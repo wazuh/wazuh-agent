@@ -7,24 +7,17 @@
  * Foundation
  */
 
-#include "time_op_wrappers.h"
+#include "sha1_op_wrappers.h"
 #include <stddef.h>
 #include <stdarg.h>
 #include <setjmp.h>
 #include <cmocka.h>
 
-time_t current_time = 0;
+int __wrap_OS_SHA1_File(const char *fname, os_sha1 output, int mode) {
+    check_expected(fname);
+    check_expected(mode);
 
-void __wrap_w_sleep_until(const time_t new_time){
-    current_time = new_time;
-}
+    snprintf(output, 41, "%s", mock_type(char *));
 
-void __wrap_w_time_delay(unsigned long int msec){
-    current_time += (msec/1000);
-}
-
-char* __wrap_w_get_timestamp(time_t time) {
-    check_expected(time);
-
-    return mock_type(char*);
+    return mock();
 }
