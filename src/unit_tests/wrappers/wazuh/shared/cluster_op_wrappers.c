@@ -7,18 +7,12 @@
  * Foundation
  */
 
+#include "cluster_op_wrappers.h"
+#include <stddef.h>
+#include <stdarg.h>
+#include <setjmp.h>
+#include <cmocka.h>
 
-#ifndef TIME_OP_WRAPPERS_H
-#define TIME_OP_WRAPPERS_H
-
-#include <time.h>
-
-void __wrap_w_sleep_until(const time_t new_time);
-
-void __wrap_w_time_delay(unsigned long int msec);
-
-char* __wrap_w_get_timestamp(time_t time);
-
-extern time_t current_time;
-
-#endif
+int __wrap_w_is_worker(void) {
+    return mock();
+}
