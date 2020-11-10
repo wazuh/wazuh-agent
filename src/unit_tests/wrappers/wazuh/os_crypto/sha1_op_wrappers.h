@@ -8,17 +8,15 @@
  */
 
 
-#ifndef TIME_OP_WRAPPERS_H
-#define TIME_OP_WRAPPERS_H
+#ifndef SHA1_OP_WRAPPERS_H
+#define SHA1_OP_WRAPPERS_H
 
-#include <time.h>
+#include "headers/shared.h"
+#include <string.h>
+#include <sys/types.h>
 
-void __wrap_w_sleep_until(const time_t new_time);
+typedef char os_sha1[41];
 
-void __wrap_w_time_delay(unsigned long int msec);
-
-char* __wrap_w_get_timestamp(time_t time);
-
-extern time_t current_time;
+int __wrap_OS_SHA1_File(const char *fname, os_sha1 output, int mode);
 
 #endif
