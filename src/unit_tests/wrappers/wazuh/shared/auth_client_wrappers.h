@@ -8,11 +8,9 @@
  */
 
 
-#ifndef RUN_REALTIME_WRAPPERS_H
-#define RUN_REALTIME_WRAPPERS_H
+#ifndef AUTH_CLIENT_WRAPPERS_H
+#define AUTH_CLIENT_WRAPPERS_H
 
-int __wrap_realtime_adddir(const char *dir, int whodata, int followsl);
-
-int __wrap_realtime_start();
+int __wrap_auth_remove_agent(__attribute__((unused)) int sock, const char *id, __attribute__((unused)) int json_format);
 
 #endif

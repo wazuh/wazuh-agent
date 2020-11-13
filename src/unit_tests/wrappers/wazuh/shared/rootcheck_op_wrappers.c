@@ -6,20 +6,20 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation
  */
+#include "rootcheck_op_wrappers.h"
 
-#include "run_realtime_wrappers.h"
 #include <stddef.h>
 #include <stdarg.h>
 #include <setjmp.h>
 #include <cmocka.h>
+#include <stdio.h>
 
-int __wrap_realtime_adddir(const char *dir, int whodata, __attribute__((unused)) int followsl) {
-    check_expected(dir);
-    check_expected(whodata);
+int __wrap_send_rootcheck_log(const char* agent_id, long int date, const char* log, char* response) {
+    check_expected(agent_id);
+    check_expected(date);
+    check_expected(log);
+
+    sprintf(response, "%s", mock_ptr_type(char*));
 
     return mock();
-}
-
-int __wrap_realtime_start() {
-    return 0;
 }

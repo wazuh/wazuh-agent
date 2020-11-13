@@ -7,12 +7,10 @@
  * Foundation
  */
 
+#ifndef ROOTCHECK_OP_WRAPPERS
+#define ROOTCHECK_OP_WRAPPERS
 
-#ifndef RUN_REALTIME_WRAPPERS_H
-#define RUN_REALTIME_WRAPPERS_H
+int __wrap_send_rootcheck_log(const char* agent_id, long int date, const char* log, char* response);
 
-int __wrap_realtime_adddir(const char *dir, int whodata, int followsl);
-
-int __wrap_realtime_start();
 
 #endif

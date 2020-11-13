@@ -8,11 +8,10 @@
  */
 
 
-#ifndef RUN_REALTIME_WRAPPERS_H
-#define RUN_REALTIME_WRAPPERS_H
+#ifndef AGENT_OP_WRAPPERS_H
+#define AGENT_OP_WRAPPERS_H
 
-int __wrap_realtime_adddir(const char *dir, int whodata, int followsl);
-
-int __wrap_realtime_start();
+int __wrap_auth_connect();
+char* __wrap_get_agent_id_from_name(__attribute__((unused)) char *agent_name);
 
 #endif

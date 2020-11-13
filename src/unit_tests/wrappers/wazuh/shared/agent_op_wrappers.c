@@ -7,19 +7,18 @@
  * Foundation
  */
 
-#include "run_realtime_wrappers.h"
+#include "agent_op_wrappers.h"
 #include <stddef.h>
 #include <stdarg.h>
 #include <setjmp.h>
 #include <cmocka.h>
+#include <string.h>
+#include <stdio.h>
 
-int __wrap_realtime_adddir(const char *dir, int whodata, __attribute__((unused)) int followsl) {
-    check_expected(dir);
-    check_expected(whodata);
-
+int __wrap_auth_connect() {
     return mock();
 }
 
-int __wrap_realtime_start() {
-    return 0;
+char* __wrap_get_agent_id_from_name(__attribute__((unused)) char *agent_name) {
+    return mock_type(char*);
 }
