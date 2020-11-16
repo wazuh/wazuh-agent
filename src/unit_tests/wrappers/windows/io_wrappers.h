@@ -7,12 +7,14 @@
  * Foundation
  */
 
+#ifndef IO_WIN_WRAPPERS_H
+#define IO_WIN_WRAPPERS_H
 
-#ifndef RUN_REALTIME_WRAPPERS_H
-#define RUN_REALTIME_WRAPPERS_H
+#include <io.h>
 
-int __wrap_realtime_adddir(const char *dir, int whodata, int followsl);
+#undef _mktemp_s
+#define _mktemp_s  wrap_mktemp_s
 
-int __wrap_realtime_start();
+char * wrap_mktemp_s(const char *path, ssize_t length);
 
 #endif

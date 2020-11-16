@@ -8,11 +8,13 @@
  */
 
 
-#ifndef RUN_REALTIME_WRAPPERS_H
-#define RUN_REALTIME_WRAPPERS_H
+#ifndef SIGNATURE_WRAPPERS_H
+#define SIGNATURE_WRAPPERS_H
 
-int __wrap_realtime_adddir(const char *dir, int whodata, int followsl);
+#include "headers/shared.h"
+#include <string.h>
 
-int __wrap_realtime_start();
+int __wrap_w_wpk_unsign(const char * source, const char * target, const char ** ca_store);
+
 
 #endif
