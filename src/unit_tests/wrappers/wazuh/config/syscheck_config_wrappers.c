@@ -7,21 +7,14 @@
  * Foundation
  */
 
-#include "time_wrappers.h"
-#include <stdarg.h>
 #include <stddef.h>
+#include <stdarg.h>
 #include <setjmp.h>
 #include <cmocka.h>
-#include <string.h>
+#include "syscheck_config_wrappers.h"
 
-time_t __wrap_time(__attribute__ ((unused)) time_t *t) {
-    return mock_type(time_t);
-}
+char **__wrap_expand_wildcards(const char *path) {
+    check_expected(path);
 
-char *__wrap_ctime_r(const time_t *timep, char *buf) {
-    check_expected(timep);
-
-    strncpy(buf, mock_type(const char *), 26);
-
-    return buf;
+    return mock_type(char **);
 }

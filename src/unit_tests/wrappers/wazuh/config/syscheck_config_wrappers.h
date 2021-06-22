@@ -8,12 +8,9 @@
  */
 
 
-#ifndef TIME_WRAPPERS_H
-#define TIME_WRAPPERS_H
+#ifndef SYSCHECK_CONFIG_WRAPPERS
+#define SYSCHECK_CONFIG_WRAPPERS
 
-#include <time.h>
+char **__wrap_expand_wildcards(const char *path);
 
-time_t __wrap_time(time_t *t);
-char *__wrap_ctime_r(const time_t *timep, char *buf);
-
-#endif // TIME_WRAPPERS_H
+#endif // SYSCHECK_CONFIG_WRAPPERS
