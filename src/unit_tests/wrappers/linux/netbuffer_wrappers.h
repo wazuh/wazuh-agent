@@ -12,4 +12,6 @@
 
 void __wrap_nb_close(__attribute__((unused)) netbuffer_t * buffer, int sock);
 
+int __wrap_nb_queue(__attribute__((unused)) netbuffer_t * buffer, int socket, char * crypt_msg, ssize_t msg_size);
+
 #endif
