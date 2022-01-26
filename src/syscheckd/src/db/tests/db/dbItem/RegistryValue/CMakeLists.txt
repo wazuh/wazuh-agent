@@ -1,22 +1,20 @@
 cmake_minimum_required(VERSION 3.12.4)
 
-project(dbsync_unit_test)
+project(registryvalue_unit_test)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
 
-include_directories(${CMAKE_SOURCE_DIR}/include/)
-link_directories(${CMAKE_BINARY_DIR}/lib)
+file(GLOB registryvalue_UNIT_TEST_SRC
+    "*.cpp")
 
+file(GLOB REGISTRYVALUE_SRC "${SRC_FOLDER}/syscheckd/src/db/src/dbRegistryValue.cpp")
 
-file(GLOB INTERFACE_UNITTEST_SRC
-    "*.cpp"
-    "${CMAKE_SOURCE_DIR}/src/*.cpp"
-    "${CMAKE_SOURCE_DIR}/src/sqlite/*.cpp")
+add_executable(registryvalue_unit_test
+    ${registryvalue_UNIT_TEST_SRC}
+    ${REGISTRYVALUE_SRC})
 
-add_executable(dbsync_unit_test 
-    ${INTERFACE_UNITTEST_SRC} )
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    target_link_libraries(dbsync_unit_test
+    target_link_libraries(registryvalue_unit_test
         debug gtestd
         debug gmockd
         debug gtest_maind
@@ -25,13 +23,13 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         optimized gmock
         optimized gtest_main
         optimized gmock_main
+        pthread
         sqlite3
         cjson
-        pthread
         -static-libgcc -static-libstdc++
     )
 else()
-    target_link_libraries(dbsync_unit_test
+    target_link_libraries(registryvalue_unit_test
         debug gtestd
         debug gmockd
         debug gtest_maind
@@ -40,12 +38,12 @@ else()
         optimized gmock
         optimized gtest_main
         optimized gmock_main
+        pthread
         sqlite3
         cjson
-        pthread
         dl
     )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
-add_test(NAME dbsync_unit_test
-         COMMAND dbsync_unit_test)
+add_test(NAME registryvalue_unit_test
+         COMMAND registryvalue_unit_test)
