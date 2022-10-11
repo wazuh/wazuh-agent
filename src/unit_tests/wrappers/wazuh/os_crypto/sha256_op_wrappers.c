@@ -7,12 +7,16 @@
  * Foundation
  */
 
-#include "manage_agents_wrappers.h"
+#include "sha256_op_wrappers.h"
 #include <stddef.h>
 #include <stdarg.h>
 #include <setjmp.h>
 #include <cmocka.h>
 
-void __wrap_OS_RemoveAgentGroup(__attribute__((unused)) const char *id) {
-    // Empty wrapper
+int __wrap_OS_SHA256_String(const char *str, os_sha256 output) {
+    check_expected(str);
+
+    snprintf(output, 65, "%s", mock_type(char *));
+
+    return 0;
 }

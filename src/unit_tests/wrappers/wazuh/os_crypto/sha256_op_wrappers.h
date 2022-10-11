@@ -8,9 +8,15 @@
  */
 
 
-#ifndef MANAGE_AGENTS_WRAPPERS_H
-#define MANAGE_AGENTS_WRAPPERS_H
+#ifndef SHA256_OP_WRAPPERS_H
+#define SHA256_OP_WRAPPERS_H
 
-void __wrap_OS_RemoveAgentGroup(const char *id);
+#include "headers/shared.h"
+#include <string.h>
+#include <sys/types.h>
+
+typedef char os_sha256[65];
+
+int __wrap_OS_SHA256_String(const char *str, os_sha256 output);
 
 #endif
