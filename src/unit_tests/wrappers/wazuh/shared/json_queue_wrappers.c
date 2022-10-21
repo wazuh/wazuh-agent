@@ -13,13 +13,10 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-cJSON * __wrap_json_fread(const char * path, __attribute__((unused)) char retry) {
-    if (path) check_expected(path);
-    return mock_type(cJSON *);
+int __wrap_jqueue_open(__attribute__((unused)) file_queue *queue, __attribute__((unused)) int tail) {
+    return mock_type(int);
 }
 
-int __wrap_json_fwrite(const char * path, const cJSON * item) {
-    check_expected(path);
-    check_expected(item);
-    return mock_type(int);
+cJSON * __wrap_jqueue_next(__attribute__((unused)) file_queue * queue) {
+    return mock_type(cJSON *);
 }

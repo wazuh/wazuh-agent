@@ -7,19 +7,24 @@
  * Foundation
  */
 
-#include "json_op_wrappers.h"
 #include <stddef.h>
 #include <stdarg.h>
 #include <setjmp.h>
 #include <cmocka.h>
 
-cJSON * __wrap_json_fread(const char * path, __attribute__((unused)) char retry) {
-    if (path) check_expected(path);
-    return mock_type(cJSON *);
+#include "rwlock_op_wrappers.h"
+
+void __wrap_rwlock_lock_read(rwlock_t * rwlock) {
+    (void)rwlock;
+    function_called();
 }
 
-int __wrap_json_fwrite(const char * path, const cJSON * item) {
-    check_expected(path);
-    check_expected(item);
-    return mock_type(int);
+void __wrap_rwlock_lock_write(rwlock_t * rwlock) {
+    (void)rwlock;
+    function_called();
+}
+
+void __wrap_rwlock_unlock(rwlock_t * rwlock) {
+    (void)rwlock;
+    function_called();
 }
