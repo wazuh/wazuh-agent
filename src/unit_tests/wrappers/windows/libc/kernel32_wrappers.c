@@ -7,19 +7,21 @@
  * Foundation
  */
 
-#include "json_op_wrappers.h"
 #include <stddef.h>
 #include <stdarg.h>
 #include <setjmp.h>
 #include <cmocka.h>
+#include <stdio.h>
+#include <string.h>
+#include "kernel32_wrappers.h"
 
-cJSON * __wrap_json_fread(const char * path, __attribute__((unused)) char retry) {
-    if (path) check_expected(path);
-    return mock_type(cJSON *);
+DWORD wrap_WaitForSingleObject(HANDLE hMutex, long value) {
+    check_expected(hMutex);
+    check_expected(value);
+    return mock();
 }
 
-int __wrap_json_fwrite(const char * path, const cJSON * item) {
-    check_expected(path);
-    check_expected(item);
-    return mock_type(int);
+bool wrap_ReleaseMutex(HANDLE hMutex) {
+    check_expected(hMutex);
+    return mock();
 }

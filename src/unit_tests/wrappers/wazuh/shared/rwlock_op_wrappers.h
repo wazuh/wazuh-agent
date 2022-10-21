@@ -7,13 +7,13 @@
  * Foundation
  */
 
+#ifndef RWLOCK_OP_WRAPPERS_H
+#define RWLOCK_OP_WRAPPERS_H
 
-#ifndef JSON_OP_WRAPPERS_H
-#define JSON_OP_WRAPPERS_H
+#include <rwlock_op.h>
 
-#include "headers/shared.h"
-
-cJSON * __wrap_json_fread(const char * path, char retry);
-int __wrap_json_fwrite(const char * path, const cJSON * item);
+void __wrap_rwlock_lock_read(rwlock_t * rwlock);
+void __wrap_rwlock_lock_write(rwlock_t * rwlock);
+void __wrap_rwlock_unlock(rwlock_t * rwlock);
 
 #endif
