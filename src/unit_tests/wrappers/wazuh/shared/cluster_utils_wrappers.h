@@ -7,9 +7,10 @@
  * Foundation
  */
 
-#ifndef NETCOUNTER_WRAPPERS_H
-#define NETCOUNTER_WRAPPERS_H
 
-void __wrap_rem_setCounter(int fd, size_t counter);
+#ifndef CLUSTER_UTILS_WRAPPERS_H
+#define CLUSTER_UTILS_WRAPPERS_H
+
+char* __wrap_get_node_name(void);
 
 #endif
