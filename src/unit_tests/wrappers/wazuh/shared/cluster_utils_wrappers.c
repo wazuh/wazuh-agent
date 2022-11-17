@@ -7,19 +7,12 @@
  * Foundation
  */
 
-#include <stdarg.h>
+#include "cluster_utils_wrappers.h"
 #include <stddef.h>
+#include <stdarg.h>
 #include <setjmp.h>
 #include <cmocka.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <shared.h>
-#include <os_net/os_net.h>
 
-#include "netcounter_wrappers.h"
-
-
-void __wrap_rem_setCounter(int fd, size_t counter) {
-    check_expected(fd);
-    check_expected(counter);
+char* __wrap_get_node_name(void) {
+    return mock_type(char*);
 }
