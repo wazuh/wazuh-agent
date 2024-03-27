@@ -1,5 +1,5 @@
 '''
-copyright: Copyright (C) 2015-2023, Wazuh Inc.
+copyright: Copyright (C) 2015-2024, Wazuh Inc.
            Created by Wazuh, Inc. <info@wazuh.com>.
            This program is free software; you can redistribute it and/or modify it under the terms of GPLv2
 
@@ -13,7 +13,6 @@ components:
 suite: sca
 
 targets:
-    - manager
     - agent
 
 daemons:
@@ -21,9 +20,13 @@ daemons:
 
 os_platform:
     - linux
+    - windows
 
 os_version:
     - CentOS 8
+    - Windows 10
+    - Windows Server 2019
+    - Windows Server 2016
 
 references:
     - https://documentation.wazuh.com/current/user-manual/capabilities/sec-config-assessment/index.html
@@ -47,7 +50,7 @@ from wazuh_testing.constants.platforms import WINDOWS
 
 from . import CONFIGURATIONS_FOLDER_PATH, TEST_CASES_FOLDER_PATH
 
-pytestmark = [pytest.mark.linux, pytest.mark.win32, pytest.mark.tier(level=0)]
+pytestmark = [pytest.mark.agent, pytest.mark.linux, pytest.mark.win32, pytest.mark.tier(level=0)]
 
 local_internal_options = {AGENTD_WINDOWS_DEBUG if sys.platform == WINDOWS else MODULESD_DEBUG: '2'}
 

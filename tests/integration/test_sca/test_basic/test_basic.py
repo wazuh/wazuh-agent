@@ -1,5 +1,5 @@
 '''
-copyright: Copyright (C) 2015-2023, Wazuh Inc.
+copyright: Copyright (C) 2015-2024, Wazuh Inc.
            Created by Wazuh, Inc. <info@wazuh.com>.
            This program is free software; you can redistribute it and/or modify it under the terms of GPLv2
 
@@ -13,13 +13,14 @@ components:
     - sca
 
 targets:
-    - manager
     - agent
+
 daemons:
     - wazuh-modulesd
 
 os_platform:
     - linux
+    - windows
 
 os_version:
     - Arch Linux
@@ -31,6 +32,9 @@ os_version:
     - Red Hat 8
     - Ubuntu Focal
     - Ubuntu Bionic
+    - Windows 10
+    - Windows Server 2019
+    - Windows Server 2016
 
 references:
     - https://documentation.wazuh.com/current/user-manual/capabilities/sec-config-assessment/index.html
@@ -53,7 +57,7 @@ from wazuh_testing.constants.platforms import WINDOWS
 from . import CONFIGURATIONS_FOLDER_PATH, TEST_CASES_FOLDER_PATH
 
 
-pytestmark = [pytest.mark.linux, pytest.mark.win32, pytest.mark.tier(level=0)]
+pytestmark = [pytest.mark.agent, pytest.mark.linux, pytest.mark.win32, pytest.mark.tier(level=0)]
 
 local_internal_options = {AGENTD_WINDOWS_DEBUG if sys.platform == WINDOWS else MODULESD_DEBUG: '2'}
 
@@ -97,30 +101,27 @@ def test_sca_enabled(test_configuration, test_metadata, prepare_cis_policies_fil
     tier: 0
 
     parameters:
-        - configuration:
+        - test_configuration:
             type: dict
             brief: Wazuh configuration data. Needed for set_wazuh_configuration fixture.
-        - metadata:
+        - test_metadata:
             type: dict
             brief: Wazuh configuration metadata.
         - prepare_cis_policies_file:
             type: fixture
             brief: copy test sca policy file. Delete it after test.
+        - truncate_monitored_files:
+            type: fixture
+            brief: Truncate all the log files and json alerts files before and after the test execution.
         - set_wazuh_configuration:
             type: fixture
             brief: Set the wazuh configuration according to the configuration data.
         - configure_local_internal_options:
             type: fixture
             brief: Configure the local_internal_options_file.
-        - truncate_monitored_files:
+        - daemons_handler:
             type: fixture
-            brief: Truncate all the log files and json alerts files before and after the test execution.
-        - restart_modulesd_function:
-            type: fixture
-            brief: Restart the wazuh-modulesd daemon.
-        - wait_for_sca_enabled:
-            type: fixture
-            brief: Wait for the sca Module to start before starting the test.
+            brief: Handler of Wazuh daemons.
 
     assertions:
         - Verify that when the `enabled` option is set to `yes`, the SCA module is enabled.
@@ -163,30 +164,27 @@ def test_sca_disabled(test_configuration, test_metadata, prepare_cis_policies_fi
     tier: 0
 
     parameters:
-        - configuration:
+        - test_configuration:
             type: dict
             brief: Wazuh configuration data. Needed for set_wazuh_configuration fixture.
-        - metadata:
+        - test_metadata:
             type: dict
             brief: Wazuh configuration metadata.
         - prepare_cis_policies_file:
             type: fixture
             brief: copy test sca policy file. Delete it after test.
+        - truncate_monitored_files:
+            type: fixture
+            brief: Truncate all the log files and json alerts files before and after the test execution.
         - set_wazuh_configuration:
             type: fixture
             brief: Set the wazuh configuration according to the configuration data.
         - configure_local_internal_options:
             type: fixture
             brief: Configure the local_internal_options_file.
-        - truncate_monitored_files:
+        - daemons_handler:
             type: fixture
-            brief: Truncate all the log files and json alerts files before and after the test execution.
-        - restart_modulesd_function:
-            type: fixture
-            brief: Restart the wazuh-modulesd daemon.
-        - wait_for_sca_enabled:
-            type: fixture
-            brief: Wait for the sca Module to start before starting the test.
+            brief: Handler of Wazuh daemons.
 
     assertions:
         - Verify that when the `enabled` option is set to `no`, the SCA module does not start.

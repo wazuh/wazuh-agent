@@ -7,7 +7,7 @@ import pytest
 import sys
 
 from wazuh_testing.tools.monitors import file_monitor
-from wazuh_testing.modules.modulesd.sca import patterns
+from wazuh_testing.modules.modulesd.syscollector import patterns
 from wazuh_testing.constants.paths.logs import WAZUH_LOG_PATH
 from wazuh_testing.utils import callbacks
 from wazuh_testing.constants.platforms import WINDOWS
@@ -15,10 +15,10 @@ from wazuh_testing.constants.platforms import WINDOWS
 
 # Fixtures
 @pytest.fixture()
-def wait_for_sca_enabled():
+def wait_for_syscollector_enabled():
     '''
-    Wait for the sca module to start.
+    Wait for the syscollector module to start.
     '''
     log_monitor = file_monitor.FileMonitor(WAZUH_LOG_PATH)
-    log_monitor.start(callback=callbacks.generate_callback(patterns.CB_SCA_ENABLED), timeout=60 if sys.platform == WINDOWS else 10)
+    log_monitor.start(callback=callbacks.generate_callback(patterns.CB_MODULE_STARTED), timeout=60 if sys.platform == WINDOWS else 10)
     assert log_monitor.callback_result
