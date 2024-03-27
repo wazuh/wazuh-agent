@@ -1,5 +1,5 @@
 '''
-copyright: Copyright (C) 2015-2023, Wazuh Inc.
+copyright: Copyright (C) 2015-2024, Wazuh Inc.
 
            Created by Wazuh, Inc. <info@wazuh.com>.
 
@@ -17,7 +17,6 @@ components:
 suite: syscollector
 
 targets:
-    - manager
     - agent
 
 daemons:
@@ -28,12 +27,10 @@ daemons:
 os_platform:
     - linux
     - windows
-    - macos
 
 os_version:
     - CentOS 8
     - Ubuntu Bionic
-    - macOS Catalina
     - Windows Server 2016
     - Windows Server 2019
 
@@ -45,30 +42,26 @@ import sys
 from pathlib import Path
 
 import pytest
-from wazuh_testing.constants.daemons import ANALYSISD_DAEMON, WAZUH_DB_DAEMON, MODULES_DAEMON, WAZUH_MANAGER
 from wazuh_testing.constants.paths.logs import WAZUH_LOG_PATH
 from wazuh_testing.constants.platforms import WINDOWS
 from wazuh_testing.utils import services
 from wazuh_testing.tools.monitors import file_monitor
 from wazuh_testing.utils import callbacks, configuration
-from wazuh_testing.modules.modulesd.syscollector import patterns
+from wazuh_testing.modules.agentd.configuration import AGENTD_WINDOWS_DEBUG
 from wazuh_testing.modules.modulesd.configuration import MODULESD_DEBUG
+from wazuh_testing.modules.modulesd.syscollector import patterns
 from . import CONFIGURATIONS_FOLDER_PATH, TEST_CASES_FOLDER_PATH
 
 
 # Marks
-pytestmark = [pytest.mark.tier(level=0), pytest.mark.linux, pytest.mark.win32]
+pytestmark = [pytest.mark.agent, pytest.mark.linux, pytest.mark.win32, pytest.mark.tier(level=0)]
 
 # Variables
-local_internal_options = {MODULESD_DEBUG: '2'}
-if services.get_service() == WAZUH_MANAGER:
-    daemons_handler_configuration = {'daemons': [ANALYSISD_DAEMON, WAZUH_DB_DAEMON, MODULES_DAEMON], 'ignore_errors': True}
-elif sys.platform == WINDOWS:
-    from wazuh_testing.modules.agentd.configuration import AGENTD_WINDOWS_DEBUG
-    daemons_handler_configuration = {'all_daemons': True, 'ignore_errors': True}
+daemons_handler_configuration = {'all_daemons': True, 'ignore_errors': True}
+if sys.platform == WINDOWS:
     local_internal_options = {AGENTD_WINDOWS_DEBUG: '2'}
 else:
-    daemons_handler_configuration = {'daemons': [MODULES_DAEMON], 'ignore_errors': True}
+    local_internal_options = {MODULESD_DEBUG: '2'}
 
 # T1 Parameters: Check that Syscollector is disabled.
 t1_3_5_config_path = Path(CONFIGURATIONS_FOLDER_PATH, 'configuration_syscollector.yaml')

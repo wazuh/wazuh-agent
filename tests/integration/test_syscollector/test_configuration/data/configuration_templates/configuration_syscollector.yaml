@@ -35,13 +35,6 @@
         - disabled:
             value: 'yes'
 
-    - section: wodle
-      attributes:
-        - name: vulnerability-detector
-      elements:
-        - disabled:
-            value: 'yes'
-
     - section: rootcheck
       elements:
         - disabled:
