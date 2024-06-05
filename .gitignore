@@ -1,0 +1,26 @@
+*.so
+*.so.*
+*.o
+*.a
+*.dSYM
+.DS_Store
+*.pyc
+*.dll
+*.exe
+*.dylib
+
+# Eclipse files
+.cproject
+.project
+.settings/
+
+# Visual Studio Code files
+.vscode
+
+# temporary vim files
+*.swp
+*.swo
+
+# patch files
+*.rej
+*.orig
