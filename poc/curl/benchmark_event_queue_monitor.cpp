@@ -12,8 +12,12 @@
 
 #include "db/dummy_wrapper.hpp"
 #include "db/sqlite_wrapper.hpp"
+#include "db/rocksdb_wrapper.hpp"
+#include "TimeMeasurement.hpp"
 
 #include "logger.hpp"
+
+#define ROCKSDB
 
 class EventQueueMonitorFixture : public benchmark::Fixture
 {
@@ -21,9 +25,14 @@ public:
     EventQueueMonitorFixture()
     {
         Logger::LOGGING_ENABLED = false;
+        #ifdef ROCKSDB
+            std::cout << "RocksDB Database" << std::endl;
+        #else
+            std::cout << "SQLite Database" << std::endl;
+        #endif
     }
 
-    std::unique_ptr<EventQueueMonitor<DummyWrapper>> monitor;
+    std::unique_ptr<EventQueueMonitor> monitor;
 };
 
 BENCHMARK_DEFINE_F(EventQueueMonitorFixture, Dispatch200000PreLoadedPendingEventsWithBatchSizesOf)
@@ -33,18 +42,26 @@ BENCHMARK_DEFINE_F(EventQueueMonitorFixture, Dispatch200000PreLoadedPendingEvent
 
     for (auto _ : state)
     {
-        monitor = std::make_unique<EventQueueMonitor<DummyWrapper>>([](const std::string&) { return false; });
+        #ifdef ROCKSDB
+            std::unique_ptr<DBWrapper> p = std::make_unique<RocksDBWrapper>("rocksdb-db");
+        #else
+            std::unique_ptr<DBWrapper> p = std::make_unique<SQLiteWrapper>();
+        #endif
+        monitor = std::make_unique<EventQueueMonitor>(std::move(p), [](const std::string&) { return false; });
 
         // First we stop the event loop so we can control that it starts with a preloaded db
         monitor->continueEventProcessing = false;
 
         // When all events are processed we stop the event loop
         monitor->shouldStopRunningIfQueueIsEmpty = true;
-
-        // Preload db with events
-        for (int i = 0; i < 200000; ++i)
+        
         {
-            monitor->eventQueue->InsertEvent(i, "event_data", "event_type");
+            TimeMeasurement tm("Inserting events");
+            // Preload db with events
+            for (int i = 0; i < 100; ++i)
+            {
+                monitor->eventQueue->InsertEvent(i, "event_data", "event_type");
+            }
         }
 
         // Benchmark the time it takes to dispatch all the events
@@ -77,33 +94,40 @@ BENCHMARK_DEFINE_F(EventQueueMonitorFixture, Dispatch200000PreLoadedPendingEvent
 BENCHMARK_REGISTER_F(EventQueueMonitorFixture, Dispatch200000PreLoadedPendingEventsWithBatchSizesOf)
     ->UseManualTime()
     ->Unit(benchmark::kMillisecond)
-    ->Iterations(100)
+    ->Iterations(10)
     ->Arg(10)
-    ->Arg(100)
-    ->Arg(1'000)
-    ->Arg(10'000)
-    ->Arg(100'000)
-    ->Arg(200'000);
+    ->Arg(20)
+    ->Arg(50);
+
 
 BENCHMARK_DEFINE_F(EventQueueMonitorFixture, DispatchPreLoadedPendingEventsWithFixedBatchSizeOf100AndEventCountOf)
 (benchmark::State& state)
 {
     for (auto _ : state)
     {
-        monitor = std::make_unique<EventQueueMonitor<DummyWrapper>>([](const std::string&) { return false; });
+        #ifdef ROCKSDB
+            std::unique_ptr<DBWrapper> p = std::make_unique<RocksDBWrapper>("rocksdb-db");
+        #else
+            std::unique_ptr<DBWrapper> p = std::make_unique<SQLiteWrapper>();
+        #endif
+        monitor = std::make_unique<EventQueueMonitor>(std::move(p), [](const std::string&) { return false; });
 
         // First we stop the event loop so we can control that it starts with a preloaded db
         monitor->continueEventProcessing = false;
 
         // When all events are processed we stop the event loop
         monitor->shouldStopRunningIfQueueIsEmpty = true;
-
-        // Preload db with events
-        for (int i = 0; i < state.range(0); ++i)
+        
         {
-            monitor->eventQueue->InsertEvent(i, "event_data", "event_type");
+            TimeMeasurement tm("Inserting events");
+            // Preload db with events
+            for (int i = 0; i < state.range(0); ++i)
+            {
+                monitor->eventQueue->InsertEvent(i, "event_data", "event_type");
+            }
         }
-
+        std::cout << "Running. " << std::endl;
+        
         // Benchmark the time it takes to dispatch all the events
         auto start = std::chrono::high_resolution_clock::now();
         monitor->batchSize = 100;
@@ -124,16 +148,10 @@ BENCHMARK_DEFINE_F(EventQueueMonitorFixture, DispatchPreLoadedPendingEventsWithF
 BENCHMARK_REGISTER_F(EventQueueMonitorFixture, DispatchPreLoadedPendingEventsWithFixedBatchSizeOf100AndEventCountOf)
     ->UseManualTime()
     ->Unit(benchmark::kMillisecond)
-    ->Iterations(100)
-    ->Arg(10)
-    ->Arg(100)
-    ->Arg(1'000)
-    ->Arg(10'000)
-    ->Arg(100'000)
-    ->Arg(200'000)
-    ->Arg(300'000)
-    ->Arg(500'000)
-    ->Arg(1'000'000);
+    ->Iterations(10)
+    ->Arg(1000)
+    ->Arg(2000)
+    ->Arg(5000);
 
 BENCHMARK_DEFINE_F(EventQueueMonitorFixture, Dispatch100000PreLoadedPendingEventsWithFixedBatchSizeOf100AndEventDataSizeOf)(benchmark::State& state)
 {
@@ -145,7 +163,12 @@ BENCHMARK_DEFINE_F(EventQueueMonitorFixture, Dispatch100000PreLoadedPendingEvent
 
     for (auto _ : state)
     {
-        monitor = std::make_unique<EventQueueMonitor<DummyWrapper>>([](const std::string&) { return false; });
+        #ifdef ROCKSDB
+            std::unique_ptr<DBWrapper> p = std::make_unique<RocksDBWrapper>("rocksdb-db");
+        #else
+            std::unique_ptr<DBWrapper> p = std::make_unique<SQLiteWrapper>();
+        #endif
+        monitor = std::make_unique<EventQueueMonitor>(std::move(p), [](const std::string&) { return false; });
 
         // First we stop the event loop so we can control that it starts with a preloaded db
         monitor->continueEventProcessing = false;
@@ -154,7 +177,7 @@ BENCHMARK_DEFINE_F(EventQueueMonitorFixture, Dispatch100000PreLoadedPendingEvent
         monitor->shouldStopRunningIfQueueIsEmpty = true;
 
         // Preload db with events
-        for (int i = 0; i < 100'000; ++i)
+        for (int i = 0; i < 5000; ++i)
         {
             monitor->eventQueue->InsertEvent(i, generateString(state.range(0)), "event_type");
         }
@@ -183,14 +206,9 @@ BENCHMARK_DEFINE_F(EventQueueMonitorFixture, Dispatch100000PreLoadedPendingEvent
 BENCHMARK_REGISTER_F(EventQueueMonitorFixture, Dispatch100000PreLoadedPendingEventsWithFixedBatchSizeOf100AndEventDataSizeOf)
     ->UseManualTime()
     ->Unit(benchmark::kMillisecond)
-    ->Iterations(100)
-    ->Arg(10)
+    ->Iterations(10)
     ->Arg(100)
-    ->Arg(1'000)
-    ->Arg(10'000)
-    ->Arg(100'000)
-    ->Arg(250'000)
-    ->Arg(500'000)
-    ->Arg(1'000'000);
+    ->Arg(200)
+    ->Arg(500);
 
 BENCHMARK_MAIN();

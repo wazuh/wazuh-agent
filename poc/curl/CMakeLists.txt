@@ -67,8 +67,14 @@ add_executable(client client_main.cpp)
 target_include_directories(server PRIVATE ${JWT_CPP_INCLUDE_DIRS})
 target_include_directories(client PRIVATE ${JWT_CPP_INCLUDE_DIRS})
 
-target_link_libraries(server Boost::system ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${SQLite3_LIBRARIES} RocksDB::rocksdb OpenSSL::SSL OpenSSL::Crypto urlrequest uv)
-target_link_libraries(client ${CURL_LIBRARIES} ${ZLIB_LIBRARIES} ${SQLite3_LIBRARIES} RocksDB::rocksdb OpenSSL::SSL OpenSSL::Crypto urlrequest uv)
+target_link_libraries(server Boost::system ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${SQLite3_LIBRARIES} RocksDB::rocksdb OpenSSL::SSL OpenSSL::Crypto urlrequest)
+target_link_libraries(client ${CURL_LIBRARIES} ${ZLIB_LIBRARIES} ${SQLite3_LIBRARIES} RocksDB::rocksdb OpenSSL::SSL OpenSSL::Crypto urlrequest)
 
 add_executable(benchmark_tests benchmark_event_queue_monitor.cpp)
-target_link_libraries(benchmark_tests benchmark::benchmark benchmark::benchmark_main ${SQLite3_LIBRARIES})
+target_link_libraries(benchmark_tests benchmark::benchmark benchmark::benchmark_main ${SQLite3_LIBRARIES} RocksDB::rocksdb)
+
+add_executable(rocks_vs_sqlite rocks_vs_sqlite.cpp)
+target_link_libraries(rocks_vs_sqlite ${SQLite3_LIBRARIES} RocksDB::rocksdb)
+
+add_executable(coro-threads coro-threads.cpp)
+target_link_libraries(coro-threads ${SQLite3_LIBRARIES} RocksDB::rocksdb)

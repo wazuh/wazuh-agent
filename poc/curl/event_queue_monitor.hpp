@@ -12,12 +12,11 @@
 #include "logger.hpp"
 #include "std_thread_manager.hpp"
 
-template<typename QueueDB>
 struct EventQueueMonitor
 {
-    EventQueueMonitor(std::function<bool(const std::string&)> onEvent)
+    EventQueueMonitor(std::unique_ptr<DBWrapper> pdb, std::function<bool(const std::string&)> onEvent)
+    : eventQueue(std::move(pdb))
     {
-        eventQueue = std::make_unique<QueueDB>();
         eventQueue->CreateTable();
         eventQueue->UpdateEntriesStatus("processing", "pending");
 
@@ -145,7 +144,7 @@ struct EventQueueMonitor
 
     std::atomic<bool> continueEventProcessing = true;
     std::unique_ptr<std::thread> dispatcher_thread;
-    std::unique_ptr<QueueDB> eventQueue;
+    std::unique_ptr<DBWrapper> eventQueue;
     StdThreadManager threadManager;
 
     // Configuration constants

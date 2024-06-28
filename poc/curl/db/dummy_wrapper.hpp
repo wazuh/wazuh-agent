@@ -9,7 +9,7 @@
 #include <mutex>
 
 
-class DummyWrapper : public DBWrapper<int>
+class DummyWrapper : public DBWrapper
 {
 public:
     ~DummyWrapper() override

@@ -2,8 +2,10 @@ build/
 vcpkg/
 .vscode/
 external/
+rocksdb-db
 
 # Ignore every file with extension "pb.cc" and "pb.h"
+*.db
 *.pb.cc
 *.pb.h
 __pycache__/

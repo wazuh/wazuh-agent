@@ -18,13 +18,13 @@ struct Command
     std::string status;
 };
 
-template<typename DB>
 class DBWrapper
 {
 public:
     virtual ~DBWrapper() = default;
 
     virtual void CreateTable() = 0;
+    virtual void DropTable() = 0;
     virtual void InsertEvent(int id, const std::string& event_data, const std::string& event_type) = 0;
     virtual std::vector<Event> FetchPendingEvents(int limit) = 0;
     virtual std::vector<Event> FetchAndMarkPendingEvents(int limit) = 0;

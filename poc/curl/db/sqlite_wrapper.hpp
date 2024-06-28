@@ -7,7 +7,7 @@
 
 static const char* sqlitedb_path = "sqlite3_events.db";
 
-class SQLiteWrapper : public DBWrapper<sqlite3>
+class SQLiteWrapper : public DBWrapper
 {
 public:
     SQLiteWrapper()
@@ -25,6 +25,18 @@ public:
         {
             sqlite3_close(db);
         }
+    }
+
+    void DropTable()
+    {
+        const char* sql = "DROP TABLE IF EXISTS events;";
+        char* errMsg = nullptr;
+        int rc = sqlite3_exec(db, sql, nullptr, nullptr, &errMsg);
+        if (rc != SQLITE_OK)
+        {
+            std::cerr << "Error creating table: " << errMsg << std::endl;
+            sqlite3_free(errMsg);
+        } 
     }
 
     void CreateTable() override

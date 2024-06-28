@@ -27,7 +27,9 @@ struct Client
             [this]() { return SendCommandsRequest(this->url, this->uuid, this->password, this->token); });
 
         // Start queue monitoring
-        eventQueueMonitor = std::make_unique<EventQueueMonitor<SQLiteWrapper>>(
+        std::unique_ptr<DBWrapper> p = std::make_unique<SQLiteWrapper>();
+        eventQueueMonitor = std::make_unique<EventQueueMonitor>(
+            std::move(p),
             [this](const std::string& event)
             { return SendStatelessRequest(this->url, this->uuid, this->password, this->token, event); });
     }
@@ -48,6 +50,6 @@ struct Client
     std::string token;
     std::string name;
     std::string ip;
-    std::unique_ptr<EventQueueMonitor<SQLiteWrapper>> eventQueueMonitor;
+    std::unique_ptr<EventQueueMonitor> eventQueueMonitor;
     std::unique_ptr<CommandDispatcher<RocksDBWrapper>> commandDispatcher;
 };

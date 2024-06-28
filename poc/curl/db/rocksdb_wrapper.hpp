@@ -9,7 +9,7 @@
 
 using json = nlohmann::json;
 
-class RocksDBWrapper : public DBWrapper<rocksdb::DB>
+class RocksDBWrapper : public DBWrapper
 {
 public:
     RocksDBWrapper(const std::string& dbPath)
@@ -31,6 +31,7 @@ public:
     }
 
     void CreateTable() override {}
+    void DropTable() override {}
 
     void InsertCommand(const std::string& command_data) override
     {
