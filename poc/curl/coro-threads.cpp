@@ -47,20 +47,29 @@ private:
     std::condition_variable cond_var;
 };
 
+enum class EventAction
+{
+    EventActionInsert,
+    EventActionUpdate,
+    EventActionDelete
+};
 
 class Event
 {
 public:
-    Event() : id{""}, data{""}, type{""}, timestamp{""}, status{""} {};
+    Event() : id{0}, data{""}, type{""}, timestamp{""}, status{""} , action{EventAction::EventActionInsert}
+    {
 
-    Event(std::string i, std::string d, std::string t, std::string ts, std::string st)
-     : id{i}, data{d}, type{t}, timestamp{ts}, status{st} 
+    };
+
+    Event(int i, std::string d, std::string t, std::string ts, std::string st, EventAction ea)
+     : id{i}, data{d}, type{t}, timestamp{ts}, status{st}, action{ea}
      {
 
      };
 
      Event(const Event& e)
-     : id{e.id}, data{e.data}, type{e.type}, timestamp{e.timestamp}, status{e.status} 
+     : id{e.id}, data{e.data}, type{e.type}, timestamp{e.timestamp}, status{e.status}, action{e.action}
      {
      
      }
@@ -72,15 +81,17 @@ public:
         type = e.type;
         timestamp = e.timestamp;
         status = e.status;
+        action = e.action;
 
         return *this;
      }
 
-    std::string id;
+    long id;
     std::string data;
     std::string type;
     std::string timestamp;
     std::string status;
+    EventAction action;
 };
 
 class SQLiteDB
@@ -148,11 +159,12 @@ public:
 
     void BeginTransaction()
     {
+        if(mDB == nullptr)
+            return;   
         if(mTransactionInProgress)
             return;
 
-        if(mDB == nullptr)
-            return;
+        writeMutex.lock();
 
         char* errMsg = nullptr;
         sqlite3_exec(mDB, "BEGIN TRANSACTION;", nullptr, nullptr, &errMsg);
@@ -161,22 +173,91 @@ public:
 
     void CommitTransaction()
     {
+        if(mDB == nullptr)
+            return;
+
         if(!mTransactionInProgress)
             return;
 
-        if(mDB == nullptr)
-            return;
-            
         char* errMsg = nullptr;
         sqlite3_exec(mDB, "COMMIT;", nullptr, nullptr, &errMsg);
+
+        writeMutex.unlock();
+
         mTransactionInProgress = false;
     }
 
+    bool HandleEvent(const Event& e)
+    {   
+        if(mDB == nullptr)
+            return false;
+
+        // build the SQL statement
+        std::string sql;
+        switch (e.action)
+        {       
+            case EventAction::EventActionInsert:
+                sql = "INSERT INTO events (event_data, event_type, status) VALUES ('" + e.data + "', '" + e.type + "', '" + e.status + "');";
+                break;
+            case EventAction::EventActionUpdate:
+                sql = "UPDATE events SET event_data='" + e.data + "', event_type='" + e.type + "', status='" + e.status + "' WHERE id=" + std::to_string(e.id) + ";";
+                break;
+            case EventAction::EventActionDelete:
+                sql = "DELETE FROM events WHERE id=" + std::to_string(e.id) + ";";
+                break;
+                
+        }
+
+        //std::cout << sql << std::endl;
+
+        // now exectute the statement
+        if (char* errMsg = nullptr; sqlite3_exec(mDB, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) 
+        {
+            std::cerr << "SQL error: " << errMsg << std::endl;
+            //std::cout << sql << std::endl;
+
+            sqlite3_free(errMsg);
+            return false;
+        }
+
+        return true;
+    }
+
+    std::vector<Event> FetchPendingEvents(int limit)
+    {
+        std::vector<Event> events;
+
+        const char* sql = "SELECT * FROM events WHERE status = 'Pending' LIMIT ?;";
+        
+        if (mDB == nullptr)
+            return events;
+
+        sqlite3_stmt* stmt;
+        sqlite3_prepare_v2(mDB, sql, -1, &stmt, nullptr);
+        sqlite3_bind_int(stmt, 1, limit);
+
+        while (sqlite3_step(stmt) == SQLITE_ROW)
+        {
+            Event e;
+
+            e.id = sqlite3_column_int(stmt, 0);
+
+            e.data = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+            e.type = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+            e.timestamp = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+            e.status = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
+            events.emplace_back(e);
+        }
+        sqlite3_finalize(stmt);
+        return events;
+    }
+    
     sqlite3* GetDB(){ return mDB; };
 
 private:
     bool mTransactionInProgress {false};
     sqlite3* mDB {nullptr};
+    std::mutex writeMutex;
 };
 
 class InsertParams
@@ -187,65 +268,65 @@ public:
     int batchSize;
 };
 
-// Function to insert items into the database
+// Function to handle items in the queue
 void insertEvents(EventQueue<Event>& eQueue, SQLiteDB& db, InsertParams& params) 
 {
 
-    Terminal::GetTerminal().printToCoordinates(0, 3, "Insertor: ");
+    Terminal::GetTerminal().printToCoordinates(0, 3, "Inserter: ");
 
-    db.BeginTransaction();
     long nItemCount {0};
     long nBatchCount {0};
     
-    TimeMeasurement tm("Insertor thread");
+    TimeMeasurement tm("Inserter thread");
 
+    // go on forever
     while (true) 
-    {
+    {   
+        // check for test max items
         if (nItemCount >= params.maxItems)
             break;
 
+        // check for test max time
         if (tm.GetElapsedMs() > params.maxTime)
             break;
 
+        // if queue is empty sleep for a while
         if (eQueue.isEmpty())
         {
-            //Terminal::GetTerminal().printToCoordinates(11, 3, "Queue is empty");
             Terminal::GetTerminal().printToCoordinates(11, 3, std::string("Queue size:") + std::to_string(eQueue.size()));
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             continue;
         }
 
-        if (nBatchCount > params.batchSize)
+        // run a batch until the queue is empty or we reach the batch size
+        db.BeginTransaction();
+        while (!eQueue.isEmpty())
         {
-            db.CommitTransaction();
-            db.BeginTransaction();
-            nBatchCount = 0;
+            Event item = eQueue.pop();
+
+            db.HandleEvent(item);
+            nItemCount++;
+            nBatchCount++;
+
+            // upate output info
+            Terminal::GetTerminal().printToCoordinates(11, 3, std::string("Queue size:") + std::to_string(eQueue.size()));
+            Terminal::GetTerminal().printToCoordinates(30, 3, std::string("Handled: ") + std::to_string(nItemCount));
+            
+            if (nBatchCount > params.batchSize)
+            {
+                nBatchCount = 0;
+                break;   // continue to next batch
+            }
         }
-
-        Event item = eQueue.pop();
-
-        Terminal::GetTerminal().printToCoordinates(11, 3, std::string("Queue size:") + std::to_string(eQueue.size()));
-        Terminal::GetTerminal().printToCoordinates(30, 3, std::string("Inserted: ") + std::to_string(nItemCount));
-
-        std::string sql = "INSERT INTO events (event_data, event_type, status) VALUES ('" + item.data + "', '" + item.type + "', '" + item.status + "');";
-        if (char* errMsg = nullptr; sqlite3_exec(db.GetDB(), sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) 
-        {
-            std::cerr << "SQL error: " << errMsg << std::endl;
-            sqlite3_free(errMsg);
-        }
-
-        nItemCount++;
-        nBatchCount++;
+        db.CommitTransaction();
     }
 
-    db.CommitTransaction();
-
-    Terminal::GetTerminal().printToCoordinates(30, 3, std::string("Inserted: ") + std::to_string(nItemCount));
+    Terminal::GetTerminal().printToCoordinates(30, 3, std::string("Handled: ") + std::to_string(nItemCount));
     Terminal::GetTerminal().printToCoordinates(60, 3, std::string("Thread duration: ") + std::to_string(tm.GetElapsedMs()));
 
 }
 
-// Function to produce items (simulating data generation)
+// Function to produce events to be inserted in the DB
 void generateEvents(EventQueue<Event>& eQueue, int numItems, double maxTime) 
 {
 
@@ -258,13 +339,60 @@ void generateEvents(EventQueue<Event>& eQueue, int numItems, double maxTime)
         if(tm.GetElapsedMs() > maxTime)
             break;
 
-        eQueue.push(Event {std::to_string(i), "{\"Some random json data\",\"165436\",\"Some string here\",\"436.4321\"}", "Event", "", "Pending"});
+        eQueue.push(Event {i, "{\"Some random json data\",\"165436\",\"Some string here\",\"436.4321\"}", "Event", "", "Pending", EventAction::EventActionInsert});
         Terminal::GetTerminal().printToCoordinates(11, 2, std::to_string(i));
         std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
     Terminal::GetTerminal().printToCoordinates(60, 2, std::string("Thread duration: ") + std::to_string(tm.GetElapsedMs()));
 }
 
+// Function to read events from the DB, do something with them and update them as processed
+void readAndUpdateEvents(SQLiteDB& db, int numItems, double maxTime) 
+{
+
+    Terminal::GetTerminal().printToCoordinates(0, 4, "Reader/updater: ");
+
+    TimeMeasurement tm("Reader/udater thread");
+
+    int itemCount {0};
+
+    while (true) 
+    {
+        if(tm.GetElapsedMs() > maxTime)
+            break;
+
+        if (itemCount > numItems)
+            break;
+
+        std::vector<Event>evs = db.FetchPendingEvents(1);
+        if (evs.size() == 0)
+        {
+            //std::cout << "No events" << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        }
+
+        for (Event e : evs)
+        {
+            //DoSomethingWithEvent();
+
+            // Update the event in the database
+            e.status = "Processed";
+            e.action = EventAction::EventActionUpdate;
+            db.HandleEvent(e);
+
+            itemCount++;
+            Terminal::GetTerminal().printToCoordinates(18, 4, std::to_string(itemCount));
+
+        }
+
+
+    }
+    Terminal::GetTerminal().printToCoordinates(60, 4, std::string("Thread duration: ") + std::to_string(tm.GetElapsedMs()));
+}
+
+#define MAXSECONDS 30
+#define MAXEVENTS 10'000'000
+#define TRANSACTION_SIZE 10
 
 int main() 
 {
@@ -273,26 +401,28 @@ int main()
     int x, y;
     //Terminal::GetTerminal().GetCursorPos(&y, &x);
     Terminal::GetTerminal().Clear();
-    Terminal::GetTerminal().printToCoordinates(0, 0, "--------- OPENING DATABASE -----------");
+    //Terminal::GetTerminal().printToCoordinates(0, 0, "--------- OPENING DATABASE -----------");
 
     db.OpenDatabase();
     db.CreateTable();
-
 
     EventQueue<Event> eventQueue;
 
     TimeMeasurement tm("Threads duration");
 
     // Create threads
-    std::thread producer(generateEvents, std::ref(eventQueue), 5'000'000, 60000.0);
+    std::thread producer(generateEvents, std::ref(eventQueue), MAXEVENTS, MAXSECONDS * 1000.0);
 
-    InsertParams params { 10'000'000, 60500.0, 10};
+    InsertParams params { MAXEVENTS, MAXSECONDS * 1000.0, TRANSACTION_SIZE};
     std::thread consumer(insertEvents, std::ref(eventQueue), std::ref(db), std::ref(params));
+
+    std::thread updater(readAndUpdateEvents, std::ref(db), MAXEVENTS, MAXSECONDS * 1000.0);
 
     // Join threads
     producer.join();
     consumer.join();
+    updater.join();
 
-    Terminal::GetTerminal().printToCoordinates(0, 4, std::string("Threads duration: ") + std::to_string(tm.GetElapsedMs()) + "\n");
+    Terminal::GetTerminal().printToCoordinates(0, 6, std::string("Threads duration: ") + std::to_string(tm.GetElapsedMs()) + "\n");
     return 0;
 }
