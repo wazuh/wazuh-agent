@@ -8,6 +8,12 @@
 #include "TimeMeasurement.hpp"
 #include "terminal.hpp"
 
+#define MAXSECONDS 10
+#define MAXEVENTS 10'000'000
+#define TRANSACTION_SIZE 100
+#define COL_3 38
+#define COL_2 22
+
 // Thread-safe queue implementation
 template <typename T>
 class EventQueue 
@@ -272,7 +278,7 @@ public:
 void insertEvents(EventQueue<Event>& eQueue, SQLiteDB& db, InsertParams& params) 
 {
 
-    Terminal::GetTerminal().printToCoordinates(0, 3, "Inserter: ");
+    Terminal::GetTerminal().printToCoordinates(0, 3, "Inserter");
 
     long nItemCount {0};
     long nBatchCount {0};
@@ -293,7 +299,7 @@ void insertEvents(EventQueue<Event>& eQueue, SQLiteDB& db, InsertParams& params)
         // if queue is empty sleep for a while
         if (eQueue.isEmpty())
         {
-            Terminal::GetTerminal().printToCoordinates(11, 3, std::string("Queue size:") + std::to_string(eQueue.size()));
+            Terminal::GetTerminal().printToCoordinates(60, 0, std::string("Queue size: ") + std::to_string(eQueue.size()));
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             continue;
         }
@@ -308,9 +314,7 @@ void insertEvents(EventQueue<Event>& eQueue, SQLiteDB& db, InsertParams& params)
             nItemCount++;
             nBatchCount++;
 
-            // upate output info
-            Terminal::GetTerminal().printToCoordinates(11, 3, std::string("Queue size:") + std::to_string(eQueue.size()));
-            Terminal::GetTerminal().printToCoordinates(30, 3, std::string("Handled: ") + std::to_string(nItemCount));
+
             
             if (nBatchCount > params.batchSize)
             {
@@ -319,10 +323,15 @@ void insertEvents(EventQueue<Event>& eQueue, SQLiteDB& db, InsertParams& params)
             }
         }
         db.CommitTransaction();
+
+        // upate output info here so that transactions are visible
+        Terminal::GetTerminal().printToCoordinates(60, 0, std::string("Queue size: ") + std::to_string(eQueue.size()));
+        Terminal::GetTerminal().printToCoordinates(COL_2, 3, std::to_string(nItemCount));
     }
 
-    Terminal::GetTerminal().printToCoordinates(30, 3, std::string("Handled: ") + std::to_string(nItemCount));
-    Terminal::GetTerminal().printToCoordinates(60, 3, std::string("Thread duration: ") + std::to_string(tm.GetElapsedMs()));
+    Terminal::GetTerminal().printToCoordinates(60, 0, std::string("Queue size: ") + std::to_string(eQueue.size()));
+    Terminal::GetTerminal().printToCoordinates(COL_2, 3, std::to_string(nItemCount));
+    Terminal::GetTerminal().printToCoordinates(COL_3, 3, std::to_string(tm.GetElapsedMs()));
 
 }
 
@@ -330,9 +339,10 @@ void insertEvents(EventQueue<Event>& eQueue, SQLiteDB& db, InsertParams& params)
 void generateEvents(EventQueue<Event>& eQueue, int numItems, double maxTime) 
 {
 
-    Terminal::GetTerminal().printToCoordinates(0, 2, "Generator: ");
+    Terminal::GetTerminal().printToCoordinates(0, 2, "Generator");
 
     TimeMeasurement tm("Generator thread");
+    long nItemCount {0};
 
     for (int i = 0; i < numItems; ++i) 
     {
@@ -340,17 +350,21 @@ void generateEvents(EventQueue<Event>& eQueue, int numItems, double maxTime)
             break;
 
         eQueue.push(Event {i, "{\"Some random json data\",\"165436\",\"Some string here\",\"436.4321\"}", "Event", "", "Pending", EventAction::EventActionInsert});
-        Terminal::GetTerminal().printToCoordinates(11, 2, std::to_string(i));
-        std::this_thread::sleep_for(std::chrono::milliseconds(2));
+        
+        nItemCount++;
+        Terminal::GetTerminal().printToCoordinates(COL_2, 2, std::to_string(nItemCount));
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
-    Terminal::GetTerminal().printToCoordinates(60, 2, std::string("Thread duration: ") + std::to_string(tm.GetElapsedMs()));
+
+    Terminal::GetTerminal().printToCoordinates(COL_3, 2, std::to_string(tm.GetElapsedMs()));
 }
 
 // Function to read events from the DB, do something with them and update them as processed
 void readAndUpdateEvents(SQLiteDB& db, int numItems, double maxTime) 
 {
 
-    Terminal::GetTerminal().printToCoordinates(0, 4, "Reader/updater: ");
+    Terminal::GetTerminal().printToCoordinates(0, 4, "Reader/updater");
 
     TimeMeasurement tm("Reader/udater thread");
 
@@ -364,13 +378,14 @@ void readAndUpdateEvents(SQLiteDB& db, int numItems, double maxTime)
         if (itemCount > numItems)
             break;
 
-        std::vector<Event>evs = db.FetchPendingEvents(1);
+        std::vector<Event>evs = db.FetchPendingEvents(TRANSACTION_SIZE);
         if (evs.size() == 0)
         {
-            //std::cout << "No events" << std::endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            continue;
         }
 
+        db.BeginTransaction();
         for (Event e : evs)
         {
             //DoSomethingWithEvent();
@@ -381,18 +396,14 @@ void readAndUpdateEvents(SQLiteDB& db, int numItems, double maxTime)
             db.HandleEvent(e);
 
             itemCount++;
-            Terminal::GetTerminal().printToCoordinates(18, 4, std::to_string(itemCount));
-
         }
-
-
+        db.CommitTransaction();
+        Terminal::GetTerminal().printToCoordinates(COL_2, 4, std::to_string(itemCount));
     }
-    Terminal::GetTerminal().printToCoordinates(60, 4, std::string("Thread duration: ") + std::to_string(tm.GetElapsedMs()));
+    Terminal::GetTerminal().printToCoordinates(COL_3, 4, std::to_string(tm.GetElapsedMs()));
 }
 
-#define MAXSECONDS 30
-#define MAXEVENTS 10'000'000
-#define TRANSACTION_SIZE 10
+
 
 int main() 
 {
@@ -400,8 +411,9 @@ int main()
 
     int x, y;
     //Terminal::GetTerminal().GetCursorPos(&y, &x);
+    Terminal::GetTerminal().HideCursor();
     Terminal::GetTerminal().Clear();
-    //Terminal::GetTerminal().printToCoordinates(0, 0, "--------- OPENING DATABASE -----------");
+    Terminal::GetTerminal().printToCoordinates(0, 0, "|     Thread   |     Events    |   Thread duration |");
 
     db.OpenDatabase();
     db.CreateTable();
@@ -413,16 +425,19 @@ int main()
     // Create threads
     std::thread producer(generateEvents, std::ref(eventQueue), MAXEVENTS, MAXSECONDS * 1000.0);
 
-    InsertParams params { MAXEVENTS, MAXSECONDS * 1000.0, TRANSACTION_SIZE};
+    InsertParams params { MAXEVENTS, (MAXSECONDS + 2) * 1000.0, TRANSACTION_SIZE};
     std::thread consumer(insertEvents, std::ref(eventQueue), std::ref(db), std::ref(params));
 
-    std::thread updater(readAndUpdateEvents, std::ref(db), MAXEVENTS, MAXSECONDS * 1000.0);
+    std::thread updater(readAndUpdateEvents, std::ref(db), MAXEVENTS, (MAXSECONDS + 4) * 1000.0);
 
     // Join threads
     producer.join();
     consumer.join();
     updater.join();
 
+    Terminal::GetTerminal().printToCoordinates(60, 0, std::string("Queue size: ") + std::to_string(eventQueue.size())+ "     \n");
     Terminal::GetTerminal().printToCoordinates(0, 6, std::string("Threads duration: ") + std::to_string(tm.GetElapsedMs()) + "\n");
+
+    Terminal::GetTerminal().ShowCursor();
     return 0;
 }
