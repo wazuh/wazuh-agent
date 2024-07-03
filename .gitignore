@@ -9,6 +9,9 @@
 *.exe
 *.dylib
 
+# Auto generated build files
+src/**/build/*
+
 # Eclipse files
 .cproject
 .project

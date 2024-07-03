@@ -1,7 +1,10 @@
 #include "pool.h"
 
 Pool::Pool() {
+    // addModule(make_shared<LogCollector>());
+    // addModule(make_shared<FIM>());
     addModule(make_shared<Inventory>());
+    // addModule(make_shared<SCA>());
 }
 
 template <Module T>
@@ -39,4 +42,7 @@ void Pool::stop() {
 }
 
 // Explicit template instantiation
+// template void Pool::addModule(shared_ptr<LogCollector> module);
+// template void Pool::addModule(shared_ptr<FIM> module);
 template void Pool::addModule(shared_ptr<Inventory> module);
+// template void Pool::addModule(shared_ptr<SCA> module);

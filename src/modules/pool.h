@@ -6,7 +6,10 @@
 #include <string>
 #include "configuration.h"
 #include "moduleWrapper.h"
+// #include "logCollector.h"
+// #include "fim.h"
 #include "inventory.h"
+// #include "sca.h"
 
 using namespace std;
 
