@@ -2,17 +2,19 @@
 #include <iostream>
 #include <mutex>
 #include <queue>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "persistence.hpp"
 #include "shared.hpp"
 
-//TODO: move to a configuration setting
+// TODO: move to a configuration setting
 constexpr int DEFAULT_MAX = 10;
 
 /**
- * @brief 
- * 
+ * @brief
+ *
  */
 class PersistedQueue
 {
@@ -24,68 +26,166 @@ public:
         m_persistenceDest.createOrCheckFile();
     }
 
+    // Delete copy constructor
+    PersistedQueue(const PersistedQueue&) = delete;
+
+    // Delete copy assignment operator
+    PersistedQueue& operator=(const PersistedQueue&) = delete;
+
+    // Delete move constructor
+    PersistedQueue(PersistedQueue&&) = delete;
+
+    // Delete move assignment operator
+    PersistedQueue& operator=(PersistedQueue&&) = delete;
+
+    // TODO
+    ~PersistedQueue() {
+        // m_persistenceDest.close();
+    };
+
+    /**
+     * @brief Get the Type object
+     *
+     * @return const MessageType&
+     */
     const MessageType& getType() const
     {
         return m_queueType;
     }
 
+    int getItemsAvailable() const
+    {
+        return m_persistenceDest.getItems();
+    }
+
+    /**
+     * @brief Get the Size object
+     *
+     * @return int
+     */
     int getSize() const
     {
         return m_size;
     }
 
+    /**
+     * @brief Set the Size object
+     *
+     * @param m_size
+     */
     void setSize(int m_size)
     {
         this->m_size = m_size;
     }
 
+    /**
+     * @brief
+     *
+     * @param event
+     * @return true
+     * @return false
+     */
     bool insertMessage(Message event)
     {
-        m_persistenceDest.writeLine("test-line");
+        std::unique_lock<std::mutex> lock(m_mtx);
+        m_persistenceDest.writeLine(event.data);
         m_size++;
+        m_cv.notify_one();
         return true;
     };
 
+    /**
+     * @brief
+     *
+     * @return true
+     * @return false
+     */
     bool removeMessage()
     {
-        m_persistenceDest.removeLine("contenido?");
-        m_size--;
+        std::unique_lock<std::mutex> lock(m_mtx);
+        auto linesRemoved = m_persistenceDest.removeNLines(1);
+        m_size = m_size - linesRemoved;
         return true;
     };
 
-    Message getMessage(MessageType type)
+    bool removeNMessages(int qttyMessages)
     {
-        return Message(type, m_persistenceDest.readLine(0));
+        std::unique_lock<std::mutex> lock(m_mtx);
+        auto linesRemoved = m_persistenceDest.removeNLines(qttyMessages);
+        m_size = m_size - linesRemoved;
+        return true;
     };
 
+    /**
+     * @brief Get the Message object
+     *
+     * @param type
+     * @return Message
+     */
+    Message getMessage(MessageType type)
+    {
+        std::unique_lock<std::mutex> lock(m_mtx);
+        return Message(type, m_persistenceDest.readNLines(1));
+    };
+
+    Message getNMessages(MessageType type, int n)
+    {
+        std::unique_lock<std::mutex> lock(m_mtx);
+        return Message(type, m_persistenceDest.readNLines(n));
+    };
+
+    bool empty()
+    {
+        return m_size == 0;
+    }
+
 private:
-    MessageType m_queueType; // Unnecesary ?
+    MessageType m_queueType;
     int m_size = 0;
     int m_max_size;
-    Persistence m_persistenceDest {DEFAULT_PERS_PATH};
+    Persistence m_persistenceDest {DEFAULT_PERS_PATH + MessageTypeName.at(m_queueType)};
+    std::mutex m_mtx;
+    std::condition_variable m_cv;
 };
 
 /**
- * 
-*/
+ * @brief
+ *
+ */
 class MultiTypeQueue
 {
 private:
-    std::unordered_map<MessageType, PersistedQueue> m_queuesMap;
-    std::mutex m_mtx;
-    std::condition_variable m_cv;
+    // std::condition_variable m_cv;
+    std::unordered_map<MessageType, std::unique_ptr<PersistedQueue>> m_queuesMap;
     int m_maxItems;
 
 public:
+    // Create a vector with 3 PersistedQueue elements
     MultiTypeQueue(int size = DEFAULT_MAX)
         : m_maxItems(size)
     {
-        // Create a vector with 3 PersistedQueue elements
-        m_queuesMap = {{MessageType::STATE_LESS, PersistedQueue(MessageType::STATE_LESS, m_maxItems)},
-                       {MessageType::STATE_FULL, PersistedQueue(MessageType::STATE_FULL, m_maxItems)},
-                       {MessageType::COMMAND, PersistedQueue(MessageType::COMMAND, m_maxItems)}};
+        // Populate the map inside the constructor body
+        m_queuesMap[MessageType::STATE_LESS] = std::make_unique<PersistedQueue>(MessageType::STATE_LESS, m_maxItems);
+        m_queuesMap[MessageType::STATE_FULL] = std::make_unique<PersistedQueue>(MessageType::STATE_FULL, m_maxItems);
+        m_queuesMap[MessageType::COMMAND] = std::make_unique<PersistedQueue>(MessageType::COMMAND, m_maxItems);
     }
 
+    // Delete copy constructor
+    MultiTypeQueue(const MultiTypeQueue&) = delete;
+
+    // Delete copy assignment operator
+    MultiTypeQueue& operator=(const MultiTypeQueue&) = delete;
+
+    // Delete move constructor
+    MultiTypeQueue(MultiTypeQueue&&) = delete;
+
+    // Delete move assignment operator
+    MultiTypeQueue& operator=(MultiTypeQueue&&) = delete;
+
+    // TODO
+    ~MultiTypeQueue() {
+        // m_queuesMap;
+    };
     /**
      * @brief: push message to a queue of t
      *
@@ -93,16 +193,14 @@ public:
      */
     void push(Message event)
     {
-        std::unique_lock<std::mutex> lock(m_mtx);
         auto it = m_queuesMap.find(event.type);
         if (it != m_queuesMap.end())
         {
-            while (it->second.getSize() == m_maxItems)
+            while (it->second->getSize() == m_maxItems)
             {
-                m_cv.wait(lock);
+                std::cout << "waiting" << std::endl;
             }
-            it->second.insertMessage(event);
-            m_cv.notify_one();
+            it->second->insertMessage(event);
         }
         else
         {
@@ -112,32 +210,41 @@ public:
     }
 
     // FIFO order
+    /**
+     * @brief Get the Last Message object
+     *
+     * @param type
+     * @return Message
+     */
     Message getLastMessage(MessageType type)
     {
-        std::unique_lock<std::mutex> lock(m_mtx);
+        Message result(type,{});
         auto it = m_queuesMap.find(type);
         if (it != m_queuesMap.end())
         {
-            auto event = it->second.getMessage(type);
-            m_cv.notify_one();
-            return event;
+            result = it->second->getMessage(type);
         }
         else
         {
             // TODO: error / logging handling !!!
             std::cout << "error didn't find the queue" << std::endl;
         }
+        return result;
     }
 
+    /**
+     * @brief
+     *
+     * @param type
+     */
     void popLastMessage(MessageType type)
     {
-        std::unique_lock<std::mutex> lock(m_mtx);
         auto it = m_queuesMap.find(type);
         if (it != m_queuesMap.end())
         {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             // Handle return value
-            m_cv.notify_one();
-            it->second.removeMessage();
+            it->second->removeMessage();
         }
         else
         {
@@ -146,22 +253,36 @@ public:
         }
     }
 
-    // void updateLast(Message event) {
-    //     std::unique_lock<std::mutex> lock(m_mtx);
-    //     while (m_queuesMap[event.type].empty() ) {
-    //       m_cv.wait(lock);
+    // TODO
+    /**
+     * @brief
+     *
+     * @param event
+     */
+    // void updateLast(Message event)
+    // {
+    // std::unique_lock<std::mutex> lock(m_mtx);
+    //     while (m_queuesMap[event.type].empty())
+    //     {
+    //         m_cv.wait(lock);
     //     }
-    //     m_queuesMap[event.type].back() = event;
+    //     m_queuesMap[event.type] = event;
     //     m_cv.notify_one();
     // }
 
+    /**
+     * @brief
+     *
+     * @param type
+     * @return true
+     * @return false
+     */
     bool isEmptyByType(MessageType type)
     {
-        std::unique_lock<std::mutex> lock(m_mtx);
         auto it = m_queuesMap.find(type);
         if (it != m_queuesMap.end())
         {
-            return it->second.getSize() == 0;
+            return it->second->empty();
         }
         else
         {

@@ -10,10 +10,12 @@ find_package(nlohmann_json REQUIRED)
 
 # Add the include directory for shared headers
 include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_SOURCE_DIR}/src)
+
+# TODO: test define
+add_subdirectory(tests)
 
 # Add the executable
-add_executable(QueueTest 
+add_executable(QueueTest
 	src/main.cpp)
 
 # Link the nlohmann::json library to your project
