@@ -12,7 +12,7 @@
 #include <fstream>
 #include <stdio.h>
 #include <memory>
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 #include "makeUnique.h"
 #include "dbsync.h"
 #include "cmdArgsHelper.h"

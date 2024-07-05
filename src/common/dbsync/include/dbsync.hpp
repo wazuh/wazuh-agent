@@ -26,7 +26,7 @@
 #endif
 
 #include <functional>
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "db_exception.h"
 #include "commonDefs.h"
 #include "builder.hpp"
