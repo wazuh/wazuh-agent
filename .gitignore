@@ -24,3 +24,13 @@
 # patch files
 *.rej
 *.orig
+
+# Python cache
+__pycache__
+.pytest_cache
+
+# Thumbnails
+._*
+
+### Python Virtualenv
+venv
