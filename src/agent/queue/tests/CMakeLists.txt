@@ -6,8 +6,9 @@ find_package(GTest REQUIRED)
 
 include_directories(${GTEST_INCLUDE_DIRS})
 
+file(GLOB QUEUE_UNIT_TEST_SRC "*.cpp")
 # Create a test executable
-add_executable(test_queue test_queue.cpp)
+add_executable(test_queue ${QUEUE_UNIT_TEST_SRC})
 # add_test(AllTestsInMain main)
 
 # Link the test executable against Google Test

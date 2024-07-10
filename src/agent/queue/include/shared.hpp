@@ -5,18 +5,19 @@
 constexpr char DEFAULT_PERS_PATH[] = "/home/vagrant/FILE_";
 
 /**
- * @brief 
- * 
+ * @brief
+ *
  */
-enum  MessageType {
+enum MessageType
+{
     STATE_LESS,
     STATE_FULL,
     COMMAND
 };
 
 /**
- * @brief 
- * 
+ * @brief
+ *
  */
 std::map<MessageType, std::string> MessageTypeName {
     {MessageType::STATE_LESS, "STATE_LESS"},
@@ -24,14 +25,30 @@ std::map<MessageType, std::string> MessageTypeName {
     {MessageType::COMMAND, "COMMAND"},
 };
 
-
 /**
- * @brief 
- * 
+ * @brief
+ *
  */
-class Message {
+class Message
+{
 public:
     MessageType type;
     nlohmann::json data;
-    Message(MessageType t, nlohmann::json d) : type(t), data(d) {}
+    Message(MessageType t, nlohmann::json d)
+        : type(t)
+        , data(d)
+    {
+    }
+
+    /**
+     * @brief 
+     * 
+     * @param other 
+     * @return true 
+     * @return false 
+     */
+    bool operator==(const Message& other) const
+    {
+        return (this->type == other.type) && (this->data == other.data);
+    }
 };

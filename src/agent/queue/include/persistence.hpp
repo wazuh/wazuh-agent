@@ -25,7 +25,6 @@ public:
 
     bool createOrCheckFile()
     {
-        std::cout << "createOrCheckFile " << std::endl;
         std::ifstream file(filename);
         if (file.good()) {
             file.close();

@@ -143,6 +143,7 @@ private:
     MessageType m_queueType;
     int m_size = 0;
     int m_max_size;
+    //TODO: make DEFAULT_PERS_PATH configurable
     Persistence m_persistenceDest {DEFAULT_PERS_PATH + MessageTypeName.at(m_queueType)};
     std::mutex m_mtx;
     std::condition_variable m_cv;
@@ -193,14 +194,13 @@ public:
      */
     void push(Message event)
     {
-        auto it = m_queuesMap.find(event.type);
-        if (it != m_queuesMap.end())
+        if (m_queuesMap.contains(event.type))
         {
-            while (it->second->getSize() == m_maxItems)
+            while (m_queuesMap[event.type]->getSize() == m_maxItems)
             {
                 std::cout << "waiting" << std::endl;
             }
-            it->second->insertMessage(event);
+            m_queuesMap[event.type]->insertMessage(event);
         }
         else
         {
@@ -219,10 +219,9 @@ public:
     Message getLastMessage(MessageType type)
     {
         Message result(type,{});
-        auto it = m_queuesMap.find(type);
-        if (it != m_queuesMap.end())
+        if (m_queuesMap.contains(type))
         {
-            result = it->second->getMessage(type);
+            result = m_queuesMap[type]->getMessage(type);
         }
         else
         {
@@ -239,12 +238,11 @@ public:
      */
     void popLastMessage(MessageType type)
     {
-        auto it = m_queuesMap.find(type);
-        if (it != m_queuesMap.end())
+        if (m_queuesMap.contains(type))
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             // Handle return value
-            it->second->removeMessage();
+            m_queuesMap[type]->removeMessage();
         }
         else
         {
@@ -279,10 +277,30 @@ public:
      */
     bool isEmptyByType(MessageType type)
     {
-        auto it = m_queuesMap.find(type);
-        if (it != m_queuesMap.end())
+        if (m_queuesMap.contains(type))
         {
-            return it->second->empty();
+            return m_queuesMap[type]->empty();
+        }
+        else
+        {
+            // TODO: error / logging handling !!!
+            std::cout << "error didn't find the queue" << std::endl;
+        }
+        return false;
+    }
+
+    /**
+     * @brief Get the Items By Type object
+     * 
+     * @param type 
+     * @return true 
+     * @return false 
+     */
+    bool getItemsByType(MessageType type)
+    {
+        if (m_queuesMap.contains(type))
+        {
+            return m_queuesMap[type]->getItemsAvailable();
         }
         else
         {

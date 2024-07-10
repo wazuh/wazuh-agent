@@ -6,7 +6,7 @@
 
 int main()
 {
-    MultiTypeQueue queue(10); // with 2 it get's blocked
+    MultiTypeQueue queue(10);
 
     auto consumer1 = [&](int &count) {
         // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
