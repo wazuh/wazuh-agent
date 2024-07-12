@@ -1,5 +1,5 @@
 /*
- * Wazuh SysCollector
+ * Wazuh Inventory
  * Copyright (C) 2015, Wazuh Inc.
  * November 15, 2020.
  *
@@ -8,7 +8,7 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation.
  */
-#include "syscollector.hpp"
+#include "inventory.hpp"
 #include "sysInfo.hpp"
 #include "dbsync.hpp"
 #include <iostream>
@@ -16,9 +16,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include "../../wm_syscollector.h"
+#include "../../wm_inventory.h"
 
-void syscollector_start(const unsigned int inverval,
+void inventory_start(const unsigned int inverval,
                         send_data_callback_t callbackDiff,
                         send_data_callback_t callbackSync,
                         log_callback_t callbackLog,
@@ -55,7 +55,7 @@ void syscollector_start(const unsigned int inverval,
     {
         [callbackLog](const modules_log_level_t level, const std::string & data)
         {
-            callbackLog(level, data.c_str(), WM_SYS_LOGTAG);
+            callbackLog(level, data.c_str(), WM_INV_LOGTAG);
         }
     };
 
@@ -63,7 +63,7 @@ void syscollector_start(const unsigned int inverval,
     {
         [callbackLog](const std::string & data)
         {
-            callbackLog(LOG_ERROR, data.c_str(), WM_SYS_LOGTAG);
+            callbackLog(LOG_ERROR, data.c_str(), WM_INV_LOGTAG);
         }
     };
 
@@ -71,7 +71,7 @@ void syscollector_start(const unsigned int inverval,
 
     try
     {
-        Syscollector::instance().init(std::make_shared<SysInfo>(),
+        Inventory::instance().init(std::make_shared<SysInfo>(),
                                       std::move(callbackDiffWrapper),
                                       std::move(callbackSyncWrapper),
                                       std::move(callbackLogWrapper),
@@ -94,18 +94,18 @@ void syscollector_start(const unsigned int inverval,
         callbackErrorLogWrapper(ex.what());
     }
 }
-void syscollector_stop()
+void inventory_stop()
 {
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 }
 
-int syscollector_sync_message(const char* data)
+int inventory_sync_message(const char* data)
 {
     int ret{-1};
 
     try
     {
-        Syscollector::instance().push(data);
+        Inventory::instance().push(data);
         ret = 0;
     }
     catch (...)
