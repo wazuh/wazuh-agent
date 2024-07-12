@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12.4)
 
-project(syscollector)
+project(inventory)
 
 enable_testing()
 
@@ -78,12 +78,12 @@ link_directories(${SRC_FOLDER}/external/flatbuffers/build/)
 if (NOT ${TARGET} STREQUAL "")
   if(${TARGET} STREQUAL "server")
     list(APPEND Schemas
-                syscollector_synchronization
+                inventory_synchronization
     )
 
     add_custom_target(compile_schemas)
     foreach(schema IN LISTS Schemas)
-      set(FILE "${FLATBUFFERS_FOLDER}/syscollectorRsync/${schema}.fbs")
+      set(FILE "${FLATBUFFERS_FOLDER}/inventoryRsync/${schema}.fbs")
       set(RSYNC_OUTPUT_HEADER_GENERATED "${FLATBUFFERS_FOLDER}/../include/${schema}_generated.h")
       set(RSYNC_OUTPUT_HEADER "${FLATBUFFERS_FOLDER}/../include/${schema}_schema.h")
 
@@ -118,12 +118,12 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
                   -DWIN_EXPORT)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
-file(GLOB SYSCOLLECTOR_SRC
+file(GLOB INVENTORY_SRC
     "${CMAKE_SOURCE_DIR}/src/*.cpp"
     )
 
-add_library(syscollector SHARED
-    ${SYSCOLLECTOR_SRC}
+add_library(inventory SHARED
+    ${INVENTORY_SRC}
     ${SRC_FOLDER}/${RESOURCE_OBJ}
     )
 
@@ -134,7 +134,7 @@ if (NOT ${TARGET} STREQUAL "")
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-  set_target_properties(syscollector PROPERTIES
+  set_target_properties(inventory PROPERTIES
         PREFIX ""
         SUFFIX ".dll"
         LINK_FLAGS "-Wl,--add-stdcall-alias"
@@ -150,12 +150,12 @@ endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 if (NOT ${TARGET} STREQUAL "")
   if(${TARGET} STREQUAL "server")
     list(APPEND DeltaSchemas
-                syscollector_deltas
+                inventory_deltas
     )
 
     add_custom_target(compile_schemas_deltas)
     foreach(schema IN LISTS DeltaSchemas)
-      set(FBS_FILE "${FLATBUFFERS_FOLDER}/syscollectorDeltas/${schema}.fbs")
+      set(FBS_FILE "${FLATBUFFERS_FOLDER}/inventoryDeltas/${schema}.fbs")
       set(RSYNC_OUTPUT_HEADER_GENERATED "${FLATBUFFERS_FOLDER}/../include/${schema}_generated.h")
       set(RSYNC_OUTPUT_HEADER "${FLATBUFFERS_FOLDER}/../include/${schema}_schema.h")
 
@@ -180,29 +180,29 @@ if (NOT ${TARGET} STREQUAL "")
       add_dependencies(compile_schemas_deltas ${schema}_schema_deltas_target)
     endforeach()
 
-    add_dependencies(syscollector compile_schemas_deltas)
+    add_dependencies(inventory compile_schemas_deltas)
   endif()
 endif()
 
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "AIX")
-  target_link_libraries(syscollector dbsync rsync sysinfo wazuhext)
+  target_link_libraries(inventory dbsync rsync sysinfo wazuhext)
 else()
   string(REPLACE ";" ":" CXX_IMPLICIT_LINK_DIRECTORIES_STR "${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}")
   string(REPLACE ";" ":" PLATFORM_REQUIRED_RUNTIME_PATH_STR "${CMAKE_PLATFORM_REQUIRED_RUNTIME_PATH}")
-  target_link_libraries(syscollector dbsync rsync sysinfo wazuhext -Wl,-blibpath:${INSTALL_PREFIX}/lib:${CXX_IMPLICIT_LINK_DIRECTORIES_STR}:${PLATFORM_REQUIRED_RUNTIME_PATH_STR})
+  target_link_libraries(inventory dbsync rsync sysinfo wazuhext -Wl,-blibpath:${INSTALL_PREFIX}/lib:${CXX_IMPLICIT_LINK_DIRECTORIES_STR}:${PLATFORM_REQUIRED_RUNTIME_PATH_STR})
 endif(NOT CMAKE_SYSTEM_NAME STREQUAL "AIX")
 
 if(UNIT_TEST)
   if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    target_link_libraries(syscollector -fprofile-arcs)
+    target_link_libraries(inventory -fprofile-arcs)
   else()
-    target_link_libraries(syscollector gcov)
+    target_link_libraries(inventory gcov)
   endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
   add_subdirectory(tests)
 else()
   if(FSANITIZE)
-    target_link_libraries(syscollector gcov)
+    target_link_libraries(inventory gcov)
   endif(FSANITIZE)
   add_subdirectory(testtool)
 endif(UNIT_TEST)

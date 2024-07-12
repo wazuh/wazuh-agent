@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12.4)
 
-project(syscollector_test_tool)
+project(inventory_test_tool)
 
 include_directories(${CMAKE_SOURCE_DIR}/)
 include_directories(${CMAKE_SOURCE_DIR}/testtool/)
@@ -27,20 +27,20 @@ if(FSANITIZE)
   set(CMAKE_CXX_FLAGS_DEBUG "-fsanitize=address,leak,undefined")
 endif(FSANITIZE)
 
-file(GLOB SYSCOLLECTOR_TESTTOOL_SRC
+file(GLOB INVENTORY_TESTTOOL_SRC
         "${CMAKE_SOURCE_DIR}/testtool/*.cpp"
         )
 
-add_executable(syscollector_test_tool
-               ${SYSCOLLECTOR_TESTTOOL_SRC}
+add_executable(inventory_test_tool
+               ${INVENTORY_TESTTOOL_SRC}
                )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    target_link_libraries(syscollector_test_tool
+    target_link_libraries(inventory_test_tool
         rsync
         dbsync
         sysinfo
-        syscollector
+        inventory
         psapi
         iphlpapi
         crypto
@@ -50,31 +50,31 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         -static-libstdc++
     )
 elseif (CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-    target_link_libraries(syscollector_test_tool
+    target_link_libraries(inventory_test_tool
         rsync
         dbsync
         sysinfo
-        syscollector
+        inventory
         pthread)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "AIX")
-    target_link_libraries(syscollector_test_tool
+    target_link_libraries(inventory_test_tool
         rsync
         dbsync
         sysinfo
-        syscollector
+        inventory
         dl)
 else()
-    target_link_libraries(syscollector_test_tool
+    target_link_libraries(inventory_test_tool
         rsync
         dbsync
         sysinfo
-        syscollector
+        inventory
         dl
         proc
     )
 
     if(SOLARIS)
-        target_link_libraries(syscollector_test_tool
+        target_link_libraries(inventory_test_tool
             nsl
             socket
         )

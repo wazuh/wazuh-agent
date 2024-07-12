@@ -1,5 +1,5 @@
 /*
- * Wazuh SysCollector
+ * Wazuh Inventory
  * Copyright (C) 2015, Wazuh Inc.
  * October 8, 2020.
  *
@@ -8,8 +8,8 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation.
  */
-#ifndef _SYSCOLLECTOR_HPP
-#define _SYSCOLLECTOR_HPP
+#ifndef _INVENTORY_HPP
+#define _INVENTORY_HPP
 #include <chrono>
 #include <thread>
 #include <condition_variable>
@@ -19,8 +19,8 @@
 #include "commonDefs.h"
 #include "dbsync.hpp"
 #include "rsync.hpp"
-#include "syscollectorNormalizer.h"
-#include "syscollector.h"
+#include "inventoryNormalizer.h"
+#include "inventory.h"
 
 // Define EXPORTED for any platform
 #ifdef _WIN32
@@ -35,12 +35,12 @@
 #define EXPORTED
 #endif
 
-class EXPORTED Syscollector final
+class EXPORTED Inventory final
 {
     public:
-        static Syscollector& instance()
+        static Inventory& instance()
         {
-            static Syscollector s_instance;
+            static Inventory s_instance;
             return s_instance;
         }
 
@@ -66,10 +66,10 @@ class EXPORTED Syscollector final
         void destroy();
         void push(const std::string& data);
     private:
-        Syscollector();
-        ~Syscollector() = default;
-        Syscollector(const Syscollector&) = delete;
-        Syscollector& operator=(const Syscollector&) = delete;
+        Inventory();
+        ~Inventory() = default;
+        Inventory(const Inventory&) = delete;
+        Inventory& operator=(const Inventory&) = delete;
 
         std::string getCreateStatement() const;
         nlohmann::json getOSData();
@@ -122,10 +122,10 @@ class EXPORTED Syscollector final
         std::unique_ptr<RemoteSync>                                             m_spRsync;
         std::condition_variable                                                 m_cv;
         std::mutex                                                              m_mutex;
-        std::unique_ptr<SysNormalizer>                                          m_spNormalizer;
+        std::unique_ptr<InvNormalizer>                                          m_spNormalizer;
         std::string                                                             m_scanTime;
         std::chrono::seconds                                           m_lastSyncMsg;
 };
 
 
-#endif //_SYSCOLLECTOR_HPP
+#endif //_INVENTORY_HPP
