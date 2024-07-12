@@ -63,7 +63,7 @@ public:
      *
      * @return The number of elements in the table.
      */
-    virtual int GetElementCount() const = 0;
+    virtual int GetElementCount() = 0;
 };
 
 #endif // PERSISTENCE_H

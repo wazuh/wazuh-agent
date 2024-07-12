@@ -12,6 +12,8 @@ find_package(nlohmann_json REQUIRED)
 # Add the include directory for shared headers
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
+add_subdirectory(tests)
+
 # Add the executable
 add_executable(QueueTest
 	src/main.cpp
@@ -19,5 +21,4 @@ add_executable(QueueTest
 	)
 
 # Link the nlohmann::json library to your project
-# target_include_directories(QueueTest PRIVATE ${SQLite3_INCLUDE_DIRS})
 target_link_libraries(QueueTest PRIVATE ${SQLite3_LIBRARIES} nlohmann_json::nlohmann_json)

@@ -22,6 +22,18 @@ public:
      */
     SQLiteStorage(const std::string& dbName, const std::string& tableName);
 
+    // Delete copy constructor
+    SQLiteStorage(const SQLiteStorage&) = delete;
+
+    // Delete copy assignment operator
+    SQLiteStorage& operator=(const SQLiteStorage&) = delete;
+
+    // Delete move constructor
+    SQLiteStorage(SQLiteStorage&&) = delete;
+
+    // Delete move assignment operator
+    SQLiteStorage& operator=(SQLiteStorage&&) = delete;
+
     /**
      * @brief Destructor.
      */
@@ -71,7 +83,7 @@ public:
      *
      * @return The number of elements in the table.
      */
-    int GetElementCount() const override;
+    int GetElementCount() override;
 
 
 private:
@@ -83,9 +95,9 @@ private:
     void InitializeTable();
 
 
-    void OpenDB() const;
+    void OpenDB();
 
-    void CloseDB() const;
+    void CloseDB();
 
 
     /// The name of the SQLite database file.
@@ -95,10 +107,10 @@ private:
     std::string m_tableName;
 
     /// Pointer to the SQLite database connection.
-    mutable sqlite3* m_db;
+    sqlite3* m_db;
 
     /// Mutex to ensure thread-safe operations.
-    mutable std::mutex m_mtx;
+    std::mutex m_mtx;
 };
 
 #endif // SQLITE_STORAGE_H

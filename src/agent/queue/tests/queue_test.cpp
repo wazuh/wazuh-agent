@@ -1,7 +1,6 @@
 #include <filesystem>
 
-#include "../include/queue.hpp"
-
+#include "queue.hpp"
 #include "queue_test.hpp"
 
 #define BIG_QUEUE_QTTY   10
@@ -21,17 +20,8 @@ bool cleanPersistence()
         }
         else
         {
-            std::ifstream file(filePath);
-            if (file.good())
-            {
-                file.close();
-                std::cerr << "Error removing file: " << ec.message() << std::endl;
-                return true; // File exists
-            }
-            else
-            {
-                continue;
-            }
+            std::cerr << "Error removing file: " << ec.message() << std::endl;
+            return false;
         }
     }
     return true;

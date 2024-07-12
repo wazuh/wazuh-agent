@@ -27,11 +27,11 @@ void SQLiteStorage::InitializeTable() {
     sqlite3_exec(m_db, createTableQuery.c_str(), 0, 0, 0);
 }
 
-void SQLiteStorage::OpenDB() const {
+void SQLiteStorage::OpenDB() {
     sqlite3_open(m_dbName.c_str(), &m_db);
 }
 
-void SQLiteStorage::CloseDB() const {
+void SQLiteStorage::CloseDB() {
     if (m_db) {
         sqlite3_close(m_db);
         m_db = nullptr;
@@ -125,7 +125,7 @@ int SQLiteStorage::RemoveMultiple(int n) {
     return n;
 }
 
-int SQLiteStorage::GetElementCount() const {
+int SQLiteStorage::GetElementCount() {
     //std::lock_guard<std::mutex> lock(m_mtx);
     OpenDB();
 

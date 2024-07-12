@@ -54,7 +54,7 @@ public:
         return m_queueType;
     }
 
-    int getItemsAvailable() const
+    int getItemsAvailable()
     {
         return m_persistenceDest.GetElementCount();
     }
