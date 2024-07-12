@@ -2,10 +2,12 @@
 
 #include <nlohmann/json.hpp>
 
-constexpr char DEFAULT_PERS_PATH[] = "/home/vagrant/FILE_";
+//TODO: should be moved to Config
+constexpr char DEFAULT_FILE_PATH[] = "/home/vagrant/FILE_";
+constexpr char DEFAULT_DB_PATH[] = "queue.db";
 
 /**
- * @brief
+ * @brief Types of messages enum
  *
  */
 enum MessageType
@@ -16,7 +18,7 @@ enum MessageType
 };
 
 /**
- * @brief
+ * @brief Map for transforing Message type name to string
  *
  */
 std::map<MessageType, std::string> MessageTypeName {
@@ -26,7 +28,7 @@ std::map<MessageType, std::string> MessageTypeName {
 };
 
 /**
- * @brief
+ * @brief Wrapper for Message data and type
  *
  */
 class Message
@@ -41,11 +43,11 @@ public:
     }
 
     /**
-     * @brief 
-     * 
-     * @param other 
-     * @return true 
-     * @return false 
+     * @brief overloading == operator for messages
+     *
+     * @param other Secondary Message parameter
+     * @return true when both messages matches in type and data
+     * @return false when the messages don't match in type and data
      */
     bool operator==(const Message& other) const
     {

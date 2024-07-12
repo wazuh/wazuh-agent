@@ -12,7 +12,7 @@ bool cleanPersistence()
 
     for (auto messageType : MessageTypeName)
     {
-        auto filePath = DEFAULT_PERS_PATH + messageType.second;
+        auto filePath = DEFAULT_FILE_PATH + messageType.second;
         std::error_code ec;
         if (std::filesystem::remove(filePath, ec))
         {

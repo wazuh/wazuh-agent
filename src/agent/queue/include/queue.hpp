@@ -1,19 +1,49 @@
+#include <any>
 #include <condition_variable>
 #include <iostream>
+#include <memory>
 #include <mutex>
 #include <queue>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
-#include "sqlitestorage.h"
+#include "filestorage.hpp"
 #include "shared.hpp"
+#include "sqlitestorage.h"
 
 // TODO: move to a configuration setting
 constexpr int DEFAULT_MAX = 10;
 
+// Factory class
+class PersistenceFactory
+{
+public:
+    static std::unique_ptr<Persistence> createPersistence(const std::string& type, const std::vector<std::any>& args)
+    {
+        if (type == "SQLite3")
+        {
+            if (args.size() != 2 || !std::any_cast<std::string>(&args[0]) || !std::any_cast<std::string>(&args[1]))
+            {
+                throw std::invalid_argument("SQLite3 requires 2  string arguments");
+            }
+            return std::make_unique<SQLiteStorage>(std::any_cast<std::string>(args[0]),
+                                                   std::any_cast<std::string>(args[1]));
+        }
+        else if (type == "File")
+        {
+            if (args.size() != 1 || !std::any_cast<std::string>(&args[0]))
+            {
+                throw std::invalid_argument("File requires a string argument");
+            }
+            return std::make_unique<FileStorage>(std::any_cast<std::string>(args[0]));
+        }
+        throw std::runtime_error("Unknown persistence type");
+    }
+};
+
 /**
- * @brief
+ * @brief Class representing each single type queue
  *
  */
 class PersistedQueue
@@ -22,9 +52,12 @@ public:
     PersistedQueue(MessageType m_queueType, int max_size = DEFAULT_MAX)
         : m_queueType(m_queueType)
         , m_max_size(max_size)
-        , m_persistenceDest("queue.db", MessageTypeName.at(m_queueType))
     {
-
+        // Another option:
+        // m_persistenceDest = PersistenceFactory::createPersistence("File", {DEFAULT_FILE_PATH +
+        // MessageTypeName.at(m_queueType)});
+        m_persistenceDest = PersistenceFactory::createPersistence(
+            "SQLite3", {static_cast<std::string>(DEFAULT_DB_PATH), MessageTypeName.at(m_queueType)});
     }
 
     // Delete copy constructor
@@ -56,7 +89,7 @@ public:
 
     int getItemsAvailable()
     {
-        return m_persistenceDest.GetElementCount();
+        return m_persistenceDest->GetElementCount();
     }
 
     /**
@@ -90,7 +123,7 @@ public:
     bool insertMessage(Message event)
     {
         std::unique_lock<std::mutex> lock(m_mtx);
-        m_persistenceDest.Store(event.data);
+        m_persistenceDest->Store(event.data);
         m_size++;
         m_cv.notify_one();
         return true;
@@ -105,7 +138,7 @@ public:
     bool removeMessage()
     {
         std::unique_lock<std::mutex> lock(m_mtx);
-        auto linesRemoved = m_persistenceDest.RemoveMultiple(1);
+        auto linesRemoved = m_persistenceDest->RemoveMultiple(1);
         m_size = m_size - linesRemoved;
         return true;
     };
@@ -113,7 +146,7 @@ public:
     bool removeNMessages(int qttyMessages)
     {
         std::unique_lock<std::mutex> lock(m_mtx);
-        auto linesRemoved = m_persistenceDest.RemoveMultiple(qttyMessages);
+        auto linesRemoved = m_persistenceDest->RemoveMultiple(qttyMessages);
         m_size = m_size - linesRemoved;
         return true;
     };
@@ -127,13 +160,13 @@ public:
     Message getMessage(MessageType type)
     {
         std::unique_lock<std::mutex> lock(m_mtx);
-        return Message(type, m_persistenceDest.RetrieveMultiple(1));
+        return Message(type, m_persistenceDest->RetrieveMultiple(1));
     };
 
     Message getNMessages(MessageType type, int n)
     {
         std::unique_lock<std::mutex> lock(m_mtx);
-        return Message(type, m_persistenceDest.RetrieveMultiple(n));
+        return Message(type, m_persistenceDest->RetrieveMultiple(n));
     };
 
     bool empty()
@@ -145,8 +178,7 @@ private:
     MessageType m_queueType;
     int m_size = 0;
     int m_max_size;
-    //TODO: make DEFAULT_PERS_PATH configurable
-    SQLiteStorage m_persistenceDest;
+    std::unique_ptr<Persistence> m_persistenceDest;
     std::mutex m_mtx;
     std::condition_variable m_cv;
 };
@@ -220,7 +252,7 @@ public:
      */
     Message getLastMessage(MessageType type)
     {
-        Message result(type,{});
+        Message result(type, {});
         if (m_queuesMap.contains(type))
         {
             result = m_queuesMap[type]->getMessage(type);
@@ -293,10 +325,10 @@ public:
 
     /**
      * @brief Get the Items By Type object
-     * 
-     * @param type 
-     * @return true 
-     * @return false 
+     *
+     * @param type
+     * @return true
+     * @return false
      */
     bool getItemsByType(MessageType type)
     {

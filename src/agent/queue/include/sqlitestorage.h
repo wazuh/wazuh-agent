@@ -1,10 +1,12 @@
 #ifndef SQLITE_STORAGE_H
 #define SQLITE_STORAGE_H
 
-#include "persistence.h"
-#include <sqlite3.h>
-#include <string>
 #include <mutex>
+#include <string>
+
+#include <sqlite3.h>
+
+#include "persistence.h"
 
 /**
  * @brief SQLite implementation of the Persistence interface.
@@ -12,7 +14,8 @@
  * This class provides methods to store, retrieve, and remove JSON messages
  * in a SQLite database.
  */
-class SQLiteStorage : public Persistence {
+class SQLiteStorage : public Persistence
+{
 public:
     /**
      * @brief Constructor.
@@ -85,7 +88,6 @@ public:
      */
     int GetElementCount() override;
 
-
 private:
     /**
      * @brief Initialize the table in the SQLite database.
@@ -94,11 +96,9 @@ private:
      */
     void InitializeTable();
 
-
     void OpenDB();
 
     void CloseDB();
-
 
     /// The name of the SQLite database file.
     std::string m_dbName;
