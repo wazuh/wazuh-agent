@@ -4,6 +4,7 @@
     "dependencies": [
       "boost-asio",
       "boost-beast",
+      "toml11",
       "gtest"
     ]
 }
