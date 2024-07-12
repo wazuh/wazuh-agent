@@ -192,34 +192,34 @@ https://www.gnu.org/licenses/gpl.html\n"
 /* Default group name */
 #define DEFAULT_GROUP "default"
 
-/* Syscollector normalization configs */
+/* Inventory normalization configs */
 #ifdef WAZUH_UNIT_TESTING
 #ifdef WIN32
-#define SYSCOLLECTOR_NORM_CONFIG_DISK_PATH    ".\\norm_config.json"
+#define INVENTORY_NORM_CONFIG_DISK_PATH    ".\\norm_config.json"
 #else
-#define SYSCOLLECTOR_NORM_CONFIG_DISK_PATH    "./norm_config.json"
+#define INVENTORY_NORM_CONFIG_DISK_PATH    "./norm_config.json"
 #endif // WIN32
 #else
-#define SYSCOLLECTOR_NORM_CONFIG_DISK_PATH "queue/syscollector/norm_config.json"
+#define INVENTORY_NORM_CONFIG_DISK_PATH "queue/inventory/norm_config.json"
 #endif // WAZUH_UNIT_TESTING
 
 #if defined(__MACH__)
-#define SYSCOLLECTOR_NORM_TYPE "macos"
+#define INVENTORY_NORM_TYPE "macos"
 #elif defined(WIN32)
-#define SYSCOLLECTOR_NORM_TYPE "windows"
+#define INVENTORY_NORM_TYPE "windows"
 #else
-#define SYSCOLLECTOR_NORM_TYPE "linux"
+#define INVENTORY_NORM_TYPE "linux"
 #endif // __MACH__
 
 
-/* Syscollector db directory */
+/* Inventory db directory */
 #ifndef WAZUH_UNIT_TESTING
-#define SYSCOLLECTOR_DB_DISK_PATH "queue/syscollector/db/local.db"
+#define INVENTORY_DB_DISK_PATH "queue/inventory/db/local.db"
 #else
 #ifndef WIN32
-#define SYSCOLLECTOR_DB_DISK_PATH    "./local.db"
+#define INVENTORY_DB_DISK_PATH    "./local.db"
 #else
-#define SYSCOLLECTOR_DB_DISK_PATH    ".\\local.db"
+#define INVENTORY_DB_DISK_PATH    ".\\local.db"
 #endif // WIN32
 #endif // WAZUH_UNIT_TESTING
 
