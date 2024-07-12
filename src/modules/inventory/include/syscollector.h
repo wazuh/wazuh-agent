@@ -1,5 +1,5 @@
 /*
- * Wazuh Syscollector
+ * Wazuh Inventory
  * Copyright (C) 2015, Wazuh Inc.
  * November 15, 2020.
  *
@@ -10,8 +10,8 @@
  */
 
 
-#ifndef _SYSCOLLECTOR_H
-#define _SYSCOLLECTOR_H
+#ifndef _INVENTORY_H
+#define _INVENTORY_H
 
 // Define EXPORTED for any platform
 #ifdef _WIN32
@@ -37,7 +37,7 @@ typedef void((*log_callback_t)(const modules_log_level_t level, const char* log,
 
 typedef void((*send_data_callback_t)(const void* buffer));
 
-EXPORTED void syscollector_start(const unsigned int inverval,
+EXPORTED void inventory_start(const unsigned int inverval,
                                  send_data_callback_t callbackDiff,
                                  send_data_callback_t callbackSync,
                                  log_callback_t callbackLog,
@@ -54,9 +54,9 @@ EXPORTED void syscollector_start(const unsigned int inverval,
                                  const bool processes,
                                  const bool hotfixes);
 
-EXPORTED void syscollector_stop();
+EXPORTED void inventory_stop();
 
-EXPORTED int syscollector_sync_message(const char* data);
+EXPORTED int inventory_sync_message(const char* data);
 
 
 
@@ -64,7 +64,7 @@ EXPORTED int syscollector_sync_message(const char* data);
 }
 #endif
 
-typedef void(*syscollector_start_func)(const unsigned int inverval,
+typedef void(*inventory_start_func)(const unsigned int inverval,
                                        send_data_callback_t callbackDiff,
                                        send_data_callback_t callbackSync,
                                        log_callback_t callbackLog,
@@ -81,10 +81,10 @@ typedef void(*syscollector_start_func)(const unsigned int inverval,
                                        const bool processes,
                                        const bool hotfixes);
 
-typedef void(*syscollector_stop_func)();
+typedef void(*inventory_stop_func)();
 
-typedef int (*syscollector_sync_message_func)(const char* data);
+typedef int (*inventory_sync_message_func)(const char* data);
 
 typedef void (*rsync_initialize_full_log_func)(full_log_fnc_t log_function);
 
-#endif //_SYSCOLLECTOR_H
+#endif //_INVENTORY_H

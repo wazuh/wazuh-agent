@@ -1,0 +1,409 @@
+The system is: Linux - 6.5.0-18-generic - x86_64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: /usr/local/gcc-9.4.0/bin/gcc 
+Build flags: -fPIC;-I/wazuh/src/external/openssl/include;-I/wazuh/src/external/zlib/;-I/wazuh/src/external/popt//src;-I/wazuh/src/external/sqlite/;-I/wazuh/src/external/lua/;;-L/wazuh/src/external/openssl/;-L/wazuh/src/external/zlib/;-L/wazuh/src/external/popt//build/output/src/.libs/;-L/wazuh/src/external/sqlite/;-L/wazuh/src/external/lua/;
+Id flags:  
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+
+The C compiler identification is GNU, found in "/wazuh/src/external/rpm/builddir/CMakeFiles/3.18.3/CompilerIdC/a.out"
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler: /usr/local/gcc-9.4.0/bin/c++ 
+Build flags: 
+Id flags:  
+
+The output was:
+0
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
+
+The CXX compiler identification is GNU, found in "/wazuh/src/external/rpm/builddir/CMakeFiles/3.18.3/CompilerIdCXX/a.out"
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: /wazuh/src/external/rpm/builddir/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake cmTC_20aca/fast && gmake[1]: Entering directory `/wazuh/src/external/rpm/builddir/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_20aca.dir/build.make CMakeFiles/cmTC_20aca.dir/build
+gmake[2]: Entering directory `/wazuh/src/external/rpm/builddir/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_20aca.dir/CMakeCCompilerABI.c.o
+/usr/local/gcc-9.4.0/bin/gcc   -fPIC -I/wazuh/src/external/openssl/include -I/wazuh/src/external/zlib/ -I/wazuh/src/external/popt//src -I/wazuh/src/external/sqlite/ -I/wazuh/src/external/lua/  -L/wazuh/src/external/openssl/ -L/wazuh/src/external/zlib/ -L/wazuh/src/external/popt//build/output/src/.libs/ -L/wazuh/src/external/sqlite/ -L/wazuh/src/external/lua/    -v -o CMakeFiles/cmTC_20aca.dir/CMakeCCompilerABI.c.o -c /usr/local/share/cmake-3.18/Modules/CMakeCCompilerABI.c
+Using built-in specs.
+COLLECT_GCC=/usr/local/gcc-9.4.0/bin/gcc
+Target: x86_64-pc-linux-gnu
+Configured with: ./configure --prefix=/usr/local/gcc-9.4.0 --enable-languages=c,c++ --disable-multilib --disable-libsanitizer
+Thread model: posix
+gcc version 9.4.0 (GCC) 
+COLLECT_GCC_OPTIONS='-fPIC' '-I' '/wazuh/src/external/openssl/include' '-I' '/wazuh/src/external/zlib/' '-I' '/wazuh/src/external/popt//src' '-I' '/wazuh/src/external/sqlite/' '-I' '/wazuh/src/external/lua/' '-L/wazuh/src/external/openssl/' '-L/wazuh/src/external/zlib/' '-L/wazuh/src/external/popt//build/output/src/.libs/' '-L/wazuh/src/external/sqlite/' '-L/wazuh/src/external/lua/' '-v' '-o' 'CMakeFiles/cmTC_20aca.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64'
+ /usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/cc1 -quiet -v -I /wazuh/src/external/openssl/include -I /wazuh/src/external/zlib/ -I /wazuh/src/external/popt//src -I /wazuh/src/external/sqlite/ -I /wazuh/src/external/lua/ /usr/local/share/cmake-3.18/Modules/CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_20aca.dir/CMakeCCompilerABI.c.o -version -fPIC -o /tmp/ccVIKeh3.s
+GNU C17 (GCC) version 9.4.0 (x86_64-pc-linux-gnu)
+	compiled by GNU C version 9.4.0, GMP version 6.1.0, MPFR version 3.1.4, MPC version 1.0.3, isl version isl-0.18-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring nonexistent directory "/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../x86_64-pc-linux-gnu/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ /wazuh/src/external/openssl/include
+ /wazuh/src/external/zlib/
+ /wazuh/src/external/popt//src
+ /wazuh/src/external/sqlite/
+ /wazuh/src/external/lua/
+ /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include
+ /usr/local/include
+ /usr/local/gcc-9.4.0/include
+ /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include-fixed
+ /usr/include
+End of search list.
+GNU C17 (GCC) version 9.4.0 (x86_64-pc-linux-gnu)
+	compiled by GNU C version 9.4.0, GMP version 6.1.0, MPFR version 3.1.4, MPC version 1.0.3, isl version isl-0.18-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: fad09828d5e81627893de367f17dd17b
+COLLECT_GCC_OPTIONS='-fPIC' '-I' '/wazuh/src/external/openssl/include' '-I' '/wazuh/src/external/zlib/' '-I' '/wazuh/src/external/popt//src' '-I' '/wazuh/src/external/sqlite/' '-I' '/wazuh/src/external/lua/' '-L/wazuh/src/external/openssl/' '-L/wazuh/src/external/zlib/' '-L/wazuh/src/external/popt//build/output/src/.libs/' '-L/wazuh/src/external/sqlite/' '-L/wazuh/src/external/lua/' '-v' '-o' 'CMakeFiles/cmTC_20aca.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64'
+ as -v -I /wazuh/src/external/openssl/include -I /wazuh/src/external/zlib/ -I /wazuh/src/external/popt//src -I /wazuh/src/external/sqlite/ -I /wazuh/src/external/lua/ --64 -o CMakeFiles/cmTC_20aca.dir/CMakeCCompilerABI.c.o /tmp/ccVIKeh3.s
+GNU assembler version 2.20.51.0.2 (x86_64-redhat-linux) using BFD version version 2.20.51.0.2-5.48.el6_10.1 20100205
+COMPILER_PATH=/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/
+LIBRARY_PATH=/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-fPIC' '-I' '/wazuh/src/external/openssl/include' '-I' '/wazuh/src/external/zlib/' '-I' '/wazuh/src/external/popt//src' '-I' '/wazuh/src/external/sqlite/' '-I' '/wazuh/src/external/lua/' '-L/wazuh/src/external/openssl/' '-L/wazuh/src/external/zlib/' '-L/wazuh/src/external/popt//build/output/src/.libs/' '-L/wazuh/src/external/sqlite/' '-L/wazuh/src/external/lua/' '-v' '-o' 'CMakeFiles/cmTC_20aca.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64'
+Linking C executable cmTC_20aca
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_20aca.dir/link.txt --verbose=1
+/usr/local/gcc-9.4.0/bin/gcc -fPIC -I/wazuh/src/external/openssl/include -I/wazuh/src/external/zlib/ -I/wazuh/src/external/popt//src -I/wazuh/src/external/sqlite/ -I/wazuh/src/external/lua/  -L/wazuh/src/external/openssl/ -L/wazuh/src/external/zlib/ -L/wazuh/src/external/popt//build/output/src/.libs/ -L/wazuh/src/external/sqlite/ -L/wazuh/src/external/lua/   -v CMakeFiles/cmTC_20aca.dir/CMakeCCompilerABI.c.o -o cmTC_20aca 
+Using built-in specs.
+COLLECT_GCC=/usr/local/gcc-9.4.0/bin/gcc
+COLLECT_LTO_WRAPPER=/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/lto-wrapper
+Target: x86_64-pc-linux-gnu
+Configured with: ./configure --prefix=/usr/local/gcc-9.4.0 --enable-languages=c,c++ --disable-multilib --disable-libsanitizer
+Thread model: posix
+gcc version 9.4.0 (GCC) 
+COMPILER_PATH=/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/
+LIBRARY_PATH=/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-fPIC' '-I' '/wazuh/src/external/openssl/include' '-I' '/wazuh/src/external/zlib/' '-I' '/wazuh/src/external/popt//src' '-I' '/wazuh/src/external/sqlite/' '-I' '/wazuh/src/external/lua/' '-L/wazuh/src/external/openssl/' '-L/wazuh/src/external/zlib/' '-L/wazuh/src/external/popt//build/output/src/.libs/' '-L/wazuh/src/external/sqlite/' '-L/wazuh/src/external/lua/' '-v' '-o' 'cmTC_20aca' '-mtune=generic' '-march=x86-64'
+ /usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/collect2 --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_20aca /usr/lib/../lib64/crt1.o /usr/lib/../lib64/crti.o /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/crtbegin.o -L/wazuh/src/external/openssl/ -L/wazuh/src/external/zlib/ -L/wazuh/src/external/popt//build/output/src/.libs/ -L/wazuh/src/external/sqlite/ -L/wazuh/src/external/lua/ -L/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0 -L/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../.. CMakeFiles/cmTC_20aca.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/crtend.o /usr/lib/../lib64/crtn.o
+COLLECT_GCC_OPTIONS='-fPIC' '-I' '/wazuh/src/external/openssl/include' '-I' '/wazuh/src/external/zlib/' '-I' '/wazuh/src/external/popt//src' '-I' '/wazuh/src/external/sqlite/' '-I' '/wazuh/src/external/lua/' '-L/wazuh/src/external/openssl/' '-L/wazuh/src/external/zlib/' '-L/wazuh/src/external/popt//build/output/src/.libs/' '-L/wazuh/src/external/sqlite/' '-L/wazuh/src/external/lua/' '-v' '-o' 'cmTC_20aca' '-mtune=generic' '-march=x86-64'
+gmake[2]: Leaving directory `/wazuh/src/external/rpm/builddir/CMakeFiles/CMakeTmp'
+gmake[1]: Leaving directory `/wazuh/src/external/rpm/builddir/CMakeFiles/CMakeTmp'
+
+
+
+Parsed C implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [/wazuh/src/external/openssl/include]
+    add: [/wazuh/src/external/zlib/]
+    add: [/wazuh/src/external/popt//src]
+    add: [/wazuh/src/external/sqlite/]
+    add: [/wazuh/src/external/lua/]
+    add: [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include]
+    add: [/usr/local/include]
+    add: [/usr/local/gcc-9.4.0/include]
+    add: [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include-fixed]
+    add: [/usr/include]
+  end of search list found
+  collapse include dir [/wazuh/src/external/openssl/include] ==> [/wazuh/src/external/openssl/include]
+  collapse include dir [/wazuh/src/external/zlib/] ==> [/wazuh/src/external/zlib]
+  collapse include dir [/wazuh/src/external/popt//src] ==> [/wazuh/src/external/popt/src]
+  collapse include dir [/wazuh/src/external/sqlite/] ==> [/wazuh/src/external/sqlite]
+  collapse include dir [/wazuh/src/external/lua/] ==> [/wazuh/src/external/lua]
+  collapse include dir [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include] ==> [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include]
+  collapse include dir [/usr/local/include] ==> [/usr/local/include]
+  collapse include dir [/usr/local/gcc-9.4.0/include] ==> [/usr/local/gcc-9.4.0/include]
+  collapse include dir [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include-fixed] ==> [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include-fixed]
+  collapse include dir [/usr/include] ==> [/usr/include]
+  implicit include dirs: [/wazuh/src/external/openssl/include;/wazuh/src/external/zlib;/wazuh/src/external/popt/src;/wazuh/src/external/sqlite;/wazuh/src/external/lua;/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include;/usr/local/include;/usr/local/gcc-9.4.0/include;/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include-fixed;/usr/include]
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /wazuh/src/external/rpm/builddir/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):/usr/bin/gmake cmTC_20aca/fast && gmake[1]: Entering directory `/wazuh/src/external/rpm/builddir/CMakeFiles/CMakeTmp']
+  ignore line: [/usr/bin/gmake  -f CMakeFiles/cmTC_20aca.dir/build.make CMakeFiles/cmTC_20aca.dir/build]
+  ignore line: [gmake[2]: Entering directory `/wazuh/src/external/rpm/builddir/CMakeFiles/CMakeTmp']
+  ignore line: [Building C object CMakeFiles/cmTC_20aca.dir/CMakeCCompilerABI.c.o]
+  ignore line: [/usr/local/gcc-9.4.0/bin/gcc   -fPIC -I/wazuh/src/external/openssl/include -I/wazuh/src/external/zlib/ -I/wazuh/src/external/popt//src -I/wazuh/src/external/sqlite/ -I/wazuh/src/external/lua/  -L/wazuh/src/external/openssl/ -L/wazuh/src/external/zlib/ -L/wazuh/src/external/popt//build/output/src/.libs/ -L/wazuh/src/external/sqlite/ -L/wazuh/src/external/lua/    -v -o CMakeFiles/cmTC_20aca.dir/CMakeCCompilerABI.c.o -c /usr/local/share/cmake-3.18/Modules/CMakeCCompilerABI.c]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=/usr/local/gcc-9.4.0/bin/gcc]
+  ignore line: [Target: x86_64-pc-linux-gnu]
+  ignore line: [Configured with: ./configure --prefix=/usr/local/gcc-9.4.0 --enable-languages=c c++ --disable-multilib --disable-libsanitizer]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 9.4.0 (GCC) ]
+  ignore line: [COLLECT_GCC_OPTIONS='-fPIC' '-I' '/wazuh/src/external/openssl/include' '-I' '/wazuh/src/external/zlib/' '-I' '/wazuh/src/external/popt//src' '-I' '/wazuh/src/external/sqlite/' '-I' '/wazuh/src/external/lua/' '-L/wazuh/src/external/openssl/' '-L/wazuh/src/external/zlib/' '-L/wazuh/src/external/popt//build/output/src/.libs/' '-L/wazuh/src/external/sqlite/' '-L/wazuh/src/external/lua/' '-v' '-o' 'CMakeFiles/cmTC_20aca.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64']
+  ignore line: [ /usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/cc1 -quiet -v -I /wazuh/src/external/openssl/include -I /wazuh/src/external/zlib/ -I /wazuh/src/external/popt//src -I /wazuh/src/external/sqlite/ -I /wazuh/src/external/lua/ /usr/local/share/cmake-3.18/Modules/CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_20aca.dir/CMakeCCompilerABI.c.o -version -fPIC -o /tmp/ccVIKeh3.s]
+  ignore line: [GNU C17 (GCC) version 9.4.0 (x86_64-pc-linux-gnu)]
+  ignore line: [	compiled by GNU C version 9.4.0  GMP version 6.1.0  MPFR version 3.1.4  MPC version 1.0.3  isl version isl-0.18-GMP]
+  ignore line: []
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [ignoring nonexistent directory "/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../x86_64-pc-linux-gnu/include"]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ /wazuh/src/external/openssl/include]
+  ignore line: [ /wazuh/src/external/zlib/]
+  ignore line: [ /wazuh/src/external/popt//src]
+  ignore line: [ /wazuh/src/external/sqlite/]
+  ignore line: [ /wazuh/src/external/lua/]
+  ignore line: [ /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include]
+  ignore line: [ /usr/local/include]
+  ignore line: [ /usr/local/gcc-9.4.0/include]
+  ignore line: [ /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include-fixed]
+  ignore line: [ /usr/include]
+  ignore line: [End of search list.]
+  ignore line: [GNU C17 (GCC) version 9.4.0 (x86_64-pc-linux-gnu)]
+  ignore line: [	compiled by GNU C version 9.4.0  GMP version 6.1.0  MPFR version 3.1.4  MPC version 1.0.3  isl version isl-0.18-GMP]
+  ignore line: []
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [Compiler executable checksum: fad09828d5e81627893de367f17dd17b]
+  ignore line: [COLLECT_GCC_OPTIONS='-fPIC' '-I' '/wazuh/src/external/openssl/include' '-I' '/wazuh/src/external/zlib/' '-I' '/wazuh/src/external/popt//src' '-I' '/wazuh/src/external/sqlite/' '-I' '/wazuh/src/external/lua/' '-L/wazuh/src/external/openssl/' '-L/wazuh/src/external/zlib/' '-L/wazuh/src/external/popt//build/output/src/.libs/' '-L/wazuh/src/external/sqlite/' '-L/wazuh/src/external/lua/' '-v' '-o' 'CMakeFiles/cmTC_20aca.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64']
+  ignore line: [ as -v -I /wazuh/src/external/openssl/include -I /wazuh/src/external/zlib/ -I /wazuh/src/external/popt//src -I /wazuh/src/external/sqlite/ -I /wazuh/src/external/lua/ --64 -o CMakeFiles/cmTC_20aca.dir/CMakeCCompilerABI.c.o /tmp/ccVIKeh3.s]
+  ignore line: [GNU assembler version 2.20.51.0.2 (x86_64-redhat-linux) using BFD version version 2.20.51.0.2-5.48.el6_10.1 20100205]
+  ignore line: [COMPILER_PATH=/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/]
+  ignore line: [LIBRARY_PATH=/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../:/lib/:/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-fPIC' '-I' '/wazuh/src/external/openssl/include' '-I' '/wazuh/src/external/zlib/' '-I' '/wazuh/src/external/popt//src' '-I' '/wazuh/src/external/sqlite/' '-I' '/wazuh/src/external/lua/' '-L/wazuh/src/external/openssl/' '-L/wazuh/src/external/zlib/' '-L/wazuh/src/external/popt//build/output/src/.libs/' '-L/wazuh/src/external/sqlite/' '-L/wazuh/src/external/lua/' '-v' '-o' 'CMakeFiles/cmTC_20aca.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64']
+  ignore line: [Linking C executable cmTC_20aca]
+  ignore line: [/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_20aca.dir/link.txt --verbose=1]
+  ignore line: [/usr/local/gcc-9.4.0/bin/gcc -fPIC -I/wazuh/src/external/openssl/include -I/wazuh/src/external/zlib/ -I/wazuh/src/external/popt//src -I/wazuh/src/external/sqlite/ -I/wazuh/src/external/lua/  -L/wazuh/src/external/openssl/ -L/wazuh/src/external/zlib/ -L/wazuh/src/external/popt//build/output/src/.libs/ -L/wazuh/src/external/sqlite/ -L/wazuh/src/external/lua/   -v CMakeFiles/cmTC_20aca.dir/CMakeCCompilerABI.c.o -o cmTC_20aca ]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=/usr/local/gcc-9.4.0/bin/gcc]
+  ignore line: [COLLECT_LTO_WRAPPER=/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/lto-wrapper]
+  ignore line: [Target: x86_64-pc-linux-gnu]
+  ignore line: [Configured with: ./configure --prefix=/usr/local/gcc-9.4.0 --enable-languages=c c++ --disable-multilib --disable-libsanitizer]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 9.4.0 (GCC) ]
+  ignore line: [COMPILER_PATH=/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/]
+  ignore line: [LIBRARY_PATH=/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../:/lib/:/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-fPIC' '-I' '/wazuh/src/external/openssl/include' '-I' '/wazuh/src/external/zlib/' '-I' '/wazuh/src/external/popt//src' '-I' '/wazuh/src/external/sqlite/' '-I' '/wazuh/src/external/lua/' '-L/wazuh/src/external/openssl/' '-L/wazuh/src/external/zlib/' '-L/wazuh/src/external/popt//build/output/src/.libs/' '-L/wazuh/src/external/sqlite/' '-L/wazuh/src/external/lua/' '-v' '-o' 'cmTC_20aca' '-mtune=generic' '-march=x86-64']
+  link line: [ /usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/collect2 --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_20aca /usr/lib/../lib64/crt1.o /usr/lib/../lib64/crti.o /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/crtbegin.o -L/wazuh/src/external/openssl/ -L/wazuh/src/external/zlib/ -L/wazuh/src/external/popt//build/output/src/.libs/ -L/wazuh/src/external/sqlite/ -L/wazuh/src/external/lua/ -L/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0 -L/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../.. CMakeFiles/cmTC_20aca.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/crtend.o /usr/lib/../lib64/crtn.o]
+    arg [/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/collect2] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [-m] ==> ignore
+    arg [elf_x86_64] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_20aca] ==> ignore
+    arg [/usr/lib/../lib64/crt1.o] ==> ignore
+    arg [/usr/lib/../lib64/crti.o] ==> ignore
+    arg [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/crtbegin.o] ==> ignore
+    arg [-L/wazuh/src/external/openssl/] ==> dir [/wazuh/src/external/openssl/]
+    arg [-L/wazuh/src/external/zlib/] ==> dir [/wazuh/src/external/zlib/]
+    arg [-L/wazuh/src/external/popt//build/output/src/.libs/] ==> dir [/wazuh/src/external/popt//build/output/src/.libs/]
+    arg [-L/wazuh/src/external/sqlite/] ==> dir [/wazuh/src/external/sqlite/]
+    arg [-L/wazuh/src/external/lua/] ==> dir [/wazuh/src/external/lua/]
+    arg [-L/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0] ==> dir [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0]
+    arg [-L/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../lib64] ==> dir [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../lib64]
+    arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+    arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+    arg [-L/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../..] ==> dir [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../..]
+    arg [CMakeFiles/cmTC_20aca.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [-lgcc] ==> lib [gcc]
+    arg [--as-needed] ==> ignore
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [--no-as-needed] ==> ignore
+    arg [-lc] ==> lib [c]
+    arg [-lgcc] ==> lib [gcc]
+    arg [--as-needed] ==> ignore
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [--no-as-needed] ==> ignore
+    arg [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/crtend.o] ==> ignore
+    arg [/usr/lib/../lib64/crtn.o] ==> ignore
+  collapse library dir [/wazuh/src/external/openssl/] ==> [/wazuh/src/external/openssl]
+  collapse library dir [/wazuh/src/external/zlib/] ==> [/wazuh/src/external/zlib]
+  collapse library dir [/wazuh/src/external/popt//build/output/src/.libs/] ==> [/wazuh/src/external/popt/build/output/src/.libs]
+  collapse library dir [/wazuh/src/external/sqlite/] ==> [/wazuh/src/external/sqlite]
+  collapse library dir [/wazuh/src/external/lua/] ==> [/wazuh/src/external/lua]
+  collapse library dir [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0] ==> [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0]
+  collapse library dir [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../lib64] ==> [/usr/local/gcc-9.4.0/lib64]
+  collapse library dir [/lib/../lib64] ==> [/lib64]
+  collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+  collapse library dir [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../..] ==> [/usr/local/gcc-9.4.0/lib]
+  implicit libs: [gcc;gcc_s;c;gcc;gcc_s]
+  implicit dirs: [/wazuh/src/external/openssl;/wazuh/src/external/zlib;/wazuh/src/external/popt/build/output/src/.libs;/wazuh/src/external/sqlite;/wazuh/src/external/lua;/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0;/usr/local/gcc-9.4.0/lib64;/lib64;/usr/lib64;/usr/local/gcc-9.4.0/lib]
+  implicit fwks: []
+
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: /wazuh/src/external/rpm/builddir/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake cmTC_9319b/fast && gmake[1]: Entering directory `/wazuh/src/external/rpm/builddir/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_9319b.dir/build.make CMakeFiles/cmTC_9319b.dir/build
+gmake[2]: Entering directory `/wazuh/src/external/rpm/builddir/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_9319b.dir/CMakeCXXCompilerABI.cpp.o
+/usr/local/gcc-9.4.0/bin/c++   -v -o CMakeFiles/cmTC_9319b.dir/CMakeCXXCompilerABI.cpp.o -c /usr/local/share/cmake-3.18/Modules/CMakeCXXCompilerABI.cpp
+Using built-in specs.
+COLLECT_GCC=/usr/local/gcc-9.4.0/bin/c++
+Target: x86_64-pc-linux-gnu
+Configured with: ./configure --prefix=/usr/local/gcc-9.4.0 --enable-languages=c,c++ --disable-multilib --disable-libsanitizer
+Thread model: posix
+gcc version 9.4.0 (GCC) 
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_9319b.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+ /usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/cc1plus -quiet -v -D_GNU_SOURCE /usr/local/share/cmake-3.18/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpbase CMakeCXXCompilerABI.cpp -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_9319b.dir/CMakeCXXCompilerABI.cpp.o -version -o /tmp/cc2CvHG5.s
+GNU C++14 (GCC) version 9.4.0 (x86_64-pc-linux-gnu)
+	compiled by GNU C version 9.4.0, GMP version 6.1.0, MPFR version 3.1.4, MPC version 1.0.3, isl version isl-0.18-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring duplicate directory "/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../include/c++/9.4.0"
+ignoring nonexistent directory "/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../x86_64-pc-linux-gnu/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ /usr/local/gcc-9.4.0/include/c++/9.4.0/
+ /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../include/c++/9.4.0/x86_64-pc-linux-gnu
+ /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../include/c++/9.4.0/backward
+ /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include
+ /usr/local/include
+ /usr/local/gcc-9.4.0/include
+ /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include-fixed
+ /usr/include
+End of search list.
+GNU C++14 (GCC) version 9.4.0 (x86_64-pc-linux-gnu)
+	compiled by GNU C version 9.4.0, GMP version 6.1.0, MPFR version 3.1.4, MPC version 1.0.3, isl version isl-0.18-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: b6a2c002a4a30793a7282319510eefdf
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_9319b.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+ as -v --64 -o CMakeFiles/cmTC_9319b.dir/CMakeCXXCompilerABI.cpp.o /tmp/cc2CvHG5.s
+GNU assembler version 2.20.51.0.2 (x86_64-redhat-linux) using BFD version version 2.20.51.0.2-5.48.el6_10.1 20100205
+COMPILER_PATH=/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/
+LIBRARY_PATH=/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_9319b.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+Linking CXX executable cmTC_9319b
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_9319b.dir/link.txt --verbose=1
+/usr/local/gcc-9.4.0/bin/c++  -v CMakeFiles/cmTC_9319b.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_9319b 
+Using built-in specs.
+COLLECT_GCC=/usr/local/gcc-9.4.0/bin/c++
+COLLECT_LTO_WRAPPER=/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/lto-wrapper
+Target: x86_64-pc-linux-gnu
+Configured with: ./configure --prefix=/usr/local/gcc-9.4.0 --enable-languages=c,c++ --disable-multilib --disable-libsanitizer
+Thread model: posix
+gcc version 9.4.0 (GCC) 
+COMPILER_PATH=/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/
+LIBRARY_PATH=/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_9319b' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+ /usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/collect2 --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_9319b /usr/lib/../lib64/crt1.o /usr/lib/../lib64/crti.o /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/crtbegin.o -L/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0 -L/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../.. CMakeFiles/cmTC_9319b.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/crtend.o /usr/lib/../lib64/crtn.o
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_9319b' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+gmake[2]: Leaving directory `/wazuh/src/external/rpm/builddir/CMakeFiles/CMakeTmp'
+gmake[1]: Leaving directory `/wazuh/src/external/rpm/builddir/CMakeFiles/CMakeTmp'
+
+
+
+Parsed CXX implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [/usr/local/gcc-9.4.0/include/c++/9.4.0/]
+    add: [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../include/c++/9.4.0/x86_64-pc-linux-gnu]
+    add: [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../include/c++/9.4.0/backward]
+    add: [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include]
+    add: [/usr/local/include]
+    add: [/usr/local/gcc-9.4.0/include]
+    add: [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include-fixed]
+    add: [/usr/include]
+  end of search list found
+  collapse include dir [/usr/local/gcc-9.4.0/include/c++/9.4.0/] ==> [/usr/local/gcc-9.4.0/include/c++/9.4.0]
+  collapse include dir [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../include/c++/9.4.0/x86_64-pc-linux-gnu] ==> [/usr/local/gcc-9.4.0/include/c++/9.4.0/x86_64-pc-linux-gnu]
+  collapse include dir [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../include/c++/9.4.0/backward] ==> [/usr/local/gcc-9.4.0/include/c++/9.4.0/backward]
+  collapse include dir [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include] ==> [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include]
+  collapse include dir [/usr/local/include] ==> [/usr/local/include]
+  collapse include dir [/usr/local/gcc-9.4.0/include] ==> [/usr/local/gcc-9.4.0/include]
+  collapse include dir [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include-fixed] ==> [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include-fixed]
+  collapse include dir [/usr/include] ==> [/usr/include]
+  implicit include dirs: [/usr/local/gcc-9.4.0/include/c++/9.4.0;/usr/local/gcc-9.4.0/include/c++/9.4.0/x86_64-pc-linux-gnu;/usr/local/gcc-9.4.0/include/c++/9.4.0/backward;/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include;/usr/local/include;/usr/local/gcc-9.4.0/include;/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include-fixed;/usr/include]
+
+
+Parsed CXX implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /wazuh/src/external/rpm/builddir/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):/usr/bin/gmake cmTC_9319b/fast && gmake[1]: Entering directory `/wazuh/src/external/rpm/builddir/CMakeFiles/CMakeTmp']
+  ignore line: [/usr/bin/gmake  -f CMakeFiles/cmTC_9319b.dir/build.make CMakeFiles/cmTC_9319b.dir/build]
+  ignore line: [gmake[2]: Entering directory `/wazuh/src/external/rpm/builddir/CMakeFiles/CMakeTmp']
+  ignore line: [Building CXX object CMakeFiles/cmTC_9319b.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [/usr/local/gcc-9.4.0/bin/c++   -v -o CMakeFiles/cmTC_9319b.dir/CMakeCXXCompilerABI.cpp.o -c /usr/local/share/cmake-3.18/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=/usr/local/gcc-9.4.0/bin/c++]
+  ignore line: [Target: x86_64-pc-linux-gnu]
+  ignore line: [Configured with: ./configure --prefix=/usr/local/gcc-9.4.0 --enable-languages=c c++ --disable-multilib --disable-libsanitizer]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 9.4.0 (GCC) ]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_9319b.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+  ignore line: [ /usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/cc1plus -quiet -v -D_GNU_SOURCE /usr/local/share/cmake-3.18/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpbase CMakeCXXCompilerABI.cpp -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_9319b.dir/CMakeCXXCompilerABI.cpp.o -version -o /tmp/cc2CvHG5.s]
+  ignore line: [GNU C++14 (GCC) version 9.4.0 (x86_64-pc-linux-gnu)]
+  ignore line: [	compiled by GNU C version 9.4.0  GMP version 6.1.0  MPFR version 3.1.4  MPC version 1.0.3  isl version isl-0.18-GMP]
+  ignore line: []
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [ignoring duplicate directory "/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../include/c++/9.4.0"]
+  ignore line: [ignoring nonexistent directory "/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../x86_64-pc-linux-gnu/include"]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ /usr/local/gcc-9.4.0/include/c++/9.4.0/]
+  ignore line: [ /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../include/c++/9.4.0/x86_64-pc-linux-gnu]
+  ignore line: [ /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../include/c++/9.4.0/backward]
+  ignore line: [ /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include]
+  ignore line: [ /usr/local/include]
+  ignore line: [ /usr/local/gcc-9.4.0/include]
+  ignore line: [ /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/include-fixed]
+  ignore line: [ /usr/include]
+  ignore line: [End of search list.]
+  ignore line: [GNU C++14 (GCC) version 9.4.0 (x86_64-pc-linux-gnu)]
+  ignore line: [	compiled by GNU C version 9.4.0  GMP version 6.1.0  MPFR version 3.1.4  MPC version 1.0.3  isl version isl-0.18-GMP]
+  ignore line: []
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [Compiler executable checksum: b6a2c002a4a30793a7282319510eefdf]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_9319b.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+  ignore line: [ as -v --64 -o CMakeFiles/cmTC_9319b.dir/CMakeCXXCompilerABI.cpp.o /tmp/cc2CvHG5.s]
+  ignore line: [GNU assembler version 2.20.51.0.2 (x86_64-redhat-linux) using BFD version version 2.20.51.0.2-5.48.el6_10.1 20100205]
+  ignore line: [COMPILER_PATH=/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/]
+  ignore line: [LIBRARY_PATH=/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../:/lib/:/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_9319b.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+  ignore line: [Linking CXX executable cmTC_9319b]
+  ignore line: [/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_9319b.dir/link.txt --verbose=1]
+  ignore line: [/usr/local/gcc-9.4.0/bin/c++  -v CMakeFiles/cmTC_9319b.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_9319b ]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=/usr/local/gcc-9.4.0/bin/c++]
+  ignore line: [COLLECT_LTO_WRAPPER=/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/lto-wrapper]
+  ignore line: [Target: x86_64-pc-linux-gnu]
+  ignore line: [Configured with: ./configure --prefix=/usr/local/gcc-9.4.0 --enable-languages=c c++ --disable-multilib --disable-libsanitizer]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 9.4.0 (GCC) ]
+  ignore line: [COMPILER_PATH=/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/]
+  ignore line: [LIBRARY_PATH=/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../:/lib/:/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_9319b' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+  link line: [ /usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/collect2 --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_9319b /usr/lib/../lib64/crt1.o /usr/lib/../lib64/crti.o /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/crtbegin.o -L/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0 -L/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../.. CMakeFiles/cmTC_9319b.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/crtend.o /usr/lib/../lib64/crtn.o]
+    arg [/usr/local/gcc-9.4.0/libexec/gcc/x86_64-pc-linux-gnu/9.4.0/collect2] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [-m] ==> ignore
+    arg [elf_x86_64] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_9319b] ==> ignore
+    arg [/usr/lib/../lib64/crt1.o] ==> ignore
+    arg [/usr/lib/../lib64/crti.o] ==> ignore
+    arg [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/crtbegin.o] ==> ignore
+    arg [-L/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0] ==> dir [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0]
+    arg [-L/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../lib64] ==> dir [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../lib64]
+    arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+    arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+    arg [-L/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../..] ==> dir [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../..]
+    arg [CMakeFiles/cmTC_9319b.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [-lstdc++] ==> lib [stdc++]
+    arg [-lm] ==> lib [m]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lgcc] ==> lib [gcc]
+    arg [-lc] ==> lib [c]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lgcc] ==> lib [gcc]
+    arg [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/crtend.o] ==> ignore
+    arg [/usr/lib/../lib64/crtn.o] ==> ignore
+  collapse library dir [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0] ==> [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0]
+  collapse library dir [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../../../lib64] ==> [/usr/local/gcc-9.4.0/lib64]
+  collapse library dir [/lib/../lib64] ==> [/lib64]
+  collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+  collapse library dir [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0/../../..] ==> [/usr/local/gcc-9.4.0/lib]
+  implicit libs: [stdc++;m;gcc_s;gcc;c;gcc_s;gcc]
+  implicit dirs: [/usr/local/gcc-9.4.0/lib/gcc/x86_64-pc-linux-gnu/9.4.0;/usr/local/gcc-9.4.0/lib64;/lib64;/usr/lib64;/usr/local/gcc-9.4.0/lib]
+  implicit fwks: []
+
+
