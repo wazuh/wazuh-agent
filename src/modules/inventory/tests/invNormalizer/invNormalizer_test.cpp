@@ -1,5 +1,5 @@
 /*
- * Wazuh SyscollectorNormalizer
+ * Wazuh InventoryNormalizer
  * Copyright (C) 2015, Wazuh Inc.
  * January 12, 2021.
  *
@@ -8,15 +8,15 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation.
  */
-#include "sysNormalizer_test.h"
+#include "invNormalizer_test.h"
 #include "test_config.h"
 #include "test_input.h"
-#include "syscollectorNormalizer.h"
+#include "inventoryNormalizer.h"
 #include <fstream>
 #include <cstdio>
 
 
-void SysNormalizerTest::SetUp()
+void InvNormalizerTest::SetUp()
 {
     std::ofstream testConfigFile{TEST_CONFIG_FILE_NAME};
 
@@ -26,7 +26,7 @@ void SysNormalizerTest::SetUp()
     }
 };
 
-void SysNormalizerTest::TearDown()
+void InvNormalizerTest::TearDown()
 {
     std::remove(TEST_CONFIG_FILE_NAME);
 };
@@ -34,17 +34,17 @@ void SysNormalizerTest::TearDown()
 using ::testing::_;
 using ::testing::Return;
 
-TEST_F(SysNormalizerTest, ctor)
+TEST_F(InvNormalizerTest, ctor)
 {
-    EXPECT_NO_THROW((SysNormalizer{TEST_CONFIG_FILE_NAME, "macos"}));
+    EXPECT_NO_THROW((InvNormalizer{TEST_CONFIG_FILE_NAME, "macos"}));
 }
 
-TEST_F(SysNormalizerTest, ctorNonExistingFile)
+TEST_F(InvNormalizerTest, ctorNonExistingFile)
 {
-    EXPECT_NO_THROW((SysNormalizer{"TEST_CONFIG_FILE_NAME", "macos"}));
+    EXPECT_NO_THROW((InvNormalizer{"TEST_CONFIG_FILE_NAME", "macos"}));
 }
 
-TEST_F(SysNormalizerTest, ctorWrongFormatConfig)
+TEST_F(InvNormalizerTest, ctorWrongFormatConfig)
 {
     constexpr auto WRONG_FORMAT_FILE{"wrong_format.json"};
     std::ofstream testConfigFile{WRONG_FORMAT_FILE};
@@ -54,20 +54,20 @@ TEST_F(SysNormalizerTest, ctorWrongFormatConfig)
         testConfigFile << R"({"exclusions":[})";
     }
 
-    EXPECT_NO_THROW((SysNormalizer{WRONG_FORMAT_FILE, "macos"}));
+    EXPECT_NO_THROW((InvNormalizer{WRONG_FORMAT_FILE, "macos"}));
     std::remove(WRONG_FORMAT_FILE);
 }
 
-TEST_F(SysNormalizerTest, excludeSiriAndiTunes)
+TEST_F(InvNormalizerTest, excludeSiriAndiTunes)
 {
     auto inputJson(nlohmann::json::parse(TEST_INPUT_DATA));
     const auto size{inputJson.size()};
-    SysNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
+    InvNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
     normalizer.removeExcluded("packages", inputJson);
     EXPECT_EQ(size, inputJson.size() + 2);
 }
 
-TEST_F(SysNormalizerTest, excludeSingleItemNoMatch)
+TEST_F(InvNormalizerTest, excludeSingleItemNoMatch)
 {
     const auto& origJson{nlohmann::json::parse(R"(
         {
@@ -77,12 +77,12 @@ TEST_F(SysNormalizerTest, excludeSingleItemNoMatch)
             "version": "3.0"
         })")};
     nlohmann::json normalized(origJson);
-    SysNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
+    InvNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
     normalizer.removeExcluded("packages", normalized);
     EXPECT_EQ(normalized, origJson);
 }
 
-TEST_F(SysNormalizerTest, excludeSingleItemMatch)
+TEST_F(InvNormalizerTest, excludeSingleItemMatch)
 {
     auto inputJson(nlohmann::json::parse(R"(
         {
@@ -91,12 +91,12 @@ TEST_F(SysNormalizerTest, excludeSingleItemMatch)
             "name": "Siri",
             "version": "1.0"
         })"));
-    SysNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
+    InvNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
     normalizer.removeExcluded("packages", inputJson);
     EXPECT_TRUE(inputJson.empty());
 }
 
-TEST_F(SysNormalizerTest, normalizeSingleMicosoft)
+TEST_F(InvNormalizerTest, normalizeSingleMicosoft)
 {
     auto inputJson(nlohmann::json::parse(R"(
         {
@@ -105,13 +105,13 @@ TEST_F(SysNormalizerTest, normalizeSingleMicosoft)
             "name": "Microsoft Defender",
             "version": "1.0"
         })"));
-    SysNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
+    InvNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
     normalizer.normalize("packages", inputJson);
     EXPECT_FALSE(inputJson.empty());
     EXPECT_EQ(inputJson["vendor"], "Microsoft");
 }
 
-TEST_F(SysNormalizerTest, normalizeSingleMcAfee1)
+TEST_F(InvNormalizerTest, normalizeSingleMcAfee1)
 {
     auto inputJson(nlohmann::json::parse(R"(
         {
@@ -120,14 +120,14 @@ TEST_F(SysNormalizerTest, normalizeSingleMcAfee1)
             "name": "McAfee Antivirus For Mac",
             "version": "1.0"
         })"));
-    SysNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
+    InvNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
     normalizer.normalize("packages", inputJson);
     EXPECT_FALSE(inputJson.empty());
     EXPECT_EQ(inputJson["vendor"], "McAfee");
     EXPECT_EQ(inputJson["name"], "Antivirus");
 }
 
-TEST_F(SysNormalizerTest, normalizeSingleMcAfee2)
+TEST_F(InvNormalizerTest, normalizeSingleMcAfee2)
 {
     auto inputJson(nlohmann::json::parse(R"(
         {
@@ -136,14 +136,14 @@ TEST_F(SysNormalizerTest, normalizeSingleMcAfee2)
             "name": "McAfee Endpoint Protection For Mac",
             "version": "1.0"
         })"));
-    SysNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
+    InvNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
     normalizer.normalize("packages", inputJson);
     EXPECT_FALSE(inputJson.empty());
     EXPECT_EQ(inputJson["vendor"], "McAfee");
     EXPECT_EQ(inputJson["name"], "Endpoint Protection");
 }
 
-TEST_F(SysNormalizerTest, normalizeSingleTotalDefense1)
+TEST_F(InvNormalizerTest, normalizeSingleTotalDefense1)
 {
     auto inputJson(nlohmann::json::parse(R"(
         {
@@ -152,14 +152,14 @@ TEST_F(SysNormalizerTest, normalizeSingleTotalDefense1)
             "name": "TotalDefenseAntivirusforMac",
             "version": "1.0"
         })"));
-    SysNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
+    InvNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
     normalizer.normalize("packages", inputJson);
     EXPECT_FALSE(inputJson.empty());
     EXPECT_EQ(inputJson["vendor"], "TotalDefense");
     EXPECT_EQ(inputJson["name"], "Anti-Virus");
 }
 
-TEST_F(SysNormalizerTest, normalizeSingleTotalDefense2)
+TEST_F(InvNormalizerTest, normalizeSingleTotalDefense2)
 {
     auto inputJson(nlohmann::json::parse(R"(
         {
@@ -168,14 +168,14 @@ TEST_F(SysNormalizerTest, normalizeSingleTotalDefense2)
             "name": "TotalDefenseOtherProductforMac",
             "version": "1.0"
         })"));
-    SysNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
+    InvNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
     normalizer.normalize("packages", inputJson);
     EXPECT_FALSE(inputJson.empty());
     EXPECT_EQ(inputJson["vendor"], "TotalDefense");
     EXPECT_EQ(inputJson["name"], "OtherProduct");
 }
 
-TEST_F(SysNormalizerTest, normalizeSingleAVG1)
+TEST_F(InvNormalizerTest, normalizeSingleAVG1)
 {
     auto inputJson(nlohmann::json::parse(R"(
         {
@@ -184,14 +184,14 @@ TEST_F(SysNormalizerTest, normalizeSingleAVG1)
             "name": "AVGAntivirus",
             "version": "1.0"
         })"));
-    SysNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
+    InvNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
     normalizer.normalize("packages", inputJson);
     EXPECT_FALSE(inputJson.empty());
     EXPECT_EQ(inputJson["vendor"], "AVG");
     EXPECT_EQ(inputJson["name"], "Anti-Virus");
 }
 
-TEST_F(SysNormalizerTest, normalizeSingleAVG2)
+TEST_F(InvNormalizerTest, normalizeSingleAVG2)
 {
     auto inputJson(nlohmann::json::parse(R"(
         {
@@ -200,14 +200,14 @@ TEST_F(SysNormalizerTest, normalizeSingleAVG2)
             "name": "AVGOtherProduct",
             "version": "1.0"
         })"));
-    SysNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
+    InvNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
     normalizer.normalize("packages", inputJson);
     EXPECT_FALSE(inputJson.empty());
     EXPECT_EQ(inputJson["vendor"], "AVG");
     EXPECT_EQ(inputJson["name"], "OtherProduct");
 }
 
-TEST_F(SysNormalizerTest, normalizeSingleKaspersky1)
+TEST_F(InvNormalizerTest, normalizeSingleKaspersky1)
 {
     auto inputJson(nlohmann::json::parse(R"(
         {
@@ -216,13 +216,13 @@ TEST_F(SysNormalizerTest, normalizeSingleKaspersky1)
             "name": "Kaspersky Antivirus For Mac",
             "version": "1.0"
         })"));
-    SysNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
+    InvNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
     normalizer.normalize("packages", inputJson);
     EXPECT_FALSE(inputJson.empty());
     EXPECT_EQ(inputJson["name"], "Kaspersky Antivirus");
 }
 
-TEST_F(SysNormalizerTest, normalizeSingleKaspersky2)
+TEST_F(InvNormalizerTest, normalizeSingleKaspersky2)
 {
     auto inputJson(nlohmann::json::parse(R"(
         {
@@ -231,17 +231,17 @@ TEST_F(SysNormalizerTest, normalizeSingleKaspersky2)
             "name": "Kaspersky Internet Security For Mac",
             "version": "1.0"
         })"));
-    SysNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
+    InvNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
     normalizer.normalize("packages", inputJson);
     EXPECT_FALSE(inputJson.empty());
     EXPECT_EQ(inputJson["name"], "Kaspersky Internet Security");
 }
 
-TEST_F(SysNormalizerTest, normalizeItemMatch)
+TEST_F(InvNormalizerTest, normalizeItemMatch)
 {
     auto inputJson(nlohmann::json::parse(TEST_INPUT_DATA));
     const auto origJson(inputJson);
-    SysNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
+    InvNormalizer normalizer{TEST_CONFIG_FILE_NAME, "macos"};
     normalizer.normalize("packages", inputJson);
     EXPECT_EQ(inputJson.size(), origJson.size());
     EXPECT_NE(inputJson, origJson);

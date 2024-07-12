@@ -55,7 +55,7 @@ void inventory_start(const unsigned int inverval,
     {
         [callbackLog](const modules_log_level_t level, const std::string & data)
         {
-            callbackLog(level, data.c_str(), WM_SYS_LOGTAG);
+            callbackLog(level, data.c_str(), WM_INV_LOGTAG);
         }
     };
 
@@ -63,7 +63,7 @@ void inventory_start(const unsigned int inverval,
     {
         [callbackLog](const std::string & data)
         {
-            callbackLog(LOG_ERROR, data.c_str(), WM_SYS_LOGTAG);
+            callbackLog(LOG_ERROR, data.c_str(), WM_INV_LOGTAG);
         }
     };
 

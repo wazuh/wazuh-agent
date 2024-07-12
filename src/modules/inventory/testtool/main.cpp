@@ -1,5 +1,5 @@
 /*
- * Wazuh SysCollector Test tool
+ * Wazuh Inventory Test tool
  * Copyright (C) 2015, Wazuh Inc.
  * October 7, 2020.
  *
@@ -18,7 +18,7 @@
 #include "dbsync.hpp"
 #include "rsync.hpp"
 #include "sysInfo.hpp"
-#include "syscollector.hpp"
+#include "inventory.hpp"
 
 constexpr int DEFAULT_SLEEP_TIME { 60 };
 
@@ -99,17 +99,17 @@ int main(int argc, const char* argv[])
                     std::this_thread::sleep_for(std::chrono::seconds(sleepTime));
                 }
 
-                Syscollector::instance().destroy();
+                Inventory::instance().destroy();
             }
         };
 
-        Syscollector::instance().init(spInfo,
+        Inventory::instance().init(spInfo,
                                       reportDiffFunction,
                                       reportSyncFunction,
                                       logFunction,
-                                      SYSCOLLECTOR_DB_DISK_PATH,
-                                      SYSCOLLECTOR_NORM_CONFIG_DISK_PATH,
-                                      SYSCOLLECTOR_NORM_TYPE,
+                                      INVENTORY_DB_DISK_PATH,
+                                      INVENTORY_NORM_CONFIG_DISK_PATH,
+                                      INVENTORY_NORM_TYPE,
                                       15ul,
                                       true,
                                       true,

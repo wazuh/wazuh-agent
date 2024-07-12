@@ -1,5 +1,5 @@
 /*
- * Wazuh SyscollectorImp
+ * Wazuh InventoryImp
  * Copyright (C) 2015, Wazuh Inc.
  * November 9, 2020.
  *
@@ -8,20 +8,20 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation.
  */
-#ifndef _SYSCOLLECTOR_IMP_TEST_H
-#define _SYSCOLLECTOR_IMP_TEST_H
+#ifndef _INVENTORY_IMP_TEST_H
+#define _INVENTORY_IMP_TEST_H
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-class SyscollectorImpTest : public ::testing::Test
+class InventoryImpTest : public ::testing::Test
 {
     protected:
 
-        SyscollectorImpTest() = default;
-        virtual ~SyscollectorImpTest() = default;
+        InventoryImpTest() = default;
+        virtual ~InventoryImpTest() = default;
 
         void SetUp() override;
         void TearDown() override;
 };
 
-#endif //_SYSCOLLECTOR_IMP_TEST_H
+#endif //_INVENTORY_IMP_TEST_H

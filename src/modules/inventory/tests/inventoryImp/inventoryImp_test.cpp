@@ -1,5 +1,5 @@
 /*
- * Wazuh SyscollectorImp
+ * Wazuh InventoryImp
  * Copyright (C) 2015, Wazuh Inc.
  * November 9, 2020.
  *
@@ -9,16 +9,15 @@
  * Foundation.
  */
 #include <cstdio>
-#include "syscollectorImp_test.h"
-#include "syscollector.hpp"
+#include "inventoryImp_test.h"
+#include "inventory.hpp"
 
-constexpr auto SYSCOLLECTOR_DB_PATH {"TEMP.db"};
+constexpr auto INVENTORY_DB_PATH {"TEMP.dbINVENTORY
+void InventoryImpTest::SetUp() {};
 
-void SyscollectorImpTest::SetUp() {};
-
-void SyscollectorImpTest::TearDown()
+void InventoryImpTest::TearDown()
 {
-    std::remove(SYSCOLLECTOR_DB_PATH);
+    std::remove(INVENTORY_DB_PATH);
 };
 
 using ::testing::_;
@@ -65,7 +64,7 @@ void logFunction(const modules_log_level_t /*level*/, const std::string& /*log*/
     // std::cout << s_logStringMap.at(level) << ": " << log << std::endl;
 }
 
-TEST_F(SyscollectorImpTest, defaultCtor)
+TEST_F(InventoryImpTest, defaultCtor)
 {
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
@@ -155,35 +154,35 @@ TEST_F(SyscollectorImpTest, defaultCtor)
     };
     const auto expectedResult10
     {
-        R"({"component":"syscollector_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
     };
     const auto expectedResult11
     {
-        R"({"component":"syscollector_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
     };
     const auto expectedResult12
     {
-        R"({"component":"syscollector_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
     };
     const auto expectedResult13
     {
-        R"({"component":"syscollector_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
     };
     const auto expectedResult14
     {
-        R"({"component":"syscollector_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
     };
     const auto expectedResult15
     {
-        R"({"component":"syscollector_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
     };
     const auto expectedResult16
     {
-        R"({"component":"syscollector_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
     };
     const auto expectedResult17
     {
-        R"({"component":"syscollector_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
     };
     const auto expectedResult18
     {
@@ -191,7 +190,7 @@ TEST_F(SyscollectorImpTest, defaultCtor)
     };
     const auto expectedResult19
     {
-        R"({"component":"syscollector_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
     };
     const auto expectedResult20
     {
@@ -224,11 +223,11 @@ TEST_F(SyscollectorImpTest, defaultCtor)
     {
         [&spInfoWrapper, &callbackData, &callbackDataDelta]()
         {
-            Syscollector::instance().init(spInfoWrapper,
+            Inventory::instance().init(spInfoWrapper,
                                           callbackDataDelta,
                                           callbackData,
                                           logFunction,
-                                          SYSCOLLECTOR_DB_PATH,
+                                          INVENTORY_DB_PATH,
                                           "",
                                           "",
                                           5, true, true, true, true, true, true, true, true, true, true);
@@ -236,7 +235,7 @@ TEST_F(SyscollectorImpTest, defaultCtor)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 
     if (t.joinable())
     {
@@ -244,7 +243,7 @@ TEST_F(SyscollectorImpTest, defaultCtor)
     }
 }
 
-TEST_F(SyscollectorImpTest, intervalSeconds)
+TEST_F(InventoryImpTest, intervalSeconds)
 {
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
@@ -270,11 +269,11 @@ TEST_F(SyscollectorImpTest, intervalSeconds)
     {
         [&spInfoWrapper]()
         {
-            Syscollector::instance().init(spInfoWrapper,
+            Inventory::instance().init(spInfoWrapper,
                                           reportFunction,
                                           reportFunction,
                                           logFunction,
-                                          SYSCOLLECTOR_DB_PATH,
+                                          INVENTORY_DB_PATH,
                                           "",
                                           "",
                                           1, true, true, true, true, true, true, true, true, true, true);
@@ -283,7 +282,7 @@ TEST_F(SyscollectorImpTest, intervalSeconds)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{10});
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 
     if (t.joinable())
     {
@@ -291,7 +290,7 @@ TEST_F(SyscollectorImpTest, intervalSeconds)
     }
 }
 
-TEST_F(SyscollectorImpTest, noScanOnStart)
+TEST_F(InventoryImpTest, noScanOnStart)
 {
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, hardware()).Times(0);
@@ -306,11 +305,11 @@ TEST_F(SyscollectorImpTest, noScanOnStart)
     {
         [&spInfoWrapper]()
         {
-            Syscollector::instance().init(spInfoWrapper,
+            Inventory::instance().init(spInfoWrapper,
                                           reportFunction,
                                           reportFunction,
                                           logFunction,
-                                          SYSCOLLECTOR_DB_PATH,
+                                          INVENTORY_DB_PATH,
                                           "",
                                           "",
                                           3600, false);
@@ -318,7 +317,7 @@ TEST_F(SyscollectorImpTest, noScanOnStart)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 
     if (t.joinable())
     {
@@ -326,7 +325,7 @@ TEST_F(SyscollectorImpTest, noScanOnStart)
     }
 }
 
-TEST_F(SyscollectorImpTest, noHardware)
+TEST_F(InventoryImpTest, noHardware)
 {
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, hardware()).Times(0);
@@ -411,31 +410,31 @@ TEST_F(SyscollectorImpTest, noHardware)
     };
     const auto expectedResult10
     {
-        R"({"component":"syscollector_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
     };
     const auto expectedResult11
     {
-        R"({"component":"syscollector_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
     };
     const auto expectedResult12
     {
-        R"({"component":"syscollector_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
     };
     const auto expectedResult13
     {
-        R"({"component":"syscollector_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
     };
     const auto expectedResult14
     {
-        R"({"component":"syscollector_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
     };
     const auto expectedResult15
     {
-        R"({"component":"syscollector_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
     };
     const auto expectedResult17
     {
-        R"({"component":"syscollector_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
     };
     const auto expectedResult18
     {
@@ -443,7 +442,7 @@ TEST_F(SyscollectorImpTest, noHardware)
     };
     const auto expectedResult19
     {
-        R"({"component":"syscollector_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
     };
     const auto expectedResult20
     {
@@ -451,7 +450,7 @@ TEST_F(SyscollectorImpTest, noHardware)
     };
     const auto expectedResult21
     {
-        R"({"component":"syscollector_hwinfo","data":{},"type":"integrity_clear"})"
+        R"({"component":"inventory_hwinfo","data":{},"type":"integrity_clear"})"
     };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -478,11 +477,11 @@ TEST_F(SyscollectorImpTest, noHardware)
     {
         [&spInfoWrapper, &callbackData, &callbackDataDelta]()
         {
-            Syscollector::instance().init(spInfoWrapper,
+            Inventory::instance().init(spInfoWrapper,
                                           callbackDataDelta,
                                           callbackData,
                                           logFunction,
-                                          SYSCOLLECTOR_DB_PATH,
+                                          INVENTORY_DB_PATH,
                                           "",
                                           "",
                                           3600, true, false, true, true, true, true, true, true, true, true);
@@ -490,7 +489,7 @@ TEST_F(SyscollectorImpTest, noHardware)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 
     if (t.joinable())
     {
@@ -499,7 +498,7 @@ TEST_F(SyscollectorImpTest, noHardware)
 
 }
 
-TEST_F(SyscollectorImpTest, noOs)
+TEST_F(InventoryImpTest, noOs)
 {
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
@@ -584,31 +583,31 @@ TEST_F(SyscollectorImpTest, noOs)
     };
     const auto expectedResult11
     {
-        R"({"component":"syscollector_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
     };
     const auto expectedResult12
     {
-        R"({"component":"syscollector_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
     };
     const auto expectedResult13
     {
-        R"({"component":"syscollector_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
     };
     const auto expectedResult14
     {
-        R"({"component":"syscollector_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
     };
     const auto expectedResult15
     {
-        R"({"component":"syscollector_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
     };
     const auto expectedResult16
     {
-        R"({"component":"syscollector_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
     };
     const auto expectedResult17
     {
-        R"({"component":"syscollector_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
     };
     const auto expectedResult18
     {
@@ -616,7 +615,7 @@ TEST_F(SyscollectorImpTest, noOs)
     };
     const auto expectedResult19
     {
-        R"({"component":"syscollector_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
     };
     const auto expectedResult20
     {
@@ -624,7 +623,7 @@ TEST_F(SyscollectorImpTest, noOs)
     };
     const auto expectedResult21
     {
-        R"({"component":"syscollector_osinfo","data":{},"type":"integrity_clear"})"
+        R"({"component":"inventory_osinfo","data":{},"type":"integrity_clear"})"
     };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
@@ -651,11 +650,11 @@ TEST_F(SyscollectorImpTest, noOs)
     {
         [&spInfoWrapper, &callbackData, &callbackDataDelta]()
         {
-            Syscollector::instance().init(spInfoWrapper,
+            Inventory::instance().init(spInfoWrapper,
                                           callbackDataDelta,
                                           callbackData,
                                           logFunction,
-                                          SYSCOLLECTOR_DB_PATH,
+                                          INVENTORY_DB_PATH,
                                           "",
                                           "",
                                           3600, true, true, false, true, true, true, true, true, true, true);
@@ -663,7 +662,7 @@ TEST_F(SyscollectorImpTest, noOs)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 
     if (t.joinable())
     {
@@ -671,7 +670,7 @@ TEST_F(SyscollectorImpTest, noOs)
     }
 }
 
-TEST_F(SyscollectorImpTest, noNetwork)
+TEST_F(InventoryImpTest, noNetwork)
 {
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
@@ -744,23 +743,23 @@ TEST_F(SyscollectorImpTest, noNetwork)
     };
     const auto expectedResult10
     {
-        R"({"component":"syscollector_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
     };
     const auto expectedResult14
     {
-        R"({"component":"syscollector_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
     };
     const auto expectedResult15
     {
-        R"({"component":"syscollector_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
     };
     const auto expectedResult16
     {
-        R"({"component":"syscollector_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
     };
     const auto expectedResult17
     {
-        R"({"component":"syscollector_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
     };
     const auto expectedResult18
     {
@@ -768,19 +767,19 @@ TEST_F(SyscollectorImpTest, noNetwork)
     };
     const auto expectedResult19
     {
-        R"({"component":"syscollector_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
     };
     const auto expectedResult20
     {
-        R"({"component":"syscollector_network_address","data":{},"type":"integrity_clear"})"
+        R"({"component":"inventory_network_address","data":{},"type":"integrity_clear"})"
     };
     const auto expectedResult21
     {
-        R"({"component":"syscollector_network_protocol","data":{},"type":"integrity_clear"})"
+        R"({"component":"inventory_network_protocol","data":{},"type":"integrity_clear"})"
     };
     const auto expectedResult22
     {
-        R"({"component":"syscollector_network_iface","data":{},"type":"integrity_clear"})"
+        R"({"component":"inventory_network_iface","data":{},"type":"integrity_clear"})"
     };
 
 
@@ -804,11 +803,11 @@ TEST_F(SyscollectorImpTest, noNetwork)
     {
         [&spInfoWrapper, &callbackData, &callbackDataDelta]()
         {
-            Syscollector::instance().init(spInfoWrapper,
+            Inventory::instance().init(spInfoWrapper,
                                           callbackDataDelta,
                                           callbackData,
                                           logFunction,
-                                          SYSCOLLECTOR_DB_PATH,
+                                          INVENTORY_DB_PATH,
                                           "",
                                           "",
                                           3600, true, true, true, false, true, true, true, true, true, true);
@@ -816,7 +815,7 @@ TEST_F(SyscollectorImpTest, noNetwork)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 
     if (t.joinable())
     {
@@ -824,7 +823,7 @@ TEST_F(SyscollectorImpTest, noNetwork)
     }
 }
 
-TEST_F(SyscollectorImpTest, noPackages)
+TEST_F(InventoryImpTest, noPackages)
 {
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
@@ -907,31 +906,31 @@ TEST_F(SyscollectorImpTest, noPackages)
     };
     const auto expectedResult10
     {
-        R"({"component":"syscollector_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
     };
     const auto expectedResult11
     {
-        R"({"component":"syscollector_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
     };
     const auto expectedResult12
     {
-        R"({"component":"syscollector_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
     };
     const auto expectedResult13
     {
-        R"({"component":"syscollector_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
     };
     const auto expectedResult14
     {
-        R"({"component":"syscollector_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
     };
     const auto expectedResult15
     {
-        R"({"component":"syscollector_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
     };
     const auto expectedResult16
     {
-        R"({"component":"syscollector_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
     };
     const auto expectedResult18
     {
@@ -939,7 +938,7 @@ TEST_F(SyscollectorImpTest, noPackages)
     };
     const auto expectedResult19
     {
-        R"({"component":"syscollector_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
     };
     const auto expectedResult20
     {
@@ -947,7 +946,7 @@ TEST_F(SyscollectorImpTest, noPackages)
     };
     const auto expectedResult21
     {
-        R"({"component":"syscollector_packages","data":{},"type":"integrity_clear"})"
+        R"({"component":"inventory_packages","data":{},"type":"integrity_clear"})"
     };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
@@ -974,11 +973,11 @@ TEST_F(SyscollectorImpTest, noPackages)
     {
         [&spInfoWrapper, &callbackDataDelta, &callbackData]()
         {
-            Syscollector::instance().init(spInfoWrapper,
+            Inventory::instance().init(spInfoWrapper,
                                           callbackDataDelta,
                                           callbackData,
                                           logFunction,
-                                          SYSCOLLECTOR_DB_PATH,
+                                          INVENTORY_DB_PATH,
                                           "",
                                           "",
                                           3600, true, true, true, true, false, true, true, true, true, true);
@@ -986,7 +985,7 @@ TEST_F(SyscollectorImpTest, noPackages)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 
     if (t.joinable())
     {
@@ -994,7 +993,7 @@ TEST_F(SyscollectorImpTest, noPackages)
     }
 }
 
-TEST_F(SyscollectorImpTest, noPorts)
+TEST_F(InventoryImpTest, noPorts)
 {
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
@@ -1079,31 +1078,31 @@ TEST_F(SyscollectorImpTest, noPorts)
     };
     const auto expectedResult10
     {
-        R"({"component":"syscollector_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
     };
     const auto expectedResult11
     {
-        R"({"component":"syscollector_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
     };
     const auto expectedResult12
     {
-        R"({"component":"syscollector_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
     };
     const auto expectedResult13
     {
-        R"({"component":"syscollector_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
     };
     const auto expectedResult15
     {
-        R"({"component":"syscollector_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
     };
     const auto expectedResult16
     {
-        R"({"component":"syscollector_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
     };
     const auto expectedResult17
     {
-        R"({"component":"syscollector_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
     };
     const auto expectedResult18
     {
@@ -1111,7 +1110,7 @@ TEST_F(SyscollectorImpTest, noPorts)
     };
     const auto expectedResult19
     {
-        R"({"component":"syscollector_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
     };
     const auto expectedResult20
     {
@@ -1119,7 +1118,7 @@ TEST_F(SyscollectorImpTest, noPorts)
     };
     const auto expectedResult21
     {
-        R"({"component":"syscollector_ports","data":{},"type":"integrity_clear"})"
+        R"({"component":"inventory_ports","data":{},"type":"integrity_clear"})"
     };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
@@ -1146,11 +1145,11 @@ TEST_F(SyscollectorImpTest, noPorts)
     {
         [&spInfoWrapper, &callbackData, &callbackDataDelta]()
         {
-            Syscollector::instance().init(spInfoWrapper,
+            Inventory::instance().init(spInfoWrapper,
                                           callbackDataDelta,
                                           callbackData,
                                           logFunction,
-                                          SYSCOLLECTOR_DB_PATH,
+                                          INVENTORY_DB_PATH,
                                           "",
                                           "",
                                           5, true, true, true, true, true, false, true, true, true, true);
@@ -1158,7 +1157,7 @@ TEST_F(SyscollectorImpTest, noPorts)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 
     if (t.joinable())
     {
@@ -1166,7 +1165,7 @@ TEST_F(SyscollectorImpTest, noPorts)
     }
 }
 
-TEST_F(SyscollectorImpTest, noPortsAll)
+TEST_F(InventoryImpTest, noPortsAll)
 {
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
@@ -1256,35 +1255,35 @@ TEST_F(SyscollectorImpTest, noPortsAll)
     };
     const auto expectedResult10
     {
-        R"({"component":"syscollector_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
     };
     const auto expectedResult11
     {
-        R"({"component":"syscollector_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
     };
     const auto expectedResult12
     {
-        R"({"component":"syscollector_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
     };
     const auto expectedResult13
     {
-        R"({"component":"syscollector_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
     };
     const auto expectedResult14
     {
-        R"({"component":"syscollector_ports","data":{"begin":"7046b3f9cda975eb6567259c2469748e634dde49","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_ports","data":{"begin":"7046b3f9cda975eb6567259c2469748e634dde49","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
     };
     const auto expectedResult15
     {
-        R"({"component":"syscollector_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
     };
     const auto expectedResult16
     {
-        R"({"component":"syscollector_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
     };
     const auto expectedResult17
     {
-        R"({"component":"syscollector_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
     };
     const auto expectedResult18
     {
@@ -1292,7 +1291,7 @@ TEST_F(SyscollectorImpTest, noPortsAll)
     };
     const auto expectedResult19
     {
-        R"({"component":"syscollector_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
     };
     const auto expectedResult20
     {
@@ -1329,11 +1328,11 @@ TEST_F(SyscollectorImpTest, noPortsAll)
     {
         [&spInfoWrapper, &callbackData, &callbackDataDelta]()
         {
-            Syscollector::instance().init(spInfoWrapper,
+            Inventory::instance().init(spInfoWrapper,
                                           callbackDataDelta,
                                           callbackData,
                                           logFunction,
-                                          SYSCOLLECTOR_DB_PATH,
+                                          INVENTORY_DB_PATH,
                                           "",
                                           "",
                                           3600, true, true, true, true, true, true, false, true, true, true);
@@ -1341,7 +1340,7 @@ TEST_F(SyscollectorImpTest, noPortsAll)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 
     if (t.joinable())
     {
@@ -1349,7 +1348,7 @@ TEST_F(SyscollectorImpTest, noPortsAll)
     }
 }
 
-TEST_F(SyscollectorImpTest, noProcesses)
+TEST_F(InventoryImpTest, noProcesses)
 {
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
@@ -1432,31 +1431,31 @@ TEST_F(SyscollectorImpTest, noProcesses)
     };
     const auto expectedResult10
     {
-        R"({"component":"syscollector_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
     };
     const auto expectedResult11
     {
-        R"({"component":"syscollector_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
     };
     const auto expectedResult12
     {
-        R"({"component":"syscollector_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
     };
     const auto expectedResult13
     {
-        R"({"component":"syscollector_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
     };
     const auto expectedResult14
     {
-        R"({"component":"syscollector_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
     };
     const auto expectedResult16
     {
-        R"({"component":"syscollector_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
     };
     const auto expectedResult17
     {
-        R"({"component":"syscollector_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
     };
     const auto expectedResult18
     {
@@ -1464,7 +1463,7 @@ TEST_F(SyscollectorImpTest, noProcesses)
     };
     const auto expectedResult19
     {
-        R"({"component":"syscollector_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
     };
     const auto expectedResult20
     {
@@ -1472,7 +1471,7 @@ TEST_F(SyscollectorImpTest, noProcesses)
     };
     const auto expectedResult21
     {
-        R"({"component":"syscollector_processes","data":{},"type":"integrity_clear"})"
+        R"({"component":"inventory_processes","data":{},"type":"integrity_clear"})"
     };
 
 
@@ -1500,11 +1499,11 @@ TEST_F(SyscollectorImpTest, noProcesses)
     {
         [&spInfoWrapper, &callbackData, &callbackDataDelta]()
         {
-            Syscollector::instance().init(spInfoWrapper,
+            Inventory::instance().init(spInfoWrapper,
                                           callbackDataDelta,
                                           callbackData,
                                           logFunction,
-                                          SYSCOLLECTOR_DB_PATH,
+                                          INVENTORY_DB_PATH,
                                           "",
                                           "",
                                           3600, true, true, true, true, true, true, true, false, true, true);
@@ -1512,7 +1511,7 @@ TEST_F(SyscollectorImpTest, noProcesses)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 
     if (t.joinable())
     {
@@ -1520,7 +1519,7 @@ TEST_F(SyscollectorImpTest, noProcesses)
     }
 }
 
-TEST_F(SyscollectorImpTest, noHotfixes)
+TEST_F(InventoryImpTest, noHotfixes)
 {
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
@@ -1610,35 +1609,35 @@ TEST_F(SyscollectorImpTest, noHotfixes)
     };
     const auto expectedResult10
     {
-        R"({"component":"syscollector_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
     };
     const auto expectedResult11
     {
-        R"({"component":"syscollector_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
     };
     const auto expectedResult12
     {
-        R"({"component":"syscollector_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
     };
     const auto expectedResult13
     {
-        R"({"component":"syscollector_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
     };
     const auto expectedResult14
     {
-        R"({"component":"syscollector_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
     };
     const auto expectedResult15
     {
-        R"({"component":"syscollector_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
     };
     const auto expectedResult16
     {
-        R"({"component":"syscollector_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
     };
     const auto expectedResult17
     {
-        R"({"component":"syscollector_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
     };
     const auto expectedResult18
     {
@@ -1646,7 +1645,7 @@ TEST_F(SyscollectorImpTest, noHotfixes)
     };
     const auto expectedResult19
     {
-        R"({"component":"syscollector_hotfixes","data":{},"type":"integrity_clear"})"
+        R"({"component":"inventory_hotfixes","data":{},"type":"integrity_clear"})"
     };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
@@ -1673,11 +1672,11 @@ TEST_F(SyscollectorImpTest, noHotfixes)
     {
         [&spInfoWrapper, &callbackData, &callbackDataDelta]()
         {
-            Syscollector::instance().init(spInfoWrapper,
+            Inventory::instance().init(spInfoWrapper,
                                           callbackDataDelta,
                                           callbackData,
                                           logFunction,
-                                          SYSCOLLECTOR_DB_PATH,
+                                          INVENTORY_DB_PATH,
                                           "",
                                           "",
                                           3600, true, true, true, true, true, true, true, true, false, true);
@@ -1685,7 +1684,7 @@ TEST_F(SyscollectorImpTest, noHotfixes)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 
     if (t.joinable())
     {
@@ -1693,9 +1692,9 @@ TEST_F(SyscollectorImpTest, noHotfixes)
     }
 }
 
-TEST_F(SyscollectorImpTest, pushMessageOk)
+TEST_F(InventoryImpTest, pushMessageOk)
 {
-    constexpr auto messageToPush{R"(syscollector_network_iface dbsync checksum_fail {"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c","id":1606851004})"};
+    constexpr auto messageToPush{R"(inventory_network_iface dbsync checksum_fail {"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c","id":1606851004})"};
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
                                                                       R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
@@ -1719,20 +1718,20 @@ TEST_F(SyscollectorImpTest, pushMessageOk)
     {
         [&spInfoWrapper]()
         {
-            Syscollector::instance().init(spInfoWrapper,
+            Inventory::instance().init(spInfoWrapper,
                                           reportFunction,
                                           reportFunction,
                                           logFunction,
-                                          SYSCOLLECTOR_DB_PATH,
+                                          INVENTORY_DB_PATH,
                                           "",
                                           "",
                                           60, true, true, true, true, true, true, true, true, true, true);
         }
     };
     std::this_thread::sleep_for(std::chrono::seconds{1});
-    Syscollector::instance().push(messageToPush);
+    Inventory::instance().push(messageToPush);
     std::this_thread::sleep_for(std::chrono::seconds{1});
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 
     if (t.joinable())
     {
@@ -1740,9 +1739,9 @@ TEST_F(SyscollectorImpTest, pushMessageOk)
     }
 }
 
-TEST_F(SyscollectorImpTest, pushMessageOk1)
+TEST_F(InventoryImpTest, pushMessageOk1)
 {
-    constexpr auto messageToPush{R"(syscollector_processes dbsync checksum_fail {"begin":"1","end":"99","id":1})"};
+    constexpr auto messageToPush{R"(inventory_processes dbsync checksum_fail {"begin":"1","end":"99","id":1})"};
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
                                                                       R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
@@ -1793,39 +1792,39 @@ TEST_F(SyscollectorImpTest, pushMessageOk1)
 
     const auto expectedResult1
     {
-        R"({"component":"syscollector_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
     };
     const auto expectedResult2
     {
-        R"({"component":"syscollector_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
     };
     const auto expectedResult3
     {
-        R"({"component":"syscollector_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
     };
     const auto expectedResult4
     {
-        R"({"component":"syscollector_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
     };
     const auto expectedResult5
     {
-        R"({"component":"syscollector_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
     };
     const auto expectedResult6
     {
-        R"({"component":"syscollector_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
     };
     const auto expectedResult7
     {
-        R"({"component":"syscollector_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
     };
     const auto expectedResult8
     {
-        R"({"component":"syscollector_processes","data":{"begin":"45","end":"45"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_processes","data":{"begin":"45","end":"45"},"type":"integrity_check_global"})"
     };
     const auto expectedResult10
     {
-        R"({"component":"syscollector_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
+        R"({"component":"inventory_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
     };
     const auto expectedResult11
     {
@@ -1897,20 +1896,20 @@ TEST_F(SyscollectorImpTest, pushMessageOk1)
     {
         [&callbackData, &callbackDataDelta, &spInfoWrapper]()
         {
-            Syscollector::instance().init(spInfoWrapper,
+            Inventory::instance().init(spInfoWrapper,
                                           callbackDataDelta,
                                           callbackData,
                                           logFunction,
-                                          SYSCOLLECTOR_DB_PATH,
+                                          INVENTORY_DB_PATH,
                                           "",
                                           "",
                                           60, true, true, true, true, true, true, true, true, true, true);
         }
     };
     std::this_thread::sleep_for(std::chrono::seconds{1});
-    Syscollector::instance().push(messageToPush);
+    Inventory::instance().push(messageToPush);
     std::this_thread::sleep_for(std::chrono::seconds{1});
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 
     if (t.joinable())
     {
@@ -1918,9 +1917,9 @@ TEST_F(SyscollectorImpTest, pushMessageOk1)
     }
 }
 
-TEST_F(SyscollectorImpTest, pushMessageInvalid)
+TEST_F(InventoryImpTest, pushMessageInvalid)
 {
-    constexpr auto messageToPush{R"(syscollector_network_iface dbsync checksum_fail {"end":"Loopback Pseudo-Interface 1","id":1606851004})"};
+    constexpr auto messageToPush{R"(inventory_network_iface dbsync checksum_fail {"end":"Loopback Pseudo-Interface 1","id":1606851004})"};
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
                                                                       R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
@@ -1944,20 +1943,20 @@ TEST_F(SyscollectorImpTest, pushMessageInvalid)
     {
         [&spInfoWrapper]()
         {
-            Syscollector::instance().init(spInfoWrapper,
+            Inventory::instance().init(spInfoWrapper,
                                           reportFunction,
                                           reportFunction,
                                           logFunction,
-                                          SYSCOLLECTOR_DB_PATH,
+                                          INVENTORY_DB_PATH,
                                           "",
                                           "",
                                           60, true, true, true, true, true, true, true, true, true, true);
         }
     };
     std::this_thread::sleep_for(std::chrono::seconds{1});
-    Syscollector::instance().push(messageToPush);
+    Inventory::instance().push(messageToPush);
     std::this_thread::sleep_for(std::chrono::seconds{1});
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 
     if (t.joinable())
     {
@@ -1965,9 +1964,9 @@ TEST_F(SyscollectorImpTest, pushMessageInvalid)
     }
 }
 
-TEST_F(SyscollectorImpTest, scanInvalidData)
+TEST_F(InventoryImpTest, scanInvalidData)
 {
-    constexpr auto messageToPush{R"(syscollector_network_iface dbsync checksum_fail {"end":"Loopback Pseudo-Interface 1","id":1606851004})"};
+    constexpr auto messageToPush{R"(inventory_network_iface dbsync checksum_fail {"end":"Loopback Pseudo-Interface 1","id":1606851004})"};
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
                                                                       R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
@@ -1991,20 +1990,20 @@ TEST_F(SyscollectorImpTest, scanInvalidData)
     {
         [&spInfoWrapper]()
         {
-            Syscollector::instance().init(spInfoWrapper,
+            Inventory::instance().init(spInfoWrapper,
                                           reportFunction,
                                           reportFunction,
                                           logFunction,
-                                          SYSCOLLECTOR_DB_PATH,
+                                          INVENTORY_DB_PATH,
                                           "",
                                           "",
                                           60, true, true, true, true, true, true, true, true, true, true);
         }
     };
     std::this_thread::sleep_for(std::chrono::seconds{1});
-    Syscollector::instance().push(messageToPush);
+    Inventory::instance().push(messageToPush);
     std::this_thread::sleep_for(std::chrono::seconds{1});
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 
     if (t.joinable())
     {
@@ -2013,7 +2012,7 @@ TEST_F(SyscollectorImpTest, scanInvalidData)
 }
 
 
-TEST_F(SyscollectorImpTest, portAllEnable)
+TEST_F(InventoryImpTest, portAllEnable)
 {
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(R"(
@@ -2125,11 +2124,11 @@ TEST_F(SyscollectorImpTest, portAllEnable)
     {
         [&spInfoWrapper, &callbackData]()
         {
-            Syscollector::instance().init(spInfoWrapper,
+            Inventory::instance().init(spInfoWrapper,
                                           callbackData,
                                           reportFunction,
                                           logFunction,
-                                          SYSCOLLECTOR_DB_PATH,
+                                          INVENTORY_DB_PATH,
                                           "",
                                           "",
                                           3600, true, false, false, false, false, true, true, false, false, true);
@@ -2137,7 +2136,7 @@ TEST_F(SyscollectorImpTest, portAllEnable)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 
     if (t.joinable())
     {
@@ -2145,7 +2144,7 @@ TEST_F(SyscollectorImpTest, portAllEnable)
     }
 }
 
-TEST_F(SyscollectorImpTest, portAllDisable)
+TEST_F(InventoryImpTest, portAllDisable)
 {
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(R"(
@@ -2251,11 +2250,11 @@ TEST_F(SyscollectorImpTest, portAllDisable)
     {
         [&spInfoWrapper, &callbackData]()
         {
-            Syscollector::instance().init(spInfoWrapper,
+            Inventory::instance().init(spInfoWrapper,
                                           callbackData,
                                           reportFunction,
                                           logFunction,
-                                          SYSCOLLECTOR_DB_PATH,
+                                          INVENTORY_DB_PATH,
                                           "",
                                           "",
                                           3600, true, false, false, false, false, true, false, false, false, true);
@@ -2263,7 +2262,7 @@ TEST_F(SyscollectorImpTest, portAllDisable)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 
     if (t.joinable())
     {
@@ -2272,7 +2271,7 @@ TEST_F(SyscollectorImpTest, portAllDisable)
 }
 
 
-TEST_F(SyscollectorImpTest, PackagesDuplicated)
+TEST_F(InventoryImpTest, PackagesDuplicated)
 {
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
 
@@ -2308,11 +2307,11 @@ TEST_F(SyscollectorImpTest, PackagesDuplicated)
     {
         [&spInfoWrapper, &callbackData]()
         {
-            Syscollector::instance().init(spInfoWrapper,
+            Inventory::instance().init(spInfoWrapper,
                                           callbackData,
                                           reportFunction,
                                           logFunction,
-                                          SYSCOLLECTOR_DB_PATH,
+                                          INVENTORY_DB_PATH,
                                           "",
                                           "",
                                           3600, true, false, false, false, true, false, false, false, false, true);
@@ -2320,7 +2319,7 @@ TEST_F(SyscollectorImpTest, PackagesDuplicated)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 
     if (t.joinable())
     {
@@ -2328,10 +2327,10 @@ TEST_F(SyscollectorImpTest, PackagesDuplicated)
     }
 }
 
-TEST_F (SyscollectorImpTest, SyncOverlap)
+TEST_F (InventoryImpTest, SyncOverlap)
 {
-    constexpr auto firstMessageToPush{R"(syscollector_packages no_data {"begin":"0005a2bdc731445bbe68d6706e452937bdbc9e2f","end":"fff931b8ce752c06e9b219189281b7eae4285d44","id":1713982194})"};
-    constexpr auto secondMessageToPush{R"(syscollector_packages checksum_fail {"begin":"0005a2bdc731445bbe68d6706e452937bdbc9e2f","end":"fff931b8ce752c06e9b219189281b7eae4285d44","id":1713982197})"};
+    constexpr auto firstMessageToPush{R"(inventory_packages no_data {"begin":"0005a2bdc731445bbe68d6706e452937bdbc9e2f","end":"fff931b8ce752c06e9b219189281b7eae4285d44","id":1713982194})"};
+    constexpr auto secondMessageToPush{R"(inventory_packages checksum_fail {"begin":"0005a2bdc731445bbe68d6706e452937bdbc9e2f","end":"fff931b8ce752c06e9b219189281b7eae4285d44","id":1713982197})"};
     const time_t intervalValue = 3;
 
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
@@ -2362,7 +2361,7 @@ TEST_F (SyscollectorImpTest, SyncOverlap)
     {
         [](const modules_log_level_t /*level*/, const std::string & log)
         {
-            std::string expectedStr {"Syscollector synchronization process concluded recently, delaying scan for 1 second/s"};
+            std::string expectedStr {"Inventory synchronization process concluded recently, delaying scan for 1 second/s"};
 
             if (log.find("Discarded") != std::string::npos)
             {
@@ -2375,22 +2374,22 @@ TEST_F (SyscollectorImpTest, SyncOverlap)
     {
         [&spInfoWrapper, &captureLog, &intervalValue]()
         {
-            Syscollector::instance().init(spInfoWrapper,
+            Inventory::instance().init(spInfoWrapper,
                                           reportFunction,
                                           reportFunction,
                                           captureLog,
-                                          SYSCOLLECTOR_DB_PATH,
+                                          INVENTORY_DB_PATH,
                                           "",
                                           "",
                                           intervalValue, true, true, true, true, true, true, true, true, true, true);
         }
     };
     std::this_thread::sleep_for(std::chrono::seconds{1});
-    Syscollector::instance().push(firstMessageToPush);
+    Inventory::instance().push(firstMessageToPush);
     std::this_thread::sleep_for(std::chrono::seconds{intervalValue});
-    Syscollector::instance().push(secondMessageToPush);
+    Inventory::instance().push(secondMessageToPush);
     std::this_thread::sleep_for(std::chrono::seconds{1});
-    Syscollector::instance().destroy();
+    Inventory::instance().destroy();
 
     if (t.joinable())
     {

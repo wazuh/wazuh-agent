@@ -1,5 +1,5 @@
 /*
- * Wazuh SyscollectorNormalizer
+ * Wazuh InventoryNormalizer
  * Copyright (C) 2015, Wazuh Inc.
  * January 12, 2021.
  *
@@ -8,20 +8,20 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation.
  */
-#ifndef _SYS_NORMALIZER_TEST_H
-#define _SYS_NORMALIZER_TEST_H
+#ifndef _INV_NORMALIZER_TEST_H
+#define _INV_NORMALIZER_TEST_H
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-class SysNormalizerTest : public ::testing::Test
+class InvNormalizerTest : public ::testing::Test
 {
     protected:
 
-        SysNormalizerTest() = default;
-        virtual ~SysNormalizerTest() = default;
+        InvNormalizerTest() = default;
+        virtual ~InvNormalizerTest() = default;
 
         void SetUp() override;
         void TearDown() override;
 };
 
-#endif //_SYS_NORMALIZER_TEST_H
+#endif //_INV_NORMALIZER_TEST_H
