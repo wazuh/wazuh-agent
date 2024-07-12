@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-#include "persistence.hpp"
+#include "sqlitestorage.h"
 #include "shared.hpp"
 
 // TODO: move to a configuration setting
@@ -22,8 +22,9 @@ public:
     PersistedQueue(MessageType m_queueType, int max_size = DEFAULT_MAX)
         : m_queueType(m_queueType)
         , m_max_size(max_size)
+        , m_persistenceDest("queue.db", MessageTypeName.at(m_queueType))
     {
-        m_persistenceDest.createOrCheckFile();
+
     }
 
     // Delete copy constructor
@@ -55,7 +56,7 @@ public:
 
     int getItemsAvailable() const
     {
-        return m_persistenceDest.getItems();
+        return m_persistenceDest.GetElementCount();
     }
 
     /**
@@ -63,6 +64,7 @@ public:
      *
      * @return int
      */
+    // TODO check this functionality
     int getSize() const
     {
         return m_size;
@@ -88,7 +90,7 @@ public:
     bool insertMessage(Message event)
     {
         std::unique_lock<std::mutex> lock(m_mtx);
-        m_persistenceDest.writeLine(event.data);
+        m_persistenceDest.Store(event.data);
         m_size++;
         m_cv.notify_one();
         return true;
@@ -103,7 +105,7 @@ public:
     bool removeMessage()
     {
         std::unique_lock<std::mutex> lock(m_mtx);
-        auto linesRemoved = m_persistenceDest.removeNLines(1);
+        auto linesRemoved = m_persistenceDest.RemoveMultiple(1);
         m_size = m_size - linesRemoved;
         return true;
     };
@@ -111,7 +113,7 @@ public:
     bool removeNMessages(int qttyMessages)
     {
         std::unique_lock<std::mutex> lock(m_mtx);
-        auto linesRemoved = m_persistenceDest.removeNLines(qttyMessages);
+        auto linesRemoved = m_persistenceDest.RemoveMultiple(qttyMessages);
         m_size = m_size - linesRemoved;
         return true;
     };
@@ -125,13 +127,13 @@ public:
     Message getMessage(MessageType type)
     {
         std::unique_lock<std::mutex> lock(m_mtx);
-        return Message(type, m_persistenceDest.readNLines(1));
+        return Message(type, m_persistenceDest.RetrieveMultiple(1));
     };
 
     Message getNMessages(MessageType type, int n)
     {
         std::unique_lock<std::mutex> lock(m_mtx);
-        return Message(type, m_persistenceDest.readNLines(n));
+        return Message(type, m_persistenceDest.RetrieveMultiple(n));
     };
 
     bool empty()
@@ -144,7 +146,7 @@ private:
     int m_size = 0;
     int m_max_size;
     //TODO: make DEFAULT_PERS_PATH configurable
-    Persistence m_persistenceDest {DEFAULT_PERS_PATH + MessageTypeName.at(m_queueType)};
+    SQLiteStorage m_persistenceDest;
     std::mutex m_mtx;
     std::condition_variable m_cv;
 };
