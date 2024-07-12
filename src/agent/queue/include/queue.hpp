@@ -137,9 +137,12 @@ public:
      */
     bool removeMessage()
     {
-        std::unique_lock<std::mutex> lock(m_mtx);
-        auto linesRemoved = m_persistenceDest->RemoveMultiple(1);
-        m_size = m_size - linesRemoved;
+        if (m_size != 0)
+        {
+            std::unique_lock<std::mutex> lock(m_mtx);
+            auto linesRemoved = m_persistenceDest->RemoveMultiple(1);
+            m_size = m_size - linesRemoved;
+        }
         return true;
     };
 
@@ -154,21 +157,32 @@ public:
     /**
      * @brief Get the Message object
      *
-     * @param type
      * @return Message
      */
-    Message getMessage(MessageType type)
+    Message getMessage()
     {
         std::unique_lock<std::mutex> lock(m_mtx);
-        return Message(type, m_persistenceDest->RetrieveMultiple(1));
+        return Message(m_queueType, m_persistenceDest->RetrieveMultiple(1));
     };
 
-    Message getNMessages(MessageType type, int n)
+    /**
+     * @brief
+     *
+     * @param n
+     * @return Message
+     */
+    Message getNMessages(int n)
     {
         std::unique_lock<std::mutex> lock(m_mtx);
-        return Message(type, m_persistenceDest->RetrieveMultiple(n));
+        return Message(m_queueType, m_persistenceDest->RetrieveMultiple(n));
     };
 
+    /**
+     * @brief
+     *
+     * @return true
+     * @return false
+     */
     bool empty()
     {
         return m_size == 0;
@@ -224,17 +238,19 @@ public:
     /**
      * @brief: push message to a queue of t
      *
-     * @param event
+     * @param message
      */
-    void push(Message event)
+    void push(Message message)
     {
-        if (m_queuesMap.contains(event.type))
+        if (m_queuesMap.contains(message.type))
         {
-            while (m_queuesMap[event.type]->getSize() == m_maxItems)
+            while (m_queuesMap[message.type]->getSize() == m_maxItems)
             {
+                // TODO: delete this
                 std::cout << "waiting" << std::endl;
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
-            m_queuesMap[event.type]->insertMessage(event);
+            m_queuesMap[message.type]->insertMessage(message);
         }
         else
         {
@@ -255,7 +271,7 @@ public:
         Message result(type, {});
         if (m_queuesMap.contains(type))
         {
-            result = m_queuesMap[type]->getMessage(type);
+            result = m_queuesMap[type]->getMessage();
         }
         else
         {
@@ -274,7 +290,6 @@ public:
     {
         if (m_queuesMap.contains(type))
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             // Handle return value
             m_queuesMap[type]->removeMessage();
         }
@@ -330,7 +345,7 @@ public:
      * @return true
      * @return false
      */
-    bool getItemsByType(MessageType type)
+    int getItemsByType(MessageType type)
     {
         if (m_queuesMap.contains(type))
         {

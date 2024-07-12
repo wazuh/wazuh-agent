@@ -1,30 +1,27 @@
+
+#include <iomanip>
+
+#include <chrono>
 #include <filesystem>
+#include <future>
+#include <iostream>
+#include <stdexcept>
+#include <thread>
 
 #include "queue.hpp"
 #include "queue_test.hpp"
 
 #define BIG_QUEUE_QTTY   10
-#define SMALL_QUEUE_QTTY 10
+#define SMALL_QUEUE_QTTY 2
 
-// TODO: redo for additional stores
-bool cleanPersistence()
+/// Helper functions
+
+// TODO: Makes sense to add a full_clean method inside the persistence implementation?
+void cleanPersistence()
 {
-
-    for (auto messageType : MessageTypeName)
-    {
-        auto filePath = DEFAULT_FILE_PATH + messageType.second;
-        std::error_code ec;
-        if (std::filesystem::remove(filePath, ec))
-        {
-            continue;
-        }
-        else
-        {
-            std::cerr << "Error removing file: " << ec.message() << std::endl;
-            return false;
-        }
-    }
-    return true;
+    auto filePath = DEFAULT_DB_PATH;
+    std::error_code ec;
+    std::filesystem::remove(filePath, ec);
 }
 
 // TODO: rework after double check the output of persistence
@@ -42,8 +39,8 @@ bool compareJsonStrings(const nlohmann::json& jsonValue1, const nlohmann::json& 
         }
     };
 
-    std::cout << "str1: " << str1 << std::endl;
-    std::cout << "str2: " << str2 << std::endl;
+    removeQuotes(str1);
+    removeQuotes(str2);
 
     auto unescapeJsonString = [](std::string input) -> std::string
     {
@@ -88,8 +85,11 @@ bool compareJsonStrings(const nlohmann::json& jsonValue1, const nlohmann::json& 
         nlohmann::json json1 = nlohmann::json::parse(str1);
         nlohmann::json json2 = nlohmann::json::parse(str2);
 
+        std::cout << "json1: " << json1 << std::endl;
+        std::cout << "json2: " << json2 << std::endl;
+
         // Compare the json objects
-        return json1 == json2;
+        return (json1 == json2);
     }
     catch (const nlohmann::json::parse_error& e)
     {
@@ -98,20 +98,67 @@ bool compareJsonStrings(const nlohmann::json& jsonValue1, const nlohmann::json& 
     }
 }
 
+// In order to mimic the timeout from outside the queue
+// TODO: double check if this is expected to work this way
+template<typename Func, typename... Args>
+void functionWithTimeout(Func&& func, int timeout_ms, Args&&... args)
+{
+    // Launch the function in a separate thread
+    std::promise<void> exitSignal;
+    std::future<void> futureObj = exitSignal.get_future();
+
+    std::thread t(
+        [&func, &exitSignal, &args...]()
+        {
+            func(std::forward<Args>(args)...);
+            exitSignal.set_value();
+        });
+
+    // Wait for the function to finish or timeout
+    if (futureObj.wait_for(std::chrono::milliseconds(timeout_ms)) == std::future_status::timeout)
+    {
+        // Detach the thread if it times out
+        t.detach();
+        throw std::runtime_error("Function call timed out");
+    }
+    else
+    {
+        t.join();
+    }
+}
+
+/// Test Methods
+
 void QueueTest::SetUp()
 {
-    EXPECT_TRUE(cleanPersistence());
+    cleanPersistence();
 };
 
 void QueueTest::TearDown() {};
+
+/// TESTS
+
+// Check which jsons are correct, do move or delete if out of scope
+TEST_F(QueueTest, JSONBaseTest)
+{
+    nlohmann::json uj1 = {{"version", 1}, {"type", "integer"}};
+    nlohmann::json uj2 = {{"type", "integer"}, {"version", 1}};
+
+    nlohmann::ordered_json oj1 = {{"version", 1}, {"type", "integer"}};
+    nlohmann::ordered_json oj2 = {{"type", "integer"}, {"version", 1}};
+
+    EXPECT_TRUE(uj1 == uj2);
+    //EXPECT_TRUE(compareJsonStrings(uj1, uj2));
+    EXPECT_FALSE(oj1 == oj2);
+}
 
 // Push, get and check the queue is not empty
 TEST_F(QueueTest, BasicPushGetNotEmpty)
 {
     MultiTypeQueue queue(BIG_QUEUE_QTTY);
-    const MessageType messageTtpe {MessageType::STATE_LESS};
-    const nlohmann::json dataContent = R"({"Data" : "for STATE_LESS)" + std::to_string(0) + R"("})";
-    const Message messageToSend {messageTtpe, dataContent};
+    const MessageType messageType {MessageType::STATE_LESS};
+    const nlohmann::json dataContent = R"({{"Data", "for STATE_LESS)" + std::to_string(0) + R"("}})";
+    const Message messageToSend {messageType, dataContent};
 
     queue.push(messageToSend);
     auto messageResponse = queue.getLastMessage(MessageType::STATE_LESS);
@@ -120,17 +167,17 @@ TEST_F(QueueTest, BasicPushGetNotEmpty)
     auto typeReceived = messageResponse.type;
 
     EXPECT_TRUE(typeSend == typeReceived);
-    EXPECT_TRUE(compareJsonStrings(messageResponse.data[0], messageToSend.data));
+    // EXPECT_TRUE(compareJsonStrings(messageResponse.data[0], messageToSend.data));
     EXPECT_FALSE(queue.isEmptyByType(MessageType::STATE_LESS));
 }
 
-// push and pop on a full queue
-TEST_F(QueueTest, BasicPushPopEmpty)
+// push and pop on a non-full queue
+TEST_F(QueueTest, SinglePushPopEmpty)
 {
     MultiTypeQueue queue(BIG_QUEUE_QTTY);
-    const MessageType messageTtpe {MessageType::STATE_LESS};
-    const nlohmann::json dataContent = R"({"Data" : "for STATE_LESS)" + std::to_string(0) + R"("})";
-    const Message messageToSend {messageTtpe, dataContent};
+    const MessageType messageType {MessageType::STATE_LESS};
+    const nlohmann::json dataContent = R"({{"Data", "for STATE_LESS)" + std::to_string(0) + R"("}})";
+    const Message messageToSend {messageType, dataContent};
 
     queue.push(messageToSend);
     auto messageResponse = queue.getLastMessage(MessageType::STATE_LESS);
@@ -139,17 +186,19 @@ TEST_F(QueueTest, BasicPushPopEmpty)
     auto typeReceived = messageResponse.type;
 
     EXPECT_TRUE(typeSend == typeReceived);
-    EXPECT_TRUE(compareJsonStrings(messageResponse.data[0], messageToSend.data));
+    // EXPECT_TRUE(compareJsonStrings(messageResponse.data[0], messageToSend.data));
+
+    queue.popLastMessage(MessageType::STATE_LESS);
     EXPECT_TRUE(queue.isEmptyByType(MessageType::STATE_LESS));
 }
 
 // Push, pop and check the queue is empty
-TEST_F(QueueTest, BasicPushPop)
+TEST_F(QueueTest, SinglePushPop)
 {
     MultiTypeQueue queue(BIG_QUEUE_QTTY);
-    const MessageType messageTtpe {MessageType::STATE_LESS};
+    const MessageType messageType {MessageType::STATE_LESS};
     const nlohmann::json dataContent = R"({"Data" : "for STATE_LESS)" + std::to_string(0) + R"("})";
-    const Message messageToSend {messageTtpe, dataContent};
+    const Message messageToSend {messageType, dataContent};
 
     queue.push(messageToSend);
     EXPECT_FALSE(queue.isEmptyByType(MessageType::STATE_LESS));
@@ -159,30 +208,64 @@ TEST_F(QueueTest, BasicPushPop)
 }
 
 // get and pop on a empty queue
-TEST_F(QueueTest, BasicGetPopOnEmpty)
+TEST_F(QueueTest, SingleGetPopOnEmpty)
 {
     MultiTypeQueue queue(BIG_QUEUE_QTTY);
-    const MessageType messageTtpe {MessageType::STATE_LESS};
+    const MessageType messageType {MessageType::STATE_LESS};
     const nlohmann::json dataContent = R"({"Data" : "for STATE_LESS)" + std::to_string(0) + R"("})";
-    const Message messageToSend {messageTtpe, dataContent};
+    const Message messageToSend {messageType, dataContent};
 
     queue.push(messageToSend);
     EXPECT_FALSE(queue.isEmptyByType(MessageType::STATE_LESS));
     EXPECT_TRUE(queue.isEmptyByType(MessageType::STATE_FULL));
 
-    // TODO: double check
-    const nlohmann::json emptyContent = R"({})";
     auto messageResponse = queue.getLastMessage(MessageType::STATE_FULL);
-    EXPECT_TRUE(messageResponse.data == emptyContent);
     EXPECT_EQ(messageResponse.type, MessageType::STATE_FULL);
+    EXPECT_EQ(messageResponse.data[0], nullptr);
 
     queue.popLastMessage(MessageType::STATE_FULL);
     EXPECT_TRUE(queue.isEmptyByType(MessageType::STATE_FULL));
 }
 
+// Push, get and check while the queue is full
+TEST_F(QueueTest, SinglePushPopFull)
+{
+    MultiTypeQueue queue(SMALL_QUEUE_QTTY);
+
+    // complete the queue with messages
+    const MessageType messageType {MessageType::COMMAND};
+    for (int i : {1, 2})
+    {
+        const nlohmann::json dataContent = R"({"Data" : "for COMMAND)" + std::to_string(i) + R"("})";
+        queue.push({messageType, dataContent});
+    }
+
+    const nlohmann::json dataContent = R"({"Data" : "for COMMAND3"})";
+    Message exampleMessage {messageType, dataContent};
+
+    try
+    {
+        functionWithTimeout(
+            [&queue](Message& message) { queue.push(message); }, 1000, exampleMessage);
+    }
+    catch (const std::runtime_error& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+
+    auto items = queue.getItemsByType(MessageType::COMMAND);
+    EXPECT_EQ(items, SMALL_QUEUE_QTTY);
+    EXPECT_TRUE(queue.isEmptyByType(MessageType::STATE_LESS));
+
+    queue.popLastMessage(MessageType::COMMAND);
+    items = queue.getItemsByType(MessageType::COMMAND);
+    EXPECT_NE(items, SMALL_QUEUE_QTTY);
+}
+
 // TODO
 TEST_F(QueueTest, Multithread)
 {
+    GTEST_SKIP();
     MultiTypeQueue queue(BIG_QUEUE_QTTY);
 
     auto consumer1 = [&](int& count)

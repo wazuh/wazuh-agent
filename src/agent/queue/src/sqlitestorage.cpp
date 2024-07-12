@@ -126,7 +126,7 @@ int SQLiteStorage::RemoveMultiple(int n) {
 }
 
 int SQLiteStorage::GetElementCount() {
-    //std::lock_guard<std::mutex> lock(m_mtx);
+    std::lock_guard<std::mutex> lock(m_mtx);
     OpenDB();
 
     std::string countQuery = COUNT_QUERY;
