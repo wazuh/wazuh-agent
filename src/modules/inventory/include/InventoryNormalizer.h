@@ -1,5 +1,5 @@
 /*
- * Wazuh SysCollector
+ * Wazuh Inventory
  * Copyright (C) 2015, Wazuh Inc.
  * January 12, 2021.
  *
@@ -8,18 +8,18 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation.
  */
-#ifndef _SYSCOLLECTOR_NORMALIZER_H
-#define _SYSCOLLECTOR_NORMALIZER_H
+#ifndef _INVENTORY_NORMALIZER_H
+#define _INVENTORY_NORMALIZER_H
 #include <json.hpp>
 #include <string>
 #include <map>
 
-class SysNormalizer
+class InvNormalizer
 {
     public:
-        SysNormalizer(const std::string& configFile,
+        InvNormalizer(const std::string& configFile,
                       const std::string& target);
-        ~SysNormalizer() = default;
+        ~InvNormalizer() = default;
         void normalize(const std::string& type,
                        nlohmann::json& data) const;
         void removeExcluded(const std::string& type,
@@ -33,4 +33,4 @@ class SysNormalizer
 };
 
 
-#endif //_SYSCOLLECTOR_NORMALIZER_H
+#endif //_INVENTORY_NORMALIZER_H

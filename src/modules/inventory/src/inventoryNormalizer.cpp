@@ -1,5 +1,5 @@
 /*
- * Wazuh SysCollector
+ * Wazuh Inventory
  * Copyright (C) 2015, Wazuh Inc.
  * January 12, 2021.
  *
@@ -11,16 +11,16 @@
 #include <iostream>
 #include <fstream>
 #include <regex>
-#include <syscollectorNormalizer.h>
+#include <inventoryNormalizer.h>
 
-SysNormalizer::SysNormalizer(const std::string& configFile,
+InvNormalizer::InvNormalizer(const std::string& configFile,
                              const std::string& target)
     : m_typeExclusions{getTypeValues(configFile, target, "exclusions")}
     , m_typeDictionary{getTypeValues(configFile, target, "dictionary")}
 {
 }
 
-void SysNormalizer::removeExcluded(const std::string& type,
+void InvNormalizer::removeExcluded(const std::string& type,
                                    nlohmann::json& data) const
 {
     const auto exclusionsIt{m_typeExclusions.find(type)};
@@ -117,7 +117,7 @@ static void normalizeItem(const nlohmann::json& dictionary,
     }
 }
 
-void SysNormalizer::normalize(const std::string& type,
+void InvNormalizer::normalize(const std::string& type,
                               nlohmann::json& data) const
 {
     const auto dictionaryIt{m_typeDictionary.find(type)};
@@ -138,7 +138,7 @@ void SysNormalizer::normalize(const std::string& type,
     }
 }
 
-std::map<std::string, nlohmann::json> SysNormalizer::getTypeValues(const std::string& configFile,
+std::map<std::string, nlohmann::json> InvNormalizer::getTypeValues(const std::string& configFile,
                                                                    const std::string& target,
                                                                    const std::string& type)
 {
