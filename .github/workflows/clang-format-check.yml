@@ -1,0 +1,25 @@
+name: Clang Format Check
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  clang-format:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Run Clang Format Check
+      uses: ./.github/actions/clang_format
+      with:
+        path: 'src/'
+        id: 'wazuh-agent'
