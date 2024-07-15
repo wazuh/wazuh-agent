@@ -23,7 +23,7 @@ int main()
         int item;
         for (int i = 0; i < count; ++i)
         {
-            queue.popLastMessage(MessageType::STATE_FULL);
+            queue.popLastMessage(MessageType::STATE_FUL);
             std::cout << "Popping event 2: " << std::endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }

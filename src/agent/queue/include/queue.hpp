@@ -204,7 +204,6 @@ private:
 class MultiTypeQueue
 {
 private:
-    // std::condition_variable m_cv;
     std::unordered_map<MessageType, std::unique_ptr<PersistedQueue>> m_queuesMap;
     int m_maxItems;
 
@@ -215,7 +214,7 @@ public:
     {
         // Populate the map inside the constructor body
         m_queuesMap[MessageType::STATE_LESS] = std::make_unique<PersistedQueue>(MessageType::STATE_LESS, m_maxItems);
-        m_queuesMap[MessageType::STATE_FULL] = std::make_unique<PersistedQueue>(MessageType::STATE_FULL, m_maxItems);
+        m_queuesMap[MessageType::STATE_FUL] = std::make_unique<PersistedQueue>(MessageType::STATE_FUL, m_maxItems);
         m_queuesMap[MessageType::COMMAND] = std::make_unique<PersistedQueue>(MessageType::COMMAND, m_maxItems);
     }
 
@@ -232,9 +231,7 @@ public:
     MultiTypeQueue& operator=(MultiTypeQueue&&) = delete;
 
     // TODO
-    ~MultiTypeQueue() {
-        // m_queuesMap;
-    };
+    ~MultiTypeQueue() {};
     /**
      * @brief: push message to a queue of t
      *
@@ -248,7 +245,7 @@ public:
             {
                 // TODO: delete this
                 std::cout << "waiting" << std::endl;
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                std::this_thread::sleep_for(std::chrono::milliseconds(250));
             }
             m_queuesMap[message.type]->insertMessage(message);
         }
@@ -259,7 +256,6 @@ public:
         }
     }
 
-    // FIFO order
     /**
      * @brief Get the Last Message object
      *
@@ -299,23 +295,6 @@ public:
             std::cout << "error didn't find the queue" << std::endl;
         }
     }
-
-    // TODO
-    /**
-     * @brief
-     *
-     * @param event
-     */
-    // void updateLast(Message event)
-    // {
-    // std::unique_lock<std::mutex> lock(m_mtx);
-    //     while (m_queuesMap[event.type].empty())
-    //     {
-    //         m_cv.wait(lock);
-    //     }
-    //     m_queuesMap[event.type] = event;
-    //     m_cv.notify_one();
-    // }
 
     /**
      * @brief

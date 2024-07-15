@@ -1,10 +1,9 @@
-
-#include <iomanip>
-
 #include <chrono>
 #include <filesystem>
 #include <future>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <thread>
 
@@ -14,7 +13,42 @@
 #define BIG_QUEUE_QTTY   10
 #define SMALL_QUEUE_QTTY 2
 
+using json = nlohmann::json;
+
 /// Helper functions
+
+// Unescape Strings
+std::string unescape_string(const std::string& str)
+{
+    std::string result;
+    result.reserve(str.length());
+
+    for (size_t i = 0; i < str.length(); ++i)
+    {
+        if (str[i] == '\\' && i + 1 < str.length())
+        {
+            switch (str[i + 1])
+            {
+                case '\\': result += '\\'; break;
+                case '\"': result += '\"'; break;
+                case '/': result += '/'; break;
+                case 'b': result += '\b'; break;
+                case 'f': result += '\f'; break;
+                case 'n': result += '\n'; break;
+                case 'r': result += '\r'; break;
+                case 't': result += '\t'; break;
+                default: result += str[i + 1];
+            }
+            ++i;
+        }
+        else
+        {
+            result += str[i];
+        }
+    }
+
+    return result;
+}
 
 // TODO: Makes sense to add a full_clean method inside the persistence implementation?
 void cleanPersistence()
@@ -22,80 +56,6 @@ void cleanPersistence()
     auto filePath = DEFAULT_DB_PATH;
     std::error_code ec;
     std::filesystem::remove(filePath, ec);
-}
-
-// TODO: rework after double check the output of persistence
-bool compareJsonStrings(const nlohmann::json& jsonValue1, const nlohmann::json& jsonValue2)
-{
-
-    std::string str1 = jsonValue1.get<std::string>();
-    std::string str2 = jsonValue2.get<std::string>();
-    // Remove outer quotes from output if present
-    auto removeQuotes = [](std::string& inputString)
-    {
-        if (inputString.front() == '"' && inputString.back() == '"')
-        {
-            inputString = inputString.substr(1, inputString.length() - 2);
-        }
-    };
-
-    removeQuotes(str1);
-    removeQuotes(str2);
-
-    auto unescapeJsonString = [](std::string input) -> std::string
-    {
-        std::string result;
-        bool escapeNext = false;
-        for (char c : input)
-        {
-            if (escapeNext)
-            {
-                if (c == '"')
-                {
-                    result += '"';
-                }
-                else
-                {
-                    result += '\\';
-                    result += c;
-                }
-                escapeNext = false;
-            }
-            else
-            {
-                if (c == '\\')
-                {
-                    escapeNext = true;
-                }
-                else
-                {
-                    result += c;
-                }
-            }
-        }
-        return result;
-    };
-
-    unescapeJsonString(str1);
-    unescapeJsonString(str2);
-
-    try
-    {
-        // Parse both strings into json objects
-        nlohmann::json json1 = nlohmann::json::parse(str1);
-        nlohmann::json json2 = nlohmann::json::parse(str2);
-
-        std::cout << "json1: " << json1 << std::endl;
-        std::cout << "json2: " << json2 << std::endl;
-
-        // Compare the json objects
-        return (json1 == json2);
-    }
-    catch (const nlohmann::json::parse_error& e)
-    {
-        std::cerr << "JSON parsing error: " << e.what() << std::endl;
-        return false;
-    }
 }
 
 // In order to mimic the timeout from outside the queue
@@ -138,18 +98,24 @@ void QueueTest::TearDown() {};
 
 /// TESTS
 
-// Check which jsons are correct, do move or delete if out of scope
-TEST_F(QueueTest, JSONBaseTest)
+// JSON Basic methods. Move or delete if JSON Wrapper is done
+TEST_F(QueueTest, JSONConversionComparisson)
 {
     nlohmann::json uj1 = {{"version", 1}, {"type", "integer"}};
-    nlohmann::json uj2 = {{"type", "integer"}, {"version", 1}};
+    // From string. If not unescape then it throws errors
+    nlohmann::json uj2 = json::parse(unescape_string(R"({\"type\":\"integer\",\"version\":1})"));
 
     nlohmann::ordered_json oj1 = {{"version", 1}, {"type", "integer"}};
     nlohmann::ordered_json oj2 = {{"type", "integer"}, {"version", 1}};
-
-    EXPECT_TRUE(uj1 == uj2);
-    //EXPECT_TRUE(compareJsonStrings(uj1, uj2));
     EXPECT_FALSE(oj1 == oj2);
+
+    auto versionUj1 = uj1["version"].template get<int>();
+    auto versionUj2 = uj2["version"].template get<int>();
+    EXPECT_EQ(versionUj1, versionUj2);
+
+    auto typeUj1 = uj1["type"].template get<std::string>();
+    auto typeUj2 = uj2["type"].template get<std::string>();
+    EXPECT_EQ(typeUj1, typeUj2);
 }
 
 // Push, get and check the queue is not empty
@@ -167,7 +133,10 @@ TEST_F(QueueTest, BasicPushGetNotEmpty)
     auto typeReceived = messageResponse.type;
 
     EXPECT_TRUE(typeSend == typeReceived);
-    // EXPECT_TRUE(compareJsonStrings(messageResponse.data[0], messageToSend.data));
+    auto versionUj1 = messageResponse.data[0].template get<std::string>();
+    auto versionUj2 = messageToSend.data.template get<std::string>();
+    EXPECT_EQ(versionUj1, versionUj2);
+
     EXPECT_FALSE(queue.isEmptyByType(MessageType::STATE_LESS));
 }
 
@@ -186,7 +155,9 @@ TEST_F(QueueTest, SinglePushPopEmpty)
     auto typeReceived = messageResponse.type;
 
     EXPECT_TRUE(typeSend == typeReceived);
-    // EXPECT_TRUE(compareJsonStrings(messageResponse.data[0], messageToSend.data));
+    auto versionUj1 = messageResponse.data[0].template get<std::string>();
+    auto versionUj2 = messageToSend.data.template get<std::string>();
+    EXPECT_EQ(versionUj1, versionUj2);
 
     queue.popLastMessage(MessageType::STATE_LESS);
     EXPECT_TRUE(queue.isEmptyByType(MessageType::STATE_LESS));
@@ -217,14 +188,14 @@ TEST_F(QueueTest, SingleGetPopOnEmpty)
 
     queue.push(messageToSend);
     EXPECT_FALSE(queue.isEmptyByType(MessageType::STATE_LESS));
-    EXPECT_TRUE(queue.isEmptyByType(MessageType::STATE_FULL));
+    EXPECT_TRUE(queue.isEmptyByType(MessageType::STATE_FUL));
 
-    auto messageResponse = queue.getLastMessage(MessageType::STATE_FULL);
-    EXPECT_EQ(messageResponse.type, MessageType::STATE_FULL);
+    auto messageResponse = queue.getLastMessage(MessageType::STATE_FUL);
+    EXPECT_EQ(messageResponse.type, MessageType::STATE_FUL);
     EXPECT_EQ(messageResponse.data[0], nullptr);
 
-    queue.popLastMessage(MessageType::STATE_FULL);
-    EXPECT_TRUE(queue.isEmptyByType(MessageType::STATE_FULL));
+    queue.popLastMessage(MessageType::STATE_FUL);
+    EXPECT_TRUE(queue.isEmptyByType(MessageType::STATE_FUL));
 }
 
 // Push, get and check while the queue is full
@@ -245,8 +216,7 @@ TEST_F(QueueTest, SinglePushPopFull)
 
     try
     {
-        functionWithTimeout(
-            [&queue](Message& message) { queue.push(message); }, 1000, exampleMessage);
+        functionWithTimeout([&queue](Message& message) { queue.push(message); }, 1000, exampleMessage);
     }
     catch (const std::runtime_error& e)
     {
@@ -262,55 +232,103 @@ TEST_F(QueueTest, SinglePushPopFull)
     EXPECT_NE(items, SMALL_QUEUE_QTTY);
 }
 
-// TODO
-TEST_F(QueueTest, Multithread)
+// Accesing different types of queues
+TEST_F(QueueTest, MultithreadDifferentType)
 {
-    GTEST_SKIP();
     MultiTypeQueue queue(BIG_QUEUE_QTTY);
 
-    auto consumer1 = [&](int& count)
+    auto consumerStateLess = [&](int& count)
     {
-        // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        int item;
         for (int i = 0; i < count; ++i)
         {
             queue.popLastMessage(MessageType::STATE_LESS);
-            std::cout << "Popping event 1: " << std::endl;
         }
     };
 
-    auto consumer2 = [&](int& count)
-    {
-        int item;
-        for (int i = 0; i < count; ++i)
-        {
-            queue.popLastMessage(MessageType::STATE_FULL);
-            std::cout << "Popping event 2: " << std::endl;
-        }
-    };
-
-    auto producer = [&](int& count)
+    auto consumerStateFull = [&](int& count)
     {
         for (int i = 0; i < count; ++i)
         {
-            auto message = R"({"Data" : "for STATE_LESS)" + std::to_string(i) + R"("})";
-            queue.push(Message(MessageType::STATE_LESS, message));
-            std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Simulate work
+            queue.popLastMessage(MessageType::STATE_FUL);
         }
     };
 
-    int items_to_insert = 5;
-    int items_to_consume = 2;
+    auto messageProducer = [&](int& count)
+    {
+        for (int i = 0; i < count; ++i)
+        {
+            const nlohmann::json dataContent = R"({{"Data", "for STATE_LESS)" + std::to_string(i) + R"("}})";
+            queue.push(Message(MessageType::STATE_LESS, dataContent));
+            queue.push(Message(MessageType::STATE_FUL, dataContent));
+        }
+    };
 
-    producer(items_to_insert);
+    int itemsToInsert = 9;
+    int itemsToConsume = 5;
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    messageProducer(itemsToInsert);
 
-    std::thread consumer_thread1(consumer1, std::ref(items_to_consume));
-    std::thread producer_thread1(consumer2, std::ref(items_to_consume));
+    std::thread consumerThread1(consumerStateLess, std::ref(itemsToConsume));
+    std::thread consumerThread2(consumerStateFull, std::ref(itemsToConsume));
 
-    producer_thread1.join();
-    consumer_thread1.join();
+    consumerThread1.join();
+    consumerThread2.join();
+
+    EXPECT_FALSE(queue.isEmptyByType(MessageType::STATE_LESS));
+    EXPECT_FALSE(queue.isEmptyByType(MessageType::STATE_FUL));
+
+    std::thread consumerThread12(consumerStateLess, std::ref(itemsToConsume));
+    std::thread consumerThread22(consumerStateFull, std::ref(itemsToConsume));
+
+    consumerThread22.join();
+    consumerThread12.join();
 
     EXPECT_TRUE(queue.isEmptyByType(MessageType::STATE_LESS));
+    EXPECT_TRUE(queue.isEmptyByType(MessageType::STATE_FUL));
+}
+
+// Accesing same queue
+TEST_F(QueueTest, MultithreadSameType)
+{
+    MultiTypeQueue queue(BIG_QUEUE_QTTY);
+
+    auto consumerCommand1 = [&](int& count)
+    {
+        for (int i = 0; i < count; ++i)
+        {
+            queue.popLastMessage(MessageType::COMMAND);
+        }
+    };
+
+    auto consumerCommand2 = [&](int& count)
+    {
+        for (int i = 0; i < count; ++i)
+        {
+            queue.popLastMessage(MessageType::COMMAND);
+        }
+    };
+
+    auto messageProducer = [&](int& count)
+    {
+        for (int i = 0; i < count; ++i)
+        {
+            const nlohmann::json dataContent = R"({{"Data", "for COMMAND)" + std::to_string(i) + R"("}})";
+            queue.push(Message(MessageType::COMMAND, dataContent));
+        }
+    };
+
+    int itemsToInsert = 10;
+    int itemsToConsume = 5;
+
+    messageProducer(itemsToInsert);
+
+    EXPECT_EQ(itemsToInsert, queue.getItemsByType(MessageType::COMMAND));
+
+    std::thread consumerThread1(consumerCommand1, std::ref(itemsToConsume));
+    std::thread messageProducerThread1(consumerCommand2, std::ref(itemsToConsume));
+
+    messageProducerThread1.join();
+    consumerThread1.join();
+
+    EXPECT_TRUE(queue.isEmptyByType(MessageType::COMMAND));
 }
