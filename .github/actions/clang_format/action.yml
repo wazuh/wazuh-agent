@@ -37,7 +37,7 @@ runs:
           arguments="--dry-run "
 
           # Retrieve all the source files for the desired module
-          sourceFiles=$(find ${{ inputs.path }} -type f \( -name "*.cpp" -o -name "*.hpp" \) | tr '\n' ' ')
+          sourceFiles=$(find ${{ inputs.path }} -type f \( -name '*.[ch]' -o -name "*.cpp" -o -name "*.hpp" \) | tr '\n' ' ')
           arguments+="-i $sourceFiles "
 
           ERRORS_FILE=${{ inputs.path }}/clang_format_errors.txt
