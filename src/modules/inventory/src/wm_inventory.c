@@ -182,21 +182,6 @@ void* wm_inv_main(wm_inv_t *inv) {
             so_free_library(rsync_module);
 #endif
         }
-#ifndef CLIENT
-        // Load router module only for manager if is enabled
-        disable_manager_scan = getDefine_Int("vulnerability-detection", "disable_scan_manager", 0, 1);
-        if (router_module_ptr = so_get_module_handle("router"), router_module_ptr) {
-                router_provider_create_func_ptr = so_get_function_sym(router_module_ptr, "router_provider_create");
-                router_provider_send_fb_func_ptr = so_get_function_sym(router_module_ptr, "router_provider_send_fb");
-                if (router_provider_create_func_ptr && router_provider_send_fb_func_ptr) {
-                    mtdebug1(WM_INV_LOGTAG, "Router module loaded.");
-                } else {
-                    mwarn("Failed to load methods from router module.");
-                }
-            } else {
-                mwarn("Failed to load router module.");
-            }
-#endif // CLIENT
     } else {
 #ifdef __hpux
         mtinfo(WM_INV_LOGTAG, "Not supported in HP-UX.");
@@ -216,18 +201,7 @@ void* wm_inv_main(wm_inv_t *inv) {
         }
         // else: if max_eps is 0 (from configuration) let's use the default max_eps value (10)
         wm_inv_log_config(inv);
-#ifndef CLIENT
-        // Router providers initialization
-        if (router_provider_create_func_ptr){
-            if(inventory_handle = router_provider_create_func_ptr("deltas-inventory", true), !inventory_handle) {
-                mdebug2("Failed to create router handle for 'inventory'.");
-            }
 
-            if (rsync_handle = router_provider_create_func_ptr("rsync-inventory", true), !rsync_handle) {
-                mdebug2("Failed to create router handle for 'rsync'.");
-            }
-        }
-#endif // CLIENT
         inventory_start_ptr(inv->interval,
                                wm_inv_send_diff_message,
                                wm_inv_send_dbsync_message,
@@ -257,10 +231,7 @@ void* wm_inv_main(wm_inv_t *inv) {
         queue_fd = 0;
     }
     so_free_library(inventory_module);
-#ifndef CLIENT
-    so_free_library(router_module_ptr);
-    router_module_ptr = NULL;
-#endif // CLIENT
+
     inventory_module = NULL;
     mtinfo(WM_INV_LOGTAG, "Module finished.");
     w_mutex_lock(&inv_stop_mutex);

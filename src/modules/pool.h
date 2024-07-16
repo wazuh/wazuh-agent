@@ -15,7 +15,7 @@ using namespace std;
 
 template<typename T>
 concept Module = requires(T t, const Configuration & config, const string & query) {
-    { t.run() } -> same_as<void>;
+    { t.run() } -> same_as<void *>;
     { t.setup(config) } -> same_as<int>;
     { t.stop() } -> same_as<void>;
     { t.command(query) } -> same_as<string>;
