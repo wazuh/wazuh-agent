@@ -17,7 +17,6 @@
 
 extern const wm_context WM_INV_CONTEXT;     // Context
 
-#define WM_INV_LOGTAG ARGV0 ":inventory" // Tag for log messages
 #define WM_INVENTORY_DEFAULT_INTERVAL W_HOUR_SECONDS
 
 typedef struct wm_inv_flags_t {
