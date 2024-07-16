@@ -22,6 +22,7 @@ endif()
 add_subdirectory(common)
 add_subdirectory(modules)
 add_subdirectory(agent)
+add_subdirectory(modules)
 
 add_executable(wazuh-agent agent/src/main.cpp)
 target_link_libraries(wazuh-agent Agent Logger)
