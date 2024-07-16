@@ -8,11 +8,15 @@
 using namespace std;
 
 struct ModuleWrapper {
-    function<void()> run;
+    function<void()> run;                              // Main function
     function<int(const Configuration&)> setup;
-    function<void()> stop;
+    function<void(void *)> destroy;                     // Configuration destructor
+    function<void()> stop;                              // Module destructor
     function<string(const string&)> command;
+    function<size_t(void *, char *, char **)> query;    // Run a query
     function<string()> name;
+    function<string(int(const string&))> sync;          // Sync
+    function<string(const void *)>dump;                 // Dump current configuration
 };
 
 #endif // MODULE_WRAPPER_H
