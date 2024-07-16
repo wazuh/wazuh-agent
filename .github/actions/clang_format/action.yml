@@ -41,7 +41,7 @@ runs:
           arguments+="-i $sourceFiles "
 
           ERRORS_FILE=${{ inputs.path }}/clang_format_errors.txt
-          clang-format $arguments 2> ${ERRORS_FILE}
+          clang-format $arguments 2>&1 | tee ${ERRORS_FILE}
 
           # Check if there are errors
           if [ -s "${ERRORS_FILE}" ]; then
