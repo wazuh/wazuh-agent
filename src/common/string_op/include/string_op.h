@@ -11,7 +11,7 @@
 #ifndef H_STRINGOP_OS
 #define H_STRINGOP_OS
 
-#include <cJSON.h>
+#include <cjson/cJSON.h>
 #include <stdbool.h>
 
 #ifdef WIN32
