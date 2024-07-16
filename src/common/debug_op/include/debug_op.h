@@ -24,7 +24,7 @@
 #endif
 
 #include <stdarg.h>
-#include <cJSON.h>
+#include <cjson/cJSON.h>
 /* For internal logs */
 #ifndef LOGFILE
 #ifndef WIN32
