@@ -9,12 +9,18 @@
  * Foundation.
  */
 
-#include "inventory.h"
 #include <iostream>
+#include "debug_op.h"
+#include "string_op.h"
+#include "inventory.h"
 
 using namespace std;
+
 const int INVENTORY_MQ =  'd';
 const int DBSYNC_MQ    = '5';
+
+#define WM_INV_LOGTAG "modules:inventory" // Tag for log messages
+#define WM_INVENTORY_DEFAULT_INTERVAL W_HOUR_SECONDS
 
 void *Inventory::run() {
     cout << "+ [Inventory] is running" << endl;
@@ -23,7 +29,7 @@ void *Inventory::run() {
 }
 
 int Inventory::setup(const Configuration & config) {
-    inverval = 3600;
+    interval = WM_INVENTORY_DEFAULT_INTERVAL;
     dbPath = "default/path";
     normalizerConfigPath = "default/config/path";
     normalizerType = "normalizerType";
@@ -84,4 +90,43 @@ void Inventory::wm_inv_send_message(string data, const char queue_id) {
         }
     }*/
    cout << "wm_inv_send_message -> Queue id: " << queue_id << " -> Data: " << data << endl;
+}
+
+void Inventory::wm_inv_log_config()
+{
+    cJSON * config_json = wm_inv_dump();
+    if (config_json) {
+        char * config_str = cJSON_PrintUnformatted(config_json);
+        if (config_str) {
+            cout << WM_INV_LOGTAG << config_str << endl;
+            cJSON_free(config_str);
+        }
+        cJSON_Delete(config_json);
+    }
+}
+
+cJSON * Inventory::wm_inv_dump() {
+    cJSON *root = cJSON_CreateObject();
+    cJSON *wm_inv = cJSON_CreateObject();
+
+    // System provider values
+    if (enabled) cJSON_AddStringToObject(wm_inv,"disabled","no"); else cJSON_AddStringToObject(wm_inv,"disabled","yes");
+    if (scan_on_start) cJSON_AddStringToObject(wm_inv,"scan-on-start","yes"); else cJSON_AddStringToObject(wm_inv,"scan-on-start","no");
+    cJSON_AddNumberToObject(wm_inv,"interval",interval);
+    if (netinfo) cJSON_AddStringToObject(wm_inv,"network","yes"); else cJSON_AddStringToObject(wm_inv,"network","no");
+    if (osinfo) cJSON_AddStringToObject(wm_inv,"os","yes"); else cJSON_AddStringToObject(wm_inv,"os","no");
+    if (hwinfo) cJSON_AddStringToObject(wm_inv,"hardware","yes"); else cJSON_AddStringToObject(wm_inv,"hardware","no");
+    if (programinfo) cJSON_AddStringToObject(wm_inv,"packages","yes"); else cJSON_AddStringToObject(wm_inv,"packages","no");
+    if (portsinfo) cJSON_AddStringToObject(wm_inv,"ports","yes"); else cJSON_AddStringToObject(wm_inv,"ports","no");
+    if (allports) cJSON_AddStringToObject(wm_inv,"ports_all","yes"); else cJSON_AddStringToObject(wm_inv,"ports_all","no");
+    if (procinfo) cJSON_AddStringToObject(wm_inv,"processes","yes"); else cJSON_AddStringToObject(wm_inv,"processes","no");
+#ifdef WIN32
+    if (hotfixinfo) cJSON_AddStringToObject(wm_inv,"hotfixes","yes"); else cJSON_AddStringToObject(wm_inv,"hotfixes","no");
+#endif
+    // Database synchronization values
+    cJSON_AddNumberToObject(wm_inv,"sync_max_eps",sync_max_eps);
+
+    cJSON_AddItemToObject(root,"inventory",wm_inv);
+
+    return root;
 }

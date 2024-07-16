@@ -2,6 +2,7 @@
 #define INVENTORY_H
 
 #include <string>
+#include <cjson/cJSON.h>
 #include "configuration.h"
 
 class Inventory {
@@ -16,9 +17,11 @@ private:
     void wm_inv_send_diff_message(const std::string& data);
     void wm_inv_send_dbsync_message(const std::string& data);
     void wm_inv_send_message(std::string data, const char queue_id);
+    void wm_inv_log_config();
+    cJSON * wm_inv_dump();
 
-    unsigned int inverval;
-    
+    unsigned int interval;
+
     std::string dbPath;
     std::string normalizerConfigPath;
     std::string normalizerType;
@@ -33,6 +36,8 @@ private:
     bool portsinfo;               // Opened ports inventory
     bool allports;                // Scan only listening ports or all
     bool procinfo;                // Running processes inventory
+
+    long sync_max_eps;            // Maximum events per second for synchronization messages.
 };
 
 #endif // INVENTORY_H
