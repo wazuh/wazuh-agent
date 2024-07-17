@@ -12,14 +12,20 @@ include_directories(include)
 
 set(SOURCES
     src/agent.cpp
+    src/task_manager.cpp
 )
 
 set(HEADERS
     include/agent.hpp
     include/itask_manager.hpp
+    include/task_manager.hpp
 )
 
 add_library(agent ${SOURCES} ${HEADERS})
+
+find_package(Boost REQUIRED COMPONENTS asio)
+
+target_link_libraries(agent PRIVATE ${Boost_LIBRARIES})
 
 if(BUILD_TESTS)
     add_subdirectory(tests)
