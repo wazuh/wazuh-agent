@@ -9,6 +9,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 find_package(SQLite3 REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wunused -pthread")
+
 # Add the include directory for shared headers
 include_directories(${CMAKE_SOURCE_DIR}/include)
 

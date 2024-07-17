@@ -58,6 +58,8 @@ public:
         // MessageTypeName.at(m_queueType)});
         m_persistenceDest = PersistenceFactory::createPersistence(
             "SQLite3", {static_cast<std::string>(DEFAULT_DB_PATH), MessageTypeName.at(m_queueType)});
+        // updates the actual size being used
+        getItemsAvailable();
     }
 
     // Delete copy constructor
@@ -89,7 +91,10 @@ public:
 
     int getItemsAvailable()
     {
-        return m_persistenceDest->GetElementCount();
+        std::unique_lock<std::mutex> lock(m_mtx);
+        //TODO: rework this behavior
+        m_size = m_persistenceDest->GetElementCount();
+        return m_size;
     }
 
     /**
@@ -97,20 +102,10 @@ public:
      *
      * @return int
      */
-    // TODO check this functionality
+    // TODO check this functionality because when inserting data arrays it loses actual value
     int getSize() const
     {
         return m_size;
-    }
-
-    /**
-     * @brief Set the Size object
-     *
-     * @param m_size
-     */
-    void setSize(int m_size)
-    {
-        this->m_size = m_size;
     }
 
     /**
@@ -126,32 +121,31 @@ public:
         m_persistenceDest->Store(event.data);
         m_size++;
         m_cv.notify_one();
-        return true;
-    };
-
-    /**
-     * @brief
-     *
-     * @return true
-     * @return false
-     */
-    bool removeMessage()
-    {
-        if (m_size != 0)
-        {
-            std::unique_lock<std::mutex> lock(m_mtx);
-            auto linesRemoved = m_persistenceDest->RemoveMultiple(1);
-            m_size = m_size - linesRemoved;
-        }
+        // TODO: make Store method int for returning items inserted when array
+        // if(m_persistenceDest->Store(event.data))
+        // {
+        //     m_size++;
+        //     m_cv.notify_one();
+        // }
         return true;
     };
 
     bool removeNMessages(int qttyMessages)
     {
-        std::unique_lock<std::mutex> lock(m_mtx);
-        auto linesRemoved = m_persistenceDest->RemoveMultiple(qttyMessages);
-        m_size = m_size - linesRemoved;
-        return true;
+        bool result = false;
+        // workaround for items issue
+        getItemsAvailable();
+        if (m_size)
+        {
+            std::unique_lock<std::mutex> lock(m_mtx);
+            auto linesRemoved = m_persistenceDest->RemoveMultiple(qttyMessages);
+            if(linesRemoved)
+            {
+                result = true;
+                m_size = m_size - linesRemoved;
+            }
+        }
+        return result;
     };
 
     /**
@@ -162,7 +156,8 @@ public:
     Message getMessage()
     {
         std::unique_lock<std::mutex> lock(m_mtx);
-        return Message(m_queueType, m_persistenceDest->RetrieveMultiple(1));
+        auto messageData = m_persistenceDest->RetrieveMultiple(1);
+        return Message(m_queueType, messageData);
     };
 
     /**
@@ -174,7 +169,8 @@ public:
     Message getNMessages(int n)
     {
         std::unique_lock<std::mutex> lock(m_mtx);
-        return Message(m_queueType, m_persistenceDest->RetrieveMultiple(n));
+        auto messageData = m_persistenceDest->RetrieveMultiple(n);
+        return Message(m_queueType, messageData);
     };
 
     /**
@@ -183,15 +179,15 @@ public:
      * @return true
      * @return false
      */
-    bool empty()
+    bool empty() const
     {
         return m_size == 0;
     }
 
 private:
-    MessageType m_queueType;
+    const MessageType m_queueType;
     int m_size = 0;
-    int m_max_size;
+    const int m_max_size;
     std::unique_ptr<Persistence> m_persistenceDest;
     std::mutex m_mtx;
     std::condition_variable m_cv;
@@ -205,7 +201,7 @@ class MultiTypeQueue
 {
 private:
     std::unordered_map<MessageType, std::unique_ptr<PersistedQueue>> m_queuesMap;
-    int m_maxItems;
+    const int m_maxItems;
 
 public:
     // Create a vector with 3 PersistedQueue elements
@@ -237,8 +233,9 @@ public:
      *
      * @param message
      */
-    void push(Message message)
+    bool push(Message message)
     {
+        bool result = false;
         if (m_queuesMap.contains(message.type))
         {
             while (m_queuesMap[message.type]->getSize() == m_maxItems)
@@ -247,12 +244,26 @@ public:
                 std::cout << "waiting" << std::endl;
                 std::this_thread::sleep_for(std::chrono::milliseconds(250));
             }
-            m_queuesMap[message.type]->insertMessage(message);
+            result = m_queuesMap[message.type]->insertMessage(message);
         }
         else
         {
             // TODO: error / logging handling !!!
             std::cout << "error didn't find the queue" << std::endl;
+        }
+        return result;
+    }
+
+    /**
+     * @brief 
+     * 
+     * @param messages 
+     */
+    void push(std::vector<Message> messages)
+    {
+        for (const auto& singleMessage : messages)
+        {
+            push(singleMessage);
         }
     }
 
@@ -278,22 +289,49 @@ public:
     }
 
     /**
-     * @brief
+     * @brief deletes a message from a queue
      *
-     * @param type
+     * @param type MessageType queue to pop
+     * @return true popped succesfully
+     * @return false wasn't able to pop message
      */
-    void popLastMessage(MessageType type)
+    bool popLastMessage(MessageType type)
     {
+        bool result = false;
         if (m_queuesMap.contains(type))
         {
             // Handle return value
-            m_queuesMap[type]->removeMessage();
+            result = m_queuesMap[type]->removeNMessages(1);
         }
         else
         {
             // TODO: error / logging handling !!!
             std::cout << "error didn't find the queue" << std::endl;
         }
+        return result;
+    }
+
+    /**
+     * @brief 
+     * 
+     * @param type 
+     * @param messageQuantity 
+     * @return true 
+     * @return false 
+     */
+    bool popNMessages(MessageType type, int messageQuantity)
+    {
+        bool result = false;
+        if (m_queuesMap.contains(type))
+        {
+            result = m_queuesMap[type]->removeNMessages(messageQuantity);
+        }
+        else
+        {
+            // TODO: error / logging handling !!!
+            std::cout << "error didn't find the queue" << std::endl;
+        }
+        return result;
     }
 
     /**

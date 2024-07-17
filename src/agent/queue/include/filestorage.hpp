@@ -103,7 +103,7 @@ public:
      * @param LineID 
      * @return json 
      */
-    json Retrieve(int LineID) override
+    json Retrieve(int lineID) override
     {
         return RetrieveMultiple(1);
     }

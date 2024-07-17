@@ -24,4 +24,15 @@ class QueueTest : public ::testing::Test
         void TearDown() override;
 };
 
+class JsonTest : public ::testing::Test
+{
+    protected:
+
+        JsonTest() = default;
+        virtual ~JsonTest() = default;
+
+        void SetUp() override {};
+        void TearDown() override {};
+};
+
 #endif //_QUEUE_TEST_H

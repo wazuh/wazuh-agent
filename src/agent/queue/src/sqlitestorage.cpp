@@ -40,16 +40,26 @@ void SQLiteStorage::CloseDB() {
 
 void SQLiteStorage::Store(const json& message) {
     std::lock_guard<std::mutex> lock(m_mtx);
-    OpenDB();
-
     std::string insertQuery = INSERT_QUERY;
+    OpenDB();
     sqlite3_stmt* stmt;
     sqlite3_prepare_v2(m_db, insertQuery.c_str(), -1, &stmt, 0);
-    std::string messageStr = message.dump();
-    sqlite3_bind_text(stmt, 1, messageStr.c_str(), -1, SQLITE_TRANSIENT);
-    sqlite3_step(stmt);
+    if(message.is_array())
+    {
+        for (auto& singleMessageData : message.items())
+        {
+            std::string messageStr = singleMessageData.value();
+            sqlite3_bind_text(stmt, 1, messageStr.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_step(stmt);
+        }
+    }
+    else
+    {
+        std::string messageStr = message.dump();
+        sqlite3_bind_text(stmt, 1, messageStr.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_step(stmt);
+    }
     sqlite3_finalize(stmt);
-
     CloseDB();
 }
 
