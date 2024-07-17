@@ -16,6 +16,7 @@ set(SOURCES
 
 set(HEADERS
     include/agent.hpp
+    include/itask_manager.hpp
 )
 
 add_library(agent ${SOURCES} ${HEADERS})
