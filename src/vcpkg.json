@@ -2,5 +2,6 @@
     "name": "wazuh-agent-mvp",
     "version": "5.0.0",
     "dependencies": [
+      "gtest"
     ]
 }
