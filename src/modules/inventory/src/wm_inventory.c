@@ -19,13 +19,6 @@
 #include "headers/logging_helper.h"
 #include "commonDefs.h"
 
-#ifndef CLIENT
-#include "router.h"
-#include "utils/flatbuffers/include/inventory_synchronization_schema.h"
-#include "utils/flatbuffers/include/inventory_deltas_schema.h"
-#include "agent_messages_adapter.h"
-#endif // CLIENT
-
 #ifdef WIN32
 static DWORD WINAPI wm_inv_main(void *arg);         // Module main function. It won't return
 #else
@@ -36,11 +29,6 @@ static void wm_inv_stop(wm_inv_t *inv);         // Module stopper
 const char *WM_INV_LOCATION = "inventory";   // Location field for event sending
 cJSON *wm_inv_dump(const wm_inv_t *inv);
 int wm_inv_message(const char *data);
-pthread_cond_t inv_stop_condition = PTHREAD_COND_INITIALIZER;
-pthread_mutex_t inv_stop_mutex = PTHREAD_MUTEX_INITIALIZER;
-bool need_shutdown_wait = false;
-pthread_mutex_t inv_reconnect_mutex = PTHREAD_MUTEX_INITIALIZER;
-bool shutdown_process_started = false;
 
 const wm_context WM_INV_CONTEXT = {
     .name = "inventory",
@@ -72,72 +60,6 @@ int queue_fd = 0;                       // Output queue file descriptor
 static bool is_shutdown_process_started() {
     bool ret_val = shutdown_process_started;
     return ret_val;
-}
-
-static void wm_inv_send_message(const void* data, const char queue_id) {
-    if (!is_shutdown_process_started()) {
-        const int eps = 1000000/inventory_sync_max_eps;
-        if (wm_sendmsg_ex(eps, queue_fd, data, WM_INV_LOCATION, queue_id, &is_shutdown_process_started) < 0) {
-    #ifdef CLIENT
-            mterror(WM_INV_LOGTAG, "Unable to send message to '%s' (wazuh-agentd might be down). Attempting to reconnect.", DEFAULTQUEUE);
-    #else
-            mterror(WM_INV_LOGTAG, "Unable to send message to '%s' (wazuh-analysisd might be down). Attempting to reconnect.", DEFAULTQUEUE);
-    #endif
-            // Since this method is beign called by multiple threads it's necessary this particular portion of code
-            // to be mutually exclusive. When one thread is successfully reconnected, the other ones will make use of it.
-            w_mutex_lock(&inv_reconnect_mutex);
-            if (!is_shutdown_process_started() && wm_sendmsg_ex(eps, queue_fd, data, WM_INV_LOCATION, queue_id, &is_shutdown_process_started) < 0) {
-                if (queue_fd = MQReconnectPredicated(DEFAULTQUEUE, &is_shutdown_process_started), 0 <= queue_fd) {
-                    mtinfo(WM_INV_LOGTAG, "Successfully reconnected to '%s'", DEFAULTQUEUE);
-                    if (wm_sendmsg_ex(eps, queue_fd, data, WM_INV_LOCATION, queue_id, &is_shutdown_process_started) < 0) {
-                        mterror(WM_INV_LOGTAG, "Unable to send message to '%s' after a successfull reconnection...", DEFAULTQUEUE);
-                    }
-                }
-            }
-            w_mutex_unlock(&inv_reconnect_mutex);
-        }
-    }
-}
-
-static void wm_inv_send_diff_message(const void* data) {
-    wm_inv_send_message(data, INVENTORY_MQ);
-#ifndef CLIENT
-    if(!disable_manager_scan)
-    {
-        char* msg_to_send = adapt_delta_message(data, "localhost", "000", "127.0.0.1", NULL);
-        if (msg_to_send && router_provider_send_fb_func_ptr) {
-            router_provider_send_fb_func_ptr(inventory_handle, msg_to_send, inventory_deltas_SCHEMA);
-        }
-        cJSON_free(msg_to_send);
-    }
-#endif // CLIENT
-}
-
-static void wm_inv_send_dbsync_message(const void* data) {
-    wm_inv_send_message(data, DBSYNC_MQ);
-#ifndef CLIENT
-    if(!disable_manager_scan)
-    {
-        char* msg_to_send = adapt_sync_message(data, "localhost", "000", "127.0.0.1", NULL);
-        if (msg_to_send && router_provider_send_fb_func_ptr) {
-            router_provider_send_fb_func_ptr(rsync_handle, msg_to_send, inventory_synchronization_SCHEMA);
-        }
-        cJSON_free(msg_to_send);
-    }
-#endif // CLIENT
-}
-
-static void wm_inv_log_config(wm_inv_t *inv)
-{
-    cJSON * config_json = wm_inv_dump(inv);
-    if (config_json) {
-        char * config_str = cJSON_PrintUnformatted(config_json);
-        if (config_str) {
-            mtdebug1(WM_INV_LOGTAG, "%s", config_str);
-            cJSON_free(config_str);
-        }
-        cJSON_Delete(config_json);
-    }
 }
 
 #ifdef WIN32
@@ -260,32 +182,6 @@ void wm_inv_stop(__attribute__((unused))wm_inv_t *data) {
     w_cond_destroy(&inv_stop_condition);
     w_mutex_destroy(&inv_stop_mutex);
     w_mutex_destroy(&inv_reconnect_mutex);
-}
-
-cJSON *wm_inv_dump(const wm_inv_t *inv) {
-    cJSON *root = cJSON_CreateObject();
-    cJSON *wm_inv = cJSON_CreateObject();
-
-    // System provider values
-    if (inv->flags.enabled) cJSON_AddStringToObject(wm_inv,"disabled","no"); else cJSON_AddStringToObject(wm_inv,"disabled","yes");
-    if (inv->flags.scan_on_start) cJSON_AddStringToObject(wm_inv,"scan-on-start","yes"); else cJSON_AddStringToObject(wm_inv,"scan-on-start","no");
-    cJSON_AddNumberToObject(wm_inv,"interval",inv->interval);
-    if (inv->flags.netinfo) cJSON_AddStringToObject(wm_inv,"network","yes"); else cJSON_AddStringToObject(wm_inv,"network","no");
-    if (inv->flags.osinfo) cJSON_AddStringToObject(wm_inv,"os","yes"); else cJSON_AddStringToObject(wm_inv,"os","no");
-    if (inv->flags.hwinfo) cJSON_AddStringToObject(wm_inv,"hardware","yes"); else cJSON_AddStringToObject(wm_inv,"hardware","no");
-    if (inv->flags.programinfo) cJSON_AddStringToObject(wm_inv,"packages","yes"); else cJSON_AddStringToObject(wm_inv,"packages","no");
-    if (inv->flags.portsinfo) cJSON_AddStringToObject(wm_inv,"ports","yes"); else cJSON_AddStringToObject(wm_inv,"ports","no");
-    if (inv->flags.allports) cJSON_AddStringToObject(wm_inv,"ports_all","yes"); else cJSON_AddStringToObject(wm_inv,"ports_all","no");
-    if (inv->flags.procinfo) cJSON_AddStringToObject(wm_inv,"processes","yes"); else cJSON_AddStringToObject(wm_inv,"processes","no");
-#ifdef WIN32
-    if (inv->flags.hotfixinfo) cJSON_AddStringToObject(wm_inv,"hotfixes","yes"); else cJSON_AddStringToObject(wm_inv,"hotfixes","no");
-#endif
-    // Database synchronization values
-    cJSON_AddNumberToObject(wm_inv,"sync_max_eps",inv->sync.sync_max_eps);
-
-    cJSON_AddItemToObject(root,"inventory",wm_inv);
-
-    return root;
 }
 
 int wm_sync_message(const char *data)
