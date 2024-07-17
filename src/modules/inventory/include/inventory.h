@@ -18,6 +18,9 @@ private:
     void wm_inv_send_dbsync_message(const std::string& data);
     void wm_inv_send_message(std::string data, const char queue_id);
     void wm_inv_log_config();
+
+    void inventory_start();
+                        
     cJSON * wm_inv_dump();
 
     unsigned int interval;
@@ -25,6 +28,12 @@ private:
     std::string dbPath;
     std::string normalizerConfigPath;
     std::string normalizerType;
+
+    pthread_cond_t inv_stop_condition;
+    pthread_mutex_t inv_stop_mutex;
+    bool need_shutdown_wait;
+    pthread_mutex_t inv_reconnect_mutex;
+    bool shutdown_process_started;
 
     bool enabled;                 // Main switch
     bool scan_on_start;           // Scan always on start
