@@ -17,8 +17,6 @@
 
 extern const wm_context WM_INV_CONTEXT;     // Context
 
-#define WM_INVENTORY_DEFAULT_INTERVAL W_HOUR_SECONDS
-
 typedef struct wm_inv_flags_t {
     unsigned int enabled:1;                 // Main switch
     unsigned int scan_on_start:1;           // Scan always on start

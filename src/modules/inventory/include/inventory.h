@@ -2,17 +2,108 @@
 #define INVENTORY_H
 
 #include <string>
+#include <memory>
 #include <cjson/cJSON.h>
+#include "sysInfoInterface.h"
 #include "configuration.h"
 
 class Inventory {
 public:
+    static Inventory& instance()
+    {
+        static Inventory s_instance;
+        return s_instance;
+    }
+
     void *run();
     int setup(const Configuration & config);
     void stop();
     std::string command(const std::string & query);
     std::string name() const;
+
 private:
+    Inventory();
+    ~Inventory() = default;
+    Inventory(const Inventory&) = delete;
+    Inventory& operator=(const Inventory&) = delete;
+
+    void init(const std::shared_ptr<ISysInfo>& spInfo,
+                const std::function<void(const std::string&)> reportDiffFunction,
+                const std::function<void(const std::string&)> reportSyncFunction,
+                const std::function<void(const modules_log_level_t, const std::string&)> logFunction,
+                const std::string& dbPath,
+                const std::string& normalizerConfigPath,
+                const std::string& normalizerType,
+                const unsigned int inverval = 3600ul,
+                const bool scanOnStart = true,
+                const bool hardware = true,
+                const bool os = true,
+                const bool network = true,
+                const bool packages = true,
+                const bool ports = true,
+                const bool portsAll = true,
+                const bool processes = true,
+                const bool hotfixes = true,
+                const bool notifyOnFirstScan = false);
+
+    void destroy();
+    void push(const std::string& data);
+
+    std::string getCreateStatement() const;
+    nlohmann::json getOSData();
+    nlohmann::json getHardwareData();
+    nlohmann::json getNetworkData();
+    nlohmann::json getPortsData();
+
+    void registerWithRsync();
+    void updateChanges(const std::string& table,
+                        const nlohmann::json& values);
+    void notifyChange(ReturnTypeCallback result,
+                        const nlohmann::json& data,
+                        const std::string& table);
+    void scanHardware();
+    void scanOs();
+    void scanNetwork();
+    void scanPackages();
+    void scanHotfixes();
+    void scanPorts();
+    void scanProcesses();
+    void syncOs();
+    void syncHardware();
+    void syncNetwork();
+    void syncPackages();
+    void syncHotfixes();
+    void syncPorts();
+    void syncProcesses();
+    void scan();
+    void sync();
+    void syncLoop(std::unique_lock<std::mutex>& lock);
+    void syncAlgorithm();
+
+    std::shared_ptr<ISysInfo>                                               m_spInfo;
+    std::function<void(const std::string&)>                                 m_reportDiffFunction;
+    std::function<void(const std::string&)>                                 m_reportSyncFunction;
+    std::function<void(const modules_log_level_t, const std::string&)>      m_logFunction;
+    std::chrono::seconds                                                    m_intervalValue;
+    std::chrono::seconds                                                    m_currentIntervalValue;
+    bool                                                                    m_scanOnStart;
+    bool                                                                    m_hardware;
+    bool                                                                    m_os;
+    bool                                                                    m_network;
+    bool                                                                    m_packages;
+    bool                                                                    m_ports;
+    bool                                                                    m_portsAll;
+    bool                                                                    m_processes;
+    bool                                                                    m_hotfixes;
+    bool                                                                    m_stopping;
+    bool                                                                    m_notify;
+    std::unique_ptr<DBSync>                                                 m_spDBSync;
+    std::unique_ptr<RemoteSync>                                             m_spRsync;
+    std::condition_variable                                                 m_cv;
+    std::mutex                                                              m_mutex;
+    std::unique_ptr<InvNormalizer>                                          m_spNormalizer;
+    std::string                                                             m_scanTime;
+    std::chrono::seconds                                                    m_lastSyncMsg;
 
     void wm_inv_send_diff_message(const std::string& data);
     void wm_inv_send_dbsync_message(const std::string& data);
@@ -20,7 +111,7 @@ private:
     void wm_inv_log_config();
 
     void inventory_start();
-                        
+
     cJSON * wm_inv_dump();
 
     unsigned int interval;
@@ -47,6 +138,7 @@ private:
     bool procinfo;                // Running processes inventory
 
     long sync_max_eps;            // Maximum events per second for synchronization messages.
+
 };
 
 #endif // INVENTORY_H
