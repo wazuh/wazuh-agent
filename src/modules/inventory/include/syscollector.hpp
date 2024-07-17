@@ -105,8 +105,8 @@ class EXPORTED Inventory final
         std::function<void(const std::string&)>                                 m_reportDiffFunction;
         std::function<void(const std::string&)>                                 m_reportSyncFunction;
         std::function<void(const modules_log_level_t, const std::string&)>      m_logFunction;
-        std::chrono::seconds                                                       m_intervalValue;
-        std::chrono::seconds                                                       m_currentIntervalValue;
+        std::chrono::seconds                                                    m_intervalValue;
+        std::chrono::seconds                                                    m_currentIntervalValue;
         bool                                                                    m_scanOnStart;
         bool                                                                    m_hardware;
         bool                                                                    m_os;
@@ -124,7 +124,7 @@ class EXPORTED Inventory final
         std::mutex                                                              m_mutex;
         std::unique_ptr<InvNormalizer>                                          m_spNormalizer;
         std::string                                                             m_scanTime;
-        std::chrono::seconds                                           m_lastSyncMsg;
+        std::chrono::seconds                                                    m_lastSyncMsg;
 };
 
 
