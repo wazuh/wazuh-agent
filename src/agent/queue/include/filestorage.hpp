@@ -98,12 +98,12 @@ public:
     }
 
     /**
-     * @brief 
-     * 
-     * @param LineID 
-     * @return json 
+     * @brief
+     *
+     * @param LineID
+     * @return json
      */
-    json Retrieve(int lineID) override
+    json Retrieve(int /*lineID*/) override
     {
         return RetrieveMultiple(1);
     }
@@ -127,8 +127,8 @@ public:
         ifs.close();
 
         // Check if n is greater than the number of lines in the file
-        if (linesQuantity > all_lines.size()) {
-            linesQuantity = all_lines.size();
+        if (linesQuantity > (int) all_lines.size()) {
+            linesQuantity = (int) all_lines.size();
         }
 
         // Create a vector for the lines to return and remove
@@ -146,20 +146,20 @@ public:
     }
 
     /**
-     * @brief 
-     * 
-     * @param LinesID 
-     * @return int 
+     * @brief
+     *
+     * @param LinesID
+     * @return int
      */
-    int Remove(int LinesID) override
+    int Remove(int /*LinesID*/) override
     {
         return RemoveMultiple(1);
     }
 
     /**
      * @brief Get the Element Count object
-     * 
-     * @return int 
+     *
+     * @return int
      */
     int GetElementCount() override
     {

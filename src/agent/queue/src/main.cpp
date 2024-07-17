@@ -10,7 +10,6 @@ int main()
 
     auto consumer1 = [&](int &count) {
         // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        int item;
         for (int i = 0; i < count; ++i)
         {
             queue.popLastMessage(MessageType::STATELESS);
@@ -20,7 +19,6 @@ int main()
     };
 
     auto consumer2 = [&](int &count) {
-        int item;
         for (int i = 0; i < count; ++i)
         {
             queue.popLastMessage(MessageType::STATEFUL);
