@@ -12,8 +12,8 @@ constexpr char DEFAULT_DB_PATH[] = "queue.db";
  */
 enum MessageType
 {
-    STATE_LESS,
-    STATE_FUL,
+    STATELESS,
+    STATEFUL,
     COMMAND
 };
 
@@ -22,8 +22,8 @@ enum MessageType
  *
  */
 std::map<MessageType, std::string> MessageTypeName {
-    {MessageType::STATE_LESS, "STATE_LESS"},
-    {MessageType::STATE_FUL, "STATE_FUL"},
+    {MessageType::STATELESS, "STATELESS"},
+    {MessageType::STATEFUL, "STATEFUL"},
     {MessageType::COMMAND, "COMMAND"},
 };
 

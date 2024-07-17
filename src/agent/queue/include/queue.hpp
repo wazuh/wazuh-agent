@@ -186,7 +186,7 @@ public:
 
 private:
     const MessageType m_queueType;
-    int m_size = 0;
+    std::atomic<int> m_size = 0;
     const int m_max_size;
     std::unique_ptr<Persistence> m_persistenceDest;
     std::mutex m_mtx;
@@ -209,8 +209,8 @@ public:
         : m_maxItems(size)
     {
         // Populate the map inside the constructor body
-        m_queuesMap[MessageType::STATE_LESS] = std::make_unique<PersistedQueue>(MessageType::STATE_LESS, m_maxItems);
-        m_queuesMap[MessageType::STATE_FUL] = std::make_unique<PersistedQueue>(MessageType::STATE_FUL, m_maxItems);
+        m_queuesMap[MessageType::STATELESS] = std::make_unique<PersistedQueue>(MessageType::STATELESS, m_maxItems);
+        m_queuesMap[MessageType::STATEFUL] = std::make_unique<PersistedQueue>(MessageType::STATEFUL, m_maxItems);
         m_queuesMap[MessageType::COMMAND] = std::make_unique<PersistedQueue>(MessageType::COMMAND, m_maxItems);
     }
 

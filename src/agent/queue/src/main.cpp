@@ -13,7 +13,7 @@ int main()
         int item;
         for (int i = 0; i < count; ++i)
         {
-            queue.popLastMessage(MessageType::STATE_LESS);
+            queue.popLastMessage(MessageType::STATELESS);
             std::cout << "Popping event 1: " << std::endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
@@ -23,7 +23,7 @@ int main()
         int item;
         for (int i = 0; i < count; ++i)
         {
-            queue.popLastMessage(MessageType::STATE_FUL);
+            queue.popLastMessage(MessageType::STATEFUL);
             std::cout << "Popping event 2: " << std::endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
@@ -33,8 +33,8 @@ int main()
     auto producer = [&](int &count) {
         for (int i = 0; i < count; ++i)
         {
-            auto message = R"({"Data" : "for STATE_LESS)" + std::to_string(i) + R"("})";
-            queue.push(Message(MessageType::STATE_LESS, message));
+            auto message = R"({"Data" : "for STATELESS)" + std::to_string(i) + R"("})";
+            queue.push(Message(MessageType::STATELESS, message));
             std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Simulate work
         }
     };
