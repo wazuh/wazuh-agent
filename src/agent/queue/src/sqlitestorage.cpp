@@ -12,142 +12,131 @@
 #define COUNT_QUERY "SELECT COUNT(*) FROM " + m_tableName + ";"
 
 SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::string& tableName)
-    : m_dbName(dbName), m_tableName(tableName), m_db(nullptr)  {
-    OpenDB();
-    InitializeTable();
-    CloseDB();
+    : m_dbName(dbName), m_tableName(tableName), m_db(nullptr) {
+    try {
+        // open db
+        m_db = std::make_unique<SQLite::Database>(m_dbName, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
+        InitializeTable();
+    } catch (const std::exception& e) {
+        std::cerr << "Error initializing database: " << e.what() << std::endl;
+        throw;
+    }
 }
 
 SQLiteStorage::~SQLiteStorage() {
-    // Destructor vacío ya que la base de datos se cerrará después de cada operación
+    // No need to explicitly close the database as std::unique_ptr will handle it
 }
 
 void SQLiteStorage::InitializeTable() {
-    std::string createTableQuery = CREATE_TABLE_QUERY;
-    sqlite3_exec(m_db, createTableQuery.c_str(), 0, 0, 0);
-}
-
-void SQLiteStorage::OpenDB() {
-    sqlite3_open(m_dbName.c_str(), &m_db);
-}
-
-void SQLiteStorage::CloseDB() {
-    if (m_db) {
-        sqlite3_close(m_db);
-        m_db = nullptr;
+    std::lock_guard<std::mutex> lock(m_mtx);
+    try {
+        std::string createTableQuery = CREATE_TABLE_QUERY;
+        m_db->exec(createTableQuery);
+    } catch (const std::exception& e) {
+        std::cerr << "Error initializing table: " << e.what() << std::endl;
+        throw;
     }
 }
 
 void SQLiteStorage::Store(const json& message) {
     std::lock_guard<std::mutex> lock(m_mtx);
-    std::string insertQuery = INSERT_QUERY;
-    OpenDB();
-    sqlite3_stmt* stmt;
-    sqlite3_prepare_v2(m_db, insertQuery.c_str(), -1, &stmt, 0);
-    if(message.is_array())
-    {
-        for (auto& singleMessageData : message.items())
-        {
-            std::string messageStr = singleMessageData.value();
-            sqlite3_bind_text(stmt, 1, messageStr.c_str(), -1, SQLITE_TRANSIENT);
-            sqlite3_step(stmt);
+    try {
+        std::string insertQuery = INSERT_QUERY;
+        SQLite::Statement query(*m_db, insertQuery);
+
+        if (message.is_array()) {
+            for (const auto& singleMessageData : message) {
+                query.bind(1, singleMessageData.dump());
+                query.exec();
+                query.reset(); // Reset the query to reuse it for the next message
+            }
+        } else {
+            query.bind(1, message.dump());
+            query.exec();
         }
+    } catch (const std::exception& e) {
+        std::cerr << "Error storing message: " << e.what() << std::endl;
+        throw;
     }
-    else
-    {
-        std::string messageStr = message.dump();
-        sqlite3_bind_text(stmt, 1, messageStr.c_str(), -1, SQLITE_TRANSIENT);
-        sqlite3_step(stmt);
-    }
-    sqlite3_finalize(stmt);
-    CloseDB();
 }
 
 json SQLiteStorage::Retrieve(int id) {
     std::lock_guard<std::mutex> lock(m_mtx);
-    OpenDB();
-
-    std::string selectQuery = SELECT_QUERY;
-    sqlite3_stmt* stmt;
-    sqlite3_prepare_v2(m_db, selectQuery.c_str(), -1, &stmt, 0);
-    sqlite3_bind_int(stmt, 1, id);
-    json message;
-    if (sqlite3_step(stmt) == SQLITE_ROW) {
-        std::string messageStr = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
-        message = json::parse(messageStr);
-    } else {
-        message = nullptr;
+    try {
+        std::string selectQuery = SELECT_QUERY;
+        SQLite::Statement query(*m_db, selectQuery);
+        query.bind(1, id);
+        json message;
+        if (query.executeStep()) {
+            message = json::parse(query.getColumn(0).getString());
+        } else {
+            message = nullptr;
+        }
+        return message;
+    } catch (const std::exception& e) {
+        std::cerr << "Error retrieving message: " << e.what() << std::endl;
+        throw;
     }
-    sqlite3_finalize(stmt);
-
-    CloseDB();
-    return message;
 }
 
 json SQLiteStorage::RetrieveMultiple(int n) {
     std::lock_guard<std::mutex> lock(m_mtx);
-    OpenDB();
-
-    std::string selectQuery = SELECT_MULTIPLE_QUERY;
-    sqlite3_stmt* stmt;
-    sqlite3_prepare_v2(m_db, selectQuery.c_str(), -1, &stmt, 0);
-    sqlite3_bind_int(stmt, 1, n);
-    json messages = json::array();
-    while (sqlite3_step(stmt) == SQLITE_ROW) {
-        std::string messageStr = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
-        messages.push_back(json::parse(messageStr));
+    try {
+        std::string selectQuery = SELECT_MULTIPLE_QUERY;
+        SQLite::Statement query(*m_db, selectQuery);
+        query.bind(1, n);
+        json messages = json::array();
+        while (query.executeStep()) {
+            messages.push_back(json::parse(query.getColumn(0).getString()));
+        }
+        std::reverse(messages.begin(), messages.end());
+        return messages;
+    } catch (const std::exception& e) {
+        std::cerr << "Error retrieving multiple messages: " << e.what() << std::endl;
+        throw;
     }
-    sqlite3_finalize(stmt);
-
-    CloseDB();
-    return messages;
 }
 
 int SQLiteStorage::Remove(int id) {
     std::lock_guard<std::mutex> lock(m_mtx);
-    OpenDB();
-
-    std::string deleteQuery = DELETE_QUERY;
-    sqlite3_stmt* stmt;
-    sqlite3_prepare_v2(m_db, deleteQuery.c_str(), -1, &stmt, 0);
-    sqlite3_bind_int(stmt, 1, id);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-
-    CloseDB();
-
-    return 1;
+    try {
+        std::string deleteQuery = DELETE_QUERY;
+        SQLite::Statement query(*m_db, deleteQuery);
+        query.bind(1, id);
+        query.exec();
+        return 1;
+    } catch (const std::exception& e) {
+        std::cerr << "Error removing message: " << e.what() << std::endl;
+        throw;
+    }
 }
 
 int SQLiteStorage::RemoveMultiple(int n) {
     std::lock_guard<std::mutex> lock(m_mtx);
-    OpenDB();
-
-    std::string deleteQuery = DELETE_MULTIPLE_QUERY;
-    sqlite3_stmt* stmt;
-    sqlite3_prepare_v2(m_db, deleteQuery.c_str(), -1, &stmt, 0);
-    sqlite3_bind_int(stmt, 1, n);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-
-    CloseDB();
-
-    return n;
+    try {
+        std::string deleteQuery = DELETE_MULTIPLE_QUERY;
+        SQLite::Statement query(*m_db, deleteQuery);
+        query.bind(1, n);
+        query.exec();
+        return n;
+    } catch (const std::exception& e) {
+        std::cerr << "Error removing multiple messages: " << e.what() << std::endl;
+        throw;
+    }
 }
 
 int SQLiteStorage::GetElementCount() {
     std::lock_guard<std::mutex> lock(m_mtx);
-    OpenDB();
-
-    std::string countQuery = COUNT_QUERY;
-    sqlite3_stmt* stmt;
-    sqlite3_prepare_v2(m_db, countQuery.c_str(), -1, &stmt, 0);
-    int count = 0;
-    if (sqlite3_step(stmt) == SQLITE_ROW) {
-        count = sqlite3_column_int(stmt, 0);
+    try {
+        std::string countQuery = COUNT_QUERY;
+        SQLite::Statement query(*m_db, countQuery);
+        int count = 0;
+        if (query.executeStep()) {
+            count = query.getColumn(0).getInt();
+        }
+        return count;
+    } catch (const std::exception& e) {
+        std::cerr << "Error getting element count: " << e.what() << std::endl;
+        throw;
     }
-    sqlite3_finalize(stmt);
-
-    CloseDB();
-    return count;
 }

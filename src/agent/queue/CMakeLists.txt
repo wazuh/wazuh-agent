@@ -5,8 +5,8 @@ project(QueueTest LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# Find the nlohmann::json package using vcpkg
-find_package(SQLite3 REQUIRED)
+# Find the nlohmann::json and SQLiteCpp package using vcpkg
+find_package(SQLiteCpp REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wunused -pthread")
@@ -23,4 +23,5 @@ add_executable(QueueTest
 	)
 
 # Link the nlohmann::json library to your project
-target_link_libraries(QueueTest PRIVATE ${SQLite3_LIBRARIES} nlohmann_json::nlohmann_json)
+target_include_directories(QueueTest PRIVATE include ${SQLiteCpp_INCLUDE_DIRS})
+target_link_libraries(QueueTest PRIVATE SQLiteCpp nlohmann_json::nlohmann_json)

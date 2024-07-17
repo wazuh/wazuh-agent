@@ -4,7 +4,9 @@
 #include <mutex>
 #include <string>
 
-#include <sqlite3.h>
+#include <SQLiteCpp/SQLiteCpp.h>
+#include <SQLiteCpp/VariadicBind.h>
+#include <stdexcept>
 
 #include "persistence.h"
 
@@ -96,10 +98,6 @@ private:
      */
     void InitializeTable();
 
-    void OpenDB();
-
-    void CloseDB();
-
     /// The name of the SQLite database file.
     std::string m_dbName;
 
@@ -107,7 +105,8 @@ private:
     std::string m_tableName;
 
     /// Pointer to the SQLite database connection.
-    sqlite3* m_db;
+    //SQLite::Database* m_db;
+    std::unique_ptr<SQLite::Database> m_db;
 
     /// Mutex to ensure thread-safe operations.
     std::mutex m_mtx;
