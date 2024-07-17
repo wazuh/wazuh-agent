@@ -10,8 +10,12 @@
  */
 
 #include <iostream>
+#include "shared.h"
+#include "defs.h"
 #include "debug_op.h"
 #include "string_op.h"
+#include "pthreads_op.h"
+
 #include "inventory.h"
 
 using namespace std;
@@ -19,10 +23,12 @@ using namespace std;
 const int INVENTORY_MQ =  'd';
 const int DBSYNC_MQ    = '5';
 
+#define INFINITE_OPENQ_ATTEMPTS 0
+
 #define WM_INV_LOGTAG "modules:inventory" // Tag for log messages
 #define WM_INVENTORY_DEFAULT_INTERVAL W_HOUR_SECONDS
 
-void Inventory::Inventory(){
+Inventory::Inventory(){
     inv_stop_condition = PTHREAD_COND_INITIALIZER;
     inv_stop_mutex = PTHREAD_MUTEX_INITIALIZER;
     need_shutdown_wait = false;
@@ -32,9 +38,11 @@ void Inventory::Inventory(){
     dbPath = INVENTORY_DB_DISK_PATH;
     normalizerConfigPath = INVENTORY_NORM_CONFIG_DISK_PATH;
     normalizerType = INVENTORY_NORM_TYPE;
+
+    sync_max_eps = 10;      // Database synchronization number of events per second (default value)
 }
 
-void Inventory::~Inventory(){
+Inventory::~Inventory(){
     cout << "Inventory destroyed!" << endl;
 }
 
@@ -48,71 +56,22 @@ void *Inventory::run() {
         pthread_exit(NULL);
     }
 
-    #ifndef WIN32
-    // Connect to socket
-    queue_fd = StartMQ(DEFAULTQUEUE, WRITE, INFINITE_OPENQ_ATTEMPTS);
-
-    if (queue_fd < 0) {
-        mterror(WM_INV_LOGTAG, "Can't connect to queue.");
-        pthread_exit(NULL);
-    }
-    #endif
-
-    if (inventory_module = so_get_module_handle("inventory"), inventory_module)
-    {
-        inventory_sync_message_ptr = so_get_function_sym(inventory_module, "inventory_sync_message");
-
-        void* rsync_module = NULL;
-        if(rsync_module = so_check_module_loaded("rsync"), rsync_module) {
-            rsync_initialize_full_log_func rsync_initialize_log_function_ptr = so_get_function_sym(rsync_module, "rsync_initialize_full_log_function");
-            if(rsync_initialize_log_function_ptr) {
-                rsync_initialize_log_function_ptr(mtLoggingFunctionsWrapper);
-            }
-            // Even when the RTLD_NOLOAD flag was used for dlopen(), we need a matching call to dlclose()
-#ifndef WIN32
-            so_free_library(rsync_module);
-#endif
-        }
-    } else {
-#ifdef __hpux
-        mtinfo(WM_INV_LOGTAG, "Not supported in HP-UX.");
-#else
-        mterror(WM_INV_LOGTAG, "Can't load inventory.");
-#endif
-        pthread_exit(NULL);
-    }
-
     mtdebug1(WM_INV_LOGTAG, "Starting inventory.");
     w_mutex_lock(&inv_stop_mutex);
     need_shutdown_wait = true;
     w_mutex_unlock(&inv_stop_mutex);
-    const long max_eps = inv->sync.sync_max_eps;
-    if (0 != max_eps) {
-        inventory_sync_max_eps = max_eps;
-    }
+
     // else: if max_eps is 0 (from configuration) let's use the default max_eps value (10)
-    wm_inv_log_config(inv);
+    wm_inv_log_config();
 
     inventory_start();
 
-    inventory_sync_message_ptr = NULL;
-    inventory_start_ptr = NULL;
-    inventory_stop_ptr = NULL;
-
-    if (queue_fd) {
-        close(queue_fd);
-        queue_fd = 0;
-    }
-    so_free_library(inventory_module);
-
-    inventory_module = NULL;
     mtinfo(WM_INV_LOGTAG, "Module finished.");
     w_mutex_lock(&inv_stop_mutex);
     w_cond_signal(&inv_stop_condition);
     w_mutex_unlock(&inv_stop_mutex);
-    return 0;
-
     return NULL;
+
 }
 
 int Inventory::setup(const Configuration & config) {
@@ -158,7 +117,7 @@ void Inventory::wm_inv_send_dbsync_message(const string& data) {
 
 void Inventory::wm_inv_send_message(string data, const char queue_id) {
     /*if (!is_shutdown_process_started()) {
-        const int eps = 1000000/inventory_sync_max_eps;
+        const int eps = 1000000/sync_max_eps;
         if (wm_sendmsg_ex(eps, queue_fd, data, WM_INV_LOCATION, queue_id, &is_shutdown_process_started) < 0) {
 
             mterror(WM_INV_LOGTAG, "Unable to send message to '%s' (wazuh-agentd might be down). Attempting to reconnect.", DEFAULTQUEUE);
