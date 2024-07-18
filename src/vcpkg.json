@@ -7,7 +7,9 @@
       "toml11",
       "boost-url",
       "nlohmann-json",
-      "gtest"
+      "jwt-cpp",
+      "gtest",
+      "openssl"
     ],
     "overrides": [
       {
