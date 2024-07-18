@@ -15,7 +15,7 @@
 #include "fileIO.hpp"
 #include "fileSystem.hpp"
 #include "stdFileSystemHelper.hpp"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "sharedDefs.h"
 #include "stringHelper.h"
 #include <iostream>

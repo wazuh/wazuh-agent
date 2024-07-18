@@ -14,7 +14,7 @@
 
 #include <memory>
 #include "filesystemHelper.h"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "sharedDefs.h"
 #include "utilsWrapperLinux.hpp"
 
