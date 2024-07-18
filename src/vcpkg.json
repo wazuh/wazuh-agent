@@ -4,10 +4,12 @@
     "dependencies": [
       "boost-asio",
       "boost-beast",
-      "toml11",
       "boost-url",
+      "gtest",
+      "jwt-cpp",
       "nlohmann-json",
-      "gtest"
+      "openssl",
+      "toml11"
     ],
     "overrides": [
       {
