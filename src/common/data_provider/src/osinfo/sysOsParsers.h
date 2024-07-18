@@ -13,7 +13,7 @@
 #define _SYS_OS_PARSERS_H
 
 #include <istream>
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 struct ISysOsParser
 {

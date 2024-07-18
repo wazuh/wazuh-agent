@@ -12,7 +12,7 @@
 #ifndef _SYS_INFO_INTERFACE
 #define _SYS_INFO_INTERFACE
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 class ISysInfo
 {
