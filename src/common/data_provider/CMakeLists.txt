@@ -8,7 +8,7 @@ endif()
 
 enable_testing()
 
-get_filename_component(SRC_FOLDER     ${CMAKE_SOURCE_DIR}/../ ABSOLUTE)
+get_filename_component(SRC_FOLDER     ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
 
 if(COVERITY)
   add_definitions(-D__GNUC__=8)
@@ -62,16 +62,26 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-include_directories(${CMAKE_SOURCE_DIR}/src/)
-include_directories(${CMAKE_SOURCE_DIR}/include/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
 include_directories(${SRC_FOLDER}/headers/)
 include_directories(${SRC_FOLDER}/external/sqlite/)
-include_directories(${SRC_FOLDER}/external/nlohmann/)
-include_directories(${SRC_FOLDER}/external/cJSON/)
+#include_directories(${SRC_FOLDER}/external/nlohmann/)
+#include_directories(${SRC_FOLDER}/external/cJSON/)
 include_directories(${SRC_FOLDER}/external/procps/)
 include_directories(${SRC_FOLDER}/external/bzip2/)
 include_directories(${SRC_FOLDER}/external/openssl/include/)
-include_directories(${SRC_FOLDER}/shared_modules/utils)
+include_directories(${SRC_FOLDER}/common/)
+include_directories(${SRC_FOLDER}/common/utils/)
+include_directories(${SRC_FOLDER}/common/byteArrayHelper/include/)
+include_directories(${SRC_FOLDER}/common/cmdHelper/include/)
+include_directories(${SRC_FOLDER}/common/globHelper/include/)
+include_directories(${SRC_FOLDER}/common/fileHelper/include/)
+include_directories(${SRC_FOLDER}/common/jsonHelper/include/)
+include_directories(${SRC_FOLDER}/common/linuxHelper/include/)
+include_directories(${SRC_FOLDER}/common/networkHelper/include/)
+include_directories(${SRC_FOLDER}/common/stringHelper/include/)
+include_directories(${SRC_FOLDER}/common/timeHelper/include/)
 include_directories(${SRC_FOLDER}/shared_modules/common/)
 include_directories(${SRC_FOLDER}/external/openssl/include/)
 include_directories(${SRC_FOLDER}/external/libplist/bin/include/)
@@ -85,8 +95,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   # Avoid download externals from http-request submodule
   set(EXTERNAL_RES "")
   set(PRECOMPILED_EXTERNAL_RES "")
-  include_directories(${SRC_FOLDER}/shared_modules/http-request/include/)
-  include_directories(${SRC_FOLDER}/shared_modules/http-request/shared/)
+  include_directories(${SRC_FOLDER}/common/http-request/include/)
+  include_directories(${SRC_FOLDER}/common/http-request/shared/)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
 if(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
@@ -95,7 +105,7 @@ endif(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
 
 link_directories(${SRC_FOLDER})
 link_directories(${SRC_FOLDER}/external/sqlite/)
-link_directories(${SRC_FOLDER}/external/cJSON/)
+#link_directories(${SRC_FOLDER}/external/cJSON/)
 link_directories(${SRC_FOLDER}/external/procps/)
 link_directories(${SRC_FOLDER}/external/bzip2/)
 link_directories(${SRC_FOLDER}/external/libplist/bin/lib/)
@@ -107,84 +117,84 @@ link_directories(${SRC_FOLDER}/external/rpm/builddir/)
 endif(NOT CMAKE_CHECK_CENTOS5)
 link_directories(${SRC_FOLDER}/external/openssl/)
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  link_directories(${SRC_FOLDER}/shared_modules/http-request/build)
+  link_directories(${SRC_FOLDER}/common/http-request/build)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   link_directories(${SRC_FOLDER}/external/curl/lib/.libs/)
 
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   file(GLOB SYSINFO_SRC
-      "${CMAKE_SOURCE_DIR}/src/*Win.cpp"
-      "${CMAKE_SOURCE_DIR}/src/osinfo/sysOsInfoWin.cpp"
-      "${CMAKE_SOURCE_DIR}/src/network/*Windows.cpp"
-      "${CMAKE_SOURCE_DIR}/src/packages/*Windows.cpp")
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/*Win.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsInfoWin.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*Windows.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/packages/*Windows.cpp")
   add_definitions(-DWIN32=1
                   -D_WIN32_WINNT=0x600
                   -DWIN_EXPORT)
 elseif(CMAKE_CHECK_CENTOS5)
   file(GLOB SYSINFO_SRC
-      "${CMAKE_SOURCE_DIR}/src/*Linux.cpp"
-      "${CMAKE_SOURCE_DIR}/src/network/*Linux.cpp"
-      "${CMAKE_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp"
-      "${CMAKE_SOURCE_DIR}/src/packages/packageLinuxParser.cpp"
-      "${CMAKE_SOURCE_DIR}/src/packages/packageLinuxParserRpmLegacy.cpp")
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/*Linux.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*Linux.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/packages/packageLinuxParser.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/packages/packageLinuxParserRpmLegacy.cpp")
   add_definitions(-DLINUX_TYPE=LinuxType::LEGACY) # Partial compilation in legacy systems
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   file(GLOB SYSINFO_SRC
-      "${CMAKE_SOURCE_DIR}/src/*Linux.cpp"
-      "${CMAKE_SOURCE_DIR}/src/network/*Linux.cpp"
-      "${CMAKE_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp"
-      "${CMAKE_SOURCE_DIR}/src/packages/packageLinux*.cpp"
-      "${CMAKE_SOURCE_DIR}/src/packages/rpm*.cpp")
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/*Linux.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*Linux.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/packages/packageLinux*.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/packages/rpm*.cpp")
   add_definitions(-DLINUX_TYPE=LinuxType::STANDARD) # Standard compilation in compatible systems
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "arm64.*|ARM64.*")
     file(GLOB SYSINFO_SRC
-        "${CMAKE_SOURCE_DIR}/src/*Mac.cpp"
-        "${CMAKE_SOURCE_DIR}/src/*CommonBSD.cpp"
-        "${CMAKE_SOURCE_DIR}/src/packages/*Mac.cpp"
-        "${CMAKE_SOURCE_DIR}/src/network/*BSD.cpp"
-        "${CMAKE_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp"
-        "${CMAKE_SOURCE_DIR}/src/hardware/*ARMMac.cpp")
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/*Mac.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/*CommonBSD.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/packages/*Mac.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*BSD.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/hardware/*ARMMac.cpp")
   else()
     file(GLOB SYSINFO_SRC
-        "${CMAKE_SOURCE_DIR}/src/*Mac.cpp"
-        "${CMAKE_SOURCE_DIR}/src/*CommonBSD.cpp"
-        "${CMAKE_SOURCE_DIR}/src/packages/*Mac.cpp"
-        "${CMAKE_SOURCE_DIR}/src/network/*BSD.cpp"
-        "${CMAKE_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp"
-        "${CMAKE_SOURCE_DIR}/src/hardware/*X86_64Mac.cpp")
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/*Mac.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/*CommonBSD.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/packages/*Mac.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*BSD.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/hardware/*X86_64Mac.cpp")
   endif()
 elseif(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
   file(GLOB SYSINFO_SRC
-      "${CMAKE_SOURCE_DIR}/src/*FreeBSD.cpp"
-      "${CMAKE_SOURCE_DIR}/src/*CommonBSD.cpp"
-      "${CMAKE_SOURCE_DIR}/src/network/*BSD.cpp"
-      "${CMAKE_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/*FreeBSD.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/*CommonBSD.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*BSD.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
   file(GLOB SYSINFO_SRC
-      "${CMAKE_SOURCE_DIR}/src/*OpenBSD.cpp"
-      "${CMAKE_SOURCE_DIR}/src/*CommonBSD.cpp"
-      "${CMAKE_SOURCE_DIR}/src/network/*BSD.cpp"
-      "${CMAKE_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/*OpenBSD.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/*CommonBSD.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*BSD.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
   file(GLOB SYSINFO_SRC
-      "${CMAKE_SOURCE_DIR}/src/UtilsWrapperUnix.cpp"
-      "${CMAKE_SOURCE_DIR}/src/*Solaris.cpp"
-      "${CMAKE_SOURCE_DIR}/src/packages/*Solaris.cpp"
-      "${CMAKE_SOURCE_DIR}/src/network/networkSolarisHelper.cpp"
-      "${CMAKE_SOURCE_DIR}/src/network/*Solaris.cpp"
-      "${CMAKE_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/UtilsWrapperUnix.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/*Solaris.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/packages/*Solaris.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/network/networkSolarisHelper.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*Solaris.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
 else()
   file(GLOB SYSINFO_SRC
-      "${CMAKE_SOURCE_DIR}/src/*Unix.cpp"
-      "${CMAKE_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/*Unix.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
 
 add_library(sysinfo SHARED
     ${SYSINFO_SRC}
-    ${CMAKE_SOURCE_DIR}/src/sysInfo.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/sysInfo.cpp
     ${SRC_FOLDER}/${RESOURCE_OBJ})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -218,7 +228,7 @@ elseif(APPLE)
   target_link_libraries(sysinfo cjson ${SRC_FOLDER}/external/libplist/bin/lib/libplist-2.0.a ${iokit_lib} ${corefoundation_lib})
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
-target_link_libraries(sysinfo wazuhext)
+target_link_libraries(sysinfo nlohmann_json::nlohmann_json cjson)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set(CURL_DEP "wazuhext")
@@ -226,7 +236,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   if(CMAKE_CHECK_CENTOS5)
       set(USE_HTTP 1)
   endif(CMAKE_CHECK_CENTOS5)
-  add_subdirectory(${SRC_FOLDER}/shared_modules/http-request ${SRC_FOLDER}/shared_modules/http-request/build)
+  add_subdirectory(${SRC_FOLDER}/common/http-request ${SRC_FOLDER}/common/http-request/build)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
 if(APPLE)
