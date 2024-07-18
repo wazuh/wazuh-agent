@@ -5,6 +5,8 @@
       "boost-asio",
       "boost-beast",
       "toml11",
+      "boost-url",
+      "nlohmann-json",
       "gtest"
     ],
     "overrides": [
