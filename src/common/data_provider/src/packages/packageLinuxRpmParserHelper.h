@@ -12,7 +12,7 @@
 #ifndef _PACKAGE_LINUX_RPM_PARSER_HELPER_H
 #define _PACKAGE_LINUX_RPM_PARSER_HELPER_H
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "rpmPackageManager.h"
 #include "sharedDefs.h"
 

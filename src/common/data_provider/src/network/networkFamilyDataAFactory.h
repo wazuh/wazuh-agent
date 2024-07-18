@@ -13,7 +13,7 @@
 #define _NETWORK_FAMILY_DATA_AFACTORY_H
 
 #include <memory>
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "networkInterfaceLinux.h"
 #include "networkInterfaceBSD.h"
 #include "networkInterfaceWindows.h"
