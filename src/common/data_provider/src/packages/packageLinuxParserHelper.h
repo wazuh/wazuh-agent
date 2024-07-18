@@ -14,7 +14,7 @@
 
 #include "sharedDefs.h"
 #include "stringHelper.h"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "timeHelper.h"
 #include "sharedDefs.h"
 

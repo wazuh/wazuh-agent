@@ -14,7 +14,7 @@
 
 #include "sharedDefs.h"
 #include "stringHelper.h"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"

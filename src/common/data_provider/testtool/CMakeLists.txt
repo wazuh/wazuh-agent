@@ -25,7 +25,7 @@ endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
 add_executable(sysinfo_test_tool
                ${sysinfo_TESTTOOL_SRC}
-               ${CMAKE_SOURCE_DIR}/testtool/main.cpp)
+               ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(sysinfo_test_tool
