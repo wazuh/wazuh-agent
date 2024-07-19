@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane id="TransactionAnchorPane" prefHeight="50.0" prefWidth="786.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="db_gui.datapage.TransactionController">
+    <children>
+        <Label accessibleHelp="Section for beginning and resolving a transaction." accessibleText="Transaction Section" layoutX="14.0" layoutY="6.0" text="Transaction" />
+        <Button fx:id="TxnBeginButton" accessibleHelp="Press this button to begin a transaction." accessibleText="Begin Transaction Button" layoutX="102.0" layoutY="13.0" mnemonicParsing="false" onAction="#handleTxnBeginButton" text="Begin" />
+        <Button fx:id="TxnCommitButton" accessibleHelp="Press this button to commit the current transaction." accessibleText="Commit Transaction Button" disable="true" layoutX="225.0" layoutY="13.0" mnemonicParsing="false" onAction="#handleTxnCommitButton" text="Commit" />
+        <Button fx:id="TxnAbortButton" accessibleHelp="Press this button to abort the current transaction." accessibleText="Abort Button" disable="true" layoutX="367.0" layoutY="13.0" mnemonicParsing="false" onAction="#handleTxnAbortButton" text="Abort" />
+        <Separator layoutX="-25.0" layoutY="46.0" prefHeight="6.0" prefWidth="810.0" />
+    </children>
+</AnchorPane>

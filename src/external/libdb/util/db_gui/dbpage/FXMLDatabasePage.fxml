@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane id="AnchorPane" prefHeight="600.0" prefWidth="786.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="db_gui.dbpage.DatabasePageController">
+    <children>
+        <TabPane layoutX="7.0" prefHeight="334.0" prefWidth="786.0" tabClosingPolicy="UNAVAILABLE">
+            <tabs>
+                <Tab fx:id="DatabaseCreateTab" closable="false" text="Create Database">
+                    <content>
+                        <fx:include fx:id="DbCreate" source="/db_gui/dbpage/FXMLDatabaseCreateTab.fxml"/>
+                    </content>
+                </Tab>
+                <Tab fx:id="DatabaseOpenTab" closable="false" text="Open Database">
+                    <content>
+                        <fx:include fx:id="DbOpen" source="/db_gui/dbpage/FXMLDatabaseOpenTab.fxml"/>
+                    </content>
+                </Tab>
+                <Tab fx:id="DatabaseCompactTab" closable="false" text="Compact">
+                    <content>
+                        <fx:include fx:id="DbCompact" source="/db_gui/dbpage/FXMLDatabaseCompactTab.fxml"/>
+                    </content>
+                </Tab>
+                <Tab fx:id="DatabaseRemoveTab" closable="false" text="Remove">
+                    <content>
+                        <fx:include fx:id="DbRemove" source="/db_gui/dbpage/FXMLDatabaseRemoveTab.fxml"/>
+                    </content>
+                </Tab>
+                <Tab fx:id="DatabaseRenameTab" closable="false" text="Rename">
+                    <content>
+                        <fx:include fx:id="DbRename" source="/db_gui/dbpage/FXMLDatabaseRenameTab.fxml"/>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+        <Button fx:id="EnvironmentPageButton" accessibleHelp="Closes the current environment and returns to the Environment page." accessibleText="Environment Page Button" layoutX="22.0" layoutY="559.0" mnemonicParsing="false" onAction="#handleEnvironmentPageButton" prefHeight="25.0" prefWidth="127.0" text="Environment Page" textAlignment="CENTER" />
+        <TextArea fx:id="dbFeedbackBox" accessibleHelp="Displays feedback, such as error messages and operation progress." accessibleText="Feedback text box" editable="false" layoutX="22.0" layoutY="342.0" prefHeight="200.0" prefWidth="752.0" />
+        <Button fx:id="CloseButton" accessibleHelp="Closes the environment and exits the application." accessibleText="Close button" layoutX="179.0" layoutY="559.0" mnemonicParsing="false" onAction="#handleCloseButton" text="Close" />
+        <Button fx:id="dbEnableButton" accessibleHelp="Allows messages to be sent to the feedback box." accessibleText="Enable Feedback Button" disable="true" layoutX="502.0" layoutY="559.0" mnemonicParsing="false" onAction="#handleEnableFeedbackBox" prefHeight="25.0" prefWidth="105.0" text="Enable Feedback" />
+        <Button fx:id="dbDisableButton" accessibleHelp="Stops messages from being sent to the feedback box." accessibleText="Disable Feedback Button" layoutX="345.0" layoutY="559.0" mnemonicParsing="false" onAction="#handleDisableFeedbackBox" prefHeight="25.0" prefWidth="119.0" text="Disable Feedback" />
+    </children>
+</AnchorPane>
