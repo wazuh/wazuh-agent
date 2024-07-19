@@ -25,9 +25,11 @@ set(HEADERS
 
 add_library(agent ${SOURCES} ${HEADERS})
 
+add_subdirectory(configuration_parser)
+
 find_package(Boost REQUIRED COMPONENTS asio)
 
-target_link_libraries(agent PRIVATE ${Boost_LIBRARIES})
+target_link_libraries(agent PUBLIC ConfigurationParser PRIVATE ${Boost_LIBRARIES})
 
 if(BUILD_TESTS)
     add_subdirectory(tests)
