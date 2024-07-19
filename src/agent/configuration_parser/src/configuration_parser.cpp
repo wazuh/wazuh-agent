@@ -6,9 +6,9 @@ namespace configuration
     {
         try
         {
-            tbl = toml::parse(configFileName, toml::spec::v(1,0,0));
+            tbl = toml::parse(configFileName, toml::spec::v(1, 0, 0));
         }
-        catch(const std::exception& e)
+        catch (const std::exception& e)
         {
             std::cout << "Error parsing wazuh.conf file: " << e.what() << std::endl;
             throw;
@@ -19,13 +19,13 @@ namespace configuration
     {
         try
         {
-            tbl = toml::parse_str(stringToParse, toml::spec::v(1,0,0));
+            tbl = toml::parse_str(stringToParse, toml::spec::v(1, 0, 0));
         }
-        catch(const std::exception& e)
+        catch (const std::exception& e)
         {
             std::cout << "Error parsing wazuh.conf file: " << e.what() << std::endl;
             throw;
         }
     }
 
-} // configuration
+} // namespace configuration
