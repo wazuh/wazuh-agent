@@ -11,7 +11,6 @@ namespace configuration
     class ConfigurationParser
     {
     private:
-        std::string configFileName = "wazuh.conf";
         toml::value tbl;
 
     public:

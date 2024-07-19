@@ -1,12 +1,17 @@
 #include <configuration_parser.hpp>
 
+namespace
+{
+    const std::string CONFIG_FILE_NAME = "wazuh.conf";
+}
+
 namespace configuration
 {
     ConfigurationParser::ConfigurationParser()
     {
         try
         {
-            tbl = toml::parse(configFileName, toml::spec::v(1, 0, 0));
+            tbl = toml::parse(CONFIG_FILE_NAME, toml::spec::v(1, 0, 0));
         }
         catch (const std::exception& e)
         {
