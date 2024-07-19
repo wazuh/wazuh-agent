@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane id="BtreeHashAnchorPane" prefHeight="332.0" prefWidth="786.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="db_gui.datapage.BtreeHashController">
+    <children>
+        <Label accessibleHelp="Section for inserting key data pairs into the database." accessibleText="Put Data Section" layoutX="14.0" layoutY="14.0" text="Put Data" />
+        <Label accessibleHelp="Label for the put key text box." accessibleText="Put Key Label" layoutX="24.0" layoutY="44.0" text="Key" />
+        <TextField fx:id="PutKeyTextField" accessibleHelp="Enter a key to add to the database." accessibleText="Put key text box." layoutX="64.0" layoutY="40.0" />
+        <ComboBox fx:id="PutKeyComboBox" accessibleHelp="Select the data format of the key to put into the database." accessibleText="Put key data format." layoutX="224.0" layoutY="40.0" prefWidth="150.0" />
+        <Label accessibleHelp="Label for the put data text box." accessibleText="Put Data Label" layoutX="399.0" layoutY="44.0" text="Data" />
+        <ComboBox fx:id="PutDataComboBox" accessibleHelp="Select the data format of the data to put into the database." accessibleText="Put data combo box" layoutX="606.0" layoutY="40.0" prefWidth="150.0" />
+        <TextField fx:id="PutDataTextField" accessibleHelp="Enter the data of a key data pair to put into the database." accessibleText="Put data text box" layoutX="443.0" layoutY="40.0" />
+        <Button fx:id="PutButton" accessibleHelp="Press this button to put the key data pair in the key and data text boxes into the database." accessibleText="Put Button" layoutX="704.0" layoutY="90.0" mnemonicParsing="false" onAction="#handlePutButton" text="Put" />
+        <Separator layoutY="154.0" prefHeight="6.0" prefWidth="786.0" />
+        <Label accessibleHelp="Section for browsing the key data pairs in the database." accessibleText="Browse Data Section" layoutX="10.0" layoutY="160.0" text="Browse Data" />
+        <Label accessibleHelp="Label for the browse key text box." accessibleText="Browse Key " layoutX="23.0" layoutY="199.0" text="Key" />
+        <TextField fx:id="GetKeyTextField" accessibleHelp="Displays the key of the current record, or enter a key to use to get a record from the database." accessibleText="Browse Key text box" layoutX="64.0" layoutY="195.0" />
+        <ComboBox fx:id="GetKeyComboBox" accessibleHelp="Selects the data format of the key entered or displayed in the key text box." accessibleText="Browse key combo box" layoutX="224.0" layoutY="195.0" onAction="#handleGetKeyComboBox" prefWidth="150.0" />
+        <Label accessibleHelp="Label for the browse data text box." accessibleText="Browse Data Label" layoutX="398.0" layoutY="199.0" text="Data" />
+        <TextField fx:id="GetDataTextField" accessibleHelp="Displays the data of the current database key data pair." accessibleText="Browse data text box" layoutX="443.0" layoutY="195.0" />
+        <ComboBox fx:id="GetDataComboBox" accessibleHelp="Selects the data format of the data displayed in the data text box." accessibleText="Browse data combo box" layoutX="606.0" layoutY="195.0" onAction="#handleGetDataComboBox" prefWidth="150.0" />
+        <Button fx:id="GetButton" accessibleHelp="Press this button to get the key data pair of the key entered into the browse key text box." accessibleText="Get button" layoutX="115.0" layoutY="250.0" mnemonicParsing="false" onAction="#handleGetButton" text="Get" />
+        <Button fx:id="NextButton" accessibleHelp="Press this button to display the next key data pair in the browse data text boxes." accessibleText="Next Button" layoutX="275.0" layoutY="250.0" mnemonicParsing="false" onAction="#handleNextButton" text="Next" />
+        <Button fx:id="PreviousButton" accessibleHelp="Press this button to display the previous key data pair in the browse data text boxes." accessibleText="Previous button" layoutX="494.0" layoutY="250.0" mnemonicParsing="false" onAction="#handlePreviousButton" text="Previous" />
+        <Button fx:id="DeleteButton" accessibleHelp="Press this button to delete the current record displayed in the browse data text boxes." accessibleText="Delete button" layoutX="657.0" layoutY="250.0" mnemonicParsing="false" onAction="#handleDeleteButton" text="Delete" />
+        <Button fx:id="ClearButton" accessibleHelp="Clears all entered text and selections." accessibleText="Clear button" layoutX="700.0" layoutY="292.0" mnemonicParsing="false" onAction="#clearAllFields" text="Clear" />
+    </children>
+</AnchorPane>

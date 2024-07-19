@@ -1,0 +1,201 @@
+# Wind River Workbench generated Makefile.
+# Do not edit!!!
+#
+# The file ".wrmakefile" is the template used by the Wind River Workbench to
+# generate the makefiles of this project. Add user-specific build targets and
+# make rules only(!) in this project's ".wrmakefile" file. These will then be
+# automatically dumped into the makefiles.
+
+WIND_HOME := $(subst \,/,$(WIND_HOME))
+WIND_BASE := $(subst \,/,$(WIND_BASE))
+WIND_USR := $(subst \,/,$(WIND_USR))
+WRVX_COMPBASE := $(subst \,/,$(WRVX_COMPBASE))
+WIND_KRNL_MK := $(subst \,/,$(WIND_KRNL_MK))
+WIND_USR_MK := $(subst \,/,$(WIND_USR_MK))
+WIND_BUILD := $(subst \,/,$(WIND_BUILD))
+WIND_BUILD_TOOL := $(subst \,/,$(WIND_BUILD_TOOL))
+BDB_ROOT := C:/jenkins/workspace/db-build-vxworks7/db
+
+all : check_vsb pre_build main_all post_build
+
+_clean ::
+	@echo "make: removing targets and objects of `pwd`"
+
+TRACE=0
+TRACEON=$(TRACE:0=@)
+TRACE_FLAG=$(TRACEON:1=)
+
+JOBS?=1
+TARGET_JOBS?=$(JOBS)
+
+MAKEFILE := Makefile
+
+FLEXIBLE_BUILD := 1
+
+BUILD_SPEC = vsb_vxsim_windows_SIMNTgnu
+DEBUG_MODE = 1
+ifeq ($(DEBUG_MODE),1)
+MODE_DIR := Debug
+else
+MODE_DIR := NonDebug
+endif
+OBJ_DIR := .
+WS_ROOT_DIR := C:/WindRiver/workspace
+PRJ_ROOT_DIR := $(BDB_ROOT)/build_vxworks
+
+
+
+#Global Build Macros
+PROJECT_TYPE = DKM
+DEFINES = 
+EXPAND_DBG = 0
+APICHECK_OPTIONS = -warning
+
+
+#BuildSpec specific Build Macros
+VX_CPU_FAMILY = simpc
+CPU = SIMNT
+TOOL_FAMILY = gnu
+TOOL_VERSION = gnu_4_8_1_8
+_CC_VERSION = gnu_4_8_1_8
+TOOL = gnu
+TOOL_PATH = $(WIND_HOME)/compilers/gnu-4.8.1.8/$(WIND_VX7_GNU_HOST_TYPE)/bin
+CC_ARCH_SPEC = -m32 -mfpmath=387 -fno-implicit-fp -fno-omit-frame-pointer
+VSB_DIR = $(WIND_BASE)/samples/prebuilt_projects/vsb_vxsim_windows
+VSB_CONFIG_FILE = $(VSB_DIR)/h/config/vsbConfig.h
+LIBPATH = 
+LIBS = 
+DKM_LONGCALL = 
+APICHECK_CMD = apicheck.sh -r "$(VSB_DIR)/krnl/apicheck/forbidden_api.lst" -n "nmpentium" -u -s "$<" "$@" $(APICHECK_OPTIONS)
+APICHECK = 0
+
+IDE_INCLUDES = -I$(VSB_DIR)/share/h -isystem$(VSB_DIR)/krnl/h/system -isystem$(VSB_DIR)/krnl/h/public -I$(BDB_ROOT)/ -I$(BDB_ROOT)/src -I$(BDB_ROOT)/build_vxworks -I$(BDB_ROOT)/src/dbinc -I$(BDB_ROOT)/src/dbinc_auto
+
+IDE_LIBRARIES = 
+
+IDE_DEFINES = -DCPU=_VX_$(CPU) -DTOOL_FAMILY=$(TOOL_FAMILY) -DTOOL=$(TOOL) -D_WRS_KERNEL -D_VSB_CONFIG_FILE=\"$(VSB_DIR)/h/config/vsbConfig.h\"   
+
+
+
+#BuildTool flags
+ifeq ($(DEBUG_MODE),1)
+DEBUGFLAGS_C-Compiler = -gdwarf-3
+DEBUGFLAGS_C++-Compiler = -gdwarf-3
+DEBUGFLAGS_Linker = -gdwarf-3
+DEBUGFLAGS_Partial-Image-Linker = 
+DEBUGFLAGS_Librarian = 
+DEBUGFLAGS_Assembler = -gdwarf-3
+else
+DEBUGFLAGS_C-Compiler = -O2
+DEBUGFLAGS_C++-Compiler = -O2
+DEBUGFLAGS_Linker = -O2
+DEBUGFLAGS_Partial-Image-Linker = 
+DEBUGFLAGS_Librarian = 
+DEBUGFLAGS_Assembler = -O2
+endif
+
+
+#Project Targets
+PROJECT_TARGETS = bdbvxw/$(MODE_DIR)/bdbvxw.out \
+	 bdbvxw_partialImage/$(MODE_DIR)/bdbvxw_partialImage.o
+
+
+#Rules
+
+# bdbvxw
+ifeq ($(DEBUG_MODE),1)
+bdbvxw/$(MODE_DIR)/% : DEBUGFLAGS_C-Compiler = -gdwarf-3
+bdbvxw/$(MODE_DIR)/% : DEBUGFLAGS_C++-Compiler = -gdwarf-3
+bdbvxw/$(MODE_DIR)/% : DEBUGFLAGS_Linker = -gdwarf-3
+bdbvxw/$(MODE_DIR)/% : DEBUGFLAGS_Partial-Image-Linker = 
+bdbvxw/$(MODE_DIR)/% : DEBUGFLAGS_Librarian = 
+bdbvxw/$(MODE_DIR)/% : DEBUGFLAGS_Assembler = -gdwarf-3
+else
+bdbvxw/$(MODE_DIR)/% : DEBUGFLAGS_C-Compiler = -O2
+bdbvxw/$(MODE_DIR)/% : DEBUGFLAGS_C++-Compiler = -O2
+bdbvxw/$(MODE_DIR)/% : DEBUGFLAGS_Linker = -O2
+bdbvxw/$(MODE_DIR)/% : DEBUGFLAGS_Partial-Image-Linker = 
+bdbvxw/$(MODE_DIR)/% : DEBUGFLAGS_Librarian = 
+bdbvxw/$(MODE_DIR)/% : DEBUGFLAGS_Assembler = -O2
+endif
+bdbvxw/$(MODE_DIR)/% : IDE_INCLUDES = -I$(VSB_DIR)/share/h -isystem$(VSB_DIR)/krnl/h/system -isystem$(VSB_DIR)/krnl/h/public -I$(BDB_ROOT)/ -I$(BDB_ROOT)/src -I$(BDB_ROOT)/build_vxworks -I$(BDB_ROOT)/src/dbinc -I$(BDB_ROOT)/src/dbinc_auto
+bdbvxw/$(MODE_DIR)/% : IDE_LIBRARIES = 
+bdbvxw/$(MODE_DIR)/% : IDE_DEFINES = -DCPU=_VX_$(CPU) -DTOOL_FAMILY=$(TOOL_FAMILY) -DTOOL=$(TOOL) -D_WRS_KERNEL -D_VSB_CONFIG_FILE=\"$(VSB_DIR)/h/config/vsbConfig.h\"   
+bdbvxw/$(MODE_DIR)/% : PROJECT_TYPE = DKM
+bdbvxw/$(MODE_DIR)/% : DEFINES = 
+bdbvxw/$(MODE_DIR)/% : EXPAND_DBG = 0
+bdbvxw/$(MODE_DIR)/% : APICHECK_OPTIONS = -warning
+bdbvxw/$(MODE_DIR)/% : VX_CPU_FAMILY = simpc
+bdbvxw/$(MODE_DIR)/% : CPU = SIMNT
+bdbvxw/$(MODE_DIR)/% : TOOL_FAMILY = gnu
+bdbvxw/$(MODE_DIR)/% : TOOL_VERSION = gnu_4_8_1_8
+bdbvxw/$(MODE_DIR)/% : _CC_VERSION = gnu_4_8_1_8
+bdbvxw/$(MODE_DIR)/% : TOOL = gnu
+bdbvxw/$(MODE_DIR)/% : TOOL_PATH = $(WIND_HOME)/compilers/gnu-4.8.1.8/$(WIND_VX7_GNU_HOST_TYPE)/bin
+bdbvxw/$(MODE_DIR)/% : CC_ARCH_SPEC = -m32 -mfpmath=387 -fno-implicit-fp -fno-omit-frame-pointer
+bdbvxw/$(MODE_DIR)/% : VSB_DIR = $(WIND_BASE)/samples/prebuilt_projects/vsb_vxsim_windows
+bdbvxw/$(MODE_DIR)/% : VSB_CONFIG_FILE = $(VSB_DIR)/h/config/vsbConfig.h
+bdbvxw/$(MODE_DIR)/% : LIBPATH = 
+bdbvxw/$(MODE_DIR)/% : LIBS = 
+bdbvxw/$(MODE_DIR)/% : DKM_LONGCALL = 
+bdbvxw/$(MODE_DIR)/% : APICHECK_CMD = apicheck.sh -r "$(VSB_DIR)/krnl/apicheck/forbidden_api.lst" -n "nmpentium" -u -s "$<" "$@" $(APICHECK_OPTIONS)
+bdbvxw/$(MODE_DIR)/% : APICHECK = 0
+bdbvxw/$(MODE_DIR)/% : OBJ_DIR := bdbvxw/$(MODE_DIR)
+
+OBJECTS_bdbvxw = bdbvxw_partialImage/$(MODE_DIR)/bdbvxw_partialImage.o
+
+ifeq ($(TARGET_JOBS),1)
+bdbvxw/$(MODE_DIR)/bdbvxw.out : $(OBJECTS_bdbvxw) | check_objdirs
+	$(TRACE_FLAG)if [ ! -d "`dirname "$@"`" ]; then mkdir -p "`dirname "$@"`"; fi;echo "building $@";rm -f "$@";nmpentium $(OBJECTS_bdbvxw) | tclsh $(WIND_BASE)/host/resource/hutils/tcl/munch.tcl -c pentium -tags $(VSB_DIR)/krnl/tags/dkm.tags > $(OBJ_DIR)/ctdt.c; $(TOOL_PATH)/ccpentium $(DEBUGFLAGS_Linker) $(CC_ARCH_SPEC) -fdollars-in-identifiers -Wall   $(ADDED_CFLAGS) $(IDE_INCLUDES) $(ADDED_INCLUDES)  $(IDE_DEFINES) $(DEFINES) -o $(OBJ_DIR)/ctdt.o -c $(OBJ_DIR)/ctdt.c;  $(TOOL_PATH)/ccpentium -r -nostdlib -Wl,-X -T $(WIND_BASE)/build/tool/gnu_4_8_1_8/krnl/ldscripts/link.OUT -o "$@" $(OBJ_DIR)/ctdt.o $(OBJECTS_bdbvxw) $(IDE_LIBRARIES) $(LIBPATH) $(LIBS) $(ADDED_LIBPATH) $(ADDED_LIBS) && if [ "$(EXPAND_DBG)" = "1" ]; then plink "$@";fi
+
+else
+bdbvxw/$(MODE_DIR)/bdbvxw.out : bdbvxw/$(MODE_DIR)/bdbvxw.out_jobs
+
+endif
+bdbvxw/$(MODE_DIR)/bdbvxw_compile_file : $(FILE) ;
+
+_clean :: bdbvxw/$(MODE_DIR)/bdbvxw_clean
+
+bdbvxw/$(MODE_DIR)/bdbvxw_clean : 
+	$(TRACE_FLAG)if [ -d "bdbvxw" ]; then cd "bdbvxw"; rm -rf $(MODE_DIR); fi
+
+
+# bdbvxw_partialImage
+ifeq ($(DEBUG_MODE),1)
+bdbvxw_partialImage/$(MODE_DIR)/% : DEBUGFLAGS_C-Compiler = -gdwarf-3
+bdbvxw_partialImage/$(MODE_DIR)/% : DEBUGFLAGS_C++-Compiler = -gdwarf-3
+bdbvxw_partialImage/$(MODE_DIR)/% : DEBUGFLAGS_Linker = -gdwarf-3
+bdbvxw_partialImage/$(MODE_DIR)/% : DEBUGFLAGS_Partial-Image-Linker = 
+bdbvxw_partialImage/$(MODE_DIR)/% : DEBUGFLAGS_Librarian = 
+bdbvxw_partialImage/$(MODE_DIR)/% : DEBUGFLAGS_Assembler = -gdwarf-3
+else
+bdbvxw_partialImage/$(MODE_DIR)/% : DEBUGFLAGS_C-Compiler = -O2
+bdbvxw_partialImage/$(MODE_DIR)/% : DEBUGFLAGS_C++-Compiler = -O2
+bdbvxw_partialImage/$(MODE_DIR)/% : DEBUGFLAGS_Linker = -O2
+bdbvxw_partialImage/$(MODE_DIR)/% : DEBUGFLAGS_Partial-Image-Linker = 
+bdbvxw_partialImage/$(MODE_DIR)/% : DEBUGFLAGS_Librarian = 
+bdbvxw_partialImage/$(MODE_DIR)/% : DEBUGFLAGS_Assembler = -O2
+endif
+bdbvxw_partialImage/$(MODE_DIR)/% : IDE_INCLUDES = -I$(VSB_DIR)/share/h -isystem$(VSB_DIR)/krnl/h/system -isystem$(VSB_DIR)/krnl/h/public -I$(BDB_ROOT)/ -I$(BDB_ROOT)/src -I$(BDB_ROOT)/build_vxworks -I$(BDB_ROOT)/src/dbinc -I$(BDB_ROOT)/src/dbinc_auto
+bdbvxw_partialImage/$(MODE_DIR)/% : IDE_LIBRARIES = 
+bdbvxw_partialImage/$(MODE_DIR)/% : IDE_DEFINES = -DCPU=_VX_$(CPU) -DTOOL_FAMILY=$(TOOL_FAMILY) -DTOOL=$(TOOL) -D_WRS_KERNEL -D_VSB_CONFIG_FILE=\"$(VSB_DIR)/h/config/vsbConfig.h\"   
+bdbvxw_partialImage/$(MODE_DIR)/% : PROJECT_TYPE = DKM
+bdbvxw_partialImage/$(MODE_DIR)/% : DEFINES = 
+bdbvxw_partialImage/$(MODE_DIR)/% : EXPAND_DBG = 0
+bdbvxw_partialImage/$(MODE_DIR)/% : APICHECK_OPTIONS = -warning
+bdbvxw_partialImage/$(MODE_DIR)/% : VX_CPU_FAMILY = simpc
+bdbvxw_partialImage/$(MODE_DIR)/% : CPU = SIMNT
+bdbvxw_partialImage/$(MODE_DIR)/% : TOOL_FAMILY = gnu
+bdbvxw_partialImage/$(MODE_DIR)/% : TOOL_VERSION = gnu_4_8_1_8
+bdbvxw_partialImage/$(MODE_DIR)/% : _CC_VERSION = gnu_4_8_1_8
+bdbvxw_partialImage/$(MODE_DIR)/% : TOOL = gnu
+bdbvxw_partialImage/$(MODE_DIR)/% : TOOL_PATH = $(WIND_HOME)/compilers/gnu-4.8.1.8/$(WIND_VX7_GNU_HOST_TYPE)/bin
+bdbvxw_partialImage/$(MODE_DIR)/% : CC_ARCH_SPEC = -m32 -mfpmath=387 -fno-implicit-fp -fno-omit-frame-pointer
+bdbvxw_partialImage/$(MODE_DIR)/% : VSB_DIR = $(WIND_BASE)/samples/prebuilt_projects/vsb_vxsim_windows
+bdbvxw_partialImage/$(MODE_DIR)/% : VSB_CONFIG_FILE = $(VSB_DIR)/h/config/vsbConfig.h
+bdbvxw_partialImage/$(MODE_DIR)/% : LIBPATH = 
+bdbvxw_partialImage/$(MODE_DIR)/% : LIBS = 
+bdbvxw_partialImage/$(MODE_DIR)/% : DKM_LONGCALL = 
+bdbvxw_partialImage/$(MODE_DIR)/% : APICHECK_CMD = apicheck.sh -r "$(VSB_DIR)/krnl/apicheck/forbidden_api.lst" -n "nmpentium" -u -s "$<" "$@" $(APICHECK_OPTIONS)
+bdbvxw_partialImage/$(MODE_DIR)/% : APICHECK = 0
+bdbvxw_partialImage/$(MODE_DIR)/% : OBJ_DIR := bdbvxw_partialImage/$(MODE_DIR)
