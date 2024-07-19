@@ -2,6 +2,7 @@
 
 #include <toml.hpp>
 
+#include <exception>
 #include <iostream>
 
 namespace configuration
