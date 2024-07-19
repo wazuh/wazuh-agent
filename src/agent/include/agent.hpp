@@ -1,5 +1,6 @@
 #pragma once
 
+#include <configuration_parser.hpp>
 #include <task_manager.hpp>
 
 #include <queue>
@@ -15,4 +16,5 @@ private:
     std::queue<std::string> m_messageQueue;
 
     TaskManager m_taskManager;
+    configuration::ConfigurationParser m_configurationParser;
 };
