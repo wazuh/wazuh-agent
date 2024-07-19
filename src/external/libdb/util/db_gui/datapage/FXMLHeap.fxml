@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane id="AnchorPane" prefHeight="330.0" prefWidth="786.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="db_gui.datapage.HeapController">
+    <Label accessibleHelp="Section for inserting data into the database." accessibleText="Put Data Section" layoutX="14.0" layoutY="14.0" text="Put Data" />
+    <Label accessibleHelp="Label for the put data text box." accessibleText="Put Data " layoutX="48.0" layoutY="59.0" text="Data" />
+    <ComboBox fx:id="PutDataComboBox" accessibleHelp="Select the data format of the data to put into the database." accessibleText="Put data combo box" layoutX="273.0" layoutY="55.0" prefWidth="150.0" />
+    <TextField fx:id="PutDataTextField" accessibleHelp="Enter the data to put into the database." accessibleText="Put data text box" layoutX="104.0" layoutY="55.0" />
+    <Button fx:id="PutButton" accessibleHelp="Press this button to put the data in the data text boxes into the database." accessibleText="Put Button" layoutX="394.0" layoutY="105.0" mnemonicParsing="false" onAction="#handlePutButton" text="Put" />
+    <Separator layoutX="1.0" layoutY="144.0" prefHeight="6.0" prefWidth="786.0" />
+    <Label accessibleHelp="Section for browsing data in the database." accessibleText="Browse Data Section" layoutX="10.0" layoutY="160.0" text="Browse Data" />
+    <Label accessibleHelp="Label for the browse data text box." accessibleText="Browse Data Label" layoutX="48.0" layoutY="208.0" text="Data" />
+    <TextField fx:id="GetDataTextField" accessibleHelp="Displays the data of the current database record." accessibleText="Browse data text box" layoutX="104.0" layoutY="204.0" />
+    <ComboBox fx:id="GetDataComboBox" accessibleHelp="Selects the data format of the data displayed in the data text box." accessibleText="Browse data combo box" layoutX="273.0" layoutY="204.0" onAction="#handleGetDataComboBox" prefWidth="150.0" />
+    <Button fx:id="NextButton" accessibleHelp="Press this button to display the next record in the browse data text box." accessibleText="Next Button" layoutX="48.0" layoutY="253.0" mnemonicParsing="false" onAction="#handleNextButton" text="Next" />
+    <Button fx:id="PreviousButton" accessibleHelp="Press this button to display the previous record in the browse data text box." accessibleText="Previous button" layoutX="156.0" layoutY="253.0" mnemonicParsing="false" onAction="#handlePreviousButton" text="Previous" />
+    <Button fx:id="DeleteButton" accessibleHelp="Press this button to delete the current record displayed in the browse data text box." accessibleText="Delete button" layoutX="331.0" layoutY="253.0" mnemonicParsing="false" onAction="#handleDeleteButton" text="Delete" />
+    <Button fx:id="ClearButton" accessibleHelp="Clears all entered text and selections." accessibleText="Clear button" layoutX="455.0" layoutY="278.0" mnemonicParsing="false" onAction="#clearAllFields" text="Clear" />
+</AnchorPane>

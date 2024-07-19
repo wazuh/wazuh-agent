@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane id="EnvRecovery" prefHeight="300.0" prefWidth="786.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="db_gui.envpage.EnvironmentRecoveryController">
+    <children>
+        <Button fx:id="RecoveryButton" accessibleHelp="Press this button to perform recovery on the selected environment." accessibleText="Recover button" layoutX="663.0" layoutY="274.0" mnemonicParsing="false" onAction="#handleRecoveryEnvironmentButton" text="Recover" textAlignment="CENTER" />
+        <Separator layoutY="124.0" prefHeight="0.0" prefWidth="786.0" />
+        <Label layoutX="644.0" layoutY="6.0" text="Required Configurations" />
+        <Label layoutX="644.0" layoutY="127.0" text="Optional Configurations" />
+        <Label accessibleHelp="Label for the environment home text box." accessibleText="Environment Home Label" layoutX="22.0" layoutY="23.0" text="Environment Home" />
+        <Button fx:id="EnvDirectoryButton" accessibleHelp="Press this button to browse and select an environment directory to open." accessibleText="Browse environment home button." layoutX="223.0" layoutY="55.0" mnemonicParsing="false" onAction="#selectEnvironmentHome" text="Browse" />
+        <TextField fx:id="DirectoryTextField" accessibleHelp="Displays the selected directory of the environment.  Required field." accessibleText="Environment home text box" layoutX="136.0" layoutY="19.0" />
+        <PasswordField fx:id="EncryptionPasswordField" accessibleHelp="Enter the encryption key for the environment if it exists." accessibleText="Encryption key text box" layoutX="319.0" layoutY="152.0" promptText="Enter Encyrption Key" />
+        <Label accessibleHelp="Label for the encryption key text box." accessibleText="Encryption key label" layoutX="211.0" layoutY="156.0" text="Encryption Key" />
+        <TextField fx:id="DataDirectoriesTextField" accessibleHelp="Text box in which to enter the path to the environement's data directories.  Optional field." accessibleText="Data Directories text box" layoutX="119.0" layoutY="217.0" />
+        <Label accessibleHelp="Label for the data directories text box." accessibleText="Data Directories Label" layoutX="14.0" layoutY="221.0" text="Data Directories" />
+        <Button accessibleHelp="Press to select the environment's data directory." accessibleText="Data Directories browse button." layoutX="211.0" layoutY="250.0" mnemonicParsing="false" onAction="#selectDataDirectories" text="Browse" />
+        <TextField fx:id="LogDirectoryTextField" accessibleHelp="Enter the path to the environment's log directory.  Optional field." accessibleText="Log directory text box" layoutX="595.0" layoutY="152.0" />
+        <Label accessibleHelp="Label for the log directory text box." accessibleText="Log directory label" layoutX="507.0" layoutY="156.0" text="Log Directory" />
+        <Button accessibleHelp="Press to select the environment's log directory." accessibleText="Log directory browse button." layoutX="694.0" layoutY="192.0" mnemonicParsing="false" onAction="#selectLogDirectory" text="Browse" />
+        <Label accessibleHelp="Label for the external file directory text box." accessibleText="External File Directory label" layoutX="354.0" layoutY="217.0" prefHeight="25.0" prefWidth="128.0" text="External File Directory" />
+        <TextField fx:id="ExtFileDirectoryTextField" accessibleHelp="Enter the path to the environment's external file directory.  Optional field." accessibleText="External file directory text box" layoutX="482.0" layoutY="217.0" />
+        <Button accessibleHelp="Press to select the environment's external file directory.  Optional field." accessibleText="External file directory browse button" layoutX="579.0" layoutY="250.0" mnemonicParsing="false" onAction="#selectExternalFileDirectory" text="Browse" />
+        <CheckBox fx:id="CatastrophicCheckBox" accessibleHelp="Select this to perform catastrophic recovery instead of normal recovery." accessibleText="Catastrophic check box" layoutX="57.0" layoutY="156.0" mnemonicParsing="false" text="Catastrophic" />
+        <Button fx:id="ClearButton" accessibleHelp="Press this button to clear all fields." accessibleText="Clear button" layoutX="730.0" layoutY="274.0" mnemonicParsing="false" onAction="#clearAllFields" text="Clear" />
+    </children>
+</AnchorPane>

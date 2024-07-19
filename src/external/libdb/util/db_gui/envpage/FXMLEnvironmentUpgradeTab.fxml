@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane id="EnvUpgrade" prefHeight="300.0" prefWidth="786.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="db_gui.envpage.EnvironmentUpgradeController">
+    <children>
+        <Button fx:id="UpgradeButton" accessibleHelp="Press to upgrade the selected database files to the current version of Berkeley DB." accessibleText="Upgrade button" layoutX="623.0" layoutY="261.0" mnemonicParsing="false" onAction="#handleUpgradeEnvironmentButton" text="Upgrade" textAlignment="CENTER" />
+        <Separator layoutY="124.0" prefHeight="0.0" prefWidth="786.0" />
+        <Label layoutX="644.0" layoutY="6.0" text="Required Configurations" />
+        <Label layoutX="644.0" layoutY="127.0" text="Optional Configurations" />
+        <Label accessibleHelp="Label for the environment home text box." accessibleText="Environment Home Label" layoutX="22.0" layoutY="23.0" text="Environment Home" />
+        <Button fx:id="EnvDirectoryButton" accessibleHelp="Press this button to browse and select an environment directory." accessibleText="Browse environment home button." layoutX="223.0" layoutY="55.0" mnemonicParsing="false" onAction="#selectEnvironmentHome" text="Browse" />
+        <TextField fx:id="DirectoryTextField" accessibleHelp="Displays the selected directory of the environment.  Required field." accessibleText="Environment home text box" layoutX="136.0" layoutY="19.0" />
+        <PasswordField fx:id="EncryptionPasswordField" accessibleHelp="Enter the encryption key for the environment if it exists." accessibleText="Encryption key text box" layoutX="115.0" layoutY="181.0" promptText="Enter Encyrption Key" />
+        <Label accessibleHelp="Label for the encryption key text box." accessibleText="Encryption key label" layoutX="22.0" layoutY="185.0" text="Encryption Key" />
+        <Label accessibleHelp="Label for the database files text box." accessibleText="Database files label" layoutX="354.0" layoutY="23.0" text="Database Files" />
+        <TextField fx:id="UpgradeDatabasesTextField" accessibleHelp="Enter the database file to upgrade to the current version of Berkeley DB.  Required field." accessibleText="Database files text box" layoutX="453.0" layoutY="19.0" promptText="Databases to upgrade" />
+        <Button accessibleHelp="Press this button to select database file to upgrade to the current version of Berkeley DB." accessibleText="Database files browse button." layoutX="550.0" layoutY="55.0" mnemonicParsing="false" onAction="#selectUpgradeDatabaseFiles" text="Browse" />
+        <Button fx:id="ClearButton" accessibleHelp="Press to clear all fields." accessibleText="Clear button" layoutX="708.0" layoutY="261.0" mnemonicParsing="false" onAction="#clearAllFields" text="Clear" />
+    </children>
+</AnchorPane>

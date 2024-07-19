@@ -1,0 +1,21 @@
+ifeq ($(TARGET_JOBS),1)
+bdbvxw_partialImage/$(MODE_DIR)/bdbvxw_partialImage.o : $(OBJECTS_bdbvxw_partialImage) | check_objdirs
+	$(TRACE_FLAG)if [ ! -d "`dirname "$@"`" ]; then mkdir -p "`dirname "$@"`"; fi;echo "building $@";  $(TOOL_PATH)/ccpentium -r -nostdlib -Wl,-X  -o "$@" $(OBJECTS_bdbvxw_partialImage) $(ADDED_OBJECTS) $(IDE_LIBRARIES) $(LIBPATH) $(LIBS) $(ADDED_LIBPATH) $(ADDED_LIBS) && if [ "$(EXPAND_DBG)" = "1" ]; then plink "$@";fi
+
+else
+bdbvxw_partialImage/$(MODE_DIR)/bdbvxw_partialImage.o : bdbvxw_partialImage/$(MODE_DIR)/bdbvxw_partialImage.o_jobs
+
+endif
+bdbvxw_partialImage/$(MODE_DIR)/bdbvxw_partialImage_compile_file : $(FILE) ;
+
+_clean :: bdbvxw_partialImage/$(MODE_DIR)/bdbvxw_partialImage_clean
+
+bdbvxw_partialImage/$(MODE_DIR)/bdbvxw_partialImage_clean : 
+	$(TRACE_FLAG)if [ -d "bdbvxw_partialImage" ]; then cd "bdbvxw_partialImage"; rm -rf $(MODE_DIR); fi
+
+force : 
+
+TARGET_JOBS_RULE?=echo "Update the makefile template via File > Import > Build Settings : Update makefile template";exit 1
+%_jobs : 
+	$(TRACE_FLAG)$(TARGET_JOBS_RULE)
+
