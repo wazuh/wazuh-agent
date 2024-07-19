@@ -43,17 +43,8 @@ void SQLiteStorage::Store(const json& message) {
     try {
         std::string insertQuery = INSERT_QUERY;
         SQLite::Statement query(*m_db, insertQuery);
-
-        if (message.is_array()) {
-            for (const auto& singleMessageData : message) {
-                query.bind(1, singleMessageData.dump());
-                query.exec();
-                query.reset(); // Reset the query to reuse it for the next message
-            }
-        } else {
-            query.bind(1, message.dump());
-            query.exec();
-        }
+        query.bind(1, message.dump());
+        query.exec();
     } catch (const std::exception& e) {
         std::cerr << "Error storing message: " << e.what() << std::endl;
         throw;

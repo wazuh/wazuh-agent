@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <stop_token>
 #include <thread>
 
 #include "queue.hpp"
@@ -62,35 +63,6 @@ void cleanPersistence()
     std::filesystem::remove(filePath, ec);
 }
 
-// In order to mimic the timeout from outside the queue
-// TODO: double check if this is expected to work this way
-template<typename Func, typename... Args>
-void functionWithTimeout(Func&& func, int timeout_ms, Args&&... args)
-{
-    // Launch the function in a separate thread
-    std::promise<void> exitSignal;
-    std::future<void> futureObj = exitSignal.get_future();
-
-    std::thread t(
-        [&func, &exitSignal, &args...]()
-        {
-            func(std::forward<Args>(args)...);
-            exitSignal.set_value();
-        });
-
-    // Wait for the function to finish or timeout
-    if (futureObj.wait_for(std::chrono::milliseconds(timeout_ms)) == std::future_status::timeout)
-    {
-        // Detach the thread if it times out
-        t.detach();
-        throw std::runtime_error("Function call timed out");
-    }
-    else
-    {
-        t.join();
-    }
-}
-
 /// Test Methods
 
 void QueueTest::SetUp()
@@ -132,6 +104,7 @@ TEST_F(JsonTest, JSONArrays)
     // call is_array()
     EXPECT_FALSE(j_object.is_array());
     EXPECT_TRUE(j_array.is_array());
+    EXPECT_EQ(5, j_array.size());
     EXPECT_TRUE(multipleDataContent.is_array());
 
     int i = 0;
@@ -148,7 +121,7 @@ TEST_F(QueueTest, SinglePushGetNotEmpty)
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, baseDataContent};
 
-    queue.push(messageToSend);
+    queue.timeoutPush(messageToSend);
     auto messageResponse = queue.getLastMessage(MessageType::STATELESS);
 
     auto typeSend = messageToSend.type;
@@ -162,14 +135,14 @@ TEST_F(QueueTest, SinglePushGetNotEmpty)
     EXPECT_FALSE(queue.isEmptyByType(MessageType::STATELESS));
 }
 
-// push and pop on a non-full queue
+// timeoutPush and pop on a non-full queue
 TEST_F(QueueTest, SinglePushPopEmpty)
 {
     MultiTypeQueue queue(BIG_QUEUE_QTTY);
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, baseDataContent};
 
-    queue.push(messageToSend);
+    queue.timeoutPush(messageToSend);
     auto messageResponse = queue.getLastMessage(MessageType::STATELESS);
 
     auto typeSend = messageToSend.type;
@@ -191,7 +164,7 @@ TEST_F(QueueTest, SinglePushPop)
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, baseDataContent};
 
-    queue.push(messageToSend);
+    queue.timeoutPush(messageToSend);
     EXPECT_FALSE(queue.isEmptyByType(MessageType::STATELESS));
 
     queue.popLastMessage(MessageType::STATELESS);
@@ -205,7 +178,7 @@ TEST_F(QueueTest, SingleGetPopOnEmpty)
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, baseDataContent};
 
-    queue.push(messageToSend);
+    queue.timeoutPush(messageToSend);
     EXPECT_FALSE(queue.isEmptyByType(MessageType::STATELESS));
     EXPECT_TRUE(queue.isEmptyByType(MessageType::STATEFUL));
 
@@ -218,7 +191,7 @@ TEST_F(QueueTest, SingleGetPopOnEmpty)
 }
 
 // Push, get and check while the queue is full
-TEST_F(QueueTest, SinglePushPopFull)
+TEST_F(QueueTest, SinglePushPopFullWithTimeout)
 {
     MultiTypeQueue queue(SMALL_QUEUE_QTTY);
 
@@ -227,20 +200,12 @@ TEST_F(QueueTest, SinglePushPopFull)
     for (int i : {1, 2})
     {
         const json dataContent = R"({"Data" : "for COMMAND)" + std::to_string(i) + R"("})";
-        queue.push({messageType, dataContent});
+        queue.timeoutPush({messageType, dataContent});
     }
 
     const json dataContent = R"({"Data" : "for COMMAND3"})";
     Message exampleMessage {messageType, dataContent};
-
-    try
-    {
-        functionWithTimeout([&queue](Message& message) { queue.push(message); }, 1000, exampleMessage);
-    }
-    catch (const std::runtime_error& e)
-    {
-        std::cerr << e.what() << '\n';
-    }
+    queue.timeoutPush({messageType, dataContent},true);
 
     auto items = queue.getItemsByType(MessageType::COMMAND);
     EXPECT_EQ(items, SMALL_QUEUE_QTTY);
@@ -278,8 +243,8 @@ TEST_F(QueueTest, MultithreadDifferentType)
         for (int i = 0; i < count; ++i)
         {
             const json dataContent = R"({{"Data", "for STATELESS)" + std::to_string(i) + R"("}})";
-            queue.push(Message(MessageType::STATELESS, dataContent));
-            queue.push(Message(MessageType::STATEFUL, dataContent));
+            queue.timeoutPush(Message(MessageType::STATELESS, dataContent));
+            queue.timeoutPush(Message(MessageType::STATEFUL, dataContent));
         }
     };
 
@@ -291,8 +256,16 @@ TEST_F(QueueTest, MultithreadDifferentType)
     std::thread consumerThread1(consumerStateLess, std::ref(itemsToConsume));
     std::thread consumerThread2(consumerStateFull, std::ref(itemsToConsume));
 
-    consumerThread1.join();
-    consumerThread2.join();
+    if(consumerThread1.joinable())
+    {
+        consumerThread1.join();
+    }
+
+    if(consumerThread2.joinable())
+    {
+        consumerThread2.join();
+    }
+
 
     EXPECT_NE(0, queue.getItemsByType(MessageType::STATELESS));
     EXPECT_NE(0, queue.getItemsByType(MessageType::STATEFUL));
@@ -303,8 +276,16 @@ TEST_F(QueueTest, MultithreadDifferentType)
     std::thread consumerThread12(consumerStateLess, std::ref(itemsToConsume));
     std::thread consumerThread22(consumerStateFull, std::ref(itemsToConsume));
 
-    consumerThread12.join();
-    consumerThread22.join();
+    if(consumerThread12.joinable())
+    {
+        consumerThread12.join();
+    }
+
+    if(consumerThread22.joinable())
+    {
+        consumerThread22.join();
+    }
+
 
     // FIXME: this doesn't match
     EXPECT_EQ(0, queue.getItemsByType(MessageType::STATELESS));
@@ -316,7 +297,6 @@ TEST_F(QueueTest, MultithreadDifferentType)
 // Accesing same queue
 TEST_F(QueueTest, MultithreadSameType)
 {
-    // Failing due to some issue deletting
     MultiTypeQueue queue(BIG_QUEUE_QTTY);
 
     auto consumerCommand1 = [&](int& count)
@@ -340,7 +320,7 @@ TEST_F(QueueTest, MultithreadSameType)
         for (int i = 0; i < count; ++i)
         {
             const json dataContent = R"({{"Data": "for COMMAND)" + std::to_string(i) + R"("}})";
-            queue.push(Message(MessageType::COMMAND, dataContent));
+            queue.timeoutPush(Message(MessageType::COMMAND, dataContent));
         }
     };
 
@@ -354,8 +334,15 @@ TEST_F(QueueTest, MultithreadSameType)
     std::thread consumerThread1(consumerCommand1, std::ref(itemsToConsume));
     std::thread messageProducerThread1(consumerCommand2, std::ref(itemsToConsume));
 
-    messageProducerThread1.join();
-    consumerThread1.join();
+    if(messageProducerThread1.joinable())
+    {
+        messageProducerThread1.join();
+    }
+
+    if(consumerThread1.joinable())
+    {
+        consumerThread1.join();
+    }
 
     EXPECT_TRUE(queue.isEmptyByType(MessageType::COMMAND));
 }
@@ -364,14 +351,13 @@ TEST_F(QueueTest, MultithreadSameType)
 // several gets, checks and pops
 TEST_F(QueueTest, MultiplePushSeveralSingleGets)
 {
-    GTEST_SKIP();
     MultiTypeQueue queue(BIG_QUEUE_QTTY);
     const MessageType messageType {MessageType::STATELESS};
     // TODO: double check array of objects
     const json multipleDataContent = {"content 1", "content 2", "content 3"};
     const Message messageToSend {messageType, multipleDataContent};
 
-    queue.push(messageToSend);
+    queue.timeoutPush(messageToSend);
 
     for (int i : {0, 1, 2})
     {
@@ -379,6 +365,7 @@ TEST_F(QueueTest, MultiplePushSeveralSingleGets)
         auto responseData = messageResponse.data[0].template get<std::string>();
         auto sentData = messageToSend.data[i].template get<std::string>();
         EXPECT_EQ(responseData, sentData);
+        queue.popLastMessage(MessageType::STATELESS);
     }
 
     EXPECT_EQ(queue.getItemsByType(MessageType::STATELESS), 0);
@@ -392,7 +379,7 @@ TEST_F(QueueTest, MultiplePushSeveralMultiplePops)
     const json multipleDataContent = {"content 1", "content 2", "content 3"};
     const Message messageToSend {messageType, multipleDataContent};
 
-    queue.push(messageToSend);
+    queue.timeoutPush(messageToSend);
 
     EXPECT_TRUE(queue.popNMessages(MessageType::STATELESS, 3));
     EXPECT_TRUE(queue.isEmptyByType(MessageType::STATELESS));
