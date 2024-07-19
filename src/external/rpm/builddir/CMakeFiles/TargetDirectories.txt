@@ -1,4 +1,0 @@
-/wazuh/src/external/rpm/builddir/CMakeFiles/rebuild_cache.dir
-/wazuh/src/external/rpm/builddir/CMakeFiles/edit_cache.dir
-/wazuh/src/external/rpm/builddir/CMakeFiles/rpm.dir
-/wazuh/src/external/rpm/builddir/CMakeFiles/rpm_create_headers.dir
