@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane id="EnvVerifyLog" prefHeight="300.0" prefWidth="786.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="db_gui.envpage.EnvironmentVerifyLogController">
+    <children>
+        <Button fx:id="VerifyLogButton" accessibleHelp="Press this button to verify the integrity of the logs." accessibleText="Verify log integrity button." layoutX="671.0" layoutY="262.0" mnemonicParsing="false" onAction="#handleVerifyLogsEnvironmentButton" text="Verify" textAlignment="CENTER" />
+        <Separator layoutY="124.0" prefHeight="0.0" prefWidth="786.0" />
+        <Label layoutX="644.0" layoutY="6.0" text="Required Configurations" />
+        <Label layoutX="644.0" layoutY="127.0" text="Optional Configurations" />
+        <Label accessibleHelp="Label for the environment home text box." accessibleText="Environment Home Label" layoutX="22.0" layoutY="23.0" text="Environment Home" />
+        <Button fx:id="EnvDirectoryButton" accessibleHelp="Press this button to browse and select an environment directory to open." accessibleText="Browse environment home button." layoutX="223.0" layoutY="55.0" mnemonicParsing="false" onAction="#selectEnvironmentHome" text="Browse" />
+        <TextField fx:id="DirectoryTextField" accessibleHelp="Displays the selected directory of the environment.  Required field." accessibleText="Environment home text box" layoutX="136.0" layoutY="19.0" />
+        <PasswordField fx:id="EncryptionPasswordField" accessibleHelp="Enter the encryption key for the environment if it exists." accessibleText="Encryption key text box" layoutX="111.0" layoutY="172.0" promptText="Enter Encyrption Key" />
+        <Label accessibleHelp="Label for the encryption key text box." accessibleText="Encryption key label" layoutX="22.0" layoutY="176.0" text="Encryption Key" />
+        <Label accessibleHelp="Label for the temporary cache size text box." accessibleText="Temporary Cache Size label" layoutX="324.0" layoutY="176.0" text="Temporary Cache Size" />
+        <TextField fx:id="CacheSizeTextField" accessibleHelp="Enter the size in bytes of the in-memory cache for the temporary environment.  Optional field." accessibleText="Temporary cache size text box" layoutX="461.0" layoutY="172.0" prefHeight="25.0" prefWidth="163.0" promptText="Temporary Cache Size" />
+        <Label accessibleHelp="Label for the temporary environment home text box." accessibleText="Temporary Environment Home label" layoutX="285.0" layoutY="226.0" text="Temporary Environment Home" />
+        <TextField fx:id="TempDirectoryTextField" accessibleHelp="Enter the path to the directory for the temporary environment.  Optional field." accessibleText="temporary environment home text box" layoutX="461.0" layoutY="222.0" prefHeight="25.0" prefWidth="163.0" />
+        <Button accessibleHelp="Press to select a directory to use as the home for the temporary environment." accessibleText="Temporary Environment home browse button." layoutX="569.0" layoutY="262.0" mnemonicParsing="false" onAction="#selectTempEnvironmentHome" text="Browse" />
+        <Label accessibleHelp="Label for the log directory text box." accessibleText="Log directory label" layoutX="22.0" layoutY="226.0" text="Log Directory" />
+        <Button accessibleHelp="Press to select the environment's log directory." accessibleText="Log directory browse button." layoutX="211.0" layoutY="262.0" mnemonicParsing="false" onAction="#selectLogDirectory" text="Browse" />
+        <TextField fx:id="LogDirectoryTextField" accessibleHelp="Enter the path to the environment's log directory.  Optional field." accessibleText="Log directory text box" layoutX="111.0" layoutY="222.0" />
+        <Button fx:id="ClearButton" accessibleHelp="Press this button to clear all fields." accessibleText="Clear button" layoutX="730.0" layoutY="262.0" mnemonicParsing="false" onAction="#clearAllFields" text="Clear" />
+    </children>
+</AnchorPane>

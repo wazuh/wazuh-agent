@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane id="EnvCreate" prefHeight="300.0" prefWidth="786.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="db_gui.envpage.EnvironmentCreateController">
+    <children>
+        <Button fx:id="CreateButton" accessibleHelp="Press to create an environment in the selected directory." accessibleText="Create button" layoutX="673.0" layoutY="274.0" mnemonicParsing="false" onAction="#handleCreateEnvironmentButton" text="Create" textAlignment="CENTER" />
+        <Separator layoutY="124.0" prefHeight="0.0" prefWidth="786.0" />
+        <Label layoutX="644.0" layoutY="6.0" text="Required Configurations" />
+        <Label layoutX="644.0" layoutY="127.0" text="Optional Configurations" />
+        <Label accessibleHelp="Label for the environment home text box." accessibleText="Environment Home Label" layoutX="22.0" layoutY="23.0" text="Environment Home" />
+        <Button fx:id="EnvDirectoryButton" accessibleHelp="Press this button to browse and select a directory in which to create the environment." accessibleText="Browse environment home button." layoutX="223.0" layoutY="55.0" mnemonicParsing="false" onAction="#selectEnvironmentHome" text="Browse" />
+        <TextField fx:id="DirectoryTextField" accessibleHelp="Displays the selected directory of the environment.  Required field." accessibleText="Environment home text box" layoutX="136.0" layoutY="19.0" />
+        <CheckBox fx:id="TransactionalCheckBox" accessibleHelp="Select enable transactions in the environment." accessibleText="Transactional check box" layoutX="22.0" layoutY="176.0" mnemonicParsing="false" text="Transactional" />
+        <PasswordField fx:id="EncryptionPasswordField" accessibleHelp="Enter an encryption key to make the environment encrypted.  Optional field." accessibleText="Encryption key text box" layoutX="278.0" layoutY="172.0" promptText="Enter Encyrption Key" />
+        <Label accessibleHelp="Label for the encryption key text box." accessibleText="Encryption key label" layoutX="184.0" layoutY="176.0" text="Encryption Key" />
+        <Label accessibleHelp="Label for the cache size text box." accessibleText="Cache Size label" layoutX="491.0" layoutY="176.0" text="Cache Size" />
+        <TextField fx:id="CacheSizeTextField" accessibleHelp="Enter the size of the in-memory cache.  Optional field." accessibleText="Cache size text box" layoutX="570.0" layoutY="172.0" prefHeight="25.0" prefWidth="128.0" promptText="Cache Size In Bytes" />
+        <Button accessibleHelp="Press to clear all fields." accessibleText="Clear button" layoutX="734.0" layoutY="274.0" mnemonicParsing="false" onAction="#clearAllFields" text="Clear" />
+    </children>
+</AnchorPane>

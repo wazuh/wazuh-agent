@@ -1,0 +1,60 @@
+-include $(DEP_FILES)
+
+OBJ_DIRS := bdbvxw_partialImage/$(MODE_DIR)/Objects/bdbvxw
+check_objdirs : 
+	$(TRACE_FLAG)echo "Creating object dirs";\
+	for dir in $(OBJ_DIRS); do\
+		if [ ! -d "$$dir" ]; then mkdir -p "$$dir"; fi;\
+	done
+
+
+-include $(PRJ_ROOT_DIR)/*.makefile
+
+-include *.makefile
+
+TARGET_JOBS_RULE=$(MAKE) -f $(MAKEFILE) --jobs $(TARGET_JOBS) $(MFLAGS) $* TARGET_JOBS=1
+ifeq ($(JOBS),1)
+main_all : external_build $(PROJECT_TARGETS)
+	@echo "make: built targets of `pwd`"
+else
+main_all : external_build 
+	@$(MAKE) -f $(MAKEFILE) --jobs $(JOBS) $(MFLAGS) $(PROJECT_TARGETS) TARGET_JOBS=1 &&\
+	echo "make: built targets of `pwd`"
+endif 
+
+check_vsb :
+	@if [ "$(SKIP_VSB_CHECK)" = "" ]; then\
+		if [ -f $(WIND_BASE)/build/mk/scripts/check_vsb.sh ]; then\
+			jobsoption="";\
+			if [ "$(JOBS)" != "" ]; then\
+				jobsoption="-j $(JOBS)";\
+			fi;\
+			sh $(WIND_BASE)/build/mk/scripts/check_vsb.sh $$jobsoption $(VSB_DIR);\
+		fi;\
+	fi
+
+# entry point for extending the build
+external_build ::
+	@echo ""
+
+# main entry point for pre processing prior to the build
+pre_build :: check_objdirs $(PRE_BUILD_STEP) generate_sources
+	@echo ""
+
+# entry point for generating sources prior to the build
+generate_sources ::
+	@echo ""
+
+# main entry point for post processing after the build
+post_build :: $(POST_BUILD_STEP) deploy_output
+	@echo ""
+
+# entry point for deploying output after the build
+deploy_output ::
+	@echo ""
+
+clean :: external_clean $(CLEAN_STEP) _clean
+
+# entry point for extending the build clean
+external_clean ::
+	@echo ""
