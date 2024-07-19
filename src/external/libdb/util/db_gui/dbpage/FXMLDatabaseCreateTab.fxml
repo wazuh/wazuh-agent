@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane id="DbCreate" prefHeight="300.0" prefWidth="786.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="db_gui.dbpage.DatabaseCreateController">
+    <children>
+        <Separator layoutY="124.0" prefHeight="0.0" prefWidth="786.0" />
+        <Label layoutX="644.0" layoutY="6.0" text="Required Configurations" />
+        <Label layoutX="644.0" layoutY="127.0" text="Optional Configurations" />
+        <Label layoutX="6.0" layoutY="6.0" prefHeight="17.0" prefWidth="270.0" text="Choose a Dabase File, or Database Name, or both." />
+        <Label accessibleHelp="Label for the text box for selecting a database file." accessibleText="Database File Label" layoutX="14.0" layoutY="45.0" text="Database File" />
+        <TextField fx:id="DatabaseFileEditTextField" accessibleHelp="Enter the name of the database file, required if no database name is entered." accessibleText="Datbase file text box" layoutX="96.0" layoutY="41.0" />
+        <Label accessibleHelp="Label for the database name text box." accessibleText="Database Name Label" layoutX="288.0" layoutY="45.0" text="Database Name" />
+        <TextField fx:id="DatabaseNameTextField" accessibleHelp="Enter the name of a subdatabase or in-memory database to create, required if no database file is entered." accessibleText="Database name text box" layoutX="384.0" layoutY="41.0" />
+        <Label accessibleHelp="Label for the database type combo box." accessibleText="Database Type label" layoutX="557.0" layoutY="45.0" text="Database Type" />
+        <Label accessibleHelp="Label for the page size combo box." accessibleText="Page size label" layoutX="24.0" layoutY="154.0" text="Page Size" />
+        <ComboBox fx:id="PageSizeComboBox" accessibleHelp="Select the page size, optional." accessibleText="Page size combo box" layoutX="85.0" layoutY="150.0" prefWidth="150.0" />
+        <ComboBox fx:id="DatabaseTypeComboBox" accessibleHelp="Select the type of database to create, required" accessibleText="Database type combo box" layoutX="654.0" layoutY="41.0" prefHeight="25.0" prefWidth="119.0" />
+        <Button fx:id="CreateButton" accessibleHelp="Press to create the database." accessibleText="Create Button" layoutX="663.0" layoutY="261.0" mnemonicParsing="false" onAction="#handleCreateDatabaseButton" text="Create" />
+        <Button fx:id="ClearButton" accessibleHelp="Press to clear all fields." accessibleText="Clear button" layoutX="729.0" layoutY="261.0" mnemonicParsing="false" onAction="#clearAllFields" text="Clear" />
+    </children>
+</AnchorPane>

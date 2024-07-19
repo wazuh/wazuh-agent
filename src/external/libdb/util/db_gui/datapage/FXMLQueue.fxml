@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane id="AnchorPane" prefHeight="322.0" prefWidth="792.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="db_gui.datapage.QueueController">
+    <children>
+        <Label accessibleHelp="Section for entering data to push onto the end of the queue." accessibleText="Enqueue Section" layoutX="11.0" layoutY="6.0" text="Enqueue" />
+        <Label accessibleHelp="Label for the enqueue data text box." accessibleText="Enqueue data label" layoutX="86.0" layoutY="27.0" text="Data" />
+        <ComboBox fx:id="EnqueueComboBox" accessibleHelp="Select the data format of the data to push onto the end of the queue." accessibleText="Enqueue data combo box" layoutX="300.0" layoutY="23.0" prefWidth="150.0" />
+        <TextField fx:id="EnqueueTextField" accessibleHelp="Enter data to push onto the end of the queue." accessibleText="Enqueue data text box" layoutX="128.0" layoutY="23.0" />
+        <Button fx:id="EnqueueButton" accessibleHelp="Press this button to push the entered data onto the end of the queue." accessibleText="Enqueue button" layoutX="387.0" layoutY="61.0" mnemonicParsing="false" onAction="#handleEnqueueButton" text="Enqueue" />
+        <Separator layoutX="1.0" layoutY="197.0" prefHeight="6.0" prefWidth="786.0" />
+        <Label accessibleHelp="Section for browsing the key data pairs in the database." accessibleText="Browse Data Section" layoutX="11.0" layoutY="203.0" text="Browse Data" />
+        <Label accessibleHelp="Label for the browse key text box." accessibleText="Browse Key Label" layoutX="28.0" layoutY="241.0" text="Key" />
+        <TextField fx:id="GetKeyTextField" accessibleHelp="Displays the key of the current record, or enter a key to use to get a record from the database." accessibleText="Browse Key text box" layoutX="73.0" layoutY="237.0" />
+        <Label accessibleHelp="Label for the browse data text box." accessibleText="Browse Data Label" layoutX="249.0" layoutY="241.0" text="Data" />
+        <TextField fx:id="GetDataTextField" accessibleHelp="Displays the data of the current database key data pair." accessibleText="Browse data text box" layoutX="292.0" layoutY="237.0" />
+        <ComboBox fx:id="GetDataComboBox" accessibleHelp="Selects the data format of the data displayed in the data text box." accessibleText="Browse data combo box" layoutX="452.0" layoutY="237.0" onAction="#handleGetDataComboBox" prefWidth="150.0" />
+        <Button fx:id="GetButton" accessibleHelp="Press this button to get the key data pair of the key entered into the browse key text box." accessibleText="Get button" layoutX="130.0" layoutY="271.0" mnemonicParsing="false" onAction="#handleGetButton" text="Get" />
+        <Button fx:id="NextButton" accessibleHelp="Press this button to display the next key data pair in the browse data text boxes." accessibleText="Next Button" layoutX="241.0" layoutY="271.0" mnemonicParsing="false" onAction="#handleNextButton" text="Next" />
+        <Button fx:id="PreviousButton" accessibleHelp="Press this button to display the previous key data pair in the browse data text boxes." accessibleText="Previous button" layoutX="336.0" layoutY="271.0" mnemonicParsing="false" onAction="#handlePreviousButton" text="Previous" />
+        <Button fx:id="DeleteButton" accessibleHelp="Press this button to delete the current record displayed in the browse data text boxes." accessibleText="Delete button" layoutX="501.0" layoutY="271.0" mnemonicParsing="false" onAction="#handleDeleteButton" text="Delete" />
+        <Separator layoutX="6.0" layoutY="93.0" prefHeight="6.0" prefWidth="786.0" />
+        <Label accessibleHelp="Section for displaying data popped off the front of the queue." accessibleText="Dequeue Section" layoutX="14.0" layoutY="99.0" text="Dequeue" />
+        <Label accessibleHelp="Label for the dequeue data text box." accessibleText="Dequeue data label" layoutX="86.0" layoutY="120.0" text="Data" />
+        <TextField fx:id="DequeueTextField" accessibleHelp="Displays data that has been popped off the front of the queue." accessibleText="Dequeue data text box" layoutX="124.0" layoutY="116.0" />
+        <ComboBox fx:id="DequeueComboBox" accessibleHelp="Sets the data format of the data displayed in the dequeue data text box." accessibleText="Dequeue data combo box" layoutX="296.0" layoutY="116.0" onAction="#handleDequeueComboBox" prefWidth="150.0" />
+        <Button fx:id="DequeueButton" accessibleHelp="Press this button to pop a record off the front of the queue and display it in the dequeue data text box." accessibleText="Dequeue button" layoutX="383.0" layoutY="161.0" mnemonicParsing="false" onAction="#handleDequeueButton" text="Dequeue" />
+        <Button fx:id="ClearButton" accessibleHelp="Clears all entered text and selections." accessibleText="Clear button" layoutX="635.0" layoutY="284.0" mnemonicParsing="false" onAction="#clearAllFields" text="Clear" />
+    </children>
+</AnchorPane>
