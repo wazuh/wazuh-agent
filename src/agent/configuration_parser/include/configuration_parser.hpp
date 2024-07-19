@@ -16,7 +16,6 @@ namespace configuration
     public:
         ConfigurationParser();
         ConfigurationParser(std::string stringToParse);
-        ~ConfigurationParser() {};
 
         template<typename T, typename... Ks>
         auto GetConfig(Ks... ks)
