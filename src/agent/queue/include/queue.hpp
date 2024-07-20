@@ -1,13 +1,9 @@
 #include <any>
-#include <chrono>
 #include <condition_variable>
-#include <iostream>
 #include <memory>
 #include <mutex>
 #include <queue>
-#include <stop_token>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 #include "shared.hpp"
@@ -16,6 +12,16 @@
 // TODO: move to a configuration setting
 constexpr int DEFAULT_MAX = 10;
 constexpr int DEFAULT_TIMEOUT_S = 3;
+
+/**
+ * @brief Map for transforing Message type name to string
+ *
+ */
+static const std::map<MessageType, std::string> MessageTypeName {
+    {MessageType::STATELESS, "STATELESS"},
+    {MessageType::STATEFUL, "STATEFUL"},
+    {MessageType::COMMAND, "COMMAND"},
+};
 
 // Factory class
 class PersistenceFactory
@@ -42,6 +48,14 @@ public:
  */
 class PersistedQueue
 {
+private:
+    const MessageType m_queueType;
+    const int m_max_size;
+    const std::chrono::seconds m_timeout;
+    std::unique_ptr<Persistence> m_persistenceDest;
+    std::mutex m_mtx;
+    std::condition_variable m_cv;
+
 public:
     PersistedQueue(MessageType queueType, int max_size, int timeout)
         : m_queueType(queueType)
@@ -83,11 +97,7 @@ public:
      *
      * @return int
      */
-    int getItemsAvailable()
-    {
-        std::unique_lock<std::mutex> lock(m_mtx);
-        return m_persistenceDest->GetElementCount();
-    }
+    int getItemsAvailable();
 
     /**
      * @brief
@@ -96,40 +106,7 @@ public:
      * @return true
      * @return false
      */
-    bool insertMessage(Message event)
-    {
-        std::unique_lock<std::mutex> lock(m_mtx);
-        bool success = false;
-        size_t spaceAvailable =
-            (m_max_size > m_persistenceDest->GetElementCount()) ? m_max_size - m_persistenceDest->GetElementCount() : 0;
-        if (spaceAvailable)
-        {
-            // TODO: handle response
-            success = true;
-            auto messageData = event.data;
-            if (messageData.is_array())
-            {
-                if (messageData.size() <= spaceAvailable)
-                {
-                    for (const auto& singleMessageData : messageData)
-                    {
-                        m_persistenceDest->Store(singleMessageData);
-                        m_cv.notify_all();
-                    }
-                }
-                else
-                {
-                    success = false;
-                }
-            }
-            else
-            {
-                m_persistenceDest->Store(event.data);
-                m_cv.notify_all();
-            }
-        }
-        return success;
-    };
+    bool insertMessage(Message event);
 
     /**
      * @brief
@@ -138,25 +115,14 @@ public:
      * @return true
      * @return false
      */
-    bool removeNMessages(int qttyMessages)
-    {
-        std::unique_lock<std::mutex> lock(m_mtx);
-        auto linesRemoved = m_persistenceDest->RemoveMultiple(qttyMessages);
-        m_cv.notify_all();
-        return linesRemoved != 0;
-    };
+    bool removeNMessages(int qttyMessages);
 
     /**
      * @brief Get the Message object
      *
      * @return Message
      */
-    Message getMessage()
-    {
-        std::unique_lock<std::mutex> lock(m_mtx);
-        auto messageData = m_persistenceDest->RetrieveMultiple(1);
-        return Message(m_queueType, messageData);
-    };
+    Message getMessage();
 
     /**
      * @brief
@@ -164,12 +130,7 @@ public:
      * @param n
      * @return Message
      */
-    Message getNMessages(int n)
-    {
-        std::unique_lock<std::mutex> lock(m_mtx);
-        auto messageData = m_persistenceDest->RetrieveMultiple(n);
-        return Message(m_queueType, messageData);
-    };
+    Message getNMessages(int n);
 
     /**
      * @brief
@@ -177,11 +138,7 @@ public:
      * @return true
      * @return false
      */
-    bool empty()
-    {
-        const auto items = getItemsAvailable();
-        return items == 0;
-    }
+    bool empty();
 
     /**
      * @brief
@@ -189,23 +146,9 @@ public:
      * @return true
      * @return false
      */
-    bool isFull()
-    {
-        std::unique_lock<std::mutex> lock(m_mtx);
-        return m_persistenceDest->GetElementCount() == m_max_size;
-    }
+    bool isFull();
 
-    void waitUntilNotFull()
-    {
-        std::unique_lock<std::mutex> lock(m_mtx);
-        m_cv.wait_for(lock,
-                      m_timeout,
-                      [this]
-                      {
-                          std::cout << " waiting " << std::endl;
-                          return m_persistenceDest->GetElementCount() < m_max_size;
-                      });
-    }
+    void waitUntilNotFull();
 
     /**
      * A function that waits until the queue is not full or until a stop signal is received.
@@ -214,27 +157,8 @@ public:
      *
      * @throws None
      */
-    void waitUntilNotFullOrStoped(std::stop_token stopToken)
-    {
-        std::unique_lock<std::mutex> lock(m_mtx);
-        m_cv.wait(lock,
-                  [this, stopToken]
-                  {
-                      std::cout << " waiting " << std::endl;
-                      bool menor = (m_persistenceDest->GetElementCount() < m_max_size);
-                      bool stopped = (stopToken.stop_possible() && stopToken.stop_requested());
-                      std::cout << "menor" << menor << "stopped" <<  stopped << std::endl;
-                      return  menor || stopped ;
-                  });
-    }
+    void waitUntilNotFullOrStoped(std::stop_token stopToken);
 
-private:
-    const MessageType m_queueType;
-    const int m_max_size;
-    const std::chrono::seconds m_timeout;
-    std::unique_ptr<Persistence> m_persistenceDest;
-    std::mutex m_mtx;
-    std::condition_variable m_cv;
 };
 
 /**
@@ -275,88 +199,19 @@ public:
 
     ~MultiTypeQueue() {};
 
-    bool stopablePush(Message message, std::stop_token stopToken)
-    {
-        bool result = false;
-        std::unique_lock<std::mutex> mapLock(m_mapMutex);
-
-        if (m_queuesMap.contains(message.type))
-        {
-            auto& queue = m_queuesMap[message.type];
-            mapLock.unlock();
-
-            // Wait until the queue is not full
-            if (stopToken.stop_possible())
-            {
-                queue->waitUntilNotFullOrStoped(stopToken);
-            }
-
-            // Insert the message
-            result = queue->insertMessage(message);
-            if (!result)
-            {
-                std::cout << "Failed to insert message: " << message.data << std::endl;
-            }
-        }
-        else
-        {
-            std::cout << "error didn't find the queue" << std::endl;
-        }
-        return result;
-    }
-
     /**
      * @brief: timeoutPush message to a queue of t
      *
      * @param message
      */
-    bool timeoutPush(Message message, bool shouldWait = false)
-    {
-        bool result = false;
-        std::unique_lock<std::mutex> mapLock(m_mapMutex);
-
-        if (m_queuesMap.contains(message.type))
-        {
-            auto& queue = m_queuesMap[message.type];
-            mapLock.unlock();
-
-            // Wait until the queue is not full
-            if (shouldWait)
-            {
-                queue->waitUntilNotFull();
-            }
-            //FIXME
-            // else
-            // {
-            //     std::cout << "Can failed because os full queue" << std::endl;
-            // }
-
-            // Insert the message
-            result = queue->insertMessage(message);
-            if (!result)
-            {
-                std::cout << "Failed to insert message: " << message.data << std::endl;
-            }
-        }
-        else
-        {
-            std::cout << "error didn't find the queue" << std::endl;
-        }
-        return result;
-    }
+    bool timeoutPush(Message message, bool shouldWait = false);
 
     /**
      * @brief
      *
      * @param messages
      */
-    void timeoutPush(std::vector<Message> messages)
-    {
-        for (const auto& singleMessage : messages)
-        {
-            timeoutPush(singleMessage);
-        }
-    }
+    void timeoutPush(std::vector<Message> messages);
 
     /**
      * @brief Get the Last Message object
@@ -364,23 +219,7 @@ public:
      * @param type
      * @return Message
      */
-    Message getLastMessage(MessageType type)
-    {
-        Message result(type, {});
-        std::unique_lock<std::mutex> mapLock(m_mapMutex);
-        if (m_queuesMap.contains(type))
-        {
-            auto& queue = m_queuesMap[type];
-            mapLock.unlock();
-            result = queue->getMessage();
-        }
-        else
-        {
-            // TODO: error / logging handling !!!
-            std::cout << "error didn't find the queue" << std::endl;
-        }
-        return result;
-    }
+    Message getLastMessage(MessageType type);
 
     /**
      * @brief deletes a message from a queue
@@ -389,24 +228,7 @@ public:
      * @return true popped succesfully
      * @return false wasn't able to pop message
      */
-    bool popLastMessage(MessageType type)
-    {
-        bool result = false;
-        std::unique_lock<std::mutex> mapLock(m_mapMutex);
-        if (m_queuesMap.contains(type))
-        {
-            auto& queue = m_queuesMap[type];
-            mapLock.unlock();
-            // Handle return value
-            result = queue->removeNMessages(1);
-        }
-        else
-        {
-            // TODO: error / logging handling !!!
-            std::cout << "error didn't find the queue" << std::endl;
-        }
-        return result;
-    }
+    bool popLastMessage(MessageType type);
 
     /**
      * @brief
@@ -416,23 +238,7 @@ public:
      * @return true
      * @return false
      */
-    bool popNMessages(MessageType type, int messageQuantity)
-    {
-        bool result = false;
-        std::unique_lock<std::mutex> mapLock(m_mapMutex);
-        if (m_queuesMap.contains(type))
-        {
-            auto& queue = m_queuesMap[type];
-            mapLock.unlock();
-            result = queue->removeNMessages(messageQuantity);
-        }
-        else
-        {
-            // TODO: error / logging handling !!!
-            std::cout << "error didn't find the queue" << std::endl;
-        }
-        return result;
-    }
+    bool popNMessages(MessageType type, int messageQuantity);
 
     /**
      * @brief
@@ -441,22 +247,7 @@ public:
      * @return true
      * @return false
      */
-    bool isEmptyByType(MessageType type)
-    {
-        std::unique_lock<std::mutex> mapLock(m_mapMutex);
-        if (m_queuesMap.contains(type))
-        {
-            auto& queue = m_queuesMap[type];
-            mapLock.unlock();
-            return queue->empty();
-        }
-        else
-        {
-            // TODO: error / logging handling !!!
-            std::cout << "error didn't find the queue" << std::endl;
-        }
-        return false;
-    }
+    bool isEmptyByType(MessageType type);
 
     /**
      * @brief Get the Items By Type object
@@ -465,20 +256,5 @@ public:
      * @return true
      * @return false
      */
-    int getItemsByType(MessageType type)
-    {
-        std::unique_lock<std::mutex> mapLock(m_mapMutex);
-        if (m_queuesMap.contains(type))
-        {
-            auto& queue = m_queuesMap[type];
-            mapLock.unlock();
-            return queue->getItemsAvailable();
-        }
-        else
-        {
-            // TODO: error / logging handling !!!
-            std::cout << "error didn't find the queue" << std::endl;
-        }
-        return false;
-    }
+    int getItemsByType(MessageType type);
 };

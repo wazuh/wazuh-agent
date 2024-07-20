@@ -13,13 +13,15 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wunused -pthread")
 
 # Add the include directory for shared headers
 include_directories(${CMAKE_SOURCE_DIR}/include)
+# include_directories(${CMAKE_SOURCE_DIR}/src)
 
 add_subdirectory(tests)
 
 # Add the executable
-add_executable(QueueTest
-	src/main.cpp
+add_library(QueueTest
+	# src/main.cpp
 	src/sqlitestorage.cpp
+	src/queue.cpp
 	)
 
 # Link the nlohmann::json library to your project

@@ -18,16 +18,6 @@ enum MessageType
 };
 
 /**
- * @brief Map for transforing Message type name to string
- *
- */
-std::map<MessageType, std::string> MessageTypeName {
-    {MessageType::STATELESS, "STATELESS"},
-    {MessageType::STATEFUL, "STATEFUL"},
-    {MessageType::COMMAND, "COMMAND"},
-};
-
-/**
  * @brief Wrapper for Message data and type
  *
  */
