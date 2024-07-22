@@ -18,6 +18,8 @@ namespace communicator
         int SendAuthenticationRequest();
         int SendRegistrationRequest();
 
+        const std::string& GetToken() const { return m_token; }
+
     private:
         std::string m_token;
         http::response<http::dynamic_body> sendHttpRequest(http::verb method,
