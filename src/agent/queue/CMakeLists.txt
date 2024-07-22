@@ -1,29 +1,24 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.22)
 
-# Set the project name and C++ standard
-project(QueueTest LANGUAGES CXX)
+project(queue_test LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# Find the nlohmann::json and SQLiteCpp package using vcpkg
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wunused -pthread")
+
+include_directories(${CMAKE_SOURCE_DIR}/include)
+
+add_library(queue_test
+	src/sqlitestorage.cpp
+	src/queue.cpp
+)
+
 find_package(SQLiteCpp REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wunused -pthread")
+target_include_directories(queue_test PRIVATE include ${SQLiteCpp_INCLUDE_DIRS})
+target_link_libraries(queue_test PRIVATE SQLiteCpp nlohmann_json::nlohmann_json)
 
-# Add the include directory for shared headers
-include_directories(${CMAKE_SOURCE_DIR}/include)
-# include_directories(${CMAKE_SOURCE_DIR}/src)
-
-add_subdirectory(tests)
-
-# Add the executable
-add_library(QueueTest
-	# src/main.cpp
-	src/sqlitestorage.cpp
-	src/queue.cpp
-	)
-
-# Link the nlohmann::json library to your project
-target_include_directories(QueueTest PRIVATE include ${SQLiteCpp_INCLUDE_DIRS})
-target_link_libraries(QueueTest PRIVATE SQLiteCpp nlohmann_json::nlohmann_json)
+if(BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
