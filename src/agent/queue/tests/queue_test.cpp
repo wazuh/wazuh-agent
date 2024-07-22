@@ -110,7 +110,7 @@ TEST_F(JsonTest, JSONArrays)
     int i = 0;
     for (auto& singleMessage : multipleDataContent.items())
     {
-        EXPECT_EQ(singleMessage.value(),"content " + std::to_string(++i));
+        EXPECT_EQ(singleMessage.value(), "content " + std::to_string(++i));
     }
 }
 
@@ -205,7 +205,7 @@ TEST_F(QueueTest, SinglePushPopFullWithTimeout)
 
     const json dataContent = R"({"Data" : "for COMMAND3"})";
     Message exampleMessage {messageType, dataContent};
-    queue.timeoutPush({messageType, dataContent},true);
+    queue.timeoutPush({messageType, dataContent}, true);
 
     auto items = queue.getItemsByType(MessageType::COMMAND);
     EXPECT_EQ(items, SMALL_QUEUE_QTTY);
@@ -256,16 +256,15 @@ TEST_F(QueueTest, MultithreadDifferentType)
     std::thread consumerThread1(consumerStateLess, std::ref(itemsToConsume));
     std::thread consumerThread2(consumerStateFull, std::ref(itemsToConsume));
 
-    if(consumerThread1.joinable())
+    if (consumerThread1.joinable())
     {
         consumerThread1.join();
     }
 
-    if(consumerThread2.joinable())
+    if (consumerThread2.joinable())
     {
         consumerThread2.join();
     }
-
 
     EXPECT_NE(0, queue.getItemsByType(MessageType::STATELESS));
     EXPECT_NE(0, queue.getItemsByType(MessageType::STATEFUL));
@@ -276,16 +275,15 @@ TEST_F(QueueTest, MultithreadDifferentType)
     std::thread consumerThread12(consumerStateLess, std::ref(itemsToConsume));
     std::thread consumerThread22(consumerStateFull, std::ref(itemsToConsume));
 
-    if(consumerThread12.joinable())
+    if (consumerThread12.joinable())
     {
         consumerThread12.join();
     }
 
-    if(consumerThread22.joinable())
+    if (consumerThread22.joinable())
     {
         consumerThread22.join();
     }
-
 
     // FIXME: this doesn't match
     EXPECT_EQ(0, queue.getItemsByType(MessageType::STATELESS));
@@ -334,12 +332,12 @@ TEST_F(QueueTest, MultithreadSameType)
     std::thread consumerThread1(consumerCommand1, std::ref(itemsToConsume));
     std::thread messageProducerThread1(consumerCommand2, std::ref(itemsToConsume));
 
-    if(messageProducerThread1.joinable())
+    if (messageProducerThread1.joinable())
     {
         messageProducerThread1.join();
     }
 
-    if(consumerThread1.joinable())
+    if (consumerThread1.joinable())
     {
         consumerThread1.join();
     }
@@ -383,5 +381,5 @@ TEST_F(QueueTest, MultiplePushSeveralMultiplePops)
 
     EXPECT_TRUE(queue.popNMessages(MessageType::STATELESS, 3));
     EXPECT_TRUE(queue.isEmptyByType(MessageType::STATELESS));
-    EXPECT_EQ(0,queue.getItemsByType(MessageType::STATELESS));
+    EXPECT_EQ(0, queue.getItemsByType(MessageType::STATELESS));
 }

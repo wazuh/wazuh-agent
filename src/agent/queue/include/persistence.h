@@ -2,8 +2,8 @@
 #define PERSISTENCE_H
 
 #include <nlohmann/json.hpp>
-#include <vector>
 #include <string>
+#include <vector>
 
 using json = nlohmann::json;
 
@@ -12,7 +12,8 @@ using json = nlohmann::json;
  *
  * This interface defines methods for storing, retrieving, and removing JSON messages.
  */
-class Persistence {
+class Persistence
+{
 public:
     /**
      * @brief Virtual destructor.

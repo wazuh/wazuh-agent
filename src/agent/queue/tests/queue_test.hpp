@@ -10,29 +10,27 @@
  */
 #ifndef _QUEUE_TEST_H
 #define _QUEUE_TEST_H
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 class QueueTest : public ::testing::Test
 {
-    protected:
+protected:
+    QueueTest() = default;
+    virtual ~QueueTest() = default;
 
-        QueueTest() = default;
-        virtual ~QueueTest() = default;
-
-        void SetUp() override;
-        void TearDown() override;
+    void SetUp() override;
+    void TearDown() override;
 };
 
 class JsonTest : public ::testing::Test
 {
-    protected:
+protected:
+    JsonTest() = default;
+    virtual ~JsonTest() = default;
 
-        JsonTest() = default;
-        virtual ~JsonTest() = default;
-
-        void SetUp() override {};
-        void TearDown() override {};
+    void SetUp() override {};
+    void TearDown() override {};
 };
 
 #endif //_QUEUE_TEST_H

@@ -158,7 +158,6 @@ public:
      * @throws None
      */
     void waitUntilNotFullOrStoped(std::stop_token stopToken);
-
 };
 
 /**

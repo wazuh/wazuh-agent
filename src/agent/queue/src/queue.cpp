@@ -90,13 +90,7 @@ bool PersistedQueue::isFull()
 void PersistedQueue::waitUntilNotFull()
 {
     std::unique_lock<std::mutex> lock(m_mtx);
-    m_cv.wait_for(lock,
-                  m_timeout,
-                  [this]
-                  {
-                      std::cout << " waiting " << std::endl;
-                      return m_persistenceDest->GetElementCount() < m_max_size;
-                  });
+    m_cv.wait_for(lock, m_timeout, [this] { return m_persistenceDest->GetElementCount() < m_max_size; });
 }
 
 void PersistedQueue::waitUntilNotFullOrStoped(std::stop_token stopToken)
@@ -105,15 +99,13 @@ void PersistedQueue::waitUntilNotFullOrStoped(std::stop_token stopToken)
     m_cv.wait(lock,
               [this, stopToken]
               {
-                  std::cout << " waiting " << std::endl;
                   bool menor = (m_persistenceDest->GetElementCount() < m_max_size);
                   bool stopped = (stopToken.stop_possible() && stopToken.stop_requested());
-                  std::cout << "menor" << menor << "stopped" << stopped << std::endl;
                   return menor || stopped;
               });
 }
 
-bool MultiTypeQueue::timeoutPush(Message message, bool shouldWait )
+bool MultiTypeQueue::timeoutPush(Message message, bool shouldWait)
 {
     bool result = false;
     std::unique_lock<std::mutex> mapLock(m_mapMutex);
