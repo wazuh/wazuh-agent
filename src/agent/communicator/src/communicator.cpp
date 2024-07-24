@@ -6,16 +6,21 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 
-namespace net = boost::asio;
 using tcp = boost::asio::ip::tcp;
 using json = nlohmann::json;
 
 namespace communicator
 {
 
-    Communicator::Communicator()
+    Communicator::Communicator(const std::function<std::string(std::string, std::string)> GetStringConfigValue)
+    : m_managerIp("")
+    , m_port("")
     {
-
+        if (GetStringConfigValue != nullptr)
+        {
+            m_managerIp = GetStringConfigValue("agent", "manager_ip");
+            m_port = GetStringConfigValue("agent", "port");
+        }
     }
 
     int Communicator::SendAuthenticationRequest()
@@ -45,9 +50,9 @@ namespace communicator
         http::response<http::dynamic_body> res;
         try
         {
-            net::io_context io_context;
+            boost::asio::io_context io_context;
             tcp::resolver resolver(io_context);
-            auto const results = resolver.resolve("localhost", "8080");
+            auto const results = resolver.resolve(m_managerIp, m_port);
 
             tcp::socket socket(io_context);
             boost::asio::connect(socket, results.begin(), results.end());
