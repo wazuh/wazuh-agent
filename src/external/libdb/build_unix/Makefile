@@ -36,9 +36,9 @@ MKDIR=	mkdir
 MV=	mv
 RANLIB=	ranlib
 RM=	rm -f
-SHELL=	/bin/sh
+SHELL=	/usr/bin/sh
 STRIP=	strip
-SED=	/bin/sed
+SED=	/usr/bin/sed
 PERL=	
 
 ##################################################
@@ -70,7 +70,7 @@ CCLINK=		$(LIBTOOL) --mode=link cc -O3
 
 LDFLAGS=	
 LIBS=		 -lpthread
-TEST_LIBS=	 -lm -lnsl
+TEST_LIBS=	 -lm
 LIBCSO_LIBS=	  -lpthread
 
 libdb_base=	libdb
