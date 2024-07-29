@@ -44,9 +44,17 @@
         "platform": "linux"
       },
       {
+        "name": "libpopt",
+        "version>=": "1.16"
+      },
+      {
         "name": "librpm",
         "version>=": "4.18.2",
         "platform": "linux"
+      },
+      {
+        "name": "lua",
+        "version>=": "5.3.6"
       },
       {
         "name": "nlohmann-json",
@@ -64,6 +72,10 @@
       {
         "name": "spdlog",
         "version>=": "1.14.0"
+      },
+      {
+        "name": "sqlite3",
+        "version>=": "3.45.0"
       },
       {
         "name": "sqlitecpp",

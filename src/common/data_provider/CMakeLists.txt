@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12.4)
+cmake_minimum_required(VERSION 3.24)
 
 project(sysinfo)
 
@@ -62,10 +62,13 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+find_path(POPT_INCLUDE_DIR include/popt.h)
+include_directories(${POPT_INCLUDE_DIR})
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
 include_directories(${SRC_FOLDER}/headers/)
-include_directories(${SRC_FOLDER}/external/sqlite/)
+include_directories(${LUA_INCLUDE_DIR})
 include_directories(${SRC_FOLDER}/external/rpm/include/)
 #include_directories(${SRC_FOLDER}/external/nlohmann/)
 #include_directories(${SRC_FOLDER}/external/cJSON/)
@@ -105,7 +108,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
 endif(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
 
 link_directories(${SRC_FOLDER})
-link_directories(${SRC_FOLDER}/external/sqlite/)
+#link_directories(${SRC_FOLDER}/external/sqlite/)
 #link_directories(${SRC_FOLDER}/external/cJSON/)
 link_directories(${SRC_FOLDER}/external/procps/)
 link_directories(${SRC_FOLDER}/external/bzip2/)
@@ -229,7 +232,8 @@ elseif(APPLE)
   target_link_libraries(sysinfo cjson ${SRC_FOLDER}/external/libplist/bin/lib/libplist-2.0.a ${iokit_lib} ${corefoundation_lib})
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
-target_link_libraries(sysinfo nlohmann_json::nlohmann_json cjson)
+find_library(POPT_LIBRARY libpopt.a)
+target_link_libraries(sysinfo nlohmann_json::nlohmann_json cjson unofficial::sqlite3::sqlite3 LibArchive::LibArchive ${LUA_LIBRARIES} ${POPT_LIBRARY} alpm rpm)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set(CURL_DEP "wazuhext")
