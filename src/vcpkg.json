@@ -11,9 +11,12 @@
       "gtest",
       "jwt-cpp",
       "libarchive",
+      "libpopt",
+      "lua",
       "nlohmann-json",
       "openssl",
       "spdlog",
+      "sqlite3",
       "sqlitecpp",
       "toml11",
       {
