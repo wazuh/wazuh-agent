@@ -63,10 +63,10 @@
 #define HAVE_BSEARCH 1
 
 /* Define to 1 if you have the `clock_gettime' function. */
-/* #undef HAVE_CLOCK_GETTIME */
+#define HAVE_CLOCK_GETTIME 1
 
 /* Define to 1 if clock_gettime supports CLOCK_MONOTONIC. */
-/* #undef HAVE_CLOCK_MONOTONIC */
+#define HAVE_CLOCK_MONOTONIC 1
 
 /* Define to 1 if building compression support. */
 #define HAVE_COMPRESSION 1
