@@ -1,3 +1,6 @@
+#ifndef SHARED_H
+#define SHARED_H
+
 #include <map>
 
 #include <nlohmann/json.hpp>
@@ -31,16 +34,6 @@ public:
         , data(d)
     {
     }
-
-    /**
-     * @brief overloading == operator for messages
-     *
-     * @param other Secondary Message parameter
-     * @return true when both messages matches in type and data
-     * @return false when the messages don't match in type and data
-     */
-    bool operator==(const Message& other) const
-    {
-        return (this->type == other.type) && (this->data == other.data);
-    }
 };
+
+#endif // SHARED_H

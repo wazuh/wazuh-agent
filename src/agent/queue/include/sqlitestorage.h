@@ -1,8 +1,12 @@
 #ifndef SQLITE_STORAGE_H
 #define SQLITE_STORAGE_H
 
+#include <condition_variable>
+#include <iostream>
+#include <memory>
 #include <mutex>
 #include <string>
+#include <sys/stat.h>
 
 #include <SQLiteCpp/SQLiteCpp.h>
 #include <SQLiteCpp/VariadicBind.h>
@@ -98,18 +102,35 @@ private:
      */
     void InitializeTable();
 
+    /**
+     * @brief Private method for waiting for database access.
+     *
+     */
+    void waitForDatabaseAccess();
+
+    /**
+     * @brief Private method for releasing database access.
+     *
+     */
+    void releaseDatabaseAccess();
+
     /// The name of the SQLite database file.
-    std::string m_dbName;
+    const std::string m_dbName;
 
     /// The name of the table to use for storing messages.
-    std::string m_tableName;
+    const std::string m_tableName;
 
     /// Pointer to the SQLite database connection.
-    //SQLite::Database* m_db;
-    std::unique_ptr<SQLite::Database> m_db;
+    std::shared_ptr<SQLite::Database> m_db;
 
     /// Mutex to ensure thread-safe operations.
-    std::mutex m_mtx;
+    std::mutex m_mutex;
+
+    /// @brief condition variable to wait for database access
+    std::condition_variable m_cv;
+
+    // TODO: should it be atomic?
+    bool m_db_in_use = false;
 };
 
 #endif // SQLITE_STORAGE_H

@@ -1,3 +1,6 @@
+#ifndef QUEUE_H
+#define QUEUE_H
+
 #include <any>
 #include <condition_variable>
 #include <memory>
@@ -257,3 +260,5 @@ public:
      */
     int getItemsByType(MessageType type);
 };
+
+#endif // QUEUE_H
