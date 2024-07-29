@@ -6,6 +6,12 @@ find_package(cJSON CONFIG REQUIRED)
 find_package(CURL REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(LibArchive REQUIRED)
+<<<<<<< HEAD
+=======
+find_package(Lua REQUIRED)
+find_package(unofficial-sqlite3 CONFIG REQUIRED)
+####################################################################################################
+>>>>>>> d475bf20d (refactor: added dependencies required by data-provider)
 
 project(wazuh-agent)
 
