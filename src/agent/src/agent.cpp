@@ -5,25 +5,19 @@
 #include <thread>
 
 Agent::Agent()
+: m_configurationParser(std::make_unique<configuration::ConfigurationParser>())
+, m_communicator([this](std::string table, std::string key)->std::string { return m_configurationParser->GetConfig<std::string>(table, key);})
 {
     m_taskManager.start(std::thread::hardware_concurrency());
 
-    m_taskManager.enqueueTask(
-        [this]() mutable
-        {
-            while (true)
-            {
-                m_communicator.SendAuthenticationRequest();
-                std::this_thread::sleep_for(std::chrono::seconds(2));
-            }
-        });
+    m_taskManager.enqueueTask(m_communicator.WaitForTokenExpirationAndAuthenticate());
+
     m_taskManager.enqueueTask(StatefulMessageProcessingTask(m_communicator.GetToken(), m_messageQueue));
     m_taskManager.enqueueTask(StatelessMessageProcessingTask(m_communicator.GetToken(), m_messageQueue));
 }
 
 Agent::~Agent()
 {
-    // Sleep for 2 seconds
-    std::this_thread::sleep_for(std::chrono::seconds(2));
+    m_communicator.Stop();
     m_taskManager.stop();
 }
