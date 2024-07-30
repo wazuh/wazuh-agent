@@ -36,5 +36,15 @@ void Agent::Run()
         [this]() { return getMessagesFromQueue(m_messageQueue, STATELESS); },
         [this]([[maybe_unused]] const std::string& response) { popMessagesFromQueue(m_messageQueue, STATELESS); }));
 
+    m_taskManager.EnqueueTask(m_commandManager.ProcessCommandsFromQueue<Message>(
+        [this]() -> std::optional<Message>
+        {
+            if (m_agentQueue.isEmpty(MessageType::COMMAND))
+            {
+                return std::nullopt;
+            }
+            return m_agentQueue.getNext(MessageType::COMMAND);
+        }));
+
     m_signalHandler.WaitForSignal();
 }

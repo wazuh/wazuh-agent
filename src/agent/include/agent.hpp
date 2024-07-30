@@ -1,6 +1,7 @@
 #pragma once
 
 #include <agent_info.hpp>
+#include <command_manager.hpp>
 #include <communicator.hpp>
 #include <configuration_parser.hpp>
 #include <multitype_queue.hpp>
@@ -25,4 +26,6 @@ private:
     AgentInfo m_agentInfo;
     configuration::ConfigurationParser m_configurationParser;
     communicator::Communicator m_communicator;
+    command_manager::CommandManager m_commandManager;
+    MultiTypeQueue m_agentQueue;
 };
