@@ -37,7 +37,6 @@ if(APPLE)
 endif(APPLE)
 
 include_directories(${SRC_FOLDER}/external/sqlite/)
-include_directories(${SRC_FOLDER}/external/nlohmann/)
 include_directories(${SRC_FOLDER}/external/cJSON/)
 include_directories(${CMAKE_SOURCE_DIR}/include/)
 include_directories(${CMAKE_SOURCE_DIR}/src/)
@@ -78,7 +77,7 @@ elseif(UNIX AND NOT APPLE)
   endif(NOT CMAKE_SYSTEM_NAME STREQUAL "AIX" AND NOT CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
-target_link_libraries(dbsync wazuhext)
+target_link_libraries(dbsync nlohmann_json::nlohmann_json)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
   if(CMAKE_SYSTEM_NAME STREQUAL "AIX")
