@@ -1,11 +1,20 @@
 #ifndef INVENTORY_H
 #define INVENTORY_H
 
+#include <chrono>
+#include <thread>
+#include <condition_variable>
+#include <mutex>
+#include <memory>
 #include <string>
 #include <memory>
 #include <cjson/cJSON.h>
 #include "sysInfoInterface.h"
 #include "configuration.h"
+#include "logging_helper.h"
+#include "commonDefs.h"
+#include "dbsync.hpp"
+#include "inventoryNormalizer.h"
 
 class Inventory {
 public:
@@ -23,28 +32,15 @@ public:
 
 private:
     Inventory();
-    ~Inventory() = default;
+    // ~Inventory() = default;
+    ~Inventory();
     Inventory(const Inventory&) = delete;
     Inventory& operator=(const Inventory&) = delete;
 
     void init(const std::shared_ptr<ISysInfo>& spInfo,
-                const std::function<void(const std::string&)> reportDiffFunction,
-                const std::function<void(const std::string&)> reportSyncFunction,
-                const std::function<void(const modules_log_level_t, const std::string&)> logFunction,
                 const std::string& dbPath,
                 const std::string& normalizerConfigPath,
-                const std::string& normalizerType,
-                const unsigned int inverval = 3600ul,
-                const bool scanOnStart = true,
-                const bool hardware = true,
-                const bool os = true,
-                const bool network = true,
-                const bool packages = true,
-                const bool ports = true,
-                const bool portsAll = true,
-                const bool processes = true,
-                const bool hotfixes = true,
-                const bool notifyOnFirstScan = false);
+                const std::string& normalizerType);
 
     void destroy();
     void push(const std::string& data);
@@ -80,10 +76,12 @@ private:
     void syncLoop(std::unique_lock<std::mutex>& lock);
     void syncAlgorithm();
 
+    static void log(const modules_log_level_t, const std::string&);
+    static void logError(const std::string&);
+
     std::shared_ptr<ISysInfo>                                               m_spInfo;
     std::function<void(const std::string&)>                                 m_reportDiffFunction;
     std::function<void(const std::string&)>                                 m_reportSyncFunction;
-    std::function<void(const modules_log_level_t, const std::string&)>      m_logFunction;
     std::chrono::seconds                                                    m_intervalValue;
     std::chrono::seconds                                                    m_currentIntervalValue;
     bool                                                                    m_scanOnStart;
@@ -98,7 +96,6 @@ private:
     bool                                                                    m_stopping;
     bool                                                                    m_notify;
     std::unique_ptr<DBSync>                                                 m_spDBSync;
-    std::unique_ptr<RemoteSync>                                             m_spRsync;
     std::condition_variable                                                 m_cv;
     std::mutex                                                              m_mutex;
     std::unique_ptr<InvNormalizer>                                          m_spNormalizer;

@@ -10,7 +10,7 @@
  */
 #ifndef _INVENTORY_NORMALIZER_H
 #define _INVENTORY_NORMALIZER_H
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <map>
 
