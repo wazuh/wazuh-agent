@@ -16,6 +16,7 @@ set(SOURCES
     src/agent.cpp
     src/message_task.cpp
     src/task_manager.cpp
+    src/register.cpp
 )
 
 set(HEADERS
@@ -23,6 +24,7 @@ set(HEADERS
     include/itask_manager.hpp
     include/task_manager.hpp
     include/message_task.hpp
+    include/register.hpp
 )
 
 add_library(agent ${SOURCES} ${HEADERS})
