@@ -1158,40 +1158,11 @@ void Inventory::registerWithRsync()
     }
 }
 void Inventory::init(const std::shared_ptr<ISysInfo>& spInfo,
-                        const std::function<void(const std::string&)> reportDiffFunction,
-                        const std::function<void(const std::string&)> reportSyncFunction,
-                        const std::function<void(const modules_log_level_t, const std::string&)> logFunction,
                         const std::string& dbPath,
                         const std::string& normalizerConfigPath,
-                        const std::string& normalizerType,
-                        const unsigned int interval,
-                        const bool scanOnStart,
-                        const bool hardware,
-                        const bool os,
-                        const bool network,
-                        const bool packages,
-                        const bool ports,
-                        const bool portsAll,
-                        const bool processes,
-                        const bool hotfixes,
-                        const bool notifyOnFirstScan)
+                        const std::string& normalizerType)
 {
     m_spInfo = spInfo;
-    m_reportDiffFunction = reportDiffFunction;
-    m_reportSyncFunction = reportSyncFunction;
-    m_logFunction = logFunction;
-    m_intervalValue = std::chrono::seconds{interval};
-    m_scanOnStart = scanOnStart;
-    m_hardware = hardware;
-    m_os = os;
-    m_network = network;
-    m_packages = packages;
-    m_ports = ports;
-    m_portsAll = portsAll;
-    m_processes = processes;
-    m_hotfixes = hotfixes;
-    m_notify = notifyOnFirstScan;
-    m_currentIntervalValue = m_intervalValue;
 
     std::unique_lock<std::mutex> lock{m_mutex};
     m_stopping = false;
