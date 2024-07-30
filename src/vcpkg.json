@@ -63,7 +63,7 @@
           "packages": [ "toml11"]
         }
       ],
-      "overlay-ports": [ 
+      "overlay-ports": [
         "./ports-overlay/procps",
         "./ports-overlay/libdb",
         "./ports-overlay/librpm"
