@@ -43,6 +43,17 @@ void Agent::Run()
         [this]([[maybe_unused]] const std::string& response)
         { PopMessagesFromQueue(m_messageQueue, MessageType::STATELESS); }));
 
+    m_taskManager.EnqueueTask(m_commandHandler.ProcessCommandsFromQueue<Message>(
+        [this]() -> std::optional<Message>
+        {
+            if (m_agentQueue.isEmpty(MessageType::COMMAND))
+            {
+                return std::nullopt;
+            }
+            return m_agentQueue.getNext(MessageType::COMMAND);
+        }));
+
     m_signalHandler->WaitForSignal();
     m_communicator.Stop();
+    m_commandHandler.Stop();
 }
