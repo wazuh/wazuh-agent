@@ -17,6 +17,7 @@
 #include "pthreads_op.h"
 
 #include "inventory.h"
+#include "sysInfo.hpp"
 
 using namespace std;
 
@@ -75,21 +76,24 @@ void *Inventory::run() {
 }
 
 int Inventory::setup(const Configuration & config) {
-    interval = WM_INVENTORY_DEFAULT_INTERVAL;
-    dbPath = "default/path";
-    normalizerConfigPath = "default/config/path";
-    normalizerType = "normalizerType";
+
+    m_intervalValue = std::chrono::seconds{WM_INVENTORY_DEFAULT_INTERVAL};
 
     enabled = true;
-    scan_on_start = true;
-    hwinfo = true;
-    netinfo = true;
-    osinfo = true;
-    programinfo = true;
-    hotfixinfo = true;
-    portsinfo = true;
-    allports = true;
-    procinfo = true;
+
+    m_scanOnStart = true;
+    m_hardware = true;
+    m_os = true;
+    m_network = true;
+    m_packages = true;
+    m_ports = true;
+    m_portsAll = true;
+    m_processes = true;
+    m_hotfixes = true;
+    m_notify = false;
+
+    m_currentIntervalValue = m_intervalValue;
+
     return 0;
 }
 
@@ -181,63 +185,19 @@ cJSON * Inventory::wm_inv_dump() {
 
 void Inventory::inventory_start()
 {
-    std::function<void(const std::string&)> callbackDiffWrapper
-    {
-        [callbackDiff](const std::string & data)
-        {
-            callbackDiff(data.c_str());
-        }
-    };
 
-    std::function<void(const std::string&)> callbackSyncWrapper
-    {
-        [callbackSync](const std::string & data)
-        {
-            callbackSync(data.c_str());
-        }
-    };
-
-    std::function<void(const modules_log_level_t, const std::string&)> callbackLogWrapper
-    {
-        [callbackLog](const modules_log_level_t level, const std::string & data)
-        {
-            callbackLog(level, data.c_str(), WM_INV_LOGTAG);
-        }
-    };
-
-    std::function<void(const std::string&)> callbackErrorLogWrapper
-    {
-        [callbackLog](const std::string & data)
-        {
-            callbackLog(LOG_ERROR, data.c_str(), WM_INV_LOGTAG);
-        }
-    };
-
-    DBSync::initialize(callbackErrorLogWrapper);
+    DBSync::initialize(logError);
 
     try
     {
         Inventory::instance().init(std::make_shared<SysInfo>(),
-                                      std::move(callbackDiffWrapper),
-                                      std::move(callbackSyncWrapper),
-                                      std::move(callbackLogWrapper),
                                       dbPath,
                                       normalizerConfigPath,
-                                      normalizerType,
-                                      inverval,
-                                      scanOnStart,
-                                      hardware,
-                                      os,
-                                      network,
-                                      packages,
-                                      ports,
-                                      portsAll,
-                                      processes,
-                                      hotfixes);
+                                      normalizerType);
     }
     catch (const std::exception& ex)
     {
-        callbackErrorLogWrapper(ex.what());
+        logError(ex.what());
     }
 }
 
@@ -255,4 +215,14 @@ int Inventory::inventory_sync_message(const char* data)
     }
 
     return ret;
+}
+
+void Inventory::log(const modules_log_level_t level, const std::string& log)
+{
+    taggedLogFunction(level, log.c_str(), WM_INV_LOGTAG);
+}
+
+void Inventory::logError(const std::string& log)
+{
+    taggedLogFunction(LOG_ERROR, log.c_str(), WM_INV_LOGTAG);
 }
