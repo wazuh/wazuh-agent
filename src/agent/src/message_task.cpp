@@ -74,14 +74,14 @@ namespace
 
 } // namespace
 
-boost::asio::awaitable<void> StatefulMessageProcessingTask(const std::string& token,
+boost::asio::awaitable<void> StatefulMessageProcessingTask(const std::string& manager_ip, const std::string& port, const std::string& token,
                                                            std::queue<std::string>& messageQueue)
 {
-    co_await send_http_request("localhost", "8080", "/stateless", token, messageQueue);
+    co_await send_http_request(manager_ip, port, "/stateless", token, messageQueue);
 }
 
-boost::asio::awaitable<void> StatelessMessageProcessingTask(const std::string& token,
+boost::asio::awaitable<void> StatelessMessageProcessingTask(const std::string& manager_ip, const std::string& port, const std::string& token,
                                                             std::queue<std::string>& messageQueue)
 {
-    co_await send_http_request("localhost", "8080", "/stateful", token, messageQueue);
+    co_await send_http_request(manager_ip, port, "/stateful", token, messageQueue);
 }

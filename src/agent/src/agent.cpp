@@ -12,8 +12,10 @@ Agent::Agent()
 
     m_taskManager.enqueueTask(m_communicator.WaitForTokenExpirationAndAuthenticate());
 
-    m_taskManager.enqueueTask(StatefulMessageProcessingTask(m_communicator.GetToken(), m_messageQueue));
-    m_taskManager.enqueueTask(StatelessMessageProcessingTask(m_communicator.GetToken(), m_messageQueue));
+    std::string managerIp = m_configurationParser->GetConfig<std::string>("agent", "manager_ip");
+    std::string port = m_configurationParser->GetConfig<std::string>("agent", "port");
+    m_taskManager.enqueueTask(StatefulMessageProcessingTask(managerIp, port, m_communicator.GetToken(), m_messageQueue));
+    m_taskManager.enqueueTask(StatelessMessageProcessingTask(managerIp, port, m_communicator.GetToken(), m_messageQueue));
 }
 
 Agent::~Agent()
