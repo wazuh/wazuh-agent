@@ -4,17 +4,24 @@
 #include <boost/asio/ssl/stream.hpp>
 #include <boost/beast/version.hpp>
 #include <iostream>
+#include <jwt-cpp/jwt.h>
 #include <nlohmann/json.hpp>
+
+#include <chrono>
+#include <iostream>
 
 using tcp = boost::asio::ip::tcp;
 using json = nlohmann::json;
+
+#define TOKEN_PRE_EXPIRY_SECS 2
 
 namespace communicator
 {
 
     Communicator::Communicator(const std::function<std::string(std::string, std::string)> GetStringConfigValue)
-    : m_managerIp("")
-    , m_port("")
+        : m_managerIp("")
+        , m_port("")
+        , m_exitFlag(false)
     {
         if (GetStringConfigValue != nullptr)
         {
@@ -23,12 +30,33 @@ namespace communicator
         }
     }
 
+    Communicator::~Communicator()
+    {
+        stop();
+    }
+
     int Communicator::SendAuthenticationRequest()
     {
         json bodyJson = {{communicator::uuidKey, communicator::kUUID},
                          {communicator::passwordKey, communicator::kPASSWORD}};
-        http::response<http::dynamic_body> res = sendHttpRequest(http::verb::post, "/authentication", "", bodyJson.dump());
+        http::response<http::dynamic_body> res =
+            sendHttpRequest(http::verb::post, "/authentication", "", bodyJson.dump());
         m_token = beast::buffers_to_string(res.body().data());
+
+        auto decoded = jwt::decode(m_token);
+        // Extract the expiration time claim (exp)
+        if (decoded.has_payload_claim("exp"))
+        {
+            auto exp_claim = decoded.get_payload_claim("exp");
+            auto exp_time = exp_claim.as_date();
+            m_tokenExpTimeInSeconds =
+                std::chrono::duration_cast<std::chrono::seconds>(exp_time.time_since_epoch()).count();
+        }
+        else
+        {
+            std::cerr << "Token does not contain an 'exp' claim" << std::endl;
+        }
+
         return res.result_int();
     }
 
@@ -90,4 +118,38 @@ namespace communicator
         return res;
     }
 
+    const long Communicator::GetTokenRemainingSecs() const
+    {
+        auto now = std::chrono::system_clock::now();
+        auto now_seconds = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
+
+        return static_cast<long>(m_tokenExpTimeInSeconds - now_seconds);
+    }
+
+    void Communicator::stop()
+    {
+        std::lock_guard<std::mutex> lock(m_exitMtx);
+        m_exitFlag = true;
+    }
+
+    boost::asio::awaitable<void> Communicator::WaitForTokenExpirationAndAuthenticate()
+    {
+        using namespace std::chrono_literals;
+        auto executor = co_await boost::asio::this_coro::executor;
+        boost::asio::steady_timer timer(executor);
+
+        while (true)
+        {
+            SendAuthenticationRequest();
+            auto duration = std::chrono::milliseconds((GetTokenRemainingSecs() - TOKEN_PRE_EXPIRY_SECS) * 1000);
+            timer.expires_after(duration);
+            co_await timer.async_wait(boost::asio::use_awaitable);
+
+            {
+                std::lock_guard<std::mutex> lock(m_exitMtx);
+                if (m_exitFlag)
+                    co_return;
+            }
+        }
+    }
 } // namespace communicator
