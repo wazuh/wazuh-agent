@@ -39,3 +39,5 @@ venv
 
 # Auto generated build files
 src/**/build/*
+
+src/external/libdb/build_unix/

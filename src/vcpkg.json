@@ -23,6 +23,10 @@
       {
         "name": "toml11",
         "version": "4.0.0"
+      },
+      {
+        "name": "lua",
+        "version": "5.3.5#6"
       }
     ]
 }
