@@ -9,7 +9,8 @@
       "nlohmann-json",
       "jwt-cpp",
       "gtest",
-      "openssl"
+      "openssl",
+      "boost-uuid"
     ],
     "overrides": [
       {

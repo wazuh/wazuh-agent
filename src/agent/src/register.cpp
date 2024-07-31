@@ -7,12 +7,15 @@
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <iostream>
 #include <jwt-cpp/jwt.h>
 #include <nlohmann/json.hpp>
 
 namespace beast = boost::beast;
 namespace http = beast::http;
+namespace uuids = boost::uuids;
 using tcp = boost::asio::ip::tcp;
 using json = nlohmann::json;
 
@@ -111,6 +114,11 @@ namespace registration
         return res.result_int();
     }
 
+    std::string GenerateUuid()
+    {
+        return to_string(uuids::random_generator()());
+    }
+
 } // namespace registration
 
 bool RegisterAgent(const std::string& user,
@@ -118,7 +126,7 @@ bool RegisterAgent(const std::string& user,
                    const std::optional<std::string>& name,
                    const std::optional<std::string>& ip)
 {
-    const auto uuid = "01910343-4ab2-7d94-ab6f-ff76dbb1677d";
+    const auto uuid = registration::GenerateUuid();
 
     const auto configurationParser = std::make_shared<configuration::ConfigurationParser>();
     const auto managerIp = configurationParser->GetConfig<std::string>("agent", "manager_ip");
