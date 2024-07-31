@@ -18,7 +18,7 @@
 #include <shared_mutex>
 #include "dbengine_factory.h"
 #include "commonDefs.h"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 namespace DbSync
 {

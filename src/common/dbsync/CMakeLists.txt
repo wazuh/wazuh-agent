@@ -8,8 +8,8 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-get_filename_component(SHARED_MODULES ${CMAKE_SOURCE_DIR}/../ ABSOLUTE)
-get_filename_component(SRC_FOLDER     ${CMAKE_SOURCE_DIR}/../../ ABSOLUTE)
+get_filename_component(COMMON_FOLDER  ${CMAKE_CURRENT_SOURCE_DIR}/../ ABSOLUTE)
+get_filename_component(SRC_FOLDER     ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
 
 if(COVERITY)
   add_definitions(-D__GNUC__=8)
@@ -36,12 +36,15 @@ if(APPLE)
   set(CMAKE_MACOSX_RPATH 1)
 endif(APPLE)
 
-include_directories(${SRC_FOLDER}/external/sqlite/)
-include_directories(${SRC_FOLDER}/external/cJSON/)
-include_directories(${CMAKE_SOURCE_DIR}/include/)
-include_directories(${CMAKE_SOURCE_DIR}/src/)
-include_directories(${SHARED_MODULES}/utils/)
-include_directories(${SHARED_MODULES}/common/)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
+include_directories(${COMMON_FOLDER})
+include_directories(${COMMON_FOLDER}/mapWrapper/include/)
+include_directories(${COMMON_FOLDER}/pipelineHelper/include/)
+include_directories(${COMMON_FOLDER}/stringHelper/include/)
+include_directories(${COMMON_FOLDER}/threadDispatcher/include/)
+include_directories(${COMMON_FOLDER}/utils/)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
   link_directories(${INSTALL_PREFIX}/lib)
@@ -55,8 +58,8 @@ link_directories(${SRC_FOLDER}/external/sqlite/)
 link_directories(${SRC_FOLDER}/external/cJSON/)
 
 file(GLOB DBSYNC_SRC
-    "${CMAKE_SOURCE_DIR}/src/*.cpp"
-    "${CMAKE_SOURCE_DIR}/src/sqlite/*.cpp")
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/sqlite/*.cpp")
 
 add_library(dbsync SHARED
     ${DBSYNC_SRC}
@@ -77,7 +80,7 @@ elseif(UNIX AND NOT APPLE)
   endif(NOT CMAKE_SYSTEM_NAME STREQUAL "AIX" AND NOT CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
-target_link_libraries(dbsync nlohmann_json::nlohmann_json)
+target_link_libraries(dbsync nlohmann_json::nlohmann_json cjson unofficial::sqlite3::sqlite3)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
   if(CMAKE_SYSTEM_NAME STREQUAL "AIX")

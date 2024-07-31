@@ -9,8 +9,7 @@
  * Foundation.
  */
 #include "inventory.h"
-#include "inventory.hpp"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include <iostream>
 #include "stringHelper.h"
 #include "hashHelper.h"
@@ -33,10 +32,7 @@ do                                                                      \
     }                                                                   \
     catch(const std::exception& ex)                                     \
     {                                                                   \
-        if(m_logFunction)                                               \
-        {                                                               \
-            m_logFunction(LOG_ERROR, std::string{ex.what()});           \
-        }                                                               \
+        logError(std::string{ex.what()});                               \
     }                                                                   \
 }while(0)
 
@@ -956,7 +952,7 @@ void Inventory::notifyChange(ReturnTypeCallback result, const nlohmann::json& da
 {
     if (DB_ERROR == result)
     {
-        m_logFunction(LOG_ERROR, data.dump());
+        logError(data.dump());
     }
     else if (m_notify && !m_stopping)
     {
@@ -972,7 +968,7 @@ void Inventory::notifyChange(ReturnTypeCallback result, const nlohmann::json& da
                 removeKeysWithEmptyValue(msg["data"]);
                 const auto msgToSend{msg.dump()};
                 m_reportDiffFunction(msgToSend);
-                m_logFunction(LOG_DEBUG_VERBOSE, "Delta sent: " + msgToSend);
+                log(LOG_DEBUG_VERBOSE, "Delta sent: " + msgToSend);
             }
         }
         else
@@ -986,7 +982,7 @@ void Inventory::notifyChange(ReturnTypeCallback result, const nlohmann::json& da
             removeKeysWithEmptyValue(msg["data"]);
             const auto msgToSend{msg.dump()};
             m_reportDiffFunction(msgToSend);
-            m_logFunction(LOG_DEBUG_VERBOSE, "Delta sent: " + msgToSend);
+            log(LOG_DEBUG_VERBOSE, "Delta sent: " + msgToSend);
             // LCOV_EXCL_STOP
         }
     }
@@ -1048,115 +1044,6 @@ std::string Inventory::getCreateStatement() const
     return ret;
 }
 
-
-void Inventory::registerWithRsync()
-{
-    const auto reportSyncWrapper
-    {
-        [this](const std::string & dataString)
-        {
-            auto jsonData(nlohmann::json::parse(dataString));
-            auto it{jsonData.find("data")};
-
-            m_lastSyncMsg = Utils::secondsSinceEpoch();
-
-            if (!m_stopping)
-            {
-                if (it != jsonData.end())
-                {
-                    auto& data{*it};
-                    it = data.find("attributes");
-
-                    if (it != data.end())
-                    {
-                        auto& fieldData { *it };
-                        removeKeysWithEmptyValue(fieldData);
-                        fieldData["scan_time"] = Utils::getCurrentTimestamp();
-                        const auto msgToSend{jsonData.dump()};
-                        m_reportSyncFunction(msgToSend);
-                        m_logFunction(LOG_DEBUG_VERBOSE, "Sync sent: " + msgToSend);
-                    }
-                    else
-                    {
-                        m_reportSyncFunction(dataString);
-                        m_logFunction(LOG_DEBUG_VERBOSE, "Sync sent: " + dataString);
-                    }
-                }
-                else
-                {
-                    //LCOV_EXCL_START
-                    m_reportSyncFunction(dataString);
-                    m_logFunction(LOG_DEBUG_VERBOSE, "Sync sent: " + dataString);
-                    //LCOV_EXCL_STOP
-                }
-            }
-        }
-    };
-
-    if (m_os)
-    {
-        m_spRsync->registerSyncID("inventory_osinfo",
-                                  m_spDBSync->handle(),
-                                  nlohmann::json::parse(OS_SYNC_CONFIG_STATEMENT),
-                                  reportSyncWrapper);
-    }
-
-    if (m_hardware)
-    {
-        m_spRsync->registerSyncID("inventory_hwinfo",
-                                  m_spDBSync->handle(),
-                                  nlohmann::json::parse(HW_SYNC_CONFIG_STATEMENT),
-                                  reportSyncWrapper);
-    }
-
-    if (m_processes)
-    {
-        m_spRsync->registerSyncID("inventory_processes",
-                                  m_spDBSync->handle(),
-                                  nlohmann::json::parse(PROCESSES_SYNC_CONFIG_STATEMENT),
-                                  reportSyncWrapper);
-    }
-
-    if (m_packages)
-    {
-        m_spRsync->registerSyncID("inventory_packages",
-                                  m_spDBSync->handle(),
-                                  nlohmann::json::parse(PACKAGES_SYNC_CONFIG_STATEMENT),
-                                  reportSyncWrapper);
-    }
-
-    if (m_hotfixes)
-    {
-        m_spRsync->registerSyncID("inventory_hotfixes",
-                                  m_spDBSync->handle(),
-                                  nlohmann::json::parse(HOTFIXES_SYNC_CONFIG_STATEMENT),
-                                  reportSyncWrapper);
-    }
-
-    if (m_ports)
-    {
-        m_spRsync->registerSyncID("inventory_ports",
-                                  m_spDBSync->handle(),
-                                  nlohmann::json::parse(PORTS_SYNC_CONFIG_STATEMENT),
-                                  reportSyncWrapper);
-    }
-
-    if (m_network)
-    {
-        m_spRsync->registerSyncID("inventory_network_iface",
-                                  m_spDBSync->handle(),
-                                  nlohmann::json::parse(NETIFACE_SYNC_CONFIG_STATEMENT),
-                                  reportSyncWrapper);
-        m_spRsync->registerSyncID("inventory_network_protocol",
-                                  m_spDBSync->handle(),
-                                  nlohmann::json::parse(NETPROTO_SYNC_CONFIG_STATEMENT),
-                                  reportSyncWrapper);
-        m_spRsync->registerSyncID("inventory_network_address",
-                                  m_spDBSync->handle(),
-                                  nlohmann::json::parse(NETADDRESS_SYNC_CONFIG_STATEMENT),
-                                  reportSyncWrapper);
-    }
-}
 void Inventory::init(const std::shared_ptr<ISysInfo>& spInfo,
                         const std::string& dbPath,
                         const std::string& normalizerConfigPath,
@@ -1167,9 +1054,7 @@ void Inventory::init(const std::shared_ptr<ISysInfo>& spInfo,
     std::unique_lock<std::mutex> lock{m_mutex};
     m_stopping = false;
     m_spDBSync = std::make_unique<DBSync>(HostType::AGENT, DbEngineType::SQLITE3, dbPath, getCreateStatement());
-    m_spRsync = std::make_unique<RemoteSync>();
     m_spNormalizer = std::make_unique<InvNormalizer>(normalizerConfigPath, normalizerType);
-    registerWithRsync();
     syncLoop(lock);
 }
 
@@ -1193,16 +1078,16 @@ void Inventory::scanHardware()
 {
     if (m_hardware)
     {
-        m_logFunction(LOG_DEBUG_VERBOSE, "Starting hardware scan");
+        log(LOG_DEBUG_VERBOSE, "Starting hardware scan");
         const auto& hwData{getHardwareData()};
         updateChanges(HW_TABLE, hwData);
-        m_logFunction(LOG_DEBUG_VERBOSE, "Ending hardware scan");
+        log(LOG_DEBUG_VERBOSE, "Ending hardware scan");
     }
 }
 
 void Inventory::syncHardware()
 {
-    m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(HW_START_CONFIG_STATEMENT), m_reportSyncFunction);
+    //m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(HW_START_CONFIG_STATEMENT), m_reportSyncFunction);
 }
 
 nlohmann::json Inventory::getOSData()
@@ -1217,16 +1102,16 @@ void Inventory::scanOs()
 {
     if (m_os)
     {
-        m_logFunction(LOG_DEBUG_VERBOSE, "Starting os scan");
+        log(LOG_DEBUG_VERBOSE, "Starting os scan");
         const auto& osData{getOSData()};
         updateChanges(OS_TABLE, osData);
-        m_logFunction(LOG_DEBUG_VERBOSE, "Ending os scan");
+        log(LOG_DEBUG_VERBOSE, "Ending os scan");
     }
 }
 
 void Inventory::syncOs()
 {
-    m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(OS_START_CONFIG_STATEMENT), m_reportSyncFunction);
+    //m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(OS_START_CONFIG_STATEMENT), m_reportSyncFunction);
 }
 
 nlohmann::json Inventory::getNetworkData()
@@ -1343,7 +1228,7 @@ void Inventory::scanNetwork()
 {
     if (m_network)
     {
-        m_logFunction(LOG_DEBUG_VERBOSE, "Starting network scan");
+        log(LOG_DEBUG_VERBOSE, "Starting network scan");
         const auto networkData(getNetworkData());
 
         if (!networkData.is_null())
@@ -1370,22 +1255,22 @@ void Inventory::scanNetwork()
             }
         }
 
-        m_logFunction(LOG_DEBUG_VERBOSE, "Ending network scan");
+        log(LOG_DEBUG_VERBOSE, "Ending network scan");
     }
 }
 
 void Inventory::syncNetwork()
 {
-    m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(NETIFACE_START_CONFIG_STATEMENT), m_reportSyncFunction);
-    m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(NETPROTO_START_CONFIG_STATEMENT), m_reportSyncFunction);
-    m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(NETADDRESS_START_CONFIG_STATEMENT), m_reportSyncFunction);
+    //m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(NETIFACE_START_CONFIG_STATEMENT), m_reportSyncFunction);
+    //m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(NETPROTO_START_CONFIG_STATEMENT), m_reportSyncFunction);
+    //m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(NETADDRESS_START_CONFIG_STATEMENT), m_reportSyncFunction);
 }
 
 void Inventory::scanPackages()
 {
     if (m_packages)
     {
-        m_logFunction(LOG_DEBUG_VERBOSE, "Starting packages scan");
+        log(LOG_DEBUG_VERBOSE, "Starting packages scan");
         const auto callback
         {
             [this](ReturnTypeCallback result, const nlohmann::json & data)
@@ -1420,7 +1305,7 @@ void Inventory::scanPackages()
         });
         txn.getDeletedRows(callback);
 
-        m_logFunction(LOG_DEBUG_VERBOSE, "Ending packages scan");
+        log(LOG_DEBUG_VERBOSE, "Ending packages scan");
     }
 }
 
@@ -1428,7 +1313,7 @@ void Inventory::scanHotfixes()
 {
     if (m_hotfixes)
     {
-        m_logFunction(LOG_DEBUG_VERBOSE, "Starting hotfixes scan");
+        log(LOG_DEBUG_VERBOSE, "Starting hotfixes scan");
         auto hotfixes = m_spInfo->hotfixes();
 
         if (!hotfixes.is_null())
@@ -1441,18 +1326,18 @@ void Inventory::scanHotfixes()
             updateChanges(HOTFIXES_TABLE, hotfixes);
         }
 
-        m_logFunction(LOG_DEBUG_VERBOSE, "Ending hotfixes scan");
+        log(LOG_DEBUG_VERBOSE, "Ending hotfixes scan");
     }
 }
 
 void Inventory::syncPackages()
 {
-    m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(PACKAGES_START_CONFIG_STATEMENT), m_reportSyncFunction);
+    //m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(PACKAGES_START_CONFIG_STATEMENT), m_reportSyncFunction);
 }
 
 void Inventory::syncHotfixes()
 {
-    m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(HOTFIXES_START_CONFIG_STATEMENT), m_reportSyncFunction);
+    //m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(HOTFIXES_START_CONFIG_STATEMENT), m_reportSyncFunction);
 }
 
 nlohmann::json Inventory::getPortsData()
@@ -1522,23 +1407,23 @@ void Inventory::scanPorts()
 {
     if (m_ports)
     {
-        m_logFunction(LOG_DEBUG_VERBOSE, "Starting ports scan");
+        log(LOG_DEBUG_VERBOSE, "Starting ports scan");
         const auto& portsData { getPortsData() };
         updateChanges(PORTS_TABLE, portsData);
-        m_logFunction(LOG_DEBUG_VERBOSE, "Ending ports scan");
+        log(LOG_DEBUG_VERBOSE, "Ending ports scan");
     }
 }
 
 void Inventory::syncPorts()
 {
-    m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(PORTS_START_CONFIG_STATEMENT), m_reportSyncFunction);
+    //m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(PORTS_START_CONFIG_STATEMENT), m_reportSyncFunction);
 }
 
 void Inventory::scanProcesses()
 {
     if (m_processes)
     {
-        m_logFunction(LOG_DEBUG_VERBOSE, "Starting processes scan");
+        log(LOG_DEBUG_VERBOSE, "Starting processes scan");
         const auto callback
         {
             [this](ReturnTypeCallback result, const nlohmann::json & data)
@@ -1567,18 +1452,18 @@ void Inventory::scanProcesses()
         });
         txn.getDeletedRows(callback);
 
-        m_logFunction(LOG_DEBUG_VERBOSE, "Ending processes scan");
+        log(LOG_DEBUG_VERBOSE, "Ending processes scan");
     }
 }
 
 void Inventory::syncProcesses()
 {
-    m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(PROCESSES_START_CONFIG_STATEMENT), m_reportSyncFunction);
+    //m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(PROCESSES_START_CONFIG_STATEMENT), m_reportSyncFunction);
 }
 
 void Inventory::scan()
 {
-    m_logFunction(LOG_INFO, "Starting evaluation.");
+    log(LOG_INFO, "Starting evaluation.");
     m_scanTime = Utils::getCurrentTimestamp();
 
     TRY_CATCH_TASK(scanHardware);
@@ -1589,12 +1474,12 @@ void Inventory::scan()
     TRY_CATCH_TASK(scanPorts);
     TRY_CATCH_TASK(scanProcesses);
     m_notify = true;
-    m_logFunction(LOG_INFO, "Evaluation finished.");
+    log(LOG_INFO, "Evaluation finished.");
 }
 
 void Inventory::sync()
 {
-    m_logFunction(LOG_DEBUG, "Starting inventory sync");
+    log(LOG_DEBUG, "Starting inventory sync");
     TRY_CATCH_TASK(syncHardware);
     TRY_CATCH_TASK(syncOs);
     TRY_CATCH_TASK(syncNetwork);
@@ -1602,7 +1487,7 @@ void Inventory::sync()
     TRY_CATCH_TASK(syncHotfixes);
     TRY_CATCH_TASK(syncPorts);
     TRY_CATCH_TASK(syncProcesses);
-    m_logFunction(LOG_DEBUG, "Ending inventory sync");
+    log(LOG_DEBUG, "Ending inventory sync");
 }
 
 void Inventory::syncAlgorithm()
@@ -1617,13 +1502,13 @@ void Inventory::syncAlgorithm()
     }
     else
     {
-        m_logFunction(LOG_DEBUG_VERBOSE, "Inventory synchronization process concluded recently, delaying scan for " + std::to_string(m_currentIntervalValue.count()) + " second/s");
+        log(LOG_DEBUG_VERBOSE, "Inventory synchronization process concluded recently, delaying scan for " + std::to_string(m_currentIntervalValue.count()) + " second/s");
     }
 }
 
 void Inventory::syncLoop(std::unique_lock<std::mutex>& lock)
 {
-    m_logFunction(LOG_INFO, "Module started.");
+    log(LOG_INFO, "Module started.");
 
     if (m_scanOnStart)
     {
@@ -1638,7 +1523,6 @@ void Inventory::syncLoop(std::unique_lock<std::mutex>& lock)
     {
         syncAlgorithm();
     }
-    m_spRsync.reset(nullptr);
     m_spDBSync.reset(nullptr);
 }
 
@@ -1654,12 +1538,12 @@ void Inventory::push(const std::string& data)
 
         try
         {
-            m_spRsync->pushMessage(std::vector<uint8_t> {buff, buff + rawData.size()});
+            //m_spRsync->pushMessage(std::vector<uint8_t> {buff, buff + rawData.size()});
         }
         // LCOV_EXCL_START
         catch (const std::exception& ex)
         {
-            m_logFunction(LOG_ERROR, ex.what());
+            logError(ex.what());
         }
     }
 
