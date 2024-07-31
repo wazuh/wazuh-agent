@@ -10,6 +10,17 @@ AgentInfo::AgentInfo()
     m_uuid = agentInfoPersistance.GetUUID();
 }
 
+AgentInfo::AgentInfo(const std::string& name, const std::string& ip, const std::string& uuid)
+    : m_name(name)
+    , m_ip(ip)
+    , m_uuid(uuid)
+{
+    AgentInfoPersistance agentInfoPersistance;
+    agentInfoPersistance.SetName(m_name);
+    agentInfoPersistance.SetIP(m_ip);
+    agentInfoPersistance.SetUUID(m_uuid);
+}
+
 std::string AgentInfo::GetName() const
 {
     return m_name;

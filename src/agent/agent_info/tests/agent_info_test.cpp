@@ -27,6 +27,27 @@ TEST_F(AgentInfoTest, TestDefaultConstructorDefaultValues)
     EXPECT_EQ(agentInfo.GetUUID(), "");
 }
 
+TEST_F(AgentInfoTest, TestParameterizedConstructor)
+{
+    const std::string name = "new_name";
+    const std::string ip = "192.168.1.1";
+    const std::string uuid = "new_uuid";
+
+    const AgentInfo agentInfo(name, ip, uuid);
+    EXPECT_EQ(agentInfo.GetName(), name);
+    EXPECT_EQ(agentInfo.GetIP(), ip);
+    EXPECT_EQ(agentInfo.GetUUID(), uuid);
+}
+
+TEST_F(AgentInfoTest, TestPersistedValues)
+{
+    const AgentInfo agentInfo("test_name", "test_ip", "test_uuid");
+    const AgentInfo agentInfoReloaded;
+    EXPECT_EQ(agentInfoReloaded.GetName(), "test_name");
+    EXPECT_EQ(agentInfoReloaded.GetIP(), "test_ip");
+    EXPECT_EQ(agentInfoReloaded.GetUUID(), "test_uuid");
+}
+
 TEST_F(AgentInfoTest, TestSetName)
 {
     AgentInfo agentInfo;
