@@ -22,6 +22,7 @@ public:
     AgentInfoPersistance& operator=(AgentInfoPersistance&&) = delete;
 
 private:
+    bool AgentInfoTableExists() const;
     void CreateAgentInfoTable();
 
     std::unique_ptr<SQLite::Database> m_db;
