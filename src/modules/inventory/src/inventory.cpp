@@ -29,31 +29,13 @@ const int DBSYNC_MQ    = '5';
 #define WM_INV_LOGTAG "modules:inventory" // Tag for log messages
 #define WM_INVENTORY_DEFAULT_INTERVAL W_HOUR_SECONDS
 
-Inventory::Inventory(){
-    inv_stop_condition = PTHREAD_COND_INITIALIZER;
-    inv_stop_mutex = PTHREAD_MUTEX_INITIALIZER;
-    need_shutdown_wait = false;
-    inv_reconnect_mutex = PTHREAD_MUTEX_INITIALIZER;
-    shutdown_process_started = false;
-
-    dbPath = INVENTORY_DB_DISK_PATH;
-    normalizerConfigPath = INVENTORY_NORM_CONFIG_DISK_PATH;
-    normalizerType = INVENTORY_NORM_TYPE;
-
-    sync_max_eps = 10;      // Database synchronization number of events per second (default value)
-}
-
-Inventory::~Inventory(){
-    cout << "Inventory destroyed!" << endl;
-}
-
 void *Inventory::run() {
     w_cond_init(&inv_stop_condition, NULL);
     w_mutex_init(&inv_stop_mutex, NULL);
     w_mutex_init(&inv_reconnect_mutex, NULL);
 
     if (!enabled) {
-        mtinfo(WM_INV_LOGTAG, "Module disabled. Exiting...");
+        log(LOG_INFO, "Module disabled. Exiting...");
         pthread_exit(NULL);
     }
 
@@ -67,7 +49,7 @@ void *Inventory::run() {
 
     inventory_start();
 
-    mtinfo(WM_INV_LOGTAG, "Module finished.");
+    log(LOG_INFO, "Module finished.");
     w_mutex_lock(&inv_stop_mutex);
     w_cond_signal(&inv_stop_condition);
     w_mutex_unlock(&inv_stop_mutex);
@@ -76,6 +58,18 @@ void *Inventory::run() {
 }
 
 int Inventory::setup(const Configuration & config) {
+
+    inv_stop_condition = PTHREAD_COND_INITIALIZER;
+    inv_stop_mutex = PTHREAD_MUTEX_INITIALIZER;
+    need_shutdown_wait = false;
+    inv_reconnect_mutex = PTHREAD_MUTEX_INITIALIZER;
+    shutdown_process_started = false;
+
+    dbPath = INVENTORY_DB_DISK_PATH;
+    normalizerConfigPath = INVENTORY_NORM_CONFIG_DISK_PATH;
+    normalizerType = INVENTORY_NORM_TYPE;
+
+    sync_max_eps = 10;      // Database synchronization number of events per second (default value)
 
     m_intervalValue = std::chrono::seconds{WM_INVENTORY_DEFAULT_INTERVAL};
 
@@ -99,7 +93,7 @@ int Inventory::setup(const Configuration & config) {
 
 void Inventory::stop() {
     cout << "- [Inventory] stopped" << endl;
-    Inventory::instance().destroy();
+    Inventory::destroy();
 }
 
 string Inventory::command(const string & query) {
@@ -149,7 +143,7 @@ void Inventory::wm_inv_log_config()
     if (config_json) {
         char * config_str = cJSON_PrintUnformatted(config_json);
         if (config_str) {
-            cout << WM_INV_LOGTAG << config_str << endl;
+            log(LOG_DEBUG, config_str);
             cJSON_free(config_str);
         }
         cJSON_Delete(config_json);
@@ -190,7 +184,7 @@ void Inventory::inventory_start()
 
     try
     {
-        Inventory::instance().init(std::make_shared<SysInfo>(),
+        init(std::make_shared<SysInfo>(),
                                       dbPath,
                                       normalizerConfigPath,
                                       normalizerType);
@@ -207,7 +201,7 @@ int Inventory::inventory_sync_message(const char* data)
 
     try
     {
-        Inventory::instance().push(data);
+        push(data);
         ret = 0;
     }
     catch (...)

@@ -11,17 +11,16 @@ find_package(cJSON CONFIG REQUIRED)
 find_package(CURL REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(LibArchive REQUIRED)
-<<<<<<< HEAD
-=======
 find_package(Lua REQUIRED)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
-####################################################################################################
->>>>>>> d475bf20d (refactor: added dependencies required by data-provider)
 
 project(wazuh-agent)
 
 add_subdirectory(agent)
-add_subdirectory(common/data_provider/)
+add_subdirectory(common/data_provider)
+add_subdirectory(common/dbsync)
+add_subdirectory(common/debug_op)
+add_subdirectory(common/logging_helper)
 add_subdirectory(modules)
 
 add_executable(wazuh-agent agent/src/main.cpp)
@@ -30,6 +29,3 @@ target_link_libraries(wazuh-agent Agent)
 if(BUILD_TESTS)
     enable_testing()
 endif()
-
-# Add the subdirectory for each child project
-add_subdirectory(modules/)
