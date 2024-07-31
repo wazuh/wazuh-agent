@@ -18,7 +18,7 @@ namespace configuration
         ConfigurationParser(std::string stringToParse);
 
         template<typename T, typename... Ks>
-        auto GetConfig(Ks... ks)
+        auto GetConfig(Ks... ks) const
         {
             try
             {
