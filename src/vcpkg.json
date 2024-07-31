@@ -9,6 +9,7 @@
       "jwt-cpp",
       "nlohmann-json",
       "openssl",
+      "sqlitecpp",
       "toml11"
     ],
     "overrides": [
