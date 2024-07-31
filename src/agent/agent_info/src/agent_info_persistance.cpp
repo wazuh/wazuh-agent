@@ -13,6 +13,7 @@ AgentInfoPersistance::AgentInfoPersistance(const std::string& db_path)
         if (!AgentInfoTableExists())
         {
             CreateAgentInfoTable();
+            InsertDefaultAgentInfo();
         }
     }
     catch (const std::exception& e)
@@ -55,3 +56,22 @@ void AgentInfoPersistance::CreateAgentInfoTable()
     }
 }
 
+void AgentInfoPersistance::InsertDefaultAgentInfo()
+{
+    try
+    {
+        SQLite::Statement query(*m_db, "SELECT COUNT(*) FROM agent_info;");
+        query.executeStep();
+        const auto count = query.getColumn(0).getInt();
+
+        if (count == 0)
+        {
+            SQLite::Statement insert(*m_db, "INSERT INTO agent_info (name, ip, uuid) VALUES (?, ?, ?);");
+            insert.exec();
+        }
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error inserting default agent info: " << e.what() << std::endl;
+    }
+}
