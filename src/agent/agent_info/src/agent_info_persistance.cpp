@@ -75,3 +75,36 @@ void AgentInfoPersistance::InsertDefaultAgentInfo()
         std::cerr << "Error inserting default agent info: " << e.what() << std::endl;
     }
 }
+
+std::string AgentInfoPersistance::GetAgentInfoValue(const std::string& column) const
+{
+    std::string value;
+    try
+    {
+        SQLite::Statement query(*m_db, "SELECT " + column + " FROM agent_info WHERE id = 1;");
+        if (query.executeStep())
+        {
+            value = query.getColumn(0).getText();
+        }
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error fetching " << column << ": " << e.what() << std::endl;
+    }
+    return value;
+}
+
+std::string AgentInfoPersistance::GetName() const
+{
+    return GetAgentInfoValue("name");
+}
+
+std::string AgentInfoPersistance::GetIP() const
+{
+    return GetAgentInfoValue("ip");
+}
+
+std::string AgentInfoPersistance::GetUUID() const
+{
+    return GetAgentInfoValue("uuid");
+}

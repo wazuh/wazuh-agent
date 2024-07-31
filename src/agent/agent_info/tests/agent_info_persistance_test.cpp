@@ -21,6 +21,13 @@ TEST_F(AgentInfoPersistanceTest, TestConstruction)
     EXPECT_NE(persistance, nullptr);
 }
 
+TEST_F(AgentInfoPersistanceTest, TestDefaultValues)
+{
+    EXPECT_EQ(persistance->GetName(), "");
+    EXPECT_EQ(persistance->GetIP(), "");
+    EXPECT_EQ(persistance->GetUUID(), "");
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
