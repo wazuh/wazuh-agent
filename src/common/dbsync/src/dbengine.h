@@ -17,7 +17,7 @@
 #include <vector>
 #include <functional>
 #include <shared_mutex>
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "commonDefs.h"
 #include "abstractLocking.hpp"
 

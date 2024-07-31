@@ -8,8 +8,8 @@
  * Foundation
  */
 
-#include "headers/shared.h"
-#include <external/cJSON/cJSON.h>
+#include "shared.h"
+#include <cjson/cJSON.h>
 
 #ifdef WIN32
 #define localtime_r(x, y) localtime_s(y, x)
