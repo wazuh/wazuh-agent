@@ -9,7 +9,11 @@ AgentInfoPersistance::AgentInfoPersistance(const std::string& db_path)
     try
     {
         m_db = std::make_unique<SQLite::Database>(db_path, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
-        CreateAgentInfoTable();
+
+        if (!AgentInfoTableExists())
+        {
+            CreateAgentInfoTable();
+        }
     }
     catch (const std::exception& e)
     {
@@ -19,6 +23,20 @@ AgentInfoPersistance::AgentInfoPersistance(const std::string& db_path)
 }
 
 AgentInfoPersistance::~AgentInfoPersistance() = default;
+
+bool AgentInfoPersistance::AgentInfoTableExists() const
+{
+    try
+    {
+        SQLite::Statement query(*m_db, "SELECT name FROM sqlite_master WHERE type='table' AND name='agent_info';");
+        return query.executeStep();
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Failed to check if table exists: " << e.what() << std::endl;
+        return false;
+    }
+}
 
 void AgentInfoPersistance::CreateAgentInfoTable()
 {
