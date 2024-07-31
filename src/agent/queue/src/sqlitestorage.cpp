@@ -15,7 +15,7 @@
 SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::string& tableName)
     : m_dbName(dbName)
     , m_tableName(tableName)
-    , m_db(make_shared<SQLite::Database>(dbName, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE))
+    , m_db(make_unique<SQLite::Database>(dbName + tableName + ".db", SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE))
 {
     try
     {

@@ -180,11 +180,10 @@ public:
         : m_maxItems(size)
     {
         // Populate the map inside the constructor body
-        m_queuesMap[MessageType::STATELESS] =
-            std::make_unique<PersistedQueue>(MessageType::STATELESS, m_maxItems, timeout);
-        m_queuesMap[MessageType::STATEFUL] =
-            std::make_unique<PersistedQueue>(MessageType::STATEFUL, m_maxItems, timeout);
-        m_queuesMap[MessageType::COMMAND] = std::make_unique<PersistedQueue>(MessageType::COMMAND, m_maxItems, timeout);
+        for (auto type : {STATELESS, STATEFUL, COMMAND})
+        {
+            m_queuesMap[type] = std::make_unique<PersistedQueue>(type, m_maxItems, timeout);
+        }
     }
 
     // Delete copy constructor

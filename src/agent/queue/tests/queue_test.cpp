@@ -3,6 +3,7 @@
 #include <future>
 #include <iomanip>
 #include <iostream>
+#include <regex>
 #include <sstream>
 #include <stdexcept>
 #include <stop_token>
@@ -58,9 +59,17 @@ std::string unescape_string(const std::string& str)
 // TODO: Makes sense to add a full_clean method inside the persistence implementation?
 void cleanPersistence()
 {
-    auto filePath = DEFAULT_DB_PATH;
-    std::error_code ec;
-    std::filesystem::remove(filePath, ec);
+    std::string filePath = DEFAULT_DB_PATH;
+    for (const auto& entry : std::filesystem::directory_iterator("."))
+    {
+        std::string fileFullPath = entry.path();
+        size_t found = fileFullPath.find(filePath);
+        if (found != std::string::npos)
+        {
+            std::error_code ec;
+            std::filesystem::remove(fileFullPath, ec);
+        }
+    }
 }
 
 /// Test Methods
@@ -219,7 +228,6 @@ TEST_F(QueueTest, SinglePushPopFullWithTimeout)
 // Accesing different types of queues
 TEST_F(QueueTest, MultithreadDifferentType)
 {
-    GTEST_SKIP();
     MultiTypeQueue queue(BIG_QUEUE_QTTY);
 
     auto consumerStateLess = [&](int& count)

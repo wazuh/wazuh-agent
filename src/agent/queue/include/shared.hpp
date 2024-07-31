@@ -7,7 +7,7 @@
 
 // TODO: should be moved to Config
 constexpr char DEFAULT_FILE_PATH[] = "/home/vagrant/FILE_";
-constexpr char DEFAULT_DB_PATH[] = "queue.db";
+constexpr char DEFAULT_DB_PATH[] = "queue-";
 
 /**
  * @brief Types of messages enum

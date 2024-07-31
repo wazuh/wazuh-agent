@@ -14,14 +14,24 @@ using json = nlohmann::json;
 class SQLiteStorageTest : public ::testing::Test
 {
 protected:
-    std::string dbName = "testdb";
+    std::string dbName = "testdb-";
     std::string tableName = "test_table";
     SQLiteStorage* storage;
 
     void SetUp() override
     {
         // Ensure the database file does not already exist
-        std::remove(dbName.c_str());
+        std::string filePath = dbName;
+        for (const auto& entry : std::filesystem::directory_iterator("."))
+        {
+            std::string fileFullPath = entry.path();
+            size_t found = fileFullPath.find(filePath);
+            if (found != std::string::npos)
+            {
+                std::error_code ec;
+                std::filesystem::remove(fileFullPath, ec);
+            }
+        }
 
         // Create a new SQLiteStorage instance
         storage = new SQLiteStorage(dbName, tableName);

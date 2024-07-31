@@ -121,7 +121,7 @@ private:
     const std::string m_tableName;
 
     /// Pointer to the SQLite database connection.
-    std::shared_ptr<SQLite::Database> m_db;
+    std::unique_ptr<SQLite::Database> m_db;
 
     /// Mutex to ensure thread-safe operations.
     std::mutex m_mutex;
