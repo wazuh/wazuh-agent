@@ -25,12 +25,17 @@ public:
     std::string GetIP() const;
     std::string GetUUID() const;
 
+    void SetName(const std::string& name);
+    void SetIP(const std::string& ip);
+    void SetUUID(const std::string& uuid);
+
     void ResetToDefault();
 
 private:
     bool AgentInfoTableExists() const;
     void CreateAgentInfoTable();
     void InsertDefaultAgentInfo();
+    void SetAgentInfoValue(const std::string& column, const std::string& value);
     std::string GetAgentInfoValue(const std::string& column) const;
 
     std::unique_ptr<SQLite::Database> m_db;
