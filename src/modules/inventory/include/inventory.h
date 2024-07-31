@@ -18,11 +18,8 @@
 
 class Inventory {
 public:
-    static Inventory& instance()
-    {
-        static Inventory s_instance;
-        return s_instance;
-    }
+
+    Inventory();
 
     void *run();
     int setup(const Configuration & config);
@@ -31,11 +28,6 @@ public:
     std::string name() const;
 
 private:
-    Inventory();
-    // ~Inventory() = default;
-    ~Inventory();
-    Inventory(const Inventory&) = delete;
-    Inventory& operator=(const Inventory&) = delete;
 
     void init(const std::shared_ptr<ISysInfo>& spInfo,
                 const std::string& dbPath,
@@ -51,7 +43,6 @@ private:
     nlohmann::json getNetworkData();
     nlohmann::json getPortsData();
 
-    void registerWithRsync();
     void updateChanges(const std::string& table,
                         const nlohmann::json& values);
     void notifyChange(ReturnTypeCallback result,
@@ -108,6 +99,8 @@ private:
     void wm_inv_log_config();
 
     void inventory_start();
+    int inventory_sync_message(const char* data);
+
 
     cJSON * wm_inv_dump();
 
