@@ -11,6 +11,7 @@ protected:
     void SetUp() override
     {
         persistance = std::make_unique<AgentInfoPersistance>("agent_info_test.db");
+        persistance->ResetToDefault();
     }
 
     std::unique_ptr<AgentInfoPersistance> persistance;
