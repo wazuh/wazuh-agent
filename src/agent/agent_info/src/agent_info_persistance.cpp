@@ -76,6 +76,20 @@ void AgentInfoPersistance::InsertDefaultAgentInfo()
     }
 }
 
+void AgentInfoPersistance::SetAgentInfoValue(const std::string& column, const std::string& value)
+{
+    try
+    {
+        SQLite::Statement query(*m_db, "UPDATE agent_info SET " + column + " = ? WHERE id = 1;");
+        query.bind(1, value);
+        query.exec();
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error updating " << column << ": " << e.what() << std::endl;
+    }
+}
+
 std::string AgentInfoPersistance::GetAgentInfoValue(const std::string& column) const
 {
     std::string value;
@@ -107,6 +121,21 @@ std::string AgentInfoPersistance::GetIP() const
 std::string AgentInfoPersistance::GetUUID() const
 {
     return GetAgentInfoValue("uuid");
+}
+
+void AgentInfoPersistance::SetName(const std::string& name)
+{
+    SetAgentInfoValue("name", name);
+}
+
+void AgentInfoPersistance::SetIP(const std::string& ip)
+{
+    SetAgentInfoValue("ip", ip);
+}
+
+void AgentInfoPersistance::SetUUID(const std::string& uuid)
+{
+    SetAgentInfoValue("uuid", uuid);
 }
 
 void AgentInfoPersistance::ResetToDefault()
