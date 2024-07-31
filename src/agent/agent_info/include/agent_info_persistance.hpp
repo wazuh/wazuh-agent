@@ -24,6 +24,7 @@ public:
 private:
     bool AgentInfoTableExists() const;
     void CreateAgentInfoTable();
+    void InsertDefaultAgentInfo();
 
     std::unique_ptr<SQLite::Database> m_db;
 };
