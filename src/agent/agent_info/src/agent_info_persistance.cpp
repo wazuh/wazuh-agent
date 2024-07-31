@@ -108,3 +108,16 @@ std::string AgentInfoPersistance::GetUUID() const
 {
     return GetAgentInfoValue("uuid");
 }
+
+void AgentInfoPersistance::ResetToDefault()
+{
+    try
+    {
+        m_db->exec("DELETE FROM agent_info;");
+        InsertDefaultAgentInfo();
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error resetting to default values: " << e.what() << std::endl;
+    }
+}

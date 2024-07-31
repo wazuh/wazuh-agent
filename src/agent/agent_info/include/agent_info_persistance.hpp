@@ -25,6 +25,8 @@ public:
     std::string GetIP() const;
     std::string GetUUID() const;
 
+    void ResetToDefault();
+
 private:
     bool AgentInfoTableExists() const;
     void CreateAgentInfoTable();
