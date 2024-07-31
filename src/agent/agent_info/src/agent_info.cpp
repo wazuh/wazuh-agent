@@ -22,3 +22,24 @@ std::string AgentInfo::GetUUID() const
 {
     return m_uuid;
 }
+
+void AgentInfo::SetName(const std::string& name)
+{
+    AgentInfoPersistance agentInfoPersistance;
+    agentInfoPersistance.SetName(name);
+    m_name = name;
+}
+
+void AgentInfo::SetIP(const std::string& ip)
+{
+    AgentInfoPersistance agentInfoPersistance;
+    agentInfoPersistance.SetIP(ip);
+    m_ip = ip;
+}
+
+void AgentInfo::SetUUID(const std::string& uuid)
+{
+    AgentInfoPersistance agentInfoPersistance;
+    agentInfoPersistance.SetUUID(uuid);
+    m_uuid = uuid;
+}
