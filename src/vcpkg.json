@@ -10,7 +10,7 @@
       "jwt-cpp",
       "gtest",
       "openssl",
-      "boost-uuid"
+      "sqlitecpp"
     ],
     "overrides": [
       {

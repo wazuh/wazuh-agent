@@ -37,6 +37,7 @@ target_include_directories(agent PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURR
 add_dependencies(agent communicator)
 
 # Add the subdirectory for each child project
+add_subdirectory(agent_info)
 add_subdirectory(communicator)
 add_subdirectory(configuration_parser)
 
