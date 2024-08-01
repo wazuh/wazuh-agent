@@ -19,7 +19,7 @@
 #include <unistd.h>
 
 #include "privsep_op.h"
-#include "headers/os_err.h"
+#include "os_err.h"
 
 struct passwd *w_getpwnam(const char *name, struct passwd *pwd, char *buf, size_t buflen) {
 #if defined(SUN_MAJOR_VERSION) && defined(SUN_MINOR_VERSION)  && \

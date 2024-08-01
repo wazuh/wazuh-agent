@@ -14,6 +14,7 @@
  */
 
 #include "shared.h"
+#include "time_op.h"
 
 #ifndef WIN32
 

@@ -65,6 +65,10 @@
         "version>=": "3.3.2"
       },
       {
+        "name": "pcre2",
+        "version>=": "10.42.0"
+      },
+      {
         "name": "procps",
         "version>=": "3.3.0",
         "platform": "linux"
@@ -84,6 +88,10 @@
       {
         "name": "toml11",
         "version>=": "4.0.0"
+      },
+      {
+        "name": "zlib",
+        "version>=": "1.3.1"
       }
     ],
     "vcpkg-configuration": {
