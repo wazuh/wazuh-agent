@@ -12,6 +12,10 @@
 #ifndef _LOGGINGHELPER_H
 #define _LOGGINGHELPER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum modules_log_level_t
 {
     LOG_DEBUG,
@@ -45,5 +49,9 @@ void loggingFunction(modules_log_level_t level, const char* log);
  * @param log Message to send into the log as error
  */
 void loggingErrorFunction(const char* log);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //_LOGGINGHELPER_H
