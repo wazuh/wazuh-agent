@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.12.4)
+add_library(networkHelper INTERFACE)
 
-if(UNIT_TEST)
-    add_subdirectory(tests)
-endif()
+target_include_directories(networkHelper INTERFACE include)
+
+target_link_libraries(networkHelper INTERFACE utils)

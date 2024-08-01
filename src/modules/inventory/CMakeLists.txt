@@ -16,17 +16,35 @@ target_include_directories(inventory PUBLIC
     ${COMMON_FOLDER}
     ${COMMON_FOLDER}/data_provider/include
     ${COMMON_FOLDER}/dbsync/include
-    ${COMMON_FOLDER}/debug_op/include
+    ${COMMON_FOLDER}/error_messages/include
+    ${COMMON_FOLDER}/file_op/include
     ${COMMON_FOLDER}/hashHelper/include
     ${COMMON_FOLDER}/logging_helper/include
+    ${COMMON_FOLDER}/os_xml/include
+    ${COMMON_FOLDER}/privsep_op/include
     ${COMMON_FOLDER}/pthreads_op/include
     ${COMMON_FOLDER}/stringHelper/include
     ${COMMON_FOLDER}/string_op/include
+    ${COMMON_FOLDER}/time_op/include
     ${COMMON_FOLDER}/timeHelper/include
     ${COMMON_FOLDER}/utils)
 
 target_link_directories(inventory PUBLIC ${SRC_FOLDER}/external/pacman/lib/libalpm/)
 target_link_directories(inventory PUBLIC ${SRC_FOLDER}/external/rpm/builddir/)
 target_link_directories(inventory PUBLIC ${SRC_FOLDER}/external/libdb/build_unix/)
+target_link_directories(inventory PUBLIC ${SRC_FOLDER}/external/procps/)
 
-target_link_libraries(inventory dbsync sysinfo cjson nlohmann_json::nlohmann_json alpm rpm db)
+
+target_link_libraries(inventory PUBLIC
+    dbsync
+    sysinfo
+    cjson
+    nlohmann_json::nlohmann_json
+    alpm
+    rpm
+    db
+    proc
+    utils
+    os_regex
+    logging_helper
+    pthreads_op)
