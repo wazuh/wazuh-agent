@@ -1,7 +1,16 @@
 cmake_minimum_required(VERSION 3.22)
 
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
-get_filename_component(SRC_FOLDER ${CMAKE_SOURCE_DIR}/../ ABSOLUTE)
+
+find_package(cJSON CONFIG REQUIRED)
+find_package(CURL REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(LibArchive REQUIRED)
+find_package(Lua REQUIRED)
+find_package(pcre2 CONFIG REQUIRED)
+find_package(unofficial-sqlite3 CONFIG REQUIRED)
+find_package(ZLIB REQUIRED)
+
 project(wazuh-agent)
 
 include(cmake/CommonSettings.cmake)
@@ -22,7 +31,7 @@ endif()
 add_subdirectory(common)
 add_subdirectory(modules)
 add_subdirectory(agent)
-add_subdirectory(common/data_provider/)
+add_subdirectory(common)
 add_subdirectory(modules)
 
 add_executable(wazuh-agent agent/src/main.cpp)
