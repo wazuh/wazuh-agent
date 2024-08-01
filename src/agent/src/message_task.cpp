@@ -6,11 +6,11 @@
 namespace
 {
 
-    boost::asio::awaitable<void> send_http_request(const std::string host,
-                                                   const std::string port,
-                                                   const std::string target,
-                                                   const std::string& token,
-                                                   std::queue<std::string>& messageQueue)
+    boost::asio::awaitable<void> MessageProcessingTask(const std::string host,
+                                                       const std::string port,
+                                                       const std::string target,
+                                                       const std::string& token,
+                                                       std::queue<std::string>& messageQueue)
     {
         using namespace std::chrono_literals;
 
@@ -74,14 +74,18 @@ namespace
 
 } // namespace
 
-boost::asio::awaitable<void> StatefulMessageProcessingTask(const std::string& manager_ip, const std::string& port, const std::string& token,
+boost::asio::awaitable<void> StatefulMessageProcessingTask(const std::string& manager_ip,
+                                                           const std::string& port,
+                                                           const std::string& token,
                                                            std::queue<std::string>& messageQueue)
 {
-    co_await send_http_request(manager_ip, port, "/stateless", token, messageQueue);
+    co_await MessageProcessingTask(manager_ip, port, "/stateless", token, messageQueue);
 }
 
-boost::asio::awaitable<void> StatelessMessageProcessingTask(const std::string& manager_ip, const std::string& port, const std::string& token,
+boost::asio::awaitable<void> StatelessMessageProcessingTask(const std::string& manager_ip,
+                                                            const std::string& port,
+                                                            const std::string& token,
                                                             std::queue<std::string>& messageQueue)
 {
-    co_await send_http_request(manager_ip, port, "/stateful", token, messageQueue);
+    co_await MessageProcessingTask(manager_ip, port, "/stateful", token, messageQueue);
 }
