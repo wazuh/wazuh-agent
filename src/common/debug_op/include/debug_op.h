@@ -19,6 +19,10 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef __GNUC__
 #define __attribute__(x)
 #endif
@@ -127,5 +131,9 @@ int isChroot(void);
  * @param args Variable arguments list.
  */
 void mtLoggingFunctionsWrapper(int level, const char* tag, const char* file, int line, const char* func, const char* msg, va_list args);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* DEBUG_H */

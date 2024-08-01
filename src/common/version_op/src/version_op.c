@@ -12,6 +12,7 @@
 
 #ifdef __linux__
 #include <sched.h>
+#include <regex.h>
 #elif defined(__MACH__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <sys/sysctl.h>
 #endif

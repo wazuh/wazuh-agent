@@ -12,7 +12,7 @@
 #include <iostream>
 #include "shared.h"
 #include "defs.h"
-#include "debug_op.h"
+#include "logging_helper.h"
 #include "string_op.h"
 #include "pthreads_op.h"
 
@@ -39,7 +39,7 @@ void *Inventory::run() {
         pthread_exit(NULL);
     }
 
-    mtdebug1(WM_INV_LOGTAG, "Starting inventory.");
+    log(LOG_DEBUG, "Starting inventory.");
     w_mutex_lock(&inv_stop_mutex);
     need_shutdown_wait = true;
     w_mutex_unlock(&inv_stop_mutex);

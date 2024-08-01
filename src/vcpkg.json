@@ -15,10 +15,12 @@
       "lua",
       "nlohmann-json",
       "openssl",
+      "pcre2",
       "spdlog",
       "sqlite3",
       "sqlitecpp",
       "toml11",
+      "zlib",
       {
         "name": "procps",
         "platform": "linux"
