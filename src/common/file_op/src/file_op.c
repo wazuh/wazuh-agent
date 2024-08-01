@@ -14,7 +14,7 @@
 #include "shared.h"
 #include "version_op.h"
 
-#include "../external/zlib/zlib.h"
+#include <zlib.h>
 
 #ifdef WAZUH_UNIT_TESTING
 #ifdef WIN32

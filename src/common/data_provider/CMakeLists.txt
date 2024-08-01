@@ -81,7 +81,6 @@ include_directories(${SRC_FOLDER}/common/globHelper/include/)
 include_directories(${SRC_FOLDER}/common/fileHelper/include/)
 include_directories(${SRC_FOLDER}/common/jsonHelper/include/)
 include_directories(${SRC_FOLDER}/common/linuxHelper/include/)
-include_directories(${SRC_FOLDER}/common/networkHelper/include/)
 include_directories(${SRC_FOLDER}/common/stringHelper/include/)
 include_directories(${SRC_FOLDER}/common/timeHelper/include/)
 include_directories(${SRC_FOLDER}/shared_modules/common/)
@@ -106,8 +105,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
 endif(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
 
 link_directories(${SRC_FOLDER})
-#link_directories(${SRC_FOLDER}/external/sqlite/)
-#link_directories(${SRC_FOLDER}/external/cJSON/)
 link_directories(${SRC_FOLDER}/external/procps/)
 link_directories(${SRC_FOLDER}/external/bzip2/)
 link_directories(${SRC_FOLDER}/external/libplist/bin/lib/)
@@ -231,7 +228,17 @@ elseif(APPLE)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
 find_library(POPT_LIBRARY libpopt.a)
-target_link_libraries(sysinfo nlohmann_json::nlohmann_json cjson unofficial::sqlite3::sqlite3 LibArchive::LibArchive ${POPT_LIBRARY} alpm rpm ${LUA_LIBRARIES})
+target_link_libraries(sysinfo
+  networkHelper
+  nlohmann_json::nlohmann_json
+  cjson
+  unofficial::sqlite3::sqlite3
+  LibArchive::LibArchive
+  ${POPT_LIBRARY}
+  alpm
+  rpm
+  proc
+  ${LUA_LIBRARIES})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set(CURL_DEP "wazuhext")
