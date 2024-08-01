@@ -1,10 +1,8 @@
 #include <register.hpp>
 
+#include <agent_info.hpp>
 #include <configuration_parser.hpp>
 
-#include <boost/asio/connect.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/ssl/stream.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
@@ -92,11 +90,11 @@ namespace registration
     }
 
     http::status SendRegistrationRequest(const std::string& managerIp,
-                                     const std::string& port,
-                                     const std::string& token,
-                                     const std::string& uuid,
-                                     const std::optional<std::string>& name,
-                                     const std::optional<std::string>& ip)
+                                         const std::string& port,
+                                         const std::string& token,
+                                         const std::string& uuid,
+                                         const std::optional<std::string>& name,
+                                         const std::optional<std::string>& ip)
     {
         json bodyJson = {{"uuid", uuid}};
 
@@ -115,9 +113,25 @@ namespace registration
         return res.result();
     }
 
-    std::string GenerateUuid()
+    AgentInfo GenerateAgentInfo(const std::optional<std::string>& name, const std::optional<std::string>& ip)
     {
-        return to_string(uuids::random_generator()());
+        AgentInfo agentInfo;
+        if (agentInfo.GetUUID().empty())
+        {
+            agentInfo.SetUUID(to_string(uuids::random_generator()()));
+        }
+
+        if (name.has_value())
+        {
+            agentInfo.SetName(name.value());
+        }
+
+        if (ip.has_value())
+        {
+            agentInfo.SetIP(ip.value());
+        }
+
+        return agentInfo;
     }
 
 } // namespace registration
@@ -127,7 +141,6 @@ bool RegisterAgent(const std::string& user,
                    const std::optional<std::string>& name,
                    const std::optional<std::string>& ip)
 {
-    const auto uuid = registration::GenerateUuid();
 
     const auto configurationParser = std::make_shared<configuration::ConfigurationParser>();
     const auto managerIp = configurationParser->GetConfig<std::string>("agent", "manager_ip");
@@ -140,7 +153,10 @@ bool RegisterAgent(const std::string& user,
         return false;
     }
 
-    if (auto registrationResultCode = registration::SendRegistrationRequest(managerIp, port, token, uuid, name, ip);
+    const auto agentInfo = registration::GenerateAgentInfo(name, ip);
+
+    if (auto registrationResultCode =
+            registration::SendRegistrationRequest(managerIp, port, token, agentInfo.GetUUID(), name, ip);
         registrationResultCode != http::status::ok)
     {
         std::cout << "Registration error: " << registrationResultCode << std::endl;

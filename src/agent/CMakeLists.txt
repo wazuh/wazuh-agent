@@ -38,7 +38,7 @@ add_subdirectory(agent_info)
 add_subdirectory(communicator)
 add_subdirectory(configuration_parser)
 
-target_link_libraries(agent PUBLIC ConfigurationParser PRIVATE ${Boost_LIBRARIES} communicator)
+target_link_libraries(agent PUBLIC ConfigurationParser PRIVATE ${Boost_LIBRARIES} communicator AgentInfo)
 
 if(BUILD_TESTS)
     add_subdirectory(tests)
