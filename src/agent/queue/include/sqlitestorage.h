@@ -6,6 +6,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <string_view>
 #include <sys/stat.h>
 
 #include <SQLiteCpp/SQLiteCpp.h>
@@ -23,13 +24,8 @@
 class SQLiteStorage : public Persistence
 {
 public:
-    /**
-     * @brief Constructor.
-     *
-     * @param dbName The name of the SQLite database file.
-     * @param tableName The name of the table to use for storing messages.
-     */
-    SQLiteStorage(const std::string& dbName, const std::string& tableName);
+
+    SQLiteStorage(const std::string& dbName, const std::vector<std::string> tableName);
 
     // Delete copy constructor
     SQLiteStorage(const SQLiteStorage&) = delete;
@@ -53,7 +49,7 @@ public:
      *
      * @param message The JSON message to store.
      */
-    void Store(const json& message) override;
+    void Store(const json& message, const std::string& tableName) override;
 
     /**
      * @brief Retrieve a JSON message by its ID.
@@ -61,7 +57,7 @@ public:
      * @param id The ID of the message to retrieve.
      * @return The retrieved JSON message.
      */
-    json Retrieve(int id) override;
+    json Retrieve(int id, const std::string& tableName) override;
 
     /**
      * @brief Retrieve multiple JSON messages.
@@ -69,7 +65,7 @@ public:
      * @param n The number of messages to retrieve.
      * @return A vector of retrieved JSON messages.
      */
-    json RetrieveMultiple(int n) override;
+    json RetrieveMultiple(int n, const std::string& tableName) override;
 
     /**
      * @brief Remove a JSON message by its ID.
@@ -77,7 +73,7 @@ public:
      * @param id The ID of the message to remove.
      * @return The number of removed elements.
      */
-    int Remove(int id) override;
+    int Remove(int id, const std::string& tableName) override;
 
     /**
      * @brief Remove multiple JSON messages.
@@ -85,14 +81,14 @@ public:
      * @param n The number of messages to remove.
      * @return The number of removed elements.
      */
-    int RemoveMultiple(int n) override;
+    int RemoveMultiple(int n, const std::string& tableName) override;
 
     /**
      * @brief Get the number of elements in the table.
      *
      * @return The number of elements in the table.
      */
-    int GetElementCount() override;
+    int GetElementCount(const std::string& tableName) override;
 
 private:
     /**
@@ -100,7 +96,7 @@ private:
      *
      * This method creates the table if it does not already exist.
      */
-    void InitializeTable();
+    void InitializeTable(const std::string& tableName);
 
     /**
      * @brief Private method for waiting for database access.
@@ -131,6 +127,7 @@ private:
 
     // TODO: should it be atomic?
     bool m_db_in_use = false;
+
 };
 
 #endif // SQLITE_STORAGE_H

@@ -21,50 +21,56 @@ public:
     virtual ~Persistence() = default;
 
     /**
-     * @brief Store a JSON message in the storage.
-     *
-     * @param message The JSON message to store.
+     * @brief 
+     * 
+     * @param message 
+     * @param queueName 
      */
-    virtual void Store(const json& message) = 0;
+    virtual void Store(const json& message, const std::string& queueName) = 0;
 
     /**
-     * @brief Retrieve a JSON message by its ID.
-     *
-     * @param id The ID of the message to retrieve.
-     * @return The retrieved JSON message.
+     * @brief 
+     * 
+     * @param id 
+     * @param queueName 
+     * @return json 
      */
-    virtual json Retrieve(int id) = 0;
+    virtual json Retrieve(int id, const std::string& queueName) = 0;
 
     /**
-     * @brief Retrieve multiple JSON messages.
-     *
-     * @param n The number of messages to retrieve.
-     * @return A vector of retrieved JSON messages.
+     * @brief 
+     * 
+     * @param n 
+     * @param queueName 
+     * @return json 
      */
-    virtual json RetrieveMultiple(int n) = 0;
+    virtual json RetrieveMultiple(int n, const std::string& queueName) = 0;
 
     /**
-     * @brief Remove a JSON message by its ID.
-     *
-     * @param id The ID of the message to remove.
-     * @return The number of removed elements.
+     * @brief 
+     * 
+     * @param id 
+     * @param queueName 
+     * @return int 
      */
-    virtual int Remove(int id) = 0;
+    virtual int Remove(int id, const std::string& queueName) = 0;
 
     /**
-     * @brief Remove multiple JSON messages.
-     *
-     * @param n The number of messages to remove.
-     * @return The number of removed elements.
+     * @brief 
+     * 
+     * @param n 
+     * @param queueName 
+     * @return int 
      */
-    virtual int RemoveMultiple(int n) = 0;
+    virtual int RemoveMultiple(int n, const std::string& queueName) = 0;
 
     /**
-     * @brief Get the number of elements in the table.
-     *
-     * @return The number of elements in the table.
+     * @brief Get the Element Count object
+     * 
+     * @param queueName 
+     * @return int 
      */
-    virtual int GetElementCount() = 0;
+    virtual int GetElementCount(const std::string& queueName) = 0;
 };
 
 #endif // PERSISTENCE_H

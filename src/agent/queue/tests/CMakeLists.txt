@@ -19,7 +19,8 @@ target_link_libraries(test_queue
     ${GTEST_MAIN_LIBRARIES}
     queue_test
     SQLiteCpp
-    nlohmann_json::nlohmann_json)
+    nlohmann_json::nlohmann_json
+    fmt::fmt)
 
 # Create a test executable for SQLiteStorage tests
 add_executable(test_sqlitestorage
@@ -30,4 +31,5 @@ target_link_libraries(test_sqlitestorage
     ${GTEST_LIBRARIES}
     ${GTEST_MAIN_LIBRARIES}
     SQLiteCpp
-    nlohmann_json::nlohmann_json)
+    nlohmann_json::nlohmann_json
+    fmt::fmt)

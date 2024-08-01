@@ -12,113 +12,20 @@
 
 #include "queue.hpp"
 
-int PersistedQueue::getItemsAvailable()
-{
-    std::unique_lock<std::mutex> lock(m_mtx);
-    return m_persistenceDest->GetElementCount();
-}
-
-bool PersistedQueue::insertMessage(Message event)
-{
-    std::unique_lock<std::mutex> lock(m_mtx);
-    bool success = false;
-    size_t spaceAvailable =
-        (m_max_size > m_persistenceDest->GetElementCount()) ? m_max_size - m_persistenceDest->GetElementCount() : 0;
-    if (spaceAvailable)
-    {
-        // TODO: handle response
-        success = true;
-        auto messageData = event.data;
-        if (messageData.is_array())
-        {
-            if (messageData.size() <= spaceAvailable)
-            {
-                for (const auto& singleMessageData : messageData)
-                {
-                    m_persistenceDest->Store(singleMessageData);
-                    m_cv.notify_all();
-                }
-            }
-            else
-            {
-                success = false;
-            }
-        }
-        else
-        {
-            m_persistenceDest->Store(event.data);
-            m_cv.notify_all();
-        }
-    }
-    return success;
-};
-
-bool PersistedQueue::removeNMessages(int qttyMessages)
-{
-    std::unique_lock<std::mutex> lock(m_mtx);
-    auto linesRemoved = m_persistenceDest->RemoveMultiple(qttyMessages);
-    m_cv.notify_all();
-    return linesRemoved != 0;
-};
-
-Message PersistedQueue::getMessage()
-{
-    std::unique_lock<std::mutex> lock(m_mtx);
-    auto messageData = m_persistenceDest->RetrieveMultiple(1);
-    return Message(m_queueType, messageData);
-};
-
-Message PersistedQueue::getNMessages(int n)
-{
-    std::unique_lock<std::mutex> lock(m_mtx);
-    auto messageData = m_persistenceDest->RetrieveMultiple(n);
-    return Message(m_queueType, messageData);
-};
-
-bool PersistedQueue::empty()
-{
-    const auto items = getItemsAvailable();
-    return items == 0;
-}
-
-bool PersistedQueue::isFull()
-{
-    std::unique_lock<std::mutex> lock(m_mtx);
-    return m_persistenceDest->GetElementCount() == m_max_size;
-}
-
-void PersistedQueue::waitUntilNotFull()
-{
-    std::unique_lock<std::mutex> lock(m_mtx);
-    m_cv.wait_for(lock, m_timeout, [this] { return m_persistenceDest->GetElementCount() < m_max_size; });
-}
-
-void PersistedQueue::waitUntilNotFullOrStoped(std::stop_token stopToken)
-{
-    std::unique_lock<std::mutex> lock(m_mtx);
-    m_cv.wait(lock,
-              [this, stopToken]
-              {
-                  bool menor = (m_persistenceDest->GetElementCount() < m_max_size);
-                  bool stopped = (stopToken.stop_possible() && stopToken.stop_requested());
-                  return menor || stopped;
-              });
-}
-
 bool MultiTypeQueue::timeoutPush(Message message, bool shouldWait)
 {
     bool result = false;
-    std::unique_lock<std::mutex> mapLock(m_mapMutex);
 
-    if (m_queuesMap.contains(message.type))
+    if (m_mapMessageTypeName.contains(message.type))
     {
-        auto& queue = m_queuesMap[message.type];
-        mapLock.unlock();
+        auto sMessageType = m_mapMessageTypeName.at(message.type);
 
         // Wait until the queue is not full
         if (shouldWait)
         {
-            queue->waitUntilNotFull();
+            std::unique_lock<std::mutex> lock(m_mtx);
+            m_cv.wait_for(
+                lock, m_timeout, [&, this] { return m_persistenceDest->GetElementCount(sMessageType) < m_maxItems; });
         }
         // FIXME
         //  else
@@ -126,11 +33,33 @@ bool MultiTypeQueue::timeoutPush(Message message, bool shouldWait)
         //      std::cout << "Can failed because os full queue" << std::endl;
         //  }
 
-        // Insert the message
-        result = queue->insertMessage(message);
-        if (!result)
+        auto storedMessages = m_persistenceDest->GetElementCount(sMessageType);
+        size_t spaceAvailable = (m_maxItems > storedMessages) ? m_maxItems - storedMessages : 0;
+        if (spaceAvailable)
         {
-            std::cout << "Failed to insert message: " << message.data << std::endl;
+            // TODO: handle response
+            result = true;
+            auto messageData = message.data;
+            if (messageData.is_array())
+            {
+                if (messageData.size() <= spaceAvailable)
+                {
+                    for (const auto& singleMessageData : messageData)
+                    {
+                        m_persistenceDest->Store(singleMessageData, sMessageType);
+                        m_cv.notify_all();
+                    }
+                }
+                else
+                {
+                    result = false;
+                }
+            }
+            else
+            {
+                m_persistenceDest->Store(message.data, m_mapMessageTypeName.at(message.type));
+                m_cv.notify_all();
+            }
         }
     }
     else
@@ -151,12 +80,25 @@ void MultiTypeQueue::timeoutPush(std::vector<Message> messages)
 Message MultiTypeQueue::getLastMessage(MessageType type)
 {
     Message result(type, {});
-    std::unique_lock<std::mutex> mapLock(m_mapMutex);
-    if (m_queuesMap.contains(type))
+    // std::unique_lock<std::mutex> mapLock(m_mapMutex);
+    if (m_mapMessageTypeName.contains(type))
     {
-        auto& queue = m_queuesMap[type];
-        mapLock.unlock();
-        result = queue->getMessage();
+        result.data = m_persistenceDest->RetrieveMultiple(1, m_mapMessageTypeName.at(type));
+    }
+    else
+    {
+        // TODO: error / logging handling !!!
+        std::cout << "error didn't find the queue" << std::endl;
+    }
+    return result;
+}
+
+Message MultiTypeQueue::getNMessages(MessageType type, int messageQuantity)
+{
+    Message result(type, {});
+    if (m_mapMessageTypeName.contains(type))
+    {
+        result.data = m_persistenceDest->RetrieveMultiple(messageQuantity, m_mapMessageTypeName.at(type));
     }
     else
     {
@@ -169,13 +111,10 @@ Message MultiTypeQueue::getLastMessage(MessageType type)
 bool MultiTypeQueue::popLastMessage(MessageType type)
 {
     bool result = false;
-    std::unique_lock<std::mutex> mapLock(m_mapMutex);
-    if (m_queuesMap.contains(type))
+    if (m_mapMessageTypeName.contains(type))
     {
-        auto& queue = m_queuesMap[type];
-        mapLock.unlock();
         // Handle return value
-        result = queue->removeNMessages(1);
+        result = m_persistenceDest->RemoveMultiple(1, m_mapMessageTypeName.at(type));
     }
     else
     {
@@ -188,12 +127,9 @@ bool MultiTypeQueue::popLastMessage(MessageType type)
 bool MultiTypeQueue::popNMessages(MessageType type, int messageQuantity)
 {
     bool result = false;
-    std::unique_lock<std::mutex> mapLock(m_mapMutex);
-    if (m_queuesMap.contains(type))
+    if (m_mapMessageTypeName.contains(type))
     {
-        auto& queue = m_queuesMap[type];
-        mapLock.unlock();
-        result = queue->removeNMessages(messageQuantity);
+        result = m_persistenceDest->RemoveMultiple(messageQuantity, m_mapMessageTypeName.at(type));
     }
     else
     {
@@ -205,12 +141,23 @@ bool MultiTypeQueue::popNMessages(MessageType type, int messageQuantity)
 
 bool MultiTypeQueue::isEmptyByType(MessageType type)
 {
-    std::unique_lock<std::mutex> mapLock(m_mapMutex);
-    if (m_queuesMap.contains(type))
+    if (m_mapMessageTypeName.contains(type))
     {
-        auto& queue = m_queuesMap[type];
-        mapLock.unlock();
-        return queue->empty();
+        return m_persistenceDest->GetElementCount(m_mapMessageTypeName.at(type)) == 0;
+    }
+    else
+    {
+        // TODO: error / logging handling !!!
+        std::cout << "error didn't find the queue" << std::endl;
+    }
+    return false;
+}
+
+bool MultiTypeQueue::isFullByType(MessageType type)
+{
+    if (m_mapMessageTypeName.contains(type))
+    {
+        return m_persistenceDest->GetElementCount(m_mapMessageTypeName.at(type)) == m_maxItems;
     }
     else
     {
@@ -222,12 +169,9 @@ bool MultiTypeQueue::isEmptyByType(MessageType type)
 
 int MultiTypeQueue::getItemsByType(MessageType type)
 {
-    std::unique_lock<std::mutex> mapLock(m_mapMutex);
-    if (m_queuesMap.contains(type))
+    if (m_mapMessageTypeName.contains(type))
     {
-        auto& queue = m_queuesMap[type];
-        mapLock.unlock();
-        return queue->getItemsAvailable();
+        return m_persistenceDest->GetElementCount(m_mapMessageTypeName.at(type));
     }
     else
     {
