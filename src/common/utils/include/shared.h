@@ -110,6 +110,28 @@
 #include <errno.h>
 #include <libgen.h>
 
+#include "defs.h"
+#include "os_err.h"
+#include "debug_op.h"
+#include "time_op.h"
+#include "file_op.h"
+#include "regex_op.h"
+#include "mem_op.h"
+#include "privsep_op.h"
+#include "pthreads_op.h"
+#include "os_xml.h"
+#include "error_messages.h"
+#include "os_regex.h"
+#include "string_op.h"
+#include "binaries_op.h"
+#include "os_ip.h"
+#include "os_net.h"
+#include "expression.h"
+#include "randombytes.h"
+#include "bzip2_op.h"
+#include "validate_op.h"
+
+
 #ifndef LARGEFILE64_SOURCE
 #define LARGEFILE64_SOURCE
 #endif /* LARGEFILE64_SOURCE */

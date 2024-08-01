@@ -15,9 +15,11 @@
       "lua",
       "nlohmann-json",
       "openssl",
+      "pcre2",
       "sqlite3",
       "sqlitecpp",
-      "toml11"
+      "toml11",
+      "zlib"
     ],
     "overrides": [
       {
