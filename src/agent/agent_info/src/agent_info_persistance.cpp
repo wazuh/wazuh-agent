@@ -44,7 +44,6 @@ void AgentInfoPersistance::CreateAgentInfoTable()
     try
     {
         m_db->exec("CREATE TABLE IF NOT EXISTS agent_info ("
-                   "id INTEGER PRIMARY KEY, "
                    "name TEXT, "
                    "ip TEXT, "
                    "uuid TEXT"
@@ -80,7 +79,7 @@ void AgentInfoPersistance::SetAgentInfoValue(const std::string& column, const st
 {
     try
     {
-        SQLite::Statement query(*m_db, "UPDATE agent_info SET " + column + " = ? WHERE id = 1;");
+        SQLite::Statement query(*m_db, "UPDATE agent_info SET " + column + " = ?;");
         query.bind(1, value);
         query.exec();
     }
@@ -95,7 +94,7 @@ std::string AgentInfoPersistance::GetAgentInfoValue(const std::string& column) c
     std::string value;
     try
     {
-        SQLite::Statement query(*m_db, "SELECT " + column + " FROM agent_info WHERE id = 1;");
+        SQLite::Statement query(*m_db, "SELECT " + column + " FROM agent_info LIMIT 1;");
         if (query.executeStep())
         {
             value = query.getColumn(0).getText();
