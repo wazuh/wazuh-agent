@@ -1,5 +1,4 @@
 #include "communicator.hpp"
-#include "defs.hpp"
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl/stream.hpp>
@@ -42,8 +41,7 @@ namespace communicator
 
     int Communicator::SendAuthenticationRequest()
     {
-        json bodyJson = {{communicator::uuidKey, communicator::kUUID},
-                         {communicator::passwordKey, communicator::kPASSWORD}};
+        json bodyJson = {{communicator::uuidKey, communicator::kUUID}};
         http::response<http::dynamic_body> res =
             sendHttpRequest(http::verb::post, "/authentication", "", bodyJson.dump());
         m_token = beast::buffers_to_string(res.body().data());
@@ -68,9 +66,7 @@ namespace communicator
     int Communicator::SendRegistrationRequest()
     {
         // TO DO: Create uuid to send to the server.
-        json bodyJson = {{communicator::uuidKey, communicator::kUUID},
-                         {communicator::nameKey, communicator::kNAME},
-                         {communicator::ipKey, communicator::kIP}};
+        json bodyJson = {{communicator::uuidKey, communicator::kUUID}, {"name", "agent_name"}, {"ip", "agent_ip"}};
         http::response<http::dynamic_body> res = sendHttpRequest(http::verb::post, "/agents", m_token, bodyJson.dump());
         return res.result_int();
     }
@@ -91,7 +87,7 @@ namespace communicator
             boost::asio::connect(socket, results.begin(), results.end());
 
             http::request<http::string_body> req {method, url, 11};
-            req.set(http::field::host, "localhost");
+            req.set(http::field::host, m_managerIp);
             req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
             req.set(http::field::accept, "application/json");
 
@@ -139,6 +135,66 @@ namespace communicator
     {
         std::lock_guard<std::mutex> lock(m_exitMtx);
         m_exitFlag = true;
+    }
+
+    boost::asio::awaitable<void> Communicator::GetCommandsFromManager()
+    {
+        using namespace std::chrono_literals;
+
+        auto executor = co_await boost::asio::this_coro::executor;
+        boost::asio::steady_timer timer(executor);
+        boost::asio::ip::tcp::resolver resolver(executor);
+
+        std::string url = "/commands?";
+        url += communicator::uuidKey;
+        url += "=";
+        url += communicator::kUUID;
+
+        while (true)
+        {
+            boost::beast::error_code ec;
+            boost::asio::ip::tcp::socket socket(executor);
+
+            auto const results = co_await resolver.async_resolve(m_managerIp, m_port, boost::asio::use_awaitable);
+            co_await boost::asio::async_connect(socket, results, boost::asio::use_awaitable);
+
+            // HTTP request
+            boost::beast::http::request<boost::beast::http::string_body> req {boost::beast::http::verb::get, url, 11};
+            req.set(boost::beast::http::field::host, m_managerIp);
+            req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+            req.set(boost::beast::http::field::authorization, "Bearer " + m_token);
+            req.body() = "";
+            req.prepare_payload();
+            co_await boost::beast::http::async_write(
+                socket, req, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+
+            if (ec)
+            {
+                std::cerr << "Error writing request (" << std::to_string(ec.value()) << "): " << ec.message()
+                          << std::endl;
+                socket.close();
+                continue;
+            }
+
+            // HTTP response
+            boost::beast::flat_buffer buffer;
+            boost::beast::http::response<boost::beast::http::dynamic_body> res;
+            co_await boost::beast::http::async_read(
+                socket, buffer, res, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+
+            if (ec)
+            {
+                std::cerr << "Error reading response. Response code: " << res.result_int() << std::endl;
+                socket.close();
+                continue;
+            }
+            std::cout << "GetCommand response code: " << res.result_int() << std::endl;
+            std::cout << "GetCommand response body: " << beast::buffers_to_string(res.body().data()) << std::endl;
+
+            auto duration = std::chrono::milliseconds(1000);
+            timer.expires_after(duration);
+            co_await timer.async_wait(boost::asio::use_awaitable);
+        }
     }
 
     boost::asio::awaitable<void> Communicator::WaitForTokenExpirationAndAuthenticate()

@@ -12,6 +12,8 @@ namespace http = beast::http;
 
 namespace communicator
 {
+    const std::string_view uuidKey = "uuid";
+    const std::string_view kUUID = "agent_uuid";
     class Communicator
     {
     public:
@@ -20,6 +22,7 @@ namespace communicator
         int SendAuthenticationRequest();
         int SendRegistrationRequest();
 
+        boost::asio::awaitable<void> GetCommandsFromManager();
         boost::asio::awaitable<void> WaitForTokenExpirationAndAuthenticate();
 
         const std::string& GetToken() const;
