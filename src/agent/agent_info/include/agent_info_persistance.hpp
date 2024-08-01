@@ -33,6 +33,7 @@ public:
 
 private:
     bool AgentInfoTableExists() const;
+    bool AgentInfoIsEmpty() const;
     void CreateAgentInfoTable();
     void InsertDefaultAgentInfo();
     void SetAgentInfoValue(const std::string& column, const std::string& value);

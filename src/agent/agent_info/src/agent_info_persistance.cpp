@@ -13,6 +13,10 @@ AgentInfoPersistance::AgentInfoPersistance(const std::string& db_path)
         if (!AgentInfoTableExists())
         {
             CreateAgentInfoTable();
+        }
+
+        if (AgentInfoIsEmpty())
+        {
             InsertDefaultAgentInfo();
         }
     }
@@ -37,6 +41,23 @@ bool AgentInfoPersistance::AgentInfoTableExists() const
         std::cerr << "Failed to check if table exists: " << e.what() << std::endl;
         return false;
     }
+}
+
+bool AgentInfoPersistance::AgentInfoIsEmpty() const
+{
+    try
+    {
+        SQLite::Statement query(*m_db, "SELECT COUNT(*) FROM agent_info;");
+        query.executeStep();
+        const auto count = query.getColumn(0).getInt();
+        return count == 0;
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error fetching: " << e.what() << std::endl;
+    }
+
+    return false;
 }
 
 void AgentInfoPersistance::CreateAgentInfoTable()
