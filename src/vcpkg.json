@@ -9,7 +9,9 @@
       "jwt-cpp",
       "nlohmann-json",
       "openssl",
-      "toml11"
+      "sqlitecpp",
+      "toml11",
+      "boost-uuid"
     ],
     "overrides": [
       {

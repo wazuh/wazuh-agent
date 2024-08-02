@@ -16,6 +16,7 @@ set(SOURCES
     src/agent.cpp
     src/message_task.cpp
     src/task_manager.cpp
+    src/register.cpp
 )
 
 set(HEADERS
@@ -23,6 +24,7 @@ set(HEADERS
     include/itask_manager.hpp
     include/task_manager.hpp
     include/message_task.hpp
+    include/register.hpp
 )
 
 add_library(agent ${SOURCES} ${HEADERS})
@@ -32,10 +34,11 @@ find_package(Boost REQUIRED COMPONENTS asio)
 target_include_directories(agent PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/communicator/include)
 
 # Add the subdirectory for each child project
+add_subdirectory(agent_info)
 add_subdirectory(communicator)
 add_subdirectory(configuration_parser)
 
-target_link_libraries(agent PUBLIC ConfigurationParser PRIVATE ${Boost_LIBRARIES} communicator)
+target_link_libraries(agent PUBLIC ConfigurationParser PRIVATE ${Boost_LIBRARIES} communicator AgentInfo)
 
 if(BUILD_TESTS)
     add_subdirectory(tests)
