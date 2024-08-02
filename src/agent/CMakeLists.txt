@@ -31,7 +31,13 @@ add_library(agent ${SOURCES} ${HEADERS})
 
 find_package(Boost REQUIRED COMPONENTS asio)
 
-target_include_directories(agent PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/communicator/include)
+set(INCLUDES
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/communicator/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/agent_info/include
+)
+
+target_include_directories(agent PUBLIC ${INCLUDES})
 
 # Add the subdirectory for each child project
 add_subdirectory(agent_info)

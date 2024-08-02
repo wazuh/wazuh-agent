@@ -17,7 +17,8 @@ namespace communicator
     class Communicator
     {
     public:
-        Communicator(const std::function<std::string(std::string, std::string)> GetStringConfigValue);
+        Communicator(const std::string& uuid,
+                     const std::function<std::string(std::string, std::string)> GetStringConfigValue);
         ~Communicator();
         http::status SendAuthenticationRequest();
 
@@ -32,6 +33,7 @@ namespace communicator
         std::mutex m_exitMtx;
         std::atomic<bool> m_exitFlag;
 
+        std::string m_uuid;
         std::string m_managerIp;
         std::string m_port;
         long long m_tokenExpTimeInSeconds;

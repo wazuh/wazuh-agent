@@ -7,7 +7,7 @@ TEST(CommunicatorTest, GetTokenRemainingSecsTest)
 {
     Communicator communicator(nullptr);
     int res = communicator.GetTokenRemainingSecs();
-    //ASSERT_EQ(res, 0);
+    // ASSERT_EQ(res, 0);
 }
 
 int main(int argc, char** argv)
