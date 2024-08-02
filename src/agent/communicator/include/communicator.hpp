@@ -19,8 +19,7 @@ namespace communicator
     public:
         Communicator(const std::function<std::string(std::string, std::string)> GetStringConfigValue);
         ~Communicator();
-        int SendAuthenticationRequest();
-        int SendRegistrationRequest();
+        http::status SendAuthenticationRequest();
 
         boost::asio::awaitable<void> GetCommandsFromManager();
         boost::asio::awaitable<void> WaitForTokenExpirationAndAuthenticate();

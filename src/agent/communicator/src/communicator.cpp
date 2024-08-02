@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <chrono>
 #include <iostream>
+#include <thread>
 
 using tcp = boost::asio::ip::tcp;
 using json = nlohmann::json;
@@ -39,11 +40,17 @@ namespace communicator
         return m_token;
     }
 
-    int Communicator::SendAuthenticationRequest()
+    http::status Communicator::SendAuthenticationRequest()
     {
         json bodyJson = {{communicator::uuidKey, communicator::kUUID}};
         http::response<http::dynamic_body> res =
             sendHttpRequest(http::verb::post, "/authentication", "", bodyJson.dump());
+
+        if (res.result() != http::status::ok)
+        {
+            return res.result();
+        }
+
         m_token = beast::buffers_to_string(res.body().data());
 
         auto decoded = jwt::decode(m_token);
@@ -60,15 +67,7 @@ namespace communicator
             std::cerr << "Token does not contain an 'exp' claim" << std::endl;
         }
 
-        return res.result_int();
-    }
-
-    int Communicator::SendRegistrationRequest()
-    {
-        // TO DO: Create uuid to send to the server.
-        json bodyJson = {{communicator::uuidKey, communicator::kUUID}, {"name", "agent_name"}, {"ip", "agent_ip"}};
-        http::response<http::dynamic_body> res = sendHttpRequest(http::verb::post, "/agents", m_token, bodyJson.dump());
-        return res.result_int();
+        return res.result();
     }
 
     http::response<http::dynamic_body> Communicator::sendHttpRequest(http::verb method,
@@ -152,11 +151,21 @@ namespace communicator
 
         while (true)
         {
-            boost::beast::error_code ec;
             boost::asio::ip::tcp::socket socket(executor);
 
             auto const results = co_await resolver.async_resolve(m_managerIp, m_port, boost::asio::use_awaitable);
-            co_await boost::asio::async_connect(socket, results, boost::asio::use_awaitable);
+
+            boost::system::error_code code;
+            co_await boost::asio::async_connect(
+                socket, results, boost::asio::redirect_error(boost::asio::use_awaitable, code));
+
+            if (code != boost::system::errc::success)
+            {
+                std::cerr << "Connect failed: " << code.message() << std::endl;
+                socket.close();
+                std::this_thread::sleep_for(1000ms);
+                continue;
+            }
 
             // HTTP request
             boost::beast::http::request<boost::beast::http::string_body> req {boost::beast::http::verb::get, url, 11};
@@ -165,6 +174,8 @@ namespace communicator
             req.set(boost::beast::http::field::authorization, "Bearer " + m_token);
             req.body() = "";
             req.prepare_payload();
+
+            boost::beast::error_code ec;
             co_await boost::beast::http::async_write(
                 socket, req, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
 
@@ -179,6 +190,7 @@ namespace communicator
             // HTTP response
             boost::beast::flat_buffer buffer;
             boost::beast::http::response<boost::beast::http::dynamic_body> res;
+
             co_await boost::beast::http::async_read(
                 socket, buffer, res, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
 
@@ -205,8 +217,18 @@ namespace communicator
 
         while (true)
         {
-            SendAuthenticationRequest();
-            auto duration = std::chrono::milliseconds((GetTokenRemainingSecs() - TokenPreExpirySecs) * 1000);
+            http::status result = SendAuthenticationRequest();
+
+            auto duration = std::chrono::milliseconds(1000);
+            if (result != http::status::ok)
+            {
+                std::cerr << "Authentication failed." << std::endl;
+            }
+            else
+            {
+                duration = std::chrono::milliseconds((GetTokenRemainingSecs() - TokenPreExpirySecs) * 1000);
+            }
+
             timer.expires_after(duration);
             co_await timer.async_wait(boost::asio::use_awaitable);
 

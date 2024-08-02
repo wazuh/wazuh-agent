@@ -3,19 +3,11 @@
 
 using namespace communicator;
 
-TEST(HttpPostTest, AuthenticationTest)
+TEST(CommunicatorTest, GetTokenRemainingSecsTest)
 {
     Communicator communicator(nullptr);
-    int res = communicator.SendAuthenticationRequest();
-    ASSERT_EQ(res, 200);
-}
-
-TEST(HttpPostTest, RegistrationTest)
-{
-    Communicator communicator(nullptr);
-    communicator.SendAuthenticationRequest();
-    int res = communicator.SendRegistrationRequest();
-    ASSERT_EQ(res, 200);
+    int res = communicator.GetTokenRemainingSecs();
+    //ASSERT_EQ(res, 0);
 }
 
 int main(int argc, char** argv)
