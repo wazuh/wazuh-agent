@@ -5,13 +5,13 @@
       "boost-asio",
       "boost-beast",
       "boost-url",
+      "boost-uuid",
       "gtest",
       "jwt-cpp",
       "nlohmann-json",
       "openssl",
       "sqlitecpp",
-      "toml11",
-      "boost-uuid"
+      "toml11"
     ],
     "overrides": [
       {

@@ -19,9 +19,11 @@ namespace communicator
 {
     constexpr int TokenPreExpirySecs = 2;
 
-    Communicator::Communicator(const std::function<std::string(std::string, std::string)> GetStringConfigValue)
+    Communicator::Communicator(const std::string& uuid,
+                               const std::function<std::string(std::string, std::string)> GetStringConfigValue)
         : m_exitFlag(false)
         , m_tokenExpTimeInSeconds(0)
+        , m_uuid(uuid)
     {
         if (GetStringConfigValue != nullptr)
         {
@@ -42,7 +44,7 @@ namespace communicator
 
     http::status Communicator::SendAuthenticationRequest()
     {
-        json bodyJson = {{communicator::uuidKey, communicator::kUUID}};
+        json bodyJson = {{"uuid", m_uuid}};
         http::response<http::dynamic_body> res =
             sendHttpRequest(http::verb::post, "/authentication", "", bodyJson.dump());
 
@@ -144,10 +146,7 @@ namespace communicator
         boost::asio::steady_timer timer(executor);
         boost::asio::ip::tcp::resolver resolver(executor);
 
-        std::string url = "/commands?";
-        url += communicator::uuidKey;
-        url += "=";
-        url += communicator::kUUID;
+        std::string url = "/commands";
 
         while (true)
         {
