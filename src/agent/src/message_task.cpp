@@ -6,10 +6,11 @@
 namespace
 {
 
-    boost::asio::awaitable<void> send_http_request(const std::string host,
-                                                   const std::string port,
-                                                   const std::string target,
-                                                   std::queue<std::string>& messageQueue)
+    boost::asio::awaitable<void> MessageProcessingTask(const std::string host,
+                                                       const std::string port,
+                                                       const std::string target,
+                                                       const std::string& token,
+                                                       std::queue<std::string>& messageQueue)
     {
         using namespace std::chrono_literals;
 
@@ -44,6 +45,7 @@ namespace
                     boost::beast::http::verb::post, target, 11};
                 req.set(boost::beast::http::field::host, host);
                 req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+                req.set(boost::beast::http::field::authorization, "Bearer " + token);
                 req.body() = message;
                 req.prepare_payload();
                 co_await boost::beast::http::async_write(
@@ -72,12 +74,18 @@ namespace
 
 } // namespace
 
-boost::asio::awaitable<void> StatefulMessageProcessingTask(std::queue<std::string>& messageQueue)
+boost::asio::awaitable<void> StatefulMessageProcessingTask(const std::string& manager_ip,
+                                                           const std::string& port,
+                                                           const std::string& token,
+                                                           std::queue<std::string>& messageQueue)
 {
-    co_await send_http_request("localhost", "8080", "/stateless", messageQueue);
+    co_await MessageProcessingTask(manager_ip, port, "/stateless", token, messageQueue);
 }
 
-boost::asio::awaitable<void> StatelessMessageProcessingTask(std::queue<std::string>& messageQueue)
+boost::asio::awaitable<void> StatelessMessageProcessingTask(const std::string& manager_ip,
+                                                            const std::string& port,
+                                                            const std::string& token,
+                                                            std::queue<std::string>& messageQueue)
 {
-    co_await send_http_request("localhost", "8080", "/stateful", messageQueue);
+    co_await MessageProcessingTask(manager_ip, port, "/stateful", token, messageQueue);
 }

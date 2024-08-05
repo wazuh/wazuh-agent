@@ -4,8 +4,14 @@
     "dependencies": [
       "boost-asio",
       "boost-beast",
-      "toml11",
-      "gtest"
+      "boost-url",
+      "boost-uuid",
+      "gtest",
+      "jwt-cpp",
+      "nlohmann-json",
+      "openssl",
+      "sqlitecpp",
+      "toml11"
     ],
     "overrides": [
       {

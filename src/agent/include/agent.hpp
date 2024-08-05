@@ -1,5 +1,7 @@
 #pragma once
 
+#include <agent_info.hpp>
+#include <communicator.hpp>
 #include <configuration_parser.hpp>
 #include <task_manager.hpp>
 
@@ -16,5 +18,7 @@ private:
     std::queue<std::string> m_messageQueue;
 
     TaskManager m_taskManager;
-    configuration::ConfigurationParser m_configurationParser;
+    std::unique_ptr<configuration::ConfigurationParser> m_configurationParser;
+    AgentInfo m_agentInfo;
+    communicator::Communicator m_communicator;
 };
