@@ -18,7 +18,7 @@ private:
     std::queue<std::string> m_messageQueue;
 
     TaskManager m_taskManager;
-    std::unique_ptr<configuration::ConfigurationParser> m_configurationParser;
     AgentInfo m_agentInfo;
+    configuration::ConfigurationParser m_configurationParser;
     communicator::Communicator m_communicator;
 };

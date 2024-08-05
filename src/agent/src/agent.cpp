@@ -3,10 +3,9 @@
 #include <thread>
 
 Agent::Agent()
-    : m_configurationParser(std::make_unique<configuration::ConfigurationParser>())
-    , m_communicator(m_agentInfo.GetUUID(),
+    : m_communicator(m_agentInfo.GetUUID(),
                      [this](std::string table, std::string key) -> std::string
-                     { return m_configurationParser->GetConfig<std::string>(table, key); })
+                     { return m_configurationParser.GetConfig<std::string>(table, key); })
 {
     m_taskManager.start(std::thread::hardware_concurrency());
 
