@@ -1,6 +1,5 @@
 #include <agent.hpp>
 
-#include <chrono>
 #include <thread>
 
 Agent::Agent()
