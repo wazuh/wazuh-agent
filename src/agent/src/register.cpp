@@ -82,7 +82,7 @@ namespace registration
     std::pair<http::status, std::string>
     SendAuthenticationRequest(const std::string& managerIp, const std::string& port, const std::string& user_pass)
     {
-        http::response<http::dynamic_body> res =
+        const http::response<http::dynamic_body> res =
             sendRequest(managerIp, port, http::verb::post, "/authenticate", "", "", user_pass);
         const auto token = beast::buffers_to_string(res.body().data());
 
@@ -108,7 +108,7 @@ namespace registration
             bodyJson["ip"] = ip.value();
         }
 
-        http::response<http::dynamic_body> res =
+        const http::response<http::dynamic_body> res =
             sendRequest(managerIp, port, http::verb::post, "/agents", token, bodyJson.dump(), "");
         return res.result();
     }
@@ -141,12 +141,13 @@ bool RegisterAgent(const std::string& user,
                    const std::optional<std::string>& name,
                    const std::optional<std::string>& ip)
 {
-
     const configuration::ConfigurationParser configurationParser;
     const auto managerIp = configurationParser.GetConfig<std::string>("agent", "manager_ip");
     const auto port = configurationParser.GetConfig<std::string>("agent", "port");
 
-    auto [authResultCode, token] = registration::SendAuthenticationRequest(managerIp, port, user + ":" + password);
+    const auto [authResultCode, token] =
+        registration::SendAuthenticationRequest(managerIp, port, user + ":" + password);
+
     if (authResultCode != http::status::ok)
     {
         std::cout << "Authentication error: " << authResultCode << std::endl;
@@ -155,7 +156,7 @@ bool RegisterAgent(const std::string& user,
 
     const auto agentInfo = registration::GenerateAgentInfo(name, ip);
 
-    if (auto registrationResultCode =
+    if (const auto registrationResultCode =
             registration::SendRegistrationRequest(managerIp, port, token, agentInfo.GetUUID(), name, ip);
         registrationResultCode != http::status::ok)
     {
