@@ -18,6 +18,34 @@ using json = nlohmann::json;
 
 namespace
 {
+    boost::asio::awaitable<void> PerformHttpRequest(boost::asio::ip::tcp::socket& socket,
+                                                    boost::beast::http::request<boost::beast::http::string_body>& req,
+                                                    boost::beast::error_code& ec)
+    {
+        // HTTP request
+        co_await boost::beast::http::async_write(
+            socket, req, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+        if (ec)
+        {
+            std::cerr << "Error writing request (" << std::to_string(ec.value()) << "): " << ec.message() << std::endl;
+            co_return;
+        }
+
+        // HTTP response
+        boost::beast::flat_buffer buffer;
+        boost::beast::http::response<boost::beast::http::dynamic_body> res;
+        co_await boost::beast::http::async_read(
+            socket, buffer, res, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+        if (ec)
+        {
+            std::cerr << "Error reading response. Response code: " << res.result_int() << std::endl;
+            co_return;
+        }
+
+        std::cout << "Response code: " << res.result_int() << std::endl;
+        std::cout << "Response body: " << boost::beast::buffers_to_string(res.body().data()) << std::endl;
+    }
+
     boost::asio::awaitable<void> MessageProcessingTask(const std::string host,
                                                        const std::string port,
                                                        const std::string target,
@@ -60,20 +88,8 @@ namespace
                 req.set(boost::beast::http::field::authorization, "Bearer " + token);
                 req.body() = message;
                 req.prepare_payload();
-                co_await boost::beast::http::async_write(
-                    socket, req, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
 
-                if (ec)
-                {
-                    socket.close();
-                    break;
-                }
-
-                // HTTP response
-                boost::beast::flat_buffer buffer;
-                boost::beast::http::response<boost::beast::http::dynamic_body> res;
-                co_await boost::beast::http::async_read(
-                    socket, buffer, res, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+                co_await PerformHttpRequest(socket, req, ec);
 
                 if (ec)
                 {
@@ -245,32 +261,13 @@ namespace communicator
             req.prepare_payload();
 
             boost::beast::error_code ec;
-            co_await boost::beast::http::async_write(
-                socket, req, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+            co_await PerformHttpRequest(socket, req, ec);
 
             if (ec)
             {
-                std::cerr << "Error writing request (" << std::to_string(ec.value()) << "): " << ec.message()
-                          << std::endl;
                 socket.close();
                 continue;
             }
-
-            // HTTP response
-            boost::beast::flat_buffer buffer;
-            boost::beast::http::response<boost::beast::http::dynamic_body> res;
-
-            co_await boost::beast::http::async_read(
-                socket, buffer, res, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
-
-            if (ec)
-            {
-                std::cerr << "Error reading response. Response code: " << res.result_int() << std::endl;
-                socket.close();
-                continue;
-            }
-            std::cout << "GetCommand response code: " << res.result_int() << std::endl;
-            std::cout << "GetCommand response body: " << beast::buffers_to_string(res.body().data()) << std::endl;
 
             auto duration = std::chrono::milliseconds(1000);
             timer.expires_after(duration);
