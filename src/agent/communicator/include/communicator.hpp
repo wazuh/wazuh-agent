@@ -19,12 +19,14 @@ namespace communicator
 {
     const std::string_view uuidKey = "uuid";
     const std::string_view kUUID = "agent_uuid";
+
     class Communicator
     {
     public:
         Communicator(const std::string& uuid,
                      const std::function<std::string(std::string, std::string)> GetStringConfigValue);
         ~Communicator();
+
         http::status SendAuthenticationRequest();
 
         boost::asio::awaitable<void> GetCommandsFromManager();
