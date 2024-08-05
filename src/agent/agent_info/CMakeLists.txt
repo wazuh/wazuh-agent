@@ -13,7 +13,6 @@ project(AgentInfo)
 find_package(SQLiteCpp REQUIRED)
 
 add_library(AgentInfo src/agent_info.cpp src/agent_info_persistance.cpp)
-
 target_include_directories(AgentInfo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(AgentInfo PRIVATE SQLiteCpp)
 
