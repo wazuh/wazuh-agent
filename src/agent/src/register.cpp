@@ -141,9 +141,9 @@ bool RegisterAgent(const std::string& user,
                    const std::optional<std::string>& ip)
 {
 
-    const auto configurationParser = std::make_shared<configuration::ConfigurationParser>();
-    const auto managerIp = configurationParser->GetConfig<std::string>("agent", "manager_ip");
-    const auto port = configurationParser->GetConfig<std::string>("agent", "port");
+    const configuration::ConfigurationParser configurationParser;
+    const auto managerIp = configurationParser.GetConfig<std::string>("agent", "manager_ip");
+    const auto port = configurationParser.GetConfig<std::string>("agent", "port");
 
     const auto [authResultCode, token] =
         registration::SendAuthenticationRequest(managerIp, port, user + ":" + password);
