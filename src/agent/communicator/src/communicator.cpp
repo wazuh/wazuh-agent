@@ -1,4 +1,5 @@
-#include "communicator.hpp"
+#include <communicator.hpp>
+
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl/stream.hpp>
