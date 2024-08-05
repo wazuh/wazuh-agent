@@ -16,6 +16,8 @@
 #include "dbsync.hpp"
 #include "inventoryNormalizer.h"
 
+#define log(a, b) log1(a, b, __FILE__, __LINE__)
+
 class Inventory {
 public:
 
@@ -67,8 +69,8 @@ private:
     void syncLoop(std::unique_lock<std::mutex>& lock);
     void syncAlgorithm();
 
-    static void log(const modules_log_level_t, const std::string&);
-    static void logError(const std::string&);
+    static void log1(const modules_log_level_t level, const std::string& log, const char* file, int line);
+    static void logError(const std::string& log);
 
     std::shared_ptr<ISysInfo>                                               m_spInfo;
     std::function<void(const std::string&)>                                 m_reportDiffFunction;
