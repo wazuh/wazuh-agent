@@ -18,5 +18,6 @@ target_include_directories(AgentInfo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(AgentInfo PRIVATE SQLiteCpp)
 
 if(BUILD_TESTS)
+    enable_testing()
     add_subdirectory(tests)
 endif()

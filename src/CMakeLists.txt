@@ -17,3 +17,6 @@ target_include_directories(wazuh-agent PUBLIC ${CMAKE_SOURCE_DIR}/agent/include)
 
 target_link_libraries(wazuh-agent agent)
 
+if(BUILD_TESTS)
+    enable_testing()
+endif()
