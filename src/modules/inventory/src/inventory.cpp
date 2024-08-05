@@ -211,9 +211,17 @@ int Inventory::inventory_sync_message(const char* data)
     return ret;
 }
 
-void Inventory::log(const modules_log_level_t level, const std::string& log)
+void Inventory::log1(const modules_log_level_t level, const std::string& log, const char* file, int line)
 {
-    taggedLogFunction(level, log.c_str(), WM_INV_LOGTAG);
+    std::string tag{};
+
+    tag += WM_INV_LOGTAG;
+    tag += " ";
+    tag += file;
+    tag += " (";
+    tag += std::to_string(line);
+    tag += ") ";
+    taggedLogFunction(level, log.c_str(), tag.c_str());
 }
 
 void Inventory::logError(const std::string& log)
