@@ -16,13 +16,13 @@ protected:
 
 TEST_F(TaskManagerTest, StartAndStop)
 {
-    taskManager.start(2);
-    taskManager.stop();
+    taskManager.Start(2);
+    taskManager.Stop();
 }
 
 TEST_F(TaskManagerTest, EnqueueFunctionTask)
 {
-    taskManager.start(1);
+    taskManager.Start(1);
 
     std::atomic<int> counter = 0;
     std::function<void()> task = [&counter]()
@@ -30,18 +30,18 @@ TEST_F(TaskManagerTest, EnqueueFunctionTask)
         ++counter;
     };
 
-    taskManager.enqueueTask(task);
+    taskManager.EnqueueTask(task);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     EXPECT_EQ(counter, 1);
 
-    taskManager.stop();
+    taskManager.Stop();
 }
 
 TEST_F(TaskManagerTest, EnqueueCoroutineTask)
 {
-    taskManager.start(1);
+    taskManager.Start(1);
 
     std::atomic<int> counter = 0;
     auto coroutineTask = [&counter]() -> boost::asio::awaitable<void>
@@ -50,13 +50,13 @@ TEST_F(TaskManagerTest, EnqueueCoroutineTask)
         co_return;
     };
 
-    taskManager.enqueueTask(coroutineTask());
+    taskManager.EnqueueTask(coroutineTask());
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     EXPECT_EQ(counter, 1);
 
-    taskManager.stop();
+    taskManager.Stop();
 }
 
 int main(int argc, char** argv)

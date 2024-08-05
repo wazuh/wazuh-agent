@@ -8,20 +8,20 @@ Agent::Agent()
                      [this](std::string table, std::string key) -> std::string
                      { return m_configurationParser.GetConfig<std::string>(table, key); })
 {
-    m_taskManager.start(std::thread::hardware_concurrency());
+    m_taskManager.Start(std::thread::hardware_concurrency());
 
-    m_taskManager.enqueueTask(m_communicator.WaitForTokenExpirationAndAuthenticate());
-    m_taskManager.enqueueTask(m_communicator.GetCommandsFromManager());
+    m_taskManager.EnqueueTask(m_communicator.WaitForTokenExpirationAndAuthenticate());
+    m_taskManager.EnqueueTask(m_communicator.GetCommandsFromManager());
 
     std::string managerIp = m_configurationParser->GetConfig<std::string>("agent", "manager_ip");
     std::string port = m_configurationParser->GetConfig<std::string>("agent", "port");
-    m_taskManager.enqueueTask(
+    m_taskManager.EnqueueTask(
         StatefulMessageProcessingTask(managerIp, port, m_communicator.GetToken(), m_messageQueue));
-    m_taskManager.enqueueTask(
+    m_taskManager.EnqueueTask(
         StatelessMessageProcessingTask(managerIp, port, m_communicator.GetToken(), m_messageQueue));
 }
 
 Agent::~Agent()
 {
-    m_taskManager.stop();
+    m_taskManager.Stop();
 }
