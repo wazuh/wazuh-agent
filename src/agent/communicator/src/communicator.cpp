@@ -142,11 +142,6 @@ namespace communicator
         Stop();
     }
 
-    const std::string& Communicator::GetToken() const
-    {
-        return m_token;
-    }
-
     http::status Communicator::SendAuthenticationRequest()
     {
         json bodyJson = {{"uuid", m_uuid}};

@@ -29,8 +29,6 @@ namespace communicator
         boost::asio::awaitable<void> StatefulMessageProcessingTask(std::queue<std::string>& messageQueue);
         boost::asio::awaitable<void> StatelessMessageProcessingTask(std::queue<std::string>& messageQueue);
 
-        const std::string& GetToken() const;
-
     private:
         std::mutex m_exitMtx;
         std::atomic<bool> m_exitFlag;
