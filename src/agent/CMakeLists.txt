@@ -39,7 +39,6 @@ set(INCLUDES
 
 target_include_directories(agent PUBLIC ${INCLUDES})
 
-# Add the subdirectory for each child project
 add_subdirectory(agent_info)
 add_subdirectory(communicator)
 add_subdirectory(configuration_parser)

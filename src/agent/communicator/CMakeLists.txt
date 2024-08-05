@@ -30,7 +30,6 @@ target_include_directories(communicator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${Boo
 target_link_libraries(communicator PUBLIC ${Boost_LIBRARIES} OpenSSL::SSL OpenSSL::Crypto)
 
 if(BUILD_TESTS)
-    # Enable testing
     enable_testing()
 
     find_package(nlohmann_json CONFIG REQUIRED)
