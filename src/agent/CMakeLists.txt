@@ -12,7 +12,6 @@ project(Agent)
 
 set(SOURCES
     src/agent.cpp
-    src/message_task.cpp
     src/task_manager.cpp
     src/register.cpp
 )
@@ -21,7 +20,6 @@ set(HEADERS
     include/agent.hpp
     include/itask_manager.hpp
     include/task_manager.hpp
-    include/message_task.hpp
     include/register.hpp
 )
 
