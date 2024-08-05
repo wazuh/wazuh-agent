@@ -1,5 +1,3 @@
-# Wazuh Agent tests
-
 find_package(GTest CONFIG REQUIRED)
 
 set(TEST_SOURCES
