@@ -88,6 +88,8 @@ namespace
 namespace communicator
 {
     constexpr int TokenPreExpirySecs = 2;
+    constexpr std::string_view uuidKey = "uuid";
+    constexpr std::string_view kUUID = "agent_uuid";
 
     Communicator::Communicator(const std::string& uuid,
                                const std::function<std::string(std::string, std::string)> GetStringConfigValue)

@@ -17,9 +17,6 @@ namespace http = beast::http;
 
 namespace communicator
 {
-    const std::string_view uuidKey = "uuid";
-    const std::string_view kUUID = "agent_uuid";
-
     class Communicator
     {
     public:
