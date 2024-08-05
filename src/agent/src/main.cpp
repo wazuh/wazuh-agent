@@ -43,5 +43,5 @@ int main(int argc, char* argv[])
     }
 
     Agent agent;
-    std::this_thread::sleep_for(std::chrono::seconds(40));
+    agent.Run();
 }
