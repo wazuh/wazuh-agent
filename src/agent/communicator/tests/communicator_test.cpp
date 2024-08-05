@@ -1,7 +1,6 @@
-#include "communicator.hpp"
 #include <gtest/gtest.h>
 
-using namespace communicator;
+#include <communicator.hpp>
 
 TEST(CommunicatorTest, GetTokenRemainingSecsTest)
 {

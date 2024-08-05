@@ -21,10 +21,5 @@ target_link_libraries(communicator PUBLIC ${Boost_LIBRARIES} OpenSSL::SSL OpenSS
 
 if(BUILD_TESTS)
     enable_testing()
-
-    find_package(GTest CONFIG REQUIRED)
-
-    add_executable(communicator_test test/communicator_test.cpp)
-    target_link_libraries(communicator_test PUBLIC communicator GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
-    add_test(NAME CommunicatorTest COMMAND communicator_test)
+    add_subdirectory(tests)
 endif()

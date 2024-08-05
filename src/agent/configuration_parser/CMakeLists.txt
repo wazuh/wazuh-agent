@@ -17,11 +17,6 @@ target_include_directories(ConfigurationParser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR
 target_link_libraries(ConfigurationParser PUBLIC toml11::toml11)
 
 if(BUILD_TESTS)
-    find_package(GTest CONFIG REQUIRED)
-
     enable_testing()
-
-    add_executable(ConfigurationParser_test tests/configuration_parser_test.cpp)
-    target_link_libraries(ConfigurationParser_test PUBLIC ConfigurationParser GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
-    add_test(NAME ConfigParserTest COMMAND ConfigurationParser_test)
+    add_subdirectory(tests)
 endif()
