@@ -1,5 +1,4 @@
 #include <agent.hpp>
-#include <message_task.hpp>
 
 #include <chrono>
 #include <thread>
@@ -18,9 +17,9 @@ Agent::Agent()
     std::string managerIp = m_configurationParser->GetConfig<std::string>("agent", "manager_ip");
     std::string port = m_configurationParser->GetConfig<std::string>("agent", "port");
     m_taskManager.enqueueTask(
-        StatefulMessageProcessingTask(managerIp, port, m_communicator.GetToken(), m_messageQueue));
+        m_communicator.StatefulMessageProcessingTask(managerIp, port, m_communicator.GetToken(), m_messageQueue));
     m_taskManager.enqueueTask(
-        StatelessMessageProcessingTask(managerIp, port, m_communicator.GetToken(), m_messageQueue));
+        m_communicator.StatelessMessageProcessingTask(managerIp, port, m_communicator.GetToken(), m_messageQueue));
 }
 
 Agent::~Agent()
