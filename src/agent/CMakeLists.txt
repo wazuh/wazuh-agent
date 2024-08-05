@@ -10,8 +10,6 @@ set(VCPKG_MANIFEST_DIR ${CMAKE_SOURCE_DIR}/../)
 
 project(Agent)
 
-include_directories(include)
-
 set(SOURCES
     src/agent.cpp
     src/message_task.cpp
@@ -27,23 +25,15 @@ set(HEADERS
     include/register.hpp
 )
 
-add_library(agent ${SOURCES} ${HEADERS})
-
-find_package(Boost REQUIRED COMPONENTS asio)
-
-set(INCLUDES
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/communicator/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/agent_info/include
-)
-
-target_include_directories(agent PUBLIC ${INCLUDES})
-
 add_subdirectory(agent_info)
 add_subdirectory(communicator)
 add_subdirectory(configuration_parser)
 
-target_link_libraries(agent PUBLIC ConfigurationParser PRIVATE ${Boost_LIBRARIES} communicator AgentInfo)
+find_package(Boost REQUIRED COMPONENTS asio)
+
+add_library(agent ${SOURCES} ${HEADERS})
+target_include_directories(agent PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(agent PUBLIC ConfigurationParser communicator AgentInfo PRIVATE ${Boost_LIBRARIES})
 
 if(BUILD_TESTS)
     enable_testing()
