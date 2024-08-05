@@ -46,5 +46,6 @@ add_subdirectory(configuration_parser)
 target_link_libraries(agent PUBLIC ConfigurationParser PRIVATE ${Boost_LIBRARIES} communicator AgentInfo)
 
 if(BUILD_TESTS)
+    enable_testing()
     add_subdirectory(tests)
 endif()
