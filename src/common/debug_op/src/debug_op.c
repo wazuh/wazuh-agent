@@ -34,7 +34,7 @@ static void _log_function(int level, const char *tag, const char * file, int lin
 // Wrapper for the real _log_function
 static void _log(int level, const char *tag, const char * file, int line, const char * func, const char *msg, va_list args) __attribute__((format(printf, 5, 0))) __attribute__((nonnull));
 static void _log(int level, const char *tag, const char * file, int line, const char * func, const char *msg, va_list args) {
-    _log_function(level, tag, file, line, func, msg, false, args);
+    _log_function(level, tag, file, line, func, msg, true, args);
 }
 
 
