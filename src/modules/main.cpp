@@ -8,8 +8,8 @@ int main() {
     Pool pool;
     Configuration config;
 
-    pool.start();
     pool.setup(config);
+    pool.start();
     cout << endl;
 
     try {
