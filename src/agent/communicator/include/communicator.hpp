@@ -28,16 +28,8 @@ namespace communicator
 
         boost::asio::awaitable<void> GetCommandsFromManager();
         boost::asio::awaitable<void> WaitForTokenExpirationAndAuthenticate();
-
-        boost::asio::awaitable<void> StatefulMessageProcessingTask(const std::string& manager_ip,
-                                                                   const std::string& port,
-                                                                   const std::string& token,
-                                                                   std::queue<std::string>& messageQueue);
-
-        boost::asio::awaitable<void> StatelessMessageProcessingTask(const std::string& manager_ip,
-                                                                    const std::string& port,
-                                                                    const std::string& token,
-                                                                    std::queue<std::string>& messageQueue);
+        boost::asio::awaitable<void> StatefulMessageProcessingTask(std::queue<std::string>& messageQueue);
+        boost::asio::awaitable<void> StatelessMessageProcessingTask(std::queue<std::string>& messageQueue);
 
         const std::string& GetToken() const;
         const long GetTokenRemainingSecs() const;

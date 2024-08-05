@@ -314,19 +314,13 @@ namespace communicator
         }
     }
 
-    boost::asio::awaitable<void> Communicator::StatefulMessageProcessingTask(const std::string& manager_ip,
-                                                                             const std::string& port,
-                                                                             const std::string& token,
-                                                                             std::queue<std::string>& messageQueue)
+    boost::asio::awaitable<void> Communicator::StatefulMessageProcessingTask(std::queue<std::string>& messageQueue)
     {
-        co_await MessageProcessingTask(manager_ip, port, "/stateless", token, messageQueue);
+        co_await MessageProcessingTask(m_managerIp, m_port, "/stateless", m_token, messageQueue);
     }
 
-    boost::asio::awaitable<void> Communicator::StatelessMessageProcessingTask(const std::string& manager_ip,
-                                                                              const std::string& port,
-                                                                              const std::string& token,
-                                                                              std::queue<std::string>& messageQueue)
+    boost::asio::awaitable<void> Communicator::StatelessMessageProcessingTask(std::queue<std::string>& messageQueue)
     {
-        co_await MessageProcessingTask(manager_ip, port, "/stateful", token, messageQueue);
+        co_await MessageProcessingTask(m_managerIp, m_port, "/stateful", m_token, messageQueue);
     }
 } // namespace communicator
