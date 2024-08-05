@@ -1,7 +1,6 @@
 #include <agent.hpp>
 #include <message_task.hpp>
 
-#include <chrono>
 #include <thread>
 
 Agent::Agent()

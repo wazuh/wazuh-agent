@@ -9,7 +9,6 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <iostream>
-#include <jwt-cpp/jwt.h>
 #include <nlohmann/json.hpp>
 
 namespace beast = boost::beast;

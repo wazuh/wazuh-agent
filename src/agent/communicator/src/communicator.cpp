@@ -1,9 +1,9 @@
-#include "communicator.hpp"
+#include <communicator.hpp>
+
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl/stream.hpp>
 #include <boost/beast/version.hpp>
-#include <iostream>
 #include <jwt-cpp/jwt.h>
 #include <nlohmann/json.hpp>
 
