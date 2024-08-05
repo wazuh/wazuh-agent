@@ -9,9 +9,9 @@ TaskManager::TaskManager()
 {
 }
 
-void TaskManager::start(size_t numThreads)
+void TaskManager::Start(size_t numThreads)
 {
-    stop();
+    Stop();
 
     for (size_t i = 0; i < numThreads; ++i)
     {
@@ -19,7 +19,7 @@ void TaskManager::start(size_t numThreads)
     }
 }
 
-void TaskManager::stop()
+void TaskManager::Stop()
 {
     m_ioContext.stop();
 
@@ -34,12 +34,12 @@ void TaskManager::stop()
     m_ioContext.reset();
 }
 
-void TaskManager::enqueueTask(std::function<void()> task)
+void TaskManager::EnqueueTask(std::function<void()> task)
 {
     boost::asio::post(m_ioContext, std::move(task));
 }
 
-void TaskManager::enqueueTask(boost::asio::awaitable<void> task)
+void TaskManager::EnqueueTask(boost::asio::awaitable<void> task)
 {
     boost::asio::co_spawn(m_ioContext, std::move(task), boost::asio::detached);
 }
