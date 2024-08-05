@@ -14,6 +14,7 @@ set(SOURCES
     src/agent.cpp
     src/task_manager.cpp
     src/register.cpp
+    src/signal_handler.cpp
 )
 
 set(HEADERS
@@ -21,6 +22,7 @@ set(HEADERS
     include/itask_manager.hpp
     include/task_manager.hpp
     include/register.hpp
+    include/signal_handler.hpp
 )
 
 add_subdirectory(agent_info)

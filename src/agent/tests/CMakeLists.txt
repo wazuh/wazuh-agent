@@ -4,6 +4,7 @@ set(TEST_SOURCES
     agent_test.cpp
     task_manager_test.cpp
     register_test.cpp
+    signal_handler_test.cpp
 )
 
 add_executable(agent_test agent_test.cpp)
@@ -17,3 +18,7 @@ add_test(NAME TaskManagerTest COMMAND task_manager_test)
 add_executable(register_test register_test.cpp)
 target_link_libraries(register_test PRIVATE agent GTest::gtest)
 add_test(NAME RegisterTest COMMAND register_test)
+
+add_executable(signal_handler_test signal_handler_test.cpp)
+target_link_libraries(signal_handler_test PRIVATE agent GTest::gtest)
+add_test(NAME SignalHandlerTest COMMAND signal_handler_test)
