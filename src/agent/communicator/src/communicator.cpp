@@ -144,7 +144,7 @@ namespace communicator
         return res.result();
     }
 
-    http::response<http::dynamic_body> Communicator::sendHttpRequest(http::verb method,
+    http::response<http::dynamic_body> Communicator::sendHttpRequest(const http::verb method,
                                                                      const std::string& url,
                                                                      const std::string& token,
                                                                      const std::string& body)

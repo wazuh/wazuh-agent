@@ -52,7 +52,7 @@ namespace communicator
         std::string m_port;
         long long m_tokenExpTimeInSeconds;
         std::string m_token;
-        http::response<http::dynamic_body> sendHttpRequest(http::verb method,
+        http::response<http::dynamic_body> sendHttpRequest(const http::verb method,
                                                            const std::string& url,
                                                            const std::string& token = "",
                                                            const std::string& body = "");
