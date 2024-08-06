@@ -11,13 +11,13 @@ set(VCPKG_MANIFEST_DIR ${CMAKE_SOURCE_DIR}/../../)
 project(Communicator)
 
 find_package(OpenSSL REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system url)
+find_package(Boost REQUIRED COMPONENTS asio beast)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
 
 add_library(communicator src/communicator.cpp)
-target_include_directories(communicator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${Boost_LIBRARIES} ${JWT_CPP_INCLUDE_DIRS})
-target_link_libraries(communicator PUBLIC ${Boost_LIBRARIES} OpenSSL::SSL OpenSSL::Crypto)
+target_include_directories(communicator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${JWT_CPP_INCLUDE_DIRS})
+target_link_libraries(communicator PUBLIC Boost::asio PRIVATE Boost::beast OpenSSL::SSL OpenSSL::Crypto)
 
 if(BUILD_TESTS)
     enable_testing()
