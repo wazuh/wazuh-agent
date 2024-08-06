@@ -72,28 +72,29 @@ private:
     static void log1(const modules_log_level_t level, const std::string& log, const char* file, int line);
     static void logError(const std::string& log);
 
-    std::shared_ptr<ISysInfo>                                               m_spInfo;
-    std::function<void(const std::string&)>                                 m_reportDiffFunction;
-    std::function<void(const std::string&)>                                 m_reportSyncFunction;
-    std::chrono::seconds                                                    m_intervalValue;
-    std::chrono::seconds                                                    m_currentIntervalValue;
-    bool                                                                    m_scanOnStart;
-    bool                                                                    m_hardware;
-    bool                                                                    m_os;
-    bool                                                                    m_network;
-    bool                                                                    m_packages;
-    bool                                                                    m_ports;
-    bool                                                                    m_portsAll;
-    bool                                                                    m_processes;
-    bool                                                                    m_hotfixes;
-    bool                                                                    m_stopping;
-    bool                                                                    m_notify;
-    std::unique_ptr<DBSync>                                                 m_spDBSync;
-    std::condition_variable                                                 m_cv;
-    std::mutex                                                              m_mutex;
-    std::unique_ptr<InvNormalizer>                                          m_spNormalizer;
-    std::string                                                             m_scanTime;
-    std::chrono::seconds                                                    m_lastSyncMsg;
+std::shared_ptr<ISysInfo>                   m_spInfo;
+std::function<void(const std::string&)>     m_reportDiffFunction;
+std::function<void(const std::string&)>     m_reportSyncFunction;
+std::chrono::seconds                        m_intervalValue;
+std::chrono::seconds                        m_currentIntervalValue;
+bool                                        m_enabled;      // Main switch
+bool                                        m_scanOnStart;  // Scan always on start
+bool                                        m_hardware;     // Hardware inventory
+bool                                        m_os;           // OS inventory
+bool                                        m_network;      // Network inventory
+bool                                        m_packages;     // Installed packages inventory
+bool                                        m_ports;        // Opened ports inventory
+bool                                        m_portsAll;     // Scan only listening ports or all
+bool                                        m_processes;    // Running processes inventory
+bool                                        m_hotfixes;     // Windows hotfixes installed
+bool                                        m_stopping;
+bool                                        m_notify;
+std::unique_ptr<DBSync>                     m_spDBSync;
+std::condition_variable                     m_cv;
+std::mutex                                  m_mutex;
+std::unique_ptr<InvNormalizer>              m_spNormalizer;
+std::string                                 m_scanTime;
+std::chrono::seconds                        m_lastSyncMsg;
 
     void wm_inv_send_diff_message(const std::string& data);
     void wm_inv_send_dbsync_message(const std::string& data);
@@ -117,17 +118,6 @@ private:
     bool need_shutdown_wait;
     pthread_mutex_t inv_reconnect_mutex;
     bool shutdown_process_started;
-
-    bool enabled;                 // Main switch
-    bool scan_on_start;           // Scan always on start
-    bool hwinfo;                  // Hardware inventory
-    bool netinfo;                 // Network inventory
-    bool osinfo;                  // OS inventory
-    bool programinfo;             // Installed packages inventory
-    bool hotfixinfo;              // Windows hotfixes installed
-    bool portsinfo;               // Opened ports inventory
-    bool allports;                // Scan only listening ports or all
-    bool procinfo;                // Running processes inventory
 
     long sync_max_eps;            // Maximum events per second for synchronization messages.
 
