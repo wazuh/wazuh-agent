@@ -34,7 +34,7 @@ void *Inventory::run() {
     w_mutex_init(&inv_stop_mutex, NULL);
     w_mutex_init(&inv_reconnect_mutex, NULL);
 
-    if (!enabled) {
+    if (!m_enabled) {
         log(LOG_INFO, "Module disabled. Exiting...");
         pthread_exit(NULL);
     }
@@ -73,7 +73,7 @@ int Inventory::setup(const Configuration & config) {
 
     m_intervalValue = std::chrono::seconds{WM_INVENTORY_DEFAULT_INTERVAL};
 
-    enabled = true;
+    m_enabled = true;
 
     m_scanOnStart = true;
     m_hardware = true;
@@ -155,18 +155,18 @@ cJSON * Inventory::wm_inv_dump() {
     cJSON *wm_inv = cJSON_CreateObject();
 
     // System provider values
-    if (enabled) cJSON_AddStringToObject(wm_inv,"disabled","no"); else cJSON_AddStringToObject(wm_inv,"disabled","yes");
-    if (scan_on_start) cJSON_AddStringToObject(wm_inv,"scan-on-start","yes"); else cJSON_AddStringToObject(wm_inv,"scan-on-start","no");
+    if (m_enabled) cJSON_AddStringToObject(wm_inv,"disabled","no"); else cJSON_AddStringToObject(wm_inv,"disabled","yes");
+    if (m_scanOnStart) cJSON_AddStringToObject(wm_inv,"scan-on-start","yes"); else cJSON_AddStringToObject(wm_inv,"scan-on-start","no");
     cJSON_AddNumberToObject(wm_inv,"interval",interval);
-    if (netinfo) cJSON_AddStringToObject(wm_inv,"network","yes"); else cJSON_AddStringToObject(wm_inv,"network","no");
-    if (osinfo) cJSON_AddStringToObject(wm_inv,"os","yes"); else cJSON_AddStringToObject(wm_inv,"os","no");
-    if (hwinfo) cJSON_AddStringToObject(wm_inv,"hardware","yes"); else cJSON_AddStringToObject(wm_inv,"hardware","no");
-    if (programinfo) cJSON_AddStringToObject(wm_inv,"packages","yes"); else cJSON_AddStringToObject(wm_inv,"packages","no");
-    if (portsinfo) cJSON_AddStringToObject(wm_inv,"ports","yes"); else cJSON_AddStringToObject(wm_inv,"ports","no");
-    if (allports) cJSON_AddStringToObject(wm_inv,"ports_all","yes"); else cJSON_AddStringToObject(wm_inv,"ports_all","no");
-    if (procinfo) cJSON_AddStringToObject(wm_inv,"processes","yes"); else cJSON_AddStringToObject(wm_inv,"processes","no");
+    if (m_network) cJSON_AddStringToObject(wm_inv,"network","yes"); else cJSON_AddStringToObject(wm_inv,"network","no");
+    if (m_os) cJSON_AddStringToObject(wm_inv,"os","yes"); else cJSON_AddStringToObject(wm_inv,"os","no");
+    if (m_hardware) cJSON_AddStringToObject(wm_inv,"hardware","yes"); else cJSON_AddStringToObject(wm_inv,"hardware","no");
+    if (m_packages) cJSON_AddStringToObject(wm_inv,"packages","yes"); else cJSON_AddStringToObject(wm_inv,"packages","no");
+    if (m_ports) cJSON_AddStringToObject(wm_inv,"ports","yes"); else cJSON_AddStringToObject(wm_inv,"ports","no");
+    if (m_portsAll) cJSON_AddStringToObject(wm_inv,"ports_all","yes"); else cJSON_AddStringToObject(wm_inv,"ports_all","no");
+    if (m_processes) cJSON_AddStringToObject(wm_inv,"processes","yes"); else cJSON_AddStringToObject(wm_inv,"processes","no");
 #ifdef WIN32
-    if (hotfixinfo) cJSON_AddStringToObject(wm_inv,"hotfixes","yes"); else cJSON_AddStringToObject(wm_inv,"hotfixes","no");
+    if (m_hotfixes) cJSON_AddStringToObject(wm_inv,"hotfixes","yes"); else cJSON_AddStringToObject(wm_inv,"hotfixes","no");
 #endif
     // Database synchronization values
     cJSON_AddNumberToObject(wm_inv,"sync_max_eps",sync_max_eps);
