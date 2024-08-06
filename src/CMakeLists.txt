@@ -9,12 +9,9 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.c
 
 project(wazuh-agent)
 
-add_executable(wazuh-agent agent/src/main.cpp)
-
 add_subdirectory(agent)
 
-target_include_directories(wazuh-agent PUBLIC ${CMAKE_SOURCE_DIR}/agent/include)
-
+add_executable(wazuh-agent agent/src/main.cpp)
 target_link_libraries(wazuh-agent agent)
 
 if(BUILD_TESTS)
