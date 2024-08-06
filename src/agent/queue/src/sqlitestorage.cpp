@@ -29,7 +29,8 @@ SQLiteStorage::~SQLiteStorage() {}
 void SQLiteStorage::InitializeTable(const std::string& tableName)
 {
     // TODO: all queries should be in the same place.
-    constexpr std::string_view CREATE_TABLE_QUERY {"CREATE TABLE IF NOT EXISTS {} (message TEXT NOT NULL);"};
+    constexpr std::string_view CREATE_TABLE_QUERY {
+        "CREATE TABLE IF NOT EXISTS {} (module TEXT, message TEXT NOT NULL);"};
     auto createTableQuery = fmt::format(CREATE_TABLE_QUERY, tableName);
     std::lock_guard<std::mutex> lock(m_mutex);
     try
@@ -56,11 +57,11 @@ void SQLiteStorage::releaseDatabaseAccess()
     m_cv.notify_one();
 }
 
-void SQLiteStorage::Store(const json& message, const std::string& tableName)
+void SQLiteStorage::Store(const json& message, const std::string& tableName, const std::string& moduleName)
 {
     waitForDatabaseAccess();
-    constexpr std::string_view INSERT_QUERY {"INSERT INTO {} (message) VALUES (?);"};
-    std::string insertQuery = fmt::format(INSERT_QUERY, tableName);
+    constexpr std::string_view INSERT_QUERY {"INSERT INTO {} (module, message) VALUES (\"{}\", ?);"};
+    std::string insertQuery = fmt::format(INSERT_QUERY, tableName, moduleName);
     SQLite::Statement query = SQLite::Statement(*m_db, insertQuery);
 
     if (message.is_array())
@@ -75,7 +76,7 @@ void SQLiteStorage::Store(const json& message, const std::string& tableName)
             }
             catch (const SQLite::Exception& e)
             {
-                std::cerr << "2 " << e.what() << '\n';
+                std::cerr << "Error SqliteStorage Store: " << e.what() << '\n';
             }
             // Reset the query to reuse it for the next message
             query.reset();
@@ -104,6 +105,7 @@ json SQLiteStorage::Retrieve(int id, const std::string& tableName)
         json message;
         if (query.executeStep())
         {
+            // TODO: Pending retrieve module
             message = json::parse(query.getColumn(0).getString());
         }
         else
@@ -114,31 +116,69 @@ json SQLiteStorage::Retrieve(int id, const std::string& tableName)
     }
     catch (const SQLite::Exception& e)
     {
-        std::cerr << "Error retrieving message: " << e.what() << std::endl;
-        throw;
+        std::cerr << "Error SQLiteStorage retrieve: " << e.what() << std::endl;
+        return {};
     }
 }
 
-json SQLiteStorage::RetrieveMultiple(int n, const std::string& tableName)
+json SQLiteStorage::RetrieveMultiple(int n, const std::string& tableName, const std::string& moduleName)
 {
+    std::string selectQuery;
+    if (moduleName.empty())
+    {
+        constexpr std::string_view SELECT_MULTIPLE_QUERY {"SELECT module, message FROM {} ORDER BY rowid ASC LIMIT ?;"};
+        selectQuery = fmt::format(SELECT_MULTIPLE_QUERY, tableName);
+    }
+    else
+    {
+        constexpr std::string_view SELECT_QUERY {
+            "SELECT module, message FROM {} WHERE module LIKE \"{}\" ORDER BY rowid ASC LIMIT ?;"};
+        selectQuery = fmt::format(SELECT_QUERY, tableName, moduleName);
+    }
+
     try
     {
-        constexpr std::string_view SELECT_MULTIPLE_QUERY {"SELECT message FROM {} ORDER BY rowid ASC LIMIT ?;"};
-        std::string selectQuery = fmt::format(SELECT_MULTIPLE_QUERY, tableName);
         SQLite::Statement query(*m_db, selectQuery);
         query.bind(1, n);
         json messages = json::array();
         while (query.executeStep())
         {
-            messages.push_back(json::parse(query.getColumn(0).getString()));
+            // getting data json
+            std::string dataString;
+            std::string moduleString;
+
+            // TODO: recheck type!
+            if (query.getColumnCount() == 2 && query.getColumn(1).getType() == 3 && query.getColumn(0).getType() == 3)
+            {
+                moduleString = query.getColumn(0).getString();
+                dataString = query.getColumn(1).getString();
+
+                json outputJson = {{"module", ""}, {"data", {}}};
+
+                if (!dataString.empty())
+                {
+                    outputJson["data"] = json::parse(dataString);
+                }
+
+                if (!moduleString.empty())
+                {
+                    outputJson["module"] = moduleString;
+                }
+
+                messages.push_back(outputJson);
+            }
         }
-        std::reverse(messages.begin(), messages.end());
+
+        if (!messages.empty())
+        {
+            std::reverse(messages.begin(), messages.end());
+        }
         return messages;
     }
     catch (const SQLite::Exception& e)
     {
-        std::cerr << "Error retrieving multiple messages: " << e.what() << std::endl;
-        throw;
+        std::cerr << "Error SQLiteStorage retrieve multiple: " << e.what() << std::endl;
+        return {};
     }
 }
 
@@ -157,8 +197,8 @@ int SQLiteStorage::Remove(int id, const std::string& tableName)
     }
     catch (const SQLite::Exception& e)
     {
-        std::cerr << "Error removing message: " << e.what() << std::endl;
-        throw;
+        std::cerr << "Error SQLiteStorage remove: " << e.what() << std::endl;
+        return {};
     }
 }
 
@@ -180,8 +220,8 @@ int SQLiteStorage::RemoveMultiple(int n, const std::string& tableName)
     }
     catch (const SQLite::Exception& e)
     {
-        std::cerr << "Error removing multiple messages: " << e.what() << std::endl;
-        throw;
+        std::cerr << "Error SQLiteStorage remove multiple: " << e.what() << std::endl;
+        return {};
     }
 }
 
@@ -201,7 +241,7 @@ int SQLiteStorage::GetElementCount(const std::string& tableName)
     }
     catch (const SQLite::Exception& e)
     {
-        std::cerr << "Error getting element count: " << e.what() << std::endl;
-        throw;
+        std::cerr << "Error SQLiteStorage get element count: " << e.what() << std::endl;
+        return {};
     }
 }

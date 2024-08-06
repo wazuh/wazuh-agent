@@ -29,9 +29,11 @@ class Message
 public:
     MessageType type;
     nlohmann::json data;
-    Message(MessageType t, nlohmann::json d)
+    std::string moduleName;
+    Message(MessageType t, nlohmann::json d, std::string mN = "")
         : type(t)
         , data(d)
+        , moduleName(mN)
     {
     }
 };

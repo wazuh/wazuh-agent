@@ -17,7 +17,7 @@ add_executable(test_queue
 target_link_libraries(test_queue
     ${GTEST_LIBRARIES}
     ${GTEST_MAIN_LIBRARIES}
-    queue_test
+    queue
     SQLiteCpp
     nlohmann_json::nlohmann_json
     fmt::fmt)

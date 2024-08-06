@@ -61,8 +61,15 @@ public:
         : m_maxItems(size)
         , m_timeout(timeout)
     {
-        m_persistenceDest = PersistenceFactory::createPersistence(
-            "SQLite3", {static_cast<std::string>(DEFAULT_DB_PATH), m_vMessageTypeStrings});
+        try
+        {
+            m_persistenceDest = PersistenceFactory::createPersistence(
+                "SQLite3", {static_cast<std::string>(DEFAULT_DB_PATH), m_vMessageTypeStrings});
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "Error creating persistence: " << e.what() << '\n';
+        }
     }
 
     // Delete copy constructor
@@ -99,7 +106,7 @@ public:
      * @param type
      * @return Message
      */
-    Message getLastMessage(MessageType type);
+    Message getLastMessage(MessageType type, const std::string module = "");
 
     /**
      * @brief Returns N messages from a queue
@@ -108,7 +115,7 @@ public:
      * @param messageQuantity quantity of messages to return
      * @return Message Json data othe messages fetched
      */
-    Message getNMessages(MessageType type, int messageQuantity);
+    Message getNMessages(MessageType type, int messageQuantity, const std::string moduleName = "");
 
     /**
      * @brief deletes a message from a queue

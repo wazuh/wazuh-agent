@@ -24,7 +24,6 @@
 class SQLiteStorage : public Persistence
 {
 public:
-
     SQLiteStorage(const std::string& dbName, const std::vector<std::string> tableName);
 
     // Delete copy constructor
@@ -49,8 +48,9 @@ public:
      *
      * @param message The JSON message to store.
      */
-    void Store(const json& message, const std::string& tableName) override;
+    void Store(const json& message, const std::string& tableName, const std::string& moduleName = "") override;
 
+    // TODO: pending tests!
     /**
      * @brief Retrieve a JSON message by its ID.
      *
@@ -65,7 +65,7 @@ public:
      * @param n The number of messages to retrieve.
      * @return A vector of retrieved JSON messages.
      */
-    json RetrieveMultiple(int n, const std::string& tableName) override;
+    json RetrieveMultiple(int n, const std::string& tableName, const std::string& moduleName = "") override;
 
     /**
      * @brief Remove a JSON message by its ID.
@@ -127,7 +127,6 @@ private:
 
     // TODO: should it be atomic?
     bool m_db_in_use = false;
-
 };
 
 #endif // SQLITE_STORAGE_H

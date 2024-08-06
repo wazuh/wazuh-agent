@@ -6,7 +6,7 @@
 
 int main()
 {
-    MultiTypeQueue queue(10);
+    MultiTypeQueue queue(100);
 
     return 0;
 }

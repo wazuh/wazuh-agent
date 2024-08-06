@@ -27,11 +27,6 @@ bool MultiTypeQueue::timeoutPush(Message message, bool shouldWait)
             m_cv.wait_for(
                 lock, m_timeout, [&, this] { return m_persistenceDest->GetElementCount(sMessageType) < m_maxItems; });
         }
-        // FIXME
-        //  else
-        //  {
-        //      std::cout << "Can failed because os full queue" << std::endl;
-        //  }
 
         auto storedMessages = m_persistenceDest->GetElementCount(sMessageType);
         size_t spaceAvailable = (m_maxItems > storedMessages) ? m_maxItems - storedMessages : 0;
@@ -46,7 +41,7 @@ bool MultiTypeQueue::timeoutPush(Message message, bool shouldWait)
                 {
                     for (const auto& singleMessageData : messageData)
                     {
-                        m_persistenceDest->Store(singleMessageData, sMessageType);
+                        m_persistenceDest->Store(singleMessageData, sMessageType, message.moduleName);
                         m_cv.notify_all();
                     }
                 }
@@ -57,7 +52,7 @@ bool MultiTypeQueue::timeoutPush(Message message, bool shouldWait)
             }
             else
             {
-                m_persistenceDest->Store(message.data, m_mapMessageTypeName.at(message.type));
+                m_persistenceDest->Store(message.data, m_mapMessageTypeName.at(message.type), message.moduleName);
                 m_cv.notify_all();
             }
         }
@@ -77,13 +72,17 @@ void MultiTypeQueue::timeoutPush(std::vector<Message> messages)
     }
 }
 
-Message MultiTypeQueue::getLastMessage(MessageType type)
+Message MultiTypeQueue::getLastMessage(MessageType type, const std::string moduleName)
 {
-    Message result(type, {});
+    Message result(type, "{}"_json, moduleName);
     // std::unique_lock<std::mutex> mapLock(m_mapMutex);
     if (m_mapMessageTypeName.contains(type))
     {
-        result.data = m_persistenceDest->RetrieveMultiple(1, m_mapMessageTypeName.at(type));
+        auto resultData = m_persistenceDest->RetrieveMultiple(1, m_mapMessageTypeName.at(type), moduleName);
+        if (!resultData.empty())
+        {
+            result.data = resultData;
+        }
     }
     else
     {
@@ -93,12 +92,12 @@ Message MultiTypeQueue::getLastMessage(MessageType type)
     return result;
 }
 
-Message MultiTypeQueue::getNMessages(MessageType type, int messageQuantity)
+Message MultiTypeQueue::getNMessages(MessageType type, int messageQuantity, const std::string moduleName)
 {
     Message result(type, {});
     if (m_mapMessageTypeName.contains(type))
     {
-        result.data = m_persistenceDest->RetrieveMultiple(messageQuantity, m_mapMessageTypeName.at(type));
+        result.data = m_persistenceDest->RetrieveMultiple(messageQuantity, m_mapMessageTypeName.at(type), moduleName);
     }
     else
     {

@@ -137,9 +137,8 @@ TEST_F(QueueTest, SinglePushGetNotEmpty)
     auto typeReceived = messageResponse.type;
     EXPECT_TRUE(typeSend == typeReceived);
 
-    auto dataResponse = messageResponse.data[0].template get<std::string>();
-    auto dataToSend = messageToSend.data.template get<std::string>();
-    EXPECT_EQ(dataResponse, dataToSend);
+    auto dataResponse = messageResponse.data.at(0).at("data");
+    EXPECT_EQ(dataResponse, baseDataContent);
 
     EXPECT_FALSE(queue.isEmptyByType(MessageType::STATELESS));
 }
@@ -158,9 +157,8 @@ TEST_F(QueueTest, SinglePushPopEmpty)
     auto typeReceived = messageResponse.type;
     EXPECT_TRUE(typeSend == typeReceived);
 
-    auto dataResponse = messageResponse.data[0].template get<std::string>();
-    auto dataToSend = messageToSend.data.template get<std::string>();
-    EXPECT_EQ(dataResponse, dataToSend);
+    auto dataResponse = messageResponse.data.at(0).at("data");
+    EXPECT_EQ(dataResponse, baseDataContent);
 
     queue.popLastMessage(MessageType::STATELESS);
     EXPECT_TRUE(queue.isEmptyByType(MessageType::STATELESS));
@@ -193,10 +191,35 @@ TEST_F(QueueTest, SingleGetPopOnEmpty)
 
     auto messageResponse = queue.getLastMessage(MessageType::STATEFUL);
     EXPECT_EQ(messageResponse.type, MessageType::STATEFUL);
-    EXPECT_EQ(messageResponse.data[0], nullptr);
+    EXPECT_EQ(messageResponse.data, "{}"_json);
 
     queue.popLastMessage(MessageType::STATEFUL);
     EXPECT_TRUE(queue.isEmptyByType(MessageType::STATEFUL));
+}
+
+TEST_F(QueueTest, SinglePushGetWithModule)
+{
+    MultiTypeQueue queue(BIG_QUEUE_QTTY);
+    const MessageType messageType {MessageType::STATELESS};
+    const std::string moduleFakeName = "fake-module";
+    const std::string moduleName = "module";
+    const Message messageToSend {messageType, baseDataContent, moduleName};
+
+    queue.timeoutPush(messageToSend);
+    auto messageResponseWrongModule = queue.getLastMessage(MessageType::STATELESS, moduleFakeName);
+
+    auto typeSend = messageToSend.type;
+    auto typeReceived = messageResponseWrongModule.type;
+    EXPECT_TRUE(typeSend == typeReceived);
+
+    EXPECT_EQ(messageResponseWrongModule.data, "{}"_json);
+
+    auto messageResponseCorrectModule = queue.getLastMessage(MessageType::STATELESS, moduleName);
+
+    auto dataResponse = messageResponseCorrectModule.data.at(0).at("data");
+    EXPECT_EQ(dataResponse, baseDataContent);
+
+    EXPECT_EQ(moduleName, messageResponseCorrectModule.moduleName);
 }
 
 // Push, get and check while the queue is full
@@ -368,7 +391,7 @@ TEST_F(QueueTest, MultiplePushSeveralSingleGets)
     for (int i : {0, 1, 2})
     {
         auto messageResponse = queue.getLastMessage(MessageType::STATELESS);
-        auto responseData = messageResponse.data[0].template get<std::string>();
+        auto responseData = messageResponse.data.at(0).at("data");
         auto sentData = messageToSend.data[i].template get<std::string>();
         EXPECT_EQ(responseData, sentData);
         queue.popLastMessage(MessageType::STATELESS);
