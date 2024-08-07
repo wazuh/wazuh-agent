@@ -16,56 +16,6 @@
 using tcp = boost::asio::ip::tcp;
 using json = nlohmann::json;
 
-namespace
-{
-    boost::asio::awaitable<void> MessageProcessingTask(const std::string host,
-                                                       const std::string port,
-                                                       const std::string target,
-                                                       const std::string& token,
-                                                       std::queue<std::string>& messageQueue)
-    {
-        using namespace std::chrono_literals;
-
-        auto executor = co_await boost::asio::this_coro::executor;
-        boost::asio::steady_timer timer(executor);
-        boost::asio::ip::tcp::resolver resolver(executor);
-
-        while (true)
-        {
-            boost::beast::error_code ec;
-            boost::asio::ip::tcp::socket socket(executor);
-
-            auto const results = co_await resolver.async_resolve(host, port, boost::asio::use_awaitable);
-            co_await boost::asio::async_connect(socket, results, boost::asio::use_awaitable);
-
-            while (true)
-            {
-                std::string message;
-                {
-                    if (messageQueue.empty())
-                    {
-                        timer.expires_after(100ms);
-                        co_await timer.async_wait(boost::asio::use_awaitable);
-                        continue;
-                    }
-                    message = std::move(messageQueue.front());
-                    messageQueue.pop();
-                }
-
-                auto req = http_client::CreateHttpRequest(boost::beast::http::verb::post, target, host, token, message);
-
-                co_await http_client::Co_PerformHttpRequest(socket, req, ec);
-
-                if (ec)
-                {
-                    socket.close();
-                    break;
-                }
-            }
-        }
-    }
-} // namespace
-
 namespace communicator
 {
     constexpr int TokenPreExpirySecs = 2;
@@ -135,47 +85,8 @@ namespace communicator
 
     boost::asio::awaitable<void> Communicator::GetCommandsFromManager()
     {
-        using namespace std::chrono_literals;
-
-        auto executor = co_await boost::asio::this_coro::executor;
-        boost::asio::steady_timer timer(executor);
-        boost::asio::ip::tcp::resolver resolver(executor);
-
-        std::string url = "/commands";
-
-        while (true)
-        {
-            boost::asio::ip::tcp::socket socket(executor);
-
-            auto const results = co_await resolver.async_resolve(m_managerIp, m_port, boost::asio::use_awaitable);
-
-            boost::system::error_code code;
-            co_await boost::asio::async_connect(
-                socket, results, boost::asio::redirect_error(boost::asio::use_awaitable, code));
-
-            if (code != boost::system::errc::success)
-            {
-                std::cerr << "Connect failed: " << code.message() << std::endl;
-                socket.close();
-                std::this_thread::sleep_for(1000ms);
-                continue;
-            }
-
-            auto req = http_client::CreateHttpRequest(http::verb::get, url, m_managerIp, m_token);
-
-            boost::beast::error_code ec;
-            co_await http_client::Co_PerformHttpRequest(socket, req, ec);
-
-            if (ec)
-            {
-                socket.close();
-                continue;
-            }
-
-            auto duration = std::chrono::milliseconds(1000);
-            timer.expires_after(duration);
-            co_await timer.async_wait(boost::asio::use_awaitable);
-        }
+        co_await http_client::Co_MessageProcessingTask(
+            boost::beast::http::verb::get, m_managerIp, m_port, "/commands", m_token, {});
     }
 
     boost::asio::awaitable<void> Communicator::WaitForTokenExpirationAndAuthenticate()
@@ -211,11 +122,13 @@ namespace communicator
 
     boost::asio::awaitable<void> Communicator::StatefulMessageProcessingTask(std::queue<std::string>& messageQueue)
     {
-        co_await MessageProcessingTask(m_managerIp, m_port, "/stateful", m_token, messageQueue);
+        co_await http_client::Co_MessageProcessingTask(
+            boost::beast::http::verb::post, m_managerIp, m_port, "/stateful", m_token, {});
     }
 
     boost::asio::awaitable<void> Communicator::StatelessMessageProcessingTask(std::queue<std::string>& messageQueue)
     {
-        co_await MessageProcessingTask(m_managerIp, m_port, "/stateless", m_token, messageQueue);
+        co_await http_client::Co_MessageProcessingTask(
+            boost::beast::http::verb::post, m_managerIp, m_port, "/stateless", m_token, {});
     }
 } // namespace communicator

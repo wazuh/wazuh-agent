@@ -64,6 +64,56 @@ namespace http_client
         std::cout << "Response body: " << boost::beast::buffers_to_string(res.body().data()) << std::endl;
     }
 
+    boost::asio::awaitable<void> Co_MessageProcessingTask(const boost::beast::http::verb method,
+                                                          const std::string host,
+                                                          const std::string port,
+                                                          const std::string target,
+                                                          const std::string& token,
+                                                          std::function<std::string()> messageGetter)
+    {
+        using namespace std::chrono_literals;
+
+        auto executor = co_await boost::asio::this_coro::executor;
+        boost::asio::steady_timer timer(executor);
+        boost::asio::ip::tcp::resolver resolver(executor);
+
+        while (true)
+        {
+            boost::asio::ip::tcp::socket socket(executor);
+
+            const auto results = co_await resolver.async_resolve(host, port, boost::asio::use_awaitable);
+
+            boost::system::error_code code;
+            co_await boost::asio::async_connect(
+                socket, results, boost::asio::redirect_error(boost::asio::use_awaitable, code));
+
+            if (code != boost::system::errc::success)
+            {
+                std::cerr << "Connect failed: " << code.message() << std::endl;
+                socket.close();
+                std::this_thread::sleep_for(1000ms);
+                continue;
+            }
+
+            const auto message = messageGetter ? messageGetter() : "";
+
+            auto req = CreateHttpRequest(method, target, host, token, message);
+
+            boost::beast::error_code ec;
+            co_await Co_PerformHttpRequest(socket, req, ec);
+
+            if (ec)
+            {
+                socket.close();
+                break;
+            }
+
+            auto duration = std::chrono::milliseconds(1000);
+            timer.expires_after(duration);
+            co_await timer.async_wait(boost::asio::use_awaitable);
+        }
+    }
+
     boost::beast::http::response<boost::beast::http::dynamic_body>
     SendHttpRequest(const boost::beast::http::verb method,
                     const std::string& ip,
