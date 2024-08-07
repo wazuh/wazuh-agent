@@ -1,7 +1,7 @@
 #include <communicator.hpp>
 
-#include <boost/asio/connect.hpp>
-#include <boost/asio/ip/tcp.hpp>
+#include <http_client.hpp>
+
 #include <boost/asio/ssl/stream.hpp>
 #include <boost/beast/version.hpp>
 #include <jwt-cpp/jwt.h>
@@ -18,32 +18,6 @@ using json = nlohmann::json;
 
 namespace
 {
-    boost::beast::http::request<boost::beast::http::string_body>
-    CreateHttpRequest(const boost::beast::http::verb method,
-                      const std::string& url,
-                      const std::string& host,
-                      const std::string& token,
-                      const std::string& body = "")
-    {
-        boost::beast::http::request<boost::beast::http::string_body> req {method, url, 11};
-        req.set(boost::beast::http::field::host, host);
-        req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-
-        if (!token.empty())
-        {
-            req.set(boost::beast::http::field::authorization, "Bearer " + token);
-        }
-
-        if (!body.empty())
-        {
-            req.set(boost::beast::http::field::content_type, "application/json");
-            req.body() = body;
-            req.prepare_payload();
-        }
-
-        return req;
-    }
-
     boost::asio::awaitable<void> PerformHttpRequest(boost::asio::ip::tcp::socket& socket,
                                                     boost::beast::http::request<boost::beast::http::string_body>& req,
                                                     boost::beast::error_code& ec)
@@ -106,7 +80,7 @@ namespace
                     messageQueue.pop();
                 }
 
-                auto req = CreateHttpRequest(boost::beast::http::verb::post, target, host, token, message);
+                auto req = http_client::CreateHttpRequest(boost::beast::http::verb::post, target, host, token, message);
 
                 co_await PerformHttpRequest(socket, req, ec);
 
@@ -187,7 +161,7 @@ namespace communicator
             tcp::socket socket(io_context);
             boost::asio::connect(socket, results.begin(), results.end());
 
-            auto req = CreateHttpRequest(method, url, m_managerIp, token, body);
+            auto req = http_client::CreateHttpRequest(method, url, m_managerIp, token, body);
 
             http::write(socket, req);
 
@@ -251,7 +225,7 @@ namespace communicator
                 continue;
             }
 
-            auto req = CreateHttpRequest(http::verb::get, url, m_managerIp, m_token);
+            auto req = http_client::CreateHttpRequest(http::verb::get, url, m_managerIp, m_token);
 
             boost::beast::error_code ec;
             co_await PerformHttpRequest(socket, req, ec);
