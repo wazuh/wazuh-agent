@@ -2,9 +2,9 @@
 
 #include <communicator.hpp>
 
-TEST(CommunicatorTest, GetTokenRemainingSecsTest)
+TEST(CommunicatorTest, CommunicatorConstructor)
 {
-    // TO DO
+    EXPECT_NO_THROW(communicator::Communicator communicator("uuid", nullptr));
 }
 
 int main(int argc, char** argv)
