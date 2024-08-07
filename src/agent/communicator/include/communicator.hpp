@@ -42,10 +42,6 @@ namespace communicator
         const long GetTokenRemainingSecs() const;
 
         http::status SendAuthenticationRequest();
-        http::response<http::dynamic_body> sendHttpRequest(const http::verb method,
-                                                           const std::string& url,
-                                                           const std::string& token = "",
-                                                           const std::string& body = "");
 
         void Stop();
     };

@@ -19,4 +19,13 @@ namespace http_client
     Co_PerformHttpRequest(boost::asio::ip::tcp::socket& socket,
                           boost::beast::http::request<boost::beast::http::string_body>& req,
                           boost::beast::error_code& ec);
+
+
+    boost::beast::http::response<boost::beast::http::dynamic_body>
+    SendHttpRequest(const boost::beast::http::verb method,
+                    const std::string& ip,
+                    const std::string& port,
+                    const std::string& url,
+                    const std::string& token,
+                    const std::string& body);
 } // namespace http_client

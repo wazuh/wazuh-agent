@@ -91,8 +91,9 @@ namespace communicator
     http::status Communicator::SendAuthenticationRequest()
     {
         json bodyJson = {{"uuid", m_uuid}};
-        http::response<http::dynamic_body> res =
-            sendHttpRequest(http::verb::post, "/authentication", "", bodyJson.dump());
+
+        const auto res = http_client::SendHttpRequest(
+            boost::beast::http::verb::post, m_managerIp, m_port, "/authentication", "", bodyJson.dump());
 
         if (res.result() != http::status::ok)
         {
@@ -116,43 +117,6 @@ namespace communicator
         }
 
         return res.result();
-    }
-
-    http::response<http::dynamic_body> Communicator::sendHttpRequest(const http::verb method,
-                                                                     const std::string& url,
-                                                                     const std::string& token,
-                                                                     const std::string& body)
-    {
-        http::response<http::dynamic_body> res;
-        try
-        {
-            boost::asio::io_context io_context;
-            tcp::resolver resolver(io_context);
-            auto const results = resolver.resolve(m_managerIp, m_port);
-
-            tcp::socket socket(io_context);
-            boost::asio::connect(socket, results.begin(), results.end());
-
-            auto req = http_client::CreateHttpRequest(method, url, m_managerIp, token, body);
-
-            http::write(socket, req);
-
-            beast::flat_buffer buffer;
-
-            http::read(socket, buffer, res);
-
-            std::cout << "Response code: " << res.result_int() << std::endl;
-            std::cout << "Response body: " << beast::buffers_to_string(res.body().data()) << std::endl;
-        }
-        catch (std::exception const& e)
-        {
-            std::cerr << "Error: " << e.what() << std::endl;
-            res.result(http::status::internal_server_error);
-            beast::ostream(res.body()) << "Internal server error: " << e.what();
-            res.prepare_payload();
-            std::cerr << "Result: " << res.result_int() << std::endl;
-        }
-        return res;
     }
 
     const long Communicator::GetTokenRemainingSecs() const
