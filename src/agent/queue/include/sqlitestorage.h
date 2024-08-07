@@ -50,14 +50,13 @@ public:
      */
     void Store(const json& message, const std::string& tableName, const std::string& moduleName = "") override;
 
-    // TODO: pending tests!
     /**
      * @brief Retrieve a JSON message by its ID.
      *
      * @param id The ID of the message to retrieve.
      * @return The retrieved JSON message.
      */
-    json Retrieve(int id, const std::string& tableName) override;
+    json Retrieve(int id, const std::string& tableName, const std::string& moduleName = "") override;
 
     /**
      * @brief Retrieve multiple JSON messages.
@@ -71,24 +70,26 @@ public:
      * @brief Remove a JSON message by its ID.
      *
      * @param id The ID of the message to remove.
+     * @param moduleName
      * @return The number of removed elements.
      */
-    int Remove(int id, const std::string& tableName) override;
+    int Remove(int id, const std::string& tableName, const std::string& moduleName = "") override;
 
     /**
      * @brief Remove multiple JSON messages.
      *
      * @param n The number of messages to remove.
+     * @param moduleName
      * @return The number of removed elements.
      */
-    int RemoveMultiple(int n, const std::string& tableName) override;
+    int RemoveMultiple(int n, const std::string& tableName, const std::string& moduleName = "") override;
 
     /**
      * @brief Get the number of elements in the table.
      *
      * @return The number of elements in the table.
      */
-    int GetElementCount(const std::string& tableName) override;
+    int GetElementCount(const std::string& tableName, const std::string& moduleName = "") override;
 
 private:
     /**

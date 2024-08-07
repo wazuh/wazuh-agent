@@ -16,6 +16,7 @@ class SQLiteStorageTest : public ::testing::Test
 protected:
     const std::string dbName = "testdb.db";
     const std::string tableName = "test_table";
+    const std::string moduleName = "moduleX";
     const std::vector<std::string> m_vMessageTypeStrings {"test_table", "test_table2"};
     SQLiteStorage* storage;
 
@@ -62,6 +63,17 @@ TEST_F(SQLiteStorageTest, StoreSingleMessage)
     EXPECT_EQ(storage->GetElementCount(tableName), 2);
 }
 
+TEST_F(SQLiteStorageTest, StoreSingleMessageWithModule)
+{
+    json message = {{"key", "value"}};
+    EXPECT_NO_THROW(storage->Store(message, tableName, moduleName));
+    EXPECT_EQ(storage->GetElementCount(tableName), 1);
+    EXPECT_NO_THROW(storage->Store(message, tableName));
+    EXPECT_EQ(storage->GetElementCount(tableName), 2);
+    EXPECT_EQ(storage->GetElementCount(tableName, "fakeModuleName"), 0);
+    EXPECT_EQ(storage->GetElementCount(tableName, moduleName), 1);
+}
+
 TEST_F(SQLiteStorageTest, StoreMultipleMessages)
 {
     json messages = json::array();
@@ -76,7 +88,17 @@ TEST_F(SQLiteStorageTest, RetrieveMessage)
     json message = {{"key", "value"}};
     storage->Store(message, tableName);
     json retrievedMessage = storage->Retrieve(1, tableName);
-    EXPECT_EQ(retrievedMessage["key"], "value");
+    EXPECT_EQ(retrievedMessage.at("data").at("key"), "value");
+}
+
+TEST_F(SQLiteStorageTest, RetrieveMessageWithModule)
+{
+    json message = {{"key", "value"}};
+    storage->Store(message, tableName, moduleName);
+    json retrievedMessage = storage->Retrieve(1, tableName, "fakeModuleName");
+    EXPECT_EQ(retrievedMessage.at("data"), nullptr);
+    retrievedMessage = storage->Retrieve(1, tableName, moduleName);
+    EXPECT_EQ(retrievedMessage.at("data").at("key"), "value");
 }
 
 TEST_F(SQLiteStorageTest, RetrieveMultipleMessages)
@@ -97,6 +119,18 @@ TEST_F(SQLiteStorageTest, RemoveMessage)
     EXPECT_EQ(storage->GetElementCount(tableName), 0);
 }
 
+TEST_F(SQLiteStorageTest, RemoveMessageWithModule)
+{
+    json message = {{"key", "value"}};
+    storage->Store(message, tableName, moduleName);
+    EXPECT_EQ(storage->Remove(1, tableName), 1);
+    storage->Store(message, tableName, moduleName);
+    EXPECT_EQ(storage->Remove(1, tableName, "fakeModuleName"), 1);
+    EXPECT_EQ(storage->GetElementCount(tableName), 1);
+    EXPECT_EQ(storage->Remove(1, tableName, moduleName), 1);
+    EXPECT_EQ(storage->GetElementCount(tableName), 0);
+}
+
 TEST_F(SQLiteStorageTest, RemoveMultipleMessages)
 {
     json messages = json::array();
@@ -104,6 +138,18 @@ TEST_F(SQLiteStorageTest, RemoveMultipleMessages)
     messages.push_back({{"key", "value2"}});
     storage->Store(messages, tableName);
     EXPECT_EQ(storage->RemoveMultiple(2, tableName), 2);
+    EXPECT_EQ(storage->GetElementCount(tableName), 0);
+}
+
+TEST_F(SQLiteStorageTest, RemoveMultipleMessagesWithModule)
+{
+    json messages = json::array();
+    messages.push_back({{"key", "value1"}});
+    messages.push_back({{"key", "value2"}});
+    storage->Store(messages, tableName, moduleName);
+    EXPECT_EQ(storage->RemoveMultiple(2, tableName, "fakeModuleName"), 2);
+    EXPECT_EQ(storage->GetElementCount(tableName), 2);
+    EXPECT_EQ(storage->RemoveMultiple(2, tableName, moduleName), 2);
     EXPECT_EQ(storage->GetElementCount(tableName), 0);
 }
 

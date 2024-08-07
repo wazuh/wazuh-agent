@@ -93,26 +93,52 @@ void SQLiteStorage::Store(const json& message, const std::string& tableName, con
     releaseDatabaseAccess();
 }
 
-json SQLiteStorage::Retrieve(int id, const std::string& tableName)
+// TODO: we shouldn't use rowid outside the table itself
+json SQLiteStorage::Retrieve(int id, const std::string& tableName, const std::string& moduleName)
 {
+
+    std::string selectQuery;
+    if (moduleName.empty())
+    {
+        constexpr std::string_view SELECT_QUERY {"SELECT module, message FROM {} WHERE rowid = ?;"};
+        selectQuery = fmt::format(SELECT_QUERY, tableName);
+    }
+    else
+    {
+        constexpr std::string_view SELECT_QUERY {
+            "SELECT module, message FROM {} WHERE module LIKE \"{}\" AND rowid = ?;"};
+        selectQuery = fmt::format(SELECT_QUERY, tableName, moduleName);
+    }
+
     try
     {
-        constexpr std::string_view SELECT_QUERY {"SELECT message FROM {} WHERE rowid = ?;"};
-        std::string selectQuery = fmt::format(SELECT_QUERY, tableName);
         SQLite::Statement query(*m_db, selectQuery);
-        // TODO: delte id?
         query.bind(1, id);
-        json message;
+        json outputJson = {{"module", ""}, {"data", {}}};
         if (query.executeStep())
         {
-            // TODO: Pending retrieve module
-            message = json::parse(query.getColumn(0).getString());
+            std::string dataString;
+            std::string moduleString;
+
+            if (query.getColumnCount() == 2 && query.getColumn(1).getType() == SQLite::TEXT &&
+                query.getColumn(0).getType() == SQLite::TEXT)
+            {
+                moduleString = query.getColumn(0).getString();
+                dataString = query.getColumn(1).getString();
+
+                if (!dataString.empty())
+                {
+                    outputJson["data"] = json::parse(dataString);
+                }
+
+                if (!moduleString.empty())
+                {
+                    outputJson["module"] = moduleString;
+                }
+            }
         }
-        else
-        {
-            message = nullptr;
-        }
-        return message;
+
+        return outputJson;
     }
     catch (const SQLite::Exception& e)
     {
@@ -131,9 +157,9 @@ json SQLiteStorage::RetrieveMultiple(int n, const std::string& tableName, const 
     }
     else
     {
-        constexpr std::string_view SELECT_QUERY {
+        constexpr std::string_view SELECT_MULTIPLE_QUERY {
             "SELECT module, message FROM {} WHERE module LIKE \"{}\" ORDER BY rowid ASC LIMIT ?;"};
-        selectQuery = fmt::format(SELECT_QUERY, tableName, moduleName);
+        selectQuery = fmt::format(SELECT_MULTIPLE_QUERY, tableName, moduleName);
     }
 
     try
@@ -147,8 +173,8 @@ json SQLiteStorage::RetrieveMultiple(int n, const std::string& tableName, const 
             std::string dataString;
             std::string moduleString;
 
-            // TODO: recheck type!
-            if (query.getColumnCount() == 2 && query.getColumn(1).getType() == 3 && query.getColumn(0).getType() == 3)
+            if (query.getColumnCount() == 2 && query.getColumn(1).getType() == SQLite::TEXT &&
+                query.getColumn(0).getType() == SQLite::TEXT)
             {
                 moduleString = query.getColumn(0).getString();
                 dataString = query.getColumn(1).getString();
@@ -182,12 +208,22 @@ json SQLiteStorage::RetrieveMultiple(int n, const std::string& tableName, const 
     }
 }
 
-int SQLiteStorage::Remove(int id, const std::string& tableName)
+int SQLiteStorage::Remove(int id, const std::string& tableName, const std::string& moduleName)
 {
-    constexpr std::string_view DELETE_QUERY {"DELETE FROM {} WHERE rowid = ?;"};
+    std::string deleteQuery;
+    if (moduleName.empty())
+    {
+        constexpr std::string_view DELETE_QUERY {"DELETE FROM {} WHERE rowid = ?;"};
+        deleteQuery = fmt::format(DELETE_QUERY, tableName);
+    }
+    else
+    {
+        constexpr std::string_view DELETE_QUERY {"DELETE FROM {} WHERE module LIKE \"{}\" AND rowid = ?;"};
+        deleteQuery = fmt::format(DELETE_QUERY, tableName, moduleName);
+    }
+
     try
     {
-        std::string deleteQuery = fmt::format(DELETE_QUERY, tableName);
         SQLite::Statement query(*m_db, deleteQuery);
         query.bind(1, id);
         SQLite::Transaction transaction(*m_db);
@@ -202,16 +238,27 @@ int SQLiteStorage::Remove(int id, const std::string& tableName)
     }
 }
 
-int SQLiteStorage::RemoveMultiple(int n, const std::string& tableName)
+int SQLiteStorage::RemoveMultiple(int n, const std::string& tableName, const std::string& moduleName)
 {
-    constexpr std::string_view DELETE_MULTIPLE_QUERY {
-        "DELETE FROM {} WHERE rowid IN (SELECT rowid FROM {} ORDER BY rowid ASC LIMIT ?);"};
+    std::string deleteQuery;
+    if (moduleName.empty())
+    {
+        constexpr std::string_view DELETE_MULTIPLE_QUERY {
+            "DELETE FROM {} WHERE rowid IN (SELECT rowid FROM {} ORDER BY rowid ASC LIMIT ?);"};
+        deleteQuery = fmt::format(DELETE_MULTIPLE_QUERY, tableName, tableName);
+    }
+    else
+    {
+        constexpr std::string_view DELETE_MULTIPLE_QUERY {
+            "DELETE FROM {} WHERE module LIKE \"{}\" AND rowid IN (SELECT rowid FROM {} WHERE module LIKE \"{}\" ORDER BY rowid ASC LIMIT ?);"};
+        deleteQuery = fmt::format(DELETE_MULTIPLE_QUERY, tableName, moduleName, tableName, moduleName);
+    }
+
     try
     {
         waitForDatabaseAccess();
-        SQLite::Transaction transaction(*m_db);
-        std::string deleteQuery = fmt::format(DELETE_MULTIPLE_QUERY, tableName, tableName);
         SQLite::Statement query(*m_db, deleteQuery);
+        SQLite::Transaction transaction(*m_db);
         query.bind(1, n);
         query.exec();
         transaction.commit();
@@ -225,12 +272,22 @@ int SQLiteStorage::RemoveMultiple(int n, const std::string& tableName)
     }
 }
 
-int SQLiteStorage::GetElementCount(const std::string& tableName)
+int SQLiteStorage::GetElementCount(const std::string& tableName, const std::string& moduleName)
 {
-    constexpr std::string_view COUNT_QUERY {"SELECT COUNT(*) FROM {}"};
+    std::string countQuery;
+    if (moduleName.empty())
+    {
+        constexpr std::string_view COUNT_QUERY {"SELECT COUNT(*) FROM {}"};
+        countQuery = fmt::format(COUNT_QUERY, tableName);
+    }
+    else
+    {
+        constexpr std::string_view COUNT_QUERY {"SELECT COUNT(*) FROM {} WHERE module LIKE \"{}\""};
+        countQuery = fmt::format(COUNT_QUERY, tableName, moduleName);
+    }
+
     try
     {
-        std::string countQuery = fmt::format(COUNT_QUERY, tableName);
         SQLite::Statement query(*m_db, countQuery);
         int count = 0;
         if (query.executeStep())
