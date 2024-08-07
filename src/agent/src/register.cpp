@@ -2,6 +2,7 @@
 
 #include <agent_info.hpp>
 #include <configuration_parser.hpp>
+#include <http_client.hpp>
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
@@ -19,70 +20,11 @@ using json = nlohmann::json;
 
 namespace registration
 {
-    http::response<http::dynamic_body> sendRequest(const std::string& managerIp,
-                                                   const std::string& port,
-                                                   const http::verb& method,
-                                                   const std::string& url,
-                                                   const std::string& token,
-                                                   const std::string& body,
-                                                   const std::string& user_pass)
-    {
-        http::response<http::dynamic_body> res;
-        try
-        {
-            boost::asio::io_context io_context;
-            tcp::resolver resolver(io_context);
-            auto const results = resolver.resolve(managerIp, port);
-
-            tcp::socket socket(io_context);
-            boost::asio::connect(socket, results.begin(), results.end());
-
-            http::request<http::string_body> req {method, url, 11};
-            req.set(http::field::host, managerIp);
-            req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-            req.set(http::field::accept, "application/json");
-
-            if (!token.empty())
-            {
-                req.set(http::field::authorization, "Bearer " + token);
-            }
-
-            if (!user_pass.empty())
-            {
-                req.set(http::field::authorization, "Basic " + user_pass);
-            }
-
-            if (!body.empty())
-            {
-                req.set(http::field::content_type, "application/json");
-                req.body() = body;
-                req.prepare_payload();
-            }
-
-            http::write(socket, req);
-
-            beast::flat_buffer buffer;
-
-            http::read(socket, buffer, res);
-
-            std::cout << "Response code: " << res.result_int() << std::endl;
-            std::cout << "Response body: " << beast::buffers_to_string(res.body().data()) << std::endl;
-        }
-        catch (std::exception const& e)
-        {
-            std::cerr << "Error: " << e.what() << std::endl;
-            res.result(http::status::internal_server_error);
-            beast::ostream(res.body()) << "Internal server error: " << e.what();
-            res.prepare_payload();
-        }
-        return res;
-    }
-
     std::pair<http::status, std::string>
     SendAuthenticationRequest(const std::string& managerIp, const std::string& port, const std::string& user_pass)
     {
         const http::response<http::dynamic_body> res =
-            sendRequest(managerIp, port, http::verb::post, "/authenticate", "", "", user_pass);
+            http_client::SendRequest(managerIp, port, http::verb::post, "/authenticate", "", "", user_pass);
         const auto token = beast::buffers_to_string(res.body().data());
 
         return {res.result(), token};
@@ -108,7 +50,7 @@ namespace registration
         }
 
         const http::response<http::dynamic_body> res =
-            sendRequest(managerIp, port, http::verb::post, "/agents", token, bodyJson.dump(), "");
+            http_client::SendRequest(managerIp, port, http::verb::post, "/agents", token, bodyJson.dump(), "");
         return res.result();
     }
 

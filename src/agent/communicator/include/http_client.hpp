@@ -16,6 +16,14 @@ namespace http_client
                       const std::string& body = "",
                       const std::string& user_pass = "");
 
+    boost::beast::http::response<boost::beast::http::dynamic_body> SendRequest(const std::string& managerIp,
+                                                                               const std::string& port,
+                                                                               const boost::beast::http::verb& method,
+                                                                               const std::string& url,
+                                                                               const std::string& token,
+                                                                               const std::string& body,
+                                                                               const std::string& user_pass);
+
     boost::asio::awaitable<void>
     Co_PerformHttpRequest(boost::asio::ip::tcp::socket& socket,
                           boost::beast::http::request<boost::beast::http::string_body>& req,
