@@ -15,8 +15,13 @@ namespace configuration
         }
         catch (const std::exception& e)
         {
-            std::cout << "Error parsing wazuh.conf file: " << e.what() << std::endl;
-            throw;
+            std::cout << "Using localhost:8080 due to error parsing wazuh.conf file: " << e.what() << std::endl;
+
+            tbl = toml::parse_str(
+                R"([agent]
+                port = "8080"
+                manager_ip = "localhost")",
+                toml::spec::v(1, 0, 0));
         }
     }
 
