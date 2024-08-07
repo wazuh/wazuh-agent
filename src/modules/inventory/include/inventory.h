@@ -19,107 +19,114 @@
 #define log(a, b) log1(a, b, __FILE__, __LINE__)
 
 class Inventory {
-public:
+    public:
+        static Inventory& instance()
+        {
+            static Inventory s_instance;
+            return s_instance;
+        }
 
-    Inventory();
+        void *run();
+        int setup(const Configuration & config);
+        void stop();
+        std::string command(const std::string & query);
+        std::string name() const;
 
-    void *run();
-    int setup(const Configuration & config);
-    void stop();
-    std::string command(const std::string & query);
-    std::string name() const;
+    private:
+        Inventory();
+        ~Inventory() = default;
+        Inventory(const Inventory&) = delete;
+        Inventory& operator=(const Inventory&) = delete;
 
-private:
+        void init(const std::shared_ptr<ISysInfo>& spInfo,
+                    const std::string& dbPath,
+                    const std::string& normalizerConfigPath,
+                    const std::string& normalizerType);
 
-    void init(const std::shared_ptr<ISysInfo>& spInfo,
-                const std::string& dbPath,
-                const std::string& normalizerConfigPath,
-                const std::string& normalizerType);
+        void destroy();
+        void push(const std::string& data);
 
-    void destroy();
-    void push(const std::string& data);
+        std::string getCreateStatement() const;
+        nlohmann::json getOSData();
+        nlohmann::json getHardwareData();
+        nlohmann::json getNetworkData();
+        nlohmann::json getPortsData();
 
-    std::string getCreateStatement() const;
-    nlohmann::json getOSData();
-    nlohmann::json getHardwareData();
-    nlohmann::json getNetworkData();
-    nlohmann::json getPortsData();
+        void updateChanges(const std::string& table,
+                            const nlohmann::json& values);
+        void notifyChange(ReturnTypeCallback result,
+                            const nlohmann::json& data,
+                            const std::string& table);
+        void scanHardware();
+        void scanOs();
+        void scanNetwork();
+        void scanPackages();
+        void scanHotfixes();
+        void scanPorts();
+        void scanProcesses();
+        void syncOs();
+        void syncHardware();
+        void syncNetwork();
+        void syncPackages();
+        void syncHotfixes();
+        void syncPorts();
+        void syncProcesses();
+        void scan();
+        void sync();
+        void syncLoop(std::unique_lock<std::mutex>& lock);
+        void syncAlgorithm();
 
-    void updateChanges(const std::string& table,
-                        const nlohmann::json& values);
-    void notifyChange(ReturnTypeCallback result,
-                        const nlohmann::json& data,
-                        const std::string& table);
-    void scanHardware();
-    void scanOs();
-    void scanNetwork();
-    void scanPackages();
-    void scanHotfixes();
-    void scanPorts();
-    void scanProcesses();
-    void syncOs();
-    void syncHardware();
-    void syncNetwork();
-    void syncPackages();
-    void syncHotfixes();
-    void syncPorts();
-    void syncProcesses();
-    void scan();
-    void sync();
-    void syncLoop(std::unique_lock<std::mutex>& lock);
-    void syncAlgorithm();
+        static void log1(const modules_log_level_t level, const std::string& log, const char* file, int line);
+        static void logError(const std::string& log);
 
-    static void log1(const modules_log_level_t level, const std::string& log, const char* file, int line);
-    static void logError(const std::string& log);
+        std::shared_ptr<ISysInfo>                   m_spInfo;
+        std::function<void(const std::string&)>     m_reportDiffFunction;
+        std::function<void(const std::string&)>     m_reportSyncFunction;
+        std::chrono::seconds                        m_intervalValue;
+        std::chrono::seconds                        m_currentIntervalValue;
+        bool                                        m_enabled;      // Main switch
+        bool                                        m_scanOnStart;  // Scan always on start
+        bool                                        m_hardware;     // Hardware inventory
+        bool                                        m_os;           // OS inventory
+        bool                                        m_network;      // Network inventory
+        bool                                        m_packages;     // Installed packages inventory
+        bool                                        m_ports;        // Opened ports inventory
+        bool                                        m_portsAll;     // Scan only listening ports or all
+        bool                                        m_processes;    // Running processes inventory
+        bool                                        m_hotfixes;     // Windows hotfixes installed
+        bool                                        m_stopping;
+        bool                                        m_notify;
+        std::unique_ptr<DBSync>                     m_spDBSync;
+        std::condition_variable                     m_cv;
+        std::mutex                                  m_mutex;
+        std::unique_ptr<InvNormalizer>              m_spNormalizer;
+        std::string                                 m_scanTime;
+        std::chrono::seconds                        m_lastSyncMsg;
 
-std::shared_ptr<ISysInfo>                   m_spInfo;
-std::function<void(const std::string&)>     m_reportDiffFunction;
-std::function<void(const std::string&)>     m_reportSyncFunction;
-std::chrono::seconds                        m_intervalValue;
-std::chrono::seconds                        m_currentIntervalValue;
-bool                                        m_enabled;      // Main switch
-bool                                        m_scanOnStart;  // Scan always on start
-bool                                        m_hardware;     // Hardware inventory
-bool                                        m_os;           // OS inventory
-bool                                        m_network;      // Network inventory
-bool                                        m_packages;     // Installed packages inventory
-bool                                        m_ports;        // Opened ports inventory
-bool                                        m_portsAll;     // Scan only listening ports or all
-bool                                        m_processes;    // Running processes inventory
-bool                                        m_hotfixes;     // Windows hotfixes installed
-bool                                        m_stopping;
-bool                                        m_notify;
-std::unique_ptr<DBSync>                     m_spDBSync;
-std::condition_variable                     m_cv;
-std::mutex                                  m_mutex;
-std::unique_ptr<InvNormalizer>              m_spNormalizer;
-std::string                                 m_scanTime;
-std::chrono::seconds                        m_lastSyncMsg;
+        void wm_inv_send_diff_message(const std::string& data);
+        void wm_inv_send_dbsync_message(const std::string& data);
+        void wm_inv_send_message(std::string data, const char queue_id);
+        void wm_inv_log_config();
 
-    void wm_inv_send_diff_message(const std::string& data);
-    void wm_inv_send_dbsync_message(const std::string& data);
-    void wm_inv_send_message(std::string data, const char queue_id);
-    void wm_inv_log_config();
-
-    void inventory_start();
-    int inventory_sync_message(const char* data);
+        void inventory_start();
+        int inventory_sync_message(const char* data);
 
 
-    cJSON * wm_inv_dump();
+        cJSON * wm_inv_dump();
 
-    unsigned int interval;
+        unsigned int interval;
 
-    std::string dbPath;
-    std::string normalizerConfigPath;
-    std::string normalizerType;
+        std::string dbPath;
+        std::string normalizerConfigPath;
+        std::string normalizerType;
 
-    pthread_cond_t inv_stop_condition;
-    pthread_mutex_t inv_stop_mutex;
-    bool need_shutdown_wait;
-    pthread_mutex_t inv_reconnect_mutex;
-    bool shutdown_process_started;
+        pthread_cond_t inv_stop_condition;
+        pthread_mutex_t inv_stop_mutex;
+        bool need_shutdown_wait;
+        pthread_mutex_t inv_reconnect_mutex;
+        bool shutdown_process_started;
 
-    long sync_max_eps;            // Maximum events per second for synchronization messages.
+        long sync_max_eps;            // Maximum events per second for synchronization messages.
 
 };
 
