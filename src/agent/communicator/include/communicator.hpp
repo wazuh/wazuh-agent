@@ -36,7 +36,7 @@ namespace communicator
         long long m_tokenExpTimeInSeconds;
         std::string m_token;
 
-        const long GetTokenRemainingSecs() const;
+        long GetTokenRemainingSecs() const;
 
         http::status SendAuthenticationRequest();
 

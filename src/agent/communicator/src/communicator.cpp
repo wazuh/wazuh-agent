@@ -69,7 +69,7 @@ namespace communicator
         return res.result();
     }
 
-    const long Communicator::GetTokenRemainingSecs() const
+    long Communicator::GetTokenRemainingSecs() const
     {
         auto now = std::chrono::system_clock::now();
         auto now_seconds = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
