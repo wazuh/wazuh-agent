@@ -1,5 +1,6 @@
 #pragma once
 
+#include <boost/asio.hpp>
 #include <boost/beast.hpp>
 
 #include <string>
@@ -14,4 +15,8 @@ namespace http_client
                       const std::string& body = "",
                       const std::string& user_pass = "");
 
+    boost::asio::awaitable<void>
+    Co_PerformHttpRequest(boost::asio::ip::tcp::socket& socket,
+                          boost::beast::http::request<boost::beast::http::string_body>& req,
+                          boost::beast::error_code& ec);
 } // namespace http_client

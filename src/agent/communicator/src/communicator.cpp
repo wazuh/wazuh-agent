@@ -18,34 +18,6 @@ using json = nlohmann::json;
 
 namespace
 {
-    boost::asio::awaitable<void> PerformHttpRequest(boost::asio::ip::tcp::socket& socket,
-                                                    boost::beast::http::request<boost::beast::http::string_body>& req,
-                                                    boost::beast::error_code& ec)
-    {
-        // HTTP request
-        co_await boost::beast::http::async_write(
-            socket, req, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
-        if (ec)
-        {
-            std::cerr << "Error writing request (" << std::to_string(ec.value()) << "): " << ec.message() << std::endl;
-            co_return;
-        }
-
-        // HTTP response
-        boost::beast::flat_buffer buffer;
-        boost::beast::http::response<boost::beast::http::dynamic_body> res;
-        co_await boost::beast::http::async_read(
-            socket, buffer, res, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
-        if (ec)
-        {
-            std::cerr << "Error reading response. Response code: " << res.result_int() << std::endl;
-            co_return;
-        }
-
-        std::cout << "Response code: " << res.result_int() << std::endl;
-        std::cout << "Response body: " << boost::beast::buffers_to_string(res.body().data()) << std::endl;
-    }
-
     boost::asio::awaitable<void> MessageProcessingTask(const std::string host,
                                                        const std::string port,
                                                        const std::string target,
@@ -82,7 +54,7 @@ namespace
 
                 auto req = http_client::CreateHttpRequest(boost::beast::http::verb::post, target, host, token, message);
 
-                co_await PerformHttpRequest(socket, req, ec);
+                co_await http_client::Co_PerformHttpRequest(socket, req, ec);
 
                 if (ec)
                 {
@@ -228,7 +200,7 @@ namespace communicator
             auto req = http_client::CreateHttpRequest(http::verb::get, url, m_managerIp, m_token);
 
             boost::beast::error_code ec;
-            co_await PerformHttpRequest(socket, req, ec);
+            co_await http_client::Co_PerformHttpRequest(socket, req, ec);
 
             if (ec)
             {
