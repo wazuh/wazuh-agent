@@ -12,7 +12,9 @@ namespace http_client
                       const std::string& body,
                       const std::string& user_pass)
     {
-        boost::beast::http::request<boost::beast::http::string_body> req {method, url, 11};
+        static constexpr int HttpVersion1_1 = 11;
+
+        boost::beast::http::request<boost::beast::http::string_body> req {method, url, HttpVersion1_1};
         req.set(boost::beast::http::field::host, host);
         req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
         req.set(boost::beast::http::field::accept, "application/json");
