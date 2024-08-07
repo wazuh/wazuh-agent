@@ -26,8 +26,8 @@ class Pool {
 public:
     Pool();
 
-    template <Module T>
-    void addModule(shared_ptr<T> module);
+    template <typename T>
+    void addModule(T& module);
 
     shared_ptr<ModuleWrapper> getModule(const string & name);
     void start();
