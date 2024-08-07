@@ -15,7 +15,7 @@ find_package(Boost REQUIRED COMPONENTS asio beast)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
 
-add_library(communicator src/communicator.cpp)
+add_library(communicator src/communicator.cpp src/http_client.cpp)
 target_include_directories(communicator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${JWT_CPP_INCLUDE_DIRS})
 target_link_libraries(communicator PUBLIC Boost::asio PRIVATE Boost::beast OpenSSL::SSL OpenSSL::Crypto)
 
