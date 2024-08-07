@@ -2,8 +2,8 @@
 
 #include <http_client.hpp>
 
-#include <boost/asio/ssl/stream.hpp>
-#include <boost/beast/version.hpp>
+#include <boost/asio.hpp>
+#include <boost/beast.hpp>
 #include <jwt-cpp/jwt.h>
 #include <nlohmann/json.hpp>
 

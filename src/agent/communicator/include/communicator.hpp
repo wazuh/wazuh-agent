@@ -1,16 +1,13 @@
 #pragma once
 
-#include <boost/asio.hpp>
-#include <boost/beast.hpp>
-#include <boost/beast/core.hpp>
-#include <boost/beast/http.hpp>
+#include <boost/asio/awaitable.hpp>
+#include <boost/beast/http/status.hpp>
 
 #include <atomic>
 #include <functional>
 #include <mutex>
 #include <queue>
 #include <string>
-#include <string_view>
 
 namespace beast = boost::beast;
 namespace http = beast::http;
