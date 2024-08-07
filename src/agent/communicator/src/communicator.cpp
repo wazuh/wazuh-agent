@@ -13,9 +13,6 @@
 #include <queue>
 #include <thread>
 
-using tcp = boost::asio::ip::tcp;
-using json = nlohmann::json;
-
 namespace communicator
 {
     constexpr int TokenPreExpirySecs = 2;
@@ -38,19 +35,19 @@ namespace communicator
         Stop();
     }
 
-    http::status Communicator::SendAuthenticationRequest()
+    boost::beast::http::status Communicator::SendAuthenticationRequest()
     {
-        json bodyJson = {{"uuid", m_uuid}};
+        const nlohmann::json bodyJson = {{"uuid", m_uuid}};
 
         const auto res = http_client::SendHttpRequest(
             boost::beast::http::verb::post, m_managerIp, m_port, "/authentication", "", bodyJson.dump());
 
-        if (res.result() != http::status::ok)
+        if (res.result() != boost::beast::http::status::ok)
         {
             return res.result();
         }
 
-        m_token = beast::buffers_to_string(res.body().data());
+        m_token = boost::beast::buffers_to_string(res.body().data());
 
         auto decoded = jwt::decode(m_token);
         // Extract the expiration time claim (exp)
@@ -97,10 +94,10 @@ namespace communicator
 
         while (true)
         {
-            http::status result = SendAuthenticationRequest();
+            boost::beast::http::status result = SendAuthenticationRequest();
 
             auto duration = std::chrono::milliseconds(1000);
-            if (result != http::status::ok)
+            if (result != boost::beast::http::status::ok)
             {
                 std::cerr << "Authentication failed." << std::endl;
             }

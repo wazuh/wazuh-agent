@@ -9,9 +9,6 @@
 #include <queue>
 #include <string>
 
-namespace beast = boost::beast;
-namespace http = beast::http;
-
 namespace communicator
 {
     class Communicator
@@ -38,7 +35,7 @@ namespace communicator
 
         long GetTokenRemainingSecs() const;
 
-        http::status SendAuthenticationRequest();
+        boost::beast::http::status SendAuthenticationRequest();
 
         void Stop();
     };
