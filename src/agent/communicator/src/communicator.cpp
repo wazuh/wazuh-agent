@@ -49,12 +49,10 @@ namespace communicator
 
         m_token = boost::beast::buffers_to_string(res.body().data());
 
-        auto decoded = jwt::decode(m_token);
-        // Extract the expiration time claim (exp)
-        if (decoded.has_payload_claim("exp"))
+        if (const auto decoded = jwt::decode(m_token); decoded.has_payload_claim("exp"))
         {
-            auto exp_claim = decoded.get_payload_claim("exp");
-            auto exp_time = exp_claim.as_date();
+            const auto exp_claim = decoded.get_payload_claim("exp");
+            const auto exp_time = exp_claim.as_date();
             m_tokenExpTimeInSeconds =
                 std::chrono::duration_cast<std::chrono::seconds>(exp_time.time_since_epoch()).count();
         }
@@ -68,9 +66,8 @@ namespace communicator
 
     long Communicator::GetTokenRemainingSecs() const
     {
-        auto now = std::chrono::system_clock::now();
-        auto now_seconds = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
-
+        const auto now = std::chrono::system_clock::now();
+        const auto now_seconds = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
         return std::max(0L, static_cast<long>(m_tokenExpTimeInSeconds - now_seconds));
     }
 
@@ -89,22 +86,24 @@ namespace communicator
     boost::asio::awaitable<void> Communicator::WaitForTokenExpirationAndAuthenticate()
     {
         using namespace std::chrono_literals;
-        auto executor = co_await boost::asio::this_coro::executor;
+        const auto executor = co_await boost::asio::this_coro::executor;
         boost::asio::steady_timer timer(executor);
 
         while (true)
         {
-            boost::beast::http::status result = SendAuthenticationRequest();
-
-            auto duration = std::chrono::milliseconds(1000);
-            if (result != boost::beast::http::status::ok)
+            const auto duration = [this]()
             {
-                std::cerr << "Authentication failed." << std::endl;
-            }
-            else
-            {
-                duration = std::chrono::milliseconds((GetTokenRemainingSecs() - TokenPreExpirySecs) * 1000);
-            }
+                const auto result = SendAuthenticationRequest();
+                if (result != boost::beast::http::status::ok)
+                {
+                    std::cerr << "Authentication failed." << std::endl;
+                    return std::chrono::milliseconds(1000);
+                }
+                else
+                {
+                    return std::chrono::milliseconds((GetTokenRemainingSecs() - TokenPreExpirySecs) * 1000);
+                }
+            }();
 
             timer.expires_after(duration);
             co_await timer.async_wait(boost::asio::use_awaitable);
