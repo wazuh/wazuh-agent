@@ -79,7 +79,7 @@ boost::asio::awaitable<void> StatefulMessageProcessingTask(const std::string& ma
                                                            const std::string& token,
                                                            std::queue<std::string>& messageQueue)
 {
-    co_await MessageProcessingTask(manager_ip, port, "/stateless", token, messageQueue);
+    co_await MessageProcessingTask(manager_ip, port, "/stateful", token, messageQueue);
 }
 
 boost::asio::awaitable<void> StatelessMessageProcessingTask(const std::string& manager_ip,
@@ -87,5 +87,5 @@ boost::asio::awaitable<void> StatelessMessageProcessingTask(const std::string& m
                                                             const std::string& token,
                                                             std::queue<std::string>& messageQueue)
 {
-    co_await MessageProcessingTask(manager_ip, port, "/stateful", token, messageQueue);
+    co_await MessageProcessingTask(manager_ip, port, "/stateless", token, messageQueue);
 }
