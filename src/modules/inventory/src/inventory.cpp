@@ -71,7 +71,9 @@ int Inventory::setup(const Configuration & config) {
 
     sync_max_eps = 10;      // Database synchronization number of events per second (default value)
 
-    m_intervalValue = std::chrono::seconds{WM_INVENTORY_DEFAULT_INTERVAL};
+    // interval = WM_INVENTORY_DEFAULT_INTERVAL;
+    interval = 10;
+    m_intervalValue = std::chrono::seconds{interval};
 
     m_enabled = true;
 
