@@ -56,10 +56,6 @@ char * wurl_http_get(const char * url, size_t max_size, const long timeout);
 curl_response *wurl_http_request(char *method, char **headers, const char *url, const char *payload, size_t max_size, const long timeout);
 
 void wurl_free_response(curl_response* response);
-#ifndef CLIENT
-int wurl_request_bz2(const char * url, const char * dest, const char * header, const char * data, const long timeout, char *sha256);
-int wurl_request_uncompress_bz2_gz(const char * url, const char * dest, const char * header, const char * data, const long timeout, char *sha256);
-#endif
 
 /* Check download module availability */
 int wurl_check_connection();

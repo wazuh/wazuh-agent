@@ -19,11 +19,7 @@
 #include "wazuh_modules/wmodules.h"
 #include "os_net/os_net.h"
 
-#ifdef CLIENT
 #include "agent/wm_agent_upgrade_agent.h"
-#else
-#include "manager/wm_agent_upgrade_manager.h"
-#endif
 
 /**
  * Module main function. It won't return
@@ -53,11 +49,8 @@ STATIC DWORD WINAPI wm_agent_upgrade_main(void *arg) {
 #else
 STATIC void *wm_agent_upgrade_main(wm_agent_upgrade* upgrade_config) {
 #endif
-    #ifdef CLIENT
-        wm_agent_upgrade_start_agent_module(&upgrade_config->agent_config, upgrade_config->enabled);
-    #else
-        wm_agent_upgrade_start_manager_module(&upgrade_config->manager_config, upgrade_config->enabled);
-    #endif
+wm_agent_upgrade_start_agent_module(&upgrade_config->agent_config, upgrade_config->enabled);
+
 
 #ifdef WIN32
     return 0;
@@ -68,9 +61,6 @@ STATIC void *wm_agent_upgrade_main(wm_agent_upgrade* upgrade_config) {
 
 STATIC void wm_agent_upgrade_destroy(wm_agent_upgrade* upgrade_config) {
     mtinfo(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_MODULE_FINISHED);
-    #ifndef CLIENT
-    os_free(upgrade_config->manager_config.wpk_repository);
-    #endif
     os_free(upgrade_config);
 }
 
@@ -83,13 +73,6 @@ STATIC cJSON *wm_agent_upgrade_dump(const wm_agent_upgrade* upgrade_config){
     } else {
         cJSON_AddStringToObject(wm_info,"enabled","no");
     }
-    #ifndef CLIENT
-    cJSON_AddNumberToObject(wm_info, "max_threads", upgrade_config->manager_config.max_threads);
-    cJSON_AddNumberToObject(wm_info, "chunk_size", upgrade_config->manager_config.chunk_size);
-    if (upgrade_config->manager_config.wpk_repository) {
-        cJSON_AddStringToObject(wm_info, "wpk_repository", upgrade_config->manager_config.wpk_repository);
-    }
-    #else
     if (upgrade_config->agent_config.enable_ca_verification) {
         cJSON_AddStringToObject(wm_info,"ca_verification","yes");
     } else {
@@ -102,7 +85,6 @@ STATIC cJSON *wm_agent_upgrade_dump(const wm_agent_upgrade* upgrade_config){
         }
         cJSON_AddItemToObject(wm_info,"ca_store",calist);
     }
-    #endif
     cJSON_AddItemToObject(root,"agent-upgrade",wm_info);
     return root;
 }

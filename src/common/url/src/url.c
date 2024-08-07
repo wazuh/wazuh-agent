@@ -373,60 +373,6 @@ char * wurl_http_get(const char * url, size_t max_size, const long timeout) {
 }
 
 #endif
-#ifndef CLIENT
-
-// Request a download of a bzip2 file and uncompress it.
-int wurl_request_bz2(const char * url, const char * dest, const char * header, const char * data, const long timeout, char *sha256) {
-    char compressed_file[OS_SIZE_6144 + 1];
-    int retval = OS_INVALID;
-
-    snprintf(compressed_file, OS_SIZE_6144, "tmp/req-%u", os_random());
-
-    if (wurl_request(url, compressed_file, header, data, timeout)) {
-        return retval;
-
-    } else {
-        os_sha256 filehash = {0};
-        if (sha256 && !OS_SHA256_File(compressed_file, filehash, 'r') && strcmp(sha256, filehash)) {
-            merror("Invalid file integrity for '%s'", compressed_file);
-
-        } else if (bzip2_uncompress(compressed_file, dest)) {
-            merror("Could not uncompress the file downloaded from '%s'", url);
-
-        } else {
-            retval = 0;
-        }
-    }
-
-    if (remove(compressed_file) < 0) {
-        mdebug1("Could not remove '%s'. Error: %d.", compressed_file, errno);
-    }
-
-    return retval;
-}
-
-// Check the compression type of the file and try to download and uncompress it.
-int wurl_request_uncompress_bz2_gz(const char * url, const char * dest, const char * header, const char * data, const long timeout, char *sha256) {
-    int res_url_request;
-    int compress = 0;
-
-    if (wstr_end((char *)url, ".gz")) {
-        compress = 1;
-        res_url_request = wurl_request_gz(url, dest, header, data, timeout, sha256);
-    } else if (wstr_end((char *)url, ".bz2")) {
-        compress = 1;
-        res_url_request = wurl_request_bz2(url, dest, header, data, timeout, sha256);
-    } else {
-        res_url_request = wurl_request(url, dest, header, data, timeout);
-    }
-
-    if (compress == 1 && !res_url_request) {
-        mdebug1("File from URL '%s' was successfully uncompressed into '%s'", url, dest);
-    }
-
-    return res_url_request;
-}
-#endif
 
 curl_response* wurl_http_request(char *method, char **headers, const char* url, const char *payload, size_t max_size, const long timeout) {
     curl_response *response;
