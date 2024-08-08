@@ -20,17 +20,6 @@ using json = nlohmann::json;
 
 namespace
 {
-    std::pair<http::status, std::string>
-    SendAuthenticationRequest(const std::string& managerIp, const std::string& port, const std::string& user_pass)
-    {
-        const auto reqParams =
-            http_client::HttpRequestParams(http::verb::post, managerIp, port, "/authenticate", "", user_pass);
-        const http::response<http::dynamic_body> res = http_client::SendHttpRequest(reqParams);
-        const auto token = beast::buffers_to_string(res.body().data());
-
-        return {res.result(), token};
-    }
-
     http::status SendRegistrationRequest(const std::string& managerIp,
                                          const std::string& port,
                                          const std::string& token,
@@ -83,24 +72,23 @@ namespace registration
 {
     bool RegisterAgent(const UserCredentials& userCredentials, const AgentInfoOptionalData& agentInfoOptionalData)
     {
-
         const configuration::ConfigurationParser configurationParser;
         const auto managerIp = configurationParser.GetConfig<std::string>("agent", "manager_ip");
         const auto port = configurationParser.GetConfig<std::string>("agent", "port");
 
-        const auto [authResultCode, token] =
-            SendAuthenticationRequest(managerIp, port, userCredentials.user + ":" + userCredentials.password);
+        const auto token =
+            http_client::AuthenticateWithUserPassword(managerIp, port, userCredentials.user, userCredentials.password);
 
-        if (authResultCode != http::status::ok)
+        if (!token.has_value())
         {
-            std::cout << "Authentication error: " << authResultCode << std::endl;
+            std::cerr << "Failed to authenticate with the manager" << std::endl;
             return false;
         }
 
         const auto agentInfo = GenerateAgentInfo(agentInfoOptionalData);
 
         if (const auto registrationResultCode = SendRegistrationRequest(
-                managerIp, port, token, agentInfo.GetUUID(), agentInfo.GetName(), agentInfo.GetIP());
+                managerIp, port, token.value(), agentInfo.GetUUID(), agentInfo.GetName(), agentInfo.GetIP());
             registrationResultCode != http::status::ok)
         {
             std::cout << "Registration error: " << registrationResultCode << std::endl;

@@ -2,6 +2,22 @@
 
 #include <iostream>
 
+namespace
+{
+    std::optional<std::string> GetTokenFromResponse(const http_client::HttpRequestParams& reqParams)
+    {
+        const auto res = http_client::SendHttpRequest(reqParams);
+
+        if (res.result() != boost::beast::http::status::ok)
+        {
+            std::cerr << "Error: " << res.result() << std::endl;
+            return std::nullopt;
+        }
+
+        return boost::beast::buffers_to_string(res.body().data());
+    }
+} // namespace
+
 namespace http_client
 {
     boost::beast::http::request<boost::beast::http::string_body> CreateHttpRequest(const HttpRequestParams& params)
@@ -142,5 +158,26 @@ namespace http_client
         }
 
         return res;
+    }
+
+    std::optional<std::string>
+    AuthenticateWithUuid(const std::string& managerIp, const std::string& port, const std::string& uuid)
+    {
+        const std::string uuidKeyValue = "{\"uuid\":\"" + uuid + "\"}";
+        const auto reqParams = http_client::HttpRequestParams(
+            boost::beast::http::verb::post, managerIp, port, "/authentication", "", "", uuidKeyValue);
+
+        return GetTokenFromResponse(reqParams);
+    }
+
+    std::optional<std::string> AuthenticateWithUserPassword(const std::string& managerIp,
+                                                            const std::string& port,
+                                                            const std::string& user,
+                                                            const std::string& password)
+    {
+        const auto reqParams = http_client::HttpRequestParams(
+            boost::beast::http::verb::post, managerIp, port, "/authenticate", "", user + ":" + password);
+
+        return GetTokenFromResponse(reqParams);
     }
 } // namespace http_client

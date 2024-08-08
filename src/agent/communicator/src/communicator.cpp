@@ -37,17 +37,17 @@ namespace communicator
 
     boost::beast::http::status Communicator::SendAuthenticationRequest()
     {
-        const nlohmann::json bodyJson = {{"uuid", m_uuid}};
-        const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::post, m_managerIp, m_port, "/authentication", "", "", bodyJson.dump());
-        const auto res = http_client::SendHttpRequest(reqParams);
+        const auto token = http_client::AuthenticateWithUuid(m_managerIp, m_port, m_uuid);
 
-        if (res.result() != boost::beast::http::status::ok)
+        if (token.has_value())
         {
-            return res.result();
+            m_token = token.value();
         }
-
-        m_token = boost::beast::buffers_to_string(res.body().data());
+        else
+        {
+            std::cerr << "Failed to authenticate with the manager" << std::endl;
+            return boost::beast::http::status::unauthorized;
+        }
 
         if (const auto decoded = jwt::decode(m_token); decoded.has_payload_claim("exp"))
         {
@@ -59,9 +59,10 @@ namespace communicator
         else
         {
             std::cerr << "Token does not contain an 'exp' claim" << std::endl;
+            return boost::beast::http::status::unauthorized;
         }
 
-        return res.result();
+        return boost::beast::http::status::ok;
     }
 
     long Communicator::GetTokenRemainingSecs() const
