@@ -33,48 +33,6 @@ namespace http_client
         return req;
     }
 
-    boost::beast::http::response<boost::beast::http::dynamic_body> SendRequest(const std::string& managerIp,
-                                                                               const std::string& port,
-                                                                               const boost::beast::http::verb& method,
-                                                                               const std::string& url,
-                                                                               const std::string& token,
-                                                                               const std::string& body,
-                                                                               const std::string& user_pass)
-    {
-        boost::beast::http::response<boost::beast::http::dynamic_body> res;
-
-        try
-        {
-            boost::asio::io_context io_context;
-            boost::asio::ip::tcp::resolver resolver(io_context);
-            auto const results = resolver.resolve(managerIp, port);
-
-            boost::asio::ip::tcp::socket socket(io_context);
-            boost::asio::connect(socket, results.begin(), results.end());
-
-            const auto reqParams = HttpRequestParams(method, url, managerIp, token, body, user_pass, port);
-            const auto req = CreateHttpRequest(reqParams);
-
-            boost::beast::http::write(socket, req);
-
-            boost::beast::flat_buffer buffer;
-
-            boost::beast::http::read(socket, buffer, res);
-
-            std::cout << "Response code: " << res.result_int() << std::endl;
-            std::cout << "Response body: " << boost::beast::buffers_to_string(res.body().data()) << std::endl;
-        }
-        catch (std::exception const& e)
-        {
-            std::cerr << "Error: " << e.what() << std::endl;
-            res.result(boost::beast::http::status::internal_server_error);
-            boost::beast::ostream(res.body()) << "Internal server error: " << e.what();
-            res.prepare_payload();
-        }
-
-        return res;
-    }
-
     boost::asio::awaitable<void>
     Co_PerformHttpRequest(boost::asio::ip::tcp::socket& socket,
                           boost::beast::http::request<boost::beast::http::string_body>& req,

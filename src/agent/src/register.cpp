@@ -23,8 +23,9 @@ namespace
     std::pair<http::status, std::string>
     SendAuthenticationRequest(const std::string& managerIp, const std::string& port, const std::string& user_pass)
     {
-        const http::response<http::dynamic_body> res =
-            http_client::SendRequest(managerIp, port, http::verb::post, "/authenticate", "", "", user_pass);
+        const auto reqParams =
+            http_client::HttpRequestParams(http::verb::post, "/authenticate", managerIp, "", "", user_pass, port);
+        const http::response<http::dynamic_body> res = http_client::SendHttpRequest(reqParams);
         const auto token = beast::buffers_to_string(res.body().data());
 
         return {res.result(), token};
@@ -49,8 +50,9 @@ namespace
             bodyJson["ip"] = ip.value();
         }
 
-        const http::response<http::dynamic_body> res =
-            http_client::SendRequest(managerIp, port, http::verb::post, "/agents", token, bodyJson.dump(), "");
+        const auto reqParams =
+            http_client::HttpRequestParams(http::verb::post, "/agents", managerIp, token, bodyJson.dump(), "", port);
+        const http::response<http::dynamic_body> res = http_client::SendHttpRequest(reqParams);
         return res.result();
     }
 
