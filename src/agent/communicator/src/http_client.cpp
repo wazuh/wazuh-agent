@@ -53,7 +53,8 @@ namespace http_client
     boost::asio::awaitable<void>
     Co_PerformHttpRequest(boost::asio::ip::tcp::socket& socket,
                           boost::beast::http::request<boost::beast::http::string_body>& req,
-                          boost::beast::error_code& ec)
+                          boost::beast::error_code& ec,
+                          std::function<void()> onUnauthorized)
     {
         co_await boost::beast::http::async_write(
             socket, req, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
@@ -67,10 +68,16 @@ namespace http_client
         boost::beast::http::response<boost::beast::http::dynamic_body> res;
         co_await boost::beast::http::async_read(
             socket, buffer, res, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+
         if (ec)
         {
             std::cerr << "Error reading response. Response code: " << res.result_int() << std::endl;
             co_return;
+        }
+
+        if (res.result_int() == static_cast<int>(boost::beast::http::status::unauthorized))
+        {
+            onUnauthorized();
         }
 
         std::cout << "Response code: " << res.result_int() << std::endl;
@@ -79,7 +86,8 @@ namespace http_client
 
     boost::asio::awaitable<void> Co_MessageProcessingTask(const std::string& token,
                                                           HttpRequestParams reqParams,
-                                                          std::function<std::string()> messageGetter)
+                                                          std::function<std::string()> messageGetter,
+                                                          std::function<void()> onUnauthorized)
     {
         using namespace std::chrono_literals;
 
@@ -113,7 +121,7 @@ namespace http_client
             auto req = CreateHttpRequest(reqParams);
 
             boost::beast::error_code ec;
-            co_await Co_PerformHttpRequest(socket, req, ec);
+            co_await Co_PerformHttpRequest(socket, req, ec, onUnauthorized);
 
             if (ec)
             {

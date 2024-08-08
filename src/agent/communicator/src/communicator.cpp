@@ -80,9 +80,13 @@ namespace communicator
 
     boost::asio::awaitable<void> Communicator::GetCommandsFromManager()
     {
+        auto onAuthenticationFailed = [this]()
+        {
+            SendAuthenticationRequest();
+        };
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::get, m_managerIp, m_port, "/commands");
-        co_await http_client::Co_MessageProcessingTask(m_token, reqParams, {});
+        co_await http_client::Co_MessageProcessingTask(m_token, reqParams, {}, onAuthenticationFailed);
     }
 
     boost::asio::awaitable<void> Communicator::WaitForTokenExpirationAndAuthenticate()
@@ -120,15 +124,23 @@ namespace communicator
 
     boost::asio::awaitable<void> Communicator::StatefulMessageProcessingTask(std::queue<std::string>& messageQueue)
     {
+        auto onAuthenticationFailed = [this]()
+        {
+            SendAuthenticationRequest();
+        };
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::post, m_managerIp, m_port, "/stateful");
-        co_await http_client::Co_MessageProcessingTask(m_token, reqParams, {});
+        co_await http_client::Co_MessageProcessingTask(m_token, reqParams, {}, onAuthenticationFailed);
     }
 
     boost::asio::awaitable<void> Communicator::StatelessMessageProcessingTask(std::queue<std::string>& messageQueue)
     {
+        auto onAuthenticationFailed = [this]()
+        {
+            SendAuthenticationRequest();
+        };
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::post, m_managerIp, m_port, "/stateless");
-        co_await http_client::Co_MessageProcessingTask(m_token, reqParams, {});
+        co_await http_client::Co_MessageProcessingTask(m_token, reqParams, {}, onAuthenticationFailed);
     }
 } // namespace communicator

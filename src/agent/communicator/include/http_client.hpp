@@ -42,11 +42,13 @@ namespace http_client
     boost::asio::awaitable<void>
     Co_PerformHttpRequest(boost::asio::ip::tcp::socket& socket,
                           boost::beast::http::request<boost::beast::http::string_body>& req,
-                          boost::beast::error_code& ec);
+                          boost::beast::error_code& ec,
+                          std::function<void()> onUnauthorized);
 
     boost::asio::awaitable<void> Co_MessageProcessingTask(const std::string& token,
                                                           HttpRequestParams params,
-                                                          std::function<std::string()> messageGetter);
+                                                          std::function<std::string()> messageGetter,
+                                                          std::function<void()> onUnauthorized);
 
     boost::beast::http::response<boost::beast::http::dynamic_body> SendHttpRequest(const HttpRequestParams& params);
 
