@@ -7,14 +7,11 @@
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <iostream>
 #include <nlohmann/json.hpp>
 
 namespace beast = boost::beast;
 namespace http = beast::http;
-namespace uuids = boost::uuids;
 using tcp = boost::asio::ip::tcp;
 using json = nlohmann::json;
 
@@ -44,33 +41,11 @@ namespace
         const http::response<http::dynamic_body> res = http_client::SendHttpRequest(reqParams);
         return res.result();
     }
-
-    AgentInfo GenerateAgentInfo(const registration::AgentInfoOptionalData& agentInfoOptionalData)
-    {
-        AgentInfo agentInfo;
-        if (agentInfo.GetUUID().empty())
-        {
-            agentInfo.SetUUID(to_string(uuids::random_generator()()));
-        }
-
-        if (agentInfoOptionalData.name.has_value())
-        {
-            agentInfo.SetName(agentInfoOptionalData.name.value());
-        }
-
-        if (agentInfoOptionalData.ip.has_value())
-        {
-            agentInfo.SetIP(agentInfoOptionalData.ip.value());
-        }
-
-        return agentInfo;
-    }
-
 } // namespace
 
 namespace registration
 {
-    bool RegisterAgent(const UserCredentials& userCredentials, const AgentInfoOptionalData& agentInfoOptionalData)
+    bool RegisterAgent(const UserCredentials& userCredentials)
     {
         const configuration::ConfigurationParser configurationParser;
         const auto managerIp = configurationParser.GetConfig<std::string>("agent", "manager_ip");
@@ -85,7 +60,7 @@ namespace registration
             return false;
         }
 
-        const auto agentInfo = GenerateAgentInfo(agentInfoOptionalData);
+        const AgentInfo agentInfo {};
 
         if (const auto registrationResultCode = SendRegistrationRequest(
                 managerIp, port, token.value(), agentInfo.GetUUID(), agentInfo.GetName(), agentInfo.GetIP());

@@ -11,10 +11,11 @@ set(VCPKG_MANIFEST_DIR ${CMAKE_SOURCE_DIR}/../../)
 project(AgentInfo)
 
 find_package(SQLiteCpp REQUIRED)
+find_package(Boost REQUIRED COMPONENTS uuid)
 
 add_library(AgentInfo src/agent_info.cpp src/agent_info_persistance.cpp)
 target_include_directories(AgentInfo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(AgentInfo PRIVATE SQLiteCpp)
+target_link_libraries(AgentInfo PRIVATE SQLiteCpp Boost::uuid)
 
 if(BUILD_TESTS)
     enable_testing()

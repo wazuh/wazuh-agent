@@ -11,11 +11,5 @@ namespace registration
         std::string password;
     };
 
-    struct AgentInfoOptionalData
-    {
-        std::optional<std::string> name;
-        std::optional<std::string> ip;
-    };
-
-    bool RegisterAgent(const UserCredentials& userCredentials, const AgentInfoOptionalData& agentInfoOptionalData);
+    bool RegisterAgent(const UserCredentials& userCredentials);
 } // namespace registration

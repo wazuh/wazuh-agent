@@ -1,4 +1,5 @@
 #include <agent.hpp>
+#include <agent_info.hpp>
 #include <cmd_ln_parser.hpp>
 #include <register.hpp>
 
@@ -17,17 +18,22 @@ int main(int argc, char* argv[])
         {
             const auto user = cmdParser.getOptionValue("--user");
             const auto password = cmdParser.getOptionValue("--password");
-            const auto name = cmdParser.OptionExists("--name")
-                                  ? std::make_optional<std::string>(cmdParser.getOptionValue("--name"))
-                                  : std::nullopt;
-            const auto ip = cmdParser.OptionExists("--ip")
-                                ? std::make_optional<std::string>(cmdParser.getOptionValue("--ip"))
-                                : std::nullopt;
+
+            AgentInfo agentInfo;
+
+            if (cmdParser.OptionExists("--name"))
+            {
+                agentInfo.SetName(cmdParser.getOptionValue("--name"));
+            }
+
+            if (cmdParser.OptionExists("--ip"))
+            {
+                agentInfo.SetIP(cmdParser.getOptionValue("--ip"));
+            }
 
             const registration::UserCredentials userCredentials {user, password};
-            const registration::AgentInfoOptionalData agentInfoOptionalData {name, ip};
 
-            if (registration::RegisterAgent(userCredentials, agentInfoOptionalData))
+            if (registration::RegisterAgent(userCredentials))
             {
                 std::cout << "Agent registered." << std::endl;
             }
