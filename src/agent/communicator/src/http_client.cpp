@@ -170,22 +170,22 @@ namespace http_client
     }
 
     std::optional<std::string>
-    AuthenticateWithUuid(const std::string& managerIp, const std::string& port, const std::string& uuid)
+    AuthenticateWithUuid(const std::string& host, const std::string& port, const std::string& uuid)
     {
         const std::string uuidKeyValue = "{\"uuid\":\"" + uuid + "\"}";
         const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::post, managerIp, port, "/authentication", "", "", uuidKeyValue);
+            boost::beast::http::verb::post, host, port, "/authentication", "", "", uuidKeyValue);
 
         return GetTokenFromResponse(reqParams);
     }
 
-    std::optional<std::string> AuthenticateWithUserPassword(const std::string& managerIp,
+    std::optional<std::string> AuthenticateWithUserPassword(const std::string& host,
                                                             const std::string& port,
                                                             const std::string& user,
                                                             const std::string& password)
     {
         const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::post, managerIp, port, "/authenticate", "", user + ":" + password);
+            boost::beast::http::verb::post, host, port, "/authenticate", "", user + ":" + password);
 
         return GetTokenFromResponse(reqParams);
     }

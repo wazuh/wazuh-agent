@@ -19,7 +19,7 @@ namespace configuration
 
             tbl = toml::parse_str(
                 R"([agent]
-                port = "8080"
+                manager_port = "8080"
                 manager_ip = "localhost")",
                 toml::spec::v(1, 0, 0));
         }

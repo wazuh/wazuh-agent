@@ -53,8 +53,8 @@ namespace http_client
     boost::beast::http::response<boost::beast::http::dynamic_body> SendHttpRequest(const HttpRequestParams& params);
 
     std::optional<std::string>
-    AuthenticateWithUuid(const std::string& managerIp, const std::string& port, const std::string& uuid);
-    std::optional<std::string> AuthenticateWithUserPassword(const std::string& managerIp,
+    AuthenticateWithUuid(const std::string& host, const std::string& port, const std::string& uuid);
+    std::optional<std::string> AuthenticateWithUserPassword(const std::string& host,
                                                             const std::string& port,
                                                             const std::string& user,
                                                             const std::string& password);

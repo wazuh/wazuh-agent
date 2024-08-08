@@ -17,7 +17,7 @@ using json = nlohmann::json;
 
 namespace
 {
-    http::status SendRegistrationRequest(const std::string& managerIp,
+    http::status SendRegistrationRequest(const std::string& host,
                                          const std::string& port,
                                          const std::string& token,
                                          const std::string& uuid,
@@ -37,7 +37,7 @@ namespace
         }
 
         const auto reqParams =
-            http_client::HttpRequestParams(http::verb::post, managerIp, port, "/agents", token, "", bodyJson.dump());
+            http_client::HttpRequestParams(http::verb::post, host, port, "/agents", token, "", bodyJson.dump());
         const http::response<http::dynamic_body> res = http_client::SendHttpRequest(reqParams);
         return res.result();
     }
@@ -49,10 +49,10 @@ namespace registration
     {
         const configuration::ConfigurationParser configurationParser;
         const auto managerIp = configurationParser.GetConfig<std::string>("agent", "manager_ip");
-        const auto port = configurationParser.GetConfig<std::string>("agent", "port");
+        const auto managerPort = configurationParser.GetConfig<std::string>("agent", "manager_port");
 
-        const auto token =
-            http_client::AuthenticateWithUserPassword(managerIp, port, userCredentials.user, userCredentials.password);
+        const auto token = http_client::AuthenticateWithUserPassword(
+            managerIp, managerPort, userCredentials.user, userCredentials.password);
 
         if (!token.has_value())
         {
@@ -63,7 +63,7 @@ namespace registration
         const AgentInfo agentInfo {};
 
         if (const auto registrationResultCode = SendRegistrationRequest(
-                managerIp, port, token.value(), agentInfo.GetUUID(), agentInfo.GetName(), agentInfo.GetIP());
+                managerIp, managerPort, token.value(), agentInfo.GetUUID(), agentInfo.GetName(), agentInfo.GetIP());
             registrationResultCode != http::status::ok)
         {
             std::cout << "Registration error: " << registrationResultCode << std::endl;
