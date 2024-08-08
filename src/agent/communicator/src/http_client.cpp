@@ -102,7 +102,9 @@ namespace http_client
             {
                 std::cerr << "Connect failed: " << code.message() << std::endl;
                 socket.close();
-                std::this_thread::sleep_for(1000ms);
+                const auto duration = std::chrono::milliseconds(1000);
+                timer.expires_after(duration);
+                co_await timer.async_wait(boost::asio::use_awaitable);
                 continue;
             }
 
@@ -116,10 +118,9 @@ namespace http_client
             if (ec)
             {
                 socket.close();
-                break;
             }
 
-            auto duration = std::chrono::milliseconds(1000);
+            const auto duration = std::chrono::milliseconds(1000);
             timer.expires_after(duration);
             co_await timer.async_wait(boost::asio::use_awaitable);
         }
