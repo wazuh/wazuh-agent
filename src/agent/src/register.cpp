@@ -18,7 +18,7 @@ namespace uuids = boost::uuids;
 using tcp = boost::asio::ip::tcp;
 using json = nlohmann::json;
 
-namespace registration
+namespace
 {
     std::pair<http::status, std::string>
     SendAuthenticationRequest(const std::string& managerIp, const std::string& port, const std::string& user_pass)
@@ -75,36 +75,39 @@ namespace registration
         return agentInfo;
     }
 
-} // namespace registration
+} // namespace
 
-bool RegisterAgent(const std::string& user,
-                   const std::string& password,
-                   const std::optional<std::string>& name,
-                   const std::optional<std::string>& ip)
+namespace registration
 {
-
-    const configuration::ConfigurationParser configurationParser;
-    const auto managerIp = configurationParser.GetConfig<std::string>("agent", "manager_ip");
-    const auto port = configurationParser.GetConfig<std::string>("agent", "port");
-
-    const auto [authResultCode, token] =
-        registration::SendAuthenticationRequest(managerIp, port, user + ":" + password);
-
-    if (authResultCode != http::status::ok)
+    bool RegisterAgent(const std::string& user,
+                       const std::string& password,
+                       const std::optional<std::string>& name,
+                       const std::optional<std::string>& ip)
     {
-        std::cout << "Authentication error: " << authResultCode << std::endl;
-        return false;
+
+        const configuration::ConfigurationParser configurationParser;
+        const auto managerIp = configurationParser.GetConfig<std::string>("agent", "manager_ip");
+        const auto port = configurationParser.GetConfig<std::string>("agent", "port");
+
+        const auto [authResultCode, token] = SendAuthenticationRequest(managerIp, port, user + ":" + password);
+
+        if (authResultCode != http::status::ok)
+        {
+            std::cout << "Authentication error: " << authResultCode << std::endl;
+            return false;
+        }
+
+        const auto agentInfo = GenerateAgentInfo(name, ip);
+
+        if (const auto registrationResultCode =
+                SendRegistrationRequest(managerIp, port, token, agentInfo.GetUUID(), name, ip);
+            registrationResultCode != http::status::ok)
+        {
+            std::cout << "Registration error: " << registrationResultCode << std::endl;
+            return false;
+        }
+
+        return true;
     }
 
-    const auto agentInfo = registration::GenerateAgentInfo(name, ip);
-
-    if (const auto registrationResultCode =
-            registration::SendRegistrationRequest(managerIp, port, token, agentInfo.GetUUID(), name, ip);
-        registrationResultCode != http::status::ok)
-    {
-        std::cout << "Registration error: " << registrationResultCode << std::endl;
-        return false;
-    }
-
-    return true;
-}
+} // namespace registration
