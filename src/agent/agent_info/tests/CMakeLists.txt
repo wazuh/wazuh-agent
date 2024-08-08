@@ -1,10 +1,5 @@
 find_package(GTest CONFIG REQUIRED)
 
-set(TEST_SOURCES
-    agent_info_test.cpp
-    agent_info_persistance_test.cpp
-)
-
 add_executable(agent_info_test agent_info_test.cpp)
 target_include_directories(agent_info_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 target_link_libraries(agent_info_test PRIVATE AgentInfo GTest::gtest)

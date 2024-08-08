@@ -24,9 +24,9 @@ add_subdirectory(configuration_parser)
 find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio beast)
 
-add_library(agent ${SOURCES})
-target_include_directories(agent PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(agent PUBLIC ConfigurationParser communicator AgentInfo PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::asio Boost::beast)
+add_library(Agent ${SOURCES})
+target_include_directories(Agent PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(Agent PUBLIC ConfigurationParser Communicator AgentInfo PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::asio Boost::beast)
 
 if(BUILD_TESTS)
     enable_testing()

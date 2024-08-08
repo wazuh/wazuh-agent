@@ -12,7 +12,7 @@ project(wazuh-agent)
 add_subdirectory(agent)
 
 add_executable(wazuh-agent agent/src/main.cpp)
-target_link_libraries(wazuh-agent agent)
+target_link_libraries(wazuh-agent Agent)
 
 if(BUILD_TESTS)
     enable_testing()
