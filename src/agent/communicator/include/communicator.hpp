@@ -32,10 +32,14 @@ namespace communicator
         std::string m_port;
         long long m_tokenExpTimeInSeconds;
         std::string m_token;
+        std::mutex reAuthMutex;
+        std::atomic<bool> isReAuthenticating = false;
 
         long GetTokenRemainingSecs() const;
 
         boost::beast::http::status SendAuthenticationRequest();
+
+        void TryReAuthenticate();
 
         void Stop();
     };

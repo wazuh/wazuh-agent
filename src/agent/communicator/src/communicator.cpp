@@ -82,7 +82,7 @@ namespace communicator
     {
         auto onAuthenticationFailed = [this]()
         {
-            SendAuthenticationRequest();
+            TryReAuthenticate();
         };
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::get, m_managerIp, m_port, "/commands");
@@ -126,7 +126,7 @@ namespace communicator
     {
         auto onAuthenticationFailed = [this]()
         {
-            SendAuthenticationRequest();
+            TryReAuthenticate();
         };
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::post, m_managerIp, m_port, "/stateful");
@@ -137,10 +137,25 @@ namespace communicator
     {
         auto onAuthenticationFailed = [this]()
         {
-            SendAuthenticationRequest();
+            TryReAuthenticate();
         };
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::post, m_managerIp, m_port, "/stateless");
         co_await http_client::Co_MessageProcessingTask(m_token, reqParams, {}, onAuthenticationFailed);
+    }
+
+    void Communicator::TryReAuthenticate()
+    {
+        std::unique_lock<std::mutex> lock(reAuthMutex, std::try_to_lock);
+        if (lock.owns_lock() && !isReAuthenticating.exchange(true))
+        {
+            std::cout << "Thread: " << std::this_thread::get_id() << " attempting re-authentication" << std::endl;
+            SendAuthenticationRequest();
+            isReAuthenticating = false;
+        }
+        else
+        {
+            std::cout << "Re-authentication attempt by thread " << std::this_thread::get_id() << " failed" << std::endl;
+        }
     }
 } // namespace communicator
