@@ -152,13 +152,7 @@ namespace http_client
         }
     }
 
-    boost::beast::http::response<boost::beast::http::dynamic_body>
-    SendHttpRequest(const boost::beast::http::verb method,
-                    const std::string& ip,
-                    const std::string& port,
-                    const std::string& url,
-                    const std::string& token,
-                    const std::string& body)
+    boost::beast::http::response<boost::beast::http::dynamic_body> SendHttpRequest(const HttpRequestParams& params)
     {
         boost::beast::http::response<boost::beast::http::dynamic_body> res;
 
@@ -166,13 +160,12 @@ namespace http_client
         {
             boost::asio::io_context io_context;
             boost::asio::ip::tcp::resolver resolver(io_context);
-            auto const results = resolver.resolve(ip, port);
+            const auto results = resolver.resolve(params.host, params.port);
 
             boost::asio::ip::tcp::socket socket(io_context);
             boost::asio::connect(socket, results.begin(), results.end());
 
-            const auto reqParams = HttpRequestParams(method, url, ip, token, body, "", port);
-            const auto req = CreateHttpRequest(reqParams);
+            const auto req = CreateHttpRequest(params);
 
             boost::beast::http::write(socket, req);
 
@@ -189,7 +182,6 @@ namespace http_client
             res.result(boost::beast::http::status::internal_server_error);
             boost::beast::ostream(res.body()) << "Internal server error: " << e.what();
             res.prepare_payload();
-            std::cerr << "Result: " << res.result_int() << std::endl;
         }
 
         return res;

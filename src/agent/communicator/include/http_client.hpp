@@ -58,11 +58,5 @@ namespace http_client
                                                           const std::string& token,
                                                           std::function<std::string()> messageGetter);
 
-    boost::beast::http::response<boost::beast::http::dynamic_body>
-    SendHttpRequest(const boost::beast::http::verb method,
-                    const std::string& ip,
-                    const std::string& port,
-                    const std::string& url,
-                    const std::string& token,
-                    const std::string& body);
+    boost::beast::http::response<boost::beast::http::dynamic_body> SendHttpRequest(const HttpRequestParams& params);
 } // namespace http_client
