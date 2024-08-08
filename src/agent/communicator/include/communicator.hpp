@@ -24,17 +24,6 @@ namespace communicator
         boost::asio::awaitable<void> StatelessMessageProcessingTask(std::queue<std::string>& messageQueue);
 
     private:
-        std::mutex m_exitMtx;
-        std::atomic<bool> m_exitFlag;
-
-        std::string m_uuid;
-        std::string m_managerIp;
-        std::string m_port;
-        long long m_tokenExpTimeInSeconds;
-        std::string m_token;
-        std::mutex reAuthMutex;
-        std::atomic<bool> isReAuthenticating = false;
-
         long GetTokenRemainingSecs() const;
 
         boost::beast::http::status SendAuthenticationRequest();
@@ -42,5 +31,17 @@ namespace communicator
         void TryReAuthenticate();
 
         void Stop();
+
+        std::mutex m_exitMtx;
+        std::atomic<bool> m_exitFlag = false;
+
+        std::mutex m_reAuthMutex;
+        std::atomic<bool> m_isReAuthenticating = false;
+
+        std::string m_managerIp;
+        std::string m_port;
+        std::string m_uuid;
+        std::string m_token;
+        long long m_tokenExpTimeInSeconds = 0;
     };
 } // namespace communicator

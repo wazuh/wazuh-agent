@@ -19,9 +19,7 @@ namespace communicator
 
     Communicator::Communicator(const std::string& uuid,
                                const std::function<std::string(std::string, std::string)> GetStringConfigValue)
-        : m_exitFlag(false)
-        , m_tokenExpTimeInSeconds(0)
-        , m_uuid(uuid)
+        : m_uuid(uuid)
     {
         if (GetStringConfigValue != nullptr)
         {
@@ -146,12 +144,12 @@ namespace communicator
 
     void Communicator::TryReAuthenticate()
     {
-        std::unique_lock<std::mutex> lock(reAuthMutex, std::try_to_lock);
-        if (lock.owns_lock() && !isReAuthenticating.exchange(true))
+        std::unique_lock<std::mutex> lock(m_reAuthMutex, std::try_to_lock);
+        if (lock.owns_lock() && !m_isReAuthenticating.exchange(true))
         {
             std::cout << "Thread: " << std::this_thread::get_id() << " attempting re-authentication" << std::endl;
             SendAuthenticationRequest();
-            isReAuthenticating = false;
+            m_isReAuthenticating = false;
         }
         else
         {
