@@ -1,10 +1,12 @@
 #pragma once
 
 #include <boost/asio/awaitable.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/beast/http/status.hpp>
 
 #include <atomic>
 #include <functional>
+#include <memory>
 #include <mutex>
 #include <queue>
 #include <string>
@@ -41,5 +43,6 @@ namespace communicator
         std::string m_uuid;
         std::string m_token;
         long long m_tokenExpTimeInSeconds = 0;
+        std::unique_ptr<boost::asio::steady_timer> m_tokenExpTimer;
     };
 } // namespace communicator

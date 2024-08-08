@@ -86,7 +86,7 @@ namespace communicator
     {
         using namespace std::chrono_literals;
         const auto executor = co_await boost::asio::this_coro::executor;
-        boost::asio::steady_timer timer(executor);
+        m_tokenExpTimer = std::make_unique<boost::asio::steady_timer>(executor);
 
         while (true)
         {
@@ -104,8 +104,8 @@ namespace communicator
                 }
             }();
 
-            timer.expires_after(duration);
-            co_await timer.async_wait(boost::asio::use_awaitable);
+            m_tokenExpTimer->expires_after(duration);
+            co_await m_tokenExpTimer->async_wait(boost::asio::use_awaitable);
 
             {
                 std::lock_guard<std::mutex> lock(m_exitMtx);
@@ -143,7 +143,15 @@ namespace communicator
         if (lock.owns_lock() && !m_isReAuthenticating.exchange(true))
         {
             std::cout << "Thread: " << std::this_thread::get_id() << " attempting re-authentication" << std::endl;
-            SendAuthenticationRequest();
+            if (const auto result = SendAuthenticationRequest(); result == boost::beast::http::status::ok)
+            {
+                if (m_tokenExpTimer)
+                {
+                    const auto newDuration =
+                        std::chrono::milliseconds((GetTokenRemainingSecs() - TokenPreExpirySecs) * 1000);
+                    m_tokenExpTimer->expires_after(newDuration);
+                }
+            }
             m_isReAuthenticating = false;
         }
         else
