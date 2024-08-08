@@ -112,56 +112,62 @@ public:
      * @brief Returns N messages from a queue
      *
      * @param type Of the queue to be used as source
+     * @param moduleName
      * @param messageQuantity quantity of messages to return
      * @return Message Json data othe messages fetched
      */
-    Message getNMessages(MessageType type, int messageQuantity, const std::string moduleName = "");
+    std::vector<Message> getNMessages(MessageType type, int messageQuantity, const std::string moduleName = "");
 
     /**
      * @brief deletes a message from a queue
      *
      * @param type MessageType queue to pop
+     * @param moduleName
      * @return true popped succesfully
      * @return false wasn't able to pop message
      */
-    bool popLastMessage(MessageType type);
+    bool popLastMessage(MessageType type, const std::string moduleName = "");
 
     /**
      * @brief
      *
      * @param type
+     * @param moduleName
      * @param messageQuantity
      * @return true
      * @return false
      */
-    bool popNMessages(MessageType type, int messageQuantity);
+    bool popNMessages(MessageType type, int messageQuantity, const std::string moduleName = "");
 
     /**
      * @brief Checks emptyness of a queue
      *
      * @param type
+     * @param moduleName
      * @return true when queue empty
      * @return false otherwise
      */
-    bool isEmptyByType(MessageType type);
+    bool isEmptyByType(MessageType type, const std::string moduleName = "");
 
     /**
      * @brief Checks fullness of a queue
      *
      * @param type
+     * @param moduleName
      * @return true when queue is full
      * @return false otherwise
      */
-    bool isFullByType(MessageType type);
+    bool isFullByType(MessageType type, const std::string moduleName = "");
 
     /**
      * @brief Get the Items By Type object
      *
      * @param type
+     * @param moduleName
      * @return true
      * @return false
      */
-    int getItemsByType(MessageType type);
+    int getItemsByType(MessageType type, const std::string moduleName = "");
 };
 
 #endif // QUEUE_H

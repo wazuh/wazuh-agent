@@ -98,9 +98,17 @@ TEST_F(JsonTest, JSONConversionComparisson)
     auto versionUj2 = uj2["version"].template get<int>();
     EXPECT_EQ(versionUj1, versionUj2);
 
+    auto versionUj12 = uj1.at("version");
+    auto versionUj22 = uj2.at("version");
+    EXPECT_EQ(versionUj12, versionUj22);
+
     auto typeUj1 = uj1["type"].template get<std::string>();
     auto typeUj2 = uj2["type"].template get<std::string>();
     EXPECT_EQ(typeUj1, typeUj2);
+
+    auto typeUj12 = uj1.at("type");
+    auto typeUj22 = uj2.at("type");
+    EXPECT_EQ(typeUj12, typeUj22);
 }
 
 TEST_F(JsonTest, JSONArrays)
@@ -241,6 +249,7 @@ TEST_F(QueueTest, SinglePushPopFullWithTimeout)
 
     auto items = queue.getItemsByType(MessageType::COMMAND);
     EXPECT_EQ(items, SMALL_QUEUE_QTTY);
+    EXPECT_TRUE(queue.isFullByType(MessageType::COMMAND));
     EXPECT_TRUE(queue.isEmptyByType(MessageType::STATELESS));
 
     queue.popLastMessage(MessageType::COMMAND);
@@ -378,7 +387,7 @@ TEST_F(QueueTest, MultithreadSameType)
 
 // Push Multiple with single message and data array,
 // several gets, checks and pops
-TEST_F(QueueTest, MultiplePushSeveralSingleGets)
+TEST_F(QueueTest, PushMultipleSeveralSingleGets)
 {
     MultiTypeQueue queue(BIG_QUEUE_QTTY);
     const MessageType messageType {MessageType::STATELESS};
@@ -400,8 +409,24 @@ TEST_F(QueueTest, MultiplePushSeveralSingleGets)
     EXPECT_EQ(queue.getItemsByType(MessageType::STATELESS), 0);
 }
 
+TEST_F(QueueTest, PushMultipleWithMessageVector)
+{
+    MultiTypeQueue queue(BIG_QUEUE_QTTY);
+
+    std::vector<Message> messages;
+    const MessageType messageType {MessageType::STATELESS};
+    for (std::string i : {"0", "1", "2"})
+    {
+        const json multipleDataContent = {"content " + i};
+        messages.push_back({messageType, multipleDataContent});
+    }
+    EXPECT_EQ(messages.size(), 3);
+    queue.timeoutPush(messages);
+    EXPECT_EQ(queue.getItemsByType(MessageType::STATELESS), 3);
+}
+
 // Push Multiple, pop multiples
-TEST_F(QueueTest, MultiplePushSeveralMultiplePops)
+TEST_F(QueueTest, PushMultipleGetMultiple)
 {
     MultiTypeQueue queue(BIG_QUEUE_QTTY);
     const MessageType messageType {MessageType::STATELESS};
@@ -413,4 +438,53 @@ TEST_F(QueueTest, MultiplePushSeveralMultiplePops)
     EXPECT_TRUE(queue.popNMessages(MessageType::STATELESS, 3));
     EXPECT_TRUE(queue.isEmptyByType(MessageType::STATELESS));
     EXPECT_EQ(0, queue.getItemsByType(MessageType::STATELESS));
+}
+
+// Push Multiple, pop multiples
+TEST_F(QueueTest, PushMultipleGetMultipleWithModule)
+{
+    MultiTypeQueue queue(BIG_QUEUE_QTTY);
+    const MessageType messageType {MessageType::STATELESS};
+    const json multipleDataContent = {"content 1", "content 2", "content 3"};
+    const std::string moduleName = "testModule";
+    const Message messageToSend {messageType, multipleDataContent, moduleName};
+
+    queue.timeoutPush(messageToSend);
+
+    // Altough we're asking for 10 messages only the availables are returned.
+    auto messagesReceived = queue.getNMessages(MessageType::STATELESS, 10);
+    int i = 3;
+    for (auto singleMessage : messagesReceived)
+    {
+        EXPECT_EQ("content " + std::to_string(i--), singleMessage.data.at("data"));
+    }
+
+    EXPECT_EQ(0, queue.getItemsByType(MessageType::STATELESS, "fakemodule"));
+    EXPECT_EQ(3, queue.getItemsByType(MessageType::STATELESS));
+    EXPECT_EQ(3, queue.getItemsByType(MessageType::STATELESS, moduleName));
+}
+
+TEST_F(QueueTest, PushSinglesleGetMultipleWithModule)
+{
+    MultiTypeQueue queue(BIG_QUEUE_QTTY);
+
+    for (std::string i : {"1", "2", "3", "4", "5"})
+    {
+        const MessageType messageType {MessageType::STATELESS};
+        const json multipleDataContent = {"content-" + i};
+        const std::string moduleName = "module-" + i;
+        const Message messageToSend {messageType, multipleDataContent, moduleName};
+        queue.timeoutPush(messageToSend);
+    }
+
+    auto messagesReceived = queue.getNMessages(MessageType::STATELESS, 10);
+    EXPECT_EQ(5, messagesReceived.size());
+    int i = 5;
+    for (auto singleMessage : messagesReceived)
+    {
+        EXPECT_EQ("content-" + std::to_string(i--), singleMessage.data.at("data"));
+    }
+
+    auto messageReceivedContent1 = queue.getNMessages(MessageType::STATELESS, 10, "module-1");
+    EXPECT_EQ(1, messageReceivedContent1.size());
 }

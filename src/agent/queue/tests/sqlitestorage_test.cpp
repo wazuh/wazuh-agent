@@ -70,7 +70,7 @@ TEST_F(SQLiteStorageTest, StoreSingleMessageWithModule)
     EXPECT_EQ(storage->GetElementCount(tableName), 1);
     EXPECT_NO_THROW(storage->Store(message, tableName));
     EXPECT_EQ(storage->GetElementCount(tableName), 2);
-    EXPECT_EQ(storage->GetElementCount(tableName, "fakeModuleName"), 0);
+    EXPECT_EQ(storage->GetElementCount(tableName, "unavailableModuleName"), 0);
     EXPECT_EQ(storage->GetElementCount(tableName, moduleName), 1);
 }
 
@@ -81,6 +81,17 @@ TEST_F(SQLiteStorageTest, StoreMultipleMessages)
     messages.push_back({{"key", "value2"}});
     EXPECT_NO_THROW(storage->Store(messages, tableName));
     EXPECT_EQ(storage->GetElementCount(tableName), 2);
+}
+
+TEST_F(SQLiteStorageTest, StoreMultipleMessagesWithModule)
+{
+    json messages = json::array();
+    messages.push_back({{"key", "value1"}});
+    messages.push_back({{"key", "value2"}});
+    EXPECT_NO_THROW(storage->Store(messages, tableName, moduleName));
+    EXPECT_EQ(storage->GetElementCount(tableName), 2);
+    EXPECT_EQ(storage->GetElementCount(tableName, moduleName), 2);
+    EXPECT_EQ(storage->GetElementCount(tableName, "unavailableModuleName"), 0);
 }
 
 TEST_F(SQLiteStorageTest, RetrieveMessage)
@@ -95,7 +106,7 @@ TEST_F(SQLiteStorageTest, RetrieveMessageWithModule)
 {
     json message = {{"key", "value"}};
     storage->Store(message, tableName, moduleName);
-    json retrievedMessage = storage->Retrieve(1, tableName, "fakeModuleName");
+    json retrievedMessage = storage->Retrieve(1, tableName, "unavailableModuleName");
     EXPECT_EQ(retrievedMessage.at("data"), nullptr);
     retrievedMessage = storage->Retrieve(1, tableName, moduleName);
     EXPECT_EQ(retrievedMessage.at("data").at("key"), "value");
@@ -109,6 +120,24 @@ TEST_F(SQLiteStorageTest, RetrieveMultipleMessages)
     storage->Store(messages, tableName);
     json retrievedMessages = storage->RetrieveMultiple(2, tableName);
     EXPECT_EQ(retrievedMessages.size(), 2);
+}
+
+TEST_F(SQLiteStorageTest, RetrieveMultipleMessagesWithModule)
+{
+    json messages = json::array();
+    messages.push_back({{"key", "value1"}});
+    messages.push_back({{"key", "value2"}});
+    messages.push_back({{"key", "value3"}});
+    messages.push_back({{"key", "value4"}});
+    storage->Store(messages, tableName, moduleName);
+    json retrievedMessages = storage->RetrieveMultiple(4, tableName, moduleName);
+    EXPECT_EQ(retrievedMessages.size(), 4);
+
+    int i = 4;
+    for (auto singleMessage : retrievedMessages)
+    {
+        EXPECT_EQ("value" + std::to_string(i--), singleMessage.at("data").at("key"));
+    }
 }
 
 TEST_F(SQLiteStorageTest, RemoveMessage)
@@ -125,7 +154,7 @@ TEST_F(SQLiteStorageTest, RemoveMessageWithModule)
     storage->Store(message, tableName, moduleName);
     EXPECT_EQ(storage->Remove(1, tableName), 1);
     storage->Store(message, tableName, moduleName);
-    EXPECT_EQ(storage->Remove(1, tableName, "fakeModuleName"), 1);
+    EXPECT_EQ(storage->Remove(1, tableName, "unavailableModuleName"), 1);
     EXPECT_EQ(storage->GetElementCount(tableName), 1);
     EXPECT_EQ(storage->Remove(1, tableName, moduleName), 1);
     EXPECT_EQ(storage->GetElementCount(tableName), 0);
@@ -147,7 +176,7 @@ TEST_F(SQLiteStorageTest, RemoveMultipleMessagesWithModule)
     messages.push_back({{"key", "value1"}});
     messages.push_back({{"key", "value2"}});
     storage->Store(messages, tableName, moduleName);
-    EXPECT_EQ(storage->RemoveMultiple(2, tableName, "fakeModuleName"), 2);
+    EXPECT_EQ(storage->RemoveMultiple(2, tableName, "unavailableModuleName"), 2);
     EXPECT_EQ(storage->GetElementCount(tableName), 2);
     EXPECT_EQ(storage->RemoveMultiple(2, tableName, moduleName), 2);
     EXPECT_EQ(storage->GetElementCount(tableName), 0);
@@ -158,6 +187,15 @@ TEST_F(SQLiteStorageTest, GetElementCount)
     json message = {{"key", "value"}};
     storage->Store(message, tableName);
     EXPECT_EQ(storage->GetElementCount(tableName), 1);
+}
+
+TEST_F(SQLiteStorageTest, GetElementCountWithModule)
+{
+    json message = {{"key", "value"}};
+    storage->Store(message, tableName, moduleName);
+    EXPECT_EQ(storage->GetElementCount(tableName), 1);
+    EXPECT_EQ(storage->GetElementCount(tableName, moduleName), 1);
+    EXPECT_EQ(storage->GetElementCount(tableName, "unavailableModuleName"), 0);
 }
 
 class SQLiteStorageMultithreadedTest : public ::testing::Test

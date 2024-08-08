@@ -74,8 +74,8 @@ void MultiTypeQueue::timeoutPush(std::vector<Message> messages)
 
 Message MultiTypeQueue::getLastMessage(MessageType type, const std::string moduleName)
 {
+    // TODO: If moduleName is not emty should be part of result on the pther cases should be parsed from answer
     Message result(type, "{}"_json, moduleName);
-    // std::unique_lock<std::mutex> mapLock(m_mapMutex);
     if (m_mapMessageTypeName.contains(type))
     {
         auto resultData = m_persistenceDest->RetrieveMultiple(1, m_mapMessageTypeName.at(type), moduleName);
@@ -86,95 +86,105 @@ Message MultiTypeQueue::getLastMessage(MessageType type, const std::string modul
     }
     else
     {
-        // TODO: error / logging handling !!!
+        // TODO: error handling and logging
         std::cout << "error didn't find the queue" << std::endl;
     }
     return result;
 }
 
-Message MultiTypeQueue::getNMessages(MessageType type, int messageQuantity, const std::string moduleName)
+std::vector<Message> MultiTypeQueue::getNMessages(MessageType type, int messageQuantity, const std::string moduleName)
 {
-    Message result(type, {});
+    std::vector<Message> result;
     if (m_mapMessageTypeName.contains(type))
     {
-        result.data = m_persistenceDest->RetrieveMultiple(messageQuantity, m_mapMessageTypeName.at(type), moduleName);
+        auto arrayData =
+            m_persistenceDest->RetrieveMultiple(messageQuantity, m_mapMessageTypeName.at(type), moduleName);
+        for (auto singleJson : arrayData)
+        {
+            auto finalModuleName = moduleName;
+            if (moduleName.empty())
+            {
+                finalModuleName = singleJson["module"];
+            }
+            result.push_back(Message(type, singleJson, finalModuleName));
+        }
     }
     else
     {
-        // TODO: error / logging handling !!!
+        // TODO: error handling and logging
         std::cout << "error didn't find the queue" << std::endl;
     }
     return result;
 }
 
-bool MultiTypeQueue::popLastMessage(MessageType type)
-{
-    bool result = false;
-    if (m_mapMessageTypeName.contains(type))
-    {
-        // Handle return value
-        result = m_persistenceDest->RemoveMultiple(1, m_mapMessageTypeName.at(type));
-    }
-    else
-    {
-        // TODO: error / logging handling !!!
-        std::cout << "error didn't find the queue" << std::endl;
-    }
-    return result;
-}
-
-bool MultiTypeQueue::popNMessages(MessageType type, int messageQuantity)
+bool MultiTypeQueue::popLastMessage(MessageType type, const std::string moduleName)
 {
     bool result = false;
     if (m_mapMessageTypeName.contains(type))
     {
-        result = m_persistenceDest->RemoveMultiple(messageQuantity, m_mapMessageTypeName.at(type));
+        // TODO: Handle return value -> should show how many rows where deleted
+        result = m_persistenceDest->RemoveMultiple(1, m_mapMessageTypeName.at(type), moduleName);
     }
     else
     {
-        // TODO: error / logging handling !!!
+        // TODO: error handling and logging
         std::cout << "error didn't find the queue" << std::endl;
     }
     return result;
 }
 
-bool MultiTypeQueue::isEmptyByType(MessageType type)
+bool MultiTypeQueue::popNMessages(MessageType type, int messageQuantity, const std::string moduleName)
 {
+    bool result = false;
     if (m_mapMessageTypeName.contains(type))
     {
-        return m_persistenceDest->GetElementCount(m_mapMessageTypeName.at(type)) == 0;
+        result = m_persistenceDest->RemoveMultiple(messageQuantity, m_mapMessageTypeName.at(type), moduleName);
     }
     else
     {
-        // TODO: error / logging handling !!!
+        // TODO: error handling and logging
+        std::cout << "error didn't find the queue" << std::endl;
+    }
+    return result;
+}
+
+bool MultiTypeQueue::isEmptyByType(MessageType type, const std::string moduleName)
+{
+    if (m_mapMessageTypeName.contains(type))
+    {
+        return m_persistenceDest->GetElementCount(m_mapMessageTypeName.at(type), moduleName) == 0;
+    }
+    else
+    {
+        // TODO: error handling and logging
         std::cout << "error didn't find the queue" << std::endl;
     }
     return false;
 }
 
-bool MultiTypeQueue::isFullByType(MessageType type)
+bool MultiTypeQueue::isFullByType(MessageType type, const std::string moduleName)
 {
     if (m_mapMessageTypeName.contains(type))
     {
-        return m_persistenceDest->GetElementCount(m_mapMessageTypeName.at(type)) == m_maxItems;
+        return m_persistenceDest->GetElementCount(m_mapMessageTypeName.at(type), moduleName) == m_maxItems;
     }
     else
     {
-        // TODO: error / logging handling !!!
+        // TODO: error handling and logging
         std::cout << "error didn't find the queue" << std::endl;
     }
     return false;
 }
 
-int MultiTypeQueue::getItemsByType(MessageType type)
+int MultiTypeQueue::getItemsByType(MessageType type, const std::string moduleName)
 {
     if (m_mapMessageTypeName.contains(type))
     {
-        return m_persistenceDest->GetElementCount(m_mapMessageTypeName.at(type));
+        return m_persistenceDest->GetElementCount(m_mapMessageTypeName.at(type), moduleName);
     }
     else
     {
-        // TODO: error / logging handling !!!
+        // TODO: error handling and logging
         std::cout << "error didn't find the queue" << std::endl;
     }
     return false;
