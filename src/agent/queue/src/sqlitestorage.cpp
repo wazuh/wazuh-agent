@@ -57,11 +57,13 @@ void SQLiteStorage::releaseDatabaseAccess()
     m_cv.notify_one();
 }
 
-void SQLiteStorage::Store(const json& message, const std::string& tableName, const std::string& moduleName)
+int SQLiteStorage::Store(const json& message, const std::string& tableName, const std::string& moduleName)
 {
-    waitForDatabaseAccess();
     constexpr std::string_view INSERT_QUERY {"INSERT INTO {} (module, message) VALUES (\"{}\", ?);"};
     std::string insertQuery = fmt::format(INSERT_QUERY, tableName, moduleName);
+    int result = 0;
+
+    waitForDatabaseAccess();
     SQLite::Statement query = SQLite::Statement(*m_db, insertQuery);
 
     if (message.is_array())
@@ -72,11 +74,12 @@ void SQLiteStorage::Store(const json& message, const std::string& tableName, con
             try
             {
                 query.bind(1, singleMessageData.dump());
-                query.exec();
+                result += query.exec();
             }
             catch (const SQLite::Exception& e)
             {
                 std::cerr << "Error SqliteStorage Store: " << e.what() << '\n';
+                break;
             }
             // Reset the query to reuse it for the next message
             query.reset();
@@ -87,10 +90,12 @@ void SQLiteStorage::Store(const json& message, const std::string& tableName, con
     {
         SQLite::Transaction transaction(*m_db);
         query.bind(1, message.dump());
-        query.exec();
+        result = query.exec();
         transaction.commit();
     }
     releaseDatabaseAccess();
+
+    return result;
 }
 
 // TODO: we shouldn't use rowid outside the table itself
@@ -241,6 +246,7 @@ int SQLiteStorage::Remove(int id, const std::string& tableName, const std::strin
 int SQLiteStorage::RemoveMultiple(int n, const std::string& tableName, const std::string& moduleName)
 {
     std::string deleteQuery;
+    int rowsModified = 0;
     if (moduleName.empty())
     {
         constexpr std::string_view DELETE_MULTIPLE_QUERY {
@@ -250,7 +256,8 @@ int SQLiteStorage::RemoveMultiple(int n, const std::string& tableName, const std
     else
     {
         constexpr std::string_view DELETE_MULTIPLE_QUERY {
-            "DELETE FROM {} WHERE module LIKE \"{}\" AND rowid IN (SELECT rowid FROM {} WHERE module LIKE \"{}\" ORDER BY rowid ASC LIMIT ?);"};
+            "DELETE FROM {} WHERE module LIKE \"{}\" AND rowid IN (SELECT rowid FROM {} WHERE module LIKE \"{}\" ORDER "
+            "BY rowid ASC LIMIT ?);"};
         deleteQuery = fmt::format(DELETE_MULTIPLE_QUERY, tableName, moduleName, tableName, moduleName);
     }
 
@@ -260,15 +267,15 @@ int SQLiteStorage::RemoveMultiple(int n, const std::string& tableName, const std
         SQLite::Statement query(*m_db, deleteQuery);
         SQLite::Transaction transaction(*m_db);
         query.bind(1, n);
-        query.exec();
+        rowsModified = query.exec();
         transaction.commit();
         releaseDatabaseAccess();
-        return n;
+        return rowsModified;
     }
     catch (const SQLite::Exception& e)
     {
         std::cerr << "Error SQLiteStorage remove multiple: " << e.what() << std::endl;
-        return {};
+        return rowsModified;
     }
 }
 

@@ -47,8 +47,11 @@ public:
      * @brief Store a JSON message in the storage.
      *
      * @param message The JSON message to store.
+     * @param tableName The name of the table to store the message in.
+     * @param moduleName
+     * @return The number of stored elements.
      */
-    void Store(const json& message, const std::string& tableName, const std::string& moduleName = "") override;
+    int Store(const json& message, const std::string& tableName, const std::string& moduleName = "") override;
 
     /**
      * @brief Retrieve a JSON message by its ID.

@@ -24,10 +24,11 @@ public:
      * @brief
      *
      * @param message
-     * @param tableName
+     * @param queueName
      * @param moduleName
+     * @return int
      */
-    virtual void Store(const json& message, const std::string& tableName, const std::string& moduleName = "") = 0;
+    virtual int Store(const json& message, const std::string& queueName, const std::string& moduleName = "") = 0;
 
     /**
      * @brief
@@ -37,7 +38,7 @@ public:
      * @param moduleName
      * @return json
      */
-    virtual json Retrieve(int id, const std::string& tableName, const std::string& moduleName = "") = 0;
+    virtual json Retrieve(int id, const std::string& queueName, const std::string& moduleName = "") = 0;
 
     /**
      * @brief
@@ -54,6 +55,7 @@ public:
      *
      * @param id
      * @param queueName
+     * @param moduleName
      * @return int
      */
     virtual int Remove(int id, const std::string& queueName, const std::string& moduleName = "") = 0;
@@ -63,6 +65,7 @@ public:
      *
      * @param n
      * @param queueName
+     * @param moduleName
      * @return int
      */
     virtual int RemoveMultiple(int n, const std::string& queueName, const std::string& moduleName = "") = 0;
@@ -74,7 +77,7 @@ public:
      * @param moduleName
      * @return int
      */
-    virtual int GetElementCount(const std::string& tableName, const std::string& moduleName = "") = 0;
+    virtual int GetElementCount(const std::string& queueName, const std::string& moduleName = "") = 0;
 };
 
 #endif // PERSISTENCE_H

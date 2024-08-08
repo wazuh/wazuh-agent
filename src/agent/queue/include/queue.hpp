@@ -87,18 +87,22 @@ public:
     ~MultiTypeQueue() {};
 
     /**
-     * @brief: timeoutPush message to a queue of t
+     * @brief pushes a message
      *
-     * @param message
+     * @param message to be pushed
+     * @param shouldWait when true, the function will wait until the message is pushed
+     * @return int number of messages pushed
      */
-    bool timeoutPush(Message message, bool shouldWait = false);
+    int timeoutPush(Message message, bool shouldWait = false);
 
     /**
-     * @brief
+     * @brief pushes a vector of messages
      *
-     * @param messages
+     * @param messages to be pushed
+     * @param shouldWait when true, the function will wait until the message is pushed
+     * @return int number of messages pushed
      */
-    void timeoutPush(std::vector<Message> messages);
+    int timeoutPush(std::vector<Message> messages);
 
     /**
      * @brief Get the Last Message object
@@ -134,10 +138,9 @@ public:
      * @param type
      * @param moduleName
      * @param messageQuantity
-     * @return true
-     * @return false
+     * @return Number of messages deleted
      */
-    bool popNMessages(MessageType type, int messageQuantity, const std::string moduleName = "");
+    int popNMessages(MessageType type, int messageQuantity, const std::string moduleName = "");
 
     /**
      * @brief Checks emptyness of a queue
