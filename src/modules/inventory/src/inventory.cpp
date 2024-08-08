@@ -45,7 +45,7 @@ void *Inventory::run() {
     w_mutex_unlock(&inv_stop_mutex);
 
     // else: if max_eps is 0 (from configuration) let's use the default max_eps value (10)
-    wm_inv_log_config();
+    log_config();
 
     inventory_start();
 
@@ -107,21 +107,21 @@ string Inventory::name() const {
     return "inventory";
 }
 
-void Inventory::wm_inv_send_diff_message(const string& data) {
-    wm_inv_send_message(data, INVENTORY_MQ);
+void Inventory::send_diff_message(const string& data) {
+    send_message(data, INVENTORY_MQ);
 }
 
-void Inventory::wm_inv_send_dbsync_message(const string& data) {
-    wm_inv_send_message(data, DBSYNC_MQ);
+void Inventory::send_dbsync_message(const string& data) {
+    send_message(data, DBSYNC_MQ);
 }
 
-void Inventory::wm_inv_send_message(string data, const char queue_id) {
+void Inventory::send_message(string data, const char queue_id) {
     /*if (!is_shutdown_process_started()) {
         const int eps = 1000000/sync_max_eps;
         if (wm_sendmsg_ex(eps, queue_fd, data, WM_INV_LOCATION, queue_id, &is_shutdown_process_started) < 0) {
 
             mterror(WM_INV_LOGTAG, "Unable to send message to '%s' (wazuh-agentd might be down). Attempting to reconnect.", DEFAULTQUEUE);
-    
+
             // Since this method is beign called by multiple threads it's necessary this particular portion of code
             // to be mutually exclusive. When one thread is successfully reconnected, the other ones will make use of it.
             w_mutex_lock(&inv_reconnect_mutex);
@@ -136,12 +136,11 @@ void Inventory::wm_inv_send_message(string data, const char queue_id) {
             w_mutex_unlock(&inv_reconnect_mutex);
         }
     }*/
-   cout << "wm_inv_send_message -> Queue id: " << queue_id << " -> Data: " << data << endl;
 }
 
-void Inventory::wm_inv_log_config()
+void Inventory::log_config()
 {
-    cJSON * config_json = wm_inv_dump();
+    cJSON * config_json = dump();
     if (config_json) {
         char * config_str = cJSON_PrintUnformatted(config_json);
         if (config_str) {
@@ -152,7 +151,7 @@ void Inventory::wm_inv_log_config()
     }
 }
 
-cJSON * Inventory::wm_inv_dump() {
+cJSON * Inventory::dump() {
     cJSON *root = cJSON_CreateObject();
     cJSON *wm_inv = cJSON_CreateObject();
 
@@ -213,17 +212,9 @@ int Inventory::inventory_sync_message(const char* data)
     return ret;
 }
 
-void Inventory::log1(const modules_log_level_t level, const std::string& log, const char* file, int line)
+void Inventory::log(const modules_log_level_t level, const std::string& log)
 {
-    std::string tag{};
-
-    tag += WM_INV_LOGTAG;
-    tag += " ";
-    tag += file;
-    tag += " (";
-    tag += std::to_string(line);
-    tag += ") ";
-    taggedLogFunction(level, log.c_str(), tag.c_str());
+    taggedLogFunction(level, log.c_str(), WM_INV_LOGTAG);
 }
 
 void Inventory::logError(const std::string& log)
