@@ -24,7 +24,10 @@ int main(int argc, char* argv[])
                                 ? std::make_optional<std::string>(cmdParser.getOptionValue("--ip"))
                                 : std::nullopt;
 
-            if (registration::RegisterAgent(user, password, name, ip))
+            const registration::UserCredentials userCredentials {user, password};
+            const registration::AgentInfoOptionalData agentInfoOptionalData {name, ip};
+
+            if (registration::RegisterAgent(userCredentials, agentInfoOptionalData))
             {
                 std::cout << "Agent registered." << std::endl;
             }

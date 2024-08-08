@@ -54,7 +54,7 @@ namespace
         return res.result();
     }
 
-    AgentInfo GenerateAgentInfo(const std::optional<std::string>& name, const std::optional<std::string>& ip)
+    AgentInfo GenerateAgentInfo(const registration::AgentInfoOptionalData& agentInfoOptionalData)
     {
         AgentInfo agentInfo;
         if (agentInfo.GetUUID().empty())
@@ -62,14 +62,14 @@ namespace
             agentInfo.SetUUID(to_string(uuids::random_generator()()));
         }
 
-        if (name.has_value())
+        if (agentInfoOptionalData.name.has_value())
         {
-            agentInfo.SetName(name.value());
+            agentInfo.SetName(agentInfoOptionalData.name.value());
         }
 
-        if (ip.has_value())
+        if (agentInfoOptionalData.ip.has_value())
         {
-            agentInfo.SetIP(ip.value());
+            agentInfo.SetIP(agentInfoOptionalData.ip.value());
         }
 
         return agentInfo;
@@ -79,17 +79,15 @@ namespace
 
 namespace registration
 {
-    bool RegisterAgent(const std::string& user,
-                       const std::string& password,
-                       const std::optional<std::string>& name,
-                       const std::optional<std::string>& ip)
+    bool RegisterAgent(const UserCredentials& userCredentials, const AgentInfoOptionalData& agentInfoOptionalData)
     {
 
         const configuration::ConfigurationParser configurationParser;
         const auto managerIp = configurationParser.GetConfig<std::string>("agent", "manager_ip");
         const auto port = configurationParser.GetConfig<std::string>("agent", "port");
 
-        const auto [authResultCode, token] = SendAuthenticationRequest(managerIp, port, user + ":" + password);
+        const auto [authResultCode, token] =
+            SendAuthenticationRequest(managerIp, port, userCredentials.user + ":" + userCredentials.password);
 
         if (authResultCode != http::status::ok)
         {
@@ -97,7 +95,7 @@ namespace registration
             return false;
         }
 
-        const auto agentInfo = GenerateAgentInfo(name, ip);
+        const auto agentInfo = GenerateAgentInfo(agentInfoOptionalData);
 
         if (const auto registrationResultCode = SendRegistrationRequest(
                 managerIp, port, token, agentInfo.GetUUID(), agentInfo.GetName(), agentInfo.GetIP());

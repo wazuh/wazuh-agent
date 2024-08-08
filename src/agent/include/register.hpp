@@ -5,8 +5,17 @@
 
 namespace registration
 {
-    bool RegisterAgent(const std::string& user,
-                       const std::string& password,
-                       const std::optional<std::string>& name,
-                       const std::optional<std::string>& ip);
+    struct UserCredentials
+    {
+        std::string user;
+        std::string password;
+    };
+
+    struct AgentInfoOptionalData
+    {
+        std::optional<std::string> name;
+        std::optional<std::string> ip;
+    };
+
+    bool RegisterAgent(const UserCredentials& userCredentials, const AgentInfoOptionalData& agentInfoOptionalData);
 } // namespace registration

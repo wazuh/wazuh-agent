@@ -4,11 +4,9 @@
 
 TEST(RegistrationTest, RegistrationTest)
 {
-    const std::string user = "user";
-    const std::string password = "123456";
-    const std::optional<std::string> name = "name";
-    const std::optional<std::string> ip = "192.168.56.1.2";
-    const bool res = registration::RegisterAgent(user, password, name, ip);
+    const registration::UserCredentials userCredentials {"user", "123456"};
+    const registration::AgentInfoOptionalData agentInfoOptionalData {"name", "192.168.56.1.2"};
+    const bool res = registration::RegisterAgent(userCredentials, agentInfoOptionalData);
     ASSERT_TRUE(res);
 }
 
