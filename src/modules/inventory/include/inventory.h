@@ -16,8 +16,6 @@
 #include "dbsync.hpp"
 #include "inventoryNormalizer.h"
 
-#define log(a, b) log1(a, b, __FILE__, __LINE__)
-
 class Inventory {
     public:
         static Inventory& instance()
@@ -76,11 +74,10 @@ class Inventory {
         void syncLoop(std::unique_lock<std::mutex>& lock);
         void syncAlgorithm();
 
-        static void log1(const modules_log_level_t level, const std::string& log, const char* file, int line);
+        static void log(const modules_log_level_t level, const std::string& log);
         static void logError(const std::string& log);
 
         std::shared_ptr<ISysInfo>                   m_spInfo;
-        std::function<void(const std::string&)>     m_reportDiffFunction;
         std::function<void(const std::string&)>     m_reportSyncFunction;
         std::chrono::seconds                        m_intervalValue;
         std::chrono::seconds                        m_currentIntervalValue;
@@ -103,16 +100,16 @@ class Inventory {
         std::string                                 m_scanTime;
         std::chrono::seconds                        m_lastSyncMsg;
 
-        void wm_inv_send_diff_message(const std::string& data);
-        void wm_inv_send_dbsync_message(const std::string& data);
-        void wm_inv_send_message(std::string data, const char queue_id);
-        void wm_inv_log_config();
+        void send_diff_message(const std::string& data);
+        void send_dbsync_message(const std::string& data);
+        void send_message(std::string data, const char queue_id);
+        void log_config();
 
         void inventory_start();
         int inventory_sync_message(const char* data);
 
 
-        cJSON * wm_inv_dump();
+        cJSON * dump();
 
         unsigned int interval;
 
