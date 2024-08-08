@@ -99,8 +99,8 @@ namespace registration
 
         const auto agentInfo = GenerateAgentInfo(name, ip);
 
-        if (const auto registrationResultCode =
-                SendRegistrationRequest(managerIp, port, token, agentInfo.GetUUID(), name, ip);
+        if (const auto registrationResultCode = SendRegistrationRequest(
+                managerIp, port, token, agentInfo.GetUUID(), agentInfo.GetName(), agentInfo.GetIP());
             registrationResultCode != http::status::ok)
         {
             std::cout << "Registration error: " << registrationResultCode << std::endl;
