@@ -43,11 +43,8 @@ namespace http_client
                           boost::beast::http::request<boost::beast::http::string_body>& req,
                           boost::beast::error_code& ec);
 
-    boost::asio::awaitable<void> Co_MessageProcessingTask(const boost::beast::http::verb method,
-                                                          const std::string host,
-                                                          const std::string port,
-                                                          const std::string endpoint,
-                                                          const std::string& token,
+    boost::asio::awaitable<void> Co_MessageProcessingTask(const std::string& token,
+                                                          HttpRequestParams params,
                                                           std::function<std::string()> messageGetter);
 
     boost::beast::http::response<boost::beast::http::dynamic_body> SendHttpRequest(const HttpRequestParams& params);

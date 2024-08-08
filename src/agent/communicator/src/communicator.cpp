@@ -79,8 +79,9 @@ namespace communicator
 
     boost::asio::awaitable<void> Communicator::GetCommandsFromManager()
     {
-        co_await http_client::Co_MessageProcessingTask(
-            boost::beast::http::verb::get, m_managerIp, m_port, "/commands", m_token, {});
+        const auto reqParams =
+            http_client::HttpRequestParams(boost::beast::http::verb::get, m_managerIp, m_port, "/commands");
+        co_await http_client::Co_MessageProcessingTask(m_token, reqParams, {});
     }
 
     boost::asio::awaitable<void> Communicator::WaitForTokenExpirationAndAuthenticate()
@@ -118,13 +119,15 @@ namespace communicator
 
     boost::asio::awaitable<void> Communicator::StatefulMessageProcessingTask(std::queue<std::string>& messageQueue)
     {
-        co_await http_client::Co_MessageProcessingTask(
-            boost::beast::http::verb::post, m_managerIp, m_port, "/stateful", m_token, {});
+        const auto reqParams =
+            http_client::HttpRequestParams(boost::beast::http::verb::post, m_managerIp, m_port, "/stateful");
+        co_await http_client::Co_MessageProcessingTask(m_token, reqParams, {});
     }
 
     boost::asio::awaitable<void> Communicator::StatelessMessageProcessingTask(std::queue<std::string>& messageQueue)
     {
-        co_await http_client::Co_MessageProcessingTask(
-            boost::beast::http::verb::post, m_managerIp, m_port, "/stateless", m_token, {});
+        const auto reqParams =
+            http_client::HttpRequestParams(boost::beast::http::verb::post, m_managerIp, m_port, "/stateless");
+        co_await http_client::Co_MessageProcessingTask(m_token, reqParams, {});
     }
 } // namespace communicator

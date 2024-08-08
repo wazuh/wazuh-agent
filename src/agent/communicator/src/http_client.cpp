@@ -61,11 +61,8 @@ namespace http_client
         std::cout << "Response body: " << boost::beast::buffers_to_string(res.body().data()) << std::endl;
     }
 
-    boost::asio::awaitable<void> Co_MessageProcessingTask(const boost::beast::http::verb method,
-                                                          const std::string host,
-                                                          const std::string port,
-                                                          const std::string endpoint,
-                                                          const std::string& token,
+    boost::asio::awaitable<void> Co_MessageProcessingTask(const std::string& token,
+                                                          HttpRequestParams reqParams,
                                                           std::function<std::string()> messageGetter)
     {
         using namespace std::chrono_literals;
@@ -78,7 +75,8 @@ namespace http_client
         {
             boost::asio::ip::tcp::socket socket(executor);
 
-            const auto results = co_await resolver.async_resolve(host, port, boost::asio::use_awaitable);
+            const auto results =
+                co_await resolver.async_resolve(reqParams.host, reqParams.port, boost::asio::use_awaitable);
 
             boost::system::error_code code;
             co_await boost::asio::async_connect(
@@ -92,8 +90,8 @@ namespace http_client
                 continue;
             }
 
-            const auto message = messageGetter ? messageGetter() : "";
-            const auto reqParams = HttpRequestParams(method, host, port, endpoint, token, "", message);
+            reqParams.body = messageGetter ? messageGetter() : "";
+            reqParams.token = token;
             auto req = CreateHttpRequest(reqParams);
 
             boost::beast::error_code ec;
