@@ -30,7 +30,8 @@ namespace communicator
 
     Communicator::~Communicator()
     {
-        Stop();
+        std::lock_guard<std::mutex> lock(m_exitMtx);
+        m_exitFlag = true;
     }
 
     boost::beast::http::status Communicator::SendAuthenticationRequest()
@@ -68,12 +69,6 @@ namespace communicator
         const auto now = std::chrono::system_clock::now();
         const auto now_seconds = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
         return std::max(0L, static_cast<long>(m_tokenExpTimeInSeconds - now_seconds));
-    }
-
-    void Communicator::Stop()
-    {
-        std::lock_guard<std::mutex> lock(m_exitMtx);
-        m_exitFlag = true;
     }
 
     boost::asio::awaitable<void> Communicator::GetCommandsFromManager()

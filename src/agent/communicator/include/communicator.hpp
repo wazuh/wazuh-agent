@@ -30,8 +30,6 @@ namespace communicator
 
         void TryReAuthenticate();
 
-        void Stop();
-
         std::mutex m_exitMtx;
         std::atomic<bool> m_exitFlag = false;
 
