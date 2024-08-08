@@ -38,7 +38,7 @@ namespace
 
         const auto reqParams =
             http_client::HttpRequestParams(http::verb::post, host, port, "/agents", token, "", bodyJson.dump());
-        const http::response<http::dynamic_body> res = http_client::SendHttpRequest(reqParams);
+        const http::response<http::dynamic_body> res = http_client::PerformHttpRequest(reqParams);
         return res.result();
     }
 } // namespace

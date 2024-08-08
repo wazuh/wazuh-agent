@@ -52,7 +52,7 @@ namespace http_client
                                                           std::function<void()> onUnauthorized,
                                                           std::function<void(const std::string&)> onSuccess = {});
 
-    boost::beast::http::response<boost::beast::http::dynamic_body> SendHttpRequest(const HttpRequestParams& params);
+    boost::beast::http::response<boost::beast::http::dynamic_body> PerformHttpRequest(const HttpRequestParams& params);
 
     std::optional<std::string>
     AuthenticateWithUuid(const std::string& host, const std::string& port, const std::string& uuid);

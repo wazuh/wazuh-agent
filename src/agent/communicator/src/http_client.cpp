@@ -6,7 +6,7 @@ namespace
 {
     std::optional<std::string> GetTokenFromResponse(const http_client::HttpRequestParams& reqParams)
     {
-        const auto res = http_client::SendHttpRequest(reqParams);
+        const auto res = http_client::PerformHttpRequest(reqParams);
 
         if (res.result() != boost::beast::http::status::ok)
         {
@@ -147,7 +147,7 @@ namespace http_client
         }
     }
 
-    boost::beast::http::response<boost::beast::http::dynamic_body> SendHttpRequest(const HttpRequestParams& params)
+    boost::beast::http::response<boost::beast::http::dynamic_body> PerformHttpRequest(const HttpRequestParams& params)
     {
         boost::beast::http::response<boost::beast::http::dynamic_body> res;
 
