@@ -24,7 +24,7 @@ namespace communicator
         if (GetStringConfigValue != nullptr)
         {
             m_managerIp = GetStringConfigValue("agent", "manager_ip");
-            m_port = GetStringConfigValue("agent", "manager_port");
+            m_port = GetStringConfigValue("agent", "agent_comms_api_port");
         }
     }
 

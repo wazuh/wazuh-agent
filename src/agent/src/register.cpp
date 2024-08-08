@@ -49,7 +49,7 @@ namespace registration
     {
         const configuration::ConfigurationParser configurationParser;
         const auto managerIp = configurationParser.GetConfig<std::string>("agent", "manager_ip");
-        const auto managerPort = configurationParser.GetConfig<std::string>("agent", "manager_port");
+        const auto managerPort = configurationParser.GetConfig<std::string>("agent", "server_mgmt_api_port");
 
         const auto token = http_client::AuthenticateWithUserPassword(
             managerIp, managerPort, userCredentials.user, userCredentials.password);
