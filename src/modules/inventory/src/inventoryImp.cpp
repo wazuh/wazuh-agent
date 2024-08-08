@@ -967,8 +967,8 @@ void Inventory::notifyChange(ReturnTypeCallback result, const nlohmann::json& da
                 msg["data"]["scan_time"] = m_scanTime;
                 removeKeysWithEmptyValue(msg["data"]);
                 const auto msgToSend{msg.dump()};
-                m_reportDiffFunction(msgToSend);
-                log(LOG_DEBUG_VERBOSE, "Delta sent: " + msgToSend);
+                send_diff_message(msgToSend);
+                log(LOG_INFO, "Delta sent: " + msgToSend);
             }
         }
         else
@@ -981,8 +981,8 @@ void Inventory::notifyChange(ReturnTypeCallback result, const nlohmann::json& da
             msg["data"]["scan_time"] = m_scanTime;
             removeKeysWithEmptyValue(msg["data"]);
             const auto msgToSend{msg.dump()};
-            m_reportDiffFunction(msgToSend);
-            log(LOG_DEBUG_VERBOSE, "Delta sent: " + msgToSend);
+            send_diff_message(msgToSend);
+            log(LOG_INFO, "Delta sent: " + msgToSend);
             // LCOV_EXCL_STOP
         }
     }
