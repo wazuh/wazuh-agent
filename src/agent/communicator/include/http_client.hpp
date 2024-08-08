@@ -43,12 +43,14 @@ namespace http_client
     Co_PerformHttpRequest(boost::asio::ip::tcp::socket& socket,
                           boost::beast::http::request<boost::beast::http::string_body>& req,
                           boost::beast::error_code& ec,
-                          std::function<void()> onUnauthorized);
+                          std::function<void()> onUnauthorized,
+                          std::function<void(const std::string&)> onSuccess = {});
 
     boost::asio::awaitable<void> Co_MessageProcessingTask(const std::string& token,
                                                           HttpRequestParams params,
                                                           std::function<std::string()> messageGetter,
-                                                          std::function<void()> onUnauthorized);
+                                                          std::function<void()> onUnauthorized,
+                                                          std::function<void(const std::string&)> onSuccess = {});
 
     boost::beast::http::response<boost::beast::http::dynamic_body> SendHttpRequest(const HttpRequestParams& params);
 

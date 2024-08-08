@@ -54,7 +54,8 @@ namespace http_client
     Co_PerformHttpRequest(boost::asio::ip::tcp::socket& socket,
                           boost::beast::http::request<boost::beast::http::string_body>& req,
                           boost::beast::error_code& ec,
-                          std::function<void()> onUnauthorized)
+                          std::function<void()> onUnauthorized,
+                          std::function<void(const std::string&)> onSuccess)
     {
         co_await boost::beast::http::async_write(
             socket, req, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
@@ -77,7 +78,18 @@ namespace http_client
 
         if (res.result_int() == static_cast<int>(boost::beast::http::status::unauthorized))
         {
-            onUnauthorized();
+            if (onUnauthorized != nullptr)
+            {
+                onUnauthorized();
+            }
+        }
+
+        if (res.result_int() == static_cast<int>(boost::beast::http::status::ok))
+        {
+            if (onSuccess != nullptr)
+            {
+                onSuccess(boost::beast::buffers_to_string(res.body().data()));
+            }
         }
 
         std::cout << "Response code: " << res.result_int() << std::endl;
@@ -87,7 +99,8 @@ namespace http_client
     boost::asio::awaitable<void> Co_MessageProcessingTask(const std::string& token,
                                                           HttpRequestParams reqParams,
                                                           std::function<std::string()> messageGetter,
-                                                          std::function<void()> onUnauthorized)
+                                                          std::function<void()> onUnauthorized,
+                                                          std::function<void(const std::string&)> onSuccess)
     {
         using namespace std::chrono_literals;
 
@@ -121,7 +134,7 @@ namespace http_client
             auto req = CreateHttpRequest(reqParams);
 
             boost::beast::error_code ec;
-            co_await Co_PerformHttpRequest(socket, req, ec, onUnauthorized);
+            co_await Co_PerformHttpRequest(socket, req, ec, onUnauthorized, onSuccess);
 
             if (ec)
             {
