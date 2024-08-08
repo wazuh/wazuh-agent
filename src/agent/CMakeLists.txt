@@ -17,14 +17,6 @@ set(SOURCES
     src/signal_handler.cpp
 )
 
-set(HEADERS
-    include/agent.hpp
-    include/itask_manager.hpp
-    include/task_manager.hpp
-    include/register.hpp
-    include/signal_handler.hpp
-)
-
 add_subdirectory(agent_info)
 add_subdirectory(communicator)
 add_subdirectory(configuration_parser)
@@ -32,7 +24,7 @@ add_subdirectory(configuration_parser)
 find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio beast)
 
-add_library(agent ${SOURCES} ${HEADERS})
+add_library(agent ${SOURCES})
 target_include_directories(agent PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(agent PUBLIC ConfigurationParser communicator AgentInfo PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::asio Boost::beast)
 
