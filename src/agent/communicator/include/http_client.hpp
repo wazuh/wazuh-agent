@@ -8,6 +8,34 @@
 
 namespace http_client
 {
+    struct HttpRequestParams
+    {
+        boost::beast::http::verb method;
+        std::string url;
+        std::string host;
+        std::string token;
+        std::string body;
+        std::string user_pass;
+        std::string port;
+
+        HttpRequestParams(boost::beast::http::verb method,
+                          const std::string& url,
+                          const std::string& host,
+                          const std::string& token = "",
+                          const std::string& body = "",
+                          const std::string& user_pass = "",
+                          const std::string& port = "")
+            : method(method)
+            , url(url)
+            , host(host)
+            , token(token)
+            , body(body)
+            , user_pass(user_pass)
+            , port(port)
+        {
+        }
+    };
+
     boost::beast::http::request<boost::beast::http::string_body>
     CreateHttpRequest(const boost::beast::http::verb method,
                       const std::string& url,
