@@ -18,7 +18,7 @@ Agent::~Agent()
 void Agent::Run()
 {
     m_taskManager.EnqueueTask(m_communicator.WaitForTokenExpirationAndAuthenticate());
-    m_taskManager.EnqueueTask(m_communicator.GetCommandsFromManager());
+    m_taskManager.EnqueueTask(m_communicator.GetCommandsFromManager(m_messageQueue));
     m_taskManager.EnqueueTask(m_communicator.StatefulMessageProcessingTask(m_messageQueue));
     m_taskManager.EnqueueTask(m_communicator.StatelessMessageProcessingTask(m_messageQueue));
 

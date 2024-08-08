@@ -19,8 +19,8 @@ namespace communicator
         Communicator(const std::string& uuid,
                      const std::function<std::string(std::string, std::string)> GetStringConfigValue);
 
-        boost::asio::awaitable<void> GetCommandsFromManager();
         boost::asio::awaitable<void> WaitForTokenExpirationAndAuthenticate();
+        boost::asio::awaitable<void> GetCommandsFromManager(std::queue<std::string>& messageQueue);
         boost::asio::awaitable<void> StatefulMessageProcessingTask(std::queue<std::string>& messageQueue);
         boost::asio::awaitable<void> StatelessMessageProcessingTask(std::queue<std::string>& messageQueue);
 

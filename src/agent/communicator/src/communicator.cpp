@@ -67,7 +67,7 @@ namespace communicator
         return std::max(0L, static_cast<long>(m_tokenExpTimeInSeconds - now_seconds));
     }
 
-    boost::asio::awaitable<void> Communicator::GetCommandsFromManager()
+    boost::asio::awaitable<void> Communicator::GetCommandsFromManager(std::queue<std::string>& messageQueue)
     {
         auto onAuthenticationFailed = [this]()
         {
