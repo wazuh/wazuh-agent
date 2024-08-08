@@ -9,7 +9,8 @@
 
 TEST(CreateHttpRequestTest, BasicGetRequest)
 {
-    const auto req = http_client::CreateHttpRequest(boost::beast::http::verb::get, "/test", "localhost", "", "", "");
+    const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "/test", "localhost");
+    const auto req = http_client::CreateHttpRequest(reqParams);
 
     EXPECT_EQ(req.method(), boost::beast::http::verb::get);
     EXPECT_EQ(req.target(), "/test");
@@ -22,8 +23,9 @@ TEST(CreateHttpRequestTest, BasicGetRequest)
 TEST(CreateHttpRequestTest, PostRequestWithBody)
 {
     const std::string body = R"({"key": "value"})";
-    const auto req =
-        http_client::CreateHttpRequest(boost::beast::http::verb::post, "/submit", "localhost", "", body, "");
+    const auto reqParams =
+        http_client::HttpRequestParams(boost::beast::http::verb::post, "/submit", "localhost", "", body);
+    const auto req = http_client::CreateHttpRequest(reqParams);
 
     EXPECT_EQ(req.method(), boost::beast::http::verb::post);
     EXPECT_EQ(req.target(), "/submit");
@@ -38,8 +40,8 @@ TEST(CreateHttpRequestTest, PostRequestWithBody)
 TEST(CreateHttpRequestTest, AuthorizationBearerToken)
 {
     const std::string token = "dummy_token";
-    const auto req =
-        http_client::CreateHttpRequest(boost::beast::http::verb::get, "/secure", "localhost", token, "", "");
+    const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "/secure", "localhost", token);
+    const auto req = http_client::CreateHttpRequest(reqParams);
 
     EXPECT_EQ(req[boost::beast::http::field::authorization], "Bearer dummy_token");
 }
@@ -47,8 +49,9 @@ TEST(CreateHttpRequestTest, AuthorizationBearerToken)
 TEST(CreateHttpRequestTest, AuthorizationBasic)
 {
     const std::string user_pass = "username:password";
-    const auto req =
-        http_client::CreateHttpRequest(boost::beast::http::verb::get, "/secure", "localhost", "", "", user_pass);
+    const auto reqParams =
+        http_client::HttpRequestParams(boost::beast::http::verb::get, "/secure", "localhost", "", "", user_pass);
+    const auto req = http_client::CreateHttpRequest(reqParams);
 
     EXPECT_EQ(req[boost::beast::http::field::authorization], "Basic username:password");
 }

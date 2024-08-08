@@ -4,35 +4,29 @@
 
 namespace http_client
 {
-    boost::beast::http::request<boost::beast::http::string_body>
-    CreateHttpRequest(const boost::beast::http::verb method,
-                      const std::string& url,
-                      const std::string& host,
-                      const std::string& token,
-                      const std::string& body,
-                      const std::string& user_pass)
+    boost::beast::http::request<boost::beast::http::string_body> CreateHttpRequest(const HttpRequestParams& params)
     {
         static constexpr int HttpVersion1_1 = 11;
 
-        boost::beast::http::request<boost::beast::http::string_body> req {method, url, HttpVersion1_1};
-        req.set(boost::beast::http::field::host, host);
+        boost::beast::http::request<boost::beast::http::string_body> req {params.method, params.url, HttpVersion1_1};
+        req.set(boost::beast::http::field::host, params.host);
         req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
         req.set(boost::beast::http::field::accept, "application/json");
 
-        if (!token.empty())
+        if (!params.token.empty())
         {
-            req.set(boost::beast::http::field::authorization, "Bearer " + token);
+            req.set(boost::beast::http::field::authorization, "Bearer " + params.token);
         }
 
-        if (!user_pass.empty())
+        if (!params.user_pass.empty())
         {
-            req.set(boost::beast::http::field::authorization, "Basic " + user_pass);
+            req.set(boost::beast::http::field::authorization, "Basic " + params.user_pass);
         }
 
-        if (!body.empty())
+        if (!params.body.empty())
         {
             req.set(boost::beast::http::field::content_type, "application/json");
-            req.body() = body;
+            req.body() = params.body;
             req.prepare_payload();
         }
 
@@ -58,7 +52,8 @@ namespace http_client
             boost::asio::ip::tcp::socket socket(io_context);
             boost::asio::connect(socket, results.begin(), results.end());
 
-            auto req = CreateHttpRequest(method, url, managerIp, token, body, user_pass);
+            const auto reqParams = HttpRequestParams(method, url, managerIp, token, body, user_pass, port);
+            const auto req = CreateHttpRequest(reqParams);
 
             boost::beast::http::write(socket, req);
 
@@ -139,8 +134,8 @@ namespace http_client
             }
 
             const auto message = messageGetter ? messageGetter() : "";
-
-            auto req = CreateHttpRequest(method, target, host, token, message);
+            const auto reqParams = HttpRequestParams(method, target, host, token, message, "", port);
+            auto req = CreateHttpRequest(reqParams);
 
             boost::beast::error_code ec;
             co_await Co_PerformHttpRequest(socket, req, ec);
@@ -176,7 +171,8 @@ namespace http_client
             boost::asio::ip::tcp::socket socket(io_context);
             boost::asio::connect(socket, results.begin(), results.end());
 
-            auto req = CreateHttpRequest(method, url, ip, token, body);
+            const auto reqParams = HttpRequestParams(method, url, ip, token, body, "", port);
+            const auto req = CreateHttpRequest(reqParams);
 
             boost::beast::http::write(socket, req);
 
