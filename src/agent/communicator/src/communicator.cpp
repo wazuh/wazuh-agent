@@ -58,6 +58,8 @@ namespace communicator
         else
         {
             std::cerr << "Token does not contain an 'exp' claim" << std::endl;
+            m_token.clear();
+            m_tokenExpTimeInSeconds = 1;
             return boost::beast::http::status::unauthorized;
         }
 
