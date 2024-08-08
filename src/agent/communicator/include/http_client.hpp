@@ -11,27 +11,27 @@ namespace http_client
     struct HttpRequestParams
     {
         boost::beast::http::verb method;
-        std::string url;
         std::string host;
-        std::string token;
-        std::string body;
-        std::string user_pass;
         std::string port;
+        std::string endpoint;
+        std::string token;
+        std::string user_pass;
+        std::string body;
 
         HttpRequestParams(boost::beast::http::verb method,
-                          const std::string& url,
                           const std::string& host,
+                          const std::string& port,
+                          const std::string& endpoint,
                           const std::string& token = "",
-                          const std::string& body = "",
                           const std::string& user_pass = "",
-                          const std::string& port = "")
+                          const std::string& body = "")
             : method(method)
-            , url(url)
             , host(host)
-            , token(token)
-            , body(body)
-            , user_pass(user_pass)
             , port(port)
+            , endpoint(endpoint)
+            , token(token)
+            , user_pass(user_pass)
+            , body(body)
         {
         }
     };
@@ -46,7 +46,7 @@ namespace http_client
     boost::asio::awaitable<void> Co_MessageProcessingTask(const boost::beast::http::verb method,
                                                           const std::string host,
                                                           const std::string port,
-                                                          const std::string target,
+                                                          const std::string endpoint,
                                                           const std::string& token,
                                                           std::function<std::string()> messageGetter);
 

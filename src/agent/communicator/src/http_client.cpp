@@ -8,7 +8,8 @@ namespace http_client
     {
         static constexpr int HttpVersion1_1 = 11;
 
-        boost::beast::http::request<boost::beast::http::string_body> req {params.method, params.url, HttpVersion1_1};
+        boost::beast::http::request<boost::beast::http::string_body> req {
+            params.method, params.endpoint, HttpVersion1_1};
         req.set(boost::beast::http::field::host, params.host);
         req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
         req.set(boost::beast::http::field::accept, "application/json");
@@ -63,7 +64,7 @@ namespace http_client
     boost::asio::awaitable<void> Co_MessageProcessingTask(const boost::beast::http::verb method,
                                                           const std::string host,
                                                           const std::string port,
-                                                          const std::string target,
+                                                          const std::string endpoint,
                                                           const std::string& token,
                                                           std::function<std::string()> messageGetter)
     {
@@ -92,7 +93,7 @@ namespace http_client
             }
 
             const auto message = messageGetter ? messageGetter() : "";
-            const auto reqParams = HttpRequestParams(method, target, host, token, message, "", port);
+            const auto reqParams = HttpRequestParams(method, host, port, endpoint, token, "", message);
             auto req = CreateHttpRequest(reqParams);
 
             boost::beast::error_code ec;

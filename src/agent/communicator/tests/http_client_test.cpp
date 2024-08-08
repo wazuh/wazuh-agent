@@ -9,7 +9,7 @@
 
 TEST(CreateHttpRequestTest, BasicGetRequest)
 {
-    const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "/test", "localhost");
+    const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/test");
     const auto req = http_client::CreateHttpRequest(reqParams);
 
     EXPECT_EQ(req.method(), boost::beast::http::verb::get);
@@ -24,7 +24,7 @@ TEST(CreateHttpRequestTest, PostRequestWithBody)
 {
     const std::string body = R"({"key": "value"})";
     const auto reqParams =
-        http_client::HttpRequestParams(boost::beast::http::verb::post, "/submit", "localhost", "", body);
+        http_client::HttpRequestParams(boost::beast::http::verb::post, "localhost", "8080", "/submit", "", "", body);
     const auto req = http_client::CreateHttpRequest(reqParams);
 
     EXPECT_EQ(req.method(), boost::beast::http::verb::post);
@@ -40,7 +40,8 @@ TEST(CreateHttpRequestTest, PostRequestWithBody)
 TEST(CreateHttpRequestTest, AuthorizationBearerToken)
 {
     const std::string token = "dummy_token";
-    const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "/secure", "localhost", token);
+    const auto reqParams =
+        http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/secure", token);
     const auto req = http_client::CreateHttpRequest(reqParams);
 
     EXPECT_EQ(req[boost::beast::http::field::authorization], "Bearer dummy_token");
@@ -50,7 +51,7 @@ TEST(CreateHttpRequestTest, AuthorizationBasic)
 {
     const std::string user_pass = "username:password";
     const auto reqParams =
-        http_client::HttpRequestParams(boost::beast::http::verb::get, "/secure", "localhost", "", "", user_pass);
+        http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/secure", "", user_pass);
     const auto req = http_client::CreateHttpRequest(reqParams);
 
     EXPECT_EQ(req[boost::beast::http::field::authorization], "Basic username:password");

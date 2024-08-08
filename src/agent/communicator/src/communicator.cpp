@@ -39,7 +39,7 @@ namespace communicator
     {
         const nlohmann::json bodyJson = {{"uuid", m_uuid}};
         const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::post, "/authentication", m_managerIp, "", bodyJson.dump(), "", m_port);
+            boost::beast::http::verb::post, m_managerIp, m_port, "/authentication", "", "", bodyJson.dump());
         const auto res = http_client::SendHttpRequest(reqParams);
 
         if (res.result() != boost::beast::http::status::ok)
