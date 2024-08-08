@@ -28,12 +28,6 @@ namespace communicator
         }
     }
 
-    Communicator::~Communicator()
-    {
-        std::lock_guard<std::mutex> lock(m_exitMtx);
-        m_exitFlag = true;
-    }
-
     boost::beast::http::status Communicator::SendAuthenticationRequest()
     {
         const auto token = http_client::AuthenticateWithUuid(m_managerIp, m_port, m_uuid);
@@ -108,12 +102,6 @@ namespace communicator
 
             m_tokenExpTimer->expires_after(duration);
             co_await m_tokenExpTimer->async_wait(boost::asio::use_awaitable);
-
-            {
-                std::lock_guard<std::mutex> lock(m_exitMtx);
-                if (m_exitFlag)
-                    co_return;
-            }
         }
     }
 

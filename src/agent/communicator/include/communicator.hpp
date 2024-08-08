@@ -18,7 +18,6 @@ namespace communicator
     public:
         Communicator(const std::string& uuid,
                      const std::function<std::string(std::string, std::string)> GetStringConfigValue);
-        ~Communicator();
 
         boost::asio::awaitable<void> GetCommandsFromManager();
         boost::asio::awaitable<void> WaitForTokenExpirationAndAuthenticate();
@@ -31,9 +30,6 @@ namespace communicator
         boost::beast::http::status SendAuthenticationRequest();
 
         void TryReAuthenticate();
-
-        std::mutex m_exitMtx;
-        std::atomic<bool> m_exitFlag = false;
 
         std::mutex m_reAuthMutex;
         std::atomic<bool> m_isReAuthenticating = false;
