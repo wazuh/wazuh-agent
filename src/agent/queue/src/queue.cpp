@@ -12,7 +12,7 @@
 
 #include "queue.hpp"
 
-int MultiTypeQueue::timeoutPush(Message message, bool shouldWait)
+int MultiTypeQueue::push(Message message, bool shouldWait)
 {
     int result = 0;
 
@@ -63,17 +63,17 @@ int MultiTypeQueue::timeoutPush(Message message, bool shouldWait)
     return result;
 }
 
-int MultiTypeQueue::timeoutPush(std::vector<Message> messages)
+int MultiTypeQueue::push(std::vector<Message> messages)
 {
     int result = 0;
     for (const auto& singleMessage : messages)
     {
-        result += timeoutPush(singleMessage);
+        result += push(singleMessage);
     }
     return result;
 }
 
-Message MultiTypeQueue::getLastMessage(MessageType type, const std::string moduleName)
+Message MultiTypeQueue::getNext(MessageType type, const std::string moduleName)
 {
     Message result(type, "{}"_json, moduleName);
     if (m_mapMessageTypeName.contains(type))
@@ -96,7 +96,7 @@ Message MultiTypeQueue::getLastMessage(MessageType type, const std::string modul
     return result;
 }
 
-std::vector<Message> MultiTypeQueue::getNMessages(MessageType type, int messageQuantity, const std::string moduleName)
+std::vector<Message> MultiTypeQueue::getNextN(MessageType type, int messageQuantity, const std::string moduleName)
 {
     std::vector<Message> result;
     if (m_mapMessageTypeName.contains(type))
@@ -121,7 +121,7 @@ std::vector<Message> MultiTypeQueue::getNMessages(MessageType type, int messageQ
     return result;
 }
 
-bool MultiTypeQueue::popLastMessage(MessageType type, const std::string moduleName)
+bool MultiTypeQueue::pop(MessageType type, const std::string moduleName)
 {
     bool result = false;
     if (m_mapMessageTypeName.contains(type))
@@ -137,7 +137,7 @@ bool MultiTypeQueue::popLastMessage(MessageType type, const std::string moduleNa
     return result;
 }
 
-int MultiTypeQueue::popNMessages(MessageType type, int messageQuantity, const std::string moduleName)
+int MultiTypeQueue::popN(MessageType type, int messageQuantity, const std::string moduleName)
 {
     int result = 0;
     if (m_mapMessageTypeName.contains(type))
@@ -152,7 +152,7 @@ int MultiTypeQueue::popNMessages(MessageType type, int messageQuantity, const st
     return result;
 }
 
-bool MultiTypeQueue::isEmptyByType(MessageType type, const std::string moduleName)
+bool MultiTypeQueue::isEmpty(MessageType type, const std::string moduleName)
 {
     if (m_mapMessageTypeName.contains(type))
     {
@@ -166,7 +166,7 @@ bool MultiTypeQueue::isEmptyByType(MessageType type, const std::string moduleNam
     return false;
 }
 
-bool MultiTypeQueue::isFullByType(MessageType type, const std::string moduleName)
+bool MultiTypeQueue::isFull(MessageType type, const std::string moduleName)
 {
     if (m_mapMessageTypeName.contains(type))
     {
@@ -180,7 +180,7 @@ bool MultiTypeQueue::isFullByType(MessageType type, const std::string moduleName
     return false;
 }
 
-int MultiTypeQueue::getItemsByType(MessageType type, const std::string moduleName)
+int MultiTypeQueue::storedItems(MessageType type, const std::string moduleName)
 {
     if (m_mapMessageTypeName.contains(type))
     {

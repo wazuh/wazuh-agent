@@ -93,7 +93,7 @@ public:
      * @param shouldWait when true, the function will wait until the message is pushed
      * @return int number of messages pushed
      */
-    int timeoutPush(Message message, bool shouldWait = false);
+    int push(Message message, bool shouldWait = false);
 
     /**
      * @brief pushes a vector of messages
@@ -102,7 +102,7 @@ public:
      * @param shouldWait when true, the function will wait until the message is pushed
      * @return int number of messages pushed
      */
-    int timeoutPush(std::vector<Message> messages);
+    int push(std::vector<Message> messages);
 
     /**
      * @brief Get the Last Message object
@@ -110,7 +110,7 @@ public:
      * @param type
      * @return Message
      */
-    Message getLastMessage(MessageType type, const std::string module = "");
+    Message getNext(MessageType type, const std::string module = "");
 
     /**
      * @brief Returns N messages from a queue
@@ -120,7 +120,7 @@ public:
      * @param messageQuantity quantity of messages to return
      * @return Message Json data othe messages fetched
      */
-    std::vector<Message> getNMessages(MessageType type, int messageQuantity, const std::string moduleName = "");
+    std::vector<Message> getNextN(MessageType type, int messageQuantity, const std::string moduleName = "");
 
     /**
      * @brief deletes a message from a queue
@@ -130,7 +130,7 @@ public:
      * @return true popped succesfully
      * @return false wasn't able to pop message
      */
-    bool popLastMessage(MessageType type, const std::string moduleName = "");
+    bool pop(MessageType type, const std::string moduleName = "");
 
     /**
      * @brief
@@ -140,7 +140,7 @@ public:
      * @param messageQuantity
      * @return Number of messages deleted
      */
-    int popNMessages(MessageType type, int messageQuantity, const std::string moduleName = "");
+    int popN(MessageType type, int messageQuantity, const std::string moduleName = "");
 
     /**
      * @brief Checks emptyness of a queue
@@ -150,7 +150,7 @@ public:
      * @return true when queue empty
      * @return false otherwise
      */
-    bool isEmptyByType(MessageType type, const std::string moduleName = "");
+    bool isEmpty(MessageType type, const std::string moduleName = "");
 
     /**
      * @brief Checks fullness of a queue
@@ -160,7 +160,7 @@ public:
      * @return true when queue is full
      * @return false otherwise
      */
-    bool isFullByType(MessageType type, const std::string moduleName = "");
+    bool isFull(MessageType type, const std::string moduleName = "");
 
     /**
      * @brief Get the Items By Type object
@@ -170,7 +170,7 @@ public:
      * @return true
      * @return false
      */
-    int getItemsByType(MessageType type, const std::string moduleName = "");
+    int storedItems(MessageType type, const std::string moduleName = "");
 };
 
 #endif // QUEUE_H

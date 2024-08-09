@@ -137,8 +137,8 @@ TEST_F(QueueTest, SinglePushGetNotEmpty)
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, baseDataContent};
 
-    EXPECT_EQ(queue.timeoutPush(messageToSend), 1);
-    auto messageResponse = queue.getLastMessage(MessageType::STATELESS);
+    EXPECT_EQ(queue.push(messageToSend), 1);
+    auto messageResponse = queue.getNext(MessageType::STATELESS);
 
     auto typeSend = messageToSend.type;
     auto typeReceived = messageResponse.type;
@@ -147,32 +147,32 @@ TEST_F(QueueTest, SinglePushGetNotEmpty)
     auto dataResponse = messageResponse.data.at(0).at("data");
     EXPECT_EQ(dataResponse, baseDataContent);
 
-    EXPECT_FALSE(queue.isEmptyByType(MessageType::STATELESS));
+    EXPECT_FALSE(queue.isEmpty(MessageType::STATELESS));
 }
 
-// timeoutPush and pop on a non-full queue
+// push and pop on a non-full queue
 TEST_F(QueueTest, SinglePushPopEmpty)
 {
     MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, baseDataContent};
 
-    EXPECT_EQ(queue.timeoutPush(messageToSend), 1);
-    auto messageResponse = queue.getLastMessage(MessageType::STATELESS);
+    EXPECT_EQ(queue.push(messageToSend), 1);
+    auto messageResponse = queue.getNext(MessageType::STATELESS);
     auto dataResponse = messageResponse.data.at(0).at("data");
     EXPECT_EQ(dataResponse, baseDataContent);
     EXPECT_EQ(messageType, messageResponse.type);
 
-    auto messageResponseStateFul = queue.getLastMessage(MessageType::STATEFUL);
+    auto messageResponseStateFul = queue.getNext(MessageType::STATEFUL);
     // TODO: this behavior can be change to return an empty message (type and module empty)
     EXPECT_EQ(messageResponseStateFul.type, MessageType::STATEFUL);
     EXPECT_EQ(messageResponseStateFul.data, "{}"_json);
 
-    queue.popLastMessage(MessageType::STATELESS);
-    EXPECT_TRUE(queue.isEmptyByType(MessageType::STATELESS));
+    queue.pop(MessageType::STATELESS);
+    EXPECT_TRUE(queue.isEmpty(MessageType::STATELESS));
 
-    queue.popLastMessage(MessageType::STATELESS);
-    EXPECT_TRUE(queue.isEmptyByType(MessageType::STATELESS));
+    queue.pop(MessageType::STATELESS);
+    EXPECT_TRUE(queue.isEmpty(MessageType::STATELESS));
 }
 
 TEST_F(QueueTest, SinglePushGetWithModule)
@@ -183,8 +183,8 @@ TEST_F(QueueTest, SinglePushGetWithModule)
     const std::string moduleName = "module";
     const Message messageToSend {messageType, baseDataContent, moduleName};
 
-    EXPECT_EQ(queue.timeoutPush(messageToSend), 1);
-    auto messageResponseWrongModule = queue.getLastMessage(MessageType::STATELESS, moduleFakeName);
+    EXPECT_EQ(queue.push(messageToSend), 1);
+    auto messageResponseWrongModule = queue.getNext(MessageType::STATELESS, moduleFakeName);
 
     auto typeSend = messageToSend.type;
     auto typeReceived = messageResponseWrongModule.type;
@@ -193,7 +193,7 @@ TEST_F(QueueTest, SinglePushGetWithModule)
     EXPECT_EQ(messageResponseWrongModule.moduleName, moduleFakeName);
     EXPECT_EQ(messageResponseWrongModule.data, "{}"_json);
 
-    auto messageResponseCorrectModule = queue.getLastMessage(MessageType::STATELESS, moduleName);
+    auto messageResponseCorrectModule = queue.getNext(MessageType::STATELESS, moduleName);
 
     auto dataResponse = messageResponseCorrectModule.data.at(0).at("data");
     EXPECT_EQ(dataResponse, baseDataContent);
@@ -211,20 +211,20 @@ TEST_F(QueueTest, SinglePushPopFullWithTimeout)
     for (int i : {1, 2})
     {
         const json dataContent = R"({"Data" : "for COMMAND)" + std::to_string(i) + R"("})";
-        EXPECT_EQ(queue.timeoutPush({messageType, dataContent}), 1);
+        EXPECT_EQ(queue.push({messageType, dataContent}), 1);
     }
 
     const json dataContent = R"({"Data" : "for COMMAND3"})";
     Message exampleMessage {messageType, dataContent};
-    EXPECT_EQ(queue.timeoutPush({messageType, dataContent}, true), 0);
+    EXPECT_EQ(queue.push({messageType, dataContent}, true), 0);
 
-    auto items = queue.getItemsByType(MessageType::COMMAND);
+    auto items = queue.storedItems(MessageType::COMMAND);
     EXPECT_EQ(items, SMALL_QUEUE_CAPACITY);
-    EXPECT_TRUE(queue.isFullByType(MessageType::COMMAND));
-    EXPECT_TRUE(queue.isEmptyByType(MessageType::STATELESS));
+    EXPECT_TRUE(queue.isFull(MessageType::COMMAND));
+    EXPECT_TRUE(queue.isEmpty(MessageType::STATELESS));
 
-    queue.popLastMessage(MessageType::COMMAND);
-    items = queue.getItemsByType(MessageType::COMMAND);
+    queue.pop(MessageType::COMMAND);
+    items = queue.storedItems(MessageType::COMMAND);
     EXPECT_NE(items, SMALL_QUEUE_CAPACITY);
 }
 
@@ -237,7 +237,7 @@ TEST_F(QueueTest, MultithreadDifferentType)
     {
         for (int i = 0; i < count; ++i)
         {
-            queue.popLastMessage(MessageType::STATELESS);
+            queue.pop(MessageType::STATELESS);
         }
     };
 
@@ -245,7 +245,7 @@ TEST_F(QueueTest, MultithreadDifferentType)
     {
         for (int i = 0; i < count; ++i)
         {
-            queue.popLastMessage(MessageType::STATEFUL);
+            queue.pop(MessageType::STATEFUL);
         }
     };
 
@@ -254,8 +254,8 @@ TEST_F(QueueTest, MultithreadDifferentType)
         for (int i = 0; i < count; ++i)
         {
             const json dataContent = R"({{"Data", "for STATELESS)" + std::to_string(i) + R"("}})";
-            EXPECT_EQ(queue.timeoutPush(Message(MessageType::STATELESS, dataContent)), 1);
-            EXPECT_EQ(queue.timeoutPush(Message(MessageType::STATEFUL, dataContent)), 1);
+            EXPECT_EQ(queue.push(Message(MessageType::STATELESS, dataContent)), 1);
+            EXPECT_EQ(queue.push(Message(MessageType::STATEFUL, dataContent)), 1);
         }
     };
 
@@ -277,10 +277,10 @@ TEST_F(QueueTest, MultithreadDifferentType)
         consumerThread2.join();
     }
 
-    EXPECT_NE(0, queue.getItemsByType(MessageType::STATELESS));
-    EXPECT_NE(0, queue.getItemsByType(MessageType::STATEFUL));
-    EXPECT_FALSE(queue.isEmptyByType(MessageType::STATELESS));
-    EXPECT_FALSE(queue.isEmptyByType(MessageType::STATEFUL));
+    EXPECT_NE(0, queue.storedItems(MessageType::STATELESS));
+    EXPECT_NE(0, queue.storedItems(MessageType::STATEFUL));
+    EXPECT_FALSE(queue.isEmpty(MessageType::STATELESS));
+    EXPECT_FALSE(queue.isEmpty(MessageType::STATEFUL));
 
     // Consume the rest of the messages
     std::thread consumerThread12(consumerStateLess, std::ref(itemsToConsume));
@@ -297,10 +297,10 @@ TEST_F(QueueTest, MultithreadDifferentType)
     }
 
     // FIXME: this doesn't match
-    EXPECT_EQ(0, queue.getItemsByType(MessageType::STATELESS));
-    EXPECT_EQ(0, queue.getItemsByType(MessageType::STATEFUL));
-    EXPECT_TRUE(queue.isEmptyByType(MessageType::STATELESS));
-    EXPECT_TRUE(queue.isEmptyByType(MessageType::STATEFUL));
+    EXPECT_EQ(0, queue.storedItems(MessageType::STATELESS));
+    EXPECT_EQ(0, queue.storedItems(MessageType::STATEFUL));
+    EXPECT_TRUE(queue.isEmpty(MessageType::STATELESS));
+    EXPECT_TRUE(queue.isEmpty(MessageType::STATEFUL));
 }
 
 // Accesing same queue
@@ -312,7 +312,7 @@ TEST_F(QueueTest, MultithreadSameType)
     {
         for (int i = 0; i < count; ++i)
         {
-            queue.popLastMessage(MessageType::COMMAND);
+            queue.pop(MessageType::COMMAND);
         }
     };
 
@@ -320,7 +320,7 @@ TEST_F(QueueTest, MultithreadSameType)
     {
         for (int i = 0; i < count; ++i)
         {
-            queue.popLastMessage(MessageType::COMMAND);
+            queue.pop(MessageType::COMMAND);
         }
     };
 
@@ -329,7 +329,7 @@ TEST_F(QueueTest, MultithreadSameType)
         for (int i = 0; i < count; ++i)
         {
             const json dataContent = R"({{"Data": "for COMMAND)" + std::to_string(i) + R"("}})";
-            EXPECT_EQ(queue.timeoutPush(Message(MessageType::COMMAND, dataContent)), 1);
+            EXPECT_EQ(queue.push(Message(MessageType::COMMAND, dataContent)), 1);
         }
     };
 
@@ -338,7 +338,7 @@ TEST_F(QueueTest, MultithreadSameType)
 
     messageProducer(itemsToInsert);
 
-    EXPECT_EQ(itemsToInsert, queue.getItemsByType(MessageType::COMMAND));
+    EXPECT_EQ(itemsToInsert, queue.storedItems(MessageType::COMMAND));
 
     std::thread consumerThread1(consumerCommand1, std::ref(itemsToConsume));
     std::thread messageProducerThread1(consumerCommand2, std::ref(itemsToConsume));
@@ -353,7 +353,7 @@ TEST_F(QueueTest, MultithreadSameType)
         consumerThread1.join();
     }
 
-    EXPECT_TRUE(queue.isEmptyByType(MessageType::COMMAND));
+    EXPECT_TRUE(queue.isEmpty(MessageType::COMMAND));
 }
 
 // Push Multiple with single message and data array,
@@ -365,18 +365,18 @@ TEST_F(QueueTest, PushMultipleSeveralSingleGets)
     // TODO: double check array of objects
     const Message messageToSend {messageType, multipleDataContent};
 
-    EXPECT_EQ(3, queue.timeoutPush(messageToSend));
+    EXPECT_EQ(3, queue.push(messageToSend));
 
     for (int i : {0, 1, 2})
     {
-        auto messageResponse = queue.getLastMessage(MessageType::STATELESS);
+        auto messageResponse = queue.getNext(MessageType::STATELESS);
         auto responseData = messageResponse.data.at(0).at("data");
         auto sentData = messageToSend.data[i].template get<std::string>();
         EXPECT_EQ(responseData, sentData);
-        queue.popLastMessage(MessageType::STATELESS);
+        queue.pop(MessageType::STATELESS);
     }
 
-    EXPECT_EQ(queue.getItemsByType(MessageType::STATELESS), 0);
+    EXPECT_EQ(queue.storedItems(MessageType::STATELESS), 0);
 }
 
 TEST_F(QueueTest, PushMultipleWithMessageVector)
@@ -391,8 +391,8 @@ TEST_F(QueueTest, PushMultipleWithMessageVector)
         messages.push_back({messageType, multipleDataContent});
     }
     EXPECT_EQ(messages.size(), 3);
-    EXPECT_EQ(3, queue.timeoutPush(messages));
-    EXPECT_EQ(queue.getItemsByType(MessageType::STATELESS), 3);
+    EXPECT_EQ(3, queue.push(messages));
+    EXPECT_EQ(queue.storedItems(MessageType::STATELESS), 3);
 }
 
 // Push Multiple, pop multiples
@@ -402,12 +402,12 @@ TEST_F(QueueTest, PushMultipleGetMultiple)
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, multipleDataContent};
 
-    EXPECT_EQ(3, queue.timeoutPush(messageToSend));
-    EXPECT_EQ(queue.getItemsByType(MessageType::STATELESS), 3);
-    EXPECT_EQ(queue.popNMessages(MessageType::STATELESS, 1), 1);
-    EXPECT_EQ(queue.popNMessages(MessageType::STATELESS, 3), 2);
-    EXPECT_TRUE(queue.isEmptyByType(MessageType::STATELESS));
-    EXPECT_EQ(0, queue.getItemsByType(MessageType::STATELESS));
+    EXPECT_EQ(3, queue.push(messageToSend));
+    EXPECT_EQ(queue.storedItems(MessageType::STATELESS), 3);
+    EXPECT_EQ(queue.popN(MessageType::STATELESS, 1), 1);
+    EXPECT_EQ(queue.popN(MessageType::STATELESS, 3), 2);
+    EXPECT_TRUE(queue.isEmpty(MessageType::STATELESS));
+    EXPECT_EQ(0, queue.storedItems(MessageType::STATELESS));
 }
 
 // Push Multiple, pop multiples
@@ -418,19 +418,19 @@ TEST_F(QueueTest, PushMultipleGetMultipleWithModule)
     const std::string moduleName = "testModule";
     const Message messageToSend {messageType, multipleDataContent, moduleName};
 
-    EXPECT_EQ(3, queue.timeoutPush(messageToSend));
+    EXPECT_EQ(3, queue.push(messageToSend));
 
     // Altough we're asking for 10 messages only the availables are returned.
-    auto messagesReceived = queue.getNMessages(MessageType::STATELESS, 10);
+    auto messagesReceived = queue.getNextN(MessageType::STATELESS, 10);
     int i = 3;
     for (auto singleMessage : messagesReceived)
     {
         EXPECT_EQ("content " + std::to_string(i--), singleMessage.data.at("data"));
     }
 
-    EXPECT_EQ(0, queue.getItemsByType(MessageType::STATELESS, "fakemodule"));
-    EXPECT_EQ(3, queue.getItemsByType(MessageType::STATELESS));
-    EXPECT_EQ(3, queue.getItemsByType(MessageType::STATELESS, moduleName));
+    EXPECT_EQ(0, queue.storedItems(MessageType::STATELESS, "fakemodule"));
+    EXPECT_EQ(3, queue.storedItems(MessageType::STATELESS));
+    EXPECT_EQ(3, queue.storedItems(MessageType::STATELESS, moduleName));
 }
 
 TEST_F(QueueTest, PushSinglesleGetMultipleWithModule)
@@ -443,10 +443,10 @@ TEST_F(QueueTest, PushSinglesleGetMultipleWithModule)
         const json multipleDataContent = {"content-" + i};
         const std::string moduleName = "module-" + i;
         const Message messageToSend {messageType, multipleDataContent, moduleName};
-        EXPECT_EQ(1, queue.timeoutPush(messageToSend));
+        EXPECT_EQ(1, queue.push(messageToSend));
     }
 
-    auto messagesReceived = queue.getNMessages(MessageType::STATELESS, 10);
+    auto messagesReceived = queue.getNextN(MessageType::STATELESS, 10);
     EXPECT_EQ(5, messagesReceived.size());
     int i = 5;
     for (auto singleMessage : messagesReceived)
@@ -456,6 +456,6 @@ TEST_F(QueueTest, PushSinglesleGetMultipleWithModule)
         EXPECT_EQ("module-" + std::to_string(val), singleMessage.data.at("module"));
     }
 
-    auto messageReceivedContent1 = queue.getNMessages(MessageType::STATELESS, 10, "module-1");
+    auto messageReceivedContent1 = queue.getNextN(MessageType::STATELESS, 10, "module-1");
     EXPECT_EQ(1, messageReceivedContent1.size());
 }
