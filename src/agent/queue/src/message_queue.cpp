@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "queue.hpp"
+#include "message_queue.hpp"
 
 int MultiTypeQueue::timeoutPush(Message message, bool shouldWait)
 {

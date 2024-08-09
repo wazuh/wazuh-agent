@@ -9,7 +9,7 @@
 #include <stop_token>
 #include <thread>
 
-#include "queue.hpp"
+#include "message_queue.hpp"
 #include "queue_test.hpp"
 
 using json = nlohmann::json;

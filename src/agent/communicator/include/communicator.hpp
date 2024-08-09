@@ -20,9 +20,9 @@ namespace communicator
                      const std::function<std::string(std::string, std::string)> GetStringConfigValue);
 
         boost::asio::awaitable<void> WaitForTokenExpirationAndAuthenticate();
-        boost::asio::awaitable<void> GetCommandsFromManager(std::queue<std::string>& messageQueue);
-        boost::asio::awaitable<void> StatefulMessageProcessingTask(std::queue<std::string>& messageQueue);
-        boost::asio::awaitable<void> StatelessMessageProcessingTask(std::queue<std::string>& messageQueue);
+        boost::asio::awaitable<void> GetCommandsFromManager(std::function<std::string()> getMessages);
+        boost::asio::awaitable<void> StatefulMessageProcessingTask(std::function<std::string()> getMessages);
+        boost::asio::awaitable<void> StatelessMessageProcessingTask(std::function<std::string()> getMessages);
 
     private:
         long GetTokenRemainingSecs() const;

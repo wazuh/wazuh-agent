@@ -2,7 +2,7 @@
 #include <string>
 #include <thread>
 
-#include "queue.hpp"
+#include "message_queue.hpp"
 
 int main()
 {

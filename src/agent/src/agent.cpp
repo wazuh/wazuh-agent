@@ -1,6 +1,22 @@
 #include <agent.hpp>
 
+#include <shared.hpp>
+
+#include <string>
 #include <thread>
+
+namespace
+{
+    template<MessageType messageType>
+    auto getMessagesFromQueue(MultiTypeQueue& multiTypeQueue)
+    {
+        return [&multiTypeQueue]() -> std::string
+        {
+            const auto message = multiTypeQueue.getLastMessage(messageType);
+            return message.data.dump();
+        };
+    }
+} // namespace
 
 Agent::Agent()
     : m_communicator(m_agentInfo.GetUUID(),
@@ -18,9 +34,11 @@ Agent::~Agent()
 void Agent::Run()
 {
     m_taskManager.EnqueueTask(m_communicator.WaitForTokenExpirationAndAuthenticate());
-    m_taskManager.EnqueueTask(m_communicator.GetCommandsFromManager(m_messageQueue));
-    m_taskManager.EnqueueTask(m_communicator.StatefulMessageProcessingTask(m_messageQueue));
-    m_taskManager.EnqueueTask(m_communicator.StatelessMessageProcessingTask(m_messageQueue));
+    m_taskManager.EnqueueTask(m_communicator.GetCommandsFromManager(getMessagesFromQueue<COMMAND>(m_messageQueue)));
+    m_taskManager.EnqueueTask(
+        m_communicator.StatefulMessageProcessingTask(getMessagesFromQueue<STATEFUL>(m_messageQueue)));
+    m_taskManager.EnqueueTask(
+        m_communicator.StatelessMessageProcessingTask(getMessagesFromQueue<STATELESS>(m_messageQueue)));
 
     m_signalHandler.WaitForSignal();
 }
