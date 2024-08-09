@@ -31,4 +31,5 @@ target_link_libraries(Agent PUBLIC ConfigurationParser Communicator AgentInfo PR
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
+    add_subdirectory(queue)
 endif()
