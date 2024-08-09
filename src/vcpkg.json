@@ -4,7 +4,6 @@
     "dependencies": [
       "boost-asio",
       "boost-beast",
-      "boost-url",
       "boost-uuid",
       "gtest",
       "jwt-cpp",

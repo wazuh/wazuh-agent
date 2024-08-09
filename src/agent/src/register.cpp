@@ -2,94 +2,22 @@
 
 #include <agent_info.hpp>
 #include <configuration_parser.hpp>
+#include <http_client.hpp>
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <iostream>
-#include <jwt-cpp/jwt.h>
 #include <nlohmann/json.hpp>
 
 namespace beast = boost::beast;
 namespace http = beast::http;
-namespace uuids = boost::uuids;
 using tcp = boost::asio::ip::tcp;
 using json = nlohmann::json;
 
-namespace registration
+namespace
 {
-    http::response<http::dynamic_body> sendRequest(const std::string& managerIp,
-                                                   const std::string& port,
-                                                   const http::verb& method,
-                                                   const std::string& url,
-                                                   const std::string& token,
-                                                   const std::string& body,
-                                                   const std::string& user_pass)
-    {
-        http::response<http::dynamic_body> res;
-        try
-        {
-            boost::asio::io_context io_context;
-            tcp::resolver resolver(io_context);
-            auto const results = resolver.resolve(managerIp, port);
-
-            tcp::socket socket(io_context);
-            boost::asio::connect(socket, results.begin(), results.end());
-
-            http::request<http::string_body> req {method, url, 11};
-            req.set(http::field::host, managerIp);
-            req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-            req.set(http::field::accept, "application/json");
-
-            if (!token.empty())
-            {
-                req.set(http::field::authorization, "Bearer " + token);
-            }
-
-            if (!user_pass.empty())
-            {
-                req.set(http::field::authorization, "Basic " + user_pass);
-            }
-
-            if (!body.empty())
-            {
-                req.set(http::field::content_type, "application/json");
-                req.body() = body;
-                req.prepare_payload();
-            }
-
-            http::write(socket, req);
-
-            beast::flat_buffer buffer;
-
-            http::read(socket, buffer, res);
-
-            std::cout << "Response code: " << res.result_int() << std::endl;
-            std::cout << "Response body: " << beast::buffers_to_string(res.body().data()) << std::endl;
-        }
-        catch (std::exception const& e)
-        {
-            std::cerr << "Error: " << e.what() << std::endl;
-            res.result(http::status::internal_server_error);
-            beast::ostream(res.body()) << "Internal server error: " << e.what();
-            res.prepare_payload();
-        }
-        return res;
-    }
-
-    std::pair<http::status, std::string>
-    SendAuthenticationRequest(const std::string& managerIp, const std::string& port, const std::string& user_pass)
-    {
-        http::response<http::dynamic_body> res =
-            sendRequest(managerIp, port, http::verb::post, "/authenticate", "", "", user_pass);
-        const auto token = beast::buffers_to_string(res.body().data());
-
-        return {res.result(), token};
-    }
-
-    http::status SendRegistrationRequest(const std::string& managerIp,
+    http::status SendRegistrationRequest(const std::string& host,
                                          const std::string& port,
                                          const std::string& token,
                                          const std::string& uuid,
@@ -108,60 +36,41 @@ namespace registration
             bodyJson["ip"] = ip.value();
         }
 
-        http::response<http::dynamic_body> res =
-            sendRequest(managerIp, port, http::verb::post, "/agents", token, bodyJson.dump(), "");
+        const auto reqParams =
+            http_client::HttpRequestParams(http::verb::post, host, port, "/agents", token, "", bodyJson.dump());
+        const http::response<http::dynamic_body> res = http_client::PerformHttpRequest(reqParams);
         return res.result();
     }
+} // namespace
 
-    AgentInfo GenerateAgentInfo(const std::optional<std::string>& name, const std::optional<std::string>& ip)
+namespace registration
+{
+    bool RegisterAgent(const UserCredentials& userCredentials)
     {
-        AgentInfo agentInfo;
-        if (agentInfo.GetUUID().empty())
+        const configuration::ConfigurationParser configurationParser;
+        const auto managerIp = configurationParser.GetConfig<std::string>("agent", "manager_ip");
+        const auto managerPort = configurationParser.GetConfig<std::string>("agent", "server_mgmt_api_port");
+
+        const auto token = http_client::AuthenticateWithUserPassword(
+            managerIp, managerPort, userCredentials.user, userCredentials.password);
+
+        if (!token.has_value())
         {
-            agentInfo.SetUUID(to_string(uuids::random_generator()()));
+            std::cerr << "Failed to authenticate with the manager" << std::endl;
+            return false;
         }
 
-        if (name.has_value())
+        const AgentInfo agentInfo {};
+
+        if (const auto registrationResultCode = SendRegistrationRequest(
+                managerIp, managerPort, token.value(), agentInfo.GetUUID(), agentInfo.GetName(), agentInfo.GetIP());
+            registrationResultCode != http::status::ok)
         {
-            agentInfo.SetName(name.value());
+            std::cout << "Registration error: " << registrationResultCode << std::endl;
+            return false;
         }
 
-        if (ip.has_value())
-        {
-            agentInfo.SetIP(ip.value());
-        }
-
-        return agentInfo;
+        return true;
     }
 
 } // namespace registration
-
-bool RegisterAgent(const std::string& user,
-                   const std::string& password,
-                   const std::optional<std::string>& name,
-                   const std::optional<std::string>& ip)
-{
-
-    const auto configurationParser = std::make_shared<configuration::ConfigurationParser>();
-    const auto managerIp = configurationParser->GetConfig<std::string>("agent", "manager_ip");
-    const auto port = configurationParser->GetConfig<std::string>("agent", "port");
-
-    auto [authResultCode, token] = registration::SendAuthenticationRequest(managerIp, port, user + ":" + password);
-    if (authResultCode != http::status::ok)
-    {
-        std::cout << "Authentication error: " << authResultCode << std::endl;
-        return false;
-    }
-
-    const auto agentInfo = registration::GenerateAgentInfo(name, ip);
-
-    if (auto registrationResultCode =
-            registration::SendRegistrationRequest(managerIp, port, token, agentInfo.GetUUID(), name, ip);
-        registrationResultCode != http::status::ok)
-    {
-        std::cout << "Registration error: " << registrationResultCode << std::endl;
-        return false;
-    }
-
-    return true;
-}

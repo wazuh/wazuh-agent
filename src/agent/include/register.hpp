@@ -3,7 +3,13 @@
 #include <optional>
 #include <string>
 
-bool RegisterAgent(const std::string& user,
-                   const std::string& password,
-                   const std::optional<std::string>& name,
-                   const std::optional<std::string>& ip);
+namespace registration
+{
+    struct UserCredentials
+    {
+        std::string user;
+        std::string password;
+    };
+
+    bool RegisterAgent(const UserCredentials& userCredentials);
+} // namespace registration

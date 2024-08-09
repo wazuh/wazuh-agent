@@ -14,11 +14,11 @@ class TaskManager : public ITaskManager<boost::asio::awaitable<void>>
 public:
     TaskManager();
 
-    void start(size_t numThreads) override;
-    void stop() override;
+    void Start(size_t numThreads) override;
+    void Stop() override;
 
-    void enqueueTask(std::function<void()> task) override;
-    void enqueueTask(boost::asio::awaitable<void> task) override;
+    void EnqueueTask(std::function<void()> task) override;
+    void EnqueueTask(boost::asio::awaitable<void> task) override;
 
 private:
     boost::asio::io_context m_ioContext;

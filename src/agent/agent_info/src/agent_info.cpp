@@ -2,12 +2,22 @@
 
 #include <agent_info_persistance.hpp>
 
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
 AgentInfo::AgentInfo()
 {
     AgentInfoPersistance agentInfoPersistance;
     m_name = agentInfoPersistance.GetName();
     m_ip = agentInfoPersistance.GetIP();
     m_uuid = agentInfoPersistance.GetUUID();
+
+    if (m_uuid.empty())
+    {
+        AgentInfoPersistance agentInfoPersistance;
+        m_uuid = boost::uuids::to_string(boost::uuids::random_generator()());
+        agentInfoPersistance.SetUUID(m_uuid);
+    }
 }
 
 AgentInfo::AgentInfo(const std::string& name, const std::string& ip, const std::string& uuid)

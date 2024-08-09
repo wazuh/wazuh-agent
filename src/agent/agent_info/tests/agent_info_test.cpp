@@ -24,7 +24,7 @@ TEST_F(AgentInfoTest, TestDefaultConstructorDefaultValues)
     const AgentInfo agentInfo;
     EXPECT_EQ(agentInfo.GetName(), "");
     EXPECT_EQ(agentInfo.GetIP(), "");
-    EXPECT_EQ(agentInfo.GetUUID(), "");
+    EXPECT_NE(agentInfo.GetUUID(), "");
 }
 
 TEST_F(AgentInfoTest, TestParameterizedConstructor)

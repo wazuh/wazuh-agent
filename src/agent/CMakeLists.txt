@@ -10,42 +10,25 @@ set(VCPKG_MANIFEST_DIR ${CMAKE_SOURCE_DIR}/../)
 
 project(Agent)
 
-include_directories(include)
-
 set(SOURCES
     src/agent.cpp
-    src/message_task.cpp
     src/task_manager.cpp
     src/register.cpp
+    src/signal_handler.cpp
 )
 
-set(HEADERS
-    include/agent.hpp
-    include/itask_manager.hpp
-    include/task_manager.hpp
-    include/message_task.hpp
-    include/register.hpp
-)
-
-add_library(agent ${SOURCES} ${HEADERS})
-
-find_package(Boost REQUIRED COMPONENTS asio)
-
-set(INCLUDES
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/communicator/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/agent_info/include
-)
-
-target_include_directories(agent PUBLIC ${INCLUDES})
-
-# Add the subdirectory for each child project
 add_subdirectory(agent_info)
 add_subdirectory(communicator)
 add_subdirectory(configuration_parser)
 
-target_link_libraries(agent PUBLIC ConfigurationParser PRIVATE ${Boost_LIBRARIES} communicator AgentInfo)
+find_package(OpenSSL REQUIRED)
+find_package(Boost REQUIRED COMPONENTS asio beast)
+
+add_library(Agent ${SOURCES})
+target_include_directories(Agent PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(Agent PUBLIC ConfigurationParser Communicator AgentInfo PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::asio Boost::beast)
 
 if(BUILD_TESTS)
+    enable_testing()
     add_subdirectory(tests)
 endif()
