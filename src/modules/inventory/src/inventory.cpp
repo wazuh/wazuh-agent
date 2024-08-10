@@ -39,7 +39,7 @@ void *Inventory::run() {
         pthread_exit(NULL);
     }
 
-    log(LOG_DEBUG, "Starting inventory.");
+    log(LOG_INFO, "Starting inventory.");
     w_mutex_lock(&inv_stop_mutex);
     need_shutdown_wait = true;
     w_mutex_unlock(&inv_stop_mutex);
@@ -86,7 +86,7 @@ int Inventory::setup(const Configuration & config) {
     m_portsAll = true;
     m_processes = true;
     m_hotfixes = true;
-    m_notify = false;
+    m_notify = true;
 
     m_currentIntervalValue = m_intervalValue;
 
