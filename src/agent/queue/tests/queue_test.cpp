@@ -9,6 +9,9 @@
 #include <stop_token>
 #include <thread>
 
+#include <boost/asio.hpp>
+#include <boost/asio/experimental/co_spawn.hpp>
+
 #include "queue.hpp"
 #include "queue_test.hpp"
 
@@ -458,4 +461,82 @@ TEST_F(QueueTest, PushSinglesleGetMultipleWithModule)
 
     auto messageReceivedContent1 = queue.getNextN(MessageType::STATELESS, 10, "module-1");
     EXPECT_EQ(1, messageReceivedContent1.size());
+}
+
+TEST_F(QueueTest, getNextAwaitable)
+{
+    MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
+    boost::asio::io_context io_context;
+
+    const MessageType messageType {MessageType::STATEFUL};
+    const json multipleDataContent = {"content-1"};
+    const Message messageToSend {messageType, multipleDataContent};
+
+    // Coroutine that waits till there's a message of the needed type on the queue
+    boost::asio::co_spawn(
+        io_context,
+        [&queue]() -> boost::asio::awaitable<void>
+        {
+            auto messageReceived = co_await queue.getNextAwaitable(MessageType::STATELESS);
+            EXPECT_EQ(messageReceived.data.at(0).at("data"), "content-0");
+        },
+        boost::asio::detached);
+
+    // Simulate the addition of needed message to the queue after some time
+    std::thread producer(
+        [&queue, &io_context]()
+        {
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+            const MessageType messageType {MessageType::STATELESS};
+            const json multipleDataContent = {"content-0"};
+            const Message messageToSend {messageType, multipleDataContent};
+            EXPECT_EQ(queue.push(messageToSend), 1);
+            io_context.stop();
+        });
+
+    io_context.run();
+    producer.join();
+}
+
+TEST_F(QueueTest, pushAwaitable)
+{
+    MultiTypeQueue queue(SMALL_QUEUE_CAPACITY);
+    boost::asio::io_context io_context;
+
+    // complete the queue with messages
+    const MessageType messageType {MessageType::STATEFUL};
+    for (int i : {1, 2})
+    {
+        const json dataContent = R"({"Data" : "for STATEFUL)" + std::to_string(i) + R"("})";
+        EXPECT_EQ(queue.push({messageType, dataContent}), 1);
+    }
+
+    EXPECT_TRUE(queue.isFull(MessageType::STATEFUL));
+
+    // Coroutine that waits till there's space on the  to push a new messagequeue
+    boost::asio::co_spawn(
+        io_context,
+        [&queue]() -> boost::asio::awaitable<void>
+        {
+            const MessageType messageType {MessageType::STATEFUL};
+            const json multipleDataContent = {"content-1"};
+            const Message messageToSend {messageType, multipleDataContent};
+            auto messagesPushed = co_await queue.pushAwaitable(messageToSend);
+            EXPECT_EQ(messagesPushed, 1);
+        },
+        boost::asio::detached);
+
+    // Simulate poping one message tll there's space to push a new one
+    std::thread consumer(
+        [&queue, &io_context]()
+        {
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+            EXPECT_EQ(queue.pop(MessageType::STATEFUL), 1);
+            io_context.stop();
+        });
+
+    io_context.run();
+    consumer.join();
+
+    EXPECT_TRUE(queue.isFull(MessageType::STATEFUL));
 }

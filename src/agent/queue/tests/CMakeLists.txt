@@ -20,7 +20,8 @@ target_link_libraries(test_queue
     queue
     SQLiteCpp
     nlohmann_json::nlohmann_json
-    fmt::fmt)
+    fmt::fmt
+    Boost::asio)
 
 # Create a test executable for SQLiteStorage tests
 add_executable(test_sqlitestorage

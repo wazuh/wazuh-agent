@@ -9,6 +9,10 @@
 #include <unordered_map>
 #include <vector>
 
+#include <boost/asio.hpp>
+// #include <boost/asio/experimental/awaitable_operators.hpp>
+#include <cassert>
+
 #include "shared.hpp"
 #include "sqlitestorage.h"
 
@@ -96,6 +100,14 @@ public:
     int push(Message message, bool shouldWait = false);
 
     /**
+     * @brief pushes a message
+     *
+     * @param message to be pushed
+     * @return boost::asio::awaitable<int> number of messages pushed
+     */
+    boost::asio::awaitable<int> pushAwaitable(Message message);
+
+    /**
      * @brief pushes a vector of messages
      *
      * @param messages to be pushed
@@ -107,11 +119,19 @@ public:
     /**
      * @brief Get the Last Message object
      *
-     * @param type
-     * @return Message
+     * @param type of the queue to be used as source
+     * @return Message type object taken from the queue
      */
     Message getNext(MessageType type, const std::string module = "");
 
+    /**
+     * @brief Get the Next Awaitable object
+     *
+     * @param type of the queue to be used as source
+     * @param module module name
+     * @return boost::asio::awaitable<Message>
+     */
+    boost::asio::awaitable<Message> getNextAwaitable(MessageType type, const std::string module = "");
     /**
      * @brief Returns N messages from a queue
      *
