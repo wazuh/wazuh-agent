@@ -58,7 +58,6 @@ std::string unescape_string(const std::string& str)
     return result;
 }
 
-// TODO: Makes sense to add a full_clean method inside the persistence implementation?
 void cleanPersistence()
 {
     std::string filePath = DEFAULT_DB_PATH;
@@ -463,22 +462,19 @@ TEST_F(QueueTest, PushSinglesleGetMultipleWithModule)
     EXPECT_EQ(1, messageReceivedContent1.size());
 }
 
-TEST_F(QueueTest, getNextAwaitable)
+TEST_F(QueueTest, getNextAwaitableBase)
 {
     MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
     boost::asio::io_context io_context;
-
-    const MessageType messageType {MessageType::STATEFUL};
-    const json multipleDataContent = {"content-1"};
-    const Message messageToSend {messageType, multipleDataContent};
 
     // Coroutine that waits till there's a message of the needed type on the queue
     boost::asio::co_spawn(
         io_context,
         [&queue]() -> boost::asio::awaitable<void>
         {
-            auto messageReceived = co_await queue.getNextAwaitable(MessageType::STATELESS);
-            EXPECT_EQ(messageReceived.data.at(0).at("data"), "content-0");
+            auto messageReceived = co_await queue.getNextNAwaitable(MessageType::STATELESS, 2);
+            EXPECT_EQ(messageReceived.data.at(0).at("data"), "content-2");
+            EXPECT_EQ(messageReceived.data.at(1).at("data"), "content-1");
         },
         boost::asio::detached);
 
@@ -488,10 +484,10 @@ TEST_F(QueueTest, getNextAwaitable)
         {
             std::this_thread::sleep_for(std::chrono::seconds(2));
             const MessageType messageType {MessageType::STATELESS};
-            const json multipleDataContent = {"content-0"};
+            const json multipleDataContent = {"content-1","content-2","content-3"};
             const Message messageToSend {messageType, multipleDataContent};
-            EXPECT_EQ(queue.push(messageToSend), 1);
-            io_context.stop();
+            EXPECT_EQ(queue.push(messageToSend), 3);
+            // io_context.stop();
         });
 
     io_context.run();
@@ -512,27 +508,31 @@ TEST_F(QueueTest, pushAwaitable)
     }
 
     EXPECT_TRUE(queue.isFull(MessageType::STATEFUL));
+    EXPECT_EQ(queue.storedItems(MessageType::STATEFUL),2);
 
-    // Coroutine that waits till there's space on the  to push a new messagequeue
+    // Coroutine that waits till there's space to push a new message
     boost::asio::co_spawn(
         io_context,
         [&queue]() -> boost::asio::awaitable<void>
         {
             const MessageType messageType {MessageType::STATEFUL};
-            const json multipleDataContent = {"content-1"};
-            const Message messageToSend {messageType, multipleDataContent};
+            const json dataContent = {"content-1"};
+            const Message messageToSend {messageType, dataContent};
+            EXPECT_EQ(queue.storedItems(MessageType::STATEFUL),2);
             auto messagesPushed = co_await queue.pushAwaitable(messageToSend);
             EXPECT_EQ(messagesPushed, 1);
+            EXPECT_EQ(queue.storedItems(MessageType::STATEFUL),2);
         },
         boost::asio::detached);
 
-    // Simulate poping one message tll there's space to push a new one
+    // Simulate poping one message so there's space to push a new one
     std::thread consumer(
         [&queue, &io_context]()
         {
             std::this_thread::sleep_for(std::chrono::seconds(2));
-            EXPECT_EQ(queue.pop(MessageType::STATEFUL), 1);
-            io_context.stop();
+            EXPECT_EQ(queue.popN(MessageType::STATEFUL,1), 1);
+            // TODO: double check this behavior, is it mandatory to stop the context here?
+            // io_context.stop();
         });
 
     io_context.run();

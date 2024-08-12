@@ -138,7 +138,7 @@ Message MultiTypeQueue::getNext(MessageType type, const std::string moduleName)
     return result;
 }
 
-boost::asio::awaitable<Message> MultiTypeQueue::getNextAwaitable(MessageType type, const std::string moduleName)
+boost::asio::awaitable<Message> MultiTypeQueue::getNextNAwaitable(MessageType type, int messageQuantity, const std::string moduleName)
 {
     boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
 
@@ -151,7 +151,7 @@ boost::asio::awaitable<Message> MultiTypeQueue::getNextAwaitable(MessageType typ
             co_await timer.async_wait(boost::asio::use_awaitable);
         }
 
-        auto resultData = m_persistenceDest->RetrieveMultiple(1, m_mapMessageTypeName.at(type), moduleName);
+        auto resultData = m_persistenceDest->RetrieveMultiple(messageQuantity, m_mapMessageTypeName.at(type), moduleName);
         if (!resultData.empty())
         {
             result.data = resultData;
@@ -199,7 +199,6 @@ bool MultiTypeQueue::pop(MessageType type, const std::string moduleName)
     bool result = false;
     if (m_mapMessageTypeName.contains(type))
     {
-        // TODO: Handle return value -> should show how many rows where deleted
         result = m_persistenceDest->RemoveMultiple(1, m_mapMessageTypeName.at(type), moduleName);
     }
     else

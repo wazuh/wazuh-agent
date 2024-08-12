@@ -301,6 +301,10 @@ int SQLiteStorage::GetElementCount(const std::string& tableName, const std::stri
         {
             count = query.getColumn(0).getInt();
         }
+        else
+        {
+            std::cerr << "Error SQLiteStorage get element count." << std::endl;
+        }
         return count;
     }
     catch (const SQLite::Exception& e)

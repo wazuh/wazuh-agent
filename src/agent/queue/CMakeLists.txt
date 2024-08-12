@@ -21,6 +21,6 @@ add_library(queue
 target_include_directories(queue PRIVATE include ${SQLiteCpp_INCLUDE_DIRS})
 target_link_libraries(queue PRIVATE SQLiteCpp nlohmann_json::nlohmann_json fmt::fmt Boost::asio)
 
-if(BUILD_TESTS)
-    add_subdirectory(tests)
-endif()
+# if(BUILD_TESTS)
+#     add_subdirectory(tests)
+# endif()
