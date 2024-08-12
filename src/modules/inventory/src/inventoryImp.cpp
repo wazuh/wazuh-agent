@@ -1053,7 +1053,11 @@ void Inventory::init(const std::shared_ptr<ISysInfo>& spInfo,
 
     std::unique_lock<std::mutex> lock{m_mutex};
     m_stopping = false;
-    m_spDBSync = std::make_unique<DBSync>(HostType::AGENT, DbEngineType::SQLITE3, dbPath, getCreateStatement());
+    m_spDBSync = std::make_unique<DBSync>(HostType::AGENT,
+                                            DbEngineType::SQLITE3,
+                                            dbPath,
+                                            getCreateStatement(),
+                                            DbManagement::PERSISTENT);
     m_spNormalizer = std::make_unique<InvNormalizer>(normalizerConfigPath, normalizerType);
     syncLoop(lock);
 }
