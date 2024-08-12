@@ -132,7 +132,8 @@ public:
      * @param messageQuantity quantity of messages to return
      * @return boost::asio::awaitable<Message>
      */
-    boost::asio::awaitable<Message> getNextNAwaitable(MessageType type, int messageQuantity, const std::string moduleName = "");
+    boost::asio::awaitable<Message>
+    getNextNAwaitable(MessageType type, int messageQuantity, const std::string moduleName = "");
     /**
      * @brief Returns N messages from a queue
      *

@@ -200,10 +200,6 @@ json SQLiteStorage::RetrieveMultiple(int n, const std::string& tableName, const 
             }
         }
 
-        if (!messages.empty())
-        {
-            std::reverse(messages.begin(), messages.end());
-        }
         return messages;
     }
     catch (const SQLite::Exception& e)

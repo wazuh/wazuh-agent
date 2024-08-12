@@ -138,7 +138,8 @@ Message MultiTypeQueue::getNext(MessageType type, const std::string moduleName)
     return result;
 }
 
-boost::asio::awaitable<Message> MultiTypeQueue::getNextNAwaitable(MessageType type, int messageQuantity, const std::string moduleName)
+boost::asio::awaitable<Message>
+MultiTypeQueue::getNextNAwaitable(MessageType type, int messageQuantity, const std::string moduleName)
 {
     boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
 
@@ -151,7 +152,8 @@ boost::asio::awaitable<Message> MultiTypeQueue::getNextNAwaitable(MessageType ty
             co_await timer.async_wait(boost::asio::use_awaitable);
         }
 
-        auto resultData = m_persistenceDest->RetrieveMultiple(messageQuantity, m_mapMessageTypeName.at(type), moduleName);
+        auto resultData =
+            m_persistenceDest->RetrieveMultiple(messageQuantity, m_mapMessageTypeName.at(type), moduleName);
         if (!resultData.empty())
         {
             result.data = resultData;

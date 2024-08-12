@@ -133,10 +133,10 @@ TEST_F(SQLiteStorageTest, RetrieveMultipleMessagesWithModule)
     json retrievedMessages = storage->RetrieveMultiple(4, tableName, moduleName);
     EXPECT_EQ(retrievedMessages.size(), 4);
 
-    int i = 4;
+    int i = 0;
     for (auto singleMessage : retrievedMessages)
     {
-        EXPECT_EQ("value" + std::to_string(i--), singleMessage.at("data").at("key"));
+        EXPECT_EQ("value" + std::to_string(++i), singleMessage.at("data").at("key"));
     }
 }
 
