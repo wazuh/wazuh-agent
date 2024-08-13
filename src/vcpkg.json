@@ -5,6 +5,7 @@
       "boost-asio",
       "boost-beast",
       "boost-uuid",
+      "fmt",
       "gtest",
       "jwt-cpp",
       "nlohmann-json",

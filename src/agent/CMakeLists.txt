@@ -20,6 +20,7 @@ set(SOURCES
 add_subdirectory(agent_info)
 add_subdirectory(communicator)
 add_subdirectory(configuration_parser)
+add_subdirectory(agent_queue)
 
 find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio beast)
