@@ -30,9 +30,6 @@ const int DBSYNC_MQ    = '5';
 #define WM_INVENTORY_DEFAULT_INTERVAL W_HOUR_SECONDS
 
 void *Inventory::run() {
-    w_cond_init(&inv_stop_condition, NULL);
-    w_mutex_init(&inv_stop_mutex, NULL);
-    w_mutex_init(&inv_reconnect_mutex, NULL);
 
     if (!m_enabled) {
         log(LOG_INFO, "Module disabled. Exiting...");
@@ -40,30 +37,18 @@ void *Inventory::run() {
     }
 
     log(LOG_INFO, "Starting inventory.");
-    w_mutex_lock(&inv_stop_mutex);
-    need_shutdown_wait = true;
-    w_mutex_unlock(&inv_stop_mutex);
 
-    // else: if max_eps is 0 (from configuration) let's use the default max_eps value (10)
     log_config();
 
     inventory_start();
 
     log(LOG_INFO, "Module finished.");
-    w_mutex_lock(&inv_stop_mutex);
-    w_cond_signal(&inv_stop_condition);
-    w_mutex_unlock(&inv_stop_mutex);
+
     return NULL;
 
 }
 
 int Inventory::setup(const Configuration & config) {
-
-    inv_stop_condition = PTHREAD_COND_INITIALIZER;
-    inv_stop_mutex = PTHREAD_MUTEX_INITIALIZER;
-    need_shutdown_wait = false;
-    inv_reconnect_mutex = PTHREAD_MUTEX_INITIALIZER;
-    shutdown_process_started = false;
 
     dbPath = INVENTORY_DB_DISK_PATH;
     normalizerConfigPath = INVENTORY_NORM_CONFIG_DISK_PATH;
@@ -194,22 +179,6 @@ void Inventory::inventory_start()
     {
         logError(ex.what());
     }
-}
-
-int Inventory::inventory_sync_message(const char* data)
-{
-    int ret{-1};
-
-    try
-    {
-        push(data);
-        ret = 0;
-    }
-    catch (...)
-    {
-    }
-
-    return ret;
 }
 
 void Inventory::log(const modules_log_level_t level, const std::string& log)
