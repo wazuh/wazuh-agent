@@ -225,57 +225,12 @@ typedef struct sk_sum_t {
 } sk_sum_t;
 
 /**
- * @brief Parse c_sum string
- *
- * @param [out] sum
- * @param [in] c_sum
- * @param [in] w_sum
- * @return 0 if success, 1 when c_sum denotes a deleted file, -1 on failure
- */
-int sk_decode_sum(sk_sum_t *sum, char *c_sum, char *w_sum);
-
-/**
- * @brief Parse fields changes and date_alert only provide for wazuh_db
- *
- * @param [out] sum
- * @param [in] c_sum
- * @return 0 if success, -1 on failure
- */
-int sk_decode_extradata(sk_sum_t *sum, char *c_sum);
-
-/**
- * @brief Fill an event with specific data
- *
- * @param [out] lf Event to be filled
- * @param [in] f_name File name for the event
- * @param [in] sum File sum used to fill the event
- */
-void sk_fill_event(Eventinfo *lf, const char *f_name, const sk_sum_t *sum);
-
-/**
- * @brief Fills a buffer with a specific file sum
- *
- * @param [in] sum File sum used to fill the buffer
- * @param [out] output The output buffer to be written
- * @param [in] size Size in bytes to be written into output
- * @return 0 on success, -1 on failure
- */
-int sk_build_sum(const sk_sum_t *sum, char *output, size_t size);
-
-/**
  * @brief Delete from path to parent all empty folders
  *
  * @param path The path from which to delete
  * @return 0 on success, -1 on failure
  */
 int remove_empty_folders(const char *path);
-
-/**
- * @brief Frees from memory a sk_sum_t structure
- *
- * @param [out] sum The sk_sum_t object to be freed
- */
-void sk_sum_clean(sk_sum_t *sum);
 
 /**
  * @brief Change in Windows paths all slashes for backslashes for compatibility
@@ -291,9 +246,6 @@ void normalize_path(char *path);
  * @return A string with escaped characters
  */
 char *escape_syscheck_field(char *field);
-#ifndef CLIENT
-char *unescape_syscheck_field(char *sum);
-#endif
 
 #ifndef WIN32
 

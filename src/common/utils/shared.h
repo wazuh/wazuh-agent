@@ -221,12 +221,6 @@ extern const char *__local_name;
 // Only static arrays allowed.
 #define array_size(array) (sizeof(array)/sizeof(array[0]))
 
-#ifdef CLIENT
-#define isAgent 1
-#else
-#define isAgent 0
-#endif
-
 #ifndef WAZUH_UNIT_TESTING
 #define FOREVER() 1
 #endif

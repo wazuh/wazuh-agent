@@ -3432,27 +3432,6 @@ int w_is_compressed_bz2_file(const char * path) {
     return retval;
 }
 
-#ifndef CLIENT
-
-int w_uncompress_bz2_gz_file(const char * path, const char * dest) {
-    int result = 1;
-
-    if (w_is_compressed_bz2_file(path)) {
-        result = bzip2_uncompress(path, dest);
-    }
-
-    if (w_is_compressed_gz_file(path)) {
-        result = w_uncompress_gzfile(path, dest);
-    }
-
-    if (!result) {
-        mdebug1("The file '%s' was successfully uncompressed into '%s'", path, dest);
-    }
-
-    return result;
-}
-#endif
-
 #ifndef WIN32
 /**
  * @brief Get the Wazuh installation directory

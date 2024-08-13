@@ -54,12 +54,10 @@ void * wm_command_main(wm_command_t * command) {
         pthread_exit(0);
     }
 
-#ifdef CLIENT
     if (!getDefine_Int("wazuh_command", "remote_commands", 0, 1) && command->agent_cfg) {
         mtwarn(WM_COMMAND_LOGTAG, "Remote commands are disabled. Ignoring '%s'.", command->tag);
         pthread_exit(0);
     }
-#endif
 
     // Verify command
     if (command->md5_hash || command->sha1_hash || command->sha256_hash) {
