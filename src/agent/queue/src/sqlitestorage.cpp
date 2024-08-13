@@ -46,14 +46,14 @@ void SQLiteStorage::InitializeTable(const std::string& tableName)
 void SQLiteStorage::waitForDatabaseAccess()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
-    m_cv.wait(lock, [this] { return !m_db_in_use; });
-    m_db_in_use = true;
+    m_cv.wait(lock, [this] { return !m_dbInUse; });
+    m_dbInUse = true;
 }
 
 void SQLiteStorage::releaseDatabaseAccess()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
-    m_db_in_use = false;
+    m_dbInUse = false;
     m_cv.notify_one();
 }
 

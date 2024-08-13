@@ -17,7 +17,7 @@
 #include "sqlitestorage.h"
 
 // TODO: move to a configuration setting
-constexpr int DEFAULT_MAX = 10;
+constexpr int DEFAULT_MAX = 10000;
 constexpr int DEFAULT_TIMEOUT_S = 3;
 
 // Factory class

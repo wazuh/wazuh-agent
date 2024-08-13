@@ -20,6 +20,7 @@ set(SOURCES
 add_subdirectory(agent_info)
 add_subdirectory(communicator)
 add_subdirectory(configuration_parser)
+add_subdirectory(queue)
 
 find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio beast)
@@ -31,5 +32,4 @@ target_link_libraries(Agent PUBLIC ConfigurationParser Communicator AgentInfo PR
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
-    add_subdirectory(queue)
 endif()

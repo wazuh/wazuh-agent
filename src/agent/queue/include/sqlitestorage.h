@@ -126,11 +126,11 @@ private:
     /// Mutex to ensure thread-safe operations.
     std::mutex m_mutex;
 
-    /// @brief condition variable to wait for database access
+    /// @brief condition variable to wait for database access.
     std::condition_variable m_cv;
 
-    // TODO: should it be atomic?
-    bool m_db_in_use = false;
+    // @brief flag for notifying the use of the db.
+    bool m_dbInUse = false;
 };
 
 #endif // SQLITE_STORAGE_H

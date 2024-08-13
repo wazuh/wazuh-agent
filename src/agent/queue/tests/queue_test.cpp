@@ -578,7 +578,7 @@ TEST_F(QueueTest, FifoOrderCheck)
         EXPECT_EQ(singleMessage.data.at("data"), R"({"Data" : "for STATEFUL)" + std::to_string(++i) + R"("})");
     }
 
-    // Kepp the order of the message: FIFO
+    // Keep the order of the message: FIFO
     for (int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
     {
         auto messageReceived = queue.getNextN(messageType, 1);
