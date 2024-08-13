@@ -12,7 +12,7 @@
 #include <boost/asio.hpp>
 #include <boost/asio/experimental/co_spawn.hpp>
 
-#include "queue.hpp"
+#include "agent_queue.hpp"
 #include "queue_test.hpp"
 
 using json = nlohmann::json;

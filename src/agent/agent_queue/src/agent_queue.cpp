@@ -3,7 +3,7 @@
 #include <stop_token>
 #include <utility>
 
-#include "queue.hpp"
+#include "agent_queue.hpp"
 
 int MultiTypeQueue::push(Message message, bool shouldWait)
 {

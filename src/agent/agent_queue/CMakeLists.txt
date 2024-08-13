@@ -13,7 +13,7 @@ find_package(Boost REQUIRED COMPONENTS asio)
 
 add_library(AgentQueue
 	src/sqlitestorage.cpp
-	src/queue.cpp
+	src/agent_queue.cpp
 )
 
 target_include_directories(AgentQueue PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include PRIVATE ${SQLiteCpp_INCLUDE_DIRS})
