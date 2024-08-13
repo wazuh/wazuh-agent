@@ -444,7 +444,7 @@ TEST_F(QueueTest, PushMultipleGetMultipleWithModule)
     int i = 0;
     for (auto singleMessage : messagesReceived)
     {
-        EXPECT_EQ("content " + std::to_string(++i), singleMessage.data.at("data"));
+        EXPECT_EQ("content " + std::to_string(++i), singleMessage.data.at("data").get<std::string>());
     }
 
     EXPECT_EQ(0, queue.storedItems(MessageType::STATELESS, "fakemodule"));
@@ -471,8 +471,8 @@ TEST_F(QueueTest, PushSinglesleGetMultipleWithModule)
     for (auto singleMessage : messagesReceived)
     {
         auto val = ++i;
-        EXPECT_EQ("content-" + std::to_string(val), singleMessage.data.at("data"));
-        EXPECT_EQ("module-" + std::to_string(val), singleMessage.data.at("module"));
+        EXPECT_EQ("content-" + std::to_string(val), singleMessage.data.at("data").get<std::string>());
+        EXPECT_EQ("module-" + std::to_string(val), singleMessage.data.at("module").get<std::string>());
     }
 
     auto messageReceivedContent1 = queue.getNextN(MessageType::STATELESS, 10, "module-1");
