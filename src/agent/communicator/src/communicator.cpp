@@ -101,7 +101,21 @@ namespace communicator
             }();
 
             m_tokenExpTimer->expires_after(duration);
-            co_await m_tokenExpTimer->async_wait(boost::asio::use_awaitable);
+
+            boost::system::error_code ec;
+            co_await m_tokenExpTimer->async_wait(boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+
+            if (ec)
+            {
+                if (ec == boost::asio::error::operation_aborted)
+                {
+                    std::cout << "Token expiration timer was canceled\n";
+                }
+                else
+                {
+                    std::cerr << "Timer wait failed: " << ec.message() << "\n";
+                }
+            }
         }
     }
 
@@ -132,15 +146,9 @@ namespace communicator
         std::unique_lock<std::mutex> lock(m_reAuthMutex, std::try_to_lock);
         if (lock.owns_lock() && !m_isReAuthenticating.exchange(true))
         {
-            std::cout << "Thread: " << std::this_thread::get_id() << " attempting re-authentication" << std::endl;
-            if (const auto result = SendAuthenticationRequest(); result == boost::beast::http::status::ok)
+            if (m_tokenExpTimer)
             {
-                if (m_tokenExpTimer)
-                {
-                    const auto newDuration =
-                        std::chrono::milliseconds((GetTokenRemainingSecs() - TokenPreExpirySecs) * 1000);
-                    m_tokenExpTimer->expires_after(newDuration);
-                }
+                m_tokenExpTimer->cancel();
             }
             m_isReAuthenticating = false;
         }
