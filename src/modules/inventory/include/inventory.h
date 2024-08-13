@@ -42,7 +42,6 @@ class Inventory {
                     const std::string& normalizerType);
 
         void destroy();
-        void push(const std::string& data);
 
         std::string getCreateStatement() const;
         nlohmann::json getOSData();
@@ -70,7 +69,6 @@ class Inventory {
         void syncPorts();
         void syncProcesses();
         void scan();
-        void sync();
         void syncLoop(std::unique_lock<std::mutex>& lock);
         void syncAlgorithm();
 
@@ -98,7 +96,6 @@ class Inventory {
         std::mutex                                  m_mutex;
         std::unique_ptr<InvNormalizer>              m_spNormalizer;
         std::string                                 m_scanTime;
-        std::chrono::seconds                        m_lastSyncMsg;
 
         void send_diff_message(const std::string& data);
         void send_dbsync_message(const std::string& data);
@@ -106,8 +103,6 @@ class Inventory {
         void log_config();
 
         void inventory_start();
-        int inventory_sync_message(const char* data);
-
 
         cJSON * dump();
 
@@ -116,12 +111,6 @@ class Inventory {
         std::string dbPath;
         std::string normalizerConfigPath;
         std::string normalizerType;
-
-        pthread_cond_t inv_stop_condition;
-        pthread_mutex_t inv_stop_mutex;
-        bool need_shutdown_wait;
-        pthread_mutex_t inv_reconnect_mutex;
-        bool shutdown_process_started;
 
         long sync_max_eps;            // Maximum events per second for synchronization messages.
 
