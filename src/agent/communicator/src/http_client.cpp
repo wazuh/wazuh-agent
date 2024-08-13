@@ -129,7 +129,15 @@ namespace http_client
                 continue;
             }
 
-            reqParams.body = messageGetter ? messageGetter() : "";
+            if (messageGetter != nullptr)
+            {
+                reqParams.body = messageGetter();
+            }
+            else
+            {
+                reqParams.body = "";
+            }
+
             reqParams.token = token;
             auto req = CreateHttpRequest(reqParams);
 
