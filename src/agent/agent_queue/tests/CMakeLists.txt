@@ -9,6 +9,7 @@ target_link_libraries(test_AgentQueue PUBLIC
     GTest::gtest_main
     GTest::gmock
     GTest::gmock_main)
+add_test(NAME AgentQueueTest COMMAND test_AgentQueue)
 
 
 # SQLiteStorage tests
@@ -21,3 +22,5 @@ target_link_libraries(test_sqlitestorage
     GTest::gtest_main
     GTest::gmock
     GTest::gmock_main)
+add_test(NAME SqliteStorageTest COMMAND test_sqlitestorage)
+

@@ -10,7 +10,6 @@
 #include <vector>
 
 #include <boost/asio.hpp>
-// #include <boost/asio/experimental/awaitable_operators.hpp>
 #include <cassert>
 
 #include "shared.hpp"
