@@ -1,6 +1,5 @@
 #include "sqlitestorage.h"
 #include <algorithm>
-// TODO: only in gcc13, does it worth it? #include <format>
 #include <fmt/format.h>
 #include <iostream>
 

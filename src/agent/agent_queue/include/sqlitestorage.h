@@ -26,16 +26,24 @@ class SQLiteStorage : public Persistence
 public:
     SQLiteStorage(const std::string& dbName, const std::vector<std::string> tableName);
 
-    // Delete copy constructor
+    /**
+     * @brief Delete copy constructor
+     */
     SQLiteStorage(const SQLiteStorage&) = delete;
 
-    // Delete copy assignment operator
+    /**
+     * @brief Delete copy assignment operator
+     */
     SQLiteStorage& operator=(const SQLiteStorage&) = delete;
 
-    // Delete move constructor
+    /**
+     * @brief Delete move constructor
+     */
     SQLiteStorage(SQLiteStorage&&) = delete;
 
-    // Delete move assignment operator
+    /**
+     * @brief Delete move assignment operator
+     */
     SQLiteStorage& operator=(SQLiteStorage&&) = delete;
 
     /**
@@ -48,7 +56,7 @@ public:
      *
      * @param message The JSON message to store.
      * @param tableName The name of the table to store the message in.
-     * @param moduleName
+     * @param moduleName The name of the module that created the message.
      * @return The number of stored elements.
      */
     int Store(const json& message, const std::string& tableName, const std::string& moduleName = "") override;
@@ -57,6 +65,8 @@ public:
      * @brief Retrieve a JSON message by its ID.
      *
      * @param id The ID of the message to retrieve.
+     * @param tableName The name of the table to retrieve the message from.
+     * @param moduleName The name of the module that created the message.
      * @return The retrieved JSON message.
      */
     json Retrieve(int id, const std::string& tableName, const std::string& moduleName = "") override;
@@ -65,6 +75,8 @@ public:
      * @brief Retrieve multiple JSON messages.
      *
      * @param n The number of messages to retrieve.
+     * @param tableName The name of the table to retrieve the message from.
+     * @param moduleName The name of the module that created the message.
      * @return A vector of retrieved JSON messages.
      */
     json RetrieveMultiple(int n, const std::string& tableName, const std::string& moduleName = "") override;
@@ -72,8 +84,9 @@ public:
     /**
      * @brief Remove a JSON message by its ID.
      *
-     * @param id The ID of the message to remove.
-     * @param moduleName
+     * @param id The number the message to remove.
+     * @param tableName The name of the table to remove the message from.
+     * @param moduleName The name of the module that created the message.
      * @return The number of removed elements.
      */
     int Remove(int id, const std::string& tableName, const std::string& moduleName = "") override;
@@ -82,14 +95,16 @@ public:
      * @brief Remove multiple JSON messages.
      *
      * @param n The number of messages to remove.
-     * @param moduleName
+     * @param tableName The name of the table to remove the message from.
+     * @param moduleName The name of the module that created the message.
      * @return The number of removed elements.
      */
     int RemoveMultiple(int n, const std::string& tableName, const std::string& moduleName = "") override;
 
     /**
      * @brief Get the number of elements in the table.
-     *
+     * @param tableName The name of the table to retrieve the message from.
+     * @param moduleName The name of the module that created the message.
      * @return The number of elements in the table.
      */
     int GetElementCount(const std::string& tableName, const std::string& moduleName = "") override;
@@ -97,8 +112,8 @@ public:
 private:
     /**
      * @brief Initialize the table in the SQLite database.
-     *
      * This method creates the table if it does not already exist.
+     * @param tableName The name of the table to initialize.
      */
     void InitializeTable(const std::string& tableName);
 
@@ -114,22 +129,34 @@ private:
      */
     void releaseDatabaseAccess();
 
-    /// The name of the SQLite database file.
+    /**
+     * @brief The name of the SQLite database file.
+     */
     const std::string m_dbName;
 
-    /// The name of the table to use for storing messages.
+    /**
+     * @brief The name of the table to use for storing messages.
+     */
     const std::string m_tableName;
 
-    /// Pointer to the SQLite database connection.
+    /**
+     * @brief Pointer to the SQLite database connection.
+     */
     std::unique_ptr<SQLite::Database> m_db;
 
-    /// Mutex to ensure thread-safe operations.
+    /**
+     * @brief Mutex to ensure thread-safe operations.
+     */
     std::mutex m_mutex;
 
-    /// @brief condition variable to wait for database access.
+    /**
+     * @brief condition variable to wait for database access.
+     */
     std::condition_variable m_cv;
 
-    // @brief flag for notifying the use of the db.
+    /**
+     * @brief flag for notifying the use of the db.
+     */
     bool m_dbInUse = false;
 };
 

@@ -21,7 +21,7 @@ enum MessageType
 };
 
 /**
- * @brief Wrapper for Message data and type
+ * @brief Wrapper for Message, contains the message type, the json data and the module name.
  *
  */
 class Message

@@ -39,10 +39,6 @@ public:
     }
 };
 
-/**
- * @brief
- *
- */
 class MultiTypeQueue
 {
 private:
@@ -59,7 +55,6 @@ private:
     std::condition_variable m_cv;
 
 public:
-    // Create a vector with 3 PersistedQueue elements
     MultiTypeQueue(int size = DEFAULT_MAX, int timeout = DEFAULT_TIMEOUT_S)
         : m_maxItems(size)
         , m_timeout(timeout)
@@ -75,18 +70,29 @@ public:
         }
     }
 
-    // Delete copy constructor
+    /**
+     * @brief Delete copy constructor
+     */
     MultiTypeQueue(const MultiTypeQueue&) = delete;
 
-    // Delete copy assignment operator
+    /**
+     * @brief Delete copy assignment operator
+     */
     MultiTypeQueue& operator=(const MultiTypeQueue&) = delete;
 
-    // Delete move constructor
+    /**
+     * @brief Delete move constructor
+     */
     MultiTypeQueue(MultiTypeQueue&&) = delete;
 
-    // Delete move assignment operator
+    /**
+     * @brief Delete move assignment operator
+     */
     MultiTypeQueue& operator=(MultiTypeQueue&&) = delete;
 
+    /**
+     * @brief Destructor.
+     */
     ~MultiTypeQueue() {};
 
     /**
@@ -109,16 +115,16 @@ public:
     /**
      * @brief pushes a vector of messages
      *
-     * @param messages to be pushed
-     * @param shouldWait when true, the function will wait until the message is pushed
+     * @param messages vector of messages to be pushed
      * @return int number of messages pushed
      */
     int push(std::vector<Message> messages);
 
     /**
-     * @brief Get the Last Message object
+     * @brief Get the next Message object
      *
      * @param type of the queue to be used as source
+     * @param module module name
      * @return Message type object taken from the queue
      */
     Message getNext(MessageType type, const std::string module = "");
@@ -127,17 +133,18 @@ public:
      * @brief Get the Next Awaitable object
      *
      * @param type of the queue to be used as source
-     * @param module module name
+     * @param moduleName module name
      * @param messageQuantity quantity of messages to return
-     * @return boost::asio::awaitable<Message>
+     * @return boost::asio::awaitable<Message> awaitable object taken from the queue
      */
     boost::asio::awaitable<Message>
     getNextNAwaitable(MessageType type, int messageQuantity, const std::string moduleName = "");
+
     /**
      * @brief Returns N messages from a queue
      *
      * @param type Of the queue to be used as source
-     * @param moduleName
+     * @param moduleName module name
      * @param messageQuantity quantity of messages to return
      * @return Message Json data othe messages fetched
      */
@@ -148,17 +155,17 @@ public:
      *
      * @param type MessageType queue to pop
      * @param moduleName
-     * @return true popped succesfully
-     * @return false wasn't able to pop message
+     * @return true when popped succesfully
+     * @return false if it wasn't able to pop message
      */
     bool pop(MessageType type, const std::string moduleName = "");
 
     /**
-     * @brief
+     * @brief deletes N messages from a queue
      *
-     * @param type
-     * @param moduleName
-     * @param messageQuantity
+     * @param type MessageType queue to pop
+     * @param moduleName module name
+     * @param messageQuantity quantity of messages to pop
      * @return Number of messages deleted
      */
     int popN(MessageType type, int messageQuantity, const std::string moduleName = "");
@@ -166,8 +173,8 @@ public:
     /**
      * @brief Checks emptyness of a queue
      *
-     * @param type
-     * @param moduleName
+     * @param type MessageType
+     * @param moduleName module name
      * @return true when queue empty
      * @return false otherwise
      */
@@ -176,8 +183,8 @@ public:
     /**
      * @brief Checks fullness of a queue
      *
-     * @param type
-     * @param moduleName
+     * @param type MessageType
+     * @param moduleName module name
      * @return true when queue is full
      * @return false otherwise
      */
@@ -186,10 +193,9 @@ public:
     /**
      * @brief Get the Items By Type object
      *
-     * @param type
-     * @param moduleName
-     * @return true
-     * @return false
+     * @param type MessageType
+     * @param moduleName module name
+     * @return int number of items in the queue.
      */
     int storedItems(MessageType type, const std::string moduleName = "");
 };

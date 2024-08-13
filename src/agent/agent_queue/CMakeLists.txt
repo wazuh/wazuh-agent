@@ -21,6 +21,6 @@ target_include_directories(AgentQueue PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 target_link_libraries(AgentQueue PUBLIC nlohmann_json::nlohmann_json Boost::asio PRIVATE SQLiteCpp nlohmann_json::nlohmann_json fmt::fmt Boost::asio)
 
 if(BUILD_TESTS)
-	enable_testing()
+    enable_testing()
     add_subdirectory(tests)
 endif()
