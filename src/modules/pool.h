@@ -6,10 +6,7 @@
 #include <string>
 #include "configuration.h"
 #include "moduleWrapper.h"
-// #include "logCollector.h"
-// #include "fim.h"
 #include "inventory.h"
-// #include "sca.h"
 
 using namespace std;
 
@@ -36,6 +33,7 @@ public:
 
 private:
     map<string, shared_ptr<ModuleWrapper>> modules;
+    vector<thread> threads;
 };
 
 #endif // POOL_H

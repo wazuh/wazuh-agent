@@ -27,8 +27,7 @@ shared_ptr<ModuleWrapper> Pool::getModule(const string & name) {
 
 void Pool::start() {
     for (const auto &[_, module] : modules) {
-        cout << "Invoke: " << module->name() << endl;
-        module->run();
+        threads.emplace_back([module]() { module->run(); });
     }
 }
 
@@ -41,5 +40,11 @@ void Pool::setup(const Configuration & config) {
 void Pool::stop() {
     for (const auto &[_, module] : modules) {
         module->stop();
+    }
+
+    for (auto &thread : threads) {
+        if (thread.joinable()) {
+            thread.join();
+        }
     }
 }
