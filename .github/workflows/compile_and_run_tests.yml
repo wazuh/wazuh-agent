@@ -1,0 +1,27 @@
+name: Compile and Run Tests
+
+on:
+    push:
+      branches:
+        - '**'
+    pull_request:
+      types:
+        - opened
+        - synchronize
+        - reopened
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+        fetch-depth: 0
+
+    - name: Run Compile Action
+      uses: ./.github/actions/compile
+      with:
+        path: src/
