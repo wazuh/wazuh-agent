@@ -1089,11 +1089,6 @@ void Inventory::scanHardware()
     }
 }
 
-void Inventory::syncHardware()
-{
-    //m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(HW_START_CONFIG_STATEMENT), m_reportSyncFunction);
-}
-
 nlohmann::json Inventory::getOSData()
 {
     nlohmann::json ret;
@@ -1111,11 +1106,6 @@ void Inventory::scanOs()
         updateChanges(OS_TABLE, osData);
         log(LOG_DEBUG_VERBOSE, "Ending os scan");
     }
-}
-
-void Inventory::syncOs()
-{
-    //m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(OS_START_CONFIG_STATEMENT), m_reportSyncFunction);
 }
 
 nlohmann::json Inventory::getNetworkData()
@@ -1263,13 +1253,6 @@ void Inventory::scanNetwork()
     }
 }
 
-void Inventory::syncNetwork()
-{
-    //m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(NETIFACE_START_CONFIG_STATEMENT), m_reportSyncFunction);
-    //m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(NETPROTO_START_CONFIG_STATEMENT), m_reportSyncFunction);
-    //m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(NETADDRESS_START_CONFIG_STATEMENT), m_reportSyncFunction);
-}
-
 void Inventory::scanPackages()
 {
     if (m_packages)
@@ -1332,16 +1315,6 @@ void Inventory::scanHotfixes()
 
         log(LOG_DEBUG_VERBOSE, "Ending hotfixes scan");
     }
-}
-
-void Inventory::syncPackages()
-{
-    //m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(PACKAGES_START_CONFIG_STATEMENT), m_reportSyncFunction);
-}
-
-void Inventory::syncHotfixes()
-{
-    //m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(HOTFIXES_START_CONFIG_STATEMENT), m_reportSyncFunction);
 }
 
 nlohmann::json Inventory::getPortsData()
@@ -1418,11 +1391,6 @@ void Inventory::scanPorts()
     }
 }
 
-void Inventory::syncPorts()
-{
-    //m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(PORTS_START_CONFIG_STATEMENT), m_reportSyncFunction);
-}
-
 void Inventory::scanProcesses()
 {
     if (m_processes)
@@ -1460,11 +1428,6 @@ void Inventory::scanProcesses()
     }
 }
 
-void Inventory::syncProcesses()
-{
-    //m_spRsync->startSync(m_spDBSync->handle(), nlohmann::json::parse(PROCESSES_START_CONFIG_STATEMENT), m_reportSyncFunction);
-}
-
 void Inventory::scan()
 {
     log(LOG_INFO, "Starting evaluation.");
@@ -1481,27 +1444,13 @@ void Inventory::scan()
     log(LOG_INFO, "Evaluation finished.");
 }
 
-void Inventory::sync()
-{
-    log(LOG_DEBUG, "Starting inventory sync");
-    TRY_CATCH_TASK(syncHardware);
-    TRY_CATCH_TASK(syncOs);
-    TRY_CATCH_TASK(syncNetwork);
-    TRY_CATCH_TASK(syncPackages);
-    TRY_CATCH_TASK(syncHotfixes);
-    TRY_CATCH_TASK(syncPorts);
-    TRY_CATCH_TASK(syncProcesses);
-    log(LOG_DEBUG, "Ending inventory sync");
-}
-
 void Inventory::syncAlgorithm()
 {
     m_currentIntervalValue = m_intervalValue / 2 >= MAX_DELAY_TIME ? MAX_DELAY_TIME : m_intervalValue / 2;
 
-    if (Utils::secondsSinceEpoch() - m_lastSyncMsg > m_currentIntervalValue)
+    if (Utils::secondsSinceEpoch() > m_currentIntervalValue)
     {
         scan();
-        sync();
         m_currentIntervalValue = m_intervalValue;
     }
     else
@@ -1517,7 +1466,6 @@ void Inventory::syncLoop(std::unique_lock<std::mutex>& lock)
     if (m_scanOnStart)
     {
         scan();
-        sync();
     }
 
     while (!m_cv.wait_for(lock, std::chrono::seconds{m_currentIntervalValue}, [&]()
@@ -1530,26 +1478,3 @@ void Inventory::syncLoop(std::unique_lock<std::mutex>& lock)
     m_spDBSync.reset(nullptr);
 }
 
-void Inventory::push(const std::string& data)
-{
-    std::unique_lock<std::mutex> lock{m_mutex};
-
-    if (!m_stopping)
-    {
-        auto rawData{data};
-        Utils::replaceFirst(rawData, "dbsync ", "");
-        const auto buff{reinterpret_cast<const uint8_t*>(rawData.c_str())};
-
-        try
-        {
-            //m_spRsync->pushMessage(std::vector<uint8_t> {buff, buff + rawData.size()});
-        }
-        // LCOV_EXCL_START
-        catch (const std::exception& ex)
-        {
-            logError(ex.what());
-        }
-    }
-
-    // LCOV_EXCL_STOP
-}
