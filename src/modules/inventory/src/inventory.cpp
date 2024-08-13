@@ -80,7 +80,7 @@ int Inventory::setup(const Configuration & config) {
 
 void Inventory::stop() {
     cout << "- [Inventory] stopped" << endl;
-    Inventory::destroy();
+    Inventory::instance().destroy();
 }
 
 string Inventory::command(const string & query) {
@@ -89,7 +89,7 @@ string Inventory::command(const string & query) {
 }
 
 string Inventory::name() const {
-    return "inventory";
+    return "Inventory";
 }
 
 void Inventory::send_diff_message(const string& data) {
@@ -137,6 +137,7 @@ void Inventory::log_config()
 }
 
 cJSON * Inventory::dump() {
+
     cJSON *root = cJSON_CreateObject();
     cJSON *wm_inv = cJSON_CreateObject();
 
@@ -165,12 +166,11 @@ cJSON * Inventory::dump() {
 
 void Inventory::inventory_start()
 {
-
     DBSync::initialize(logError);
 
     try
     {
-        init(std::make_shared<SysInfo>(),
+        Inventory::instance().init(std::make_shared<SysInfo>(),
                                       dbPath,
                                       normalizerConfigPath,
                                       normalizerType);
