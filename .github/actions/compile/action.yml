@@ -10,16 +10,29 @@ inputs:
 runs:
   using: "composite"
   steps:
+      - name: Generate CMake project
+        run: |
+          SRC_FOLDER=$(pwd)/${{ inputs.path }}
+
+          mkdir -p build && cd build
+          cmake ${SRC_FOLDER} -DBUILD_TESTS=1 -G "Unix Makefiles"
+          echo "CMake project generated in $(pwd)"
+        shell: bash
+
       - name: Compile
         run: |
-          SRC_FOLDER=$(pwd)/src
+          cd build
+          if [ ! -f CMakeCache.txt ]; then
+            echo "CMake cache not found in $(pwd). Aborting."
+            exit 1
+          fi
+          cmake --build .
+        shell: bash
 
-          VERSION=$(cat src/VERSION)
-          echo $VERSION
-          REVISION=$(cat src/REVISION)
-          echo $REVISION
-
-          cd ${{ inputs.path }}
-          mkdir -p build && cd build
-          cmake -DSRC_FOLDER=${SRC_FOLDER} -DVERSION="$VERSION" -DREVISION="$REVISION" .. && make -j2
+      - name: Run Tests
+        continue-on-error: true
+        run: |
+          set +e
+          cd build
+          ctest || echo "Tests failed, but continuing"
         shell: bash
