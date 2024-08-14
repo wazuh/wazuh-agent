@@ -31,4 +31,10 @@ public:
         , moduleName(mN)
     {
     }
+
+    // Define equality operator
+    bool operator==(const Message& other) const
+    {
+        return type == other.type && data == other.data;
+    }
 };

@@ -46,11 +46,12 @@ namespace http_client
                           std::function<void()> onUnauthorized,
                           std::function<void(const std::string&)> onSuccess = {});
 
-    boost::asio::awaitable<void> Co_MessageProcessingTask(const std::string& token,
-                                                          HttpRequestParams params,
-                                                          std::function<std::string()> messageGetter,
-                                                          std::function<void()> onUnauthorized,
-                                                          std::function<void(const std::string&)> onSuccess = {});
+    boost::asio::awaitable<void>
+    Co_MessageProcessingTask(const std::string& token,
+                             HttpRequestParams params,
+                             std::function<boost::asio::awaitable<std::string>()> messageGetter,
+                             std::function<void()> onUnauthorized,
+                             std::function<void(const std::string&)> onSuccess = {});
 
     boost::beast::http::response<boost::beast::http::dynamic_body> PerformHttpRequest(const HttpRequestParams& params);
 

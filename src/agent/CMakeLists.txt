@@ -12,9 +12,10 @@ project(Agent)
 
 set(SOURCES
     src/agent.cpp
-    src/task_manager.cpp
+    src/message_queue_utils.cpp
     src/register.cpp
     src/signal_handler.cpp
+    src/task_manager.cpp
 )
 
 add_subdirectory(agent_info)
