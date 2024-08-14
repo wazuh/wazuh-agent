@@ -142,7 +142,6 @@ static int read_sys_file(const char *file_name, int do_read)
 
         if (statbuf.st_uid == 0) {
             char op_msg[OS_SIZE_1024 + 1];
-#ifdef OSSECHIDS
             const char op_msg_fmt[] = "File '%*s' is owned by root and has written permissions to anyone.";
 
             const int size = snprintf(NULL, 0, op_msg_fmt, (int)strlen(file_name), file_name);
@@ -161,27 +160,6 @@ static int read_sys_file(const char *file_name, int do_read)
             }
 
             _sys_errors++;
-
-#else
-            const char op_msg_fmt[] = "File '%*s' is: \n          - owned by root,\n          - has write permissions to anyone.";
-
-            const int size = snprintf(NULL, 0, op_msg_fmt, (int)strlen(file_name), file_name);
-
-            if (size >= 0) {
-                if ((size_t)size < sizeof(op_msg)) {
-                    snprintf(op_msg, sizeof(op_msg), op_msg_fmt, (int)strlen(file_name), file_name);
-                } else {
-                    const unsigned int surplus = size - sizeof(op_msg) + 1;
-                    snprintf(op_msg, sizeof(op_msg), op_msg_fmt, (int)(strlen(file_name) - surplus), file_name);
-                }
-
-                notify_rk(ALERT_SYSTEM_CRIT, op_msg);
-            } else {
-                mtdebug2(ARGV0, "Error %d (%s) with snprintf with file %s", errno, strerror(errno), file_name);
-            }
-
-            _sys_errors++;
-#endif
         }
     } else if ((statbuf.st_mode & S_ISUID) == S_ISUID) {
         if (_suid) {
