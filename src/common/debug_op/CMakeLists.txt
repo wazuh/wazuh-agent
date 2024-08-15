@@ -1,5 +1,7 @@
 add_library(debug_op STATIC src/debug_op.c)
 
+find_package(cJSON CONFIG REQUIRED)
+
 target_include_directories(debug_op PUBLIC include)
 
 target_link_libraries(debug_op

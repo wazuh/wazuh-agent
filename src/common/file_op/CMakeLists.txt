@@ -1,3 +1,5 @@
+find_package(ZLIB REQUIRED)
+
 add_library(file_op STATIC src/file_op.c)
 
 target_include_directories(file_op PUBLIC include)
