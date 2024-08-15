@@ -1,5 +1,4 @@
-#ifndef QUEUE_H
-#define QUEUE_H
+#pragma once
 
 #include <persistence.h>
 #include <shared.hpp>
@@ -164,5 +163,3 @@ public:
      */
     int storedItems(MessageType type, const std::string moduleName = "");
 };
-
-#endif // QUEUE_H
