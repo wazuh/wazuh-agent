@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 #include <memory>
-#include <cjson/cJSON.h>
 #include "sysInfoInterface.h"
 #include "configuration.h"
 #include "logging_helper.h"

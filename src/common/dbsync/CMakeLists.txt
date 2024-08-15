@@ -36,6 +36,9 @@ if(APPLE)
   set(CMAKE_MACOSX_RPATH 1)
 endif(APPLE)
 
+find_package(cJSON CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(unofficial-sqlite3 CONFIG REQUIRED)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
@@ -54,8 +57,6 @@ else()
 endif(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
 
 link_directories(${SRC_FOLDER})
-link_directories(${SRC_FOLDER}/external/sqlite/)
-link_directories(${SRC_FOLDER}/external/cJSON/)
 
 file(GLOB DBSYNC_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"

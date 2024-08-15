@@ -7,15 +7,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
 
-find_package(cJSON CONFIG REQUIRED)
-find_package(CURL REQUIRED)
-find_package(nlohmann_json CONFIG REQUIRED)
-find_package(LibArchive REQUIRED)
-find_package(Lua REQUIRED)
-find_package(pcre2 CONFIG REQUIRED)
-find_package(unofficial-sqlite3 CONFIG REQUIRED)
-find_package(ZLIB REQUIRED)
-
 project(wazuh-agent)
 
 add_subdirectory(agent)
