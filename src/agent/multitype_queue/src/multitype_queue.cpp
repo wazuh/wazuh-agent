@@ -14,7 +14,7 @@ MultiTypeQueue::MultiTypeQueue(int size, int timeout)
     try
     {
         m_persistenceDest = PersistenceFactory::createPersistence(
-            "SQLite3", {static_cast<std::string>(DEFAULT_DB_PATH), m_vMessageTypeStrings});
+            "SQLite3", {static_cast<std::string>(QUEUE_DEFAULT_DB_PATH), m_vMessageTypeStrings});
     }
     catch (const std::exception& e)
     {

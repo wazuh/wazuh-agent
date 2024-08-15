@@ -60,7 +60,7 @@ std::string unescape_string(const std::string& str)
 
 void cleanPersistence()
 {
-    std::string filePath = DEFAULT_DB_PATH;
+    std::string filePath = QUEUE_DEFAULT_DB_PATH;
     for (const auto& entry : std::filesystem::directory_iterator("."))
     {
         std::string fileFullPath = entry.path();
