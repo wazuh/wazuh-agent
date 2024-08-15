@@ -3,6 +3,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include <string>
+
 /**
  * @brief Types of messages enum
  *
