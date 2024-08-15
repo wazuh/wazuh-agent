@@ -75,12 +75,12 @@ void cleanPersistence()
 
 /// Test Methods
 
-void QueueTest::SetUp()
+void MultiTypeQueueTest::SetUp()
 {
     cleanPersistence();
 };
 
-void QueueTest::TearDown() {};
+void MultiTypeQueueTest::TearDown() {};
 
 /// TESTS
 
@@ -133,7 +133,7 @@ TEST_F(JsonTest, JSONArrays)
 }
 
 // Push, get and check the queue is not empty
-TEST_F(QueueTest, SinglePushGetNotEmpty)
+TEST_F(MultiTypeQueueTest, SinglePushGetNotEmpty)
 {
     MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
@@ -153,7 +153,7 @@ TEST_F(QueueTest, SinglePushGetNotEmpty)
 }
 
 // push and pop on a non-full queue
-TEST_F(QueueTest, SinglePushPopEmpty)
+TEST_F(MultiTypeQueueTest, SinglePushPopEmpty)
 {
     MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
@@ -177,7 +177,7 @@ TEST_F(QueueTest, SinglePushPopEmpty)
     EXPECT_TRUE(queue.isEmpty(MessageType::STATELESS));
 }
 
-TEST_F(QueueTest, SinglePushGetWithModule)
+TEST_F(MultiTypeQueueTest, SinglePushGetWithModule)
 {
     MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
@@ -204,7 +204,7 @@ TEST_F(QueueTest, SinglePushGetWithModule)
 }
 
 // Push, get and check while the queue is full
-TEST_F(QueueTest, SinglePushPopFullWithTimeout)
+TEST_F(MultiTypeQueueTest, SinglePushPopFullWithTimeout)
 {
     MultiTypeQueue queue(SMALL_QUEUE_CAPACITY);
 
@@ -231,7 +231,7 @@ TEST_F(QueueTest, SinglePushPopFullWithTimeout)
 }
 
 // Accesing different types of queues from several threads
-TEST_F(QueueTest, MultithreadDifferentType)
+TEST_F(MultiTypeQueueTest, MultithreadDifferentType)
 {
     MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
 
@@ -301,7 +301,7 @@ TEST_F(QueueTest, MultithreadDifferentType)
 }
 
 // Accesing same queue from 2 different threads
-TEST_F(QueueTest, MultithreadSameType)
+TEST_F(MultiTypeQueueTest, MultithreadSameType)
 {
     MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
     auto messageType = MessageType::COMMAND;
@@ -356,7 +356,7 @@ TEST_F(QueueTest, MultithreadSameType)
 
 // Push Multiple with single message and data array,
 // several gets, checks and pops
-TEST_F(QueueTest, PushMultipleSeveralSingleGets)
+TEST_F(MultiTypeQueueTest, PushMultipleSeveralSingleGets)
 {
     MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
@@ -376,7 +376,7 @@ TEST_F(QueueTest, PushMultipleSeveralSingleGets)
     EXPECT_EQ(queue.storedItems(MessageType::STATELESS), 0);
 }
 
-TEST_F(QueueTest, PushMultipleWithMessageVector)
+TEST_F(MultiTypeQueueTest, PushMultipleWithMessageVector)
 {
     MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
 
@@ -393,7 +393,7 @@ TEST_F(QueueTest, PushMultipleWithMessageVector)
 }
 
 // push message vector with a mutiple data element
-TEST_F(QueueTest, PushVectorWithAMultipleInside)
+TEST_F(MultiTypeQueueTest, PushVectorWithAMultipleInside)
 {
     MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
 
@@ -415,7 +415,7 @@ TEST_F(QueueTest, PushVectorWithAMultipleInside)
 }
 
 // Push Multiple, pop multiples
-TEST_F(QueueTest, PushMultipleGetMultiple)
+TEST_F(MultiTypeQueueTest, PushMultipleGetMultiple)
 {
     MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
@@ -430,7 +430,7 @@ TEST_F(QueueTest, PushMultipleGetMultiple)
 }
 
 // Push Multiple, pop multiples
-TEST_F(QueueTest, PushMultipleGetMultipleWithModule)
+TEST_F(MultiTypeQueueTest, PushMultipleGetMultipleWithModule)
 {
     MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
@@ -452,7 +452,7 @@ TEST_F(QueueTest, PushMultipleGetMultipleWithModule)
     EXPECT_EQ(3, queue.storedItems(MessageType::STATELESS, moduleName));
 }
 
-TEST_F(QueueTest, PushSinglesleGetMultipleWithModule)
+TEST_F(MultiTypeQueueTest, PushSinglesleGetMultipleWithModule)
 {
     MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
 
@@ -479,7 +479,7 @@ TEST_F(QueueTest, PushSinglesleGetMultipleWithModule)
     EXPECT_EQ(1, messageReceivedContent1.size());
 }
 
-TEST_F(QueueTest, GetNextAwaitableBase)
+TEST_F(MultiTypeQueueTest, GetNextAwaitableBase)
 {
     MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
     boost::asio::io_context io_context;
@@ -511,7 +511,7 @@ TEST_F(QueueTest, GetNextAwaitableBase)
     producer.join();
 }
 
-TEST_F(QueueTest, PushAwaitable)
+TEST_F(MultiTypeQueueTest, PushAwaitable)
 {
     MultiTypeQueue queue(SMALL_QUEUE_CAPACITY);
     boost::asio::io_context io_context;
@@ -558,7 +558,7 @@ TEST_F(QueueTest, PushAwaitable)
     EXPECT_TRUE(queue.isFull(MessageType::STATEFUL));
 }
 
-TEST_F(QueueTest, FifoOrderCheck)
+TEST_F(MultiTypeQueueTest, FifoOrderCheck)
 {
     MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
 
