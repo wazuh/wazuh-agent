@@ -135,12 +135,12 @@ TEST_F(JsonTest, JSONArrays)
 // Push, get and check the queue is not empty
 TEST_F(MultiTypeQueueTest, SinglePushGetNotEmpty)
 {
-    MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, baseDataContent};
 
-    EXPECT_EQ(queue.push(messageToSend), 1);
-    auto messageResponse = queue.getNext(MessageType::STATELESS);
+    EXPECT_EQ(multiTypeQueue.push(messageToSend), 1);
+    auto messageResponse = multiTypeQueue.getNext(MessageType::STATELESS);
 
     auto typeSend = messageToSend.type;
     auto typeReceived = messageResponse.type;
@@ -149,44 +149,44 @@ TEST_F(MultiTypeQueueTest, SinglePushGetNotEmpty)
     auto dataResponse = messageResponse.data.at(0).at("data");
     EXPECT_EQ(dataResponse, baseDataContent);
 
-    EXPECT_FALSE(queue.isEmpty(MessageType::STATELESS));
+    EXPECT_FALSE(multiTypeQueue.isEmpty(MessageType::STATELESS));
 }
 
 // push and pop on a non-full queue
 TEST_F(MultiTypeQueueTest, SinglePushPopEmpty)
 {
-    MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, baseDataContent};
 
-    EXPECT_EQ(queue.push(messageToSend), 1);
-    auto messageResponse = queue.getNext(MessageType::STATELESS);
+    EXPECT_EQ(multiTypeQueue.push(messageToSend), 1);
+    auto messageResponse = multiTypeQueue.getNext(MessageType::STATELESS);
     auto dataResponse = messageResponse.data.at(0).at("data");
     EXPECT_EQ(dataResponse, baseDataContent);
     EXPECT_EQ(messageType, messageResponse.type);
 
-    auto messageResponseStateFul = queue.getNext(MessageType::STATEFUL);
+    auto messageResponseStateFul = multiTypeQueue.getNext(MessageType::STATEFUL);
     // TODO: this behavior can be change to return an empty message (type and module empty)
     EXPECT_EQ(messageResponseStateFul.type, MessageType::STATEFUL);
     EXPECT_EQ(messageResponseStateFul.data, "{}"_json);
 
-    queue.pop(MessageType::STATELESS);
-    EXPECT_TRUE(queue.isEmpty(MessageType::STATELESS));
+    multiTypeQueue.pop(MessageType::STATELESS);
+    EXPECT_TRUE(multiTypeQueue.isEmpty(MessageType::STATELESS));
 
-    queue.pop(MessageType::STATELESS);
-    EXPECT_TRUE(queue.isEmpty(MessageType::STATELESS));
+    multiTypeQueue.pop(MessageType::STATELESS);
+    EXPECT_TRUE(multiTypeQueue.isEmpty(MessageType::STATELESS));
 }
 
 TEST_F(MultiTypeQueueTest, SinglePushGetWithModule)
 {
-    MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
     const std::string moduleFakeName = "fake-module";
     const std::string moduleName = "module";
     const Message messageToSend {messageType, baseDataContent, moduleName};
 
-    EXPECT_EQ(queue.push(messageToSend), 1);
-    auto messageResponseWrongModule = queue.getNext(MessageType::STATELESS, moduleFakeName);
+    EXPECT_EQ(multiTypeQueue.push(messageToSend), 1);
+    auto messageResponseWrongModule = multiTypeQueue.getNext(MessageType::STATELESS, moduleFakeName);
 
     auto typeSend = messageToSend.type;
     auto typeReceived = messageResponseWrongModule.type;
@@ -195,7 +195,7 @@ TEST_F(MultiTypeQueueTest, SinglePushGetWithModule)
     EXPECT_EQ(messageResponseWrongModule.moduleName, moduleFakeName);
     EXPECT_EQ(messageResponseWrongModule.data, "{}"_json);
 
-    auto messageResponseCorrectModule = queue.getNext(MessageType::STATELESS, moduleName);
+    auto messageResponseCorrectModule = multiTypeQueue.getNext(MessageType::STATELESS, moduleName);
 
     auto dataResponse = messageResponseCorrectModule.data.at(0).at("data");
     EXPECT_EQ(dataResponse, baseDataContent);
@@ -206,40 +206,40 @@ TEST_F(MultiTypeQueueTest, SinglePushGetWithModule)
 // Push, get and check while the queue is full
 TEST_F(MultiTypeQueueTest, SinglePushPopFullWithTimeout)
 {
-    MultiTypeQueue queue(SMALL_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(SMALL_QUEUE_CAPACITY);
 
     // complete the queue with messages
     const MessageType messageType {MessageType::COMMAND};
     for (int i : {1, 2})
     {
         const json dataContent = R"({"Data" : "for COMMAND)" + std::to_string(i) + R"("})";
-        EXPECT_EQ(queue.push({messageType, dataContent}), 1);
+        EXPECT_EQ(multiTypeQueue.push({messageType, dataContent}), 1);
     }
 
     const json dataContent = R"({"Data" : "for COMMAND3"})";
     Message exampleMessage {messageType, dataContent};
-    EXPECT_EQ(queue.push({messageType, dataContent}, true), 0);
+    EXPECT_EQ(multiTypeQueue.push({messageType, dataContent}, true), 0);
 
-    auto items = queue.storedItems(MessageType::COMMAND);
+    auto items = multiTypeQueue.storedItems(MessageType::COMMAND);
     EXPECT_EQ(items, SMALL_QUEUE_CAPACITY);
-    EXPECT_TRUE(queue.isFull(MessageType::COMMAND));
-    EXPECT_TRUE(queue.isEmpty(MessageType::STATELESS));
+    EXPECT_TRUE(multiTypeQueue.isFull(MessageType::COMMAND));
+    EXPECT_TRUE(multiTypeQueue.isEmpty(MessageType::STATELESS));
 
-    queue.pop(MessageType::COMMAND);
-    items = queue.storedItems(MessageType::COMMAND);
+    multiTypeQueue.pop(MessageType::COMMAND);
+    items = multiTypeQueue.storedItems(MessageType::COMMAND);
     EXPECT_NE(items, SMALL_QUEUE_CAPACITY);
 }
 
 // Accesing different types of queues from several threads
 TEST_F(MultiTypeQueueTest, MultithreadDifferentType)
 {
-    MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
 
     auto consumerStateLess = [&](int& count)
     {
         for (int i = 0; i < count; ++i)
         {
-            queue.pop(MessageType::STATELESS);
+            multiTypeQueue.pop(MessageType::STATELESS);
         }
     };
 
@@ -247,7 +247,7 @@ TEST_F(MultiTypeQueueTest, MultithreadDifferentType)
     {
         for (int i = 0; i < count; ++i)
         {
-            queue.pop(MessageType::STATEFUL);
+            multiTypeQueue.pop(MessageType::STATEFUL);
         }
     };
 
@@ -256,8 +256,8 @@ TEST_F(MultiTypeQueueTest, MultithreadDifferentType)
         for (int i = 0; i < count; ++i)
         {
             const json dataContent = R"({{"Data", "Number )" + std::to_string(i) + R"("}})";
-            EXPECT_EQ(queue.push(Message(MessageType::STATELESS, dataContent)), 1);
-            EXPECT_EQ(queue.push(Message(MessageType::STATEFUL, dataContent)), 1);
+            EXPECT_EQ(multiTypeQueue.push(Message(MessageType::STATELESS, dataContent)), 1);
+            EXPECT_EQ(multiTypeQueue.push(Message(MessageType::STATEFUL, dataContent)), 1);
         }
     };
 
@@ -279,8 +279,8 @@ TEST_F(MultiTypeQueueTest, MultithreadDifferentType)
         consumerThread2.join();
     }
 
-    EXPECT_EQ(5, queue.storedItems(MessageType::STATELESS));
-    EXPECT_EQ(5, queue.storedItems(MessageType::STATEFUL));
+    EXPECT_EQ(5, multiTypeQueue.storedItems(MessageType::STATELESS));
+    EXPECT_EQ(5, multiTypeQueue.storedItems(MessageType::STATEFUL));
 
     // Consume the rest of the messages
     std::thread consumerThread12(consumerStateLess, std::ref(itemsToConsume));
@@ -296,21 +296,21 @@ TEST_F(MultiTypeQueueTest, MultithreadDifferentType)
         consumerThread22.join();
     }
 
-    EXPECT_TRUE(queue.isEmpty(MessageType::STATELESS));
-    EXPECT_TRUE(queue.isEmpty(MessageType::STATEFUL));
+    EXPECT_TRUE(multiTypeQueue.isEmpty(MessageType::STATELESS));
+    EXPECT_TRUE(multiTypeQueue.isEmpty(MessageType::STATEFUL));
 }
 
 // Accesing same queue from 2 different threads
 TEST_F(MultiTypeQueueTest, MultithreadSameType)
 {
-    MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
     auto messageType = MessageType::COMMAND;
 
     auto consumerCommand1 = [&](int& count)
     {
         for (int i = 0; i < count; ++i)
         {
-            queue.pop(messageType);
+            multiTypeQueue.pop(messageType);
         }
     };
 
@@ -318,7 +318,7 @@ TEST_F(MultiTypeQueueTest, MultithreadSameType)
     {
         for (int i = 0; i < count; ++i)
         {
-            queue.pop(messageType);
+            multiTypeQueue.pop(messageType);
         }
     };
 
@@ -327,7 +327,7 @@ TEST_F(MultiTypeQueueTest, MultithreadSameType)
         for (int i = 0; i < count; ++i)
         {
             const json dataContent = R"({{"Data": "for COMMAND)" + std::to_string(i) + R"("}})";
-            EXPECT_EQ(queue.push(Message(messageType, dataContent)), 1);
+            EXPECT_EQ(multiTypeQueue.push(Message(messageType, dataContent)), 1);
         }
     };
 
@@ -336,7 +336,7 @@ TEST_F(MultiTypeQueueTest, MultithreadSameType)
 
     messageProducer(itemsToInsert);
 
-    EXPECT_EQ(itemsToInsert, queue.storedItems(messageType));
+    EXPECT_EQ(itemsToInsert, multiTypeQueue.storedItems(messageType));
 
     std::thread consumerThread1(consumerCommand1, std::ref(itemsToConsume));
     std::thread messageProducerThread1(consumerCommand2, std::ref(itemsToConsume));
@@ -351,34 +351,34 @@ TEST_F(MultiTypeQueueTest, MultithreadSameType)
         consumerThread1.join();
     }
 
-    EXPECT_TRUE(queue.isEmpty(messageType));
+    EXPECT_TRUE(multiTypeQueue.isEmpty(messageType));
 }
 
 // Push Multiple with single message and data array,
 // several gets, checks and pops
 TEST_F(MultiTypeQueueTest, PushMultipleSeveralSingleGets)
 {
-    MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, multipleDataContent};
 
-    EXPECT_EQ(3, queue.push(messageToSend));
+    EXPECT_EQ(3, multiTypeQueue.push(messageToSend));
 
     for (int i : {0, 1, 2})
     {
-        auto messageResponse = queue.getNext(MessageType::STATELESS);
+        auto messageResponse = multiTypeQueue.getNext(MessageType::STATELESS);
         auto responseData = messageResponse.data.at(0).at("data");
         auto sentData = messageToSend.data[i].template get<std::string>();
         EXPECT_EQ(responseData, sentData);
-        queue.pop(MessageType::STATELESS);
+        multiTypeQueue.pop(MessageType::STATELESS);
     }
 
-    EXPECT_EQ(queue.storedItems(MessageType::STATELESS), 0);
+    EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATELESS), 0);
 }
 
 TEST_F(MultiTypeQueueTest, PushMultipleWithMessageVector)
 {
-    MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
 
     std::vector<Message> messages;
     const MessageType messageType {MessageType::STATELESS};
@@ -388,14 +388,14 @@ TEST_F(MultiTypeQueueTest, PushMultipleWithMessageVector)
         messages.push_back({messageType, multipleDataContent});
     }
     EXPECT_EQ(messages.size(), 3);
-    EXPECT_EQ(queue.push(messages), 3);
-    EXPECT_EQ(queue.storedItems(MessageType::STATELESS), 3);
+    EXPECT_EQ(multiTypeQueue.push(messages), 3);
+    EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATELESS), 3);
 }
 
 // push message vector with a mutiple data element
 TEST_F(MultiTypeQueueTest, PushVectorWithAMultipleInside)
 {
-    MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
 
     std::vector<Message> messages;
 
@@ -411,50 +411,50 @@ TEST_F(MultiTypeQueueTest, PushVectorWithAMultipleInside)
         messages.push_back({messageType, dataContent});
     }
 
-    EXPECT_EQ(6, queue.push(messages));
+    EXPECT_EQ(6, multiTypeQueue.push(messages));
 }
 
 // Push Multiple, pop multiples
 TEST_F(MultiTypeQueueTest, PushMultipleGetMultiple)
 {
-    MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, multipleDataContent};
 
-    EXPECT_EQ(3, queue.push(messageToSend));
-    EXPECT_EQ(queue.storedItems(MessageType::STATELESS), 3);
-    EXPECT_EQ(queue.popN(MessageType::STATELESS, 1), 1);
-    EXPECT_EQ(queue.popN(MessageType::STATELESS, 3), 2);
-    EXPECT_TRUE(queue.isEmpty(MessageType::STATELESS));
-    EXPECT_EQ(0, queue.storedItems(MessageType::STATELESS));
+    EXPECT_EQ(3, multiTypeQueue.push(messageToSend));
+    EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATELESS), 3);
+    EXPECT_EQ(multiTypeQueue.popN(MessageType::STATELESS, 1), 1);
+    EXPECT_EQ(multiTypeQueue.popN(MessageType::STATELESS, 3), 2);
+    EXPECT_TRUE(multiTypeQueue.isEmpty(MessageType::STATELESS));
+    EXPECT_EQ(0, multiTypeQueue.storedItems(MessageType::STATELESS));
 }
 
 // Push Multiple, pop multiples
 TEST_F(MultiTypeQueueTest, PushMultipleGetMultipleWithModule)
 {
-    MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
     const std::string moduleName = "testModule";
     const Message messageToSend {messageType, multipleDataContent, moduleName};
 
-    EXPECT_EQ(3, queue.push(messageToSend));
+    EXPECT_EQ(3, multiTypeQueue.push(messageToSend));
 
     // Altough we're asking for 10 messages only the availables are returned.
-    auto messagesReceived = queue.getNextN(MessageType::STATELESS, 10);
+    auto messagesReceived = multiTypeQueue.getNextN(MessageType::STATELESS, 10);
     int i = 0;
     for (auto singleMessage : messagesReceived)
     {
         EXPECT_EQ("content " + std::to_string(++i), singleMessage.data.at("data").get<std::string>());
     }
 
-    EXPECT_EQ(0, queue.storedItems(MessageType::STATELESS, "fakemodule"));
-    EXPECT_EQ(3, queue.storedItems(MessageType::STATELESS));
-    EXPECT_EQ(3, queue.storedItems(MessageType::STATELESS, moduleName));
+    EXPECT_EQ(0, multiTypeQueue.storedItems(MessageType::STATELESS, "fakemodule"));
+    EXPECT_EQ(3, multiTypeQueue.storedItems(MessageType::STATELESS));
+    EXPECT_EQ(3, multiTypeQueue.storedItems(MessageType::STATELESS, moduleName));
 }
 
 TEST_F(MultiTypeQueueTest, PushSinglesleGetMultipleWithModule)
 {
-    MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
 
     for (std::string i : {"1", "2", "3", "4", "5"})
     {
@@ -462,10 +462,10 @@ TEST_F(MultiTypeQueueTest, PushSinglesleGetMultipleWithModule)
         const json multipleDataContent = {"content-" + i};
         const std::string moduleName = "module-" + i;
         const Message messageToSend {messageType, multipleDataContent, moduleName};
-        EXPECT_EQ(1, queue.push(messageToSend));
+        EXPECT_EQ(1, multiTypeQueue.push(messageToSend));
     }
 
-    auto messagesReceived = queue.getNextN(MessageType::STATELESS, 10);
+    auto messagesReceived = multiTypeQueue.getNextN(MessageType::STATELESS, 10);
     EXPECT_EQ(5, messagesReceived.size());
     int i = 0;
     for (auto singleMessage : messagesReceived)
@@ -475,21 +475,21 @@ TEST_F(MultiTypeQueueTest, PushSinglesleGetMultipleWithModule)
         EXPECT_EQ("module-" + std::to_string(val), singleMessage.data.at("module").get<std::string>());
     }
 
-    auto messageReceivedContent1 = queue.getNextN(MessageType::STATELESS, 10, "module-1");
+    auto messageReceivedContent1 = multiTypeQueue.getNextN(MessageType::STATELESS, 10, "module-1");
     EXPECT_EQ(1, messageReceivedContent1.size());
 }
 
 TEST_F(MultiTypeQueueTest, GetNextAwaitableBase)
 {
-    MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
     boost::asio::io_context io_context;
 
     // Coroutine that waits till there's a message of the needed type on the queue
     boost::asio::co_spawn(
         io_context,
-        [&queue]() -> boost::asio::awaitable<void>
+        [&multiTypeQueue]() -> boost::asio::awaitable<void>
         {
-            auto messageReceived = co_await queue.getNextNAwaitable(MessageType::STATELESS, 2);
+            auto messageReceived = co_await multiTypeQueue.getNextNAwaitable(MessageType::STATELESS, 2);
             EXPECT_EQ(messageReceived.data.at(0).at("data"), "content-1");
             EXPECT_EQ(messageReceived.data.at(1).at("data"), "content-2");
         },
@@ -497,13 +497,13 @@ TEST_F(MultiTypeQueueTest, GetNextAwaitableBase)
 
     // Simulate the addition of needed message to the queue after some time
     std::thread producer(
-        [&queue, &io_context]()
+        [&multiTypeQueue, &io_context]()
         {
             std::this_thread::sleep_for(std::chrono::seconds(2));
             const MessageType messageType {MessageType::STATELESS};
             const json multipleDataContent = {"content-1", "content-2", "content-3"};
             const Message messageToSend {messageType, multipleDataContent};
-            EXPECT_EQ(queue.push(messageToSend), 3);
+            EXPECT_EQ(multiTypeQueue.push(messageToSend), 3);
             // io_context.stop();
         });
 
@@ -513,7 +513,7 @@ TEST_F(MultiTypeQueueTest, GetNextAwaitableBase)
 
 TEST_F(MultiTypeQueueTest, PushAwaitable)
 {
-    MultiTypeQueue queue(SMALL_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(SMALL_QUEUE_CAPACITY);
     boost::asio::io_context io_context;
 
     // complete the queue with messages
@@ -521,33 +521,33 @@ TEST_F(MultiTypeQueueTest, PushAwaitable)
     for (int i : {1, 2})
     {
         const json dataContent = R"({"Data" : "for STATEFUL)" + std::to_string(i) + R"("})";
-        EXPECT_EQ(queue.push({messageType, dataContent}), 1);
+        EXPECT_EQ(multiTypeQueue.push({messageType, dataContent}), 1);
     }
 
-    EXPECT_TRUE(queue.isFull(MessageType::STATEFUL));
-    EXPECT_EQ(queue.storedItems(MessageType::STATEFUL), 2);
+    EXPECT_TRUE(multiTypeQueue.isFull(MessageType::STATEFUL));
+    EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATEFUL), 2);
 
     // Coroutine that waits till there's space to push a new message
     boost::asio::co_spawn(
         io_context,
-        [&queue]() -> boost::asio::awaitable<void>
+        [&multiTypeQueue]() -> boost::asio::awaitable<void>
         {
             const MessageType messageType {MessageType::STATEFUL};
             const json dataContent = {"content-1"};
             const Message messageToSend {messageType, dataContent};
-            EXPECT_EQ(queue.storedItems(MessageType::STATEFUL), 2);
-            auto messagesPushed = co_await queue.pushAwaitable(messageToSend);
+            EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATEFUL), 2);
+            auto messagesPushed = co_await multiTypeQueue.pushAwaitable(messageToSend);
             EXPECT_EQ(messagesPushed, 1);
-            EXPECT_EQ(queue.storedItems(MessageType::STATEFUL), 2);
+            EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATEFUL), 2);
         },
         boost::asio::detached);
 
     // Simulate poping one message so there's space to push a new one
     std::thread consumer(
-        [&queue, &io_context]()
+        [&multiTypeQueue, &io_context]()
         {
             std::this_thread::sleep_for(std::chrono::seconds(2));
-            EXPECT_EQ(queue.popN(MessageType::STATEFUL, 1), 1);
+            EXPECT_EQ(multiTypeQueue.popN(MessageType::STATEFUL, 1), 1);
             // TODO: double check this behavior, is it mandatory to stop the context here?
             // io_context.stop();
         });
@@ -555,22 +555,22 @@ TEST_F(MultiTypeQueueTest, PushAwaitable)
     io_context.run();
     consumer.join();
 
-    EXPECT_TRUE(queue.isFull(MessageType::STATEFUL));
+    EXPECT_TRUE(multiTypeQueue.isFull(MessageType::STATEFUL));
 }
 
 TEST_F(MultiTypeQueueTest, FifoOrderCheck)
 {
-    MultiTypeQueue queue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
 
     // complete the queue with messages
     const MessageType messageType {MessageType::STATEFUL};
     for (int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
     {
         const json dataContent = R"({"Data" : "for STATEFUL)" + std::to_string(i) + R"("})";
-        EXPECT_EQ(queue.push({messageType, dataContent}), 1);
+        EXPECT_EQ(multiTypeQueue.push({messageType, dataContent}), 1);
     }
 
-    auto messageReceivedVector = queue.getNextN(messageType, 10);
+    auto messageReceivedVector = multiTypeQueue.getNextN(messageType, 10);
     EXPECT_EQ(messageReceivedVector.size(), 10);
     int i = 0;
     for (auto singleMessage : messageReceivedVector)
@@ -581,8 +581,8 @@ TEST_F(MultiTypeQueueTest, FifoOrderCheck)
     // Keep the order of the message: FIFO
     for (int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
     {
-        auto messageReceived = queue.getNextN(messageType, 1);
+        auto messageReceived = multiTypeQueue.getNextN(messageType, 1);
         EXPECT_EQ(messageReceived.at(0).data.at("data"), R"({"Data" : "for STATEFUL)" + std::to_string(i) + R"("})");
-        EXPECT_TRUE(queue.pop(messageType));
+        EXPECT_TRUE(multiTypeQueue.pop(messageType));
     }
 }
