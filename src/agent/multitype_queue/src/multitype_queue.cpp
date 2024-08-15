@@ -1,4 +1,4 @@
-#include <agent_queue.hpp>
+#include <multitype_queue.hpp>
 
 #include <persistence_factory.hpp>
 
