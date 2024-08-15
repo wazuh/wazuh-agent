@@ -12,32 +12,13 @@
 #include <boost/asio.hpp>
 #include <cassert>
 
+#include "persistence_factory.hpp"
 #include "shared.hpp"
 #include "sqlitestorage.h"
 
 // TODO: move to a configuration setting
 constexpr int DEFAULT_MAX = 10000;
 constexpr int DEFAULT_TIMEOUT_S = 3;
-
-// Factory class
-class PersistenceFactory
-{
-public:
-    static std::unique_ptr<Persistence> createPersistence(const std::string& type, const std::vector<std::any>& args)
-    {
-        if (type == "SQLite3")
-        {
-            if (args.size() != 2 || !std::any_cast<std::string>(&args[0]) ||
-                !std::any_cast<std::vector<std::string>>(&args[1]))
-            {
-                throw std::invalid_argument("SQLite3 requires db name and table names as arguments");
-            }
-            return std::make_unique<SQLiteStorage>(std::any_cast<std::string>(args[0]),
-                                                   std::any_cast<std::vector<std::string>>(args[1]));
-        }
-        throw std::runtime_error("Unknown persistence type");
-    }
-};
 
 class MultiTypeQueue
 {

@@ -15,7 +15,7 @@ find_package(nlohmann_json REQUIRED)
 find_package(fmt REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio)
 
-add_library(AgentQueue src/sqlitestorage.cpp src/agent_queue.cpp)
+add_library(AgentQueue src/sqlitestorage.cpp src/agent_queue.cpp src/persistence_factory.cpp)
 target_include_directories(AgentQueue PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include PRIVATE ${SQLiteCpp_INCLUDE_DIRS})
 target_link_libraries(AgentQueue PUBLIC nlohmann_json::nlohmann_json Boost::asio PRIVATE SQLiteCpp fmt::fmt)
 
