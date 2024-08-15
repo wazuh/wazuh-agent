@@ -13,12 +13,14 @@ find_package(Boost REQUIRED COMPONENTS uuid)
 
 add_library(AgentInfo src/agent_info.cpp src/agent_info_persistance.cpp)
 target_include_directories(AgentInfo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_link_libraries(AgentInfo PRIVATE SQLiteCpp Boost::uuid)
 
 if(MSVC)
     target_link_libraries(AgentInfo PRIVATE bcrypt)
 endif()
 
-target_link_libraries(AgentInfo PRIVATE SQLiteCpp Boost::uuid)
+include(../../cmake/ConfigureTarget.cmake)
+configure_target(AgentInfo)
 
 if(BUILD_TESTS)
     enable_testing()
