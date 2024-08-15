@@ -10,6 +10,7 @@
  */
 
 #include <iostream>
+#include <cjson/cJSON.h>
 #include "shared.h"
 #include "defs.h"
 #include "logging_helper.h"
