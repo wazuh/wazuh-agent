@@ -1,5 +1,6 @@
 #pragma once
 
+#include <imultitype_queue.hpp>
 #include <message.hpp>
 #include <persistence.h>
 
@@ -10,14 +11,19 @@
 #include <vector>
 
 #include <boost/asio.hpp>
-#include <cassert>
 
 // TODO: move to a configuration setting
 constexpr int DEFAULT_MAX = 10000;
 constexpr int DEFAULT_TIMEOUT_S = 3;
 constexpr char QUEUE_DEFAULT_DB_PATH[] = "queue.db";
 
-class MultiTypeQueue
+/**
+ * @brief MultiTypeQueue implementation that handles multiple types of messages.
+ *
+ * This class implements the IMultiTypeQueue interface to provide a queue
+ * that can handle different message types such as STATELESS, STATEFUL, and COMMAND.
+ */
+class MultiTypeQueue : public IMultiTypeQueue
 {
 private:
     const std::vector<std::string> m_vMessageTypeStrings {"STATELESS", "STATEFUL", "COMMAND"};
@@ -33,6 +39,12 @@ private:
     std::condition_variable m_cv;
 
 public:
+    /**
+     * @brief Constructor.
+     *
+     * @param size The maximum number of items in the queue.
+     * @param timeout The timeout period in seconds.
+     */
     MultiTypeQueue(int size = DEFAULT_MAX, int timeout = DEFAULT_TIMEOUT_S);
 
     /**
@@ -58,109 +70,61 @@ public:
     /**
      * @brief Destructor.
      */
-    ~MultiTypeQueue() {};
+    ~MultiTypeQueue() override = default;
 
     /**
-     * @brief pushes a message
-     *
-     * @param message to be pushed
-     * @param shouldWait when true, the function will wait until the message is pushed
-     * @return int number of messages pushed
+     * @copydoc IMultiTypeQueue::push(Message, bool)
      */
-    int push(Message message, bool shouldWait = false);
+    int push(Message message, bool shouldWait = false) override;
 
     /**
-     * @brief pushes a message
-     *
-     * @param message to be pushed
-     * @return boost::asio::awaitable<int> number of messages pushed
+     * @copydoc IMultiTypeQueue::pushAwaitable(Message)
      */
-    boost::asio::awaitable<int> pushAwaitable(Message message);
+    boost::asio::awaitable<int> pushAwaitable(Message message) override;
 
     /**
-     * @brief pushes a vector of messages
-     *
-     * @param messages vector of messages to be pushed
-     * @return int number of messages pushed
+     * @copydoc IMultiTypeQueue::push(std::vector<Message>)
      */
-    int push(std::vector<Message> messages);
+    int push(std::vector<Message> messages) override;
 
     /**
-     * @brief Get the next Message object
-     *
-     * @param type of the queue to be used as source
-     * @param module module name
-     * @return Message type object taken from the queue
+     * @copydoc IMultiTypeQueue::getNext(MessageType, const std::string)
      */
-    Message getNext(MessageType type, const std::string module = "");
+    Message getNext(MessageType type, const std::string module = "") override;
 
     /**
-     * @brief Get the Next Awaitable object
-     *
-     * @param type of the queue to be used as source
-     * @param moduleName module name
-     * @param messageQuantity quantity of messages to return
-     * @return boost::asio::awaitable<Message> awaitable object taken from the queue
+     * @copydoc IMultiTypeQueue::getNextNAwaitable(MessageType, int, const std::string)
      */
     boost::asio::awaitable<Message>
-    getNextNAwaitable(MessageType type, int messageQuantity, const std::string moduleName = "");
+    getNextNAwaitable(MessageType type, int messageQuantity, const std::string moduleName = "") override;
 
     /**
-     * @brief Returns N messages from a queue
-     *
-     * @param type Of the queue to be used as source
-     * @param moduleName module name
-     * @param messageQuantity quantity of messages to return
-     * @return Message Json data othe messages fetched
+     * @copydoc IMultiTypeQueue::getNextN(MessageType, int, const std::string)
      */
-    std::vector<Message> getNextN(MessageType type, int messageQuantity, const std::string moduleName = "");
+    std::vector<Message> getNextN(MessageType type, int messageQuantity, const std::string moduleName = "") override;
 
     /**
-     * @brief deletes a message from a queue
-     *
-     * @param type MessageType queue to pop
-     * @param moduleName
-     * @return true when popped succesfully
-     * @return false if it wasn't able to pop message
+     * @copydoc IMultiTypeQueue::pop(MessageType, const std::string)
      */
-    bool pop(MessageType type, const std::string moduleName = "");
+    bool pop(MessageType type, const std::string moduleName = "") override;
 
     /**
-     * @brief deletes N messages from a queue
-     *
-     * @param type MessageType queue to pop
-     * @param moduleName module name
-     * @param messageQuantity quantity of messages to pop
-     * @return Number of messages deleted
+     * @copydoc IMultiTypeQueue::popN(MessageType, int, const std::string)
      */
-    int popN(MessageType type, int messageQuantity, const std::string moduleName = "");
+    int popN(MessageType type, int messageQuantity, const std::string moduleName = "") override;
 
     /**
-     * @brief Checks emptyness of a queue
-     *
-     * @param type MessageType
-     * @param moduleName module name
-     * @return true when queue empty
-     * @return false otherwise
+     * @copydoc IMultiTypeQueue::isEmpty(MessageType, const std::string)
      */
-    bool isEmpty(MessageType type, const std::string moduleName = "");
+    bool isEmpty(MessageType type, const std::string moduleName = "") override;
 
     /**
-     * @brief Checks fullness of a queue
-     *
-     * @param type MessageType
-     * @param moduleName module name
-     * @return true when queue is full
-     * @return false otherwise
+     * @copydoc IMultiTypeQueue::isFull(MessageType, const std::string)
      */
-    bool isFull(MessageType type, const std::string moduleName = "");
+    bool isFull(MessageType type, const std::string moduleName = "") override;
 
     /**
-     * @brief Get the Items By Type object
-     *
-     * @param type MessageType
-     * @param moduleName module name
-     * @return int number of items in the queue.
+     * @copydoc IMultiTypeQueue::storedItems(MessageType, const std::string)
      */
-    int storedItems(MessageType type, const std::string moduleName = "");
+    int storedItems(MessageType type, const std::string moduleName = "") override;
 };
