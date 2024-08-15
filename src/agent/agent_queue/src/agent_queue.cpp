@@ -1,9 +1,26 @@
+#include <agent_queue.hpp>
+
+#include <persistence_factory.hpp>
+
 #include <chrono>
 #include <iostream>
 #include <stop_token>
 #include <utility>
 
-#include "agent_queue.hpp"
+MultiTypeQueue::MultiTypeQueue(int size, int timeout)
+    : m_maxItems(size)
+    , m_timeout(timeout)
+{
+    try
+    {
+        m_persistenceDest = PersistenceFactory::createPersistence(
+            "SQLite3", {static_cast<std::string>(DEFAULT_DB_PATH), m_vMessageTypeStrings});
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error creating persistence: " << e.what() << '\n';
+    }
+}
 
 int MultiTypeQueue::push(Message message, bool shouldWait)
 {

@@ -1,20 +1,17 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
-#include <any>
+#include <persistence.h>
+#include <shared.hpp>
+
 #include <condition_variable>
+#include <map>
 #include <memory>
 #include <mutex>
-#include <queue>
-#include <unordered_map>
 #include <vector>
 
 #include <boost/asio.hpp>
 #include <cassert>
-
-#include "persistence_factory.hpp"
-#include "shared.hpp"
-#include "sqlitestorage.h"
 
 // TODO: move to a configuration setting
 constexpr int DEFAULT_MAX = 10000;
@@ -36,20 +33,7 @@ private:
     std::condition_variable m_cv;
 
 public:
-    MultiTypeQueue(int size = DEFAULT_MAX, int timeout = DEFAULT_TIMEOUT_S)
-        : m_maxItems(size)
-        , m_timeout(timeout)
-    {
-        try
-        {
-            m_persistenceDest = PersistenceFactory::createPersistence(
-                "SQLite3", {static_cast<std::string>(DEFAULT_DB_PATH), m_vMessageTypeStrings});
-        }
-        catch (const std::exception& e)
-        {
-            std::cerr << "Error creating persistence: " << e.what() << '\n';
-        }
-    }
+    MultiTypeQueue(int size = DEFAULT_MAX, int timeout = DEFAULT_TIMEOUT_S);
 
     /**
      * @brief Delete copy constructor
