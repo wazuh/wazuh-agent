@@ -4,9 +4,9 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <thread>
 #include "configuration.h"
 #include "moduleWrapper.h"
-#include "inventory.h"
 
 using namespace std;
 

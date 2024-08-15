@@ -1,4 +1,5 @@
 #include <iostream>
+#include "inventory.h"
 #include "pool.h"
 
 Pool::Pool() {
