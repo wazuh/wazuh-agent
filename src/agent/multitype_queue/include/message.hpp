@@ -1,5 +1,4 @@
-#ifndef SHARED_H
-#define SHARED_H
+#pragma once
 
 #include <nlohmann/json.hpp>
 
@@ -33,5 +32,3 @@ public:
     {
     }
 };
-
-#endif // SHARED_H

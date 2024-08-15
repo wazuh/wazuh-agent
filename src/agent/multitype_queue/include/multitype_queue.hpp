@@ -1,7 +1,7 @@
 #pragma once
 
+#include <message.hpp>
 #include <persistence.h>
-#include <shared.hpp>
 
 #include <condition_variable>
 #include <map>
