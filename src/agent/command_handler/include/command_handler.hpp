@@ -11,7 +11,8 @@ namespace command_handler
     {
     public:
         template<typename T>
-        boost::asio::awaitable<void> ProcessCommandsFromQueue(const std::function<std::optional<T>()> GetCommand)
+        boost::asio::awaitable<void> ProcessCommandsFromQueue(const std::function<std::optional<T>()> GetCommand,
+                                                              const std::function<int(T&)> DispatchMessage)
         {
             using namespace std::chrono_literals;
             const auto executor = co_await boost::asio::this_coro::executor;
@@ -26,6 +27,8 @@ namespace command_handler
                     co_await expTimer->async_wait(boost::asio::use_awaitable);
                     continue;
                 }
+
+                DispatchMessage(cmd.value());
             }
         }
 
