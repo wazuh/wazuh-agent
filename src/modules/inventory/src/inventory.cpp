@@ -30,7 +30,7 @@ const int DBSYNC_MQ    = '5';
 #define WM_INV_LOGTAG "modules:inventory" // Tag for log messages
 #define WM_INVENTORY_DEFAULT_INTERVAL W_HOUR_SECONDS
 
-void *Inventory::run() {
+void *Inventory::start() {
 
     if (!m_enabled) {
         log(LOG_INFO, "Module disabled. Exiting...");
@@ -41,7 +41,7 @@ void *Inventory::run() {
 
     log_config();
 
-    inventory_start();
+    run();
 
     log(LOG_INFO, "Module finished.");
 
@@ -165,7 +165,7 @@ cJSON * Inventory::dump() {
 }
 
 
-void Inventory::inventory_start()
+void Inventory::run()
 {
     DBSync::initialize(logError);
 
