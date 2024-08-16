@@ -1,20 +1,18 @@
-cmake_minimum_required(VERSION 3.12.4)
+cmake_minimum_required(VERSION 3.22)
 
 project(inventory_test_tool)
 
-include_directories(${CMAKE_SOURCE_DIR}/)
-include_directories(${CMAKE_SOURCE_DIR}/testtool/)
-include_directories(${SRC_FOLDER}/shared_modules/common/)
-include_directories(${SRC_FOLDER}/shared_modules/dbsync/include/)
-include_directories(${SRC_FOLDER}/shared_modules/rsync/include/)
-include_directories(${SRC_FOLDER}/external/nlohmann/)
-include_directories(${CMAKE_SOURCE_DIR}/src/)
+# include_directories(${CMAKE_SOURCE_DIR}/)
+# include_directories(${CMAKE_SOURCE_DIR}/testtool/)
+# include_directories(${SRC_FOLDER}/shared_modules/common/)
+# include_directories(${SRC_FOLDER}/shared_modules/dbsync/include/)
+# include_directories(${SRC_FOLDER}/external/nlohmann/)
+# include_directories(${CMAKE_SOURCE_DIR}/src/)
 
-link_directories(${SRC_FOLDER}/shared_modules/dbsync/build/lib)
-link_directories(${SRC_FOLDER}/shared_modules/rsync/build/lib)
-link_directories(${SRC_FOLDER}/data_provider/build/lib)
-link_directories(${SRC_FOLDER}/external/openssl/)
-link_directories(${SRC_FOLDER}/external/procps/)
+# link_directories(${SRC_FOLDER}/shared_modules/dbsync/build/lib)
+# link_directories(${SRC_FOLDER}/data_provider/build/lib)
+# link_directories(${SRC_FOLDER}/external/openssl/)
+# link_directories(${SRC_FOLDER}/external/procps/)
 
 if(COVERITY)
   add_definitions(-D__GNUC__=8)
@@ -28,16 +26,17 @@ if(FSANITIZE)
 endif(FSANITIZE)
 
 file(GLOB INVENTORY_TESTTOOL_SRC
-        "${CMAKE_SOURCE_DIR}/testtool/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
         )
 
 add_executable(inventory_test_tool
                ${INVENTORY_TESTTOOL_SRC}
                )
 
+#target_include_directories(inventory_test_tool PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(inventory_test_tool
-        rsync
         dbsync
         sysinfo
         inventory
@@ -51,21 +50,18 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     )
 elseif (CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
     target_link_libraries(inventory_test_tool
-        rsync
         dbsync
         sysinfo
         inventory
         pthread)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "AIX")
     target_link_libraries(inventory_test_tool
-        rsync
         dbsync
         sysinfo
         inventory
         dl)
 else()
     target_link_libraries(inventory_test_tool
-        rsync
         dbsync
         sysinfo
         inventory
