@@ -73,7 +73,7 @@ namespace communicator
     {
         auto onAuthenticationFailed = [this]()
         {
-            TryReAuthenticate();
+            // TryReAuthenticate();
         };
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::get, m_managerIp, m_port, "/commands");
@@ -127,7 +127,7 @@ namespace communicator
     {
         auto onAuthenticationFailed = [this]()
         {
-            TryReAuthenticate();
+            // TryReAuthenticate();
         };
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::post, m_managerIp, m_port, "/stateful");
@@ -141,7 +141,7 @@ namespace communicator
     {
         auto onAuthenticationFailed = [this]()
         {
-            TryReAuthenticate();
+            // TryReAuthenticate();
         };
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::post, m_managerIp, m_port, "/stateless");
