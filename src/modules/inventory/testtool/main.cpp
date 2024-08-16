@@ -15,10 +15,8 @@
 #include <memory>
 #include <chrono>
 #include "defs.h"
-#include "dbsync.hpp"
-#include "rsync.hpp"
-#include "sysInfo.hpp"
-#include "inventory.hpp"
+#include "configuration.h"
+#include "inventory.h"
 
 constexpr int DEFAULT_SLEEP_TIME { 60 };
 
@@ -26,6 +24,7 @@ int main(int argc, const char* argv[])
 {
     auto timedMainLoop { false };
     auto sleepTime { DEFAULT_SLEEP_TIME };
+    Configuration config{};
 
     if (2 == argc)
     {
@@ -40,49 +39,7 @@ int main(int argc, const char* argv[])
         return -1;
     }
 
-    const auto reportDiffFunction
-    {
-        [](const std::string & payload)
-        {
-            std::cout << "diff output payload:" << std::endl;
-            std::cout << payload << std::endl;
-        }
-    };
-    const auto reportSyncFunction
-    {
-        [](const std::string & payload)
-        {
-            std::cout << "sync output payload:" << std::endl;
-            std::cout << payload << std::endl;
-        }
-    };
-
-    const auto logFunction
-    {
-        [](const modules_log_level_t level, const std::string & log)
-        {
-            static const std::map<modules_log_level_t, std::string> s_logStringMap
-            {
-                {LOG_ERROR, "ERROR"},
-                {LOG_INFO, "INFO"},
-                {LOG_DEBUG, "DEBUG"},
-                {LOG_DEBUG_VERBOSE, "DEBUG2"}
-            };
-            std::cout << s_logStringMap.at(level) << ": " << log << std::endl;
-        }
-    };
-
-    const auto logErrorFunction
-    {
-        [](const std::string & log)
-        {
-            std::cout << "ERROR: " << log << std::endl;
-        }
-    };
-
-    const auto spInfo{ std::make_shared<SysInfo>() };
-    RemoteSync::initialize(logErrorFunction);
-    DBSync::initialize(logErrorFunction);
+    Inventory::instance().setup(config);
 
     try
     {
@@ -99,27 +56,11 @@ int main(int argc, const char* argv[])
                     std::this_thread::sleep_for(std::chrono::seconds(sleepTime));
                 }
 
-                Inventory::instance().destroy();
+                Inventory::instance().stop();
             }
         };
 
-        Inventory::instance().init(spInfo,
-                                      reportDiffFunction,
-                                      reportSyncFunction,
-                                      logFunction,
-                                      INVENTORY_DB_DISK_PATH,
-                                      INVENTORY_NORM_CONFIG_DISK_PATH,
-                                      INVENTORY_NORM_TYPE,
-                                      15ul,
-                                      true,
-                                      true,
-                                      true,
-                                      true,
-                                      true,
-                                      true,
-                                      true,
-                                      true,
-                                      true);
+        Inventory::instance().start();
 
         if (thread.joinable())
         {
@@ -131,7 +72,5 @@ int main(int argc, const char* argv[])
         std::cout << ex.what() << std::endl;
     }
 
-    RemoteSync::teardown();
-    DBSync::teardown();
     return 0;
 }
