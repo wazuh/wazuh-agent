@@ -22,7 +22,7 @@ class Inventory {
             return s_instance;
         }
 
-        void *run();
+        void * start();
         int setup(const Configuration & config);
         void stop();
         std::string command(const std::string & query);
@@ -100,7 +100,7 @@ class Inventory {
         void send_message(std::string data, const char queue_id);
         void log_config();
 
-        void inventory_start();
+        void run();
 
         cJSON * dump();
 

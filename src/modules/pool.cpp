@@ -12,7 +12,7 @@ Pool::Pool() {
 template <typename T>
 void Pool::addModule(T& module) {
     auto wrapper = make_shared<ModuleWrapper>(ModuleWrapper{
-        .run = [&module]() { module.run(); },
+        .start = [&module]() { module.start(); },
         .setup = [&module](const Configuration & config) { return module.setup(config); },
         .stop = [&module]() { module.stop(); },
         .command = [&module](const string & query) { return module.command(query); },
@@ -28,7 +28,7 @@ shared_ptr<ModuleWrapper> Pool::getModule(const string & name) {
 
 void Pool::start() {
     for (const auto &[_, module] : modules) {
-        threads.emplace_back([module]() { module->run(); });
+        threads.emplace_back([module]() { module->start(); });
     }
 }
 
