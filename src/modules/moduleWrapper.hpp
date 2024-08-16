@@ -7,7 +7,7 @@
 using namespace std;
 
 struct ModuleWrapper {
-    function<void()> run;
+    function<void()> start;
     function<int(const Configuration&)> setup;
     function<void()> stop;
     function<string(const string&)> command;
