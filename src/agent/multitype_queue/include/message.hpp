@@ -1,13 +1,8 @@
-#ifndef SHARED_H
-#define SHARED_H
-
-#include <map>
+#pragma once
 
 #include <nlohmann/json.hpp>
 
-// TODO: should be moved to Config
-constexpr char DEFAULT_FILE_PATH[] = "/home/vagrant/FILE_";
-constexpr char DEFAULT_DB_PATH[] = "queue.db";
+#include <string>
 
 /**
  * @brief Types of messages enum
@@ -36,6 +31,10 @@ public:
         , moduleName(mN)
     {
     }
-};
 
-#endif // SHARED_H
+    // Define equality operator
+    bool operator==(const Message& other) const
+    {
+        return type == other.type && data == other.data;
+    }
+};

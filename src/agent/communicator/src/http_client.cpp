@@ -96,11 +96,12 @@ namespace http_client
         std::cout << "Response body: " << boost::beast::buffers_to_string(res.body().data()) << std::endl;
     }
 
-    boost::asio::awaitable<void> Co_MessageProcessingTask(const std::string& token,
-                                                          HttpRequestParams reqParams,
-                                                          std::function<std::string()> messageGetter,
-                                                          std::function<void()> onUnauthorized,
-                                                          std::function<void(const std::string&)> onSuccess)
+    boost::asio::awaitable<void>
+    Co_MessageProcessingTask(const std::string& token,
+                             HttpRequestParams reqParams,
+                             std::function<boost::asio::awaitable<std::string>()> messageGetter,
+                             std::function<void()> onUnauthorized,
+                             std::function<void(const std::string&)> onSuccess)
     {
         using namespace std::chrono_literals;
 
@@ -129,7 +130,15 @@ namespace http_client
                 continue;
             }
 
-            reqParams.body = messageGetter ? messageGetter() : "";
+            if (messageGetter != nullptr)
+            {
+                reqParams.body = co_await messageGetter();
+            }
+            else
+            {
+                reqParams.body = "";
+            }
+
             reqParams.token = token;
             auto req = CreateHttpRequest(reqParams);
 

@@ -1,26 +1,20 @@
 find_package(GTest REQUIRED)
 
-# AgentQueue tests
-add_executable(test_AgentQueue queue_test.cpp)
-
-target_link_libraries(test_AgentQueue PUBLIC
-    AgentQueue
+add_executable(test_MultiTypeQueue multitype_queue_test.cpp)
+target_link_libraries(test_MultiTypeQueue PUBLIC
+    MultiTypeQueue
     GTest::gtest
     GTest::gtest_main
     GTest::gmock
     GTest::gmock_main)
-add_test(NAME AgentQueueTest COMMAND test_AgentQueue)
+add_test(NAME MultiTypeQueueTest COMMAND test_MultiTypeQueue)
 
-
-# SQLiteStorage tests
 add_executable(test_sqlitestorage sqlitestorage_test.cpp)
-
 target_link_libraries(test_sqlitestorage
-    AgentQueue
+    MultiTypeQueue
     SQLiteCpp
     GTest::gtest
     GTest::gtest_main
     GTest::gmock
     GTest::gmock_main)
 add_test(NAME SqliteStorageTest COMMAND test_sqlitestorage)
-

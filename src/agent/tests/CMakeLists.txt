@@ -15,3 +15,7 @@ add_test(NAME RegisterTest COMMAND register_test)
 add_executable(signal_handler_test signal_handler_test.cpp)
 target_link_libraries(signal_handler_test PRIVATE Agent GTest::gtest)
 add_test(NAME SignalHandlerTest COMMAND signal_handler_test)
+
+add_executable(message_queue_utils_test message_queue_utils_test.cpp)
+target_link_libraries(message_queue_utils_test PRIVATE Agent MultiTypeQueue GTest::gtest GTest::gmock)
+add_test(NAME MessageQueueUtilsTest COMMAND message_queue_utils_test)

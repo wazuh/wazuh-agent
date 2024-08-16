@@ -13,11 +13,11 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-class QueueTest : public ::testing::Test
+class MultiTypeQueueTest : public ::testing::Test
 {
 protected:
-    QueueTest() = default;
-    virtual ~QueueTest() = default;
+    MultiTypeQueueTest() = default;
+    virtual ~MultiTypeQueueTest() = default;
 
     void SetUp() override;
     void TearDown() override;

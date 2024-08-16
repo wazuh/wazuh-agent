@@ -67,7 +67,7 @@ namespace communicator
         return std::max(0L, static_cast<long>(m_tokenExpTimeInSeconds - now_seconds));
     }
 
-    boost::asio::awaitable<void> Communicator::GetCommandsFromManager(std::queue<std::string>& messageQueue)
+    boost::asio::awaitable<void> Communicator::GetCommandsFromManager(std::function<void(const std::string&)> onSuccess)
     {
         auto onAuthenticationFailed = [this]()
         {
@@ -75,7 +75,7 @@ namespace communicator
         };
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::get, m_managerIp, m_port, "/commands");
-        co_await http_client::Co_MessageProcessingTask(m_token, reqParams, {}, onAuthenticationFailed);
+        co_await http_client::Co_MessageProcessingTask(m_token, reqParams, {}, onAuthenticationFailed, onSuccess);
     }
 
     boost::asio::awaitable<void> Communicator::WaitForTokenExpirationAndAuthenticate()
@@ -101,11 +101,27 @@ namespace communicator
             }();
 
             m_tokenExpTimer->expires_after(duration);
-            co_await m_tokenExpTimer->async_wait(boost::asio::use_awaitable);
+
+            boost::system::error_code ec;
+            co_await m_tokenExpTimer->async_wait(boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+
+            if (ec)
+            {
+                if (ec == boost::asio::error::operation_aborted)
+                {
+                    std::cout << "Token expiration timer was canceled\n";
+                }
+                else
+                {
+                    std::cerr << "Timer wait failed: " << ec.message() << "\n";
+                }
+            }
         }
     }
 
-    boost::asio::awaitable<void> Communicator::StatefulMessageProcessingTask(std::queue<std::string>& messageQueue)
+    boost::asio::awaitable<void>
+    Communicator::StatefulMessageProcessingTask(std::function<boost::asio::awaitable<std::string>()> getMessages,
+                                                std::function<void(const std::string&)> onSuccess)
     {
         auto onAuthenticationFailed = [this]()
         {
@@ -113,10 +129,13 @@ namespace communicator
         };
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::post, m_managerIp, m_port, "/stateful");
-        co_await http_client::Co_MessageProcessingTask(m_token, reqParams, {}, onAuthenticationFailed);
+        co_await http_client::Co_MessageProcessingTask(
+            m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess);
     }
 
-    boost::asio::awaitable<void> Communicator::StatelessMessageProcessingTask(std::queue<std::string>& messageQueue)
+    boost::asio::awaitable<void>
+    Communicator::StatelessMessageProcessingTask(std::function<boost::asio::awaitable<std::string>()> getMessages,
+                                                 std::function<void(const std::string&)> onSuccess)
     {
         auto onAuthenticationFailed = [this]()
         {
@@ -124,7 +143,8 @@ namespace communicator
         };
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::post, m_managerIp, m_port, "/stateless");
-        co_await http_client::Co_MessageProcessingTask(m_token, reqParams, {}, onAuthenticationFailed);
+        co_await http_client::Co_MessageProcessingTask(
+            m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess);
     }
 
     void Communicator::TryReAuthenticate()
@@ -132,15 +152,9 @@ namespace communicator
         std::unique_lock<std::mutex> lock(m_reAuthMutex, std::try_to_lock);
         if (lock.owns_lock() && !m_isReAuthenticating.exchange(true))
         {
-            std::cout << "Thread: " << std::this_thread::get_id() << " attempting re-authentication" << std::endl;
-            if (const auto result = SendAuthenticationRequest(); result == boost::beast::http::status::ok)
+            if (m_tokenExpTimer)
             {
-                if (m_tokenExpTimer)
-                {
-                    const auto newDuration =
-                        std::chrono::milliseconds((GetTokenRemainingSecs() - TokenPreExpirySecs) * 1000);
-                    m_tokenExpTimer->expires_after(newDuration);
-                }
+                m_tokenExpTimer->cancel();
             }
             m_isReAuthenticating = false;
         }

@@ -3,10 +3,10 @@
 #include <agent_info.hpp>
 #include <communicator.hpp>
 #include <configuration_parser.hpp>
+#include <multitype_queue.hpp>
 #include <signal_handler.hpp>
 #include <task_manager.hpp>
 
-#include <queue>
 #include <string>
 
 class Agent
@@ -18,7 +18,7 @@ public:
     void Run();
 
 private:
-    std::queue<std::string> m_messageQueue;
+    MultiTypeQueue m_messageQueue;
 
     SignalHandler m_signalHandler;
     TaskManager m_taskManager;
