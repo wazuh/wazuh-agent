@@ -49,3 +49,10 @@ target_link_libraries(inventory PUBLIC
     os_regex
     logging_helper
     pthreads_op)
+
+add_subdirectory(testtool)
+
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
