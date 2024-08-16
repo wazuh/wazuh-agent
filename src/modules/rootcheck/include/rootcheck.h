@@ -126,7 +126,6 @@ void check_rc_pids(void);
 int check_rc_readproc(int pid);
 
 void check_rc_ports(void);
-void check_open_ports(void);
 void check_rc_if(void);
 
 /*Checks if the path or file is user-ignored */

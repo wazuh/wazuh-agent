@@ -28,49 +28,11 @@ char total_ports_tcp[65535 + 1];
 #define ARGV0 "rootcheck"
 #endif
 
-#ifndef OSSECHIDS
-
-/* Print help statement */
-void help_rootcheck(char * home_path)
-{
-    print_header();
-    print_out("  %s: -[Vhdtsr] [-c config] [-D dir]", ARGV0);
-    print_out("    -V          Version and license message");
-    print_out("    -h          Print this help message");
-    print_out("    -d          Execute in debug mode. This parameter");
-    print_out("                can be specified multiple times");
-    print_out("                to increase the debug level.");
-    print_out("    -t          Test configuration");
-    print_out("    -s          Scan the whole system");
-    print_out("    -r          Read all the files for kernel-based detection");
-    print_out("    -c <config> Configuration file to use");
-    print_out("    -D <dir>    Directory to chroot into (default: %s)", home_path);
-    print_out(" ");
-    os_free(home_path);
-    exit(1);
-}
-
-int main(int argc, char **argv)
-{
-    int test_config = 0;
-    const char *cfg = "./rootcheck.conf";
-    char * home_path = w_homedir(argv[0]);
-
-#else
-
 int rootcheck_init(int test_config)
 {
     const char *cfg = OSSECCONF;
 
-#endif /* OSSECHIDS */
-
     int c;
-
-#ifndef OSSECHIDS
-    if (chdir(home_path) == -1) {
-        merror_exit(CHDIR_ERROR, home_path, errno, strerror(errno));
-    }
-#endif /* OSSECHIDS */
 
     /* Zero the structure, initialize default values */
     rootcheck.workdir = NULL;
@@ -114,58 +76,6 @@ int rootcheck_init(int test_config)
         rootcheck.alert_msg[c] = NULL;
         c++;
     }
-
-#ifndef OSSECHIDS
-    rootcheck.notify = SYSLOG_RK;
-    rootcheck.daemon = 0;
-    while ((c = getopt(argc, argv, "VstrdhD:c:")) != -1) {
-        switch (c) {
-            case 'V':
-                print_version();
-                break;
-            case 'h':
-                help_rootcheck(home_path);
-                break;
-            case 'd':
-                nowDebug();
-                break;
-            case 'D':
-                if (!optarg) {
-                    mterror_exit(ARGV0, "-D needs an argument");
-                }
-                rootcheck.workdir = optarg;
-                break;
-            case 'c':
-                if (!optarg) {
-                    mterror_exit(ARGV0, "-c needs an argument");
-                }
-                cfg = optarg;
-                break;
-            case 's':
-                rootcheck.scanall = 1;
-                break;
-            case 't':
-                test_config = 1;
-                break;
-            case 'r':
-                rootcheck.readall = 1;
-                break;
-            default:
-                help_rootcheck(home_path);
-                break;
-        }
-    }
-#ifdef WIN32
-    /* Start Winsock */
-    {
-        WSADATA wsaData;
-        if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0) {
-            mterror_exit(ARGV0, "WSAStartup() failed");
-        }
-    }
-#endif /* WIN32 */
-
-#endif /* OSSECHIDS */
 
     /* Check if the configuration is present */
     if (File_DateofChange(cfg) < 0) {
@@ -211,21 +121,10 @@ int rootcheck_init(int test_config)
     }
 #endif
 
-    /* Set default values */
-#ifndef OSSECHIDS
-    mdebug1(WAZUH_HOMEDIR, home_path);
-    if (rootcheck.workdir == NULL) {
-        rootcheck.workdir = home_path;
-    }
-#endif
-
-#ifdef OSSECHIDS
     /* Start up message */
 #ifdef WIN32
     mtinfo(ARGV0, STARTUP_MSG, getpid());
 #endif /* WIN32 */
-
-#endif /* OSSECHIDS */
 
     /* Initialize rk list */
     rk_sys_name = (char **) calloc(MAX_RK_SYS + 2, sizeof(char *));
@@ -236,18 +135,6 @@ int rootcheck_init(int test_config)
     rk_sys_name[0] = NULL;
     rk_sys_file[0] = NULL;
 
-#ifndef OSSECHIDS
-#ifndef WIN32
-    /* Start signal handling */
-    StartSIG(ARGV0);
-    rootcheck_connect();
-#endif
-    mtdebug1(ARGV0, "Running run_rk_check");
-    run_rk_check();
-
-    mtdebug1(ARGV0, "Leaving...");
-    os_free(home_path);
-#endif /* OSSECHIDS */
     return (0);
 }
 
