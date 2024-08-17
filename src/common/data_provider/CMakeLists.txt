@@ -94,7 +94,6 @@ include_directories(${SRC_FOLDER}/external/openssl/include/)
 include_directories(${SRC_FOLDER}/external/libplist/bin/include/)
 include_directories(${SRC_FOLDER}/external/libdb/build_unix/)
 if(NOT CMAKE_CHECK_CENTOS5) # Avoid incompatible libraries in CentOS 5 and Red Hat 5
-  include_directories(${SRC_FOLDER}/external/pacman/lib/libalpm/)
   include_directories(${SRC_FOLDER}/external/libarchive/libarchive/)
   include_directories(${SRC_FOLDER}/external/rpm/builddir/output/include/)
 endif(NOT CMAKE_CHECK_CENTOS5)
@@ -116,7 +115,6 @@ link_directories(${SRC_FOLDER}/external/bzip2/)
 link_directories(${SRC_FOLDER}/external/libplist/bin/lib/)
 link_directories(${SRC_FOLDER}/external/libdb/build_unix/)
 if(NOT CMAKE_CHECK_CENTOS5) # Avoid incompatible libraries in CentOS 5 and Red Hat 5
-link_directories(${SRC_FOLDER}/external/pacman/lib/libalpm/)
 link_directories(${SRC_FOLDER}/external/libarchive/.libs/)
 link_directories(${SRC_FOLDER}/external/rpm/builddir/)
 endif(NOT CMAKE_CHECK_CENTOS5)
@@ -241,7 +239,6 @@ target_link_libraries(sysinfo
   unofficial::sqlite3::sqlite3
   LibArchive::LibArchive
   ${POPT_LIBRARY}
-  alpm
   rpm
   proc
   ${LUA_LIBRARIES})

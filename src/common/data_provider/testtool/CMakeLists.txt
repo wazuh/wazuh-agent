@@ -6,7 +6,6 @@ include_directories(${CMAKE_SOURCE_DIR}/include/)
 include_directories(${CMAKE_SOURCE_DIR}/src/)
 include_directories(${SRC_FOLDER}/shared_modules/common/)
 include_directories(${SRC_FOLDER}/external/nlohmann/)
-include_directories(${SRC_FOLDER}/external/pacman/lib/libalpm/)
 
 link_directories(${SRC_FOLDER}/external/procps/)
 

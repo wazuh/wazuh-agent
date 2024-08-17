@@ -19,13 +19,6 @@
 #include "utilsWrapperLinux.hpp"
 
 /**
- * @brief Fills a JSON object with all available pacman-related information
- * @param libPath  Path to pacman's database directory
- * @param callback Callback to be called for every single element being found
- */
-void getPacmanInfo(const std::string& libPath, std::function<void(nlohmann::json&)> callback);
-
-/**
  * @brief Fills a JSON object with all available rpm-related information
  * @param callback Callback to be called for every single element being found
  */
@@ -82,11 +75,6 @@ class FactoryPackagesCreator<LinuxType::STANDARD> final
             if (Utils::existsDir(DPKG_PATH))
             {
                 getDpkgInfo(DPKG_STATUS_PATH, callback);
-            }
-
-            if (Utils::existsDir(PACMAN_PATH))
-            {
-                getPacmanInfo(PACMAN_PATH, callback);
             }
 
             if (Utils::existsDir(RPM_PATH))
