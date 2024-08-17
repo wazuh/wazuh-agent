@@ -14,21 +14,17 @@ int main(int argc, char* argv[])
     {
         std::cout << "Starting registration process" << std::endl;
 
-        if (cmdParser.OptionExists("--user") && cmdParser.OptionExists("--password"))
+        if (cmdParser.OptionExists("--user") && cmdParser.OptionExists("--password") && cmdParser.OptionExists("--key"))
         {
             const auto user = cmdParser.getOptionValue("--user");
             const auto password = cmdParser.getOptionValue("--password");
 
             AgentInfo agentInfo;
+            agentInfo.SetKey(cmdParser.getOptionValue("--key"));
 
             if (cmdParser.OptionExists("--name"))
             {
                 agentInfo.SetName(cmdParser.getOptionValue("--name"));
-            }
-
-            if (cmdParser.OptionExists("--ip"))
-            {
-                agentInfo.SetIP(cmdParser.getOptionValue("--ip"));
             }
 
             const registration::UserCredentials userCredentials {user, password};
@@ -44,7 +40,7 @@ int main(int argc, char* argv[])
         }
         else
         {
-            std::cout << "--user and --password args are mandatory" << std::endl;
+            std::cout << "--user, --password and --key args are mandatory" << std::endl;
         }
 
         std::cout << "Exiting ..." << std::endl;

@@ -22,7 +22,7 @@ namespace
                                          const std::string& token,
                                          const std::string& uuid,
                                          const std::optional<std::string>& name,
-                                         const std::optional<std::string>& ip)
+                                         const std::optional<std::string>& key)
     {
         json bodyJson = {{"uuid", uuid}};
 
@@ -31,9 +31,9 @@ namespace
             bodyJson["name"] = name.value();
         }
 
-        if (ip.has_value())
+        if (key.has_value())
         {
-            bodyJson["ip"] = ip.value();
+            bodyJson["key"] = key.value();
         }
 
         const auto reqParams =
@@ -63,7 +63,7 @@ namespace registration
         const AgentInfo agentInfo {};
 
         if (const auto registrationResultCode = SendRegistrationRequest(
-                managerIp, managerPort, token.value(), agentInfo.GetUUID(), agentInfo.GetName(), agentInfo.GetIP());
+                managerIp, managerPort, token.value(), agentInfo.GetUUID(), agentInfo.GetName(), agentInfo.GetKey());
             registrationResultCode != http::status::ok)
         {
             std::cout << "Registration error: " << registrationResultCode << std::endl;

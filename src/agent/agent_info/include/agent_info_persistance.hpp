@@ -22,11 +22,11 @@ public:
     AgentInfoPersistance& operator=(AgentInfoPersistance&&) = delete;
 
     std::string GetName() const;
-    std::string GetIP() const;
+    std::string GetKey() const;
     std::string GetUUID() const;
 
     void SetName(const std::string& name);
-    void SetIP(const std::string& ip);
+    void SetKey(const std::string& key);
     void SetUUID(const std::string& uuid);
 
     void ResetToDefault();

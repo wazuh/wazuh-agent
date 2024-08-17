@@ -25,7 +25,7 @@ TEST_F(AgentInfoPersistanceTest, TestConstruction)
 TEST_F(AgentInfoPersistanceTest, TestDefaultValues)
 {
     EXPECT_EQ(persistance->GetName(), "");
-    EXPECT_EQ(persistance->GetIP(), "");
+    EXPECT_EQ(persistance->GetKey(), "");
     EXPECT_EQ(persistance->GetUUID(), "");
 }
 
@@ -36,11 +36,11 @@ TEST_F(AgentInfoPersistanceTest, TestSetName)
     EXPECT_EQ(persistance->GetName(), newName);
 }
 
-TEST_F(AgentInfoPersistanceTest, TestSetIP)
+TEST_F(AgentInfoPersistanceTest, TestSetKey)
 {
-    const std::string newIP = "192.168.1.1";
-    persistance->SetIP(newIP);
-    EXPECT_EQ(persistance->GetIP(), newIP);
+    const std::string newKey = "new_key";
+    persistance->SetKey(newKey);
+    EXPECT_EQ(persistance->GetKey(), newKey);
 }
 
 TEST_F(AgentInfoPersistanceTest, TestSetUUID)
@@ -58,7 +58,7 @@ TEST_F(AgentInfoPersistanceTest, TestResetToDefault)
 
     persistance->ResetToDefault();
     EXPECT_EQ(persistance->GetName(), "");
-    EXPECT_EQ(persistance->GetIP(), "");
+    EXPECT_EQ(persistance->GetKey(), "");
     EXPECT_EQ(persistance->GetUUID(), "");
 }
 

@@ -66,7 +66,7 @@ void AgentInfoPersistance::CreateAgentInfoTable()
     {
         m_db->exec("CREATE TABLE IF NOT EXISTS agent_info ("
                    "name TEXT, "
-                   "ip TEXT, "
+                   "key TEXT, "
                    "uuid TEXT"
                    ");");
     }
@@ -86,7 +86,7 @@ void AgentInfoPersistance::InsertDefaultAgentInfo()
 
         if (count == 0)
         {
-            SQLite::Statement insert(*m_db, "INSERT INTO agent_info (name, ip, uuid) VALUES (?, ?, ?);");
+            SQLite::Statement insert(*m_db, "INSERT INTO agent_info (name, key, uuid) VALUES (?, ?, ?);");
             insert.exec();
         }
     }
@@ -133,9 +133,9 @@ std::string AgentInfoPersistance::GetName() const
     return GetAgentInfoValue("name");
 }
 
-std::string AgentInfoPersistance::GetIP() const
+std::string AgentInfoPersistance::GetKey() const
 {
-    return GetAgentInfoValue("ip");
+    return GetAgentInfoValue("key");
 }
 
 std::string AgentInfoPersistance::GetUUID() const
@@ -148,9 +148,9 @@ void AgentInfoPersistance::SetName(const std::string& name)
     SetAgentInfoValue("name", name);
 }
 
-void AgentInfoPersistance::SetIP(const std::string& ip)
+void AgentInfoPersistance::SetKey(const std::string& key)
 {
-    SetAgentInfoValue("ip", ip);
+    SetAgentInfoValue("key", key);
 }
 
 void AgentInfoPersistance::SetUUID(const std::string& uuid)
