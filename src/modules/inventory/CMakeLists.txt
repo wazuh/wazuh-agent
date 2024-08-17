@@ -32,7 +32,6 @@ target_include_directories(inventory PUBLIC
     ${COMMON_FOLDER}/timeHelper/include
     ${COMMON_FOLDER}/utils)
 
-target_link_directories(inventory PUBLIC ${SRC_FOLDER}/external/pacman/lib/libalpm/)
 target_link_directories(inventory PUBLIC ${SRC_FOLDER}/external/rpm/builddir/)
 target_link_directories(inventory PUBLIC ${SRC_FOLDER}/external/libdb/build_unix/)
 target_link_directories(inventory PUBLIC ${SRC_FOLDER}/external/procps/)
@@ -43,7 +42,6 @@ target_link_libraries(inventory PUBLIC
     sysinfo
     cjson
     nlohmann_json::nlohmann_json
-    alpm
     rpm
     db
     proc
