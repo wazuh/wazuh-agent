@@ -30,9 +30,9 @@ runs:
         shell: bash
 
       - name: Run Tests
-        continue-on-error: true
+        continue-on-error: false
         run: |
           set +e
           cd build
-          ctest || echo "Tests failed, but continuing"
+          ctest
         shell: bash
