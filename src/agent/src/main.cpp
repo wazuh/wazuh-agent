@@ -1,6 +1,7 @@
 #include <agent.hpp>
 #include <agent_info.hpp>
 #include <cmd_ln_parser.hpp>
+#include <http_client.hpp>
 #include <register.hpp>
 
 #include <iostream>
@@ -29,7 +30,8 @@ int main(int argc, char* argv[])
 
             const registration::UserCredentials userCredentials {user, password};
 
-            if (registration::RegisterAgent(userCredentials))
+            if (registration::RegisterAgent(
+                    userCredentials, http_client::AuthenticateWithUserPassword, registration::SendRegistrationRequest))
             {
                 std::cout << "Agent registered." << std::endl;
             }

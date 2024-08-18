@@ -58,8 +58,11 @@ namespace http_client
                                                           const std::string& port,
                                                           const std::string& uuid,
                                                           const std::string& key);
-    std::optional<std::string> AuthenticateWithUserPassword(const std::string& host,
-                                                            const std::string& port,
-                                                            const std::string& user,
-                                                            const std::string& password);
+
+    using AuthenticateFunctionType = std::optional<std::string>(const std::string& host,
+                                                                const std::string& port,
+                                                                const std::string& user,
+                                                                const std::string& password);
+
+    AuthenticateFunctionType AuthenticateWithUserPassword;
 } // namespace http_client
