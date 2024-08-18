@@ -10,8 +10,11 @@ set(VCPKG_MANIFEST_DIR ${CMAKE_SOURCE_DIR}/../../)
 
 project(CommandManager)
 
+find_package(Boost REQUIRED COMPONENTS asio beast)
+
 add_library(CommandManager src/command_manager.cpp)
 target_include_directories(CommandManager PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(CommandManager PUBLIC Boost::asio PRIVATE Boost::beast )
 
 if(BUILD_TESTS)
     enable_testing()
