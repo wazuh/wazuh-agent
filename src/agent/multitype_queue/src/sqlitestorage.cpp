@@ -1,6 +1,9 @@
-#include "sqlitestorage.h"
-#include <algorithm>
+#include <sqlitestorage.h>
+
 #include <fmt/format.h>
+
+#include <algorithm>
+#include <exception>
 #include <iostream>
 
 SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::vector<std::string> tableNames)
@@ -75,9 +78,9 @@ int SQLiteStorage::Store(const json& message, const std::string& tableName, cons
                 query.bind(1, singleMessageData.dump());
                 result += query.exec();
             }
-            catch (const SQLite::Exception& e)
+            catch (const std::exception& e)
             {
-                std::cerr << "Error SqliteStorage Store: " << e.what() << '\n';
+                std::cerr << "Error during Store operation: " << e.what() << '\n';
                 break;
             }
             // Reset the query to reuse it for the next message
@@ -144,9 +147,9 @@ json SQLiteStorage::Retrieve(int id, const std::string& tableName, const std::st
 
         return outputJson;
     }
-    catch (const SQLite::Exception& e)
+    catch (const std::exception& e)
     {
-        std::cerr << "Error SQLiteStorage retrieve: " << e.what() << std::endl;
+        std::cerr << "Error during Retrieve operation: " << e.what() << std::endl;
         return {};
     }
 }
@@ -201,9 +204,9 @@ json SQLiteStorage::RetrieveMultiple(int n, const std::string& tableName, const 
 
         return messages;
     }
-    catch (const SQLite::Exception& e)
+    catch (const std::exception& e)
     {
-        std::cerr << "Error SQLiteStorage retrieve multiple: " << e.what() << std::endl;
+        std::cerr << "Error during RetrieveMultiple operation: " << e.what() << std::endl;
         return {};
     }
 }
@@ -231,9 +234,9 @@ int SQLiteStorage::Remove(int id, const std::string& tableName, const std::strin
         transaction.commit();
         return 1;
     }
-    catch (const SQLite::Exception& e)
+    catch (const std::exception& e)
     {
-        std::cerr << "Error SQLiteStorage remove: " << e.what() << std::endl;
+        std::cerr << "Error during Remove operation: " << e.what() << std::endl;
         return {};
     }
 }
@@ -267,9 +270,9 @@ int SQLiteStorage::RemoveMultiple(int n, const std::string& tableName, const std
         releaseDatabaseAccess();
         return rowsModified;
     }
-    catch (const SQLite::Exception& e)
+    catch (const std::exception& e)
     {
-        std::cerr << "Error SQLiteStorage remove multiple: " << e.what() << std::endl;
+        std::cerr << "Error during RemoveMultiple operation: " << e.what() << std::endl;
         return rowsModified;
     }
 }
@@ -302,9 +305,9 @@ int SQLiteStorage::GetElementCount(const std::string& tableName, const std::stri
         }
         return count;
     }
-    catch (const SQLite::Exception& e)
+    catch (const std::exception& e)
     {
-        std::cerr << "Error SQLiteStorage get element count: " << e.what() << std::endl;
+        std::cerr << "Error during GetElementCount operation: " << e.what() << std::endl;
         return {};
     }
 }
