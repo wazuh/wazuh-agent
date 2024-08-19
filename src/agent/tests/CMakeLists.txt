@@ -9,7 +9,7 @@ target_link_libraries(task_manager_test PRIVATE Agent GTest::gtest)
 add_test(NAME TaskManagerTest COMMAND task_manager_test)
 
 add_executable(register_test register_test.cpp)
-target_link_libraries(register_test PRIVATE Agent GTest::gtest)
+target_link_libraries(register_test PRIVATE Agent GTest::gmock GTest::gtest)
 add_test(NAME RegisterTest COMMAND register_test)
 
 add_executable(signal_handler_test signal_handler_test.cpp)

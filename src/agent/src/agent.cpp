@@ -9,6 +9,7 @@
 
 Agent::Agent()
     : m_communicator(m_agentInfo.GetUUID(),
+                     m_agentInfo.GetKey(),
                      [this](std::string table, std::string key) -> std::string
                      { return m_configurationParser.GetConfig<std::string>(table, key); })
 {

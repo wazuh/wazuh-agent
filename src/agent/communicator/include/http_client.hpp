@@ -55,10 +55,15 @@ namespace http_client
 
     boost::beast::http::response<boost::beast::http::dynamic_body> PerformHttpRequest(const HttpRequestParams& params);
 
-    std::optional<std::string>
-    AuthenticateWithUuid(const std::string& host, const std::string& port, const std::string& uuid);
-    std::optional<std::string> AuthenticateWithUserPassword(const std::string& host,
-                                                            const std::string& port,
-                                                            const std::string& user,
-                                                            const std::string& password);
+    std::optional<std::string> AuthenticateWithUuidAndKey(const std::string& host,
+                                                          const std::string& port,
+                                                          const std::string& uuid,
+                                                          const std::string& key);
+
+    using AuthenticateFunctionType = std::optional<std::string>(const std::string& host,
+                                                                const std::string& port,
+                                                                const std::string& user,
+                                                                const std::string& password);
+
+    AuthenticateFunctionType AuthenticateWithUserPassword;
 } // namespace http_client

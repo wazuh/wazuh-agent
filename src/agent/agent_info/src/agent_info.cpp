@@ -9,7 +9,7 @@ AgentInfo::AgentInfo()
 {
     AgentInfoPersistance agentInfoPersistance;
     m_name = agentInfoPersistance.GetName();
-    m_ip = agentInfoPersistance.GetIP();
+    m_key = agentInfoPersistance.GetKey();
     m_uuid = agentInfoPersistance.GetUUID();
 
     if (m_uuid.empty())
@@ -20,14 +20,14 @@ AgentInfo::AgentInfo()
     }
 }
 
-AgentInfo::AgentInfo(const std::string& name, const std::string& ip, const std::string& uuid)
+AgentInfo::AgentInfo(const std::string& name, const std::string& key, const std::string& uuid)
     : m_name(name)
-    , m_ip(ip)
+    , m_key(key)
     , m_uuid(uuid)
 {
     AgentInfoPersistance agentInfoPersistance;
     agentInfoPersistance.SetName(m_name);
-    agentInfoPersistance.SetIP(m_ip);
+    agentInfoPersistance.SetKey(m_key);
     agentInfoPersistance.SetUUID(m_uuid);
 }
 
@@ -35,9 +35,9 @@ std::string AgentInfo::GetName() const
 {
     return m_name;
 }
-std::string AgentInfo::GetIP() const
+std::string AgentInfo::GetKey() const
 {
-    return m_ip;
+    return m_key;
 }
 std::string AgentInfo::GetUUID() const
 {
@@ -51,11 +51,11 @@ void AgentInfo::SetName(const std::string& name)
     m_name = name;
 }
 
-void AgentInfo::SetIP(const std::string& ip)
+void AgentInfo::SetKey(const std::string& key)
 {
     AgentInfoPersistance agentInfoPersistance;
-    agentInfoPersistance.SetIP(ip);
-    m_ip = ip;
+    agentInfoPersistance.SetKey(key);
+    m_key = key;
 }
 
 void AgentInfo::SetUUID(const std::string& uuid)

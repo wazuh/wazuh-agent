@@ -18,8 +18,10 @@ namespace communicator
     constexpr int TokenPreExpirySecs = 2;
 
     Communicator::Communicator(const std::string& uuid,
+                               const std::string& key,
                                const std::function<std::string(std::string, std::string)> GetStringConfigValue)
         : m_uuid(uuid)
+        , m_key(key)
     {
         if (GetStringConfigValue != nullptr)
         {
@@ -30,7 +32,7 @@ namespace communicator
 
     boost::beast::http::status Communicator::SendAuthenticationRequest()
     {
-        const auto token = http_client::AuthenticateWithUuid(m_managerIp, m_port, m_uuid);
+        const auto token = http_client::AuthenticateWithUuidAndKey(m_managerIp, m_port, m_uuid, m_key);
 
         if (token.has_value())
         {
