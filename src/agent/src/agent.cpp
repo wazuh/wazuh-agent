@@ -43,24 +43,24 @@ void Agent::Run()
         [this]() { return getMessagesFromQueue(m_messageQueue, STATELESS); },
         [this]([[maybe_unused]] const std::string& response) { popMessagesFromQueue(m_messageQueue, STATELESS); }));
 
-
     // Push message to Agent Queue every 100 seconds.
-    m_taskManager.EnqueueTask([this]() -> boost::asio::awaitable<void> {
+    m_taskManager.EnqueueTask(
+        [this]() -> boost::asio::awaitable<void>
+        {
+            while (true)
+            {
+                // Push the message
+                const nlohmann::json dataContent = {{"command", "upgradeModule"}, {"status", "Pending"}};
+                std::cout << "--------------------------------" << std::endl;
+                std::cout << "Push command to the agent queue:" << std::endl;
+                std::cout << dataContent << std::endl;
+                std::cout << "--------------------------------" << std::endl;
 
-        while (true) {
-            // Push the message
-            const nlohmann::json dataContent = {{"command", "upgradeModule"}, {"status", "Pending"}};
-            std::cout << "--------------------------------" << std::endl;
-            std::cout << "Push command to the agent queue:" << std::endl;
-            std::cout << dataContent << std::endl;
-            std::cout << "--------------------------------" << std::endl;
-
-            const Message messageToSend {MessageType::COMMAND, dataContent, "CommandManager"};
-            m_agentQueue.push(messageToSend);
-            std::this_thread::sleep_for(std::chrono::seconds(100));
-        }
-    });
-
+                const Message messageToSend {MessageType::COMMAND, dataContent, "CommandManager"};
+                m_agentQueue.push(messageToSend);
+                std::this_thread::sleep_for(std::chrono::seconds(100));
+            }
+        });
 
     m_taskManager.EnqueueTask(m_commandManager.ProcessCommandsFromQueue<Message>(
         [this]() -> std::optional<Message>
@@ -76,29 +76,11 @@ void Agent::Run()
             // pop message from queue
             m_agentQueue.pop(MessageType::COMMAND);
 
-            nlohmann::json jdata = m.data.at(0);
-            for (auto& [key, value] : jdata.items())
-            {
-                std::cout << key << ": " << value << std::endl;
-            }
-
-            std::cout << "Data inside data:" << std::endl;
-
-            nlohmann::json jdataData = m.data.at(0).at("data");
-            for (auto& [key, value] : jdataData.items())
-            {
-                std::cout << key << ": " << value << std::endl;
-            }
-
-            // change status and push again
-            if (jdataData.at("status") == "Pending")
-            {
-                std::cout << "Message status is Pending. Updating status and pushing back." << std::endl;
-                jdataData["status"] = "InProcess";
-                Message newMessage(MessageType::COMMAND, jdataData, "CommandManager");
-                // m_agentQueue.push(newMessage);
-                // return m;
-            }
+            // change status and push to CommandStore
+            Message newMessage(MessageType::COMMAND, m.data, "CommandManager");
+            setJsonValue(newMessage.data, "status", "InProgress");
+            std::cout << newMessage.data.dump() << std::endl;
+            // m_agentQueue.push(newMessage);
 
             return m;
         },

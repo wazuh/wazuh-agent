@@ -2,8 +2,6 @@
 
 #include <imultitype_queue.hpp>
 
-#include <nlohmann/json.hpp>
-
 #include <vector>
 
 namespace
@@ -46,4 +44,74 @@ void pushCommandsToQueue(IMultiTypeQueue& multiTypeQueue, const std::string& com
             multiTypeQueue.push(messages);
         }
     }
+}
+
+std::string findJsonKey(const nlohmann::json& j, const std::string& key)
+{
+    if (j.is_object())
+    {
+        for (const auto& [k, v] : j.items())
+        {
+            if (k == key)
+            {
+                return v.get<std::string>();
+            }
+            else if (v.is_object() || v.is_array())
+            {
+                std::string result = findJsonKey(v, key);
+                if (!result.empty())
+                {
+                    return result;
+                }
+            }
+        }
+    }
+    else if (j.is_array())
+    {
+        for (const auto& element : j)
+        {
+            std::string result = findJsonKey(element, key);
+            if (!result.empty())
+            {
+                return result;
+            }
+        }
+    }
+
+    return ""; // key not found
+}
+
+bool setJsonValue(nlohmann::json& j, const std::string& key, const std::string& value)
+{
+
+    if (j.is_object())
+    {
+        for (auto& [k, v] : j.items())
+        {
+            if (k == key)
+            {
+                v = value;
+                return true;
+            }
+            else if (v.is_object() || v.is_array())
+            {
+                if (setJsonValue(v, key, value))
+                {
+                    return true;
+                }
+            }
+        }
+    }
+    else if (j.is_array())
+    {
+        for (auto& element : j)
+        {
+            if (setJsonValue(element, key, value))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false; // Key not found
 }
