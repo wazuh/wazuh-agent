@@ -23,13 +23,6 @@ Agent::~Agent()
 
 void Agent::Run()
 {
-    // add some test command to the queue
-    // const nlohmann::json dataContent = {{"command", {{"name", "001"}, {"type", "stateless"}}},
-    //                                    {"origin", {{"serverName", "node01"}, {"moduleName", "upgradeModule"}}},
-    //                                    {"parameters", {{"error", 0}, {"data", "Command received"}}},
-    //                                    {"status", "Pending"}};
-    //
-
     m_taskManager.EnqueueTask(m_communicator.WaitForTokenExpirationAndAuthenticate());
 
     m_taskManager.EnqueueTask(m_communicator.GetCommandsFromManager(
@@ -43,35 +36,20 @@ void Agent::Run()
         [this]() { return getMessagesFromQueue(m_messageQueue, STATELESS); },
         [this]([[maybe_unused]] const std::string& response) { popMessagesFromQueue(m_messageQueue, STATELESS); }));
 
-    // Push message to Agent Queue every 100 seconds.
-    m_taskManager.EnqueueTask(
-        [this]() -> boost::asio::awaitable<void>
-        {
-            while (true)
-            {
-                // Push the message
-                const nlohmann::json dataContent = {{"command", "upgradeModule"}, {"status", "Pending"}};
-                std::cout << "--------------------------------" << std::endl;
-                std::cout << "Push command to the agent queue:" << std::endl;
-                std::cout << dataContent << std::endl;
-                std::cout << "--------------------------------" << std::endl;
-
-                const Message messageToSend {MessageType::COMMAND, dataContent, "CommandManager"};
-                m_agentQueue.push(messageToSend);
-                std::this_thread::sleep_for(std::chrono::seconds(100));
-            }
-        });
+    m_taskManager.EnqueueTask(PushTestMessages());
 
     m_taskManager.EnqueueTask(m_commandManager.ProcessCommandsFromQueue<Message>(
         [this]() -> std::optional<Message>
         {
-            if (m_agentQueue.isEmpty(MessageType::COMMAND))
+            while (m_agentQueue.isEmpty(MessageType::COMMAND))
             {
                 return std::nullopt;
             }
+
             Message m = m_agentQueue.getNext(MessageType::COMMAND);
 
-            std::cout << "COMMAND retrieved from Queue:" << std::endl;
+            std::cout << "--------- COMMAND retrieved from Queue:" << std::endl;
+            std::cout << m.data.dump() << std::endl;
 
             // pop message from queue
             m_agentQueue.pop(MessageType::COMMAND);
