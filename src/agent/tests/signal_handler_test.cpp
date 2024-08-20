@@ -1,8 +1,31 @@
 #include <gtest/gtest.h>
 
-#include <future>
 #include <signal_handler.hpp>
+
+#include <csignal>
+#include <future>
 #include <thread>
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+namespace
+{
+#ifdef _WIN32
+    const DWORD TestSignalToRaise = CTRL_C_EVENT;
+    void RaiseSignal()
+    {
+        SignalHandler::HandleSignal(TestSignalToRaise);
+    }
+#else
+    const int TestSignalToRaise = SIGUSR1;
+    void RaiseSignal()
+    {
+        std::raise(TestSignalToRaise);
+    }
+#endif
+} // namespace
 
 class SignalHandlerTest : public ::testing::Test
 {
@@ -12,9 +35,7 @@ protected:
         SignalHandler::KeepRunning.store(true);
     }
 
-    void TearDown() override {}
-
-    SignalHandler signalHandler = SignalHandler({SIGUSR1});
+    SignalHandler signalHandler = SignalHandler({TestSignalToRaise});
 };
 
 TEST_F(SignalHandlerTest, KeepRunningIsTheDefault)
@@ -34,7 +55,7 @@ TEST_F(SignalHandlerTest, HandlesSignal)
         });
 
     readyFuture.wait();
-    std::raise(SIGUSR1);
+    RaiseSignal();
     signalThread.join();
 
     EXPECT_FALSE(SignalHandler::KeepRunning.load());

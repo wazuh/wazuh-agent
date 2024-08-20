@@ -17,6 +17,8 @@ public:
     static std::atomic<bool> KeepRunning;
 
 private:
+    void Initialize(const std::vector<int>& signalsToHandle);
+
     static std::condition_variable m_cv;
     static std::mutex m_cvMutex;
 };
