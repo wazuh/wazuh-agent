@@ -13,9 +13,9 @@ find_package(nlohmann_json REQUIRED)
 find_package(fmt REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio)
 
-add_library(MultiTypeQueue src/sqlitestorage.cpp src/multitype_queue.cpp src/persistence_factory.cpp)
+add_library(MultiTypeQueue src/multitype_queue.cpp)
 target_include_directories(MultiTypeQueue PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include PRIVATE ${SQLiteCpp_INCLUDE_DIRS})
-target_link_libraries(MultiTypeQueue PUBLIC nlohmann_json::nlohmann_json Boost::asio PRIVATE SQLiteCpp fmt::fmt)
+target_link_libraries(MultiTypeQueue PUBLIC Persistence nlohmann_json::nlohmann_json Boost::asio PRIVATE SQLiteCpp fmt::fmt)
 
 if(BUILD_TESTS)
     enable_testing()

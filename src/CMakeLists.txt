@@ -7,10 +7,11 @@ project(wazuh-agent)
 include(cmake/CommonSettings.cmake)
 set_common_settings()
 
+add_subdirectory(common/persistence)
 add_subdirectory(agent)
 
 add_executable(wazuh-agent agent/src/main.cpp)
-target_link_libraries(wazuh-agent Agent)
+target_link_libraries(wazuh-agent Persistence Agent)
 
 if(BUILD_TESTS)
     enable_testing()
