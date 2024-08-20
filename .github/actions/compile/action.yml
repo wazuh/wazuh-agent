@@ -15,7 +15,7 @@ runs:
           SRC_FOLDER=$(pwd)/${{ inputs.path }}
 
           mkdir -p build && cd build
-          cmake ${SRC_FOLDER} -DBUILD_TESTS=1 -G "Unix Makefiles"
+          cmake ${SRC_FOLDER} -DBUILD_TESTS=1 -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo
           echo "CMake project generated in $(pwd)"
         shell: bash
 
@@ -26,7 +26,7 @@ runs:
             echo "CMake cache not found in $(pwd). Aborting."
             exit 1
           fi
-          cmake --build .
+          cmake --build . --config RelWithDebInfo
         shell: bash
 
       - name: Run Tests
@@ -34,5 +34,5 @@ runs:
         run: |
           set +e
           cd build
-          ctest
+          ctest -C RelWithDebInfo
         shell: bash
