@@ -60,12 +60,10 @@ std::string unescape_string(const std::string& str)
 
 void cleanPersistence()
 {
-    std::string filePath = QUEUE_DEFAULT_DB_PATH;
     for (const auto& entry : std::filesystem::directory_iterator("."))
     {
-        std::string fileFullPath = entry.path();
-        size_t found = fileFullPath.find(filePath);
-        if (found != std::string::npos)
+        const auto fileFullPath = entry.path().string();
+        if (fileFullPath.find(QUEUE_DEFAULT_DB_PATH) != std::string::npos)
         {
             std::error_code ec;
             std::filesystem::remove(fileFullPath, ec);
