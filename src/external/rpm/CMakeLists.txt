@@ -6,12 +6,14 @@ project(librpm)
 
 get_filename_component(SRC_FOLDER ${CMAKE_SOURCE_DIR}/../ ABSOLUTE)
 include_directories(${SRC_FOLDER}/lua/install/include/)
+include_directories(${SRC_FOLDER}/src/vcpkg/packages/sqlite3_x64-linux/include/)
+include_directories(${SRC_FOLDER}/src/vcpkg/packages/libpopt_x64-linux/include/)
+include_directories(${SRC_FOLDER}/src/vcpkg/packages/lua_x64-linux/include/)
 
 set(LIBRPM_SRC ${CMAKE_CURRENT_SOURCE_DIR})
 set(LIBRPM_OUT ${CMAKE_CURRENT_BINARY_DIR}/output)
 set(LIBRPM_PUBLIC_INCLUDES ${LIBRPM_OUT}/include)
 set(LIBRPM_STATIC_LIB ${LIBRPM_OUT}/librpm.a)
-
 
 set(library_headers
   "${LIBRPM_SRC}/include/rpm/argv.h"
