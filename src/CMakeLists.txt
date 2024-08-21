@@ -8,10 +8,20 @@ include(cmake/CommonSettings.cmake)
 set_common_settings()
 
 add_subdirectory(external/rpm)
+
 add_custom_target(
     build_procps_lib ALL
     COMMAND ${CMAKE_MAKE_PROGRAM} -C ${SRC_FOLDER}/src/external/procps
     COMMENT "Buiding procps library"
+)
+
+add_custom_target(
+    build_libdb ALL
+    COMMAND ${CMAKE_COMMAND} -E echo "Building libdb"
+    COMMAND ${CMAKE_COMMAND} -E chdir ${LIBDB_DIR} ${LIBDB_DIR}/dist/configure CFLAGS="-fPIC"
+    COMMAND ${CMAKE_COMMAND} -E chdir ${LIBDB_DIR} ${CMAKE_MAKE_PROGRAM}
+    COMMENT "Building libdb"
+    DEPENDS ${LIBDB_DIR}/dist/configure
 )
 add_subdirectory(agent)
 add_subdirectory(common)
