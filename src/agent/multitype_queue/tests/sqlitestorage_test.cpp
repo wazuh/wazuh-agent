@@ -1,5 +1,6 @@
 #include <filesystem>
 #include <iostream>
+#include <memory>
 #include <random>
 #include <thread>
 #include <vector>
@@ -18,30 +19,27 @@ protected:
     const std::string tableName = "test_table";
     const std::string moduleName = "moduleX";
     const std::vector<std::string> m_vMessageTypeStrings {"test_table", "test_table2"};
-    SQLiteStorage* storage;
+    std::unique_ptr<SQLiteStorage> storage;
 
     void SetUp() override
     {
         // Ensure the database file does not already exist
-        std::string filePath = dbName;
         for (const auto& entry : std::filesystem::directory_iterator("."))
         {
-            std::string fileFullPath = entry.path();
-            size_t found = fileFullPath.find(filePath);
-            if (found != std::string::npos)
+            const auto fileFullPath = entry.path().string();
+            if (fileFullPath.find(dbName) != std::string::npos)
             {
                 std::error_code ec;
                 std::filesystem::remove(fileFullPath, ec);
             }
         }
 
-        storage = new SQLiteStorage(dbName, m_vMessageTypeStrings);
+        storage = std::make_unique<SQLiteStorage>(dbName, m_vMessageTypeStrings);
     }
 
     void TearDown() override
     {
-        // Clean up: Delete the SQLiteStorage instance and remove the database file
-        delete storage;
+        // Clean up: remove the database file
         std::error_code ec;
         if (std::filesystem::exists(dbName.c_str()))
         {

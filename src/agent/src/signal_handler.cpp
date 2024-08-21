@@ -6,10 +6,7 @@ std::mutex SignalHandler::m_cvMutex;
 
 SignalHandler::SignalHandler(const std::vector<int>& signalsToHandle)
 {
-    for (const auto signal : signalsToHandle)
-    {
-        std::signal(signal, SignalHandler::HandleSignal);
-    }
+    Initialize(signalsToHandle);
 }
 
 void SignalHandler::HandleSignal(int signal)
