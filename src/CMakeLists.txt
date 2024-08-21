@@ -15,14 +15,15 @@ add_custom_target(
     COMMENT "Buiding procps library"
 )
 
+set(LIBDB_DIR "${SRC_FOLDER}/src/external/libdb")
 add_custom_target(
     build_libdb ALL
     COMMAND ${CMAKE_COMMAND} -E echo "Building libdb"
-    COMMAND ${CMAKE_COMMAND} -E chdir ${LIBDB_DIR} ${LIBDB_DIR}/dist/configure CFLAGS="-fPIC"
-    COMMAND ${CMAKE_COMMAND} -E chdir ${LIBDB_DIR} ${CMAKE_MAKE_PROGRAM}
+    COMMAND ${CMAKE_COMMAND} -E chdir ${LIBDB_DIR}/build_unix ${LIBDB_DIR}/dist/configure CFLAGS="-fPIC"
+    COMMAND ${CMAKE_COMMAND} -E chdir ${LIBDB_DIR}/build_unix ${CMAKE_MAKE_PROGRAM}
     COMMENT "Building libdb"
-    DEPENDS ${LIBDB_DIR}/dist/configure
 )
+
 add_subdirectory(agent)
 add_subdirectory(common)
 add_subdirectory(modules)
