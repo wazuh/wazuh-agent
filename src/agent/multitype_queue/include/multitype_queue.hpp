@@ -2,7 +2,7 @@
 
 #include <imultitype_queue.hpp>
 #include <message.hpp>
-#include <persistence.h>
+#include <persistence.hpp>
 
 #include <condition_variable>
 #include <map>

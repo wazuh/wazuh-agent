@@ -1,6 +1,5 @@
 #include <persistence_factory.hpp>
-
-#include <sqlitestorage.h>
+#include <sqlitestorage.hpp>
 
 #include <stdexcept>
 
