@@ -165,6 +165,9 @@ target_compile_definitions(rpm PRIVATE
   SYSCONFDIR="/usr/etc"
 )
 
+# Add -fPIC to the compile options
+target_compile_options(rpm PRIVATE -fPIC)
+
 target_include_directories(rpm PRIVATE
   "${LIBRPM_SRC}"
   "${LIBRPM_PUBLIC_INCLUDES}"
