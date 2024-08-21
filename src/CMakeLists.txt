@@ -6,9 +6,15 @@ set(CMAKE_BUILD_TYPE RelWithDebInfo)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
-
+get_filename_component(SRC_FOLDER ${CMAKE_SOURCE_DIR}/../ ABSOLUTE)
 project(wazuh-agent)
 
+add_subdirectory(external/rpm)
+add_custom_target(
+    build_procps_lib ALL
+    COMMAND ${CMAKE_MAKE_PROGRAM} -C ${SRC_FOLDER}/src/external/procps
+    COMMENT "Buiding procps library"
+)
 add_subdirectory(agent)
 add_subdirectory(common)
 add_subdirectory(modules)
