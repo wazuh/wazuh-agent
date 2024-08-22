@@ -27,8 +27,7 @@ const int DBSYNC_MQ    = '5';
 
 #define INFINITE_OPENQ_ATTEMPTS 0
 
-#define WM_INV_LOGTAG "modules:inventory" // Tag for log messages
-#define WM_INVENTORY_DEFAULT_INTERVAL W_HOUR_SECONDS
+#define INV_LOGTAG "modules:inventory" // Tag for log messages
 
 void *Inventory::start() {
 
@@ -51,30 +50,21 @@ void *Inventory::start() {
 
 int Inventory::setup(const Configuration & config) {
 
-    dbPath = INVENTORY_DB_DISK_PATH;
-    normalizerConfigPath = INVENTORY_NORM_CONFIG_DISK_PATH;
-    normalizerType = INVENTORY_NORM_TYPE;
+    const InventoryConfig& inventoryConfig = config.getInventoryConfig();
 
-    sync_max_eps = 10;      // Database synchronization number of events per second (default value)
+    m_enabled = inventoryConfig.enabled;
+    m_intervalValue = std::chrono::seconds{inventoryConfig.interval};
+    m_scanOnStart = inventoryConfig.scanOnStart;
+    m_hardware = inventoryConfig.hardware;
+    m_os = inventoryConfig.os;
+    m_network = inventoryConfig.network;
+    m_packages = inventoryConfig.packages;
+    m_ports = inventoryConfig.ports;
+    m_portsAll = inventoryConfig.portsAll;
+    m_processes = inventoryConfig.processes;
+    m_hotfixes = inventoryConfig.hotfixes;
 
-    // interval = WM_INVENTORY_DEFAULT_INTERVAL;
-    interval = 10;
-    m_intervalValue = std::chrono::seconds{interval};
-
-    m_enabled = true;
-
-    m_scanOnStart = true;
-    m_hardware = true;
-    m_os = true;
-    m_network = true;
-    m_packages = true;
-    m_ports = true;
-    m_portsAll = true;
-    m_processes = true;
-    m_hotfixes = true;
     m_notify = true;
-
-    m_currentIntervalValue = m_intervalValue;
 
     return 0;
 }
@@ -184,10 +174,10 @@ void Inventory::run()
 
 void Inventory::log(const modules_log_level_t level, const std::string& log)
 {
-    taggedLogFunction(level, log.c_str(), WM_INV_LOGTAG);
+    taggedLogFunction(level, log.c_str(), INV_LOGTAG);
 }
 
 void Inventory::logError(const std::string& log)
 {
-    taggedLogFunction(LOG_ERROR, log.c_str(), WM_INV_LOGTAG);
+    taggedLogFunction(LOG_ERROR, log.c_str(), INV_LOGTAG);
 }
