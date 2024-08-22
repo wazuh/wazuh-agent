@@ -4,11 +4,26 @@
 
 #include <any>
 #include <memory>
-#include <string>
 #include <vector>
 
+/**
+ * @brief Class to create a persistence.
+ *
+ */
 class PersistenceFactory
 {
 public:
-    static std::unique_ptr<Persistence> createPersistence(const std::string& type, const std::vector<std::any>& args);
+    /**
+     * @brief Types of persistence enum
+     *
+     */
+    enum class PersistenceType
+    {
+        SQLITE3
+    };
+
+    /**
+     * @brief Create a persistence
+     */
+    static std::unique_ptr<Persistence> createPersistence(PersistenceType type, const std::vector<std::any>& args);
 };
