@@ -18,9 +18,9 @@ concept Module = requires(T t, const Configuration & config, const string & quer
     { t.name() } -> same_as<string>;
 };
 
-class Pool {
+class ModuleManager {
 public:
-    Pool();
+    ModuleManager();
 
     template <typename T>
     void addModule(T& module);
