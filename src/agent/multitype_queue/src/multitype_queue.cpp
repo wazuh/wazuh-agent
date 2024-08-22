@@ -14,9 +14,14 @@ MultiTypeQueue::MultiTypeQueue(int size, int timeout)
     try
     {
         m_persistenceDest = PersistenceFactory::createPersistence(PersistenceFactory::PersistenceType::SQLITE3,
-                                                                  static_cast<std::string>(QUEUE_DEFAULT_DB_PATH),
-                                                                  CREATE_TABLE_QUERY,
-                                                                  m_vMessageTypeStrings);
+                                                                  static_cast<std::string>(QUEUE_DEFAULT_DB_PATH));
+
+        // Initalize tables
+        for (auto table : m_vMessageTypeStrings)
+        {
+            std::string createTableQuery = m_persistenceDest->GenerateQuery(CREATE_TABLE_QUERY, {table});
+            m_persistenceDest->InitializeTable(createTableQuery);
+        }
     }
     catch (const std::exception& e)
     {

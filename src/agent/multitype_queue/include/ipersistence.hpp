@@ -19,6 +19,9 @@ public:
      */
     virtual ~IPersistence() = default;
 
+    virtual std::string GenerateQuery(const std::string_view& formatString, const std::vector<std::string>& params) = 0;
+    virtual bool InitializeTable(const std::string& initTableQuery) = 0;
+
     /**
      * @brief Store a JSON message in the specified queue.
      *

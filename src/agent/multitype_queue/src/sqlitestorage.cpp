@@ -15,32 +15,17 @@ std::string SQLiteStorage::GenerateQuery(const std::string_view& formatString, c
     return fmt::vformat(formatString, store);
 }
 
-SQLiteStorage::SQLiteStorage(const std::string& dbName,
-                             const std::string_view& initTableQuery,
-                             const std::vector<std::string>& tableNames)
+SQLiteStorage::SQLiteStorage(const std::string& dbName)
     : m_dbName(dbName)
     , m_db(make_unique<SQLite::Database>(dbName, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE))
 {
-    try
-    {
-        // Open the database in WAL mode
-        m_db->exec("PRAGMA journal_mode=WAL;");
-        for (auto table : tableNames)
-        {
-            std::string createTableQuery = GenerateQuery(initTableQuery, {table});
-            InitializeTable(createTableQuery);
-        }
-    }
-    catch (const std::exception& e)
-    {
-        std::cerr << "Error initializing database: " << e.what() << std::endl;
-        throw;
-    }
+    // Open the database in WAL mode
+    m_db->exec("PRAGMA journal_mode=WAL;");
 }
 
 SQLiteStorage::~SQLiteStorage() {}
 
-void SQLiteStorage::InitializeTable(const std::string& initTableQuery)
+bool SQLiteStorage::InitializeTable(const std::string& initTableQuery)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     try
@@ -52,6 +37,8 @@ void SQLiteStorage::InitializeTable(const std::string& initTableQuery)
         std::cerr << "Error initializing table: " << e.what() << std::endl;
         throw;
     }
+
+    return true;
 }
 
 void SQLiteStorage::waitForDatabaseAccess()

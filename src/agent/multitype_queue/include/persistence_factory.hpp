@@ -25,8 +25,5 @@ public:
     /**
      * @brief Create a persistence
      */
-    static std::unique_ptr<IPersistence> createPersistence(PersistenceType type,
-                                                           const std::string& dbName,
-                                                           const std::string_view& createTableQuery,
-                                                           const std::vector<std::string>& args);
+    static std::unique_ptr<IPersistence> createPersistence(PersistenceType type, const std::string& dbName);
 };

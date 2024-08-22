@@ -23,9 +23,7 @@
 class SQLiteStorage : public IPersistence
 {
 public:
-    SQLiteStorage(const std::string& dbName,
-                  const std::string_view& initTableQuery,
-                  const std::vector<std::string>& tableNames);
+    SQLiteStorage(const std::string& dbName);
 
     /**
      * @brief Delete copy constructor
@@ -110,14 +108,23 @@ public:
      */
     int GetElementCount(const std::string& tableName, const std::string& moduleName = "") override;
 
-private:
     /**
      * @brief Initialize the table in the SQLite database.
      * This method creates the table if it does not already exist.
      * @param initTableQuery The query used to initialize the table.
+     * @return true for success
      */
-    void InitializeTable(const std::string& initTableQuery);
+    bool InitializeTable(const std::string& initTableQuery) override;
 
+    /**
+     * @brief Generate a query inserting each param string in the {} placeholder in formatString.
+     * @param formatString String specifying the format of the query, including {} placeholders for each parameters.
+     * @param params Vector of strings to be inserted in formatString.
+     * @return A new string resulting of the insertion of the params in formatString.
+     */
+    std::string GenerateQuery(const std::string_view& formatString, const std::vector<std::string>& params);
+
+private:
     /**
      * @brief Private method for waiting for database access.
      *
@@ -159,12 +166,4 @@ private:
      * @brief flag for notifying the use of the db.
      */
     bool m_dbInUse = false;
-
-    /**
-     * @brief Generate a query inserting each param string in the {} placeholder in formatString.
-     * @param formatString String specifying the format of the query, including {} placeholders for each parameters.
-     * @param params Vector of strings to be inserted in formatString.
-     * @return A new string resulting of the insertion of the params in formatString.
-     */
-    std::string GenerateQuery(const std::string_view& formatString, const std::vector<std::string>& params);
 };
