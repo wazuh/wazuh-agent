@@ -1,4 +1,4 @@
-#include <sqlitestorage.h>
+#include <sqlitestorage.hpp>
 
 #include <fmt/format.h>
 
@@ -45,6 +45,7 @@ void SQLiteStorage::InitializeTable(const std::string& tableName)
         throw;
     }
 }
+
 void SQLiteStorage::waitForDatabaseAccess()
 {
     std::unique_lock<std::mutex> lock(m_mutex);

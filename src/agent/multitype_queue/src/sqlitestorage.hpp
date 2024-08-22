@@ -1,5 +1,4 @@
-#ifndef SQLITE_STORAGE_H
-#define SQLITE_STORAGE_H
+#pragma once
 
 #include <condition_variable>
 #include <iostream>
@@ -13,7 +12,7 @@
 #include <SQLiteCpp/VariadicBind.h>
 #include <stdexcept>
 
-#include "persistence.h"
+#include "persistence.hpp"
 
 /**
  * @brief SQLite implementation of the Persistence interface.
@@ -159,5 +158,3 @@ private:
      */
     bool m_dbInUse = false;
 };
-
-#endif // SQLITE_STORAGE_H

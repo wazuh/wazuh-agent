@@ -1,13 +1,13 @@
 #include <persistence_factory.hpp>
-
-#include <sqlitestorage.h>
+#include <sqlitestorage.hpp>
 
 #include <stdexcept>
+#include <string>
 
-std::unique_ptr<Persistence> PersistenceFactory::createPersistence(const std::string& type,
+std::unique_ptr<Persistence> PersistenceFactory::createPersistence(PersistenceType type,
                                                                    const std::vector<std::any>& args)
 {
-    if (type == "SQLite3")
+    if (type == PersistenceType::SQLITE3)
     {
         if (args.size() != 2 || !std::any_cast<std::string>(&args[0]) ||
             !std::any_cast<std::vector<std::string>>(&args[1]))

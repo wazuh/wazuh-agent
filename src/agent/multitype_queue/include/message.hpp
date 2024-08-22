@@ -8,7 +8,7 @@
  * @brief Types of messages enum
  *
  */
-enum MessageType
+enum class MessageType
 {
     STATELESS,
     STATEFUL,

@@ -8,7 +8,7 @@
 #include "gtest/gtest.h"
 #include <nlohmann/json.hpp>
 
-#include "sqlitestorage.h"
+#include "sqlitestorage.hpp"
 
 using json = nlohmann::json;
 

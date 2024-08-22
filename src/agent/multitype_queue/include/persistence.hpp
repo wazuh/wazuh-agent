@@ -1,5 +1,4 @@
-#ifndef PERSISTENCE_H
-#define PERSISTENCE_H
+#pragma once
 
 #include <nlohmann/json.hpp>
 #include <string>
@@ -79,5 +78,3 @@ public:
      */
     virtual int GetElementCount(const std::string& queueName, const std::string& moduleName = "") = 0;
 };
-
-#endif // PERSISTENCE_H

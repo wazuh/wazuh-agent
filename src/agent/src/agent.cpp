@@ -29,12 +29,14 @@ void Agent::Run()
         [this](const std::string& response) { pushCommandsToQueue(m_messageQueue, response); }));
 
     m_taskManager.EnqueueTask(m_communicator.StatefulMessageProcessingTask(
-        [this]() { return getMessagesFromQueue(m_messageQueue, STATEFUL); },
-        [this]([[maybe_unused]] const std::string& response) { popMessagesFromQueue(m_messageQueue, STATEFUL); }));
+        [this]() { return getMessagesFromQueue(m_messageQueue, MessageType::STATEFUL); },
+        [this]([[maybe_unused]] const std::string& response)
+        { popMessagesFromQueue(m_messageQueue, MessageType::STATEFUL); }));
 
     m_taskManager.EnqueueTask(m_communicator.StatelessMessageProcessingTask(
-        [this]() { return getMessagesFromQueue(m_messageQueue, STATELESS); },
-        [this]([[maybe_unused]] const std::string& response) { popMessagesFromQueue(m_messageQueue, STATELESS); }));
+        [this]() { return getMessagesFromQueue(m_messageQueue, MessageType::STATELESS); },
+        [this]([[maybe_unused]] const std::string& response)
+        { popMessagesFromQueue(m_messageQueue, MessageType::STATELESS); }));
 
     m_signalHandler.WaitForSignal();
 }
