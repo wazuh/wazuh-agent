@@ -214,7 +214,7 @@ https://www.gnu.org/licenses/gpl.html\n"
 
 /* Inventory db directory */
 #ifndef WAZUH_UNIT_TESTING
-#define INVENTORY_DB_DISK_PATH "queue/inventory/db/local.db"
+#define INVENTORY_DB_DISK_PATH    "./local.db"
 #else
 #ifndef WIN32
 #define INVENTORY_DB_DISK_PATH    "./local.db"
