@@ -246,3 +246,9 @@ TEST_F(InvNormalizerTest, normalizeItemMatch)
     EXPECT_EQ(inputJson.size(), origJson.size());
     EXPECT_NE(inputJson, origJson);
 }
+
+int main(int argc, char** argv)
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
