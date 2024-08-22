@@ -5,17 +5,17 @@
 #include <string>
 
 std::unique_ptr<IPersistence> PersistenceFactory::createPersistence(PersistenceType type,
-                                                                    const std::vector<std::any>& args)
+                                                                    const std::string& dbName,
+                                                                    const std::string_view& createTableQuery,
+                                                                    const std::vector<std::string>& args)
 {
     if (type == PersistenceType::SQLITE3)
     {
-        if (args.size() != 2 || !std::any_cast<std::string>(&args[0]) ||
-            !std::any_cast<std::vector<std::string>>(&args[1]))
+        if (dbName.size() == 0 || createTableQuery.size() == 0 || args.size() == 0)
         {
-            throw std::invalid_argument("SQLite3 requires db name and table names as arguments");
+            throw std::invalid_argument("SQLite3 requires db name, table creation query and table names as arguments");
         }
-        return std::make_unique<SQLiteStorage>(std::any_cast<std::string>(args[0]),
-                                               std::any_cast<std::vector<std::string>>(args[1]));
+        return std::make_unique<SQLiteStorage>(dbName, createTableQuery, args);
     }
     throw std::runtime_error("Unknown persistence type");
 }

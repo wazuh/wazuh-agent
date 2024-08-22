@@ -1,12 +1,23 @@
 #include <sqlitestorage.hpp>
 
+#include <fmt/args.h>
 #include <fmt/format.h>
+#include <fmt/ranges.h>
 
 #include <algorithm>
 #include <exception>
 #include <iostream>
 
-SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::vector<std::string> tableNames)
+std::string SQLiteStorage::GenerateQuery(const std::string_view& formatString, const std::vector<std::string>& params)
+{
+    fmt::dynamic_format_arg_store<fmt::format_context> store;
+    for (auto param : params) store.push_back(param);
+    return fmt::vformat(formatString, store);
+}
+
+SQLiteStorage::SQLiteStorage(const std::string& dbName,
+                             const std::string_view& initTableQuery,
+                             const std::vector<std::string>& tableNames)
     : m_dbName(dbName)
     , m_db(make_unique<SQLite::Database>(dbName, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE))
 {
@@ -16,7 +27,8 @@ SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::vector<std::s
         m_db->exec("PRAGMA journal_mode=WAL;");
         for (auto table : tableNames)
         {
-            InitializeTable(table);
+            std::string createTableQuery = GenerateQuery(initTableQuery, {table});
+            InitializeTable(createTableQuery);
         }
     }
     catch (const std::exception& e)
@@ -28,16 +40,12 @@ SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::vector<std::s
 
 SQLiteStorage::~SQLiteStorage() {}
 
-void SQLiteStorage::InitializeTable(const std::string& tableName)
+void SQLiteStorage::InitializeTable(const std::string& initTableQuery)
 {
-    // TODO: all queries should be in the same place.
-    constexpr std::string_view CREATE_TABLE_QUERY {
-        "CREATE TABLE IF NOT EXISTS {} (module TEXT, message TEXT NOT NULL);"};
-    auto createTableQuery = fmt::format(CREATE_TABLE_QUERY, tableName);
     std::lock_guard<std::mutex> lock(m_mutex);
     try
     {
-        m_db->exec(createTableQuery);
+        m_db->exec(initTableQuery);
     }
     catch (const std::exception& e)
     {

@@ -19,6 +19,7 @@ protected:
     const std::string tableName = "test_table";
     const std::string moduleName = "moduleX";
     const std::vector<std::string> m_vMessageTypeStrings {"test_table", "test_table2"};
+    const std::string CREATE_TABLE_QUERY {"CREATE TABLE IF NOT EXISTS {} (module TEXT, message TEXT NOT NULL);"};
     std::unique_ptr<SQLiteStorage> storage;
 
     void SetUp() override
@@ -34,7 +35,7 @@ protected:
             }
         }
 
-        storage = std::make_unique<SQLiteStorage>(dbName, m_vMessageTypeStrings);
+        storage = std::make_unique<SQLiteStorage>(dbName, CREATE_TABLE_QUERY, m_vMessageTypeStrings);
     }
 
     void TearDown() override
@@ -243,8 +244,8 @@ void removeMessages(SQLiteStorage& storage, int count, const std::string& tableN
 TEST_F(SQLiteStorageMultithreadedTest, MultithreadedStoreAndRetrieve)
 {
     size_t messagesToStore = 100;
-
-    SQLiteStorage storage1(dbName, m_vMessageTypeStrings);
+    const std::string CREATE_TABLE_QUERY {"CREATE TABLE IF NOT EXISTS {} (module TEXT, message TEXT NOT NULL);"};
+    SQLiteStorage storage1(dbName, CREATE_TABLE_QUERY, m_vMessageTypeStrings);
 
     json messages1 = json::array();
     json messages2 = json::array();

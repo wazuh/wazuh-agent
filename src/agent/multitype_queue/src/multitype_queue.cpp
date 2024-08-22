@@ -1,5 +1,5 @@
 #include <multitype_queue.hpp>
-
+#include <multitypequeue_queries.hpp>
 #include <persistence_factory.hpp>
 
 #include <chrono>
@@ -13,9 +13,10 @@ MultiTypeQueue::MultiTypeQueue(int size, int timeout)
 {
     try
     {
-        m_persistenceDest = PersistenceFactory::createPersistence(
-            PersistenceFactory::PersistenceType::SQLITE3,
-            {static_cast<std::string>(QUEUE_DEFAULT_DB_PATH), m_vMessageTypeStrings});
+        m_persistenceDest = PersistenceFactory::createPersistence(PersistenceFactory::PersistenceType::SQLITE3,
+                                                                  static_cast<std::string>(QUEUE_DEFAULT_DB_PATH),
+                                                                  CREATE_TABLE_QUERY,
+                                                                  m_vMessageTypeStrings);
     }
     catch (const std::exception& e)
     {

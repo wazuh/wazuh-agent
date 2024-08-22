@@ -23,7 +23,9 @@
 class SQLiteStorage : public IPersistence
 {
 public:
-    SQLiteStorage(const std::string& dbName, const std::vector<std::string> tableName);
+    SQLiteStorage(const std::string& dbName,
+                  const std::string_view& initTableQuery,
+                  const std::vector<std::string>& tableNames);
 
     /**
      * @brief Delete copy constructor
@@ -112,9 +114,9 @@ private:
     /**
      * @brief Initialize the table in the SQLite database.
      * This method creates the table if it does not already exist.
-     * @param tableName The name of the table to initialize.
+     * @param initTableQuery The query used to initialize the table.
      */
-    void InitializeTable(const std::string& tableName);
+    void InitializeTable(const std::string& initTableQuery);
 
     /**
      * @brief Private method for waiting for database access.
@@ -157,4 +159,12 @@ private:
      * @brief flag for notifying the use of the db.
      */
     bool m_dbInUse = false;
+
+    /**
+     * @brief Generate a query inserting each param string in the {} placeholder in formatString.
+     * @param formatString String specifying the format of the query, including {} placeholders for each parameters.
+     * @param params Vector of strings to be inserted in formatString.
+     * @return A new string resulting of the insertion of the params in formatString.
+     */
+    std::string GenerateQuery(const std::string_view& formatString, const std::vector<std::string>& params);
 };
