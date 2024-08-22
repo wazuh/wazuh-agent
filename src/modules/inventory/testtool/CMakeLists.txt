@@ -2,18 +2,6 @@ cmake_minimum_required(VERSION 3.22)
 
 project(inventory_test_tool)
 
-# include_directories(${CMAKE_SOURCE_DIR}/)
-# include_directories(${CMAKE_SOURCE_DIR}/testtool/)
-# include_directories(${SRC_FOLDER}/shared_modules/common/)
-# include_directories(${SRC_FOLDER}/shared_modules/dbsync/include/)
-# include_directories(${SRC_FOLDER}/external/nlohmann/)
-# include_directories(${CMAKE_SOURCE_DIR}/src/)
-
-# link_directories(${SRC_FOLDER}/shared_modules/dbsync/build/lib)
-# link_directories(${SRC_FOLDER}/data_provider/build/lib)
-# link_directories(${SRC_FOLDER}/external/openssl/)
-# link_directories(${SRC_FOLDER}/external/procps/)
-
 if(COVERITY)
   add_definitions(-D__GNUC__=8)
 endif(COVERITY)
@@ -32,8 +20,6 @@ file(GLOB INVENTORY_TESTTOOL_SRC
 add_executable(inventory_test_tool
                ${INVENTORY_TESTTOOL_SRC}
                )
-
-#target_include_directories(inventory_test_tool PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(inventory_test_tool
