@@ -9,10 +9,12 @@
  * Foundation.
  */
 #include <cstdio>
+#include <gtest/gtest.h>
 #include "inventoryImp_test.hpp"
 #include "inventory.hpp"
 
-constexpr auto INVENTORY_DB_PATH {"TEMP.dbINVENTORY
+constexpr auto INVENTORY_DB_PATH {"TEMP.db"};
+
 void InventoryImpTest::SetUp() {};
 
 void InventoryImpTest::TearDown()
@@ -87,18 +89,6 @@ TEST_F(InventoryImpTest, defaultCtor)
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":"431625","ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
 
-    CallbackMock wrapper;
-    std::function<void(const std::string&)> callbackData
-    {
-        [&wrapper](const std::string & data)
-        {
-            auto delta = nlohmann::json::parse(data);
-            delta["data"].erase("checksum");
-            delta["data"].erase("id");
-            wrapper.callbackMock(delta.dump());
-        }
-    };
-
     CallbackMock wrapperDelta;
     std::function<void(const std::string&)> callbackDataDelta
     {
@@ -152,47 +142,13 @@ TEST_F(InventoryImpTest, defaultCtor)
     {
         R"({"data":{"architecture":"amd64","checksum":"c084f78ed87ed19974b1fd90bbf727c2d1416f7d","format":"deb","group":"x11","item_id":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","location":" ","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14"},"operation":"INSERTED","type":"dbsync_packages"})"
     };
+
     const auto expectedResult10
-    {
-        R"({"component":"inventory_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult11
-    {
-        R"({"component":"inventory_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult12
-    {
-        R"({"component":"inventory_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult13
-    {
-        R"({"component":"inventory_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult14
-    {
-        R"({"component":"inventory_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult15
-    {
-        R"({"component":"inventory_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult16
-    {
-        R"({"component":"inventory_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult17
-    {
-        R"({"component":"inventory_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult18
     {
         R"({"data":{"checksum":"56162cd7bb632b4728ec868e8e271b01222ff131","hotfix":"KB12345678"},"operation":"INSERTED","type":"dbsync_hotfixes"})"
     };
-    const auto expectedResult19
-    {
-        R"({"component":"inventory_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult20
+
+    const auto expectedResult11
     {
         R"({"data":{"checksum":"ea17673e7422c0ab04c4f1f111a5828be8cd366a","dhcp":"unknown","gateway":"192.168.0.1|600","iface":"enp4s0","item_id":"9dff246584835755137820c975f034d089e90b6f","metric":" ","type":"ipv6"},"operation":"INSERTED","type":"dbsync_network_protocol"})"
     };
@@ -207,35 +163,25 @@ TEST_F(InventoryImpTest, defaultCtor)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult7)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult8)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult9)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult10)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult11)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult12)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult13)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult14)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult15)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult16)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult17)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult18)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult19)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult20)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult10)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
 
+    Configuration config;
+    Inventory::instance().setup(config);
     std::thread t
     {
-        [&spInfoWrapper, &callbackData, &callbackDataDelta]()
+        [&spInfoWrapper, &callbackDataDelta]()
         {
             Inventory::instance().init(spInfoWrapper,
-                                          callbackDataDelta,
-                                          callbackData,
-                                          logFunction,
-                                          INVENTORY_DB_PATH,
-                                          "",
-                                          "",
-                                          5, true, true, true, true, true, true, true, true, true, true);
+                                        callbackDataDelta,
+                                        INVENTORY_DB_PATH,
+                                        "",
+                                        "");
         }
     };
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Inventory::instance().destroy();
+    Inventory::instance().stop();
 
     if (t.joinable())
     {
@@ -263,7 +209,12 @@ TEST_F(InventoryImpTest, intervalSeconds)
     EXPECT_CALL(*spInfoWrapper, packages(_))
     .Times(::testing::AtLeast(2))
     .WillRepeatedly(::testing::InvokeArgument<0>
-                    (R"({"name":"TEXT", "scan_time":"2020/12/28 21:49:50", "version":"TEXT", "vendor":"TEXT", "install_time":"TEXT", "location":"TEXT", "architecture":"TEXT", "groups":"TEXT", "description":"TEXT", "size":"TEXT", "priority":"TEXT", "multiarch":"TEXT", "source":"TEXT", "os_patch":"TEXT"})"_json));
+                    (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
+
+    InventoryConfig invConfig;
+    invConfig.interval = 1;
+    Configuration config(invConfig);
+    Inventory::instance().setup(config);
 
     std::thread t
     {
@@ -271,18 +222,15 @@ TEST_F(InventoryImpTest, intervalSeconds)
         {
             Inventory::instance().init(spInfoWrapper,
                                           reportFunction,
-                                          reportFunction,
-                                          logFunction,
                                           INVENTORY_DB_PATH,
                                           "",
-                                          "",
-                                          1, true, true, true, true, true, true, true, true, true, true);
+                                          "");
 
         }
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{10});
-    Inventory::instance().destroy();
+    Inventory::instance().stop();
 
     if (t.joinable())
     {
@@ -301,23 +249,25 @@ TEST_F(InventoryImpTest, noScanOnStart)
     EXPECT_CALL(*spInfoWrapper, ports()).Times(0);
     EXPECT_CALL(*spInfoWrapper, hotfixes()).Times(0);
 
+    InventoryConfig invConfig;
+    invConfig.scanOnStart = false;
+    Configuration config(invConfig);
+    Inventory::instance().setup(config);
+
     std::thread t
     {
         [&spInfoWrapper]()
         {
             Inventory::instance().init(spInfoWrapper,
-                                          reportFunction,
-                                          reportFunction,
-                                          logFunction,
-                                          INVENTORY_DB_PATH,
-                                          "",
-                                          "",
-                                          3600, false);
+                                        reportFunction,
+                                        INVENTORY_DB_PATH,
+                                        "",
+                                        "");
         }
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Inventory::instance().destroy();
+    Inventory::instance().stop();
 
     if (t.joinable())
     {
@@ -346,18 +296,6 @@ TEST_F(InventoryImpTest, noHardware)
     .Times(testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":"431625","ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
-
-    CallbackMock wrapper;
-    std::function<void(const std::string&)> callbackData
-    {
-        [&wrapper](const std::string & data)
-        {
-            auto delta = nlohmann::json::parse(data);
-            delta["data"].erase("checksum");
-            delta["data"].erase("id");
-            wrapper.callbackMock(delta.dump());
-        }
-    };
 
     CallbackMock wrapperDelta;
     std::function<void(const std::string&)> callbackDataDelta
@@ -410,47 +348,11 @@ TEST_F(InventoryImpTest, noHardware)
     };
     const auto expectedResult10
     {
-        R"({"component":"inventory_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
+        R"({"data":{"checksum":"56162cd7bb632b4728ec868e8e271b01222ff131","hotfix":"KB12345678"},"operation":"INSERTED","type":"dbsync_hotfixes"})"
     };
     const auto expectedResult11
     {
-        R"({"component":"inventory_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult12
-    {
-        R"({"component":"inventory_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult13
-    {
-        R"({"component":"inventory_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult14
-    {
-        R"({"component":"inventory_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult15
-    {
-        R"({"component":"inventory_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult17
-    {
-        R"({"component":"inventory_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult18
-    {
-        R"({"data":{"checksum":"56162cd7bb632b4728ec868e8e271b01222ff131","hotfix":"KB12345678"},"operation":"INSERTED","type":"dbsync_hotfixes"})"
-    };
-    const auto expectedResult19
-    {
-        R"({"component":"inventory_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult20
-    {
         R"({"data":{"checksum":"ea17673e7422c0ab04c4f1f111a5828be8cd366a","dhcp":"unknown","gateway":"192.168.0.1|600","iface":"enp4s0","item_id":"9dff246584835755137820c975f034d089e90b6f","metric":" ","type":"ipv6"},"operation":"INSERTED","type":"dbsync_network_protocol"})"
-    };
-    const auto expectedResult21
-    {
-        R"({"component":"inventory_hwinfo","data":{},"type":"integrity_clear"})"
     };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -461,35 +363,28 @@ TEST_F(InventoryImpTest, noHardware)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult7)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult8)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult9)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult10)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult11)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult12)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult13)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult14)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult15)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult17)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult18)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult19)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult20)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult21)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult10)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
+
+    InventoryConfig invConfig;
+    invConfig.hardware = false;
+    Configuration config(invConfig);
+    Inventory::instance().setup(config);
 
     std::thread t
     {
-        [&spInfoWrapper, &callbackData, &callbackDataDelta]()
+        [&spInfoWrapper, &callbackDataDelta]()
         {
             Inventory::instance().init(spInfoWrapper,
-                                          callbackDataDelta,
-                                          callbackData,
-                                          logFunction,
-                                          INVENTORY_DB_PATH,
-                                          "",
-                                          "",
-                                          3600, true, false, true, true, true, true, true, true, true, true);
+                                        callbackDataDelta,
+                                        INVENTORY_DB_PATH,
+                                        "",
+                                        "");
         }
     };
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Inventory::instance().destroy();
+    Inventory::instance().stop();
 
     if (t.joinable())
     {
@@ -520,18 +415,6 @@ TEST_F(InventoryImpTest, noOs)
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":"431625","ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
 
-    CallbackMock wrapper;
-    std::function<void(const std::string&)> callbackData
-    {
-        [&wrapper](const std::string & data)
-        {
-            auto delta = nlohmann::json::parse(data);
-            delta["data"].erase("checksum");
-            delta["data"].erase("id");
-            wrapper.callbackMock(delta.dump());
-        }
-    };
-
     CallbackMock wrapperDelta;
     std::function<void(const std::string&)> callbackDataDelta
     {
@@ -581,49 +464,13 @@ TEST_F(InventoryImpTest, noOs)
     {
         R"({"data":{"architecture":"amd64","checksum":"c084f78ed87ed19974b1fd90bbf727c2d1416f7d","format":"deb","group":"x11","item_id":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","location":" ","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14"},"operation":"INSERTED","type":"dbsync_packages"})"
     };
-    const auto expectedResult11
-    {
-        R"({"component":"inventory_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult12
-    {
-        R"({"component":"inventory_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult13
-    {
-        R"({"component":"inventory_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult14
-    {
-        R"({"component":"inventory_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult15
-    {
-        R"({"component":"inventory_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult16
-    {
-        R"({"component":"inventory_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult17
-    {
-        R"({"component":"inventory_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult18
+    const auto expectedResult10
     {
         R"({"data":{"checksum":"56162cd7bb632b4728ec868e8e271b01222ff131","hotfix":"KB12345678"},"operation":"INSERTED","type":"dbsync_hotfixes"})"
     };
-    const auto expectedResult19
-    {
-        R"({"component":"inventory_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult20
+    const auto expectedResult11
     {
         R"({"data":{"checksum":"ea17673e7422c0ab04c4f1f111a5828be8cd366a","dhcp":"unknown","gateway":"192.168.0.1|600","iface":"enp4s0","item_id":"9dff246584835755137820c975f034d089e90b6f","metric":" ","type":"ipv6"},"operation":"INSERTED","type":"dbsync_network_protocol"})"
-    };
-    const auto expectedResult21
-    {
-        R"({"component":"inventory_osinfo","data":{},"type":"integrity_clear"})"
     };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
@@ -634,35 +481,28 @@ TEST_F(InventoryImpTest, noOs)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult7)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult8)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult9)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult11)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult12)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult13)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult14)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult15)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult16)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult17)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult18)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult19)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult20)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult21)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult10)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
+
+    InventoryConfig invConfig;
+    invConfig.os = false;
+    Configuration config(invConfig);
+    Inventory::instance().setup(config);
 
     std::thread t
     {
-        [&spInfoWrapper, &callbackData, &callbackDataDelta]()
+        [&spInfoWrapper, &callbackDataDelta]()
         {
             Inventory::instance().init(spInfoWrapper,
                                           callbackDataDelta,
-                                          callbackData,
-                                          logFunction,
                                           INVENTORY_DB_PATH,
                                           "",
-                                          "",
-                                          3600, true, true, false, true, true, true, true, true, true, true);
+                                          "");
         }
     };
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
-    Inventory::instance().destroy();
+    Inventory::instance().stop();
 
     if (t.joinable())
     {
@@ -692,18 +532,6 @@ TEST_F(InventoryImpTest, noNetwork)
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":"431625","ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
 
-    CallbackMock wrapper;
-    std::function<void(const std::string&)> callbackData
-    {
-        [&wrapper](const std::string & data)
-        {
-            auto delta = nlohmann::json::parse(data);
-            delta["data"].erase("checksum");
-            delta["data"].erase("id");
-            wrapper.callbackMock(delta.dump());
-        }
-    };
-
     CallbackMock wrapperDelta;
     std::function<void(const std::string&)> callbackDataDelta
     {
@@ -743,79 +571,35 @@ TEST_F(InventoryImpTest, noNetwork)
     };
     const auto expectedResult10
     {
-        R"({"component":"inventory_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult14
-    {
-        R"({"component":"inventory_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult15
-    {
-        R"({"component":"inventory_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult16
-    {
-        R"({"component":"inventory_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult17
-    {
-        R"({"component":"inventory_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult18
-    {
         R"({"data":{"checksum":"56162cd7bb632b4728ec868e8e271b01222ff131","hotfix":"KB12345678"},"operation":"INSERTED","type":"dbsync_hotfixes"})"
     };
-    const auto expectedResult19
-    {
-        R"({"component":"inventory_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult20
-    {
-        R"({"component":"inventory_network_address","data":{},"type":"integrity_clear"})"
-    };
-    const auto expectedResult21
-    {
-        R"({"component":"inventory_network_protocol","data":{},"type":"integrity_clear"})"
-    };
-    const auto expectedResult22
-    {
-        R"({"component":"inventory_network_iface","data":{},"type":"integrity_clear"})"
-    };
-
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult7)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult8)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult9)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult10)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult14)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult15)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult16)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult17)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult18)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult19)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult20)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult21)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult22)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult10)).Times(1);
+
+    InventoryConfig invConfig;
+    invConfig.network = false;
+    Configuration config(invConfig);
+    Inventory::instance().setup(config);
 
     std::thread t
     {
-        [&spInfoWrapper, &callbackData, &callbackDataDelta]()
+        [&spInfoWrapper, &callbackDataDelta]()
         {
             Inventory::instance().init(spInfoWrapper,
-                                          callbackDataDelta,
-                                          callbackData,
-                                          logFunction,
-                                          INVENTORY_DB_PATH,
-                                          "",
-                                          "",
-                                          3600, true, true, true, false, true, true, true, true, true, true);
+                                        callbackDataDelta,
+                                        INVENTORY_DB_PATH,
+                                        "",
+                                        "");
         }
     };
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Inventory::instance().destroy();
+    Inventory::instance().stop();
 
     if (t.joinable())
     {
@@ -842,18 +626,6 @@ TEST_F(InventoryImpTest, noPackages)
     .Times(testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":"431625","ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
-
-    CallbackMock wrapper;
-    std::function<void(const std::string&)> callbackData
-    {
-        [&wrapper](const std::string & data)
-        {
-            auto delta = nlohmann::json::parse(data);
-            delta["data"].erase("checksum");
-            delta["data"].erase("id");
-            wrapper.callbackMock(delta.dump());
-        }
-    };
 
     CallbackMock wrapperDelta;
     std::function<void(const std::string&)> callbackDataDelta
@@ -906,47 +678,11 @@ TEST_F(InventoryImpTest, noPackages)
     };
     const auto expectedResult10
     {
-        R"({"component":"inventory_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
+        R"({"data":{"checksum":"56162cd7bb632b4728ec868e8e271b01222ff131","hotfix":"KB12345678"},"operation":"INSERTED","type":"dbsync_hotfixes"})"
     };
     const auto expectedResult11
     {
-        R"({"component":"inventory_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult12
-    {
-        R"({"component":"inventory_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult13
-    {
-        R"({"component":"inventory_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult14
-    {
-        R"({"component":"inventory_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult15
-    {
-        R"({"component":"inventory_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult16
-    {
-        R"({"component":"inventory_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult18
-    {
-        R"({"data":{"checksum":"56162cd7bb632b4728ec868e8e271b01222ff131","hotfix":"KB12345678"},"operation":"INSERTED","type":"dbsync_hotfixes"})"
-    };
-    const auto expectedResult19
-    {
-        R"({"component":"inventory_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult20
-    {
         R"({"data":{"checksum":"ea17673e7422c0ab04c4f1f111a5828be8cd366a","dhcp":"unknown","gateway":"192.168.0.1|600","iface":"enp4s0","item_id":"9dff246584835755137820c975f034d089e90b6f","metric":" ","type":"ipv6"},"operation":"INSERTED","type":"dbsync_network_protocol"})"
-    };
-    const auto expectedResult21
-    {
-        R"({"component":"inventory_packages","data":{},"type":"integrity_clear"})"
     };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
@@ -957,35 +693,28 @@ TEST_F(InventoryImpTest, noPackages)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult6)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult7)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult8)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult10)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult11)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult12)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult13)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult14)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult15)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult16)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult18)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult19)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult20)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult21)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult10)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
+
+    InventoryConfig invConfig;
+    invConfig.packages = false;
+    Configuration config(invConfig);
+    Inventory::instance().setup(config);
 
     std::thread t
     {
-        [&spInfoWrapper, &callbackDataDelta, &callbackData]()
+        [&spInfoWrapper, &callbackDataDelta]()
         {
             Inventory::instance().init(spInfoWrapper,
                                           callbackDataDelta,
-                                          callbackData,
-                                          logFunction,
                                           INVENTORY_DB_PATH,
                                           "",
-                                          "",
-                                          3600, true, true, true, true, false, true, true, true, true, true);
+                                          "");
         }
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Inventory::instance().destroy();
+    Inventory::instance().stop();
 
     if (t.joinable())
     {
@@ -1015,18 +744,6 @@ TEST_F(InventoryImpTest, noPorts)
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":"431625","ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
 
-    CallbackMock wrapper;
-    std::function<void(const std::string&)> callbackData
-    {
-        [&wrapper](const std::string & data)
-        {
-            auto delta = nlohmann::json::parse(data);
-            delta["data"].erase("checksum");
-            delta["data"].erase("id");
-            wrapper.callbackMock(delta.dump());
-        }
-    };
-
     CallbackMock wrapperDelta;
     std::function<void(const std::string&)> callbackDataDelta
     {
@@ -1076,49 +793,13 @@ TEST_F(InventoryImpTest, noPorts)
     {
         R"({"data":{"architecture":"amd64","checksum":"c084f78ed87ed19974b1fd90bbf727c2d1416f7d","format":"deb","group":"x11","item_id":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","location":" ","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14"},"operation":"INSERTED","type":"dbsync_packages"})"
     };
-    const auto expectedResult10
-    {
-        R"({"component":"inventory_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult11
-    {
-        R"({"component":"inventory_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult12
-    {
-        R"({"component":"inventory_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult13
-    {
-        R"({"component":"inventory_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult15
-    {
-        R"({"component":"inventory_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult16
-    {
-        R"({"component":"inventory_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult17
-    {
-        R"({"component":"inventory_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
-    };
     const auto expectedResult18
     {
         R"({"data":{"checksum":"56162cd7bb632b4728ec868e8e271b01222ff131","hotfix":"KB12345678"},"operation":"INSERTED","type":"dbsync_hotfixes"})"
     };
-    const auto expectedResult19
-    {
-        R"({"component":"inventory_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
-    };
     const auto expectedResult20
     {
         R"({"data":{"checksum":"ea17673e7422c0ab04c4f1f111a5828be8cd366a","dhcp":"unknown","gateway":"192.168.0.1|600","iface":"enp4s0","item_id":"9dff246584835755137820c975f034d089e90b6f","metric":" ","type":"ipv6"},"operation":"INSERTED","type":"dbsync_network_protocol"})"
-    };
-    const auto expectedResult21
-    {
-        R"({"component":"inventory_ports","data":{},"type":"integrity_clear"})"
     };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
@@ -1129,35 +810,29 @@ TEST_F(InventoryImpTest, noPorts)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult6)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult8)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult9)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult10)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult11)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult12)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult13)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult15)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult16)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult17)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult18)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult19)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult20)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult21)).Times(1);
+
+    InventoryConfig invConfig;
+    invConfig.ports = false;
+    invConfig.interval = 5;
+    Configuration config(invConfig);
+    Inventory::instance().setup(config);
 
     std::thread t
     {
-        [&spInfoWrapper, &callbackData, &callbackDataDelta]()
+        [&spInfoWrapper, &callbackDataDelta]()
         {
             Inventory::instance().init(spInfoWrapper,
                                           callbackDataDelta,
-                                          callbackData,
-                                          logFunction,
                                           INVENTORY_DB_PATH,
                                           "",
-                                          "",
-                                          5, true, true, true, true, true, false, true, true, true, true);
+                                          "");
         }
     };
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Inventory::instance().destroy();
+    Inventory::instance().stop();
 
     if (t.joinable())
     {
@@ -1188,18 +863,6 @@ TEST_F(InventoryImpTest, noPortsAll)
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":"431625","ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
 
-    CallbackMock wrapper;
-    std::function<void(const std::string&)> callbackData
-    {
-        [&wrapper](const std::string & data)
-        {
-            auto delta = nlohmann::json::parse(data);
-            delta["data"].erase("checksum");
-            delta["data"].erase("id");
-            wrapper.callbackMock(delta.dump());
-        }
-    };
-
     CallbackMock wrapperDelta;
     std::function<void(const std::string&)> callbackDataDelta
     {
@@ -1255,49 +918,13 @@ TEST_F(InventoryImpTest, noPortsAll)
     };
     const auto expectedResult10
     {
-        R"({"component":"inventory_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
+        R"({"data":{"checksum":"56162cd7bb632b4728ec868e8e271b01222ff131","hotfix":"KB12345678"},"operation":"INSERTED","type":"dbsync_hotfixes"})"
     };
     const auto expectedResult11
     {
-        R"({"component":"inventory_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult12
-    {
-        R"({"component":"inventory_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult13
-    {
-        R"({"component":"inventory_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult14
-    {
-        R"({"component":"inventory_ports","data":{"begin":"7046b3f9cda975eb6567259c2469748e634dde49","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult15
-    {
-        R"({"component":"inventory_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult16
-    {
-        R"({"component":"inventory_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult17
-    {
-        R"({"component":"inventory_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult18
-    {
-        R"({"data":{"checksum":"56162cd7bb632b4728ec868e8e271b01222ff131","hotfix":"KB12345678"},"operation":"INSERTED","type":"dbsync_hotfixes"})"
-    };
-    const auto expectedResult19
-    {
-        R"({"component":"inventory_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult20
-    {
         R"({"data":{"checksum":"09d591fb0ed092c387f77b24af5bada43b5d519d","inode":0,"item_id":"7046b3f9cda975eb6567259c2469748e634dde49","local_ip":"127.0.0.1","local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"udp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":null,"tx_queue":0},"operation":"INSERTED","type":"dbsync_ports"})"
     };
-    const auto expectedResult21
+    const auto expectedResult12
     {
         R"({"data":{"checksum":"ea17673e7422c0ab04c4f1f111a5828be8cd366a","dhcp":"unknown","gateway":"192.168.0.1|600","iface":"enp4s0","item_id":"9dff246584835755137820c975f034d089e90b6f","metric":" ","type":"ipv6"},"operation":"INSERTED","type":"dbsync_network_protocol"})"
     };
@@ -1311,36 +938,29 @@ TEST_F(InventoryImpTest, noPortsAll)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult7)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult8)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult9)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult10)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult11)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult12)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult13)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult14)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult15)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult16)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult17)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult18)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult19)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult20)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult21)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult10)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult12)).Times(1);
+
+    InventoryConfig invConfig;
+    invConfig.portsAll = false;
+    Configuration config(invConfig);
+    Inventory::instance().setup(config);
 
     std::thread t
     {
-        [&spInfoWrapper, &callbackData, &callbackDataDelta]()
+        [&spInfoWrapper, &callbackDataDelta]()
         {
             Inventory::instance().init(spInfoWrapper,
                                           callbackDataDelta,
-                                          callbackData,
-                                          logFunction,
                                           INVENTORY_DB_PATH,
                                           "",
-                                          "",
-                                          3600, true, true, true, true, true, true, false, true, true, true);
+                                          "");
         }
     };
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Inventory::instance().destroy();
+    Inventory::instance().stop();
 
     if (t.joinable())
     {
@@ -1367,18 +987,6 @@ TEST_F(InventoryImpTest, noProcesses)
     EXPECT_CALL(*spInfoWrapper, hotfixes()).WillRepeatedly(Return(R"([{"hotfix":"KB12345678"}])"_json));
 
     EXPECT_CALL(*spInfoWrapper, processes(_)).Times(0);
-
-    CallbackMock wrapper;
-    std::function<void(const std::string&)> callbackData
-    {
-        [&wrapper](const std::string & data)
-        {
-            auto delta = nlohmann::json::parse(data);
-            delta["data"].erase("checksum");
-            delta["data"].erase("id");
-            wrapper.callbackMock(delta.dump());
-        }
-    };
 
     CallbackMock wrapperDelta;
     std::function<void(const std::string&)> callbackDataDelta
@@ -1431,49 +1039,12 @@ TEST_F(InventoryImpTest, noProcesses)
     };
     const auto expectedResult10
     {
-        R"({"component":"inventory_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
+        R"({"data":{"checksum":"56162cd7bb632b4728ec868e8e271b01222ff131","hotfix":"KB12345678"},"operation":"INSERTED","type":"dbsync_hotfixes"})"
     };
     const auto expectedResult11
     {
-        R"({"component":"inventory_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult12
-    {
-        R"({"component":"inventory_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult13
-    {
-        R"({"component":"inventory_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult14
-    {
-        R"({"component":"inventory_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult16
-    {
-        R"({"component":"inventory_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult17
-    {
-        R"({"component":"inventory_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult18
-    {
-        R"({"data":{"checksum":"56162cd7bb632b4728ec868e8e271b01222ff131","hotfix":"KB12345678"},"operation":"INSERTED","type":"dbsync_hotfixes"})"
-    };
-    const auto expectedResult19
-    {
-        R"({"component":"inventory_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult20
-    {
         R"({"data":{"checksum":"ea17673e7422c0ab04c4f1f111a5828be8cd366a","dhcp":"unknown","gateway":"192.168.0.1|600","iface":"enp4s0","item_id":"9dff246584835755137820c975f034d089e90b6f","metric":" ","type":"ipv6"},"operation":"INSERTED","type":"dbsync_network_protocol"})"
     };
-    const auto expectedResult21
-    {
-        R"({"component":"inventory_processes","data":{},"type":"integrity_clear"})"
-    };
-
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -1483,35 +1054,28 @@ TEST_F(InventoryImpTest, noProcesses)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult6)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult7)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult9)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult10)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult11)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult12)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult13)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult14)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult16)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult17)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult18)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult19)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult20)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult21)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult10)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
+
+    InventoryConfig invConfig;
+    invConfig.processes = false;
+    Configuration config(invConfig);
+    Inventory::instance().setup(config);
 
     std::thread t
     {
-        [&spInfoWrapper, &callbackData, &callbackDataDelta]()
+        [&spInfoWrapper, &callbackDataDelta]()
         {
             Inventory::instance().init(spInfoWrapper,
                                           callbackDataDelta,
-                                          callbackData,
-                                          logFunction,
                                           INVENTORY_DB_PATH,
                                           "",
-                                          "",
-                                          3600, true, true, true, true, true, true, true, false, true, true);
+                                          "");
         }
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Inventory::instance().destroy();
+    Inventory::instance().stop();
 
     if (t.joinable())
     {
@@ -1542,18 +1106,6 @@ TEST_F(InventoryImpTest, noHotfixes)
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":"431625","ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
 
-    CallbackMock wrapper;
-    std::function<void(const std::string&)> callbackData
-    {
-        [&wrapper](const std::string & data)
-        {
-            auto delta = nlohmann::json::parse(data);
-            delta["data"].erase("checksum");
-            delta["data"].erase("id");
-            wrapper.callbackMock(delta.dump());
-        }
-    };
-
     CallbackMock wrapperDelta;
     std::function<void(const std::string&)> callbackDataDelta
     {
@@ -1607,45 +1159,9 @@ TEST_F(InventoryImpTest, noHotfixes)
     {
         R"({"data":{"architecture":"amd64","checksum":"c084f78ed87ed19974b1fd90bbf727c2d1416f7d","format":"deb","group":"x11","item_id":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","location":" ","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14"},"operation":"INSERTED","type":"dbsync_packages"})"
     };
-    const auto expectedResult10
-    {
-        R"({"component":"inventory_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult11
-    {
-        R"({"component":"inventory_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult12
-    {
-        R"({"component":"inventory_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult13
-    {
-        R"({"component":"inventory_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult14
-    {
-        R"({"component":"inventory_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult15
-    {
-        R"({"component":"inventory_processes","data":{"begin":"431625","end":"431625"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult16
-    {
-        R"({"component":"inventory_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult17
-    {
-        R"({"component":"inventory_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
-    };
     const auto expectedResult18
     {
         R"({"data":{"checksum":"ea17673e7422c0ab04c4f1f111a5828be8cd366a","dhcp":"unknown","gateway":"192.168.0.1|600","iface":"enp4s0","item_id":"9dff246584835755137820c975f034d089e90b6f","metric":" ","type":"ipv6"},"operation":"INSERTED","type":"dbsync_network_protocol"})"
-    };
-    const auto expectedResult19
-    {
-        R"({"component":"inventory_hotfixes","data":{},"type":"integrity_clear"})"
     };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
@@ -1657,306 +1173,27 @@ TEST_F(InventoryImpTest, noHotfixes)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult7)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult8)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult9)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult10)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult11)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult12)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult13)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult14)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult15)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult16)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult17)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult18)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult19)).Times(1);
+
+    InventoryConfig invConfig;
+    invConfig.hotfixes = false;
+    Configuration config(invConfig);
+    Inventory::instance().setup(config);
 
     std::thread t
     {
-        [&spInfoWrapper, &callbackData, &callbackDataDelta]()
+        [&spInfoWrapper, &callbackDataDelta]()
         {
             Inventory::instance().init(spInfoWrapper,
                                           callbackDataDelta,
-                                          callbackData,
-                                          logFunction,
                                           INVENTORY_DB_PATH,
                                           "",
-                                          "",
-                                          3600, true, true, true, true, true, true, true, true, false, true);
+                                          "");
         }
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Inventory::instance().destroy();
-
-    if (t.joinable())
-    {
-        t.join();
-    }
-}
-
-TEST_F(InventoryImpTest, pushMessageOk)
-{
-    constexpr auto messageToPush{R"(inventory_network_iface dbsync checksum_fail {"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c","id":1606851004})"};
-    const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
-    EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
-                                                                      R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
-    EXPECT_CALL(*spInfoWrapper, networks()).WillRepeatedly(Return(nlohmann::json::parse(
-                                                                      R"({"iface":[{"address":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "mac":"d4:5d:64:51:07:5d", "gateway":"192.168.0.1|600","broadcast":"127.255.255.255", "name":"ens1", "mtu":1500, "name":"enp4s0", "adapter":" ", "type":"ethernet", "state":"up", "dhcp":"disabled","iface":"Loopback Pseudo-Interface 1","metric":"75","netmask":"255.0.0.0","proto":"IPv4","rx_bytes":0,"rx_dropped":0,"rx_errors":0,"rx_packets":0,"tx_bytes":0,"tx_dropped":0,"tx_errors":0,"tx_packets":0, "IPv4":[{"address":"192.168.153.1","broadcast":"192.168.153.255","dhcp":"unknown","metric":" ","netmask":"255.255.255.0"}], "IPv6":[{"address":"fe80::250:56ff:fec0:8","dhcp":"unknown","metric":" ","netmask":"ffff:ffff:ffff:ffff::"}]}]})")));
-    EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
-                                                                R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})")));
-    EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
-                                                                   R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
-    EXPECT_CALL(*spInfoWrapper, hotfixes()).WillRepeatedly(Return(R"([{"hotfix":"KB12345678"}])"_json));
-    EXPECT_CALL(*spInfoWrapper, packages(_))
-    .Times(::testing::AtLeast(1))
-    .WillOnce(::testing::InvokeArgument<0>
-              (R"({"name":"TEXT", "scan_time":"2020/12/28 21:49:50", "version":"TEXT", "vendor":"TEXT", "install_time":"TEXT", "location":"TEXT", "architecture":"TEXT", "groups":"TEXT", "description":"TEXT", "size":"TEXT", "priority":"TEXT", "multiarch":"TEXT", "source":"TEXT", "os_patch":"TEXT"})"_json));
-    EXPECT_CALL(*spInfoWrapper, processes(_))
-    .Times(testing::AtLeast(1))
-    .WillOnce(::testing::InvokeArgument<0>
-              (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":431625,"ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
-
-    std::thread t
-    {
-        [&spInfoWrapper]()
-        {
-            Inventory::instance().init(spInfoWrapper,
-                                          reportFunction,
-                                          reportFunction,
-                                          logFunction,
-                                          INVENTORY_DB_PATH,
-                                          "",
-                                          "",
-                                          60, true, true, true, true, true, true, true, true, true, true);
-        }
-    };
-    std::this_thread::sleep_for(std::chrono::seconds{1});
-    Inventory::instance().push(messageToPush);
-    std::this_thread::sleep_for(std::chrono::seconds{1});
-    Inventory::instance().destroy();
-
-    if (t.joinable())
-    {
-        t.join();
-    }
-}
-
-TEST_F(InventoryImpTest, pushMessageOk1)
-{
-    constexpr auto messageToPush{R"(inventory_processes dbsync checksum_fail {"begin":"1","end":"99","id":1})"};
-    const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
-    EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
-                                                                      R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
-    EXPECT_CALL(*spInfoWrapper, networks()).WillRepeatedly(Return(nlohmann::json::parse(
-                                                                      R"({"iface":[{"address":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "mac":"d4:5d:64:51:07:5d", "gateway":"192.168.0.1|600","broadcast":"127.255.255.255", "name":"ens1", "mtu":1500, "name":"enp4s0", "adapter":" ", "type":"ethernet", "state":"up", "dhcp":"disabled","iface":"Loopback Pseudo-Interface 1","metric":"75","netmask":"255.0.0.0","proto":"IPv4","rx_bytes":0,"rx_dropped":0,"rx_errors":0,"rx_packets":0,"tx_bytes":0,"tx_dropped":0,"tx_errors":0,"tx_packets":0, "IPv4":[{"address":"192.168.153.1","broadcast":"192.168.153.255","dhcp":"unknown","metric":" ","netmask":"255.255.255.0"}], "IPv6":[{"address":"fe80::250:56ff:fec0:8","dhcp":"unknown","metric":" ","netmask":"ffff:ffff:ffff:ffff::"}]}]})")));
-    EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
-                                                                R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})")));
-    EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
-                                                                   R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
-    EXPECT_CALL(*spInfoWrapper, hotfixes()).WillRepeatedly(Return(R"([{"hotfix":"KB12345678"}])"_json));
-    EXPECT_CALL(*spInfoWrapper, packages(_))
-    .Times(::testing::AtLeast(1))
-    .WillOnce(::testing::InvokeArgument<0>
-              (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":"411","source":"xorg","version":"1:7.7+19ubuntu14", "os_patch":"","format":"deb","location":" "})"_json));
-    EXPECT_CALL(*spInfoWrapper, processes(_))
-    .Times(testing::AtLeast(1))
-    .WillOnce(::testing::InvokeArgument<0>
-              (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":"45","ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
-
-    CallbackMock wrapper;
-    std::function<void(const std::string&)> callbackData
-    {
-        [&wrapper](const std::string & data)
-        {
-            auto delta = nlohmann::json::parse(data);
-            delta["data"].erase("checksum");
-            delta["data"].erase("id");
-            wrapper.callbackMock(delta.dump());
-        }
-    };
-
-    CallbackMock wrapperDelta;
-    std::function<void(const std::string&)> callbackDataDelta
-    {
-        [&wrapperDelta](const std::string & data)
-        {
-            auto delta = nlohmann::json::parse(data);
-
-            if (delta["type"].get_ref<const std::string&>().compare("dbsync_osinfo") == 0)
-            {
-                delta["data"].erase("checksum");
-            }
-
-            delta["data"].erase("scan_time");
-            wrapperDelta.callbackMock(delta.dump());
-        }
-    };
-
-    const auto expectedResult1
-    {
-        R"({"component":"inventory_hwinfo","data":{"begin":"Intel Corporation","end":"Intel Corporation"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult2
-    {
-        R"({"component":"inventory_osinfo","data":{"begin":"Microsoft Windows 7","end":"Microsoft Windows 7"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult3
-    {
-        R"({"component":"inventory_network_iface","data":{"begin":"25eef9a0a422a9b644fb6b73650453148bc6151c","end":"25eef9a0a422a9b644fb6b73650453148bc6151c"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult4
-    {
-        R"({"component":"inventory_network_protocol","data":{"begin":"9dff246584835755137820c975f034d089e90b6f","end":"d633b040008ea38303d778431ee2fd0b4ee5a37a"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult5
-    {
-        R"({"component":"inventory_packages","data":{"begin":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","end":"4846c220a185b0fc251a07843efbfbb0d90ac4a5"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult6
-    {
-        R"({"component":"inventory_hotfixes","data":{"begin":"KB12345678","end":"KB12345678"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult7
-    {
-        R"({"component":"inventory_ports","data":{"begin":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","end":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult8
-    {
-        R"({"component":"inventory_processes","data":{"begin":"45","end":"45"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult10
-    {
-        R"({"component":"inventory_network_address","data":{"begin":"3d48ddc47fac84c62a19746af66fbfcf78547de9","end":"65973316a5dc8615a6d20b2d6c4ce52ecd074496"},"type":"integrity_check_global"})"
-    };
-    const auto expectedResult11
-    {
-        R"({"data":{"board_serial":"Intel Corporation","checksum":"af7b22eef8f5e06c04af4db49c9f8d1d28963918","cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","ram_free":2257872,"ram_total":4972208,"ram_usage":54},"operation":"INSERTED","type":"dbsync_hwinfo"})"
-    };
-    const auto expectedResult12
-    {
-        R"({"data":{"architecture":"x86_64","hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"},"operation":"INSERTED","type":"dbsync_osinfo"})"
-    };
-    const auto expectedResult13
-    {
-        R"({"data":{"adapter":" ","checksum":"165f7160ecd2838479ee4c43c1012b723736d90a","item_id":"25eef9a0a422a9b644fb6b73650453148bc6151c","mac":"d4:5d:64:51:07:5d","mtu":1500,"name":"enp4s0","rx_bytes":0,"rx_dropped":0,"rx_errors":0,"rx_packets":0,"state":"up","tx_bytes":0,"tx_dropped":0,"tx_errors":0,"tx_packets":0,"type":"ethernet"},"operation":"INSERTED","type":"dbsync_network_iface"})"
-    };
-    const auto expectedResult14
-    {
-        R"({"data":{"checksum":"ff63981c231f110a0877ac6acd8862ac09877b5d","dhcp":"unknown","gateway":"192.168.0.1|600","iface":"enp4s0","item_id":"d633b040008ea38303d778431ee2fd0b4ee5a37a","metric":" ","type":"ipv4"},"operation":"INSERTED","type":"dbsync_network_protocol"})"
-    };
-    const auto expectedResult15
-    {
-        R"({"data":{"address":"192.168.153.1","broadcast":"192.168.153.255","checksum":"72dfd66759bd8062cdc17607d760a48c906189b3","iface":"enp4s0","item_id":"3d48ddc47fac84c62a19746af66fbfcf78547de9","netmask":"255.255.255.0","proto":0},"operation":"INSERTED","type":"dbsync_network_address"})"
-    };
-    const auto expectedResult16
-    {
-        R"({"data":{"address":"fe80::250:56ff:fec0:8","checksum":"f606d1a1c551874d8fab33e4e5cfaa0370673ec8","iface":"enp4s0","item_id":"65973316a5dc8615a6d20b2d6c4ce52ecd074496","netmask":"ffff:ffff:ffff:ffff::","proto":1},"operation":"INSERTED","type":"dbsync_network_address"})"
-    };
-    const auto expectedResult17
-    {
-        R"({"data":{"architecture":"amd64","checksum":"c1a125f40a70bab20a252f42ea4ec0dcf90733e8","format":"deb","group":"x11","item_id":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","location":" ","name":"xserver-xorg","os_patch":null,"priority":"optional","size":"411","source":"xorg","version":"1:7.7+19ubuntu14"},"operation":"INSERTED","type":"dbsync_packages"})"
-    };
-    const auto expectedResult18
-    {
-        R"({"data":{"checksum":"56162cd7bb632b4728ec868e8e271b01222ff131","hotfix":"KB12345678"},"operation":"INSERTED","type":"dbsync_hotfixes"})"
-    };
-    const auto expectedResult19
-    {
-        R"({"data":{"checksum":"f25348b1ce5310f36c1ed859d13138fbb4e6bacb","inode":0,"item_id":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba","local_ip":"127.0.0.1","local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0},"operation":"INSERTED","type":"dbsync_ports"})"
-    };
-    const auto expectedResult20
-    {
-        R"({"data":{"checksum":"af3801fac517cf9ae30f746092ce3e4058574454","egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","nice":0,"nlwp":1,"pgrp":0,"pid":"45","ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0},"operation":"INSERTED","type":"dbsync_processes"})"
-    };
-    const auto expectedResult21
-    {
-        R"({"data":{"checksum":"ea17673e7422c0ab04c4f1f111a5828be8cd366a","dhcp":"unknown","gateway":"192.168.0.1|600","iface":"enp4s0","item_id":"9dff246584835755137820c975f034d089e90b6f","metric":" ","type":"ipv6"},"operation":"INSERTED","type":"dbsync_network_protocol"})"
-    };
-
-    EXPECT_CALL(wrapper, callbackMock(expectedResult1)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult2)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult3)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult4)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult5)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult6)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult7)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult8)).Times(1);
-    EXPECT_CALL(wrapper, callbackMock(expectedResult10)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult12)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult13)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult14)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult15)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult16)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult17)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult18)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult19)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult20)).Times(1);
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult21)).Times(1);
-
-    std::thread t
-    {
-        [&callbackData, &callbackDataDelta, &spInfoWrapper]()
-        {
-            Inventory::instance().init(spInfoWrapper,
-                                          callbackDataDelta,
-                                          callbackData,
-                                          logFunction,
-                                          INVENTORY_DB_PATH,
-                                          "",
-                                          "",
-                                          60, true, true, true, true, true, true, true, true, true, true);
-        }
-    };
-    std::this_thread::sleep_for(std::chrono::seconds{1});
-    Inventory::instance().push(messageToPush);
-    std::this_thread::sleep_for(std::chrono::seconds{1});
-    Inventory::instance().destroy();
-
-    if (t.joinable())
-    {
-        t.join();
-    }
-}
-
-TEST_F(InventoryImpTest, pushMessageInvalid)
-{
-    constexpr auto messageToPush{R"(inventory_network_iface dbsync checksum_fail {"end":"Loopback Pseudo-Interface 1","id":1606851004})"};
-    const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
-    EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
-                                                                      R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
-    EXPECT_CALL(*spInfoWrapper, networks()).WillRepeatedly(Return(nlohmann::json::parse(
-                                                                      R"({"iface":[{"address":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "mac":"d4:5d:64:51:07:5d", "gateway":"192.168.0.1|600","broadcast":"127.255.255.255", "name":"ens1", "mtu":1500, "name":"enp4s0", "adapter":" ", "type":"ethernet", "state":"up", "dhcp":"disabled","iface":"Loopback Pseudo-Interface 1","metric":"75","netmask":"255.0.0.0","proto":"IPv4","rx_bytes":0,"rx_dropped":0,"rx_errors":0,"rx_packets":0,"tx_bytes":0,"tx_dropped":0,"tx_errors":0,"tx_packets":0, "IPv4":[{"address":"192.168.153.1","broadcast":"192.168.153.255","dhcp":"unknown","metric":" ","netmask":"255.255.255.0"}], "IPv6":[{"address":"fe80::250:56ff:fec0:8","dhcp":"unknown","metric":" ","netmask":"ffff:ffff:ffff:ffff::"}]}]})")));
-    EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
-                                                                R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})")));
-    EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
-                                                                   R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
-    EXPECT_CALL(*spInfoWrapper, hotfixes()).WillRepeatedly(Return(R"([{"hotfix":"KB12345678"},{"hotfix":"KB87654321"}])"_json));
-    EXPECT_CALL(*spInfoWrapper, packages(_))
-    .Times(::testing::AtLeast(1))
-    .WillOnce(::testing::InvokeArgument<0>
-              (R"({"name":"TEXT", "scan_time":"2020/12/28 21:49:50", "version":"TEXT", "vendor":"TEXT", "install_time":"TEXT", "location":"TEXT", "architecture":"TEXT", "groups":"TEXT", "description":"TEXT", "size":"TEXT", "priority":"TEXT", "multiarch":"TEXT", "source":"TEXT", "os_patch":"TEXT"})"_json));
-    EXPECT_CALL(*spInfoWrapper, processes(_))
-    .Times(testing::AtLeast(1))
-    .WillOnce(::testing::InvokeArgument<0>
-              (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":431625,"ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
-
-    std::thread t
-    {
-        [&spInfoWrapper]()
-        {
-            Inventory::instance().init(spInfoWrapper,
-                                          reportFunction,
-                                          reportFunction,
-                                          logFunction,
-                                          INVENTORY_DB_PATH,
-                                          "",
-                                          "",
-                                          60, true, true, true, true, true, true, true, true, true, true);
-        }
-    };
-    std::this_thread::sleep_for(std::chrono::seconds{1});
-    Inventory::instance().push(messageToPush);
-    std::this_thread::sleep_for(std::chrono::seconds{1});
-    Inventory::instance().destroy();
+    Inventory::instance().stop();
 
     if (t.joinable())
     {
@@ -1966,7 +1203,6 @@ TEST_F(InventoryImpTest, pushMessageInvalid)
 
 TEST_F(InventoryImpTest, scanInvalidData)
 {
-    constexpr auto messageToPush{R"(inventory_network_iface dbsync checksum_fail {"end":"Loopback Pseudo-Interface 1","id":1606851004})"};
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
                                                                       R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
@@ -1986,31 +1222,30 @@ TEST_F(InventoryImpTest, scanInvalidData)
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":431625,"ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
 
+    InventoryConfig invConfig;
+    invConfig.interval = 60;
+    Configuration config(invConfig);
+    Inventory::instance().setup(config);
+
     std::thread t
     {
         [&spInfoWrapper]()
         {
             Inventory::instance().init(spInfoWrapper,
                                           reportFunction,
-                                          reportFunction,
-                                          logFunction,
                                           INVENTORY_DB_PATH,
                                           "",
-                                          "",
-                                          60, true, true, true, true, true, true, true, true, true, true);
+                                          "");
         }
     };
     std::this_thread::sleep_for(std::chrono::seconds{1});
-    Inventory::instance().push(messageToPush);
-    std::this_thread::sleep_for(std::chrono::seconds{1});
-    Inventory::instance().destroy();
+    Inventory::instance().stop();
 
     if (t.joinable())
     {
         t.join();
     }
 }
-
 
 TEST_F(InventoryImpTest, portAllEnable)
 {
@@ -2120,23 +1355,30 @@ TEST_F(InventoryImpTest, portAllEnable)
     EXPECT_CALL(wrapper, callbackMock(expectedResult3)).Times(1);
     EXPECT_CALL(wrapper, callbackMock(expectedResult4)).Times(1);
 
+    InventoryConfig invConfig;
+    invConfig.hardware = false;
+    invConfig.os = false;
+    invConfig.network = false;
+    invConfig.packages = false;
+    invConfig.processes = false;
+    invConfig.hotfixes = false;
+    Configuration config(invConfig);
+    Inventory::instance().setup(config);
+
     std::thread t
     {
         [&spInfoWrapper, &callbackData]()
         {
             Inventory::instance().init(spInfoWrapper,
                                           callbackData,
-                                          reportFunction,
-                                          logFunction,
                                           INVENTORY_DB_PATH,
                                           "",
-                                          "",
-                                          3600, true, false, false, false, false, true, true, false, false, true);
+                                          "");
         }
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Inventory::instance().destroy();
+    Inventory::instance().stop();
 
     if (t.joinable())
     {
@@ -2246,30 +1488,37 @@ TEST_F(InventoryImpTest, portAllDisable)
     EXPECT_CALL(wrapper, callbackMock(expectedResult2)).Times(1);
     EXPECT_CALL(wrapper, callbackMock(expectedResult3)).Times(1);
 
+    InventoryConfig invConfig;
+    invConfig.hardware = false;
+    invConfig.os = false;
+    invConfig.network = false;
+    invConfig.packages = false;
+    invConfig.portsAll = false;
+    invConfig.processes = false;
+    invConfig.hotfixes = false;
+    Configuration config(invConfig);
+    Inventory::instance().setup(config);
+
     std::thread t
     {
         [&spInfoWrapper, &callbackData]()
         {
             Inventory::instance().init(spInfoWrapper,
                                           callbackData,
-                                          reportFunction,
-                                          logFunction,
                                           INVENTORY_DB_PATH,
                                           "",
-                                          "",
-                                          3600, true, false, false, false, false, true, false, false, false, true);
+                                          "");
         }
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Inventory::instance().destroy();
+    Inventory::instance().stop();
 
     if (t.joinable())
     {
         t.join();
     }
 }
-
 
 TEST_F(InventoryImpTest, PackagesDuplicated)
 {
@@ -2303,23 +1552,32 @@ TEST_F(InventoryImpTest, PackagesDuplicated)
     };
 
     EXPECT_CALL(wrapper, callbackMock(expectedResult1)).Times(1);
+
+    InventoryConfig invConfig;
+    invConfig.hardware = false;
+    invConfig.os = false;
+    invConfig.network = false;
+    invConfig.ports = false;
+    invConfig.portsAll = false;
+    invConfig.processes = false;
+    invConfig.hotfixes = false;
+    Configuration config(invConfig);
+    Inventory::instance().setup(config);
+
     std::thread t
     {
         [&spInfoWrapper, &callbackData]()
         {
             Inventory::instance().init(spInfoWrapper,
                                           callbackData,
-                                          reportFunction,
-                                          logFunction,
                                           INVENTORY_DB_PATH,
                                           "",
-                                          "",
-                                          3600, true, false, false, false, true, false, false, false, false, true);
+                                          "");
         }
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Inventory::instance().destroy();
+    Inventory::instance().stop();
 
     if (t.joinable())
     {
@@ -2327,72 +1585,8 @@ TEST_F(InventoryImpTest, PackagesDuplicated)
     }
 }
 
-TEST_F (InventoryImpTest, SyncOverlap)
+int main(int argc, char** argv)
 {
-    constexpr auto firstMessageToPush{R"(inventory_packages no_data {"begin":"0005a2bdc731445bbe68d6706e452937bdbc9e2f","end":"fff931b8ce752c06e9b219189281b7eae4285d44","id":1713982194})"};
-    constexpr auto secondMessageToPush{R"(inventory_packages checksum_fail {"begin":"0005a2bdc731445bbe68d6706e452937bdbc9e2f","end":"fff931b8ce752c06e9b219189281b7eae4285d44","id":1713982197})"};
-    const time_t intervalValue = 3;
-
-    const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
-    EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
-                                                                      R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
-    EXPECT_CALL(*spInfoWrapper, networks()).WillRepeatedly(Return(nlohmann::json::parse(
-                                                                      R"({"iface":[{"address":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "mac":"d4:5d:64:51:07:5d", "gateway":"192.168.0.1|600","broadcast":"127.255.255.255", "name":"ens1", "mtu":1500, "name":"enp4s0", "adapter":" ", "type":"ethernet", "state":"up", "dhcp":"disabled","iface":"Loopback Pseudo-Interface 1","metric":"75","netmask":"255.0.0.0","proto":"IPv4","rx_bytes":0,"rx_dropped":0,"rx_errors":0,"rx_packets":0,"tx_bytes":0,"tx_dropped":0,"tx_errors":0,"tx_packets":0, "IPv4":[{"address":"192.168.153.1","broadcast":"192.168.153.255","dhcp":"unknown","metric":" ","netmask":"255.255.255.0"}], "IPv6":[{"address":"fe80::250:56ff:fec0:8","dhcp":"unknown","metric":" ","netmask":"ffff:ffff:ffff:ffff::"}]}]})")));
-    EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
-                                                                R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})")));
-    EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
-                                                                   R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
-    EXPECT_CALL(*spInfoWrapper, hotfixes()).WillRepeatedly(Return(R"([{"hotfix":"KB12345678"}])"_json));
-    EXPECT_CALL(*spInfoWrapper, packages(_))
-    .Times(::testing::AtLeast(2))
-    .WillOnce(::testing::InvokeArgument<0>
-              (R"({"name":"TEXT", "scan_time":"2020/12/28 21:49:50", "version":"TEXT", "vendor":"TEXT", "install_time":"TEXT", "location":"TEXT", "architecture":"TEXT", "groups":"TEXT", "description":"TEXT", "size":"TEXT", "priority":"TEXT", "multiarch":"TEXT", "source":"TEXT", "os_patch":"TEXT"})"_json))
-    .WillOnce(::testing::InvokeArgument<0>
-              (R"({"name":"TEXT", "scan_time":"2020/12/28 21:49:50", "version":"TEXT", "vendor":"TEXT", "install_time":"TEXT", "location":"TEXT", "architecture":"TEXT", "groups":"TEXT", "description":"TEXT", "size":"TEXT", "priority":"TEXT", "multiarch":"TEXT", "source":"TEXT", "os_patch":"TEXT"})"_json));
-
-    EXPECT_CALL(*spInfoWrapper, processes(_))
-    .Times(testing::AtLeast(2))
-    .WillOnce(::testing::InvokeArgument<0>
-              (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":431625,"ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json))
-    .WillOnce(::testing::InvokeArgument<0>
-              (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":431625,"ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
-
-    const auto captureLog
-    {
-        [](const modules_log_level_t /*level*/, const std::string & log)
-        {
-            std::string expectedStr {"Inventory synchronization process concluded recently, delaying scan for 1 second/s"};
-
-            if (log.find("Discarded") != std::string::npos)
-            {
-                EXPECT_STREQ(log.c_str(), expectedStr.c_str());
-            }
-        }
-    };
-
-    std::thread t
-    {
-        [&spInfoWrapper, &captureLog, &intervalValue]()
-        {
-            Inventory::instance().init(spInfoWrapper,
-                                          reportFunction,
-                                          reportFunction,
-                                          captureLog,
-                                          INVENTORY_DB_PATH,
-                                          "",
-                                          "",
-                                          intervalValue, true, true, true, true, true, true, true, true, true, true);
-        }
-    };
-    std::this_thread::sleep_for(std::chrono::seconds{1});
-    Inventory::instance().push(firstMessageToPush);
-    std::this_thread::sleep_for(std::chrono::seconds{intervalValue});
-    Inventory::instance().push(secondMessageToPush);
-    std::this_thread::sleep_for(std::chrono::seconds{1});
-    Inventory::instance().destroy();
-
-    if (t.joinable())
-    {
-        t.join();
-    }
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
