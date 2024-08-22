@@ -1,5 +1,4 @@
-#ifndef CONFIGURATION_H
-#define CONFIGURATION_H
+#pragma once
 
 #include "stringHelper.h"
 
@@ -34,5 +33,3 @@ class Configuration {
     private:
         InventoryConfig inventoryConfig;
 };
-
-#endif // CONFIGURATION_H

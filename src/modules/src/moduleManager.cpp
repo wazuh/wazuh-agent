@@ -1,16 +1,13 @@
 #include <iostream>
-#include "inventory.hpp"
-#include "pool.hpp"
+#include "inventory.h"
+#include "moduleManager.h"
 
-Pool::Pool() {
-    // addModule(make_shared<LogCollector>());
-    // addModule(make_shared<FIM>());
+ModuleManager::ModuleManager() {
     addModule(Inventory::instance());
-    // addModule(make_shared<SCA>());
 }
 
 template <typename T>
-void Pool::addModule(T& module) {
+void ModuleManager::addModule(T& module) {
     auto wrapper = make_shared<ModuleWrapper>(ModuleWrapper{
         .start = [&module]() { module.start(); },
         .setup = [&module](const Configuration & config) { return module.setup(config); },
@@ -22,23 +19,23 @@ void Pool::addModule(T& module) {
     modules[module.name()] = wrapper;
 }
 
-shared_ptr<ModuleWrapper> Pool::getModule(const string & name) {
+shared_ptr<ModuleWrapper> ModuleManager::getModule(const string & name) {
     return modules.at(name);
 }
 
-void Pool::start() {
+void ModuleManager::start() {
     for (const auto &[_, module] : modules) {
         threads.emplace_back([module]() { module->start(); });
     }
 }
 
-void Pool::setup(const Configuration & config) {
+void ModuleManager::setup(const Configuration & config) {
     for (const auto &[_, module] : modules) {
         module->setup(config);
     }
 }
 
-void Pool::stop() {
+void ModuleManager::stop() {
     for (const auto &[_, module] : modules) {
         module->stop();
     }
