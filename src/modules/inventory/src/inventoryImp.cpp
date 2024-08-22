@@ -967,8 +967,7 @@ void Inventory::notifyChange(ReturnTypeCallback result, const nlohmann::json& da
                 msg["data"]["scan_time"] = m_scanTime;
                 removeKeysWithEmptyValue(msg["data"]);
                 const auto msgToSend{msg.dump()};
-                send_diff_message(msgToSend);
-                log(LOG_INFO, "Delta sent: " + msgToSend);
+                m_reportDiffFunction(msgToSend);
             }
         }
         else
@@ -981,8 +980,7 @@ void Inventory::notifyChange(ReturnTypeCallback result, const nlohmann::json& da
             msg["data"]["scan_time"] = m_scanTime;
             removeKeysWithEmptyValue(msg["data"]);
             const auto msgToSend{msg.dump()};
-            send_diff_message(msgToSend);
-            log(LOG_INFO, "Delta sent: " + msgToSend);
+            m_reportDiffFunction(msgToSend);
             // LCOV_EXCL_STOP
         }
     }
@@ -1045,11 +1043,13 @@ std::string Inventory::getCreateStatement() const
 }
 
 void Inventory::init(const std::shared_ptr<ISysInfo>& spInfo,
+                        const std::function<void(const std::string&)> reportDiffFunction,
                         const std::string& dbPath,
                         const std::string& normalizerConfigPath,
                         const std::string& normalizerType)
 {
     m_spInfo = spInfo;
+    m_reportDiffFunction = reportDiffFunction;
 
     std::unique_lock<std::mutex> lock{m_mutex};
     m_stopping = false;
@@ -1444,21 +1444,6 @@ void Inventory::scan()
     log(LOG_INFO, "Evaluation finished.");
 }
 
-void Inventory::syncAlgorithm()
-{
-    m_currentIntervalValue = m_intervalValue / 2 >= MAX_DELAY_TIME ? MAX_DELAY_TIME : m_intervalValue / 2;
-
-    if (Utils::secondsSinceEpoch() > m_currentIntervalValue)
-    {
-        scan();
-        m_currentIntervalValue = m_intervalValue;
-    }
-    else
-    {
-        log(LOG_DEBUG_VERBOSE, "Inventory synchronization process concluded recently, delaying scan for " + std::to_string(m_currentIntervalValue.count()) + " second/s");
-    }
-}
-
 void Inventory::syncLoop(std::unique_lock<std::mutex>& lock)
 {
     log(LOG_INFO, "Module started.");
@@ -1468,12 +1453,12 @@ void Inventory::syncLoop(std::unique_lock<std::mutex>& lock)
         scan();
     }
 
-    while (!m_cv.wait_for(lock, std::chrono::seconds{m_currentIntervalValue}, [&]()
+    while (!m_cv.wait_for(lock, std::chrono::seconds{m_intervalValue}, [&]()
 {
     return m_stopping;
 }))
     {
-        syncAlgorithm();
+        scan();
     }
     m_spDBSync.reset(nullptr);
 }

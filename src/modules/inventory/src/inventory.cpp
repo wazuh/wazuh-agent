@@ -29,7 +29,7 @@ const int DBSYNC_MQ    = '5';
 
 #define INV_LOGTAG "modules:inventory" // Tag for log messages
 
-void *Inventory::start() {
+void Inventory::start() {
 
     if (!m_enabled) {
         log(LOG_INFO, "Module disabled. Exiting...");
@@ -38,13 +38,24 @@ void *Inventory::start() {
 
     log(LOG_INFO, "Starting inventory.");
 
-    log_config();
+    showConfig();
 
-    run();
+    DBSync::initialize(logError);
+
+    try
+    {
+        Inventory::instance().init(std::make_shared<SysInfo>(),
+                                    [this](const std::string& diff) { this->sendDeltaEvent(diff); },
+                                    INVENTORY_DB_DISK_PATH,
+                                    INVENTORY_NORM_CONFIG_DISK_PATH,
+                                    INVENTORY_NORM_TYPE);
+    }
+    catch (const std::exception& ex)
+    {
+        logError(ex.what());
+    }
 
     log(LOG_INFO, "Module finished.");
-
-    return NULL;
 
 }
 
@@ -70,12 +81,12 @@ int Inventory::setup(const Configuration & config) {
 }
 
 void Inventory::stop() {
-    cout << "- [Inventory] stopped" << endl;
+    log(LOG_INFO, "Module stopped.");
     Inventory::instance().destroy();
 }
 
 string Inventory::command(const string & query) {
-    cout << "  [Inventory] query: " << query << endl;
+    log(LOG_INFO, "Query: " + query);
     return "OK";
 }
 
@@ -83,93 +94,46 @@ string Inventory::name() const {
     return "Inventory";
 }
 
-void Inventory::send_diff_message(const string& data) {
-    send_message(data, INVENTORY_MQ);
+void Inventory::sendDeltaEvent(const string& data) {
+    log(LOG_INFO, "Delta sent: " + data);
 }
 
-void Inventory::send_dbsync_message(const string& data) {
-    send_message(data, DBSYNC_MQ);
-}
-
-void Inventory::send_message(string data, const char queue_id) {
-    /*if (!is_shutdown_process_started()) {
-        const int eps = 1000000/sync_max_eps;
-        if (wm_sendmsg_ex(eps, queue_fd, data, WM_INV_LOCATION, queue_id, &is_shutdown_process_started) < 0) {
-
-            mterror(WM_INV_LOGTAG, "Unable to send message to '%s' (wazuh-agentd might be down). Attempting to reconnect.", DEFAULTQUEUE);
-
-            // Since this method is beign called by multiple threads it's necessary this particular portion of code
-            // to be mutually exclusive. When one thread is successfully reconnected, the other ones will make use of it.
-            w_mutex_lock(&inv_reconnect_mutex);
-            if (!is_shutdown_process_started() && wm_sendmsg_ex(eps, queue_fd, data, WM_INV_LOCATION, queue_id, &is_shutdown_process_started) < 0) {
-                if (queue_fd = MQReconnectPredicated(DEFAULTQUEUE, &is_shutdown_process_started), 0 <= queue_fd) {
-                    mtinfo(WM_INV_LOGTAG, "Successfully reconnected to '%s'", DEFAULTQUEUE);
-                    if (wm_sendmsg_ex(eps, queue_fd, data, WM_INV_LOCATION, queue_id, &is_shutdown_process_started) < 0) {
-                        mterror(WM_INV_LOGTAG, "Unable to send message to '%s' after a successfull reconnection...", DEFAULTQUEUE);
-                    }
-                }
-            }
-            w_mutex_unlock(&inv_reconnect_mutex);
-        }
-    }*/
-}
-
-void Inventory::log_config()
+void Inventory::showConfig()
 {
-    cJSON * config_json = dump();
-    if (config_json) {
-        char * config_str = cJSON_PrintUnformatted(config_json);
-        if (config_str) {
-            log(LOG_DEBUG, config_str);
-            cJSON_free(config_str);
+    cJSON * configJson = dump();
+    if (configJson) {
+        char * configString = cJSON_PrintUnformatted(configJson);
+        if (configString) {
+            log(LOG_DEBUG, configString);
+            cJSON_free(configString);
         }
-        cJSON_Delete(config_json);
+        cJSON_Delete(configJson);
     }
 }
 
 cJSON * Inventory::dump() {
 
-    cJSON *root = cJSON_CreateObject();
-    cJSON *wm_inv = cJSON_CreateObject();
+    cJSON *rootJson = cJSON_CreateObject();
+    cJSON *invJson = cJSON_CreateObject();
 
     // System provider values
-    if (m_enabled) cJSON_AddStringToObject(wm_inv,"disabled","no"); else cJSON_AddStringToObject(wm_inv,"disabled","yes");
-    if (m_scanOnStart) cJSON_AddStringToObject(wm_inv,"scan-on-start","yes"); else cJSON_AddStringToObject(wm_inv,"scan-on-start","no");
-    cJSON_AddNumberToObject(wm_inv,"interval",interval);
-    if (m_network) cJSON_AddStringToObject(wm_inv,"network","yes"); else cJSON_AddStringToObject(wm_inv,"network","no");
-    if (m_os) cJSON_AddStringToObject(wm_inv,"os","yes"); else cJSON_AddStringToObject(wm_inv,"os","no");
-    if (m_hardware) cJSON_AddStringToObject(wm_inv,"hardware","yes"); else cJSON_AddStringToObject(wm_inv,"hardware","no");
-    if (m_packages) cJSON_AddStringToObject(wm_inv,"packages","yes"); else cJSON_AddStringToObject(wm_inv,"packages","no");
-    if (m_ports) cJSON_AddStringToObject(wm_inv,"ports","yes"); else cJSON_AddStringToObject(wm_inv,"ports","no");
-    if (m_portsAll) cJSON_AddStringToObject(wm_inv,"ports_all","yes"); else cJSON_AddStringToObject(wm_inv,"ports_all","no");
-    if (m_processes) cJSON_AddStringToObject(wm_inv,"processes","yes"); else cJSON_AddStringToObject(wm_inv,"processes","no");
+    if (m_enabled) cJSON_AddStringToObject(invJson,"disabled","no"); else cJSON_AddStringToObject(invJson,"disabled","yes");
+    if (m_scanOnStart) cJSON_AddStringToObject(invJson,"scan-on-start","yes"); else cJSON_AddStringToObject(invJson,"scan-on-start","no");
+    cJSON_AddNumberToObject(invJson,"interval",m_intervalValue.count());
+    if (m_network) cJSON_AddStringToObject(invJson,"network","yes"); else cJSON_AddStringToObject(invJson,"network","no");
+    if (m_os) cJSON_AddStringToObject(invJson,"os","yes"); else cJSON_AddStringToObject(invJson,"os","no");
+    if (m_hardware) cJSON_AddStringToObject(invJson,"hardware","yes"); else cJSON_AddStringToObject(invJson,"hardware","no");
+    if (m_packages) cJSON_AddStringToObject(invJson,"packages","yes"); else cJSON_AddStringToObject(invJson,"packages","no");
+    if (m_ports) cJSON_AddStringToObject(invJson,"ports","yes"); else cJSON_AddStringToObject(invJson,"ports","no");
+    if (m_portsAll) cJSON_AddStringToObject(invJson,"ports_all","yes"); else cJSON_AddStringToObject(invJson,"ports_all","no");
+    if (m_processes) cJSON_AddStringToObject(invJson,"processes","yes"); else cJSON_AddStringToObject(invJson,"processes","no");
 #ifdef WIN32
-    if (m_hotfixes) cJSON_AddStringToObject(wm_inv,"hotfixes","yes"); else cJSON_AddStringToObject(wm_inv,"hotfixes","no");
+    if (m_hotfixes) cJSON_AddStringToObject(invJson,"hotfixes","yes"); else cJSON_AddStringToObject(invJson,"hotfixes","no");
 #endif
-    // Database synchronization values
-    cJSON_AddNumberToObject(wm_inv,"sync_max_eps",sync_max_eps);
 
-    cJSON_AddItemToObject(root,"inventory",wm_inv);
+    cJSON_AddItemToObject(rootJson,"inventory",invJson);
 
-    return root;
-}
-
-
-void Inventory::run()
-{
-    DBSync::initialize(logError);
-
-    try
-    {
-        Inventory::instance().init(std::make_shared<SysInfo>(),
-                                      dbPath,
-                                      normalizerConfigPath,
-                                      normalizerType);
-    }
-    catch (const std::exception& ex)
-    {
-        logError(ex.what());
-    }
+    return rootJson;
 }
 
 void Inventory::log(const modules_log_level_t level, const std::string& log)

@@ -22,22 +22,24 @@ class Inventory {
             return s_instance;
         }
 
-        void * start();
+        void start();
         int setup(const Configuration & config);
         void stop();
         std::string command(const std::string & query);
         std::string name() const;
+
+        void init(const std::shared_ptr<ISysInfo>& spInfo,
+                    const std::function<void(const std::string&)> reportDiffFunction,
+                    const std::string& dbPath,
+                    const std::string& normalizerConfigPath,
+                    const std::string& normalizerType);
+        virtual void sendDeltaEvent(const std::string& data);
 
     private:
         Inventory();
         ~Inventory() = default;
         Inventory(const Inventory&) = delete;
         Inventory& operator=(const Inventory&) = delete;
-
-        void init(const std::shared_ptr<ISysInfo>& spInfo,
-                    const std::string& dbPath,
-                    const std::string& normalizerConfigPath,
-                    const std::string& normalizerType);
 
         void destroy();
 
@@ -59,13 +61,6 @@ class Inventory {
         void scanHotfixes();
         void scanPorts();
         void scanProcesses();
-        void syncOs();
-        void syncHardware();
-        void syncNetwork();
-        void syncPackages();
-        void syncHotfixes();
-        void syncPorts();
-        void syncProcesses();
         void scan();
         void syncLoop(std::unique_lock<std::mutex>& lock);
         void syncAlgorithm();
@@ -74,9 +69,8 @@ class Inventory {
         static void logError(const std::string& log);
 
         std::shared_ptr<ISysInfo>                   m_spInfo;
-        std::function<void(const std::string&)>     m_reportSyncFunction;
+        std::function<void(const std::string&)>     m_reportDiffFunction;
         std::chrono::seconds                        m_intervalValue;
-        std::chrono::seconds                        m_currentIntervalValue;
         bool                                        m_enabled;      // Main switch
         bool                                        m_scanOnStart;  // Scan always on start
         bool                                        m_hardware;     // Hardware inventory
@@ -95,21 +89,8 @@ class Inventory {
         std::unique_ptr<InvNormalizer>              m_spNormalizer;
         std::string                                 m_scanTime;
 
-        void send_diff_message(const std::string& data);
-        void send_dbsync_message(const std::string& data);
-        void send_message(std::string data, const char queue_id);
-        void log_config();
-
-        void run();
+        void showConfig();
 
         cJSON * dump();
-
-        unsigned int interval;
-
-        std::string dbPath;
-        std::string normalizerConfigPath;
-        std::string normalizerType;
-
-        long sync_max_eps;            // Maximum events per second for synchronization messages.
 
 };
