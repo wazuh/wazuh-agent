@@ -4,8 +4,8 @@
 #include <stdexcept>
 #include <string>
 
-std::unique_ptr<Persistence> PersistenceFactory::createPersistence(PersistenceType type,
-                                                                   const std::vector<std::any>& args)
+std::unique_ptr<IPersistence> PersistenceFactory::createPersistence(PersistenceType type,
+                                                                    const std::vector<std::any>& args)
 {
     if (type == PersistenceType::SQLITE3)
     {

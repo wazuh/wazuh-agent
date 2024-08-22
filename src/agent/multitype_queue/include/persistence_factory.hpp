@@ -1,6 +1,6 @@
 #pragma once
 
-#include <persistence.hpp>
+#include <ipersistence.hpp>
 
 #include <any>
 #include <memory>
@@ -25,5 +25,5 @@ public:
     /**
      * @brief Create a persistence
      */
-    static std::unique_ptr<Persistence> createPersistence(PersistenceType type, const std::vector<std::any>& args);
+    static std::unique_ptr<IPersistence> createPersistence(PersistenceType type, const std::vector<std::any>& args);
 };

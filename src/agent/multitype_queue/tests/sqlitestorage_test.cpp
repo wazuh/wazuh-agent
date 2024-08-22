@@ -5,10 +5,10 @@
 #include <thread>
 #include <vector>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
 
-#include "sqlitestorage.hpp"
+#include <sqlitestorage.hpp>
 
 using json = nlohmann::json;
 

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <imultitype_queue.hpp>
+#include <ipersistence.hpp>
 #include <message.hpp>
-#include <persistence.hpp>
 
 #include <condition_variable>
 #include <map>
@@ -34,7 +34,7 @@ private:
     };
     const int m_maxItems;
     const std::chrono::seconds m_timeout;
-    std::unique_ptr<Persistence> m_persistenceDest;
+    std::unique_ptr<IPersistence> m_persistenceDest;
     std::mutex m_mtx;
     std::condition_variable m_cv;
 

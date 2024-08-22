@@ -12,8 +12,8 @@
 #include <boost/asio.hpp>
 #include <boost/asio/experimental/co_spawn.hpp>
 
-#include "multitype_queue.hpp"
 #include "multitype_queue_test.hpp"
+#include <multitype_queue.hpp>
 
 using json = nlohmann::json;
 

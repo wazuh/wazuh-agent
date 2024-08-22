@@ -11,13 +11,13 @@ using json = nlohmann::json;
  *
  * This interface defines methods for storing, retrieving, and removing JSON messages.
  */
-class Persistence
+class IPersistence
 {
 public:
     /**
      * @brief Virtual destructor.
      */
-    virtual ~Persistence() = default;
+    virtual ~IPersistence() = default;
 
     /**
      * @brief Store a JSON message in the specified queue.

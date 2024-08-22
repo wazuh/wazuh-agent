@@ -12,7 +12,7 @@
 #include <SQLiteCpp/VariadicBind.h>
 #include <stdexcept>
 
-#include "persistence.hpp"
+#include <ipersistence.hpp>
 
 /**
  * @brief SQLite implementation of the Persistence interface.
@@ -20,7 +20,7 @@
  * This class provides methods to store, retrieve, and remove JSON messages
  * in a SQLite database.
  */
-class SQLiteStorage : public Persistence
+class SQLiteStorage : public IPersistence
 {
 public:
     SQLiteStorage(const std::string& dbName, const std::vector<std::string> tableName);
