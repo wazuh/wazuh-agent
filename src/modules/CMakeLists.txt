@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_subdirectory(inventory)
 
-add_library(modules STATIC modules.cpp pool.cpp)
+add_executable(modules src/main.cpp src/moduleManager.cpp)
 
 target_include_directories(modules PRIVATE modules)
 
