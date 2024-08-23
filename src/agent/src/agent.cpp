@@ -1,14 +1,16 @@
 #include <agent.hpp>
 
+#include <http_client.hpp>
 #include <message.hpp>
 #include <message_queue_utils.hpp>
 
+#include <memory>
 #include <string>
 #include <thread>
-#include <vector>
 
 Agent::Agent()
-    : m_communicator(m_agentInfo.GetUUID(),
+    : m_communicator(std::make_unique<http_client::HttpClient>(),
+                     m_agentInfo.GetUUID(),
                      m_agentInfo.GetKey(),
                      [this](std::string table, std::string key) -> std::string
                      { return m_configurationParser.GetConfig<std::string>(table, key); })

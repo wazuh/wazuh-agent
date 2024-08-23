@@ -4,7 +4,7 @@
 
 TEST(CommunicatorTest, CommunicatorConstructor)
 {
-    EXPECT_NO_THROW(communicator::Communicator communicator("uuid", "key", nullptr));
+    EXPECT_NO_THROW(communicator::Communicator communicator(nullptr, "uuid", "key", nullptr));
 }
 
 int main(int argc, char** argv)

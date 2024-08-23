@@ -28,10 +28,10 @@ int main(int argc, char* argv[])
                 agentInfo.SetName(cmdParser.getOptionValue("--name"));
             }
 
+            http_client::HttpClient httpClient;
             const registration::UserCredentials userCredentials {user, password};
 
-            if (registration::RegisterAgent(
-                    userCredentials, http_client::AuthenticateWithUserPassword, registration::SendRegistrationRequest))
+            if (registration::RegisterAgent(userCredentials, httpClient))
             {
                 std::cout << "Agent registered." << std::endl;
             }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ihttp_client.hpp>
+
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/beast/http/status.hpp>
@@ -16,7 +18,8 @@ namespace communicator
     class Communicator
     {
     public:
-        Communicator(const std::string& uuid,
+        Communicator(std::unique_ptr<http_client::IHttpClient> httpClient,
+                     const std::string& uuid,
                      const std::string& key,
                      const std::function<std::string(std::string, std::string)> GetStringConfigValue);
 
@@ -35,6 +38,8 @@ namespace communicator
         boost::beast::http::status SendAuthenticationRequest();
 
         void TryReAuthenticate();
+
+        std::unique_ptr<http_client::IHttpClient> m_httpClient;
 
         std::mutex m_reAuthMutex;
         std::atomic<bool> m_isReAuthenticating = false;

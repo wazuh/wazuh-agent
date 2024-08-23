@@ -7,8 +7,6 @@
 #include <signal_handler.hpp>
 #include <task_manager.hpp>
 
-#include <string>
-
 class Agent
 {
 public:

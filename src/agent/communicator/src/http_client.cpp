@@ -4,23 +4,23 @@
 
 namespace
 {
-    std::optional<std::string> GetTokenFromResponse(const http_client::HttpRequestParams& reqParams)
+    std::optional<std::string>
+    GetTokenFromResponse(const boost::beast::http::response<boost::beast::http::dynamic_body>& response)
     {
-        const auto res = http_client::PerformHttpRequest(reqParams);
-
-        if (res.result() != boost::beast::http::status::ok)
+        if (response.result() != boost::beast::http::status::ok)
         {
-            std::cerr << "Error: " << res.result() << std::endl;
+            std::cerr << "Error: " << response.result() << std::endl;
             return std::nullopt;
         }
 
-        return boost::beast::buffers_to_string(res.body().data());
+        return boost::beast::buffers_to_string(response.body().data());
     }
 } // namespace
 
 namespace http_client
 {
-    boost::beast::http::request<boost::beast::http::string_body> CreateHttpRequest(const HttpRequestParams& params)
+    boost::beast::http::request<boost::beast::http::string_body>
+    HttpClient::CreateHttpRequest(const HttpRequestParams& params)
     {
         static constexpr int HttpVersion1_1 = 11;
 
@@ -51,11 +51,11 @@ namespace http_client
     }
 
     boost::asio::awaitable<void>
-    Co_PerformHttpRequest(boost::asio::ip::tcp::socket& socket,
-                          boost::beast::http::request<boost::beast::http::string_body>& req,
-                          boost::beast::error_code& ec,
-                          std::function<void()> onUnauthorized,
-                          std::function<void(const std::string&)> onSuccess)
+    HttpClient::Co_PerformHttpRequest(boost::asio::ip::tcp::socket& socket,
+                                      boost::beast::http::request<boost::beast::http::string_body>& req,
+                                      boost::beast::error_code& ec,
+                                      std::function<void()> onUnauthorized,
+                                      std::function<void(const std::string&)> onSuccess)
     {
         co_await boost::beast::http::async_write(
             socket, req, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
@@ -97,11 +97,11 @@ namespace http_client
     }
 
     boost::asio::awaitable<void>
-    Co_MessageProcessingTask(const std::string& token,
-                             HttpRequestParams reqParams,
-                             std::function<boost::asio::awaitable<std::string>()> messageGetter,
-                             std::function<void()> onUnauthorized,
-                             std::function<void(const std::string&)> onSuccess)
+    HttpClient::Co_MessageProcessingTask(const std::string& token,
+                                         HttpRequestParams reqParams,
+                                         std::function<boost::asio::awaitable<std::string>()> messageGetter,
+                                         std::function<void()> onUnauthorized,
+                                         std::function<void(const std::string&)> onSuccess)
     {
         using namespace std::chrono_literals;
 
@@ -156,7 +156,8 @@ namespace http_client
         }
     }
 
-    boost::beast::http::response<boost::beast::http::dynamic_body> PerformHttpRequest(const HttpRequestParams& params)
+    boost::beast::http::response<boost::beast::http::dynamic_body>
+    HttpClient::PerformHttpRequest(const HttpRequestParams& params)
     {
         boost::beast::http::response<boost::beast::http::dynamic_body> res;
 
@@ -191,26 +192,28 @@ namespace http_client
         return res;
     }
 
-    std::optional<std::string> AuthenticateWithUuidAndKey(const std::string& host,
-                                                          const std::string& port,
-                                                          const std::string& uuid,
-                                                          const std::string& key)
+    std::optional<std::string> HttpClient::AuthenticateWithUuidAndKey(const std::string& host,
+                                                                      const std::string& port,
+                                                                      const std::string& uuid,
+                                                                      const std::string& key)
     {
         const std::string body = "{\"uuid\":\"" + uuid + "\", \"key\":\"" + key + "\"}";
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::post, host, port, "/authentication", "", "", body);
 
-        return GetTokenFromResponse(reqParams);
+        const auto res = PerformHttpRequest(reqParams);
+        return GetTokenFromResponse(res);
     }
 
-    std::optional<std::string> AuthenticateWithUserPassword(const std::string& host,
-                                                            const std::string& port,
-                                                            const std::string& user,
-                                                            const std::string& password)
+    std::optional<std::string> HttpClient::AuthenticateWithUserPassword(const std::string& host,
+                                                                        const std::string& port,
+                                                                        const std::string& user,
+                                                                        const std::string& password)
     {
         const auto reqParams = http_client::HttpRequestParams(
             boost::beast::http::verb::post, host, port, "/authenticate", "", user + ":" + password);
 
-        return GetTokenFromResponse(reqParams);
+        const auto res = PerformHttpRequest(reqParams);
+        return GetTokenFromResponse(res);
     }
 } // namespace http_client

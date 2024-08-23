@@ -9,8 +9,9 @@
 
 TEST(CreateHttpRequestTest, BasicGetRequest)
 {
+    auto httpClient = http_client::HttpClient();
     const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/test");
-    const auto req = http_client::CreateHttpRequest(reqParams);
+    const auto req = httpClient.CreateHttpRequest(reqParams);
 
     EXPECT_EQ(req.method(), boost::beast::http::verb::get);
     EXPECT_EQ(req.target(), "/test");
@@ -22,10 +23,11 @@ TEST(CreateHttpRequestTest, BasicGetRequest)
 
 TEST(CreateHttpRequestTest, PostRequestWithBody)
 {
+    auto httpClient = http_client::HttpClient();
     const std::string body = R"({"key": "value"})";
     const auto reqParams =
         http_client::HttpRequestParams(boost::beast::http::verb::post, "localhost", "8080", "/submit", "", "", body);
-    const auto req = http_client::CreateHttpRequest(reqParams);
+    const auto req = httpClient.CreateHttpRequest(reqParams);
 
     EXPECT_EQ(req.method(), boost::beast::http::verb::post);
     EXPECT_EQ(req.target(), "/submit");
@@ -39,20 +41,22 @@ TEST(CreateHttpRequestTest, PostRequestWithBody)
 
 TEST(CreateHttpRequestTest, AuthorizationBearerToken)
 {
+    auto httpClient = http_client::HttpClient();
     const std::string token = "dummy_token";
     const auto reqParams =
         http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/secure", token);
-    const auto req = http_client::CreateHttpRequest(reqParams);
+    const auto req = httpClient.CreateHttpRequest(reqParams);
 
     EXPECT_EQ(req[boost::beast::http::field::authorization], "Bearer dummy_token");
 }
 
 TEST(CreateHttpRequestTest, AuthorizationBasic)
 {
+    auto httpClient = http_client::HttpClient();
     const std::string user_pass = "username:password";
     const auto reqParams =
         http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/secure", "", user_pass);
-    const auto req = http_client::CreateHttpRequest(reqParams);
+    const auto req = httpClient.CreateHttpRequest(reqParams);
 
     EXPECT_EQ(req[boost::beast::http::field::authorization], "Basic username:password");
 }
