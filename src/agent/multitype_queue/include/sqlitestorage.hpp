@@ -51,14 +51,19 @@ public:
     ~SQLiteStorage() override;
 
     /**
-     * @brief Store a JSON message in the storage.
+     * @brief Store a string value or a JSON message in the storage.
      *
-     * @param message The JSON message to store.
-     * @param tableName The name of the table to store the message in.
-     * @param moduleName The name of the module that created the message.
+     * @param insertQueryFmtStr The format string to be used. Should have {} placeholders for arguments to be inserted.
+     * If inserting a json object, it should include ? for binding.
+     * @param args The arguments to be inserted in the {} placeholders of the format string
+     * @param jsonObject The JSON message to store.
      * @return The number of stored elements.
      */
-    int Store(const json& message, const std::string& tableName, const std::string& moduleName = "") override;
+    int Store(const std::string_view& insertQueryFmtStr, const std::vector<std::string>& args) override;
+
+    int Store(const std::string_view& insertQueryFmtStr,
+              const std::vector<std::string>& args,
+              const json& jsonObject) override;
 
     /**
      * @brief Retrieve a JSON message by its ID.

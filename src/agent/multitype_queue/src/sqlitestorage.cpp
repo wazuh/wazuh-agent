@@ -55,19 +55,34 @@ void SQLiteStorage::releaseDatabaseAccess()
     m_cv.notify_one();
 }
 
-int SQLiteStorage::Store(const json& message, const std::string& tableName, const std::string& moduleName)
+int SQLiteStorage::Store(const std::string_view& insertQueryFmtStr, const std::vector<std::string>& args)
 {
-    constexpr std::string_view INSERT_QUERY {"INSERT INTO {} (module, message) VALUES (\"{}\", ?);"};
-    std::string insertQuery = fmt::format(INSERT_QUERY, tableName, moduleName);
+    // constexpr std::string_view INSERT_QUERY {"INSERT INTO {} (module, message) VALUES (\"{}\", \"{}\");"};
+    std::string insertQuery = GenerateQuery(insertQueryFmtStr, args);
     int result = 0;
 
     waitForDatabaseAccess();
-    SQLite::Statement query = SQLite::Statement(*m_db, insertQuery);
 
-    if (message.is_array())
+    result = m_db->exec(insertQuery);
+
+    releaseDatabaseAccess();
+    return result;
+}
+
+int SQLiteStorage::Store(const std::string_view& insertQueryFmtStr,
+                         const std::vector<std::string>& args,
+                         const json& jsonObject)
+{
+    std::string insertQuery = GenerateQuery(insertQueryFmtStr, args);
+    int result = 0;
+
+    waitForDatabaseAccess();
+
+    SQLite::Statement query = SQLite::Statement(*m_db, insertQuery);
+    if (jsonObject.is_array())
     {
         SQLite::Transaction transaction(*m_db);
-        for (const auto& singleMessageData : message)
+        for (const auto& singleMessageData : jsonObject)
         {
             try
             {
@@ -87,10 +102,11 @@ int SQLiteStorage::Store(const json& message, const std::string& tableName, cons
     else
     {
         SQLite::Transaction transaction(*m_db);
-        query.bind(1, message.dump());
+        query.bind(1, jsonObject.dump());
         result = query.exec();
         transaction.commit();
     }
+
     releaseDatabaseAccess();
 
     return result;
@@ -99,7 +115,6 @@ int SQLiteStorage::Store(const json& message, const std::string& tableName, cons
 // TODO: we shouldn't use rowid outside the table itself
 json SQLiteStorage::Retrieve(int id, const std::string& tableName, const std::string& moduleName)
 {
-
     std::string selectQuery;
     if (moduleName.empty())
     {
@@ -249,9 +264,9 @@ int SQLiteStorage::RemoveMultiple(int n, const std::string& tableName, const std
     }
     else
     {
-        constexpr std::string_view DELETE_MULTIPLE_QUERY {
-            "DELETE FROM {} WHERE module LIKE \"{}\" AND rowid IN (SELECT rowid FROM {} WHERE module LIKE \"{}\" ORDER "
-            "BY rowid ASC LIMIT ?);"};
+        constexpr std::string_view DELETE_MULTIPLE_QUERY {"DELETE FROM {} WHERE module LIKE \"{}\" AND rowid IN "
+                                                          "(SELECT rowid FROM {} WHERE module LIKE \"{}\" ORDER "
+                                                          "BY rowid ASC LIMIT ?);"};
         deleteQuery = fmt::format(DELETE_MULTIPLE_QUERY, tableName, moduleName, tableName, moduleName);
     }
 

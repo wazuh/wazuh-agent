@@ -56,15 +56,17 @@ int MultiTypeQueue::push(Message message, bool shouldWait)
                 {
                     for (const auto& singleMessageData : messageData)
                     {
-                        result += m_persistenceDest->Store(singleMessageData, sMessageType, message.moduleName);
+                        result += m_persistenceDest->Store(INSERT_QUERY_BIND,
+                                                           {m_mapMessageTypeName.at(message.type), message.moduleName},
+                                                           singleMessageData);
                         m_cv.notify_all();
                     }
                 }
             }
             else
             {
-                result =
-                    m_persistenceDest->Store(message.data, m_mapMessageTypeName.at(message.type), message.moduleName);
+                result = m_persistenceDest->Store(
+                    INSERT_QUERY_BIND, {m_mapMessageTypeName.at(message.type), message.moduleName}, message.data);
                 m_cv.notify_all();
             }
         }
@@ -102,15 +104,15 @@ boost::asio::awaitable<int> MultiTypeQueue::pushAwaitable(Message message)
                 {
                     for (const auto& singleMessageData : messageData)
                     {
-                        result += m_persistenceDest->Store(singleMessageData, sMessageType, message.moduleName);
+                        result += m_persistenceDest->Store(INSERT_QUERY_BIND, {message.moduleName}, singleMessageData);
                         m_cv.notify_all();
                     }
                 }
             }
             else
             {
-                result =
-                    m_persistenceDest->Store(message.data, m_mapMessageTypeName.at(message.type), message.moduleName);
+                result = m_persistenceDest->Store(
+                    INSERT_QUERY_BIND, {m_mapMessageTypeName.at(message.type), message.moduleName}, message.data);
                 m_cv.notify_all();
             }
         }

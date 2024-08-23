@@ -30,7 +30,9 @@ public:
      * @param moduleName The name of the module.
      * @return int The number of messages stored.
      */
-    virtual int Store(const json& message, const std::string& queueName, const std::string& moduleName = "") = 0;
+    virtual int Store(const std::string_view& insertQueryFmtStr, const std::vector<std::string>& args) = 0;
+    virtual int
+    Store(const std::string_view& insertQueryFmtStr, const std::vector<std::string>& args, const json& jsonObject) = 0;
 
     /**
      * @brief Retrieve a JSON message from the specified queue.
