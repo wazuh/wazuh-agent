@@ -143,10 +143,8 @@ TEST_F(MultiTypeQueueTest, SinglePushGetNotEmpty)
     auto typeSend = messageToSend.type;
     auto typeReceived = messageResponse.type;
     EXPECT_TRUE(typeSend == typeReceived);
-
     auto dataResponse = messageResponse.data.at(0).at("data");
     EXPECT_EQ(dataResponse, baseDataContent);
-
     EXPECT_FALSE(multiTypeQueue.isEmpty(MessageType::STATELESS));
 }
 
@@ -553,7 +551,8 @@ TEST_F(MultiTypeQueueTest, PushAwaitable)
     io_context.run();
     consumer.join();
 
-    EXPECT_TRUE(multiTypeQueue.isFull(MessageType::STATEFUL));
+    // we just popped a message so the queue should not be full
+    EXPECT_FALSE(multiTypeQueue.isFull(MessageType::STATEFUL));
 }
 
 TEST_F(MultiTypeQueueTest, FifoOrderCheck)

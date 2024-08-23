@@ -20,6 +20,11 @@ protected:
     const std::string moduleName = "moduleX";
     const std::vector<std::string> m_vMessageTypeStrings {"test_table", "test_table2"};
     const std::string CREATE_TABLE_QUERY {"CREATE TABLE IF NOT EXISTS {} (module TEXT, message TEXT NOT NULL);"};
+    std::string_view INSERT_QUERY {
+        "INSERT INTO {} (module, message) VALUES (\"{}\", \"{}\");"}; // params: tableName, moduleName, message
+    std::string_view INSERT_QUERY_BIND {
+        "INSERT INTO {} (module, message) VALUES (\"{}\", ?);"}; // params: tableName, moduleName, message
+
     std::unique_ptr<SQLiteStorage> storage;
 
     void SetUp() override
@@ -35,7 +40,12 @@ protected:
             }
         }
 
-        storage = std::make_unique<SQLiteStorage>(dbName, CREATE_TABLE_QUERY, m_vMessageTypeStrings);
+        storage = std::make_unique<SQLiteStorage>(dbName);
+        for (auto table : m_vMessageTypeStrings)
+        {
+            std::string createTableQuery = storage->GenerateQuery(CREATE_TABLE_QUERY, {table});
+            storage->InitializeTable(createTableQuery);
+        }
     }
 
     void TearDown() override
@@ -55,19 +65,22 @@ protected:
 
 TEST_F(SQLiteStorageTest, StoreSingleMessage)
 {
-    json message = {{"key", "value"}};
-    EXPECT_EQ(storage->Store(message, tableName), 1);
+
+    EXPECT_EQ(storage->Store(INSERT_QUERY, {tableName, "", "some test value"}), 1);
     EXPECT_EQ(storage->GetElementCount(tableName), 1);
-    EXPECT_EQ(storage->Store(message, tableName), 1);
+
+    json message = {{"key", "value"}};
+    EXPECT_EQ(storage->Store(INSERT_QUERY_BIND, {tableName, ""}, message), 1);
     EXPECT_EQ(storage->GetElementCount(tableName), 2);
 }
 
 TEST_F(SQLiteStorageTest, StoreSingleMessageWithModule)
 {
-    json message = {{"key", "value"}};
-    EXPECT_EQ(storage->Store(message, tableName, moduleName), 1);
+    EXPECT_EQ(storage->Store(INSERT_QUERY, {tableName, moduleName, "some test value"}), 1);
     EXPECT_EQ(storage->GetElementCount(tableName), 1);
-    EXPECT_EQ(storage->Store(message, tableName), 1);
+
+    json message = {{"key", "value"}};
+    EXPECT_EQ(storage->Store(INSERT_QUERY_BIND, {tableName, ""}, message), 1);
     EXPECT_EQ(storage->GetElementCount(tableName), 2);
     EXPECT_EQ(storage->GetElementCount(tableName, "unavailableModuleName"), 0);
     EXPECT_EQ(storage->GetElementCount(tableName, moduleName), 1);
@@ -78,7 +91,7 @@ TEST_F(SQLiteStorageTest, StoreMultipleMessages)
     json messages = json::array();
     messages.push_back({{"key", "value1"}});
     messages.push_back({{"key", "value2"}});
-    EXPECT_EQ(storage->Store(messages, tableName), 2);
+    EXPECT_EQ(storage->Store(INSERT_QUERY_BIND, {tableName, ""}, messages), 2);
     EXPECT_EQ(storage->GetElementCount(tableName), 2);
 }
 
@@ -87,7 +100,7 @@ TEST_F(SQLiteStorageTest, StoreMultipleMessagesWithModule)
     json messages = json::array();
     messages.push_back({{"key", "value1"}});
     messages.push_back({{"key", "value2"}});
-    EXPECT_EQ(storage->Store(messages, tableName, moduleName), 2);
+    EXPECT_EQ(storage->Store(INSERT_QUERY_BIND, {tableName, moduleName}, messages), 2);
     EXPECT_EQ(storage->GetElementCount(tableName), 2);
     EXPECT_EQ(storage->GetElementCount(tableName, moduleName), 2);
     EXPECT_EQ(storage->GetElementCount(tableName, "unavailableModuleName"), 0);
@@ -96,7 +109,7 @@ TEST_F(SQLiteStorageTest, StoreMultipleMessagesWithModule)
 TEST_F(SQLiteStorageTest, RetrieveMessage)
 {
     json message = {{"key", "value"}};
-    EXPECT_EQ(storage->Store(message, tableName), 1);
+    EXPECT_EQ(storage->Store(INSERT_QUERY_BIND, {tableName, ""}, message), 1);
     json retrievedMessage = storage->Retrieve(1, tableName);
     EXPECT_EQ(retrievedMessage.at("data").at("key"), "value");
 }
@@ -104,7 +117,7 @@ TEST_F(SQLiteStorageTest, RetrieveMessage)
 TEST_F(SQLiteStorageTest, RetrieveMessageWithModule)
 {
     json message = {{"key", "value"}};
-    storage->Store(message, tableName, moduleName);
+    storage->Store(INSERT_QUERY_BIND, {tableName, moduleName}, message);
     json retrievedMessage = storage->Retrieve(1, tableName, "unavailableModuleName");
     EXPECT_EQ(retrievedMessage.at("data"), nullptr);
     retrievedMessage = storage->Retrieve(1, tableName, moduleName);
@@ -116,7 +129,7 @@ TEST_F(SQLiteStorageTest, RetrieveMultipleMessages)
     json messages = json::array();
     messages.push_back({{"key", "value1"}});
     messages.push_back({{"key", "value2"}});
-    storage->Store(messages, tableName);
+    storage->Store(INSERT_QUERY_BIND, {tableName, ""}, messages);
     json retrievedMessages = storage->RetrieveMultiple(2, tableName);
     EXPECT_EQ(retrievedMessages.size(), 2);
 }
@@ -128,7 +141,7 @@ TEST_F(SQLiteStorageTest, RetrieveMultipleMessagesWithModule)
     messages.push_back({{"key", "value2"}});
     messages.push_back({{"key", "value3"}});
     messages.push_back({{"key", "value4"}});
-    storage->Store(messages, tableName, moduleName);
+    storage->Store(INSERT_QUERY_BIND, {tableName, moduleName}, messages);
     json retrievedMessages = storage->RetrieveMultiple(4, tableName, moduleName);
     EXPECT_EQ(retrievedMessages.size(), 4);
 
@@ -142,7 +155,7 @@ TEST_F(SQLiteStorageTest, RetrieveMultipleMessagesWithModule)
 TEST_F(SQLiteStorageTest, RemoveMessage)
 {
     json message = {{"key", "value"}};
-    EXPECT_EQ(storage->Store(message, tableName), 1);
+    EXPECT_EQ(storage->Store(INSERT_QUERY_BIND, {tableName, ""}, message), 1);
     EXPECT_EQ(storage->Remove(1, tableName), 1);
     EXPECT_EQ(storage->GetElementCount(tableName), 0);
 }
@@ -150,9 +163,9 @@ TEST_F(SQLiteStorageTest, RemoveMessage)
 TEST_F(SQLiteStorageTest, RemoveMessageWithModule)
 {
     json message = {{"key", "value"}};
-    EXPECT_EQ(storage->Store(message, tableName, moduleName), 1);
+    EXPECT_EQ(storage->Store(INSERT_QUERY_BIND, {tableName, moduleName}, message), 1);
     EXPECT_EQ(storage->Remove(1, tableName), 1);
-    EXPECT_EQ(storage->Store(message, tableName, moduleName), 1);
+    EXPECT_EQ(storage->Store(INSERT_QUERY_BIND, {tableName, moduleName}, message), 1);
     EXPECT_EQ(storage->Remove(1, tableName, "unavailableModuleName"), 1);
     EXPECT_EQ(storage->GetElementCount(tableName), 1);
     EXPECT_EQ(storage->Remove(1, tableName, moduleName), 1);
@@ -164,7 +177,7 @@ TEST_F(SQLiteStorageTest, RemoveMultipleMessages)
     json messages = json::array();
     messages.push_back({{"key", "value1"}});
     messages.push_back({{"key", "value2"}});
-    EXPECT_EQ(storage->Store(messages, tableName), 2);
+    EXPECT_EQ(storage->Store(INSERT_QUERY_BIND, {tableName, ""}, messages), 2);
     EXPECT_EQ(storage->RemoveMultiple(2, tableName), 2);
     EXPECT_EQ(storage->GetElementCount(tableName), 0);
 }
@@ -174,7 +187,7 @@ TEST_F(SQLiteStorageTest, RemoveMultipleMessagesWithModule)
     json messages = json::array();
     messages.push_back({{"key", "value1"}});
     messages.push_back({{"key", "value2"}});
-    EXPECT_EQ(storage->Store(messages, tableName, moduleName), 2);
+    EXPECT_EQ(storage->Store(INSERT_QUERY_BIND, {tableName, moduleName}, messages), 2);
     EXPECT_EQ(storage->RemoveMultiple(2, tableName, "unavailableModuleName"), 0);
     EXPECT_EQ(storage->GetElementCount(tableName), 2);
     EXPECT_EQ(storage->RemoveMultiple(2, tableName, moduleName), 2);
@@ -184,14 +197,14 @@ TEST_F(SQLiteStorageTest, RemoveMultipleMessagesWithModule)
 TEST_F(SQLiteStorageTest, GetElementCount)
 {
     json message = {{"key", "value"}};
-    EXPECT_EQ(storage->Store(message, tableName), 1);
+    EXPECT_EQ(storage->Store(INSERT_QUERY_BIND, {tableName, ""}, message), 1);
     EXPECT_EQ(storage->GetElementCount(tableName), 1);
 }
 
 TEST_F(SQLiteStorageTest, GetElementCountWithModule)
 {
     json message = {{"key", "value"}};
-    EXPECT_EQ(storage->Store(message, tableName, moduleName), 1);
+    EXPECT_EQ(storage->Store(INSERT_QUERY_BIND, {tableName, moduleName}, message), 1);
     EXPECT_EQ(storage->GetElementCount(tableName), 1);
     EXPECT_EQ(storage->GetElementCount(tableName, moduleName), 1);
     EXPECT_EQ(storage->GetElementCount(tableName, "unavailableModuleName"), 0);
@@ -200,7 +213,7 @@ TEST_F(SQLiteStorageTest, GetElementCountWithModule)
 class SQLiteStorageMultithreadedTest : public ::testing::Test
 {
 protected:
-    const std::string dbName = "testdb";
+    const std::string dbName = "testdb-multi.db";
     const std::vector<std::string> m_vMessageTypeStrings {"test_table1", "test_table2", "test_table3"};
 
     void SetUp() override
@@ -222,9 +235,11 @@ protected:
 
 void storeMessages(SQLiteStorage& storage, const json& messages, const std::string& tableName)
 {
+    std::string_view INSERT_QUERY {
+        "INSERT INTO {} (module, message) VALUES (\"{}\", ?);"}; // params: tableName, moduleName, message
     for (const auto& message : messages)
     {
-        storage.Store(message, tableName);
+        storage.Store(INSERT_QUERY, {tableName, ""}, message);
     }
 }
 
@@ -245,7 +260,13 @@ TEST_F(SQLiteStorageMultithreadedTest, MultithreadedStoreAndRetrieve)
 {
     size_t messagesToStore = 100;
     const std::string CREATE_TABLE_QUERY {"CREATE TABLE IF NOT EXISTS {} (module TEXT, message TEXT NOT NULL);"};
-    SQLiteStorage storage1(dbName, CREATE_TABLE_QUERY, m_vMessageTypeStrings);
+    SQLiteStorage storage1(dbName);
+
+    for (auto table : m_vMessageTypeStrings)
+    {
+        std::string createTableQuery = storage1.GenerateQuery(CREATE_TABLE_QUERY, {table});
+        storage1.InitializeTable(createTableQuery);
+    }
 
     json messages1 = json::array();
     json messages2 = json::array();
