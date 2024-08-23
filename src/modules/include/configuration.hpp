@@ -1,8 +1,6 @@
 #pragma once
 
-#include "stringHelper.h"
-
-#define INVENTORY_DEFAULT_INTERVAL W_HOUR_SECONDS
+#define INVENTORY_DEFAULT_INTERVAL 3600
 
 struct InventoryConfig {
     bool enabled = true;
