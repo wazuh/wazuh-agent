@@ -1,5 +1,6 @@
 #include <iostream>
 #include <csignal>
+<<<<<<< HEAD
 <<<<<<<< HEAD:src/modules/modules.cpp
 #include "pool.hpp"
 #include "configuration.hpp"
@@ -9,7 +10,11 @@ using namespace std;
 static Pool* global_pool = nullptr;
 ========
 #include "moduleManager.h"
+=======
+>>>>>>> b1a318f55 (feat: Added module manager unit tests)
 #include "configuration.h"
+#include "inventory.h"
+#include "moduleManager.h"
 
 using namespace std;
 
@@ -22,7 +27,7 @@ static void signalHandler(int signal) {
         case SIGHUP:
         case SIGINT:
         case SIGTERM:
-            cout << endl << "!  Signal received: " << signal << ". Stopping modules..." << endl;
+            cout << endl << "Signal received: " << signal << ". Stopping modules..." << endl;
             if (g_moduleManager) {
                 g_moduleManager->stop();
             }
@@ -47,6 +52,7 @@ int main() {
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
 
+    moduleManager.addModule(Inventory::instance());
     moduleManager.setup(config);
     moduleManager.start();
 

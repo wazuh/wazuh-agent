@@ -7,8 +7,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_subdirectory(inventory)
 
-add_executable(modules src/main.cpp src/moduleManager.cpp)
+add_library(ModuleManager src/moduleManager.cpp)
+target_include_directories(ModuleManager PUBLIC include)
+target_link_libraries(ModuleManager PUBLIC inventory)
 
-target_include_directories(modules PRIVATE modules)
+add_executable(Modules src/main.cpp)
+target_link_libraries(Modules PRIVATE ModuleManager)
 
-target_link_libraries(modules inventory)
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
