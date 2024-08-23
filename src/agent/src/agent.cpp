@@ -3,13 +3,15 @@
 #include <http_client.hpp>
 #include <message.hpp>
 #include <message_queue_utils.hpp>
+#include <signal_handler.hpp>
 
 #include <memory>
 #include <string>
 #include <thread>
 
-Agent::Agent()
-    : m_communicator(std::make_unique<http_client::HttpClient>(),
+Agent::Agent(std::unique_ptr<ISignalHandler> signalHandler)
+    : m_signalHandler(std::move(signalHandler))
+    , m_communicator(std::make_unique<http_client::HttpClient>(),
                      m_agentInfo.GetUUID(),
                      m_agentInfo.GetKey(),
                      [this](std::string table, std::string key) -> std::string
@@ -40,5 +42,5 @@ void Agent::Run()
         [this]([[maybe_unused]] const std::string& response)
         { popMessagesFromQueue(m_messageQueue, MessageType::STATELESS); }));
 
-    m_signalHandler.WaitForSignal();
+    m_signalHandler->WaitForSignal();
 }

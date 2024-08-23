@@ -1,10 +1,30 @@
 #include <agent.hpp>
 
+#include <isignal_handler.hpp>
+
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-TEST(AgentTests, AgentConstruction)
+class MockSignalHandler : public ISignalHandler
+{
+public:
+    MOCK_METHOD(void, WaitForSignal, (), (override));
+};
+
+TEST(AgentTests, AgentDefaultConstruction)
 {
     EXPECT_NO_THROW(Agent {});
+}
+
+TEST(AgentTests, AgentStopsWhenSignalReceived)
+{
+    auto mockSignalHandler = std::make_unique<MockSignalHandler>();
+    MockSignalHandler* mockSignalHandlerPtr = mockSignalHandler.get();
+
+    Agent agent(std::move(mockSignalHandler));
+
+    EXPECT_CALL(*mockSignalHandlerPtr, WaitForSignal()).Times(1);
+    EXPECT_NO_THROW(agent.Run());
 }
 
 int main(int argc, char** argv)

@@ -2,7 +2,7 @@ find_package(GTest CONFIG REQUIRED)
 
 add_executable(agent_test agent_test.cpp)
 target_include_directories(agent_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include ${CMAKE_CURRENT_SOURCE_DIR}/../src)
-target_link_libraries(agent_test PRIVATE Agent GTest::gtest)
+target_link_libraries(agent_test PRIVATE Agent GTest::gtest GTest::gmock)
 add_test(NAME AgentTest COMMAND agent_test)
 
 add_executable(task_manager_test task_manager_test.cpp)

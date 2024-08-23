@@ -1,16 +1,18 @@
 #pragma once
 
+#include <isignal_handler.hpp>
+
 #include <atomic>
 #include <condition_variable>
 #include <csignal>
 #include <mutex>
 #include <vector>
 
-class SignalHandler
+class SignalHandler : public ISignalHandler
 {
 public:
     SignalHandler(const std::vector<int>& signalsToHandle = {SIGINT, SIGTERM});
-    void WaitForSignal();
+    void WaitForSignal() override;
 
     static void HandleSignal(int signalToHandle);
 
