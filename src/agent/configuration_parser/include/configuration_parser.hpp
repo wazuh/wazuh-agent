@@ -30,6 +30,6 @@ namespace configuration
                 std::cout << "The requested value could not be obtained: " << e.what() << std::endl;
                 throw;
             }
-        };
+        }
     };
 } // namespace configuration
