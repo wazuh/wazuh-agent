@@ -7,7 +7,7 @@
 #include <stop_token>
 #include <utility>
 
-MultiTypeQueue::MultiTypeQueue(int size, int timeout)
+MultiTypeQueue::MultiTypeQueue(size_t size, int timeout)
     : m_maxItems(size)
     , m_timeout(timeout)
 {
@@ -35,12 +35,15 @@ int MultiTypeQueue::push(Message message, bool shouldWait)
         if (shouldWait)
         {
             std::unique_lock<std::mutex> lock(m_mtx);
-            m_cv.wait_for(
-                lock, m_timeout, [&, this] { return m_persistenceDest->GetElementCount(sMessageType) < m_maxItems; });
+            m_cv.wait_for(lock,
+                          m_timeout,
+                          [&, this] {
+                              return static_cast<size_t>(m_persistenceDest->GetElementCount(sMessageType)) < m_maxItems;
+                          });
         }
 
-        auto storedMessages = m_persistenceDest->GetElementCount(sMessageType);
-        size_t spaceAvailable = (m_maxItems > storedMessages) ? m_maxItems - storedMessages : 0;
+        const auto storedMessages = static_cast<size_t>(m_persistenceDest->GetElementCount(sMessageType));
+        const auto spaceAvailable = (m_maxItems > storedMessages) ? m_maxItems - storedMessages : 0;
         if (spaceAvailable)
         {
             auto messageData = message.data;
@@ -79,14 +82,14 @@ boost::asio::awaitable<int> MultiTypeQueue::pushAwaitable(Message message)
     {
         auto sMessageType = m_mapMessageTypeName.at(message.type);
 
-        while (m_persistenceDest->GetElementCount(sMessageType) >= m_maxItems)
+        while (static_cast<size_t>(m_persistenceDest->GetElementCount(sMessageType)) >= m_maxItems)
         {
             timer.expires_after(std::chrono::milliseconds(100));
             co_await timer.async_wait(boost::asio::use_awaitable);
         }
 
-        auto storedMessages = m_persistenceDest->GetElementCount(sMessageType);
-        size_t spaceAvailable = (m_maxItems > storedMessages) ? m_maxItems - storedMessages : 0;
+        const auto storedMessages = static_cast<size_t>(m_persistenceDest->GetElementCount(sMessageType));
+        const auto spaceAvailable = (m_maxItems > storedMessages) ? m_maxItems - storedMessages : 0;
         if (spaceAvailable)
         {
             auto messageData = message.data;
@@ -255,7 +258,8 @@ bool MultiTypeQueue::isFull(MessageType type, const std::string moduleName)
 {
     if (m_mapMessageTypeName.contains(type))
     {
-        return m_persistenceDest->GetElementCount(m_mapMessageTypeName.at(type), moduleName) == m_maxItems;
+        return static_cast<size_t>(m_persistenceDest->GetElementCount(m_mapMessageTypeName.at(type), moduleName)) ==
+               m_maxItems;
     }
     else
     {

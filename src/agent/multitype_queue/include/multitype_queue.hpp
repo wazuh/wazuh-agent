@@ -32,7 +32,7 @@ private:
         {MessageType::STATEFUL, "STATEFUL"},
         {MessageType::COMMAND, "COMMAND"},
     };
-    const int m_maxItems;
+    const size_t m_maxItems;
     const std::chrono::seconds m_timeout;
     std::unique_ptr<Persistence> m_persistenceDest;
     std::mutex m_mtx;
@@ -45,7 +45,7 @@ public:
      * @param size The maximum number of items in the queue.
      * @param timeout The timeout period in seconds.
      */
-    MultiTypeQueue(int size = DEFAULT_MAX, int timeout = DEFAULT_TIMEOUT_S);
+    MultiTypeQueue(size_t size = DEFAULT_MAX, int timeout = DEFAULT_TIMEOUT_S);
 
     /**
      * @brief Delete copy constructor
