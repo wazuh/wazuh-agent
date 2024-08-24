@@ -15,7 +15,6 @@ AgentInfo::AgentInfo()
 
     if (m_uuid.empty())
     {
-        AgentInfoPersistance agentInfoPersistance;
         m_uuid = boost::uuids::to_string(boost::uuids::random_generator()());
         agentInfoPersistance.SetUUID(m_uuid);
     }

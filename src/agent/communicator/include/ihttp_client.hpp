@@ -11,13 +11,13 @@ namespace http_client
 {
     struct HttpRequestParams
     {
-        boost::beast::http::verb method;
-        std::string host;
-        std::string port;
-        std::string endpoint;
-        std::string token;
-        std::string user_pass;
-        std::string body;
+        boost::beast::http::verb Method;
+        std::string Host;
+        std::string Port;
+        std::string Endpoint;
+        std::string Token;
+        std::string User_pass;
+        std::string Body;
 
         HttpRequestParams(boost::beast::http::verb method,
                           const std::string& host,
@@ -26,20 +26,20 @@ namespace http_client
                           const std::string& token = "",
                           const std::string& user_pass = "",
                           const std::string& body = "")
-            : method(method)
-            , host(host)
-            , port(port)
-            , endpoint(endpoint)
-            , token(token)
-            , user_pass(user_pass)
-            , body(body)
+            : Method(method)
+            , Host(host)
+            , Port(port)
+            , Endpoint(endpoint)
+            , Token(token)
+            , User_pass(user_pass)
+            , Body(body)
         {
         }
 
         bool operator==(const HttpRequestParams& other) const
         {
-            return method == other.method && host == other.host && port == other.port && endpoint == other.endpoint &&
-                   token == other.token && user_pass == other.user_pass && body == other.body;
+            return Method == other.Method && Host == other.Host && Port == other.Port && Endpoint == other.Endpoint &&
+                   Token == other.Token && User_pass == other.User_pass && Body == other.Body;
         }
     };
 

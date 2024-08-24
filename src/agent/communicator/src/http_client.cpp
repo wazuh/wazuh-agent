@@ -25,25 +25,25 @@ namespace http_client
         static constexpr int HttpVersion1_1 = 11;
 
         boost::beast::http::request<boost::beast::http::string_body> req {
-            params.method, params.endpoint, HttpVersion1_1};
-        req.set(boost::beast::http::field::host, params.host);
+            params.Method, params.Endpoint, HttpVersion1_1};
+        req.set(boost::beast::http::field::host, params.Host);
         req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
         req.set(boost::beast::http::field::accept, "application/json");
 
-        if (!params.token.empty())
+        if (!params.Token.empty())
         {
-            req.set(boost::beast::http::field::authorization, "Bearer " + params.token);
+            req.set(boost::beast::http::field::authorization, "Bearer " + params.Token);
         }
 
-        if (!params.user_pass.empty())
+        if (!params.User_pass.empty())
         {
-            req.set(boost::beast::http::field::authorization, "Basic " + params.user_pass);
+            req.set(boost::beast::http::field::authorization, "Basic " + params.User_pass);
         }
 
-        if (!params.body.empty())
+        if (!params.Body.empty())
         {
             req.set(boost::beast::http::field::content_type, "application/json");
-            req.body() = params.body;
+            req.body() = params.Body;
             req.prepare_payload();
         }
 
@@ -114,7 +114,7 @@ namespace http_client
             boost::asio::ip::tcp::socket socket(executor);
 
             const auto results =
-                co_await resolver.async_resolve(reqParams.host, reqParams.port, boost::asio::use_awaitable);
+                co_await resolver.async_resolve(reqParams.Host, reqParams.Port, boost::asio::use_awaitable);
 
             boost::system::error_code code;
             co_await boost::asio::async_connect(
@@ -132,14 +132,14 @@ namespace http_client
 
             if (messageGetter != nullptr)
             {
-                reqParams.body = co_await messageGetter();
+                reqParams.Body = co_await messageGetter();
             }
             else
             {
-                reqParams.body = "";
+                reqParams.Body = "";
             }
 
-            reqParams.token = token;
+            reqParams.Token = token;
             auto req = CreateHttpRequest(reqParams);
 
             boost::beast::error_code ec;
@@ -165,7 +165,7 @@ namespace http_client
         {
             boost::asio::io_context io_context;
             boost::asio::ip::tcp::resolver resolver(io_context);
-            const auto results = resolver.resolve(params.host, params.port);
+            const auto results = resolver.resolve(params.Host, params.Port);
 
             boost::asio::ip::tcp::socket socket(io_context);
             boost::asio::connect(socket, results.begin(), results.end());
