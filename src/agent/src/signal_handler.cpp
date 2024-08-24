@@ -9,7 +9,7 @@ SignalHandler::SignalHandler(const std::vector<int>& signalsToHandle)
     Initialize(signalsToHandle);
 }
 
-void SignalHandler::HandleSignal(int signal)
+void SignalHandler::HandleSignal([[maybe_unused]] int signal)
 {
     KeepRunning.store(false);
     m_cv.notify_one();
