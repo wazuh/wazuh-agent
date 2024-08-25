@@ -76,7 +76,7 @@ namespace http_client
             co_return;
         }
 
-        if (res.result_int() == static_cast<int>(boost::beast::http::status::unauthorized))
+        if (res.result() == boost::beast::http::status::unauthorized)
         {
             if (onUnauthorized != nullptr)
             {
@@ -84,7 +84,7 @@ namespace http_client
             }
         }
 
-        if (res.result_int() == static_cast<int>(boost::beast::http::status::ok))
+        if (res.result() == boost::beast::http::status::ok)
         {
             if (onSuccess != nullptr)
             {
