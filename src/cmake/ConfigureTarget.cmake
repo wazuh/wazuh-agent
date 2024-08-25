@@ -3,6 +3,7 @@ function(configure_target target)
         set(common_warnings
             -Wall
             -Wextra
+            -Werror
             -Wpedantic
             -Wshadow
             -Wconversion
@@ -23,6 +24,7 @@ function(configure_target target)
     else()
         set(msvc_warnings
             /W4
+            /WX
             /permissive-
             /sdl
             /Wv:18 # Additional security-related warnings and runtime checks
