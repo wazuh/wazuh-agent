@@ -3,6 +3,7 @@
 
 #include <agent_info.hpp>
 #include <ihttp_client.hpp>
+#include <ihttp_socket.hpp>
 #include <register.hpp>
 
 #include <boost/asio.hpp>
@@ -27,7 +28,7 @@ public:
 
     MOCK_METHOD(boost::asio::awaitable<void>,
                 Co_PerformHttpRequest,
-                (boost::asio::ip::tcp::socket & socket,
+                (http_client::IHttpSocket & socket,
                  boost::beast::http::request<boost::beast::http::string_body>& req,
                  boost::beast::error_code& ec,
                  std::function<void()> onUnauthorized,

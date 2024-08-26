@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ihttp_socket.hpp>
+
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 
@@ -52,7 +54,7 @@ namespace http_client
         CreateHttpRequest(const HttpRequestParams& params) = 0;
 
         virtual boost::asio::awaitable<void>
-        Co_PerformHttpRequest(boost::asio::ip::tcp::socket& socket,
+        Co_PerformHttpRequest(IHttpSocket& socket,
                               boost::beast::http::request<boost::beast::http::string_body>& req,
                               boost::beast::error_code& ec,
                               std::function<void()> onUnauthorized,

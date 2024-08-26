@@ -1,11 +1,15 @@
 #pragma once
 
 #include <ihttp_client.hpp>
+#include <ihttp_resolver_factory.hpp>
+#include <ihttp_socket.hpp>
+#include <ihttp_socket_factory.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 
 #include <functional>
+#include <memory>
 #include <optional>
 #include <string>
 
@@ -14,11 +18,14 @@ namespace http_client
     class HttpClient : public IHttpClient
     {
     public:
+        HttpClient(std::shared_ptr<IHttpResolverFactory> resolverFactory = nullptr,
+                   std::shared_ptr<IHttpSocketFactory> socketFactory = nullptr);
+
         boost::beast::http::request<boost::beast::http::string_body>
         CreateHttpRequest(const HttpRequestParams& params) override;
 
         boost::asio::awaitable<void>
-        Co_PerformHttpRequest(boost::asio::ip::tcp::socket& socket,
+        Co_PerformHttpRequest(IHttpSocket& socket,
                               boost::beast::http::request<boost::beast::http::string_body>& req,
                               boost::beast::error_code& ec,
                               std::function<void()> onUnauthorized,
@@ -43,5 +50,9 @@ namespace http_client
                                                                 const std::string& port,
                                                                 const std::string& user,
                                                                 const std::string& password) override;
+
+    private:
+        std::shared_ptr<IHttpResolverFactory> m_resolverFactory;
+        std::shared_ptr<IHttpSocketFactory> m_socketFactory;
     };
 } // namespace http_client

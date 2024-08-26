@@ -1,5 +1,8 @@
 #include <http_client.hpp>
 
+#include "http_resolver_factory.hpp"
+#include "http_socket_factory.hpp"
+
 #include <iostream>
 
 namespace
@@ -19,6 +22,28 @@ namespace
 
 namespace http_client
 {
+    HttpClient::HttpClient(std::shared_ptr<IHttpResolverFactory> resolverFactory,
+                           std::shared_ptr<IHttpSocketFactory> socketFactory)
+    {
+        if (resolverFactory != nullptr)
+        {
+            m_resolverFactory = std::move(resolverFactory);
+        }
+        else
+        {
+            m_resolverFactory = std::make_shared<HttpResolverFactory>();
+        }
+
+        if (socketFactory != nullptr)
+        {
+            m_socketFactory = std::move(socketFactory);
+        }
+        else
+        {
+            m_socketFactory = std::make_shared<HttpSocketFactory>();
+        }
+    }
+
     boost::beast::http::request<boost::beast::http::string_body>
     HttpClient::CreateHttpRequest(const HttpRequestParams& params)
     {
@@ -51,24 +76,21 @@ namespace http_client
     }
 
     boost::asio::awaitable<void>
-    HttpClient::Co_PerformHttpRequest(boost::asio::ip::tcp::socket& socket,
+    HttpClient::Co_PerformHttpRequest(IHttpSocket& socket,
                                       boost::beast::http::request<boost::beast::http::string_body>& req,
                                       boost::beast::error_code& ec,
                                       std::function<void()> onUnauthorized,
                                       std::function<void(const std::string&)> onSuccess)
     {
-        co_await boost::beast::http::async_write(
-            socket, req, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+        co_await socket.AsyncWrite(req, ec);
         if (ec)
         {
             std::cerr << "Error writing request (" << std::to_string(ec.value()) << "): " << ec.message() << std::endl;
             co_return;
         }
 
-        boost::beast::flat_buffer buffer;
         boost::beast::http::response<boost::beast::http::dynamic_body> res;
-        co_await boost::beast::http::async_read(
-            socket, buffer, res, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+        co_await socket.AsyncRead(res, ec);
 
         if (ec)
         {
@@ -112,23 +134,21 @@ namespace http_client
 
         auto executor = co_await boost::asio::this_coro::executor;
         boost::asio::steady_timer timer(executor);
-        boost::asio::ip::tcp::resolver resolver(executor);
+        auto resolver = m_resolverFactory->Create(executor);
 
         while (true)
         {
-            boost::asio::ip::tcp::socket socket(executor);
+            auto socket = m_socketFactory->Create(executor);
 
-            const auto results =
-                co_await resolver.async_resolve(reqParams.Host, reqParams.Port, boost::asio::use_awaitable);
+            const auto results = co_await resolver->AsyncResolve(reqParams.Host, reqParams.Port);
 
             boost::system::error_code code;
-            co_await boost::asio::async_connect(
-                socket, results, boost::asio::redirect_error(boost::asio::use_awaitable, code));
+            co_await socket->AsyncConnect(results, code);
 
             if (code != boost::system::errc::success)
             {
                 std::cerr << "Connect failed: " << code.message() << std::endl;
-                socket.close();
+                socket->Close();
                 const auto duration = std::chrono::milliseconds(1000);
                 timer.expires_after(duration);
                 co_await timer.async_wait(boost::asio::use_awaitable);
@@ -148,11 +168,11 @@ namespace http_client
             auto req = CreateHttpRequest(reqParams);
 
             boost::beast::error_code ec;
-            co_await Co_PerformHttpRequest(socket, req, ec, onUnauthorized, onSuccess);
+            co_await Co_PerformHttpRequest(*socket, req, ec, onUnauthorized, onSuccess);
 
             if (ec)
             {
-                socket.close();
+                socket->Close();
             }
 
             const auto duration = std::chrono::milliseconds(1000);
@@ -172,19 +192,16 @@ namespace http_client
         try
         {
             boost::asio::io_context io_context;
-            boost::asio::ip::tcp::resolver resolver(io_context);
-            const auto results = resolver.resolve(params.Host, params.Port);
+            auto resolver = m_resolverFactory->Create(io_context.get_executor());
 
-            boost::asio::ip::tcp::socket socket(io_context);
-            boost::asio::connect(socket, results.begin(), results.end());
+            const auto results = resolver->Resolve(params.Host, params.Port);
+
+            auto socket = m_socketFactory->Create(io_context.get_executor());
+            socket->Connect(results);
 
             const auto req = CreateHttpRequest(params);
-
-            boost::beast::http::write(socket, req);
-
-            boost::beast::flat_buffer buffer;
-
-            boost::beast::http::read(socket, buffer, res);
+            socket->Write(req);
+            socket->Read(res);
 
             std::cout << "Response code: " << res.result_int() << std::endl;
             std::cout << "Response body: " << boost::beast::buffers_to_string(res.body().data()) << std::endl;
