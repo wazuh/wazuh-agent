@@ -8,7 +8,7 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation.
  */
-#include "inventory.h"
+#include "inventory.hpp"
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include "stringHelper.h"

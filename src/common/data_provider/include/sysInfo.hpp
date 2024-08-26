@@ -25,7 +25,7 @@
 #define EXPORTED
 #endif
 
-#include "sysInfoInterface.h"
+#include "sysInfoInterface.hpp"
 
 constexpr auto KByte
 {

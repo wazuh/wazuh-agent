@@ -8,8 +8,7 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation.
  */
-#ifndef _INVENTORY_NORMALIZER_H
-#define _INVENTORY_NORMALIZER_H
+#pragma once
 #include <nlohmann/json.hpp>
 #include <string>
 #include <map>
@@ -31,6 +30,3 @@ class InvNormalizer
         const std::map<std::string, nlohmann::json> m_typeExclusions;
         const std::map<std::string, nlohmann::json> m_typeDictionary;
 };
-
-
-#endif //_INVENTORY_NORMALIZER_H

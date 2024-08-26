@@ -1,4 +1,5 @@
 #include <agent.hpp>
+#include "../../../modules/modules.hpp"
 
 #include <message.hpp>
 #include <message_queue_utils.hpp>
@@ -37,6 +38,8 @@ void Agent::Run()
         [this]() { return getMessagesFromQueue(m_messageQueue, MessageType::STATELESS); },
         [this]([[maybe_unused]] const std::string& response)
         { popMessagesFromQueue(m_messageQueue, MessageType::STATELESS); }));
+
+    m_taskManager.EnqueueTask([this]() { modulesExec(); });
 
     m_signalHandler.WaitForSignal();
 }
