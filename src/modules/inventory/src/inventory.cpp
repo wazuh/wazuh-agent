@@ -17,7 +17,7 @@
 #include "string_op.h"
 #include "pthreads_op.h"
 
-#include "inventory.h"
+#include "inventory.hpp"
 #include "sysInfo.hpp"
 
 using namespace std;

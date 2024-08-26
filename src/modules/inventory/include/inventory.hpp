@@ -1,5 +1,4 @@
-#ifndef INVENTORY_H
-#define INVENTORY_H
+#pragma once
 
 #include <chrono>
 #include <thread>
@@ -8,12 +7,12 @@
 #include <memory>
 #include <string>
 #include <memory>
-#include "sysInfoInterface.h"
-#include "configuration.h"
+#include "sysInfoInterface.hpp"
+#include "configuration.hpp"
 #include "logging_helper.h"
 #include "commonDefs.h"
 #include "dbsync.hpp"
-#include "inventoryNormalizer.h"
+#include "inventoryNormalizer.hpp"
 
 class Inventory {
     public:
@@ -114,6 +113,3 @@ class Inventory {
         long sync_max_eps;            // Maximum events per second for synchronization messages.
 
 };
-
-#endif // INVENTORY_H
-

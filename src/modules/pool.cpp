@@ -1,6 +1,6 @@
 #include <iostream>
-#include "inventory.h"
-#include "pool.h"
+#include "inventory.hpp"
+#include "pool.hpp"
 
 Pool::Pool() {
     // addModule(make_shared<LogCollector>());
