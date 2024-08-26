@@ -25,18 +25,11 @@ namespace http_client
         CreateHttpRequest(const HttpRequestParams& params) override;
 
         boost::asio::awaitable<void>
-        Co_PerformHttpRequest(IHttpSocket& socket,
-                              boost::beast::http::request<boost::beast::http::string_body>& req,
-                              boost::beast::error_code& ec,
+        Co_PerformHttpRequest(const std::string& token,
+                              HttpRequestParams params,
+                              std::function<boost::asio::awaitable<std::string>()> messageGetter,
                               std::function<void()> onUnauthorized,
                               std::function<void(const std::string&)> onSuccess = {}) override;
-
-        boost::asio::awaitable<void>
-        Co_MessageProcessingTask(const std::string& token,
-                                 HttpRequestParams params,
-                                 std::function<boost::asio::awaitable<std::string>()> messageGetter,
-                                 std::function<void()> onUnauthorized,
-                                 std::function<void(const std::string&)> onSuccess = {}) override;
 
         boost::beast::http::response<boost::beast::http::dynamic_body>
         PerformHttpRequest(const HttpRequestParams& params) override;

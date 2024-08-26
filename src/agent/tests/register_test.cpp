@@ -28,15 +28,6 @@ public:
 
     MOCK_METHOD(boost::asio::awaitable<void>,
                 Co_PerformHttpRequest,
-                (http_client::IHttpSocket & socket,
-                 boost::beast::http::request<boost::beast::http::string_body>& req,
-                 boost::beast::error_code& ec,
-                 std::function<void()> onUnauthorized,
-                 std::function<void(const std::string&)> onSuccess),
-                (override));
-
-    MOCK_METHOD(boost::asio::awaitable<void>,
-                Co_MessageProcessingTask,
                 (const std::string& token,
                  http_client::HttpRequestParams params,
                  std::function<boost::asio::awaitable<std::string>()> messageGetter,

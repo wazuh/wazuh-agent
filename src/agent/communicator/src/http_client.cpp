@@ -75,60 +75,17 @@ namespace http_client
         return req;
     }
 
-    boost::asio::awaitable<void>
-    HttpClient::Co_PerformHttpRequest(IHttpSocket& socket,
-                                      boost::beast::http::request<boost::beast::http::string_body>& req,
-                                      boost::beast::error_code& ec,
-                                      std::function<void()> onUnauthorized,
-                                      std::function<void(const std::string&)> onSuccess)
-    {
-        co_await socket.AsyncWrite(req, ec);
-        if (ec)
-        {
-            std::cerr << "Error writing request (" << std::to_string(ec.value()) << "): " << ec.message() << std::endl;
-            co_return;
-        }
-
-        boost::beast::http::response<boost::beast::http::dynamic_body> res;
-        co_await socket.AsyncRead(res, ec);
-
-        if (ec)
-        {
-            std::cerr << "Error reading response. Response code: " << res.result_int() << std::endl;
-            co_return;
-        }
-
-        if (res.result() == boost::beast::http::status::unauthorized)
-        {
-            if (onUnauthorized != nullptr)
-            {
-                onUnauthorized();
-            }
-        }
-
-        if (res.result() == boost::beast::http::status::ok)
-        {
-            if (onSuccess != nullptr)
-            {
-                onSuccess(boost::beast::buffers_to_string(res.body().data()));
-            }
-        }
-
-        std::cout << "Response code: " << res.result_int() << std::endl;
-        std::cout << "Response body: " << boost::beast::buffers_to_string(res.body().data()) << std::endl;
-    }
-
 // Silence false positive warning introduced in newer versions of GCC
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmismatched-new-delete"
 #endif
     boost::asio::awaitable<void>
-    HttpClient::Co_MessageProcessingTask(const std::string& token,
-                                         HttpRequestParams reqParams,
-                                         std::function<boost::asio::awaitable<std::string>()> messageGetter,
-                                         std::function<void()> onUnauthorized,
-                                         std::function<void(const std::string&)> onSuccess)
+    HttpClient::Co_PerformHttpRequest(const std::string& token,
+                                      HttpRequestParams reqParams,
+                                      std::function<boost::asio::awaitable<std::string>()> messageGetter,
+                                      std::function<void()> onUnauthorized,
+                                      std::function<void(const std::string&)> onSuccess)
     {
         using namespace std::chrono_literals;
 
@@ -168,7 +125,42 @@ namespace http_client
             auto req = CreateHttpRequest(reqParams);
 
             boost::beast::error_code ec;
-            co_await Co_PerformHttpRequest(*socket, req, ec, onUnauthorized, onSuccess);
+            co_await socket->AsyncWrite(req, ec);
+
+            if (ec)
+            {
+                std::cerr << "Error writing request (" << std::to_string(ec.value()) << "): " << ec.message()
+                          << std::endl;
+                co_return;
+            }
+
+            boost::beast::http::response<boost::beast::http::dynamic_body> res;
+            co_await socket->AsyncRead(res, ec);
+
+            if (ec)
+            {
+                std::cerr << "Error reading response. Response code: " << res.result_int() << std::endl;
+                co_return;
+            }
+
+            if (res.result() == boost::beast::http::status::unauthorized)
+            {
+                if (onUnauthorized != nullptr)
+                {
+                    onUnauthorized();
+                }
+            }
+
+            if (res.result() == boost::beast::http::status::ok)
+            {
+                if (onSuccess != nullptr)
+                {
+                    onSuccess(boost::beast::buffers_to_string(res.body().data()));
+                }
+            }
+
+            std::cout << "Response code: " << res.result_int() << std::endl;
+            std::cout << "Response body: " << boost::beast::buffers_to_string(res.body().data()) << std::endl;
 
             if (ec)
             {
