@@ -8,8 +8,7 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation.
  */
-#ifndef _INVENTORY_IMP_TEST_H
-#define _INVENTORY_IMP_TEST_H
+#pragma once
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
@@ -23,5 +22,3 @@ class InventoryImpTest : public ::testing::Test
         void SetUp() override;
         void TearDown() override;
 };
-
-#endif //_INVENTORY_IMP_TEST_H
