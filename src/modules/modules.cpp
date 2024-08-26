@@ -1,13 +1,13 @@
 #include <iostream>
 #include <csignal>
-#include "pool.h"
-#include "configuration.h"
+#include "pool.hpp"
+#include "configuration.hpp"
 
 using namespace std;
 
-Pool* global_pool = nullptr;
+static Pool* global_pool = nullptr;
 
-void signalHandler(int signal) {
+static void signalHandler(int signal) {
 
     switch (signal) {
         case SIGHUP:
@@ -23,7 +23,7 @@ void signalHandler(int signal) {
     }
 }
 
-int main() {
+int modulesExec(){
     Pool pool;
     global_pool = &pool;
     Configuration config;

@@ -1,12 +1,11 @@
-#ifndef POOL_H
-#define POOL_H
+#pragma once
 
 #include <map>
 #include <memory>
 #include <string>
 #include <thread>
-#include "configuration.h"
-#include "moduleWrapper.h"
+#include "configuration.hpp"
+#include "moduleWrapper.hpp"
 
 using namespace std;
 
@@ -35,5 +34,3 @@ private:
     map<string, shared_ptr<ModuleWrapper>> modules;
     vector<thread> threads;
 };
-
-#endif // POOL_H

@@ -11,7 +11,7 @@
 #include <iostream>
 #include <fstream>
 #include <regex>
-#include <inventoryNormalizer.h>
+#include <inventoryNormalizer.hpp>
 
 InvNormalizer::InvNormalizer(const std::string& configFile,
                              const std::string& target)

@@ -1,9 +1,8 @@
-#ifndef MODULE_WRAPPER_H
-#define MODULE_WRAPPER_H
+#pragma once
 
 #include <functional>
 #include <string>
-#include "configuration.h"
+#include "configuration.hpp"
 
 using namespace std;
 
@@ -14,5 +13,3 @@ struct ModuleWrapper {
     function<string(const string&)> command;
     function<string()> name;
 };
-
-#endif // MODULE_WRAPPER_H
