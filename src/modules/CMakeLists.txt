@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.22)
 
 project(Modules)
 
@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_subdirectory(inventory)
 
-add_executable(modules main.cpp pool.cpp)
+add_library(modules STATIC modules.cpp pool.cpp)
 
 target_include_directories(modules PRIVATE modules)
 

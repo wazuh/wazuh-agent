@@ -1,4 +1,5 @@
 #include <agent.hpp>
+#include "../../../modules/modules.hpp"
 
 #include <command.hpp>
 #include <command_handler_utils.hpp>
@@ -49,6 +50,8 @@ void Agent::Run()
         [this]() { return GetCommandFromQueue(m_messageQueue); },
         [this]() { return PopCommandFromQueue(m_messageQueue); },
         [](command_store::Command& cmd) { return DispatchCommand(cmd); }));
+
+    m_taskManager.EnqueueTask([this]() { modulesExec(); });
 
     m_signalHandler->WaitForSignal();
     m_communicator.Stop();

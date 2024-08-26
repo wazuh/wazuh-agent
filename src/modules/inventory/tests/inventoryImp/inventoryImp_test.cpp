@@ -9,7 +9,7 @@
  * Foundation.
  */
 #include <cstdio>
-#include "inventoryImp_test.h"
+#include "inventoryImp_test.hpp"
 #include "inventory.hpp"
 
 constexpr auto INVENTORY_DB_PATH {"TEMP.dbINVENTORY
