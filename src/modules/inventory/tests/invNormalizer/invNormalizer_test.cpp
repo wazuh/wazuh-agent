@@ -11,7 +11,7 @@
 #include "invNormalizer_test.h"
 #include "test_config.h"
 #include "test_input.h"
-#include "inventoryNormalizer.h"
+#include "inventoryNormalizer.hpp"
 #include <fstream>
 #include <cstdio>
 

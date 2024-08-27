@@ -24,12 +24,12 @@ add_custom_target(
     COMMENT "Building libdb"
 )
 
-add_subdirectory(agent)
 add_subdirectory(common)
 add_subdirectory(modules)
+add_subdirectory(agent)
 
 add_executable(wazuh-agent agent/src/main.cpp)
-target_link_libraries(wazuh-agent Agent Logger modules)
+target_link_libraries(wazuh-agent Agent Logger)
 
 include(cmake/ConfigureTarget.cmake)
 configure_target(Agent)
