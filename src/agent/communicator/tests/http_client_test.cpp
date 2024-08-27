@@ -176,6 +176,26 @@ TEST_F(HttpClientTest, PerformHttpRequest_Success)
     EXPECT_EQ(response.result(), boost::beast::http::status::ok);
 }
 
+TEST_F(HttpClientTest, PerformHttpRequest_ExceptionThrown)
+{
+    EXPECT_CALL(*mockResolverFactory, Create(_))
+        .WillOnce(Invoke(
+            [&](const auto& executor) -> std::unique_ptr<http_client::IHttpResolver>
+            {
+                EXPECT_TRUE(executor);
+                return std::move(mockResolver);
+            }));
+
+    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Throw(std::runtime_error("Simulated resolution failure")));
+
+    const http_client::HttpRequestParams params(boost::beast::http::verb::get, "localhost", "80", "/");
+    const auto response = client->PerformHttpRequest(params);
+
+    EXPECT_EQ(response.result(), boost::beast::http::status::internal_server_error);
+    EXPECT_TRUE(boost::beast::buffers_to_string(response.body().data()).find("Simulated resolution failure") !=
+                std::string::npos);
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
