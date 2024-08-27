@@ -1,5 +1,5 @@
 #include <agent.hpp>
-#include "../../../modules/modules.hpp"
+#include <modules.hpp>
 
 #include <message.hpp>
 #include <message_queue_utils.hpp>

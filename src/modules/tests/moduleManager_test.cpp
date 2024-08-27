@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "moduleManager.h"
+#include "moduleManager.hpp"
 
 using namespace testing;
 
