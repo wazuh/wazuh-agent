@@ -1,5 +1,5 @@
 #include <agent.hpp>
-#include "../../../modules/modules.hpp"
+#include <modules.hpp>
 
 #include <command.hpp>
 #include <command_handler_utils.hpp>
