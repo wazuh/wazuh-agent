@@ -26,3 +26,14 @@ TEST_F(SQLiteManagerTest, CreateTableTest)
 
     EXPECT_NO_THROW(m_db->CreateTable(m_tableName, {col1, col2, col3}));
 }
+
+TEST_F(SQLiteManagerTest, InsertTest)
+{
+    sqlite_manager::Col col1 {"Name", sqlite_manager::ColumnType::TEXT, "ItemName1"};
+    sqlite_manager::Col col2 {"Status", sqlite_manager::ColumnType::TEXT, "ItemStatus1"};
+
+    EXPECT_NO_THROW(m_db->Insert(m_tableName, {col1, col2}));
+    EXPECT_NO_THROW(m_db->Insert(m_tableName,
+                                 {sqlite_manager::Col("Name", sqlite_manager::ColumnType::TEXT, "ItemName2"),
+                                  sqlite_manager::Col("Status", sqlite_manager::ColumnType::TEXT, "ItemStatus2")}));
+}

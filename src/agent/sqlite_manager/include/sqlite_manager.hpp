@@ -53,6 +53,7 @@ namespace sqlite_manager
         SQLiteManager(const std::string& dbName);
 
         void CreateTable(const std::string& tableName, const std::vector<Col>& cols);
+        void Insert(const std::string& tableName, const std::vector<Col>& cols);
 
     private:
         /**

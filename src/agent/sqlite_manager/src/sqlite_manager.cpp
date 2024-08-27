@@ -55,4 +55,35 @@ namespace sqlite_manager
             throw;
         }
     }
+
+    void SQLiteManager::Insert(const std::string& tableName, const std::vector<Col>& cols)
+    {
+        std::vector<std::string> names;
+        std::vector<std::string> values;
+
+        for (const Col& col : cols)
+        {
+            names.push_back(col.m_name);
+            if (col.m_type == ColumnType::TEXT)
+            {
+                values.push_back(fmt::format("'{}'", col.m_value));
+            }
+            else
+                values.push_back(col.m_value);
+        }
+
+        std::string queryString =
+            format("INSERT INTO {} ({}) VALUES ({})", tableName, fmt::join(names, ", "), fmt::join(values, ", "));
+
+        std::lock_guard<std::mutex> lock(m_mutex);
+        try
+        {
+            m_db->exec(queryString);
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "Error inserting element: " << e.what() << std::endl;
+            throw;
+        }
+    }
 } // namespace sqlite_manager
