@@ -1,5 +1,5 @@
 #include <agent.hpp>
-#include "../../../modules/modules.hpp"
+#include <modules.hpp>
 
 #include <http_client.hpp>
 #include <message.hpp>

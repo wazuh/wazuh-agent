@@ -15,8 +15,8 @@
 #include <memory>
 #include <chrono>
 #include "defs.h"
-#include "configuration.h"
-#include "inventory.h"
+#include "configuration.hpp"
+#include "inventory.hpp"
 
 constexpr int DEFAULT_SLEEP_TIME { 60 };
 
