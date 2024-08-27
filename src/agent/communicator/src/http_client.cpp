@@ -85,7 +85,8 @@ namespace http_client
                                       HttpRequestParams reqParams,
                                       std::function<boost::asio::awaitable<std::string>()> messageGetter,
                                       std::function<void()> onUnauthorized,
-                                      std::function<void(const std::string&)> onSuccess)
+                                      std::function<void(const std::string&)> onSuccess,
+                                      std::function<bool()> loopRequestCondition)
     {
         using namespace std::chrono_literals;
 
@@ -93,7 +94,7 @@ namespace http_client
         boost::asio::steady_timer timer(executor);
         auto resolver = m_resolverFactory->Create(executor);
 
-        while (true)
+        do
         {
             auto socket = m_socketFactory->Create(executor);
 
@@ -170,7 +171,7 @@ namespace http_client
             const auto duration = std::chrono::milliseconds(1000);
             timer.expires_after(duration);
             co_await timer.async_wait(boost::asio::use_awaitable);
-        }
+        } while (loopRequestCondition != nullptr && loopRequestCondition());
     }
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic pop

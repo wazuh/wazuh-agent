@@ -85,9 +85,16 @@ namespace communicator
         {
             TryReAuthenticate();
         };
+
+        auto loopCondition = [this]()
+        {
+            return m_keepRunning.load();
+        };
+
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::get, m_managerIp, m_port, "/commands");
-        co_await m_httpClient->Co_PerformHttpRequest(m_token, reqParams, {}, onAuthenticationFailed, onSuccess);
+        co_await m_httpClient->Co_PerformHttpRequest(
+            m_token, reqParams, {}, onAuthenticationFailed, onSuccess, loopCondition);
     }
 
     boost::asio::awaitable<void> Communicator::WaitForTokenExpirationAndAuthenticate()
@@ -139,10 +146,16 @@ namespace communicator
         {
             TryReAuthenticate();
         };
+
+        auto loopCondition = [this]()
+        {
+            return m_keepRunning.load();
+        };
+
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::post, m_managerIp, m_port, "/stateful");
         co_await m_httpClient->Co_PerformHttpRequest(
-            m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess);
+            m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess, loopCondition);
     }
 
     boost::asio::awaitable<void>
@@ -153,10 +166,16 @@ namespace communicator
         {
             TryReAuthenticate();
         };
+
+        auto loopCondition = [this]()
+        {
+            return m_keepRunning.load();
+        };
+
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::post, m_managerIp, m_port, "/stateless");
         co_await m_httpClient->Co_PerformHttpRequest(
-            m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess);
+            m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess, loopCondition);
     }
 
     void Communicator::TryReAuthenticate()

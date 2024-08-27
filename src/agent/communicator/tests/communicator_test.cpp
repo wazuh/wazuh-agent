@@ -21,7 +21,8 @@ public:
                  http_client::HttpRequestParams params,
                  std::function<boost::asio::awaitable<std::string>()> messageGetter,
                  std::function<void()> onUnauthorized,
-                 std::function<void(const std::string&)> onSuccess),
+                 std::function<void(const std::string&)> onSuccess,
+                 std::function<bool()> loopRequestCondition),
                 (override));
 
     MOCK_METHOD(boost::beast::http::response<boost::beast::http::dynamic_body>,
@@ -60,13 +61,14 @@ TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
         EXPECT_EQ(message, "message-content");
     };
 
-    EXPECT_CALL(*mockHttpClient, Co_PerformHttpRequest(_, _, _, _, _))
+    EXPECT_CALL(*mockHttpClient, Co_PerformHttpRequest(_, _, _, _, _, _))
         .WillOnce(Invoke(
             [](const std::string&,
                http_client::HttpRequestParams,
                std::function<boost::asio::awaitable<std::string>()> pGetMessages,
                std::function<void()>,
-               std::function<void(const std::string&)> pOnSuccess) -> boost::asio::awaitable<void>
+               std::function<void(const std::string&)> pOnSuccess,
+               std::function<bool()> loopRequestCondition) -> boost::asio::awaitable<void>
             {
                 const auto message = co_await pGetMessages();
                 pOnSuccess(message);

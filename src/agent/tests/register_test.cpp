@@ -32,7 +32,8 @@ public:
                  http_client::HttpRequestParams params,
                  std::function<boost::asio::awaitable<std::string>()> messageGetter,
                  std::function<void()> onUnauthorized,
-                 std::function<void(const std::string&)> onSuccess),
+                 std::function<void(const std::string&)> onSuccess,
+                 std::function<bool()> loopRequestCondition),
                 (override));
 
     MOCK_METHOD(boost::beast::http::response<boost::beast::http::dynamic_body>,
