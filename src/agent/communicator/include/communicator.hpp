@@ -32,6 +32,8 @@ namespace communicator
         StatelessMessageProcessingTask(std::function<boost::asio::awaitable<std::string>()> getMessages,
                                        std::function<void(const std::string&)> onSuccess);
 
+        void Stop();
+
     private:
         long GetTokenRemainingSecs() const;
 
@@ -39,6 +41,7 @@ namespace communicator
 
         void TryReAuthenticate();
 
+        std::atomic<bool> m_keepRunning = true;
         std::unique_ptr<http_client::IHttpClient> m_httpClient;
 
         std::mutex m_reAuthMutex;

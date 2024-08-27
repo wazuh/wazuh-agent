@@ -96,7 +96,7 @@ namespace communicator
         const auto executor = co_await boost::asio::this_coro::executor;
         m_tokenExpTimer = std::make_unique<boost::asio::steady_timer>(executor);
 
-        while (true)
+        while (m_keepRunning.load())
         {
             const auto duration = [this]()
             {
@@ -174,5 +174,10 @@ namespace communicator
         {
             std::cout << "Re-authentication attempt by thread " << std::this_thread::get_id() << " failed" << std::endl;
         }
+    }
+
+    void Communicator::Stop()
+    {
+        m_keepRunning.store(false);
     }
 } // namespace communicator

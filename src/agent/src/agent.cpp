@@ -43,4 +43,5 @@ void Agent::Run()
         { popMessagesFromQueue(m_messageQueue, MessageType::STATELESS); }));
 
     m_signalHandler->WaitForSignal();
+    m_communicator.Stop();
 }
