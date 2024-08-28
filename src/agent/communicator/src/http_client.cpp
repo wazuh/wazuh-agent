@@ -210,7 +210,7 @@ namespace http_client
                                                                       const std::string& uuid,
                                                                       const std::string& key)
     {
-        const std::string body = "{\"uuid\":\"" + uuid + "\", \"key\":\"" + key + "\"}";
+        const std::string body = R"({"uuid":")" + uuid + R"(", "key":")" + key + "\"}";
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::post, host, port, "/authentication", "", "", body);
 
