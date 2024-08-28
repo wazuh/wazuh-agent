@@ -14,7 +14,7 @@ SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::vector<std::s
     {
         // Open the database in WAL mode
         m_db->exec("PRAGMA journal_mode=WAL;");
-        for (auto table : tableNames)
+        for (const auto& table : tableNames)
         {
             InitializeTable(table);
         }
