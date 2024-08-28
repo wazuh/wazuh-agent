@@ -26,7 +26,7 @@ SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::vector<std::s
     }
 }
 
-SQLiteStorage::~SQLiteStorage() {}
+SQLiteStorage::~SQLiteStorage() = default;
 
 void SQLiteStorage::InitializeTable(const std::string& tableName)
 {
