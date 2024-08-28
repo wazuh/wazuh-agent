@@ -15,7 +15,7 @@
 // TODO: move to a configuration setting
 constexpr int DEFAULT_MAX = 10000;
 constexpr int DEFAULT_TIMEOUT_S = 3;
-constexpr char QUEUE_DEFAULT_DB_PATH[] = "queue.db";
+const std::string QUEUE_DEFAULT_DB_PATH = "queue.db";
 
 /**
  * @brief MultiTypeQueue implementation that handles multiple types of messages.
