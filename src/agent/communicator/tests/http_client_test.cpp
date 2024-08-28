@@ -340,6 +340,78 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
     EXPECT_FALSE(onSuccessCalled);
 }
 
+TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails)
+{
+    EXPECT_CALL(*mockResolverFactory, Create(_))
+        .WillOnce(Invoke(
+            [&](const auto& executor) -> std::unique_ptr<http_client::IHttpResolver>
+            {
+                EXPECT_TRUE(executor);
+                return std::move(mockResolver);
+            }));
+
+    EXPECT_CALL(*mockSocketFactory, Create(_))
+        .WillOnce(Invoke(
+            [&](const auto& executor) -> std::unique_ptr<http_client::IHttpSocket>
+            {
+                EXPECT_TRUE(executor);
+                return std::move(mockSocket);
+            }));
+
+    EXPECT_CALL(*mockResolver, AsyncResolve(_, _))
+        .WillOnce(Invoke([](const std::string&,
+                            const std::string&) -> boost::asio::awaitable<boost::asio::ip::tcp::resolver::results_type>
+                         { co_return boost::asio::ip::tcp::resolver::results_type {}; }));
+
+    EXPECT_CALL(*mockSocket, AsyncConnect(_, _))
+        .WillOnce(Invoke(
+            [](const boost::asio::ip::tcp::resolver::results_type&,
+               boost::system::error_code& ec) -> boost::asio::awaitable<void>
+            {
+                ec = boost::system::errc::make_error_code(boost::system::errc::success);
+                co_return;
+            }));
+
+    EXPECT_CALL(*mockSocket, AsyncWrite(_, _))
+        .WillOnce(Invoke(
+            [](const boost::beast::http::request<boost::beast::http::string_body>&,
+               boost::beast::error_code& ec) -> boost::asio::awaitable<void>
+            {
+                ec = boost::system::errc::make_error_code(boost::system::errc::bad_address);
+                co_return;
+            }));
+
+    auto getMessagesCalled = false;
+    auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::string>
+    {
+        getMessagesCalled = true;
+        co_return std::string("test message");
+    };
+
+    auto onSuccessCalled = false;
+    std::function<void(const std::string&)> onSuccess = [&onSuccessCalled](const std::string& responseBody)
+    {
+        onSuccessCalled = true;
+    };
+
+    auto unauthorizedCalled = false;
+    std::function<void()> onUnauthorized = [&unauthorizedCalled]()
+    {
+        unauthorizedCalled = true;
+    };
+
+    const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/");
+    auto task = client->Co_PerformHttpRequest("token", reqParams, getMessages, onUnauthorized, onSuccess, nullptr);
+
+    boost::asio::io_context ioContext;
+    boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);
+    ioContext.run();
+
+    EXPECT_TRUE(getMessagesCalled);
+    EXPECT_FALSE(unauthorizedCalled);
+    EXPECT_FALSE(onSuccessCalled);
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
