@@ -383,7 +383,7 @@ TEST_F(MultiTypeQueueTest, PushMultipleWithMessageVector)
     for (std::string i : {"0", "1", "2"})
     {
         const json multipleDataContent = {"content " + i};
-        messages.push_back({messageType, multipleDataContent});
+        messages.emplace_back(messageType, multipleDataContent);
     }
     EXPECT_EQ(messages.size(), 3);
     EXPECT_EQ(multiTypeQueue.push(messages), 3);
@@ -406,7 +406,7 @@ TEST_F(MultiTypeQueueTest, PushVectorWithAMultipleInside)
     for (std::string i : {"0", "1", "2"})
     {
         const json dataContent = {"content " + i};
-        messages.push_back({messageType, dataContent});
+        messages.emplace_back(messageType, dataContent);
     }
 
     EXPECT_EQ(6, multiTypeQueue.push(messages));

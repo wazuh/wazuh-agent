@@ -198,7 +198,7 @@ std::vector<Message> MultiTypeQueue::getNextN(MessageType type, int messageQuant
             {
                 finalModuleName = singleJson["module"];
             }
-            result.push_back(Message(type, singleJson, finalModuleName));
+            result.emplace_back(type, singleJson, finalModuleName);
         }
     }
     else
