@@ -20,6 +20,7 @@
 #include <iostream>
 #include <queue>
 #include <thread>
+#include <utility>
 
 namespace communicator
 {
@@ -27,12 +28,12 @@ namespace communicator
     constexpr int A_SECOND_IN_MILLIS = 1000;
 
     Communicator::Communicator(std::unique_ptr<http_client::IHttpClient> httpClient,
-                               const std::string& uuid,
-                               const std::string& key,
+                               std::string uuid,
+                               std::string key,
                                const std::function<std::string(std::string, std::string)> GetStringConfigValue)
         : m_httpClient(std::move(httpClient))
-        , m_uuid(uuid)
-        , m_key(key)
+        , m_uuid(std::move(uuid))
+        , m_key(std::move(key))
     {
         if (GetStringConfigValue != nullptr)
         {
