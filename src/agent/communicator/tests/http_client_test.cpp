@@ -259,14 +259,21 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_Success)
         onSuccessCalled = true;
     };
 
+    auto unauthorizedCalled = false;
+    std::function<void()> onUnauthorized = [&unauthorizedCalled]()
+    {
+        unauthorizedCalled = true;
+    };
+
     const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/");
-    auto task = client->Co_PerformHttpRequest("token", reqParams, getMessages, nullptr, onSuccess, nullptr);
+    auto task = client->Co_PerformHttpRequest("token", reqParams, getMessages, onUnauthorized, onSuccess, nullptr);
 
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);
     ioContext.run();
 
     EXPECT_TRUE(getMessagesCalled);
+    EXPECT_FALSE(unauthorizedCalled);
     EXPECT_TRUE(onSuccessCalled);
 }
 
@@ -315,14 +322,21 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
         onSuccessCalled = true;
     };
 
+    auto unauthorizedCalled = false;
+    std::function<void()> onUnauthorized = [&unauthorizedCalled]()
+    {
+        unauthorizedCalled = true;
+    };
+
     const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/");
-    auto task = client->Co_PerformHttpRequest("token", reqParams, getMessages, nullptr, onSuccess, nullptr);
+    auto task = client->Co_PerformHttpRequest("token", reqParams, getMessages, onUnauthorized, onSuccess, nullptr);
 
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);
     ioContext.run();
 
     EXPECT_FALSE(getMessagesCalled);
+    EXPECT_FALSE(unauthorizedCalled);
     EXPECT_FALSE(onSuccessCalled);
 }
 
