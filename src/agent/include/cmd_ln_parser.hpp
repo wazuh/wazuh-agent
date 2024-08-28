@@ -9,27 +9,31 @@ class CommandlineParser
 public:
     CommandlineParser(int& argc, char** argv)
     {
-        for (int i = 1; i < argc; ++i) this->tokens.push_back(std::string(argv[i]));
+        for (int i = 1; i < argc; ++i)
+        {
+            m_tokens.push_back(std::string(argv[i]));
+        }
     }
 
-    const std::string& getOptionValue(const std::string& option) const
+    const std::string& GetOptionValue(const std::string& option) const
     {
-        std::vector<std::string>::const_iterator itr;
-        itr = std::find(this->tokens.begin(), this->tokens.end(), option);
-        if (itr != this->tokens.end() && ++itr != this->tokens.end())
+        auto itr = std::find(m_tokens.cbegin(), m_tokens.cend(), option);
+
+        if (itr != m_tokens.cend() && ++itr != m_tokens.cend())
         {
             return *itr;
         }
+
         static const std::string empty_string("");
         return empty_string;
     }
 
     bool OptionExists(const std::string& option) const
     {
-        bool bExists = std::find(this->tokens.begin(), this->tokens.end(), option) != this->tokens.end();
+        auto bExists = std::find(m_tokens.begin(), m_tokens.end(), option) != m_tokens.end();
         return bExists;
     }
 
 private:
-    std::vector<std::string> tokens;
+    std::vector<std::string> m_tokens;
 };

@@ -17,15 +17,15 @@ int main(int argc, char* argv[])
 
         if (cmdParser.OptionExists("--user") && cmdParser.OptionExists("--password") && cmdParser.OptionExists("--key"))
         {
-            const auto user = cmdParser.getOptionValue("--user");
-            const auto password = cmdParser.getOptionValue("--password");
+            const auto user = cmdParser.GetOptionValue("--user");
+            const auto password = cmdParser.GetOptionValue("--password");
 
             AgentInfo agentInfo;
-            agentInfo.SetKey(cmdParser.getOptionValue("--key"));
+            agentInfo.SetKey(cmdParser.GetOptionValue("--key"));
 
             if (cmdParser.OptionExists("--name"))
             {
-                agentInfo.SetName(cmdParser.getOptionValue("--name"));
+                agentInfo.SetName(cmdParser.GetOptionValue("--name"));
             }
 
             http_client::HttpClient httpClient;
