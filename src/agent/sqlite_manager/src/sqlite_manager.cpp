@@ -87,20 +87,6 @@ namespace sqlite_manager
         }
     }
 
-    void SQLiteManager::ExecuteNoSelectSQL(const std::string& queryString)
-    {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        try
-        {
-            m_db->exec(queryString);
-        }
-        catch (const std::exception& e)
-        {
-            std::cerr << "Error executing SQL: " << e.what() << std::endl;
-            throw;
-        }
-    }
-
     int SQLiteManager::GetCount(const std::string& tableName)
     {
         std::string queryString = fmt::format("SELECT COUNT(*) FROM {}", tableName);
@@ -196,4 +182,40 @@ namespace sqlite_manager
         }
         return results;
     }
+
+    void SQLiteManager::Remove(const std::string& tableName, const std::vector<Col>& selCriteria)
+    {
+        // Build the query string
+        std::string whereClause;
+        if (selCriteria.size() != 0)
+        {
+            std::vector<std::string> critFields;
+            for (auto& col : selCriteria)
+            {
+                if (col.m_type == ColumnType::TEXT)
+                {
+                    critFields.push_back(fmt::format("{}='{}'", col.m_name, col.m_value));
+                }
+                else
+                {
+                    critFields.push_back(fmt::format("{}={}", col.m_name, col.m_value));
+                }
+            }
+            whereClause = fmt::format(" WHERE {}", fmt::join(critFields, " AND "));
+        }
+
+        std::string queryString = fmt::format("DELETE FROM {}{}", tableName, whereClause);
+
+        std::lock_guard<std::mutex> lock(m_mutex);
+        try
+        {
+            m_db->exec(queryString);
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "Error executing SQL: " << e.what() << std::endl;
+            throw;
+        }
+    }
+
 } // namespace sqlite_manager

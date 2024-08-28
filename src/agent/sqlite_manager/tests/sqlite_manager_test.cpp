@@ -40,7 +40,7 @@ TEST_F(SQLiteManagerTest, InsertTest)
 
 TEST_F(SQLiteManagerTest, GetCountTest)
 {
-    m_db->ExecuteNoSelectSQL("DELETE FROM TestTable");
+    EXPECT_NO_THROW(m_db->Remove(m_tableName));
     int count = m_db->GetCount(m_tableName);
     EXPECT_EQ(count, 0);
 
@@ -72,7 +72,7 @@ void DumpResults(std::vector<sqlite_manager::Row>& ret)
 
 TEST_F(SQLiteManagerTest, SelectTest)
 {
-    EXPECT_NO_THROW(storage->ExecuteNoSelectSQL("DELETE FROM TestTable"));
+    EXPECT_NO_THROW(storage->Remove("TestTable"));
     storage->Insert("TestTable",
                     {sqlite_manager::Col("Name", SQLite::TEXT, "DummyData"),
                      sqlite_manager::Col("Status", SQLite::TEXT, "DummyData")});
@@ -120,4 +120,35 @@ TEST_F(SQLiteManagerTest, SelectTest)
 
     DumpResults(ret);
     EXPECT_NE(ret.size(), 0);
+}
+
+TEST_F(SQLiteManagerTest, RemoveTest)
+{
+    EXPECT_NO_THROW(storage->Remove("TestTable"));
+    storage->Insert("TestTable",
+                    {sqlite_manager::Col("Name", SQLite::TEXT, "DummyData"),
+                     sqlite_manager::Col("Status", SQLite::TEXT, "DummyData")});
+    storage->Insert("TestTable",
+                    {sqlite_manager::Col("Name", SQLite::TEXT, "MyTestName"),
+                     sqlite_manager::Col("Status", SQLite::TEXT, "MyTestValue")});
+    storage->Insert("TestTable",
+                    {sqlite_manager::Col("Name", SQLite::TEXT, "DummyData2"),
+                     sqlite_manager::Col("Status", SQLite::TEXT, "DummyData2")});
+
+    int count = storage->GetCount("TestTable");
+
+    int count = m_db->GetCount(m_tableName);
+    EXPECT_EQ(count, 3);
+
+    // Remove a single record
+    EXPECT_NO_THROW(m_db->Remove(m_tableName,
+                                 {sqlite_manager::Col("Name", sqlite_manager::ColumnType::TEXT, "MyTestName"),
+                                  sqlite_manager::Col("Status", sqlite_manager::ColumnType::TEXT, "MyTestValue")}));
+    count = m_db->GetCount(m_tableName);
+    EXPECT_EQ(count, 2);
+
+    // Remove remaining records
+    EXPECT_NO_THROW(m_db->Remove(m_tableName));
+    count = m_db->GetCount(m_tableName);
+    EXPECT_EQ(count, 0);
 }
