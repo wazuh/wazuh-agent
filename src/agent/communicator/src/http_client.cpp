@@ -132,6 +132,7 @@ namespace http_client
             {
                 std::cerr << "Error writing request (" << std::to_string(ec.value()) << "): " << ec.message()
                           << std::endl;
+                socket->Close();
                 co_return;
             }
 
@@ -141,15 +142,8 @@ namespace http_client
             if (ec)
             {
                 std::cerr << "Error reading response. Response code: " << res.result_int() << std::endl;
+                socket->Close();
                 co_return;
-            }
-
-            if (res.result() == boost::beast::http::status::unauthorized)
-            {
-                if (onUnauthorized != nullptr)
-                {
-                    onUnauthorized();
-                }
             }
 
             if (res.result() == boost::beast::http::status::ok)
@@ -159,14 +153,16 @@ namespace http_client
                     onSuccess(boost::beast::buffers_to_string(res.body().data()));
                 }
             }
+            else if (res.result() == boost::beast::http::status::unauthorized)
+            {
+                if (onUnauthorized != nullptr)
+                {
+                    onUnauthorized();
+                }
+            }
 
             std::cout << "Response code: " << res.result_int() << std::endl;
             std::cout << "Response body: " << boost::beast::buffers_to_string(res.body().data()) << std::endl;
-
-            if (ec)
-            {
-                socket->Close();
-            }
 
             const auto duration = std::chrono::milliseconds(1000);
             timer.expires_after(duration);
