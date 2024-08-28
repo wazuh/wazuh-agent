@@ -21,7 +21,7 @@ SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::vector<std::s
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error initializing database: " << e.what() << std::endl;
+        std::cerr << "Error initializing database: " << e.what() << '\n';
         throw;
     }
 }
@@ -41,7 +41,7 @@ void SQLiteStorage::InitializeTable(const std::string& tableName)
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error initializing table: " << e.what() << std::endl;
+        std::cerr << "Error initializing table: " << e.what() << '\n';
         throw;
     }
 }
@@ -150,7 +150,7 @@ json SQLiteStorage::Retrieve(int id, const std::string& tableName, const std::st
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error during Retrieve operation: " << e.what() << std::endl;
+        std::cerr << "Error during Retrieve operation: " << e.what() << '\n';
         return {};
     }
 }
@@ -207,7 +207,7 @@ json SQLiteStorage::RetrieveMultiple(int n, const std::string& tableName, const 
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error during RetrieveMultiple operation: " << e.what() << std::endl;
+        std::cerr << "Error during RetrieveMultiple operation: " << e.what() << '\n';
         return {};
     }
 }
@@ -237,7 +237,7 @@ int SQLiteStorage::Remove(int id, const std::string& tableName, const std::strin
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error during Remove operation: " << e.what() << std::endl;
+        std::cerr << "Error during Remove operation: " << e.what() << '\n';
         return {};
     }
 }
@@ -273,7 +273,7 @@ int SQLiteStorage::RemoveMultiple(int n, const std::string& tableName, const std
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error during RemoveMultiple operation: " << e.what() << std::endl;
+        std::cerr << "Error during RemoveMultiple operation: " << e.what() << '\n';
         return rowsModified;
     }
 }
@@ -302,13 +302,13 @@ int SQLiteStorage::GetElementCount(const std::string& tableName, const std::stri
         }
         else
         {
-            std::cerr << "Error SQLiteStorage get element count." << std::endl;
+            std::cerr << "Error SQLiteStorage get element count." << '\n';
         }
         return count;
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error during GetElementCount operation: " << e.what() << std::endl;
+        std::cerr << "Error during GetElementCount operation: " << e.what() << '\n';
         return {};
     }
 }

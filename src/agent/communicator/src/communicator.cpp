@@ -50,7 +50,7 @@ namespace communicator
         }
         else
         {
-            std::cerr << "Failed to authenticate with the manager" << std::endl;
+            std::cerr << "Failed to authenticate with the manager" << '\n';
             return boost::beast::http::status::unauthorized;
         }
 
@@ -63,7 +63,7 @@ namespace communicator
         }
         else
         {
-            std::cerr << "Token does not contain an 'exp' claim" << std::endl;
+            std::cerr << "Token does not contain an 'exp' claim" << '\n';
             m_token.clear();
             m_tokenExpTimeInSeconds = 1;
             return boost::beast::http::status::unauthorized;
@@ -110,7 +110,7 @@ namespace communicator
                 const auto result = SendAuthenticationRequest();
                 if (result != boost::beast::http::status::ok)
                 {
-                    std::cerr << "Authentication failed." << std::endl;
+                    std::cerr << "Authentication failed." << '\n';
                     return std::chrono::milliseconds(1000);
                 }
                 else
@@ -191,7 +191,7 @@ namespace communicator
         }
         else
         {
-            std::cout << "Re-authentication attempt by thread " << std::this_thread::get_id() << " failed" << std::endl;
+            std::cout << "Re-authentication attempt by thread " << std::this_thread::get_id() << " failed" << '\n';
         }
     }
 

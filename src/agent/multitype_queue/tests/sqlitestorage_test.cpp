@@ -46,7 +46,7 @@ protected:
             std::filesystem::remove(dbName.c_str());
             if (ec)
             {
-                std::cerr << "Error removing file: " << ec.message() << std::endl;
+                std::cerr << "Error removing file: " << ec.message() << '\n';
             }
         }
     }
@@ -211,7 +211,7 @@ protected:
             std::filesystem::remove(dbName.c_str());
             if (ec)
             {
-                std::cerr << "Error removing file: " << ec.message() << std::endl;
+                std::cerr << "Error removing file: " << ec.message() << '\n';
             }
         }
     }

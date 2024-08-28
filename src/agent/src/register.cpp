@@ -22,7 +22,7 @@ namespace registration
 
         if (!token.has_value())
         {
-            std::cerr << "Failed to authenticate with the manager" << std::endl;
+            std::cerr << "Failed to authenticate with the manager" << '\n';
             return false;
         }
 
@@ -42,7 +42,7 @@ namespace registration
 
         if (res.result() != http::status::ok)
         {
-            std::cout << "Registration error: " << res.result() << std::endl;
+            std::cout << "Registration error: " << res.result() << '\n';
             return false;
         }
 

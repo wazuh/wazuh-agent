@@ -12,7 +12,7 @@ namespace
     {
         if (response.result() != boost::beast::http::status::ok)
         {
-            std::cerr << "Error: " << response.result() << std::endl;
+            std::cerr << "Error: " << response.result() << '\n';
             return std::nullopt;
         }
 
@@ -105,7 +105,7 @@ namespace http_client
 
             if (code != boost::system::errc::success)
             {
-                std::cerr << "Connect failed: " << code.message() << std::endl;
+                std::cerr << "Connect failed: " << code.message() << '\n';
                 socket->Close();
                 const auto duration = std::chrono::milliseconds(1000);
                 timer.expires_after(duration);
@@ -130,8 +130,7 @@ namespace http_client
 
             if (ec)
             {
-                std::cerr << "Error writing request (" << std::to_string(ec.value()) << "): " << ec.message()
-                          << std::endl;
+                std::cerr << "Error writing request (" << std::to_string(ec.value()) << "): " << ec.message() << '\n';
                 socket->Close();
                 co_return;
             }
@@ -141,7 +140,7 @@ namespace http_client
 
             if (ec)
             {
-                std::cerr << "Error reading response. Response code: " << res.result_int() << std::endl;
+                std::cerr << "Error reading response. Response code: " << res.result_int() << '\n';
                 socket->Close();
                 co_return;
             }
@@ -161,8 +160,8 @@ namespace http_client
                 }
             }
 
-            std::cout << "Response code: " << res.result_int() << std::endl;
-            std::cout << "Response body: " << boost::beast::buffers_to_string(res.body().data()) << std::endl;
+            std::cout << "Response code: " << res.result_int() << '\n';
+            std::cout << "Response body: " << boost::beast::buffers_to_string(res.body().data()) << '\n';
 
             const auto duration = std::chrono::milliseconds(1000);
             timer.expires_after(duration);
@@ -192,12 +191,12 @@ namespace http_client
             socket->Write(req);
             socket->Read(res);
 
-            std::cout << "Response code: " << res.result_int() << std::endl;
-            std::cout << "Response body: " << boost::beast::buffers_to_string(res.body().data()) << std::endl;
+            std::cout << "Response code: " << res.result_int() << '\n';
+            std::cout << "Response body: " << boost::beast::buffers_to_string(res.body().data()) << '\n';
         }
         catch (std::exception const& e)
         {
-            std::cerr << "Error: " << e.what() << std::endl;
+            std::cerr << "Error: " << e.what() << '\n';
             res.result(boost::beast::http::status::internal_server_error);
             boost::beast::ostream(res.body()) << "Internal server error: " << e.what();
             res.prepare_payload();

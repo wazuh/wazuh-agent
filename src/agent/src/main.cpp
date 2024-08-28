@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
 
     if (cmdParser.OptionExists("--register"))
     {
-        std::cout << "Starting registration process" << std::endl;
+        std::cout << "Starting registration process" << '\n';
 
         if (cmdParser.OptionExists("--user") && cmdParser.OptionExists("--password") && cmdParser.OptionExists("--key"))
         {
@@ -33,19 +33,19 @@ int main(int argc, char* argv[])
 
             if (registration::RegisterAgent(userCredentials, httpClient))
             {
-                std::cout << "Agent registered." << std::endl;
+                std::cout << "Agent registered." << '\n';
             }
             else
             {
-                std::cout << "Registration fail." << std::endl;
+                std::cout << "Registration fail." << '\n';
             }
         }
         else
         {
-            std::cout << "--user, --password and --key args are mandatory" << std::endl;
+            std::cout << "--user, --password and --key args are mandatory" << '\n';
         }
 
-        std::cout << "Exiting ..." << std::endl;
+        std::cout << "Exiting ..." << '\n';
         return 0;
     }
 

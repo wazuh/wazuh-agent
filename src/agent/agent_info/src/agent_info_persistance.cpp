@@ -22,7 +22,7 @@ AgentInfoPersistance::AgentInfoPersistance(const std::string& db_path)
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Can't open database: " << e.what() << std::endl;
+        std::cerr << "Can't open database: " << e.what() << '\n';
         m_db.reset();
     }
 }
@@ -38,7 +38,7 @@ bool AgentInfoPersistance::AgentInfoTableExists() const
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Failed to check if table exists: " << e.what() << std::endl;
+        std::cerr << "Failed to check if table exists: " << e.what() << '\n';
         return false;
     }
 }
@@ -54,7 +54,7 @@ bool AgentInfoPersistance::AgentInfoIsEmpty() const
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error fetching: " << e.what() << std::endl;
+        std::cerr << "Error fetching: " << e.what() << '\n';
     }
 
     return false;
@@ -72,7 +72,7 @@ void AgentInfoPersistance::CreateAgentInfoTable()
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error creating table: " << e.what() << std::endl;
+        std::cerr << "Error creating table: " << e.what() << '\n';
     }
 }
 
@@ -92,7 +92,7 @@ void AgentInfoPersistance::InsertDefaultAgentInfo()
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error inserting default agent info: " << e.what() << std::endl;
+        std::cerr << "Error inserting default agent info: " << e.what() << '\n';
     }
 }
 
@@ -106,7 +106,7 @@ void AgentInfoPersistance::SetAgentInfoValue(const std::string& column, const st
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error updating " << column << ": " << e.what() << std::endl;
+        std::cerr << "Error updating " << column << ": " << e.what() << '\n';
     }
 }
 
@@ -123,7 +123,7 @@ std::string AgentInfoPersistance::GetAgentInfoValue(const std::string& column) c
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error fetching " << column << ": " << e.what() << std::endl;
+        std::cerr << "Error fetching " << column << ": " << e.what() << '\n';
     }
     return value;
 }
@@ -167,6 +167,6 @@ void AgentInfoPersistance::ResetToDefault()
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error resetting to default values: " << e.what() << std::endl;
+        std::cerr << "Error resetting to default values: " << e.what() << '\n';
     }
 }

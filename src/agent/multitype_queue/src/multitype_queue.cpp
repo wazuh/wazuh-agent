@@ -68,7 +68,7 @@ int MultiTypeQueue::push(Message message, bool shouldWait)
     }
     else
     {
-        std::cout << "error didn't find the queue" << std::endl;
+        std::cout << "error didn't find the queue" << '\n';
     }
     return result;
 }
@@ -114,7 +114,7 @@ boost::asio::awaitable<int> MultiTypeQueue::pushAwaitable(Message message)
     }
     else
     {
-        std::cout << "error didn't find the queue" << std::endl;
+        std::cout << "error didn't find the queue" << '\n';
     }
     co_return result;
 }
@@ -147,7 +147,7 @@ Message MultiTypeQueue::getNext(MessageType type, const std::string moduleName)
     else
     {
         // TODO: error handling and logging
-        std::cout << "error didn't find the queue" << std::endl;
+        std::cout << "error didn't find the queue" << '\n';
     }
     return result;
 }
@@ -180,7 +180,7 @@ MultiTypeQueue::getNextNAwaitable(MessageType type, int messageQuantity, const s
     else
     {
         // TODO: error handling and logging
-        std::cout << "error didn't find the queue" << std::endl;
+        std::cout << "error didn't find the queue" << '\n';
     }
     co_return result;
 }
@@ -205,7 +205,7 @@ std::vector<Message> MultiTypeQueue::getNextN(MessageType type, int messageQuant
     else
     {
         // TODO: error handling and logging
-        std::cout << "error didn't find the queue" << std::endl;
+        std::cout << "error didn't find the queue" << '\n';
     }
     return result;
 }
@@ -220,7 +220,7 @@ bool MultiTypeQueue::pop(MessageType type, const std::string moduleName)
     else
     {
         // TODO: error handling and logging
-        std::cout << "error didn't find the queue" << std::endl;
+        std::cout << "error didn't find the queue" << '\n';
     }
     return result;
 }
@@ -235,7 +235,7 @@ int MultiTypeQueue::popN(MessageType type, int messageQuantity, const std::strin
     else
     {
         // TODO: error handling and logging
-        std::cout << "error didn't find the queue" << std::endl;
+        std::cout << "error didn't find the queue" << '\n';
     }
     return result;
 }
@@ -249,7 +249,7 @@ bool MultiTypeQueue::isEmpty(MessageType type, const std::string moduleName)
     else
     {
         // TODO: error handling and logging
-        std::cout << "error didn't find the queue" << std::endl;
+        std::cout << "error didn't find the queue" << '\n';
     }
     return false;
 }
@@ -264,7 +264,7 @@ bool MultiTypeQueue::isFull(MessageType type, const std::string moduleName)
     else
     {
         // TODO: error handling and logging
-        std::cout << "error didn't find the queue" << std::endl;
+        std::cout << "error didn't find the queue" << '\n';
     }
     return false;
 }
@@ -278,7 +278,7 @@ int MultiTypeQueue::storedItems(MessageType type, const std::string moduleName)
     else
     {
         // TODO: error handling and logging
-        std::cout << "error didn't find the queue" << std::endl;
+        std::cout << "error didn't find the queue" << '\n';
     }
     return false;
 }

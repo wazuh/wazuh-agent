@@ -27,7 +27,7 @@ namespace configuration
             }
             catch (const std::exception& e)
             {
-                std::cout << "The requested value could not be obtained: " << e.what() << std::endl;
+                std::cout << "The requested value could not be obtained: " << e.what() << '\n';
                 throw;
             }
         }
