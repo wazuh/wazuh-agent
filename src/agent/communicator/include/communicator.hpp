@@ -21,7 +21,7 @@ namespace communicator
         Communicator(std::unique_ptr<http_client::IHttpClient> httpClient,
                      std::string uuid,
                      std::string key,
-                     const std::function<std::string(std::string, std::string)> getStringConfigValue);
+                     const std::function<std::string(std::string, std::string)>& getStringConfigValue);
 
         boost::asio::awaitable<void> WaitForTokenExpirationAndAuthenticate();
         boost::asio::awaitable<void> GetCommandsFromManager(std::function<void(const std::string&)> onSuccess);

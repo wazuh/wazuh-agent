@@ -30,7 +30,7 @@ namespace communicator
     Communicator::Communicator(std::unique_ptr<http_client::IHttpClient> httpClient,
                                std::string uuid,
                                std::string key,
-                               const std::function<std::string(std::string, std::string)> getStringConfigValue)
+                               const std::function<std::string(std::string, std::string)>& getStringConfigValue)
         : m_httpClient(std::move(httpClient))
         , m_uuid(std::move(uuid))
         , m_key(std::move(key))
