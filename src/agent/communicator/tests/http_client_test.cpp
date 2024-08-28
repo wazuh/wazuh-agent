@@ -420,6 +420,43 @@ TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_Failure)
     EXPECT_FALSE(token.has_value());
 }
 
+TEST_F(HttpClientTest, AuthenticateWithUserPassword_Success)
+{
+    SetupMockResolverFactory();
+    SetupMockSocketFactory();
+
+    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
+    EXPECT_CALL(*mockSocket, Connect(_)).Times(1);
+    EXPECT_CALL(*mockSocket, Write(_)).Times(1);
+    EXPECT_CALL(*mockSocket, Read(_))
+        .WillOnce(
+            [](auto& res)
+            {
+                res.result(boost::beast::http::status::ok);
+                boost::beast::ostream(res.body()) << "valid_token";
+            });
+
+    const auto token = client->AuthenticateWithUserPassword("localhost", "8080", "user", "password");
+
+    ASSERT_TRUE(token.has_value());
+    EXPECT_EQ(token.value(), "valid_token");
+}
+
+TEST_F(HttpClientTest, AuthenticateWithUserPassword_Failure)
+{
+    SetupMockResolverFactory();
+    SetupMockSocketFactory();
+
+    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
+    EXPECT_CALL(*mockSocket, Connect(_)).Times(1);
+    EXPECT_CALL(*mockSocket, Write(_)).Times(1);
+    EXPECT_CALL(*mockSocket, Read(_)).WillOnce([](auto& res) { res.result(boost::beast::http::status::unauthorized); });
+
+    const auto token = client->AuthenticateWithUserPassword("localhost", "8080", "user", "password");
+
+    EXPECT_FALSE(token.has_value());
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
