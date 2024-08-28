@@ -113,8 +113,8 @@ TEST_F(JsonTest, JSONConversionComparisson)
 TEST_F(JsonTest, JSONArrays)
 {
     // create JSON values
-    json j_object = {{"one", 1}, {"two", 2}, {"three", 3}};
-    json j_array = {1, 2, 4, 8, 16};
+    const json j_object = {{"one", 1}, {"two", 2}, {"three", 3}};
+    const json j_array = {1, 2, 4, 8, 16};
     // TODO: test string: const std::string multipleDataContent = R"({"data": {"content 1", "content 2", "content 3"})";
 
     // call is_array()
@@ -233,7 +233,7 @@ TEST_F(MultiTypeQueueTest, MultithreadDifferentType)
 {
     MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
 
-    auto consumerStateLess = [&](int& count)
+    auto consumerStateLess = [&](const int& count)
     {
         for (int i = 0; i < count; ++i)
         {
@@ -241,7 +241,7 @@ TEST_F(MultiTypeQueueTest, MultithreadDifferentType)
         }
     };
 
-    auto consumerStateFull = [&](int& count)
+    auto consumerStateFull = [&](const int& count)
     {
         for (int i = 0; i < count; ++i)
         {
@@ -249,7 +249,7 @@ TEST_F(MultiTypeQueueTest, MultithreadDifferentType)
         }
     };
 
-    auto messageProducer = [&](int& count)
+    auto messageProducer = [&](const int& count)
     {
         for (int i = 0; i < count; ++i)
         {
@@ -259,8 +259,8 @@ TEST_F(MultiTypeQueueTest, MultithreadDifferentType)
         }
     };
 
-    int itemsToInsert = 10;
-    int itemsToConsume = 5;
+    const int itemsToInsert = 10;
+    const int itemsToConsume = 5;
 
     messageProducer(itemsToInsert);
 
@@ -304,7 +304,7 @@ TEST_F(MultiTypeQueueTest, MultithreadSameType)
     MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
     auto messageType = MessageType::COMMAND;
 
-    auto consumerCommand1 = [&](int& count)
+    auto consumerCommand1 = [&](const int& count)
     {
         for (int i = 0; i < count; ++i)
         {
@@ -312,7 +312,7 @@ TEST_F(MultiTypeQueueTest, MultithreadSameType)
         }
     };
 
-    auto consumerCommand2 = [&](int& count)
+    auto consumerCommand2 = [&](const int& count)
     {
         for (int i = 0; i < count; ++i)
         {
@@ -320,7 +320,7 @@ TEST_F(MultiTypeQueueTest, MultithreadSameType)
         }
     };
 
-    auto messageProducer = [&](int& count)
+    auto messageProducer = [&](const int& count)
     {
         for (int i = 0; i < count; ++i)
         {
@@ -329,8 +329,8 @@ TEST_F(MultiTypeQueueTest, MultithreadSameType)
         }
     };
 
-    int itemsToInsert = 10;
-    int itemsToConsume = 5;
+    const int itemsToInsert = 10;
+    const int itemsToConsume = 5;
 
     messageProducer(itemsToInsert);
 
@@ -438,7 +438,8 @@ TEST_F(MultiTypeQueueTest, PushMultipleGetMultipleWithModule)
     EXPECT_EQ(3, multiTypeQueue.push(messageToSend));
 
     // Altough we're asking for 10 messages only the availables are returned.
-    auto messagesReceived = multiTypeQueue.getNextN(MessageType::STATELESS, 10);
+    auto messagesReceived =
+        multiTypeQueue.getNextN(MessageType::STATELESS, 10); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     int i = 0;
     for (auto singleMessage : messagesReceived)
     {
@@ -463,7 +464,8 @@ TEST_F(MultiTypeQueueTest, PushSinglesleGetMultipleWithModule)
         EXPECT_EQ(1, multiTypeQueue.push(messageToSend));
     }
 
-    auto messagesReceived = multiTypeQueue.getNextN(MessageType::STATELESS, 10);
+    auto messagesReceived =
+        multiTypeQueue.getNextN(MessageType::STATELESS, 10); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     EXPECT_EQ(5, messagesReceived.size());
     int i = 0;
     for (auto singleMessage : messagesReceived)
@@ -473,7 +475,8 @@ TEST_F(MultiTypeQueueTest, PushSinglesleGetMultipleWithModule)
         EXPECT_EQ("module-" + std::to_string(val), singleMessage.data.at("module").get<std::string>());
     }
 
-    auto messageReceivedContent1 = multiTypeQueue.getNextN(MessageType::STATELESS, 10, "module-1");
+    auto messageReceivedContent1 = multiTypeQueue.getNextN(
+        MessageType::STATELESS, 10, "module-1"); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     EXPECT_EQ(1, messageReceivedContent1.size());
 }
 
@@ -568,7 +571,8 @@ TEST_F(MultiTypeQueueTest, FifoOrderCheck)
         EXPECT_EQ(multiTypeQueue.push({messageType, dataContent}), 1);
     }
 
-    auto messageReceivedVector = multiTypeQueue.getNextN(messageType, 10);
+    auto messageReceivedVector =
+        multiTypeQueue.getNextN(messageType, 10); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     EXPECT_EQ(messageReceivedVector.size(), 10);
     int i = 0;
     for (auto singleMessage : messageReceivedVector)

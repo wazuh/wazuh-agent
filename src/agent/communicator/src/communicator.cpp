@@ -24,6 +24,7 @@
 namespace communicator
 {
     constexpr int TokenPreExpirySecs = 2;
+    constexpr int A_SECOND_IN_MILLIS = 1000;
 
     Communicator::Communicator(std::unique_ptr<http_client::IHttpClient> httpClient,
                                const std::string& uuid,
@@ -111,11 +112,12 @@ namespace communicator
                 if (result != boost::beast::http::status::ok)
                 {
                     std::cerr << "Authentication failed." << '\n';
-                    return std::chrono::milliseconds(1000);
+                    return std::chrono::milliseconds(A_SECOND_IN_MILLIS);
                 }
                 else
                 {
-                    return std::chrono::milliseconds((GetTokenRemainingSecs() - TokenPreExpirySecs) * 1000);
+                    return std::chrono::milliseconds((GetTokenRemainingSecs() - TokenPreExpirySecs) *
+                                                     A_SECOND_IN_MILLIS);
                 }
             }();
 

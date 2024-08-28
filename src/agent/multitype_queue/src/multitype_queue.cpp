@@ -7,6 +7,8 @@
 #include <stop_token>
 #include <utility>
 
+constexpr int DEFAULT_TIMER_IN_MS = 100;
+
 MultiTypeQueue::MultiTypeQueue(size_t size, int timeout)
     : m_maxItems(size)
     , m_timeout(timeout)
@@ -83,7 +85,7 @@ boost::asio::awaitable<int> MultiTypeQueue::pushAwaitable(Message message)
 
         while (static_cast<size_t>(m_persistenceDest->GetElementCount(sMessageType)) >= m_maxItems)
         {
-            timer.expires_after(std::chrono::milliseconds(100));
+            timer.expires_after(std::chrono::milliseconds(DEFAULT_TIMER_IN_MS));
             co_await timer.async_wait(boost::asio::use_awaitable);
         }
 
@@ -161,7 +163,7 @@ MultiTypeQueue::getNextNAwaitable(MessageType type, int messageQuantity, const s
     {
         while (isEmpty(type))
         {
-            timer.expires_after(std::chrono::milliseconds(100));
+            timer.expires_after(std::chrono::milliseconds(DEFAULT_TIMER_IN_MS));
             co_await timer.async_wait(boost::asio::use_awaitable);
         }
 

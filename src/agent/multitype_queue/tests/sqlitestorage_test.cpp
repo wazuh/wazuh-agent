@@ -242,7 +242,7 @@ void removeMessages(SQLiteStorage& storage, int count, const std::string& tableN
 
 TEST_F(SQLiteStorageMultithreadedTest, MultithreadedStoreAndRetrieve)
 {
-    size_t messagesToStore = 100;
+    constexpr size_t messagesToStore = 100;
 
     SQLiteStorage storage1(dbName, m_vMessageTypeStrings);
 
