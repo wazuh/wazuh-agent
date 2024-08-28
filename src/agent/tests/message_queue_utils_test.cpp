@@ -22,16 +22,21 @@ public:
 class MessageQueueUtilsTest : public ::testing::Test
 {
 protected:
+    MessageQueueUtilsTest()
+        : mockQueue(std::make_shared<MockMultiTypeQueue>())
+    {
+    }
+
     boost::asio::io_context io_context;
-    MockMultiTypeQueue mockQueue;
+    std::shared_ptr<MockMultiTypeQueue> mockQueue;
 };
 
 TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
 {
     Message testMessage {MessageType::STATEFUL, "test_data"};
 
-    EXPECT_CALL(mockQueue, getNextNAwaitable(MessageType::STATEFUL, 1, ""))
-        .WillOnce([this, &testMessage]() -> boost::asio::awaitable<Message> { co_return testMessage; });
+    EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATEFUL, 1, ""))
+        .WillOnce([&testMessage]() -> boost::asio::awaitable<Message> { co_return testMessage; });
 
     io_context.restart();
 
@@ -54,7 +59,7 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
 
 TEST_F(MessageQueueUtilsTest, PopMessagesFromQueueTest)
 {
-    EXPECT_CALL(mockQueue, popN(MessageType::STATEFUL, 1, "")).Times(1);
+    EXPECT_CALL(*mockQueue, popN(MessageType::STATEFUL, 1, "")).Times(1);
     PopMessagesFromQueue(mockQueue, MessageType::STATEFUL);
 }
 
@@ -69,7 +74,7 @@ TEST_F(MessageQueueUtilsTest, PushCommandsToQueueTest)
     expectedMessages.emplace_back(MessageType::COMMAND, "command_1");
     expectedMessages.emplace_back(MessageType::COMMAND, "command_2");
 
-    EXPECT_CALL(mockQueue, push(::testing::ContainerEq(expectedMessages))).Times(1);
+    EXPECT_CALL(*mockQueue, push(::testing::ContainerEq(expectedMessages))).Times(1);
 
     PushCommandsToQueue(mockQueue, commandsJson.dump());
 }
@@ -79,7 +84,7 @@ TEST_F(MessageQueueUtilsTest, NoCommandsToPushTest)
     nlohmann::json commandsJson;
     commandsJson["commands"] = nlohmann::json::array();
 
-    EXPECT_CALL(mockQueue, push(::testing::_)).Times(0);
+    EXPECT_CALL(*mockQueue, push(::testing::_)).Times(0);
 
     PushCommandsToQueue(mockQueue, commandsJson.dump());
 }

@@ -46,7 +46,7 @@ TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
 
     EXPECT_CALL(*mockHttpClient, Co_PerformHttpRequest(_, _, _, _, _, _))
         .WillOnce(Invoke(
-            [](const std::string&,
+            [](std::shared_ptr<std::string>,
                http_client::HttpRequestParams,
                std::function<boost::asio::awaitable<std::string>()> pGetMessages,
                std::function<void()>,
@@ -92,14 +92,14 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
     // A following call to Co_PerformHttpRequest should not have a token
     EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(_, _, _, _, _, _))
         .WillOnce(Invoke(
-            [](const std::string& token,
+            [](std::shared_ptr<std::string> token,
                http_client::HttpRequestParams,
                std::function<boost::asio::awaitable<std::string>()> getMessages,
                std::function<void()> onUnauthorized,
                std::function<void(const std::string&)> onSuccess,
                std::function<bool()> loopCondition) -> boost::asio::awaitable<void>
             {
-                EXPECT_TRUE(token.empty());
+                EXPECT_TRUE(token->empty());
                 co_return;
             }));
 
@@ -140,14 +140,14 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
     std::string capturedToken;
     EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(_, _, _, _, _, _))
         .WillOnce(Invoke(
-            [&capturedToken](const std::string& token,
+            [&capturedToken](std::shared_ptr<std::string> token,
                              http_client::HttpRequestParams,
                              std::function<boost::asio::awaitable<std::string>()> getMessages,
                              std::function<void()> onUnauthorized,
                              std::function<void(const std::string&)> onSuccess,
                              std::function<bool()> loopCondition) -> boost::asio::awaitable<void>
             {
-                capturedToken = token;
+                capturedToken = *token;
                 co_return;
             }));
 

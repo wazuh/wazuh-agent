@@ -10,7 +10,8 @@
 #include <thread>
 
 Agent::Agent(std::unique_ptr<ISignalHandler> signalHandler)
-    : m_signalHandler(std::move(signalHandler))
+    : m_messageQueue(std::make_shared<MultiTypeQueue>())
+    , m_signalHandler(std::move(signalHandler))
     , m_communicator(std::make_unique<http_client::HttpClient>(),
                      m_agentInfo.GetUUID(),
                      m_agentInfo.GetKey(),

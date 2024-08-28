@@ -19,7 +19,7 @@ public:
     void Run();
 
 private:
-    MultiTypeQueue m_messageQueue;
+    std::shared_ptr<MultiTypeQueue> m_messageQueue;
 
     std::unique_ptr<ISignalHandler> m_signalHandler;
     TaskManager m_taskManager;

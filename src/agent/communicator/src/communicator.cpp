@@ -34,6 +34,7 @@ namespace communicator
         : m_httpClient(std::move(httpClient))
         , m_uuid(std::move(uuid))
         , m_key(std::move(key))
+        , m_token(std::make_shared<std::string>())
     {
         if (getStringConfigValue != nullptr)
         {
@@ -48,7 +49,7 @@ namespace communicator
 
         if (token.has_value())
         {
-            m_token = token.value();
+            *m_token = token.value();
         }
         else
         {
@@ -56,7 +57,7 @@ namespace communicator
             return boost::beast::http::status::unauthorized;
         }
 
-        if (const auto decoded = jwt::decode(m_token); decoded.has_payload_claim("exp"))
+        if (const auto decoded = jwt::decode(*m_token); decoded.has_payload_claim("exp"))
         {
             const auto exp_claim = decoded.get_payload_claim("exp");
             const auto exp_time = exp_claim.as_date();
@@ -66,7 +67,7 @@ namespace communicator
         else
         {
             std::cerr << "Token does not contain an 'exp' claim" << '\n';
-            m_token.clear();
+            m_token->clear();
             m_tokenExpTimeInSeconds = 1;
             return boost::beast::http::status::unauthorized;
         }

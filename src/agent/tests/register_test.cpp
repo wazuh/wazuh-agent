@@ -28,7 +28,7 @@ public:
 
     MOCK_METHOD(boost::asio::awaitable<void>,
                 Co_PerformHttpRequest,
-                (const std::string& token,
+                (std::shared_ptr<std::string> token,
                  http_client::HttpRequestParams params,
                  std::function<boost::asio::awaitable<std::string>()> messageGetter,
                  std::function<void()> onUnauthorized,

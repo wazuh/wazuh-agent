@@ -25,7 +25,7 @@ namespace http_client
         CreateHttpRequest(const HttpRequestParams& params) override;
 
         boost::asio::awaitable<void>
-        Co_PerformHttpRequest(const std::string& token,
+        Co_PerformHttpRequest(std::shared_ptr<std::string> token,
                               HttpRequestParams params,
                               std::function<boost::asio::awaitable<std::string>()> messageGetter,
                               std::function<void()> onUnauthorized,

@@ -81,7 +81,7 @@ namespace http_client
 #pragma GCC diagnostic ignored "-Wmismatched-new-delete"
 #endif
     boost::asio::awaitable<void>
-    HttpClient::Co_PerformHttpRequest(const std::string& token,
+    HttpClient::Co_PerformHttpRequest(std::shared_ptr<std::string> token,
                                       HttpRequestParams reqParams,
                                       std::function<boost::asio::awaitable<std::string>()> messageGetter,
                                       std::function<void()> onUnauthorized,
@@ -122,7 +122,7 @@ namespace http_client
                 reqParams.Body = "";
             }
 
-            reqParams.Token = token;
+            reqParams.Token = *token;
             auto req = CreateHttpRequest(reqParams);
 
             boost::beast::error_code ec;
