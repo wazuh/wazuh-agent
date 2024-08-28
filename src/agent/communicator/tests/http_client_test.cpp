@@ -383,6 +383,43 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_UnauthorizedCalledWhenAuthorization
     EXPECT_FALSE(onSuccessCalled);
 }
 
+TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_Success)
+{
+    SetupMockResolverFactory();
+    SetupMockSocketFactory();
+
+    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
+    EXPECT_CALL(*mockSocket, Connect(_)).Times(1);
+    EXPECT_CALL(*mockSocket, Write(_)).Times(1);
+    EXPECT_CALL(*mockSocket, Read(_))
+        .WillOnce(
+            [](auto& res)
+            {
+                res.result(boost::beast::http::status::ok);
+                boost::beast::ostream(res.body()) << "valid_token";
+            });
+
+    const auto token = client->AuthenticateWithUuidAndKey("localhost", "8080", "test-uuid", "test-key");
+
+    ASSERT_TRUE(token.has_value());
+    EXPECT_EQ(token.value(), "valid_token");
+}
+
+TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_Failure)
+{
+    SetupMockResolverFactory();
+    SetupMockSocketFactory();
+
+    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
+    EXPECT_CALL(*mockSocket, Connect(_)).Times(1);
+    EXPECT_CALL(*mockSocket, Write(_)).Times(1);
+    EXPECT_CALL(*mockSocket, Read(_)).WillOnce([](auto& res) { res.result(boost::beast::http::status::unauthorized); });
+
+    const auto token = client->AuthenticateWithUuidAndKey("localhost", "8080", "test-uuid", "test-key");
+
+    EXPECT_FALSE(token.has_value());
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
