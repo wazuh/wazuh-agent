@@ -8,8 +8,8 @@
 
 class IMultiTypeQueue;
 
-boost::asio::awaitable<std::string> getMessagesFromQueue(IMultiTypeQueue& multiTypeQueue, MessageType messageType);
+boost::asio::awaitable<std::string> GetMessagesFromQueue(IMultiTypeQueue& multiTypeQueue, MessageType messageType);
 
-void popMessagesFromQueue(IMultiTypeQueue& multiTypeQueue, MessageType messageType);
+void PopMessagesFromQueue(IMultiTypeQueue& multiTypeQueue, MessageType messageType);
 
-void pushCommandsToQueue(IMultiTypeQueue& multiTypeQueue, const std::string& commands);
+void PushCommandsToQueue(IMultiTypeQueue& multiTypeQueue, const std::string& commands);

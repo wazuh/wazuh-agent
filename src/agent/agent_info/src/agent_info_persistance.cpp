@@ -4,11 +4,11 @@
 
 #include <iostream>
 
-AgentInfoPersistance::AgentInfoPersistance(const std::string& db_path)
+AgentInfoPersistance::AgentInfoPersistance(const std::string& dbPath)
 {
     try
     {
-        m_db = std::make_unique<SQLite::Database>(db_path, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
+        m_db = std::make_unique<SQLite::Database>(dbPath, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
 
         if (!AgentInfoTableExists())
         {

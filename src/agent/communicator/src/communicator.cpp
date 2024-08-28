@@ -24,21 +24,21 @@
 
 namespace communicator
 {
-    constexpr int TokenPreExpirySecs = 2;
+    constexpr int TOKEN_PRE_EXPIRY_SECS = 2;
     constexpr int A_SECOND_IN_MILLIS = 1000;
 
     Communicator::Communicator(std::unique_ptr<http_client::IHttpClient> httpClient,
                                std::string uuid,
                                std::string key,
-                               const std::function<std::string(std::string, std::string)> GetStringConfigValue)
+                               const std::function<std::string(std::string, std::string)> getStringConfigValue)
         : m_httpClient(std::move(httpClient))
         , m_uuid(std::move(uuid))
         , m_key(std::move(key))
     {
-        if (GetStringConfigValue != nullptr)
+        if (getStringConfigValue != nullptr)
         {
-            m_managerIp = GetStringConfigValue("agent", "manager_ip");
-            m_port = GetStringConfigValue("agent", "agent_comms_api_port");
+            m_managerIp = getStringConfigValue("agent", "manager_ip");
+            m_port = getStringConfigValue("agent", "agent_comms_api_port");
         }
     }
 
@@ -117,7 +117,7 @@ namespace communicator
                 }
                 else
                 {
-                    return std::chrono::milliseconds((GetTokenRemainingSecs() - TokenPreExpirySecs) *
+                    return std::chrono::milliseconds((GetTokenRemainingSecs() - TOKEN_PRE_EXPIRY_SECS) *
                                                      A_SECOND_IN_MILLIS);
                 }
             }();

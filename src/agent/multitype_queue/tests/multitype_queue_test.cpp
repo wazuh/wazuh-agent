@@ -20,13 +20,13 @@ using json = nlohmann::json;
 #define BIG_QUEUE_CAPACITY   10
 #define SMALL_QUEUE_CAPACITY 2
 
-const json baseDataContent = R"({{"data": "for STATELESS_0"}})";
-const json multipleDataContent = {"content 1", "content 2", "content 3"};
+const json BASE_DATA_CONTENT = R"({{"data": "for STATELESS_0"}})";
+const json MULTIPLE_DATA_CONTENT = {"content 1", "content 2", "content 3"};
 
 /// Helper functions
 
 // Unescape Strings
-std::string unescape_string(const std::string& str)
+std::string UnescapeString(const std::string& str)
 {
     std::string result;
     result.reserve(str.length());
@@ -58,7 +58,7 @@ std::string unescape_string(const std::string& str)
     return result;
 }
 
-void cleanPersistence()
+void CleanPersistence()
 {
     for (const auto& entry : std::filesystem::directory_iterator("."))
     {
@@ -75,7 +75,7 @@ void cleanPersistence()
 
 void MultiTypeQueueTest::SetUp()
 {
-    cleanPersistence();
+    CleanPersistence();
 };
 
 void MultiTypeQueueTest::TearDown() {};
@@ -87,7 +87,7 @@ TEST_F(JsonTest, JSONConversionComparisson)
 {
     json uj1 = {{"version", 1}, {"type", "integer"}};
     // From string. If not unescape then it throws errors
-    json uj2 = json::parse(unescape_string(R"({\"type\":\"integer\",\"version\":1})"));
+    json uj2 = json::parse(UnescapeString(R"({\"type\":\"integer\",\"version\":1})"));
 
     nlohmann::ordered_json oj1 = {{"version", 1}, {"type", "integer"}};
     nlohmann::ordered_json oj2 = {{"type", "integer"}, {"version", 1}};
@@ -121,10 +121,10 @@ TEST_F(JsonTest, JSONArrays)
     EXPECT_FALSE(j_object.is_array());
     EXPECT_TRUE(j_array.is_array());
     EXPECT_EQ(5, j_array.size());
-    EXPECT_TRUE(multipleDataContent.is_array());
+    EXPECT_TRUE(MULTIPLE_DATA_CONTENT.is_array());
 
     int i = 0;
-    for (auto& singleMessage : multipleDataContent.items())
+    for (auto& singleMessage : MULTIPLE_DATA_CONTENT.items())
     {
         EXPECT_EQ(singleMessage.value(), "content " + std::to_string(++i));
     }
@@ -135,7 +135,7 @@ TEST_F(MultiTypeQueueTest, SinglePushGetNotEmpty)
 {
     MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
-    const Message messageToSend {messageType, baseDataContent};
+    const Message messageToSend {messageType, BASE_DATA_CONTENT};
 
     EXPECT_EQ(multiTypeQueue.push(messageToSend), 1);
     auto messageResponse = multiTypeQueue.getNext(MessageType::STATELESS);
@@ -145,7 +145,7 @@ TEST_F(MultiTypeQueueTest, SinglePushGetNotEmpty)
     EXPECT_TRUE(typeSend == typeReceived);
 
     auto dataResponse = messageResponse.data.at(0).at("data");
-    EXPECT_EQ(dataResponse, baseDataContent);
+    EXPECT_EQ(dataResponse, BASE_DATA_CONTENT);
 
     EXPECT_FALSE(multiTypeQueue.isEmpty(MessageType::STATELESS));
 }
@@ -155,12 +155,12 @@ TEST_F(MultiTypeQueueTest, SinglePushPopEmpty)
 {
     MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
-    const Message messageToSend {messageType, baseDataContent};
+    const Message messageToSend {messageType, BASE_DATA_CONTENT};
 
     EXPECT_EQ(multiTypeQueue.push(messageToSend), 1);
     auto messageResponse = multiTypeQueue.getNext(MessageType::STATELESS);
     auto dataResponse = messageResponse.data.at(0).at("data");
-    EXPECT_EQ(dataResponse, baseDataContent);
+    EXPECT_EQ(dataResponse, BASE_DATA_CONTENT);
     EXPECT_EQ(messageType, messageResponse.type);
 
     auto messageResponseStateFul = multiTypeQueue.getNext(MessageType::STATEFUL);
@@ -181,7 +181,7 @@ TEST_F(MultiTypeQueueTest, SinglePushGetWithModule)
     const MessageType messageType {MessageType::STATELESS};
     const std::string moduleFakeName = "fake-module";
     const std::string moduleName = "module";
-    const Message messageToSend {messageType, baseDataContent, moduleName};
+    const Message messageToSend {messageType, BASE_DATA_CONTENT, moduleName};
 
     EXPECT_EQ(multiTypeQueue.push(messageToSend), 1);
     auto messageResponseWrongModule = multiTypeQueue.getNext(MessageType::STATELESS, moduleFakeName);
@@ -196,7 +196,7 @@ TEST_F(MultiTypeQueueTest, SinglePushGetWithModule)
     auto messageResponseCorrectModule = multiTypeQueue.getNext(MessageType::STATELESS, moduleName);
 
     auto dataResponse = messageResponseCorrectModule.data.at(0).at("data");
-    EXPECT_EQ(dataResponse, baseDataContent);
+    EXPECT_EQ(dataResponse, BASE_DATA_CONTENT);
 
     EXPECT_EQ(moduleName, messageResponseCorrectModule.moduleName);
 }
@@ -358,7 +358,7 @@ TEST_F(MultiTypeQueueTest, PushMultipleSeveralSingleGets)
 {
     MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
-    const Message messageToSend {messageType, multipleDataContent};
+    const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT};
 
     EXPECT_EQ(3, multiTypeQueue.push(messageToSend));
 
@@ -399,7 +399,7 @@ TEST_F(MultiTypeQueueTest, PushVectorWithAMultipleInside)
 
     // triple data content message
     const MessageType messageType {MessageType::STATELESS};
-    const Message messageToSend {messageType, multipleDataContent};
+    const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT};
     messages.push_back(messageToSend);
 
     // triple message vector
@@ -417,7 +417,7 @@ TEST_F(MultiTypeQueueTest, PushMultipleGetMultiple)
 {
     MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
-    const Message messageToSend {messageType, multipleDataContent};
+    const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT};
 
     EXPECT_EQ(3, multiTypeQueue.push(messageToSend));
     EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATELESS), 3);
@@ -433,7 +433,7 @@ TEST_F(MultiTypeQueueTest, PushMultipleGetMultipleWithModule)
     MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
     const std::string moduleName = "testModule";
-    const Message messageToSend {messageType, multipleDataContent, moduleName};
+    const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT, moduleName};
 
     EXPECT_EQ(3, multiTypeQueue.push(messageToSend));
 

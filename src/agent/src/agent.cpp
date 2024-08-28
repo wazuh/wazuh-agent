@@ -30,17 +30,17 @@ void Agent::Run()
     m_taskManager.EnqueueTask(m_communicator.WaitForTokenExpirationAndAuthenticate());
 
     m_taskManager.EnqueueTask(m_communicator.GetCommandsFromManager(
-        [this](const std::string& response) { pushCommandsToQueue(m_messageQueue, response); }));
+        [this](const std::string& response) { PushCommandsToQueue(m_messageQueue, response); }));
 
     m_taskManager.EnqueueTask(m_communicator.StatefulMessageProcessingTask(
-        [this]() { return getMessagesFromQueue(m_messageQueue, MessageType::STATEFUL); },
+        [this]() { return GetMessagesFromQueue(m_messageQueue, MessageType::STATEFUL); },
         [this]([[maybe_unused]] const std::string& response)
-        { popMessagesFromQueue(m_messageQueue, MessageType::STATEFUL); }));
+        { PopMessagesFromQueue(m_messageQueue, MessageType::STATEFUL); }));
 
     m_taskManager.EnqueueTask(m_communicator.StatelessMessageProcessingTask(
-        [this]() { return getMessagesFromQueue(m_messageQueue, MessageType::STATELESS); },
+        [this]() { return GetMessagesFromQueue(m_messageQueue, MessageType::STATELESS); },
         [this]([[maybe_unused]] const std::string& response)
-        { popMessagesFromQueue(m_messageQueue, MessageType::STATELESS); }));
+        { PopMessagesFromQueue(m_messageQueue, MessageType::STATELESS); }));
 
     m_signalHandler->WaitForSignal();
     m_communicator.Stop();

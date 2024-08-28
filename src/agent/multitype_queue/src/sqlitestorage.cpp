@@ -46,14 +46,14 @@ void SQLiteStorage::InitializeTable(const std::string& tableName)
     }
 }
 
-void SQLiteStorage::waitForDatabaseAccess()
+void SQLiteStorage::WaitForDatabaseAccess()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
     m_cv.wait(lock, [this] { return !m_dbInUse; });
     m_dbInUse = true;
 }
 
-void SQLiteStorage::releaseDatabaseAccess()
+void SQLiteStorage::ReleaseDatabaseAccess()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_dbInUse = false;
@@ -66,7 +66,7 @@ int SQLiteStorage::Store(const json& message, const std::string& tableName, cons
     std::string insertQuery = fmt::format(INSERT_QUERY, tableName, moduleName);
     int result = 0;
 
-    waitForDatabaseAccess();
+    WaitForDatabaseAccess();
     SQLite::Statement query = SQLite::Statement(*m_db, insertQuery);
 
     if (message.is_array())
@@ -96,7 +96,7 @@ int SQLiteStorage::Store(const json& message, const std::string& tableName, cons
         result = query.exec();
         transaction.commit();
     }
-    releaseDatabaseAccess();
+    ReleaseDatabaseAccess();
 
     return result;
 }
@@ -262,13 +262,13 @@ int SQLiteStorage::RemoveMultiple(int n, const std::string& tableName, const std
 
     try
     {
-        waitForDatabaseAccess();
+        WaitForDatabaseAccess();
         SQLite::Statement query(*m_db, deleteQuery);
         SQLite::Transaction transaction(*m_db);
         query.bind(1, n);
         rowsModified = query.exec();
         transaction.commit();
-        releaseDatabaseAccess();
+        ReleaseDatabaseAccess();
         return rowsModified;
     }
     catch (const std::exception& e)

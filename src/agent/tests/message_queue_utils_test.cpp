@@ -36,7 +36,7 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
     io_context.restart();
 
     auto result = boost::asio::co_spawn(
-        io_context, getMessagesFromQueue(mockQueue, MessageType::STATEFUL), boost::asio::use_future);
+        io_context, GetMessagesFromQueue(mockQueue, MessageType::STATEFUL), boost::asio::use_future);
 
     const auto timeout = std::chrono::steady_clock::now() + std::chrono::milliseconds(1);
     io_context.run_until(timeout);
@@ -55,7 +55,7 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
 TEST_F(MessageQueueUtilsTest, PopMessagesFromQueueTest)
 {
     EXPECT_CALL(mockQueue, popN(MessageType::STATEFUL, 1, "")).Times(1);
-    popMessagesFromQueue(mockQueue, MessageType::STATEFUL);
+    PopMessagesFromQueue(mockQueue, MessageType::STATEFUL);
 }
 
 TEST_F(MessageQueueUtilsTest, PushCommandsToQueueTest)
@@ -71,7 +71,7 @@ TEST_F(MessageQueueUtilsTest, PushCommandsToQueueTest)
 
     EXPECT_CALL(mockQueue, push(::testing::ContainerEq(expectedMessages))).Times(1);
 
-    pushCommandsToQueue(mockQueue, commandsJson.dump());
+    PushCommandsToQueue(mockQueue, commandsJson.dump());
 }
 
 TEST_F(MessageQueueUtilsTest, NoCommandsToPushTest)
@@ -81,7 +81,7 @@ TEST_F(MessageQueueUtilsTest, NoCommandsToPushTest)
 
     EXPECT_CALL(mockQueue, push(::testing::_)).Times(0);
 
-    pushCommandsToQueue(mockQueue, commandsJson.dump());
+    PushCommandsToQueue(mockQueue, commandsJson.dump());
 }
 
 int main(int argc, char** argv)

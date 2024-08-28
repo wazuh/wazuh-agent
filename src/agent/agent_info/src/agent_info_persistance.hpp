@@ -13,7 +13,7 @@ namespace SQLite
 class AgentInfoPersistance
 {
 public:
-    explicit AgentInfoPersistance(const std::string& db_path = sqlitedb_path);
+    explicit AgentInfoPersistance(const std::string& dbPath = sqlitedb_path);
     ~AgentInfoPersistance();
 
     AgentInfoPersistance(const AgentInfoPersistance&) = delete;

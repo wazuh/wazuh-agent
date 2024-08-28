@@ -219,7 +219,7 @@ protected:
     void TearDown() override {}
 };
 
-void storeMessages(SQLiteStorage& storage, const json& messages, const std::string& tableName)
+void StoreMessages(SQLiteStorage& storage, const json& messages, const std::string& tableName)
 {
     for (const auto& message : messages)
     {
@@ -227,7 +227,7 @@ void storeMessages(SQLiteStorage& storage, const json& messages, const std::stri
     }
 }
 
-void retrieveMessages(SQLiteStorage& storage,
+void RetrieveMessages(SQLiteStorage& storage,
                       int count,
                       std::vector<json>& retrievedMessages,
                       const std::string& tableName)
@@ -235,7 +235,7 @@ void retrieveMessages(SQLiteStorage& storage,
     retrievedMessages = storage.RetrieveMultiple(count, tableName);
 }
 
-void removeMessages(SQLiteStorage& storage, int count, const std::string& tableName)
+void RemoveMessages(SQLiteStorage& storage, int count, const std::string& tableName)
 {
     storage.RemoveMultiple(count, tableName);
 }
@@ -255,8 +255,8 @@ TEST_F(SQLiteStorageMultithreadedTest, MultithreadedStoreAndRetrieve)
     }
 
     // Create threads for storing messages
-    std::thread thread1(storeMessages, std::ref(storage1), messages1, m_vMessageTypeStrings[0]);
-    std::thread thread2(storeMessages, std::ref(storage1), messages2, m_vMessageTypeStrings[0]);
+    std::thread thread1(StoreMessages, std::ref(storage1), messages1, m_vMessageTypeStrings[0]);
+    std::thread thread2(StoreMessages, std::ref(storage1), messages2, m_vMessageTypeStrings[0]);
 
     // Join the threads to ensure they complete
     thread1.join();
@@ -264,8 +264,8 @@ TEST_F(SQLiteStorageMultithreadedTest, MultithreadedStoreAndRetrieve)
 
     EXPECT_EQ(storage1.GetElementCount(m_vMessageTypeStrings[0]), 2 * messagesToStore);
 
-    std::thread thread3(removeMessages, std::ref(storage1), messagesToStore, m_vMessageTypeStrings[0]);
-    std::thread thread4(removeMessages, std::ref(storage1), messagesToStore, m_vMessageTypeStrings[0]);
+    std::thread thread3(RemoveMessages, std::ref(storage1), messagesToStore, m_vMessageTypeStrings[0]);
+    std::thread thread4(RemoveMessages, std::ref(storage1), messagesToStore, m_vMessageTypeStrings[0]);
 
     // Join the threads to ensure they complete
     thread3.join();
