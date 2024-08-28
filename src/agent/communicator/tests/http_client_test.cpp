@@ -3,74 +3,15 @@
 
 #include <http_client.hpp>
 
-#include <ihttp_resolver.hpp>
-#include <ihttp_resolver_factory.hpp>
-#include <ihttp_socket.hpp>
-#include <ihttp_socket_factory.hpp>
+#include "mocks/mock_http_resolver.hpp"
+#include "mocks/mock_http_resolver_factory.hpp"
+#include "mocks/mock_http_socket.hpp"
+#include "mocks/mock_http_socket_factory.hpp"
 
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
 
 #include <string>
-
-class MockHttpResolver : public http_client::IHttpResolver
-{
-public:
-    MOCK_METHOD(boost::asio::ip::tcp::resolver::results_type,
-                Resolve,
-                (const std::string& host, const std::string& port),
-                (override));
-
-    MOCK_METHOD(boost::asio::awaitable<boost::asio::ip::tcp::resolver::results_type>,
-                AsyncResolve,
-                (const std::string& host, const std::string& port),
-                (override));
-};
-
-class MockHttpSocket : public http_client::IHttpSocket
-{
-public:
-    MOCK_METHOD(void, Connect, (const boost::asio::ip::tcp::resolver::results_type& endpoints), (override));
-
-    MOCK_METHOD(boost::asio::awaitable<void>,
-                AsyncConnect,
-                (const boost::asio::ip::tcp::resolver::results_type& endpoints, boost::system::error_code& code),
-                (override));
-
-    MOCK_METHOD(void, Write, (const boost::beast::http::request<boost::beast::http::string_body>& req), (override));
-
-    MOCK_METHOD(boost::asio::awaitable<void>,
-                AsyncWrite,
-                (const boost::beast::http::request<boost::beast::http::string_body>& req, boost::beast::error_code& ec),
-                (override));
-
-    MOCK_METHOD(void, Read, (boost::beast::http::response<boost::beast::http::dynamic_body> & res), (override));
-
-    MOCK_METHOD(boost::asio::awaitable<void>,
-                AsyncRead,
-                (boost::beast::http::response<boost::beast::http::dynamic_body> & res, boost::beast::error_code& ec),
-                (override));
-
-    MOCK_METHOD(void, Close, (), (override));
-};
-
-class MockHttpResolverFactory : public http_client::IHttpResolverFactory
-{
-public:
-    MOCK_METHOD(std::unique_ptr<http_client::IHttpResolver>,
-                Create,
-                (const boost::asio::any_io_executor& executor),
-                (override));
-};
-
-class MockHttpSocketFactory : public http_client::IHttpSocketFactory
-{
-public:
-    MOCK_METHOD(std::unique_ptr<http_client::IHttpSocket>,
-                Create,
-                (const boost::asio::any_io_executor& executor),
-                (override));
-};
 
 using namespace testing;
 
