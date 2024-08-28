@@ -6,7 +6,7 @@
 #include <exception>
 #include <iostream>
 
-SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::vector<std::string> tableNames)
+SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::vector<std::string>& tableNames)
     : m_dbName(dbName)
     , m_db(make_unique<SQLite::Database>(dbName, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE))
 {

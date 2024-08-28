@@ -15,7 +15,7 @@ Agent::Agent(std::unique_ptr<ISignalHandler> signalHandler)
                      m_agentInfo.GetUUID(),
                      m_agentInfo.GetKey(),
                      [this](std::string table, std::string key) -> std::string
-                     { return m_configurationParser.GetConfig<std::string>(table, key); })
+                     { return m_configurationParser.GetConfig<std::string>(std::move(table), std::move(key)); })
 {
     m_taskManager.Start(std::thread::hardware_concurrency());
 }

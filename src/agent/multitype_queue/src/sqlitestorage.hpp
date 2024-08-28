@@ -23,7 +23,7 @@
 class SQLiteStorage : public Persistence
 {
 public:
-    SQLiteStorage(const std::string& dbName, const std::vector<std::string> tableName);
+    SQLiteStorage(const std::string& dbName, const std::vector<std::string>& tableName);
 
     /**
      * @brief Delete copy constructor

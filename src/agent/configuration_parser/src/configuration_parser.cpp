@@ -1,4 +1,5 @@
 #include <configuration_parser.hpp>
+#include <utility>
 
 namespace
 {
@@ -30,7 +31,7 @@ namespace configuration
     {
         try
         {
-            tbl = toml::parse_str(stringToParse, toml::spec::v(1, 0, 0));
+            tbl = toml::parse_str(std::move(stringToParse), toml::spec::v(1, 0, 0));
         }
         catch (const std::exception& e)
         {
