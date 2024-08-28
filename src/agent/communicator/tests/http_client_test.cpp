@@ -27,6 +27,73 @@ protected:
         client = std::make_unique<http_client::HttpClient>(mockResolverFactory, mockSocketFactory);
     }
 
+    void SetupMockResolverFactory()
+    {
+        EXPECT_CALL(*mockResolverFactory, Create(_))
+            .WillOnce(Invoke(
+                [&](const auto& executor) -> std::unique_ptr<http_client::IHttpResolver>
+                {
+                    EXPECT_TRUE(executor);
+                    return std::move(mockResolver);
+                }));
+    }
+
+    void SetupMockSocketFactory()
+    {
+        EXPECT_CALL(*mockSocketFactory, Create(_))
+            .WillOnce(Invoke(
+                [&](const auto& executor) -> std::unique_ptr<http_client::IHttpSocket>
+                {
+                    EXPECT_TRUE(executor);
+                    return std::move(mockSocket);
+                }));
+    }
+
+    void SetupMockResolverExpectations()
+    {
+        EXPECT_CALL(*mockResolver, AsyncResolve(_, _))
+            .WillOnce(
+                Invoke([](const std::string&,
+                          const std::string&) -> boost::asio::awaitable<boost::asio::ip::tcp::resolver::results_type>
+                       { co_return boost::asio::ip::tcp::resolver::results_type {}; }));
+    }
+
+    void SetupMockSocketConnectExpectations(boost::system::error_code connectEc = {})
+    {
+        EXPECT_CALL(*mockSocket, AsyncConnect(_, _))
+            .WillOnce(Invoke(
+                [connectEc](const boost::asio::ip::tcp::resolver::results_type&,
+                            boost::system::error_code& ec) -> boost::asio::awaitable<void>
+                {
+                    ec = connectEc;
+                    co_return;
+                }));
+    }
+
+    void SetupMockSocketWriteExpectations(boost::beast::error_code writeEc = {})
+    {
+        EXPECT_CALL(*mockSocket, AsyncWrite(_, _))
+            .WillOnce(Invoke(
+                [writeEc](const boost::beast::http::request<boost::beast::http::string_body>&,
+                          boost::beast::error_code& ec) -> boost::asio::awaitable<void>
+                {
+                    ec = writeEc;
+                    co_return;
+                }));
+    }
+
+    void SetupMockSocketReadExpectations(boost::beast::http::status status, boost::beast::error_code readEc = {})
+    {
+        EXPECT_CALL(*mockSocket, AsyncRead(_, _))
+            .WillOnce(Invoke(
+                [status, readEc](auto& res, boost::beast::error_code& ec) -> boost::asio::awaitable<void>
+                {
+                    res.result(status);
+                    ec = readEc;
+                    co_return;
+                }));
+    }
+
     std::shared_ptr<MockHttpResolverFactory> mockResolverFactory;
     std::shared_ptr<MockHttpSocketFactory> mockSocketFactory;
     std::unique_ptr<MockHttpResolver> mockResolver;
@@ -90,21 +157,8 @@ TEST(CreateHttpRequestTest, AuthorizationBasic)
 
 TEST_F(HttpClientTest, PerformHttpRequest_Success)
 {
-    EXPECT_CALL(*mockResolverFactory, Create(_))
-        .WillOnce(Invoke(
-            [&](const auto& executor) -> std::unique_ptr<http_client::IHttpResolver>
-            {
-                EXPECT_TRUE(executor);
-                return std::move(mockResolver);
-            }));
-
-    EXPECT_CALL(*mockSocketFactory, Create(_))
-        .WillOnce(Invoke(
-            [&](const auto& executor) -> std::unique_ptr<http_client::IHttpSocket>
-            {
-                EXPECT_TRUE(executor);
-                return std::move(mockSocket);
-            }));
+    SetupMockResolverFactory();
+    SetupMockSocketFactory();
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
     EXPECT_CALL(*mockSocket, Connect(_)).Times(1);
@@ -119,13 +173,7 @@ TEST_F(HttpClientTest, PerformHttpRequest_Success)
 
 TEST_F(HttpClientTest, PerformHttpRequest_ExceptionThrown)
 {
-    EXPECT_CALL(*mockResolverFactory, Create(_))
-        .WillOnce(Invoke(
-            [&](const auto& executor) -> std::unique_ptr<http_client::IHttpResolver>
-            {
-                EXPECT_TRUE(executor);
-                return std::move(mockResolver);
-            }));
+    SetupMockResolverFactory();
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Throw(std::runtime_error("Simulated resolution failure")));
 
@@ -139,53 +187,12 @@ TEST_F(HttpClientTest, PerformHttpRequest_ExceptionThrown)
 
 TEST_F(HttpClientTest, Co_PerformHttpRequest_Success)
 {
-    EXPECT_CALL(*mockResolverFactory, Create(_))
-        .WillOnce(Invoke(
-            [&](const auto& executor) -> std::unique_ptr<http_client::IHttpResolver>
-            {
-                EXPECT_TRUE(executor);
-                return std::move(mockResolver);
-            }));
-
-    EXPECT_CALL(*mockSocketFactory, Create(_))
-        .WillOnce(Invoke(
-            [&](const auto& executor) -> std::unique_ptr<http_client::IHttpSocket>
-            {
-                EXPECT_TRUE(executor);
-                return std::move(mockSocket);
-            }));
-
-    EXPECT_CALL(*mockResolver, AsyncResolve(_, _))
-        .WillOnce(Invoke([](const std::string&,
-                            const std::string&) -> boost::asio::awaitable<boost::asio::ip::tcp::resolver::results_type>
-                         { co_return boost::asio::ip::tcp::resolver::results_type {}; }));
-
-    EXPECT_CALL(*mockSocket, AsyncConnect(_, _))
-        .WillOnce(Invoke(
-            [](const boost::asio::ip::tcp::resolver::results_type&,
-               boost::system::error_code& ec) -> boost::asio::awaitable<void>
-            {
-                ec = boost::system::errc::make_error_code(boost::system::errc::success);
-                co_return;
-            }));
-
-    EXPECT_CALL(*mockSocket, AsyncWrite(_, _))
-        .WillOnce(Invoke(
-            [](const boost::beast::http::request<boost::beast::http::string_body>&,
-               boost::beast::error_code& ec) -> boost::asio::awaitable<void>
-            {
-                ec = {};
-                co_return;
-            }));
-
-    EXPECT_CALL(*mockSocket, AsyncRead(_, _))
-        .WillOnce(Invoke(
-            [](auto& res, boost::beast::error_code& ec) -> boost::asio::awaitable<void>
-            {
-                res.result(boost::beast::http::status::ok);
-                ec = {};
-                co_return;
-            }));
+    SetupMockResolverFactory();
+    SetupMockSocketFactory();
+    SetupMockResolverExpectations();
+    SetupMockSocketConnectExpectations();
+    SetupMockSocketWriteExpectations();
+    SetupMockSocketReadExpectations(boost::beast::http::status::ok);
 
     auto getMessagesCalled = false;
     auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::string>
@@ -220,35 +227,10 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_Success)
 
 TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
 {
-    EXPECT_CALL(*mockResolverFactory, Create(_))
-        .WillOnce(Invoke(
-            [&](const auto& executor) -> std::unique_ptr<http_client::IHttpResolver>
-            {
-                EXPECT_TRUE(executor);
-                return std::move(mockResolver);
-            }));
-
-    EXPECT_CALL(*mockSocketFactory, Create(_))
-        .WillOnce(Invoke(
-            [&](const auto& executor) -> std::unique_ptr<http_client::IHttpSocket>
-            {
-                EXPECT_TRUE(executor);
-                return std::move(mockSocket);
-            }));
-
-    EXPECT_CALL(*mockResolver, AsyncResolve(_, _))
-        .WillOnce(Invoke([](const std::string&,
-                            const std::string&) -> boost::asio::awaitable<boost::asio::ip::tcp::resolver::results_type>
-                         { co_return boost::asio::ip::tcp::resolver::results_type {}; }));
-
-    EXPECT_CALL(*mockSocket, AsyncConnect(_, _))
-        .WillOnce(Invoke(
-            [](const boost::asio::ip::tcp::resolver::results_type&,
-               boost::system::error_code& ec) -> boost::asio::awaitable<void>
-            {
-                ec = boost::system::errc::make_error_code(boost::system::errc::bad_address);
-                co_return;
-            }));
+    SetupMockResolverFactory();
+    SetupMockSocketFactory();
+    SetupMockResolverExpectations();
+    SetupMockSocketConnectExpectations(boost::system::errc::make_error_code(boost::system::errc::bad_address));
 
     auto getMessagesCalled = false;
     auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::string>
@@ -283,44 +265,11 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
 
 TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails)
 {
-    EXPECT_CALL(*mockResolverFactory, Create(_))
-        .WillOnce(Invoke(
-            [&](const auto& executor) -> std::unique_ptr<http_client::IHttpResolver>
-            {
-                EXPECT_TRUE(executor);
-                return std::move(mockResolver);
-            }));
-
-    EXPECT_CALL(*mockSocketFactory, Create(_))
-        .WillOnce(Invoke(
-            [&](const auto& executor) -> std::unique_ptr<http_client::IHttpSocket>
-            {
-                EXPECT_TRUE(executor);
-                return std::move(mockSocket);
-            }));
-
-    EXPECT_CALL(*mockResolver, AsyncResolve(_, _))
-        .WillOnce(Invoke([](const std::string&,
-                            const std::string&) -> boost::asio::awaitable<boost::asio::ip::tcp::resolver::results_type>
-                         { co_return boost::asio::ip::tcp::resolver::results_type {}; }));
-
-    EXPECT_CALL(*mockSocket, AsyncConnect(_, _))
-        .WillOnce(Invoke(
-            [](const boost::asio::ip::tcp::resolver::results_type&,
-               boost::system::error_code& ec) -> boost::asio::awaitable<void>
-            {
-                ec = boost::system::errc::make_error_code(boost::system::errc::success);
-                co_return;
-            }));
-
-    EXPECT_CALL(*mockSocket, AsyncWrite(_, _))
-        .WillOnce(Invoke(
-            [](const boost::beast::http::request<boost::beast::http::string_body>&,
-               boost::beast::error_code& ec) -> boost::asio::awaitable<void>
-            {
-                ec = boost::system::errc::make_error_code(boost::system::errc::bad_address);
-                co_return;
-            }));
+    SetupMockResolverFactory();
+    SetupMockSocketFactory();
+    SetupMockResolverExpectations();
+    SetupMockSocketConnectExpectations(boost::system::errc::make_error_code(boost::system::errc::success));
+    SetupMockSocketWriteExpectations(boost::system::errc::make_error_code(boost::system::errc::bad_address));
 
     auto getMessagesCalled = false;
     auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::string>
@@ -355,52 +304,13 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails
 
 TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
 {
-    EXPECT_CALL(*mockResolverFactory, Create(_))
-        .WillOnce(Invoke(
-            [&](const auto& executor) -> std::unique_ptr<http_client::IHttpResolver>
-            {
-                EXPECT_TRUE(executor);
-                return std::move(mockResolver);
-            }));
-
-    EXPECT_CALL(*mockSocketFactory, Create(_))
-        .WillOnce(Invoke(
-            [&](const auto& executor) -> std::unique_ptr<http_client::IHttpSocket>
-            {
-                EXPECT_TRUE(executor);
-                return std::move(mockSocket);
-            }));
-
-    EXPECT_CALL(*mockResolver, AsyncResolve(_, _))
-        .WillOnce(Invoke([](const std::string&,
-                            const std::string&) -> boost::asio::awaitable<boost::asio::ip::tcp::resolver::results_type>
-                         { co_return boost::asio::ip::tcp::resolver::results_type {}; }));
-
-    EXPECT_CALL(*mockSocket, AsyncConnect(_, _))
-        .WillOnce(Invoke(
-            [](const boost::asio::ip::tcp::resolver::results_type&,
-               boost::system::error_code& ec) -> boost::asio::awaitable<void>
-            {
-                ec = boost::system::errc::make_error_code(boost::system::errc::success);
-                co_return;
-            }));
-
-    EXPECT_CALL(*mockSocket, AsyncWrite(_, _))
-        .WillOnce(Invoke(
-            [](const boost::beast::http::request<boost::beast::http::string_body>&,
-               boost::beast::error_code& ec) -> boost::asio::awaitable<void>
-            {
-                ec = {};
-                co_return;
-            }));
-
-    EXPECT_CALL(*mockSocket, AsyncRead(_, _))
-        .WillOnce(Invoke(
-            [](auto& res, boost::beast::error_code& ec) -> boost::asio::awaitable<void>
-            {
-                ec = boost::system::errc::make_error_code(boost::system::errc::bad_address);
-                co_return;
-            }));
+    SetupMockResolverFactory();
+    SetupMockSocketFactory();
+    SetupMockResolverExpectations();
+    SetupMockSocketConnectExpectations(boost::system::errc::make_error_code(boost::system::errc::success));
+    SetupMockSocketWriteExpectations();
+    SetupMockSocketReadExpectations(boost::beast::http::status::not_found,
+                                    boost::system::errc::make_error_code(boost::system::errc::bad_address));
 
     auto getMessagesCalled = false;
     auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::string>
@@ -435,53 +345,12 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
 
 TEST_F(HttpClientTest, Co_PerformHttpRequest_UnauthorizedCalledWhenAuthorizationFails)
 {
-    EXPECT_CALL(*mockResolverFactory, Create(_))
-        .WillOnce(Invoke(
-            [&](const auto& executor) -> std::unique_ptr<http_client::IHttpResolver>
-            {
-                EXPECT_TRUE(executor);
-                return std::move(mockResolver);
-            }));
-
-    EXPECT_CALL(*mockSocketFactory, Create(_))
-        .WillOnce(Invoke(
-            [&](const auto& executor) -> std::unique_ptr<http_client::IHttpSocket>
-            {
-                EXPECT_TRUE(executor);
-                return std::move(mockSocket);
-            }));
-
-    EXPECT_CALL(*mockResolver, AsyncResolve(_, _))
-        .WillOnce(Invoke([](const std::string&,
-                            const std::string&) -> boost::asio::awaitable<boost::asio::ip::tcp::resolver::results_type>
-                         { co_return boost::asio::ip::tcp::resolver::results_type {}; }));
-
-    EXPECT_CALL(*mockSocket, AsyncConnect(_, _))
-        .WillOnce(Invoke(
-            [](const boost::asio::ip::tcp::resolver::results_type&,
-               boost::system::error_code& ec) -> boost::asio::awaitable<void>
-            {
-                ec = boost::system::errc::make_error_code(boost::system::errc::success);
-                co_return;
-            }));
-
-    EXPECT_CALL(*mockSocket, AsyncWrite(_, _))
-        .WillOnce(Invoke(
-            [](const boost::beast::http::request<boost::beast::http::string_body>&,
-               boost::beast::error_code& ec) -> boost::asio::awaitable<void>
-            {
-                ec = {};
-                co_return;
-            }));
-
-    EXPECT_CALL(*mockSocket, AsyncRead(_, _))
-        .WillOnce(Invoke(
-            [](auto& res, boost::beast::error_code& ec) -> boost::asio::awaitable<void>
-            {
-                res.result(boost::beast::http::status::unauthorized);
-                ec = {};
-                co_return;
-            }));
+    SetupMockResolverFactory();
+    SetupMockSocketFactory();
+    SetupMockResolverExpectations();
+    SetupMockSocketConnectExpectations(boost::system::errc::make_error_code(boost::system::errc::success));
+    SetupMockSocketWriteExpectations();
+    SetupMockSocketReadExpectations(boost::beast::http::status::unauthorized);
 
     auto getMessagesCalled = false;
     auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::string>
