@@ -5,7 +5,7 @@
 
 using namespace std;
 
-int modulesExec() {
+void modulesExec() {
     ModuleManager moduleManager;
     Configuration config;
     bool running{true};
@@ -20,5 +20,4 @@ int modulesExec() {
 
     moduleManager.stop();
 
-    return 0;
 }

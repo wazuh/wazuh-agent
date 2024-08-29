@@ -181,7 +181,7 @@ class SQLiteDBEngine final : public DbSync::IDbEngine
 
         ColumnType columnTypeName(const std::string& type);
 
-        bool bindJsonData(const std::shared_ptr<SQLite::IStatement> stmt,
+        bool bindJsonData(const std::shared_ptr<SQLiteLegacy::IStatement> stmt,
                           const ColumnData& cd,
                           const nlohmann::json::value_type& valueType,
                           const unsigned int cid);
@@ -222,13 +222,13 @@ class SQLiteDBEngine final : public DbSync::IDbEngine
         void deleteRowsbyPK(const std::string& table,
                             const nlohmann::json& data);
 
-        void getTableData(std::shared_ptr<SQLite::IStatement>const stmt,
+        void getTableData(std::shared_ptr<SQLiteLegacy::IStatement>const stmt,
                           const int32_t index,
                           const ColumnType& type,
                           const std::string& fieldName,
                           Row& row);
 
-        void bindFieldData(const std::shared_ptr<SQLite::IStatement> stmt,
+        void bindFieldData(const std::shared_ptr<SQLiteLegacy::IStatement> stmt,
                            const int32_t index,
                            const TableField& fieldData);
 
@@ -295,7 +295,7 @@ class SQLiteDBEngine final : public DbSync::IDbEngine
 
         SQLiteDBEngine& operator=(const SQLiteDBEngine&) = delete;
 
-        std::shared_ptr<SQLite::IStatement>const getStatement(const std::string& sql);
+        std::shared_ptr<SQLiteLegacy::IStatement>const getStatement(const std::string& sql);
 
         std::string getSelectAllQuery(const std::string& table,
                                       const TableColumns& tableFields) const;
@@ -316,11 +316,11 @@ class SQLiteDBEngine final : public DbSync::IDbEngine
                            const std::function<void()> callback = {});
 
         Utils::MapWrapperSafe<std::string, TableColumns> m_tableFields;
-        std::deque<std::pair<std::string, std::shared_ptr<SQLite::IStatement>>> m_statementsCache;
+        std::deque<std::pair<std::string, std::shared_ptr<SQLiteLegacy::IStatement>>> m_statementsCache;
         const std::shared_ptr<ISQLiteFactory> m_sqliteFactory;
-        std::shared_ptr<SQLite::IConnection> m_sqliteConnection;
+        std::shared_ptr<SQLiteLegacy::IConnection> m_sqliteConnection;
         std::mutex m_stmtMutex;
-        std::unique_ptr<SQLite::ITransaction> m_transaction;
+        std::unique_ptr<SQLiteLegacy::ITransaction> m_transaction;
         std::mutex m_maxRowsMutex;
         std::map<std::string, MaxRows> m_maxRows;
 };

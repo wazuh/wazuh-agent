@@ -114,7 +114,7 @@ constexpr auto DB_PERMISSIONS
 };
 
 
-namespace SQLite
+namespace SQLiteLegacy
 {
     const constexpr auto MAX_ROWS_ERROR_STRING {"Too Many Rows."};
 
@@ -188,9 +188,9 @@ namespace SQLite
 
     };
 
-}//namespace SQLite
+}//namespace SQLiteLegacy
 
-using namespace SQLite;
+using namespace SQLiteLegacy;
 using ExpandedSQLPtr = std::unique_ptr<char, CustomDeleter<decltype(&sqlite3_free), sqlite3_free>>;
 
 static void checkSqliteResult(const int result,
@@ -228,7 +228,7 @@ static sqlite3_stmt* prepareSQLiteStatement(std::shared_ptr<IConnection>& connec
     return pStatement;
 }
 
-namespace SQLite
+namespace SQLiteLegacy
 {
     class Connection : public IConnection
     {
