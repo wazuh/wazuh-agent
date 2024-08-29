@@ -8,6 +8,8 @@
 
 #include "mocks/mock_http_client.hpp"
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+
 using namespace testing;
 
 namespace
@@ -179,3 +181,5 @@ int main(int argc, char** argv)
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
+
+// NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)

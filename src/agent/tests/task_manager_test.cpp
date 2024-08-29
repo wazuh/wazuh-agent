@@ -45,6 +45,7 @@ TEST_F(TaskManagerTest, EnqueueCoroutineTask)
     taskManager.Start(1);
 
     std::atomic<int> counter = 0;
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
     auto coroutineTask = [&counter]() -> boost::asio::awaitable<void>
     {
         ++counter;

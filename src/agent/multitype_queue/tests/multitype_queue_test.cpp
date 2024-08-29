@@ -488,6 +488,7 @@ TEST_F(MultiTypeQueueTest, GetNextAwaitableBase)
     // Coroutine that waits till there's a message of the needed type on the queue
     boost::asio::co_spawn(
         io_context,
+        // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
         [&multiTypeQueue]() -> boost::asio::awaitable<void>
         {
             auto messageReceived = co_await multiTypeQueue.getNextNAwaitable(MessageType::STATELESS, 2);
@@ -531,6 +532,7 @@ TEST_F(MultiTypeQueueTest, PushAwaitable)
     // Coroutine that waits till there's space to push a new message
     boost::asio::co_spawn(
         io_context,
+        // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
         [&multiTypeQueue]() -> boost::asio::awaitable<void>
         {
             const MessageType messageType {MessageType::STATEFUL};

@@ -35,8 +35,10 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
 {
     Message testMessage {MessageType::STATEFUL, "test_data"};
 
+    // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
     EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATEFUL, 1, ""))
         .WillOnce([&testMessage]() -> boost::asio::awaitable<Message> { co_return testMessage; });
+    // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
     io_context.restart();
 

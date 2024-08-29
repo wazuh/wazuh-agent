@@ -13,7 +13,7 @@
 
 #include <string>
 
-// NOLINTBEGIN(cppcoreguidelines-avoid-reference-coroutine-parameters)
+// NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines,cppcoreguidelines-avoid-reference-coroutine-parameters)
 
 using namespace testing;
 
@@ -470,4 +470,4 @@ int main(int argc, char** argv)
     return RUN_ALL_TESTS();
 }
 
-// NOLINTEND(cppcoreguidelines-avoid-reference-coroutine-parameters)
+// NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines,cppcoreguidelines-avoid-reference-coroutine-parameters)
