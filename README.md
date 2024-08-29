@@ -1,3 +1,13 @@
+# ⚠️ Warning: Work in Progress ⚠️
+
+> **Warning**
+>
+> If you are looking for the Wazuh Agent repository, please go to https://github.com/wazuh/wazuh
+>
+> This repository is currently an **experimental** work. It doesn't feature any released or in production work by Wazuh (see above). The contents are not stable, and there may be significant changes or issues.
+
+---
+
 # Wazuh
 
 [![Slack](https://img.shields.io/badge/slack-join-blue.svg)](https://wazuh.com/community/join-us-on-slack/)
