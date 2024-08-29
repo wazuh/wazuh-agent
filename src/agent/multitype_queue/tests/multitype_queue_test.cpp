@@ -17,8 +17,8 @@
 
 using json = nlohmann::json;
 
-#define BIG_QUEUE_CAPACITY   10
-#define SMALL_QUEUE_CAPACITY 2
+constexpr int BIG_QUEUE_CAPACITY = 10;
+constexpr int SMALL_QUEUE_CAPACITY = 2;
 
 const json BASE_DATA_CONTENT = R"({{"data": "for STATELESS_0"}})";
 const json MULTIPLE_DATA_CONTENT = {"content 1", "content 2", "content 3"};
