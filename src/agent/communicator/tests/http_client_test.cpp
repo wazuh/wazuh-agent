@@ -409,6 +409,8 @@ TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_Success)
     const auto token = client->AuthenticateWithUuidAndKey("localhost", "8080", "test-uuid", "test-key");
 
     ASSERT_TRUE(token.has_value());
+
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
     EXPECT_EQ(token.value(), "valid_token");
 }
 
@@ -446,6 +448,8 @@ TEST_F(HttpClientTest, AuthenticateWithUserPassword_Success)
     const auto token = client->AuthenticateWithUserPassword("localhost", "8080", "user", "password");
 
     ASSERT_TRUE(token.has_value());
+
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
     EXPECT_EQ(token.value(), "valid_token");
 }
 
