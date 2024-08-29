@@ -63,7 +63,7 @@ protected:
 
     MockHttpClient mockHttpClient;
     std::unique_ptr<AgentInfo> agent;
-    const registration::UserCredentials userCredentials {"user", "password"};
+    registration::UserCredentials userCredentials {"user", "password"};
 };
 
 TEST_F(RegisterTest, RegistrationTestSuccess)
