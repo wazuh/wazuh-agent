@@ -24,7 +24,7 @@ constexpr auto DB_PERMISSIONS
     0640
 };
 
-using namespace SQLite;
+using namespace SQLiteLegacy;
 using ExpandedSQLPtr = std::unique_ptr<char, CustomDeleter<decltype(&sqlite3_free), sqlite3_free>>;
 
 static void checkSqliteResult(const int result,
@@ -271,7 +271,7 @@ std::string Statement::expand()
 
 std::unique_ptr<IColumn> Statement::column(const int32_t index)
 {
-    return std::make_unique<SQLite::Column>(m_stmt, index);
+    return std::make_unique<SQLiteLegacy::Column>(m_stmt, index);
 }
 
 int Statement::columnsCount() const
