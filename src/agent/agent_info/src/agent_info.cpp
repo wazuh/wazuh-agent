@@ -36,10 +36,12 @@ std::string AgentInfo::GetName() const
 {
     return m_name;
 }
+
 std::string AgentInfo::GetKey() const
 {
     return m_key;
 }
+
 std::string AgentInfo::GetUUID() const
 {
     return m_uuid;

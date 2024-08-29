@@ -14,12 +14,14 @@ namespace
 {
 #ifdef _WIN32
     const DWORD TEST_SIGNAL_TO_RAISE = CTRL_C_EVENT;
+
     void RaiseSignal()
     {
         SignalHandler::HandleSignal(TEST_SIGNAL_TO_RAISE);
     }
 #else
     const int TEST_SIGNAL_TO_RAISE = SIGUSR1;
+
     void RaiseSignal()
     {
         std::raise(TEST_SIGNAL_TO_RAISE);

@@ -25,6 +25,8 @@ FixNamespaceComments: 'true'
 IncludeBlocks: Preserve
 IndentCaseLabels: 'true'
 InsertNewlineAtEOF: 'true'
+MaxEmptyLinesToKeep: 1
+SeparateDefinitionBlocks: 'Always'
 SortIncludes: 'true'
 SpaceAfterCStyleCast: 'false'
 SpaceAfterLogicalNot: 'false'
@@ -45,4 +47,3 @@ UseTab: Never
 PointerAlignment: Left
 NamespaceIndentation: All
 ColumnLimit: 120
-
