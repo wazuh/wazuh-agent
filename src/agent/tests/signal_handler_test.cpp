@@ -13,16 +13,18 @@
 namespace
 {
 #ifdef _WIN32
-    const DWORD TestSignalToRaise = CTRL_C_EVENT;
+    const DWORD TEST_SIGNAL_TO_RAISE = CTRL_C_EVENT;
+
     void RaiseSignal()
     {
-        SignalHandler::HandleSignal(TestSignalToRaise);
+        SignalHandler::HandleSignal(TEST_SIGNAL_TO_RAISE);
     }
 #else
-    const int TestSignalToRaise = SIGUSR1;
+    const int TEST_SIGNAL_TO_RAISE = SIGUSR1;
+
     void RaiseSignal()
     {
-        std::raise(TestSignalToRaise);
+        std::raise(TEST_SIGNAL_TO_RAISE);
     }
 #endif
 } // namespace
@@ -35,7 +37,7 @@ protected:
         SignalHandler::KeepRunning.store(true);
     }
 
-    SignalHandler signalHandler = SignalHandler({TestSignalToRaise});
+    SignalHandler signalHandler = SignalHandler({TEST_SIGNAL_TO_RAISE});
 };
 
 TEST_F(SignalHandlerTest, KeepRunningIsTheDefault)

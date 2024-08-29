@@ -2,7 +2,7 @@ find_package(GTest CONFIG REQUIRED)
 
 add_executable(agent_test agent_test.cpp)
 target_include_directories(agent_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include ${CMAKE_CURRENT_SOURCE_DIR}/../src)
-target_link_libraries(agent_test PRIVATE Agent GTest::gtest)
+target_link_libraries(agent_test PRIVATE Agent GTest::gtest GTest::gmock)
 add_test(NAME AgentTest COMMAND agent_test)
 
 add_executable(task_manager_test task_manager_test.cpp)
@@ -24,3 +24,8 @@ add_executable(message_queue_utils_test message_queue_utils_test.cpp)
 target_include_directories(message_queue_utils_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 target_link_libraries(message_queue_utils_test PRIVATE Agent MultiTypeQueue GTest::gtest GTest::gmock)
 add_test(NAME MessageQueueUtilsTest COMMAND message_queue_utils_test)
+
+add_executable(cmd_ln_parser_test cmd_ln_parser_test.cpp)
+target_include_directories(cmd_ln_parser_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+target_link_libraries(cmd_ln_parser_test PRIVATE GTest::gtest)
+add_test(NAME CommandlineParserTest COMMAND cmd_ln_parser_test)

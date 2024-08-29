@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ihttp_client.hpp>
+
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/beast/http/status.hpp>
@@ -16,9 +18,10 @@ namespace communicator
     class Communicator
     {
     public:
-        Communicator(const std::string& uuid,
-                     const std::string& key,
-                     const std::function<std::string(std::string, std::string)> GetStringConfigValue);
+        Communicator(std::unique_ptr<http_client::IHttpClient> httpClient,
+                     std::string uuid,
+                     std::string key,
+                     const std::function<std::string(std::string, std::string)>& getStringConfigValue);
 
         boost::asio::awaitable<void> WaitForTokenExpirationAndAuthenticate();
         boost::asio::awaitable<void> GetCommandsFromManager(std::function<void(const std::string&)> onSuccess);
@@ -29,12 +32,17 @@ namespace communicator
         StatelessMessageProcessingTask(std::function<boost::asio::awaitable<std::string>()> getMessages,
                                        std::function<void(const std::string&)> onSuccess);
 
+        void Stop();
+
     private:
         long GetTokenRemainingSecs() const;
 
         boost::beast::http::status SendAuthenticationRequest();
 
         void TryReAuthenticate();
+
+        std::atomic<bool> m_keepRunning = true;
+        std::unique_ptr<http_client::IHttpClient> m_httpClient;
 
         std::mutex m_reAuthMutex;
         std::atomic<bool> m_isReAuthenticating = false;
@@ -43,7 +51,7 @@ namespace communicator
         std::string m_port;
         std::string m_uuid;
         std::string m_key;
-        std::string m_token;
+        std::shared_ptr<std::string> m_token;
         long long m_tokenExpTimeInSeconds = 0;
         std::unique_ptr<boost::asio::steady_timer> m_tokenExpTimer;
     };

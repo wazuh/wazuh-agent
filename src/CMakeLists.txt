@@ -12,6 +12,9 @@ add_subdirectory(agent)
 add_executable(wazuh-agent agent/src/main.cpp)
 target_link_libraries(wazuh-agent Agent)
 
+include(cmake/ConfigureTarget.cmake)
+configure_target(Agent)
+
 if(BUILD_TESTS)
     enable_testing()
 endif()

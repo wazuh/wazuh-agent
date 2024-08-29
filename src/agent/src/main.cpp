@@ -9,44 +9,53 @@
 
 int main(int argc, char* argv[])
 {
-    CommandlineParser cmdParser(argc, argv);
-
-    if (cmdParser.OptionExists("--register"))
+    try
     {
-        std::cout << "Starting registration process" << std::endl;
+        CommandlineParser cmdParser(argc, argv);
 
-        if (cmdParser.OptionExists("--user") && cmdParser.OptionExists("--password") && cmdParser.OptionExists("--key"))
+        if (cmdParser.OptionExists("--register"))
         {
-            const auto user = cmdParser.getOptionValue("--user");
-            const auto password = cmdParser.getOptionValue("--password");
+            std::cout << "Starting registration process" << '\n';
 
-            AgentInfo agentInfo;
-            agentInfo.SetKey(cmdParser.getOptionValue("--key"));
-
-            if (cmdParser.OptionExists("--name"))
+            if (cmdParser.OptionExists("--user") && cmdParser.OptionExists("--password") &&
+                cmdParser.OptionExists("--key"))
             {
-                agentInfo.SetName(cmdParser.getOptionValue("--name"));
-            }
+                const auto user = cmdParser.GetOptionValue("--user");
+                const auto password = cmdParser.GetOptionValue("--password");
 
-            const registration::UserCredentials userCredentials {user, password};
+                AgentInfo agentInfo;
+                agentInfo.SetKey(cmdParser.GetOptionValue("--key"));
 
-            if (registration::RegisterAgent(
-                    userCredentials, http_client::AuthenticateWithUserPassword, registration::SendRegistrationRequest))
-            {
-                std::cout << "Agent registered." << std::endl;
+                if (cmdParser.OptionExists("--name"))
+                {
+                    agentInfo.SetName(cmdParser.GetOptionValue("--name"));
+                }
+
+                http_client::HttpClient httpClient;
+                const registration::UserCredentials userCredentials {user, password};
+
+                if (registration::RegisterAgent(userCredentials, httpClient))
+                {
+                    std::cout << "Agent registered." << '\n';
+                }
+                else
+                {
+                    std::cout << "Registration fail." << '\n';
+                }
             }
             else
             {
-                std::cout << "Registration fail." << std::endl;
+                std::cout << "--user, --password and --key args are mandatory" << '\n';
             }
-        }
-        else
-        {
-            std::cout << "--user, --password and --key args are mandatory" << std::endl;
-        }
 
-        std::cout << "Exiting ..." << std::endl;
-        return 0;
+            std::cout << "Exiting ..." << '\n';
+            return 0;
+        }
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "An error occurred: " << e.what() << '\n';
+        return 1;
     }
 
     Agent agent;

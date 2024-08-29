@@ -23,7 +23,7 @@
 class SQLiteStorage : public Persistence
 {
 public:
-    SQLiteStorage(const std::string& dbName, const std::vector<std::string> tableName);
+    SQLiteStorage(const std::string& dbName, const std::vector<std::string>& tableName);
 
     /**
      * @brief Delete copy constructor
@@ -120,13 +120,13 @@ private:
      * @brief Private method for waiting for database access.
      *
      */
-    void waitForDatabaseAccess();
+    void WaitForDatabaseAccess();
 
     /**
      * @brief Private method for releasing database access.
      *
      */
-    void releaseDatabaseAccess();
+    void ReleaseDatabaseAccess();
 
     /**
      * @brief The name of the SQLite database file.

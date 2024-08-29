@@ -5,6 +5,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <utility>
 
 AgentInfo::AgentInfo()
 {
@@ -15,16 +16,15 @@ AgentInfo::AgentInfo()
 
     if (m_uuid.empty())
     {
-        AgentInfoPersistance agentInfoPersistance;
         m_uuid = boost::uuids::to_string(boost::uuids::random_generator()());
         agentInfoPersistance.SetUUID(m_uuid);
     }
 }
 
-AgentInfo::AgentInfo(const std::string& name, const std::string& key, const std::string& uuid)
-    : m_name(name)
-    , m_key(key)
-    , m_uuid(uuid)
+AgentInfo::AgentInfo(std::string name, std::string key, std::string uuid)
+    : m_name(std::move(name))
+    , m_key(std::move(key))
+    , m_uuid(std::move(uuid))
 {
     AgentInfoPersistance agentInfoPersistance;
     agentInfoPersistance.SetName(m_name);
@@ -36,10 +36,12 @@ std::string AgentInfo::GetName() const
 {
     return m_name;
 }
+
 std::string AgentInfo::GetKey() const
 {
     return m_key;
 }
+
 std::string AgentInfo::GetUUID() const
 {
     return m_uuid;

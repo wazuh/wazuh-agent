@@ -14,8 +14,11 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
 
 add_library(Communicator src/communicator.cpp src/http_client.cpp)
-target_include_directories(Communicator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${JWT_CPP_INCLUDE_DIRS})
+target_include_directories(Communicator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include SYSTEM INTERFACE ${JWT_CPP_INCLUDE_DIRS})
 target_link_libraries(Communicator PUBLIC Boost::asio PRIVATE Boost::beast OpenSSL::SSL OpenSSL::Crypto)
+
+include(../../cmake/ConfigureTarget.cmake)
+configure_target(Communicator)
 
 if(BUILD_TESTS)
     enable_testing()

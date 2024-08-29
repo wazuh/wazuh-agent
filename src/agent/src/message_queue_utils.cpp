@@ -12,9 +12,10 @@ namespace
     constexpr int NUM_EVENTS = 1;
 } // namespace
 
-boost::asio::awaitable<std::string> getMessagesFromQueue(IMultiTypeQueue& multiTypeQueue, MessageType messageType)
+boost::asio::awaitable<std::string> GetMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue,
+                                                         MessageType messageType)
 {
-    const auto message = co_await multiTypeQueue.getNextNAwaitable(messageType, NUM_EVENTS);
+    const auto message = co_await multiTypeQueue->getNextNAwaitable(messageType, NUM_EVENTS);
 
     nlohmann::json jsonObj;
     jsonObj["events"] = nlohmann::json::array();
@@ -23,12 +24,12 @@ boost::asio::awaitable<std::string> getMessagesFromQueue(IMultiTypeQueue& multiT
     co_return jsonObj.dump();
 }
 
-void popMessagesFromQueue(IMultiTypeQueue& multiTypeQueue, MessageType messageType)
+void PopMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue, MessageType messageType)
 {
-    multiTypeQueue.popN(messageType, NUM_EVENTS);
+    multiTypeQueue->popN(messageType, NUM_EVENTS);
 }
 
-void pushCommandsToQueue(IMultiTypeQueue& multiTypeQueue, const std::string& commands)
+void PushCommandsToQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue, const std::string& commands)
 {
     const auto jsonObj = nlohmann::json::parse(commands);
 
@@ -43,7 +44,7 @@ void pushCommandsToQueue(IMultiTypeQueue& multiTypeQueue, const std::string& com
 
         if (!messages.empty())
         {
-            multiTypeQueue.push(messages);
+            multiTypeQueue->push(messages);
         }
     }
 }

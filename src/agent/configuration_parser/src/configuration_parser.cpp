@@ -1,4 +1,5 @@
 #include <configuration_parser.hpp>
+#include <utility>
 
 namespace
 {
@@ -15,7 +16,7 @@ namespace configuration
         }
         catch (const std::exception& e)
         {
-            std::cout << "Using default values due to error parsing wazuh.conf file: " << e.what() << std::endl;
+            std::cout << "Using default values due to error parsing wazuh.conf file: " << e.what() << '\n';
 
             tbl = toml::parse_str(
                 R"([agent]
@@ -30,11 +31,11 @@ namespace configuration
     {
         try
         {
-            tbl = toml::parse_str(stringToParse, toml::spec::v(1, 0, 0));
+            tbl = toml::parse_str(std::move(stringToParse), toml::spec::v(1, 0, 0));
         }
         catch (const std::exception& e)
         {
-            std::cout << "Error parsing wazuh.conf file: " << e.what() << std::endl;
+            std::cout << "Error parsing wazuh.conf file: " << e.what() << '\n';
             throw;
         }
     }

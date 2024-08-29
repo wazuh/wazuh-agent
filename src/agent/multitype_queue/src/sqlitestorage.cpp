@@ -6,7 +6,7 @@
 #include <exception>
 #include <iostream>
 
-SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::vector<std::string> tableNames)
+SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::vector<std::string>& tableNames)
     : m_dbName(dbName)
     , m_db(make_unique<SQLite::Database>(dbName, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE))
 {
@@ -14,19 +14,19 @@ SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::vector<std::s
     {
         // Open the database in WAL mode
         m_db->exec("PRAGMA journal_mode=WAL;");
-        for (auto table : tableNames)
+        for (const auto& table : tableNames)
         {
             InitializeTable(table);
         }
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error initializing database: " << e.what() << std::endl;
+        std::cerr << "Error initializing database: " << e.what() << '\n';
         throw;
     }
 }
 
-SQLiteStorage::~SQLiteStorage() {}
+SQLiteStorage::~SQLiteStorage() = default;
 
 void SQLiteStorage::InitializeTable(const std::string& tableName)
 {
@@ -41,19 +41,19 @@ void SQLiteStorage::InitializeTable(const std::string& tableName)
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error initializing table: " << e.what() << std::endl;
+        std::cerr << "Error initializing table: " << e.what() << '\n';
         throw;
     }
 }
 
-void SQLiteStorage::waitForDatabaseAccess()
+void SQLiteStorage::WaitForDatabaseAccess()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
     m_cv.wait(lock, [this] { return !m_dbInUse; });
     m_dbInUse = true;
 }
 
-void SQLiteStorage::releaseDatabaseAccess()
+void SQLiteStorage::ReleaseDatabaseAccess()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_dbInUse = false;
@@ -66,7 +66,7 @@ int SQLiteStorage::Store(const json& message, const std::string& tableName, cons
     std::string insertQuery = fmt::format(INSERT_QUERY, tableName, moduleName);
     int result = 0;
 
-    waitForDatabaseAccess();
+    WaitForDatabaseAccess();
     SQLite::Statement query = SQLite::Statement(*m_db, insertQuery);
 
     if (message.is_array())
@@ -96,7 +96,7 @@ int SQLiteStorage::Store(const json& message, const std::string& tableName, cons
         result = query.exec();
         transaction.commit();
     }
-    releaseDatabaseAccess();
+    ReleaseDatabaseAccess();
 
     return result;
 }
@@ -150,7 +150,7 @@ json SQLiteStorage::Retrieve(int id, const std::string& tableName, const std::st
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error during Retrieve operation: " << e.what() << std::endl;
+        std::cerr << "Error during Retrieve operation: " << e.what() << '\n';
         return {};
     }
 }
@@ -207,7 +207,7 @@ json SQLiteStorage::RetrieveMultiple(int n, const std::string& tableName, const 
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error during RetrieveMultiple operation: " << e.what() << std::endl;
+        std::cerr << "Error during RetrieveMultiple operation: " << e.what() << '\n';
         return {};
     }
 }
@@ -237,7 +237,7 @@ int SQLiteStorage::Remove(int id, const std::string& tableName, const std::strin
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error during Remove operation: " << e.what() << std::endl;
+        std::cerr << "Error during Remove operation: " << e.what() << '\n';
         return {};
     }
 }
@@ -262,18 +262,18 @@ int SQLiteStorage::RemoveMultiple(int n, const std::string& tableName, const std
 
     try
     {
-        waitForDatabaseAccess();
+        WaitForDatabaseAccess();
         SQLite::Statement query(*m_db, deleteQuery);
         SQLite::Transaction transaction(*m_db);
         query.bind(1, n);
         rowsModified = query.exec();
         transaction.commit();
-        releaseDatabaseAccess();
+        ReleaseDatabaseAccess();
         return rowsModified;
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error during RemoveMultiple operation: " << e.what() << std::endl;
+        std::cerr << "Error during RemoveMultiple operation: " << e.what() << '\n';
         return rowsModified;
     }
 }
@@ -302,13 +302,13 @@ int SQLiteStorage::GetElementCount(const std::string& tableName, const std::stri
         }
         else
         {
-            std::cerr << "Error SQLiteStorage get element count." << std::endl;
+            std::cerr << "Error SQLiteStorage get element count." << '\n';
         }
         return count;
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error during GetElementCount operation: " << e.what() << std::endl;
+        std::cerr << "Error during GetElementCount operation: " << e.what() << '\n';
         return {};
     }
 }

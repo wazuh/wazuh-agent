@@ -1,50 +1,63 @@
 #include <communicator.hpp>
 
-#include <http_client.hpp>
-
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
-#include <jwt-cpp/jwt.h>
 #include <nlohmann/json.hpp>
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
+#include <jwt-cpp/jwt.h>
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 #include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <queue>
 #include <thread>
+#include <utility>
 
 namespace communicator
 {
-    constexpr int TokenPreExpirySecs = 2;
+    constexpr int TOKEN_PRE_EXPIRY_SECS = 2;
+    constexpr int A_SECOND_IN_MILLIS = 1000;
 
-    Communicator::Communicator(const std::string& uuid,
-                               const std::string& key,
-                               const std::function<std::string(std::string, std::string)> GetStringConfigValue)
-        : m_uuid(uuid)
-        , m_key(key)
+    Communicator::Communicator(std::unique_ptr<http_client::IHttpClient> httpClient,
+                               std::string uuid,
+                               std::string key,
+                               const std::function<std::string(std::string, std::string)>& getStringConfigValue)
+        : m_httpClient(std::move(httpClient))
+        , m_uuid(std::move(uuid))
+        , m_key(std::move(key))
+        , m_token(std::make_shared<std::string>())
     {
-        if (GetStringConfigValue != nullptr)
+        if (getStringConfigValue != nullptr)
         {
-            m_managerIp = GetStringConfigValue("agent", "manager_ip");
-            m_port = GetStringConfigValue("agent", "agent_comms_api_port");
+            m_managerIp = getStringConfigValue("agent", "manager_ip");
+            m_port = getStringConfigValue("agent", "agent_comms_api_port");
         }
     }
 
     boost::beast::http::status Communicator::SendAuthenticationRequest()
     {
-        const auto token = http_client::AuthenticateWithUuidAndKey(m_managerIp, m_port, m_uuid, m_key);
+        const auto token = m_httpClient->AuthenticateWithUuidAndKey(m_managerIp, m_port, m_uuid, m_key);
 
         if (token.has_value())
         {
-            m_token = token.value();
+            *m_token = token.value();
         }
         else
         {
-            std::cerr << "Failed to authenticate with the manager" << std::endl;
+            std::cerr << "Failed to authenticate with the manager" << '\n';
             return boost::beast::http::status::unauthorized;
         }
 
-        if (const auto decoded = jwt::decode(m_token); decoded.has_payload_claim("exp"))
+        if (const auto decoded = jwt::decode(*m_token); decoded.has_payload_claim("exp"))
         {
             const auto exp_claim = decoded.get_payload_claim("exp");
             const auto exp_time = exp_claim.as_date();
@@ -53,8 +66,8 @@ namespace communicator
         }
         else
         {
-            std::cerr << "Token does not contain an 'exp' claim" << std::endl;
-            m_token.clear();
+            std::cerr << "Token does not contain an 'exp' claim" << '\n';
+            m_token->clear();
             m_tokenExpTimeInSeconds = 1;
             return boost::beast::http::status::unauthorized;
         }
@@ -75,9 +88,16 @@ namespace communicator
         {
             TryReAuthenticate();
         };
+
+        auto loopCondition = [this]()
+        {
+            return m_keepRunning.load();
+        };
+
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::get, m_managerIp, m_port, "/commands");
-        co_await http_client::Co_MessageProcessingTask(m_token, reqParams, {}, onAuthenticationFailed, onSuccess);
+        co_await m_httpClient->Co_PerformHttpRequest(
+            m_token, reqParams, {}, onAuthenticationFailed, onSuccess, loopCondition);
     }
 
     boost::asio::awaitable<void> Communicator::WaitForTokenExpirationAndAuthenticate()
@@ -86,19 +106,20 @@ namespace communicator
         const auto executor = co_await boost::asio::this_coro::executor;
         m_tokenExpTimer = std::make_unique<boost::asio::steady_timer>(executor);
 
-        while (true)
+        while (m_keepRunning.load())
         {
             const auto duration = [this]()
             {
                 const auto result = SendAuthenticationRequest();
                 if (result != boost::beast::http::status::ok)
                 {
-                    std::cerr << "Authentication failed." << std::endl;
-                    return std::chrono::milliseconds(1000);
+                    std::cerr << "Authentication failed." << '\n';
+                    return std::chrono::milliseconds(A_SECOND_IN_MILLIS);
                 }
                 else
                 {
-                    return std::chrono::milliseconds((GetTokenRemainingSecs() - TokenPreExpirySecs) * 1000);
+                    return std::chrono::milliseconds((GetTokenRemainingSecs() - TOKEN_PRE_EXPIRY_SECS) *
+                                                     A_SECOND_IN_MILLIS);
                 }
             }();
 
@@ -129,10 +150,16 @@ namespace communicator
         {
             TryReAuthenticate();
         };
+
+        auto loopCondition = [this]()
+        {
+            return m_keepRunning.load();
+        };
+
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::post, m_managerIp, m_port, "/stateful");
-        co_await http_client::Co_MessageProcessingTask(
-            m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess);
+        co_await m_httpClient->Co_PerformHttpRequest(
+            m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess, loopCondition);
     }
 
     boost::asio::awaitable<void>
@@ -143,10 +170,16 @@ namespace communicator
         {
             TryReAuthenticate();
         };
+
+        auto loopCondition = [this]()
+        {
+            return m_keepRunning.load();
+        };
+
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::post, m_managerIp, m_port, "/stateless");
-        co_await http_client::Co_MessageProcessingTask(
-            m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess);
+        co_await m_httpClient->Co_PerformHttpRequest(
+            m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess, loopCondition);
     }
 
     void Communicator::TryReAuthenticate()
@@ -162,7 +195,12 @@ namespace communicator
         }
         else
         {
-            std::cout << "Re-authentication attempt by thread " << std::this_thread::get_id() << " failed" << std::endl;
+            std::cout << "Re-authentication attempt by thread " << std::this_thread::get_id() << " failed" << '\n';
         }
+    }
+
+    void Communicator::Stop()
+    {
+        m_keepRunning.store(false);
     }
 } // namespace communicator

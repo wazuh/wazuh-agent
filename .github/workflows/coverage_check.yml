@@ -1,0 +1,68 @@
+name: Coverage Check
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+        fetch-depth: 0
+
+    - name: Install Clang 16 and LLVM 16
+      run: |
+        sudo apt-get update
+        wget https://apt.llvm.org/llvm.sh
+        chmod +x llvm.sh
+        sudo ./llvm.sh 16
+
+    - name: Set up dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake gcovr
+      shell: bash
+
+    - name: Update PATH for LLVM
+      run: echo "/usr/lib/llvm-16/bin" >> $GITHUB_PATH
+      shell: bash
+
+    - name: Generate CMake project
+      run: |
+        mkdir -p build && cd build
+        cmake -DCMAKE_CXX_COMPILER=clang++-16 ../src -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=1 -DCOVERAGE=1 -G "Unix Makefiles"
+      shell: bash
+
+    - name: Compile
+      run: |
+        cd build
+        cmake --build . --config Debug
+      shell: bash
+
+    - name: Generate and Check Coverage
+      run: |
+        cd build
+        cmake --build . --target coverage
+      shell: bash
+
+    - name: Zip Coverage Files
+      if: always()
+      run: |
+        cd build
+        zip -r coverage.zip coverage*
+      shell: bash
+
+    - name: Upload Coverage Artifact
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: build/coverage.zip

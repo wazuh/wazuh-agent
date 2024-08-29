@@ -36,6 +36,18 @@ jobs:
         brew install cmake
       shell: bash
 
+    - name: Set up dependencies on Ubuntu
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget gnupg lsb-release software-properties-common
+        wget https://apt.llvm.org/llvm.sh
+        chmod +x llvm.sh
+        sudo ./llvm.sh 18
+        sudo apt-get update
+        sudo apt-get install -y clang-tidy-18
+      shell: bash
+
     - name: Run Compile Action
       uses: ./.github/actions/compile
       with:

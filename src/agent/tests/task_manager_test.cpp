@@ -32,6 +32,7 @@ TEST_F(TaskManagerTest, EnqueueFunctionTask)
 
     taskManager.EnqueueTask(task);
 
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     EXPECT_EQ(counter, 1);
@@ -44,6 +45,7 @@ TEST_F(TaskManagerTest, EnqueueCoroutineTask)
     taskManager.Start(1);
 
     std::atomic<int> counter = 0;
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
     auto coroutineTask = [&counter]() -> boost::asio::awaitable<void>
     {
         ++counter;
@@ -52,6 +54,7 @@ TEST_F(TaskManagerTest, EnqueueCoroutineTask)
 
     taskManager.EnqueueTask(coroutineTask());
 
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     EXPECT_EQ(counter, 1);

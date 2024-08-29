@@ -4,12 +4,14 @@
 
 #include <boost/asio/awaitable.hpp>
 
+#include <memory>
 #include <string>
 
 class IMultiTypeQueue;
 
-boost::asio::awaitable<std::string> getMessagesFromQueue(IMultiTypeQueue& multiTypeQueue, MessageType messageType);
+boost::asio::awaitable<std::string> GetMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue,
+                                                         MessageType messageType);
 
-void popMessagesFromQueue(IMultiTypeQueue& multiTypeQueue, MessageType messageType);
+void PopMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue, MessageType messageType);
 
-void pushCommandsToQueue(IMultiTypeQueue& multiTypeQueue, const std::string& commands);
+void PushCommandsToQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue, const std::string& commands);

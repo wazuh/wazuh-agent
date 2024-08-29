@@ -17,6 +17,9 @@ add_library(MultiTypeQueue src/sqlitestorage.cpp src/multitype_queue.cpp src/per
 target_include_directories(MultiTypeQueue PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${SQLiteCpp_INCLUDE_DIRS})
 target_link_libraries(MultiTypeQueue PUBLIC nlohmann_json::nlohmann_json Boost::asio PRIVATE SQLiteCpp fmt::fmt)
 
+include(../../cmake/ConfigureTarget.cmake)
+configure_target(MultiTypeQueue)
+
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)

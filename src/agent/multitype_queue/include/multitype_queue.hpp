@@ -15,7 +15,7 @@
 // TODO: move to a configuration setting
 constexpr int DEFAULT_MAX = 10000;
 constexpr int DEFAULT_TIMEOUT_S = 3;
-constexpr char QUEUE_DEFAULT_DB_PATH[] = "queue.db";
+const std::string QUEUE_DEFAULT_DB_PATH = "queue.db";
 
 /**
  * @brief MultiTypeQueue implementation that handles multiple types of messages.
@@ -32,7 +32,7 @@ private:
         {MessageType::STATEFUL, "STATEFUL"},
         {MessageType::COMMAND, "COMMAND"},
     };
-    const int m_maxItems;
+    const size_t m_maxItems;
     const std::chrono::seconds m_timeout;
     std::unique_ptr<Persistence> m_persistenceDest;
     std::mutex m_mtx;
@@ -45,7 +45,7 @@ public:
      * @param size The maximum number of items in the queue.
      * @param timeout The timeout period in seconds.
      */
-    MultiTypeQueue(int size = DEFAULT_MAX, int timeout = DEFAULT_TIMEOUT_S);
+    MultiTypeQueue(size_t size = DEFAULT_MAX, int timeout = DEFAULT_TIMEOUT_S);
 
     /**
      * @brief Delete copy constructor
