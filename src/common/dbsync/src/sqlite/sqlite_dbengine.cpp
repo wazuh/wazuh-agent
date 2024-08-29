@@ -796,7 +796,7 @@ ColumnType SQLiteDBEngine::columnTypeName(const std::string& type)
     return retVal;
 }
 
-bool SQLiteDBEngine::bindJsonData(const std::shared_ptr<SQLite::IStatement> stmt,
+bool SQLiteDBEngine::bindJsonData(const std::shared_ptr<SQLiteLegacy::IStatement> stmt,
                                   const ColumnData& cd,
                                   const nlohmann::json::value_type& valueType,
                                   const unsigned int cid)
@@ -987,7 +987,7 @@ bool SQLiteDBEngine::getPrimaryKeysFromTable(const std::string& table,
     return retVal;
 }
 
-void SQLiteDBEngine::getTableData(std::shared_ptr<SQLite::IStatement>const stmt,
+void SQLiteDBEngine::getTableData(std::shared_ptr<SQLiteLegacy::IStatement>const stmt,
                                   const int32_t index,
                                   const ColumnType& type,
                                   const std::string& fieldName,
@@ -1228,7 +1228,7 @@ void SQLiteDBEngine::deleteRowsbyPK(const std::string& table,
     }
 }
 
-void SQLiteDBEngine::bindFieldData(const std::shared_ptr<SQLite::IStatement> stmt,
+void SQLiteDBEngine::bindFieldData(const std::shared_ptr<SQLiteLegacy::IStatement> stmt,
                                    const int32_t index,
                                    const TableField& fieldData)
 {
@@ -1983,14 +1983,14 @@ void SQLiteDBEngine::getFieldValueFromTuple(const Field& value,
     }
 }
 
-std::shared_ptr<SQLite::IStatement>const SQLiteDBEngine::getStatement(const std::string& sql)
+std::shared_ptr<SQLiteLegacy::IStatement>const SQLiteDBEngine::getStatement(const std::string& sql)
 {
     std::lock_guard<std::mutex> lock(m_stmtMutex);
     const auto it
     {
         std::find_if(m_statementsCache.begin(),
                      m_statementsCache.end(),
-                     [sql](const std::pair<std::string, std::shared_ptr<SQLite::IStatement>>& pair)
+                     [sql](const std::pair<std::string, std::shared_ptr<SQLiteLegacy::IStatement>>& pair)
         {
             return 0 == pair.first.compare(sql);
         })
@@ -2139,7 +2139,7 @@ void SQLiteDBEngine::updateTableRowCounter(const std::string& table, const long 
     {
         if (it->second.currentRows + rowModifyCount > it->second.maxRows)
         {
-            throw DbSync::max_rows_error { SQLite::MAX_ROWS_ERROR_STRING };
+            throw DbSync::max_rows_error { SQLiteLegacy::MAX_ROWS_ERROR_STRING };
         }
 
         it->second.currentRows += rowModifyCount;

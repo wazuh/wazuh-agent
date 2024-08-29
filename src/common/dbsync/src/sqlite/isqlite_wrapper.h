@@ -16,7 +16,7 @@
 #include <math.h>
 #include "db_exception.h"
 
-namespace SQLite
+namespace SQLiteLegacy
 {
     const constexpr auto MAX_ROWS_ERROR_STRING {"Too Many Rows."};
 
@@ -90,4 +90,4 @@ namespace SQLite
 
     };
 
-}//namespace SQLite
+}//namespace SQLiteLegacy
