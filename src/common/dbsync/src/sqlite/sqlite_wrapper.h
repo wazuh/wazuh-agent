@@ -17,7 +17,7 @@
 
 #include <string>
 #include <memory>
-namespace SQLite
+namespace SQLiteLegacy
 {
     class Connection : public IConnection
     {
