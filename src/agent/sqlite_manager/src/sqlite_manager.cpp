@@ -164,7 +164,7 @@ namespace sqlite_manager
             {
                 int nColumns = query.getColumnCount();
                 std::vector<Col> queryFields;
-                queryFields.reserve(nColumns);
+                queryFields.reserve(static_cast<size_t>(nColumns));
                 for (int i = 0; i < nColumns; i++)
                 {
                     sqlite_manager::Col field(query.getColumn(i).getName(),
