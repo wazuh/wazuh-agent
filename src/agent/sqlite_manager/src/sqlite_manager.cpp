@@ -73,7 +73,7 @@ namespace sqlite_manager
         }
 
         std::string queryString =
-            format("INSERT INTO {} ({}) VALUES ({})", tableName, fmt::join(names, ", "), fmt::join(values, ", "));
+            fmt::format("INSERT INTO {} ({}) VALUES ({})", tableName, fmt::join(names, ", "), fmt::join(values, ", "));
 
         std::lock_guard<std::mutex> lock(m_mutex);
         try
