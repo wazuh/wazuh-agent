@@ -37,3 +37,22 @@ TEST_F(SQLiteManagerTest, InsertTest)
                                  {sqlite_manager::Col("Name", sqlite_manager::ColumnType::TEXT, "ItemName2"),
                                   sqlite_manager::Col("Status", sqlite_manager::ColumnType::TEXT, "ItemStatus2")}));
 }
+
+TEST_F(SQLiteManagerTest, GetCountTest)
+{
+    m_db->ExecuteNoSelectSQL("DELETE FROM TestTable");
+    int count = m_db->GetCount(m_tableName);
+    EXPECT_EQ(count, 0);
+
+    sqlite_manager::Col col1 {"Name", sqlite_manager::ColumnType::TEXT, "ItemName1"};
+    sqlite_manager::Col col2 {"Status", sqlite_manager::ColumnType::TEXT, "ItemStatus1"};
+    EXPECT_NO_THROW(m_db->Insert(m_tableName, {col1, col2}));
+
+    count = m_db->GetCount(m_tableName);
+    EXPECT_EQ(count, 1);
+
+    EXPECT_NO_THROW(m_db->Insert(m_tableName, {col1, col2}));
+
+    count = m_db->GetCount(m_tableName);
+    EXPECT_EQ(count, 2);
+}

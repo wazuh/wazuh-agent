@@ -100,4 +100,31 @@ namespace sqlite_manager
             throw;
         }
     }
+
+    int SQLiteManager::GetCount(const std::string& tableName)
+    {
+        std::string queryString = fmt::format("SELECT COUNT(*) FROM {}", tableName);
+
+        try
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            SQLite::Statement query(*m_db, queryString);
+            int count = 0;
+
+            if (query.executeStep())
+            {
+                count = query.getColumn(0).getInt();
+            }
+            else
+            {
+                std::cerr << "Error getting element count." << std::endl;
+            }
+            return count;
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "Error during GetCount operation: " << e.what() << std::endl;
+            return {};
+        }
+    }
 } // namespace sqlite_manager
