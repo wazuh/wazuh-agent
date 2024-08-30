@@ -16,6 +16,22 @@ protected:
     }
 
     void TearDown() override {}
+
+    void AddTestData()
+    {
+
+        using namespace sqlite_manager;
+        EXPECT_NO_THROW(m_db->Remove(m_tableName));
+        m_db->Insert(m_tableName,
+                     {sqlite_manager::Col("Name", ColumnType::TEXT, "DummyData"),
+                      sqlite_manager::Col("Status", ColumnType::TEXT, "DummyData")});
+        m_db->Insert(m_tableName,
+                     {sqlite_manager::Col("Name", ColumnType::TEXT, "MyTestName"),
+                      sqlite_manager::Col("Status", ColumnType::TEXT, "MyTestValue")});
+        m_db->Insert(m_tableName,
+                     {sqlite_manager::Col("Name", ColumnType::TEXT, "DummyData2"),
+                      sqlite_manager::Col("Status", ColumnType::TEXT, "DummyData2")});
+    }
 };
 
 TEST_F(SQLiteManagerTest, CreateTableTest)
@@ -72,16 +88,7 @@ void DumpResults(std::vector<sqlite_manager::Row>& ret)
 
 TEST_F(SQLiteManagerTest, SelectTest)
 {
-    EXPECT_NO_THROW(storage->Remove("TestTable"));
-    storage->Insert("TestTable",
-                    {sqlite_manager::Col("Name", SQLite::TEXT, "DummyData"),
-                     sqlite_manager::Col("Status", SQLite::TEXT, "DummyData")});
-    storage->Insert("TestTable",
-                    {sqlite_manager::Col("Name", SQLite::TEXT, "MyTestName"),
-                     sqlite_manager::Col("Status", SQLite::TEXT, "MyTestValue")});
-    storage->Insert("TestTable",
-                    {sqlite_manager::Col("Name", SQLite::TEXT, "DummyData2"),
-                     sqlite_manager::Col("Status", SQLite::TEXT, "DummyData2")});
+    AddTestData();
 
     std::vector<sqlite_manager::Col> cols;
 
@@ -124,18 +131,7 @@ TEST_F(SQLiteManagerTest, SelectTest)
 
 TEST_F(SQLiteManagerTest, RemoveTest)
 {
-    EXPECT_NO_THROW(storage->Remove("TestTable"));
-    storage->Insert("TestTable",
-                    {sqlite_manager::Col("Name", SQLite::TEXT, "DummyData"),
-                     sqlite_manager::Col("Status", SQLite::TEXT, "DummyData")});
-    storage->Insert("TestTable",
-                    {sqlite_manager::Col("Name", SQLite::TEXT, "MyTestName"),
-                     sqlite_manager::Col("Status", SQLite::TEXT, "MyTestValue")});
-    storage->Insert("TestTable",
-                    {sqlite_manager::Col("Name", SQLite::TEXT, "DummyData2"),
-                     sqlite_manager::Col("Status", SQLite::TEXT, "DummyData2")});
-
-    int count = storage->GetCount("TestTable");
+    AddTestData();
 
     int count = m_db->GetCount(m_tableName);
     EXPECT_EQ(count, 3);
