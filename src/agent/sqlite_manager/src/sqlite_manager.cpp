@@ -6,7 +6,7 @@
 
 namespace sqlite_manager
 {
-    const std::map<ColumnType, std::string> mapColTypeString {
+    const std::map<ColumnType, std::string> MAP_COL_TYPE_STRING {
         {ColumnType::INTEGER, "INTEGER"}, {ColumnType::TEXT, "TEXT"}, {ColumnType::FLOAT, "REAL"}};
 
     ColumnType SQLiteManager::ColumnTypeFromSQLiteType(const int type) const
@@ -34,7 +34,7 @@ namespace sqlite_manager
         {
             std::string field = fmt::format("{} {}{}{}{}",
                                             col.m_name,
-                                            mapColTypeString.at(col.m_type),
+                                            MAP_COL_TYPE_STRING.at(col.m_type),
                                             (col.m_primaryKey) ? " PRIMARY KEY" : "",
                                             (col.m_autoIncrement) ? " AUTOINCREMENT" : "",
                                             (col.m_notNull) ? " NOT NULL" : "");
