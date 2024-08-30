@@ -86,4 +86,18 @@ namespace sqlite_manager
             throw;
         }
     }
+
+    void SQLiteManager::ExecuteNoSelectSQL(const std::string& queryString)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        try
+        {
+            m_db->exec(queryString);
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "Error executing SQL: " << e.what() << std::endl;
+            throw;
+        }
+    }
 } // namespace sqlite_manager

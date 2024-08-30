@@ -54,6 +54,7 @@ namespace sqlite_manager
 
         void CreateTable(const std::string& tableName, const std::vector<Col>& cols);
         void Insert(const std::string& tableName, const std::vector<Col>& cols);
+        void ExecuteNoSelectSQL(const std::string& queryString);
 
     private:
         /**
