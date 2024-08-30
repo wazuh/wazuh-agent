@@ -109,7 +109,7 @@ TEST_F(SQLiteManagerTest, SelectTest)
 
     // only Name field no selection criteria
     cols.clear();
-    cols.push_back(sqlite_manager::Col("Name", sqlite_manager::ColumnType::TEXT, "MyTestName"));
+    cols.emplace_back("Name", sqlite_manager::ColumnType::TEXT, "MyTestName");
     ret.clear();
     ret = m_db->Select(m_tableName, cols);
 
@@ -118,7 +118,7 @@ TEST_F(SQLiteManagerTest, SelectTest)
 
     // only Name field with selection criteria
     cols.clear();
-    cols.push_back(sqlite_manager::Col("Name", sqlite_manager::ColumnType::TEXT, "MyTestName"));
+    cols.emplace_back("Name", sqlite_manager::ColumnType::TEXT, "MyTestName");
     ret.clear();
     ret = m_db->Select(m_tableName,
                        cols,
