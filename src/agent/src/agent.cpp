@@ -1,5 +1,5 @@
 #include <agent.hpp>
-#include <modules.hpp>
+#include <inventory.hpp>
 
 #include <command.hpp>
 #include <command_handler_utils.hpp>
@@ -31,6 +31,8 @@ Agent::~Agent()
 
 void Agent::Run()
 {
+    Configuration config;
+
     m_taskManager.EnqueueTask(m_communicator.WaitForTokenExpirationAndAuthenticate());
 
     m_taskManager.EnqueueTask(m_communicator.GetCommandsFromManager(
@@ -52,8 +54,12 @@ void Agent::Run()
         [](command_store::Command& cmd) { return DispatchCommand(cmd); }));
 
     m_taskManager.EnqueueTask([this]() { modulesExec(); });
+    
+    m_moduleManager.addModule(Inventory::instance());
+    m_moduleManager.setup(config);
+    m_taskManager.EnqueueTask([this]() { m_moduleManager.start(); });
 
     m_signalHandler->WaitForSignal();
     m_communicator.Stop();
-    m_commandHandler.Stop();
+    m_moduleManager.stop();
 }
