@@ -160,3 +160,13 @@ TEST_F(SQLiteManagerTest, UpdateTest)
         m_db->Select(m_tableName, {}, {sqlite_manager::Col("Name", sqlite_manager::ColumnType::TEXT, "MyTestName")});
     DumpResults(ret);
 }
+
+TEST_F(SQLiteManagerTest, DropTableTest)
+{
+    AddTestData();
+    EXPECT_NO_THROW(m_db->DropTable(m_tableName));
+
+    auto ret = m_db->Select(m_tableName, {}, {});
+
+    EXPECT_EQ(ret.size(), 0);
+}

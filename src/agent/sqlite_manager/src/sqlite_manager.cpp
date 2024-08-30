@@ -275,4 +275,19 @@ namespace sqlite_manager
             std::cerr << "Error during update operation: " << e.what() << std::endl;
         }
     }
+
+    void SQLiteManager::DropTable(const std::string& tableName)
+    {
+        std::string queryString = fmt::format("DROP TABLE {}", tableName);
+
+        try
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            m_db->exec(queryString);
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "Error during DROP operation: " << e.what() << std::endl;
+        }
+    }
 } // namespace sqlite_manager

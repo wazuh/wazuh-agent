@@ -62,6 +62,7 @@ namespace sqlite_manager
         void Remove(const std::string& tableName, const std::vector<Col>& selCriteria = {});
         void
         Update(const std::string& tableName, const std::vector<Col>& fields, const std::vector<Col>& selCriteria = {});
+        void DropTable(const std::string& tableName);
 
     private:
         /**
