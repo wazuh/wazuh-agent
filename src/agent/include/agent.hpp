@@ -8,6 +8,7 @@
 #include <multitype_queue.hpp>
 #include <signal_handler.hpp>
 #include <task_manager.hpp>
+#include <moduleManager.hpp>
 
 #include <memory>
 
@@ -28,4 +29,5 @@ private:
     configuration::ConfigurationParser m_configurationParser;
     communicator::Communicator m_communicator;
     command_handler::CommandHandler m_commandHandler;
+    ModuleManager m_moduleManager;
 };
