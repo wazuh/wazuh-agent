@@ -53,7 +53,7 @@ TEST(ConfigurationParser, GetConfigFloat)
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
     const auto ret = parserStr->GetConfig<float>("agent_array", "float_conf");
-    EXPECT_FLOAT_EQ(ret, 12.34);
+    EXPECT_FLOAT_EQ(ret, 12.34f);
 }
 
 TEST(ConfigurationParser, GetConfigNoKey)
