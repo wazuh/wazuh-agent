@@ -1,11 +1,19 @@
 #include "gtest/gtest.h"
 
+#include <sqlite_manager.hpp>
+
 class SQLiteManagerTest : public ::testing::Test
 {
 protected:
-    const std::string dbName = "testdb.db";
+    const std::string m_dbName = "testdb.db";
+    const std::string m_tableName = "TestTable";
 
-    void SetUp() override {}
+    std::unique_ptr<sqlite_manager::SQLiteManager> m_db;
+
+    void SetUp() override
+    {
+        m_db = std::make_unique<sqlite_manager::SQLiteManager>(m_dbName);
+    }
 
     void TearDown() override {}
 };
