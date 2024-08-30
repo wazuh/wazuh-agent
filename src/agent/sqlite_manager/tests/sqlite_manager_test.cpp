@@ -73,7 +73,7 @@ TEST_F(SQLiteManagerTest, GetCountTest)
     EXPECT_EQ(count, 2);
 }
 
-void DumpResults(std::vector<sqlite_manager::Row>& ret)
+static void DumpResults(std::vector<sqlite_manager::Row>& ret)
 {
     std::cout << "---------- " << ret.size() << " rows returned. ----------" << '\n';
     for (const auto& row : ret)

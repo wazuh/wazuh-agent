@@ -84,5 +84,6 @@ namespace sqlite_manager
         std::unique_ptr<SQLite::Database> m_db;
 
         ColumnType ColumnTypeFromSQLiteType(const int type) const;
+        void Execute(const std::string& query);
     };
 } // namespace sqlite_manager

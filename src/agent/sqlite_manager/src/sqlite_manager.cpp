@@ -44,16 +44,7 @@ namespace sqlite_manager
         std::string queryString =
             fmt::format("CREATE TABLE IF NOT EXISTS {} ({})", tableName, fmt::format("{}", fmt::join(fields, ", ")));
 
-        std::lock_guard<std::mutex> lock(m_mutex);
-        try
-        {
-            m_db->exec(queryString);
-        }
-        catch (const std::exception& e)
-        {
-            std::cerr << "Error initializing table: " << e.what() << '\n';
-            throw;
-        }
+        Execute(queryString);
     }
 
     void SQLiteManager::Insert(const std::string& tableName, const std::vector<Col>& cols)
@@ -75,16 +66,7 @@ namespace sqlite_manager
         std::string queryString =
             fmt::format("INSERT INTO {} ({}) VALUES ({})", tableName, fmt::join(names, ", "), fmt::join(values, ", "));
 
-        std::lock_guard<std::mutex> lock(m_mutex);
-        try
-        {
-            m_db->exec(queryString);
-        }
-        catch (const std::exception& e)
-        {
-            std::cerr << "Error inserting element: " << e.what() << '\n';
-            throw;
-        }
+        Execute(queryString);
     }
 
     int SQLiteManager::GetCount(const std::string& tableName)
@@ -208,16 +190,9 @@ namespace sqlite_manager
 
         std::string queryString = fmt::format("DELETE FROM {}{}", tableName, whereClause);
 
-        std::lock_guard<std::mutex> lock(m_mutex);
-        try
-        {
-            m_db->exec(queryString);
-        }
-        catch (const std::exception& e)
-        {
-            std::cerr << "Error executing SQL: " << e.what() << '\n';
-            throw;
-        }
+        std::cout << "QueryString: " << queryString << std::endl;
+
+        Execute(queryString);
     }
 
     void SQLiteManager::Update(const std::string& tableName,
@@ -267,14 +242,19 @@ namespace sqlite_manager
         std::cout << "QueryString: " << queryString << '\n';
 
         // Do the actual query
+        Execute(queryString);
+    }
+
+    void SQLiteManager::Execute(const std::string& query)
+    {
         try
         {
             std::lock_guard<std::mutex> lock(m_mutex);
-            m_db->exec(queryString);
+            m_db->exec(query);
         }
         catch (const std::exception& e)
         {
-            std::cerr << "Error during update operation: " << e.what() << '\n';
+            std::cerr << "Error during database operation: " << e.what() << '\n';
         }
     }
 
