@@ -75,14 +75,14 @@ TEST_F(SQLiteManagerTest, GetCountTest)
 
 void DumpResults(std::vector<sqlite_manager::Row>& ret)
 {
-    std::cout << "---------- " << ret.size() << " rows returned. ----------" << std::endl;
+    std::cout << "---------- " << ret.size() << " rows returned. ----------" << '\n';
     for (auto row : ret)
     {
         for (auto field : row)
         {
             std::cout << "[" << field.m_name << ": " << field.m_value << "]";
         }
-        std::cout << std::endl;
+        std::cout << '\n';
     }
 }
 

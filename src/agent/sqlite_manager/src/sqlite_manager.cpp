@@ -51,7 +51,7 @@ namespace sqlite_manager
         }
         catch (const std::exception& e)
         {
-            std::cerr << "Error initializing table: " << e.what() << std::endl;
+            std::cerr << "Error initializing table: " << e.what() << '\n';
             throw;
         }
     }
@@ -82,7 +82,7 @@ namespace sqlite_manager
         }
         catch (const std::exception& e)
         {
-            std::cerr << "Error inserting element: " << e.what() << std::endl;
+            std::cerr << "Error inserting element: " << e.what() << '\n';
             throw;
         }
     }
@@ -103,13 +103,13 @@ namespace sqlite_manager
             }
             else
             {
-                std::cerr << "Error getting element count." << std::endl;
+                std::cerr << "Error getting element count." << '\n';
             }
             return count;
         }
         catch (const std::exception& e)
         {
-            std::cerr << "Error during GetCount operation: " << e.what() << std::endl;
+            std::cerr << "Error during GetCount operation: " << e.what() << '\n';
             return {};
         }
     }
@@ -149,7 +149,7 @@ namespace sqlite_manager
 
         std::string queryString = fmt::format("SELECT {} FROM {} {}", selectedFields, tableName, condition);
 
-        std::cout << "QueryString: " << queryString << std::endl;
+        std::cout << "QueryString: " << queryString << '\n';
 
         // Do the actual query
         std::vector<Row> results;
@@ -177,7 +177,7 @@ namespace sqlite_manager
         }
         catch (const std::exception& e)
         {
-            std::cerr << "Error during Retrieve operation: " << e.what() << std::endl;
+            std::cerr << "Error during Retrieve operation: " << e.what() << '\n';
             return {};
         }
         return results;
@@ -213,7 +213,7 @@ namespace sqlite_manager
         }
         catch (const std::exception& e)
         {
-            std::cerr << "Error executing SQL: " << e.what() << std::endl;
+            std::cerr << "Error executing SQL: " << e.what() << '\n';
             throw;
         }
     }
@@ -224,7 +224,7 @@ namespace sqlite_manager
     {
         if (fields.size() == 0)
         {
-            std::cerr << "Error: Missing update fields" << std::endl;
+            std::cerr << "Error: Missing update fields" << '\n';
             throw;
         }
 
@@ -262,7 +262,7 @@ namespace sqlite_manager
         }
 
         std::string queryString = fmt::format("UPDATE {} SET {}{}", tableName, updateValues, whereClause);
-        std::cout << "QueryString: " << queryString << std::endl;
+        std::cout << "QueryString: " << queryString << '\n';
 
         // Do the actual query
         try
@@ -272,7 +272,7 @@ namespace sqlite_manager
         }
         catch (const std::exception& e)
         {
-            std::cerr << "Error during update operation: " << e.what() << std::endl;
+            std::cerr << "Error during update operation: " << e.what() << '\n';
         }
     }
 
@@ -287,7 +287,7 @@ namespace sqlite_manager
         }
         catch (const std::exception& e)
         {
-            std::cerr << "Error during DROP operation: " << e.what() << std::endl;
+            std::cerr << "Error during DROP operation: " << e.what() << '\n';
         }
     }
 
