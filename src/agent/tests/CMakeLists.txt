@@ -11,6 +11,7 @@ target_link_libraries(task_manager_test PRIVATE Agent GTest::gtest)
 add_test(NAME TaskManagerTest COMMAND task_manager_test)
 
 add_executable(register_test register_test.cpp)
+configure_target(register_test)
 target_include_directories(register_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 target_link_libraries(register_test PRIVATE Agent GTest::gmock GTest::gtest)
 add_test(NAME RegisterTest COMMAND register_test)
