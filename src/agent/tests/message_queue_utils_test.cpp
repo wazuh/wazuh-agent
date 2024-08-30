@@ -16,6 +16,7 @@ public:
                 (MessageType, int, const std::string module),
                 (override));
     MOCK_METHOD(int, popN, (MessageType, int, const std::string module), (override));
+    MOCK_METHOD(int, push, (Message, bool), (override));
     MOCK_METHOD(int, push, (std::vector<Message>), (override));
 };
 
