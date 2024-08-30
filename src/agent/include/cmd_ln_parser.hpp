@@ -7,7 +7,7 @@
 class CommandlineParser
 {
 public:
-    CommandlineParser(int& argc, char** argv)
+    CommandlineParser(int argc, char** argv)
     {
         for (int i = 1; i < argc; ++i)
         {

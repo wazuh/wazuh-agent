@@ -26,6 +26,7 @@ target_link_libraries(message_queue_utils_test PRIVATE Agent MultiTypeQueue GTes
 add_test(NAME MessageQueueUtilsTest COMMAND message_queue_utils_test)
 
 add_executable(cmd_ln_parser_test cmd_ln_parser_test.cpp)
+configure_target(cmd_ln_parser_test)
 target_include_directories(cmd_ln_parser_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 target_link_libraries(cmd_ln_parser_test PRIVATE GTest::gtest)
 add_test(NAME CommandlineParserTest COMMAND cmd_ln_parser_test)

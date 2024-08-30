@@ -2,49 +2,45 @@
 
 #include <cmd_ln_parser.hpp>
 
-TEST(CommandlineParserTest, GetOptionValue_OptionExists)
-{
-    char* argv[] = {(char*)"program", (char*)"--option", (char*)"value"};
-    int argc = 3;
-    CommandlineParser parser(argc, argv);
+#include <array>
+#include <string>
 
-    EXPECT_EQ(parser.GetOptionValue("--option"), "value");
+class CommandlineParserTest : public ::testing::Test
+{
+protected:
+    std::string program = "program";
+    std::string option = "--option";
+    std::string value = "value";
+    std::array<char*, 3> args = {program.data(), option.data(), value.data()};
+    CommandlineParser parser {static_cast<int>(args.size()), args.data()};
+};
+
+TEST_F(CommandlineParserTest, GetOptionValue_OptionExists)
+{
+    EXPECT_EQ(parser.GetOptionValue(option), value);
 }
 
-TEST(CommandlineParserTest, GetOptionValue_OptionDoesNotExist)
+TEST_F(CommandlineParserTest, GetOptionValue_OptionDoesNotExist)
 {
-    char* argv[] = {(char*)"program", (char*)"--option", (char*)"value"};
-    int argc = 3;
-    CommandlineParser parser(argc, argv);
-
     EXPECT_EQ(parser.GetOptionValue("--nonexistent"), "");
 }
 
-TEST(CommandlineParserTest, OptionExists_OptionExists)
+TEST_F(CommandlineParserTest, OptionExists_OptionExists)
 {
-    char* argv[] = {(char*)"program", (char*)"--option", (char*)"value"};
-    int argc = 3;
-    CommandlineParser parser(argc, argv);
-
-    EXPECT_TRUE(parser.OptionExists("--option"));
+    EXPECT_TRUE(parser.OptionExists(option));
 }
 
-TEST(CommandlineParserTest, OptionExists_OptionDoesNotExist)
+TEST_F(CommandlineParserTest, OptionExists_OptionDoesNotExist)
 {
-    char* argv[] = {(char*)"program", (char*)"--option", (char*)"value"};
-    int argc = 3;
-    CommandlineParser parser(argc, argv);
-
     EXPECT_FALSE(parser.OptionExists("--nonexistent"));
 }
 
-TEST(CommandlineParserTest, GetOptionValue_NoValueForOption)
+TEST_F(CommandlineParserTest, GetOptionValue_NoValueForOption)
 {
-    char* argv[] = {(char*)"program", (char*)"--option"};
-    int argc = 2;
-    CommandlineParser parser(argc, argv);
+    std::array<char*, 2> noValueArgs = {program.data(), option.data()};
+    CommandlineParser noValueParser {static_cast<int>(noValueArgs.size()), noValueArgs.data()};
 
-    EXPECT_EQ(parser.GetOptionValue("--option"), "");
+    EXPECT_EQ(noValueParser.GetOptionValue(option), "");
 }
 
 int main(int argc, char** argv)
