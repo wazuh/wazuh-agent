@@ -163,16 +163,16 @@ namespace sqlite_manager
             while (query.executeStep())
             {
                 int nColumns = query.getColumnCount();
-                std::vector<Col> fields;
-                fields.reserve(nColumns);
+                std::vector<Col> queryFields;
+                queryFields.reserve(nColumns);
                 for (int i = 0; i < nColumns; i++)
                 {
                     sqlite_manager::Col field(query.getColumn(i).getName(),
                                               ColumnTypeFromSQLiteType(query.getColumn(i).getType()),
                                               query.getColumn(i).getString());
-                    fields.push_back(field);
+                    queryFields.push_back(field);
                 }
-                results.push_back(fields);
+                results.push_back(queryFields);
             }
 
             return results;
