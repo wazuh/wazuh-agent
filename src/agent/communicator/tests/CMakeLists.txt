@@ -1,6 +1,7 @@
 find_package(GTest CONFIG REQUIRED)
 
 add_executable(communicator_test communicator_test.cpp)
+configure_target(communicator_test)
 target_include_directories(communicator_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 target_link_libraries(communicator_test PUBLIC Communicator GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 add_test(NAME CommunicatorTest COMMAND communicator_test)
