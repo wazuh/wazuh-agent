@@ -126,6 +126,8 @@ namespace sqlite_manager
         else
         {
             std::vector<std::string> fieldNames;
+            fieldNames.reserve(fields.size());
+
             for (auto& col : fields)
             {
                 fieldNames.push_back(col.m_name);
