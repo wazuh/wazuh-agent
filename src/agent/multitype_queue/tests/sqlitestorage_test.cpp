@@ -219,26 +219,21 @@ protected:
     void TearDown() override {}
 };
 
-void StoreMessages(SQLiteStorage& storage, const json& messages, const std::string& tableName)
+namespace
 {
-    for (const auto& message : messages)
+    void StoreMessages(SQLiteStorage& storage, const json& messages, const std::string& tableName)
     {
-        storage.Store(message, tableName);
+        for (const auto& message : messages)
+        {
+            storage.Store(message, tableName);
+        }
     }
-}
 
-void RetrieveMessages(SQLiteStorage& storage,
-                      int count,
-                      std::vector<json>& retrievedMessages,
-                      const std::string& tableName)
-{
-    retrievedMessages = storage.RetrieveMultiple(count, tableName);
-}
-
-void RemoveMessages(SQLiteStorage& storage, int count, const std::string& tableName)
-{
-    storage.RemoveMultiple(count, tableName);
-}
+    void RemoveMessages(SQLiteStorage& storage, size_t count, const std::string& tableName)
+    {
+        storage.RemoveMultiple(static_cast<int>(count), tableName);
+    }
+} // namespace
 
 TEST_F(SQLiteStorageMultithreadedTest, MultithreadedStoreAndRetrieve)
 {
