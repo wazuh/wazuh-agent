@@ -7,6 +7,7 @@
 #include <multitype_queue.hpp>
 #include <signal_handler.hpp>
 #include <task_manager.hpp>
+#include <moduleManager.hpp>
 
 #include <memory>
 
@@ -26,4 +27,5 @@ private:
     AgentInfo m_agentInfo;
     configuration::ConfigurationParser m_configurationParser;
     communicator::Communicator m_communicator;
+    ModuleManager m_moduleManager;
 };

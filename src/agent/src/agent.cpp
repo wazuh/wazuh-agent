@@ -1,5 +1,5 @@
 #include <agent.hpp>
-#include <modules.hpp>
+#include <inventory.hpp>
 
 #include <http_client.hpp>
 #include <message.hpp>
@@ -29,6 +29,8 @@ Agent::~Agent()
 
 void Agent::Run()
 {
+    Configuration config;
+
     m_taskManager.EnqueueTask(m_communicator.WaitForTokenExpirationAndAuthenticate());
 
     m_taskManager.EnqueueTask(m_communicator.GetCommandsFromManager(
@@ -44,8 +46,12 @@ void Agent::Run()
         [this]([[maybe_unused]] const std::string& response)
         { PopMessagesFromQueue(m_messageQueue, MessageType::STATELESS); }));
 
-    m_taskManager.EnqueueTask([this]() { modulesExec(); });
+    m_moduleManager.addModule(Inventory::instance());
+    m_moduleManager.setup(config);
+
+    m_taskManager.EnqueueTask([this]() { m_moduleManager.start(); });
 
     m_signalHandler->WaitForSignal();
     m_communicator.Stop();
+    m_moduleManager.stop();
 }
