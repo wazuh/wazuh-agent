@@ -119,7 +119,7 @@ namespace sqlite_manager
                                            const std::vector<Col>& selCriteria)
     {
         std::string selectedFields;
-        if (fields.size() == 0)
+        if (fields.empty())
         {
             selectedFields = "*";
         }
@@ -134,7 +134,7 @@ namespace sqlite_manager
         }
 
         std::string condition;
-        if (selCriteria.size() != 0)
+        if (!selCriteria.empty())
         {
             std::vector<std::string> conditions;
             for (auto& col : selCriteria)
@@ -187,7 +187,7 @@ namespace sqlite_manager
     {
         // Build the query string
         std::string whereClause;
-        if (selCriteria.size() != 0)
+        if (!selCriteria.empty())
         {
             std::vector<std::string> critFields;
             for (auto& col : selCriteria)
@@ -222,7 +222,7 @@ namespace sqlite_manager
                                const std::vector<Col>& fields,
                                const std::vector<Col>& selCriteria)
     {
-        if (fields.size() == 0)
+        if (fields.empty())
         {
             std::cerr << "Error: Missing update fields" << '\n';
             throw;
@@ -244,7 +244,7 @@ namespace sqlite_manager
         std::string updateValues = fmt::format("{}", fmt::join(setFields, ", "));
 
         std::string whereClause;
-        if (selCriteria.size() != 0)
+        if (!selCriteria.empty())
         {
             std::vector<std::string> conditions;
             for (auto& col : selCriteria)
