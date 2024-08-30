@@ -7,6 +7,44 @@
 
 namespace sqlite_manager
 {
+    enum class ColumnType
+    {
+        INTEGER,
+        TEXT,
+        FLOAT
+    };
+
+    class Col
+    {
+    public:
+        Col(std::string name,
+            const ColumnType type,
+            const bool notNull,
+            const bool autoIncr,
+            const bool primary = false)
+            : m_name(std::move(name))
+            , m_type(type)
+            , m_notNull(notNull)
+            , m_autoIncrement(autoIncr)
+            , m_primaryKey(primary)
+        {
+        }
+
+        Col(std::string name, const ColumnType type, std::string value)
+            : m_name(std::move(name))
+            , m_type(type)
+            , m_value(std::move(value))
+        {
+        }
+
+        std::string m_name;
+        ColumnType m_type;
+        bool m_notNull;
+        bool m_autoIncrement;
+        bool m_primaryKey;
+        std::string m_value;
+    };
+
     class SQLiteManager
     {
     public:
@@ -22,5 +60,7 @@ namespace sqlite_manager
          * @brief Pointer to the SQLite database connection.
          */
         std::unique_ptr<SQLite::Database> m_db;
+
+        ColumnType ColumnTypeFromSQLiteType(const int type) const;
     };
 } // namespace sqlite_manager
