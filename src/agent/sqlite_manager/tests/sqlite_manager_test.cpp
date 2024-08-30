@@ -161,6 +161,65 @@ TEST_F(SQLiteManagerTest, UpdateTest)
     DumpResults(ret);
 }
 
+TEST_F(SQLiteManagerTest, TransactionTest)
+{
+    {
+        auto transaction = m_db->BeginTransaction();
+
+        m_db->Insert(m_tableName,
+                     {sqlite_manager::Col("Name", sqlite_manager::ColumnType::TEXT, "TransactionName"),
+                      sqlite_manager::Col("Status", sqlite_manager::ColumnType::TEXT, "TransactionStatus")});
+
+        m_db->Insert(m_tableName,
+                     {sqlite_manager::Col("Name", sqlite_manager::ColumnType::TEXT, "TransactionName2"),
+                      sqlite_manager::Col("Status", sqlite_manager::ColumnType::TEXT, "TransactionStatus2")});
+        EXPECT_NO_THROW(m_db->RollbackTransaction(transaction));
+    }
+
+    // since we rolled back the transaction we should find nothing
+    auto ret = m_db->Select(
+        m_tableName, {}, {sqlite_manager::Col("Status", sqlite_manager::ColumnType::TEXT, "TransactionStatus2")});
+
+    EXPECT_EQ(ret.size(), 0);
+
+    {
+        auto transaction = m_db->BeginTransaction();
+
+        m_db->Insert(m_tableName,
+                     {sqlite_manager::Col("Name", sqlite_manager::ColumnType::TEXT, "TransactionName"),
+                      sqlite_manager::Col("Status", sqlite_manager::ColumnType::TEXT, "TransactionStatus")});
+
+        m_db->Insert(m_tableName,
+                     {sqlite_manager::Col("Name", sqlite_manager::ColumnType::TEXT, "TransactionName2"),
+                      sqlite_manager::Col("Status", sqlite_manager::ColumnType::TEXT, "TransactionStatus2")});
+    }
+
+    // since transaction obejct ran out of scope without being committed we should find nothing
+    ret = m_db->Select(
+        m_tableName, {}, {sqlite_manager::Col("Status", sqlite_manager::ColumnType::TEXT, "TransactionStatus2")});
+
+    EXPECT_EQ(ret.size(), 0);
+
+    {
+        auto transaction = m_db->BeginTransaction();
+
+        m_db->Insert(m_tableName,
+                     {sqlite_manager::Col("Name", sqlite_manager::ColumnType::TEXT, "TransactionName"),
+                      sqlite_manager::Col("Status", sqlite_manager::ColumnType::TEXT, "TransactionStatus")});
+
+        m_db->Insert(m_tableName,
+                     {sqlite_manager::Col("Name", sqlite_manager::ColumnType::TEXT, "TransactionName2"),
+                      sqlite_manager::Col("Status", sqlite_manager::ColumnType::TEXT, "TransactionStatus2")});
+        EXPECT_NO_THROW(m_db->CommitTransaction(transaction));
+    }
+
+    // since we commited the transaction we should find something
+    ret = m_db->Select(
+        m_tableName, {}, {sqlite_manager::Col("Status", sqlite_manager::ColumnType::TEXT, "TransactionStatus2")});
+
+    EXPECT_EQ(ret.size(), 1);
+}
+
 TEST_F(SQLiteManagerTest, DropTableTest)
 {
     AddTestData();

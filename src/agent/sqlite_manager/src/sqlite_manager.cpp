@@ -290,4 +290,19 @@ namespace sqlite_manager
             std::cerr << "Error during DROP operation: " << e.what() << std::endl;
         }
     }
+
+    SQLite::Transaction SQLiteManager::BeginTransaction()
+    {
+        return SQLite::Transaction(*m_db);
+    }
+
+    void SQLiteManager::CommitTransaction(SQLite::Transaction& transaction)
+    {
+        transaction.commit();
+    }
+
+    void SQLiteManager::RollbackTransaction(SQLite::Transaction& transaction)
+    {
+        transaction.rollback();
+    }
 } // namespace sqlite_manager
