@@ -1,4 +1,4 @@
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include <sqlite_manager.hpp>
 
@@ -55,4 +55,69 @@ TEST_F(SQLiteManagerTest, GetCountTest)
 
     count = m_db->GetCount(m_tableName);
     EXPECT_EQ(count, 2);
+}
+
+void DumpResults(std::vector<sqlite_manager::Row>& ret)
+{
+    std::cout << "---------- " << ret.size() << " rows returned. ----------" << std::endl;
+    for (auto row : ret)
+    {
+        for (auto field : row)
+        {
+            std::cout << "[" << field.m_name << ": " << field.m_value << "]";
+        }
+        std::cout << std::endl;
+    }
+}
+
+TEST_F(SQLiteManagerTest, SelectTest)
+{
+    EXPECT_NO_THROW(storage->ExecuteNoSelectSQL("DELETE FROM TestTable"));
+    storage->Insert("TestTable",
+                    {sqlite_manager::Col("Name", SQLite::TEXT, "DummyData"),
+                     sqlite_manager::Col("Status", SQLite::TEXT, "DummyData")});
+    storage->Insert("TestTable",
+                    {sqlite_manager::Col("Name", SQLite::TEXT, "MyTestName"),
+                     sqlite_manager::Col("Status", SQLite::TEXT, "MyTestValue")});
+    storage->Insert("TestTable",
+                    {sqlite_manager::Col("Name", SQLite::TEXT, "DummyData2"),
+                     sqlite_manager::Col("Status", SQLite::TEXT, "DummyData2")});
+
+    std::vector<sqlite_manager::Col> cols;
+
+    // all fields, no selection criteria
+    std::vector<sqlite_manager::Row> ret = m_db->Select(m_tableName, cols);
+
+    DumpResults(ret);
+    EXPECT_NE(ret.size(), 0);
+
+    // all fields with selection criteria
+    ret = m_db->Select(m_tableName,
+                       cols,
+                       {sqlite_manager::Col("Name", sqlite_manager::ColumnType::TEXT, "MyTestName"),
+                        sqlite_manager::Col("Status", sqlite_manager::ColumnType::TEXT, "MyTestValue")});
+
+    DumpResults(ret);
+    EXPECT_NE(ret.size(), 0);
+
+    // only Name field no selection criteria
+    cols.clear();
+    cols.push_back(sqlite_manager::Col("Name", sqlite_manager::ColumnType::TEXT, "MyTestName"));
+    ret.clear();
+    ret = m_db->Select(m_tableName, cols);
+
+    DumpResults(ret);
+    EXPECT_NE(ret.size(), 0);
+
+    // only Name field with selection criteria
+    cols.clear();
+    cols.push_back(sqlite_manager::Col("Name", sqlite_manager::ColumnType::TEXT, "MyTestName"));
+    ret.clear();
+    ret = m_db->Select(m_tableName,
+                       cols,
+                       {sqlite_manager::Col("Name", sqlite_manager::ColumnType::TEXT, "MyTestName"),
+                        sqlite_manager::Col("Status", sqlite_manager::ColumnType::TEXT, "MyTestValue")});
+
+    DumpResults(ret);
+    EXPECT_NE(ret.size(), 0);
 }

@@ -47,6 +47,8 @@ namespace sqlite_manager
         std::string m_value;
     };
 
+    using Row = std::vector<Col>;
+
     class SQLiteManager
     {
     public:
@@ -56,6 +58,8 @@ namespace sqlite_manager
         void Insert(const std::string& tableName, const std::vector<Col>& cols);
         void ExecuteNoSelectSQL(const std::string& queryString);
         int GetCount(const std::string& tableName);
+        std::vector<Row>
+        Select(const std::string& tableName, const std::vector<Col>& fields, const std::vector<Col>& selCriteria = {});
 
     private:
         /**

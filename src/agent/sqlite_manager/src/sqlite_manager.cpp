@@ -127,4 +127,73 @@ namespace sqlite_manager
             return {};
         }
     }
+
+    std::vector<Row> SQLiteManager::Select(const std::string& tableName,
+                                           const std::vector<Col>& fields,
+                                           const std::vector<Col>& selCriteria)
+    {
+        std::string selectedFields;
+        if (fields.size() == 0)
+        {
+            selectedFields = "*";
+        }
+        else
+        {
+            std::vector<std::string> fieldNames;
+            for (auto& col : fields)
+            {
+                fieldNames.push_back(col.m_name);
+            }
+            selectedFields = fmt::format("{}", fmt::join(fieldNames, ", "));
+        }
+
+        std::string condition;
+        if (selCriteria.size() != 0)
+        {
+            std::vector<std::string> conditions;
+            for (auto& col : selCriteria)
+            {
+                if (col.m_type == ColumnType::TEXT)
+                    conditions.push_back(fmt::format("{} = '{}'", col.m_name, col.m_value));
+                else
+                    conditions.push_back(fmt::format("{} = {}", col.m_name, col.m_value));
+            }
+            condition = fmt::format("WHERE {}", fmt::join(conditions, " AND "));
+        }
+
+        std::string queryString = fmt::format("SELECT {} FROM {} {}", selectedFields, tableName, condition);
+
+        std::cout << "QueryString: " << queryString << std::endl;
+
+        // Do the actual query
+        std::vector<Row> results;
+        try
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+
+            SQLite::Statement query(*m_db, queryString);
+            while (query.executeStep())
+            {
+                int nColumns = query.getColumnCount();
+                std::vector<Col> fields;
+                fields.reserve(nColumns);
+                for (int i = 0; i < nColumns; i++)
+                {
+                    sqlite_manager::Col field(query.getColumn(i).getName(),
+                                              ColumnTypeFromSQLiteType(query.getColumn(i).getType()),
+                                              query.getColumn(i).getString());
+                    fields.push_back(field);
+                }
+                results.push_back(fields);
+            }
+
+            return results;
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "Error during Retrieve operation: " << e.what() << std::endl;
+            return {};
+        }
+        return results;
+    }
 } // namespace sqlite_manager
