@@ -148,3 +148,15 @@ TEST_F(SQLiteManagerTest, RemoveTest)
     count = m_db->GetCount(m_tableName);
     EXPECT_EQ(count, 0);
 }
+
+TEST_F(SQLiteManagerTest, UpdateTest)
+{
+    AddTestData();
+    EXPECT_NO_THROW(m_db->Update(m_tableName,
+                                 {sqlite_manager::Col("Status", sqlite_manager::ColumnType::TEXT, "Updated status")},
+                                 {sqlite_manager::Col("Name", sqlite_manager::ColumnType::TEXT, "MyTestName")}));
+
+    auto ret =
+        m_db->Select(m_tableName, {}, {sqlite_manager::Col("Name", sqlite_manager::ColumnType::TEXT, "MyTestName")});
+    DumpResults(ret);
+}

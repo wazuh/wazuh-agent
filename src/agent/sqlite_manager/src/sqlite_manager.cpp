@@ -218,4 +218,61 @@ namespace sqlite_manager
         }
     }
 
+    void SQLiteManager::Update(const std::string& tableName,
+                               const std::vector<Col>& fields,
+                               const std::vector<Col>& selCriteria)
+    {
+        if (fields.size() == 0)
+        {
+            std::cerr << "Error: Missing update fields" << std::endl;
+            throw;
+        }
+
+        // Build the query string
+        std::vector<std::string> setFields;
+        for (auto& col : fields)
+        {
+            if (col.m_type == ColumnType::TEXT)
+            {
+                setFields.push_back(fmt::format("{}='{}'", col.m_name, col.m_value));
+            }
+            else
+            {
+                setFields.push_back(fmt::format("{}={}", col.m_name, col.m_value));
+            }
+        }
+        std::string updateValues = fmt::format("{}", fmt::join(setFields, ", "));
+
+        std::string whereClause;
+        if (selCriteria.size() != 0)
+        {
+            std::vector<std::string> conditions;
+            for (auto& col : selCriteria)
+            {
+                if (col.m_type == ColumnType::TEXT)
+                {
+                    conditions.push_back(fmt::format("{}='{}'", col.m_name, col.m_value));
+                }
+                else
+                {
+                    conditions.push_back(fmt::format("{}={}", col.m_name, col.m_value));
+                }
+            }
+            whereClause = fmt::format(" WHERE {}", fmt::join(conditions, " AND "));
+        }
+
+        std::string queryString = fmt::format("UPDATE {} SET {}{}", tableName, updateValues, whereClause);
+        std::cout << "QueryString: " << queryString << std::endl;
+
+        // Do the actual query
+        try
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            m_db->exec(queryString);
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "Error during update operation: " << e.what() << std::endl;
+        }
+    }
 } // namespace sqlite_manager

@@ -60,6 +60,8 @@ namespace sqlite_manager
         std::vector<Row>
         Select(const std::string& tableName, const std::vector<Col>& fields, const std::vector<Col>& selCriteria = {});
         void Remove(const std::string& tableName, const std::vector<Col>& selCriteria = {});
+        void
+        Update(const std::string& tableName, const std::vector<Col>& fields, const std::vector<Col>& selCriteria = {});
 
     private:
         /**
