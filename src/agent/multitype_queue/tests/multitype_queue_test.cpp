@@ -23,53 +23,53 @@ constexpr int SMALL_QUEUE_CAPACITY = 2;
 const json BASE_DATA_CONTENT = R"({{"data": "for STATELESS_0"}})";
 const json MULTIPLE_DATA_CONTENT = {"content 1", "content 2", "content 3"};
 
-/// Helper functions
-
-// Unescape Strings
-std::string UnescapeString(const std::string& str)
+namespace
 {
-    std::string result;
-    result.reserve(str.length());
-
-    for (size_t i = 0; i < str.length(); ++i)
+    std::string UnescapeString(const std::string& str)
     {
-        if (str[i] == '\\' && i + 1 < str.length())
+        std::string result;
+        result.reserve(str.length());
+
+        for (size_t i = 0; i < str.length(); ++i)
         {
-            switch (str[i + 1])
+            if (str[i] == '\\' && i + 1 < str.length())
             {
-                case '\\': result += '\\'; break;
-                case '\"': result += '\"'; break;
-                case '/': result += '/'; break;
-                case 'b': result += '\b'; break;
-                case 'f': result += '\f'; break;
-                case 'n': result += '\n'; break;
-                case 'r': result += '\r'; break;
-                case 't': result += '\t'; break;
-                default: result += str[i + 1];
+                switch (str[i + 1])
+                {
+                    case '\\': result += '\\'; break;
+                    case '\"': result += '\"'; break;
+                    case '/': result += '/'; break;
+                    case 'b': result += '\b'; break;
+                    case 'f': result += '\f'; break;
+                    case 'n': result += '\n'; break;
+                    case 'r': result += '\r'; break;
+                    case 't': result += '\t'; break;
+                    default: result += str[i + 1];
+                }
+                ++i;
             }
-            ++i;
+            else
+            {
+                result += str[i];
+            }
         }
-        else
-        {
-            result += str[i];
-        }
+
+        return result;
     }
 
-    return result;
-}
-
-void CleanPersistence()
-{
-    for (const auto& entry : std::filesystem::directory_iterator("."))
+    void CleanPersistence()
     {
-        const auto fileFullPath = entry.path().string();
-        if (fileFullPath.find(QUEUE_DEFAULT_DB_PATH) != std::string::npos)
+        for (const auto& entry : std::filesystem::directory_iterator("."))
         {
-            std::error_code ec;
-            std::filesystem::remove(fileFullPath, ec);
+            const auto fileFullPath = entry.path().string();
+            if (fileFullPath.find(QUEUE_DEFAULT_DB_PATH) != std::string::npos)
+            {
+                std::error_code ec;
+                std::filesystem::remove(fileFullPath, ec);
+            }
         }
     }
-}
+} // namespace
 
 /// Test Methods
 
@@ -362,7 +362,7 @@ TEST_F(MultiTypeQueueTest, PushMultipleSeveralSingleGets)
 
     EXPECT_EQ(3, multiTypeQueue.push(messageToSend));
 
-    for (int i : {0, 1, 2})
+    for (size_t i : {0u, 1u, 2u})
     {
         auto messageResponse = multiTypeQueue.getNext(MessageType::STATELESS);
         auto responseData = messageResponse.data.at(0).at("data");
@@ -499,14 +499,13 @@ TEST_F(MultiTypeQueueTest, GetNextAwaitableBase)
 
     // Simulate the addition of needed message to the queue after some time
     std::thread producer(
-        [&multiTypeQueue, &io_context]()
+        [&multiTypeQueue]()
         {
             std::this_thread::sleep_for(std::chrono::seconds(2));
             const MessageType messageType {MessageType::STATELESS};
             const json multipleDataContent = {"content-1", "content-2", "content-3"};
             const Message messageToSend {messageType, multipleDataContent};
             EXPECT_EQ(multiTypeQueue.push(messageToSend), 3);
-            // io_context.stop();
         });
 
     io_context.run();
@@ -518,12 +517,10 @@ TEST_F(MultiTypeQueueTest, PushAwaitable)
     MultiTypeQueue multiTypeQueue(SMALL_QUEUE_CAPACITY);
     boost::asio::io_context io_context;
 
-    // complete the queue with messages
-    const MessageType messageType {MessageType::STATEFUL};
     for (int i : {1, 2})
     {
         const json dataContent = R"({"Data" : "for STATEFUL)" + std::to_string(i) + R"("})";
-        EXPECT_EQ(multiTypeQueue.push({messageType, dataContent}), 1);
+        EXPECT_EQ(multiTypeQueue.push({MessageType::STATEFUL, dataContent}), 1);
     }
 
     EXPECT_TRUE(multiTypeQueue.isFull(MessageType::STATEFUL));
@@ -535,9 +532,8 @@ TEST_F(MultiTypeQueueTest, PushAwaitable)
         // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
         [&multiTypeQueue]() -> boost::asio::awaitable<void>
         {
-            const MessageType messageType {MessageType::STATEFUL};
             const json dataContent = {"content-1"};
-            const Message messageToSend {messageType, dataContent};
+            const Message messageToSend {MessageType::STATEFUL, dataContent};
             EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATEFUL), 2);
             auto messagesPushed = co_await multiTypeQueue.pushAwaitable(messageToSend);
             EXPECT_EQ(messagesPushed, 1);
@@ -547,12 +543,11 @@ TEST_F(MultiTypeQueueTest, PushAwaitable)
 
     // Simulate poping one message so there's space to push a new one
     std::thread consumer(
-        [&multiTypeQueue, &io_context]()
+        [&multiTypeQueue]()
         {
             std::this_thread::sleep_for(std::chrono::seconds(2));
             EXPECT_EQ(multiTypeQueue.popN(MessageType::STATEFUL, 1), 1);
             // TODO: double check this behavior, is it mandatory to stop the context here?
-            // io_context.stop();
         });
 
     io_context.run();
@@ -576,11 +571,12 @@ TEST_F(MultiTypeQueueTest, FifoOrderCheck)
     auto messageReceivedVector =
         multiTypeQueue.getNextN(messageType, 10); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     EXPECT_EQ(messageReceivedVector.size(), 10);
-    int i = 0;
-    for (auto singleMessage : messageReceivedVector)
-    {
-        EXPECT_EQ(singleMessage.data.at("data"), R"({"Data" : "for STATEFUL)" + std::to_string(++i) + R"("})");
-    }
+
+    std::for_each(
+        messageReceivedVector.begin(),
+        messageReceivedVector.end(),
+        [i = 0](const auto& singleMessage) mutable
+        { EXPECT_EQ(singleMessage.data.at("data"), R"({"Data" : "for STATEFUL)" + std::to_string(++i) + R"("})"); });
 
     // Keep the order of the message: FIFO
     for (int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
