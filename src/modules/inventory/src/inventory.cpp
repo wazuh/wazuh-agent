@@ -91,11 +91,24 @@ string Inventory::command(const string & query) {
 }
 
 string Inventory::name() const {
-    return "Inventory";
+    return "inventory";
+}
+
+void Inventory::setMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue) {
+    m_messageQueue = queue;
 }
 
 void Inventory::sendDeltaEvent(const string& data) {
-    log(LOG_INFO, "Delta sent: " + data);
+
+    const auto jsonData = nlohmann::json::parse(data);
+    const Message message{ MessageType::STATELESS, jsonData, name() };
+
+    if(!m_messageQueue->push(message)) {
+        log(LOG_WARNING, "Delta event can't be pushed into the message queue: " + data);
+    }
+    else {
+        log(LOG_DEBUG_VERBOSE, "Delta sent: " + data);
+    }
 }
 
 void Inventory::showConfig()

@@ -12,6 +12,7 @@ public:
     MOCK_METHOD(void, stop, (), ());
     MOCK_METHOD(std::string, command, (const std::string&), ());
     MOCK_METHOD(std::string, name, (), (const));
+    MOCK_METHOD(void, setMessageQueue, (const std::shared_ptr<IMultiTypeQueue>));
 };
 
 class ModuleManagerTest : public ::testing::Test {
