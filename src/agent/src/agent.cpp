@@ -46,6 +46,7 @@ void Agent::Run()
         [this]([[maybe_unused]] const std::string& response)
         { PopMessagesFromQueue(m_messageQueue, MessageType::STATELESS); }));
 
+    m_moduleManager.setMessageQueue(m_messageQueue);
     m_moduleManager.addModule(Inventory::instance());
     m_moduleManager.setup(config);
 

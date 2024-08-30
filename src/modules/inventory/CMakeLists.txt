@@ -48,7 +48,8 @@ target_link_libraries(inventory PUBLIC
     utils
     os_regex
     logging_helper
-    pthreads_op)
+    pthreads_op
+    MultiTypeQueue)
 
 add_subdirectory(testtool)
 
