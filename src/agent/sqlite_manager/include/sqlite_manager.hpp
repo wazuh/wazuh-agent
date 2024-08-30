@@ -3,7 +3,9 @@
 #include <SQLiteCpp/SQLiteCpp.h>
 
 #include <memory>
+#include <mutex>
 #include <string>
+#include <vector>
 
 namespace sqlite_manager
 {
@@ -50,7 +52,14 @@ namespace sqlite_manager
     public:
         SQLiteManager(const std::string& dbName);
 
+        void CreateTable(const std::string& tableName, const std::vector<Col>& cols);
+
     private:
+        /**
+         * @brief Mutex to ensure thread-safe operations.
+         */
+        std::mutex m_mutex;
+
         /**
          * @brief The name of the SQLite database file.
          */

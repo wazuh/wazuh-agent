@@ -18,7 +18,11 @@ protected:
     void TearDown() override {}
 };
 
-TEST_F(SQLiteManagerTest, OneTest)
+TEST_F(SQLiteManagerTest, CreateTableTest)
 {
-    EXPECT_EQ(2, 2);
+    sqlite_manager::Col col1 {"Id", sqlite_manager::ColumnType::INTEGER, true, true, true};
+    sqlite_manager::Col col2 {"Name", sqlite_manager::ColumnType::TEXT, true, false};
+    sqlite_manager::Col col3 {"Status", sqlite_manager::ColumnType::TEXT, true, false};
+
+    EXPECT_NO_THROW(m_db->CreateTable(m_tableName, {col1, col2, col3}));
 }
