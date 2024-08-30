@@ -204,7 +204,8 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_Success)
     };
 
     auto onSuccessCalled = false;
-    std::function<void(const std::string&)> onSuccess = [&onSuccessCalled](const std::string& responseBody)
+    std::function<void(const std::string&)> onSuccess =
+        [&onSuccessCalled]([[maybe_unused]] const std::string& responseBody)
     {
         onSuccessCalled = true;
     };
@@ -243,7 +244,8 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
     };
 
     auto onSuccessCalled = false;
-    std::function<void(const std::string&)> onSuccess = [&onSuccessCalled](const std::string& responseBody)
+    std::function<void(const std::string&)> onSuccess =
+        [&onSuccessCalled]([[maybe_unused]] const std::string& responseBody)
     {
         onSuccessCalled = true;
     };
@@ -283,7 +285,8 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails
     };
 
     auto onSuccessCalled = false;
-    std::function<void(const std::string&)> onSuccess = [&onSuccessCalled](const std::string& responseBody)
+    std::function<void(const std::string&)> onSuccess =
+        [&onSuccessCalled]([[maybe_unused]] const std::string& responseBody)
     {
         onSuccessCalled = true;
     };
@@ -325,7 +328,8 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
     };
 
     auto onSuccessCalled = false;
-    std::function<void(const std::string&)> onSuccess = [&onSuccessCalled](const std::string& responseBody)
+    std::function<void(const std::string&)> onSuccess =
+        [&onSuccessCalled]([[maybe_unused]] const std::string& responseBody)
     {
         onSuccessCalled = true;
     };
@@ -366,7 +370,8 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_UnauthorizedCalledWhenAuthorization
     };
 
     auto onSuccessCalled = false;
-    std::function<void(const std::string&)> onSuccess = [&onSuccessCalled](const std::string& responseBody)
+    std::function<void(const std::string&)> onSuccess =
+        [&onSuccessCalled]([[maybe_unused]] const std::string& responseBody)
     {
         onSuccessCalled = true;
     };

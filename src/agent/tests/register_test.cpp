@@ -14,10 +14,6 @@
 #include <optional>
 #include <string>
 
-using ::testing::_;
-using ::testing::MockFunction;
-using ::testing::Return;
-
 class MockHttpClient : public http_client::IHttpClient
 {
 public:
