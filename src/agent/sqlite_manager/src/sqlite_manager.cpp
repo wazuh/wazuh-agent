@@ -8,6 +8,8 @@ namespace sqlite_manager
 {
     const std::map<ColumnType, std::string> MAP_COL_TYPE_STRING {
         {ColumnType::INTEGER, "INTEGER"}, {ColumnType::TEXT, "TEXT"}, {ColumnType::FLOAT, "REAL"}};
+    const std::map<LogicalOperator, std::string> MAP_LOGOP_STRING {{LogicalOperator::AND, "AND"},
+                                                                   {LogicalOperator::OR, "OR"}};
 
     ColumnType SQLiteManager::ColumnTypeFromSQLiteType(const int type) const
     {
@@ -29,20 +31,22 @@ namespace sqlite_manager
 
     void SQLiteManager::CreateTable(const std::string& tableName, const std::vector<Col>& cols)
     {
+        std::vector<std::string> pk;
         std::vector<std::string> fields;
         for (const Col& col : cols)
         {
-            std::string field = fmt::format("{} {}{}{}{}",
-                                            col.m_name,
-                                            MAP_COL_TYPE_STRING.at(col.m_type),
-                                            (col.m_primaryKey) ? " PRIMARY KEY" : "",
-                                            (col.m_autoIncrement) ? " AUTOINCREMENT" : "",
-                                            (col.m_notNull) ? " NOT NULL" : "");
+            std::string field = fmt::format(
+                "{} {}{}", col.m_name, MAP_COL_TYPE_STRING.at(col.m_type), (col.m_notNull) ? " NOT NULL" : "");
+            if (col.m_primaryKey)
+            {
+                pk.push_back(col.m_autoIncrement ? fmt::format("{} AUTOINCREMENT", col.m_name) : col.m_name);
+            }
             fields.push_back(field);
         }
 
-        std::string queryString =
-            fmt::format("CREATE TABLE IF NOT EXISTS {} ({})", tableName, fmt::format("{}", fmt::join(fields, ", ")));
+        std::string primaryKey = pk.empty() ? "" : fmt::format(", PRIMARY KEY({})", fmt::join(pk, ", "));
+        std::string queryString = fmt::format(
+            "CREATE TABLE IF NOT EXISTS {} ({}{})", tableName, fmt::format("{}", fmt::join(fields, ", ")), primaryKey);
 
         Execute(queryString);
     }
@@ -98,7 +102,8 @@ namespace sqlite_manager
 
     std::vector<Row> SQLiteManager::Select(const std::string& tableName,
                                            const std::vector<Col>& fields,
-                                           const std::vector<Col>& selCriteria)
+                                           const std::vector<Col>& selCriteria,
+                                           LogicalOperator logOp)
     {
         std::string selectedFields;
         if (fields.empty())
@@ -128,14 +133,11 @@ namespace sqlite_manager
                 else
                     conditions.push_back(fmt::format("{} = {}", col.m_name, col.m_value));
             }
-            condition = fmt::format("WHERE {}", fmt::join(conditions, " AND "));
+            condition = fmt::format("WHERE {}", fmt::join(conditions, fmt::format(" {} ", MAP_LOGOP_STRING.at(logOp))));
         }
 
         std::string queryString = fmt::format("SELECT {} FROM {} {}", selectedFields, tableName, condition);
 
-        std::cout << "QueryString: " << queryString << '\n';
-
-        // Do the actual query
         std::vector<Row> results;
         try
         {
@@ -167,9 +169,8 @@ namespace sqlite_manager
         return results;
     }
 
-    void SQLiteManager::Remove(const std::string& tableName, const std::vector<Col>& selCriteria)
+    void SQLiteManager::Remove(const std::string& tableName, const std::vector<Col>& selCriteria, LogicalOperator logOp)
     {
-        // Build the query string
         std::string whereClause;
         if (!selCriteria.empty())
         {
@@ -185,19 +186,19 @@ namespace sqlite_manager
                     critFields.push_back(fmt::format("{}={}", col.m_name, col.m_value));
                 }
             }
-            whereClause = fmt::format(" WHERE {}", fmt::join(critFields, " AND "));
+            whereClause =
+                fmt::format(" WHERE {}", fmt::join(critFields, fmt::format(" {} ", MAP_LOGOP_STRING.at(logOp))));
         }
 
         std::string queryString = fmt::format("DELETE FROM {}{}", tableName, whereClause);
-
-        std::cout << "QueryString: " << queryString << std::endl;
 
         Execute(queryString);
     }
 
     void SQLiteManager::Update(const std::string& tableName,
                                const std::vector<Col>& fields,
-                               const std::vector<Col>& selCriteria)
+                               const std::vector<Col>& selCriteria,
+                               LogicalOperator logOp)
     {
         if (fields.empty())
         {
@@ -205,7 +206,6 @@ namespace sqlite_manager
             throw;
         }
 
-        // Build the query string
         std::vector<std::string> setFields;
         for (auto& col : fields)
         {
@@ -235,13 +235,11 @@ namespace sqlite_manager
                     conditions.push_back(fmt::format("{}={}", col.m_name, col.m_value));
                 }
             }
-            whereClause = fmt::format(" WHERE {}", fmt::join(conditions, " AND "));
+            whereClause =
+                fmt::format(" WHERE {}", fmt::join(conditions, fmt::format(" {} ", MAP_LOGOP_STRING.at(logOp))));
         }
 
         std::string queryString = fmt::format("UPDATE {} SET {}{}", tableName, updateValues, whereClause);
-        std::cout << "QueryString: " << queryString << '\n';
-
-        // Do the actual query
         Execute(queryString);
     }
 
@@ -262,15 +260,7 @@ namespace sqlite_manager
     {
         std::string queryString = fmt::format("DROP TABLE {}", tableName);
 
-        try
-        {
-            std::lock_guard<std::mutex> lock(m_mutex);
-            m_db->exec(queryString);
-        }
-        catch (const std::exception& e)
-        {
-            std::cerr << "Error during DROP operation: " << e.what() << '\n';
-        }
+        Execute(queryString);
     }
 
     SQLite::Transaction SQLiteManager::BeginTransaction()

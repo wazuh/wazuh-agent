@@ -9,6 +9,12 @@
 
 namespace sqlite_manager
 {
+    enum class LogicalOperator
+    {
+        AND,
+        OR
+    };
+
     enum class ColumnType
     {
         INTEGER,
@@ -57,11 +63,17 @@ namespace sqlite_manager
         void CreateTable(const std::string& tableName, const std::vector<Col>& cols);
         void Insert(const std::string& tableName, const std::vector<Col>& cols);
         int GetCount(const std::string& tableName);
-        std::vector<Row>
-        Select(const std::string& tableName, const std::vector<Col>& fields, const std::vector<Col>& selCriteria = {});
-        void Remove(const std::string& tableName, const std::vector<Col>& selCriteria = {});
-        void
-        Update(const std::string& tableName, const std::vector<Col>& fields, const std::vector<Col>& selCriteria = {});
+        std::vector<Row> Select(const std::string& tableName,
+                                const std::vector<Col>& fields,
+                                const std::vector<Col>& selCriteria = {},
+                                LogicalOperator logOp = LogicalOperator::AND);
+        void Remove(const std::string& tableName,
+                    const std::vector<Col>& selCriteria = {},
+                    LogicalOperator logOp = LogicalOperator::AND);
+        void Update(const std::string& tableName,
+                    const std::vector<Col>& fields,
+                    const std::vector<Col>& selCriteria = {},
+                    LogicalOperator logOp = LogicalOperator::AND);
         void DropTable(const std::string& tableName);
         SQLite::Transaction BeginTransaction();
         void CommitTransaction(SQLite::Transaction& transaction);
