@@ -13,6 +13,7 @@
 #include "commonDefs.h"
 #include "dbsync.hpp"
 #include "inventoryNormalizer.hpp"
+#include <multitype_queue.hpp>
 
 class Inventory {
     public:
@@ -27,6 +28,7 @@ class Inventory {
         void stop();
         std::string command(const std::string & query);
         std::string name() const;
+        void setMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue);
 
         void init(const std::shared_ptr<ISysInfo>& spInfo,
                     const std::function<void(const std::string&)> reportDiffFunction,
@@ -88,6 +90,7 @@ class Inventory {
         std::mutex                                  m_mutex;
         std::unique_ptr<InvNormalizer>              m_spNormalizer;
         std::string                                 m_scanTime;
+        std::shared_ptr<IMultiTypeQueue>            m_messageQueue;
 
         void showConfig();
 

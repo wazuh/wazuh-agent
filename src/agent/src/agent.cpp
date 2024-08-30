@@ -52,9 +52,8 @@ void Agent::Run()
         [this]() { return GetCommandFromQueue(m_messageQueue); },
         [this]() { return PopCommandFromQueue(m_messageQueue); },
         [](command_store::Command& cmd) { return DispatchCommand(cmd); }));
-
-    m_taskManager.EnqueueTask([this]() { modulesExec(); });
     
+    m_moduleManager.setMessageQueue(m_messageQueue);
     m_moduleManager.addModule(Inventory::instance());
     m_moduleManager.setup(config);
     m_taskManager.EnqueueTask([this]() { m_moduleManager.start(); });
