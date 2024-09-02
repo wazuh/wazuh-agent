@@ -11,21 +11,16 @@
 
 #include <iostream>
 #include <cjson/cJSON.h>
-#include "shared.h"
-#include "defs.h"
-#include "logging_helper.h"
-#include "string_op.h"
-#include "pthreads_op.h"
+#include <shared.h>
+#include <defs.h>
+#include <logging_helper.h>
+#include <string_op.h>
+#include <pthreads_op.h>
 
-#include "inventory.hpp"
-#include "sysInfo.hpp"
+#include <inventory.hpp>
+#include <sysInfo.hpp>
 
 using namespace std;
-
-const int INVENTORY_MQ =  'd';
-const int DBSYNC_MQ    = '5';
-
-#define INFINITE_OPENQ_ATTEMPTS 0
 
 #define INV_LOGTAG "modules:inventory" // Tag for log messages
 

@@ -7,12 +7,12 @@
 #include <memory>
 #include <string>
 #include <memory>
-#include "sysInfoInterface.hpp"
-#include "configuration.hpp"
-#include "logging_helper.h"
-#include "commonDefs.h"
-#include "dbsync.hpp"
-#include "inventoryNormalizer.hpp"
+#include <sysInfoInterface.hpp>
+#include <configuration.hpp>
+#include <logging_helper.h>
+#include <commonDefs.h>
+#include <dbsync.hpp>
+#include <inventoryNormalizer.hpp>
 #include <multitype_queue.hpp>
 
 class Inventory {
@@ -65,8 +65,8 @@ class Inventory {
         void scanProcesses();
         void scan();
         void syncLoop(std::unique_lock<std::mutex>& lock);
-        void syncAlgorithm();
-
+        void showConfig();
+        cJSON * dump();
         static void log(const modules_log_level_t level, const std::string& log);
         static void logError(const std::string& log);
 
@@ -91,9 +91,5 @@ class Inventory {
         std::unique_ptr<InvNormalizer>              m_spNormalizer;
         std::string                                 m_scanTime;
         std::shared_ptr<IMultiTypeQueue>            m_messageQueue;
-
-        void showConfig();
-
-        cJSON * dump();
 
 };
