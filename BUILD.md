@@ -1,6 +1,29 @@
 # Build Instructions
 
-1. **Clone the Repository**
+The following dependencies are required for this project:
+
+- **Git**
+- **CMake** at least 3.22
+- **Make**
+- **C++ compiler** (GCC 10 or Clang 13, coroutines support needed)
+- **Zip** (for [vcpkg](https://vcpkg.io))
+- **Curl** (for [vcpkg](https://vcpkg.io))
+- **Tar** (for [vcpkg](https://vcpkg.io))
+- **Ninja-build** (for [vcpkg](https://vcpkg.io))
+- **Pkg-config**
+
+## Compilation steps
+
+1. **Installing Dependencies on Debian**
+
+    To install the necessary dependencies on a Debian-based system, run the following commands:
+
+    ```bash
+    sudo apt-get update
+    sudo apt-get install cmake make gcc git zip curl tar ninja-build pkg-config
+    ```
+
+2. **Clone the Repository**
 
     First, clone the repository using the following command:
 
@@ -8,7 +31,7 @@
     git clone https://github.com/wazuh/wazuh-agent.git
     ```
 
-2. **Initialize Submodules**
+3. **Initialize Submodules**
 
     The project uses submodules, so you need to initialize and update them. Run the following commands:
 
@@ -17,37 +40,28 @@
     git submodule update --init --recursive
     ```
 
-3. **Build the Project**
-
-    Navigate to the `src` folder and create a `build` directory:
+4. **Configure and Build the Project**
 
     ```bash
-    cd src
-    mkdir build
-    cd build
-    ```
-
-    Run `cmake` to configure the project:
-
-    ```bash
-    cmake ..
+    cmake src -B build
+    cmake --build build
     ```
 
     If you want to include tests, configure the project with the following command:
 
     ```bash
-    cmake .. -DBUILD_TESTS=1
+    cmake src -B build -DBUILD_TESTS=1
+    cmake --build build
     ```
 
-4. **Build the Project**
+5. **Run tests**
 
-    Finally, build the project using `make`:
+    If built with CMake and `-DBUILD_TESTS=1`, you can run tests with:
 
     ```bash
-    make
+    ctest --test-dir build --output-log build
     ```
 
 ## Notes
 
 - The project uses `vcpkg` as a submodule to manage dependencies. By initializing the submodules, `vcpkg` will automatically fetch the necessary dependencies when running CMake.
-- Ensure you have `cmake` and `make` installed on your system. You can install them via your package manager.
