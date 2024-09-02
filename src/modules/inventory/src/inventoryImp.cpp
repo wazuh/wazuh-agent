@@ -8,12 +8,12 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation.
  */
-#include "inventory.hpp"
+#include <inventory.hpp>
 #include <nlohmann/json.hpp>
 #include <iostream>
-#include "stringHelper.h"
-#include "hashHelper.h"
-#include "timeHelper.h"
+#include <stringHelper.h>
+#include <hashHelper.h>
+#include <timeHelper.h>
 
 constexpr std::chrono::seconds MAX_DELAY_TIME
 {

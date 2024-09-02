@@ -1,6 +1,6 @@
 #include <iostream>
-#include "inventory.hpp"
-#include "moduleManager.hpp"
+#include <inventory.hpp>
+#include <moduleManager.hpp>
 
 shared_ptr<ModuleWrapper> ModuleManager::getModule(const string & name) {
     auto it = modules.find(name);
