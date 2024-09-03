@@ -617,7 +617,7 @@ checks:
     condition: all
     rules:
       - "c:fdesetup status -> r:^FileVault is On"
-      - 'c:osascript -l JavaScript -e "osascript -l JavaScript -e "$.NSUserDefaults.alloc.initWithSuiteName(''com.apple.MCX'').objectForKey(''dontAllowFDEDisable'')" -> r:^0$'
+      - 'c:osascript -l JavaScript -e "$.NSUserDefaults.alloc.initWithSuiteName(''com.apple.MCX'').objectForKey(''dontAllowFDEDisable'')" -> r:^0$'
 
   # 2.6.7 Audit Lockdown Mode. (Manual) - Not Implemented
 
