@@ -1,5 +1,6 @@
 #pragma once
 
+#include <command.hpp>
 #include <sqlite_manager.hpp>
 
 #include <memory>
@@ -15,10 +16,14 @@ namespace command_store
     private:
         std::unique_ptr<sqlite_manager::SQLiteManager> m_dataBase;
 
+        double GetCurrentTimestampAsReal();
+
     public:
         CommandStore();
 
-        void StoreCommand(const std::string& command);
+        void Clear();
+        int GetCount();
+        void StoreCommand(const Command& cmd);
         void DeleteCommand(int id);
     };
 } // namespace command_store
