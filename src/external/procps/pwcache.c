@@ -27,7 +27,7 @@ static struct pwbuf {
     char name[P_G_SZ];
 } *pwhash[HASHSIZE];
 
-char *user_from_uid(uid_t uid) {
+char *pwcache_get_user(uid_t uid) {
     struct pwbuf **p;
     struct passwd *pw;
 
@@ -55,7 +55,7 @@ static struct grpbuf {
     char name[P_G_SZ];
 } *grphash[HASHSIZE];
 
-char *group_from_gid(gid_t gid) {
+char *pwcache_get_group(gid_t gid) {
     struct grpbuf **g;
     struct group *gr;
 
