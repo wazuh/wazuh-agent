@@ -232,6 +232,9 @@ elseif(APPLE)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
 find_library(POPT_LIBRARY libpopt)
+if(NOT POPT_LIBRARY)
+message(FATAL_ERROR "libpopt library not found! Aborting...")
+endif()
 target_link_libraries(sysinfo
   networkHelper
   nlohmann_json::nlohmann_json
