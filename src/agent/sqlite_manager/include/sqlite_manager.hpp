@@ -19,17 +19,17 @@ namespace sqlite_manager
     {
         INTEGER,
         TEXT,
-        FLOAT
+        REAL
     };
 
-    class Col
+    class Column
     {
     public:
-        Col(std::string name,
-            const ColumnType type,
-            const bool notNull,
-            const bool autoIncr,
-            const bool primary = false)
+        Column(std::string name,
+               const ColumnType type,
+               const bool notNull,
+               const bool autoIncr,
+               const bool primary = false)
             : m_name(std::move(name))
             , m_type(type)
             , m_notNull(notNull)
@@ -38,7 +38,7 @@ namespace sqlite_manager
         {
         }
 
-        Col(std::string name, const ColumnType type, std::string value)
+        Column(std::string name, const ColumnType type, std::string value)
             : m_name(std::move(name))
             , m_type(type)
             , m_value(std::move(value))
@@ -53,26 +53,26 @@ namespace sqlite_manager
         std::string m_value;
     };
 
-    using Row = std::vector<Col>;
+    using Row = std::vector<Column>;
 
     class SQLiteManager
     {
     public:
         SQLiteManager(const std::string& dbName);
 
-        void CreateTable(const std::string& tableName, const std::vector<Col>& cols);
-        void Insert(const std::string& tableName, const std::vector<Col>& cols);
+        void CreateTable(const std::string& tableName, const std::vector<Column>& cols);
+        void Insert(const std::string& tableName, const std::vector<Column>& cols);
         int GetCount(const std::string& tableName);
         std::vector<Row> Select(const std::string& tableName,
-                                const std::vector<Col>& fields,
-                                const std::vector<Col>& selCriteria = {},
+                                const std::vector<Column>& fields,
+                                const std::vector<Column>& selCriteria = {},
                                 LogicalOperator logOp = LogicalOperator::AND);
         void Remove(const std::string& tableName,
-                    const std::vector<Col>& selCriteria = {},
+                    const std::vector<Column>& selCriteria = {},
                     LogicalOperator logOp = LogicalOperator::AND);
         void Update(const std::string& tableName,
-                    const std::vector<Col>& fields,
-                    const std::vector<Col>& selCriteria = {},
+                    const std::vector<Column>& fields,
+                    const std::vector<Column>& selCriteria = {},
                     LogicalOperator logOp = LogicalOperator::AND);
         void DropTable(const std::string& tableName);
         SQLite::Transaction BeginTransaction();

@@ -7,7 +7,7 @@
 namespace sqlite_manager
 {
     const std::map<ColumnType, std::string> MAP_COL_TYPE_STRING {
-        {ColumnType::INTEGER, "INTEGER"}, {ColumnType::TEXT, "TEXT"}, {ColumnType::FLOAT, "REAL"}};
+        {ColumnType::INTEGER, "INTEGER"}, {ColumnType::TEXT, "TEXT"}, {ColumnType::REAL, "REAL"}};
     const std::map<LogicalOperator, std::string> MAP_LOGOP_STRING {{LogicalOperator::AND, "AND"},
                                                                    {LogicalOperator::OR, "OR"}};
 
@@ -17,7 +17,7 @@ namespace sqlite_manager
             return ColumnType::INTEGER;
 
         if (type == SQLite::FLOAT)
-            return ColumnType::FLOAT;
+            return ColumnType::REAL;
 
         return ColumnType::TEXT;
     }
@@ -29,11 +29,11 @@ namespace sqlite_manager
         m_db->exec("PRAGMA journal_mode=WAL;");
     }
 
-    void SQLiteManager::CreateTable(const std::string& tableName, const std::vector<Col>& cols)
+    void SQLiteManager::CreateTable(const std::string& tableName, const std::vector<Column>& cols)
     {
         std::vector<std::string> pk;
         std::vector<std::string> fields;
-        for (const Col& col : cols)
+        for (const Column& col : cols)
         {
             std::string field = fmt::format(
                 "{} {}{}", col.m_name, MAP_COL_TYPE_STRING.at(col.m_type), (col.m_notNull) ? " NOT NULL" : "");
@@ -51,12 +51,12 @@ namespace sqlite_manager
         Execute(queryString);
     }
 
-    void SQLiteManager::Insert(const std::string& tableName, const std::vector<Col>& cols)
+    void SQLiteManager::Insert(const std::string& tableName, const std::vector<Column>& cols)
     {
         std::vector<std::string> names;
         std::vector<std::string> values;
 
-        for (const Col& col : cols)
+        for (const Column& col : cols)
         {
             names.push_back(col.m_name);
             if (col.m_type == ColumnType::TEXT)
@@ -101,8 +101,8 @@ namespace sqlite_manager
     }
 
     std::vector<Row> SQLiteManager::Select(const std::string& tableName,
-                                           const std::vector<Col>& fields,
-                                           const std::vector<Col>& selCriteria,
+                                           const std::vector<Column>& fields,
+                                           const std::vector<Column>& selCriteria,
                                            LogicalOperator logOp)
     {
         std::string selectedFields;
@@ -147,13 +147,13 @@ namespace sqlite_manager
             while (query.executeStep())
             {
                 int nColumns = query.getColumnCount();
-                std::vector<Col> queryFields;
+                std::vector<Column> queryFields;
                 queryFields.reserve(static_cast<size_t>(nColumns));
                 for (int i = 0; i < nColumns; i++)
                 {
-                    sqlite_manager::Col field(query.getColumn(i).getName(),
-                                              ColumnTypeFromSQLiteType(query.getColumn(i).getType()),
-                                              query.getColumn(i).getString());
+                    sqlite_manager::Column field(query.getColumn(i).getName(),
+                                                 ColumnTypeFromSQLiteType(query.getColumn(i).getType()),
+                                                 query.getColumn(i).getString());
                     queryFields.push_back(field);
                 }
                 results.push_back(queryFields);
@@ -169,7 +169,8 @@ namespace sqlite_manager
         return results;
     }
 
-    void SQLiteManager::Remove(const std::string& tableName, const std::vector<Col>& selCriteria, LogicalOperator logOp)
+    void
+    SQLiteManager::Remove(const std::string& tableName, const std::vector<Column>& selCriteria, LogicalOperator logOp)
     {
         std::string whereClause;
         if (!selCriteria.empty())
@@ -196,8 +197,8 @@ namespace sqlite_manager
     }
 
     void SQLiteManager::Update(const std::string& tableName,
-                               const std::vector<Col>& fields,
-                               const std::vector<Col>& selCriteria,
+                               const std::vector<Column>& fields,
+                               const std::vector<Column>& selCriteria,
                                LogicalOperator logOp)
     {
         if (fields.empty())
