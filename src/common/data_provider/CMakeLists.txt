@@ -231,7 +231,7 @@ elseif(APPLE)
   target_link_libraries(sysinfo cjson ${SRC_FOLDER}/external/libplist/bin/lib/libplist-2.0.a ${iokit_lib} ${corefoundation_lib})
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
-find_library(POPT_LIBRARY libpopt.a)
+find_library(POPT_LIBRARY libpopt)
 target_link_libraries(sysinfo
   networkHelper
   nlohmann_json::nlohmann_json
