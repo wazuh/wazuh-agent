@@ -231,19 +231,29 @@ elseif(APPLE)
   target_link_libraries(sysinfo cjson ${SRC_FOLDER}/external/libplist/bin/lib/libplist-2.0.a ${iokit_lib} ${corefoundation_lib})
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
-find_library(POPT_LIBRARY libpopt)
-if(NOT POPT_LIBRARY)
-message(FATAL_ERROR "libpopt library not found! Aborting...")
+if (LINUX)
+  if(NOT CMAKE_CHECK_CENTOS5)
+    find_library(POPT_LIBRARY libpopt.a)
+    set(RPM_LIBRARY rpm)
+    set(PROC_LIBRARY proc)
+    set(ARCHIVE_LIBRARY LibArchive::LibArchive)
+    set(PROC_LIBRARY proc)
+  else()
+    set(RPM_LIBRARY "")
+    set(PROC_LIBRARY "")
+    set(ARCHIVE_LIBRARY "")
+    set(PROC_LIBRARY proc)
+  endif()
 endif()
 target_link_libraries(sysinfo
   networkHelper
   nlohmann_json::nlohmann_json
   cjson
   unofficial::sqlite3::sqlite3
-  LibArchive::LibArchive
+  ${ARCHIVE_LIBRARY}
   ${POPT_LIBRARY}
-  rpm
-  proc
+  ${RPM_LIBRARY}
+  ${PROC_LIBRARY}
   ${LUA_LIBRARIES})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
