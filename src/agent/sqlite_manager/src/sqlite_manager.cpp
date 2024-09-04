@@ -96,7 +96,7 @@ namespace sqlite_manager
         catch (const std::exception& e)
         {
             std::cerr << "Error during GetCount operation: " << e.what() << '\n';
-            return {};
+            throw;
         }
     }
 
@@ -158,13 +158,11 @@ namespace sqlite_manager
                 }
                 results.push_back(queryFields);
             }
-
-            return results;
         }
         catch (const std::exception& e)
         {
             std::cerr << "Error during Retrieve operation: " << e.what() << '\n';
-            return {};
+            throw;
         }
         return results;
     }
@@ -254,6 +252,7 @@ namespace sqlite_manager
         catch (const std::exception& e)
         {
             std::cerr << "Error during database operation: " << e.what() << '\n';
+            throw;
         }
     }
 

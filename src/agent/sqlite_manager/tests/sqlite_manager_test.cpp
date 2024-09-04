@@ -342,7 +342,5 @@ TEST_F(SQLiteManagerTest, DropTableTest)
     EXPECT_NO_THROW(m_db->CreateTable("DropMe", {col1, col2, col3, col4, col5}));
     EXPECT_NO_THROW(m_db->DropTable("DropMe"));
 
-    auto ret = m_db->Select("DropMe", {}, {});
-
-    EXPECT_EQ(ret.size(), 0);
+    EXPECT_ANY_THROW(auto ret = m_db->Select("DropMe", {}, {}));
 }
