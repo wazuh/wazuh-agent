@@ -17,6 +17,7 @@ namespace command_store
         std::unique_ptr<sqlite_manager::SQLiteManager> m_dataBase;
 
         double GetCurrentTimestampAsReal();
+        Status StatusFromInt(const int i);
 
     public:
         CommandStore();
@@ -25,5 +26,6 @@ namespace command_store
         int GetCount();
         void StoreCommand(const Command& cmd);
         void DeleteCommand(int id);
+        Command GetCommand(int id);
     };
 } // namespace command_store

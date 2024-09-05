@@ -7,6 +7,17 @@ namespace command_store
 {
     constexpr double MILLISECS_IN_A_SEC = 1000.0;
 
+    Status CommandStore::StatusFromInt(const int i)
+    {
+        switch (i)
+        {
+            case 0: return Status::SUCCESS; break;
+            case 1: return Status::ERROR; break;
+            case 2: return Status::INPROCESS; break;
+            default: return Status::TIMEOUT; break;
+        }
+    }
+
     CommandStore::CommandStore()
         : m_dataBase(std::make_unique<sqlite_manager::SQLiteManager>(COMMANDSTORE_DEFAULT_DB_PATH))
     {
@@ -99,4 +110,44 @@ namespace command_store
         }
     }
 
+    Command CommandStore::GetCommand(int id)
+    {
+        auto cmdData =
+            m_dataBase->Select(COMMANDSTORE_TABLE_NAME,
+                               {},
+                               {sqlite_manager::Column("id", sqlite_manager::ColumnType::INTEGER, std::to_string(id))});
+
+        Command cmd;
+        if (!cmdData.empty())
+        {
+            for (sqlite_manager::Column col : cmdData[0])
+            {
+                if (col.m_name == "id")
+                {
+                    cmd.m_id = std::stoi(col.m_value);
+                }
+                else if (col.m_name == "module")
+                {
+                    cmd.m_module = col.m_value;
+                }
+                else if (col.m_name == "command")
+                {
+                    cmd.m_command = col.m_value;
+                }
+                else if (col.m_name == "parameters")
+                {
+                    cmd.m_parameters = col.m_value;
+                }
+                else if (col.m_name == "status")
+                {
+                    cmd.m_status = StatusFromInt(std::stoi(col.m_value));
+                }
+                else if (col.m_name == "time")
+                {
+                    cmd.m_time = std::stod(col.m_value);
+                }
+            }
+        }
+        return cmd;
+    }
 } // namespace command_store
