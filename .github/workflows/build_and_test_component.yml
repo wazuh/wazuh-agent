@@ -1,0 +1,56 @@
+run-name: Build and Test Component - Build ${{ inputs.component }}
+name:  Build and Test Component
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_reference:
+        description: |
+          Branch from wazuh/wazuh-agent repository to use.
+        required: true
+      component:
+        description: 'Default agent'
+        required: true
+        type: choice
+          - agent
+        default: agent
+
+  workflow_call:
+    inputs:
+      source_reference:
+        type: string
+        required: true
+      components:
+        type: string
+        required: true
+
+jobs:
+  Build-component-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    name: Build ${{ inputs.components }}
+
+    steps:
+      - name: Checkout wazuh/wazuh-agent repository
+        uses: actions/checkout@v4
+        with:
+          repository: wazuh/wazuh-agent
+          ref: ${{ inputs.source_reference }}
+
+      - name: Initializing Submodules
+        run: |
+          git submodule update --init --recursive
+          cd src/vcpkg && ./bootstrap-vcpkg.sh
+
+      - name: Build component
+        if: ${{ inputs.component == 'agent' }}
+        run: |
+          mkdir src/build
+          cd src/build
+          cmake .. -DBUILD_TESTS=ON
+          make
+
+      - name: Run the tests
+        run: |
+          cd src/build && ./wazuh-agent &> status.log & sleep 3; pkill wazuh-agent
+          cat src/build/status.log
