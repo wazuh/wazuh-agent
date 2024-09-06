@@ -13,8 +13,9 @@ namespace command_store
         {
             case 0: return Status::SUCCESS; break;
             case 1: return Status::ERROR; break;
-            case 2: return Status::INPROCESS; break;
-            default: return Status::TIMEOUT; break;
+            case 2: return Status::IN_PROGRESS; break;
+            case 3: return Status::TIMEOUT; break;
+            default: return Status::UNKNOWN; break;
         }
     }
 
@@ -39,7 +40,7 @@ namespace command_store
         }
     }
 
-    void CommandStore::Clear()
+    bool CommandStore::Clear()
     {
         try
         {
@@ -48,7 +49,9 @@ namespace command_store
         catch (const std::exception& e)
         {
             std::cerr << "Clear operation failed. " << e.what() << "\n";
+            return false;
         }
+        return true;
     }
 
     int CommandStore::GetCount()
@@ -76,7 +79,7 @@ namespace command_store
                MILLISECS_IN_A_SEC;
     }
 
-    void CommandStore::StoreCommand(const Command& cmd)
+    bool CommandStore::StoreCommand(const Command& cmd)
     {
         std::vector<sqlite_manager::Column> fields;
         fields.emplace_back("id", sqlite_manager::ColumnType::INTEGER, std::to_string(cmd.m_id));
@@ -93,10 +96,12 @@ namespace command_store
         catch (const std::exception& e)
         {
             std::cerr << "StoreCommand operation failed. " << e.what() << "\n";
+            return false;
         }
+        return true;
     }
 
-    void CommandStore::DeleteCommand(int id)
+    bool CommandStore::DeleteCommand(int id)
     {
         std::vector<sqlite_manager::Column> fields;
         fields.emplace_back("id", sqlite_manager::ColumnType::INTEGER, std::to_string(id));
@@ -107,45 +112,49 @@ namespace command_store
         catch (const std::exception& e)
         {
             std::cerr << "DeleteCommand operation failed. " << e.what() << "\n";
+            return false;
         }
+        return true;
     }
 
-    Command CommandStore::GetCommand(int id)
+    std::optional<Command> CommandStore::GetCommand(int id)
     {
         auto cmdData =
             m_dataBase->Select(COMMANDSTORE_TABLE_NAME,
                                {},
                                {sqlite_manager::Column("id", sqlite_manager::ColumnType::INTEGER, std::to_string(id))});
 
-        Command cmd;
-        if (!cmdData.empty())
+        if (cmdData.empty())
         {
-            for (sqlite_manager::Column col : cmdData[0])
+            return std::nullopt;
+        }
+
+        Command cmd;
+        for (const sqlite_manager::Column& col : cmdData[0])
+        {
+            if (col.m_name == "id")
             {
-                if (col.m_name == "id")
-                {
-                    cmd.m_id = std::stoi(col.m_value);
-                }
-                else if (col.m_name == "module")
-                {
-                    cmd.m_module = col.m_value;
-                }
-                else if (col.m_name == "command")
-                {
-                    cmd.m_command = col.m_value;
-                }
-                else if (col.m_name == "parameters")
-                {
-                    cmd.m_parameters = col.m_value;
-                }
-                else if (col.m_name == "status")
-                {
-                    cmd.m_status = StatusFromInt(std::stoi(col.m_value));
-                }
-                else if (col.m_name == "time")
-                {
-                    cmd.m_time = std::stod(col.m_value);
-                }
+                cmd.m_id = std::stoi(col.m_value);
+            }
+            else if (col.m_name == "module")
+            {
+                cmd.m_module = col.m_value;
+            }
+            else if (col.m_name == "command")
+            {
+                cmd.m_command = col.m_value;
+            }
+            else if (col.m_name == "parameters")
+            {
+                cmd.m_parameters = col.m_value;
+            }
+            else if (col.m_name == "status")
+            {
+                cmd.m_status = StatusFromInt(std::stoi(col.m_value));
+            }
+            else if (col.m_name == "time")
+            {
+                cmd.m_time = std::stod(col.m_value);
             }
         }
         return cmd;

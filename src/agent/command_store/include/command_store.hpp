@@ -4,6 +4,7 @@
 #include <sqlite_manager.hpp>
 
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace command_store
@@ -22,10 +23,10 @@ namespace command_store
     public:
         CommandStore();
 
-        void Clear();
+        bool Clear();
         int GetCount();
-        void StoreCommand(const Command& cmd);
-        void DeleteCommand(int id);
-        Command GetCommand(int id);
+        bool StoreCommand(const Command& cmd);
+        bool DeleteCommand(int id);
+        std::optional<Command> GetCommand(int id);
     };
 } // namespace command_store
