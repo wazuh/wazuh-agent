@@ -1,3 +1,0 @@
-%__pkgconfig_provides	%{_rpmconfigdir}/pkgconfigdeps.sh --provides
-%__pkgconfig_requires	%{_rpmconfigdir}/pkgconfigdeps.sh --requires
-%__pkgconfig_path	^((%{_libdir}|%{_datadir})/pkgconfig/.*\.pc|%{_bindir}/pkg-config)$
