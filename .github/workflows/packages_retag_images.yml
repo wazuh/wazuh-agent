@@ -64,8 +64,8 @@ jobs:
       - name: Run retag script
         run: |
           if [ "${{ inputs.old_version }}" != "none" ] && [ "${{ inputs.new_version }}" != "none" ]; then
-            new_version=${{ inputs.new_version }}
-            old_version=${{ inputs.old_version }}
+            new_version=$(sed 's|[/\]|--|g' <<< ${{ inputs.new_version }})
+            old_version=$(sed 's|[/\]|--|g' <<< ${{ inputs.old_version }})
           else
             new_version=${{ env.NEW_VERSION }}
             old_version=${{ env.OLD_VERSION }}
