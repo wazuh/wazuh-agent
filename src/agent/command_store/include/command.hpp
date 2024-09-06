@@ -24,12 +24,17 @@ namespace command_store
         {
         }
 
-        Command(
-            int id, const std::string& module, const std::string& command, const std::string& parameters, Status status)
+        Command(int id,
+                const std::string& module,
+                const std::string& command,
+                const std::string& parameters,
+                const std::string& result,
+                Status status)
             : m_id(id)
             , m_module(module)
             , m_command(command)
             , m_parameters(parameters)
+            , m_result(result)
             , m_status(status)
         {
         }
@@ -38,6 +43,7 @@ namespace command_store
         std::string m_module;
         std::string m_command;
         std::string m_parameters;
+        std::string m_result;
         Status m_status;
         double m_time;
     };
