@@ -12,7 +12,7 @@
 #ifndef _PACKAGE_INTERFACE_H
 #define _PACKAGE_INTERFACE_H
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 class IPackage
 {

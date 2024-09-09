@@ -7,6 +7,7 @@ get_filename_component(COMMON_FOLDER    ${SRC_FOLDER}/common/ ABSOLUTE)
 
 find_package(cJSON CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 add_library(inventory
     src/inventory.cpp
@@ -32,7 +33,9 @@ target_include_directories(inventory PUBLIC
     ${COMMON_FOLDER}/timeHelper/include
     ${COMMON_FOLDER}/utils)
 
-target_link_directories(inventory PUBLIC ${SRC_FOLDER}/external/rpm/builddir/)
+if(LINUX)
+    target_link_directories(inventory PUBLIC ${SRC_FOLDER}/external/rpm/builddir/)
+endif()
 target_link_directories(inventory PUBLIC ${SRC_FOLDER}/external/libdb/build_unix/)
 target_link_directories(inventory PUBLIC ${SRC_FOLDER}/external/procps/)
 
@@ -42,9 +45,8 @@ target_link_libraries(inventory PUBLIC
     sysinfo
     cjson
     nlohmann_json::nlohmann_json
-    rpm
-    db
-    proc
+    OpenSSL::SSL
+    OpenSSL::Crypto
     utils
     os_regex
     logging_helper

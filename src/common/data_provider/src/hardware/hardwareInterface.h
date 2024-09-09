@@ -12,7 +12,7 @@
 #ifndef _HARDWARE_INTERFACE_H
 #define _HARDWARE_INTERFACE_H
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 class IOSHardware
 {
