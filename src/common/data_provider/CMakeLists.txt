@@ -65,6 +65,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 find_package(cJSON CONFIG REQUIRED)
 find_package(LibArchive REQUIRED)
 find_package(Lua REQUIRED)
+if(APPLE)
+  find_package(unofficial-libplist CONFIG REQUIRED)
+endif()
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
 
@@ -74,11 +77,8 @@ include_directories(${POPT_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
 include_directories(${SRC_FOLDER}/headers/)
-include_directories(${SRC_FOLDER}/external/rpm/include/)
 include_directories(${LUA_INCLUDE_DIR})
 include_directories(${SRC_FOLDER}/external/procps/)
-include_directories(${SRC_FOLDER}/external/bzip2/)
-include_directories(${SRC_FOLDER}/external/openssl/include/)
 include_directories(${SRC_FOLDER}/common/)
 include_directories(${SRC_FOLDER}/common/utils/)
 include_directories(${SRC_FOLDER}/common/byteArrayHelper/include/)
@@ -90,20 +90,16 @@ include_directories(${SRC_FOLDER}/common/linuxHelper/include/)
 include_directories(${SRC_FOLDER}/common/stringHelper/include/)
 include_directories(${SRC_FOLDER}/common/timeHelper/include/)
 include_directories(${SRC_FOLDER}/shared_modules/common/)
-include_directories(${SRC_FOLDER}/external/openssl/include/)
-include_directories(${SRC_FOLDER}/external/libplist/bin/include/)
 include_directories(${SRC_FOLDER}/external/libdb/build_unix/)
-if(NOT CMAKE_CHECK_CENTOS5) # Avoid incompatible libraries in CentOS 5 and Red Hat 5
-  include_directories(${SRC_FOLDER}/external/libarchive/libarchive/)
+if(LINUX)
+  include_directories(${SRC_FOLDER}/external/rpm/include/)
   include_directories(${SRC_FOLDER}/external/rpm/builddir/output/include/)
-endif(NOT CMAKE_CHECK_CENTOS5)
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   # Avoid download externals from http-request submodule
   set(EXTERNAL_RES "")
   set(PRECOMPILED_EXTERNAL_RES "")
   include_directories(${SRC_FOLDER}/common/http-request/include/)
   include_directories(${SRC_FOLDER}/common/http-request/shared/)
-endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
   link_directories(${INSTALL_PREFIX}/lib)
@@ -111,19 +107,11 @@ endif(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
 
 link_directories(${SRC_FOLDER})
 link_directories(${SRC_FOLDER}/external/procps/)
-link_directories(${SRC_FOLDER}/external/bzip2/)
-link_directories(${SRC_FOLDER}/external/libplist/bin/lib/)
 link_directories(${SRC_FOLDER}/external/libdb/build_unix/)
-if(NOT CMAKE_CHECK_CENTOS5) # Avoid incompatible libraries in CentOS 5 and Red Hat 5
-link_directories(${SRC_FOLDER}/external/libarchive/.libs/)
-link_directories(${SRC_FOLDER}/external/rpm/builddir/)
-endif(NOT CMAKE_CHECK_CENTOS5)
-link_directories(${SRC_FOLDER}/external/openssl/)
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if(LINUX)
+  link_directories(${SRC_FOLDER}/external/rpm/builddir/)
   link_directories(${SRC_FOLDER}/common/http-request/build)
-endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  link_directories(${SRC_FOLDER}/external/curl/lib/.libs/)
-
+endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   file(GLOB SYSINFO_SRC
@@ -210,15 +198,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
       # MinGW generates position-independent-code for DLL by default
   )
 elseif(UNIX AND NOT APPLE)
-  if(CMAKE_SYSTEM_NAME STREQUAL "AIX")
-    string(REPLACE ";" ":" CXX_IMPLICIT_LINK_DIRECTORIES_STR "${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}")
-    string(REPLACE ";" ":" PLATFORM_REQUIRED_RUNTIME_PATH_STR "${CMAKE_PLATFORM_REQUIRED_RUNTIME_PATH}")
-    target_link_libraries(sysinfo -Wl,-blibpath:${INSTALL_PREFIX}/lib:${CXX_IMPLICIT_LINK_DIRECTORIES_STR}:${PLATFORM_REQUIRED_RUNTIME_PATH_STR})
-  elseif(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
-    # Do nothing for HP-UX
-  else()
-    string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,-rpath=$ORIGIN")
-  endif(CMAKE_SYSTEM_NAME STREQUAL "AIX")
+  string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,-rpath=$ORIGIN")
 elseif(APPLE)
   find_library(iokit_lib IOKit)
   if(NOT iokit_lib)
@@ -228,37 +208,26 @@ elseif(APPLE)
   if(NOT corefoundation_lib)
     message(FATAL_ERROR "CoreFoundation library not found! Aborting...")
   endif()
-  target_link_libraries(sysinfo cjson ${SRC_FOLDER}/external/libplist/bin/lib/libplist-2.0.a ${iokit_lib} ${corefoundation_lib})
+  target_link_libraries(sysinfo
+    unofficial::libplist::libplist
+    unofficial::libplist::libplist++
+    ${iokit_lib}
+    ${corefoundation_lib}
+    sqliteWrapper
+    proc
+    LibArchive::LibArchive)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
-if (LINUX)
-  if(NOT CMAKE_CHECK_CENTOS5)
-    find_library(POPT_LIBRARY libpopt.a)
-    set(RPM_LIBRARY rpm)
-    set(PROC_LIBRARY proc)
-    set(ARCHIVE_LIBRARY LibArchive::LibArchive)
-    set(PROC_LIBRARY proc)
-  else()
-    set(RPM_LIBRARY "")
-    set(PROC_LIBRARY "")
-    set(ARCHIVE_LIBRARY "")
-    set(PROC_LIBRARY proc)
-  endif()
-endif()
 target_link_libraries(sysinfo
   networkHelper
   nlohmann_json::nlohmann_json
   cjson
   unofficial::sqlite3::sqlite3
-  ${ARCHIVE_LIBRARY}
-  ${POPT_LIBRARY}
-  ${RPM_LIBRARY}
-  ${PROC_LIBRARY}
   ${LUA_LIBRARIES})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  set(CURL_DEP "wazuhext")
-  target_link_libraries(sysinfo urlrequest db)
+  find_library(POPT_LIBRARY libpopt.a)
+  target_link_libraries(sysinfo urlrequest db proc rpm LibArchive::LibArchive ${POPT_LIBRARY})
   if(CMAKE_CHECK_CENTOS5)
       set(USE_HTTP 1)
   endif(CMAKE_CHECK_CENTOS5)

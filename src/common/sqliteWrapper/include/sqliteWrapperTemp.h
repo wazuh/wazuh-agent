@@ -12,7 +12,7 @@
 #ifndef _SQLITE_WRAPPER_TEMP_H
 #define _SQLITE_WRAPPER_TEMP_H
 
-#include "sqlite3.h"
+#include <sqlite3.h>
 #include <string>
 #include <memory>
 #include "makeUnique.h"
@@ -506,7 +506,7 @@ namespace SQLiteLegacy
 
             std::unique_ptr<IColumn> column(const int32_t index)
             {
-                return std::make_unique<SQLite::Column>(m_stmt, index);
+                return std::make_unique<SQLiteLegacy::Column>(m_stmt, index);
             }
 
             int columnsCount() const
