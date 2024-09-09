@@ -109,15 +109,15 @@ static void getPackagesFromPath(const std::string& pkgDirectory, const int pkgTy
         {
             try
             {
-                std::shared_ptr<SQLite::IConnection> sqliteConnection = std::make_shared<SQLite::Connection>(pkgDirectory + "/" + MACPORTS_DB_NAME);
+                std::shared_ptr<SQLiteLegacy::IConnection> sqliteConnection = std::make_shared<SQLiteLegacy::Connection>(pkgDirectory + "/" + MACPORTS_DB_NAME);
 
-                SQLite::Statement stmt
+                SQLiteLegacy::Statement stmt
                 {
                     sqliteConnection,
                     MACPORTS_QUERY
                 };
 
-                std::pair<SQLite::IStatement&, const int&> pkgContext {std::make_pair(std::ref(stmt), std::cref(pkgType))};
+                std::pair<SQLiteLegacy::IStatement&, const int&> pkgContext {std::make_pair(std::ref(stmt), std::cref(pkgType))};
 
                 while (SQLITE_ROW == stmt.step())
                 {

@@ -30,7 +30,7 @@ const std::map<std::string, int> columnIndexes
 class MacportsWrapper final : public IPackageWrapper
 {
     public:
-        explicit MacportsWrapper(SQLite::IStatement& stmt)
+        explicit MacportsWrapper(SQLiteLegacy::IStatement& stmt)
             : m_version{UNKNOWN_VALUE}
             , m_groups {UNKNOWN_VALUE}
             , m_description {UNKNOWN_VALUE}
@@ -110,7 +110,7 @@ class MacportsWrapper final : public IPackageWrapper
             return m_multiarch;
         }
     private:
-        void getPkgData(SQLite::IStatement& stmt)
+        void getPkgData(SQLiteLegacy::IStatement& stmt)
         {
             const int& columnsNumber = columnIndexes.size();
 

@@ -13,7 +13,7 @@
 #define _PACKAGE_FAMILY_DATA_AFACTORY_H
 
 #include <memory>
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "packageMac.h"
 #include "packageSolaris.h"
 #include "sharedDefs.h"
@@ -47,7 +47,7 @@ class FactoryPackageFamilyCreator<OSPlatformType::BSDBASED> final
         {
             return FactoryBSDPackage::create(ctx);
         }
-        static std::shared_ptr<IPackage> create(const std::pair<SQLite::IStatement&, const int>& ctx)
+        static std::shared_ptr<IPackage> create(const std::pair<SQLiteLegacy::IStatement&, const int>& ctx)
         {
             return FactoryBSDPackage::create(ctx);
         }

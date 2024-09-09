@@ -11,6 +11,7 @@
       "gtest",
       "jwt-cpp",
       "libarchive",
+      "libplist",
       "libpopt",
       "lua",
       "nlohmann-json",
