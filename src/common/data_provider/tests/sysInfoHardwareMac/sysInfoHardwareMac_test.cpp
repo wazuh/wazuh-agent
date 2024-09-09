@@ -12,7 +12,7 @@
 #include "sysInfoHardwareMac_test.h"
 #include "hardware/factoryHardwareFamilyCreator.h"
 #include "hardware/hardwareWrapperInterface.h"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 void SysInfoHardwareMacTest::SetUp() {};
 

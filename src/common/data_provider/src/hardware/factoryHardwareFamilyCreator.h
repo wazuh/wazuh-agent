@@ -13,7 +13,7 @@
 #define _FACTORY_HARDWARE_FAMILY_CREATOR_H
 
 #include <memory>
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "hardwareInterface.h"
 #include "hardwareWrapperInterface.h"
 #include "hardwareImplMac.h"

@@ -22,7 +22,10 @@ add_subdirectory(logging_helper)
 add_subdirectory(networkHelper)
 add_subdirectory(data_provider)
 add_subdirectory(dbsync)
+add_subdirectory(sqliteWrapper)
+add_subdirectory(hashHelper)
 
 if(BUILD_TESTS)
     enable_testing()
 endif()
+

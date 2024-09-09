@@ -44,6 +44,11 @@
         "platform": "linux"
       },
       {
+        "name": "libplist",
+        "version>=": "2.2.0",
+        "platform": "Darwin"
+      },
+      {
         "name": "libpopt",
         "version>=": "1.16"
       },
