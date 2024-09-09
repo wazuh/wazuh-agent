@@ -13,6 +13,7 @@ add_subdirectory(communicator)
 add_subdirectory(configuration_parser)
 add_subdirectory(multitype_queue)
 add_subdirectory(sqlite_manager)
+add_subdirectory(command_store)
 
 find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio beast)
