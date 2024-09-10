@@ -2,6 +2,7 @@
 #include <agent_info.hpp>
 #include <cmd_ln_parser.hpp>
 #include <http_client.hpp>
+#include <logger.hpp>
 #include <register.hpp>
 
 #include <iostream>
@@ -9,6 +10,9 @@
 
 int main(int argc, char* argv[])
 {
+    Logger logger;
+    LogInfo("Starting Wazuh Agent.");
+
     try
     {
         CommandlineParser cmdParser(argc, argv);

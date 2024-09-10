@@ -10,6 +10,7 @@
       "jwt-cpp",
       "nlohmann-json",
       "openssl",
+      "spdlog",
       "sqlitecpp",
       "toml11"
     ],
