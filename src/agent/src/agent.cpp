@@ -59,6 +59,6 @@ void Agent::Run()
     m_taskManager.EnqueueTask([this]() { m_moduleManager.start(); });
 
     m_signalHandler->WaitForSignal();
-    m_communicator.Stop();
     m_moduleManager.stop();
+    m_communicator.Stop();
 }

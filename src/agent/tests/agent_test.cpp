@@ -21,9 +21,14 @@ TEST(AgentTests, AgentStopsWhenSignalReceived)
     auto mockSignalHandler = std::make_unique<MockSignalHandler>();
     MockSignalHandler* mockSignalHandlerPtr = mockSignalHandler.get();
 
+    EXPECT_CALL(*mockSignalHandlerPtr, WaitForSignal())
+        .Times(1)
+        .WillOnce([]() {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        });
+
     Agent agent(std::move(mockSignalHandler));
 
-    EXPECT_CALL(*mockSignalHandlerPtr, WaitForSignal()).Times(1);
     EXPECT_NO_THROW(agent.Run());
 }
 
