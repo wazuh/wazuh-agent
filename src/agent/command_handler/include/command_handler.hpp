@@ -1,7 +1,9 @@
 #pragma once
-#include <iostream>
 
 #include <boost/asio.hpp>
+#include <command_store.hpp>
+
+#include <iostream>
 #include <optional>
 #include <queue>
 
@@ -11,8 +13,10 @@ namespace command_handler
     {
     public:
         template<typename T>
-        boost::asio::awaitable<void> ProcessCommandsFromQueue(const std::function<std::optional<T>()> GetCommand,
-                                                              const std::function<int(T&)> DispatchMessage)
+        boost::asio::awaitable<void>
+        ProcessCommandsFromQueue(const std::function<std::optional<T>()> GetCommandFromQueue,
+                                 const std::function<bool()> PopCommandFromQueue,
+                                 const std::function<int(T&)> DispatchCommand)
         {
             using namespace std::chrono_literals;
             const auto executor = co_await boost::asio::this_coro::executor;
@@ -20,7 +24,7 @@ namespace command_handler
 
             while (m_keepRunning.load())
             {
-                auto cmd = GetCommand();
+                auto cmd = GetCommandFromQueue();
                 if (cmd == std::nullopt)
                 {
                     expTimer->expires_after(1000ms);
@@ -28,11 +32,20 @@ namespace command_handler
                     continue;
                 }
 
-                DispatchMessage(cmd.value());
+                m_commandStore.StoreCommand(cmd.value());
+                PopCommandFromQueue();
+                DispatchCommand(cmd.value());
+
+                cmd.value().m_status = command_store::Status::SUCCESS;
+                cmd.value().m_result = "Successfully executed";
+                m_commandStore.UpdateCommand(cmd.value());
+
+                std::cout << "Done processing command" << "\n";
             }
         }
 
     private:
         std::atomic<bool> m_keepRunning = true;
+        command_store::CommandStore m_commandStore;
     };
 } // namespace command_handler
