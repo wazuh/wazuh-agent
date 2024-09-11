@@ -7,7 +7,11 @@ if(COVERITY)
   add_definitions(-D__GNUC__=8)
 endif(COVERITY)
 
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++14 --coverage")
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++14 --coverage")
+else()
+  set(CMAKE_CXX_FLAGS "/W4 /permissive- /std:c++14 /MT /coverage")
+endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/include/)
 link_directories(${CMAKE_BINARY_DIR}/lib)
