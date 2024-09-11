@@ -9,7 +9,11 @@ if(COVERITY)
   add_definitions(-D__GNUC__=8)
 endif(COVERITY)
 
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++14")
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++14")
+else()
+  set(CMAKE_CXX_FLAGS "/W4 /permissive- /std:c++14 /MT")
+endif()
 
 add_executable(dbsync_example
     "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp" )
