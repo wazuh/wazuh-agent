@@ -12,9 +12,9 @@
 #include "HTTPRequest.hpp"
 #include "curlWrapper.hpp"
 #include "factoryRequestImplemetator.hpp"
-#include <nlohmann/json.hpp>
 #include "urlRequest.hpp"
 #include <atomic>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <unordered_set>
 
