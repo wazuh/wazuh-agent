@@ -23,9 +23,7 @@ TEST(AgentTests, AgentStopsWhenSignalReceived)
 
     EXPECT_CALL(*mockSignalHandlerPtr, WaitForSignal())
         .Times(1)
-        .WillOnce([]() {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-        });
+        .WillOnce([]() { std::this_thread::sleep_for(std::chrono::seconds(1)); });
 
     Agent agent(std::move(mockSignalHandler));
 

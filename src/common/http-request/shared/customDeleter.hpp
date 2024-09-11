@@ -12,7 +12,7 @@
 #ifndef _CUSTOM_DELETER_HPP
 #define _CUSTOM_DELETER_HPP
 
-template <typename F, F func>
+template<typename F, F func>
 /**
  * @brief Custom deleter for unique_ptr.
  * @tparam F Function type.
@@ -20,8 +20,8 @@ template <typename F, F func>
  */
 class CustomDeleter
 {
-    public:
-    template <typename T>
+public:
+    template<typename T>
     /**
      * @brief Call function to delete the object.
      * @param arg Object to delete.

@@ -13,9 +13,9 @@
 #define _CURL_SINGLE_HANDLER_HPP
 
 #include "ICURLHandler.hpp"
-#include <curl/curl.h>
 #include "curlException.hpp"
 #include "customDeleter.hpp"
+#include <curl/curl.h>
 #include <memory>
 #include <stdexcept>
 #include <utility>

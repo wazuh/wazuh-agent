@@ -14,13 +14,13 @@
 
 #include "ICURLHandler.hpp"
 #include "IRequestImplementator.hpp"
-#include <curl/curl.h>
 #include "curlHandlerCache.hpp"
 #include "curlMultiHandler.hpp"
 #include "curlSingleHandler.hpp"
 #include "customDeleter.hpp"
 #include <algorithm>
 #include <atomic>
+#include <curl/curl.h>
 #include <map>
 #include <memory>
 #include <ostream>
