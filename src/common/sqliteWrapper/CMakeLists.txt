@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.12.4)
+add_library(sqliteWrapper INTERFACE)
 
-if(UNIT_TEST)
-    add_subdirectory(tests)
-endif()
+target_include_directories(sqliteWrapper INTERFACE include)

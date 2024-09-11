@@ -18,7 +18,7 @@
 #include "stringHelper.h"
 #include "ipackageWrapper.h"
 #include "sharedDefs.h"
-#include "plist/plist.h"
+#include <plist/plist.h>
 #include "filesystemHelper.h"
 
 static const std::string APP_INFO_PATH      { "Contents/Info.plist" };
@@ -250,7 +250,7 @@ class PKGWrapper final : public IPackageWrapper
                 if (nullptr != xml)
                 {
                     xmlContent.assign(xml, xml + length);
-                    plist_to_xml_free(xml);
+                    plist_mem_free(xml);
                     plist_free(rootNode);
                 }
             }
