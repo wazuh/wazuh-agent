@@ -11,11 +11,14 @@ if(COVERITY)
   add_definitions(-D__GNUC__=8)
 endif(COVERITY)
 
-set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -std=c++14 -pthread")
-
-if(FSANITIZE)
-  set(CMAKE_CXX_FLAGS_DEBUG "-fsanitize=address,leak,undefined")
-endif(FSANITIZE)
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++14 -pthread")
+else()
+  set(CMAKE_CXX_FLAGS "/W4 /permissive- /std:c++14 /MT")
+  if(FSANITIZE)
+    set(CMAKE_CXX_FLAGS_DEBUG "-fsanitize=address,leak,undefined")
+  endif(FSANITIZE)
+endif()
 
 add_executable(dbsync_test_tool
                ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp )

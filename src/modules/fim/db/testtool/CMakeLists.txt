@@ -9,11 +9,14 @@ if(COVERITY)
     add_definitions(-D__GNUC__=8)
 endif(COVERITY)
 
-set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -std=c++14 -pthread")
-
-if(FSANITIZE)
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -std=c++14 -pthread")
+  if(FSANITIZE)
     set(CMAKE_CXX_FLAGS_DEBUG "-fsanitize=address,leak,undefined")
-endif(FSANITIZE)
+  endif(FSANITIZE)
+else()
+  set(CMAKE_CXX_FLAGS "/Zi /W4 /permissive- /std:c++14 /MTd")
+endif()
 
 add_executable(fimdb_test_tool
                ${CMAKE_SOURCE_DIR}/src/db/testtool/main.cpp )
