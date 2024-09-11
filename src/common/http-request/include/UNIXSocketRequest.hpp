@@ -13,11 +13,11 @@
 #define _UNIX_SOCKET_REQUEST_HPP
 
 #include "IURLRequest.hpp"
-#include <nlohmann/json.hpp>
 #include "singleton.hpp"
 #include <atomic>
 #include <functional>
 #include <iostream>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <unordered_set>
 
