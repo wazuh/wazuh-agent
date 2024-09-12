@@ -33,6 +33,9 @@ runs:
         shell: bash
         run: |
 
+          # Print clanformat version used.
+          echo "Clang-format version: $(clang-format --version)"
+
           # Don't apply changes, just check
           arguments="--dry-run "
 
