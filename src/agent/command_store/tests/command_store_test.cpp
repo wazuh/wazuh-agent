@@ -2,9 +2,9 @@
 
 #include <command_store.hpp>
 
-constexpr int TESTID_5 = 5;
-constexpr int TESTID_9 = 9;
-constexpr int TESTID_11 = 11;
+constexpr char TESTID_5[] = "5";
+constexpr char TESTID_9[] = "9";
+constexpr char TESTID_11[] = "11";
 
 class CommandStoreTest : public ::testing::Test
 {
@@ -70,7 +70,7 @@ TEST_F(CommandStoreTest, UpdateCommandTest)
     ASSERT_EQ(retVal, true);
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    std::optional<command_store::Command> retValue = m_commandStore->GetCommand(9);
+    std::optional<command_store::Command> retValue = m_commandStore->GetCommand(TESTID_9);
     if (retValue.has_value())
     {
         const command_store::Command& cmd = retValue.value();
@@ -139,7 +139,7 @@ TEST_F(CommandStoreTest, GetCommandTest)
     ASSERT_EQ(m_commandStore->GetCount(), 3);
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    std::optional<command_store::Command> retValue = m_commandStore->GetCommand(9);
+    std::optional<command_store::Command> retValue = m_commandStore->GetCommand(TESTID_9);
     if (retValue.has_value())
     {
         const command_store::Command& cmd = retValue.value();

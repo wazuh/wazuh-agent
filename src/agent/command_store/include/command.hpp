@@ -18,13 +18,12 @@ namespace command_store
     {
     public:
         Command()
-            : m_id(std::numeric_limits<int>::min())
-            , m_status(Status::UNKNOWN)
+            : m_status(Status::UNKNOWN)
             , m_time(0.0)
         {
         }
 
-        Command(int id,
+        Command(const std::string& id,
                 const std::string& module,
                 const std::string& command,
                 const std::string& parameters,
@@ -39,7 +38,7 @@ namespace command_store
         {
         }
 
-        int m_id;
+        std::string m_id;
         std::string m_module;
         std::string m_command;
         std::string m_parameters;
