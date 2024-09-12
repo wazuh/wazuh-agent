@@ -1,6 +1,7 @@
 #include <agent.hpp>
 
 #include <command.hpp>
+#include <command_handler_utils.hpp>
 #include <http_client.hpp>
 #include <message.hpp>
 #include <message_queue_utils.hpp>
@@ -47,7 +48,7 @@ void Agent::Run()
     m_taskManager.EnqueueTask(m_commandHandler.ProcessCommandsFromQueue<command_store::Command>(
         [this]() { return GetCommandFromQueue(m_messageQueue); },
         [this]() { return PopCommandFromQueue(m_messageQueue); },
-        [](command_store::Command& cmd) -> int { return DispatchCommand(cmd); }));
+        [](command_store::Command& cmd) { return DispatchCommand(cmd); }));
 
     m_signalHandler->WaitForSignal();
     m_communicator.Stop();

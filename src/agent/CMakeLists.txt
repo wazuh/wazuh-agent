@@ -23,6 +23,7 @@ find_package(Boost REQUIRED COMPONENTS asio beast)
 
 set(SOURCES
     src/agent.cpp
+    src/command_handler_utils.cpp
     src/message_queue_utils.cpp
     src/register.cpp
     src/signal_handler.cpp

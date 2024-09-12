@@ -3,6 +3,7 @@
 #include <boost/asio.hpp>
 #include <command_store.hpp>
 
+#include <atomic>
 #include <iostream>
 #include <optional>
 #include <queue>
@@ -13,10 +14,10 @@ namespace command_handler
     {
     public:
         template<typename T>
-        boost::asio::awaitable<void>
-        ProcessCommandsFromQueue(const std::function<std::optional<T>()> GetCommandFromQueue,
-                                 const std::function<bool()> PopCommandFromQueue,
-                                 const std::function<int(T&)> DispatchCommand)
+        boost::asio::awaitable<void> ProcessCommandsFromQueue(
+            const std::function<std::optional<T>()> GetCommandFromQueue,
+            const std::function<void()> PopCommandFromQueue,
+            const std::function<std::tuple<command_store::Status, std::string>(T&)> DispatchCommand)
         {
             using namespace std::chrono_literals;
             const auto executor = co_await boost::asio::this_coro::executor;
@@ -34,15 +35,17 @@ namespace command_handler
 
                 m_commandStore.StoreCommand(cmd.value());
                 PopCommandFromQueue();
-                DispatchCommand(cmd.value());
+                auto result = DispatchCommand(cmd.value());
 
-                cmd.value().m_status = command_store::Status::SUCCESS;
-                cmd.value().m_result = "Successfully executed";
+                cmd.value().m_status = std::get<0>(result);
+                cmd.value().m_result = std::get<1>(result);
                 m_commandStore.UpdateCommand(cmd.value());
 
                 std::cout << "Done processing command" << "\n";
             }
         }
+
+        void Stop();
 
     private:
         std::atomic<bool> m_keepRunning = true;
