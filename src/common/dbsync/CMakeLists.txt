@@ -28,7 +28,7 @@ if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address,leak,undefined")
   endif(FSANITIZE)
 else()
-  set(CMAKE_CXX_FLAGS "/W4 /permissive- /std:c++14 /MT")
+set(CMAKE_CXX_FLAGS "/W4 /permissive- /std:c++14 /MT /EHsc")
 endif()
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)

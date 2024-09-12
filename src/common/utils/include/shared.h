@@ -13,6 +13,8 @@
  *  Reference: http://gcc.gnu.org/onlinedocs/gcc-4.1.2/cpp.pdf
  */
 
+#pragma once
+
 #if defined(__GNUC__) && (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 1) && (__GNUC_PATCHLEVEL__ >= 2)) || \
                           ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 2)) || \
                            (__GNUC__ >= 5))
@@ -23,9 +25,6 @@
 /* FORTIFY_SOURCE is RedHat / Fedora specific */
 #define FORTIFY_SOURCE
 #endif
-
-#ifndef SHARED_H
-#define SHARED_H
 
 #ifndef LARGEFILE64_SOURCE
 #define LARGEFILE64_SOURCE
@@ -38,8 +37,6 @@
 /* Global headers */
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/time.h>
-#include <sys/param.h>
 #include <stdint.h>
 #include <inttypes.h>
 #include <assert.h>
@@ -53,32 +50,18 @@
 #include <sys/mount.h>
 #endif
 
-/* HPUX does not have select.h */
-#ifndef HPUX
 #include <sys/select.h>
-#endif
-
 #include <sys/utsname.h>
-#endif /* WIN32 */
+#endif /* NOT WIN32 */
 
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 #include <fcntl.h>
-#include <dirent.h>
 #include <ctype.h>
 #include <signal.h>
 #include <stdbool.h>
-#include <pthread.h>
-
-/* The mingw32 builder used by travis.ci can't find glob.h
- * Yet glob must work on actual win32.
- */
-#ifndef __MINGW32__
-#include <glob.h>
-#endif
 
 #ifndef WIN32
 #include <netdb.h>
@@ -99,16 +82,10 @@
 #ifdef __cplusplus
 #include <atomic>
 #define _Atomic(T) std::atomic<T>
-#else
-#ifdef hpux
-// TODO: remove this line after upgrading GCC on HP-UX
-#define _Atomic(T) T
-#endif
 #endif
 
 #include <time.h>
 #include <errno.h>
-#include <libgen.h>
 
 #include "defs.h"
 #include "os_err.h"
@@ -117,7 +94,6 @@
 #include "file_op.h"
 #include "regex_op.h"
 #include "mem_op.h"
-#include "privsep_op.h"
 #include "pthreads_op.h"
 #include "os_xml.h"
 #include "error_messages.h"
@@ -131,7 +107,6 @@
 #include "bzip2_op.h"
 #include "validate_op.h"
 
-
 #ifndef LARGEFILE64_SOURCE
 #define LARGEFILE64_SOURCE
 #endif /* LARGEFILE64_SOURCE */
@@ -142,29 +117,6 @@
 
 /* Global portability code */
 
-#ifdef SOLARIS
-#include <limits.h>
-typedef uint32_t u_int32_t;
-typedef uint16_t u_int16_t;
-typedef uint8_t u_int8_t;
-
-#ifndef va_copy
-#define va_copy __va_copy
-#endif
-
-#endif /* SOLARIS */
-
-#if defined(HPUX) || defined(DOpenBSD)
-#include <limits.h>
-typedef uint64_t u_int64_t;
-typedef int int32_t;
-typedef uint32_t u_int32_t;
-typedef uint16_t u_int16_t;
-typedef uint8_t u_int8_t;
-
-#define MSG_DONTWAIT 0
-#endif
-
 #ifdef Darwin
 typedef int sock2len_t;
 #endif
@@ -174,8 +126,6 @@ typedef int sock2len_t;
 #endif
 
 #ifdef WIN32
-typedef int uid_t;
-typedef int gid_t;
 typedef int socklen_t;
 #define sleep(x) Sleep((x) * 1000)
 #define srandom(x) srand(x)
@@ -246,5 +196,3 @@ extern const char *__local_name;
 #ifndef WAZUH_UNIT_TESTING
 #define FOREVER() 1
 #endif
-
-#endif /* SHARED_H */

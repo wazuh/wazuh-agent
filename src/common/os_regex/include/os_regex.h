@@ -16,7 +16,16 @@
 /* size_t */
 #include <stddef.h>
 #include <stdbool.h>
-#include <pthread.h>
+
+#ifdef WIN32
+
+#define ATTR_NONNULL_TWO
+#define ATTR_NONNULL
+
+#else
+#define ATTR_NONNULL_TWO __attribute__((nonnull(2)))
+#define ATTR_NONNULL __attribute__((__returns_nonnull__))
+#endif
 
 /* OSRegex_Compile flags */
 #define OS_RETURN_SUBSTRING     0000200
@@ -93,7 +102,7 @@ int OSRegex_Compile(const char *pattern, OSRegex *reg, int flags);
  * @param reg compiled pattern
  * @return Returns the end of the string on success or NULL otherwise
  */
-const char *OSRegex_Execute(const char *str, OSRegex *reg) __attribute__((nonnull(2)));
+const char *OSRegex_Execute(const char *str, OSRegex *reg) ATTR_NONNULL_TWO;
 
 /**
  * @brief Compares an already compiled OSRegex regular expression with a string
@@ -110,7 +119,7 @@ const char *OSRegex_Execute(const char *str, OSRegex *reg) __attribute__((nonnul
  * @param regex_match Structure to manage pattern matches
  * @return Returns the end of the string on success or NULL otherwise
  */
- const char *OSRegex_Execute_ex(const char *str, OSRegex *reg, regex_matching *regex_match) __attribute__((nonnull(2)));
+ const char *OSRegex_Execute_ex(const char *str, OSRegex *reg, regex_matching *regex_match) ATTR_NONNULL_TWO;
 
 /* Release all the memory created by the compilation/execution phases */
 void OSRegex_FreePattern(OSRegex *reg);
@@ -139,10 +148,10 @@ int OSMatch_Execute(const char *str, size_t str_len, OSMatch *reg);
 /* Release all the memory created by the compilation/execution phases */
 void OSMatch_FreePattern(OSMatch *reg);
 
-int OS_Match2(const char *pattern, const char *str)  __attribute__((nonnull(2)));
+int OS_Match2(const char *pattern, const char *str) ATTR_NONNULL_TWO;
 
 /* Searches for pattern in the string */
-int OS_WordMatch(const char *pattern, const char *str) __attribute__((nonnull));
+int OS_WordMatch(const char *pattern, const char *str) ATTR_NONNULL;
 #define OS_Match OS_WordMatch
 
 /* Split a string into multiples pieces, divided by a char "match".
@@ -160,7 +169,7 @@ size_t OS_StrHowClosedMatch(const char *str1, const char *str2);
 /* Verifies if a string starts with the provided pattern.
  * Returns 1 on success or 0 on failure.
  */
-int OS_StrStartsWith(const char *str, const char *pattern) __attribute__((nonnull));
+int OS_StrStartsWith(const char *str, const char *pattern) ATTR_NONNULL;
 
 /* Checks if a specific string is numeric (like "129544") */
 int OS_StrIsNum(const char *str);

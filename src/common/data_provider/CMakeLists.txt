@@ -104,9 +104,10 @@ if(LINUX)
   include_directories(${SRC_FOLDER}/common/http-request/shared/)
 endif()
 
-if(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
-  link_directories(${INSTALL_PREFIX}/lib)
-endif(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
+if(WINDOWS)
+  include_directories(${SRC_FOLDER}/common/registryHelper/include/)
+  include_directories(${SRC_FOLDER}/common/windowsHelper/include/)
+endif()
 
 link_directories(${SRC_FOLDER})
 link_directories(${SRC_FOLDER}/external/procps/)
@@ -196,9 +197,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   set_target_properties(sysinfo PROPERTIES
       PREFIX ""
       SUFFIX ".dll"
-      LINK_FLAGS "-Wl,--add-stdcall-alias"
-      POSITION_INDEPENDENT_CODE 0 # this is to avoid MinGW warning;
-      # MinGW generates position-independent-code for DLL by default
   )
 elseif(UNIX AND NOT APPLE)
   string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,-rpath=$ORIGIN")
