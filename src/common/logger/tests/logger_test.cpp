@@ -1,6 +1,7 @@
 #include <logger.hpp>
 
 #include <gtest/gtest.h>
+#include <spdlog/sinks/ostream_sink.h>
 #ifdef __APPLE__
 #include <spdlog/sinks/syslog_sink.h>
 #endif
@@ -11,6 +12,7 @@
 #ifdef _WIN32
 #include <spdlog/sinks/win_eventlog_sink.h>
 #endif
+#include <sstream>
 
 class LoggerConstructorTest : public ::testing::Test
 {
@@ -20,6 +22,27 @@ protected:
     void SetUp() override
     {
         logger = std::make_unique<Logger>();
+    }
+
+    void TearDown() override
+    {
+        spdlog::drop_all();
+    }
+};
+
+class LoggerMessageTest : public ::testing::Test
+{
+protected:
+    std::ostringstream oss;
+    std::shared_ptr<spdlog::sinks::ostream_sink_st> ostream_sink;
+
+    void SetUp() override
+    {
+        oss.str("");
+        ostream_sink = std::make_shared<spdlog::sinks::ostream_sink_st>(oss);
+        auto logger = std::make_shared<spdlog::logger>("test_logger", ostream_sink);
+        spdlog::set_default_logger(logger);
+        spdlog::set_level(spdlog::level::trace);
     }
 
     void TearDown() override
@@ -85,6 +108,57 @@ TEST_F(LoggerConstructorTest, MacOSLoggerConstructor)
     EXPECT_NE(syslog_sink, nullptr);
 }
 #endif // __APPLE__
+
+TEST_F(LoggerMessageTest, LogsTraceMessage)
+{
+    LogTrace("This is a trace message");
+    std::string logged_message = oss.str();
+    EXPECT_TRUE(logged_message.find("[TRACE]") != std::string::npos);
+    EXPECT_TRUE(logged_message.find("This is a trace message") != std::string::npos);
+}
+
+TEST_F(LoggerMessageTest, LogsDebugMessage)
+{
+    LogDebug("This is a debug message");
+    std::string logged_message = oss.str();
+    EXPECT_TRUE(logged_message.find("[DEBUG]") != std::string::npos);
+    EXPECT_TRUE(logged_message.find("This is a debug message") != std::string::npos);
+}
+
+TEST_F(LoggerMessageTest, LogsInfoMessage)
+{
+    LogInfo("This is an info message");
+    std::string logged_message = oss.str();
+    EXPECT_TRUE(logged_message.find("[INFO]") != std::string::npos);
+    EXPECT_TRUE(logged_message.find("This is an info message") != std::string::npos);
+}
+
+TEST_F(LoggerMessageTest, LogsWarnMessage)
+{
+    LogWarn("This is a warning message");
+    std::string logged_message = oss.str();
+    EXPECT_TRUE(logged_message.find("[WARN]") != std::string::npos);
+    EXPECT_TRUE(logged_message.find("This is a warning message") != std::string::npos);
+}
+
+TEST_F(LoggerMessageTest, LogsErrorMessage)
+{
+    std::string error_message = "Can't open database";
+    std::exception e;
+    LogError("{}: {}", error_message, e.what());
+    std::string logged_message = oss.str();
+    EXPECT_TRUE(logged_message.find("[ERROR]") != std::string::npos);
+    EXPECT_TRUE(logged_message.find("Can't open database") != std::string::npos);
+    EXPECT_TRUE(logged_message.find(e.what()) != std::string::npos);
+}
+
+TEST_F(LoggerMessageTest, LogsCriticalMessage)
+{
+    LogCritical("This is a critical message");
+    std::string logged_message = oss.str();
+    EXPECT_TRUE(logged_message.find("[CRITICAL]") != std::string::npos);
+    EXPECT_TRUE(logged_message.find("This is a critical message") != std::string::npos);
+}
 
 int main(int argc, char** argv)
 {
