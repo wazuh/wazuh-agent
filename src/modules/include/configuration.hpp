@@ -3,31 +3,31 @@
 #define INVENTORY_DEFAULT_INTERVAL 3600
 
 struct InventoryConfig {
-    bool enabled = true;
-    unsigned int interval = INVENTORY_DEFAULT_INTERVAL;
-    bool scanOnStart = true;
-    bool hardware = true;
-    bool os = true;
-    bool network = true;
-    bool packages = true;
-    bool ports = true;
-    bool portsAll = true;
-    bool processes = true;
-    bool hotfixes = true;
+    bool m_enabled = true;
+    unsigned int m_interval = INVENTORY_DEFAULT_INTERVAL;
+    bool m_scanOnStart = true;
+    bool m_hardware = true;
+    bool m_os = true;
+    bool m_network = true;
+    bool m_packages = true;
+    bool m_ports = true;
+    bool m_portsAll = true;
+    bool m_processes = true;
+    bool m_hotfixes = true;
 };
 
 class Configuration {
     public:
         Configuration() = default;
 
-        Configuration(const InventoryConfig& config) : inventoryConfig(config) {}
+        Configuration(const InventoryConfig& config) : m_inventoryConfig(config) {}
 
-        void setInventoryConfig(const InventoryConfig& config) {
-            inventoryConfig = config;
+        void SetInventoryConfig(const InventoryConfig& config) {
+            m_inventoryConfig = config;
         }
 
-        const InventoryConfig& getInventoryConfig() const { return inventoryConfig; }
+        const InventoryConfig& GetInventoryConfig() const { return m_inventoryConfig; }
 
     private:
-        InventoryConfig inventoryConfig;
+        InventoryConfig m_inventoryConfig;
 };

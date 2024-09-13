@@ -32,7 +32,7 @@ do                                                                      \
     }                                                                   \
     catch(const std::exception& ex)                                     \
     {                                                                   \
-        logError(std::string{ex.what()});                               \
+        LogError(std::string{ex.what()});                               \
     }                                                                   \
 }while(0)
 
@@ -885,7 +885,7 @@ constexpr auto OS_TABLE           { "dbsync_osinfo"           };
 constexpr auto HW_TABLE           { "dbsync_hwinfo"           };
 
 
-static std::string getItemId(const nlohmann::json& item, const std::vector<std::string>& idFields)
+static std::string GetItemId(const nlohmann::json& item, const std::vector<std::string>& idFields)
 {
     Utils::HashData hash;
 
@@ -909,7 +909,7 @@ static std::string getItemId(const nlohmann::json& item, const std::vector<std::
     return Utils::asciiToHex(hash.hash());
 }
 
-static std::string getItemChecksum(const nlohmann::json& item)
+static std::string GetItemChecksum(const nlohmann::json& item)
 {
     const auto content{item.dump()};
     Utils::HashData hash;
@@ -917,7 +917,7 @@ static std::string getItemChecksum(const nlohmann::json& item)
     return Utils::asciiToHex(hash.hash());
 }
 
-static void removeKeysWithEmptyValue(nlohmann::json& input)
+static void RemoveKeysWithEmptyValue(nlohmann::json& input)
 {
     for (auto& data : input)
     {
@@ -936,7 +936,7 @@ static void removeKeysWithEmptyValue(nlohmann::json& input)
     }
 }
 
-static bool isElementDuplicated(const nlohmann::json& input, const std::pair<std::string, std::string>& keyValue)
+static bool IsElementDuplicated(const nlohmann::json& input, const std::pair<std::string, std::string>& keyValue)
 {
     const auto it
     {
@@ -948,11 +948,11 @@ static bool isElementDuplicated(const nlohmann::json& input, const std::pair<std
     return it != input.end();
 }
 
-void Inventory::notifyChange(ReturnTypeCallback result, const nlohmann::json& data, const std::string& table)
+void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& data, const std::string& table)
 {
     if (DB_ERROR == result)
     {
-        logError(data.dump());
+        LogError(data.dump());
     }
     else if (m_notify && !m_stopping)
     {
@@ -965,7 +965,7 @@ void Inventory::notifyChange(ReturnTypeCallback result, const nlohmann::json& da
                 msg["operation"] = OPERATION_MAP.at(result);
                 msg["data"] = item;
                 msg["data"]["scan_time"] = m_scanTime;
-                removeKeysWithEmptyValue(msg["data"]);
+                RemoveKeysWithEmptyValue(msg["data"]);
                 const auto msgToSend{msg.dump()};
                 m_reportDiffFunction(msgToSend);
             }
@@ -978,7 +978,7 @@ void Inventory::notifyChange(ReturnTypeCallback result, const nlohmann::json& da
             msg["operation"] = OPERATION_MAP.at(result);
             msg["data"] = data;
             msg["data"]["scan_time"] = m_scanTime;
-            removeKeysWithEmptyValue(msg["data"]);
+            RemoveKeysWithEmptyValue(msg["data"]);
             const auto msgToSend{msg.dump()};
             m_reportDiffFunction(msgToSend);
             // LCOV_EXCL_STOP
@@ -986,14 +986,14 @@ void Inventory::notifyChange(ReturnTypeCallback result, const nlohmann::json& da
     }
 }
 
-void Inventory::updateChanges(const std::string& table,
+void Inventory::UpdateChanges(const std::string& table,
                                  const nlohmann::json& values)
 {
     const auto callback
     {
         [this, table](ReturnTypeCallback result, const nlohmann::json & data)
         {
-            notifyChange(result, data, table);
+            NotifyChange(result, data, table);
         }
     };
     DBSyncTxn txn
@@ -1026,7 +1026,7 @@ Inventory::Inventory()
     , m_notify { false }
 {}
 
-std::string Inventory::getCreateStatement() const
+std::string Inventory::GetCreateStatement() const
 {
     std::string ret;
 
@@ -1042,7 +1042,7 @@ std::string Inventory::getCreateStatement() const
     return ret;
 }
 
-void Inventory::init(const std::shared_ptr<ISysInfo>& spInfo,
+void Inventory::Init(const std::shared_ptr<ISysInfo>& spInfo,
                         const std::function<void(const std::string&)> reportDiffFunction,
                         const std::string& dbPath,
                         const std::string& normalizerConfigPath,
@@ -1056,13 +1056,13 @@ void Inventory::init(const std::shared_ptr<ISysInfo>& spInfo,
     m_spDBSync = std::make_unique<DBSync>(HostType::AGENT,
                                             DbEngineType::SQLITE3,
                                             dbPath,
-                                            getCreateStatement(),
+                                            GetCreateStatement(),
                                             DbManagement::PERSISTENT);
     m_spNormalizer = std::make_unique<InvNormalizer>(normalizerConfigPath, normalizerType);
-    syncLoop(lock);
+    SyncLoop(lock);
 }
 
-void Inventory::destroy()
+void Inventory::Destroy()
 {
     std::unique_lock<std::mutex> lock{m_mutex};
     m_stopping = true;
@@ -1070,26 +1070,26 @@ void Inventory::destroy()
     lock.unlock();
 }
 
-nlohmann::json Inventory::getHardwareData()
+nlohmann::json Inventory::GetHardwareData()
 {
     nlohmann::json ret;
     ret[0] = m_spInfo->hardware();
-    ret[0]["checksum"] = getItemChecksum(ret[0]);
+    ret[0]["checksum"] = GetItemChecksum(ret[0]);
     return ret;
 }
 
-void Inventory::scanHardware()
+void Inventory::ScanHardware()
 {
     if (m_hardware)
     {
-        log(LOG_DEBUG_VERBOSE, "Starting hardware scan");
-        const auto& hwData{getHardwareData()};
-        updateChanges(HW_TABLE, hwData);
-        log(LOG_DEBUG_VERBOSE, "Ending hardware scan");
+        Log(LOG_DEBUG_VERBOSE, "Starting hardware scan");
+        const auto& hwData{GetHardwareData()};
+        UpdateChanges(HW_TABLE, hwData);
+        Log(LOG_DEBUG_VERBOSE, "Ending hardware scan");
     }
 }
 
-nlohmann::json Inventory::getOSData()
+nlohmann::json Inventory::GetOSData()
 {
     nlohmann::json ret;
     ret[0] = m_spInfo->os();
@@ -1097,18 +1097,18 @@ nlohmann::json Inventory::getOSData()
     return ret;
 }
 
-void Inventory::scanOs()
+void Inventory::ScanOs()
 {
     if (m_os)
     {
-        log(LOG_DEBUG_VERBOSE, "Starting os scan");
-        const auto& osData{getOSData()};
-        updateChanges(OS_TABLE, osData);
-        log(LOG_DEBUG_VERBOSE, "Ending os scan");
+        Log(LOG_DEBUG_VERBOSE, "Starting os scan");
+        const auto& osData{GetOSData()};
+        UpdateChanges(OS_TABLE, osData);
+        Log(LOG_DEBUG_VERBOSE, "Ending os scan");
     }
 }
 
-nlohmann::json Inventory::getNetworkData()
+nlohmann::json Inventory::GetNetworkData()
 {
     nlohmann::json ret;
     const auto& networks { m_spInfo->networks() };
@@ -1148,8 +1148,8 @@ nlohmann::json Inventory::getNetworkData()
                 ifaceTableData["rx_bytes"]   = item.at("rx_bytes");
                 ifaceTableData["tx_dropped"] = item.at("tx_dropped");
                 ifaceTableData["rx_dropped"] = item.at("rx_dropped");
-                ifaceTableData["checksum"]   = getItemChecksum(ifaceTableData);
-                ifaceTableData["item_id"]    = getItemId(ifaceTableData, NETIFACE_ITEM_ID_FIELDS);
+                ifaceTableData["checksum"]   = GetItemChecksum(ifaceTableData);
+                ifaceTableData["item_id"]    = GetItemId(ifaceTableData, NETIFACE_ITEM_ID_FIELDS);
                 ifaceTableDataList.push_back(std::move(ifaceTableData));
 
                 if (item.find("IPv4") != item.end())
@@ -1161,8 +1161,8 @@ nlohmann::json Inventory::getNetworkData()
                     protoTableData["type"]    = IP_TYPE.at(IPV4);
                     protoTableData["dhcp"]    = item.at("IPv4").begin()->at("dhcp");
                     protoTableData["metric"]  = item.at("IPv4").begin()->at("metric");
-                    protoTableData["checksum"]  = getItemChecksum(protoTableData);
-                    protoTableData["item_id"]   = getItemId(protoTableData, NETPROTO_ITEM_ID_FIELDS);
+                    protoTableData["checksum"]  = GetItemChecksum(protoTableData);
+                    protoTableData["item_id"]   = GetItemId(protoTableData, NETPROTO_ITEM_ID_FIELDS);
                     protoTableDataList.push_back(std::move(protoTableData));
 
                     for (auto addressTableData : item.at("IPv4"))
@@ -1170,8 +1170,8 @@ nlohmann::json Inventory::getNetworkData()
                         // "dbsync_network_address" table data to update and notify
                         addressTableData["iface"]     = item.at("name");
                         addressTableData["proto"]     = IPV4;
-                        addressTableData["checksum"]  = getItemChecksum(addressTableData);
-                        addressTableData["item_id"]   = getItemId(addressTableData, NETADDRESS_ITEM_ID_FIELDS);
+                        addressTableData["checksum"]  = GetItemChecksum(addressTableData);
+                        addressTableData["item_id"]   = GetItemId(addressTableData, NETADDRESS_ITEM_ID_FIELDS);
                         // Remove unwanted fields for dbsync_network_address table
                         addressTableData.erase("dhcp");
                         addressTableData.erase("metric");
@@ -1189,8 +1189,8 @@ nlohmann::json Inventory::getNetworkData()
                     protoTableData["type"]    = IP_TYPE.at(IPV6);
                     protoTableData["dhcp"]    = item.at("IPv6").begin()->at("dhcp");
                     protoTableData["metric"]  = item.at("IPv6").begin()->at("metric");
-                    protoTableData["checksum"]  = getItemChecksum(protoTableData);
-                    protoTableData["item_id"]   = getItemId(protoTableData, NETPROTO_ITEM_ID_FIELDS);
+                    protoTableData["checksum"]  = GetItemChecksum(protoTableData);
+                    protoTableData["item_id"]   = GetItemId(protoTableData, NETPROTO_ITEM_ID_FIELDS);
                     protoTableDataList.push_back(std::move(protoTableData));
 
                     for (auto addressTableData : item.at("IPv6"))
@@ -1198,8 +1198,8 @@ nlohmann::json Inventory::getNetworkData()
                         // "dbsync_network_address" table data to update and notify
                         addressTableData["iface"]     = item.at("name");
                         addressTableData["proto"]     = IPV6;
-                        addressTableData["checksum"]  = getItemChecksum(addressTableData);
-                        addressTableData["item_id"]   = getItemId(addressTableData, NETADDRESS_ITEM_ID_FIELDS);
+                        addressTableData["checksum"]  = GetItemChecksum(addressTableData);
+                        addressTableData["item_id"]   = GetItemId(addressTableData, NETADDRESS_ITEM_ID_FIELDS);
                         // Remove unwanted fields for dbsync_network_address table
                         addressTableData.erase("dhcp");
                         addressTableData.erase("metric");
@@ -1218,12 +1218,12 @@ nlohmann::json Inventory::getNetworkData()
     return ret;
 }
 
-void Inventory::scanNetwork()
+void Inventory::ScanNetwork()
 {
     if (m_network)
     {
-        log(LOG_DEBUG_VERBOSE, "Starting network scan");
-        const auto networkData(getNetworkData());
+        Log(LOG_DEBUG_VERBOSE, "Starting network scan");
+        const auto networkData(GetNetworkData());
 
         if (!networkData.is_null())
         {
@@ -1231,38 +1231,38 @@ void Inventory::scanNetwork()
 
             if (itIface != networkData.end())
             {
-                updateChanges(NET_IFACE_TABLE, itIface.value());
+                UpdateChanges(NET_IFACE_TABLE, itIface.value());
             }
 
             const auto itProtocol { networkData.find(NET_PROTOCOL_TABLE) };
 
             if (itProtocol != networkData.end())
             {
-                updateChanges(NET_PROTOCOL_TABLE, itProtocol.value());
+                UpdateChanges(NET_PROTOCOL_TABLE, itProtocol.value());
             }
 
             const auto itAddress { networkData.find(NET_ADDRESS_TABLE) };
 
             if (itAddress != networkData.end())
             {
-                updateChanges(NET_ADDRESS_TABLE, itAddress.value());
+                UpdateChanges(NET_ADDRESS_TABLE, itAddress.value());
             }
         }
 
-        log(LOG_DEBUG_VERBOSE, "Ending network scan");
+        Log(LOG_DEBUG_VERBOSE, "Ending network scan");
     }
 }
 
-void Inventory::scanPackages()
+void Inventory::ScanPackages()
 {
     if (m_packages)
     {
-        log(LOG_DEBUG_VERBOSE, "Starting packages scan");
+        Log(LOG_DEBUG_VERBOSE, "Starting packages scan");
         const auto callback
         {
             [this](ReturnTypeCallback result, const nlohmann::json & data)
             {
-                notifyChange(result, data, PACKAGES_TABLE);
+                NotifyChange(result, data, PACKAGES_TABLE);
             }
         };
         DBSyncTxn txn
@@ -1277,12 +1277,12 @@ void Inventory::scanPackages()
         {
             nlohmann::json input;
 
-            rawData["checksum"] = getItemChecksum(rawData);
-            rawData["item_id"] = getItemId(rawData, PACKAGES_ITEM_ID_FIELDS);
+            rawData["checksum"] = GetItemChecksum(rawData);
+            rawData["item_id"] = GetItemId(rawData, PACKAGES_ITEM_ID_FIELDS);
 
             input["table"] = PACKAGES_TABLE;
-            m_spNormalizer->normalize("packages", rawData);
-            m_spNormalizer->removeExcluded("packages", rawData);
+            m_spNormalizer->Normalize("packages", rawData);
+            m_spNormalizer->RemoveExcluded("packages", rawData);
 
             if (!rawData.empty())
             {
@@ -1292,32 +1292,32 @@ void Inventory::scanPackages()
         });
         txn.getDeletedRows(callback);
 
-        log(LOG_DEBUG_VERBOSE, "Ending packages scan");
+        Log(LOG_DEBUG_VERBOSE, "Ending packages scan");
     }
 }
 
-void Inventory::scanHotfixes()
+void Inventory::ScanHotfixes()
 {
     if (m_hotfixes)
     {
-        log(LOG_DEBUG_VERBOSE, "Starting hotfixes scan");
+        Log(LOG_DEBUG_VERBOSE, "Starting hotfixes scan");
         auto hotfixes = m_spInfo->hotfixes();
 
         if (!hotfixes.is_null())
         {
             for (auto& hotfix : hotfixes)
             {
-                hotfix["checksum"] = getItemChecksum(hotfix);
+                hotfix["checksum"] = GetItemChecksum(hotfix);
             }
 
-            updateChanges(HOTFIXES_TABLE, hotfixes);
+            UpdateChanges(HOTFIXES_TABLE, hotfixes);
         }
 
-        log(LOG_DEBUG_VERBOSE, "Ending hotfixes scan");
+        Log(LOG_DEBUG_VERBOSE, "Ending hotfixes scan");
     }
 }
 
-nlohmann::json Inventory::getPortsData()
+nlohmann::json Inventory::GetPortsData()
 {
     nlohmann::json ret;
     constexpr auto PORT_LISTENING_STATE { "listening" };
@@ -1336,11 +1336,11 @@ nlohmann::json Inventory::getPortsData()
                 // All ports.
                 if (m_portsAll)
                 {
-                    const auto& itemId { getItemId(item, PORTS_ITEM_ID_FIELDS) };
+                    const auto& itemId { GetItemId(item, PORTS_ITEM_ID_FIELDS) };
 
-                    if (!isElementDuplicated(ret, std::make_pair("item_id", itemId)))
+                    if (!IsElementDuplicated(ret, std::make_pair("item_id", itemId)))
                     {
-                        item["checksum"] = getItemChecksum(item);
+                        item["checksum"] = GetItemChecksum(item);
                         item["item_id"] = itemId;
                         ret.push_back(item);
                     }
@@ -1352,11 +1352,11 @@ nlohmann::json Inventory::getPortsData()
 
                     if (isListeningState)
                     {
-                        const auto& itemId { getItemId(item, PORTS_ITEM_ID_FIELDS) };
+                        const auto& itemId { GetItemId(item, PORTS_ITEM_ID_FIELDS) };
 
-                        if (!isElementDuplicated(ret, std::make_pair("item_id", itemId)))
+                        if (!IsElementDuplicated(ret, std::make_pair("item_id", itemId)))
                         {
-                            item["checksum"] = getItemChecksum(item);
+                            item["checksum"] = GetItemChecksum(item);
                             item["item_id"] = itemId;
                             ret.push_back(item);
                         }
@@ -1365,11 +1365,11 @@ nlohmann::json Inventory::getPortsData()
             }
             else if (Utils::startsWith(protocol, UDP_PROTOCOL))
             {
-                const auto& itemId { getItemId(item, PORTS_ITEM_ID_FIELDS) };
+                const auto& itemId { GetItemId(item, PORTS_ITEM_ID_FIELDS) };
 
-                if (!isElementDuplicated(ret, std::make_pair("item_id", itemId)))
+                if (!IsElementDuplicated(ret, std::make_pair("item_id", itemId)))
                 {
-                    item["checksum"] = getItemChecksum(item);
+                    item["checksum"] = GetItemChecksum(item);
                     item["item_id"] = itemId;
                     ret.push_back(item);
                 }
@@ -1380,27 +1380,27 @@ nlohmann::json Inventory::getPortsData()
     return ret;
 }
 
-void Inventory::scanPorts()
+void Inventory::ScanPorts()
 {
     if (m_ports)
     {
-        log(LOG_DEBUG_VERBOSE, "Starting ports scan");
-        const auto& portsData { getPortsData() };
-        updateChanges(PORTS_TABLE, portsData);
-        log(LOG_DEBUG_VERBOSE, "Ending ports scan");
+        Log(LOG_DEBUG_VERBOSE, "Starting ports scan");
+        const auto& portsData { GetPortsData() };
+        UpdateChanges(PORTS_TABLE, portsData);
+        Log(LOG_DEBUG_VERBOSE, "Ending ports scan");
     }
 }
 
-void Inventory::scanProcesses()
+void Inventory::ScanProcesses()
 {
     if (m_processes)
     {
-        log(LOG_DEBUG_VERBOSE, "Starting processes scan");
+        Log(LOG_DEBUG_VERBOSE, "Starting processes scan");
         const auto callback
         {
             [this](ReturnTypeCallback result, const nlohmann::json & data)
             {
-                notifyChange(result, data, PROCESSES_TABLE);
+                NotifyChange(result, data, PROCESSES_TABLE);
             }
         };
         DBSyncTxn txn
@@ -1415,7 +1415,7 @@ void Inventory::scanProcesses()
         {
             nlohmann::json input;
 
-            rawData["checksum"] = getItemChecksum(rawData);
+            rawData["checksum"] = GetItemChecksum(rawData);
 
             input["table"] = PROCESSES_TABLE;
             input["data"] = nlohmann::json::array( { rawData } );
@@ -1424,33 +1424,33 @@ void Inventory::scanProcesses()
         });
         txn.getDeletedRows(callback);
 
-        log(LOG_DEBUG_VERBOSE, "Ending processes scan");
+        Log(LOG_DEBUG_VERBOSE, "Ending processes scan");
     }
 }
 
-void Inventory::scan()
+void Inventory::Scan()
 {
-    log(LOG_INFO, "Starting evaluation.");
+    Log(LOG_INFO, "Starting evaluation.");
     m_scanTime = Utils::getCurrentTimestamp();
 
-    TRY_CATCH_TASK(scanHardware);
-    TRY_CATCH_TASK(scanOs);
-    TRY_CATCH_TASK(scanNetwork);
-    TRY_CATCH_TASK(scanPackages);
-    TRY_CATCH_TASK(scanHotfixes);
-    TRY_CATCH_TASK(scanPorts);
-    TRY_CATCH_TASK(scanProcesses);
+    TRY_CATCH_TASK(ScanHardware);
+    TRY_CATCH_TASK(ScanOs);
+    TRY_CATCH_TASK(ScanNetwork);
+    TRY_CATCH_TASK(ScanPackages);
+    TRY_CATCH_TASK(ScanHotfixes);
+    TRY_CATCH_TASK(ScanPorts);
+    TRY_CATCH_TASK(ScanProcesses);
     m_notify = true;
-    log(LOG_INFO, "Evaluation finished.");
+    Log(LOG_INFO, "Evaluation finished.");
 }
 
-void Inventory::syncLoop(std::unique_lock<std::mutex>& lock)
+void Inventory::SyncLoop(std::unique_lock<std::mutex>& lock)
 {
-    log(LOG_INFO, "Module started.");
+    Log(LOG_INFO, "Module started.");
 
     if (m_scanOnStart)
     {
-        scan();
+        Scan();
     }
 
     while (!m_cv.wait_for(lock, std::chrono::seconds{m_intervalValue}, [&]()
@@ -1458,7 +1458,7 @@ void Inventory::syncLoop(std::unique_lock<std::mutex>& lock)
     return m_stopping;
 }))
     {
-        scan();
+        Scan();
     }
     m_spDBSync.reset(nullptr);
 }
