@@ -23,102 +23,102 @@ using namespace std;
 
 #define INV_LOGTAG "modules:inventory" // Tag for log messages
 
-void Inventory::start() {
+void Inventory::Start() {
 
     if (!m_enabled) {
-        log(LOG_INFO, "Module disabled. Exiting...");
+        Log(LOG_INFO, "Module disabled. Exiting...");
         pthread_exit(NULL);
     }
 
-    log(LOG_INFO, "Starting inventory.");
+    Log(LOG_INFO, "Starting inventory.");
 
-    showConfig();
+    ShowConfig();
 
-    DBSync::initialize(logError);
+    DBSync::initialize(LogError);
 
     try
     {
-        Inventory::instance().init(std::make_shared<SysInfo>(),
-                                    [this](const std::string& diff) { this->sendDeltaEvent(diff); },
+        Inventory::Instance().Init(std::make_shared<SysInfo>(),
+                                    [this](const std::string& diff) { this->SendDeltaEvent(diff); },
                                     INVENTORY_DB_DISK_PATH,
                                     INVENTORY_NORM_CONFIG_DISK_PATH,
                                     INVENTORY_NORM_TYPE);
     }
     catch (const std::exception& ex)
     {
-        logError(ex.what());
+        LogError(ex.what());
     }
 
-    log(LOG_INFO, "Module finished.");
+    Log(LOG_INFO, "Module finished.");
 
 }
 
-int Inventory::setup(const Configuration & config) {
+int Inventory::Setup(const Configuration & config) {
 
-    const InventoryConfig& inventoryConfig = config.getInventoryConfig();
+    const InventoryConfig& inventoryConfig = config.GetInventoryConfig();
 
-    m_enabled = inventoryConfig.enabled;
-    m_intervalValue = std::chrono::seconds{inventoryConfig.interval};
-    m_scanOnStart = inventoryConfig.scanOnStart;
-    m_hardware = inventoryConfig.hardware;
-    m_os = inventoryConfig.os;
-    m_network = inventoryConfig.network;
-    m_packages = inventoryConfig.packages;
-    m_ports = inventoryConfig.ports;
-    m_portsAll = inventoryConfig.portsAll;
-    m_processes = inventoryConfig.processes;
-    m_hotfixes = inventoryConfig.hotfixes;
+    m_enabled = inventoryConfig.m_enabled;
+    m_intervalValue = std::chrono::seconds{inventoryConfig.m_interval};
+    m_scanOnStart = inventoryConfig.m_scanOnStart;
+    m_hardware = inventoryConfig.m_hardware;
+    m_os = inventoryConfig.m_os;
+    m_network = inventoryConfig.m_network;
+    m_packages = inventoryConfig.m_packages;
+    m_ports = inventoryConfig.m_ports;
+    m_portsAll = inventoryConfig.m_portsAll;
+    m_processes = inventoryConfig.m_processes;
+    m_hotfixes = inventoryConfig.m_hotfixes;
 
     m_notify = true;
 
     return 0;
 }
 
-void Inventory::stop() {
-    log(LOG_INFO, "Module stopped.");
-    Inventory::instance().destroy();
+void Inventory::Stop() {
+    Log(LOG_INFO, "Module stopped.");
+    Inventory::Instance().Destroy();
 }
 
-string Inventory::command(const string & query) {
-    log(LOG_INFO, "Query: " + query);
+string Inventory::Command(const string & query) {
+    Log(LOG_INFO, "Query: " + query);
     return "OK";
 }
 
-string Inventory::name() const {
+string Inventory::Name() const {
     return "inventory";
 }
 
-void Inventory::setMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue) {
+void Inventory::SetMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue) {
     m_messageQueue = queue;
 }
 
-void Inventory::sendDeltaEvent(const string& data) {
+void Inventory::SendDeltaEvent(const string& data) {
 
     const auto jsonData = nlohmann::json::parse(data);
-    const Message message{ MessageType::STATELESS, jsonData, name() };
+    const Message message{ MessageType::STATELESS, jsonData, Name() };
 
     if(!m_messageQueue->push(message)) {
-        log(LOG_WARNING, "Delta event can't be pushed into the message queue: " + data);
+        Log(LOG_WARNING, "Delta event can't be pushed into the message queue: " + data);
     }
     else {
-        log(LOG_DEBUG_VERBOSE, "Delta sent: " + data);
+        Log(LOG_DEBUG_VERBOSE, "Delta sent: " + data);
     }
 }
 
-void Inventory::showConfig()
+void Inventory::ShowConfig()
 {
-    cJSON * configJson = dump();
+    cJSON * configJson = Dump();
     if (configJson) {
         char * configString = cJSON_PrintUnformatted(configJson);
         if (configString) {
-            log(LOG_DEBUG, configString);
+            Log(LOG_DEBUG, configString);
             cJSON_free(configString);
         }
         cJSON_Delete(configJson);
     }
 }
 
-cJSON * Inventory::dump() {
+cJSON * Inventory::Dump() {
 
     cJSON *rootJson = cJSON_CreateObject();
     cJSON *invJson = cJSON_CreateObject();
@@ -143,12 +143,12 @@ cJSON * Inventory::dump() {
     return rootJson;
 }
 
-void Inventory::log(const modules_log_level_t level, const std::string& log)
+void Inventory::Log(const modules_log_level_t level, const std::string& log)
 {
     taggedLogFunction(level, log.c_str(), INV_LOGTAG);
 }
 
-void Inventory::logError(const std::string& log)
+void Inventory::LogError(const std::string& log)
 {
     taggedLogFunction(LOG_ERROR, log.c_str(), INV_LOGTAG);
 }

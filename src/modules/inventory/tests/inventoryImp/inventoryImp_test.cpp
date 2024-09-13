@@ -49,12 +49,12 @@ class CallbackMock
         MOCK_METHOD(void, callbackMock, (const std::string&), ());
 };
 
-void reportFunction(const std::string& /*payload*/)
+void ReportFunction(const std::string& /*payload*/)
 {
     // std::cout << payload << std::endl;
 }
 
-void logFunction(const modules_log_level_t /*level*/, const std::string& /*log*/)
+void LogFunction(const modules_log_level_t /*level*/, const std::string& /*log*/)
 {
     // static const std::map<modules_log_level_t, std::string> s_logStringMap
     // {
@@ -167,12 +167,12 @@ TEST_F(InventoryImpTest, defaultCtor)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
 
     Configuration config;
-    Inventory::instance().setup(config);
+    Inventory::Instance().Setup(config);
     std::thread t
     {
         [&spInfoWrapper, &callbackDataDelta]()
         {
-            Inventory::instance().init(spInfoWrapper,
+            Inventory::Instance().Init(spInfoWrapper,
                                         callbackDataDelta,
                                         INVENTORY_DB_PATH,
                                         "",
@@ -181,7 +181,7 @@ TEST_F(InventoryImpTest, defaultCtor)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Inventory::instance().stop();
+    Inventory::Instance().Stop();
 
     if (t.joinable())
     {
@@ -212,16 +212,16 @@ TEST_F(InventoryImpTest, intervalSeconds)
                     (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
     InventoryConfig invConfig;
-    invConfig.interval = 1;
+    invConfig.m_interval = 1;
     Configuration config(invConfig);
-    Inventory::instance().setup(config);
+    Inventory::Instance().Setup(config);
 
     std::thread t
     {
         [&spInfoWrapper]()
         {
-            Inventory::instance().init(spInfoWrapper,
-                                          reportFunction,
+            Inventory::Instance().Init(spInfoWrapper,
+                                          ReportFunction,
                                           INVENTORY_DB_PATH,
                                           "",
                                           "");
@@ -230,7 +230,7 @@ TEST_F(InventoryImpTest, intervalSeconds)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{10});
-    Inventory::instance().stop();
+    Inventory::Instance().Stop();
 
     if (t.joinable())
     {
@@ -250,16 +250,16 @@ TEST_F(InventoryImpTest, noScanOnStart)
     EXPECT_CALL(*spInfoWrapper, hotfixes()).Times(0);
 
     InventoryConfig invConfig;
-    invConfig.scanOnStart = false;
+    invConfig.m_scanOnStart = false;
     Configuration config(invConfig);
-    Inventory::instance().setup(config);
+    Inventory::Instance().Setup(config);
 
     std::thread t
     {
         [&spInfoWrapper]()
         {
-            Inventory::instance().init(spInfoWrapper,
-                                        reportFunction,
+            Inventory::Instance().Init(spInfoWrapper,
+                                        ReportFunction,
                                         INVENTORY_DB_PATH,
                                         "",
                                         "");
@@ -267,7 +267,7 @@ TEST_F(InventoryImpTest, noScanOnStart)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Inventory::instance().stop();
+    Inventory::Instance().Stop();
 
     if (t.joinable())
     {
@@ -367,15 +367,15 @@ TEST_F(InventoryImpTest, noHardware)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
 
     InventoryConfig invConfig;
-    invConfig.hardware = false;
+    invConfig.m_hardware = false;
     Configuration config(invConfig);
-    Inventory::instance().setup(config);
+    Inventory::Instance().Setup(config);
 
     std::thread t
     {
         [&spInfoWrapper, &callbackDataDelta]()
         {
-            Inventory::instance().init(spInfoWrapper,
+            Inventory::Instance().Init(spInfoWrapper,
                                         callbackDataDelta,
                                         INVENTORY_DB_PATH,
                                         "",
@@ -384,7 +384,7 @@ TEST_F(InventoryImpTest, noHardware)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Inventory::instance().stop();
+    Inventory::Instance().Stop();
 
     if (t.joinable())
     {
@@ -485,15 +485,15 @@ TEST_F(InventoryImpTest, noOs)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
 
     InventoryConfig invConfig;
-    invConfig.os = false;
+    invConfig.m_os = false;
     Configuration config(invConfig);
-    Inventory::instance().setup(config);
+    Inventory::Instance().Setup(config);
 
     std::thread t
     {
         [&spInfoWrapper, &callbackDataDelta]()
         {
-            Inventory::instance().init(spInfoWrapper,
+            Inventory::Instance().Init(spInfoWrapper,
                                           callbackDataDelta,
                                           INVENTORY_DB_PATH,
                                           "",
@@ -502,7 +502,7 @@ TEST_F(InventoryImpTest, noOs)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
-    Inventory::instance().stop();
+    Inventory::Instance().Stop();
 
     if (t.joinable())
     {
@@ -582,15 +582,15 @@ TEST_F(InventoryImpTest, noNetwork)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult10)).Times(1);
 
     InventoryConfig invConfig;
-    invConfig.network = false;
+    invConfig.m_network = false;
     Configuration config(invConfig);
-    Inventory::instance().setup(config);
+    Inventory::Instance().Setup(config);
 
     std::thread t
     {
         [&spInfoWrapper, &callbackDataDelta]()
         {
-            Inventory::instance().init(spInfoWrapper,
+            Inventory::Instance().Init(spInfoWrapper,
                                         callbackDataDelta,
                                         INVENTORY_DB_PATH,
                                         "",
@@ -599,7 +599,7 @@ TEST_F(InventoryImpTest, noNetwork)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Inventory::instance().stop();
+    Inventory::Instance().Stop();
 
     if (t.joinable())
     {
@@ -697,15 +697,15 @@ TEST_F(InventoryImpTest, noPackages)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
 
     InventoryConfig invConfig;
-    invConfig.packages = false;
+    invConfig.m_packages = false;
     Configuration config(invConfig);
-    Inventory::instance().setup(config);
+    Inventory::Instance().Setup(config);
 
     std::thread t
     {
         [&spInfoWrapper, &callbackDataDelta]()
         {
-            Inventory::instance().init(spInfoWrapper,
+            Inventory::Instance().Init(spInfoWrapper,
                                           callbackDataDelta,
                                           INVENTORY_DB_PATH,
                                           "",
@@ -714,7 +714,7 @@ TEST_F(InventoryImpTest, noPackages)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Inventory::instance().stop();
+    Inventory::Instance().Stop();
 
     if (t.joinable())
     {
@@ -814,16 +814,16 @@ TEST_F(InventoryImpTest, noPorts)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult20)).Times(1);
 
     InventoryConfig invConfig;
-    invConfig.ports = false;
-    invConfig.interval = 5;
+    invConfig.m_ports = false;
+    invConfig.m_interval = 5;
     Configuration config(invConfig);
-    Inventory::instance().setup(config);
+    Inventory::Instance().Setup(config);
 
     std::thread t
     {
         [&spInfoWrapper, &callbackDataDelta]()
         {
-            Inventory::instance().init(spInfoWrapper,
+            Inventory::Instance().Init(spInfoWrapper,
                                           callbackDataDelta,
                                           INVENTORY_DB_PATH,
                                           "",
@@ -832,7 +832,7 @@ TEST_F(InventoryImpTest, noPorts)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Inventory::instance().stop();
+    Inventory::Instance().Stop();
 
     if (t.joinable())
     {
@@ -943,15 +943,15 @@ TEST_F(InventoryImpTest, noPortsAll)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult12)).Times(1);
 
     InventoryConfig invConfig;
-    invConfig.portsAll = false;
+    invConfig.m_portsAll = false;
     Configuration config(invConfig);
-    Inventory::instance().setup(config);
+    Inventory::Instance().Setup(config);
 
     std::thread t
     {
         [&spInfoWrapper, &callbackDataDelta]()
         {
-            Inventory::instance().init(spInfoWrapper,
+            Inventory::Instance().Init(spInfoWrapper,
                                           callbackDataDelta,
                                           INVENTORY_DB_PATH,
                                           "",
@@ -960,7 +960,7 @@ TEST_F(InventoryImpTest, noPortsAll)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Inventory::instance().stop();
+    Inventory::Instance().Stop();
 
     if (t.joinable())
     {
@@ -1058,15 +1058,15 @@ TEST_F(InventoryImpTest, noProcesses)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
 
     InventoryConfig invConfig;
-    invConfig.processes = false;
+    invConfig.m_processes = false;
     Configuration config(invConfig);
-    Inventory::instance().setup(config);
+    Inventory::Instance().Setup(config);
 
     std::thread t
     {
         [&spInfoWrapper, &callbackDataDelta]()
         {
-            Inventory::instance().init(spInfoWrapper,
+            Inventory::Instance().Init(spInfoWrapper,
                                           callbackDataDelta,
                                           INVENTORY_DB_PATH,
                                           "",
@@ -1075,7 +1075,7 @@ TEST_F(InventoryImpTest, noProcesses)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Inventory::instance().stop();
+    Inventory::Instance().Stop();
 
     if (t.joinable())
     {
@@ -1176,15 +1176,15 @@ TEST_F(InventoryImpTest, noHotfixes)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult18)).Times(1);
 
     InventoryConfig invConfig;
-    invConfig.hotfixes = false;
+    invConfig.m_hotfixes = false;
     Configuration config(invConfig);
-    Inventory::instance().setup(config);
+    Inventory::Instance().Setup(config);
 
     std::thread t
     {
         [&spInfoWrapper, &callbackDataDelta]()
         {
-            Inventory::instance().init(spInfoWrapper,
+            Inventory::Instance().Init(spInfoWrapper,
                                           callbackDataDelta,
                                           INVENTORY_DB_PATH,
                                           "",
@@ -1193,7 +1193,7 @@ TEST_F(InventoryImpTest, noHotfixes)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Inventory::instance().stop();
+    Inventory::Instance().Stop();
 
     if (t.joinable())
     {
@@ -1223,23 +1223,23 @@ TEST_F(InventoryImpTest, scanInvalidData)
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":431625,"ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
 
     InventoryConfig invConfig;
-    invConfig.interval = 60;
+    invConfig.m_interval = 60;
     Configuration config(invConfig);
-    Inventory::instance().setup(config);
+    Inventory::Instance().Setup(config);
 
     std::thread t
     {
         [&spInfoWrapper]()
         {
-            Inventory::instance().init(spInfoWrapper,
-                                          reportFunction,
+            Inventory::Instance().Init(spInfoWrapper,
+                                          ReportFunction,
                                           INVENTORY_DB_PATH,
                                           "",
                                           "");
         }
     };
     std::this_thread::sleep_for(std::chrono::seconds{1});
-    Inventory::instance().stop();
+    Inventory::Instance().Stop();
 
     if (t.joinable())
     {
@@ -1356,20 +1356,20 @@ TEST_F(InventoryImpTest, portAllEnable)
     EXPECT_CALL(wrapper, callbackMock(expectedResult4)).Times(1);
 
     InventoryConfig invConfig;
-    invConfig.hardware = false;
-    invConfig.os = false;
-    invConfig.network = false;
-    invConfig.packages = false;
-    invConfig.processes = false;
-    invConfig.hotfixes = false;
+    invConfig.m_hardware = false;
+    invConfig.m_os = false;
+    invConfig.m_network = false;
+    invConfig.m_packages = false;
+    invConfig.m_processes = false;
+    invConfig.m_hotfixes = false;
     Configuration config(invConfig);
-    Inventory::instance().setup(config);
+    Inventory::Instance().Setup(config);
 
     std::thread t
     {
         [&spInfoWrapper, &callbackData]()
         {
-            Inventory::instance().init(spInfoWrapper,
+            Inventory::Instance().Init(spInfoWrapper,
                                           callbackData,
                                           INVENTORY_DB_PATH,
                                           "",
@@ -1378,7 +1378,7 @@ TEST_F(InventoryImpTest, portAllEnable)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Inventory::instance().stop();
+    Inventory::Instance().Stop();
 
     if (t.joinable())
     {
@@ -1489,21 +1489,21 @@ TEST_F(InventoryImpTest, portAllDisable)
     EXPECT_CALL(wrapper, callbackMock(expectedResult3)).Times(1);
 
     InventoryConfig invConfig;
-    invConfig.hardware = false;
-    invConfig.os = false;
-    invConfig.network = false;
-    invConfig.packages = false;
-    invConfig.portsAll = false;
-    invConfig.processes = false;
-    invConfig.hotfixes = false;
+    invConfig.m_hardware = false;
+    invConfig.m_os = false;
+    invConfig.m_network = false;
+    invConfig.m_packages = false;
+    invConfig.m_portsAll = false;
+    invConfig.m_processes = false;
+    invConfig.m_hotfixes = false;
     Configuration config(invConfig);
-    Inventory::instance().setup(config);
+    Inventory::Instance().Setup(config);
 
     std::thread t
     {
         [&spInfoWrapper, &callbackData]()
         {
-            Inventory::instance().init(spInfoWrapper,
+            Inventory::Instance().Init(spInfoWrapper,
                                           callbackData,
                                           INVENTORY_DB_PATH,
                                           "",
@@ -1512,7 +1512,7 @@ TEST_F(InventoryImpTest, portAllDisable)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Inventory::instance().stop();
+    Inventory::Instance().Stop();
 
     if (t.joinable())
     {
@@ -1554,21 +1554,21 @@ TEST_F(InventoryImpTest, PackagesDuplicated)
     EXPECT_CALL(wrapper, callbackMock(expectedResult1)).Times(1);
 
     InventoryConfig invConfig;
-    invConfig.hardware = false;
-    invConfig.os = false;
-    invConfig.network = false;
-    invConfig.ports = false;
-    invConfig.portsAll = false;
-    invConfig.processes = false;
-    invConfig.hotfixes = false;
+    invConfig.m_hardware = false;
+    invConfig.m_os = false;
+    invConfig.m_network = false;
+    invConfig.m_ports = false;
+    invConfig.m_portsAll = false;
+    invConfig.m_processes = false;
+    invConfig.m_hotfixes = false;
     Configuration config(invConfig);
-    Inventory::instance().setup(config);
+    Inventory::Instance().Setup(config);
 
     std::thread t
     {
         [&spInfoWrapper, &callbackData]()
         {
-            Inventory::instance().init(spInfoWrapper,
+            Inventory::Instance().Init(spInfoWrapper,
                                           callbackData,
                                           INVENTORY_DB_PATH,
                                           "",
@@ -1577,7 +1577,7 @@ TEST_F(InventoryImpTest, PackagesDuplicated)
     };
 
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    Inventory::instance().stop();
+    Inventory::Instance().Stop();
 
     if (t.joinable())
     {

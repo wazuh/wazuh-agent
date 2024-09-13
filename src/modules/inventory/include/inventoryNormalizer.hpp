@@ -19,12 +19,10 @@ class InvNormalizer
         InvNormalizer(const std::string& configFile,
                       const std::string& target);
         ~InvNormalizer() = default;
-        void normalize(const std::string& type,
-                       nlohmann::json& data) const;
-        void removeExcluded(const std::string& type,
-                            nlohmann::json& data) const;
+        void Normalize(const std::string& type, nlohmann::json& data) const;
+        void RemoveExcluded(const std::string& type, nlohmann::json& data) const;
     private:
-        static std::map<std::string, nlohmann::json> getTypeValues(const std::string& configFile,
+        static std::map<std::string, nlohmann::json> GetTypeValues(const std::string& configFile,
                                                                    const std::string& target,
                                                                    const std::string& type);
         const std::map<std::string, nlohmann::json> m_typeExclusions;
