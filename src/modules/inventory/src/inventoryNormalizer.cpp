@@ -15,12 +15,12 @@
 
 InvNormalizer::InvNormalizer(const std::string& configFile,
                              const std::string& target)
-    : m_typeExclusions{getTypeValues(configFile, target, "exclusions")}
-    , m_typeDictionary{getTypeValues(configFile, target, "dictionary")}
+    : m_typeExclusions{GetTypeValues(configFile, target, "exclusions")}
+    , m_typeDictionary{GetTypeValues(configFile, target, "dictionary")}
 {
 }
 
-void InvNormalizer::removeExcluded(const std::string& type,
+void InvNormalizer::RemoveExcluded(const std::string& type,
                                    nlohmann::json& data) const
 {
     const auto exclusionsIt{m_typeExclusions.find(type)};
@@ -66,7 +66,7 @@ void InvNormalizer::removeExcluded(const std::string& type,
 }
 
 
-static void normalizeItem(const nlohmann::json& dictionary,
+static void NormalizeItem(const nlohmann::json& dictionary,
                           nlohmann::json& item)
 {
     for (const auto& dictItem : dictionary)
@@ -117,7 +117,7 @@ static void normalizeItem(const nlohmann::json& dictionary,
     }
 }
 
-void InvNormalizer::normalize(const std::string& type,
+void InvNormalizer::Normalize(const std::string& type,
                               nlohmann::json& data) const
 {
     const auto dictionaryIt{m_typeDictionary.find(type)};
@@ -128,17 +128,17 @@ void InvNormalizer::normalize(const std::string& type,
         {
             for (auto& item : data)
             {
-                normalizeItem(dictionaryIt->second, item);
+                NormalizeItem(dictionaryIt->second, item);
             }
         }
         else
         {
-            normalizeItem(dictionaryIt->second, data);
+            NormalizeItem(dictionaryIt->second, data);
         }
     }
 }
 
-std::map<std::string, nlohmann::json> InvNormalizer::getTypeValues(const std::string& configFile,
+std::map<std::string, nlohmann::json> InvNormalizer::GetTypeValues(const std::string& configFile,
                                                                    const std::string& target,
                                                                    const std::string& type)
 {

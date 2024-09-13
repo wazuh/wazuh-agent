@@ -17,25 +17,25 @@
 
 class Inventory {
     public:
-        static Inventory& instance()
+        static Inventory& Instance()
         {
             static Inventory s_instance;
             return s_instance;
         }
 
-        void start();
-        int setup(const Configuration & config);
-        void stop();
-        std::string command(const std::string & query);
-        std::string name() const;
-        void setMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue);
+        void Start();
+        int Setup(const Configuration & config);
+        void Stop();
+        std::string Command(const std::string & query);
+        std::string Name() const;
+        void SetMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue);
 
-        void init(const std::shared_ptr<ISysInfo>& spInfo,
+        void Init(const std::shared_ptr<ISysInfo>& spInfo,
                     const std::function<void(const std::string&)> reportDiffFunction,
                     const std::string& dbPath,
                     const std::string& normalizerConfigPath,
                     const std::string& normalizerType);
-        virtual void sendDeltaEvent(const std::string& data);
+        virtual void SendDeltaEvent(const std::string& data);
 
     private:
         Inventory();
@@ -43,32 +43,29 @@ class Inventory {
         Inventory(const Inventory&) = delete;
         Inventory& operator=(const Inventory&) = delete;
 
-        void destroy();
+        void Destroy();
 
-        std::string getCreateStatement() const;
-        nlohmann::json getOSData();
-        nlohmann::json getHardwareData();
-        nlohmann::json getNetworkData();
-        nlohmann::json getPortsData();
+        std::string GetCreateStatement() const;
+        nlohmann::json GetOSData();
+        nlohmann::json GetHardwareData();
+        nlohmann::json GetNetworkData();
+        nlohmann::json GetPortsData();
 
-        void updateChanges(const std::string& table,
-                            const nlohmann::json& values);
-        void notifyChange(ReturnTypeCallback result,
-                            const nlohmann::json& data,
-                            const std::string& table);
-        void scanHardware();
-        void scanOs();
-        void scanNetwork();
-        void scanPackages();
-        void scanHotfixes();
-        void scanPorts();
-        void scanProcesses();
-        void scan();
-        void syncLoop(std::unique_lock<std::mutex>& lock);
-        void showConfig();
-        cJSON * dump();
-        static void log(const modules_log_level_t level, const std::string& log);
-        static void logError(const std::string& log);
+        void UpdateChanges(const std::string& table, const nlohmann::json& values);
+        void NotifyChange(ReturnTypeCallback result, const nlohmann::json& data, const std::string& table);
+        void ScanHardware();
+        void ScanOs();
+        void ScanNetwork();
+        void ScanPackages();
+        void ScanHotfixes();
+        void ScanPorts();
+        void ScanProcesses();
+        void Scan();
+        void SyncLoop(std::unique_lock<std::mutex>& lock);
+        void ShowConfig();
+        cJSON * Dump();
+        static void Log(const modules_log_level_t level, const std::string& log);
+        static void LogError(const std::string& log);
 
         std::shared_ptr<ISysInfo>                   m_spInfo;
         std::function<void(const std::string&)>     m_reportDiffFunction;

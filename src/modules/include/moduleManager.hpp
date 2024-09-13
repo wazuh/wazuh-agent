@@ -13,12 +13,12 @@ using namespace std;
 template<typename T>
 concept Module = requires(T t, const Configuration & config, const string & query,
                              const std::shared_ptr<IMultiTypeQueue> queue) {
-    { t.start() } -> same_as<void>;
-    { t.setup(config) } -> same_as<int>;
-    { t.stop() } -> same_as<void>;
-    { t.command(query) } -> same_as<string>;
-    { t.name() } -> same_as<string>;
-    { t.setMessageQueue(queue) } -> same_as<void>;
+    { t.Start() } -> same_as<void>;
+    { t.Setup(config) } -> same_as<int>;
+    { t.Stop() } -> same_as<void>;
+    { t.Command(query) } -> same_as<string>;
+    { t.Name() } -> same_as<string>;
+    { t.SetMessageQueue(queue) } -> same_as<void>;
 };
 
 class ModuleManager {
@@ -27,35 +27,35 @@ public:
     ~ModuleManager() = default;
 
     template <typename T>
-    void addModule(T& module) {
-        const std::string& moduleName = module.name();
-        if (modules.find(moduleName) != modules.end()) {
+    void AddModule(T& module) {
+        const std::string& moduleName = module.Name();
+        if (m_modules.find(moduleName) != m_modules.end()) {
             throw std::runtime_error("Module '" + moduleName + "' already exists.");
         }
 
-        module.setMessageQueue(multiTypeQueue);
+        module.SetMessageQueue(m_multiTypeQueue);
 
         auto wrapper = make_shared<ModuleWrapper>(ModuleWrapper{
-            .start = [&module]() { module.start(); },
-            .setup = [&module](const Configuration & config) { return module.setup(config); },
-            .stop = [&module]() { module.stop(); },
-            .command = [&module](const string & query) { return module.command(query); },
-            .name = [&module]() { return module.name(); }
+            .Start = [&module]() { module.Start(); },
+            .Setup = [&module](const Configuration & config) { return module.Setup(config); },
+            .Stop = [&module]() { module.Stop(); },
+            .Command = [&module](const string & query) { return module.Command(query); },
+            .Name = [&module]() { return module.Name(); }
         });
 
-        modules[moduleName] = wrapper;
+        m_modules[moduleName] = wrapper;
     }
 
-    shared_ptr<ModuleWrapper> getModule(const string & name);
-    void start();
-    void setup(const Configuration & config);
-    void stop();
-    void setMessageQueue(const std::shared_ptr<MultiTypeQueue>& messageQueue) {
-        multiTypeQueue = messageQueue;
+    shared_ptr<ModuleWrapper> GetModule(const string & name);
+    void Start();
+    void Setup(const Configuration & config);
+    void Stop();
+    void SetMessageQueue(const std::shared_ptr<MultiTypeQueue>& messageQueue) {
+        m_multiTypeQueue = messageQueue;
     }
 
 private:
-    map<string, shared_ptr<ModuleWrapper>> modules;
-    vector<thread> threads;
-    std::shared_ptr<IMultiTypeQueue> multiTypeQueue;
+    map<string, shared_ptr<ModuleWrapper>> m_modules;
+    vector<thread> m_threads;
+    std::shared_ptr<IMultiTypeQueue> m_multiTypeQueue;
 };

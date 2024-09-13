@@ -37,8 +37,5 @@ __pycache__
 ### Python Virtualenv
 venv
 
-# Auto generated build files
-src/**/build/*
-
 # External dependencies
 src/external/*

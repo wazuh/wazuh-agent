@@ -2,32 +2,32 @@
 #include <inventory.hpp>
 #include <moduleManager.hpp>
 
-shared_ptr<ModuleWrapper> ModuleManager::getModule(const string & name) {
-    auto it = modules.find(name);
-    if (it != modules.end()) {
+shared_ptr<ModuleWrapper> ModuleManager::GetModule(const string & name) {
+    auto it = m_modules.find(name);
+    if (it != m_modules.end()) {
         return it->second;
     }
     return nullptr;
 }
 
-void ModuleManager::start() {
-    for (const auto &[_, module] : modules) {
-        threads.emplace_back([module]() { module->start(); });
+void ModuleManager::Start() {
+    for (const auto &[_, module] : m_modules) {
+        m_threads.emplace_back([module]() { module->Start(); });
     }
 }
 
-void ModuleManager::setup(const Configuration & config) {
-    for (const auto &[_, module] : modules) {
-        module->setup(config);
+void ModuleManager::Setup(const Configuration & config) {
+    for (const auto &[_, module] : m_modules) {
+        module->Setup(config);
     }
 }
 
-void ModuleManager::stop() {
-    for (const auto &[_, module] : modules) {
-        module->stop();
+void ModuleManager::Stop() {
+    for (const auto &[_, module] : m_modules) {
+        module->Stop();
     }
 
-    for (auto &thread : threads) {
+    for (auto &thread : m_threads) {
         if (thread.joinable()) {
             thread.join();
         }

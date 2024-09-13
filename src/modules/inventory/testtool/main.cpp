@@ -39,7 +39,7 @@ int main(int argc, const char* argv[])
         return -1;
     }
 
-    Inventory::instance().setup(config);
+    Inventory::Instance().Setup(config);
 
     try
     {
@@ -56,11 +56,11 @@ int main(int argc, const char* argv[])
                     std::this_thread::sleep_for(std::chrono::seconds(sleepTime));
                 }
 
-                Inventory::instance().stop();
+                Inventory::Instance().Stop();
             }
         };
 
-        Inventory::instance().start();
+        Inventory::Instance().Start();
 
         if (thread.joinable())
         {
