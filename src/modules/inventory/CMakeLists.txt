@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.22)
 
 project(Inventory)
 
+include(../../cmake/CommonSettings.cmake)
+set_common_settings()
+
 get_filename_component(SRC_FOLDER       ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
 get_filename_component(COMMON_FOLDER    ${SRC_FOLDER}/common/ ABSOLUTE)
 
@@ -9,12 +12,12 @@ find_package(cJSON CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
 
-add_library(inventory
+add_library(Inventory
     src/inventory.cpp
     src/inventoryImp.cpp
     src/inventoryNormalizer.cpp)
 
-target_include_directories(inventory PUBLIC
+target_include_directories(Inventory PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
     ${COMMON_FOLDER}
@@ -31,14 +34,13 @@ target_include_directories(inventory PUBLIC
     ${COMMON_FOLDER}/timeHelper/include
     ${COMMON_FOLDER}/utils)
 
-if(LINUX)
-    target_link_directories(inventory PUBLIC ${SRC_FOLDER}/external/rpm/builddir/)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_link_directories(Inventory PUBLIC ${SRC_FOLDER}/external/rpm/builddir/)
 endif()
-target_link_directories(inventory PUBLIC ${SRC_FOLDER}/external/libdb/build_unix/)
-target_link_directories(inventory PUBLIC ${SRC_FOLDER}/external/procps/)
+target_link_directories(Inventory PUBLIC ${SRC_FOLDER}/external/libdb/build_unix/)
+target_link_directories(Inventory PUBLIC ${SRC_FOLDER}/external/procps/)
 
-
-target_link_libraries(inventory PUBLIC
+target_link_libraries(Inventory PUBLIC
     dbsync
     sysinfo
     cjson
@@ -49,6 +51,9 @@ target_link_libraries(inventory PUBLIC
     logging_helper
     pthreads_op
     MultiTypeQueue)
+
+include(../../cmake/ConfigureTarget.cmake)
+configure_target(Inventory)
 
 add_subdirectory(testtool)
 

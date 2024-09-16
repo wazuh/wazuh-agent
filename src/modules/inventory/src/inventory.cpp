@@ -1,14 +1,3 @@
-/*
- * Wazuh Inventory
- * Copyright (C) 2015, Wazuh Inc.
- * July 15, 2024.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 3) as published by the FSF - Free Software
- * Foundation.
- */
-
 #include <iostream>
 #include <cjson/cJSON.h>
 #include <shared.h>
@@ -84,10 +73,6 @@ string Inventory::Command(const string & query) {
     return "OK";
 }
 
-string Inventory::Name() const {
-    return "inventory";
-}
-
 void Inventory::SetMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue) {
     m_messageQueue = queue;
 }
@@ -126,7 +111,7 @@ cJSON * Inventory::Dump() {
     // System provider values
     if (m_enabled) cJSON_AddStringToObject(invJson,"disabled","no"); else cJSON_AddStringToObject(invJson,"disabled","yes");
     if (m_scanOnStart) cJSON_AddStringToObject(invJson,"scan-on-start","yes"); else cJSON_AddStringToObject(invJson,"scan-on-start","no");
-    cJSON_AddNumberToObject(invJson,"interval",m_intervalValue.count());
+    cJSON_AddNumberToObject(invJson, "interval", static_cast<double>(m_intervalValue.count()));
     if (m_network) cJSON_AddStringToObject(invJson,"network","yes"); else cJSON_AddStringToObject(invJson,"network","no");
     if (m_os) cJSON_AddStringToObject(invJson,"os","yes"); else cJSON_AddStringToObject(invJson,"os","no");
     if (m_hardware) cJSON_AddStringToObject(invJson,"hardware","yes"); else cJSON_AddStringToObject(invJson,"hardware","no");

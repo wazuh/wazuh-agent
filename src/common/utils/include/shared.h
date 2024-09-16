@@ -124,6 +124,7 @@
 #include "os_ip.h"
 #include "randombytes.h"
 #include "bzip2_op.h"
+#include "validate_op.h"
 
 
 #ifndef LARGEFILE64_SOURCE

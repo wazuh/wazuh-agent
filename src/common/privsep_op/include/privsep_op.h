@@ -15,13 +15,7 @@
 
 #include "shared.h"
 
-#if defined(SUN_MAJOR_VERSION) && defined(SUN_MINOR_VERSION)  && \
-    (SUN_MAJOR_VERSION < 11) || \
-    ((SUN_MAJOR_VERSION == 11) && (SUN_MINOR_VERSION < 4))
-#define w_ctime(x,y,z) ctime_r(x,y,z)
-#else
 #define w_ctime(x,y,z) ctime_r(x,y)
-#endif
 
 /**
  * @brief Find a user by name
