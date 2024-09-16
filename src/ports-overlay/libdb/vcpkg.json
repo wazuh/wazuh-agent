@@ -1,0 +1,17 @@
+{
+  "name": "libdb",
+  "version": "18.1.40",
+  "description": "This is Berkeley DB Release 18.1.40 from Oracle.",
+  "homepage": "https://github.com/yasuhirokimura/db18",
+  "license": "GPL-2.0",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}

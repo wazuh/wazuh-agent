@@ -13,7 +13,8 @@
       "spdlog",
       "sqlitecpp",
       "toml11",
-      "procps"
+      "procps",
+      "libdb"
     ],
     "overrides": [
       {
@@ -36,7 +37,8 @@
         }
       ],
       "overlay-ports": [ 
-        "./ports-overlay/procps" 
+        "./ports-overlay/procps",
+        "./ports-overlay/libdb"
       ]
   }
 }
