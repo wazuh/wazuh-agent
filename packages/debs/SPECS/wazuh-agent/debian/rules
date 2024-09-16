@@ -1,0 +1,75 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+#
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+#
+# Modified to make a template file for a multi-binary package with separated
+# build-arch and build-indep targets  by Bill Allombert 2001
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+# This has to be exported to make some magic below work.
+export DH_OPTIONS
+
+export TARGET_DIR=${CURDIR}/debian/wazuh-agent
+
+# Package build options
+export INSTALLATION_WAZUH_DIR="/opt/wazuh-agent"
+export JOBS=$(shell nproc)
+export DEBUG_ENABLED="no"
+export PATH="${PATH}"
+export LD_LIBRARY_PATH=""
+
+%:
+	dh $@
+
+override_dh_shlibdeps:
+
+override_dh_auto_configure:
+
+override_dh_auto_install:
+
+override_dh_install:
+
+	rm -rf $(INSTALLATION_WAZUH_DIR)/
+
+	# Build the binaries
+	git submodule update --init --recursive
+	cmake src -B build
+	cmake --build build --parallel $(JOBS)
+
+	# Copying init.d script
+	mkdir -p ${TARGET_DIR}/etc/init.d/
+	sed -i "s:WAZUH_HOME_TMP:${INSTALLATION_WAZUH_DIR}:g" src/init/templates/hids-debian.init
+	cp src/init/templates/hids-debian.init ${TARGET_DIR}/etc/init.d/wazuh-agent
+
+	# # Copying systemd file
+	# mkdir -p ${TARGET_DIR}/usr/lib/systemd/system/
+	# sed -i "s:WAZUH_HOME_TMP:${INSTALLATION_WAZUH_DIR}:g" src/init/templates/wazuh-agent.service
+	# install -m 0644 src/init/templates/wazuh-agent.service ${TARGET_DIR}/usr/lib/systemd/system/
+
+	# Copying wazuh-agent binary
+	mkdir -p ${TARGET_DIR}$(INSTALLATION_WAZUH_DIR)/bin
+	cp -r build/wazuh-agent $(TARGET_DIR)$(INSTALLATION_WAZUH_DIR)/bin
+
+	cp src/VERSION ${TARGET_DIR}$(INSTALLATION_WAZUH_DIR)
+	cp src/REVISION ${TARGET_DIR}$(INSTALLATION_WAZUH_DIR)
+
+	# Copying systemd file
+	mkdir -p ${TARGET_DIR}/etc/systemd/system/
+	sed -i "s:WAZUH_HOME_TMP:${INSTALLATION_WAZUH_DIR}:g" src/init/templates/wazuh-agent.service
+	cp src/init/templates/wazuh-agent.service ${TARGET_DIR}/etc/systemd/system/
+
+override_dh_auto_clean:
+	$(MAKE) -C src clean
+
+
+override_dh_strip:
+	dh_strip --no-automatic-dbgsym
+
+.PHONY: override_dh_install override_dh_strip override_dh_auto_clean override_dh_auto_build override_dh_auto_configure

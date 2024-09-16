@@ -1,0 +1,17 @@
+[Unit]
+Description=Wazuh agent
+Wants=network-online.target
+After=network.target network-online.target
+
+[Service]
+Type=forking
+
+ExecStart=cd /opt/wazuh-agent/ && /usr/bin/env WAZUH_HOME_TMP/bin/wazuh-agent &
+ExecStop=/usr/bin/env pkill wazuh-agent
+ExecReload=/usr/bin/env pkill wazuh-agent && cd /opt/wazuh-agent/ && /usr/bin/env WAZUH_HOME_TMP/bin/wazuh-agent &
+
+KillMode=process
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
