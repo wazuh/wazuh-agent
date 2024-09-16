@@ -148,9 +148,9 @@ namespace Utils
             HashData hash;
             while (inputFile.read(buffer.data(), buffer.size()))
             {
-                hash.update(buffer.data(), inputFile.gcount());
+                hash.update(buffer.data(), static_cast<size_t>(inputFile.gcount()));
             }
-            hash.update(buffer.data(), inputFile.gcount());
+            hash.update(buffer.data(), static_cast<size_t>(inputFile.gcount()));
 
             return hash.hash();
         }

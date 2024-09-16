@@ -22,11 +22,7 @@
 #include "os_err.h"
 
 struct passwd *w_getpwnam(const char *name, struct passwd *pwd, char *buf, size_t buflen) {
-#if defined(SUN_MAJOR_VERSION) && defined(SUN_MINOR_VERSION)  && \
-    (SUN_MAJOR_VERSION < 11) || \
-    ((SUN_MAJOR_VERSION == 11) && (SUN_MINOR_VERSION < 4))
-    return getpwnam_r(name, pwd, buf, buflen);
-#else
+
     struct passwd *result = NULL;
     int retval = getpwnam_r(name, pwd, buf, buflen, &result);
 
@@ -35,15 +31,10 @@ struct passwd *w_getpwnam(const char *name, struct passwd *pwd, char *buf, size_
     }
 
     return result;
-#endif
 }
 
 struct passwd *w_getpwuid(uid_t uid, struct  passwd  *pwd, char *buf, int  buflen) {
-#if defined(SUN_MAJOR_VERSION) && defined(SUN_MINOR_VERSION)  && \
-    (SUN_MAJOR_VERSION < 11) || \
-    ((SUN_MAJOR_VERSION == 11) && (SUN_MINOR_VERSION < 4))
-    return getpwuid_r(uid, pwd, buf, buflen);
-#else
+
     struct passwd *result = NULL;
     int retval = getpwuid_r(uid, pwd, buf, buflen, &result);
 
@@ -52,15 +43,10 @@ struct passwd *w_getpwuid(uid_t uid, struct  passwd  *pwd, char *buf, int  bufle
     }
 
     return result;
-#endif
 }
 
 struct group *w_getgrnam(const  char  *name,  struct group *grp, char *buf, int buflen) {
-#if defined(SUN_MAJOR_VERSION) && defined(SUN_MINOR_VERSION)  && \
-    (SUN_MAJOR_VERSION < 11) || \
-    ((SUN_MAJOR_VERSION == 11) && (SUN_MINOR_VERSION < 4))
-    return getgrnam_r(name, grp, buf, buflen);
-#else
+
     struct group *result = NULL;
     int retval = getgrnam_r(name, grp, buf, buflen, &result);
 
@@ -69,15 +55,10 @@ struct group *w_getgrnam(const  char  *name,  struct group *grp, char *buf, int 
     }
 
     return result;
-#endif
 }
 
 struct group *w_getgrgid(gid_t gid, struct group *grp,  char *buf, int buflen) {
-#if defined(SUN_MAJOR_VERSION) && defined(SUN_MINOR_VERSION)  && \
-    (SUN_MAJOR_VERSION < 11) || \
-    ((SUN_MAJOR_VERSION == 11) && (SUN_MINOR_VERSION < 4))
-    return getgrgid_r(gid, grp, buf, buflen);
-#else
+
     struct group *result = NULL;
     int retval = getgrgid_r(gid, grp, buf, buflen, &result);
 
@@ -86,7 +67,6 @@ struct group *w_getgrgid(gid_t gid, struct group *grp,  char *buf, int buflen) {
     }
 
     return result;
-#endif
 }
 
 uid_t Privsep_GetUser(const char *name)
