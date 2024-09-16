@@ -8,7 +8,6 @@
  */
 
 #include "shared.h"
-#include "version_op.h"
 
 #ifdef __linux__
 #include <sched.h>

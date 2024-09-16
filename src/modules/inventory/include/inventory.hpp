@@ -27,7 +27,7 @@ class Inventory {
         int Setup(const Configuration & config);
         void Stop();
         std::string Command(const std::string & query);
-        std::string Name() const;
+        const std::string& Name() const { return m_moduleName; };
         void SetMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue);
 
         void Init(const std::shared_ptr<ISysInfo>& spInfo,
@@ -67,6 +67,7 @@ class Inventory {
         static void Log(const modules_log_level_t level, const std::string& log);
         static void LogError(const std::string& log);
 
+        const std::string                           m_moduleName {"inventory"};
         std::shared_ptr<ISysInfo>                   m_spInfo;
         std::function<void(const std::string&)>     m_reportDiffFunction;
         std::chrono::seconds                        m_intervalValue;

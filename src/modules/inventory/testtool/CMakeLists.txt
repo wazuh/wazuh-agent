@@ -28,7 +28,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(inventory_test_tool
         dbsync
         sysinfo
-        inventory
+        Inventory
         psapi
         iphlpapi
         crypto
@@ -41,19 +41,19 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
     target_link_libraries(inventory_test_tool
         dbsync
         sysinfo
-        inventory
+        Inventory
         pthread)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "AIX")
     target_link_libraries(inventory_test_tool
         dbsync
         sysinfo
-        inventory
+        Inventory
         dl)
 else()
     target_link_libraries(inventory_test_tool
         dbsync
         sysinfo
-        inventory
+        Inventory
         dl
         proc
     )
