@@ -1,0 +1,56 @@
+#!/bin/sh
+# postinst script for wazuh-agent
+# Wazuh, Inc 2024
+
+set -ex
+export INSTALLATION_WAZUH_DIR="/opt/wazuh-agent"
+
+case "$1" in
+    configure)
+
+    OS=$(lsb_release -si)
+    VER=$(lsb_release -sr)
+    USER="wazuh"
+    GROUP="wazuh"
+
+    OSMYSHELL="/sbin/nologin"
+
+    if [ -d /run/systemd/system ]; then
+        rm -f /etc/init.d/wazuh-agent
+    fi
+
+    if [ ! -f ${OSMYSHELL} ]; then
+        if [ -f "/bin/false" ]; then
+            OSMYSHELL="/bin/false"
+        fi
+    fi
+
+    if ! getent group ${GROUP} > /dev/null 2>&1; then
+        addgroup --system ${GROUP} > /dev/null 2>&1
+    fi
+    if ! getent passwd ${USER} > /dev/null 2>&1; then
+        adduser --system --home ${INSTALLATION_WAZUH_DIR} --shell ${OSMYSHELL} --ingroup ${GROUP} ${USER} > /dev/null 2>&1
+    fi
+
+    if [ -f /etc/systemd/system/wazuh-agent.service ]; then
+        rm -f /etc/systemd/system/wazuh-agent.service
+        if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1; then
+            systemctl daemon-reload > /dev/null 2>&1
+        fi
+    fi
+
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+
+    ;;
+
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >2
+        exit 1
+    ;;
+
+esac
+
+exit 0
