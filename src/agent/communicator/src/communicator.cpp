@@ -1,5 +1,7 @@
 #include <communicator.hpp>
 
+#include <logger.hpp>
+
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 #include <nlohmann/json.hpp>
@@ -17,7 +19,6 @@
 
 #include <algorithm>
 #include <chrono>
-#include <iostream>
 #include <queue>
 #include <thread>
 #include <utility>
@@ -53,7 +54,7 @@ namespace communicator
         }
         else
         {
-            std::cerr << "Failed to authenticate with the manager" << '\n';
+            LogError("Failed to authenticate with the manager.");
             return boost::beast::http::status::unauthorized;
         }
 
@@ -66,7 +67,7 @@ namespace communicator
         }
         else
         {
-            std::cerr << "Token does not contain an 'exp' claim" << '\n';
+            LogError("Token does not contain an 'exp' claim.");
             m_token->clear();
             m_tokenExpTimeInSeconds = 1;
             return boost::beast::http::status::unauthorized;
@@ -113,7 +114,6 @@ namespace communicator
                 const auto result = SendAuthenticationRequest();
                 if (result != boost::beast::http::status::ok)
                 {
-                    std::cerr << "Authentication failed." << '\n';
                     return std::chrono::milliseconds(A_SECOND_IN_MILLIS);
                 }
                 else
@@ -132,11 +132,11 @@ namespace communicator
             {
                 if (ec == boost::asio::error::operation_aborted)
                 {
-                    std::cout << "Token expiration timer was canceled\n";
+                    LogError("Token expiration timer was canceled.");
                 }
                 else
                 {
-                    std::cerr << "Timer wait failed: " << ec.message() << "\n";
+                    LogError("Timer wait failed: {}.", ec.message());
                 }
             }
         }
@@ -195,7 +195,11 @@ namespace communicator
         }
         else
         {
-            std::cout << "Re-authentication attempt by thread " << std::this_thread::get_id() << " failed" << '\n';
+            const std::thread::id threadId = std::this_thread::get_id();
+            std::ostringstream oss;
+            oss << threadId;
+            std::string threadIdStr = oss.str();
+            LogError("Re-authentication attempt by thread {} failed.", threadIdStr);
         }
     }
 

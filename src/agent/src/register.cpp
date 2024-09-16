@@ -2,9 +2,9 @@
 
 #include <agent_info.hpp>
 #include <configuration_parser.hpp>
+#include <logger.hpp>
 
 #include <boost/beast/http.hpp>
-#include <iostream>
 #include <nlohmann/json.hpp>
 
 namespace http = boost::beast::http;
@@ -22,7 +22,7 @@ namespace registration
 
         if (!token.has_value())
         {
-            std::cerr << "Failed to authenticate with the manager" << '\n';
+            LogError("Failed to authenticate with the manager");
             return false;
         }
 
@@ -42,7 +42,7 @@ namespace registration
 
         if (res.result() != http::status::ok)
         {
-            std::cout << "Registration error: " << res.result() << '\n';
+            LogError("Registration error: {}.", res.result_int());
             return false;
         }
 

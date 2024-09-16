@@ -1,7 +1,8 @@
 #include <command_store.hpp>
 
+#include <logger.hpp>
+
 #include <chrono>
-#include <iostream>
 
 namespace command_store
 {
@@ -37,7 +38,7 @@ namespace command_store
         }
         catch (std::exception& e)
         {
-            std::cerr << "CreateTable operation failed. " << e.what() << "\n";
+            LogError("CreateTable operation failed: {}.", e.what());
         }
     }
 
@@ -49,7 +50,7 @@ namespace command_store
         }
         catch (const std::exception& e)
         {
-            std::cerr << "Clear operation failed. " << e.what() << "\n";
+            LogError("Clear operation failed: {}.", e.what());
             return false;
         }
         return true;
@@ -64,7 +65,7 @@ namespace command_store
         }
         catch (const std::exception& e)
         {
-            std::cerr << "GetCount operation failed. " << e.what() << "\n";
+            LogError("GetCount operation failed: {}.", e.what());
         }
 
         return count;
@@ -97,7 +98,7 @@ namespace command_store
         }
         catch (const std::exception& e)
         {
-            std::cerr << "StoreCommand operation failed. " << e.what() << "\n";
+            LogError("StoreCommand operation failed: {}.", e.what());
             return false;
         }
         return true;
@@ -113,7 +114,7 @@ namespace command_store
         }
         catch (const std::exception& e)
         {
-            std::cerr << "DeleteCommand operation failed. " << e.what() << "\n";
+            LogError("DeleteCommand operation failed: {}.", e.what());
             return false;
         }
         return true;
@@ -169,7 +170,7 @@ namespace command_store
         }
         catch (const std::exception& e)
         {
-            std::cerr << "Select operation failed. " << e.what() << "\n";
+            LogError("Select operation failed: {}.", e.what());
             return std::nullopt;
         }
     }
@@ -196,7 +197,7 @@ namespace command_store
         }
         catch (const std::exception& e)
         {
-            std::cerr << "UpdateCommand operation failed. " << e.what() << "\n";
+            LogError("UpdateCommand operation failed: {}.", e.what());
             return false;
         }
         return true;

@@ -5,7 +5,6 @@
 #include <logger.hpp>
 #include <register.hpp>
 
-#include <iostream>
 #include <optional>
 
 int main(int argc, char* argv[])
@@ -19,7 +18,7 @@ int main(int argc, char* argv[])
 
         if (cmdParser.OptionExists("--register"))
         {
-            std::cout << "Starting registration process" << '\n';
+            LogInfo("Starting registration process");
 
             if (cmdParser.OptionExists("--user") && cmdParser.OptionExists("--password") &&
                 cmdParser.OptionExists("--key"))
@@ -40,25 +39,25 @@ int main(int argc, char* argv[])
 
                 if (registration::RegisterAgent(userCredentials, httpClient))
                 {
-                    std::cout << "Agent registered." << '\n';
+                    LogInfo("Agent registered.");
                 }
                 else
                 {
-                    std::cout << "Registration fail." << '\n';
+                    LogError("Registration fail.");
                 }
             }
             else
             {
-                std::cout << "--user, --password and --key args are mandatory" << '\n';
+                LogError("--user, --password and --key args are mandatory");
             }
 
-            std::cout << "Exiting ..." << '\n';
+            LogInfo("Exiting ...");
             return 0;
         }
     }
     catch (const std::exception& e)
     {
-        std::cerr << "An error occurred: " << e.what() << '\n';
+        LogError("An error occurred: {}.", e.what());
         return 1;
     }
 
