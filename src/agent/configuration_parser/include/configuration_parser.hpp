@@ -1,9 +1,10 @@
 #pragma once
 
+#include <logger.hpp>
+
 #include <toml.hpp>
 
 #include <exception>
-#include <iostream>
 #include <string>
 
 namespace configuration
@@ -27,7 +28,7 @@ namespace configuration
             }
             catch (const std::exception& e)
             {
-                std::cout << "The requested value could not be obtained: " << e.what() << '\n';
+                LogError("The requested value could not be obtained: {}.", e.what());
                 throw;
             }
         }

@@ -1,7 +1,8 @@
 #include <sqlite_manager.hpp>
 
+#include <logger.hpp>
+
 #include <fmt/format.h>
-#include <iostream>
 #include <map>
 
 namespace sqlite_manager
@@ -89,13 +90,13 @@ namespace sqlite_manager
             }
             else
             {
-                std::cerr << "Error getting element count." << '\n';
+                LogError("Error getting element count.");
             }
             return count;
         }
         catch (const std::exception& e)
         {
-            std::cerr << "Error during GetCount operation: " << e.what() << '\n';
+            LogError("Error during GetCount operation: {}.", e.what());
             throw;
         }
     }
@@ -161,7 +162,7 @@ namespace sqlite_manager
         }
         catch (const std::exception& e)
         {
-            std::cerr << "Error during Retrieve operation: " << e.what() << '\n';
+            LogError("Error during Retrieve operation: {}.", e.what());
             throw;
         }
         return results;
@@ -201,7 +202,7 @@ namespace sqlite_manager
     {
         if (fields.empty())
         {
-            std::cerr << "Error: Missing update fields" << '\n';
+            LogError("Error: Missing update fields.");
             throw;
         }
 
@@ -251,7 +252,7 @@ namespace sqlite_manager
         }
         catch (const std::exception& e)
         {
-            std::cerr << "Error during database operation: " << e.what() << '\n';
+            LogError("Error during database operation: {}.", e.what());
             throw;
         }
     }

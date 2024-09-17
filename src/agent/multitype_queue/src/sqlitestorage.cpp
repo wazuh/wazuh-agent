@@ -1,10 +1,11 @@
 #include <sqlitestorage.hpp>
 
+#include <logger.hpp>
+
 #include <fmt/format.h>
 
 #include <algorithm>
 #include <exception>
-#include <iostream>
 
 SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::vector<std::string>& tableNames)
     : m_dbName(dbName)
@@ -21,7 +22,7 @@ SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::vector<std::s
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error initializing database: " << e.what() << '\n';
+        LogError("Error initializing database: {}.", e.what());
         throw;
     }
 }
@@ -41,7 +42,7 @@ void SQLiteStorage::InitializeTable(const std::string& tableName)
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error initializing table: " << e.what() << '\n';
+        LogError("Error initializing table: {}.", e.what());
         throw;
     }
 }
@@ -81,7 +82,7 @@ int SQLiteStorage::Store(const json& message, const std::string& tableName, cons
             }
             catch (const std::exception& e)
             {
-                std::cerr << "Error during Store operation: " << e.what() << '\n';
+                LogError("Error during Store operation: {}.", e.what());
                 break;
             }
             // Reset the query to reuse it for the next message
@@ -150,7 +151,7 @@ json SQLiteStorage::Retrieve(int id, const std::string& tableName, const std::st
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error during Retrieve operation: " << e.what() << '\n';
+        LogError("Error during Retrieve operation: {}.", e.what());
         return {};
     }
 }
@@ -207,7 +208,7 @@ json SQLiteStorage::RetrieveMultiple(int n, const std::string& tableName, const 
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error during RetrieveMultiple operation: " << e.what() << '\n';
+        LogError("Error during RetrieveMultiple operation: {}.", e.what());
         return {};
     }
 }
@@ -237,7 +238,7 @@ int SQLiteStorage::Remove(int id, const std::string& tableName, const std::strin
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error during Remove operation: " << e.what() << '\n';
+        LogError("Error during Remove operation: {}.", e.what());
         return {};
     }
 }
@@ -273,7 +274,7 @@ int SQLiteStorage::RemoveMultiple(int n, const std::string& tableName, const std
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error during RemoveMultiple operation: " << e.what() << '\n';
+        LogError("Error during RemoveMultiple operation: {}.", e.what());
         return rowsModified;
     }
 }
@@ -302,13 +303,13 @@ int SQLiteStorage::GetElementCount(const std::string& tableName, const std::stri
         }
         else
         {
-            std::cerr << "Error SQLiteStorage get element count." << '\n';
+            LogError("Error SQLiteStorage get element count.");
         }
         return count;
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error during GetElementCount operation: " << e.what() << '\n';
+        LogError("Error during GetElementCount operation: {}.", e.what());
         return {};
     }
 }

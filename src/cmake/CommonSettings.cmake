@@ -40,6 +40,7 @@ function(set_common_settings)
 
     if(MSVC)
         set(CMAKE_CXX_FLAGS "/Zi /DWIN32 /EHsc" PARENT_SCOPE)
+        add_compile_options(/Zc:preprocessor)
     else()
         set(CMAKE_CXX_FLAGS "-g3" PARENT_SCOPE)
     endif()

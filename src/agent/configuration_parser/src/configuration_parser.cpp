@@ -16,7 +16,7 @@ namespace configuration
         }
         catch (const std::exception& e)
         {
-            std::cout << "Using default values due to error parsing wazuh.conf file: " << e.what() << '\n';
+            LogError("Using default values due to error parsing wazuh.conf file: {}", e.what());
 
             tbl = toml::parse_str(
                 R"([agent]
@@ -35,7 +35,7 @@ namespace configuration
         }
         catch (const std::exception& e)
         {
-            std::cout << "Error parsing wazuh.conf file: " << e.what() << '\n';
+            LogError("Error parsing wazuh.conf file: {}.", e.what());
             throw;
         }
     }

@@ -8,6 +8,8 @@ project(Communicator)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
+include_directories(${CMAKE_SOURCE_DIR}/common/logger/include)
+
 find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio beast)
 find_package(nlohmann_json CONFIG REQUIRED)
@@ -15,7 +17,7 @@ find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
 
 add_library(Communicator src/communicator.cpp src/http_client.cpp)
 target_include_directories(Communicator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include SYSTEM INTERFACE ${JWT_CPP_INCLUDE_DIRS})
-target_link_libraries(Communicator PUBLIC Boost::asio PRIVATE Boost::beast OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(Communicator PUBLIC Boost::asio PRIVATE Boost::beast OpenSSL::SSL OpenSSL::Crypto Logger)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(Communicator)

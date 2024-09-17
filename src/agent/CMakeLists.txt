@@ -8,6 +8,8 @@ project(Agent)
 include(../cmake/CommonSettings.cmake)
 set_common_settings()
 
+include_directories(${CMAKE_SOURCE_DIR}/common/logger/include)
+
 add_subdirectory(agent_info)
 add_subdirectory(communicator)
 add_subdirectory(configuration_parser)
@@ -30,7 +32,7 @@ set(SOURCES
 
 add_library(Agent ${SOURCES})
 target_include_directories(Agent PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_link_libraries(Agent PUBLIC ConfigurationParser Communicator AgentInfo MultiTypeQueue PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::asio Boost::beast)
+target_link_libraries(Agent PUBLIC ConfigurationParser Communicator AgentInfo MultiTypeQueue PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::asio Boost::beast Logger)
 
 include(../cmake/ConfigureTarget.cmake)
 configure_target(Agent)

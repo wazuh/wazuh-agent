@@ -8,13 +8,15 @@ project(SQLiteManager)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
+include_directories(${CMAKE_SOURCE_DIR}/common/logger/include)
+
 find_package(fmt REQUIRED)
 find_package(SQLiteCpp REQUIRED)
 
 add_library(SQLiteManager src/sqlite_manager.cpp)
 configure_target(SQLiteManager)
 target_include_directories(SQLiteManager PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include PRIVATE ${SQLiteCpp_INCLUDE_DIRS})
-target_link_libraries(SQLiteManager PUBLIC SQLiteCpp PRIVATE fmt::fmt)
+target_link_libraries(SQLiteManager PUBLIC SQLiteCpp PRIVATE fmt::fmt Logger)
 
 if(BUILD_TESTS)
     enable_testing()
