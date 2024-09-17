@@ -8,7 +8,7 @@ namespace command_store
     enum class Status
     {
         SUCCESS,
-        ERROR,
+        FAILURE,
         IN_PROGRESS,
         TIMEOUT,
         UNKNOWN

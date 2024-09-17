@@ -13,7 +13,7 @@ namespace command_store
         switch (i)
         {
             case 0: return Status::SUCCESS; break;
-            case 1: return Status::ERROR; break;
+            case 1: return Status::FAILURE; break;
             case 2: return Status::IN_PROGRESS; break;
             case 3: return Status::TIMEOUT; break;
             default: return Status::UNKNOWN; break;
