@@ -8,6 +8,9 @@
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
 
+const nlohmann::json BASE_DATA_CONTENT = R"([{"data": {"id":"112233", "origin": {"module": "origin_test"},
+                                        "command": "command_test", "parameters": "parameters_test"}}])"_json;
+
 class MockMultiTypeQueue : public MultiTypeQueue
 {
 public:
@@ -18,6 +21,8 @@ public:
     MOCK_METHOD(int, popN, (MessageType, int, const std::string module), (override));
     MOCK_METHOD(int, push, (Message, bool), (override));
     MOCK_METHOD(int, push, (std::vector<Message>), (override));
+    MOCK_METHOD(bool, isEmpty, (MessageType, const std::string moduleName), (override));
+    MOCK_METHOD(Message, getNext, (MessageType, const std::string moduleName), (override));
 };
 
 class MessageQueueUtilsTest : public ::testing::Test
@@ -90,6 +95,31 @@ TEST_F(MessageQueueUtilsTest, NoCommandsToPushTest)
     EXPECT_CALL(*mockQueue, push(::testing::_)).Times(0);
 
     PushCommandsToQueue(mockQueue, commandsJson.dump());
+}
+
+TEST_F(MessageQueueUtilsTest, GetCommandFromQueueEmptyTest)
+{
+    EXPECT_CALL(*mockQueue, isEmpty(MessageType::COMMAND, "")).WillOnce(testing::Return(true));
+
+    ASSERT_EQ(std::nullopt, GetCommandFromQueue(mockQueue));
+}
+
+TEST_F(MessageQueueUtilsTest, GetCommandFromQueueTest)
+{
+    Message testMessage {MessageType::COMMAND, BASE_DATA_CONTENT};
+
+    EXPECT_CALL(*mockQueue, isEmpty(MessageType::COMMAND, "")).WillOnce(testing::Return(false));
+
+    EXPECT_CALL(*mockQueue, getNext(MessageType::COMMAND, "")).WillOnce(testing::Return(testMessage));
+
+    auto cmd = GetCommandFromQueue(mockQueue);
+
+    ASSERT_EQ(cmd.has_value() ? cmd.value().m_id : "", "112233");
+    ASSERT_EQ(cmd.has_value() ? cmd.value().m_module : "", "origin_test");
+    ASSERT_EQ(cmd.has_value() ? cmd.value().m_command : "", "command_test");
+    ASSERT_EQ(cmd.has_value() ? cmd.value().m_parameters : "", "\"parameters_test\"");
+    ASSERT_EQ(cmd.has_value() ? cmd.value().m_status : command_store::Status::UNKNOWN,
+              command_store::Status::IN_PROGRESS);
 }
 
 int main(int argc, char** argv)

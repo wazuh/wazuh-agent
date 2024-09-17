@@ -13,7 +13,7 @@ namespace command_store
         switch (i)
         {
             case 0: return Status::SUCCESS; break;
-            case 1: return Status::ERROR; break;
+            case 1: return Status::FAILURE; break;
             case 2: return Status::IN_PROGRESS; break;
             case 3: return Status::TIMEOUT; break;
             default: return Status::UNKNOWN; break;
@@ -23,7 +23,7 @@ namespace command_store
     CommandStore::CommandStore()
         : m_dataBase(std::make_unique<sqlite_manager::SQLiteManager>(COMMANDSTORE_DEFAULT_DB_PATH))
     {
-        sqlite_manager::Column colId {"id", sqlite_manager::ColumnType::INTEGER, true, false, true};
+        sqlite_manager::Column colId {"id", sqlite_manager::ColumnType::TEXT, true, false, true};
         sqlite_manager::Column colModule {"module", sqlite_manager::ColumnType::TEXT, true, false, false};
         sqlite_manager::Column colCommand {"command", sqlite_manager::ColumnType::TEXT, true, false, false};
         sqlite_manager::Column colParameter {"parameters", sqlite_manager::ColumnType::TEXT, true, false, false};
@@ -84,7 +84,7 @@ namespace command_store
     bool CommandStore::StoreCommand(const Command& cmd)
     {
         std::vector<sqlite_manager::Column> fields;
-        fields.emplace_back("id", sqlite_manager::ColumnType::INTEGER, std::to_string(cmd.m_id));
+        fields.emplace_back("id", sqlite_manager::ColumnType::TEXT, cmd.m_id);
         fields.emplace_back("module", sqlite_manager::ColumnType::TEXT, cmd.m_module);
         fields.emplace_back("command", sqlite_manager::ColumnType::TEXT, cmd.m_command);
         fields.emplace_back("time", sqlite_manager::ColumnType::REAL, std::to_string(GetCurrentTimestampAsReal()));
@@ -104,10 +104,10 @@ namespace command_store
         return true;
     }
 
-    bool CommandStore::DeleteCommand(int id)
+    bool CommandStore::DeleteCommand(const std::string& id)
     {
         std::vector<sqlite_manager::Column> fields;
-        fields.emplace_back("id", sqlite_manager::ColumnType::INTEGER, std::to_string(id));
+        fields.emplace_back("id", sqlite_manager::ColumnType::TEXT, id);
         try
         {
             m_dataBase->Remove(COMMANDSTORE_TABLE_NAME, fields);
@@ -120,14 +120,12 @@ namespace command_store
         return true;
     }
 
-    std::optional<Command> CommandStore::GetCommand(int id)
+    std::optional<Command> CommandStore::GetCommand(const std::string& id)
     {
         try
         {
             auto cmdData = m_dataBase->Select(
-                COMMANDSTORE_TABLE_NAME,
-                {},
-                {sqlite_manager::Column("id", sqlite_manager::ColumnType::INTEGER, std::to_string(id))});
+                COMMANDSTORE_TABLE_NAME, {}, {sqlite_manager::Column("id", sqlite_manager::ColumnType::TEXT, id)});
 
             if (cmdData.empty())
             {
@@ -139,7 +137,7 @@ namespace command_store
             {
                 if (col.m_name == "id")
                 {
-                    cmd.m_id = std::stoi(col.m_value);
+                    cmd.m_id = col.m_value;
                 }
                 else if (col.m_name == "module")
                 {
@@ -190,7 +188,7 @@ namespace command_store
             fields.emplace_back(
                 "status", sqlite_manager::ColumnType::INTEGER, std::to_string(static_cast<int>(cmd.m_status)));
 
-        sqlite_manager::Column condition("id", sqlite_manager::ColumnType::INTEGER, std::to_string(cmd.m_id));
+        sqlite_manager::Column condition("id", sqlite_manager::ColumnType::TEXT, cmd.m_id);
         try
         {
             m_dataBase->Update(COMMANDSTORE_TABLE_NAME, fields, {condition});

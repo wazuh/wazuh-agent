@@ -1,6 +1,7 @@
 #pragma once
 
 #include <agent_info.hpp>
+#include <command_handler.hpp>
 #include <communicator.hpp>
 #include <configuration_parser.hpp>
 #include <isignal_handler.hpp>
@@ -26,4 +27,5 @@ private:
     AgentInfo m_agentInfo;
     configuration::ConfigurationParser m_configurationParser;
     communicator::Communicator m_communicator;
+    command_handler::CommandHandler m_commandHandler;
 };
