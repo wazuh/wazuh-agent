@@ -1,0 +1,14 @@
+name: 'Set Nugget Credentials'
+description: 'Set Nugget Credentials enabling binary caching'
+inputs:
+  gh_token:
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Set Nugget Credentials
+      id: set_nugget_credentials
+      shell: bash
+      env:
+          GH_TOKEN: ${{ inputs.gh_token }}
+      run: .github/actions/vcpkg_related/set_nugget_credentials/set_nugget_credentials.sh

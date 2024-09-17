@@ -1,0 +1,9 @@
+name: 'Bootstrap vcpkg'
+description: 'Bootstrap vcpkg and sets PATH'
+runs:
+  using: 'composite'
+  steps:
+    - name: Bootstrap vcpkg
+      id: bootstrap_vcpkg
+      shell: bash
+      run: .github/actions/vcpkg_related/set_vcpkg/set_vcpkg.sh

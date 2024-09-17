@@ -51,42 +51,25 @@ jobs:
     name: Upload Linux amd64 dependencies
 
     steps:
-      - name: Checkout vcpkg repository
-        uses: actions/checkout@v4
-        with:
-          repository: microsoft/vcpkg
 
-      - name: Bootstrap vcpkg
-        run: |
-          ./bootstrap-vcpkg.sh 
-          export VCPKG_ROOT=$(pwd)
-          export PATH=$VCPKG_ROOT:$PATH
-
-      - name: Install mono
-        run: |
-          sudo apt install ca-certificates gnupg
-          sudo gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mono-official-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-          echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-          sudo apt update
-          sudo apt install mono-devel
-
-      - name: Setup NuGet Credentials
-        run: |
-          mono `vcpkg fetch nuget | tail -n 1` \
-            sources add \
-            -source "https://nuget.pkg.github.com/wazuh/index.json" \
-            -name "GitHub" \
-            -username "wazuh" \
-            -password "${{ secrets.GITHUB_TOKEN }}"
-          mono `vcpkg fetch nuget | tail -n 1` \
-            setapikey "${{ secrets.GITHUB_TOKEN }}" \
-            -source "https://nuget.pkg.github.com/wazuh/index.json"
-    
       - name: Checkout wazuh/wazuh-agent repository
         uses: actions/checkout@v4
         with:
           repository: wazuh/wazuh-agent
           ref: ${{ inputs.source_reference }}
+
+      - name: Bootstrap vcpkg
+        id: set_vcpkg
+        uses: ./.github/actions/vcpkg_related/set_vcpkg
+
+      - name: Install mono
+        id: install_mono
+        uses: ./.github/actions/vcpkg_related/install_mono
+
+      - name: Setup NuGet Credentials
+        uses: ./.github/actions/vcpkg_related/set_nugget_credentials
+        with:
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run vcpkg install
         run: |

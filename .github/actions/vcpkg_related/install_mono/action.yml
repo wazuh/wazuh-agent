@@ -1,0 +1,9 @@
+name: 'Install mono'
+description: 'Install mono'
+runs:
+  using: 'composite'
+  steps:
+    - name: Install mono
+      id: install_mono
+      shell: bash
+      run: .github/actions/vcpkg_related/install_mono/install_mono.sh
