@@ -13,8 +13,7 @@
       "spdlog",
       "sqlitecpp",
       "toml11",
-      "procps",
-      "libdb"
+      "procps"
     ],
     "overrides": [
       {
