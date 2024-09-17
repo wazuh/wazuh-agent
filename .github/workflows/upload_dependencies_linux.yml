@@ -58,16 +58,9 @@ jobs:
           repository: wazuh/wazuh-agent
           ref: ${{ inputs.source_reference }}
 
-      - name: Bootstrap vcpkg
-        id: set_vcpkg
-        uses: ./.github/actions/vcpkg_related/set_vcpkg
-
-      - name: Install mono
-        id: install_mono
-        uses: ./.github/actions/vcpkg_related/install_mono
-
-      - name: Setup NuGet Credentials
-        uses: ./.github/actions/vcpkg_related/set_nugget_credentials
+      - name: Cover vcpkg dependencies
+        id: cover_vcpkg_dependencies
+        uses: ./.github/actions/vcpkg_related/cover_vcpkg_dependencies
         with:
           gh_token: ${{ secrets.GITHUB_TOKEN }}
 

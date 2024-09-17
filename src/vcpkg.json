@@ -13,7 +13,10 @@
       "spdlog",
       "sqlitecpp",
       "toml11",
-      "procps"
+      {
+        "name": "procps",
+        "platform": "linux"
+      }
     ],
     "overrides": [
       {

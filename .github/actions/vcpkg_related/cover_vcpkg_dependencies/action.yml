@@ -1,0 +1,14 @@
+name: 'Cover vcpkg dependencies'
+description: 'Cover vcpkg dependencies enabling binary caching'
+inputs:
+  gh_token:
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Cover vcpkg dependencies
+      id: cover_vcpkg_dependencies
+      shell: bash
+      env:
+          GH_TOKEN: ${{ inputs.gh_token }}
+      run: .github/actions/vcpkg_related/cover_vcpkg_dependencies/cover_vcpkg_dependencies.sh
