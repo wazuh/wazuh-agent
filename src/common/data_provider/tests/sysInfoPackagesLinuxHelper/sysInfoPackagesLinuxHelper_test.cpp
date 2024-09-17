@@ -11,13 +11,9 @@
 
 #include "sysInfoPackagesLinuxHelper_test.h"
 #include "packages/packageLinuxParserHelper.h"
-#include "packages/packageLinuxParserHelperExtra.h"
 #include "packages/packageLinuxRpmParserHelper.h"
 #include "packages/packageLinuxRpmParserHelperLegacy.h"
-#include "packages/packageLinuxApkParserHelper.h"
 #include "packages/rpmPackageManager.h"
-#include <package.h>
-#include <handle.h>
 #include "sharedDefs.h"
 
 using ::testing::_;
@@ -326,111 +322,6 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseDpkgInformation)
     EXPECT_EQ("Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>", jsPackageInfo["vendor"]);
     EXPECT_EQ("compression library - development", jsPackageInfo["description"]);
     EXPECT_EQ("zlib", jsPackageInfo["source"]);
-}
-
-TEST_F(SysInfoPackagesLinuxHelperTest, parseApkNameKeyNotFound)
-{
-    std::vector<std::pair<char, std::string>> input;
-    input.push_back(std::pair<char, std::string>('V', "1.2.3-r4"));
-    input.push_back(std::pair<char, std::string>('A', "x86_64"));
-    input.push_back(std::pair<char, std::string>('I', "634880"));
-    input.push_back(std::pair<char, std::string>('T', "the musl c library (libc) implementation"));
-
-    const auto& jsPackageInfo { PackageLinuxHelper::parseApk(input) };
-    EXPECT_EQ(true, jsPackageInfo.empty());
-}
-
-TEST_F(SysInfoPackagesLinuxHelperTest, parseApkVersionKeyNotFound)
-{
-    std::vector<std::pair<char, std::string>> input;
-    input.push_back(std::pair<char, std::string>('P', "musl"));
-    input.push_back(std::pair<char, std::string>('A', "x86_64"));
-    input.push_back(std::pair<char, std::string>('I', "634880"));
-    input.push_back(std::pair<char, std::string>('T', "the musl c library (libc) implementation"));
-
-    const auto& jsPackageInfo { PackageLinuxHelper::parseApk(input) };
-    EXPECT_EQ(true, jsPackageInfo.empty());
-}
-
-TEST_F(SysInfoPackagesLinuxHelperTest, parseApkArchitectureKeyNotFound)
-{
-    std::vector<std::pair<char, std::string>> input;
-    input.push_back(std::pair<char, std::string>('P', "musl"));
-    input.push_back(std::pair<char, std::string>('V', "1.2.3-r4"));
-    input.push_back(std::pair<char, std::string>('I', "634880"));
-    input.push_back(std::pair<char, std::string>('T', "the musl c library (libc) implementation"));
-
-    const auto& jsPackageInfo { PackageLinuxHelper::parseApk(input) };
-    EXPECT_EQ("musl", jsPackageInfo.at("name"));
-    EXPECT_EQ("1.2.3-r4", jsPackageInfo.at("version"));
-    EXPECT_EQ(UNKNOWN_VALUE, jsPackageInfo.at("architecture"));
-    EXPECT_EQ(634880, jsPackageInfo.at("size"));
-    EXPECT_EQ("the musl c library (libc) implementation", jsPackageInfo.at("description"));
-    EXPECT_EQ("apk", jsPackageInfo.at("format"));
-    EXPECT_EQ("Alpine Linux", jsPackageInfo.at("vendor"));
-}
-
-TEST_F(SysInfoPackagesLinuxHelperTest, parseApkNameValueEmpty)
-{
-    std::vector<std::pair<char, std::string>> input;
-    input.push_back(std::pair<char, std::string>('P', ""));
-    input.push_back(std::pair<char, std::string>('V', "1.2.3-r4"));
-    input.push_back(std::pair<char, std::string>('A', "x86_64"));
-    input.push_back(std::pair<char, std::string>('I', "634880"));
-    input.push_back(std::pair<char, std::string>('T', "the musl c library (libc) implementation"));
-
-    const auto& jsPackageInfo { PackageLinuxHelper::parseApk(input) };
-    EXPECT_EQ(true, jsPackageInfo.empty());
-}
-
-TEST_F(SysInfoPackagesLinuxHelperTest, parseApkVersionValueEmpty)
-{
-    std::vector<std::pair<char, std::string>> input;
-    input.push_back(std::pair<char, std::string>('P', "musl"));
-    input.push_back(std::pair<char, std::string>('V', ""));
-    input.push_back(std::pair<char, std::string>('A', "x86_64"));
-    input.push_back(std::pair<char, std::string>('I', "634880"));
-    input.push_back(std::pair<char, std::string>('T', "the musl c library (libc) implementation"));
-
-    const auto& jsPackageInfo { PackageLinuxHelper::parseApk(input) };
-    EXPECT_EQ(true, jsPackageInfo.empty());
-}
-
-TEST_F(SysInfoPackagesLinuxHelperTest, parseApkSizeValueEmpty)
-{
-    std::vector<std::pair<char, std::string>> input;
-    input.push_back(std::pair<char, std::string>('P', "musl"));
-    input.push_back(std::pair<char, std::string>('V', "1.2.3-r4"));
-    input.push_back(std::pair<char, std::string>('A', "x86_64"));
-    input.push_back(std::pair<char, std::string>('I', ""));
-    input.push_back(std::pair<char, std::string>('T', "the musl c library (libc) implementation"));
-
-    const auto& jsPackageInfo { PackageLinuxHelper::parseApk(input) };
-    EXPECT_EQ("musl", jsPackageInfo.at("name"));
-    EXPECT_EQ("1.2.3-r4", jsPackageInfo.at("version"));
-    EXPECT_EQ("x86_64", jsPackageInfo.at("architecture"));
-    EXPECT_EQ(0, jsPackageInfo.at("size"));
-    EXPECT_EQ("the musl c library (libc) implementation", jsPackageInfo.at("description"));
-    EXPECT_EQ("apk", jsPackageInfo.at("format"));
-    EXPECT_EQ("Alpine Linux", jsPackageInfo.at("vendor"));
-}
-
-TEST_F(SysInfoPackagesLinuxHelperTest, parseApkSuccess)
-{
-    std::vector<std::pair<char, std::string>> input;
-    input.push_back(std::pair<char, std::string>('P', "musl"));
-    input.push_back(std::pair<char, std::string>('V', "1.2.3-r4"));
-    input.push_back(std::pair<char, std::string>('A', "x86_64"));
-    input.push_back(std::pair<char, std::string>('I', "634880"));
-    input.push_back(std::pair<char, std::string>('T', "the musl c library (libc) implementation"));
-
-    const auto& jsPackageInfo { PackageLinuxHelper::parseApk(input) };
-    EXPECT_EQ("musl", jsPackageInfo.at("name"));
-    EXPECT_EQ("1.2.3-r4", jsPackageInfo.at("version"));
-    EXPECT_EQ(634880, jsPackageInfo.at("size"));
-    EXPECT_EQ("the musl c library (libc) implementation", jsPackageInfo.at("description"));
-    EXPECT_EQ("apk", jsPackageInfo.at("format"));
-    EXPECT_EQ("Alpine Linux", jsPackageInfo.at("vendor"));
 }
 
 TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapCorrectMapping)

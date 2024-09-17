@@ -104,10 +104,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   include_directories(${SRC_FOLDER}/common/http-request/shared/)
 endif()
 
-if(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
-  link_directories(${INSTALL_PREFIX}/lib)
-endif(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
-
 link_directories(${SRC_FOLDER})
 link_directories(${SRC_FOLDER}/external/procps/)
 link_directories(${SRC_FOLDER}/external/libdb/build_unix/)
@@ -125,14 +121,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   add_definitions(-DWIN32=1
                   -D_WIN32_WINNT=0x600
                   -DWIN_EXPORT)
-elseif(CMAKE_CHECK_CENTOS5)
-  file(GLOB SYSINFO_SRC
-      "${CMAKE_CURRENT_SOURCE_DIR}/src/*Linux.cpp"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*Linux.cpp"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src/packages/packageLinuxParser.cpp"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src/packages/packageLinuxParserRpmLegacy.cpp")
-  add_definitions(-DLINUX_TYPE=LinuxType::LEGACY) # Partial compilation in legacy systems
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   file(GLOB SYSINFO_SRC
       "${CMAKE_CURRENT_SOURCE_DIR}/src/*Linux.cpp"
@@ -159,26 +147,6 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/hardware/*X86_64Mac.cpp")
   endif()
-elseif(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
-  file(GLOB SYSINFO_SRC
-      "${CMAKE_CURRENT_SOURCE_DIR}/src/*FreeBSD.cpp"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src/*CommonBSD.cpp"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*BSD.cpp"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
-elseif(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-  file(GLOB SYSINFO_SRC
-      "${CMAKE_CURRENT_SOURCE_DIR}/src/*OpenBSD.cpp"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src/*CommonBSD.cpp"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*BSD.cpp"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
-elseif(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
-  file(GLOB SYSINFO_SRC
-      "${CMAKE_CURRENT_SOURCE_DIR}/src/UtilsWrapperUnix.cpp"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src/*Solaris.cpp"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src/packages/*Solaris.cpp"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src/network/networkSolarisHelper.cpp"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*Solaris.cpp"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
 else()
   file(GLOB SYSINFO_SRC
       "${CMAKE_CURRENT_SOURCE_DIR}/src/*Unix.cpp"
