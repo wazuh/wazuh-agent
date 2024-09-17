@@ -37,18 +37,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         crypt32
         -static-libstdc++
     )
-elseif (CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-    target_link_libraries(inventory_test_tool
-        dbsync
-        sysinfo
-        Inventory
-        pthread)
-elseif (CMAKE_SYSTEM_NAME STREQUAL "AIX")
-    target_link_libraries(inventory_test_tool
-        dbsync
-        sysinfo
-        Inventory
-        dl)
 else()
     target_link_libraries(inventory_test_tool
         dbsync
@@ -57,11 +45,4 @@ else()
         dl
         proc
     )
-
-    if(SOLARIS)
-        target_link_libraries(inventory_test_tool
-            nsl
-            socket
-        )
-    endif(SOLARIS)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
