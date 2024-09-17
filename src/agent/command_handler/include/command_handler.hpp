@@ -2,9 +2,9 @@
 
 #include <boost/asio.hpp>
 #include <command_store.hpp>
+#include <logger.hpp>
 
 #include <atomic>
-#include <iostream>
 #include <optional>
 #include <queue>
 
@@ -41,7 +41,7 @@ namespace command_handler
                 cmd.value().m_result = std::get<1>(result);
                 m_commandStore.UpdateCommand(cmd.value());
 
-                std::cout << "Done processing command" << "\n";
+                LogInfo("Done processing command: {}({})", cmd.value().m_command, cmd.value().m_module);
             }
         }
 
