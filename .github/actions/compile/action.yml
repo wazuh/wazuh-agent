@@ -29,7 +29,7 @@ runs:
             echo "CMake cache not found in $(pwd). Aborting."
             exit 1
           fi
-          cmake --build . --config RelWithDebInfo
+          cmake --build . --config RelWithDebInfo -j $(nproc)
         shell: bash
 
       - name: Run Tests
