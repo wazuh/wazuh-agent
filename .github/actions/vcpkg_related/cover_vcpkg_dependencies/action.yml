@@ -7,8 +7,17 @@ runs:
   using: 'composite'
   steps:
     - name: Cover vcpkg dependencies
+      if: runner.os != 'Windows'
       id: cover_vcpkg_dependencies
       shell: bash
       env:
           GH_TOKEN: ${{ inputs.gh_token }}
       run: .github/actions/vcpkg_related/cover_vcpkg_dependencies/cover_vcpkg_dependencies.sh
+
+    - name: Cover vcpkg dependencies
+      if: runner.os == 'Windows'
+      id: cover_vcpkg_dependencies_windows
+      shell: pwsh
+      env:
+          GH_TOKEN: ${{ inputs.gh_token }}
+      run: .github/actions/vcpkg_related/cover_vcpkg_dependencies/cover_vcpkg_dependencies.ps1

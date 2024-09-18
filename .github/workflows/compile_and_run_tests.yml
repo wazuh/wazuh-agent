@@ -31,15 +31,6 @@ jobs:
       run: |
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
         choco install git
-        .$(C:\vcpkg\vcpkg fetch nuget) `
-          sources add `
-          -Source "https://nuget.pkg.github.com/wazuh/index.json" `
-          -Name GitHub `
-          -UserName "wazuh" `
-          -Password "${{ secrets.GITHUB_TOKEN }}"
-        .$(C:\vcpkg\vcpkg fetch nuget) `
-          setapikey "${{ secrets.GITHUB_TOKEN }}" `
-          -Source "https://nuget.pkg.github.com/wazuh/index.json"
       shell: powershell
 
     - name: Set up dependencies on macOS
@@ -61,7 +52,6 @@ jobs:
       shell: bash
 
     - name: Set up Binary caching 
-      if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
       uses: ./.github/actions/vcpkg_related/cover_vcpkg_dependencies
       with:
         gh_token: ${{ secrets.GITHUB_TOKEN }}
