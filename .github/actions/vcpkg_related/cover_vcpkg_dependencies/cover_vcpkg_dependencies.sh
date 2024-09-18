@@ -1,11 +1,15 @@
 #! /usr/bin/env bash
 # Copyright (C) 2024, Wazuh Inc.
 
-# Clone vcpkg repository and bootstrap it
-git clone --branch master --single-branch https://github.com/microsoft/vcpkg.git
-cd vcpkg && ./bootstrap-vcpkg.sh
-export VCPKG_ROOT=$(pwd)
-export PATH=$VCPKG_ROOT:$PATH
+# Check vcpkg installation and run it if needed
+if [[ $(vcpkg --version 2>/dev/null) =~ [0-9] ]]; then
+    echo "vcpkg already installed."
+else
+    git clone --branch master --single-branch https://github.com/microsoft/vcpkg.git
+    cd vcpkg && ./bootstrap-vcpkg.sh
+    export VCPKG_ROOT=$(pwd)
+    export PATH=$VCPKG_ROOT:$PATH
+fi
 
 # Check mono installation and run it if needed
 if [[ $(mono --version 2>/dev/null) =~ [0-9] ]]; then

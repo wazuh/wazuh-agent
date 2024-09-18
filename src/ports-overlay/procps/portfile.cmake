@@ -1,11 +1,11 @@
 vcpkg_from_github(
   OUT_SOURCE_PATH SOURCE_PATH
   REPO warmchang/procps
-  REF 21f6017b6156d2ed44ca3dcfdc2a82889218f696
-  SHA512 13e8176aad44a89123c3e8b44e4f772fa05c45601e83b2b9180e592b40cf86f2d0faa3911ebdd87c74226ead5d5cad2322284e141ebbc147f41ccc89e3b1e183
-  HEAD_REF master
+  REF fadce3f1b25b55d5f22be0d26db1ae2a53018255
+  SHA512 c4efb9583be0e2272316b57ab9e574698d78a0bb6b2a84d4e5857e1fde9418e6fb1354892a1fba799a456e03eeb4b995487673d88d2d0b5b19087c6a812cd500
+  HEAD_REF v3.3.0
   PATCHES
-    set_cmake_project.patch
+    set_procps_cmake_project.patch
 )
 
 vcpkg_cmake_configure(
