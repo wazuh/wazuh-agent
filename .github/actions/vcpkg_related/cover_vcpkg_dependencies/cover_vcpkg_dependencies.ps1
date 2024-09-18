@@ -1,7 +1,7 @@
 .$(C:\vcpkg\vcpkg fetch nuget) `
     sources add `
     -Source "https://nuget.pkg.github.com/wazuh/index.json" `
-    -Name GitHub `
+    -Name "GitHub" `
     -UserName "wazuh" `
     -Password "$Env:GITHUB_TOKEN"
 .$(C:\vcpkg\vcpkg fetch nuget) `
