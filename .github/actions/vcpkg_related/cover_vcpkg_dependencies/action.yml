@@ -18,6 +18,13 @@ runs:
       if: runner.os == 'Windows'
       id: cover_vcpkg_dependencies_windows
       shell: pwsh
-      env:
-          GH_TOKEN: ${{ inputs.gh_token }}
-      run: .github/actions/vcpkg_related/cover_vcpkg_dependencies/cover_vcpkg_dependencies.ps1
+      run: |
+        .$(C:\vcpkg\vcpkg fetch nuget) `
+          sources add `
+          -Source "https://nuget.pkg.github.com/wazuh/index.json" `
+          -Name GitHub `
+          -UserName "wazuh" `
+          -Password "${{ inputs.gh_token }}"
+        .$(C:\vcpkg\vcpkg fetch nuget) `
+          setapikey "${{ inputs.gh_token }}" `
+          -Source "https://nuget.pkg.github.com/wazuh/index.json"
