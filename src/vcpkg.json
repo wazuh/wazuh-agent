@@ -20,6 +20,10 @@
       {
         "name": "libdb",
         "platform": "linux"
+      },
+      {
+        "name": "librpm",
+        "platform": "linux"
       }
     ],
     "overrides": [
@@ -44,7 +48,8 @@
       ],
       "overlay-ports": [ 
         "./ports-overlay/procps",
-        "./ports-overlay/libdb"
+        "./ports-overlay/libdb",
+        "./ports-overlay/librpm"
       ]
   }
 }
