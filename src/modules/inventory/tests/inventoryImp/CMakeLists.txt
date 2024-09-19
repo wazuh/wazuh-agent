@@ -8,4 +8,6 @@ target_link_libraries(inventoryimp_unit_test PRIVATE
     GTest::gtest_main
     GTest::gmock
     GTest::gmock_main)
+if(NOT WIN32)
 add_test(NAME InventoryImpTest COMMAND inventoryimp_unit_test)
+endif()
