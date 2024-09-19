@@ -8,8 +8,8 @@
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
 
-const nlohmann::json BASE_DATA_CONTENT = R"([{"data": {"id":"112233", "origin": {"module": "origin_test"},
-                                        "command": "command_test", "parameters": "parameters_test"}}])"_json;
+const nlohmann::json BASE_DATA_CONTENT = R"([{"data": {"id":"112233", "args": ["origin_test",
+                                        "command_test", "parameters_test"]}}])"_json;
 
 class MockMultiTypeQueue : public MultiTypeQueue
 {
@@ -39,7 +39,8 @@ protected:
 
 TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
 {
-    Message testMessage {MessageType::STATEFUL, "test_data"};
+    std::vector<std::string> data {"test_data"};
+    Message testMessage {MessageType::STATEFUL, data};
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
     EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATEFUL, 1, ""))
@@ -117,7 +118,7 @@ TEST_F(MessageQueueUtilsTest, GetCommandFromQueueTest)
     ASSERT_EQ(cmd.has_value() ? cmd.value().m_id : "", "112233");
     ASSERT_EQ(cmd.has_value() ? cmd.value().m_module : "", "origin_test");
     ASSERT_EQ(cmd.has_value() ? cmd.value().m_command : "", "command_test");
-    ASSERT_EQ(cmd.has_value() ? cmd.value().m_parameters : "", "\"parameters_test\"");
+    ASSERT_EQ(cmd.has_value() ? cmd.value().m_parameters : "", "parameters_test");
     ASSERT_EQ(cmd.has_value() ? cmd.value().m_status : command_store::Status::UNKNOWN,
               command_store::Status::IN_PROGRESS);
 }

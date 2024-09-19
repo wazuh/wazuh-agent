@@ -28,7 +28,7 @@ namespace registration
 
         const AgentInfo agentInfo {};
 
-        nlohmann::json bodyJson = {{"uuid", agentInfo.GetUUID()}, {"key", agentInfo.GetKey()}};
+        nlohmann::json bodyJson = {{"id", agentInfo.GetUUID()}, {"key", agentInfo.GetKey()}};
 
         if (!agentInfo.GetName().empty())
         {

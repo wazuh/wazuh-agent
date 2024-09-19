@@ -408,7 +408,7 @@ TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_Success)
             [](auto& res)
             {
                 res.result(boost::beast::http::status::ok);
-                boost::beast::ostream(res.body()) << "valid_token";
+                boost::beast::ostream(res.body()) << R"({"token":"valid_token"})";
             });
 
     const auto token = client->AuthenticateWithUuidAndKey("localhost", "8080", "test-uuid", "test-key");
@@ -447,7 +447,7 @@ TEST_F(HttpClientTest, AuthenticateWithUserPassword_Success)
             [](auto& res)
             {
                 res.result(boost::beast::http::status::ok);
-                boost::beast::ostream(res.body()) << "valid_token";
+                boost::beast::ostream(res.body()) << R"({"data":{"token":"valid_token"}})";
             });
 
     const auto token = client->AuthenticateWithUserPassword("localhost", "8080", "user", "password");

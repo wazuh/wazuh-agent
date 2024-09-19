@@ -16,8 +16,7 @@ boost::asio::awaitable<std::string> GetMessagesFromQueue(std::shared_ptr<IMultiT
     const auto message = co_await multiTypeQueue->getNextNAwaitable(messageType, NUM_EVENTS);
 
     nlohmann::json jsonObj;
-    jsonObj["events"] = nlohmann::json::array();
-    jsonObj["events"].push_back(message.data);
+    jsonObj["events"] = message.data;
 
     co_return jsonObj.dump();
 }
@@ -57,10 +56,40 @@ std::optional<command_store::Command> GetCommandFromQueue(std::shared_ptr<IMulti
     Message m = multiTypeQueue->getNext(MessageType::COMMAND);
     nlohmann::json jsonData = m.data.at(0).at("data");
 
-    std::string id = jsonData["id"].get<std::string>();
-    std::string module = jsonData["origin"]["module"].get<std::string>();
-    std::string command = jsonData["command"].get<std::string>();
-    std::string parameters = jsonData["parameters"].dump();
+    std::string id;
+    std::string module;
+    std::string command;
+    std::string parameters;
+
+    if (jsonData.contains("id") && jsonData["id"].is_string())
+    {
+        id = jsonData["id"].get<std::string>();
+    }
+
+    if (jsonData.contains("args") && jsonData["args"].is_array())
+    {
+        int index = 0;
+        for (const auto& arg : jsonData["args"])
+        {
+            switch (index++)
+            {
+                case 0:
+                    if (arg.is_string())
+                        module = arg.get<std::string>();
+                    break;
+                case 1:
+                    if (arg.is_string())
+                        command = arg.get<std::string>();
+                    break;
+                default:
+                    if (!parameters.empty())
+                        parameters += " ";
+                    parameters += arg.is_string() ? arg.get<std::string>() : arg.dump();
+                    break;
+            }
+        }
+    }
+
     command_store::Status status = command_store::Status::IN_PROGRESS;
 
     command_store::Command cmd(id, module, command, parameters, "", status);
