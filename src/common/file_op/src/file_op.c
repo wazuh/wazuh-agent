@@ -2202,7 +2202,9 @@ int cldir_ex_ignore(const char * name, const char ** ignore) {
 
     while (dirent = readdir(dir), dirent) {
         // Skip "." and ".."
-        if ((dirent->d_name[0] == '.' && (dirent->d_name[1] == '\0' || (dirent->d_name[1] == '.' && dirent->d_name[2] == '\0'))) || w_str_in_array(dirent->d_name, ignore)) {
+        // TODO: replace function w_str_in_array
+        // if ((dirent->d_name[0] == '.' && (dirent->d_name[1] == '\0' || (dirent->d_name[1] == '.' && dirent->d_name[2] == '\0'))) || w_str_in_array(dirent->d_name, ignore)) {
+        if (dirent->d_name[0] == '.' && (dirent->d_name[1] == '\0' || (dirent->d_name[1] == '.' && dirent->d_name[2] == '\0'))) {
             continue;
         }
 
@@ -3449,25 +3451,30 @@ char *w_homedir(char *arg) {
 #ifdef __MACH__
     pid_t pid = getpid();
     if (proc_pidpath(pid, buff, PATH_MAX) > 0) {
-        buff = w_strtok_r_str_delim(delim, &buff);
+        // TODO: replace function w_strtok_r_str_delim
+        //buff = w_strtok_r_str_delim(delim, &buff);
     }
 #else
     if (realpath("/proc/self/exe", buff) != NULL) {
         dirname(buff);
-        buff = w_strtok_r_str_delim(delim, &buff);
+        // TODO: replace function w_strtok_r_str_delim
+        //buff = w_strtok_r_str_delim(delim, &buff);
     }
     else if (realpath("/proc/curproc/file", buff) != NULL) {
         dirname(buff);
-        buff = w_strtok_r_str_delim(delim, &buff);
+        // TODO: replace function w_strtok_r_str_delim
+        //buff = w_strtok_r_str_delim(delim, &buff);
     }
     else if (realpath("/proc/self/path/a.out", buff) != NULL) {
         dirname(buff);
-        buff = w_strtok_r_str_delim(delim, &buff);
+        // TODO: replace function w_strtok_r_str_delim
+        //buff = w_strtok_r_str_delim(delim, &buff);
     }
 #endif
     else if (realpath(arg, buff) != NULL) {
         dirname(buff);
-        buff = w_strtok_r_str_delim(delim, &buff);
+        // TODO: replace function w_strtok_r_str_delim
+        //buff = w_strtok_r_str_delim(delim, &buff);
     } else {
         // The path was not found so read WAZUH_HOME env var
         char * home_env = NULL;

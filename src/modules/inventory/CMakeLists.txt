@@ -28,7 +28,6 @@ target_include_directories(inventory PUBLIC
     ${COMMON_FOLDER}/privsep_op/include
     ${COMMON_FOLDER}/pthreads_op/include
     ${COMMON_FOLDER}/stringHelper/include
-    ${COMMON_FOLDER}/string_op/include
     ${COMMON_FOLDER}/time_op/include
     ${COMMON_FOLDER}/timeHelper/include
     ${COMMON_FOLDER}/utils)
@@ -48,7 +47,6 @@ target_link_libraries(inventory PUBLIC
     OpenSSL::SSL
     OpenSSL::Crypto
     utils
-    os_regex
     logging_helper
     pthreads_op
     MultiTypeQueue)

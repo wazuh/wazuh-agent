@@ -13,7 +13,6 @@
 #include <os_net/os_net.h>
 #include <sys/stat.h>
 #include "os_crypto/sha256/sha256_op.h"
-#include "expression.h"
 #include "shared.h"
 
 #undef minfo

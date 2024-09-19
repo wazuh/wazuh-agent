@@ -121,15 +121,10 @@
 #include "pthreads_op.h"
 #include "os_xml.h"
 #include "error_messages.h"
-#include "os_regex.h"
-#include "string_op.h"
 #include "binaries_op.h"
 #include "os_ip.h"
-#include "os_net.h"
-#include "expression.h"
 #include "randombytes.h"
 #include "bzip2_op.h"
-#include "validate_op.h"
 
 
 #ifndef LARGEFILE64_SOURCE
