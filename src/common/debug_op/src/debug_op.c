@@ -306,11 +306,13 @@ void os_logging_config(){
 
   }else{
 
-    parts = OS_StrBreak(',', logformat, 2);
+    // TODO: replace function OS_StrBreak
+    // parts = OS_StrBreak(',', logformat, 2);
     char * part;
     if (parts){
       for (i=0; parts[i]; i++){
-        part = w_strtrim(parts[i]);
+        // TODO: replace function w_strtrim
+        // part = w_strtrim(parts[i]);
         if (!strcmp(part, "plain")){
           flags.log_plain = 1;
         }else if(!strcmp(part, "json")){

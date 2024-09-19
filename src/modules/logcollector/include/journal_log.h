@@ -5,7 +5,6 @@
 #include "../config/localfile-config.h"
 
 #include "cJSON.h"
-#include "expression.h"
 
 /*******************************************************************************
  * NOTE: This module is not thread-safe.

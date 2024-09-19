@@ -13,7 +13,6 @@
 #define PCRE2_CODE_UNIT_WIDTH 8
 
 #include <pcre2.h>
-#include "os_regex.h"
 #include "os_ip.h"
 
 #define OSMATCH_STR  "osmatch"
