@@ -4,17 +4,16 @@
 #include <memory>
 #include <string>
 #include <thread>
-#include <configuration.hpp>
 #include <multitype_queue.hpp>
 #include <moduleWrapper.hpp>
 
 using namespace std;
 
 template<typename T>
-concept Module = requires(T t, const Configuration & config, const string & query,
+concept Module = requires(T t, const configuration::ConfigurationParser& configurationParser, const string & query,
                              const std::shared_ptr<IMultiTypeQueue> queue) {
     { t.Start() } -> same_as<void>;
-    { t.Setup(config) } -> same_as<int>;
+    { t.Setup(configurationParser) } -> same_as<void>;
     { t.Stop() } -> same_as<void>;
     { t.Command(query) } -> same_as<string>;
     { t.Name() } -> same_as<string>;
@@ -23,7 +22,11 @@ concept Module = requires(T t, const Configuration & config, const string & quer
 
 class ModuleManager {
 public:
-    ModuleManager() = default;
+    ModuleManager(const std::shared_ptr<MultiTypeQueue>& messageQueue,
+                const configuration::ConfigurationParser& configurationParser)
+        : m_multiTypeQueue(messageQueue)
+        , m_configurationParser(configurationParser)
+    {}
     ~ModuleManager() = default;
 
     template <typename T>
@@ -37,7 +40,7 @@ public:
 
         auto wrapper = make_shared<ModuleWrapper>(ModuleWrapper{
             .Start = [&module]() { module.Start(); },
-            .Setup = [&module](const Configuration & config) { return module.Setup(config); },
+            .Setup = [&module](const configuration::ConfigurationParser& configurationParser) { module.Setup(configurationParser); },
             .Stop = [&module]() { module.Stop(); },
             .Command = [&module](const string & query) { return module.Command(query); },
             .Name = [&module]() { return module.Name(); }
@@ -48,14 +51,12 @@ public:
 
     shared_ptr<ModuleWrapper> GetModule(const string & name);
     void Start();
-    void Setup(const Configuration & config);
+    void Setup();
     void Stop();
-    void SetMessageQueue(const std::shared_ptr<MultiTypeQueue>& messageQueue) {
-        m_multiTypeQueue = messageQueue;
-    }
 
 private:
     map<string, shared_ptr<ModuleWrapper>> m_modules;
     vector<thread> m_threads;
     std::shared_ptr<IMultiTypeQueue> m_multiTypeQueue;
+    configuration::ConfigurationParser m_configurationParser;
 };
