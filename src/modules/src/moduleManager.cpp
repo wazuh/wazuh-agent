@@ -16,9 +16,9 @@ void ModuleManager::Start() {
     }
 }
 
-void ModuleManager::Setup(const Configuration & config) {
+void ModuleManager::Setup() {
     for (const auto &[_, module] : m_modules) {
-        module->Setup(config);
+        module->Setup(m_configurationParser);
     }
 }
 

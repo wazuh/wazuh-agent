@@ -3,9 +3,8 @@
 #include <stdio.h>
 #include <memory>
 #include <chrono>
-#include "defs.h"
-#include "configuration.hpp"
-#include "inventory.hpp"
+#include <defs.h>
+#include <inventory.hpp>
 
 constexpr int DEFAULT_SLEEP_TIME { 60 };
 
@@ -13,7 +12,7 @@ int main(int argc, const char* argv[])
 {
     auto timedMainLoop { false };
     auto sleepTime { DEFAULT_SLEEP_TIME };
-    Configuration config{};
+    const configuration::ConfigurationParser configurationParser;
 
     if (2 == argc)
     {
@@ -28,7 +27,7 @@ int main(int argc, const char* argv[])
         return -1;
     }
 
-    Inventory::Instance().Setup(config);
+    Inventory::Instance().Setup(configurationParser);
 
     try
     {

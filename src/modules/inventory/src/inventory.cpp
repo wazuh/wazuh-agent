@@ -42,25 +42,19 @@ void Inventory::Start() {
 
 }
 
-int Inventory::Setup(const Configuration & config) {
+void Inventory::Setup(const configuration::ConfigurationParser& configurationParser) {
 
-    const InventoryConfig& inventoryConfig = config.GetInventoryConfig();
-
-    m_enabled = inventoryConfig.m_enabled;
-    m_intervalValue = std::chrono::seconds{inventoryConfig.m_interval};
-    m_scanOnStart = inventoryConfig.m_scanOnStart;
-    m_hardware = inventoryConfig.m_hardware;
-    m_os = inventoryConfig.m_os;
-    m_network = inventoryConfig.m_network;
-    m_packages = inventoryConfig.m_packages;
-    m_ports = inventoryConfig.m_ports;
-    m_portsAll = inventoryConfig.m_portsAll;
-    m_processes = inventoryConfig.m_processes;
-    m_hotfixes = inventoryConfig.m_hotfixes;
-
-    m_notify = true;
-
-    return 0;
+    m_enabled = !configurationParser.GetConfig<bool>("inventory", "disabled");
+    m_intervalValue = std::chrono::seconds{configurationParser.GetConfig<int>("inventory", "interval")};
+    m_scanOnStart = configurationParser.GetConfig<bool>("inventory", "scan_on_start");
+    m_hardware = configurationParser.GetConfig<bool>("inventory", "hardware");
+    m_os = configurationParser.GetConfig<bool>("inventory", "os");
+    m_network = configurationParser.GetConfig<bool>("inventory", "network");
+    m_packages = configurationParser.GetConfig<bool>("inventory", "packages");
+    m_ports = configurationParser.GetConfig<bool>("inventory", "ports");
+    m_portsAll = configurationParser.GetConfig<bool>("inventory", "ports_all");
+    m_processes = configurationParser.GetConfig<bool>("inventory", "processes");
+    m_hotfixes = configurationParser.GetConfig<bool>("inventory", "hotfixes");
 }
 
 void Inventory::Stop() {
