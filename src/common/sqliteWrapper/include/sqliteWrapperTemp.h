@@ -15,7 +15,6 @@
 #include <sqlite3.h>
 #include <string>
 #include <memory>
-#include "makeUnique.h"
 #include "customDeleter.hpp"
 #include <iostream>
 #include <chrono>
