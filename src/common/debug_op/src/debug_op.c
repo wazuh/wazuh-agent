@@ -278,7 +278,7 @@ void w_logging_init(){
 }
 
 void os_logging_config(){
-  OS_XML xml;
+//   OS_XML xml;
   const char * xmlf[] = {"ossec_config", "logging", "log_format", NULL};
   char * logformat;
   char ** parts = NULL;
@@ -286,14 +286,17 @@ void os_logging_config(){
 
   pid = (int)getpid();
 
-  if (OS_ReadXML(OSSECCONF, &xml) < 0){
-    flags.log_plain = 1;
-    flags.log_json = 0;
-    OS_ClearXML(&xml);
-    mlerror_exit(LOGLEVEL_ERROR, XML_ERROR, OSSECCONF, xml.err, xml.err_line);
-  }
-
-  logformat = OS_GetOneContentforElement(&xml, xmlf);
+//   TODO: replace function OS_ReadXML
+//   if (OS_ReadXML(OSSECCONF, &xml) < 0){
+//     flags.log_plain = 1;
+//     flags.log_json = 0;
+//     TODO: replace function OS_ClearXML
+//     OS_ClearXML(&xml);
+//     TODO: replace XML_ERROR
+//     mlerror_exit(LOGLEVEL_ERROR, XML_ERROR, OSSECCONF, xml.err, xml.err_line);
+//   }
+//   TODO: replace function OS_GetOneContentforElement
+//   logformat = OS_GetOneContentforElement(&xml, xmlf);
 
   if (!logformat || logformat[0] == '\0'){
 
@@ -301,8 +304,10 @@ void os_logging_config(){
     flags.log_json = 0;
 
     free(logformat);
-    OS_ClearXML(&xml);
-    mdebug1(XML_NO_ELEM, "log_format");
+    // TODO: replace function OS_ClearXML
+    // OS_ClearXML(&xml);
+    // TODO: replace XML_NO_ELEM
+    // mdebug1(XML_NO_ELEM, "log_format");
 
   }else{
 
@@ -320,7 +325,8 @@ void os_logging_config(){
         }else{
           flags.log_plain = 1;
           flags.log_json = 0;
-          mlerror_exit(LOGLEVEL_ERROR, XML_VALUEERR, "log_format", part);
+          // TODO: replace XML_VALUEERR
+        //   mlerror_exit(LOGLEVEL_ERROR, XML_VALUEERR, "log_format", part);
         }
       }
       for (i=0; parts[i]; i++){
@@ -330,7 +336,8 @@ void os_logging_config(){
     }
 
     free(logformat);
-    OS_ClearXML(&xml);
+    // TODO: replace function OS_ClearXML
+    // OS_ClearXML(&xml);
   }
 }
 

@@ -24,7 +24,6 @@ target_include_directories(inventory PUBLIC
     ${COMMON_FOLDER}/file_op/include
     ${COMMON_FOLDER}/hashHelper/include
     ${COMMON_FOLDER}/logging_helper/include
-    ${COMMON_FOLDER}/os_xml/include
     ${COMMON_FOLDER}/privsep_op/include
     ${COMMON_FOLDER}/pthreads_op/include
     ${COMMON_FOLDER}/stringHelper/include
