@@ -5,10 +5,7 @@
 #include <hashHelper.h>
 #include <timeHelper.h>
 
-constexpr std::chrono::seconds MAX_DELAY_TIME
-{
-    300
-};
+constexpr std::chrono::seconds INVENTORY_DEFAULT_INTERVAL { 3600 };
 
 #define TRY_CATCH_TASK(task)                                            \
 do                                                                      \
@@ -1002,18 +999,19 @@ void Inventory::UpdateChanges(const std::string& table,
 }
 
 Inventory::Inventory()
-    : m_intervalValue { 0 }
-    , m_scanOnStart { false }
-    , m_hardware { false }
-    , m_os { false }
-    , m_network { false }
-    , m_packages { false }
-    , m_ports { false }
-    , m_portsAll { false }
-    , m_processes { false }
-    , m_hotfixes { false }
+    : m_enabled { true }
+    , m_intervalValue { INVENTORY_DEFAULT_INTERVAL }
+    , m_scanOnStart { true }
+    , m_hardware { true }
+    , m_os { true }
+    , m_network { true }
+    , m_packages { true }
+    , m_ports { true }
+    , m_portsAll { true }
+    , m_processes { true }
+    , m_hotfixes { true }
     , m_stopping { true }
-    , m_notify { false }
+    , m_notify { true }
 {}
 
 std::string Inventory::GetCreateStatement() const

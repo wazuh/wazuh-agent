@@ -156,8 +156,8 @@ TEST_F(InventoryImpTest, defaultCtor)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult10)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
 
-    Configuration config;
-    Inventory::Instance().Setup(config);
+    const configuration::ConfigurationParser configurationParser;
+    Inventory::Instance().Setup(configurationParser);
     std::thread t
     {
         [&spInfoWrapper, &callbackDataDelta]()
@@ -201,10 +201,21 @@ TEST_F(InventoryImpTest, intervalSeconds)
     .WillRepeatedly(::testing::InvokeArgument<0>
                     (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
-    InventoryConfig invConfig;
-    invConfig.m_interval = 1;
-    Configuration config(invConfig);
-    Inventory::Instance().Setup(config);
+    std::string inventoryConfig = R"(
+        [inventory]
+        disabled = false
+        interval = 1
+        scan_on_start = true
+        hardware = true
+        os = true
+        network = true
+        packages = true
+        ports = true
+        ports_all = true
+        processes = true
+        hotfixes = true
+    )";
+    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
     std::thread t
     {
@@ -239,10 +250,21 @@ TEST_F(InventoryImpTest, noScanOnStart)
     EXPECT_CALL(*spInfoWrapper, ports()).Times(0);
     EXPECT_CALL(*spInfoWrapper, hotfixes()).Times(0);
 
-    InventoryConfig invConfig;
-    invConfig.m_scanOnStart = false;
-    Configuration config(invConfig);
-    Inventory::Instance().Setup(config);
+    std::string inventoryConfig = R"(
+        [inventory]
+        disabled = false
+        interval = 3600
+        scan_on_start = false
+        hardware = true
+        os = true
+        network = true
+        packages = true
+        ports = true
+        ports_all = true
+        processes = true
+        hotfixes = true
+    )";
+    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
     std::thread t
     {
@@ -356,10 +378,21 @@ TEST_F(InventoryImpTest, noHardware)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult10)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
 
-    InventoryConfig invConfig;
-    invConfig.m_hardware = false;
-    Configuration config(invConfig);
-    Inventory::Instance().Setup(config);
+    std::string inventoryConfig = R"(
+        [inventory]
+        disabled = false
+        interval = 3600
+        scan_on_start = true
+        hardware = false
+        os = true
+        network = true
+        packages = true
+        ports = true
+        ports_all = true
+        processes = true
+        hotfixes = true
+    )";
+    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
     std::thread t
     {
@@ -474,10 +507,21 @@ TEST_F(InventoryImpTest, noOs)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult10)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
 
-    InventoryConfig invConfig;
-    invConfig.m_os = false;
-    Configuration config(invConfig);
-    Inventory::Instance().Setup(config);
+    std::string inventoryConfig = R"(
+        [inventory]
+        disabled = false
+        interval = 3600
+        scan_on_start = true
+        hardware = true
+        os = false
+        network = true
+        packages = true
+        ports = true
+        ports_all = true
+        processes = true
+        hotfixes = true
+    )";
+    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
     std::thread t
     {
@@ -571,10 +615,21 @@ TEST_F(InventoryImpTest, noNetwork)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult9)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult10)).Times(1);
 
-    InventoryConfig invConfig;
-    invConfig.m_network = false;
-    Configuration config(invConfig);
-    Inventory::Instance().Setup(config);
+    std::string inventoryConfig = R"(
+        [inventory]
+        disabled = false
+        interval = 3600
+        scan_on_start = true
+        hardware = true
+        os = true
+        network = false
+        packages = true
+        ports = true
+        ports_all = true
+        processes = true
+        hotfixes = true
+    )";
+    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
     std::thread t
     {
@@ -686,10 +741,21 @@ TEST_F(InventoryImpTest, noPackages)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult10)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
 
-    InventoryConfig invConfig;
-    invConfig.m_packages = false;
-    Configuration config(invConfig);
-    Inventory::Instance().Setup(config);
+    std::string inventoryConfig = R"(
+        [inventory]
+        disabled = false
+        interval = 3600
+        scan_on_start = true
+        hardware = true
+        os = true
+        network = true
+        packages = false
+        ports = true
+        ports_all = true
+        processes = true
+        hotfixes = true
+    )";
+    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
     std::thread t
     {
@@ -803,11 +869,21 @@ TEST_F(InventoryImpTest, noPorts)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult18)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult20)).Times(1);
 
-    InventoryConfig invConfig;
-    invConfig.m_ports = false;
-    invConfig.m_interval = 5;
-    Configuration config(invConfig);
-    Inventory::Instance().Setup(config);
+    std::string inventoryConfig = R"(
+        [inventory]
+        disabled = false
+        interval = 5
+        scan_on_start = true
+        hardware = true
+        os = true
+        network = true
+        packages = true
+        ports = false
+        ports_all = true
+        processes = true
+        hotfixes = true
+    )";
+    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
     std::thread t
     {
@@ -932,10 +1008,21 @@ TEST_F(InventoryImpTest, noPortsAll)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult12)).Times(1);
 
-    InventoryConfig invConfig;
-    invConfig.m_portsAll = false;
-    Configuration config(invConfig);
-    Inventory::Instance().Setup(config);
+    std::string inventoryConfig = R"(
+        [inventory]
+        disabled = false
+        interval = 3600
+        scan_on_start = true
+        hardware = true
+        os = true
+        network = true
+        packages = true
+        ports = true
+        ports_all = false
+        processes = true
+        hotfixes = true
+    )";
+    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
     std::thread t
     {
@@ -1047,10 +1134,21 @@ TEST_F(InventoryImpTest, noProcesses)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult10)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
 
-    InventoryConfig invConfig;
-    invConfig.m_processes = false;
-    Configuration config(invConfig);
-    Inventory::Instance().Setup(config);
+    std::string inventoryConfig = R"(
+        [inventory]
+        disabled = false
+        interval = 3600
+        scan_on_start = true
+        hardware = true
+        os = true
+        network = true
+        packages = true
+        ports = true
+        ports_all = true
+        processes = false
+        hotfixes = true
+    )";
+    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
     std::thread t
     {
@@ -1165,10 +1263,21 @@ TEST_F(InventoryImpTest, noHotfixes)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult9)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult18)).Times(1);
 
-    InventoryConfig invConfig;
-    invConfig.m_hotfixes = false;
-    Configuration config(invConfig);
-    Inventory::Instance().Setup(config);
+    std::string inventoryConfig = R"(
+        [inventory]
+        disabled = false
+        interval = 3600
+        scan_on_start = true
+        hardware = true
+        os = true
+        network = true
+        packages = true
+        ports = true
+        ports_all = true
+        processes = true
+        hotfixes = false
+    )";
+    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
     std::thread t
     {
@@ -1212,10 +1321,21 @@ TEST_F(InventoryImpTest, scanInvalidData)
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":431625,"ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
 
-    InventoryConfig invConfig;
-    invConfig.m_interval = 60;
-    Configuration config(invConfig);
-    Inventory::Instance().Setup(config);
+    std::string inventoryConfig = R"(
+        [inventory]
+        disabled = false
+        interval = 60
+        scan_on_start = true
+        hardware = true
+        os = true
+        network = true
+        packages = true
+        ports = true
+        ports_all = true
+        processes = true
+        hotfixes = true
+    )";
+    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
     std::thread t
     {
@@ -1345,15 +1465,21 @@ TEST_F(InventoryImpTest, portAllEnable)
     EXPECT_CALL(wrapper, callbackMock(expectedResult3)).Times(1);
     EXPECT_CALL(wrapper, callbackMock(expectedResult4)).Times(1);
 
-    InventoryConfig invConfig;
-    invConfig.m_hardware = false;
-    invConfig.m_os = false;
-    invConfig.m_network = false;
-    invConfig.m_packages = false;
-    invConfig.m_processes = false;
-    invConfig.m_hotfixes = false;
-    Configuration config(invConfig);
-    Inventory::Instance().Setup(config);
+    std::string inventoryConfig = R"(
+        [inventory]
+        disabled = false
+        interval = 3600
+        scan_on_start = true
+        hardware = false
+        os = false
+        network = false
+        packages = false
+        ports = true
+        ports_all = true
+        processes = false
+        hotfixes = false
+    )";
+    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
     std::thread t
     {
@@ -1478,16 +1604,21 @@ TEST_F(InventoryImpTest, portAllDisable)
     EXPECT_CALL(wrapper, callbackMock(expectedResult2)).Times(1);
     EXPECT_CALL(wrapper, callbackMock(expectedResult3)).Times(1);
 
-    InventoryConfig invConfig;
-    invConfig.m_hardware = false;
-    invConfig.m_os = false;
-    invConfig.m_network = false;
-    invConfig.m_packages = false;
-    invConfig.m_portsAll = false;
-    invConfig.m_processes = false;
-    invConfig.m_hotfixes = false;
-    Configuration config(invConfig);
-    Inventory::Instance().Setup(config);
+    std::string inventoryConfig = R"(
+        [inventory]
+        disabled = false
+        interval = 3600
+        scan_on_start = true
+        hardware = false
+        os = false
+        network = false
+        packages = false
+        ports = true
+        ports_all = false
+        processes = false
+        hotfixes = false
+    )";
+    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
     std::thread t
     {
@@ -1543,16 +1674,21 @@ TEST_F(InventoryImpTest, PackagesDuplicated)
 
     EXPECT_CALL(wrapper, callbackMock(expectedResult1)).Times(1);
 
-    InventoryConfig invConfig;
-    invConfig.m_hardware = false;
-    invConfig.m_os = false;
-    invConfig.m_network = false;
-    invConfig.m_ports = false;
-    invConfig.m_portsAll = false;
-    invConfig.m_processes = false;
-    invConfig.m_hotfixes = false;
-    Configuration config(invConfig);
-    Inventory::Instance().Setup(config);
+    std::string inventoryConfig = R"(
+        [inventory]
+        disabled = false
+        interval = 3600
+        scan_on_start = true
+        hardware = false
+        os = false
+        network = false
+        packages = true
+        ports = false
+        ports_all = false
+        processes = false
+        hotfixes = false
+    )";
+    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
     std::thread t
     {

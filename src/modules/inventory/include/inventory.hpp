@@ -8,7 +8,7 @@
 #include <string>
 #include <memory>
 #include <sysInfoInterface.hpp>
-#include <configuration.hpp>
+#include <configuration_parser.hpp>
 #include <logging_helper.h>
 #include <commonDefs.h>
 #include <dbsync.hpp>
@@ -24,7 +24,7 @@ class Inventory {
         }
 
         void Start();
-        int Setup(const Configuration & config);
+        void Setup(const configuration::ConfigurationParser& configurationParser);
         void Stop();
         std::string Command(const std::string & query);
         const std::string& Name() const { return m_moduleName; };
@@ -70,17 +70,17 @@ class Inventory {
         const std::string                           m_moduleName {"inventory"};
         std::shared_ptr<ISysInfo>                   m_spInfo;
         std::function<void(const std::string&)>     m_reportDiffFunction;
-        std::chrono::seconds                        m_intervalValue;
-        bool                                        m_enabled;      // Main switch
-        bool                                        m_scanOnStart;  // Scan always on start
-        bool                                        m_hardware;     // Hardware inventory
-        bool                                        m_os;           // OS inventory
-        bool                                        m_network;      // Network inventory
-        bool                                        m_packages;     // Installed packages inventory
-        bool                                        m_ports;        // Opened ports inventory
-        bool                                        m_portsAll;     // Scan only listening ports or all
-        bool                                        m_processes;    // Running processes inventory
-        bool                                        m_hotfixes;     // Windows hotfixes installed
+        bool                                        m_enabled;          // Main switch
+        std::chrono::seconds                        m_intervalValue;    // Scan interval
+        bool                                        m_scanOnStart;      // Scan always on start
+        bool                                        m_hardware;         // Hardware inventory
+        bool                                        m_os;               // OS inventory
+        bool                                        m_network;          // Network inventory
+        bool                                        m_packages;         // Installed packages inventory
+        bool                                        m_ports;            // Opened ports inventory
+        bool                                        m_portsAll;         // Scan only listening ports or all
+        bool                                        m_processes;        // Running processes inventory
+        bool                                        m_hotfixes;         // Windows hotfixes installed
         bool                                        m_stopping;
         bool                                        m_notify;
         std::unique_ptr<DBSync>                     m_spDBSync;

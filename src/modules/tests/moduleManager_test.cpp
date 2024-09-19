@@ -8,7 +8,7 @@ using namespace testing;
 class MockModule {
 public:
     MOCK_METHOD(void, Start, (), ());
-    MOCK_METHOD(int, Setup, (const Configuration&), ());
+    MOCK_METHOD(int, Setup, (const configuration::ConfigurationParser&), ());
     MOCK_METHOD(void, Stop, (), ());
     MOCK_METHOD(std::string, Command, (const std::string&), ());
     MOCK_METHOD(std::string, Name, (), (const));
@@ -17,8 +17,16 @@ public:
 
 class ModuleManagerTest : public ::testing::Test {
 protected:
+    std::shared_ptr<MultiTypeQueue> messageQueue;
+    configuration::ConfigurationParser configurationParser;
     ModuleManager manager;
     MockModule mockModule;
+
+    ModuleManagerTest()
+        : messageQueue(std::make_shared<MultiTypeQueue>()),
+          configurationParser(),
+          manager(messageQueue, configurationParser)
+    {}
 
     void SetUp() override {
         // Set up default expectations for mock methods
@@ -68,17 +76,15 @@ TEST_F(ModuleManagerTest, GetModuleNotFound) {
 }
 
 TEST_F(ModuleManagerTest, SetupModules) {
-    Configuration config;
     EXPECT_CALL(mockModule, Name()).Times(1);
     EXPECT_CALL(mockModule, Setup(_)).Times(1);
 
     manager.AddModule(mockModule);
-    manager.Setup(config);
+    manager.Setup();
 }
 
 TEST_F(ModuleManagerTest, SetupMultipleModules) {
     MockModule mockModule1, mockModule2;
-    Configuration config;
 
     EXPECT_CALL(mockModule1, Name()).WillOnce(Return("MockModule1"));
     EXPECT_CALL(mockModule2, Name()).WillOnce(Return("MockModule2"));
@@ -88,18 +94,17 @@ TEST_F(ModuleManagerTest, SetupMultipleModules) {
 
     manager.AddModule(mockModule1);
     manager.AddModule(mockModule2);
-    manager.Setup(config);
+    manager.Setup();
 }
 
 TEST_F(ModuleManagerTest, SetupModuleThrowsException) {
-    Configuration config;
 
     EXPECT_CALL(mockModule, Name()).WillOnce(Return("MockModule"));
     EXPECT_CALL(mockModule, Setup(_)).WillOnce(Throw(std::runtime_error("Setup failed")));
 
     manager.AddModule(mockModule);
 
-    EXPECT_THROW(manager.Setup(config), std::runtime_error);
+    EXPECT_THROW(manager.Setup(), std::runtime_error);
 }
 
 TEST_F(ModuleManagerTest, StartModules) {
