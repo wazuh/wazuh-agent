@@ -14,7 +14,6 @@
 #include <shared.h>
 #include <defs.h>
 #include <logging_helper.h>
-#include <string_op.h>
 #include <pthreads_op.h>
 
 #include <inventory.hpp>

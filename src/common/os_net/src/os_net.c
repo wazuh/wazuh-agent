@@ -892,9 +892,10 @@ void resolve_hostname(char **hostname, int attempts) {
     char *f_ip;
 
     assert(hostname != NULL);
-    if (OS_IsValidIP(*hostname, NULL) == 1) {
-        return;
-    }
+    // TODO: replace function OS_IsValidIP
+    // if (OS_IsValidIP(*hostname, NULL) == 1) {
+    //     return;
+    // }
 
     tmp_str = strchr(*hostname, '/');
     if (tmp_str) {
@@ -1059,9 +1060,11 @@ int get_ipv6_string(struct in6_addr addr6, char *address, size_t address_size) {
     }
 #endif
 
-    if ((ret == OS_SUCCESS) && !OS_GetIPv4FromIPv6(address, IPSIZE)) {
-        OS_ExpandIPv6(address, IPSIZE);
-    }
+    // TODO: replace function OS_GetIPv4FromIPv6
+    // if ((ret == OS_SUCCESS) && !OS_GetIPv4FromIPv6(address, IPSIZE)) {
+        // TODO: replace function OS_ExpandIPv6
+        // OS_ExpandIPv6(address, IPSIZE);
+    // }
 
     return ret;
 }

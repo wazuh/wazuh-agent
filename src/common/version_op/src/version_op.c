@@ -716,7 +716,9 @@ os_info *get_unix_version()
                             char *key = strtok_r(buff, ":", &save_ptr);
                             if (key) {
                                 const char *expected_key = "System Version";
-                                char *trimmed_key = w_strtrim(key);
+                                // TODO: replace function w_strtrim
+                                // char *trimmed_key = w_strtrim(key);
+                                char *trimmed_key = key;
                                 if (NULL != trimmed_key && strncmp(trimmed_key, expected_key, strlen(expected_key)) == 0) {
                                     char *value = strtok_r(NULL, " ", &save_ptr);
                                     if (value) {

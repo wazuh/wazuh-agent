@@ -10,7 +10,6 @@
 
 #include "shared.h"
 #include "string.h"
-#include "os_regex.h"
 #include "string_op.h"
 
 #ifdef WIN32
