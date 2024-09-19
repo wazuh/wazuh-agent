@@ -24,6 +24,12 @@ using namespace std;
 
 #define INV_LOGTAG "modules:inventory" // Tag for log messages
 
+#ifdef WIN32
+void pthread_exit(void *p){
+
+}
+#endif
+
 void Inventory::start() {
 
     if (!m_enabled) {

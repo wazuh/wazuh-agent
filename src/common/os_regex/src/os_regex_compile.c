@@ -13,9 +13,14 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include <pthread.h>
 #include "shared.h"
 #include "os_regex_internal.h"
+
+#if defined(__GNUC__) || defined(__clang__)
+#include <pthread.h>
+#else
+
+#endif
 
 
 /* Compile a regular expression to be used later

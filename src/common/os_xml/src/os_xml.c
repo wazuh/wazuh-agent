@@ -20,15 +20,19 @@
 #include "os_xml_internal.h"
 #include "file_op.h"
 
+#ifdef WIN32
+static int strcasecmp(char *s1, char *s2){}
+#endif
+
 /* Prototypes */
-static int _oscomment(OS_XML *_lxml) __attribute__((nonnull));
-static int _writecontent(const char *str, __attribute__((unused)) size_t size, unsigned int parent, OS_XML *_lxml) __attribute__((nonnull));
+static int _oscomment(OS_XML *_lxml) ATTR_NONNULL;
+static int _writecontent(const char *str, ATTR_UNUSED size_t size, unsigned int parent, OS_XML *_lxml) ATTR_NONNULL;
 static int _writememory(const char *str, XML_TYPE type, size_t size,
-                        unsigned int parent, OS_XML *_lxml) __attribute__((nonnull));
-static int _xml_fgetc(FILE *fp, OS_XML *_lxml) __attribute__((nonnull));
-int _xml_sgetc(OS_XML *_lxml)  __attribute__((nonnull));
-static int _getattributes(unsigned int parent, OS_XML *_lxml, bool flag_truncate) __attribute__((nonnull));
-static void xml_error(OS_XML *_lxml, const char *msg, ...) __attribute__((format(printf, 2, 3), nonnull));
+                        unsigned int parent, OS_XML *_lxml) ATTR_NONNULL;
+static int _xml_fgetc(FILE *fp, OS_XML *_lxml) ATTR_NONNULL;
+int _xml_sgetc(OS_XML *_lxml) ATTR_NONNULL;
+static int _getattributes(unsigned int parent, OS_XML *_lxml, bool flag_truncate) ATTR_NONNULL;
+static void xml_error(OS_XML *_lxml, const char *msg, ...) ATTR_PRINTF_TWO_THREE_NONNULL;
 
 /**
  * @brief Recursive method to read XML elements.
@@ -39,7 +43,7 @@ static void xml_error(OS_XML *_lxml, const char *msg, ...) __attribute__((format
  * @param flag_truncate If TRUE, truncates the content of a tag when it's bigger than XML_MAXSIZE. Fails if set to FALSE.
  * @return int Returns 0, -1 or -2.
  */
-static int _ReadElem(unsigned int parent, OS_XML *_lxml, unsigned int recursion_level, bool flag_truncate) __attribute__((nonnull));
+static int _ReadElem(unsigned int parent, OS_XML *_lxml, unsigned int recursion_level, bool flag_truncate) ATTR_NONNULL;
 
 /* Local fgetc */
 static int _xml_fgetc(FILE *fp, OS_XML *_lxml)
@@ -544,8 +548,9 @@ fail:
     return (-1);
 }
 
-static int _writecontent(const char *str, __attribute__((unused)) size_t size, unsigned int parent, OS_XML *_lxml)
+static int _writecontent(const char *str, ATTR_UNUSED size_t size, unsigned int parent, OS_XML *_lxml)
 {
+    UNREFERENCED_PARAMETER(size);
     _lxml->ct[parent] = strdup(str);
 
     if ( _lxml->ct[parent] == NULL) {

@@ -664,9 +664,9 @@ int OS_SendSecureTCP(int sock, uint32_t size, const void * msg) {
 
     os_malloc(bufsz, buffer);
     *(uint32_t *)buffer = wnet_order(size);
-    memcpy(buffer + sizeof(uint32_t), msg, size);
+    memcpy((void *)((unsigned char *)buffer + sizeof(uint32_t)), msg, size);
     errno = 0;
-    retval = send(sock, buffer, bufsz, 0) == (ssize_t)bufsz ? 0 : OS_SOCKTERR;
+    retval = send(sock, buffer, bufsz, 0) == (int64_t)bufsz ? 0 : OS_SOCKTERR;
     free(buffer);
     return retval;
 }
@@ -677,7 +677,7 @@ int OS_SendSecureTCP(int sock, uint32_t size, const void * msg) {
  * Return recvval on success or OS_SOCKTERR on error.
  */
 int OS_RecvSecureTCP(int sock, char * ret, uint32_t size) {
-    ssize_t recvval, recvb;
+    int64_t recvval, recvb;
     uint32_t msgsize;
 
     /* Get header */
@@ -810,7 +810,7 @@ int OS_SendSecureTCPCluster(int sock, const void * command, const void * payload
     memset(buffer + HEADER_SIZE + cmd_length + 1, '-', COMMAND_SIZE - cmd_length - 1);
     memcpy(buffer + HEADER_SIZE + COMMAND_SIZE, payload, length);
 
-    retval = send(sock, buffer, buffer_size, 0) == (ssize_t)buffer_size ? 0 : OS_SOCKTERR;
+    retval = send(sock, buffer, buffer_size, 0) == (int64_t)buffer_size ? 0 : OS_SOCKTERR;
 
     free(buffer);
     return retval;
@@ -820,8 +820,8 @@ int OS_SendSecureTCPCluster(int sock, const void * command, const void * payload
 /* Receive secure TCP Cluster message */
 int OS_RecvSecureClusterTCP(int sock, char * ret, size_t length) {
     int recvval;
-    const unsigned CMD_SIZE = 12;
-    const uint32_t HEADER_SIZE = 8 + CMD_SIZE;
+    #define CMD_SIZE 12
+    #define HEADER_SIZE (8 + CMD_SIZE)
     uint32_t size = 0;
     char buffer[HEADER_SIZE];
 
@@ -861,12 +861,12 @@ int OS_RecvSecureClusterTCP(int sock, char * ret, size_t length) {
  * Returns -1 on socket error.
  * Returns 0 on socket disconnected or timeout.
  */
-ssize_t os_recv_waitall(int sock, void * buf, size_t size) {
+int64_t os_recv_waitall(int sock, void * buf, size_t size) {
     size_t offset;
-    ssize_t recvb;
+    int64_t recvb;
 
     for (offset = 0; offset < size; offset += recvb) {
-        recvb = recv(sock, buf + offset, size - offset, 0);
+        recvb = recv(sock, (void *)((unsigned char *)buf + offset), size - offset, 0);
 
         if (recvb <= 0) {
             return recvb;

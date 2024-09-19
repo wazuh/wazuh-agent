@@ -11,8 +11,7 @@
 
 #ifdef WIN32
 
-#ifndef _NETWORK_WINDOWS_HELPER_H
-#define _NETWORK_WINDOWS_HELPER_H
+#pragma once
 
 #include <map>
 #include <memory>
@@ -24,16 +23,17 @@
 #include <time.h>
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
+#include <netioapi.h>
 #include <versionhelpers.h>
 #include "mem_op.h"
 #include "stringHelper.h"
 #include "encodingWindowsHelper.h"
 #include "timeHelper.h"
+#include <WTypesbase.h>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-#pragma GCC diagnostic ignored "-Wreturn-type"
-#pragma GCC diagnostic ignored "-Wcast-function-type"
+typedef unsigned int UINT;
+typedef ULONG (WINAPI* ConvertLengthToIpv4Mask_t)(ULONG, PULONG);
+typedef ULONG (WINAPI* GetIfEntry2_t)(PMIB_IF_ROW2);
 
 constexpr auto WORKING_ADAPTERS_INFO_BUFFER_SIZE
 {
@@ -128,7 +128,6 @@ namespace Utils
         return ret;
     }
 
-    typedef NETIOAPI_API (WINAPI* ConvertLengthToIpv4Mask_t)(ULONG, PULONG);
     static ConvertLengthToIpv4Mask_t getConvertLengthToIpv4MaskFunctionAddress()
     {
         ConvertLengthToIpv4Mask_t ret{nullptr};
@@ -142,7 +141,6 @@ namespace Utils
         return ret;
     }
 
-    typedef NETIOAPI_API (WINAPI* GetIfEntry2_t)(PMIB_IF_ROW2);
     static GetIfEntry2_t getIfEntry2FunctionAddress()
     {
         GetIfEntry2_t ret{nullptr};
@@ -682,9 +680,3 @@ namespace Utils
             }
     };
 }
-
-#pragma GCC diagnostic pop
-
-#endif // _NETWORK_WINDOWS_HELPER_H
-
-#endif //WIN32

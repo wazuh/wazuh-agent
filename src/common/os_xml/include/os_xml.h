@@ -10,11 +10,30 @@
 
 /* os_xml C Library */
 
-#ifndef OS_XML_H
-#define OS_XML_H
+#pragma once
 
 #include <stdio.h>
 #include <stdbool.h>
+
+#if defined(__GNUC__) || defined(__clang__)
+#define ATTR_NONNULL __attribute__((nonnull))
+#define ATTR_NONNULL_ONE __attribute__((nonnull(1)))
+#define ATTR_NONNULL_TWO __attribute__((nonnull(2)))
+#define ATTR_NONNULL_ONE_TWO __attribute__((nonnull(1, 2)))
+#define ATTR_NONNULL_ONE_TWO_THREE_FIVE __attribute__((nonnull(1, 2, 3, 5)))
+#define ATTR_PRINTF_TWO_THREE_NONNULL __attribute__((format(printf, 2, 3), nonnull))
+#define ATTR_UNUSED __attribute__((unused))
+#define UNREFERENCED_PARAMETER(P)
+#else
+#define ATTR_NONNULL
+#define ATTR_NONNULL_ONE
+#define ATTR_NONNULL_TWO
+#define ATTR_NONNULL_ONE_TWO
+#define ATTR_NONNULL_ONE_TWO_THREE_FIVE
+#define ATTR_PRINTF_TWO_THREE_NONNULL
+#define ATTR_UNUSED
+#define UNREFERENCED_PARAMETER(P) (P)
+#endif
 
 /* XML Node structure */
 typedef struct _xml_node {
@@ -59,7 +78,7 @@ typedef xml_node **XML_NODE;
  * @param lxml The struct to store the result.
  * @return int OS_SUCCESS on success, OS_INVALID otherwise.
  */
-int OS_ReadXML(const char *file, OS_XML *lxml) __attribute__((nonnull));
+int OS_ReadXML(const char *file, OS_XML *lxml) ATTR_NONNULL;
 
 /**
  * @brief Parses a XML file and stores the content in the OS_XML struct.
@@ -70,7 +89,7 @@ int OS_ReadXML(const char *file, OS_XML *lxml) __attribute__((nonnull));
  *                      truncate on TRUE or fail on FALSE.
  * @return int OS_SUCCESS on success, OS_INVALID otherwise.
  */
-int OS_ReadXML_Ex(const char *file, OS_XML *_lxml, bool flag_truncate) __attribute__((nonnull));
+int OS_ReadXML_Ex(const char *file, OS_XML *_lxml, bool flag_truncate) ATTR_NONNULL;
 
 /**
  * @brief Parses a XML string and stores the content in the OS_XML struct.
@@ -80,7 +99,7 @@ int OS_ReadXML_Ex(const char *file, OS_XML *_lxml, bool flag_truncate) __attribu
  * @param lxml The struct to store the result.
  * @return int OS_SUCCESS on success, OS_INVALID otherwise.
  */
-int OS_ReadXMLString(const char *string, OS_XML *_lxml) __attribute__((nonnull));
+int OS_ReadXMLString(const char *string, OS_XML *_lxml) ATTR_NONNULL;
 
 /**
  * @brief Parses a XML string and stores the content in the OS_XML struct.
@@ -91,7 +110,7 @@ int OS_ReadXMLString(const char *string, OS_XML *_lxml) __attribute__((nonnull))
  *                      truncate on TRUE or fail on FALSE.
  * @return int OS_SUCCESS on success, OS_INVALID otherwise.
  */
-int OS_ReadXMLString_Ex(const char *string, OS_XML *_lxml, bool flag_truncate) __attribute__((nonnull));
+int OS_ReadXMLString_Ex(const char *string, OS_XML *_lxml, bool flag_truncate) ATTR_NONNULL;
 
 /**
  * @brief Parses a XML string or file.
@@ -101,10 +120,10 @@ int OS_ReadXMLString_Ex(const char *string, OS_XML *_lxml, bool flag_truncate) _
  *                      truncate on TRUE or fail on FALSE.
  * @return int OS_SUCCESS on success, OS_INVALID otherwise.
  */
-int ParseXML(OS_XML *_lxml, bool flag_truncate) __attribute__((nonnull));
+int ParseXML(OS_XML *_lxml, bool flag_truncate) ATTR_NONNULL;
 
 /* Clear the XML structure memory */
-void OS_ClearXML(OS_XML *_lxml) __attribute__((nonnull));
+void OS_ClearXML(OS_XML *_lxml) ATTR_NONNULL;
 
 /* Clear a node */
 void OS_ClearNode(xml_node **node);
@@ -113,35 +132,35 @@ void OS_ClearNode(xml_node **node);
 /* Functions to read the XML */
 
 /* Return 1 if element_name is a root element */
-unsigned int OS_RootElementExist(const OS_XML *_lxml, const char *element_name) __attribute__((nonnull));
+unsigned int OS_RootElementExist(const OS_XML *_lxml, const char *element_name) ATTR_NONNULL;
 
 /* Return 1 if the element_name exists */
-unsigned int OS_ElementExist(const OS_XML *_lxml, const char **element_name) __attribute__((nonnull));
+unsigned int OS_ElementExist(const OS_XML *_lxml, const char **element_name) ATTR_NONNULL;
 
 /* Return the elements "children" of the element_name */
-char **OS_GetElements(const OS_XML *_lxml, const char **element_name) __attribute__((nonnull(1)));
+char **OS_GetElements(const OS_XML *_lxml, const char **element_name) ATTR_NONNULL_ONE;
 
 /* Return the elements "children" of the element_name */
-xml_node **OS_GetElementsbyNode(const OS_XML *_lxml, const xml_node *node) __attribute__((nonnull(1)));
+xml_node **OS_GetElementsbyNode(const OS_XML *_lxml, const xml_node *node) ATTR_NONNULL_ONE;
 
 /* Return the attributes of the element name */
-char **OS_GetAttributes(const OS_XML *_lxml, const char **element_name) __attribute__((nonnull(1)));
+char **OS_GetAttributes(const OS_XML *_lxml, const char **element_name) ATTR_NONNULL_ONE;
 
 /* Return one value from element_name */
-char *OS_GetOneContentforElement(OS_XML *_lxml, const char **element_name) __attribute__((nonnull));
+char *OS_GetOneContentforElement(OS_XML *_lxml, const char **element_name) ATTR_NONNULL;
 
 /* Return an array with the content of all entries of element_name */
-char **OS_GetElementContent(OS_XML *_lxml, const char **element_name) __attribute__((nonnull));
+char **OS_GetElementContent(OS_XML *_lxml, const char **element_name) ATTR_NONNULL;
 
 /* Return an array with the contents of an element_nane */
-char **OS_GetContents(OS_XML *_lxml, const char **element_name) __attribute__((nonnull(1)));
+char **OS_GetContents(OS_XML *_lxml, const char **element_name) ATTR_NONNULL_ONE;
 
 /* Return the value of a specific attribute of the element_name */
 char *OS_GetAttributeContent(OS_XML *_lxml, const char **element_name,
-                             const char *attribute_name) __attribute__((nonnull(1, 2)));
+                             const char *attribute_name) ATTR_NONNULL_ONE_TWO;
 
 /* Apply the variables to the xml */
-int OS_ApplyVariables(OS_XML *_lxml) __attribute__((nonnull));
+int OS_ApplyVariables(OS_XML *_lxml) ATTR_NONNULL;
 
 /* Error from writer */
 #define XMLW_ERROR              006
@@ -150,7 +169,7 @@ int OS_ApplyVariables(OS_XML *_lxml) __attribute__((nonnull));
 
 /* Write an XML file, based on the input and values to change */
 int OS_WriteXML(const char *infile, const char *outfile, const char **nodes,
-                const char *oldval, const char *newval) __attribute__((nonnull(1, 2, 3, 5)));
+                const char *oldval, const char *newval) ATTR_NONNULL_ONE_TWO_THREE_FIVE;
 
 /**
  * @brief Get value of an attribute of a node
@@ -160,4 +179,3 @@ int OS_WriteXML(const char *infile, const char *outfile, const char **nodes,
  */
 const char * w_get_attr_val_by_name(xml_node * node, const char * name);
 
-#endif /* OS_XML_H */

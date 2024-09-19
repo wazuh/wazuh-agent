@@ -20,17 +20,29 @@
 
 #ifndef WC_ERR_INVALID_CHARS
 #define WC_ERR_INVALID_CHARS 0x80
+#endif
 
+#ifndef ATTR_NONNULL_FIRST
 #define ATTR_NONNULL_FIRST
-#define ATTR_NONNULL
+#endif
 
-#else
-#define ATTR_NONNULL_FIRST __attribute__((nonnull(1)))
-#define ATTR_NONNULL __attribute__((__returns_nonnull__))
+#ifndef ATTR_RET_NONNULL
+#define ATTR_RET_NONNULL
 #endif
 
 /* converts a Windows format string to char* */
 char *convert_windows_string(LPCWSTR string);
+
+#else
+
+#ifndef ATTR_NONNULL_FIRST
+#define ATTR_NONNULL_FIRST __attribute__((nonnull(1)))
+#endif
+
+#ifndef ATTR_RET_NONNULL
+#define ATTR_RET_NONNULL __attribute__((__returns_nonnull__))
+#endif
+
 #endif
 
 // Time values for conversion
@@ -77,10 +89,10 @@ char *convert_windows_string(LPCWSTR string);
 void os_trimcrlf(char *str);
 
 /* Similiar to Perl's substr() function */
-int os_substr(char *dest, const char *src, size_t position, ssize_t length) ATTR_NONNULL_FIRST;
+int os_substr(char *dest, const char *src, size_t position, int64_t length) ATTR_NONNULL_FIRST;
 
 /* Remove a character from a string */
-char *os_strip_char(const char *source, char remove) ATTR_NONNULL;
+char *os_strip_char(const char *source, char remove) ATTR_RET_NONNULL;
 
 /* Escape a list of characters with a backslash */
 char *os_shell_escape(const char *src);

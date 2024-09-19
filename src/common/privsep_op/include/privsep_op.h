@@ -13,7 +13,8 @@
 #ifndef PRIV_H
 #define PRIV_H
 
-#include "id_types.h"
+#include "cust_types.h"
+#include "shared.h"
 
 #define w_ctime(x,y,z) ctime_r(x,y)
 

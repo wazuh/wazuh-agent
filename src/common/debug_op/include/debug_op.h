@@ -42,6 +42,20 @@ extern "C" {
 #endif
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+#define ATTR_NONNULL __attribute__((nonnull))
+#define ATTR_NORETURN __attribute__ ((noreturn))
+#define ATTR_PRINTF_FIRST_SEC __attribute__((format(_PRINTF_FORMAT, 1, 2)))
+#define ATTR_PRINTF_FOURTH_FIFTH __attribute__((format(_PRINTF_FORMAT, 4, 5)))
+#define ATTR_PRINTF_FIFTH_SIXTH __attribute__((format(_PRINTF_FORMAT, 5, 6)))
+#else
+#define ATTR_NONNULL
+#define ATTR_NORETURN
+#define ATTR_PRINTF_FIRST_SEC
+#define ATTR_PRINTF_FOURTH_FIFTH
+#define ATTR_PRINTF_FIFTH_SIXTH
+#endif
+
 #define mdebug1(msg, ...) _mdebug1(__FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
 #define plain_mdebug1(msg, ...) _plain_mdebug1(__FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
 #define mtdebug1(tag, msg, ...) _mtdebug1(tag, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
@@ -63,30 +77,30 @@ extern "C" {
 #define mterror_exit(tag, msg, ...) _mterror_exit(tag, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
 #define mlerror_exit(level, msg, ...) _mlerror_exit(level, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
 
-void _mdebug1(const char * file, int line, const char * func, const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 4, 5))) __attribute__((nonnull));
-void _plain_mdebug1(const char * file, int line, const char * func, const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 4, 5))) __attribute__((nonnull));
-void _mtdebug1(const char *tag, const char * file, int line, const char * func, const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 5, 6))) __attribute__((nonnull));
-void _mdebug2(const char * file, int line, const char * func, const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 4, 5))) __attribute__((nonnull));
-void _mtdebug2(const char *tag, const char * file, int line, const char * func, const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 5, 6))) __attribute__((nonnull));
-void _merror(const char * file, int line, const char * func, const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 4, 5))) __attribute__((nonnull));
-void _plain_merror(const char * file, int line, const char * func, const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 4, 5))) __attribute__((nonnull));
-void _mterror(const char *tag, const char * file, int line, const char * func, const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 5, 6))) __attribute__((nonnull));
-void _mverror(const char * file, int line, const char * func, const char *msg, va_list args)  __attribute__((nonnull));
-void _mwarn(const char * file, int line, const char * func, const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 4, 5))) __attribute__((nonnull));
-void _plain_mwarn(const char * file, int line, const char * func, const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 4, 5))) __attribute__((nonnull));
-void _mtwarn(const char *tag, const char * file, int line, const char * func, const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 5, 6))) __attribute__((nonnull));
-void _mvwarn(const char * file, int line, const char * func, const char *msg, va_list args)  __attribute__((nonnull));
-void _minfo(const char * file, int line, const char * func, const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 4, 5))) __attribute__((nonnull));
-void _plain_minfo(const char * file, int line, const char * func, const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 4, 5))) __attribute__((nonnull));
-void _mtinfo(const char *tag, const char * file, int line, const char * func, const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 5, 6))) __attribute__((nonnull));
-void _mvinfo(const char * file, int line, const char * func, const char *msg, va_list args)  __attribute__((nonnull));
-void print_out(const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 1, 2))) __attribute__((nonnull));
-void _mferror(const char * file, int line, const char * func, const char *msg, ... ) __attribute__((format(_PRINTF_FORMAT, 4, 5))) __attribute__((nonnull));
-void _mtferror(const char *tag, const char * file, int line, const char * func, const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 5, 6))) __attribute__((nonnull));
-void _merror_exit(const char * file, int line, const char * func, const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 4, 5))) __attribute__((nonnull)) __attribute__ ((noreturn));
-void _plain_merror_exit(const char * file, int line, const char * func, const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 4, 5))) __attribute__((nonnull)) __attribute__ ((noreturn));
-void _mterror_exit(const char *tag, const char * file, int line, const char * func, const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 5, 6))) __attribute__((nonnull)) __attribute__ ((noreturn));
-void _mlerror_exit(const int level, const char * file, int line, const char * func, const char *msg, ...) __attribute__((format(_PRINTF_FORMAT, 5, 6))) __attribute__((nonnull)) __attribute__ ((noreturn));
+void _mdebug1(const char * file, int line, const char * func, const char *msg, ...)                       ATTR_PRINTF_FOURTH_FIFTH ATTR_NONNULL;
+void _plain_mdebug1(const char * file, int line, const char * func, const char *msg, ...)                 ATTR_PRINTF_FOURTH_FIFTH ATTR_NONNULL;
+void _mtdebug1(const char *tag, const char * file, int line, const char * func, const char *msg, ...)     ATTR_PRINTF_FIFTH_SIXTH  ATTR_NONNULL;
+void _mdebug2(const char * file, int line, const char * func, const char *msg, ...)                       ATTR_PRINTF_FOURTH_FIFTH ATTR_NONNULL;
+void _mtdebug2(const char *tag, const char * file, int line, const char * func, const char *msg, ...)     ATTR_PRINTF_FIFTH_SIXTH  ATTR_NONNULL;
+void _merror(const char * file, int line, const char * func, const char *msg, ...)                        ATTR_PRINTF_FOURTH_FIFTH ATTR_NONNULL;
+void _plain_merror(const char * file, int line, const char * func, const char *msg, ...)                  ATTR_PRINTF_FOURTH_FIFTH ATTR_NONNULL;
+void _mterror(const char *tag, const char * file, int line, const char * func, const char *msg, ...)      ATTR_PRINTF_FIFTH_SIXTH  ATTR_NONNULL;
+void _mverror(const char * file, int line, const char * func, const char *msg, va_list args)                                       ATTR_NONNULL;
+void _mwarn(const char * file, int line, const char * func, const char *msg, ...)                         ATTR_PRINTF_FOURTH_FIFTH ATTR_NONNULL;
+void _plain_mwarn(const char * file, int line, const char * func, const char *msg, ...)                   ATTR_PRINTF_FOURTH_FIFTH ATTR_NONNULL;
+void _mtwarn(const char *tag, const char * file, int line, const char * func, const char *msg, ...)       ATTR_PRINTF_FIFTH_SIXTH  ATTR_NONNULL;
+void _mvwarn(const char * file, int line, const char * func, const char *msg, va_list args)                                        ATTR_NONNULL;
+void _minfo(const char * file, int line, const char * func, const char *msg, ...)                         ATTR_PRINTF_FOURTH_FIFTH ATTR_NONNULL;
+void _plain_minfo(const char * file, int line, const char * func, const char *msg, ...)                   ATTR_PRINTF_FOURTH_FIFTH ATTR_NONNULL;
+void _mtinfo(const char *tag, const char * file, int line, const char * func, const char *msg, ...)       ATTR_PRINTF_FIFTH_SIXTH  ATTR_NONNULL;
+void _mvinfo(const char * file, int line, const char * func, const char *msg, va_list args)                                        ATTR_NONNULL;
+void print_out(const char *msg, ...)                                                                      ATTR_PRINTF_FIRST_SEC    ATTR_NONNULL;
+void _mferror(const char * file, int line, const char * func, const char *msg, ... )                      ATTR_PRINTF_FOURTH_FIFTH ATTR_NONNULL;
+void _mtferror(const char *tag, const char * file, int line, const char * func, const char *msg, ...)     ATTR_PRINTF_FIFTH_SIXTH  ATTR_NONNULL;
+void _merror_exit(const char * file, int line, const char * func, const char *msg, ...)                   ATTR_PRINTF_FOURTH_FIFTH ATTR_NONNULL ATTR_NORETURN;
+void _plain_merror_exit(const char * file, int line, const char * func, const char *msg, ...)             ATTR_PRINTF_FOURTH_FIFTH ATTR_NONNULL ATTR_NORETURN;
+void _mterror_exit(const char *tag, const char * file, int line, const char * func, const char *msg, ...) ATTR_PRINTF_FIFTH_SIXTH  ATTR_NONNULL ATTR_NORETURN;
+void _mlerror_exit(const int level, const char * file, int line, const char * func, const char *msg, ...) ATTR_PRINTF_FIFTH_SIXTH  ATTR_NONNULL ATTR_NORETURN;
 
 /**
  * @brief Logging module initializer

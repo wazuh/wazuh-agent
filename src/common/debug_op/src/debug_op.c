@@ -11,8 +11,19 @@
 #include "shared.h"
 #include <cjson/cJSON.h>
 
-#ifdef WIN32
+#if defined(__GNUC__) || defined(__clang__)
+#define ATTR_NONNULL __attribute__((nonnull))
+#define ATTR_PRINTF_FIFTH_ZERO __attribute__((format(_PRINTF_FORMAT, 5, 0)))
+#else
 #define localtime_r(x, y) localtime_s(y, x)
+#define ATTR_NONNULL
+#define ATTR_PRINTF_FIFTH_ZERO
+static int pthread_mutex_init(pthread_mutex_t*m, void *p){  return 0; }
+static void w_mutex_lock(pthread_mutex_t*m){}
+static void w_mutex_unlock(pthread_mutex_t*m){}
+static int pthread_mutex_lock(pthread_mutex_t*m){}
+static int pthread_mutex_unlock(pthread_mutex_t*m){}
+static void w_mutex_init(pthread_mutex_t*m, void *p){}
 #endif
 
 static int dbg_flag = 0;
@@ -29,17 +40,17 @@ static struct{
 
 static pthread_mutex_t logging_mutex;
 
-static void _log_function(int level, const char *tag, const char * file, int line, const char * func, const char *msg, bool plain_only, va_list args) __attribute__((format(printf, 5, 0))) __attribute__((nonnull));
+static void _log_function(int level, const char *tag, const char * file, int line, const char * func, const char *msg, bool plain_only, va_list args) ATTR_PRINTF_FIFTH_ZERO ATTR_NONNULL;
 
 // Wrapper for the real _log_function
-static void _log(int level, const char *tag, const char * file, int line, const char * func, const char *msg, va_list args) __attribute__((format(printf, 5, 0))) __attribute__((nonnull));
+static void _log(int level, const char *tag, const char * file, int line, const char * func, const char *msg, va_list args) ATTR_PRINTF_FIFTH_ZERO ATTR_NONNULL;
 static void _log(int level, const char *tag, const char * file, int line, const char * func, const char *msg, va_list args) {
     _log_function(level, tag, file, line, func, msg, true, args);
 }
 
 
 #ifdef WIN32
-void WinSetError();
+void WinSetError(){}
 #endif
 
 static void print_stderr_msg(char* timestamp, const char *tag, const char * file, int line, const char * func, const char* level, const char *msg, bool use_va_list, va_list args2) {

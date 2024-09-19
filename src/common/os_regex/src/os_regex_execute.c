@@ -50,7 +50,7 @@ const char *OSRegex_Execute_ex(const char *str, OSRegex *reg, regex_matching *re
                 os_calloc(1, reg->d_size.sub_strings_size, *sub_strings);
             } else {
                 os_realloc(*sub_strings, reg->d_size.sub_strings_size, *sub_strings);
-                memset((void*)*sub_strings + str_sizes->sub_strings_size, 0, reg->d_size.sub_strings_size - str_sizes->sub_strings_size);
+                memset((void*)((unsigned char*)*sub_strings + str_sizes->sub_strings_size), 0, reg->d_size.sub_strings_size - str_sizes->sub_strings_size);
             }
             str_sizes->sub_strings_size = reg->d_size.sub_strings_size;
         }
@@ -60,13 +60,13 @@ const char *OSRegex_Execute_ex(const char *str, OSRegex *reg, regex_matching *re
     if (external_context && prts_str) {
         if (str_sizes->prts_str_alloc_size < reg->d_size.prts_str_alloc_size) {
             os_realloc(*prts_str, reg->d_size.prts_str_alloc_size, *prts_str);
-            memset((void *) *prts_str + str_sizes->prts_str_alloc_size, 0,
+            memset((void *)((unsigned char *)*prts_str + str_sizes->prts_str_alloc_size), 0,
                    reg->d_size.prts_str_alloc_size - str_sizes->prts_str_alloc_size);
             if (!str_sizes->prts_str_size) {
                 os_calloc(1, reg->d_size.prts_str_alloc_size, str_sizes->prts_str_size);
             } else {
                 os_realloc(str_sizes->prts_str_size, reg->d_size.prts_str_alloc_size, str_sizes->prts_str_size);
-                memset((void *) str_sizes->prts_str_size + str_sizes->prts_str_alloc_size, 0,
+                memset((void *)((unsigned char *)str_sizes->prts_str_size + str_sizes->prts_str_alloc_size), 0,
                        reg->d_size.prts_str_alloc_size - str_sizes->prts_str_alloc_size);
             }
             str_sizes->prts_str_alloc_size = reg->d_size.prts_str_alloc_size;
@@ -80,7 +80,7 @@ const char *OSRegex_Execute_ex(const char *str, OSRegex *reg, regex_matching *re
                     str_sizes->prts_str_size[i] = reg->d_size.prts_str_size[i];
                 } else if (str_sizes->prts_str_size[i] < reg->d_size.prts_str_size[i]) {
                     os_realloc((*prts_str)[i], reg->d_size.prts_str_size[i], (*prts_str)[i]);
-                    memset((void*)(*prts_str)[i] + str_sizes->prts_str_size[i], 0, reg->d_size.prts_str_size[i] - str_sizes->prts_str_size[i]);
+                    memset((void*)((unsigned char *)(*prts_str)[i] + str_sizes->prts_str_size[i]), 0, reg->d_size.prts_str_size[i] - str_sizes->prts_str_size[i]);
                     str_sizes->prts_str_size[i] = reg->d_size.prts_str_size[i];
                 }
             }

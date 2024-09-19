@@ -12,8 +12,19 @@
  * APIs for many network operations
  */
 
-#ifndef OS_NET_H
-#define OS_NET_H
+#pragma once
+
+#include "cust_types.h"
+
+#if defined(__GNUC__) || defined(__clang__)
+#define ATTR_NONNULL __attribute__((nonnull))
+#define ATTR_UNUSED __attribute__((unused))
+#define UNREFERENCED_PARAMETER(P)
+#else
+#define ATTR_NONNULL
+#define ATTR_UNUSED
+#define UNREFERENCED_PARAMETER(P) (P)
+#endif
 
 #define IPV6_LINK_LOCAL_PREFIX "FE80:0000:0000:0000:"
 
@@ -31,9 +42,9 @@ int OS_Bindportudp(u_int16_t _port, const char *_ip, int ipv6);
  * Bind to a specific file, using the "mode" permissions in
  * a Unix Domain socket.
  */
-int OS_BindUnixDomain(const char *path, int type, int max_msg_size) __attribute__((nonnull));
-int OS_BindUnixDomainWithPerms(const char *path, int type, int max_msg_size, uid_t uid, gid_t gid, mode_t mode) __attribute__((nonnull));
-int OS_ConnectUnixDomain(const char *path, int type, int max_msg_size) __attribute__((nonnull));
+int OS_BindUnixDomain(const char *path, int type, int max_msg_size) ATTR_NONNULL;
+int OS_BindUnixDomainWithPerms(const char *path, int type, int max_msg_size, uid_t uid, gid_t gid, mode_t mode) ATTR_NONNULL;
+int OS_ConnectUnixDomain(const char *path, int type, int max_msg_size) ATTR_NONNULL;
 int OS_getsocketsize(int ossock);
 
 /* OS_Connect
@@ -46,29 +57,29 @@ int OS_ConnectUDP(u_int16_t _port, const char *_ip, int ipv6, uint32_t network_i
  * Receive a UDP packet. Return NULL if failed
  */
 char *OS_RecvUDP(int socket, int sizet);
-int OS_RecvConnUDP(int socket, char *buffer, int buffer_size) __attribute__((nonnull));
+int OS_RecvConnUDP(int socket, char *buffer, int buffer_size) ATTR_NONNULL;
 
 /* OS_RecvUnix
  * Receive a message via a Unix socket
  */
-int OS_RecvUnix(int socket, int sizet, char *ret) __attribute__((nonnull));
+int OS_RecvUnix(int socket, int sizet, char *ret) ATTR_NONNULL;
 
 /* OS_RecvTCP
  * Receive a TCP packet
  */
-int OS_AcceptTCP(int socket, char *srcip, size_t addrsize) __attribute__((nonnull));
+int OS_AcceptTCP(int socket, char *srcip, size_t addrsize) ATTR_NONNULL;
 char *OS_RecvTCP(int socket, int sizet);
-int OS_RecvTCPBuffer(int socket, char *buffer, int sizet) __attribute__((nonnull));
+int OS_RecvTCPBuffer(int socket, char *buffer, int sizet) ATTR_NONNULL;
 
 /* OS_SendTCP
  * Send a TCP/UDP/UnixSocket packet (in a open socket)
  */
-int OS_SendTCP(int socket, const char *msg) __attribute__((nonnull));
-int OS_SendTCPbySize(int socket, int size, const char *msg) __attribute__((nonnull));
+int OS_SendTCP(int socket, const char *msg) ATTR_NONNULL;
+int OS_SendTCPbySize(int socket, int size, const char *msg) ATTR_NONNULL;
 
-int OS_SendUnix(int socket, const char *msg, int size) __attribute__((nonnull));
+int OS_SendUnix(int socket, const char *msg, int size) ATTR_NONNULL;
 
-int OS_SendUDPbySize(int socket, int size, const char *msg) __attribute__((nonnull));
+int OS_SendUDPbySize(int socket, int size, const char *msg) ATTR_NONNULL;
 
 /*
  * OS_GetHost retrieves the IP of a host
@@ -100,7 +111,7 @@ int OS_SetKeepalive(int socket);
  * @param intvl Interval between probes, in seconds.
  * @param cnt Number of probes sent before closing the connection.
  */
-void OS_SetKeepalive_Options(__attribute__((unused)) int socket, int idle, int intvl, int cnt);
+void OS_SetKeepalive_Options(ATTR_UNUSED int socket, int idle, int intvl, int cnt);
 
 /* Set the delivery timeout for a socket
  * Returns 0 on success, else -1
@@ -159,7 +170,7 @@ int OS_SetSocketSize(int sock, int mode, int max_msg_size);
  * Returns -1 on socket error.
  * Returns 0 on socket disconnected or timeout.
  */
-ssize_t os_recv_waitall(int sock, void * buf, size_t size);
+int64_t os_recv_waitall(int sock, void * buf, size_t size);
 
 // Wrapper for select()
 int wnet_select(int sock, int timeout);
@@ -221,4 +232,3 @@ int get_ipv4_string(struct in_addr addr, char *address, size_t address_size);
  * */
 int get_ipv6_string(struct in6_addr addr6, char *address, size_t address_size);
 
-#endif /* OS_NET_H */

@@ -11,9 +11,15 @@
 #ifndef VALIDATE_H
 #define VALIDATE_H
 
+#if defined(__GNUC__) || defined(__clang__)
+#define ATTR_NONNULL __attribute__((nonnull))
+#define UNREFERENCED_PARAMETER(P)
+#else
+#define ATTR_NONNULL
+#endif
 
 /* Run-time definitions */
-int getDefine_Int(const char *high_name, const char *low_name, int min, int max) __attribute__((nonnull));
+int getDefine_Int(const char *high_name, const char *low_name, int min, int max) ATTR_NONNULL;
 
 
 /**
@@ -23,7 +29,7 @@ int getDefine_Int(const char *high_name, const char *low_name, int min, int max)
  * @param that_ip Struct os_ip to check.
  * @return Returns 1 on success or 0 on failure.
  */
-int OS_IPFound(const char *ip_address, const os_ip *that_ip) __attribute__((nonnull));
+int OS_IPFound(const char *ip_address, const os_ip *that_ip) ATTR_NONNULL;
 
 
 /**
@@ -33,7 +39,7 @@ int OS_IPFound(const char *ip_address, const os_ip *that_ip) __attribute__((nonn
  * @param list_of_ips List of os_ip struct to check.
  * @return Returns 1 on success or 0 on failure.
  */
-int OS_IPFoundList(const char *ip_address, os_ip **list_of_ips);// __attribute__((nonnull));
+int OS_IPFoundList(const char *ip_address, os_ip **list_of_ips);// ATTR_NONNULL;
 
 
 /**
@@ -88,7 +94,7 @@ char *OS_IsValidTime(const char *time_str);
  * @param time_str Time to be validated.
  * @return Returns 0 if doesn't match or a valid string in success.
  */
-char *OS_IsValidUniqueTime(const char *time_str) __attribute__((nonnull));
+char *OS_IsValidUniqueTime(const char *time_str) ATTR_NONNULL;
 
 
 /**
@@ -98,7 +104,7 @@ char *OS_IsValidUniqueTime(const char *time_str) __attribute__((nonnull));
  * @param ossec_time Time interval.
  * @return Returns 1 on success or 0 on failure.
  */
-int OS_IsonTime(const char *time_str, const char *ossec_time) __attribute__((nonnull));
+int OS_IsonTime(const char *time_str, const char *ossec_time) ATTR_NONNULL;
 
 
 /**
@@ -108,7 +114,7 @@ int OS_IsonTime(const char *time_str, const char *ossec_time) __attribute__((non
  * @param ossec_time Time interval.
  * @return Returns 1 on success or 0 on failure.
  */
-int OS_IsAfterTime(const char *time_str, const char *ossec_time) __attribute__((nonnull));
+int OS_IsAfterTime(const char *time_str, const char *ossec_time) ATTR_NONNULL;
 
 
 /**
@@ -130,7 +136,7 @@ char *OS_IsValidDay(const char *day_str);
  * @param ossec_day Interval.
  * @return Returns 1 on success or 0 on failure.
  */
-int OS_IsonDay(int week_day, const char *ossec_day) __attribute__((nonnull));
+int OS_IsonDay(int week_day, const char *ossec_day) ATTR_NONNULL;
 
 
 /**

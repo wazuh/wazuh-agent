@@ -9,16 +9,21 @@
  * Foundation.
  */
 
-#ifndef _CMD_HELPER_H
-#define _CMD_HELPER_H
+#pragma once
 
 #include <string>
 #include <iostream>
 #include <cstdio>
 #include <memory>
+#include <vector>
 
+#ifndef WIN32
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
+#else
+FILE *popen(const char *command, const char *mode) { return NULL; }
+int pclose(FILE *stream){ return 0; }
+#endif
 
 namespace Utils
 {
@@ -49,4 +54,3 @@ namespace Utils
 
 #pragma GCC diagnostic pop
 
-#endif // _CMD_HELPER_H

@@ -13,7 +13,7 @@ if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_CXX_FLAGS_DEBUG "-fsanitize=address,leak,undefined")
   endif(FSANITIZE)
 else()
-  set(CMAKE_CXX_FLAGS "/Zi /W4 /permissive- /std:c++14 /MT")
+  set(CMAKE_CXX_FLAGS "/Zi /W4 /permissive- /std:c++14 /MT /EHsc")
 endif()
 
 file(GLOB INVENTORY_TESTTOOL_SRC
@@ -31,11 +31,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         inventory
         psapi
         iphlpapi
-        crypto
-        ssl
         ws2_32
         crypt32
-        -static-libstdc++
     )
 elseif (CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
     target_link_libraries(inventory_test_tool

@@ -15,6 +15,15 @@
 #include "os_regex.h"
 #include "os_regex_internal.h"
 
+#if defined(__GNUC__) || defined(__clang__)
+#define ATTR_NONNULL __attribute__((nonnull))
+#define UNREFERENCED_PARAMETER(P)
+#define ATTR_UNUSED __attribute__((unused))
+#else
+#define UNREFERENCED_PARAMETER(P) (P)
+#define ATTR_UNUSED
+#define ATTR_NONNULL
+#endif
 
 int _OS_Match(const char *pattern, const char *str, size_t str_len, size_t size)
 {
@@ -55,8 +64,9 @@ nnext:
     return (FALSE);
 }
 
-int _os_strncmp(const char *pattern, const char *str, __attribute__((unused)) size_t str_len, size_t size)
+int _os_strncmp(const char *pattern, const char *str, ATTR_UNUSED size_t str_len, size_t size)
 {
+    UNREFERENCED_PARAMETER(str_len);
     if (strncasecmp(pattern, str, size) == 0) {
         return (TRUE);
     }
@@ -64,8 +74,9 @@ int _os_strncmp(const char *pattern, const char *str, __attribute__((unused)) si
     return (FALSE);
 }
 
-int _os_strcmp(const char *pattern, const char *str, __attribute__((unused)) size_t str_len, __attribute__((unused)) size_t size)
+int _os_strcmp(const char *pattern, const char *str, ATTR_UNUSED size_t str_len, ATTR_UNUSED size_t size)
 {
+    UNREFERENCED_PARAMETER(str_len);
     if (strcasecmp(pattern, str) == 0) {
         return (TRUE);
     }
@@ -73,9 +84,13 @@ int _os_strcmp(const char *pattern, const char *str, __attribute__((unused)) siz
     return (FALSE);
 }
 
-int _os_strmatch(__attribute__((unused)) const char *pattern, __attribute__((unused)) const char *str,
-                 __attribute__((unused)) size_t str_len, __attribute__((unused)) size_t size)
+int _os_strmatch(ATTR_UNUSED const char *pattern, ATTR_UNUSED const char *str,
+                 ATTR_UNUSED size_t str_len, ATTR_UNUSED size_t size)
 {
+    UNREFERENCED_PARAMETER(pattern);
+    UNREFERENCED_PARAMETER(str);
+    UNREFERENCED_PARAMETER(str_len);
+    UNREFERENCED_PARAMETER(size);
     return (TRUE);
 }
 

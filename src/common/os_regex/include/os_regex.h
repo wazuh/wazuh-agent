@@ -18,13 +18,22 @@
 #include <stdbool.h>
 
 #ifdef WIN32
-
+typedef void * pthread_mutex_t;
+#ifndef ATTR_NONNULL_TWO
 #define ATTR_NONNULL_TWO
+#endif
+#ifndef ATTR_NONNULL
 #define ATTR_NONNULL
-
+#endif
 #else
+#include <pthread.h>
+
+#ifndef ATTR_NONNULL_TWO
 #define ATTR_NONNULL_TWO __attribute__((nonnull(2)))
-#define ATTR_NONNULL __attribute__((__returns_nonnull__))
+#endif
+#ifndef ATTR_NONNULL
+#define ATTR_NONNULL __attribute__((nonnull))
+#endif
 #endif
 
 /* OSRegex_Compile flags */

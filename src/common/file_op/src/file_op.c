@@ -28,6 +28,23 @@
 #include <regex.h>
 #else
 #include <aclapi.h>
+typedef int DIR;
+struct dirent {
+    unsigned short d_reclen;    /* length of this record */
+    unsigned char  d_type;      /* type of file; not supported
+                                   by all file system types */
+    char           d_name[256]; /* filename */
+};
+DIR * opendir(DIR *dir){ return NULL; }
+int closedir(DIR *dir){ return 0; }
+static char *dirname(char *s){ return NULL; }
+static struct dirent *readdir(DIR *dir){ return NULL; }
+static int64_t ftello64(FILE *x){ return 0; }
+static int64_t fseeko64(FILE *x, int64_t pos, int mode){ return 0; }
+static int64_t S_ISREG(int64_t flags){ return 0; }
+static int64_t S_ISDIR(int64_t flags){ return 0; }
+static char * PathFindFileNameA_(char *s){ return NULL; }
+static void PathRemoveFileSpec_(char *path){}
 #endif
 
 /* Vista product information */
@@ -701,7 +718,11 @@ int UnmergeFiles(const char *finalpath, const char *optdir, int mode, char ***un
         free(copy);
 
         /* Create temporary file */
-        char tmp_file[strlen(final_name) + 7];
+        char *tmp_file = malloc(strlen(final_name) + 7);
+        if(!tmp_file){
+            merror("Unmerging '%s': could not reserve temporary memory for '%s'", finalpath, files);
+            state_ok = 0;
+        }
         snprintf(tmp_file, sizeof(tmp_file), "%sXXXXXX", final_name);
 
         if (mkstemp_ex(tmp_file) == -1) {
@@ -775,6 +796,7 @@ int UnmergeFiles(const char *finalpath, const char *optdir, int mode, char ***un
             os_strdup(file_name, *(*unmerged_files + file_count));
             file_count++;
         }
+        free(tmp_file);
     }
 
     if (unmerged_files != NULL) {
@@ -1226,7 +1248,7 @@ time_t get_UTC_modification_time(const char *file){
 
 char *basename_ex(char *path)
 {
-    return (PathFindFileNameA(path));
+    return (PathFindFileNameA_(path));
 }
 
 
@@ -1628,9 +1650,9 @@ const char *getuname()
                 // Read Windows Version from registry
                 DWORD dwRet;
                 HKEY RegistryKey;
-                const DWORD size = 1024;
-                TCHAR value[size];
-                DWORD dwCount = size;
+                #define VALUE_SIZE 1024
+                TCHAR value[VALUE_SIZE];
+                DWORD dwCount = VALUE_SIZE;
                 add_infoEx = 0;
 
                 if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"), 0, KEY_READ | KEY_WOW64_64KEY , &RegistryKey) != ERROR_SUCCESS) {
@@ -1846,13 +1868,13 @@ const char *getuname()
                 memset(__wp, '\0', 64);
                 DWORD dwRet;
                 HKEY RegistryKey;
-                const DWORD size = 30;
-                TCHAR winver[size];
-                TCHAR wincomp[size];
+                #define WIN_SIZE 30
+                TCHAR winver[WIN_SIZE];
+                TCHAR wincomp[WIN_SIZE];
                 DWORD winMajor = 0;
                 DWORD winMinor = 0;
                 DWORD buildRevision = 0;
-                DWORD dwCount = size;
+                DWORD dwCount = WIN_SIZE;
                 unsigned long type=REG_DWORD;
 
                 if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"), 0, KEY_READ | KEY_WOW64_64KEY, &RegistryKey) != ERROR_SUCCESS) {
@@ -1862,20 +1884,20 @@ const char *getuname()
                 // Windows 10
                 dwRet = RegQueryValueEx(RegistryKey, TEXT("CurrentMajorVersionNumber"), NULL, &type, (LPBYTE)&winMajor, &dwCount);
                 if (dwRet == ERROR_SUCCESS) {
-                    dwCount = size;
+                    dwCount = WIN_SIZE;
                     dwRet = RegQueryValueEx(RegistryKey, TEXT("CurrentMinorVersionNumber"), NULL, &type, (LPBYTE)&winMinor, &dwCount);
                     if (dwRet != ERROR_SUCCESS) {
                         merror("Error reading 'CurrentMinorVersionNumber' from Windows registry. (Error %u)",(unsigned int)dwRet);
                     }
                     else {
-                        dwCount = size;
+                        dwCount = WIN_SIZE;
                         dwRet = RegQueryValueEx(RegistryKey, TEXT("CurrentBuildNumber"), NULL, NULL, (LPBYTE)wincomp, &dwCount);
                         if (dwRet != ERROR_SUCCESS) {
                             merror("Error reading 'CurrentBuildNumber' from Windows registry. (Error %u)",(unsigned int)dwRet);
                             snprintf(__wp, 63, " [Ver: %d.%d]", (unsigned int)winMajor, (unsigned int)winMinor);
                         }
                         else {
-                            dwCount = size;
+                            dwCount = WIN_SIZE;
                             dwRet = RegQueryValueEx(RegistryKey, TEXT("UBR"), NULL, &type, (LPBYTE)&buildRevision, &dwCount);
                             if (dwRet != ERROR_SUCCESS) {
                                 snprintf(__wp,  sizeof(__wp), " [Ver: %d.%d.%s]", (unsigned int)winMajor, (unsigned int)winMinor, wincomp);
@@ -1904,14 +1926,14 @@ const char *getuname()
                         snprintf(__wp, 63, " [Ver: 6.2]");
                     }
                     else {
-                        dwCount = size;
+                        dwCount = WIN_SIZE;
                         dwRet = RegQueryValueEx(RegistryKey, TEXT("CurrentBuildNumber"), NULL, NULL, (LPBYTE)wincomp, &dwCount);
                         if (dwRet != ERROR_SUCCESS) {
                             merror("Error reading 'CurrentBuildNumber' from Windows registry. (Error %u)",(unsigned int)dwRet);
                             snprintf(__wp, 63, " [Ver: 6.2]");
                         }
                         else {
-                            dwCount = size;
+                            dwCount = WIN_SIZE;
                             dwRet = RegQueryValueEx(RegistryKey, TEXT("UBR"), NULL, &type, (LPBYTE)&buildRevision, &dwCount);
                             if (dwRet != ERROR_SUCCESS) {
                                 snprintf(__wp, sizeof(__wp), " [Ver: %s.%s]", winver,wincomp);
@@ -2004,7 +2026,7 @@ void w_ch_exec_dir() {
     }
 
     /* Remove file name from path */
-    PathRemoveFileSpec(path);
+    PathRemoveFileSpec_(path);
 
     /* Move to correct directory */
     if (chdir(path)) {

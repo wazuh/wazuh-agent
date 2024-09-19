@@ -8,12 +8,16 @@
  * Foundation
  */
 
-#ifndef MEM_H
-#define MEM_H
+#pragma once
 
 #include <stdlib.h>
 
-#ifdef WIN32
+#if defined(__GNUC__) || defined(__clang__)
+#define ATTR_NONNULL __attribute__((nonnull))
+#define ATTR_NONNULL_TWO __attribute__((nonnull(2)))
+#else
+#define ATTR_NONNULL
+#define ATTR_NONNULL_TWO
 #define win_alloc(x) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (x))
 #define win_free(x) HeapFree(GetProcessHeap(), 0, (x))
 #endif
@@ -24,7 +28,6 @@ void **os_AddPtArray(void *pt, void **array);
 char **os_AddStrArray(const char *str, char **array);
 void   os_FreeArray(char *ch1, char **ch2);
 int    os_IsStrOnArray(const char *str, char **array);
-char  *os_LoadString(char *at, const char *str) __attribute__((nonnull(2)));
-void  *memset_secure(void *v, int c, size_t n) __attribute__((nonnull));
+char  *os_LoadString(char *at, const char *str) ATTR_NONNULL_TWO;
+void  *memset_secure(void *v, int c, size_t n) ATTR_NONNULL;
 
-#endif /* MEM_H */

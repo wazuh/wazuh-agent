@@ -9,14 +9,12 @@
  * Foundation.
  */
 
-#ifndef _NETWORK_HELPER_H
-#define _NETWORK_HELPER_H
+#pragma once
 
 #include <string>
 #include <arpa/inet.h>
 #include <memory>
 #include <netdb.h>
-#include "makeUnique.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -83,4 +81,3 @@ namespace Utils
 
 #pragma GCC diagnostic pop
 
-#endif // _NETWORK_HELPER_H

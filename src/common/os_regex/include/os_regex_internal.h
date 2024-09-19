@@ -8,15 +8,20 @@
  * Foundation.
 */
 
-#ifndef OS_INTERNAL_H
-#define OS_INTERNAL_H
+#pragma once
+
+#if defined(__GNUC__) || defined(__clang__)
+#define ATTR_NONNULL __attribute__((nonnull))
+#else
+#define ATTR_NONNULL
+#endif
 
 /* Prototype for the _OsMatch */
-int _OS_Match(const char *pattern, const char *str, size_t str_len, size_t size) __attribute__((nonnull));
-int _os_strncmp(const char *pattern, const char *str, size_t str_len, size_t size) __attribute__((nonnull));
-int _os_strcmp_last(const char *pattern, const char *str, size_t str_len, size_t size) __attribute__((nonnull));
-int _os_strcmp(const char *pattern, const char *str, size_t str_len, size_t size) __attribute__((nonnull));
-int _os_strmatch(const char *pattern, const char *str, size_t str_len, size_t size) __attribute__((nonnull));
+int _OS_Match(const char *pattern, const char *str, size_t str_len, size_t size) ATTR_NONNULL;
+int _os_strncmp(const char *pattern, const char *str, size_t str_len, size_t size) ATTR_NONNULL;
+int _os_strcmp_last(const char *pattern, const char *str, size_t str_len, size_t size) ATTR_NONNULL;
+int _os_strcmp(const char *pattern, const char *str, size_t str_len, size_t size) ATTR_NONNULL;
+int _os_strmatch(const char *pattern, const char *str, size_t str_len, size_t size) ATTR_NONNULL;
 
 #define BACKSLASH   '\\'
 #define ENDSTR      '\0'
@@ -109,4 +114,3 @@ extern const uchar charmap[256];
  */
 extern const uchar regexmap[][256];
 
-#endif /* OS_INTERNAL_H */

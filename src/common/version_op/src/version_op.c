@@ -29,18 +29,18 @@ os_info *get_win_version()
     DWORD dwRet;
     HKEY RegistryKey;
     char * subkey;
-    const DWORD vsize = 1024;
-    TCHAR value[vsize];
-    DWORD dwCount = vsize;
+    #define VSIZE 1024
+    TCHAR value[VSIZE];
+    DWORD dwCount = VSIZE;
     char version[64] = "";
-    const DWORD size = 30;
+    #define WINVER_SIZE 30
     unsigned long type = REG_DWORD;
 
     size_t ver_length = 60;
     size_t v_length = 20;
 
     os_calloc(1,sizeof(os_info),info);
-    os_calloc(vsize, sizeof(char), subkey);
+    os_calloc(VSIZE, sizeof(char), subkey);
 
     typedef void (WINAPI * PGNSI)(LPSYSTEM_INFO);
 
@@ -70,7 +70,7 @@ os_info *get_win_version()
 
         // Read Windows Version from registry
 
-        snprintf(subkey, vsize - 1, "%s", "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
+        snprintf(subkey, VSIZE - 1, "%s", "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
 
         if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, KEY_READ, &RegistryKey) != ERROR_SUCCESS) {
             merror(SK_REG_OPEN, subkey);
@@ -95,11 +95,11 @@ os_info *get_win_version()
         // Read Windows Version number from registry
         char vn_temp[64];
         memset(vn_temp, '\0', 64);
-        TCHAR winver[size];
-        TCHAR wincomp[size];
+        TCHAR winver[WINVER_SIZE];
+        TCHAR wincomp[WINVER_SIZE];
         DWORD winMajor = 0;
         DWORD winMinor = 0;
-        dwCount = size;
+        dwCount = WINVER_SIZE;
 
         if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, KEY_READ, &RegistryKey) != ERROR_SUCCESS) {
             merror(SK_REG_OPEN, subkey);
@@ -108,7 +108,7 @@ os_info *get_win_version()
         // Windows 10
         dwRet = RegQueryValueEx(RegistryKey, TEXT("CurrentMajorVersionNumber"), NULL, &type, (LPBYTE)&winMajor, &dwCount);
         if (dwRet == ERROR_SUCCESS) {
-            dwCount = size;
+            dwCount = WINVER_SIZE;
             dwRet = RegQueryValueEx(RegistryKey, TEXT("CurrentMinorVersionNumber"), NULL, &type, (LPBYTE)&winMinor, &dwCount);
             if (dwRet != ERROR_SUCCESS) {
                 merror("Error reading 'CurrentMinorVersionNumber' from Windows registry. (Error %u)",(unsigned int)dwRet);
@@ -118,7 +118,7 @@ os_info *get_win_version()
                 info->os_major = strdup(vn_temp);
                 snprintf(vn_temp, 63, "%d", (unsigned int)winMinor);
                 info->os_minor = strdup(vn_temp);
-                dwCount = size;
+                dwCount = WINVER_SIZE;
                 dwRet = RegQueryValueEx(RegistryKey, TEXT("CurrentBuildNumber"), NULL, NULL, (LPBYTE)wincomp, &dwCount);
                 if (dwRet != ERROR_SUCCESS) {
                     merror("Error reading 'CurrentBuildNumber' from Windows registry. (Error %u)",(unsigned int)dwRet);
@@ -129,7 +129,7 @@ os_info *get_win_version()
                 }
             }
 
-            dwCount = vsize;
+            dwCount = VSIZE;
             dwRet = RegQueryValueEx(RegistryKey, TEXT("ReleaseId"), NULL, NULL, (LPBYTE)value, &dwCount);
             if (dwRet != ERROR_SUCCESS) {
                 mdebug1("Could not read the 'ReleaseId' key from Windows registry. (Error %u)",(unsigned int)dwRet);
@@ -155,7 +155,7 @@ os_info *get_win_version()
                     free(parts[i]);
                 }
                 free(parts);
-                dwCount = size;
+                dwCount = WINVER_SIZE;
                 dwRet = RegQueryValueEx(RegistryKey, TEXT("CurrentBuildNumber"), NULL, NULL, (LPBYTE)wincomp, &dwCount);
                 if (dwRet != ERROR_SUCCESS) {
                     merror("Error reading 'CurrentBuildNumber' from Windows registry. (Error %u)",(unsigned int)dwRet);
@@ -240,7 +240,7 @@ os_info *get_win_version()
     if(!info->os_release) {
         DWORD service_pack = 0;
         dwCount = sizeof(DWORD);
-        snprintf(subkey, vsize - 1, "%s", "SYSTEM\\CurrentControlSet\\Control\\Windows");
+        snprintf(subkey, VSIZE - 1, "%s", "SYSTEM\\CurrentControlSet\\Control\\Windows");
 
         if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, KEY_READ, &RegistryKey) != ERROR_SUCCESS) {
             merror(SK_REG_OPEN, subkey);
@@ -280,7 +280,7 @@ os_info *get_win_version()
 
     // Read Architecture
 
-    snprintf(subkey, vsize - 1, "%s", "System\\CurrentControlSet\\Control\\Session Manager\\Environment");
+    snprintf(subkey, VSIZE - 1, "%s", "System\\CurrentControlSet\\Control\\Session Manager\\Environment");
 
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, KEY_READ, &RegistryKey) != ERROR_SUCCESS) {
         merror(SK_REG_OPEN, subkey);
@@ -307,12 +307,12 @@ os_info *get_win_version()
 
     // Read Hostname
 
-    snprintf(subkey, vsize - 1, "%s", "System\\CurrentControlSet\\Control\\ComputerName\\ActiveComputerName");
+    snprintf(subkey, VSIZE - 1, "%s", "System\\CurrentControlSet\\Control\\ComputerName\\ActiveComputerName");
     char nodename[1024] = "";
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, KEY_READ, &RegistryKey) != ERROR_SUCCESS) {
         merror(SK_REG_OPEN, subkey);
     } else {
-        dwCount = size;
+        dwCount = WINVER_SIZE;
         dwRet = RegQueryValueEx(RegistryKey, TEXT("ComputerName"), NULL, NULL, (LPBYTE)&nodename, &dwCount);
 
         if (dwRet != ERROR_SUCCESS) {

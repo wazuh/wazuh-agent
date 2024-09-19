@@ -16,8 +16,8 @@
 #include "os_xml_internal.h"
 
 /* Prototypes */
-static char **_GetElements(const OS_XML *_lxml, const char **element_name, XML_TYPE type) __attribute__((nonnull(1)));
-static char **_GetElementContent(OS_XML *_lxml, const char **element_name, const char *attr) __attribute__((nonnull(1, 2)));
+static char **_GetElements(const OS_XML *_lxml, const char **element_name, XML_TYPE type) ATTR_NONNULL_ONE;
+static char **_GetElementContent(OS_XML *_lxml, const char **element_name, const char *attr) ATTR_NONNULL_ONE_TWO;
 
 
 /* Check if a element exists

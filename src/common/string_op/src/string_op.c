@@ -17,6 +17,7 @@
 #ifdef EVENTCHANNEL_SUPPORT
 #define _WIN32_WINNT 0x0600
 #endif
+char *strtok_r(char *str, const char *delim, char **saveptr){return NULL; }
 #endif
 
 /* Trim CR and/or LF from the last positions of a string */

@@ -37,6 +37,10 @@
 /* Global headers */
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifndef WIN32
+#include <sys/time.h>
+#include <sys/param.h>
+#endif
 #include <stdint.h>
 #include <inttypes.h>
 #include <assert.h>
@@ -59,11 +63,17 @@
 #include <string.h>
 #include <stdarg.h>
 #include <fcntl.h>
+#ifndef WIN32
+#include <unistd.h>
+#include <dirent.h>
+#endif
 #include <ctype.h>
 #include <signal.h>
 #include <stdbool.h>
 
 #ifndef WIN32
+#include <pthread.h>
+#include <glob.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -71,6 +81,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #else
+#include <vcruntime.h>
 #include <winsock2.h>
 #include <windows.h>
 #include <io.h>
@@ -86,6 +97,9 @@
 
 #include <time.h>
 #include <errno.h>
+#ifndef WIN32
+#include <libgen.h>
+#endif
 
 #include "defs.h"
 #include "os_err.h"
@@ -94,7 +108,10 @@
 #include "file_op.h"
 #include "regex_op.h"
 #include "mem_op.h"
+#ifndef WIN32
+#include "privsep_op.h"
 #include "pthreads_op.h"
+#endif
 #include "os_xml.h"
 #include "error_messages.h"
 #include "os_regex.h"
@@ -132,9 +149,6 @@ typedef int socklen_t;
 #define lstat(x,y) stat(x,y)
 #define CloseSocket(x) closesocket(x)
 void WinSetError();
-typedef uint32_t u_int32_t;
-typedef uint16_t u_int16_t;
-typedef uint8_t u_int8_t;
 
 #define MSG_DONTWAIT    0
 
@@ -187,7 +201,7 @@ extern const char *__local_name;
 
 #define sqlite_strdup(x,y) ({ if (x) { os_strdup(x, y); } else (void)0; })
 
-#define w_strlen(x) ({ size_t ret = 0; if (x) ret = strlen(x); ret;})
+#define w_strlen(x) ((x)? strlen(x) : 0)
 
 // Calculate the number of elements within an array.
 // Only static arrays allowed.
@@ -196,3 +210,4 @@ extern const char *__local_name;
 #ifndef WAZUH_UNIT_TESTING
 #define FOREVER() 1
 #endif
+
