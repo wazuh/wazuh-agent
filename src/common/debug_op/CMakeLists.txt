@@ -11,7 +11,6 @@ target_link_libraries(debug_op
     mem_op
     privsep_op
     pthreads_op
-    os_xml
     error_messages
     os_net
     binaries_op
