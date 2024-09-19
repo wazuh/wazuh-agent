@@ -4,7 +4,7 @@ add_executable(agent_test agent_test.cpp)
 configure_target(agent_test)
 target_include_directories(agent_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 target_link_libraries(agent_test PRIVATE Agent GTest::gtest GTest::gmock)
-if(NOT WIN32
+if(NOT WIN32)
 add_test(NAME AgentTest COMMAND agent_test)
 endif()
 
