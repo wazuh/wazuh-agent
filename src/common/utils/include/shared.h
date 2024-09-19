@@ -119,7 +119,6 @@
 #include "mem_op.h"
 #include "privsep_op.h"
 #include "pthreads_op.h"
-#include "os_xml.h"
 #include "error_messages.h"
 #include "binaries_op.h"
 #include "os_ip.h"
