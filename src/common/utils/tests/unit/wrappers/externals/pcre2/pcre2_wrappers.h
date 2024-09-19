@@ -14,7 +14,6 @@
 #define PCRE2_CODE_UNIT_WIDTH 8
 
 #include "shared.h"
-#include "expression.h"
 
 #define w_pcre2_match_data_create_from_pattern wrap_pcre2_match_data_create_from_pattern
 #define w_pcre2_match wrap_pcre2_match

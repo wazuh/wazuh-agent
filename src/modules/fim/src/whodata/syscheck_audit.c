@@ -16,7 +16,6 @@
 #include "../os_net/os_net.h"
 #include "syscheck_op.h"
 #include "audit_op.h"
-#include "string_op.h"
 
 #define AUDIT_RULES_FILE            "etc/audit_rules_wazuh.rules"
 #define AUDIT_RULES_LINK            "/etc/audit/rules.d/audit_rules_wazuh.rules"
