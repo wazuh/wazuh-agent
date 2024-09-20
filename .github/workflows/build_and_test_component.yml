@@ -3,47 +3,42 @@ name:  Build and Test Component
 
 on:
   workflow_dispatch:
-    inputs:
-      source_reference:
-        description: |
-          Branch from wazuh/wazuh-agent repository to use.
-        required: true
-      component:
-        description: 'Default agent'
-        required: true
-        type: choice
-          - agent
-        default: agent
 
-  workflow_call:
-    inputs:
-      source_reference:
-        type: string
-        required: true
-      components:
-        type: string
-        required: true
+env:
+  VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
 
 jobs:
   Build-component-and-test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    name: Build ${{ inputs.components }}
+    name: Build agent
 
     steps:
-      - name: Checkout wazuh/wazuh-agent repository
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
         with:
-          repository: wazuh/wazuh-agent
-          ref: ${{ inputs.source_reference }}
+          submodules: true
+          fetch-depth: 0
 
-      - name: Initializing Submodules
+      - name: Set up dependencies
         run: |
-          git submodule update --init --recursive
-          cd src/vcpkg && ./bootstrap-vcpkg.sh
+          sudo apt-get update
+          sudo apt-get install -y wget gnupg lsb-release software-properties-common libsystemd-dev
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 18
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy-18 autopoint libtool zlib1g-dev \
+            libgcrypt20-dev libmagic-dev libpopt-dev libmagic-dev libsqlite3-dev \
+            liblua5.4-dev gettext libarchive-dev
+        shell: bash
+
+      - name: Set up Binary caching
+        uses: ./.github/actions/vcpkg_related/cover_vcpkg_dependencies
+        with:
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build component
-        if: ${{ inputs.component == 'agent' }}
         run: |
           mkdir src/build
           cd src/build
