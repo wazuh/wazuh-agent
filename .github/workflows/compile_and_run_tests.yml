@@ -44,7 +44,7 @@ jobs:
       uses: ./.github/actions/vcpkg_related/cover_vcpkg_dependencies
       with:
         gh_token: ${{ secrets.GITHUB_TOKEN }}
-      
+
     - name: Run Compile Action
       uses: ./.github/actions/compile
       with:
