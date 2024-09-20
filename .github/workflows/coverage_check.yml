@@ -29,11 +29,19 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y cmake gcovr libsystemd-dev
+        sudo apt-get install -y autopoint libtool zlib1g-dev \
+          libgcrypt20-dev libmagic-dev libpopt-dev libmagic-dev \
+          libsqlite3-dev liblua5.4-dev gettext libarchive-dev
       shell: bash
 
     - name: Update PATH for LLVM
       run: echo "/usr/lib/llvm-16/bin" >> $GITHUB_PATH
       shell: bash
+
+    - name: Set up Binary caching 
+      uses: ./.github/actions/vcpkg_related/cover_vcpkg_dependencies
+      with:
+        gh_token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Generate CMake project
       run: |
