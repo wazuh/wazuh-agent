@@ -7,22 +7,6 @@
 
 constexpr std::chrono::seconds INVENTORY_DEFAULT_INTERVAL { 3600 };
 
-#define TRY_CATCH_TASK(task)                                            \
-do                                                                      \
-{                                                                       \
-    try                                                                 \
-    {                                                                   \
-        if(!m_stopping)                                                 \
-        {                                                               \
-            task();                                                     \
-        }                                                               \
-    }                                                                   \
-    catch(const std::exception& ex)                                     \
-    {                                                                   \
-        LogError(std::string{ex.what()});                               \
-    }                                                                   \
-}while(0)
-
 constexpr auto QUEUE_SIZE
 {
     4096
@@ -62,78 +46,6 @@ constexpr auto OS_SQL_STATEMENT
     PRIMARY KEY (os_name)) WITHOUT ROWID;)"
 };
 
-constexpr auto OS_SYNC_CONFIG_STATEMENT
-{
-    R"(
-    {
-        "decoder_type":"JSON_RANGE",
-        "table":"dbsync_osinfo",
-        "component":"inventory_osinfo",
-        "index":"os_name",
-        "checksum_field":"checksum",
-        "no_data_query_json": {
-                "row_filter":"WHERE os_name BETWEEN '?' and '?' ORDER BY os_name",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "count_range_query_json": {
-                "row_filter":"WHERE os_name BETWEEN '?' and '?' ORDER BY os_name",
-                "count_field_name":"count",
-                "column_list":["count(*) AS count "],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "row_data_query_json": {
-                "row_filter":"WHERE os_name ='?'",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "range_checksum_query_json": {
-                "row_filter":"WHERE os_name BETWEEN '?' and '?' ORDER BY os_name",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        }
-    }
-    )"
-};
-
-constexpr auto OS_START_CONFIG_STATEMENT
-{
-    R"({"table":"dbsync_osinfo",
-        "first_query":
-            {
-                "column_list":["os_name"],
-                "row_filter":" ",
-                "distinct_opt":false,
-                "order_by_opt":"os_name DESC",
-                "count_opt":1
-            },
-        "last_query":
-            {
-                "column_list":["os_name"],
-                "row_filter":" ",
-                "distinct_opt":false,
-                "order_by_opt":"os_name ASC",
-                "count_opt":1
-            },
-        "component":"inventory_osinfo",
-        "index":"os_name",
-        "last_event":"last_event",
-        "checksum_field":"checksum",
-        "range_checksum_query_json":
-            {
-                "row_filter":"WHERE os_name BETWEEN '?' and '?' ORDER BY os_name",
-                "column_list":["os_name, checksum"],
-                "distinct_opt":false,
-                "order_by_opt":"",
-                "count_opt":100
-            }
-        })"
-};
-
 constexpr auto HW_SQL_STATEMENT
 {
     R"(CREATE TABLE dbsync_hwinfo (
@@ -148,157 +60,12 @@ constexpr auto HW_SQL_STATEMENT
     PRIMARY KEY (board_serial)) WITHOUT ROWID;)"
 };
 
-constexpr auto HW_SYNC_CONFIG_STATEMENT
-{
-    R"(
-    {
-        "decoder_type":"JSON_RANGE",
-        "table":"dbsync_hwinfo",
-        "component":"inventory_hwinfo",
-        "index":"board_serial",
-        "checksum_field":"checksum",
-        "no_data_query_json": {
-                "row_filter":"WHERE board_serial BETWEEN '?' and '?' ORDER BY board_serial",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "count_range_query_json": {
-                "row_filter":"WHERE board_serial BETWEEN '?' and '?' ORDER BY board_serial",
-                "count_field_name":"count",
-                "column_list":["count(*) AS count "],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "row_data_query_json": {
-                "row_filter":"WHERE board_serial ='?'",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "range_checksum_query_json": {
-                "row_filter":"WHERE board_serial BETWEEN '?' and '?' ORDER BY board_serial",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        }
-    }
-    )"
-};
-
-constexpr auto HW_START_CONFIG_STATEMENT
-{
-    R"({"table":"dbsync_hwinfo",
-        "first_query":
-            {
-                "column_list":["board_serial"],
-                "row_filter":" ",
-                "distinct_opt":false,
-                "order_by_opt":"board_serial DESC",
-                "count_opt":1
-            },
-        "last_query":
-            {
-                "column_list":["board_serial"],
-                "row_filter":" ",
-                "distinct_opt":false,
-                "order_by_opt":"board_serial ASC",
-                "count_opt":1
-            },
-        "component":"inventory_hwinfo",
-        "index":"board_serial",
-        "last_event":"last_event",
-        "checksum_field":"checksum",
-        "range_checksum_query_json":
-            {
-                "row_filter":"WHERE board_serial BETWEEN '?' and '?' ORDER BY board_serial",
-                "column_list":["board_serial, checksum"],
-                "distinct_opt":false,
-                "order_by_opt":"",
-                "count_opt":100
-            }
-        })"
-};
-
-
 constexpr auto HOTFIXES_SQL_STATEMENT
 {
     R"(CREATE TABLE dbsync_hotfixes(
     hotfix TEXT,
     checksum TEXT,
     PRIMARY KEY (hotfix)) WITHOUT ROWID;)"
-};
-
-constexpr auto HOTFIXES_SYNC_CONFIG_STATEMENT
-{
-    R"(
-    {
-        "decoder_type":"JSON_RANGE",
-        "table":"dbsync_hotfixes",
-        "component":"inventory_hotfixes",
-        "index":"hotfix",
-        "checksum_field":"checksum",
-        "no_data_query_json": {
-                "row_filter":"WHERE hotfix BETWEEN '?' and '?' ORDER BY hotfix",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "count_range_query_json": {
-                "row_filter":"WHERE hotfix BETWEEN '?' and '?' ORDER BY hotfix",
-                "count_field_name":"count",
-                "column_list":["count(*) AS count "],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "row_data_query_json": {
-                "row_filter":"WHERE hotfix ='?'",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "range_checksum_query_json": {
-                "row_filter":"WHERE hotfix BETWEEN '?' and '?' ORDER BY hotfix",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        }
-    }
-    )"
-};
-
-constexpr auto HOTFIXES_START_CONFIG_STATEMENT
-{
-    R"({"table":"dbsync_hotfixes",
-        "first_query":
-            {
-                "column_list":["hotfix"],
-                "row_filter":" ",
-                "distinct_opt":false,
-                "order_by_opt":"hotfix DESC",
-                "count_opt":1
-            },
-        "last_query":
-            {
-                "column_list":["hotfix"],
-                "row_filter":" ",
-                "distinct_opt":false,
-                "order_by_opt":"hotfix ASC",
-                "count_opt":1
-            },
-        "component":"inventory_hotfixes",
-        "index":"hotfix",
-        "last_event":"last_event",
-        "checksum_field":"checksum",
-        "range_checksum_query_json":
-            {
-                "row_filter":"WHERE hotfix BETWEEN '?' and '?' ORDER BY hotfix",
-                "column_list":["hotfix, checksum"],
-                "distinct_opt":false,
-                "order_by_opt":"",
-                "count_opt":100
-            }
-        })"
 };
 
 constexpr auto PACKAGES_SQL_STATEMENT
@@ -322,150 +89,6 @@ constexpr auto PACKAGES_SQL_STATEMENT
     PRIMARY KEY (name,version,architecture,format,location)) WITHOUT ROWID;)"
 };
 static const std::vector<std::string> PACKAGES_ITEM_ID_FIELDS{"name", "version", "architecture", "format", "location"};
-
-constexpr auto PACKAGES_SYNC_CONFIG_STATEMENT
-{
-    R"(
-    {
-        "decoder_type":"JSON_RANGE",
-        "table":"dbsync_packages",
-        "component":"inventory_packages",
-        "index":"item_id",
-        "checksum_field":"checksum",
-        "no_data_query_json": {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "count_range_query_json": {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "count_field_name":"count",
-                "column_list":["count(*) AS count "],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "row_data_query_json": {
-                "row_filter":"WHERE item_id ='?'",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "range_checksum_query_json": {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        }
-    }
-    )"
-};
-
-constexpr auto PACKAGES_START_CONFIG_STATEMENT
-{
-    R"({"table":"dbsync_packages",
-        "first_query":
-            {
-                "column_list":["item_id"],
-                "row_filter":" ",
-                "distinct_opt":false,
-                "order_by_opt":"item_id DESC",
-                "count_opt":1
-            },
-        "last_query":
-            {
-                "column_list":["item_id"],
-                "row_filter":" ",
-                "distinct_opt":false,
-                "order_by_opt":"item_id ASC",
-                "count_opt":1
-            },
-        "component":"inventory_packages",
-        "index":"item_id",
-        "last_event":"last_event",
-        "checksum_field":"checksum",
-        "range_checksum_query_json":
-            {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "column_list":["item_id, checksum"],
-                "distinct_opt":false,
-                "order_by_opt":"",
-                "count_opt":100
-            }
-        })"
-};
-
-constexpr auto PROCESSES_START_CONFIG_STATEMENT
-{
-    R"({"table":"dbsync_processes",
-        "first_query":
-            {
-                "column_list":["pid"],
-                "row_filter":" ",
-                "distinct_opt":false,
-                "order_by_opt":"pid DESC",
-                "count_opt":1
-            },
-        "last_query":
-            {
-                "column_list":["pid"],
-                "row_filter":" ",
-                "distinct_opt":false,
-                "order_by_opt":"pid ASC",
-                "count_opt":1
-            },
-        "component":"inventory_processes",
-        "index":"pid",
-        "last_event":"last_event",
-        "checksum_field":"checksum",
-        "range_checksum_query_json":
-            {
-                "row_filter":"WHERE pid BETWEEN '?' and '?' ORDER BY pid",
-                "column_list":["pid, checksum"],
-                "distinct_opt":false,
-                "order_by_opt":"",
-                "count_opt":1000
-            }
-        })"
-};
-
-constexpr auto PROCESSES_SYNC_CONFIG_STATEMENT
-{
-    R"(
-    {
-        "decoder_type":"JSON_RANGE",
-        "table":"dbsync_processes",
-        "component":"inventory_processes",
-        "index":"pid",
-        "checksum_field":"checksum",
-        "no_data_query_json": {
-                "row_filter":"WHERE pid BETWEEN '?' and '?' ORDER BY pid",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "count_range_query_json": {
-                "row_filter":"WHERE pid BETWEEN '?' and '?' ORDER BY pid",
-                "count_field_name":"count",
-                "column_list":["count(*) AS count "],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "row_data_query_json": {
-                "row_filter":"WHERE pid ='?'",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "range_checksum_query_json": {
-                "row_filter":"WHERE pid BETWEEN '?' and '?' ORDER BY pid",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        }
-    }
-    )"
-};
 
 constexpr auto PROCESSES_SQL_STATEMENT
 {
@@ -502,78 +125,6 @@ constexpr auto PROCESSES_SQL_STATEMENT
     PRIMARY KEY (pid)) WITHOUT ROWID;)"
 };
 
-constexpr auto PORTS_START_CONFIG_STATEMENT
-{
-    R"({"table":"dbsync_ports",
-        "first_query":
-            {
-                "column_list":["item_id"],
-                "row_filter":" ",
-                "distinct_opt":false,
-                "order_by_opt":"item_id DESC",
-                "count_opt":1
-            },
-        "last_query":
-            {
-                "column_list":["item_id"],
-                "row_filter":" ",
-                "distinct_opt":false,
-                "order_by_opt":"item_id ASC",
-                "count_opt":1
-            },
-        "component":"inventory_ports",
-        "index":"item_id",
-        "last_event":"last_event",
-        "checksum_field":"checksum",
-        "range_checksum_query_json":
-            {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "column_list":["item_id, checksum"],
-                "distinct_opt":false,
-                "order_by_opt":"",
-                "count_opt":1000
-            }
-        })"
-};
-
-constexpr auto PORTS_SYNC_CONFIG_STATEMENT
-{
-    R"(
-    {
-        "decoder_type":"JSON_RANGE",
-        "table":"dbsync_ports",
-        "component":"inventory_ports",
-        "index":"item_id",
-        "checksum_field":"checksum",
-        "no_data_query_json": {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "count_range_query_json": {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "count_field_name":"count",
-                "column_list":["count(*) AS count "],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "row_data_query_json": {
-                "row_filter":"WHERE item_id ='?'",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "range_checksum_query_json": {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        }
-    }
-    )"
-};
-
 constexpr auto PORTS_SQL_STATEMENT
 {
     R"(CREATE TABLE dbsync_ports (
@@ -593,78 +144,6 @@ constexpr auto PORTS_SQL_STATEMENT
        PRIMARY KEY (inode, protocol, local_ip, local_port)) WITHOUT ROWID;)"
 };
 static const std::vector<std::string> PORTS_ITEM_ID_FIELDS{"inode", "protocol", "local_ip", "local_port"};
-
-constexpr auto NETIFACE_START_CONFIG_STATEMENT
-{
-    R"({"table":"dbsync_network_iface",
-        "first_query":
-            {
-                "column_list":["item_id"],
-                "row_filter":" ",
-                "distinct_opt":false,
-                "order_by_opt":"item_id DESC",
-                "count_opt":1
-            },
-        "last_query":
-            {
-                "column_list":["item_id"],
-                "row_filter":" ",
-                "distinct_opt":false,
-                "order_by_opt":"item_id ASC",
-                "count_opt":1
-            },
-        "component":"inventory_network_iface",
-        "index":"item_id",
-        "last_event":"last_event",
-        "checksum_field":"checksum",
-        "range_checksum_query_json":
-            {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "column_list":["item_id, checksum"],
-                "distinct_opt":false,
-                "order_by_opt":"",
-                "count_opt":1000
-            }
-        })"
-};
-
-constexpr auto NETIFACE_SYNC_CONFIG_STATEMENT
-{
-    R"(
-    {
-        "decoder_type":"JSON_RANGE",
-        "table":"dbsync_network_iface",
-        "component":"inventory_network_iface",
-        "index":"item_id",
-        "checksum_field":"checksum",
-        "no_data_query_json": {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "count_range_query_json": {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "count_field_name":"count",
-                "column_list":["count(*) AS count "],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "row_data_query_json": {
-                "row_filter":"WHERE item_id ='?'",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "range_checksum_query_json": {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        }
-    }
-    )"
-};
 
 constexpr auto NETIFACE_SQL_STATEMENT
 {
@@ -689,78 +168,6 @@ constexpr auto NETIFACE_SQL_STATEMENT
 };
 static const std::vector<std::string> NETIFACE_ITEM_ID_FIELDS{"name", "adapter", "type"};
 
-constexpr auto NETPROTO_START_CONFIG_STATEMENT
-{
-    R"({"table":"dbsync_network_protocol",
-        "first_query":
-            {
-                "column_list":["item_id"],
-                "row_filter":" ",
-                "distinct_opt":false,
-                "order_by_opt":"item_id DESC",
-                "count_opt":1
-            },
-        "last_query":
-            {
-                "column_list":["item_id"],
-                "row_filter":" ",
-                "distinct_opt":false,
-                "order_by_opt":"item_id ASC",
-                "count_opt":1
-            },
-        "component":"inventory_network_protocol",
-        "index":"item_id",
-        "last_event":"last_event",
-        "checksum_field":"checksum",
-        "range_checksum_query_json":
-            {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "column_list":["item_id, checksum"],
-                "distinct_opt":false,
-                "order_by_opt":"",
-                "count_opt":1000
-            }
-        })"
-};
-
-constexpr auto NETPROTO_SYNC_CONFIG_STATEMENT
-{
-    R"(
-    {
-        "decoder_type":"JSON_RANGE",
-        "table":"dbsync_network_protocol",
-        "component":"inventory_network_protocol",
-        "index":"item_id",
-        "checksum_field":"checksum",
-        "no_data_query_json": {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "count_range_query_json": {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "count_field_name":"count",
-                "column_list":["count(*) AS count "],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "row_data_query_json": {
-                "row_filter":"WHERE item_id ='?'",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "range_checksum_query_json": {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        }
-    }
-    )"
-};
-
 constexpr auto NETPROTO_SQL_STATEMENT
 {
     R"(CREATE TABLE dbsync_network_protocol (
@@ -774,78 +181,6 @@ constexpr auto NETPROTO_SQL_STATEMENT
        PRIMARY KEY (iface,type)) WITHOUT ROWID;)"
 };
 static const std::vector<std::string> NETPROTO_ITEM_ID_FIELDS{"iface", "type"};
-
-constexpr auto NETADDRESS_START_CONFIG_STATEMENT
-{
-    R"({"table":"dbsync_network_address",
-        "first_query":
-            {
-                "column_list":["item_id"],
-                "row_filter":" ",
-                "distinct_opt":false,
-                "order_by_opt":"item_id DESC",
-                "count_opt":1
-            },
-        "last_query":
-            {
-                "column_list":["item_id"],
-                "row_filter":" ",
-                "distinct_opt":false,
-                "order_by_opt":"item_id ASC",
-                "count_opt":1
-            },
-        "component":"inventory_network_address",
-        "index":"item_id",
-        "last_event":"last_event",
-        "checksum_field":"checksum",
-        "range_checksum_query_json":
-            {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "column_list":["item_id, checksum"],
-                "distinct_opt":false,
-                "order_by_opt":"",
-                "count_opt":1000
-            }
-        })"
-};
-
-constexpr auto NETADDRESS_SYNC_CONFIG_STATEMENT
-{
-    R"(
-    {
-        "decoder_type":"JSON_RANGE",
-        "table":"dbsync_network_address",
-        "component":"inventory_network_address",
-        "index":"item_id",
-        "checksum_field":"checksum",
-        "no_data_query_json": {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "count_range_query_json": {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "count_field_name":"count",
-                "column_list":["count(*) AS count "],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "row_data_query_json": {
-                "row_filter":"WHERE item_id ='?'",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        },
-        "range_checksum_query_json": {
-                "row_filter":"WHERE item_id BETWEEN '?' and '?' ORDER BY item_id",
-                "column_list":["*"],
-                "distinct_opt":false,
-                "order_by_opt":""
-        }
-    }
-    )"
-};
 
 constexpr auto NETADDR_SQL_STATEMENT
 {
@@ -998,6 +333,21 @@ void Inventory::UpdateChanges(const std::string& table,
     txn.getDeletedRows(callback);
 }
 
+void Inventory::TryCatchTask(const std::function<void()>& task) const
+{
+    try
+    {
+        if (!m_stopping)
+        {
+            task();  // Ejecuta la tarea
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        LogError(std::string{ex.what()});
+    }
+}
+
 Inventory::Inventory()
     : m_enabled { true }
     , m_intervalValue { INVENTORY_DEFAULT_INTERVAL }
@@ -1031,7 +381,7 @@ std::string Inventory::GetCreateStatement() const
 }
 
 void Inventory::Init(const std::shared_ptr<ISysInfo>& spInfo,
-                        const std::function<void(const std::string&)> reportDiffFunction,
+                        const std::function<void(const std::string&)>& reportDiffFunction,
                         const std::string& dbPath,
                         const std::string& normalizerConfigPath,
                         const std::string& normalizerType)
@@ -1421,13 +771,13 @@ void Inventory::Scan()
     Log(LOG_INFO, "Starting evaluation.");
     m_scanTime = Utils::getCurrentTimestamp();
 
-    TRY_CATCH_TASK(ScanHardware);
-    TRY_CATCH_TASK(ScanOs);
-    TRY_CATCH_TASK(ScanNetwork);
-    TRY_CATCH_TASK(ScanPackages);
-    TRY_CATCH_TASK(ScanHotfixes);
-    TRY_CATCH_TASK(ScanPorts);
-    TRY_CATCH_TASK(ScanProcesses);
+    TryCatchTask([&]() { ScanHardware(); });
+    TryCatchTask([&]() { ScanOs(); });
+    TryCatchTask([&]() { ScanNetwork(); });
+    TryCatchTask([&]() { ScanPackages(); });
+    TryCatchTask([&]() { ScanHotfixes(); });
+    TryCatchTask([&]() { ScanPorts(); });
+    TryCatchTask([&]() { ScanProcesses(); });
     m_notify = true;
     Log(LOG_INFO, "Evaluation finished.");
 }
