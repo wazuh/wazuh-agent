@@ -47,9 +47,14 @@ void InvNormalizer::RemoveExcluded(const std::string& type,
                 }
             }
             // LCOV_EXCL_START
+            catch (const std::exception& ex)
+            {
+                std::cout << "Exception caught in RemoveExcluded: " << ex.what() << '\n';
+            }
             catch (...)
-            {}
-
+            {
+                std::cout << "Unknown exception caught in RemoveExcluded." << '\n';
+            }
             // LCOV_EXCL_STOP
         }
     }
@@ -156,8 +161,13 @@ std::map<std::string, nlohmann::json> InvNormalizer::GetTypeValues(const std::st
             }
         }
     }
+    catch (const std::exception& ex)
+    {
+        std::cout << "Exception caught in GetTypeValues: " << ex.what() << '\n';
+    }
     catch (...)
     {
+        std::cout << "Unknown exception caught in GetTypeValues." << '\n';
     }
 
     return ret;
