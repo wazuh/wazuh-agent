@@ -2,22 +2,11 @@
 
 #include "http_resolver_factory.hpp"
 #include "http_socket_factory.hpp"
+
 #include <logger.hpp>
 
-namespace
-{
-    std::optional<std::string>
-    GetTokenFromResponse(const boost::beast::http::response<boost::beast::http::dynamic_body>& response)
-    {
-        if (response.result() != boost::beast::http::status::ok)
-        {
-            LogError("Error: {}.", response.result_int());
-            return std::nullopt;
-        }
-
-        return boost::beast::buffers_to_string(response.body().data());
-    }
-} // namespace
+#include <boost/beast/core/detail/base64.hpp>
+#include <nlohmann/json.hpp>
 
 namespace http_client
 {
@@ -151,7 +140,8 @@ namespace http_client
                     onSuccess(boost::beast::buffers_to_string(res.body().data()));
                 }
             }
-            else if (res.result() == boost::beast::http::status::unauthorized)
+            else if (res.result() == boost::beast::http::status::unauthorized ||
+                     res.result() == boost::beast::http::status::forbidden)
             {
                 if (onUnauthorized != nullptr)
                 {
@@ -210,11 +200,20 @@ namespace http_client
                                                                       const std::string& key)
     {
         const std::string body = R"({"uuid":")" + uuid + R"(", "key":")" + key + "\"}";
-        const auto reqParams =
-            http_client::HttpRequestParams(boost::beast::http::verb::post, host, port, "/authentication", "", "", body);
+        const auto reqParams = http_client::HttpRequestParams(
+            boost::beast::http::verb::post, host, port, "/api/v1/authentication", "", "", body);
 
         const auto res = PerformHttpRequest(reqParams);
-        return GetTokenFromResponse(res);
+
+        if (res.result() != boost::beast::http::status::ok)
+        {
+            LogError("Error: {}.", res.result_int());
+            return std::nullopt;
+        }
+
+        return nlohmann::json::parse(boost::beast::buffers_to_string(res.body().data()))
+            .at("token")
+            .get_ref<const std::string&>();
     }
 
     std::optional<std::string> HttpClient::AuthenticateWithUserPassword(const std::string& host,
@@ -222,10 +221,27 @@ namespace http_client
                                                                         const std::string& user,
                                                                         const std::string& password)
     {
+        std::string basicAuth {};
+        std::string userPass {user + ":" + password};
+
+        basicAuth.resize(boost::beast::detail::base64::encoded_size(userPass.size()));
+
+        boost::beast::detail::base64::encode(&basicAuth[0], userPass.c_str(), userPass.size());
+
         const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::post, host, port, "/authenticate", "", user + ":" + password);
+            boost::beast::http::verb::post, host, port, "/security/user/authenticate", "", basicAuth);
 
         const auto res = PerformHttpRequest(reqParams);
-        return GetTokenFromResponse(res);
+
+        if (res.result() != boost::beast::http::status::ok)
+        {
+            LogError("Error: {}.", res.result_int());
+            return std::nullopt;
+        }
+
+        return nlohmann::json::parse(boost::beast::buffers_to_string(res.body().data()))
+            .at("data")
+            .at("token")
+            .get_ref<const std::string&>();
     }
 } // namespace http_client

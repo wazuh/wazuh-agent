@@ -5,5 +5,5 @@ std::tuple<command_store::Status, std::string> DispatchCommand(const command_sto
 {
     // TO_DO: Implement real dispatch function.
     LogInfo("Dispatching command {}({})", cmd.m_command, cmd.m_module);
-    return {command_store::Status::SUCCESS, "Successfully executed."};
+    return {command_store::Status::SUCCESS, "Successfully executed"};
 }

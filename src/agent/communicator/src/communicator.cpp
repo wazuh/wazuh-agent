@@ -96,7 +96,7 @@ namespace communicator
         };
 
         const auto reqParams =
-            http_client::HttpRequestParams(boost::beast::http::verb::get, m_managerIp, m_port, "/commands");
+            http_client::HttpRequestParams(boost::beast::http::verb::get, m_managerIp, m_port, "/api/v1/commands");
         co_await m_httpClient->Co_PerformHttpRequest(
             m_token, reqParams, {}, onAuthenticationFailed, onSuccess, loopCondition);
     }
@@ -156,8 +156,8 @@ namespace communicator
             return m_keepRunning.load();
         };
 
-        const auto reqParams =
-            http_client::HttpRequestParams(boost::beast::http::verb::post, m_managerIp, m_port, "/stateful");
+        const auto reqParams = http_client::HttpRequestParams(
+            boost::beast::http::verb::post, m_managerIp, m_port, "/api/v1/events/stateful");
         co_await m_httpClient->Co_PerformHttpRequest(
             m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess, loopCondition);
     }
@@ -176,8 +176,8 @@ namespace communicator
             return m_keepRunning.load();
         };
 
-        const auto reqParams =
-            http_client::HttpRequestParams(boost::beast::http::verb::post, m_managerIp, m_port, "/stateless");
+        const auto reqParams = http_client::HttpRequestParams(
+            boost::beast::http::verb::post, m_managerIp, m_port, "/api/v1/events/stateless");
         co_await m_httpClient->Co_PerformHttpRequest(
             m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess, loopCondition);
     }

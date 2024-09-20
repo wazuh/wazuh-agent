@@ -68,7 +68,7 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
                 AuthenticateWithUserPassword(testing::_, testing::_, userCredentials.user, userCredentials.password))
         .WillOnce(testing::Return("token"));
 
-    nlohmann::json bodyJson = {{"uuid", agent->GetUUID()}, {"key", agent->GetKey()}};
+    nlohmann::json bodyJson = {{"id", agent->GetUUID()}, {"key", agent->GetKey()}};
 
     if (!agent->GetName().empty())
     {

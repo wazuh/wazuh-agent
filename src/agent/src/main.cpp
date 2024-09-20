@@ -33,6 +33,10 @@ int main(int argc, char* argv[])
                 {
                     agentInfo.SetName(cmdParser.GetOptionValue("--name"));
                 }
+                else
+                {
+                    agentInfo.SetName(boost::asio::ip::host_name());
+                }
 
                 http_client::HttpClient httpClient;
                 const registration::UserCredentials userCredentials {user, password};
