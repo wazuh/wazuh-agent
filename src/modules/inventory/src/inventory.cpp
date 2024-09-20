@@ -10,13 +10,13 @@
 
 using namespace std;
 
-#define INV_LOGTAG "modules:inventory" // Tag for log messages
+constexpr const char* INV_LOGTAG = "modules:inventory"; // Tag for log messages
 
 void Inventory::Start() {
 
     if (!m_enabled) {
         Log(LOG_INFO, "Module disabled. Exiting...");
-        pthread_exit(NULL);
+        return;
     }
 
     Log(LOG_INFO, "Starting inventory.");

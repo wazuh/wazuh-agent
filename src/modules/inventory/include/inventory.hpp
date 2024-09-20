@@ -31,7 +31,7 @@ class Inventory {
         void SetMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue);
 
         void Init(const std::shared_ptr<ISysInfo>& spInfo,
-                    const std::function<void(const std::string&)> reportDiffFunction,
+                    const std::function<void(const std::string&)>& reportDiffFunction,
                     const std::string& dbPath,
                     const std::string& normalizerConfigPath,
                     const std::string& normalizerType);
@@ -53,6 +53,7 @@ class Inventory {
 
         void UpdateChanges(const std::string& table, const nlohmann::json& values);
         void NotifyChange(ReturnTypeCallback result, const nlohmann::json& data, const std::string& table);
+        void TryCatchTask(const std::function<void()>& task) const;
         void ScanHardware();
         void ScanOs();
         void ScanNetwork();

@@ -4,6 +4,9 @@
 #include "inventory.hpp"
 
 constexpr auto INVENTORY_DB_PATH {"TEMP.db"};
+constexpr int SLEEP_DURATION_SECONDS = 10;
+
+void ReportFunction(const std::string& payload);
 
 void InventoryImpTest::SetUp() {};
 
@@ -12,14 +15,19 @@ void InventoryImpTest::TearDown()
     std::remove(INVENTORY_DB_PATH);
 };
 
-using ::testing::_;
 using ::testing::Return;
 
 class SysInfoWrapper: public ISysInfo
 {
     public:
         SysInfoWrapper() = default;
-        ~SysInfoWrapper() = default;
+        ~SysInfoWrapper() override = default;
+
+        SysInfoWrapper(const SysInfoWrapper&) = delete;
+        SysInfoWrapper& operator=(const SysInfoWrapper&) = delete;
+        SysInfoWrapper(SysInfoWrapper&&) = default;
+        SysInfoWrapper& operator=(SysInfoWrapper&&) = default;
+
         MOCK_METHOD(nlohmann::json, hardware, (), (override));
         MOCK_METHOD(nlohmann::json, packages, (), (override));
         MOCK_METHOD(void, packages, (std::function<void(nlohmann::json&)>), (override));
@@ -36,24 +44,18 @@ class CallbackMock
     public:
         CallbackMock() = default;
         ~CallbackMock() = default;
+
+        CallbackMock(const CallbackMock&) = delete;
+        CallbackMock& operator=(const CallbackMock&) = delete;
+        CallbackMock(CallbackMock&&) = default;
+        CallbackMock& operator=(CallbackMock&&) = default;
+
         MOCK_METHOD(void, callbackMock, (const std::string&), ());
 };
 
 void ReportFunction(const std::string& /*payload*/)
 {
     // std::cout << payload << std::endl;
-}
-
-void LogFunction(const modules_log_level_t /*level*/, const std::string& /*log*/)
-{
-    // static const std::map<modules_log_level_t, std::string> s_logStringMap
-    // {
-    //     {LOG_ERROR, "ERROR"},
-    //     {LOG_INFO, "INFO"},
-    //     {LOG_DEBUG, "DEBUG"},
-    //     {LOG_DEBUG_VERBOSE, "DEBUG2"}
-    // };
-    // std::cout << s_logStringMap.at(level) << ": " << log << std::endl;
 }
 
 TEST_F(InventoryImpTest, defaultCtor)
@@ -67,14 +69,14 @@ TEST_F(InventoryImpTest, defaultCtor)
                                                                       R"({"iface":[{"address":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "mac":"d4:5d:64:51:07:5d", "gateway":"192.168.0.1|600","broadcast":"127.255.255.255", "name":"ens1", "mtu":1500, "name":"enp4s0", "adapter":" ", "type":"ethernet", "state":"up", "dhcp":"disabled","iface":"Loopback Pseudo-Interface 1","metric":"75","netmask":"255.0.0.0","proto":"IPv4","rx_bytes":0,"rx_dropped":0,"rx_errors":0,"rx_packets":0,"tx_bytes":0,"tx_dropped":0,"tx_errors":0,"tx_packets":0, "IPv4":[{"address":"192.168.153.1","broadcast":"192.168.153.255","dhcp":"unknown","metric":" ","netmask":"255.255.255.0"}], "IPv6":[{"address":"fe80::250:56ff:fec0:8","dhcp":"unknown","metric":" ","netmask":"ffff:ffff:ffff:ffff::"}]}]})")));
     EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
                                                                    R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
-    EXPECT_CALL(*spInfoWrapper, packages(_))
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
     EXPECT_CALL(*spInfoWrapper, hotfixes()).WillRepeatedly(Return(R"([{"hotfix":"KB12345678"}])"_json));
 
-    EXPECT_CALL(*spInfoWrapper, processes(_))
+    EXPECT_CALL(*spInfoWrapper, processes(testing::_))
     .Times(testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":"431625","ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
@@ -191,12 +193,12 @@ TEST_F(InventoryImpTest, intervalSeconds)
     EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
                                                                    R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
     EXPECT_CALL(*spInfoWrapper, hotfixes()).WillRepeatedly(Return(R"([{"hotfix":"KB12345678"},{"hotfix":"KB87654321"}])"_json));
-    EXPECT_CALL(*spInfoWrapper, processes(_))
+    EXPECT_CALL(*spInfoWrapper, processes(testing::_))
     .Times(::testing::AtLeast(2))
     .WillRepeatedly(testing::InvokeArgument<0>(nlohmann::json::parse(
                                                    R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":431625,"ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})")));
 
-    EXPECT_CALL(*spInfoWrapper, packages(_))
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(2))
     .WillRepeatedly(::testing::InvokeArgument<0>
                     (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
@@ -230,7 +232,7 @@ TEST_F(InventoryImpTest, intervalSeconds)
         }
     };
 
-    std::this_thread::sleep_for(std::chrono::seconds{10});
+    std::this_thread::sleep_for(std::chrono::seconds{SLEEP_DURATION_SECONDS});
     Inventory::Instance().Stop();
 
     if (t.joinable())
@@ -244,9 +246,9 @@ TEST_F(InventoryImpTest, noScanOnStart)
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, hardware()).Times(0);
     EXPECT_CALL(*spInfoWrapper, os()).Times(0);
-    EXPECT_CALL(*spInfoWrapper, packages(_)).Times(0);
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_)).Times(0);
     EXPECT_CALL(*spInfoWrapper, networks()).Times(0);
-    EXPECT_CALL(*spInfoWrapper, processes(_)).Times(0);
+    EXPECT_CALL(*spInfoWrapper, processes(testing::_)).Times(0);
     EXPECT_CALL(*spInfoWrapper, ports()).Times(0);
     EXPECT_CALL(*spInfoWrapper, hotfixes()).Times(0);
 
@@ -297,14 +299,14 @@ TEST_F(InventoryImpTest, noHardware)
                                                                       R"({"iface":[{"address":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "mac":"d4:5d:64:51:07:5d", "gateway":"192.168.0.1|600","broadcast":"127.255.255.255", "name":"ens1", "mtu":1500, "name":"enp4s0", "adapter":" ", "type":"ethernet", "state":"up", "dhcp":"disabled","iface":"Loopback Pseudo-Interface 1","metric":"75","netmask":"255.0.0.0","proto":"IPv4","rx_bytes":0,"rx_dropped":0,"rx_errors":0,"rx_packets":0,"tx_bytes":0,"tx_dropped":0,"tx_errors":0,"tx_packets":0, "IPv4":[{"address":"192.168.153.1","broadcast":"192.168.153.255","dhcp":"unknown","metric":" ","netmask":"255.255.255.0"}], "IPv6":[{"address":"fe80::250:56ff:fec0:8","dhcp":"unknown","metric":" ","netmask":"ffff:ffff:ffff:ffff::"}]}]})")));
     EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
                                                                    R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
-    EXPECT_CALL(*spInfoWrapper, packages(_))
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
     EXPECT_CALL(*spInfoWrapper, hotfixes()).WillRepeatedly(Return(R"([{"hotfix":"KB12345678"}])"_json));
 
-    EXPECT_CALL(*spInfoWrapper, processes(_))
+    EXPECT_CALL(*spInfoWrapper, processes(testing::_))
     .Times(testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":"431625","ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
@@ -426,14 +428,14 @@ TEST_F(InventoryImpTest, noOs)
     EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
                                                                    R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
     EXPECT_CALL(*spInfoWrapper, os()).Times(0);
-    EXPECT_CALL(*spInfoWrapper, packages(_))
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
     EXPECT_CALL(*spInfoWrapper, hotfixes()).WillRepeatedly(Return(R"([{"hotfix":"KB12345678"}])"_json));
 
-    EXPECT_CALL(*spInfoWrapper, processes(_))
+    EXPECT_CALL(*spInfoWrapper, processes(testing::_))
     .Times(testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":"431625","ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
@@ -554,14 +556,14 @@ TEST_F(InventoryImpTest, noNetwork)
     EXPECT_CALL(*spInfoWrapper, networks()).Times(0);
     EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
                                                                    R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
-    EXPECT_CALL(*spInfoWrapper, packages(_))
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
     EXPECT_CALL(*spInfoWrapper, hotfixes()).WillRepeatedly(Return(R"([{"hotfix":"KB12345678"}])"_json));
 
-    EXPECT_CALL(*spInfoWrapper, processes(_))
+    EXPECT_CALL(*spInfoWrapper, processes(testing::_))
     .Times(testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":"431625","ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
@@ -663,11 +665,11 @@ TEST_F(InventoryImpTest, noPackages)
                                                                       R"({"iface":[{"address":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "mac":"d4:5d:64:51:07:5d", "gateway":"192.168.0.1|600","broadcast":"127.255.255.255", "name":"ens1", "mtu":1500, "name":"enp4s0", "adapter":" ", "type":"ethernet", "state":"up", "dhcp":"disabled","iface":"Loopback Pseudo-Interface 1","metric":"75","netmask":"255.0.0.0","proto":"IPv4","rx_bytes":0,"rx_dropped":0,"rx_errors":0,"rx_packets":0,"tx_bytes":0,"tx_dropped":0,"tx_errors":0,"tx_packets":0, "IPv4":[{"address":"192.168.153.1","broadcast":"192.168.153.255","dhcp":"unknown","metric":" ","netmask":"255.255.255.0"}], "IPv6":[{"address":"fe80::250:56ff:fec0:8","dhcp":"unknown","metric":" ","netmask":"ffff:ffff:ffff:ffff::"}]}]})")));
     EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
                                                                    R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
-    EXPECT_CALL(*spInfoWrapper, packages(_)).Times(0);
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_)).Times(0);
 
     EXPECT_CALL(*spInfoWrapper, hotfixes()).WillRepeatedly(Return(R"([{"hotfix":"KB12345678"}])"_json));
 
-    EXPECT_CALL(*spInfoWrapper, processes(_))
+    EXPECT_CALL(*spInfoWrapper, processes(testing::_))
     .Times(testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":"431625","ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
@@ -788,14 +790,14 @@ TEST_F(InventoryImpTest, noPorts)
     EXPECT_CALL(*spInfoWrapper, networks()).WillRepeatedly(Return(nlohmann::json::parse(
                                                                       R"({"iface":[{"address":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "mac":"d4:5d:64:51:07:5d", "gateway":"192.168.0.1|600","broadcast":"127.255.255.255", "name":"ens1", "mtu":1500, "name":"enp4s0", "adapter":" ", "type":"ethernet", "state":"up", "dhcp":"disabled","iface":"Loopback Pseudo-Interface 1","metric":"75","netmask":"255.0.0.0","proto":"IPv4","rx_bytes":0,"rx_dropped":0,"rx_errors":0,"rx_packets":0,"tx_bytes":0,"tx_dropped":0,"tx_errors":0,"tx_packets":0, "IPv4":[{"address":"192.168.153.1","broadcast":"192.168.153.255","dhcp":"unknown","metric":" ","netmask":"255.255.255.0"}], "IPv6":[{"address":"fe80::250:56ff:fec0:8","dhcp":"unknown","metric":" ","netmask":"ffff:ffff:ffff:ffff::"}]}]})")));
     EXPECT_CALL(*spInfoWrapper, ports()).Times(0);
-    EXPECT_CALL(*spInfoWrapper, packages(_))
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
     EXPECT_CALL(*spInfoWrapper, hotfixes()).WillRepeatedly(Return(R"([{"hotfix":"KB12345678"}])"_json));
 
-    EXPECT_CALL(*spInfoWrapper, processes(_))
+    EXPECT_CALL(*spInfoWrapper, processes(testing::_))
     .Times(testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":"431625","ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
@@ -917,14 +919,14 @@ TEST_F(InventoryImpTest, noPortsAll)
                                                                       R"({"iface":[{"address":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "mac":"d4:5d:64:51:07:5d", "gateway":"192.168.0.1|600","broadcast":"127.255.255.255", "name":"ens1", "mtu":1500, "name":"enp4s0", "adapter":" ", "type":"ethernet", "state":"up", "dhcp":"disabled","iface":"Loopback Pseudo-Interface 1","metric":"75","netmask":"255.0.0.0","proto":"IPv4","rx_bytes":0,"rx_dropped":0,"rx_errors":0,"rx_packets":0,"tx_bytes":0,"tx_dropped":0,"tx_errors":0,"tx_packets":0, "IPv4":[{"address":"192.168.153.1","broadcast":"192.168.153.255","dhcp":"unknown","metric":" ","netmask":"255.255.255.0"}], "IPv6":[{"address":"fe80::250:56ff:fec0:8","dhcp":"unknown","metric":" ","netmask":"ffff:ffff:ffff:ffff::"}]}]})")));
     EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
                                                                    R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"udp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"","tx_queue":0},{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
-    EXPECT_CALL(*spInfoWrapper, packages(_))
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
     EXPECT_CALL(*spInfoWrapper, hotfixes()).WillRepeatedly(Return(R"([{"hotfix":"KB12345678"}])"_json));
 
-    EXPECT_CALL(*spInfoWrapper, processes(_))
+    EXPECT_CALL(*spInfoWrapper, processes(testing::_))
     .Times(testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":"431625","ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
@@ -1056,14 +1058,14 @@ TEST_F(InventoryImpTest, noProcesses)
                                                                       R"({"iface":[{"address":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "mac":"d4:5d:64:51:07:5d", "gateway":"192.168.0.1|600","broadcast":"127.255.255.255", "name":"ens1", "mtu":1500, "name":"enp4s0", "adapter":" ", "type":"ethernet", "state":"up", "dhcp":"disabled","iface":"Loopback Pseudo-Interface 1","metric":"75","netmask":"255.0.0.0","proto":"IPv4","rx_bytes":0,"rx_dropped":0,"rx_errors":0,"rx_packets":0,"tx_bytes":0,"tx_dropped":0,"tx_errors":0,"tx_packets":0, "IPv4":[{"address":"192.168.153.1","broadcast":"192.168.153.255","dhcp":"unknown","metric":" ","netmask":"255.255.255.0"}], "IPv6":[{"address":"fe80::250:56ff:fec0:8","dhcp":"unknown","metric":" ","netmask":"ffff:ffff:ffff:ffff::"}]}]})")));
     EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
                                                                    R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
-    EXPECT_CALL(*spInfoWrapper, packages(_))
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
     EXPECT_CALL(*spInfoWrapper, hotfixes()).WillRepeatedly(Return(R"([{"hotfix":"KB12345678"}])"_json));
 
-    EXPECT_CALL(*spInfoWrapper, processes(_)).Times(0);
+    EXPECT_CALL(*spInfoWrapper, processes(testing::_)).Times(0);
 
     CallbackMock wrapperDelta;
     std::function<void(const std::string&)> callbackDataDelta
@@ -1182,14 +1184,14 @@ TEST_F(InventoryImpTest, noHotfixes)
                                                                       R"({"iface":[{"address":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "mac":"d4:5d:64:51:07:5d", "gateway":"192.168.0.1|600","broadcast":"127.255.255.255", "name":"ens1", "mtu":1500, "name":"enp4s0", "adapter":" ", "type":"ethernet", "state":"up", "dhcp":"disabled","iface":"Loopback Pseudo-Interface 1","metric":"75","netmask":"255.0.0.0","proto":"IPv4","rx_bytes":0,"rx_dropped":0,"rx_errors":0,"rx_packets":0,"tx_bytes":0,"tx_dropped":0,"tx_errors":0,"tx_packets":0, "IPv4":[{"address":"192.168.153.1","broadcast":"192.168.153.255","dhcp":"unknown","metric":" ","netmask":"255.255.255.0"}], "IPv6":[{"address":"fe80::250:56ff:fec0:8","dhcp":"unknown","metric":" ","netmask":"ffff:ffff:ffff:ffff::"}]}]})")));
     EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
                                                                    R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
-    EXPECT_CALL(*spInfoWrapper, packages(_))
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
     EXPECT_CALL(*spInfoWrapper, hotfixes()).Times(0);
 
-    EXPECT_CALL(*spInfoWrapper, processes(_))
+    EXPECT_CALL(*spInfoWrapper, processes(testing::_))
     .Times(testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":"431625","ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
@@ -1312,11 +1314,11 @@ TEST_F(InventoryImpTest, scanInvalidData)
     EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
                                                                    R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
     EXPECT_CALL(*spInfoWrapper, hotfixes()).WillRepeatedly(Return(R"([{"hotfix":"KB12345678"},{"hotfix":"KB87654321"}])"_json));
-    EXPECT_CALL(*spInfoWrapper, packages(_))
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"name":"TEXT", "scan_time":"2020/12/28 21:49:50", "version":"TEXT", "vendor":"TEXT", "install_time":"TEXT", "location":"TEXT", "architecture":"TEXT", "groups":"TEXT", "description":"TEXT", "size":"TEXT", "priority":"TEXT", "multiarch":"TEXT", "source":"TEXT", "os_patch":"TEXT"})"_json));
-    EXPECT_CALL(*spInfoWrapper, processes(_))
+    EXPECT_CALL(*spInfoWrapper, processes(testing::_))
     .Times(testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":431625,"ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
@@ -1645,7 +1647,7 @@ TEST_F(InventoryImpTest, PackagesDuplicated)
 {
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
 
-    EXPECT_CALL(*spInfoWrapper, packages(_))
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(1))
     .WillOnce(::testing::DoAll(
                   ::testing::InvokeArgument<0>
