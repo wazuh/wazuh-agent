@@ -163,7 +163,7 @@ Here you can find all the automation tools maintained by the Wazuh team.
 |[OpenSSL](https://github.com/openssl/openssl)|3.0.12|OpenSSL Software Foundation|Apache 2.0 License|
 |[pacman](https://gitlab.archlinux.org/pacman/pacman)|5.2.2|Judd Vinet|GNU Public License version 2 (copyleft)|
 |[popt](https://github.com/rpm-software-management/popt)|1.16|Jeff Johnson & Erik Troan|MIT License|
-|[procps](https://gitlab.com/procps-ng/procps)|2.8.3|Brian Edmonds et al.|LGPL (copyleft)|
+|[procps](https://github.com/warmchang/procps)|3.3.0|Brian Edmonds et al.|LGPL (copyleft)|
 |[RocksDB](https://github.com/facebook/rocksdb/)|8.3.2|Facebook Inc.|Apache 2.0 License|
 |[rpm](https://github.com/rpm-software-management/rpm)|4.18.2|Marc Ewing & Erik Troan|GNU Public License version 2 (copyleft)|
 |[sqlite](https://github.com/sqlite/sqlite)|3.45.0|D. Richard Hipp|Public Domain (no restrictions)|

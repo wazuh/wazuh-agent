@@ -1,17 +1,17 @@
 {
-    "name": "procps",
-    "version": "3.3.0",
-    "description": "Procps is a set of command line and full-screen utilities that provide information out of the pseudo-filesystem most commonly located at /proc",
-    "homepage": "https://github.com/HowardHinnant/date",
-    "license": "GPL-2.0",
-    "dependencies": [
-      {
-        "name": "vcpkg-cmake",
-        "host": true
-      },
-      {
-        "name": "vcpkg-cmake-config",
-        "host": true
-      }
-    ]
-  }
+  "name": "procps",
+  "version": "3.3.0",
+  "description": "Procps is a set of command line and full-screen utilities that provide information out of the pseudo-filesystem most commonly located at /proc",
+  "homepage": "https://github.com/HowardHinnant/date",
+  "license": "GPL-2.0",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}

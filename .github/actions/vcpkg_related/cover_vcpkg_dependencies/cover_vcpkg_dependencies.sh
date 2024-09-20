@@ -40,4 +40,3 @@ mono `vcpkg fetch nuget | tail -n 1` \
 mono `vcpkg fetch nuget | tail -n 1` \
     setapikey "$GH_TOKEN" \
     -source "https://nuget.pkg.github.com/wazuh/index.json"
-
