@@ -12,9 +12,9 @@ target_link_libraries(debug_op
     privsep_op
     pthreads_op
     error_messages
-    os_net
     binaries_op
     regex_op
     randombytes
     bzip2_op
     cjson)
+
