@@ -51,7 +51,8 @@ target_link_libraries(Inventory PUBLIC
     logging_helper
     pthreads_op
     ConfigurationParser
-    MultiTypeQueue)
+    MultiTypeQueue
+    Logger)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(Inventory)
