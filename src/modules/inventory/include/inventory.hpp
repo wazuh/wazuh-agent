@@ -66,7 +66,7 @@ class Inventory {
         void ShowConfig();
         cJSON * Dump();
         static void Log(const modules_log_level_t level, const std::string& log);
-        static void LogError(const std::string& log);
+        static void LogErrorInventory(const std::string& log);
 
         const std::string                           m_moduleName {"inventory"};
         std::shared_ptr<ISysInfo>                   m_spInfo;

@@ -23,7 +23,7 @@ void Inventory::Start() {
 
     ShowConfig();
 
-    DBSync::initialize(LogError);
+    DBSync::initialize(LogErrorInventory);
 
     try
     {
@@ -35,7 +35,7 @@ void Inventory::Start() {
     }
     catch (const std::exception& ex)
     {
-        LogError(ex.what());
+        LogErrorInventory(ex.what());
     }
 
     Log(LOG_INFO, "Module finished.");
@@ -127,7 +127,7 @@ void Inventory::Log(const modules_log_level_t level, const std::string& log)
     taggedLogFunction(level, log.c_str(), INV_LOGTAG);
 }
 
-void Inventory::LogError(const std::string& log)
+void Inventory::LogErrorInventory(const std::string& log)
 {
     taggedLogFunction(LOG_ERROR, log.c_str(), INV_LOGTAG);
 }

@@ -274,7 +274,7 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
 {
     if (DB_ERROR == result)
     {
-        LogError(data.dump());
+        LogErrorInventory(data.dump());
     }
     else if (m_notify && !m_stopping)
     {
@@ -344,7 +344,7 @@ void Inventory::TryCatchTask(const std::function<void()>& task) const
     }
     catch (const std::exception& ex)
     {
-        LogError(std::string{ex.what()});
+        LogErrorInventory(std::string{ex.what()});
     }
 }
 
