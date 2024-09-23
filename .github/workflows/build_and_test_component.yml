@@ -1,5 +1,4 @@
-run-name: Build and Test Component - Build ${{ inputs.component }}
-name:  Build and Test Component
+run-name: Build and Test Components
 
 on:
   workflow_dispatch:
@@ -43,7 +42,7 @@ jobs:
           mkdir src/build
           cd src/build
           cmake .. -DBUILD_TESTS=ON
-          make
+          make -j $(nproc)
 
       - name: Run the tests
         run: |
