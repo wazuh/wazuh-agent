@@ -14,6 +14,12 @@
 #include <stdexcept>
 #include <string>
 
+#if defined(__GNUC__) || defined(__clang__)
+#define ATTR_RET_NONNULL __attribute__((__returns_nonnull__))
+#else
+#define ATTR_RET_NONNULL
+#endif
+
 using DBSyncExceptionType = const std::pair<int, std::string>;
 
 DBSyncExceptionType FACTORY_INSTANTATION           { std::make_pair(1, "Unspecified type during factory instantiation")         };
@@ -48,7 +54,7 @@ namespace DbSync
     class dbsync_error : public std::exception
     {
         public:
-            __attribute__((__returns_nonnull__))
+            ATTR_RET_NONNULL
             const char* what() const noexcept override
             {
                 return m_error.what();
@@ -82,7 +88,7 @@ namespace DbSync
     class max_rows_error : public std::exception
     {
         public:
-            __attribute__((__returns_nonnull__))
+            ATTR_RET_NONNULL
             const char* what() const noexcept override
             {
                 return m_error.what();

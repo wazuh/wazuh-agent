@@ -17,4 +17,3 @@ target_link_libraries(debug_op
     randombytes
     bzip2_op
     cjson)
-

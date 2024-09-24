@@ -11,7 +11,6 @@
 
 #include "sqlite_wrapper.h"
 #include "db_exception.h"
-#include "makeUnique.h"
 #include "customDeleter.hpp"
 #include <iostream>
 #include <chrono>

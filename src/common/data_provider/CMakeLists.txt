@@ -92,11 +92,33 @@ include_directories(${SRC_FOLDER}/common/jsonHelper/include/)
 include_directories(${SRC_FOLDER}/common/linuxHelper/include/)
 include_directories(${SRC_FOLDER}/common/stringHelper/include/)
 include_directories(${SRC_FOLDER}/common/timeHelper/include/)
+include_directories(${SRC_FOLDER}/common/time_op/include/)
+include_directories(${SRC_FOLDER}/common/file_op/include/)
+include_directories(${SRC_FOLDER}/common/regex_op/include/)
+include_directories(${SRC_FOLDER}/common/debug_op/include/)
+include_directories(${SRC_FOLDER}/common/string_op/include/)
+include_directories(${SRC_FOLDER}/common/bzip2_op/include/)
+include_directories(${SRC_FOLDER}/common/validate_op/include/)
+include_directories(${SRC_FOLDER}/common/binaries_op/include/)
+include_directories(${SRC_FOLDER}/common/os_xml/include/)
+include_directories(${SRC_FOLDER}/common/os_regex/include/)
+include_directories(${SRC_FOLDER}/common/os_net/include/)
+include_directories(${SRC_FOLDER}/common/expression/include/)
+include_directories(${SRC_FOLDER}/common/randombytes/include/)
+include_directories(${SRC_FOLDER}/common/error_messages/include/)
+## TODO BETO: VERIFICAR CUALES VAN Y CUALES NO
 include_directories(${SRC_FOLDER}/shared_modules/common/)
 include_directories(${SRC_FOLDER}/external/libdb/build_unix/)
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   include_directories(${SRC_FOLDER}/external/rpm/include/)
   include_directories(${SRC_FOLDER}/external/rpm/builddir/output/include/)
+endif()
+
+if(WIN32)
+  include_directories(${SRC_FOLDER}/common/registryHelper/include/)
+  include_directories(${SRC_FOLDER}/common/windowsHelper/include/)
+  include_directories(${SRC_FOLDER}/common/encodingHelper/include/)
+  include_directories(${SRC_FOLDER}/common/mem_op/include/)
 endif()
 
 link_directories(${SRC_FOLDER})
@@ -158,9 +180,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   set_target_properties(sysinfo PROPERTIES
       PREFIX ""
       SUFFIX ".dll"
-      LINK_FLAGS "-Wl,--add-stdcall-alias"
-      POSITION_INDEPENDENT_CODE 0 # this is to avoid MinGW warning;
-      # MinGW generates position-independent-code for DLL by default
   )
 elseif(UNIX AND NOT APPLE)
   string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,-rpath=$ORIGIN")
@@ -193,9 +212,6 @@ target_link_libraries(sysinfo
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   find_library(POPT_LIBRARY libpopt.a)
   target_link_libraries(sysinfo db proc rpm LibArchive::LibArchive ${POPT_LIBRARY})
-  if(CMAKE_CHECK_CENTOS5)
-      set(USE_HTTP 1)
-  endif(CMAKE_CHECK_CENTOS5)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
 if(APPLE)
