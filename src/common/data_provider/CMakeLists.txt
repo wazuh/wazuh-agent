@@ -97,11 +97,6 @@ include_directories(${SRC_FOLDER}/external/libdb/build_unix/)
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   include_directories(${SRC_FOLDER}/external/rpm/include/)
   include_directories(${SRC_FOLDER}/external/rpm/builddir/output/include/)
-  # Avoid download externals from http-request submodule
-  set(EXTERNAL_RES "")
-  set(PRECOMPILED_EXTERNAL_RES "")
-  include_directories(${SRC_FOLDER}/common/http-request/include/)
-  include_directories(${SRC_FOLDER}/common/http-request/shared/)
 endif()
 
 link_directories(${SRC_FOLDER})
@@ -109,7 +104,6 @@ link_directories(${SRC_FOLDER}/external/procps/)
 link_directories(${SRC_FOLDER}/external/libdb/build_unix/)
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   link_directories(${SRC_FOLDER}/external/rpm/builddir/)
-  link_directories(${SRC_FOLDER}/common/http-request/build)
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -198,11 +192,10 @@ target_link_libraries(sysinfo
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   find_library(POPT_LIBRARY libpopt.a)
-  target_link_libraries(sysinfo urlrequest db proc rpm LibArchive::LibArchive ${POPT_LIBRARY})
+  target_link_libraries(sysinfo db proc rpm LibArchive::LibArchive ${POPT_LIBRARY})
   if(CMAKE_CHECK_CENTOS5)
       set(USE_HTTP 1)
   endif(CMAKE_CHECK_CENTOS5)
-  add_subdirectory(${SRC_FOLDER}/common/http-request ${SRC_FOLDER}/common/http-request/build)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
 if(APPLE)
