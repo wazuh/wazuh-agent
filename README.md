@@ -42,12 +42,13 @@ This project uses the following third-party software:
 
 | Software                                                                      | Description                                                      | License                        | Version |
 | ----------------------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------ | ------- |
-| [Boost Asio](https://www.boost.org/doc/libs/release/doc/html/boost_asio.html) | Cross-platform C++ library for network programming               | Boost Software License 1.0     | 1.86.0  |
-| [Boost Beast](https://www.boost.org/doc/libs/release/libs/beast/)             | Library built on Boost Asio for HTTP and WebSocket communication | Boost Software License 1.0     | 1.86.0  |
-| [Boost Uuid](https://www.boost.org/doc/libs/release/libs/uuid/)               | Provides support for universally unique identifiers (UUIDs)      | Boost Software License 1.0     | 1.86.0  |
-| [fmt](https://fmt.dev/)                                                       | A formatting library for C++                                     | MIT License                    | 11.0    |
+| [Boost Asio](https://www.boost.org/doc/libs/release/doc/html/boost_asio.html) | Cross-platform C++ library for network programming               | Boost Software License 1.0     | 1.85.0  |
+| [Boost Beast](https://www.boost.org/doc/libs/release/libs/beast/)             | Library built on Boost Asio for HTTP and WebSocket communication | Boost Software License 1.0     | 1.85.0  |
+| [Boost Uuid](https://www.boost.org/doc/libs/release/libs/uuid/)               | Provides support for universally unique identifiers (UUIDs)      | Boost Software License 1.0     | 1.85.0  |
+| [fmt](https://fmt.dev/)                                                       | A formatting library for C++                                     | MIT License                    | 10.2.1  |
 | [gtest](https://github.com/google/googletest)                                 | Google's C++ testing framework                                   | BSD-3-Clause                   | 1.15.2  |
 | [jwt-cpp](https://github.com/Thalhammer/jwt-cpp)                              | C++ library for handling JSON Web Tokens (JWT)                   | MIT License                    | 0.7.0   |
+| [libdb](https://github.com/yasuhirokimura/db18)                               | Database management library                                      | AGPL-3.0                       | 18.1.40 |
 | [librpm](https://github.com/rpm-software-management/rpm)                      | RPM package manager                                              | GPL-2.0                        | 4.18.2  |
 | [nlohmann-json](https://github.com/nlohmann/json)                             | JSON parsing and serialization library for C++                   | MIT License                    | 3.11.3  |
 | [OpenSSL](https://www.openssl.org/)                                           | Toolkit for SSL/TLS protocols                                    | Apache 2.0 and OpenSSL License | 3.3.2   |

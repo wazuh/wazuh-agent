@@ -1,35 +1,65 @@
 {
-    "name": "wazuh-agent-mvp",
+    "name": "wazuh-agent",
     "version": "5.0.0",
     "dependencies": [
-      "boost-asio",
-      "boost-beast",
-      "boost-uuid",
-      "fmt",
-      "gtest",
-      "jwt-cpp",
-      "nlohmann-json",
-      "openssl",
-      "spdlog",
-      "sqlitecpp",
-      "toml11",
       {
-        "name": "procps",
-        "platform": "linux"
+        "name": "boost-asio",
+        "version>=": "1.85.0"
+      },
+      {
+        "name": "boost-beast",
+        "version>=": "1.85.0"
+      },
+      {
+        "name": "boost-uuid",
+        "version>=": "1.85.0"
+      },
+      {
+        "name": "fmt",
+        "version>=": "10.2.1"
+      },
+      {
+        "name": "gtest",
+        "version>=": "1.15.2"
+      },
+      {
+        "name": "jwt-cpp",
+        "version>=": "0.7.0"
       },
       {
         "name": "libdb",
+        "version>=": "18.1.40",
         "platform": "linux"
       },
       {
         "name": "librpm",
+        "version>=": "4.18.2",
         "platform": "linux"
-      }
-    ],
-    "overrides": [
+      },
+      {
+        "name": "nlohmann-json",
+        "version>=": "3.11.3"
+      },
+      {
+        "name": "openssl",
+        "version>=": "3.3.2"
+      },
+      {
+        "name": "procps",
+        "version>=": "3.3.0",
+        "platform": "linux"
+      },
+      {
+        "name": "spdlog",
+        "version>=": "1.14.0"
+      },
+      {
+        "name": "sqlitecpp",
+        "version>=": "3.3.2"
+      },
       {
         "name": "toml11",
-        "version": "4.0.0"
+        "version>=": "4.0.0"
       }
     ],
     "vcpkg-configuration": {
