@@ -13,7 +13,7 @@
 #define _SQLITE_WRAPPER_FACTORY_H
 
 #include "sqlite_wrapper.h"
-#include "makeUnique.h"
+
 class ISQLiteFactory
 {
     public:

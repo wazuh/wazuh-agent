@@ -25,7 +25,6 @@
 #include <netinet/in.h>
 #include "inetworkWrapper.h"
 #include "networkHelper.h"
-#include "makeUnique.h"
 #include "sharedDefs.h"
 #include "stringHelper.h"
 

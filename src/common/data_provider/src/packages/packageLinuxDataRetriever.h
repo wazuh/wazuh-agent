@@ -74,6 +74,7 @@ class FactoryPackagesCreator<LinuxType::STANDARD> final
                 getRpmInfo(callback);
             }
 
+			// TODO: Implment without http_request library
             // if (Utils::existsDir(SNAP_PATH))
             // {
             //     getSnapInfo(callback);
