@@ -36,7 +36,7 @@
       },
       {
         "name": "libarchive",
-        "version>=": "3.7.2"
+        "version>=": "3.7.5"
       },
       {
         "name": "libdb",
@@ -45,12 +45,12 @@
       },
       {
         "name": "libplist",
-        "version>=": "2.2.0",
+        "version>=": "2023-06-15#1",
         "platform": "osx"
       },
       {
         "name": "libpopt",
-        "version>=": "1.16"
+        "version>=": "1.16#17"
       },
       {
         "name": "librpm",

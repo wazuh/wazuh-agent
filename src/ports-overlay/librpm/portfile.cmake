@@ -9,8 +9,12 @@ vcpkg_from_github(
 vcpkg_configure_make(
   SOURCE_PATH "${SOURCE_PATH}"
   OPTIONS
+  "--with-crypto=openssl"
+  "--enable-sqlite=yes"
   "--disable-openmp"
   "--disable-plugins"
+  "--enable-ndb"
+  "--enable-bdb-ro"
 )
 
 vcpkg_install_make()
@@ -19,14 +23,14 @@ vcpkg_copy_pdbs()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share"
                     "${CURRENT_PACKAGES_DIR}/debug/lib/rpm-plugins"
-                    "${CURRENT_PACKAGES_DIR}/debug/lib/rpm/lua" 
-                    "${CURRENT_PACKAGES_DIR}/debug/lib/rpm/macros.d" 
-                    "${CURRENT_PACKAGES_DIR}/debug/var/tmp" 
-                    "${CURRENT_PACKAGES_DIR}/lib/rpm-plugins" 
-                    "${CURRENT_PACKAGES_DIR}/lib/rpm/lua" 
-                    "${CURRENT_PACKAGES_DIR}/lib/rpm/macros.d" 
+                    "${CURRENT_PACKAGES_DIR}/debug/lib/rpm/lua"
+                    "${CURRENT_PACKAGES_DIR}/debug/lib/rpm/macros.d"
+                    "${CURRENT_PACKAGES_DIR}/debug/var/tmp"
+                    "${CURRENT_PACKAGES_DIR}/lib/rpm-plugins"
+                    "${CURRENT_PACKAGES_DIR}/lib/rpm/lua"
+                    "${CURRENT_PACKAGES_DIR}/lib/rpm/macros.d"
                     "${CURRENT_PACKAGES_DIR}/var/tmp"
-                    "${CURRENT_PACKAGES_DIR}/debug/var" 
+                    "${CURRENT_PACKAGES_DIR}/debug/var"
                     "${CURRENT_PACKAGES_DIR}/var")
 
 set(VCPKG_POLICY_SKIP_COPYRIGHT_CHECK enabled)
