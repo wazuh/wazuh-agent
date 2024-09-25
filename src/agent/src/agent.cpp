@@ -50,7 +50,8 @@ void Agent::Run()
     m_taskManager.EnqueueTask(m_commandHandler.CommandsProcessingTask<command_store::CommandEntry>(
         [this]() { return GetCommandFromQueue(m_messageQueue); },
         [this]() { return PopCommandFromQueue(m_messageQueue); },
-        [](command_store::CommandEntry& cmd) { return DispatchCommand(cmd); }));
+        [this](command_store::CommandEntry& cmd)
+        { return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue); }));
 
     m_moduleManager.AddModule(Inventory::Instance());
     m_moduleManager.Setup();
