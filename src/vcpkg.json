@@ -121,7 +121,8 @@
       ],
       "overlay-ports": [
         "./ports-overlay/procps",
-        "./ports-overlay/libdb"
+        "./ports-overlay/libdb",
+        "./ports-overlay/librpm"
       ]
   }
 }

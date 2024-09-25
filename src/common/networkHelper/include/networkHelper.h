@@ -16,8 +16,10 @@
 #include <memory>
 #include <netdb.h>
 
+#ifndef WIN32
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
+#endif
 
 namespace Utils
 {
@@ -79,5 +81,6 @@ namespace Utils
     };
 }
 
+#ifndef WIN32
 #pragma GCC diagnostic pop
-
+#endif

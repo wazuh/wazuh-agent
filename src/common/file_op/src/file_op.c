@@ -720,12 +720,13 @@ int UnmergeFiles(const char *finalpath, const char *optdir, int mode, char ***un
         free(copy);
 
         /* Create temporary file */
-        char *tmp_file = malloc(strlen(final_name) + 7);
+        unsigned long tmp_file_size = strlen(final_name) + 7;
+        char *tmp_file = malloc(tmp_file_size);
         if(!tmp_file){
             merror("Unmerging '%s': could not reserve temporary memory for '%s'", finalpath, files);
             state_ok = 0;
         }
-        snprintf(tmp_file, sizeof(tmp_file), "%sXXXXXX", final_name);
+        snprintf(tmp_file, tmp_file_size, "%sXXXXXX", final_name);
 
         if (mkstemp_ex(tmp_file) == -1) {
             merror("Unmerging '%s': could not create temporary file for '%s'", finalpath, files);
@@ -735,7 +736,8 @@ int UnmergeFiles(const char *finalpath, const char *optdir, int mode, char ***un
         /* Open filename */
 
         if (state_ok) {
-            if (fp = wfopen(tmp_file, mode == OS_BINARY ? "wb" : "w"), !fp) {
+            fp = wfopen(tmp_file, mode == OS_BINARY ? "wb" : "w");
+            if (!fp) {
                 ret = 0;
                 merror("Unable to unmerge file '%s' due to [(%d)-(%s)].", tmp_file, errno, strerror(errno));
             }
