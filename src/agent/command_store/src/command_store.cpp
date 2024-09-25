@@ -135,33 +135,33 @@ namespace command_store
             CommandEntry cmd;
             for (const sqlite_manager::Column& col : cmdData[0])
             {
-                if (col.m_name == "id")
+                if (col.Name == "id")
                 {
-                    cmd.Id = col.m_value;
+                    cmd.Id = col.Value;
                 }
-                else if (col.m_name == "module")
+                else if (col.Name == "module")
                 {
-                    cmd.Module = col.m_value;
+                    cmd.Module = col.Value;
                 }
-                else if (col.m_name == "command")
+                else if (col.Name == "command")
                 {
-                    cmd.Command = col.m_value;
+                    cmd.Command = col.Value;
                 }
-                else if (col.m_name == "parameters")
+                else if (col.Name == "parameters")
                 {
-                    cmd.Parameters = col.m_value;
+                    cmd.Parameters = col.Value;
                 }
-                else if (col.m_name == "result")
+                else if (col.Name == "result")
                 {
-                    cmd.Result = col.m_value;
+                    cmd.Result = col.Value;
                 }
-                else if (col.m_name == "status")
+                else if (col.Name == "status")
                 {
-                    cmd.CurrentStatus = StatusFromInt(std::stoi(col.m_value));
+                    cmd.CurrentStatus = StatusFromInt(std::stoi(col.Value));
                 }
-                else if (col.m_name == "time")
+                else if (col.Name == "time")
                 {
-                    cmd.Time = std::stod(col.m_value);
+                    cmd.Time = std::stod(col.Value);
                 }
             }
             return cmd;

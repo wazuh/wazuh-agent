@@ -124,7 +124,7 @@ static void DumpResults(std::vector<sqlite_manager::Row>& ret)
     {
         for (const auto& field : row)
         {
-            std::cout << "[" << field.m_name << ": " << field.m_value << "]";
+            std::cout << "[" << field.Name << ": " << field.Value << "]";
         }
         std::cout << '\n';
     }

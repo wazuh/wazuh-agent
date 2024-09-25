@@ -36,11 +36,11 @@ namespace sqlite_manager
         std::vector<std::string> fields;
         for (const Column& col : cols)
         {
-            std::string field = fmt::format(
-                "{} {}{}", col.m_name, MAP_COL_TYPE_STRING.at(col.m_type), (col.m_notNull) ? " NOT NULL" : "");
-            if (col.m_primaryKey)
+            std::string field =
+                fmt::format("{} {}{}", col.Name, MAP_COL_TYPE_STRING.at(col.Type), (col.NotNull) ? " NOT NULL" : "");
+            if (col.PrimaryKey)
             {
-                pk.push_back(col.m_autoIncrement ? fmt::format("{} AUTOINCREMENT", col.m_name) : col.m_name);
+                pk.push_back(col.AutoIncrement ? fmt::format("{} AUTOINCREMENT", col.Name) : col.Name);
             }
             fields.push_back(field);
         }
@@ -59,13 +59,13 @@ namespace sqlite_manager
 
         for (const Column& col : cols)
         {
-            names.push_back(col.m_name);
-            if (col.m_type == ColumnType::TEXT)
+            names.push_back(col.Name);
+            if (col.Type == ColumnType::TEXT)
             {
-                values.push_back(fmt::format("'{}'", col.m_value));
+                values.push_back(fmt::format("'{}'", col.Value));
             }
             else
-                values.push_back(col.m_value);
+                values.push_back(col.Value);
         }
 
         std::string queryString =
@@ -118,7 +118,7 @@ namespace sqlite_manager
 
             for (auto& col : fields)
             {
-                fieldNames.push_back(col.m_name);
+                fieldNames.push_back(col.Name);
             }
             selectedFields = fmt::format("{}", fmt::join(fieldNames, ", "));
         }
@@ -129,10 +129,10 @@ namespace sqlite_manager
             std::vector<std::string> conditions;
             for (auto& col : selCriteria)
             {
-                if (col.m_type == ColumnType::TEXT)
-                    conditions.push_back(fmt::format("{} = '{}'", col.m_name, col.m_value));
+                if (col.Type == ColumnType::TEXT)
+                    conditions.push_back(fmt::format("{} = '{}'", col.Name, col.Value));
                 else
-                    conditions.push_back(fmt::format("{} = {}", col.m_name, col.m_value));
+                    conditions.push_back(fmt::format("{} = {}", col.Name, col.Value));
             }
             condition = fmt::format("WHERE {}", fmt::join(conditions, fmt::format(" {} ", MAP_LOGOP_STRING.at(logOp))));
         }
@@ -177,13 +177,13 @@ namespace sqlite_manager
             std::vector<std::string> critFields;
             for (auto& col : selCriteria)
             {
-                if (col.m_type == ColumnType::TEXT)
+                if (col.Type == ColumnType::TEXT)
                 {
-                    critFields.push_back(fmt::format("{}='{}'", col.m_name, col.m_value));
+                    critFields.push_back(fmt::format("{}='{}'", col.Name, col.Value));
                 }
                 else
                 {
-                    critFields.push_back(fmt::format("{}={}", col.m_name, col.m_value));
+                    critFields.push_back(fmt::format("{}={}", col.Name, col.Value));
                 }
             }
             whereClause =
@@ -209,13 +209,13 @@ namespace sqlite_manager
         std::vector<std::string> setFields;
         for (auto& col : fields)
         {
-            if (col.m_type == ColumnType::TEXT)
+            if (col.Type == ColumnType::TEXT)
             {
-                setFields.push_back(fmt::format("{}='{}'", col.m_name, col.m_value));
+                setFields.push_back(fmt::format("{}='{}'", col.Name, col.Value));
             }
             else
             {
-                setFields.push_back(fmt::format("{}={}", col.m_name, col.m_value));
+                setFields.push_back(fmt::format("{}={}", col.Name, col.Value));
             }
         }
         std::string updateValues = fmt::format("{}", fmt::join(setFields, ", "));
@@ -226,13 +226,13 @@ namespace sqlite_manager
             std::vector<std::string> conditions;
             for (auto& col : selCriteria)
             {
-                if (col.m_type == ColumnType::TEXT)
+                if (col.Type == ColumnType::TEXT)
                 {
-                    conditions.push_back(fmt::format("{}='{}'", col.m_name, col.m_value));
+                    conditions.push_back(fmt::format("{}='{}'", col.Name, col.Value));
                 }
                 else
                 {
-                    conditions.push_back(fmt::format("{}={}", col.m_name, col.m_value));
+                    conditions.push_back(fmt::format("{}={}", col.Name, col.Value));
                 }
             }
             whereClause =

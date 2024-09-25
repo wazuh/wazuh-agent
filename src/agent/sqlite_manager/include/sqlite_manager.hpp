@@ -30,27 +30,27 @@ namespace sqlite_manager
                const bool notNull,
                const bool autoIncr,
                const bool primary = false)
-            : m_name(std::move(name))
-            , m_type(type)
-            , m_notNull(notNull)
-            , m_autoIncrement(autoIncr)
-            , m_primaryKey(primary)
+            : Name(std::move(name))
+            , Type(type)
+            , NotNull(notNull)
+            , AutoIncrement(autoIncr)
+            , PrimaryKey(primary)
         {
         }
 
         Column(std::string name, const ColumnType type, std::string value)
-            : m_name(std::move(name))
-            , m_type(type)
-            , m_value(std::move(value))
+            : Name(std::move(name))
+            , Type(type)
+            , Value(std::move(value))
         {
         }
 
-        std::string m_name;
-        ColumnType m_type;
-        bool m_notNull;
-        bool m_autoIncrement;
-        bool m_primaryKey;
-        std::string m_value;
+        std::string Name;
+        ColumnType Type;
+        bool NotNull;
+        bool AutoIncrement;
+        bool PrimaryKey;
+        std::string Value;
     };
 
     using Row = std::vector<Column>;
