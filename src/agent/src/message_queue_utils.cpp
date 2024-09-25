@@ -90,9 +90,7 @@ std::optional<command_store::CommandEntry> GetCommandFromQueue(std::shared_ptr<I
         }
     }
 
-    command_store::Status status = command_store::Status::IN_PROGRESS;
-
-    command_store::CommandEntry cmd(id, module, command, parameters, "", status);
+    command_store::CommandEntry cmd(id, module, command, parameters, "", command_store::Status::IN_PROGRESS);
 
     return cmd;
 }
