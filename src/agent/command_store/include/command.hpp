@@ -18,8 +18,8 @@ namespace command_store
     {
     public:
         CommandEntry()
-            : m_status(Status::UNKNOWN)
-            , m_time(0.0)
+            : CurrentStatus(Status::UNKNOWN)
+            , Time(0.0)
         {
         }
 
@@ -29,21 +29,21 @@ namespace command_store
                      const std::string& parameters,
                      const std::string& result,
                      Status status)
-            : m_id(id)
-            , m_module(module)
-            , m_command(command)
-            , m_parameters(parameters)
-            , m_result(result)
-            , m_status(status)
+            : Id(id)
+            , Module(module)
+            , Command(command)
+            , Parameters(parameters)
+            , Result(result)
+            , CurrentStatus(status)
         {
         }
 
-        std::string m_id;
-        std::string m_module;
-        std::string m_command;
-        std::string m_parameters;
-        std::string m_result;
-        Status m_status;
-        double m_time;
+        std::string Id;
+        std::string Module;
+        std::string Command;
+        std::string Parameters;
+        std::string Result;
+        Status CurrentStatus;
+        double Time;
     };
 } // namespace command_store

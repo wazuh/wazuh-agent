@@ -37,11 +37,11 @@ namespace command_handler
                 PopCommandFromQueue();
                 auto result = DispatchCommand(cmd.value());
 
-                cmd.value().m_status = std::get<0>(result);
-                cmd.value().m_result = std::get<1>(result);
+                cmd.value().CurrentStatus = std::get<0>(result);
+                cmd.value().Result = std::get<1>(result);
                 m_commandStore.UpdateCommand(cmd.value());
 
-                LogInfo("Done processing command: {}({})", cmd.value().m_command, cmd.value().m_module);
+                LogInfo("Done processing command: {}({})", cmd.value().Command, cmd.value().Module);
             }
         }
 
