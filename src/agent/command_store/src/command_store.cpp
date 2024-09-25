@@ -81,7 +81,7 @@ namespace command_store
                MILLISECS_IN_A_SEC;
     }
 
-    bool CommandStore::StoreCommand(const Command& cmd)
+    bool CommandStore::StoreCommand(const CommandEntry& cmd)
     {
         std::vector<sqlite_manager::Column> fields;
         fields.emplace_back("id", sqlite_manager::ColumnType::TEXT, cmd.m_id);
@@ -120,7 +120,7 @@ namespace command_store
         return true;
     }
 
-    std::optional<Command> CommandStore::GetCommand(const std::string& id)
+    std::optional<CommandEntry> CommandStore::GetCommand(const std::string& id)
     {
         try
         {
@@ -132,7 +132,7 @@ namespace command_store
                 return std::nullopt;
             }
 
-            Command cmd;
+            CommandEntry cmd;
             for (const sqlite_manager::Column& col : cmdData[0])
             {
                 if (col.m_name == "id")
@@ -173,7 +173,7 @@ namespace command_store
         }
     }
 
-    bool CommandStore::UpdateCommand(const Command& cmd)
+    bool CommandStore::UpdateCommand(const CommandEntry& cmd)
     {
         std::vector<sqlite_manager::Column> fields;
         if (!cmd.m_module.empty())

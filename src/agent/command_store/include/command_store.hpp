@@ -25,9 +25,9 @@ namespace command_store
 
         bool Clear();
         int GetCount();
-        bool StoreCommand(const Command& cmd);
+        bool StoreCommand(const CommandEntry& cmd);
         bool DeleteCommand(const std::string& id);
-        std::optional<Command> GetCommand(const std::string& id);
-        bool UpdateCommand(const Command& cmd);
+        std::optional<CommandEntry> GetCommand(const std::string& id);
+        bool UpdateCommand(const CommandEntry& cmd);
     };
 } // namespace command_store

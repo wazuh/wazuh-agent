@@ -14,21 +14,21 @@ namespace command_store
         UNKNOWN
     };
 
-    class Command
+    class CommandEntry
     {
     public:
-        Command()
+        CommandEntry()
             : m_status(Status::UNKNOWN)
             , m_time(0.0)
         {
         }
 
-        Command(const std::string& id,
-                const std::string& module,
-                const std::string& command,
-                const std::string& parameters,
-                const std::string& result,
-                Status status)
+        CommandEntry(const std::string& id,
+                     const std::string& module,
+                     const std::string& command,
+                     const std::string& parameters,
+                     const std::string& result,
+                     Status status)
             : m_id(id)
             , m_module(module)
             , m_command(command)
