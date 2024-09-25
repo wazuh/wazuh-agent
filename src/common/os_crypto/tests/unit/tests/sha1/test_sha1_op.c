@@ -51,7 +51,7 @@ void OS_SHA1_File_Nbytes_unable_open_file (void **state)
     const char *path = "/home/test_file";
     EVP_MD_CTX *context = EVP_MD_CTX_new();
     os_sha1 output;
-    ssize_t nbytes = 4096;
+    int64_t nbytes = 4096;
 
     int mode = OS_BINARY;
 

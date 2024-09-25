@@ -16,6 +16,7 @@
 #ifdef EVENTCHANNEL_SUPPORT
 #define _WIN32_WINNT 0x0600
 #endif
+char *strtok_r(char *str, const char *delim, char **saveptr){return NULL; }
 #endif
 
 /* Trim CR and/or LF from the last positions of a string */
@@ -78,7 +79,7 @@ char *os_strip_char(const char *source, char remove)
 }
 
 /* Do a substring */
-int os_substr(char *dest, const char *src, size_t position, ssize_t length)
+int os_substr(char *dest, const char *src, size_t position, int64_t length)
 {
     dest[0] = '\0';
 
@@ -333,7 +334,7 @@ char * wstr_chr_escape(const char * str, char character, char escape) {
 
 // Escape a specific character from a character string
 
-ssize_t wstr_escape(char *dststr, size_t dst_size, const char *str, char escape, char match) {
+int64_t wstr_escape(char *dststr, size_t dst_size, const char *str, char escape, char match) {
 
     if (str == NULL || dststr == NULL) {
         return OS_INVALID;
@@ -375,7 +376,7 @@ ssize_t wstr_escape(char *dststr, size_t dst_size, const char *str, char escape,
 
 // Unescape a specific character from a character string
 
-ssize_t wstr_unescape(char *dststr, size_t dst_size, const char *str, char escape) {
+int64_t wstr_unescape(char *dststr, size_t dst_size, const char *str, char escape) {
 
     if (str == NULL || dststr == NULL) {
         return OS_INVALID;
@@ -764,9 +765,9 @@ long w_parse_time(const char * string) {
 
 // Parse positive size string into bytes
 
-ssize_t w_parse_size(const char * string) {
+int64_t w_parse_size(const char * string) {
     char c;
-    ssize_t size;
+    int64_t size;
 
     switch (sscanf(string, "%zd%c", &size, &c)) {
     case 1:

@@ -43,7 +43,7 @@ void gettime(struct timespec *ts) {
 
 #include <windows.h>
 #define EPOCH_DIFFERENCE 11644473600LL
-
+struct tm *localtime_r(const time_t *timer, struct tm *result){}
 // Get the epoch time
 
 long long int get_windows_time_epoch() {

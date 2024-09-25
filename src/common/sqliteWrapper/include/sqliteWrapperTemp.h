@@ -15,13 +15,18 @@
 #include <sqlite3.h>
 #include <string>
 #include <memory>
-#include "makeUnique.h"
 #include "customDeleter.hpp"
 #include <iostream>
 #include <chrono>
 #include <sys/stat.h>
 #include <math.h>
 #include <stdexcept>
+
+#if defined(__GNUC__) || defined(__clang__)
+#define ATTR_RET_NONNULL __attribute__((__returns_nonnull__))
+#else
+#define ATTR_RET_NONNULL
+#endif
 
 using DBSyncExceptionType = const std::pair<int, std::string>;
 
@@ -56,7 +61,7 @@ namespace DbSync
     class dbsync_error : public std::exception
     {
         public:
-            __attribute__((__returns_nonnull__))
+            ATTR_RET_NONNULL
             const char* what() const noexcept override
             {
                 return m_error.what();
@@ -90,7 +95,7 @@ namespace DbSync
     class max_rows_error : public std::exception
     {
         public:
-            __attribute__((__returns_nonnull__))
+            ATTR_RET_NONNULL
             const char* what() const noexcept override
             {
                 return m_error.what();

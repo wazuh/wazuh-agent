@@ -3,14 +3,17 @@
 #include <shared.h>
 #include <defs.h>
 #include <logging_helper.h>
-#include <pthreads_op.h>
 
 #include <inventory.hpp>
 #include <sysInfo.hpp>
 
 using namespace std;
 
+#ifdef WIN32
+#define INV_LOGTAG "modules:inventory" // Tag for log messages
+#else
 constexpr const char* INV_LOGTAG = "modules:inventory"; // Tag for log messages
+#endif
 
 void Inventory::Start() {
 
