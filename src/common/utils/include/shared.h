@@ -91,6 +91,7 @@
 
 #ifdef __cplusplus
 #include <atomic>
+#include <logger.hpp>
 #define _Atomic(T) std::atomic<T>
 #endif
 
@@ -102,7 +103,6 @@
 
 #include "defs.h"
 #include "os_err.h"
-#include "debug_op.h"
 #include "time_op.h"
 #include "file_op.h"
 #include "regex_op.h"
@@ -171,16 +171,25 @@ extern const char *__local_name;
 /*** Global prototypes ***/
 /*** These functions will exit on error. No need to check return code ***/
 
+// TODO: how to solve this??
 /* for calloc: x = calloc(4,sizeof(char)) -> os_calloc(4,sizeof(char),x) */
-#define os_calloc(x,y,z) ((z = (__typeof__(z)) calloc(x,y)))?(void)1:merror_exit(MEM_ERROR, errno, strerror(errno))
+// #define os_calloc(x,y,z) ((z = (__typeof__(z)) calloc(x,y)))?(void)1:merror_exit(MEM_ERROR, errno, strerror(errno))
+// #define os_calloc(x,y,z) ((z = (__typeof__(z)) calloc(x,y)))?(void)1:LogError({}, strerror(errno))
+#define os_calloc(x,y,z) ((z = (__typeof__(z)) calloc(x,y)))
 
-#define os_strdup(x,y) ((y = strdup(x)))?(void)1:merror_exit(MEM_ERROR, errno, strerror(errno))
+// #define os_strdup(x,y) ((y = strdup(x)))?(void)1:merror_exit(MEM_ERROR, errno, strerror(errno))
+// #define os_strdup(x,y) ((y = strdup(x)))?(void)1:LogError({}, strerror(errno))
+#define os_strdup(x,y) ((y = strdup(x)))
 
-#define os_malloc(x,y) ((y = (__typeof__(y)) malloc(x)))?(void)1:merror_exit(MEM_ERROR, errno, strerror(errno))
+// #define os_malloc(x,y) ((y = (__typeof__(y)) malloc(x)))?(void)1:merror_exit(MEM_ERROR, errno, strerror(errno))
+// #define os_malloc(x,y) ((y = (__typeof__(y)) malloc(x)))?(void)1:LogError({}, strerror(errno))
+#define os_malloc(x,y) ((y = (__typeof__(y)) malloc(x)))
 
 #define os_free(x) if(x){free(x);x=NULL;}
 
-#define os_realloc(x,y,z) ((z = (__typeof__(z))realloc(x,y)))?(void)1:merror_exit(MEM_ERROR, errno, strerror(errno))
+// #define os_realloc(x,y,z) ((z = (__typeof__(z))realloc(x,y)))?(void)1:merror_exit(MEM_ERROR, errno, strerror(errno))
+// #define os_realloc(x,y,z) ((z = (__typeof__(z))realloc(x,y)))?(void)1:LogError({}, strerror(errno))
+#define os_realloc(x,y,z) ((z = (__typeof__(z))realloc(x,y)))
 
 #define os_clearnl(x,p) if((p = strrchr(x, '\n')))*p = '\0';
 

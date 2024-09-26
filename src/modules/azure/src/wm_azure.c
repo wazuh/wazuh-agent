@@ -51,7 +51,7 @@ void* wm_azure_main(wm_azure_t *azure_config) {
     char * timestamp = NULL;
 
     wm_azure_setup(azure_config);
-    mtinfo(WM_AZURE_LOGTAG, "Module started.");
+    //mtinfo(WM_AZURE_LOGTAG, "Module started.");
 
 
 
@@ -67,37 +67,37 @@ void* wm_azure_main(wm_azure_t *azure_config) {
         if (time_sleep) {
             const int next_scan_time = sched_get_next_scan_time(azure_config->scan_config);
             timestamp = w_get_timestamp(next_scan_time);
-            mtdebug2(WM_AZURE_LOGTAG, "Sleeping until: %s", timestamp);
+            //mtdebug2(WM_AZURE_LOGTAG, "Sleeping until: %s", timestamp);
             os_free(timestamp);
             w_sleep_until(next_scan_time);
         }
-        mtinfo(WM_AZURE_LOGTAG, "Starting fetching of logs.");
+        //mtinfo(WM_AZURE_LOGTAG, "Starting fetching of logs.");
 
         snprintf(msg, OS_SIZE_6144, "Starting Azure-logs scan.");
         SendMSG(queue_fd, msg, "rootcheck", ROOTCHECK_MQ);
 
         for (curr_api = azure_config->api_config; curr_api; curr_api = curr_api->next) {
             if (curr_api->type == LOG_ANALYTICS) {
-                mtinfo(WM_AZURE_LOGTAG, "Starting Log Analytics collection for the domain '%s'.", curr_api->tenantdomain);
+                //mtinfo(WM_AZURE_LOGTAG, "Starting Log Analytics collection for the domain '%s'.", curr_api->tenantdomain);
                 wm_azure_log_analytics(curr_api);
-                mtinfo(WM_AZURE_LOGTAG, "Finished Log Analytics collection for the domain '%s'.", curr_api->tenantdomain);
+                //mtinfo(WM_AZURE_LOGTAG, "Finished Log Analytics collection for the domain '%s'.", curr_api->tenantdomain);
             } else if (curr_api->type == GRAPHS) {
-                mtinfo(WM_AZURE_LOGTAG, "Starting Graphs log collection for the domain '%s'.", curr_api->tenantdomain);
+                //mtinfo(WM_AZURE_LOGTAG, "Starting Graphs log collection for the domain '%s'.", curr_api->tenantdomain);
                 wm_azure_graphs(curr_api);
-                mtinfo(WM_AZURE_LOGTAG, "Finished Graphs log collection for the domain '%s'.", curr_api->tenantdomain);
+                //mtinfo(WM_AZURE_LOGTAG, "Finished Graphs log collection for the domain '%s'.", curr_api->tenantdomain);
             }
         }
 
         for (curr_storage = azure_config->storage; curr_storage; curr_storage = curr_storage->next) {
-            mtinfo(WM_AZURE_LOGTAG, "Starting Storage log collection for '%s'.", curr_storage->tag);
+            //mtinfo(WM_AZURE_LOGTAG, "Starting Storage log collection for '%s'.", curr_storage->tag);
             wm_azure_storage(curr_storage);
-            mtinfo(WM_AZURE_LOGTAG, "Finished Storage log collection for '%s'.", curr_storage->tag);
+            //mtinfo(WM_AZURE_LOGTAG, "Finished Storage log collection for '%s'.", curr_storage->tag);
         }
 
         snprintf(msg, OS_SIZE_6144, "Ending Azure-logs scan.");
         SendMSG(queue_fd, msg, "rootcheck", ROOTCHECK_MQ);
 
-        mtdebug1(WM_AZURE_LOGTAG, "Fetching logs finished.");
+        //mtdebug1(WM_AZURE_LOGTAG, "Fetching logs finished.");
 
     } while (FOREVER());
 
@@ -117,7 +117,7 @@ void wm_azure_log_analytics(wm_azure_api_t *log_analytics) {
         char * output = NULL;
 
         // Create argument list
-        mtdebug2(WM_AZURE_LOGTAG, "Creating argument list.");
+        //mtdebug2(WM_AZURE_LOGTAG, "Creating argument list.");
 
         char * script = NULL;
         os_calloc(PATH_MAX, sizeof(char), script);
@@ -148,10 +148,12 @@ void wm_azure_log_analytics(wm_azure_api_t *log_analytics) {
             wm_strcat(&command, "--la_time_offset", ' ');
             wm_strcat(&command, curr_request->time_offset, ' ');
         }
-        if (isDebug()) {
+        if (// TODO : should this feature be added
+// isDebug()) {
             char *int_to_string;
             os_malloc(OS_SIZE_1024, int_to_string);
-            sprintf(int_to_string, "%d", isDebug());
+            sprintf(int_to_string, "%d", // TODO : should this feature be added
+// isDebug());
             wm_strcat(&command, "--debug", ' ');
             wm_strcat(&command, int_to_string, ' ');
             os_free(int_to_string);
@@ -164,24 +166,24 @@ void wm_azure_log_analytics(wm_azure_api_t *log_analytics) {
             timeout = default_timeout;
 
         // Run script
-        mtdebug1(WM_AZURE_LOGTAG, "Launching command: %s", command);
+        //mtdebug1(WM_AZURE_LOGTAG, "Launching command: %s", command);
         switch (wm_exec(command, &output, &status, timeout, NULL)) {
             case 0:
                 if (status > 0) {
-                    mterror(WM_AZURE_LOGTAG, "%s: Returned error code: '%d'.", curr_request->tag, status);
-                    mtdebug1(WM_AZURE_LOGTAG, "OUTPUT: %s", output);
+                    //mterror(WM_AZURE_LOGTAG, "%s: Returned error code: '%d'.", curr_request->tag, status);
+                    //mtdebug1(WM_AZURE_LOGTAG, "OUTPUT: %s", output);
                 }
                 break;
             case WM_ERROR_TIMEOUT:
-                mterror(WM_AZURE_LOGTAG, "Timeout expired at request '%s'.", curr_request->tag);
+                //mterror(WM_AZURE_LOGTAG, "Timeout expired at request '%s'.", curr_request->tag);
                 break;
             default:
-                mterror(WM_AZURE_LOGTAG, "Internal error. Exiting...");
+                //mterror(WM_AZURE_LOGTAG, "Internal error. Exiting...");
                 os_free(command);
                 pthread_exit(NULL);
         }
 
-        mtinfo(WM_AZURE_LOGTAG, "Finished Log Analytics collection for request '%s'.", curr_request->tag);
+        //mtinfo(WM_AZURE_LOGTAG, "Finished Log Analytics collection for request '%s'.", curr_request->tag);
 
         os_free(command);
         os_free(output);
@@ -201,7 +203,7 @@ void wm_azure_graphs(wm_azure_api_t *graph) {
         char * output = NULL;
 
         // Create argument list
-        mtdebug2(WM_AZURE_LOGTAG, "Creating argument list.");
+        //mtdebug2(WM_AZURE_LOGTAG, "Creating argument list.");
 
         char * script = NULL;
         os_calloc(PATH_MAX, sizeof(char), script);
@@ -230,10 +232,12 @@ void wm_azure_graphs(wm_azure_api_t *graph) {
             wm_strcat(&command, curr_request->time_offset, ' ');
         }
 
-        if (isDebug()) {
+        if (// TODO : should this feature be added
+// isDebug()) {
             char *int_to_string;
             os_malloc(OS_SIZE_1024, int_to_string);
-            sprintf(int_to_string, "%d", isDebug());
+            sprintf(int_to_string, "%d", // TODO : should this feature be added
+// isDebug());
             wm_strcat(&command, "--debug", ' ');
             wm_strcat(&command, int_to_string, ' ');
             os_free(int_to_string);
@@ -246,24 +250,24 @@ void wm_azure_graphs(wm_azure_api_t *graph) {
             timeout = default_timeout;
 
         // Run script
-        mtdebug1(WM_AZURE_LOGTAG, "Launching command: %s", command);
+        //mtdebug1(WM_AZURE_LOGTAG, "Launching command: %s", command);
         switch (wm_exec(command, &output, &status, timeout, NULL)) {
             case 0:
                 if (status > 0) {
-                    mterror(WM_AZURE_LOGTAG, "%s: Returned error code: '%d'.", curr_request->tag, status);
-                    mtdebug1(WM_AZURE_LOGTAG, "OUTPUT: %s", output);
+                    //mterror(WM_AZURE_LOGTAG, "%s: Returned error code: '%d'.", curr_request->tag, status);
+                    //mtdebug1(WM_AZURE_LOGTAG, "OUTPUT: %s", output);
                 }
                 break;
             case WM_ERROR_TIMEOUT:
-                mterror(WM_AZURE_LOGTAG, "Timeout expired at request '%s'.", curr_request->tag);
+                //mterror(WM_AZURE_LOGTAG, "Timeout expired at request '%s'.", curr_request->tag);
                 break;
             default:
-                mterror(WM_AZURE_LOGTAG, "Internal error. Exiting...");
+                //mterror(WM_AZURE_LOGTAG, "Internal error. Exiting...");
                 os_free(command);
                 pthread_exit(NULL);
         }
 
-        mtinfo(WM_AZURE_LOGTAG, "Finished Graphs log collection for request '%s'.", curr_request->tag);
+        //mtinfo(WM_AZURE_LOGTAG, "Finished Graphs log collection for request '%s'.", curr_request->tag);
 
         os_free(command);
         os_free(output);
@@ -284,7 +288,7 @@ void wm_azure_storage(wm_azure_storage_t *storage) {
         char * output = NULL;
 
         // Create argument list
-        mtdebug2(WM_AZURE_LOGTAG, "Creating argument list.");
+        //mtdebug2(WM_AZURE_LOGTAG, "Creating argument list.");
 
         char * script = NULL;
         os_calloc(PATH_MAX, sizeof(char), script);
@@ -330,10 +334,12 @@ void wm_azure_storage(wm_azure_storage_t *storage) {
             wm_strcat(&command, curr_container->path, ' ');
         }
 
-        if (isDebug()) {
+        if (// TODO : should this feature be added
+// isDebug()) {
             char *int_to_string;
             os_malloc(OS_SIZE_1024, int_to_string);
-            sprintf(int_to_string, "%d", isDebug());
+            sprintf(int_to_string, "%d", // TODO : should this feature be added
+// isDebug());
             wm_strcat(&command, "--debug", ' ');
             wm_strcat(&command, int_to_string, ' ');
             os_free(int_to_string);
@@ -346,24 +352,24 @@ void wm_azure_storage(wm_azure_storage_t *storage) {
             timeout = default_timeout;
 
         // Run script
-        mtdebug1(WM_AZURE_LOGTAG, "Launching command: %s", command);
+        //mtdebug1(WM_AZURE_LOGTAG, "Launching command: %s", command);
         switch (wm_exec(command, &output, &status, timeout, NULL)) {
             case 0:
                 if (status > 0) {
-                    mterror(WM_AZURE_LOGTAG, "%s: Returned error code: '%d'.", curr_container->name, status);
-                    mtdebug1(WM_AZURE_LOGTAG, "OUTPUT: %s", output);
+                    //mterror(WM_AZURE_LOGTAG, "%s: Returned error code: '%d'.", curr_container->name, status);
+                    //mtdebug1(WM_AZURE_LOGTAG, "OUTPUT: %s", output);
                 }
                 break;
             case WM_ERROR_TIMEOUT:
-                mterror(WM_AZURE_LOGTAG, "Timeout expired at request '%s'.", curr_container->name);
+                //mterror(WM_AZURE_LOGTAG, "Timeout expired at request '%s'.", curr_container->name);
                 break;
             default:
-                mterror(WM_AZURE_LOGTAG, "Internal error. Exiting...");
+                //mterror(WM_AZURE_LOGTAG, "Internal error. Exiting...");
                 os_free(command);
                 pthread_exit(NULL);
         }
 
-        mtinfo(WM_AZURE_LOGTAG, "Finished Storage log collection for container '%s'.", curr_container->name);
+        //mtinfo(WM_AZURE_LOGTAG, "Finished Storage log collection for container '%s'.", curr_container->name);
 
         os_free(command);
         os_free(output);
@@ -387,7 +393,7 @@ void wm_azure_setup(wm_azure_t *_azure_config) {
     queue_fd = StartMQ(DEFAULTQUEUE, WRITE, INFINITE_OPENQ_ATTEMPTS);
 
     if (queue_fd < 0) {
-        mterror(WM_AZURE_LOGTAG, "Can't connect to queue.");
+        //mterror(WM_AZURE_LOGTAG, "Can't connect to queue.");
         pthread_exit(NULL);
     }
 
@@ -402,14 +408,14 @@ void wm_azure_check() {
 
     // Check if disabled
     if (!azure_config->flags.enabled) {
-        mtinfo(WM_AZURE_LOGTAG, "Module disabled. Exiting...");
+        //mtinfo(WM_AZURE_LOGTAG, "Module disabled. Exiting...");
         pthread_exit(NULL);
     }
 
     // Check if necessary configuration is defined
 
     if (!azure_config->api_config && !azure_config->storage) {
-        mtwarn(WM_AZURE_LOGTAG, "No API (log_analytics, graph or storage) defined. Exiting...");
+        //mtwarn(WM_AZURE_LOGTAG, "No API (log_analytics, graph or storage) defined. Exiting...");
         pthread_exit(NULL);
     }
 
@@ -422,7 +428,7 @@ void wm_azure_check() {
 
 void wm_azure_cleanup() {
     close(queue_fd);
-    mtinfo(WM_AZURE_LOGTAG, "Module finished.");
+    //mtinfo(WM_AZURE_LOGTAG, "Module finished.");
 }
 
 // Destroy data

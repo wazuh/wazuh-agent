@@ -25,11 +25,11 @@ void *read_fullcommand(logreader *lf, int *rc, int drop_it) {
     strfinal[OS_MAXSTR] = '\0';
     *rc = 0;
 
-    mdebug2("Running full command '%s'", lf->command);
+    //mdebug2("Running full command '%s'", lf->command);
 
     cmd_output = popen(lf->command, "r");
     if (!cmd_output) {
-        merror("Unable to execute command: '%s'.",
+        //merror("Unable to execute command: '%s'.",
                lf->command);
 
         lf->command = NULL;
@@ -51,7 +51,7 @@ void *read_fullcommand(logreader *lf, int *rc, int drop_it) {
             *p = '\0';
         }
 
-        mdebug2("Reading command message: '%s'", str);
+        //mdebug2("Reading command message: '%s'", str);
 
         /* Remove empty lines */
         n = 0;

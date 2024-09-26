@@ -89,7 +89,7 @@ void ExecdShutdown(int sig)
 #endif
 {
     /* Remove pending active responses */
-    minfo(EXEC_SHUTDOWN);
+    //minfo(EXEC_SHUTDOWN);
 
     timeout_node = timeout_list ? OSList_GetFirstNode(timeout_list) : NULL;
     while (timeout_node) {
@@ -97,7 +97,7 @@ void ExecdShutdown(int sig)
 
         list_entry = (timeout_data *)timeout_node->data;
 
-        mdebug2("Delete pending AR: '%s' '%s'", list_entry->command[0], list_entry->parameters);
+        //mdebug2("Delete pending AR: '%s' '%s'", list_entry->command[0], list_entry->parameters);
 
         wfd_t *wfd = wpopenv(list_entry->command[0], list_entry->command, W_BIND_STDIN);
         if (wfd) {
@@ -106,7 +106,7 @@ void ExecdShutdown(int sig)
             fflush(wfd->file_in);
             wpclose(wfd);
         } else {
-            merror(EXEC_CMD_FAIL, strerror(errno), errno);
+            //merror(EXEC_CMD_FAIL, strerror(errno), errno);
         }
 
         /* Delete current node - already sets the pointer to next */
@@ -140,7 +140,7 @@ void ExecdTimeoutRun(int *childcount)
         /* Timed out */
         if ((curr_time - list_entry->time_of_addition) > list_entry->time_to_block) {
 
-            mdebug1("Executing command '%s %s' after a timeout of '%ds'",
+            LogDebug("Executing command '%s %s' after a timeout of '%ds'",
                 list_entry->command[0],
                 list_entry->parameters ? list_entry->parameters : "",
                 list_entry->time_to_block
@@ -153,7 +153,7 @@ void ExecdTimeoutRun(int *childcount)
                 fflush(wfd->file_in);
                 wpclose(wfd);
             } else {
-                merror(EXEC_CMD_FAIL, strerror(errno), errno);
+                //merror(EXEC_CMD_FAIL, strerror(errno), errno);
             }
 
             /* Delete currently node - already sets the pointer to next */
@@ -195,7 +195,7 @@ void ExecdRun(char *exec_msg, int *childcount)
 
     /* Parse message */
     if (json_root = cJSON_Parse(exec_msg), !json_root) {
-        merror(EXEC_INV_JSON, exec_msg);
+        //merror(EXEC_INV_JSON, exec_msg);
         return;
     }
 
@@ -204,7 +204,7 @@ void ExecdRun(char *exec_msg, int *childcount)
     if (json_command && (json_command->type == cJSON_String)) {
         name = json_command->valuestring;
     } else {
-        merror(EXEC_INV_CMD, exec_msg);
+        //merror(EXEC_INV_CMD, exec_msg);
         cJSON_Delete(json_root);
         return;
     }
@@ -230,7 +230,7 @@ void ExecdRun(char *exec_msg, int *childcount)
         ReadExecConfig();
         cmd[0] = GetCommandbyName(name, &timeout_value);
         if (!cmd[0]) {
-            merror(EXEC_INV_NAME, name);
+            //merror(EXEC_INV_NAME, name);
             cJSON_Delete(json_root);
             return;
         }
@@ -249,7 +249,7 @@ void ExecdRun(char *exec_msg, int *childcount)
     cmd_parameters = cJSON_PrintUnformatted(json_root);
 
     /* Execute command */
-    mdebug1("Executing command '%s %s'", cmd[0], cmd_parameters ? cmd_parameters : "");
+    LogDebug("Executing command '%s %s'", cmd[0], cmd_parameters ? cmd_parameters : "");
 
     wfd_t *wfd = wpopenv(cmd[0], cmd, W_BIND_STDIN | W_BIND_STDOUT);
     if (wfd) {
@@ -263,7 +263,7 @@ void ExecdRun(char *exec_msg, int *childcount)
 
         /* Receive alert keys from AR script to check timeout list */
         if (fgets(response, sizeof(response), wfd->file_out) == NULL) {
-            mdebug1("Active response won't be added to timeout list. "
+            LogDebug("Active response won't be added to timeout list. "
                     "Message not received with alert keys from script '%s'", cmd[0]);
             wpclose(wfd);
             os_free(cmd_parameters);
@@ -315,10 +315,10 @@ void ExecdRun(char *exec_msg, int *childcount)
                         snprintf(ntimes, 16, "%d", ntimes_int);
                         if (OSHash_Update(repeated_hash, rkey, ntimes) != 1) {
                             os_free(ntimes);
-                            merror("At ExecdRun: OSHash_Update() failed");
+                            //merror("At ExecdRun: OSHash_Update() failed");
                         }
                     }
-                    mdebug1("Repeated offender. Setting timeout to '%ds'", new_timeout);
+                    LogDebug("Repeated offender. Setting timeout to '%ds'", new_timeout);
                     timeout_value = new_timeout;
                 } else {
                     /* Add to the repeated offenders list */
@@ -326,7 +326,7 @@ void ExecdRun(char *exec_msg, int *childcount)
                     os_strdup("0", tmp_zero);
                     if (OSHash_Add(repeated_hash, rkey, tmp_zero) != 2) {
                         os_free(tmp_zero);
-                        merror("At ExecdRun: OSHash_Add() failed");
+                        //merror("At ExecdRun: OSHash_Add() failed");
                     }
                 }
             }
@@ -342,7 +342,7 @@ void ExecdRun(char *exec_msg, int *childcount)
                     added_before = 1;
 
                     /* Update the timeout */
-                    mdebug1("Command already received, updating time of addition to now.");
+                    LogDebug("Command already received, updating time of addition to now.");
                     list_entry->time_of_addition = curr_time;
                     list_entry->time_to_block = timeout_value;
                     break;
@@ -368,14 +368,14 @@ void ExecdRun(char *exec_msg, int *childcount)
                 timeout_entry->time_to_block = timeout_value;
 
                 /* Add command to the timeout list */
-                mdebug1("Adding command '%s %s' to the timeout list, with a timeout of '%ds'.",
+                LogDebug("Adding command '%s %s' to the timeout list, with a timeout of '%ds'.",
                     timeout_entry->command[0],
                     timeout_entry->parameters,
                     timeout_entry->time_to_block
                 );
 
                 if (!OSList_AddData(timeout_list, timeout_entry)) {
-                    merror(LIST_ADD_ERROR);
+                    //merror(LIST_ADD_ERROR);
                     FreeTimeoutEntry(timeout_entry);
                 }
             }
@@ -403,7 +403,7 @@ void ExecdRun(char *exec_msg, int *childcount)
         (*childcount)++;
 #endif
     } else {
-        merror(EXEC_CMD_FAIL, strerror(errno), errno);
+        //merror(EXEC_CMD_FAIL, strerror(errno), errno);
     }
 
     os_free(cmd_parameters);
@@ -429,7 +429,7 @@ void ExecdStart(int q)
     /* Create list for timeout */
     timeout_list = OSList_Create();
     if (!timeout_list) {
-        merror_exit(LIST_ERROR);
+        //merror_exit(LIST_ERROR);
     }
 #endif
 
@@ -446,7 +446,7 @@ void ExecdStart(int q)
             int wp;
             wp = waitpid((pid_t) - 1, NULL, WNOHANG);
             if (wp < 0 && errno != ECHILD) {
-                merror(WAITPID_ERROR, errno, strerror(errno));
+                //merror(WAITPID_ERROR, errno, strerror(errno));
                 break;
             }
             /* if = 0, we still need to wait for the child process */
@@ -477,17 +477,17 @@ void ExecdStart(int q)
 
         /* Check for error */
         if (!FD_ISSET(q, &fdset)) {
-            merror(SELECT_ERROR, errno, strerror(errno));
+            //merror(SELECT_ERROR, errno, strerror(errno));
             continue;
         }
 
         /* Receive the message */
         if (OS_RecvUnix(q, OS_MAXSTR, buffer) == 0) {
-            merror(QUEUE_ERROR, EXECQUEUE, strerror(errno));
+            //merror(QUEUE_ERROR, EXECQUEUE, strerror(errno));
             continue;
         }
 
-        mdebug2("Received message: '%s'", buffer);
+        //mdebug2("Received message: '%s'", buffer);
 
         ExecdRun(buffer, &childcount);
 
@@ -507,19 +507,19 @@ int WinExecdStart()
 
     /* Read config */
     if ((c = ExecdConfig(cfg)) < 0) {
-        mlerror_exit(LOGLEVEL_ERROR, CONFIG_ERROR, cfg);
+        //mlerror_exit(LOGLEVEL_ERROR, CONFIG_ERROR, cfg);
     }
 
     /* Active response disabled */
     if (c == 1) {
-        minfo(EXEC_DISABLED);
+        //minfo(EXEC_DISABLED);
         return (0);
     }
 
     /* Create list for timeout */
     timeout_list = OSList_Create();
     if (!timeout_list) {
-        merror_exit(LIST_ERROR);
+        //merror_exit(LIST_ERROR);
     }
 
     if (repeated_offenders_timeout[0] != 0) {
@@ -532,7 +532,7 @@ int WinExecdStart()
     atexit(ExecdShutdown);
 
     /* Start up message */
-    minfo(STARTUP_MSG, getpid());
+    //minfo(STARTUP_MSG, getpid());
 
     w_create_thread(NULL, 0, win_exec_main,
                     winexec_queue, 0, NULL);

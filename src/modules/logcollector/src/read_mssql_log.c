@@ -17,7 +17,7 @@
 
 /* Send MS SQL message and check the return code */
 static void __send_mssql_msg(logreader *lf, int drop_it, char *buffer) {
-    mdebug2("Reading MSSQL message: '%s'", buffer);
+    //mdebug2("Reading MSSQL message: '%s'", buffer);
 
     /* Check ignore and restrict log regex, if configured. */
     if (drop_it == 0 && !check_ignore_and_restrict(lf->regex_ignore, lf->regex_restrict, buffer)) {
@@ -161,6 +161,6 @@ void *read_mssql_log(logreader *lf, int *rc, int drop_it) {
         __send_mssql_msg(lf, drop_it, buffer);
     }
 
-    mdebug2("Read %d lines from %s", lines, lf->file);
+    //mdebug2("Read %d lines from %s", lines, lf->file);
     return (NULL);
 }

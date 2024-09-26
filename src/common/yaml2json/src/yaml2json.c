@@ -26,7 +26,7 @@ int yaml_parse_stdin(yaml_document_t * document) {
     if (yaml_parser_load(&parser, document)) {
         error = 0;
     } else {
-        mwarn("Failed to load YAML document at line %u", (unsigned int)parser.problem_mark.line);
+        //mwarn("Failed to load YAML document at line %u", (unsigned int)parser.problem_mark.line);
     }
 
     yaml_parser_delete(&parser);
@@ -46,14 +46,14 @@ int yaml_parse_file(const char * path, yaml_document_t * document) {
         if (yaml_parser_load(&parser, document)) {
             error = 0;
         } else {
-            mwarn("Failed to load YAML document in %s:%u", path, (unsigned int)parser.problem_mark.line);
+            //mwarn("Failed to load YAML document in %s:%u", path, (unsigned int)parser.problem_mark.line);
             yaml_document_delete(document);
         }
 
         yaml_parser_delete(&parser);
         fclose(finput);
     } else {
-        mwarn("Cannot open file '%s': %s (%d)", path, strerror(errno), errno);
+        //mwarn("Cannot open file '%s': %s (%d)", path, strerror(errno), errno);
     }
 
     return error;
@@ -63,7 +63,7 @@ cJSON * yaml2json(yaml_document_t * document, int single_quote_float_as_string) 
     yaml_node_t * node;
 
     if (node = yaml_document_get_root_node(document), !node) {
-        mwarn("No document defined.");
+        //mwarn("No document defined.");
         return NULL;
     }
 
@@ -114,7 +114,7 @@ cJSON * yaml2json_node(yaml_document_t * document, yaml_node_t * node,int quoted
             value = yaml_document_get_node(document, pair_i->value);
 
             if (key->type != YAML_SCALAR_NODE) {
-                mwarn("Mapping key is not scalar (line %u).", (unsigned int)key->start_mark.line);
+                //mwarn("Mapping key is not scalar (line %u).", (unsigned int)key->start_mark.line);
                 continue;
             }
 
@@ -124,7 +124,7 @@ cJSON * yaml2json_node(yaml_document_t * document, yaml_node_t * node,int quoted
         break;
 
     default:
-        mwarn("Unknown node type (line %u).", (unsigned int)node->start_mark.line);
+        //mwarn("Unknown node type (line %u).", (unsigned int)node->start_mark.line);
         object = NULL;
     }
 

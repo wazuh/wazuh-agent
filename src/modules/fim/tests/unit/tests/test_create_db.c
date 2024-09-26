@@ -254,7 +254,7 @@ static int setup_group(void **state) {
 
     removed_entries = OSList_Create();
     if (removed_entries == NULL) {
-        merror(MEM_ERROR, errno, strerror(errno));
+        //merror(MEM_ERROR, errno, strerror(errno));
         return -1;
     }
     OSList_SetFreeDataPointer(removed_entries, (void (*)(void *))free_directory);

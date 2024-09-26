@@ -17,7 +17,7 @@
 
 /* Send pgsql message and check the return code */
 static void __send_pgsql_msg(logreader *lf, int drop_it, char *buffer) {
-    mdebug2("Reading PostgreSQL message: '%s'", buffer);
+    //mdebug2("Reading PostgreSQL message: '%s'", buffer);
 
     /* Check ignore and restrict log regex, if configured. */
     if (drop_it == 0 && !check_ignore_and_restrict(lf->regex_ignore, lf->regex_restrict, buffer)) {
@@ -155,6 +155,6 @@ void *read_postgresql_log(logreader *lf, int *rc, int drop_it) {
         EVP_MD_CTX_free(context);
     }
 
-    mdebug2("Read %d lines from %s", lines, lf->file);
+    //mdebug2("Read %d lines from %s", lines, lf->file);
     return (NULL);
 }

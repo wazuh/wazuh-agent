@@ -58,7 +58,7 @@ int LogCollectorConfig(const char *cfgfile)
     current_files = 0;
 
     if (force_reload && reload_interval < vcheck_files) {
-        mwarn("Reload interval (%d) must be greater or equal than the checking interval (%d).", reload_interval, vcheck_files);
+        //mwarn("Reload interval (%d) must be greater or equal than the checking interval (%d).", reload_interval, vcheck_files);
     }
 
 #ifndef WIN32
@@ -66,20 +66,20 @@ int LogCollectorConfig(const char *cfgfile)
 #endif
 
     if (maximum_lines > 0 && maximum_lines < 100) {
-        merror("Definition 'logcollector.max_lines' must be 0 or 100..1000000.");
+        //merror("Definition 'logcollector.max_lines' must be 0 or 100..1000000.");
         return OS_INVALID;
     }
 
 #ifndef WIN32
     if (maximum_files > (int)nofile - 100) {
-        merror("Definition 'logcollector.max_files' must be lower than ('logcollector.rlimit_nofile' - 100).");
+        //merror("Definition 'logcollector.max_files' must be lower than ('logcollector.rlimit_nofile' - 100).");
         return OS_SIZELIM;
     }
 #else
     if (maximum_files > WIN32_MAX_FILES) {
         /* Limit files on Windows as file descriptors are shared */
         maximum_files = WIN32_MAX_FILES;
-        mdebug1("The maximum number of files to monitor cannot exceed %d in Windows, so it will be limited.", WIN32_MAX_FILES);
+        LogDebug("The maximum number of files to monitor cannot exceed %d in Windows, so it will be limited.", WIN32_MAX_FILES);
     }
 #endif
 

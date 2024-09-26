@@ -41,7 +41,7 @@ int ReadExecConfig()
     /* Open file */
     fp = wfopen(DEFAULTAR, "r");
     if (!fp) {
-        merror(FOPEN_ERROR, DEFAULTAR, errno, strerror(errno));
+        //merror(FOPEN_ERROR, DEFAULTAR, errno, strerror(errno));
         return (0);
     }
 
@@ -55,14 +55,14 @@ int ReadExecConfig()
         // The command name must not start with '!'
 
         if (buffer[0] == '!') {
-            merror(EXEC_INV_CONF, DEFAULTAR);
+            //merror(EXEC_INV_CONF, DEFAULTAR);
             continue;
         }
 
         /* Clean up the buffer */
         tmp_str = strstr(buffer, " - ");
         if (!tmp_str) {
-            merror(EXEC_INV_CONF, DEFAULTAR);
+            //merror(EXEC_INV_CONF, DEFAULTAR);
             continue;
         }
         *tmp_str = '\0';
@@ -72,9 +72,9 @@ int ReadExecConfig()
         const int bytes_written = snprintf(exec_names[exec_size], sizeof(exec_names[exec_size]), "%s", str_pt);
 
         if (bytes_written < 0) {
-            merror(EXEC_BAD_NAME " Error %d (%s).", exec_names[exec_size], errno, strerror(errno));
+            //merror(EXEC_BAD_NAME " Error %d (%s).", exec_names[exec_size], errno, strerror(errno));
         } else if ((size_t)bytes_written >= sizeof(exec_names[exec_size])) {
-            merror(EXEC_BAD_NAME, exec_names[exec_size]);
+            //merror(EXEC_BAD_NAME, exec_names[exec_size]);
         }
 
         str_pt = tmp_str;
@@ -82,7 +82,7 @@ int ReadExecConfig()
         /* Search for ' ' and - */
         tmp_str = strstr(tmp_str, " - ");
         if (!tmp_str) {
-            merror(EXEC_INV_CONF, DEFAULTAR);
+            //merror(EXEC_INV_CONF, DEFAULTAR);
             continue;
         }
         *tmp_str = '\0';
@@ -91,7 +91,7 @@ int ReadExecConfig()
         // Directory traversal test
 
         if (w_ref_parent_folder(str_pt)) {
-            merror("Active response command '%s' vulnerable to directory traversal attack. Ignoring.", str_pt);
+            //merror("Active response command '%s' vulnerable to directory traversal attack. Ignoring.", str_pt);
             exec_cmd[exec_size][0] = '\0';
         } else {
             /* Write the full command path */
@@ -102,7 +102,7 @@ int ReadExecConfig()
             process_file = wfopen(exec_cmd[exec_size], "r");
             if (!process_file) {
                 if (f_time_reading) {
-                    minfo("Active response command not present: '%s'. "
+                    //minfo("Active response command not present: '%s'. "
                             "Not using it on this system.",
                             exec_cmd[exec_size]);
                 }
@@ -164,14 +164,14 @@ char *GetCommandbyName(const char *name, int *timeout)
 
     if (name[0] == '!') {
         if (w_ref_parent_folder(name + 1)) {
-            mwarn("Active response command '%s' vulnerable to directory traversal attack. Ignoring.", name + 1);
+            //mwarn("Active response command '%s' vulnerable to directory traversal attack. Ignoring.", name + 1);
             return NULL;
         }
 
         static char command[OS_FLSIZE];
 
         if (snprintf(command, sizeof(command), "%s/%s", AR_BINDIR, name + 1) >= (int)sizeof(command)) {
-            mwarn("Cannot execute command '%32s...': path too long.", name + 1);
+            //mwarn("Cannot execute command '%32s...': path too long.", name + 1);
             return NULL;
         }
 
@@ -202,7 +202,7 @@ void ExecCmd(char *const *cmd)
     pid = fork();
     if (pid == 0) {
         if (execv(*cmd, cmd) < 0) {
-            merror(EXEC_CMDERROR, *cmd, strerror(errno));
+            //merror(EXEC_CMDERROR, *cmd, strerror(errno));
             exit(1);
         }
 
@@ -225,7 +225,7 @@ void ExecCmd_Win32(char *cmd)
 
     if (!CreateProcess(NULL, cmd, NULL, NULL, FALSE, 0, NULL, NULL,
                        &si, &pi)) {
-        merror("Unable to create active response process. ");
+        //merror("Unable to create active response process. ");
         return;
     }
 

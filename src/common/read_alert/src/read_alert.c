@@ -201,14 +201,14 @@ alert_data *GetAlertData(int flag, FILE *fp) {
                     p++;
                 } else {
                     /* If p is null it is because strchr failed */
-                    merror("date or location not NULL");
+                    //merror("date or location not NULL");
                     goto l_error;
                 }
             }
 
             /* If not, str is date and p is the location */
             if (al_data->date || al_data->location || !p) {
-                merror("date or location not NULL or p is NULL");
+                //merror("date or location not NULL or p is NULL");
                 goto l_error;
             }
 

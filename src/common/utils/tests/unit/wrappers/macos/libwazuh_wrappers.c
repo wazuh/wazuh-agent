@@ -14,7 +14,7 @@
 #include "../common.h"
 #include "headers/defs.h"
 
-void wrap_mterror(const char *tag, const char *msg, ...) {
+void wrap_//mterror(const char *tag, const char *msg, ...) {
     char formatted_msg[OS_MAXSTR];
     va_list args;
 
@@ -40,7 +40,7 @@ void wrap_mtwarn(const char *tag, const char *msg, ...) {
     check_expected(formatted_msg);
 }
 
-void wrap_mtdebug1(const char *tag, const char *msg, ...) {
+void wrap_//mtdebug1(const char *tag, const char *msg, ...) {
     char formatted_msg[OS_MAXSTR];
     va_list args;
 
@@ -53,7 +53,7 @@ void wrap_mtdebug1(const char *tag, const char *msg, ...) {
     check_expected(formatted_msg);
 }
 
-void wrap_mtdebug2(const char *tag, const char *msg, ...) {
+void wrap_//mtdebug2(const char *tag, const char *msg, ...) {
     char formatted_msg[OS_MAXSTR];
     va_list args;
 

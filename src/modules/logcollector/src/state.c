@@ -118,11 +118,11 @@ STATIC void w_logcollector_state_dump() {
 
     if (lc_state_file = wfopen(LOGCOLLECTOR_STATE, "w"), lc_state_file != NULL) {
         if (fwrite(lc_state_str, sizeof(char), len + 1, lc_state_file) < 1) {
-            merror(FWRITE_ERROR, LOGCOLLECTOR_STATE, errno, strerror(errno));
+            //merror(FWRITE_ERROR, LOGCOLLECTOR_STATE, errno, strerror(errno));
         }
         fclose(lc_state_file);
     } else {
-        merror(FOPEN_ERROR, LOGCOLLECTOR_STATE, errno, strerror(errno));
+        //merror(FOPEN_ERROR, LOGCOLLECTOR_STATE, errno, strerror(errno));
     }
 
     os_free(lc_state_str);
@@ -139,10 +139,10 @@ void w_logcollector_state_init(w_lc_state_type_t state_type, bool state_file_ena
         g_lc_states_global->start = time(NULL);
 
         if (g_lc_states_global->states = OSHash_Create(), g_lc_states_global->states == NULL) {
-            merror_exit(HCREATE_ERROR, LOGCOLLECTOR_STATE_DESCRIPTION);
+            //merror_exit(HCREATE_ERROR, LOGCOLLECTOR_STATE_DESCRIPTION);
         }
         if (OSHash_setSize(g_lc_states_global->states, LOGCOLLECTOR_STATE_FILES_MAX) == 0) {
-            merror_exit(HSETSIZE_ERROR, LOGCOLLECTOR_STATE_DESCRIPTION);
+            //merror_exit(HSETSIZE_ERROR, LOGCOLLECTOR_STATE_DESCRIPTION);
         }
     }
 
@@ -154,11 +154,11 @@ void w_logcollector_state_init(w_lc_state_type_t state_type, bool state_file_ena
         g_lc_states_interval->start = time(NULL);
 
         if (g_lc_states_interval->states = OSHash_Create(), g_lc_states_interval->states == NULL) {
-            merror_exit(HCREATE_ERROR, LOGCOLLECTOR_STATE_DESCRIPTION);
+            //merror_exit(HCREATE_ERROR, LOGCOLLECTOR_STATE_DESCRIPTION);
         }
 
         if (OSHash_setSize(g_lc_states_interval->states, LOGCOLLECTOR_STATE_FILES_MAX) == 0) {
-            merror_exit(HSETSIZE_ERROR, LOGCOLLECTOR_STATE_DESCRIPTION);
+            //merror_exit(HSETSIZE_ERROR, LOGCOLLECTOR_STATE_DESCRIPTION);
         }
     }
 
@@ -226,7 +226,7 @@ void _w_logcollector_state_update_file(w_lc_state_storage_t * state, char * fpat
             }
             os_free(data->targets);
             os_free(data);
-            merror(HUPDATE_ERROR, fpath, LOGCOLLECTOR_STATE_DESCRIPTION);
+            //merror(HUPDATE_ERROR, fpath, LOGCOLLECTOR_STATE_DESCRIPTION);
         }
     }
 }
@@ -273,7 +273,7 @@ void _w_logcollector_state_update_target(w_lc_state_storage_t * state, char * fp
             }
             os_free(data->targets);
             os_free(data);
-            merror(HUPDATE_ERROR, fpath, LOGCOLLECTOR_STATE_DESCRIPTION);
+            //merror(HUPDATE_ERROR, fpath, LOGCOLLECTOR_STATE_DESCRIPTION);
         }
     }
 }

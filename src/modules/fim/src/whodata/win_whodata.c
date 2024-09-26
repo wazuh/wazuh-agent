@@ -211,22 +211,22 @@ int set_winsacl(const char *dir, directory_t *configuration) {
 
     assert(configuration != NULL);
 
-    mdebug2(FIM_SACL_CONFIGURE, dir);
+    //mdebug2(FIM_SACL_CONFIGURE, dir);
 
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hdle)) {
-        merror(FIM_ERROR_SACL_OPENPROCESSTOKEN, GetLastError());
+        //merror(FIM_ERROR_SACL_OPENPROCESSTOKEN, GetLastError());
         return 1;
     }
 
     if (set_privilege(hdle, priv, TRUE)) {
-        merror(FIM_ERROR_SACL_ELEVATE_PRIVILEGE, GetLastError());
+        //merror(FIM_ERROR_SACL_ELEVATE_PRIVILEGE, GetLastError());
         goto end;
     }
 
     privilege_enabled = 1;
 
     if (result = GetNamedSecurityInfo(dir, SE_FILE_OBJECT, SACL_SECURITY_INFORMATION, NULL, NULL, NULL, &old_sacl, &security_descriptor), result != ERROR_SUCCESS) {
-        merror(FIM_ERROR_SACL_GETSECURITYINFO, result);
+        //merror(FIM_ERROR_SACL_GETSECURITYINFO, result);
         goto end;
     }
 
@@ -241,7 +241,7 @@ int set_winsacl(const char *dir, directory_t *configuration) {
         retval = 0;
         goto end;
     case 1:
-        mdebug2(FIM_SACL_CHECK_CONFIGURE, dir);
+        //mdebug2(FIM_SACL_CHECK_CONFIGURE, dir);
         configuration->dirs_status.status |= WD_IGNORE_REST;
 
         // Empty SACL
@@ -250,7 +250,7 @@ int set_winsacl(const char *dir, directory_t *configuration) {
         } else {
             // Get SACL size
             if (!GetAclInformation(old_sacl, (LPVOID)&old_sacl_info, sizeof(ACL_SIZE_INFORMATION), AclSizeInformation)) {
-                merror(FIM_ERROR_SACL_GETSIZE, dir);
+                //merror(FIM_ERROR_SACL_GETSIZE, dir);
                 goto end;
             }
         }
@@ -268,12 +268,12 @@ int set_winsacl(const char *dir, directory_t *configuration) {
     new_sacl_size = old_sacl_info.AclBytesInUse + sizeof(SYSTEM_AUDIT_ACE) + ev_sid_size - sizeof(unsigned long);
 
     if (new_sacl = (PACL)win_alloc(new_sacl_size), !new_sacl) {
-        merror(FIM_ERROR_SACL_NOMEMORY, dir);
+        //merror(FIM_ERROR_SACL_NOMEMORY, dir);
         goto end;
     }
 
     if (!InitializeAcl(new_sacl, new_sacl_size, ACL_REVISION)) {
-        merror(FIM_ERROR_SACL_CREATE, dir);
+        //merror(FIM_ERROR_SACL_CREATE, dir);
         goto end;
     }
 
@@ -282,12 +282,12 @@ int set_winsacl(const char *dir, directory_t *configuration) {
         if (old_sacl_info.AceCount) {
             for (i = 0; i < old_sacl_info.AceCount; i++) {
                if (!GetAce(old_sacl, i, &entry_access_it)) {
-                   merror(FIM_ERROR_SACL_ACE_GET, i, dir);
+                   //merror(FIM_ERROR_SACL_ACE_GET, i, dir);
                    goto end;
                }
 
                if (!AddAce(new_sacl, ACL_REVISION, MAXDWORD, entry_access_it, ((PACE_HEADER)entry_access_it)->AceSize)) {
-                   merror(FIM_ERROR_SACL_ACE_CPY, i, dir);
+                   //merror(FIM_ERROR_SACL_ACE_CPY, i, dir);
                    goto end;
                }
            }
@@ -295,7 +295,7 @@ int set_winsacl(const char *dir, directory_t *configuration) {
     }
     // Build the new ACE
     if (ace = (SYSTEM_AUDIT_ACE *)win_alloc(sizeof(SYSTEM_AUDIT_ACE) + ev_sid_size - sizeof(DWORD)), !ace) {
-        merror(FIM_ERROR_SACL_ACE_NOMEMORY, dir);
+        //merror(FIM_ERROR_SACL_ACE_NOMEMORY, dir);
         goto end;
     }
 
@@ -309,13 +309,13 @@ int set_winsacl(const char *dir, directory_t *configuration) {
 
     // Add the new ACE
     if (!AddAce(new_sacl, ACL_REVISION, 0, (LPVOID)ace, ace->Header.AceSize)) {
-        merror(FIM_ERROR_SACL_ACE_ADD, dir);
+        //merror(FIM_ERROR_SACL_ACE_ADD, dir);
         goto end;
     }
 
     // Set a new ACL for the security descriptor
     if (result = SetNamedSecurityInfo((char *) dir, SE_FILE_OBJECT, SACL_SECURITY_INFORMATION, NULL, NULL, NULL, new_sacl), result != ERROR_SUCCESS) {
-        merror(FIM_ERROR_SACL_SETSECURITYINFO, result);
+        //merror(FIM_ERROR_SACL_SETSECURITYINFO, result);
         goto end;
     }
 
@@ -324,7 +324,7 @@ end:
     if (privilege_enabled) {
         // Disable the privilege
         if (set_privilege(hdle, priv, FALSE)) {
-            merror(FIM_ERROR_SACL_SET_PRIVILEGE, GetLastError());
+            //merror(FIM_ERROR_SACL_SET_PRIVILEGE, GetLastError());
         }
     }
 
@@ -356,19 +356,19 @@ int is_valid_sacl(PACL sacl, int is_file) {
 
     if (!everyone_sid) {
         if (!AllocateAndInitializeSid(&world_auth, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &everyone_sid)) {
-            merror(FIM_ERROR_WHODATA_GET_SID, GetLastError());
+            //merror(FIM_ERROR_WHODATA_GET_SID, GetLastError());
             return 2;
         }
     }
 
     if (!sacl) {
-        mdebug2(FIM_SACL_NOT_FOUND);
+        //mdebug2(FIM_SACL_NOT_FOUND);
         return 1;
     }
 
     for (i = 0; i < sacl->AceCount; i++) {
         if (!GetAce(sacl, i, (LPVOID*)&ace)) {
-            merror(FIM_ERROR_WHODATA_GET_ACE, GetLastError());
+            //merror(FIM_ERROR_WHODATA_GET_ACE, GetLastError());
             return 1;
         }
 
@@ -388,7 +388,7 @@ int set_privilege(HANDLE hdle, LPCTSTR privilege, int enable) {
 
     // Get the privilege UID
     if (!LookupPrivilegeValue(NULL, privilege, &pr_uid)) {
-        merror(FIM_ERROR_SACL_FIND_PRIVILEGE, privilege, GetLastError());
+        //merror(FIM_ERROR_SACL_FIND_PRIVILEGE, privilege, GetLastError());
         return 1;
     }
 
@@ -403,14 +403,14 @@ int set_privilege(HANDLE hdle, LPCTSTR privilege, int enable) {
 
     // Set the privilege to the process
     if (!AdjustTokenPrivileges(hdle, 0, &tp, sizeof(TOKEN_PRIVILEGES), (PTOKEN_PRIVILEGES)NULL, (PDWORD)NULL)) {
-        merror(FIM_ERROR_WHODATA_TOKENPRIVILEGES, GetLastError());
+        //merror(FIM_ERROR_WHODATA_TOKENPRIVILEGES, GetLastError());
         return 1;
     }
 
     if (enable) {
-        mdebug2(FIM_ELEVATE_PRIVILEGE, privilege);
+        //mdebug2(FIM_ELEVATE_PRIVILEGE, privilege);
     } else {
-        mdebug2(FIM_REDUCE_PRIVILEGE, privilege);
+        //mdebug2(FIM_REDUCE_PRIVILEGE, privilege);
     }
 
     return 0;
@@ -429,13 +429,13 @@ int run_whodata_scan() {
 
     // Set the system audit policies
     if (result = set_policies(), result) {
-        merror(FIM_WARN_WHODATA_LOCALPOLICIES);
+        //merror(FIM_WARN_WHODATA_LOCALPOLICIES);
         return 1;
     }
 
     // Select the interesting fields
     if (context = EvtCreateRenderContext(fields_number, event_fields, EvtRenderContextValues), !context) {
-        merror(FIM_ERROR_WHODATA_CONTEXT, GetLastError());
+        //merror(FIM_ERROR_WHODATA_CONTEXT, GetLastError());
         return 1;
     }
 
@@ -451,11 +451,11 @@ int run_whodata_scan() {
                            (EVT_SUBSCRIBE_CALLBACK) whodata_callback,
                            EvtSubscribeToFutureEvents);
     if (evt_subscribe_handle == NULL) {
-        merror(FIM_ERROR_WHODATA_EVENTCHANNEL);
+        //merror(FIM_ERROR_WHODATA_EVENTCHANNEL);
         return 1;
     }
 
-    minfo(FIM_WHODATA_STARTED);
+    //minfo(FIM_WHODATA_STARTED);
 
     return 0;
 }
@@ -481,12 +481,12 @@ void restore_sacls() {
 
     c_process = GetCurrentProcess();
     if (!OpenProcessToken(c_process, TOKEN_ADJUST_PRIVILEGES, &hdle)) {
-        merror(FIM_ERROR_SACL_OPENPROCESSTOKEN, GetLastError());
+        //merror(FIM_ERROR_SACL_OPENPROCESSTOKEN, GetLastError());
         goto end;
     }
 
     if (set_privilege(hdle, priv, TRUE)) {
-        merror(FIM_ERROR_SACL_ELEVATE_PRIVILEGE, GetLastError());
+        //merror(FIM_ERROR_SACL_ELEVATE_PRIVILEGE, GetLastError());
         goto end;
     }
 
@@ -501,20 +501,20 @@ void restore_sacls() {
             result = GetNamedSecurityInfo(dir_it->path, SE_FILE_OBJECT, SACL_SECURITY_INFORMATION, NULL, NULL, NULL,
                                           &sacl_it, &security_descriptor);
             if (result != ERROR_SUCCESS) {
-                merror(FIM_ERROR_SACL_GETSECURITYINFO, result);
+                //merror(FIM_ERROR_SACL_GETSECURITYINFO, result);
                 break;
             }
 
             // The ACE we added is in position 0
             if (!DeleteAce(sacl_it, 0)) {
-                merror(FIM_ERROR_SACL_ACE_DELETE, GetLastError());
+                //merror(FIM_ERROR_SACL_ACE_DELETE, GetLastError());
                 break;
             }
 
             // Set the SACL
             result = SetNamedSecurityInfo(dir_it->path, SE_FILE_OBJECT, SACL_SECURITY_INFORMATION, NULL, NULL, NULL, sacl_it);
             if (result != ERROR_SUCCESS) {
-                merror(FIM_ERROR_SACL_SETSECURITYINFO, result);
+                //merror(FIM_ERROR_SACL_SETSECURITYINFO, result);
                 break;
             }
 
@@ -525,7 +525,7 @@ void restore_sacls() {
             if (security_descriptor) {
                 LocalFree((HLOCAL)security_descriptor);
             }
-            mdebug2(FIM_SACL_RESTORED, dir_it->path);
+            //mdebug2(FIM_SACL_RESTORED, dir_it->path);
         }
     }
     w_rwlock_unlock(&syscheck.directories_lock);
@@ -534,7 +534,7 @@ end:
     if (privilege_enabled) {
         // Disable the privilege
         if (set_privilege(hdle, priv, FALSE)) {
-            merror(FIM_ERROR_SACL_SET_PRIVILEGE, GetLastError());
+            //merror(FIM_ERROR_SACL_SET_PRIVILEGE, GetLastError());
         }
     }
 
@@ -552,7 +552,7 @@ int restore_audit_policies() {
     snprintf(command, OS_SIZE_1024, WPOL_RESTORE_COMMAND, WPOL_BACKUP_FILE);
 
     if (IsFile(WPOL_BACKUP_FILE)) {
-        merror(FIM_ERROR_WHODATA_RESTORE_POLICIES);
+        //merror(FIM_ERROR_WHODATA_RESTORE_POLICIES);
         return 1;
     }
 
@@ -566,27 +566,27 @@ int restore_audit_policies() {
         cmd_failed = 0;
         wm_exec_ret_code = wm_exec(command, &cmd_output, &result_code, timeout+i, NULL);
         if (wm_exec_ret_code < 0) {
-            merror(FIM_ERROR_WHODATA_AUDITPOL, "failed to execute command");
+            //merror(FIM_ERROR_WHODATA_AUDITPOL, "failed to execute command");
             cmd_failed = 1;
         } else if (wm_exec_ret_code == 1) {
-            merror(FIM_ERROR_WHODATA_AUDITPOL, "time overtaken while running the command");
+            //merror(FIM_ERROR_WHODATA_AUDITPOL, "time overtaken while running the command");
             os_free(cmd_output);
             cmd_failed = 1;
         } else if (!wm_exec_ret_code && result_code) {
             char error_msg[OS_MAXSTR];
             snprintf(error_msg, OS_MAXSTR, FIM_ERROR_WHODATA_AUDITPOL, "command returned failure'. Output: '%s");
-            merror(error_msg, cmd_output);
+            //merror(error_msg, cmd_output);
             os_free(cmd_output);
             cmd_failed = 1;
         }
         if (cmd_failed) {
-            merror(FIM_AUDITPOL_ATTEMPT_FAIL, i+1);
+            //merror(FIM_AUDITPOL_ATTEMPT_FAIL, i+1);
         }
         i++;
     } while (i <= retries && cmd_failed);
     
     if (i == retries + 1) {
-       merror(FIM_AUDITPOL_FINAL_FAIL, i);
+       //merror(FIM_AUDITPOL_FINAL_FAIL, i);
     } 
 
     return cmd_failed;
@@ -604,13 +604,13 @@ PEVT_VARIANT whodata_event_render(EVT_HANDLE event) {
     memset(buffer, 0, used_size);
 
     if (!EvtRender(context, event, EvtRenderEventValues, used_size, buffer, &used_size, &property_count)) {
-        mwarn(FIM_WHODATA_RENDER_EVENT, GetLastError());
+        //mwarn(FIM_WHODATA_RENDER_EVENT, GetLastError());
         os_free(buffer);
         return buffer;
     }
 
     if (property_count != fields_number) {
-        mwarn(FIM_WHODATA_RENDER_PARAM);
+        //mwarn(FIM_WHODATA_RENDER_PARAM);
         os_free(buffer);
     }
 
@@ -624,7 +624,7 @@ int whodata_get_event_id(const PEVT_VARIANT raw_data, short *event_id) {
 
     // EventID
     if (raw_data[RENDERED_EVENT_ID].Type != EvtVarTypeUInt16) {
-        mwarn(FIM_WHODATA_PARAMETER, raw_data[RENDERED_EVENT_ID].Type, "event_id");
+        //mwarn(FIM_WHODATA_PARAMETER, raw_data[RENDERED_EVENT_ID].Type, "event_id");
         return -1;
     }
     *event_id = raw_data[RENDERED_EVENT_ID].Int16Val;
@@ -645,7 +645,7 @@ int whodata_get_handle_id(const PEVT_VARIANT raw_data, unsigned __int64 *handle_
         } else if (raw_data[RENDERED_HANDLE_ID].Type == EvtVarTypeHexInt32) {
             *handle_id = (unsigned __int64) raw_data[RENDERED_HANDLE_ID].UInt32Val;
         } else {
-            mwarn(FIM_WHODATA_PARAMETER, raw_data[RENDERED_HANDLE_ID].Type, "handle_id");
+            //mwarn(FIM_WHODATA_PARAMETER, raw_data[RENDERED_HANDLE_ID].Type, "handle_id");
             return -1;
         }
     } else {
@@ -661,7 +661,7 @@ int whodata_get_access_mask(const PEVT_VARIANT raw_data, unsigned long *mask) {
 
     // AccessMask
     if (raw_data[RENDERED_ACCESS_MASK].Type != EvtVarTypeHexInt32) {
-        mwarn(FIM_WHODATA_PARAMETER, raw_data[RENDERED_ACCESS_MASK].Type, "mask");
+        //mwarn(FIM_WHODATA_PARAMETER, raw_data[RENDERED_ACCESS_MASK].Type, "mask");
         return -1;
     }
     *mask = raw_data[RENDERED_ACCESS_MASK].UInt32Val;
@@ -676,7 +676,7 @@ int whodata_event_parse(const PEVT_VARIANT raw_data, whodata_evt *event_data) {
 
     // ObjectName
     if (raw_data[RENDERED_PATH].Type != EvtVarTypeString) {
-        mwarn(FIM_WHODATA_PARAMETER, raw_data[RENDERED_PATH].Type, "path");
+        //mwarn(FIM_WHODATA_PARAMETER, raw_data[RENDERED_PATH].Type, "path");
         return -1;
     }  else {
         if (event_data->path = get_whodata_path(raw_data[RENDERED_PATH].XmlVal), !event_data->path) {
@@ -694,7 +694,7 @@ int whodata_event_parse(const PEVT_VARIANT raw_data, whodata_evt *event_data) {
 
     // SubjectUserName
     if (raw_data[RENDERED_USER_NAME].Type != EvtVarTypeString) {
-        mwarn(FIM_WHODATA_PARAMETER, raw_data[RENDERED_USER_NAME].Type, "user_name");
+        //mwarn(FIM_WHODATA_PARAMETER, raw_data[RENDERED_USER_NAME].Type, "user_name");
         event_data->user_name = NULL;
     } else {
         event_data->user_name = convert_windows_string(raw_data[RENDERED_USER_NAME].XmlVal);
@@ -702,7 +702,7 @@ int whodata_event_parse(const PEVT_VARIANT raw_data, whodata_evt *event_data) {
 
     // ProcessName
     if (raw_data[RENDERED_PROCESS_NAME].Type != EvtVarTypeString) {
-        mwarn(FIM_WHODATA_PARAMETER, raw_data[RENDERED_PROCESS_NAME].Type, "process_name");
+        //mwarn(FIM_WHODATA_PARAMETER, raw_data[RENDERED_PROCESS_NAME].Type, "process_name");
         event_data->process_name = NULL;
     } else {
         event_data->process_name = convert_windows_string(raw_data[RENDERED_PROCESS_NAME].XmlVal);
@@ -716,7 +716,7 @@ int whodata_event_parse(const PEVT_VARIANT raw_data, whodata_evt *event_data) {
         } else if (raw_data[RENDERED_PROCESS_ID].Type == EvtVarTypeHexInt32) {
             event_data->process_id = (unsigned __int64) raw_data[RENDERED_PROCESS_ID].UInt32Val;
         } else {
-            mwarn(FIM_WHODATA_PARAMETER, raw_data[RENDERED_PROCESS_ID].Type, "process_id");
+            //mwarn(FIM_WHODATA_PARAMETER, raw_data[RENDERED_PROCESS_ID].Type, "process_id");
             event_data->process_id = 0;
         }
     } else {
@@ -725,13 +725,13 @@ int whodata_event_parse(const PEVT_VARIANT raw_data, whodata_evt *event_data) {
 
     // SubjectUserSid
     if (raw_data[RENDERED_USER_SID].Type != EvtVarTypeSid) {
-        mwarn(FIM_WHODATA_PARAMETER, raw_data[RENDERED_USER_SID].Type, "user_id");
+        //mwarn(FIM_WHODATA_PARAMETER, raw_data[RENDERED_USER_SID].Type, "user_id");
         event_data->user_id = NULL;
     } else if (!ConvertSidToStringSid(raw_data[RENDERED_USER_SID].SidVal, &event_data->user_id)) {
         if (event_data->user_name) {
-            mdebug1(FIM_WHODATA_INVALID_UID, event_data->user_name);
+            LogDebug(FIM_WHODATA_INVALID_UID, event_data->user_name);
         } else {
-            mdebug1(FIM_WHODATA_INVALID_UNKNOWN_UID);
+            LogDebug(FIM_WHODATA_INVALID_UNKNOWN_UID);
         }
         return -1;
     }
@@ -791,7 +791,7 @@ unsigned long WINAPI whodata_callback(EVT_SUBSCRIBE_NOTIFY_ACTION action, __attr
                 configuration = fim_configuration_directory(w_evt->path);
                 if (configuration == NULL && !(mask & (FILE_APPEND_DATA | FILE_WRITE_DATA))) {
                     // Discard the file or directory if its monitoring has not been activated
-                    mdebug2(FIM_WHODATA_NOT_ACTIVE, w_evt->path);
+                    //mdebug2(FIM_WHODATA_NOT_ACTIVE, w_evt->path);
                     free_whodata_event(w_evt);
                     w_rwlock_unlock(&syscheck.directories_lock);
                     goto clean;
@@ -801,7 +801,7 @@ unsigned long WINAPI whodata_callback(EVT_SUBSCRIBE_NOTIFY_ACTION action, __attr
                     // Ignore the file if belongs to a non-whodata directory
                     if (!(configuration->dirs_status.status & WD_CHECK_WHODATA) &&
                         !(mask & (FILE_APPEND_DATA | FILE_WRITE_DATA))) {
-                        mdebug2(FIM_WHODATA_CANCELED, w_evt->path);
+                        //mdebug2(FIM_WHODATA_CANCELED, w_evt->path);
                         free_whodata_event(w_evt);
                         w_rwlock_unlock(&syscheck.directories_lock);
                         goto clean;
@@ -810,7 +810,7 @@ unsigned long WINAPI whodata_callback(EVT_SUBSCRIBE_NOTIFY_ACTION action, __attr
                     // Ignore any and all events that are beyond the configured recursion level.
                     int depth = fim_check_depth(w_evt->path, configuration);
                     if (depth > configuration->recursion_level) {
-                        mdebug2(FIM_MAX_RECURSION_LEVEL, depth, configuration->recursion_level, w_evt->path);
+                        //mdebug2(FIM_MAX_RECURSION_LEVEL, depth, configuration->recursion_level, w_evt->path);
                         free_whodata_event(w_evt);
                         w_rwlock_unlock(&syscheck.directories_lock);
                         goto clean;
@@ -827,7 +827,7 @@ unsigned long WINAPI whodata_callback(EVT_SUBSCRIBE_NOTIFY_ACTION action, __attr
                     // If the device could not be found, it was monitored by Syscheck, has not recently been removed,
                     // and had never been entered in the hash table before, we can deduce that it is a removed directory
                     if (mask & DELETE || mask & FILE_APPEND_DATA) {
-                        mdebug2(FIM_WHODATA_REMOVE_FOLDEREVENT, w_evt->path);
+                        //mdebug2(FIM_WHODATA_REMOVE_FOLDEREVENT, w_evt->path);
                         is_directory = 1;
                     }
                 }
@@ -850,9 +850,9 @@ unsigned long WINAPI whodata_callback(EVT_SUBSCRIBE_NOTIFY_ACTION action, __attr
                 if (result == 1) {
                     whodata_evt *w_evtdup;
 
-                    mdebug2(FIM_WHODATA_HANDLE_UPDATE, hash_id);
+                    //mdebug2(FIM_WHODATA_HANDLE_UPDATE, hash_id);
                     if (w_evtdup = OSHash_Delete_ex(syscheck.wdata.fd, hash_id), !w_evtdup) {
-                        merror(FIM_ERROR_WHODATA_HANDLER_REMOVE, hash_id);
+                        //merror(FIM_ERROR_WHODATA_HANDLER_REMOVE, hash_id);
                         free_whodata_event(w_evt);
                         goto clean;
                     }
@@ -860,7 +860,7 @@ unsigned long WINAPI whodata_callback(EVT_SUBSCRIBE_NOTIFY_ACTION action, __attr
 
                     if (result = whodata_hash_add(syscheck.wdata.fd, hash_id, w_evt, "whodata"), result != 2) {
                         if(result == 1){
-                            merror(FIM_ERROR_WHODATA_EVENTADD, "whodata", hash_id); // LCOV_EXCL_LINE
+                            //merror(FIM_ERROR_WHODATA_EVENTADD, "whodata", hash_id); // LCOV_EXCL_LINE
                         }
                         free_whodata_event(w_evt);
                         goto clean;
@@ -887,7 +887,7 @@ unsigned long WINAPI whodata_callback(EVT_SUBSCRIBE_NOTIFY_ACTION action, __attr
 
                 // Get the event time
                 if (buffer[RENDERED_TIMESTAMP].Type != EvtVarTypeFileTime) {
-                    mwarn(FIM_WHODATA_PARAMETER, buffer[RENDERED_TIMESTAMP].Type, "event_time");
+                    //mwarn(FIM_WHODATA_PARAMETER, buffer[RENDERED_TIMESTAMP].Type, "event_time");
                     w_evt->scan_directory = 2;
                     goto clean;
                 }
@@ -900,7 +900,7 @@ unsigned long WINAPI whodata_callback(EVT_SUBSCRIBE_NOTIFY_ACTION action, __attr
                 // Check if is a valid directory
                 w_rwlock_rdlock(&syscheck.directories_lock);
                 if (fim_configuration_directory(w_evt->path) == NULL) {
-                    mdebug2(FIM_WHODATA_DIRECTORY_DISCARDED, w_evt->path);
+                    //mdebug2(FIM_WHODATA_DIRECTORY_DISCARDED, w_evt->path);
                     w_evt->scan_directory = 2;
                     w_rwlock_unlock(&syscheck.directories_lock);
                     break;
@@ -914,7 +914,7 @@ unsigned long WINAPI whodata_callback(EVT_SUBSCRIBE_NOTIFY_ACTION action, __attr
 
                     if ((buffer[RENDERED_TIMESTAMP].FileTimeVal - w_dir->QuadPart) < FILETIME_SECOND) {
                         w_rwlock_unlock(&syscheck.wdata.directories->mutex);
-                        mdebug2(FIM_WHODATA_DIRECTORY_SCANNED, w_evt->path);
+                        //mdebug2(FIM_WHODATA_DIRECTORY_SCANNED, w_evt->path);
                         w_evt->scan_directory = 3;
                         break;
                     }
@@ -924,7 +924,7 @@ unsigned long WINAPI whodata_callback(EVT_SUBSCRIBE_NOTIFY_ACTION action, __attr
 
                     w_rwlock_unlock(&syscheck.wdata.directories->mutex);
 
-                    mdebug2(FIM_WHODATA_CHECK_NEW_FILES, w_evt->path);
+                    //mdebug2(FIM_WHODATA_CHECK_NEW_FILES, w_evt->path);
                 } else {
                     w_rwlock_unlock(&syscheck.wdata.directories->mutex);
                     os_calloc(1, sizeof(whodata_directory), w_dir);
@@ -934,7 +934,7 @@ unsigned long WINAPI whodata_callback(EVT_SUBSCRIBE_NOTIFY_ACTION action, __attr
                         free(w_dir);
                         break;
                     } else {
-                        mdebug2(FIM_WHODATA_CHECK_NEW_FILES, w_evt->path);
+                        //mdebug2(FIM_WHODATA_CHECK_NEW_FILES, w_evt->path);
                     }
                 }
             break;
@@ -955,11 +955,11 @@ unsigned long WINAPI whodata_callback(EVT_SUBSCRIBE_NOTIFY_ACTION action, __attr
                             fim_whodata_event(w_evt);
 
                         } else {
-                            mdebug2(FIM_WHODATA_NO_NEW_FILES, w_evt->path, w_evt->mask);
+                            //mdebug2(FIM_WHODATA_NO_NEW_FILES, w_evt->path, w_evt->mask);
                         }
 
                     } else if (w_evt->scan_directory == 2) {
-                        mdebug1(FIM_WHODATA_SCAN_ABORTED, w_evt->path);
+                        LogDebug(FIM_WHODATA_SCAN_ABORTED, w_evt->path);
                     }
                 }
 
@@ -968,12 +968,12 @@ unsigned long WINAPI whodata_callback(EVT_SUBSCRIBE_NOTIFY_ACTION action, __attr
 
             case 4719:
                 if (policies_checked) {
-                    mwarn(FIM_WHODATA_POLICY_CHANGE_CHANNEL);
+                    //mwarn(FIM_WHODATA_POLICY_CHANGE_CHANNEL);
                     win_whodata_release_resources(&syscheck.wdata);
                 }
             break;
             default:
-                merror(FIM_ERROR_WHODATA_EVENTID);
+                //merror(FIM_ERROR_WHODATA_EVENTID);
                 goto clean;
         }
     }
@@ -996,7 +996,7 @@ int whodata_audit_start() {
 
     OSHash_SetFreeDataPointer(syscheck.wdata.fd, (void (*)(void *))free_whodata_event);
 
-    minfo(FIM_WHODATA_VOLUMES);
+    //minfo(FIM_WHODATA_VOLUMES);
     get_volume_names();
 
     return 0;
@@ -1032,7 +1032,7 @@ int policy_check() {
                 ULONG policyAuditEventType = 0;
                 char guid_string[40];
 
-                mdebug2(FIM_WHODATA_POLICY_OPENED);
+                //mdebug2(FIM_WHODATA_POLICY_OPENED);
 
                 while (policyAuditEventType < AuditEvents->MaximumAuditEventCount) {
                     if(AuditLookupCategoryGuidFromCategoryId((POLICY_AUDIT_EVENT_TYPE)policyAuditEventType, &auditCategoryId) == FALSE) {
@@ -1044,7 +1044,7 @@ int policy_check() {
                                                 auditCategoryId.Data4[4], auditCategoryId.Data4[5], auditCategoryId.Data4[6], auditCategoryId.Data4[7]);
 
                     if(!strcasecmp(guid_string, guid_ObjectAccess)) {
-                        mdebug2(FIM_WHODATA_OBJECT_ACCESS, guid_string);
+                        //mdebug2(FIM_WHODATA_OBJECT_ACCESS, guid_string);
 
                         if(AuditEnumerateSubCategories(&auditCategoryId, FALSE, &pAuditSubCategoryGuids, &subCategoryCount) == FALSE) {
                             goto error;
@@ -1066,11 +1066,11 @@ int policy_check() {
                             if(currentPolicy.AuditingInformation & POLICY_AUDIT_EVENT_SUCCESS) {
                                 if(!strcasecmp(guid_string, guid_FileSystem)) {
                                     file_system_success = 1;
-                                    mdebug2(FIM_WHODATA_SUCCESS_POLICY, "File System", guid_string);
+                                    //mdebug2(FIM_WHODATA_SUCCESS_POLICY, "File System", guid_string);
                                 }
                                 if(!strcasecmp(guid_string, guid_Handle)) {
                                     handle_manipulation_success = 1;
-                                    mdebug2(FIM_WHODATA_SUCCESS_POLICY, "Handle Manipulation", guid_string);
+                                    //mdebug2(FIM_WHODATA_SUCCESS_POLICY, "Handle Manipulation", guid_string);
                                 }
                                 if(file_system_success && handle_manipulation_success) {
                                     LsaFreeMemory(AuditEvents);
@@ -1103,7 +1103,7 @@ error:
     memset(err_msg, 0, OS_SIZE_1024);
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK,
                   NULL, err_code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &err_msg, OS_SIZE_1024, NULL);
-    mwarn(FIM_WHODATA_ERROR_CHECKING_POL, err_msg, err_code);
+    //mwarn(FIM_WHODATA_ERROR_CHECKING_POL, err_msg, err_code);
 
     if(open_policy) {
         LsaFreeMemory(AuditEvents);
@@ -1134,14 +1134,14 @@ long unsigned int WINAPI state_checker(__attribute__((unused)) void *_void) {
         interval = syscheck.wdata.interval_scan;
     }
 
-    mdebug1(FIM_WHODATA_CHECKTHREAD, interval);
+    LogDebug(FIM_WHODATA_CHECKTHREAD, interval);
 
     while (atomic_int_get(&whodata_end) == 0) {
-        mdebug2(FIM_WHODATA_STATE_CHECKER);
+        //mdebug2(FIM_WHODATA_STATE_CHECKER);
 
         // Check File System and Handle Manipulation policies. Switch to realtime in case these policies are disabled.
         if (policy_check() == 1) {
-            mwarn(FIM_WHODATA_POLICY_CHANGE_CHECKER);
+            //mwarn(FIM_WHODATA_POLICY_CHANGE_CHECKER);
             win_whodata_release_resources(&syscheck.wdata);
             break;
         }
@@ -1174,9 +1174,9 @@ long unsigned int WINAPI state_checker(__attribute__((unused)) void *_void) {
 
             if (exists) {
                 if (!(d_status->status & WD_STATUS_EXISTS)) {
-                    minfo(FIM_WHODATA_READDED, dir_it->path);
+                    //minfo(FIM_WHODATA_READDED, dir_it->path);
                     if (set_winsacl(dir_it->path, dir_it)) {
-                        merror(FIM_ERROR_WHODATA_ADD_DIRECTORY, dir_it->path);
+                        //merror(FIM_ERROR_WHODATA_ADD_DIRECTORY, dir_it->path);
                         d_status->status &= ~WD_CHECK_WHODATA;
                         dir_it->options &= ~WHODATA_ACTIVE;
                         d_status->status |= WD_CHECK_REALTIME;
@@ -1187,7 +1187,7 @@ long unsigned int WINAPI state_checker(__attribute__((unused)) void *_void) {
                 } else {
                     // Check if the SACL is invalid
                     if (check_object_sacl(dir_it->path, (d_status->object_type == WD_STATUS_FILE_TYPE)) == 1) {
-                        minfo(FIM_WHODATA_SACL_CHANGED, dir_it->path);
+                        //minfo(FIM_WHODATA_SACL_CHANGED, dir_it->path);
                         // Mark the directory to prevent its children from
                         // sending partial whodata alerts
                         d_status->status &= ~WD_CHECK_WHODATA;
@@ -1204,7 +1204,7 @@ long unsigned int WINAPI state_checker(__attribute__((unused)) void *_void) {
                     }
                 }
             } else {
-                mdebug2(FIM_WHODATA_DELETE, dir_it->path);
+                //mdebug2(FIM_WHODATA_DELETE, dir_it->path);
                 d_status->status &= ~WD_STATUS_EXISTS;
                 d_status->object_type = WD_STATUS_UNK_TYPE;
             }
@@ -1266,7 +1266,7 @@ int set_policies() {
     static const char *WPOL_HANDLE_SUC = ",System,Handle Manipulation,{0CCE9223-69AE-11D9-BED3-505054503030},,,1\n";
 
     if (!IsFile(WPOL_BACKUP_FILE) && remove(WPOL_BACKUP_FILE)) {
-        merror(FIM_ERROR_WPOL_BACKUP_FILE_REMOVE, WPOL_BACKUP_FILE, strerror(errno), errno);
+        //merror(FIM_ERROR_WPOL_BACKUP_FILE_REMOVE, WPOL_BACKUP_FILE, strerror(errno), errno);
         goto end;
     }
 
@@ -1280,7 +1280,7 @@ int set_policies() {
         wm_exec_ret_code = wm_exec(command, NULL, &result_code, timeout+i, NULL);
         if (wm_exec_ret_code || result_code) {
             retval = 2;
-            merror(FIM_AUDITPOL_ATTEMPT_FAIL, i+1);
+            //merror(FIM_AUDITPOL_ATTEMPT_FAIL, i+1);
         } else {
             retval = 1;
         }
@@ -1288,16 +1288,16 @@ int set_policies() {
     } while (i <= retries && (wm_exec_ret_code || result_code));
 
     if (retval == 2) {
-        merror(FIM_WARN_WHODATA_AUTOCONF);
+        //merror(FIM_WARN_WHODATA_AUTOCONF);
         goto end;
     }
 
     if (f_backup = wfopen(WPOL_BACKUP_FILE, "r"), !f_backup) {
-        merror(FIM_ERROR_WPOL_BACKUP_FILE_OPEN, WPOL_BACKUP_FILE, strerror(errno), errno);
+        //merror(FIM_ERROR_WPOL_BACKUP_FILE_OPEN, WPOL_BACKUP_FILE, strerror(errno), errno);
         goto end;
     }
     if (f_new = wfopen(WPOL_NEW_FILE, "w"), !f_new) {
-        merror(FIM_ERROR_WPOL_BACKUP_FILE_OPEN, WPOL_NEW_FILE, strerror(errno), errno);
+        //merror(FIM_ERROR_WPOL_BACKUP_FILE_OPEN, WPOL_NEW_FILE, strerror(errno), errno);
         goto end;
     }
 
@@ -1320,7 +1320,7 @@ int set_policies() {
         wm_exec_ret_code = wm_exec(command, NULL, &result_code, timeout+i, NULL);
         if (wm_exec_ret_code || result_code) {
             retval = 2;
-            merror(FIM_AUDITPOL_ATTEMPT_FAIL, i+1);
+            //merror(FIM_AUDITPOL_ATTEMPT_FAIL, i+1);
         } else {
             retval = 1;
         }
@@ -1328,7 +1328,7 @@ int set_policies() {
     } while (i <= retries && (wm_exec_ret_code || result_code));
 
     if (retval == 2) {
-        merror(FIM_WARN_WHODATA_AUTOCONF);
+        //merror(FIM_WARN_WHODATA_AUTOCONF);
         goto end;
     }
 
@@ -1399,18 +1399,18 @@ int check_object_sacl(char *obj, int is_file) {
     int privilege_enabled = 0;
 
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hdle)) {
-        merror(FIM_ERROR_SACL_OPENPROCESSTOKEN, GetLastError());
+        //merror(FIM_ERROR_SACL_OPENPROCESSTOKEN, GetLastError());
         return retval;
     }
 
     if (set_privilege(hdle, priv, TRUE)) {
-        merror(FIM_ERROR_SACL_ELEVATE_PRIVILEGE, GetLastError());
+        //merror(FIM_ERROR_SACL_ELEVATE_PRIVILEGE, GetLastError());
         goto end;
     }
 
     privilege_enabled = 1;
     if (result = GetNamedSecurityInfo(obj, SE_FILE_OBJECT, SACL_SECURITY_INFORMATION, NULL, NULL, NULL, &sacl, &security_descriptor), result != ERROR_SUCCESS) {
-        merror(FIM_ERROR_SACL_GETSECURITYINFO, result);
+        //merror(FIM_ERROR_SACL_GETSECURITYINFO, result);
         goto end;
     }
 
@@ -1420,7 +1420,7 @@ end:
     if (privilege_enabled) {
         // Disable the privilege
         if (set_privilege(hdle, priv, FALSE)) {
-            merror(FIM_ERROR_SACL_SET_PRIVILEGE, GetLastError());
+            //merror(FIM_ERROR_SACL_SET_PRIVILEGE, GetLastError());
         }
     }
     if (hdle) {
@@ -1440,9 +1440,9 @@ int whodata_hash_add(OSHash *table, char *id, void *data, char *tag) {
 
     if (result = OSHash_Add_ex(table, id, data), result != 2) {
         if (!result) {
-            merror(FIM_ERROR_WHODATA_EVENTADD, tag, id);
+            //merror(FIM_ERROR_WHODATA_EVENTADD, tag, id);
         } else if (result == 1) {
-            mdebug2(FIM_ERROR_WHODATA_EVENTADD_DUP, tag, id);
+            //mdebug2(FIM_ERROR_WHODATA_EVENTADD_DUP, tag, id);
         }
     }
 
@@ -1471,7 +1471,7 @@ int get_volume_names() {
 
     if (fh == INVALID_HANDLE_VALUE) {
         win_error = GetLastError();
-        mwarn("FindFirstVolumeW failed (%u)'%s'", win_error, strerror(win_error));
+        //mwarn("FindFirstVolumeW failed (%u)'%s'", win_error, strerror(win_error));
         FindVolumeClose(fh);
         return success;
     }
@@ -1493,7 +1493,7 @@ int get_volume_names() {
             volume_name[3]     != L'\\' ||
             volume_name[index] != L'\\')
         {
-            mwarn("Find Volume returned a bad path: %s", convert_volume);
+            //mwarn("Find Volume returned a bad path: %s", convert_volume);
             break;
         }
 
@@ -1505,7 +1505,7 @@ int get_volume_names() {
 
         if (char_count == 0) {
             win_error = GetLastError();
-            mwarn("QueryDosDeviceW failed (%u)'%s'", win_error, strerror(win_error));
+            //mwarn("QueryDosDeviceW failed (%u)'%s'", win_error, strerror(win_error));
             break;
         }
 
@@ -1521,7 +1521,7 @@ int get_volume_names() {
             win_error = GetLastError();
 
             if (win_error != ERROR_NO_MORE_FILES) {
-                mwarn("FindNextVolumeW failed (%u)'%s'", win_error, strerror(win_error));
+                //mwarn("FindNextVolumeW failed (%u)'%s'", win_error, strerror(win_error));
                 break;
             }
 
@@ -1564,7 +1564,7 @@ int get_drive_names(wchar_t *volume_name, char *device) {
         }
 
         if (retval = GetLastError(), retval != ERROR_MORE_DATA) {
-            mwarn("GetVolumePathNamesForVolumeNameW (%u)'%s'", retval, strerror(retval));
+            //mwarn("GetVolumePathNamesForVolumeNameW (%u)'%s'", retval, strerror(retval));
             break;
         }
 
@@ -1579,7 +1579,7 @@ int get_drive_names(wchar_t *volume_name, char *device) {
         for (nameit = names; nameit[0] != L'\0'; nameit += name_len + 1) {
             name_len = wcslen(nameit);
             wcstombs(convert_name, nameit, name_len);
-            mdebug1(FIM_WHODATA_DEVICE_LETTER, device, convert_name);
+            LogDebug(FIM_WHODATA_DEVICE_LETTER, device, convert_name);
 
             if(syscheck.wdata.device) {
                 device_it = 0;
@@ -1627,14 +1627,14 @@ void replace_device_path(char **path) {
     while (syscheck.wdata.device[iterator]) {
         size_t dev_size = strlen(syscheck.wdata.device[iterator]);
 
-        mdebug2(FIM_WHODATA_DEVICE_PATH, syscheck.wdata.device[iterator], *path);
+        //mdebug2(FIM_WHODATA_DEVICE_PATH, syscheck.wdata.device[iterator], *path);
 
         if (!strncmp(*path, syscheck.wdata.device[iterator], dev_size)) {
             size_t new_path_size = strlen(syscheck.wdata.drive[iterator]) + (size_t) (*path - dev_size);
 
             os_calloc(new_path_size + 1, sizeof(char), new_path);
             snprintf(new_path, new_path_size, "%s%s", syscheck.wdata.drive[iterator], *path + dev_size);
-            mdebug2(FIM_WHODATA_DEVICE_REPLACE, *path, new_path);
+            //mdebug2(FIM_WHODATA_DEVICE_REPLACE, *path, new_path);
 
             os_free(*path);
             *path = new_path;
@@ -1663,7 +1663,7 @@ char *get_whodata_path(const short unsigned int *win_path) {
     }
 
     if (count <= 0) {
-        mdebug1(FIM_WHODATA_PATH_NOPROCCESED, error);
+        LogDebug(FIM_WHODATA_PATH_NOPROCCESED, error);
         os_free(path);
     }
 
@@ -1672,7 +1672,7 @@ char *get_whodata_path(const short unsigned int *win_path) {
 
 int whodata_path_filter(char **path) {
     if (check_removed_file(*path)) {
-        mdebug2(FIM_DISCARD_RECYCLEBIN, *path);
+        //mdebug2(FIM_DISCARD_RECYCLEBIN, *path);
         return 1;
     }
 
@@ -1689,11 +1689,11 @@ int whodata_check_arch() {
     const char *processor_arch = "PROCESSOR_ARCHITECTURE";
 
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, environment_key, 0, KEY_READ, &RegistryKey) != ERROR_SUCCESS) {
-        merror(SK_REG_OPEN, environment_key);
+        //merror(SK_REG_OPEN, environment_key);
         return OS_INVALID;
     } else {
         if (result = RegQueryValueEx(RegistryKey, TEXT(processor_arch), NULL, NULL, (LPBYTE)&arch, &data_size), result != ERROR_SUCCESS) {
-            merror(FIM_ERROR_WHODATA_WIN_ARCH, (unsigned int)result);
+            //merror(FIM_ERROR_WHODATA_WIN_ARCH, (unsigned int)result);
         } else {
 
             if (!strncmp(arch, "AMD64", 5) || !strncmp(arch, "IA64", 4) || !strncmp(arch, "ARM64", 5)) {
@@ -1727,7 +1727,7 @@ int w_update_sacl(const char *obj_path) {
 
     if (!everyone_sid) {
         if (!AllocateAndInitializeSid(&world_auth, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &everyone_sid)) {
-            merror(FIM_ERROR_WHODATA_WIN_SIDERROR, GetLastError());
+            //merror(FIM_ERROR_WHODATA_WIN_SIDERROR, GetLastError());
             goto end;
         }
     }
@@ -1737,26 +1737,26 @@ int w_update_sacl(const char *obj_path) {
     }
 
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hdle)) {
-        merror(FIM_ERROR_WHODATA_OPEN_TOKEN, GetLastError());
+        //merror(FIM_ERROR_WHODATA_OPEN_TOKEN, GetLastError());
         goto end;
     }
 
     if (set_privilege(hdle, priv, TRUE)) {
-        merror(FIM_ERROR_WHODATA_ACTIVATE_PRIV, GetLastError());
+        //merror(FIM_ERROR_WHODATA_ACTIVATE_PRIV, GetLastError());
         goto end;
     }
 
     privilege_enabled = 1;
 
     if (result = GetNamedSecurityInfo(obj_path, SE_FILE_OBJECT, SACL_SECURITY_INFORMATION, NULL, NULL, NULL, &old_sacl, &security_descriptor), result != ERROR_SUCCESS) {
-        merror(FIM_ERROR_WHODATA_GETNAMEDSECURITY, result);
+        //merror(FIM_ERROR_WHODATA_GETNAMEDSECURITY, result);
         goto end;
     }
 
     ZeroMemory(&old_sacl_info, sizeof(ACL_SIZE_INFORMATION));
     // Get SACL size
     if (old_sacl && !GetAclInformation(old_sacl, (LPVOID)&old_sacl_info, sizeof(ACL_SIZE_INFORMATION), AclSizeInformation)) {
-        merror(FIM_ERROR_WHODATA_SACL_SIZE, obj_path);
+        //merror(FIM_ERROR_WHODATA_SACL_SIZE, obj_path);
         goto end;
     }
 
@@ -1764,17 +1764,17 @@ int w_update_sacl(const char *obj_path) {
     new_sacl_size = (old_sacl ? old_sacl_info.AclBytesInUse : sizeof(ACL)) + sizeof(SYSTEM_AUDIT_ACE) + ev_sid_size;
 
     if (new_sacl = (PACL)win_alloc(new_sacl_size), !new_sacl) {
-        merror(FIM_ERROR_WHODATA_SACL_MEMORY, obj_path);
+        //merror(FIM_ERROR_WHODATA_SACL_MEMORY, obj_path);
         goto end;
     }
 
     if (!InitializeAcl(new_sacl, new_sacl_size, ACL_REVISION)) {
-        merror(FIM_ERROR_WHODATA_SACL_NOCREATE, obj_path, GetLastError());
+        //merror(FIM_ERROR_WHODATA_SACL_NOCREATE, obj_path, GetLastError());
         goto end;
     }
 
     if (ace = (SYSTEM_AUDIT_ACE *)win_alloc(sizeof(SYSTEM_AUDIT_ACE) + ev_sid_size - sizeof(DWORD)), !ace) {
-        merror(FIM_ERROR_WHODATA_ACE_MEMORY, obj_path, GetLastError());
+        //merror(FIM_ERROR_WHODATA_ACE_MEMORY, obj_path, GetLastError());
         goto end;
     }
 
@@ -1784,7 +1784,7 @@ int w_update_sacl(const char *obj_path) {
     ace->Mask            = 0;
 
     if (!CopySid(ev_sid_size, &ace->SidStart, everyone_sid)) {
-        merror(FIM_ERROR_WHODATA_COPY_SID, obj_path, ev_sid_size, GetLastError());
+        //merror(FIM_ERROR_WHODATA_COPY_SID, obj_path, ev_sid_size, GetLastError());
         goto end;
     }
 
@@ -1792,12 +1792,12 @@ int w_update_sacl(const char *obj_path) {
         if (old_sacl_info.AceCount) {
             for (i = 0; i < old_sacl_info.AceCount; i++) {
                if (!GetAce(old_sacl, i, &entry_access_it)) {
-                   merror(FIM_ERROR_WHODATA_ACE_NOOBTAIN, i, obj_path);
+                   //merror(FIM_ERROR_WHODATA_ACE_NOOBTAIN, i, obj_path);
                    goto end;
                }
 
                if (!AddAce(new_sacl, ACL_REVISION, MAXDWORD, entry_access_it, ((PACE_HEADER)entry_access_it)->AceSize)) {
-                   merror(FIM_ERROR_WHODATA_ACE_NUMBER, i, obj_path);
+                   //merror(FIM_ERROR_WHODATA_ACE_NUMBER, i, obj_path);
                    goto end;
                }
            }
@@ -1806,19 +1806,19 @@ int w_update_sacl(const char *obj_path) {
 
     // Add the new ACE
     if (!AddAce(new_sacl, ACL_REVISION, 0, (LPVOID)ace, ace->Header.AceSize)) {
-        merror(FIM_ERROR_WHODATA_ACE_NOADDED, obj_path, GetLastError());
+        //merror(FIM_ERROR_WHODATA_ACE_NOADDED, obj_path, GetLastError());
         goto end;
     }
 
     if (result = SetNamedSecurityInfo((char *) obj_path, SE_FILE_OBJECT, SACL_SECURITY_INFORMATION, NULL, NULL, NULL, new_sacl), result != ERROR_SUCCESS) {
-        merror(FIM_ERROR_WHODATA_SETNAMEDSECURITY, result);
+        //merror(FIM_ERROR_WHODATA_SETNAMEDSECURITY, result);
         goto end;
     }
 
     retval = 0;
 end:
     if (privilege_enabled && set_privilege(hdle, priv, FALSE)) {
-        merror(FIM_ERROR_WHODATA_ACTIVATE_PRIV, GetLastError());
+        //merror(FIM_ERROR_WHODATA_ACTIVATE_PRIV, GetLastError());
         goto end;
     }
 
