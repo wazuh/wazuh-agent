@@ -47,7 +47,7 @@ void Agent::Run()
         [this]([[maybe_unused]] const std::string& response)
         { PopMessagesFromQueue(m_messageQueue, MessageType::STATELESS); }));
 
-    m_taskManager.EnqueueTask(m_commandHandler.ProcessCommandsFromQueue<command_store::CommandEntry>(
+    m_taskManager.EnqueueTask(m_commandHandler.CommandsProcessingTask<command_store::CommandEntry>(
         [this]() { return GetCommandFromQueue(m_messageQueue); },
         [this]() { return PopCommandFromQueue(m_messageQueue); },
         [](command_store::CommandEntry& cmd) { return DispatchCommand(cmd); }));

@@ -14,10 +14,10 @@ namespace command_handler
     {
     public:
         template<typename T>
-        boost::asio::awaitable<void> ProcessCommandsFromQueue(
-            const std::function<std::optional<T>()> GetCommandFromQueue,
-            const std::function<void()> PopCommandFromQueue,
-            const std::function<std::tuple<command_store::Status, std::string>(T&)> DispatchCommand)
+        boost::asio::awaitable<void>
+        CommandsProcessingTask(const std::function<std::optional<T>()> GetCommandFromQueue,
+                               const std::function<void()> PopCommandFromQueue,
+                               const std::function<std::tuple<command_store::Status, std::string>(T&)> DispatchCommand)
         {
             using namespace std::chrono_literals;
             const auto executor = co_await boost::asio::this_coro::executor;
