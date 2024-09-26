@@ -1,11 +1,11 @@
-%if %{_debugenabled} == yes
+%if "%{_debugenabled}" == "yes"
   %global _enable_debug_package 0
   %global debug_package %{nil}
   %global __os_install_post %{nil}
   %define __strip /bin/true
 %endif
 
-%if %{_isstage} == no
+%if "%{_isstage}" == "no"
   %define _rpmfilename %%{NAME}_%%{VERSION}-%%{RELEASE}_%%{ARCH}_%{_hashcommit}.rpm
 %else
   %define _rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm
@@ -44,26 +44,12 @@ log analysis, file integrity monitoring, intrusions detection and policy and com
 %prep
 %setup -q
 
-./gen_ossec.sh conf agent centos %rhel %{_localstatedir} > etc/ossec-agent.conf
-
 %build
 pushd src
-# Rebuild for agent
-make clean
-
-%if 0%{?el} >= 6 || 0%{?rhel} >= 6
-    make deps TARGET=agent
-    make -j%{_threads} TARGET=agent USE_SELINUX=yes DEBUG=%{_debugenabled}
-%else
-    %ifnarch amd64
-      MSGPACK="USE_MSGPACK_OPT=no"
-    %endif
-    deps_version=`cat Makefile | grep "DEPS_VERSION =" | cut -d " " -f 3`
-    make deps RESOURCES_URL=http://packages.wazuh.com/deps/${deps_version} TARGET=agent
-    make -j%{_threads} TARGET=agent USE_AUDIT=no USE_SELINUX=yes USE_EXEC_ENVIRON=no DEBUG=%{_debugenabled} ${MSGPACK}
-
-%endif
-
+mkdir build
+pushd build
+cmake .. && make -j $(nproc)
+popd
 popd
 
 %install
