@@ -21,7 +21,6 @@ void InvNormalizerTest::TearDown()
     std::remove(TEST_CONFIG_FILE_NAME);
 };
 
-using ::testing::_;
 using ::testing::Return;
 
 TEST_F(InvNormalizerTest, ctor)
