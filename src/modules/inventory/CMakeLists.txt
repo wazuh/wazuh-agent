@@ -8,6 +8,8 @@ set_common_settings()
 get_filename_component(SRC_FOLDER       ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
 get_filename_component(COMMON_FOLDER    ${SRC_FOLDER}/common/ ABSOLUTE)
 
+include_directories(${COMMON_FOLDER}/logger/include)
+
 find_package(cJSON CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
@@ -26,7 +28,6 @@ target_include_directories(Inventory PUBLIC
     ${COMMON_FOLDER}/error_messages/include
     ${COMMON_FOLDER}/file_op/include
     ${COMMON_FOLDER}/hashHelper/include
-    ${COMMON_FOLDER}/logging_helper/include
     ${COMMON_FOLDER}/privsep_op/include
     ${COMMON_FOLDER}/pthreads_op/include
     ${COMMON_FOLDER}/stringHelper/include
@@ -48,7 +49,6 @@ target_link_libraries(Inventory PUBLIC
     OpenSSL::SSL
     OpenSSL::Crypto
     utils
-    logging_helper
     pthreads_op
     ConfigurationParser
     MultiTypeQueue

@@ -1,8 +1,8 @@
 #include <iostream>
 #include <cjson/cJSON.h>
-#include <shared.h>
+// #include <shared.h>
 #include <defs.h>
-#include <logging_helper.h>
+#include <logger.hpp>
 
 #include <inventory.hpp>
 #include <sysInfo.hpp>
@@ -18,11 +18,11 @@ constexpr const char* INV_LOGTAG = "modules:inventory"; // Tag for log messages
 void Inventory::Start() {
 
     if (!m_enabled) {
-        Log(LOG_INFO, "Module disabled. Exiting...");
+        LogInfo("Module disabled. Exiting...");
         return;
     }
 
-    Log(LOG_INFO, "Starting inventory.");
+    LogInfo("Starting inventory.");
 
     ShowConfig();
 
@@ -41,7 +41,7 @@ void Inventory::Start() {
         LogErrorInventory(ex.what());
     }
 
-    Log(LOG_INFO, "Module finished.");
+    LogInfo("Module finished.");
 
 }
 
@@ -61,12 +61,12 @@ void Inventory::Setup(const configuration::ConfigurationParser& configurationPar
 }
 
 void Inventory::Stop() {
-    Log(LOG_INFO, "Module stopped.");
+    LogInfo("Module stopped.");
     Inventory::Instance().Destroy();
 }
 
 string Inventory::Command(const string & query) {
-    Log(LOG_INFO, "Query: " + query);
+    LogInfo("Query: ",query);
     return "OK";
 }
 
@@ -80,10 +80,11 @@ void Inventory::SendDeltaEvent(const string& data) {
     const Message message{ MessageType::STATELESS, jsonData, Name() };
 
     if(!m_messageQueue->push(message)) {
-        Log(LOG_WARNING, "Delta event can't be pushed into the message queue: " + data);
+        LogWarn("Delta event can't be pushed into the message queue: ", data);
     }
     else {
-        Log(LOG_DEBUG_VERBOSE, "Delta sent: " + data);
+        LogTrace("Delta sent: ", data);
+
     }
 }
 
@@ -93,7 +94,7 @@ void Inventory::ShowConfig()
     if (configJson) {
         char * configString = cJSON_PrintUnformatted(configJson);
         if (configString) {
-            Log(LOG_DEBUG, configString);
+            LogTrace("{}",configString);
             cJSON_free(configString);
         }
         cJSON_Delete(configJson);
@@ -125,12 +126,13 @@ cJSON * Inventory::Dump() {
     return rootJson;
 }
 
-void Inventory::Log(const modules_log_level_t level, const std::string& log)
-{
-    taggedLogFunction(level, log.c_str(), INV_LOGTAG);
-}
+//TODO 
+// void Inventory::Log(const modules_log_level_t level, const std::string& log)
+// {
+//     taggedLogFunction(level, log.c_str(), INV_LOGTAG);
+// }
 
 void Inventory::LogErrorInventory(const std::string& log)
 {
-    taggedLogFunction(LOG_ERROR, log.c_str(), INV_LOGTAG);
+    LogError("{}",log.c_str(), INV_LOGTAG);
 }
