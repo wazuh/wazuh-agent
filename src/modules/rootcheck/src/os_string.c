@@ -116,7 +116,7 @@ struct exec {
 #endif /* N_TXTOFF */
 
 #include "headers/defs.h"
-#include "headers/debug_op.h"
+// #include "headers/debug_op.h"
 #include "headers/regex_op.h"
 
 #include "error_messages/error_messages.h"

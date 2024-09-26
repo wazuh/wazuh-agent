@@ -11,7 +11,7 @@
 #include <string.h>
 #include <sys/time.h>
 
-#include "debug_op.h"
+// #include "debug_op.h"
 
 #ifdef WAZUH_UNIT_TESTING
 // Remove STATIC qualifier from tests
