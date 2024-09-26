@@ -79,10 +79,10 @@ STATIC void fim_send_msg(char mq, const char * location, const char * msg) {
     }
 
     if (SendMSGPredicated(syscheck.queue, msg, location, mq, fim_shutdown_process_on) < 0) {
-        merror(QUEUE_SEND);
+        //merror(QUEUE_SEND);
 
         if ((syscheck.queue = StartMQ(DEFAULTQUEUE, WRITE, INFINITE_OPENQ_ATTEMPTS)) < 0) {
-            merror_exit(QUEUE_FATAL, DEFAULTQUEUE);
+            //merror_exit(QUEUE_FATAL, DEFAULTQUEUE);
         }
 
         // Try to send it again
@@ -103,14 +103,14 @@ void fim_send_sync_state(const char *location, const char* msg) {
 
     if (syscheck.sync_max_eps == 0) {
         fim_send_msg(DBSYNC_MQ, location, msg);
-        mdebug2(FIM_DBSYNC_SEND, msg);
+        //mdebug2(FIM_DBSYNC_SEND, msg);
     } else {
         static pthread_mutex_t sync_eps_mutex = PTHREAD_MUTEX_INITIALIZER;
 
         w_mutex_lock(&sync_eps_mutex);
 
         fim_send_msg(DBSYNC_MQ, location, msg);
-        mdebug2(FIM_DBSYNC_SEND, msg);
+        //mdebug2(FIM_DBSYNC_SEND, msg);
         fim_sync_check_eps();
 
         w_mutex_unlock(&sync_eps_mutex);
@@ -121,7 +121,7 @@ void fim_send_sync_state(const char *location, const char* msg) {
 void send_syscheck_msg(const cJSON *_msg) {
     char *msg = cJSON_PrintUnformatted(_msg);
 
-    mdebug2(FIM_SEND, msg);
+    //mdebug2(FIM_SEND, msg);
     fim_send_msg(SYSCHECK_MQ, SYSCHECK, msg);
 
     os_free(msg);
@@ -172,7 +172,7 @@ void check_max_fps() {
         w_mutex_unlock(&fps_mutex);
         return;
     }
-    mdebug2(FIM_REACHED_MAX_FPS);
+    //mdebug2(FIM_REACHED_MAX_FPS);
     wait_time.tv_sec += 1;
 
     // Wait for one second or until the thread is unlocked using w_cond_broadcast
@@ -182,7 +182,7 @@ void check_max_fps() {
         files_read = 0;
         w_cond_broadcast(&cond);
     } else if (rt != 0) {
-        mdebug2("pthread_cond_timedwait failed: %s", strerror(rt));
+        //mdebug2("pthread_cond_timedwait failed: %s", strerror(rt));
     }
     w_mutex_unlock(&fps_mutex);
 }
@@ -213,10 +213,10 @@ void start_daemon()
 
     // A higher nice value means a low priority.
 #ifndef WIN32
-    mdebug1(FIM_PROCESS_PRIORITY, syscheck.process_priority);
+    LogDebug(FIM_PROCESS_PRIORITY, syscheck.process_priority);
 
     if (nice(syscheck.process_priority) == -1) {
-        merror(NICE_ERROR, strerror(errno), errno);
+        //merror(NICE_ERROR, strerror(errno), errno);
     }
 #else
     set_priority_windows_thread();
@@ -227,7 +227,7 @@ void start_daemon()
     w_create_thread(w_rootcheck_thread, &syscheck);
 #else
     if (CreateThread(NULL, 0, w_rootcheck_thread, &syscheck, 0, NULL) == NULL) {
-        merror(THREAD_ERROR);
+        //merror(THREAD_ERROR);
     }
 #endif
 
@@ -247,41 +247,41 @@ void start_daemon()
     // Directory used for files.
     snprintf(diff_file_dir, PATH_MAX, "%s/file/", DIFF_DIR);
     if (cldir_ex(diff_file_dir) == -1 && errno != ENOENT) {
-        merror("Unable to clear directory '%s': %s (%d)", diff_file_dir, strerror(errno), errno);
+        //merror("Unable to clear directory '%s': %s (%d)", diff_file_dir, strerror(errno), errno);
     }
     // Directory used for registries.
     snprintf(diff_registry_dir, PATH_MAX, "%s/registry/", DIFF_DIR);
     if (cldir_ex(diff_registry_dir) == -1 && errno != ENOENT) {
-        merror("Unable to clear directory '%s': %s (%d)", diff_registry_dir, strerror(errno), errno);
+        //merror("Unable to clear directory '%s': %s (%d)", diff_registry_dir, strerror(errno), errno);
     }
     // Old directory used by report_changes, may be leftover from an old installation
     snprintf(diff_local_dir, PATH_MAX, "%s/local/", DIFF_DIR);
     if (cldir_ex(diff_local_dir) == -1 && errno != ENOENT) {
-        merror("Unable to clear directory '%s': %s (%d)", diff_local_dir, strerror(errno), errno);
+        //merror("Unable to clear directory '%s': %s (%d)", diff_local_dir, strerror(errno), errno);
     }
 
     if (syscheck.disabled) {
         return;
     }
 
-    minfo(FIM_DAEMON_STARTED);
+    //minfo(FIM_DAEMON_STARTED);
 
     if (syscheck.file_limit_enabled) {
-        mdebug2(FIM_FILE_LIMIT_VALUE, syscheck.file_entry_limit);
+        //mdebug2(FIM_FILE_LIMIT_VALUE, syscheck.file_entry_limit);
     } else {
-        mdebug2(FIM_LIMIT_UNLIMITED, "file");
+        //mdebug2(FIM_LIMIT_UNLIMITED, "file");
     }
 
 #ifdef WIN32
     if (syscheck.registry_limit_enabled) {
-        mdebug2(FIM_REGISTRY_LIMIT_VALUE, syscheck.db_entry_registry_limit);
+        //mdebug2(FIM_REGISTRY_LIMIT_VALUE, syscheck.db_entry_registry_limit);
     } else {
-        mdebug2(FIM_LIMIT_UNLIMITED, "registry");
+        //mdebug2(FIM_LIMIT_UNLIMITED, "registry");
     }
 #endif
 
     // Create File integrity monitoring base-line
-    minfo(FIM_FREQUENCY_TIME, syscheck.time);
+    //minfo(FIM_FREQUENCY_TIME, syscheck.time);
     fim_scan();
 
     // Launch inventory synchronization thread, if enabled
@@ -298,7 +298,7 @@ void start_daemon()
 #else
     if (CreateThread(NULL, 0, fim_run_realtime, &syscheck, 0, NULL) == NULL) {
 
-        merror(THREAD_ERROR);
+        //merror(THREAD_ERROR);
     }
 #endif
 
@@ -416,7 +416,7 @@ DWORD WINAPI fim_run_realtime(__attribute__((unused)) void * args) {
 
     watches = get_realtime_watches();
     if (watches != 0) {
-        mdebug2(FIM_NUM_WATCHES, watches);
+        //mdebug2(FIM_NUM_WATCHES, watches);
     }
 
     while (FOREVER()) {
@@ -430,7 +430,7 @@ DWORD WINAPI fim_run_realtime(__attribute__((unused)) void * args) {
             log_realtime_status(1);
 
             if (WaitForSingleObjectEx(syscheck.realtime->evt, SYSCHECK_WAIT * 1000, TRUE) == WAIT_FAILED) {
-                merror(FIM_ERROR_REALTIME_WAITSINGLE_OBJECT);
+                //merror(FIM_ERROR_REALTIME_WAITSINGLE_OBJECT);
             }
         } else {
             sleep(SYSCHECK_WAIT);
@@ -477,7 +477,7 @@ void *fim_run_realtime(__attribute__((unused)) void * args) {
             run_now = select(nfds + 1, &rfds, NULL, NULL, &selecttime);
 
             if (run_now < 0) {
-                merror(FIM_ERROR_SELECT);
+                //merror(FIM_ERROR_SELECT);
             } else if (run_now == 0) {
                 // Timeout
             } else if (FD_ISSET (nfds, &rfds)) {
@@ -499,7 +499,7 @@ void * fim_run_realtime(__attribute__((unused)) void * args) {
     OSList_foreach(node_it, syscheck.directories) {
         dir_it = node_it->data;
         if (dir_it->options & REALTIME_ACTIVE) {
-            mwarn(FIM_WARN_REALTIME_UNSUPPORTED);
+            //mwarn(FIM_WARN_REALTIME_UNSUPPORTED);
             break;
         }
     }
@@ -520,11 +520,11 @@ void set_priority_windows_thread() {
                       syscheck.process_priority <= 10 ? THREAD_PRIORITY_LOWEST :
                       THREAD_PRIORITY_IDLE;
 
-    mdebug1(FIM_PROCESS_PRIORITY, syscheck.process_priority);
+    LogDebug(FIM_PROCESS_PRIORITY, syscheck.process_priority);
 
     if(!SetThreadPriority(GetCurrentThread(), dwCreationFlags)) {
         int dwError = GetLastError();
-        merror("Can't set thread priority: %d", dwError);
+        //merror("Can't set thread priority: %d", dwError);
     }
 }
 #endif
@@ -567,11 +567,11 @@ int fim_whodata_initialize() {
     Wazuh must monitor files/directories in Realtime mode. */
     if (!run_whodata_scan()) {
         if (t_hdle = CreateThread(NULL, 0, state_checker, NULL, 0, &t_id), !t_hdle) {
-            merror(FIM_ERROR_CHECK_THREAD);
+            //merror(FIM_ERROR_CHECK_THREAD);
             retval = -1;
         }
     } else {
-        merror(FIM_ERROR_WHODATA_INIT);
+        //merror(FIM_ERROR_WHODATA_INIT);
 
         // In case SACLs and policies have been set, restore them.
         audit_restore();
@@ -603,7 +603,7 @@ int fim_whodata_initialize() {
 #else
 int fim_whodata_initialize() {
     if (syscheck.enable_whodata) {
-        mwarn(FIM_WARN_WHODATA_UNSUPPORTED);
+        //mwarn(FIM_WARN_WHODATA_UNSUPPORTED);
     }
     return -1;
 }
@@ -622,19 +622,19 @@ void log_realtime_status(int next) {
     switch (status) {
     case 0:
         if (next == 1) {
-            minfo(FIM_REALTIME_STARTED);
+            //minfo(FIM_REALTIME_STARTED);
             status = next;
         }
         break;
     case 1:
         if (next == 2) {
-            minfo(FIM_REALTIME_PAUSED);
+            //minfo(FIM_REALTIME_PAUSED);
             status = next;
         }
         break;
     case 2:
         if (next == 1) {
-            minfo(FIM_REALTIME_RESUMED);
+            //minfo(FIM_REALTIME_RESUMED);
             status = next;
         }
     }
@@ -661,11 +661,11 @@ static void *symlink_checker_thread(__attribute__((unused)) void * data) {
     directory_t *dir_it;
     OSListNode *node_it;
 
-    mdebug1(FIM_LINKCHECK_START, syscheck.sym_checker_interval);
+    LogDebug(FIM_LINKCHECK_START, syscheck.sym_checker_interval);
 
     while (1) {
         sleep(syscheck.sym_checker_interval);
-        mdebug1(FIM_LINKCHECK_START, syscheck.sym_checker_interval);
+        LogDebug(FIM_LINKCHECK_START, syscheck.sym_checker_interval);
 
         w_mutex_lock(&syscheck.fim_scan_mutex);
         w_rwlock_rdlock(&syscheck.directories_lock);
@@ -682,10 +682,10 @@ static void *symlink_checker_thread(__attribute__((unused)) void * data) {
                 if (real_path) {
                     // Check if link has changed
                     if (strcmp(real_path, dir_it->symbolic_links)) {
-                        mdebug2(FIM_LINKCHECK_CHANGED, dir_it->path, dir_it->symbolic_links, real_path);
+                        //mdebug2(FIM_LINKCHECK_CHANGED, dir_it->path, dir_it->symbolic_links, real_path);
                         fim_link_update(real_path, dir_it);
                     } else {
-                        mdebug2(FIM_LINKCHECK_NOCHANGE, dir_it->symbolic_links);
+                        //mdebug2(FIM_LINKCHECK_NOCHANGE, dir_it->symbolic_links);
                     }
                 } else {
                     // Broken link
@@ -712,7 +712,7 @@ static void *symlink_checker_thread(__attribute__((unused)) void * data) {
 
         w_rwlock_unlock(&syscheck.directories_lock);
         w_mutex_unlock(&syscheck.fim_scan_mutex);
-        mdebug1(FIM_LINKCHECK_FINALIZE);
+        LogDebug(FIM_LINKCHECK_FINALIZE);
     }
 
     return NULL;
@@ -765,7 +765,7 @@ STATIC void fim_link_update(const char *new_path, directory_t *configuration) {
                 break;
             }
         } else if (strcmp(new_path, dir_it->symbolic_links ? dir_it->symbolic_links : dir_it->path) == 0) {
-            mdebug2(FIM_LINK_ALREADY_ADDED, dir_it->path);
+            //mdebug2(FIM_LINK_ALREADY_ADDED, dir_it->path);
             is_new_link = false;
             break;
         }
@@ -801,7 +801,7 @@ STATIC void fim_link_check_delete(directory_t *configuration) {
             return;
         }
 
-        mdebug1(FIM_STAT_FAILED, configuration->symbolic_links, errno, strerror(errno));
+        LogDebug(FIM_STAT_FAILED, configuration->symbolic_links, errno, strerror(errno));
     } else {
         fim_link_delete_range(configuration);
 
@@ -858,7 +858,7 @@ STATIC void fim_link_reload_broken_link(char *path, directory_t *configuration) 
         dir_it = node_it->data;
         if (strcmp(path, dir_it->path) == 0) {
             // If a configuration directory exists don't reload
-            mdebug2(FIM_LINK_ALREADY_ADDED, dir_it->path);
+            //mdebug2(FIM_LINK_ALREADY_ADDED, dir_it->path);
             return;
         }
     }
@@ -893,9 +893,9 @@ void set_whodata_mode_changes() {
             dir_it->dirs_status.status &= ~WD_CHECK_REALTIME;
             dir_it->options |= REALTIME_ACTIVE;
             if (realtime_adddir(dir_it->path, dir_it) != 1) {
-                merror(FIM_ERROR_REALTIME_ADDDIR_FAILED, dir_it->path);
+                //merror(FIM_ERROR_REALTIME_ADDDIR_FAILED, dir_it->path);
             } else {
-                mdebug1(FIM_REALTIME_MONITORING, dir_it->path);
+                LogDebug(FIM_REALTIME_MONITORING, dir_it->path);
             }
         }
     }

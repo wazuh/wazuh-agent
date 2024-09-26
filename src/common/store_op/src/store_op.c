@@ -319,7 +319,7 @@ int OSStore_Put(OSStore *list, const char *key, void *data)
     /* Allocate memory for new node */
     newnode = (OSStoreNode *) calloc(1, sizeof(OSStoreNode));
     if (!newnode) {
-        merror(MEM_ERROR, errno, strerror(errno));
+        //merror(MEM_ERROR, errno, strerror(errno));
         return (0);
     }
 
@@ -329,7 +329,7 @@ int OSStore_Put(OSStore *list, const char *key, void *data)
     newnode->key = strdup(key);
     if (!newnode->key) {
         free(newnode);
-        merror(MEM_ERROR, errno, strerror(errno));
+        //merror(MEM_ERROR, errno, strerror(errno));
         return (0);
     }
     newnode->key_size = strlen(key);

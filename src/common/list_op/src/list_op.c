@@ -174,7 +174,7 @@ void OSList_DeleteOldestNode(OSList *list)
         free(list->first_node);
         list->first_node = next;
     } else {
-        merror("No Oldest node to delete");
+        //merror("No Oldest node to delete");
     }
     w_mutex_unlock((pthread_mutex_t *)&list->mutex);
     w_rwlock_unlock((pthread_rwlock_t *)&list->wr_mutex);
@@ -291,7 +291,7 @@ void *OSList_AddData(OSList *list, void *data)
     /* Allocate memory for new node */
     newnode = (OSListNode *) calloc(1, sizeof(OSListNode));
     if (!newnode) {
-        merror(MEM_ERROR, errno, strerror(errno));
+        //merror(MEM_ERROR, errno, strerror(errno));
         w_mutex_unlock((pthread_mutex_t *)&list->mutex);
         w_rwlock_unlock((pthread_rwlock_t *)&list->wr_mutex);
         return NULL;
@@ -458,7 +458,7 @@ static int _OSList_InsertData(OSList *list, OSListNode *node, void *data) {
     newnode = (OSListNode *) calloc(1, sizeof(OSListNode));
     if (newnode == NULL) {
         // LCOV_EXCL_START
-        merror(MEM_ERROR, errno, strerror(errno));
+        //merror(MEM_ERROR, errno, strerror(errno));
         return 1;
         // LCOV_EXCL_STOP
     }

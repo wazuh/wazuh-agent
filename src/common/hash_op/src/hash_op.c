@@ -273,7 +273,7 @@ int _OSHash_Add(OSHash *self, const char *key, void *data, int update)
     /* Create new node */
     new_node = (OSHashNode *) calloc(1, sizeof(OSHashNode));
     if (!new_node) {
-        mdebug1("hash_op: calloc() failed!");
+        LogDebug("hash_op: calloc() failed!");
         return (0);
     }
     new_node->next = NULL;
@@ -282,7 +282,7 @@ int _OSHash_Add(OSHash *self, const char *key, void *data, int update)
     new_node->key = strdup(key);
     if ( new_node->key == NULL ) {
         free(new_node);
-        mdebug1("hash_op: strdup() failed!");
+        LogDebug("hash_op: strdup() failed!");
         return (0);
     }
 

@@ -128,9 +128,9 @@ void* wm_gcp_pubsub_main(wm_gcp_pubsub *data) {
     char * timestamp = NULL;
     // If module is disabled, exit
     if (data->enabled) {
-        mtinfo(WM_GCP_PUBSUB_LOGTAG, "Module started.");
+        //mtinfo(WM_GCP_PUBSUB_LOGTAG, "Module started.");
     } else {
-        mtinfo(WM_GCP_PUBSUB_LOGTAG, "Module disabled. Exiting.");
+        //mtinfo(WM_GCP_PUBSUB_LOGTAG, "Module disabled. Exiting.");
         pthread_exit(NULL);
     }
 
@@ -140,15 +140,15 @@ void* wm_gcp_pubsub_main(wm_gcp_pubsub *data) {
         if (time_sleep) {
             const int next_scan_time = sched_get_next_scan_time(data->scan_config);
             timestamp = w_get_timestamp(next_scan_time);
-            mtdebug2(WM_GCP_PUBSUB_LOGTAG, "Sleeping until: %s", timestamp);
+            //mtdebug2(WM_GCP_PUBSUB_LOGTAG, "Sleeping until: %s", timestamp);
             os_free(timestamp);
             w_sleep_until(next_scan_time);
         }
-        mtdebug1(WM_GCP_PUBSUB_LOGTAG, "Starting fetching of logs.");
+        //mtdebug1(WM_GCP_PUBSUB_LOGTAG, "Starting fetching of logs.");
 
         wm_gcp_pubsub_run(data);
 
-        mtdebug1(WM_GCP_PUBSUB_LOGTAG, "Fetching logs finished.");
+        //mtdebug1(WM_GCP_PUBSUB_LOGTAG, "Fetching logs finished.");
     } while (FOREVER());
 
 #ifdef WIN32
@@ -167,9 +167,9 @@ void* wm_gcp_bucket_main(wm_gcp_bucket_base *data) {
     char * timestamp = NULL;
     // If module is disabled, exit
     if (data->enabled) {
-        mtinfo(WM_GCP_BUCKET_LOGTAG, "Module started.");
+        //mtinfo(WM_GCP_BUCKET_LOGTAG, "Module started.");
     } else {
-        mtinfo(WM_GCP_BUCKET_LOGTAG, "Module disabled. Exiting.");
+        //mtinfo(WM_GCP_BUCKET_LOGTAG, "Module disabled. Exiting.");
         pthread_exit(NULL);
     }
 
@@ -181,11 +181,11 @@ void* wm_gcp_bucket_main(wm_gcp_bucket_base *data) {
         if (time_sleep) {
             const int next_scan_time = sched_get_next_scan_time(data->scan_config);
             timestamp = w_get_timestamp(next_scan_time);
-            mtdebug2(WM_GCP_BUCKET_LOGTAG, "Sleeping until: %s", timestamp);
+            //mtdebug2(WM_GCP_BUCKET_LOGTAG, "Sleeping until: %s", timestamp);
             os_free(timestamp);
             w_sleep_until(next_scan_time);
         }
-        mtdebug1(WM_GCP_BUCKET_LOGTAG, "Starting fetching of logs.");
+        //mtdebug1(WM_GCP_BUCKET_LOGTAG, "Starting fetching of logs.");
 
         for (cur_bucket = data->buckets; cur_bucket; cur_bucket = cur_bucket->next) {
 
@@ -217,12 +217,12 @@ void* wm_gcp_bucket_main(wm_gcp_bucket_base *data) {
 
             wm_strcat(&log_info, ")", '\0');
 
-            mtinfo(WM_GCP_BUCKET_LOGTAG, "%s", log_info);
+            //mtinfo(WM_GCP_BUCKET_LOGTAG, "%s", log_info);
             wm_gcp_bucket_run(cur_bucket);
             free(log_info);
         }
 
-        mtdebug1(WM_GCP_BUCKET_LOGTAG, "Fetching logs finished.");
+        //mtdebug1(WM_GCP_BUCKET_LOGTAG, "Fetching logs finished.");
     } while (FOREVER());
 
 #ifdef WIN32
@@ -245,7 +245,7 @@ void wm_gcp_pubsub_run(const wm_gcp_pubsub *data) {
     char *command = NULL;
 
     // Create arguments
-    mtdebug2(WM_GCP_PUBSUB_LOGTAG, "Create argument list");
+    //mtdebug2(WM_GCP_PUBSUB_LOGTAG, "Create argument list");
 
     char * script = NULL;
     os_calloc(PATH_MAX, sizeof(char), script);
@@ -287,10 +287,12 @@ void wm_gcp_pubsub_run(const wm_gcp_pubsub *data) {
         os_free(int_to_string);
     }
 
-    if (isDebug()){
+    if (// TODO : should this feature be added
+// isDebug()){
         char *int_to_string;
         os_malloc(OS_SIZE_1024, int_to_string);
-        sprintf(int_to_string, "%d", isDebug());
+        sprintf(int_to_string, "%d", // TODO : should this feature be added
+// isDebug());
         wm_strcat(&command, "--log_level", ' ');
         wm_strcat(&command, int_to_string, ' ');
         os_free(int_to_string);
@@ -298,20 +300,20 @@ void wm_gcp_pubsub_run(const wm_gcp_pubsub *data) {
 
     // Execute
 
-    mtdebug1(WM_GCP_PUBSUB_LOGTAG, "Launching command: %s", command);
+    //mtdebug1(WM_GCP_PUBSUB_LOGTAG, "Launching command: %s", command);
 
     const int wm_exec_ret_code = wm_exec(command, &output, &status, 0, NULL);
 
     os_free(command);
 
     if (wm_exec_ret_code != 0){
-        mterror(WM_GCP_PUBSUB_LOGTAG, "Internal error. Exiting...");
+        //mterror(WM_GCP_PUBSUB_LOGTAG, "Internal error. Exiting...");
         if (wm_exec_ret_code > 0) {
             os_free(output);
         }
         pthread_exit(NULL);
     } else if (status > 0) {
-        mtwarn(WM_GCP_PUBSUB_LOGTAG, "Command returned exit code %d", status);
+        //mtwarn(WM_GCP_PUBSUB_LOGTAG, "Command returned exit code %d", status);
     }
 
     wm_gcp_parse_output(output, WM_GCP_PUBSUB_LOGTAG);
@@ -321,7 +323,8 @@ void wm_gcp_pubsub_run(const wm_gcp_pubsub *data) {
 static void wm_gcp_parse_output(char *output, char *tag){
     char *line;
     char * parsing_output = output;
-    int debug_level = isDebug();
+    int debug_level = // TODO : should this feature be added
+// isDebug();
 
     for (line = strstr(parsing_output, WM_GCP_LOGGING_TOKEN); line; line = strstr(parsing_output, WM_GCP_LOGGING_TOKEN)) {
         char * tokenized_line;
@@ -343,27 +346,27 @@ static void wm_gcp_parse_output(char *output, char *tag){
         if (debug_level >= 2) {
             if ((p_line = strstr(tokenized_line, "- DEBUG - "))) {
                 p_line += 10;
-                mtdebug1(tag, "%s", p_line);
+                //mtdebug1(tag, "%s", p_line);
             }
         }
         if (debug_level >= 1) {
             if ((p_line = strstr(tokenized_line, "- INFO - "))) {
                 p_line += 9;
-                mtinfo(tag, "%s", p_line);
+                //mtinfo(tag, "%s", p_line);
             }
         }
         if (debug_level >= 0) {
             if ((p_line = strstr(tokenized_line, "- CRITICAL - "))) {
                 p_line += 13;
-                mterror(tag, "%s", p_line);
+                //mterror(tag, "%s", p_line);
             }
             if ((p_line = strstr(tokenized_line, "- ERROR - "))) {
                 p_line += 10;
-                mterror(tag, "%s", p_line);
+                //mterror(tag, "%s", p_line);
             }
             if ((p_line = strstr(tokenized_line, "- WARNING - "))) {
                 p_line += 12;
-                mtwarn(tag, "%s", p_line);
+                //mtwarn(tag, "%s", p_line);
             }
         }
 
@@ -378,7 +381,7 @@ void wm_gcp_bucket_run(wm_gcp_bucket *exec_bucket) {
     char *command = NULL;
 
     // Create arguments
-    mtdebug2(WM_GCP_BUCKET_LOGTAG, "Create argument list");
+    //mtdebug2(WM_GCP_BUCKET_LOGTAG, "Create argument list");
 
     char * script = NULL;
     os_calloc(PATH_MAX, sizeof(char), script);
@@ -410,10 +413,12 @@ void wm_gcp_bucket_run(wm_gcp_bucket *exec_bucket) {
         wm_strcat(&command, "--remove", ' ');
     }
 
-    if (isDebug()){
+    if (// TODO : should this feature be added
+// isDebug()){
         char *int_to_string;
         os_malloc(OS_SIZE_1024, int_to_string);
-        sprintf(int_to_string, "%d", isDebug());
+        sprintf(int_to_string, "%d", // TODO : should this feature be added
+// isDebug());
         wm_strcat(&command, "--log_level", ' ');
         wm_strcat(&command, int_to_string, ' ');
         os_free(int_to_string);
@@ -421,20 +426,20 @@ void wm_gcp_bucket_run(wm_gcp_bucket *exec_bucket) {
 
     // Execute
 
-    mtdebug1(WM_GCP_BUCKET_LOGTAG, "Launching command: %s", command);
+    //mtdebug1(WM_GCP_BUCKET_LOGTAG, "Launching command: %s", command);
 
     const int wm_exec_ret_code = wm_exec(command, &output, &status, 0, NULL);
 
     os_free(command);
 
     if (wm_exec_ret_code != 0){
-        mterror(WM_GCP_BUCKET_LOGTAG, "Internal error. Exiting...");
+        //mterror(WM_GCP_BUCKET_LOGTAG, "Internal error. Exiting...");
         if (wm_exec_ret_code > 0) {
             os_free(output);
         }
         pthread_exit(NULL);
     } else if (status > 0) {
-        mtwarn(WM_GCP_BUCKET_LOGTAG, "Command returned exit code %d", status);
+        //mtwarn(WM_GCP_BUCKET_LOGTAG, "Command returned exit code %d", status);
     }
 
     wm_gcp_parse_output(output, WM_GCP_BUCKET_LOGTAG);
@@ -478,7 +483,8 @@ cJSON *wm_gcp_pubsub_dump(const wm_gcp_pubsub *data) {
     if (data->subscription_name) cJSON_AddStringToObject(wm_wd, "subscription_name", data->subscription_name);
     if (data->credentials_file) cJSON_AddStringToObject(wm_wd, "credentials_file", data->credentials_file);
 
-    int debug_level = isDebug();
+    int debug_level = // TODO : should this feature be added
+// isDebug();
 
     if (debug_level >= 2) cJSON_AddStringToObject(wm_wd, "logging", "debug");
     if (debug_level == 1) cJSON_AddStringToObject(wm_wd, "logging", "info");
@@ -517,7 +523,8 @@ cJSON *wm_gcp_bucket_dump(const wm_gcp_bucket_base *data) {
         }
     }
 
-    int debug_level = isDebug();
+    int debug_level = // TODO : should this feature be added
+// isDebug();
 
     if (debug_level >= 2) cJSON_AddStringToObject(wm_wd, "logging", "debug");
     if (debug_level == 1) cJSON_AddStringToObject(wm_wd, "logging", "info");

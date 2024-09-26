@@ -56,7 +56,7 @@ int main(int argc, char **argv)
     // Define current working directory
     char * home_path = w_homedir(argv[0]);
     if (chdir(home_path) == -1) {
-        merror_exit(CHDIR_ERROR, home_path, errno, strerror(errno));
+        //merror_exit(CHDIR_ERROR, home_path, errno, strerror(errno));
     }
 
     const char *group = GROUPGLOBAL;
@@ -73,20 +73,21 @@ int main(int argc, char **argv)
                 break;
             case 'd':
                 debug_level = 1;
-                nowDebug();
+                // TODO : should this feature be added
+                // nowDebug();
                 break;
             case 'f':
                 run_foreground = 1;
                 break;
             case 'g':
                 if (!optarg) {
-                    merror_exit("-g needs an argument.");
+                    //merror_exit("-g needs an argument.");
                 }
                 group = optarg;
                 break;
             case 'c':
                 if (!optarg) {
-                    merror_exit("-c needs an argument.");
+                    //merror_exit("-c needs an argument.");
                 }
                 cfg = optarg;
                 break;
@@ -103,28 +104,29 @@ int main(int argc, char **argv)
         /* Get debug level */
         debug_level = getDefine_Int("execd", "debug", 0, 2);
         while (debug_level != 0) {
-            nowDebug();
+            // TODO : should this feature be added
+            // nowDebug();
             debug_level--;
         }
     }
 
-    mdebug1(WAZUH_HOMEDIR, home_path);
+    LogDebug(WAZUH_HOMEDIR, home_path);
     os_free(home_path);
 
     /* Check if the group given is valid */
     gid = Privsep_GetGroup(group);
     if (gid == (gid_t) - 1) {
-        merror_exit(USER_ERROR, "", group, strerror(errno), errno);
+        //merror_exit(USER_ERROR, "", group, strerror(errno), errno);
     }
 
     /* Privilege separation */
     if (Privsep_SetGroup(gid) < 0) {
-        merror_exit(SETGID_ERROR, group, errno, strerror(errno));
+        //merror_exit(SETGID_ERROR, group, errno, strerror(errno));
     }
 
     /* Read config */
     if ((c = ExecdConfig(cfg)) < 0) {
-        mlerror_exit(LOGLEVEL_ERROR, CONFIG_ERROR, cfg);
+        //mlerror_exit(LOGLEVEL_ERROR, CONFIG_ERROR, cfg);
     }
 
     /* Exit if test_config */
@@ -143,12 +145,12 @@ int main(int argc, char **argv)
 
     /* Active response disabled */
     if (c == 1) {
-        minfo(EXEC_DISABLED);
+        //minfo(EXEC_DISABLED);
     }
 
     /* Create the PID file */
     if (CreatePID(ARGV0, getpid()) < 0) {
-        merror_exit(PID_ERROR);
+        //merror_exit(PID_ERROR);
     }
 
     // Start com request thread
@@ -157,7 +159,7 @@ int main(int argc, char **argv)
     }
 
     /* Start up message */
-    minfo(STARTUP_MSG, (int)getpid());
+    //minfo(STARTUP_MSG, (int)getpid());
 
     /* If AR is disabled, do not continue */
     if (c == 1) {
@@ -167,7 +169,7 @@ int main(int argc, char **argv)
 
     /* Start exec queue */
     if ((m_queue = StartMQ(EXECQUEUE, READ, 0)) < 0) {
-        merror_exit(QUEUE_ERROR, EXECQUEUE, strerror(errno));
+        //merror_exit(QUEUE_ERROR, EXECQUEUE, strerror(errno));
     }
 
     /* The real daemon Now */

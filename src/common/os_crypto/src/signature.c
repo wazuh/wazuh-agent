@@ -38,26 +38,26 @@ int w_wpk_unsign(const char * source, const char * target, const char ** ca_stor
     // Read signed file
 
     if (filein = wfopen(source, "rb"), !filein) {
-        merror("opening input file: %s", strerror(errno));
+        //merror("opening input file: %s", strerror(errno));
         goto cleanup;
     }
 
     // Check magic number
 
     if (length = fread(buffer, 1, sizeof(MAGIC), filein), length < (ssize_t)sizeof(MAGIC)) {
-        merror("Invalid input file (reading magic number).");
+        //merror("Invalid input file (reading magic number).");
         goto cleanup;
     }
 
     if (memcmp(buffer, MAGIC, sizeof(MAGIC))) {
-        merror("Invalid input file (bad magic number).");
+        //merror("Invalid input file (bad magic number).");
         goto cleanup;
     }
 
     // Get certificate
 
     if (cert = w_wpk_cert(filein), !cert) {
-        merror("Couldn't extract certificate at file '%s'.", source);
+        //merror("Couldn't extract certificate at file '%s'.", source);
         goto cleanup;
     }
 
@@ -65,107 +65,107 @@ int w_wpk_unsign(const char * source, const char * target, const char ** ca_stor
 
     if (ca_store) {
         if (wpk_verify_cert(cert, ca_store) < 0) {
-            merror("Error verifying WPK certificate.");
+            //merror("Error verifying WPK certificate.");
             goto cleanup;
         }
     } else {
-        mwarn("No root CA defined to verify file '%s'.", source);
+        //mwarn("No root CA defined to verify file '%s'.", source);
     }
 
     // Read signature
 
     if (length = fread(signature, 1, SIGNLEN, filein), length < SIGNLEN) {
-        merror("Invalid input file (reading signature).");
+        //merror("Invalid input file (reading signature).");
         goto cleanup;
     }
 
     // Hash of file content
 
     if (offset = ftell(filein), offset < 0) {
-        merror(FTELL_ERROR, source, errno, strerror(errno));
+        //merror(FTELL_ERROR, source, errno, strerror(errno));
         goto cleanup;
     }
 
     if (hash = EVP_MD_CTX_new(), !hash) {
-        merror("Couldn't create hash context.");
+        //merror("Couldn't create hash context.");
         goto cleanup;
     }
 
     if (1 != EVP_DigestInit(hash, EVP_sha256())) {
-        merror("Couldn't initialize hash context.");
+        //merror("Couldn't initialize hash context.");
         goto cleanup;
     }
 
     while (length = fread(buffer, 1, BUFLEN, filein), length > 0) {
         if (1 != EVP_DigestUpdate(hash, buffer, length)) {
-            merror("Couldn't update hash.");
+            //merror("Couldn't update hash.");
             goto cleanup;
         }
     }
 
     if (length < 0) {
-        merror("Invalid input file (reading content).");
+        //merror("Invalid input file (reading content).");
         goto cleanup;
     }
 
     if (1 != EVP_DigestFinal(hash, digest, NULL)) {
-        merror("Couldn't finalize hash.");
+        //merror("Couldn't finalize hash.");
         goto cleanup;
     }
 
     // Verify signature (PKCS1)
 
     if (pkey = X509_get0_pubkey(cert), !pkey) {
-        merror("Couldn't get public key from certificate.");
+        //merror("Couldn't get public key from certificate.");
         goto cleanup;
     }
 
     if (EVP_PKEY_base_id(pkey) != EVP_PKEY_RSA) {
-        merror("Public key is not RSA.");
+        //merror("Public key is not RSA.");
         goto cleanup;
     }
 
     if (ctx = EVP_PKEY_CTX_new(pkey, NULL), !ctx) {
-        merror("Couldn't create public key context.");
+        //merror("Couldn't create public key context.");
         goto cleanup;
     }
 
     if (EVP_PKEY_verify_init(ctx) <= 0) {
-        merror("Failed to initialize public key context.");
+        //merror("Failed to initialize public key context.");
         goto cleanup;
     }
 
     if (EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha256()) <= 0) {
-        merror("Failed to set signature digest type.");
+        //merror("Failed to set signature digest type.");
         goto cleanup;
     }
 
     if (1 != EVP_PKEY_verify(ctx, signature, SIGNLEN, digest, SHA256_DIGEST_LENGTH)) {
-        merror("Failed to verify signature.");
+        //merror("Failed to verify signature.");
         goto cleanup;
     }
 
     // Extract file
 
     if (fileout = wfopen(target, "wb"), !fileout) {
-        merror("Opening output file: %s", strerror(errno));
+        //merror("Opening output file: %s", strerror(errno));
         goto cleanup;
     }
 
     if (fseek(filein, offset, SEEK_SET) < 0) {
-        merror(FSEEK_ERROR, source, errno, strerror(errno));
+        //merror(FSEEK_ERROR, source, errno, strerror(errno));
         goto cleanup;
     }
 
     while (length = fread(buffer, 1, BUFLEN, filein), length > 0) {
         if (fwrite(buffer, 1, length, fileout) != (size_t)length) {
-            merror("writing output file.");
+            //merror("writing output file.");
             goto cleanup;
         }
     }
 
     if (length < 0) {
-        merror("Invalid input file (writing output).");
+        //merror("Invalid input file (writing output).");
         goto cleanup;
     }
 
@@ -228,7 +228,7 @@ X509 * w_wpk_cert(FILE * fp) {
     }
 
     if (buffer[i]) {
-        merror("Couldn't get certificate from WPK file.");
+        //merror("Couldn't get certificate from WPK file.");
         free(buffer);
         return NULL;
     }
@@ -236,7 +236,7 @@ X509 * w_wpk_cert(FILE * fp) {
     bio = BIO_new_mem_buf(buffer, (int)i);
 
     if (cert = PEM_read_bio_X509(bio, NULL, NULL, NULL), !cert) {
-        merror("Invalid certificate in WPK file.");
+        //merror("Invalid certificate in WPK file.");
         BIO_free_all(bio);
         free(buffer);
         return NULL;
@@ -268,14 +268,14 @@ int wpk_verify_cert(X509 * cert, const char ** ca_store) {
         }
 
         if (store = X509_STORE_new(), !store) {
-            merror("Couldn't create new store.");
+            //merror("Couldn't create new store.");
             return -1;
         }
 
         int r;
 
         if (stat(ca_store[i], &statbuf) < 0) {
-            merror(FSTAT_ERROR, ca_store[i], errno, strerror(errno));
+            //merror(FSTAT_ERROR, ca_store[i], errno, strerror(errno));
             continue;
         }
 
@@ -289,12 +289,12 @@ int wpk_verify_cert(X509 * cert, const char ** ca_store) {
             break;
 
         default:
-            merror("Loading CA '%s': it's neither file nor directory.", ca_store[i]);
+            //merror("Loading CA '%s': it's neither file nor directory.", ca_store[i]);
             continue;
         }
 
         if (r < 0) {
-            merror("Couldn't add CA '%s'", ca_store[i]);
+            //merror("Couldn't add CA '%s'", ca_store[i]);
             X509_STORE_free(store);
             continue;
         }
@@ -307,21 +307,21 @@ int wpk_verify_cert(X509 * cert, const char ** ca_store) {
             ERR_load_crypto_strings();
 
             while (err = ERR_get_error(), err) {
-                mdebug1("At wpk_verify_cert(): %s (%lu)", ERR_reason_error_string(err), err);
+                LogDebug("At wpk_verify_cert(): %s (%lu)", ERR_reason_error_string(err), err);
             }
 
         } else if (r == 0) {
             ERR_load_crypto_strings();
 
             err = X509_STORE_CTX_get_error(store_ctx);
-            mdebug1("Certificate couldn't be verified by CA '%s': %s (%lu)", ca_store[i], X509_verify_cert_error_string(err), err);
+            LogDebug("Certificate couldn't be verified by CA '%s': %s (%lu)", ca_store[i], X509_verify_cert_error_string(err), err);
 
         } else if (r == 1) {
 
             result = 0;
 
         } else {
-            mdebug1("At wpk_verify_cert(): unexpected result.");
+            LogDebug("At wpk_verify_cert(): unexpected result.");
         }
 
         X509_STORE_CTX_cleanup(store_ctx);

@@ -51,7 +51,7 @@ int setup_and_check_message(char **argv, cJSON **message) {
 
     /* Change working directory */
     if (chdir(home_path) == -1) {
-        merror_exit(CHDIR_ERROR, home_path, errno, strerror(errno));
+        //merror_exit(CHDIR_ERROR, home_path, errno, strerror(errno));
     }
     os_free(home_path);
 #endif

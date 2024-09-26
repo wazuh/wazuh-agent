@@ -9,11 +9,7 @@
 
 using namespace std;
 
-#ifdef WIN32
-#define INV_LOGTAG "modules:inventory" // Tag for log messages
-#else
-constexpr const char* INV_LOGTAG = "modules:inventory"; // Tag for log messages
-#endif
+// constexpr const char* INV_LOGTAG = "modules:inventory"; // Tag for log messages
 
 void Inventory::Start() {
 
@@ -126,7 +122,7 @@ cJSON * Inventory::Dump() {
     return rootJson;
 }
 
-//TODO 
+// TODO: reuse this tag
 // void Inventory::Log(const modules_log_level_t level, const std::string& log)
 // {
 //     taggedLogFunction(level, log.c_str(), INV_LOGTAG);

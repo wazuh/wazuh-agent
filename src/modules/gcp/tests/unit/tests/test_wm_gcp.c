@@ -53,7 +53,8 @@ typedef struct __gcp_pubsub_dump_s {
 }gcp_pubsub_dump_t;
 
 /* wraps */
-int __wrap_isDebug() {
+int __wrap_// TODO : should this feature be added
+// isDebug() {
     return mock();
 }
 

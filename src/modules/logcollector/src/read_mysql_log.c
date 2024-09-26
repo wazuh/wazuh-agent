@@ -234,12 +234,12 @@ void *read_mysql_log(logreader *lf, int *rc, int drop_it) {
         }
 
         if (bytes_written < 0) {
-            merror("Error %d (%s) while reading message: '%s' (length = " FTELL_TT "): '%s'...", errno, strerror(errno), lf->file, FTELL_INT64 bytes_written, buffer);
+            //merror("Error %d (%s) while reading message: '%s' (length = " FTELL_TT "): '%s'...", errno, strerror(errno), lf->file, FTELL_INT64 bytes_written, buffer);
         } else if ((size_t)bytes_written >= sizeof(buffer)) {
-            merror("Message size too big on file '%s' (length = " FTELL_TT "): '%s'...", lf->file, FTELL_INT64 bytes_written, buffer);
+            //merror("Message size too big on file '%s' (length = " FTELL_TT "): '%s'...", lf->file, FTELL_INT64 bytes_written, buffer);
         }
 
-        mdebug2("Reading mysql messages: '%s'", buffer);
+        //mdebug2("Reading mysql messages: '%s'", buffer);
 
         /* Check ignore and restrict log regex, if configured. */
         if (drop_it == 0 && !check_ignore_and_restrict(lf->regex_ignore, lf->regex_restrict, buffer)) {
@@ -256,6 +256,6 @@ void *read_mysql_log(logreader *lf, int *rc, int drop_it) {
         EVP_MD_CTX_free(context);
     }
 
-    mdebug2("Read %d lines from %s", lines, lf->file);
+    //mdebug2("Read %d lines from %s", lines, lf->file);
     return (NULL);
 }

@@ -30,14 +30,14 @@ int Read_Syscheck_Config(const char *cfgfile)
         return OS_INVALID;
     }
 
-    mdebug1(FIM_CONFIGURATION_FILE, cfgfile);
+    LogDebug(FIM_CONFIGURATION_FILE, cfgfile);
 
     /* Read config */
     if (ReadConfig(modules, cfgfile, &syscheck, NULL) < 0) {
         return (OS_INVALID);
     }
 
-    mdebug1(FIM_CLIENT_CONFIGURATION, cfgfile);
+    LogDebug(FIM_CLIENT_CONFIGURATION, cfgfile);
 
     /* Read shared config */
     modules |= CAGENT_CONFIG;

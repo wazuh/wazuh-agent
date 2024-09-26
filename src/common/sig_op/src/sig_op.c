@@ -46,7 +46,7 @@ void HandleExit() {
 
 void HandleSIG(int sig)
 {
-    minfo(SIGNAL_RECV, sig, strsignal(sig));
+    //minfo(SIGNAL_RECV, sig, strsignal(sig));
 
     exit(1);
 }
