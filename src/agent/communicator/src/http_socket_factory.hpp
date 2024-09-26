@@ -3,6 +3,7 @@
 #include <ihttp_socket_factory.hpp>
 
 #include "http_socket.hpp"
+#include "https_socket.hpp"
 
 #include <boost/asio/any_io_executor.hpp>
 
