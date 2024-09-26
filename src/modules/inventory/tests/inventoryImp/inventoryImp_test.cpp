@@ -25,8 +25,8 @@ class SysInfoWrapper: public ISysInfo
 
         SysInfoWrapper(const SysInfoWrapper&) = delete;
         SysInfoWrapper& operator=(const SysInfoWrapper&) = delete;
-        SysInfoWrapper(SysInfoWrapper&&) = default;
-        SysInfoWrapper& operator=(SysInfoWrapper&&) = default;
+        SysInfoWrapper(SysInfoWrapper&&) = delete;
+        SysInfoWrapper& operator=(SysInfoWrapper&&) = delete;
 
         MOCK_METHOD(nlohmann::json, hardware, (), (override));
         MOCK_METHOD(nlohmann::json, packages, (), (override));
@@ -47,8 +47,8 @@ class CallbackMock
 
         CallbackMock(const CallbackMock&) = delete;
         CallbackMock& operator=(const CallbackMock&) = delete;
-        CallbackMock(CallbackMock&&) = default;
-        CallbackMock& operator=(CallbackMock&&) = default;
+        CallbackMock(CallbackMock&&) = delete;
+        CallbackMock& operator=(CallbackMock&&) = delete;
 
         MOCK_METHOD(void, callbackMock, (const std::string&), ());
 };
