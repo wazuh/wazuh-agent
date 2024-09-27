@@ -10,7 +10,7 @@ public:
     MOCK_METHOD(void, Start, (), ());
     MOCK_METHOD(int, Setup, (const configuration::ConfigurationParser&), ());
     MOCK_METHOD(void, Stop, (), ());
-    MOCK_METHOD(std::string, Command, (const std::string&), ());
+    MOCK_METHOD(boost::asio::awaitable<std::string>, Command, (const std::string&), ());
     MOCK_METHOD(std::string, Name, (), (const));
     MOCK_METHOD(void, SetMessageQueue, (const std::shared_ptr<IMultiTypeQueue>));
 };

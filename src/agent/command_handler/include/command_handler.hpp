@@ -7,6 +7,7 @@
 #include <atomic>
 #include <optional>
 #include <queue>
+#include <string>
 
 namespace command_handler
 {
@@ -14,10 +15,11 @@ namespace command_handler
     {
     public:
         template<typename T>
-        boost::asio::awaitable<void>
-        CommandsProcessingTask(const std::function<std::optional<T>()> GetCommandFromQueue,
-                               const std::function<void()> PopCommandFromQueue,
-                               const std::function<std::tuple<command_store::Status, std::string>(T&)> DispatchCommand)
+        boost::asio::awaitable<void> CommandsProcessingTask(
+            const std::function<std::optional<T>()> GetCommandFromQueue,
+            const std::function<void()> PopCommandFromQueue,
+            const std::function<boost::asio::awaitable<std::tuple<command_store::Status, std::string>>(T&)>
+                DispatchCommand)
         {
             using namespace std::chrono_literals;
             const auto executor = co_await boost::asio::this_coro::executor;
@@ -35,7 +37,7 @@ namespace command_handler
 
                 m_commandStore.StoreCommand(cmd.value());
                 PopCommandFromQueue();
-                auto result = DispatchCommand(cmd.value());
+                auto result = co_await DispatchCommand(cmd.value());
 
                 cmd.value().CurrentStatus = std::get<0>(result);
                 cmd.value().Result = std::get<1>(result);

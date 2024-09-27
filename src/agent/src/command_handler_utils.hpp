@@ -5,9 +5,12 @@
 #include <moduleWrapper.hpp>
 #include <multitype_queue.hpp>
 
+#include <boost/asio/awaitable.hpp>
+
 #include <memory>
 #include <tuple>
 
-std::tuple<command_store::Status, std::string> DispatchCommand(const command_store::CommandEntry& commandEntry,
-                                                               std::shared_ptr<ModuleWrapper> module,
-                                                               std::shared_ptr<IMultiTypeQueue> messageQueue);
+boost::asio::awaitable<std::tuple<command_store::Status, std::string>>
+DispatchCommand(command_store::CommandEntry commandEntry,
+                std::shared_ptr<ModuleWrapper> module,
+                std::shared_ptr<IMultiTypeQueue> messageQueue);

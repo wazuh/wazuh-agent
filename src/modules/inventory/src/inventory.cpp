@@ -59,9 +59,9 @@ void Inventory::Stop() {
     Inventory::Instance().Destroy();
 }
 
-std::string Inventory::Command(const std::string & query) {
+boost::asio::awaitable<std::string> Inventory::Command(const std::string query) {
     LogInfo("Query: ",query);
-    return "OK";
+    co_return "OK";
 }
 
 void Inventory::SetMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue) {
