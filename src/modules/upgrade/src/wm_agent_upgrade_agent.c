@@ -96,7 +96,7 @@ void wm_agent_upgrade_start_agent_module(const wm_agent_configs* agent_config, c
     if (!enabled) {
         allow_upgrades = false;
     } else {
-        //mtinfo(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_MODULE_STARTED);
+        LogInfo(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_MODULE_STARTED);
     }
 
     #ifndef WIN32
@@ -118,7 +118,7 @@ STATIC void* wm_agent_upgrade_listen_messages(__attribute__((unused)) void *arg)
 
     int sock = OS_BindUnixDomainWithPerms(sockname, SOCK_STREAM, OS_MAXSTR, getuid(), wm_getGroupID(), 0660);
     if (sock < 0) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_BIND_SOCK_ERROR, AGENT_UPGRADE_SOCK, strerror(errno));
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_BIND_SOCK_ERROR, AGENT_UPGRADE_SOCK, strerror(errno));
         return NULL;
     }
 
@@ -131,7 +131,7 @@ STATIC void* wm_agent_upgrade_listen_messages(__attribute__((unused)) void *arg)
         switch (select(sock + 1, &fdset, NULL, NULL, NULL)) {
         case -1:
             if (errno != EINTR) {
-                //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_SELECT_ERROR, strerror(errno));
+                LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_SELECT_ERROR, strerror(errno));
                 close(sock);
                 return NULL;
             }
@@ -144,7 +144,7 @@ STATIC void* wm_agent_upgrade_listen_messages(__attribute__((unused)) void *arg)
         int peer;
         if (peer = accept(sock, NULL, NULL), peer < 0) {
             if (errno != EINTR) {
-                //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_ACCEPT_ERROR, strerror(errno));
+                LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_ACCEPT_ERROR, strerror(errno));
             }
             continue;
         }
@@ -156,20 +156,20 @@ STATIC void* wm_agent_upgrade_listen_messages(__attribute__((unused)) void *arg)
         int length;
         switch (length = OS_RecvSecureTCP(peer, buffer, OS_MAXSTR), length) {
         case OS_SOCKTERR:
-            //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_SOCKTERR_ERROR);
+            LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_SOCKTERR_ERROR);
             break;
         case -1:
-            //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_RECV_ERROR, strerror(errno));
+            LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_RECV_ERROR, strerror(errno));
             break;
         case 0:
-            //mtdebug1(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_EMPTY_MESSAGE);
+            LogDebug(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_EMPTY_MESSAGE);
             break;
         default:
-            //mtdebug1(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_INCOMMING_MESSAGE, buffer);
+            LogDebug(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_INCOMMING_MESSAGE, buffer);
             char* message = NULL;
             size_t length = wm_agent_upgrade_process_command(buffer, &message);
 
-            //mtdebug1(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_RESPONSE_MESSAGE, message);
+            LogDebug(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_RESPONSE_MESSAGE, message);
             OS_SendSecureTCP(peer, length, message);
             os_free(message);
             break;
@@ -201,7 +201,7 @@ STATIC void wm_agent_upgrade_check_status(const wm_agent_configs* agent_config) 
     sleep(WM_AGENT_UPGRADE_RESULT_WAIT_TIME);
 
     if (queue_fd < 0) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_QUEUE_FD);
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_QUEUE_FD);
     } else {
         bool result_available = true;
         unsigned int wait_time = agent_config->upgrade_wait_start;
@@ -270,17 +270,17 @@ STATIC void wm_upgrade_agent_send_ack_message(int *queue_fd, wm_upgrade_agent_st
 
     char *msg_string = cJSON_PrintUnformatted(root);
     if (wm_sendmsg(msg_delay, *queue_fd, msg_string, task_manager_modules_list[WM_TASK_UPGRADE_MODULE], UPGRADE_MQ) < 0) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, QUEUE_ERROR, DEFAULTQUEUE, strerror(errno));
+        LogError(WM_AGENT_UPGRADE_LOGTAG, QUEUE_ERROR, DEFAULTQUEUE, strerror(errno));
         if(*queue_fd >= 0){
             close(*queue_fd);
         }
         *queue_fd = StartMQ(DEFAULTQUEUE, WRITE, INFINITE_OPENQ_ATTEMPTS);
         if (*queue_fd < 0) {
-            //mterror_exit(WM_AGENT_UPGRADE_LOGTAG, QUEUE_FATAL, DEFAULTQUEUE);
+            LogCritical(WM_AGENT_UPGRADE_LOGTAG, QUEUE_FATAL, DEFAULTQUEUE);
         }
     }
 
-    //mtdebug1(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_ACK_MESSAGE, msg_string);
+    LogDebug(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_ACK_MESSAGE, msg_string);
     os_free(msg_string);
     cJSON_Delete(root);
 }

@@ -58,7 +58,7 @@ int LogCollectorConfig(const char *cfgfile)
     current_files = 0;
 
     if (force_reload && reload_interval < vcheck_files) {
-        //mwarn("Reload interval (%d) must be greater or equal than the checking interval (%d).", reload_interval, vcheck_files);
+        LogWarn("Reload interval (%d) must be greater or equal than the checking interval (%d).", reload_interval, vcheck_files);
     }
 
 #ifndef WIN32
@@ -66,13 +66,13 @@ int LogCollectorConfig(const char *cfgfile)
 #endif
 
     if (maximum_lines > 0 && maximum_lines < 100) {
-        //merror("Definition 'logcollector.max_lines' must be 0 or 100..1000000.");
+        LogError("Definition 'logcollector.max_lines' must be 0 or 100..1000000.");
         return OS_INVALID;
     }
 
 #ifndef WIN32
     if (maximum_files > (int)nofile - 100) {
-        //merror("Definition 'logcollector.max_files' must be lower than ('logcollector.rlimit_nofile' - 100).");
+        LogError("Definition 'logcollector.max_files' must be lower than ('logcollector.rlimit_nofile' - 100).");
         return OS_SIZELIM;
     }
 #else

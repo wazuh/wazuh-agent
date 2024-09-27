@@ -79,25 +79,25 @@ int rootcheck_init(int test_config)
 
     /* Check if the configuration is present */
     if (File_DateofChange(cfg) < 0) {
-        //mterror(ARGV0, "Configuration file '%s' not found", cfg);
+        LogError(ARGV0, "Configuration file '%s' not found", cfg);
         return (-1);
     }
 
     /* Read configuration  --function specified twice (check makefile) */
     if (Read_Rootcheck_Config(cfg) < 0) {
-        //mwarn(RCONFIG_ERROR, ARGV0, cfg);
+        LogWarn(RCONFIG_ERROR, ARGV0, cfg);
         return (1);
     }
 
 #ifndef WIN32
     if(rootcheck.checks.rc_unixaudit && !test_config) {
-        //mwarn("The check_unixaudit option is deprecated in favor of the SCA module.");
+        LogWarn("The check_unixaudit option is deprecated in favor of the SCA module.");
     }
 #endif
 
 #ifdef WIN32
     if(rootcheck.checks.rc_winaudit && !test_config) {
-        //mwarn("The check_winaudit option is deprecated in favor of the SCA module.");
+        LogWarn("The check_winaudit option is deprecated in favor of the SCA module.");
     }
 #endif
 
@@ -110,27 +110,27 @@ int rootcheck_init(int test_config)
 
     /* Return 1 disables rootcheck */
     if (rootcheck.disabled == 1) {
-        //mtinfo(ARGV0, "Rootcheck disabled.");
+        LogInfo(ARGV0, "Rootcheck disabled.");
         return (1);
     }
 
 #ifndef WIN32
     /* Check if Unix audit file is configured */
     if (rootcheck.checks.rc_unixaudit && !rootcheck.unixaudit) {
-        //mtferror(ARGV0, "System audit file not configured.");
+        LogError(ARGV0, "System audit file not configured.");
     }
 #endif
 
     /* Start up message */
 #ifdef WIN32
-    //mtinfo(ARGV0, STARTUP_MSG, getpid());
+    LogInfo(ARGV0, STARTUP_MSG, getpid());
 #endif /* WIN32 */
 
     /* Initialize rk list */
     rk_sys_name = (char **) calloc(MAX_RK_SYS + 2, sizeof(char *));
     rk_sys_file = (char **) calloc(MAX_RK_SYS + 2, sizeof(char *));
     if (!rk_sys_name || !rk_sys_file) {
-        //mterror_exit(ARGV0, MEM_ERROR, errno, strerror(errno));
+        LogCritical(ARGV0, MEM_ERROR, errno, strerror(errno));
     }
     rk_sys_name[0] = NULL;
     rk_sys_file[0] = NULL;
@@ -142,11 +142,11 @@ void rootcheck_connect() {
 #ifndef WIN32
     /* Connect to the queue if configured to do so */
     if (rootcheck.notify == QUEUE) {
-        //mtdebug1(ARGV0, "Starting queue ...");
+        LogDebug(ARGV0, "Starting queue ...");
 
         /* Start the queue */
         if ((rootcheck.queue = StartMQ(DEFAULTQUEUE, WRITE, INFINITE_OPENQ_ATTEMPTS)) < 0) {
-            //mterror_exit(ARGV0, QUEUE_FATAL, DEFAULTQUEUE);
+            LogCritical(ARGV0, QUEUE_FATAL, DEFAULTQUEUE);
         }
     }
 #endif

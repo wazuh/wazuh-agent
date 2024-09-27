@@ -89,13 +89,13 @@ DWORD WINAPI wm_github_main(void* arg) {
 void * wm_github_main(wm_github* github_config) {
 #endif
     if (github_config->enabled) {
-        //mtinfo(WM_GITHUB_LOGTAG, "Module GitHub started.");
+        LogInfo(WM_GITHUB_LOGTAG, "Module GitHub started.");
 
 #ifndef WIN32
         // Connect to queue
         github_config->queue_fd = StartMQ(DEFAULTQUEUE, WRITE, INFINITE_OPENQ_ATTEMPTS);
         if (github_config->queue_fd < 0) {
-            //mterror(WM_GITHUB_LOGTAG, "Can't connect to queue. Closing module.");
+            LogError(WM_GITHUB_LOGTAG, "Can't connect to queue. Closing module.");
 #ifdef WIN32
             return 0;
 #else
@@ -115,7 +115,7 @@ void * wm_github_main(wm_github* github_config) {
             #endif
         }
     } else {
-        //mtinfo(WM_GITHUB_LOGTAG, "Module GitHub disabled.");
+        LogInfo(WM_GITHUB_LOGTAG, "Module GitHub disabled.");
     }
 
 #ifdef WIN32
@@ -126,7 +126,7 @@ void * wm_github_main(wm_github* github_config) {
 }
 
 void wm_github_destroy(wm_github* github_config) {
-    //mtinfo(WM_GITHUB_LOGTAG, "Module GitHub finished.");
+    LogInfo(WM_GITHUB_LOGTAG, "Module GitHub finished.");
     wm_github_auth_destroy(github_config->auth);
     wm_github_fail_destroy(github_config->fails);
     os_free(github_config->event_type);
@@ -239,7 +239,7 @@ STATIC void wm_github_execute_scan(wm_github *github_config, int initial_scan) {
     {
         next = current->next;
 
-        //mtdebug1(WM_GITHUB_LOGTAG, "Scanning organization: '%s'", current->org_name);
+        LogDebug(WM_GITHUB_LOGTAG, "Scanning organization: '%s'", current->org_name);
 
         event_types_len = array_size(event_types);
 
@@ -264,13 +264,13 @@ STATIC void wm_github_execute_scan(wm_github *github_config, int initial_scan) {
                 if (initial_scan && (!org_state_struc.last_log_time || github_config->only_future_events)) {
                     org_state_struc.last_log_time = new_scan_time;
                     if (wm_state_io(org_state_name, WM_IO_WRITE, &org_state_struc, sizeof(org_state_struc)) < 0) {
-                        //mterror(WM_GITHUB_LOGTAG, "Couldn't save running state.");
+                        LogError(WM_GITHUB_LOGTAG, "Couldn't save running state.");
                     } else if (// TODO : should this feature be added
 // isDebug()) {
                         memset(new_scan_time_str, '\0', 80);
                         gmtime_r(&new_scan_time, &tm_scan);
                         strftime(new_scan_time_str, sizeof(new_scan_time_str), "%Y-%m-%dT%H:%M:%SZ", &tm_scan);
-                        //mtdebug1(WM_GITHUB_LOGTAG, "Bookmark updated to '%s' for organization '%s' and event type '%s', waiting '%ld' seconds to run first scan.",
+                        LogDebug(WM_GITHUB_LOGTAG, "Bookmark updated to '%s' for organization '%s' and event type '%s', waiting '%ld' seconds to run first scan.",
                             new_scan_time_str, current->org_name, event_types[event_types_it], github_config->interval);
                     }
                     continue;
@@ -289,7 +289,7 @@ STATIC void wm_github_execute_scan(wm_github *github_config, int initial_scan) {
                 memset(url, '\0', OS_SIZE_8192);
                 snprintf(url, OS_SIZE_8192 -1, GITHUB_API_URL, current->org_name, last_scan_time_str, new_scan_time_str, event_types[event_types_it], ITEM_PER_PAGE);
 
-                //mtdebug1(WM_GITHUB_LOGTAG, "GitHub API URL: '%s'", url);
+                LogDebug(WM_GITHUB_LOGTAG, "GitHub API URL: '%s'", url);
 
                 char auth_header[OS_SIZE_8192];
                 snprintf(auth_header, OS_SIZE_8192 -1, "Authorization: token %s", current->api_token);
@@ -303,14 +303,14 @@ STATIC void wm_github_execute_scan(wm_github *github_config, int initial_scan) {
 
                     if (response) {
                         if (response->max_size_reached) {
-                            //mtdebug1(WM_GITHUB_LOGTAG, "Libcurl error, reached maximum response size.");
+                            LogDebug(WM_GITHUB_LOGTAG, "Libcurl error, reached maximum response size.");
                             scan_finished = 1;
                         } else if (response->status_code == 200) {
                             // Load body to json and sent as localfile
                             cJSON *array_logs_json = NULL;
 
                             if (array_logs_json = cJSON_Parse(response->body), !array_logs_json) {
-                                //mtdebug1(WM_GITHUB_LOGTAG, "Error parsing response body.");
+                                LogDebug(WM_GITHUB_LOGTAG, "Error parsing response body.");
                                 scan_finished = 1;
                                 fail = 1;
                             } else {
@@ -327,10 +327,10 @@ STATIC void wm_github_execute_scan(wm_github *github_config, int initial_scan) {
 
                                         payload = cJSON_PrintUnformatted(github);
 
-                                        //mtdebug2(WM_GITHUB_LOGTAG, "Sending GitHub log: '%s'", payload);
+                                        LogDebug(WM_GITHUB_LOGTAG, "Sending GitHub log: '%s'", payload);
 
                                         if (wm_sendmsg(WM_GITHUB_MSG_DELAY, github_config->queue_fd, payload, WM_GITHUB_CONTEXT.name, LOCALFILE_MQ) < 0) {
-                                            //mterror(WM_GITHUB_LOGTAG, QUEUE_ERROR, DEFAULTQUEUE, strerror(errno));
+                                            LogError(WM_GITHUB_LOGTAG, QUEUE_ERROR, DEFAULTQUEUE, strerror(errno));
                                         }
 
                                         os_free(payload);
@@ -372,15 +372,15 @@ STATIC void wm_github_execute_scan(wm_github *github_config, int initial_scan) {
                 } else {
                     org_state_struc.last_log_time = new_scan_time;
                     if (wm_state_io(org_state_name, WM_IO_WRITE, &org_state_struc, sizeof(org_state_struc)) < 0) {
-                        //mterror(WM_GITHUB_LOGTAG, "Couldn't save running state.");
+                        LogError(WM_GITHUB_LOGTAG, "Couldn't save running state.");
                     } else {
-                        //mtdebug1(WM_GITHUB_LOGTAG, "Bookmark updated to '%s' for organization '%s' and event type '%s', waiting '%ld' seconds to run next scan.",
+                        LogDebug(WM_GITHUB_LOGTAG, "Bookmark updated to '%s' for organization '%s' and event type '%s', waiting '%ld' seconds to run next scan.",
                             new_scan_time_str, current->org_name, event_types[event_types_it], github_config->interval);
                     }
 
                     if (org_fail = wm_github_get_fail_by_org_and_type(github_config->fails,
                         current->org_name, event_types[event_types_it]), org_fail && org_fail->fails) {
-                        //mtinfo(WM_GITHUB_LOGTAG, "Github organization '%s' and event type '%s', connected successfully.",
+                        LogInfo(WM_GITHUB_LOGTAG, "Github organization '%s' and event type '%s', connected successfully.",
                             current->org_name, event_types[event_types_it]);
                         org_fail->fails = 0;
                     }
@@ -474,10 +474,10 @@ STATIC void wm_github_scan_failure_action(wm_github_fail **current_fails, char *
 
             payload = cJSON_PrintUnformatted(fail_github);
 
-            //mtwarn(WM_GITHUB_LOGTAG, "Sending GitHub internal message: '%s'", payload);
+            LogWarn(WM_GITHUB_LOGTAG, "Sending GitHub internal message: '%s'", payload);
 
             if (wm_sendmsg(WM_GITHUB_MSG_DELAY, queue_fd, payload, WM_GITHUB_CONTEXT.name, LOCALFILE_MQ) < 0) {
-                //mterror(WM_GITHUB_LOGTAG, QUEUE_ERROR, DEFAULTQUEUE, strerror(errno));
+                LogError(WM_GITHUB_LOGTAG, QUEUE_ERROR, DEFAULTQUEUE, strerror(errno));
             }
 
             os_free(payload);

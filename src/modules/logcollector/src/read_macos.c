@@ -137,7 +137,7 @@ void * read_macos(logreader * lf, int * rc, __attribute__((unused)) int drop_it)
             w_msg_hash_queues_push(read_buffer, MACOS_LOG_NAME, size + 1, lf->log_target, LOCALFILE_MQ);
             memcpy(full_timestamp, read_buffer, OS_LOGCOLLECTOR_TIMESTAMP_FULL_LEN);
         } else {
-            //mdebug2("macOS ULS: Discarding empty message.");
+            LogDebug("macOS ULS: Discarding empty message.");
         }
 
         count_logs++;
@@ -164,10 +164,10 @@ void * read_macos(logreader * lf, int * rc, __attribute__((unused)) int drop_it)
             if (lf->macos_log->state == LOG_RUNNING_SHOW) {
                 if (status == 0) {
                     // Normal process' end of execution
-                    //minfo(MACOS_LOG_SHOW_CHILD_EXITED, log_mode_wfd->pid, status);
+                    LogInfo(MACOS_LOG_SHOW_CHILD_EXITED, log_mode_wfd->pid, status);
                 } else {
                     // Abnormal process' end of execution
-                    //merror(MACOS_LOG_SHOW_CHILD_EXITED, log_mode_wfd->pid, status);
+                    LogError(MACOS_LOG_SHOW_CHILD_EXITED, log_mode_wfd->pid, status);
                 }
                 w_macos_release_log_show();
                 if (lf->macos_log->processes.stream.wfd != NULL) {
@@ -180,12 +180,12 @@ void * read_macos(logreader * lf, int * rc, __attribute__((unused)) int drop_it)
                     lf->macos_log->state = LOG_NOT_RUNNING;
                 }
             } else {    // LOG_RUNNING_STREAM
-                //merror(MACOS_LOG_STREAM_CHILD_EXITED, log_mode_wfd->pid, status);
+                LogError(MACOS_LOG_STREAM_CHILD_EXITED, log_mode_wfd->pid, status);
                 w_macos_release_log_stream();
                 lf->macos_log->state = LOG_NOT_RUNNING;
             }
         } else if (retval != 0) {
-            //merror(WAITPID_ERROR, errno, strerror(errno));
+            LogError(WAITPID_ERROR, errno, strerror(errno));
         }
     }
 
@@ -255,7 +255,7 @@ STATIC bool w_macos_log_getlog(char * buffer, int length, FILE * stream, w_macos
             w_macos_log_ctxt_clean(&macos_log_cfg->ctxt);
             is_buffer_full = true;
         } else if (!is_endline) {
-            //mdebug2("macOS ULS: Incomplete message.");
+            LogDebug("macOS ULS: Incomplete message.");
             // Saves the context
             w_macos_log_ctxt_backup(buffer, &macos_log_cfg->ctxt);
             continue;
@@ -294,7 +294,7 @@ STATIC bool w_macos_log_getlog(char * buffer, int length, FILE * stream, w_macos
             bool is_chunck_message = (int) w_strlen(d_str_msg) - 1 > sample_log_length;
             int  d_str_lenght = is_chunck_message ? sample_log_length : (int) w_strlen(d_str_msg) - 1;
 
-            //mdebug2("Reading macOS message: '%.*s'%s", d_str_lenght, d_str_msg, is_chunck_message  ? "..." : "");
+            LogDebug("Reading macOS message: '%.*s'%s", d_str_lenght, d_str_msg, is_chunck_message  ? "..." : "");
 
         }
 
@@ -314,10 +314,10 @@ STATIC bool w_macos_log_getlog(char * buffer, int length, FILE * stream, w_macos
                     do {
                         c = fgetc(stream);
                     } while (c != '\n' && c != '\0' && c != EOF);
-                    //mdebug2("macOS ULS: Maximum message length reached. The remainder was discarded.");
+                    LogDebug("macOS ULS: Maximum message length reached. The remainder was discarded.");
                 } else {
                     do_split = true;
-                    //mdebug2("macOS ULS: Maximum message length reached. The remainder will be send separately.");
+                    LogDebug("macOS ULS: Maximum message length reached. The remainder will be send separately.");
                 }
             }
         }
@@ -420,7 +420,7 @@ STATIC bool w_macos_is_log_header(w_macos_log_config_t * macos_log_cfg, char * b
         } else if (buffer[buffer_size - 1] == '\n') {
             buffer[buffer_size - 1] = '\0';
         }
-        //merror(LOGCOLLECTOR_MACOS_LOG_ERROR_AFTER_EXEC, buffer);
+        LogError(LOGCOLLECTOR_MACOS_LOG_ERROR_AFTER_EXEC, buffer);
         w_macos_set_is_valid_data(false);
     }
     /* Rows header or remaining error lines */
@@ -428,7 +428,7 @@ STATIC bool w_macos_is_log_header(w_macos_log_config_t * macos_log_cfg, char * b
         if (buffer[buffer_size - 1] == '\n') {
             buffer[buffer_size - 1] = '\0';
         }
-        //mdebug2("macOS ULS: Reading other log headers or errors: '%s'.", buffer);
+        LogDebug("macOS ULS: Reading other log headers or errors: '%s'.", buffer);
     }
 
     return retval;

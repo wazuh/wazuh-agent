@@ -99,11 +99,11 @@ void *audit_healthcheck_thread(int *audit_sock) {
     w_cond_signal(&audit_hc_cond);
     w_mutex_unlock(&audit_hc_mutex);
 
-    //mdebug2(FIM_HEALTHCHECK_THREAD_ACTIVE);
+    LogDebug(FIM_HEALTHCHECK_THREAD_ACTIVE);
 
     audit_read_events(audit_sock, &hc_thread_active);
 
-    //mdebug2(FIM_HEALTHCHECK_THREAD_FINISHED);
+    LogDebug(FIM_HEALTHCHECK_THREAD_FINISHED);
 
     w_mutex_lock(&audit_hc_mutex);
     w_cond_signal(&audit_hc_cond);

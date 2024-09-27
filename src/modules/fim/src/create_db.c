@@ -409,7 +409,7 @@ static void transaction_callback(ReturnTypeCallback resultType, const cJSON* res
                                             changed_attributes);
 
             if (cJSON_GetArraySize(changed_attributes) == 0) {
-                //mdebug2(FIM_EMPTY_CHANGED_ATTRIBUTES, path);
+                LogDebug(FIM_EMPTY_CHANGED_ATTRIBUTES, path);
                 goto end;
             }
         }
@@ -495,19 +495,19 @@ time_t fim_scan() {
 #endif
     cputime_start = clock();
     gettime(&start);
-    //minfo(FIM_FREQUENCY_STARTED);
+    LogInfo(FIM_FREQUENCY_STARTED);
     fim_send_scan_info(FIM_SCAN_START);
 
 
     TXN_HANDLE db_transaction_handle = fim_db_transaction_start(FIMDB_FILE_TXN_TABLE, transaction_callback, &txn_ctx);
     if (db_transaction_handle == NULL) {
-        //merror(FIM_ERROR_TRANSACTION, FIMDB_FILE_TXN_TABLE);
+        LogError(FIM_ERROR_TRANSACTION, FIMDB_FILE_TXN_TABLE);
         return time(NULL);
     }
     fim_diff_folder_size();
     syscheck.disk_quota_full_msg = true;
 
-    //mdebug2(FIM_DIFF_FOLDER_SIZE, DIFF_DIR, syscheck.diff_folder_size);
+    LogDebug(FIM_DIFF_FOLDER_SIZE, DIFF_DIR, syscheck.diff_folder_size);
 
     w_mutex_lock(&syscheck.fim_scan_mutex);
 
@@ -610,7 +610,7 @@ time_t fim_scan() {
         fim_realtime_print_watches();
     }
 
-    //minfo(FIM_FREQUENCY_ENDED);
+    LogInfo(FIM_FREQUENCY_ENDED);
     fim_send_scan_info(FIM_SCAN_END);
 
     if (// TODO : should this feature be added
@@ -631,7 +631,7 @@ void fim_checker(const char *path,
     int depth;
 
     if (!w_utf8_valid(path)) {
-        //mwarn(FIM_INVALID_FILE_NAME, path);
+        LogWarn(FIM_INVALID_FILE_NAME, path);
         return;
     }
 
@@ -667,7 +667,7 @@ void fim_checker(const char *path,
     depth = fim_check_depth(path, configuration);
 
     if (depth > configuration->recursion_level) {
-        //mdebug2(FIM_MAX_RECURSION_LEVEL, depth, configuration->recursion_level, path);
+        LogDebug(FIM_MAX_RECURSION_LEVEL, depth, configuration->recursion_level, path);
         return;
     }
 
@@ -739,7 +739,7 @@ void fim_checker(const char *path,
 
     case FIM_DIRECTORY:
         if (depth == configuration->recursion_level) {
-            //mdebug2(FIM_DIR_RECURSION_LEVEL, path, depth);
+            LogDebug(FIM_DIR_RECURSION_LEVEL, path, depth);
             return;
         }
         fim_directory(path, evt_data, configuration, dbsync_txn, ctx);
@@ -766,7 +766,7 @@ int fim_directory(const char *dir,
     size_t path_size;
 
     if (!dir) {
-        //merror(NULL_ERROR);
+        LogError(NULL_ERROR);
         return OS_INVALID;
     }
 
@@ -774,7 +774,7 @@ int fim_directory(const char *dir,
     dp = opendir(dir);
 
     if (!dp) {
-        //mwarn(FIM_PATH_NOT_OPEN, dir, strerror(errno));
+        LogWarn(FIM_PATH_NOT_OPEN, dir, strerror(errno));
         return OS_INVALID;
     }
 
@@ -802,7 +802,7 @@ int fim_directory(const char *dir,
         // and log a warning, PATH_MAX is 260 on windows, but reserves 1 char
         // for the null terminator.
         if (path_size + strlen(entry->d_name) >= PATH_MAX) {
-            //mwarn(FIM_ERROR_PATH_TOO_LONG, f_name, entry->d_name, PATH_MAX);
+            LogWarn(FIM_ERROR_PATH_TOO_LONG, f_name, entry->d_name, PATH_MAX);
             continue;
         }
 #endif
@@ -834,7 +834,7 @@ void fim_event_callback(void* data, void * ctx)
 
         cJSON *changed_attributes = cJSON_GetObjectItem(data_json, "changed_attributes");
         if (changed_attributes && cJSON_GetArraySize(changed_attributes) == 0) {
-            //mdebug2(FIM_EMPTY_CHANGED_ATTRIBUTES, path);
+            LogDebug(FIM_EMPTY_CHANGED_ATTRIBUTES, path);
             return;
         }
 
@@ -1067,7 +1067,7 @@ void fim_check_db_state(int nodes_limit, int nodes_count, fim_state_db* db_state
     char alert_msg[OS_SIZE_256] = {'\0'};
 
     if (nodes_count < 0) {
-        //mwarn(FIM_DATABASE_NODES_COUNT_FAIL);
+        LogWarn(FIM_DATABASE_NODES_COUNT_FAIL);
         return;
     }
 
@@ -1127,27 +1127,27 @@ void fim_check_db_state(int nodes_limit, int nodes_count, fim_state_db* db_state
 
     if (nodes_count >= nodes_limit) {
         *db_state = FIM_STATE_DB_FULL;
-        //mwarn(strcmp(table_name, FIMDB_FILE_TABLE_NAME) ? FIM_DB_FULL_ALERT_REG : FIM_DB_FULL_ALERT_FILE);
+        LogWarn(strcmp(table_name, FIMDB_FILE_TABLE_NAME) ? FIM_DB_FULL_ALERT_REG : FIM_DB_FULL_ALERT_FILE);
         cJSON_AddStringToObject(json_event, "alert_type", "full");
     }
     else if (nodes_count >= nodes_limit * 0.9) {
         *db_state = FIM_STATE_DB_90_PERCENTAGE;
-        //minfo(strcmp(table_name, FIMDB_FILE_TABLE_NAME) ? FIM_DB_90_PERCENTAGE_ALERT_REG : FIM_DB_90_PERCENTAGE_ALERT_FILE);
+        LogInfo(strcmp(table_name, FIMDB_FILE_TABLE_NAME) ? FIM_DB_90_PERCENTAGE_ALERT_REG : FIM_DB_90_PERCENTAGE_ALERT_FILE);
         cJSON_AddStringToObject(json_event, "alert_type", "90_percentage");
     }
     else if (nodes_count >= nodes_limit * 0.8) {
         *db_state = FIM_STATE_DB_80_PERCENTAGE;
-        //minfo(strcmp(table_name, FIMDB_FILE_TABLE_NAME) ? FIM_DB_80_PERCENTAGE_ALERT_REG : FIM_DB_80_PERCENTAGE_ALERT_FILE);
+        LogInfo(strcmp(table_name, FIMDB_FILE_TABLE_NAME) ? FIM_DB_80_PERCENTAGE_ALERT_REG : FIM_DB_80_PERCENTAGE_ALERT_FILE);
         cJSON_AddStringToObject(json_event, "alert_type", "80_percentage");
     }
     else if (nodes_count > 0) {
         *db_state = FIM_STATE_DB_NORMAL;
-        //minfo(strcmp(table_name, FIMDB_FILE_TABLE_NAME) ? FIM_DB_NORMAL_ALERT_REG : FIM_DB_NORMAL_ALERT_FILE);
+        LogInfo(strcmp(table_name, FIMDB_FILE_TABLE_NAME) ? FIM_DB_NORMAL_ALERT_REG : FIM_DB_NORMAL_ALERT_FILE);
         cJSON_AddStringToObject(json_event, "alert_type", "normal");
     }
     else {
         *db_state = FIM_STATE_DB_EMPTY;
-        //minfo(strcmp(table_name, FIMDB_FILE_TABLE_NAME) ? FIM_DB_NORMAL_ALERT_REG : FIM_DB_NORMAL_ALERT_FILE);
+        LogInfo(strcmp(table_name, FIMDB_FILE_TABLE_NAME) ? FIM_DB_NORMAL_ALERT_REG : FIM_DB_NORMAL_ALERT_FILE);
         cJSON_AddStringToObject(json_event, "alert_type", "normal");
     }
 
@@ -1193,7 +1193,7 @@ directory_t *fim_configuration_directory(const char *path) {
     }
 
     if (dir == NULL) {
-        //mdebug2(FIM_CONFIGURATION_NOTFOUND, "file", path);
+        LogDebug(FIM_CONFIGURATION_NOTFOUND, "file", path);
     }
 
     return dir;
@@ -1652,7 +1652,7 @@ int fim_check_ignore (const char *file_name) {
         int i = 0;
         while (syscheck.ignore[i] != NULL) {
             if (strncasecmp(syscheck.ignore[i], file_name, strlen(syscheck.ignore[i])) == 0) {
-                //mdebug2(FIM_IGNORE_ENTRY, file_name, syscheck.ignore[i]);
+                LogDebug(FIM_IGNORE_ENTRY, file_name, syscheck.ignore[i]);
                 return 1;
             }
             i++;
@@ -1664,7 +1664,7 @@ int fim_check_ignore (const char *file_name) {
         int i = 0;
         while (syscheck.ignore_regex[i] != NULL) {
             if (OSMatch_Execute(file_name, strlen(file_name), syscheck.ignore_regex[i])) {
-                //mdebug2(FIM_IGNORE_SREGEX, file_name, syscheck.ignore_regex[i]->raw);
+                LogDebug(FIM_IGNORE_SREGEX, file_name, syscheck.ignore_regex[i]->raw);
                 return 1;
             }
             i++;
@@ -1677,14 +1677,14 @@ int fim_check_ignore (const char *file_name) {
 
 int fim_check_restrict (const char *file_name, OSMatch *restriction) {
     if (file_name == NULL) {
-        //merror(NULL_ERROR);
+        LogError(NULL_ERROR);
         return 1;
     }
 
     // Restrict file types
     if (restriction) {
         if (!OSMatch_Execute(file_name, strlen(file_name), restriction)) {
-            //mdebug2(FIM_FILE_IGNORE_RESTRICT, file_name, restriction->raw);
+            LogDebug(FIM_FILE_IGNORE_RESTRICT, file_name, restriction->raw);
             return 1;
         }
     }
@@ -1737,7 +1737,7 @@ void update_wildcards_config() {
         return;
     }
 
-    //mdebug2(FIM_WILDCARDS_UPDATE_START);
+    LogDebug(FIM_WILDCARDS_UPDATE_START);
     w_rwlock_wrlock(&syscheck.directories_lock);
 
     OSList_foreach(node_it, syscheck.directories) {
@@ -1774,7 +1774,7 @@ void update_wildcards_config() {
 
     removed_entries = OSList_Create();
     if (removed_entries == NULL) {
-        //merror(MEM_ERROR, errno, strerror(errno));
+        LogError(MEM_ERROR, errno, strerror(errno));
         w_rwlock_unlock(&syscheck.directories_lock);
         return;
     }
@@ -1812,11 +1812,11 @@ void update_wildcards_config() {
     OSList_foreach(node_it, removed_entries) {
         dir_it = node_it->data;
         fim_process_wildcard_removed(dir_it);
-        //mdebug2(FIM_WILDCARDS_REMOVE_DIRECTORY, dir_it->path);
+        LogDebug(FIM_WILDCARDS_REMOVE_DIRECTORY, dir_it->path);
     }
     OSList_Destroy(removed_entries);
 
-    //mdebug2(FIM_WILDCARDS_UPDATE_FINALIZE);
+    LogDebug(FIM_WILDCARDS_UPDATE_FINALIZE);
 }
 
 // LCOV_EXCL_START

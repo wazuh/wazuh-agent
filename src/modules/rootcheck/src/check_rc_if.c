@@ -64,7 +64,7 @@ void check_rc_if()
 
     _fd = socket(AF_INET, SOCK_DGRAM, 0);
     if (_fd < 0) {
-        //mterror(ARGV0, "Error checking interfaces (socket)");
+        LogError(ARGV0, "Error checking interfaces (socket)");
         return;
     }
 
@@ -74,7 +74,7 @@ void check_rc_if()
 
     if (ioctl(_fd, SIOCGIFCONF, &_if) < 0) {
         close(_fd);
-        //mterror(ARGV0, "Error checking interfaces (ioctl)");
+        LogError(ARGV0, "Error checking interfaces (ioctl)");
         return;
     }
 

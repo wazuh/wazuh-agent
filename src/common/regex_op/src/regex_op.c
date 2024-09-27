@@ -22,7 +22,7 @@ int OS_PRegex(const char *str, const char *regex)
     }
 
     if (regcomp(&preg, regex, REG_EXTENDED | REG_NOSUB) != 0) {
-        //merror("Posix Regex compile error (%s).", regex);
+        LogError("Posix Regex compile error (%s).", regex);
         return (0);
     }
 
@@ -46,7 +46,7 @@ int w_regexec(const char * pattern, const char * string, size_t nmatch, regmatch
     }
 
     if (regcomp(&regex, pattern, REG_EXTENDED)) {
-        //merror("Couldn't compile regular expression '%s'", pattern);
+        LogError("Couldn't compile regular expression '%s'", pattern);
         return 0;
     }
 

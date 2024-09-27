@@ -73,13 +73,13 @@ os_info *get_win_version()
         snprintf(subkey, VSIZE - 1, "%s", "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
 
         if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, KEY_READ, &RegistryKey) != ERROR_SUCCESS) {
-            //merror(SK_REG_OPEN, subkey);
+            LogError(SK_REG_OPEN, subkey);
             info->os_name = strdup("Microsoft Windows undefined version");
         }
         else {
             dwRet = RegQueryValueEx(RegistryKey, TEXT("ProductName"), NULL, NULL, (LPBYTE)value, &dwCount);
             if (dwRet != ERROR_SUCCESS) {
-                //merror("Error reading 'ProductName' from Windows registry. (Error %u)",(unsigned int)dwRet);
+                LogError("Error reading 'ProductName' from Windows registry. (Error %u)",(unsigned int)dwRet);
                 info->os_name = strdup("Microsoft Windows undefined version");
             }
             else {
@@ -102,7 +102,7 @@ os_info *get_win_version()
         dwCount = WINVER_SIZE;
 
         if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, KEY_READ, &RegistryKey) != ERROR_SUCCESS) {
-            //merror(SK_REG_OPEN, subkey);
+            LogError(SK_REG_OPEN, subkey);
         }
 
         // Windows 10
@@ -111,7 +111,7 @@ os_info *get_win_version()
             dwCount = WINVER_SIZE;
             dwRet = RegQueryValueEx(RegistryKey, TEXT("CurrentMinorVersionNumber"), NULL, &type, (LPBYTE)&winMinor, &dwCount);
             if (dwRet != ERROR_SUCCESS) {
-                //merror("Error reading 'CurrentMinorVersionNumber' from Windows registry. (Error %u)",(unsigned int)dwRet);
+                LogError("Error reading 'CurrentMinorVersionNumber' from Windows registry. (Error %u)",(unsigned int)dwRet);
             }
             else {
                 snprintf(vn_temp, 63, "%d", (unsigned int)winMajor);
@@ -121,7 +121,7 @@ os_info *get_win_version()
                 dwCount = WINVER_SIZE;
                 dwRet = RegQueryValueEx(RegistryKey, TEXT("CurrentBuildNumber"), NULL, NULL, (LPBYTE)wincomp, &dwCount);
                 if (dwRet != ERROR_SUCCESS) {
-                    //merror("Error reading 'CurrentBuildNumber' from Windows registry. (Error %u)",(unsigned int)dwRet);
+                    LogError("Error reading 'CurrentBuildNumber' from Windows registry. (Error %u)",(unsigned int)dwRet);
                 }
                 else {
                     snprintf(vn_temp, 63, "%s", wincomp);
@@ -145,7 +145,7 @@ os_info *get_win_version()
         else {
             dwRet = RegQueryValueEx(RegistryKey, TEXT("CurrentVersion"), NULL, NULL, (LPBYTE)winver, &dwCount);
             if (dwRet != ERROR_SUCCESS) {
-                //merror("Error reading 'Current Version' from Windows registry. (Error %u)",(unsigned int)dwRet);
+                LogError("Error reading 'Current Version' from Windows registry. (Error %u)",(unsigned int)dwRet);
             }
             else {
                 // TODO: Solve when StrBreak is implemented
@@ -159,7 +159,7 @@ os_info *get_win_version()
                 dwCount = WINVER_SIZE;
                 dwRet = RegQueryValueEx(RegistryKey, TEXT("CurrentBuildNumber"), NULL, NULL, (LPBYTE)wincomp, &dwCount);
                 if (dwRet != ERROR_SUCCESS) {
-                    //merror("Error reading 'CurrentBuildNumber' from Windows registry. (Error %u)",(unsigned int)dwRet);
+                    LogError("Error reading 'CurrentBuildNumber' from Windows registry. (Error %u)",(unsigned int)dwRet);
                 }
                 else {
                     snprintf(vn_temp, 63, "%s", wincomp);
@@ -244,12 +244,12 @@ os_info *get_win_version()
         snprintf(subkey, VSIZE - 1, "%s", "SYSTEM\\CurrentControlSet\\Control\\Windows");
 
         if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, KEY_READ, &RegistryKey) != ERROR_SUCCESS) {
-            //merror(SK_REG_OPEN, subkey);
+            LogError(SK_REG_OPEN, subkey);
         }
         else {
             dwRet = RegQueryValueEx(RegistryKey, TEXT("CSDVersion"), NULL, &type, (LPBYTE)&service_pack, &dwCount);
             if (dwRet != ERROR_SUCCESS) {
-                //merror("Error reading 'CSDVersion' from Windows registry. (Error %u)",(unsigned int)dwRet);
+                LogError("Error reading 'CSDVersion' from Windows registry. (Error %u)",(unsigned int)dwRet);
             }
             else {
                 switch(service_pack) {
@@ -284,14 +284,14 @@ os_info *get_win_version()
     snprintf(subkey, VSIZE - 1, "%s", "System\\CurrentControlSet\\Control\\Session Manager\\Environment");
 
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, KEY_READ, &RegistryKey) != ERROR_SUCCESS) {
-        //merror(SK_REG_OPEN, subkey);
+        LogError(SK_REG_OPEN, subkey);
     } else {
         char arch[64] = "";
         dwCount = sizeof(arch);
         dwRet = RegQueryValueEx(RegistryKey, TEXT("PROCESSOR_ARCHITECTURE"), NULL, NULL, (LPBYTE)&arch, &dwCount);
 
         if (dwRet != ERROR_SUCCESS) {
-            //merror("Error reading 'Architecture' from Windows registry. (Error %u)",(unsigned int)dwRet);
+            LogError("Error reading 'Architecture' from Windows registry. (Error %u)",(unsigned int)dwRet);
         } else {
             if (!strncmp(arch, "AMD64", 5) || !strncmp(arch, "IA64", 4) || !strncmp(arch, "ARM64", 5)) {
                 info->machine = strdup("x86_64");
@@ -311,13 +311,13 @@ os_info *get_win_version()
     snprintf(subkey, VSIZE - 1, "%s", "System\\CurrentControlSet\\Control\\ComputerName\\ActiveComputerName");
     char nodename[1024] = "";
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, KEY_READ, &RegistryKey) != ERROR_SUCCESS) {
-        //merror(SK_REG_OPEN, subkey);
+        LogError(SK_REG_OPEN, subkey);
     } else {
         dwCount = WINVER_SIZE;
         dwRet = RegQueryValueEx(RegistryKey, TEXT("ComputerName"), NULL, NULL, (LPBYTE)&nodename, &dwCount);
 
         if (dwRet != ERROR_SUCCESS) {
-            //merror("Error reading 'hostname' from Windows registry. (Error %u)",(unsigned int)dwRet);
+            LogError("Error reading 'hostname' from Windows registry. (Error %u)",(unsigned int)dwRet);
         } else {
             info->nodename = strdup(nodename);
         }
@@ -470,7 +470,7 @@ os_info *get_unix_version()
                     os_free(info->os_version);
                     static const char *pattern = "([0-9][0-9]*\\.?[0-9]*)\\.*";
                     if (regcomp(&regexCompiled, pattern, REG_EXTENDED)) {
-                        //merror_exit("Cannot compile regular expression.");
+                        LogCritical("Cannot compile regular expression.");
                     }
                     while (fgets(buff, sizeof(buff) - 1, version_release)) {
                         if(regexec(&regexCompiled, buff, 2, match, 0) == 0){
@@ -506,7 +506,7 @@ os_info *get_unix_version()
             info->os_platform = strdup("centos");
             static const char *pattern = "([0-9][0-9]*\\.?[0-9]*)\\.*";
             if (regcomp(&regexCompiled, pattern, REG_EXTENDED)) {
-                //merror_exit("Can not compile regular expression.");
+                LogCritical("Can not compile regular expression.");
             }
             while (fgets(buff, sizeof(buff) - 1, version_release)) {
                 if(regexec(&regexCompiled, buff, 2, match, 0) == 0){
@@ -524,7 +524,7 @@ os_info *get_unix_version()
             info->os_platform = strdup("fedora");
             static const char *pattern = " ([0-9][0-9]*) ";
             if (regcomp(&regexCompiled, pattern, REG_EXTENDED)) {
-                //merror_exit("Can not compile regular expression.");
+                LogCritical("Can not compile regular expression.");
             }
             while (fgets(buff, sizeof(buff) - 1, version_release)) {
                 if(regexec(&regexCompiled, buff, 2, match, 0) == 0){
@@ -540,7 +540,7 @@ os_info *get_unix_version()
         } else if (version_release = wfopen("/etc/redhat-release","r"), version_release){
             static const char *pattern = "([0-9][0-9]*\\.?[0-9]*)\\.*";
             if (regcomp(&regexCompiled, pattern, REG_EXTENDED)) {
-                //merror_exit("Can not compile regular expression.");
+                LogCritical("Can not compile regular expression.");
             }
             while (fgets(buff, sizeof(buff) - 1, version_release)) {
                 if (strstr(buff, "CentOS")){
@@ -573,7 +573,7 @@ os_info *get_unix_version()
             info->os_platform = strdup("arch");
             static const char *pattern = "([0-9][0-9]*\\.?[0-9]*)\\.*";
             if (regcomp(&regexCompiled, pattern, REG_EXTENDED)) {
-                //merror_exit("Cannot compile regular expression.");
+                LogCritical("Cannot compile regular expression.");
             }
             while (fgets(buff, sizeof(buff) - 1, version_release)) {
                 if(regexec(&regexCompiled, buff, 2, match, 0) == 0){
@@ -595,7 +595,7 @@ os_info *get_unix_version()
             info->os_platform = strdup("gentoo");
             static const char *pattern = " ([0-9][0-9]*\\.?[0-9]*)\\.*";
             if (regcomp(&regexCompiled, pattern, REG_EXTENDED)) {
-                //merror_exit("Cannot compile regular expression.");
+                LogCritical("Cannot compile regular expression.");
             }
             while (fgets(buff, sizeof(buff) - 1, version_release)) {
                 if(regexec(&regexCompiled, buff, 2, match, 0) == 0){
@@ -613,7 +613,7 @@ os_info *get_unix_version()
             info->os_platform = strdup("suse");
             static const char *pattern = ".*VERSION = ([0-9][0-9]*)";
             if (regcomp(&regexCompiled, pattern, REG_EXTENDED)) {
-                //merror_exit("Cannot compile regular expression.");
+                LogCritical("Cannot compile regular expression.");
             }
             while (fgets(buff, sizeof(buff) - 1, version_release)) {
                 if(regexec(&regexCompiled, buff, 2, match, 0) == 0){
@@ -643,7 +643,7 @@ os_info *get_unix_version()
             info->os_platform = strdup("debian");
             static const char *pattern = "([0-9][0-9]*\\.?[0-9]*)\\.*";
             if (regcomp(&regexCompiled, pattern, REG_EXTENDED)) {
-                //merror_exit("Cannot compile regular expression.");
+                LogCritical("Cannot compile regular expression.");
             }
             while (fgets(buff, sizeof(buff) - 1, version_release)) {
                 if(regexec(&regexCompiled, buff, 2, match, 0) == 0){
@@ -661,7 +661,7 @@ os_info *get_unix_version()
             info->os_platform = strdup("slackware");
             static const char *pattern = " ([0-9][0-9]*\\.?[0-9]*)\\.*";
             if (regcomp(&regexCompiled, pattern, REG_EXTENDED)) {
-                //merror_exit("Cannot compile regular expression.");
+                LogCritical("Cannot compile regular expression.");
             }
             while (fgets(buff, sizeof(buff) - 1, version_release)) {
                 if(regexec(&regexCompiled, buff, 2, match, 0) == 0){
@@ -679,7 +679,7 @@ os_info *get_unix_version()
             info->os_platform = strdup("alpine");
             static const char *pattern = "([0-9]+\\.)?([0-9]+\\.)?([0-9]+)";
             if (regcomp(&regexCompiled, pattern, REG_EXTENDED)) {
-                //merror_exit("Cannot compile regular expression.");
+                LogCritical("Cannot compile regular expression.");
             }
             while (fgets(buff, sizeof(buff) - 1, version_release)) {
                 if(regexec(&regexCompiled, buff, 4, match, 0) == 0){
@@ -695,7 +695,7 @@ os_info *get_unix_version()
             char *uname_path = NULL;
 
             if (get_binary_path("uname", &uname_path) < 0) {
-                //mdebug1("Binary '%s' not found in default paths, the full path will not be used.", uname_path);
+                LogDebug("Binary '%s' not found in default paths, the full path will not be used.", uname_path);
             }
 
             if (cmd_output = popen(uname_path, "r"), cmd_output) {
@@ -805,7 +805,7 @@ os_info *get_unix_version()
                                 os_strdup(base, info->os_version);
                                 fclose(os_release);
                             } else {
-                                //merror("Cannot get the Solaris version.");
+                                LogError("Cannot get the Solaris version.");
                                 fclose(os_release);
                                 pclose(cmd_output);
                                 os_free(uname_path);

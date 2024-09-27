@@ -50,12 +50,12 @@ void * wm_command_main(wm_command_t * command) {
     char * timestamp = NULL;
 
     if (!command->enabled) {
-        //mtinfo(WM_COMMAND_LOGTAG, "Module command:%s is disabled. Exiting.", command->tag);
+        LogInfo(WM_COMMAND_LOGTAG, "Module command:%s is disabled. Exiting.", command->tag);
         pthread_exit(0);
     }
 
     if (!getDefine_Int("wazuh_command", "remote_commands", 0, 1) && command->agent_cfg) {
-        //mtwarn(WM_COMMAND_LOGTAG, "Remote commands are disabled. Ignoring '%s'.", command->tag);
+        LogWarn(WM_COMMAND_LOGTAG, "Remote commands are disabled. Ignoring '%s'.", command->tag);
         pthread_exit(0);
     }
 
@@ -67,14 +67,14 @@ void * wm_command_main(wm_command_t * command) {
         argv = w_strtok(command_cpy);
     #ifndef __clang_analyzer__
         if (!argv) {
-            //merror("Could not split command: %s", command_cpy);
+            LogError("Could not split command: %s", command_cpy);
             pthread_exit(NULL);
         }
     #endif
         binary = argv[0];
 
         if (get_binary_path(binary, &full_path) == OS_INVALID) {
-            //mterror(WM_COMMAND_LOGTAG, "Cannot check binary: '%s'. Cannot stat binary file.", binary);
+            LogError(WM_COMMAND_LOGTAG, "Cannot check binary: '%s'. Cannot stat binary file.", binary);
             pthread_exit(NULL);
         }
 
@@ -91,15 +91,15 @@ void * wm_command_main(wm_command_t * command) {
 
             switch (validation) {
                 case 1:
-                    //mtdebug1(WM_COMMAND_LOGTAG, "MD5 checksum verification succeded for command '%s'.", command->full_command);
+                    LogDebug(WM_COMMAND_LOGTAG, "MD5 checksum verification succeded for command '%s'.", command->full_command);
                     break;
 
                 case 0:
                     if (!command->skip_verification) {
-                        //mterror(WM_COMMAND_LOGTAG, "MD5 checksum verification failed for command '%s'.", command->full_command);
+                        LogError(WM_COMMAND_LOGTAG, "MD5 checksum verification failed for command '%s'.", command->full_command);
                         pthread_exit(NULL);
                     } else {
-                        //mtwarn(WM_COMMAND_LOGTAG, "MD5 checksum verification failed for command '%s'. Skipping...", command->full_command);
+                        LogWarn(WM_COMMAND_LOGTAG, "MD5 checksum verification failed for command '%s'. Skipping...", command->full_command);
                     }
             }
         }
@@ -109,15 +109,15 @@ void * wm_command_main(wm_command_t * command) {
 
             switch (validation) {
                 case 1:
-                    //mtdebug1(WM_COMMAND_LOGTAG, "SHA1 checksum verification succeded for command '%s'.", command->full_command);
+                    LogDebug(WM_COMMAND_LOGTAG, "SHA1 checksum verification succeded for command '%s'.", command->full_command);
                     break;
 
                 case 0:
                     if (!command->skip_verification) {
-                        //mterror(WM_COMMAND_LOGTAG, "SHA1 checksum verification failed for command '%s'.", command->full_command);
+                        LogError(WM_COMMAND_LOGTAG, "SHA1 checksum verification failed for command '%s'.", command->full_command);
                         pthread_exit(NULL);
                     } else {
-                        //mtwarn(WM_COMMAND_LOGTAG, "SHA1 checksum verification failed for command '%s'. Skipping...", command->full_command);
+                        LogWarn(WM_COMMAND_LOGTAG, "SHA1 checksum verification failed for command '%s'. Skipping...", command->full_command);
                     }
             }
         }
@@ -127,15 +127,15 @@ void * wm_command_main(wm_command_t * command) {
 
             switch (validation) {
                 case 1:
-                    //mtdebug1(WM_COMMAND_LOGTAG, "SHA256 checksum verification succeded for command '%s'.", command->full_command);
+                    LogDebug(WM_COMMAND_LOGTAG, "SHA256 checksum verification succeded for command '%s'.", command->full_command);
                     break;
 
                 case 0:
                     if (!command->skip_verification) {
-                        //mterror(WM_COMMAND_LOGTAG, "SHA256 checksum verification failed for command '%s'.", command->full_command);
+                        LogError(WM_COMMAND_LOGTAG, "SHA256 checksum verification failed for command '%s'.", command->full_command);
                         pthread_exit(NULL);
                     } else {
-                        //mtwarn(WM_COMMAND_LOGTAG, "SHA256 checksum verification failed for command '%s'. Skipping...", command->full_command);
+                        LogWarn(WM_COMMAND_LOGTAG, "SHA256 checksum verification failed for command '%s'. Skipping...", command->full_command);
                     }
             }
         }
@@ -146,7 +146,7 @@ void * wm_command_main(wm_command_t * command) {
         command->full_command = strdup(command->command);
     }
 
-    //mtinfo(WM_COMMAND_LOGTAG, "Module command:%s started", command->tag);
+    LogInfo(WM_COMMAND_LOGTAG, "Module command:%s started", command->tag);
 
     // Set extended tag
 
@@ -166,7 +166,7 @@ void * wm_command_main(wm_command_t * command) {
         command->queue_fd = StartMQ(DEFAULTQUEUE, WRITE, INFINITE_OPENQ_ATTEMPTS);
 
         if (command->queue_fd < 0) {
-            //mterror(WM_COMMAND_LOGTAG, "Can't connect to queue.");
+            LogError(WM_COMMAND_LOGTAG, "Can't connect to queue.");
             pthread_exit(NULL);
         }
     }
@@ -182,31 +182,31 @@ void * wm_command_main(wm_command_t * command) {
         if (time_sleep) {
             const int next_scan_time = sched_get_next_scan_time(command->scan_config);
             timestamp = w_get_timestamp(next_scan_time);
-            //mtdebug2(WM_COMMAND_LOGTAG, "Sleeping until: %s", timestamp);
+            LogDebug(WM_COMMAND_LOGTAG, "Sleeping until: %s", timestamp);
             os_free(timestamp);
             w_sleep_until(next_scan_time);
         }
 
-        //mtinfo(WM_COMMAND_LOGTAG, "Starting command '%s'.", command->tag);
+        LogInfo(WM_COMMAND_LOGTAG, "Starting command '%s'.", command->tag);
 
         int status = 0;
         char *output = NULL;
         switch (wm_exec(command->full_command, command->ignore_output ? NULL : &output, &status, command->timeout, NULL)) {
         case 0:
             if (status > 0) {
-                //mtwarn(WM_COMMAND_LOGTAG, "Command '%s' returned exit code %d.", command->tag, status);
+                LogWarn(WM_COMMAND_LOGTAG, "Command '%s' returned exit code %d.", command->tag, status);
 
                 if (!command->ignore_output) {
-                    //mtdebug2(WM_COMMAND_LOGTAG, "OUTPUT: %s", output);
+                    LogDebug(WM_COMMAND_LOGTAG, "OUTPUT: %s", output);
                 }
             }
             break;
         case WM_ERROR_TIMEOUT:
-            //mterror(WM_COMMAND_LOGTAG, "%s: Timeout overtaken. You can modify your command timeout at '%s'. Exiting...", command->tag, OSSECCONF);
+            LogError(WM_COMMAND_LOGTAG, "%s: Timeout overtaken. You can modify your command timeout at '%s'. Exiting...", command->tag, OSSECCONF);
             break;
 
         default:
-            //mterror(WM_COMMAND_LOGTAG, "Command '%s' failed.", command->tag);
+            LogError(WM_COMMAND_LOGTAG, "Command '%s' failed.", command->tag);
             break;
         }
 
@@ -225,7 +225,7 @@ void * wm_command_main(wm_command_t * command) {
         }
 
 
-        //mtdebug1(WM_COMMAND_LOGTAG, "Command '%s' finished.", command->tag);
+        LogDebug(WM_COMMAND_LOGTAG, "Command '%s' finished.", command->tag);
     } while (FOREVER());
 
     free(extag);

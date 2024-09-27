@@ -49,25 +49,25 @@ int sched_scan_read(sched_scan_config *scan_config, xml_node **nodes, const char
     for (i = 0; nodes[i]; i++) {
         if (!strcmp(nodes[i]->element, XML_SCAN_DAY)) { // <day></day>
             if (!OS_StrIsNum(nodes[i]->content)) {
-                //merror(XML_VALUEERR, nodes[i]->element, nodes[i]->content);
+                LogError(XML_VALUEERR, nodes[i]->element, nodes[i]->content);
                 return (OS_INVALID);
             } else {
                 scan_config->scan_day = atoi(nodes[i]->content);
                 if (scan_config->scan_day < 1 || scan_config->scan_day > 31) {
-                    //merror(XML_VALUEERR, nodes[i]->element, nodes[i]->content);
+                    LogError(XML_VALUEERR, nodes[i]->element, nodes[i]->content);
                     return (OS_INVALID);
                 }
             }
         } else if (!strcmp(nodes[i]->element, XML_WEEK_DAY)) { // <wday></wday>
             scan_config->scan_wday = w_validate_wday(nodes[i]->content);
             if (scan_config->scan_wday < 0 || scan_config->scan_wday > 6) {
-                //merror(XML_VALUEERR, nodes[i]->element, nodes[i]->content);
+                LogError(XML_VALUEERR, nodes[i]->element, nodes[i]->content);
                 return OS_INVALID;
             }
         } else if (!strcmp(nodes[i]->element, XML_TIME)) {  // <time></time>
             scan_config->scan_time = w_validate_time(nodes[i]->content);
             if (!scan_config->scan_time) {
-                //merror(XML_VALUEERR, nodes[i]->element, nodes[i]->content);
+                LogError(XML_VALUEERR, nodes[i]->element, nodes[i]->content);
                 return (OS_INVALID);
             }
         } else if (!strcmp(nodes[i]->element, XML_INTERVAL)) { //<interval></interval>
@@ -75,7 +75,7 @@ int sched_scan_read(sched_scan_config *scan_config, xml_node **nodes, const char
             scan_config->interval = strtoul(nodes[i]->content, &endptr, 0);
 
             if (scan_config->interval <= 0 || scan_config->interval >= UINT_MAX) {
-                //merror("Invalid interval value at module '%s'", MODULE_NAME);
+                LogError("Invalid interval value at module '%s'", MODULE_NAME);
                 return OS_INVALID;
             }
 
@@ -100,7 +100,7 @@ int sched_scan_read(sched_scan_config *scan_config, xml_node **nodes, const char
                 case '\0':
                     break;
                 default:
-                    //merror("Invalid interval value at module '%s'", MODULE_NAME);
+                    LogError("Invalid interval value at module '%s'", MODULE_NAME);
                     return OS_INVALID;
             }
         }
@@ -150,11 +150,11 @@ static time_t _get_next_time(const sched_scan_config *config, const char *MODULE
                 return (time_t)config->interval;
             }
         } else {
-            //mtwarn(MODULE_TAG, "Interval overtaken.");
+            LogWarn(MODULE_TAG, "Interval overtaken.");
             return 0;
         }
     } else {
-        //merror_exit("Invalid Scheduling option for module %s. Exiting.", MODULE_TAG);
+        LogCritical("Invalid Scheduling option for module %s. Exiting.", MODULE_TAG);
     }
     return 0;
 }
@@ -163,11 +163,11 @@ static time_t _get_next_time(const sched_scan_config *config, const char *MODULE
 static int _sched_scan_validate_parameters(sched_scan_config *scan_config) {
     // Validate scheduled scan parameters and interval value
     if (scan_config->scan_day && (scan_config->scan_wday >= 0)) {
-        //merror("Options 'day' and 'wday' are not compatible.");
+        LogError("Options 'day' and 'wday' are not compatible.");
         return OS_INVALID;
     } else if (scan_config->scan_day) {
         if (!scan_config->month_interval) {
-            //mwarn("Interval must be a multiple of one month. New interval value: 1M");
+            LogWarn("Interval must be a multiple of one month. New interval value: 1M");
             scan_config->interval = 1; // 1 month
             scan_config->month_interval = true;
         }
@@ -176,7 +176,7 @@ static int _sched_scan_validate_parameters(sched_scan_config *scan_config) {
     } else if (scan_config->scan_wday >= 0) {
         if (w_validate_interval(scan_config->interval, 1) != 0) {
             scan_config->interval = 604800;  // 1 week
-            //mwarn("Interval must be a multiple of one week. New interval value: 1w");
+            LogWarn("Interval must be a multiple of one week. New interval value: 1w");
         }
         if (scan_config->interval == 0)
             scan_config->interval = 604800;
@@ -185,10 +185,10 @@ static int _sched_scan_validate_parameters(sched_scan_config *scan_config) {
     } else if (scan_config->scan_time) {
         if (w_validate_interval(scan_config->interval, 0) != 0) {
             scan_config->interval = WM_DEF_INTERVAL;  // 1 day
-            //mwarn("Interval must be a multiple of one day. New interval value: 1d");
+            LogWarn("Interval must be a multiple of one day. New interval value: 1d");
         }
     } else if (scan_config->month_interval) {
-        //mwarn("Interval value is in months. Setting scan day to first day of the month.");
+        LogWarn("Interval value is in months. Setting scan day to first day of the month.");
         scan_config->scan_day = 1;
         scan_config->scan_time = strdup("00:00");
     }

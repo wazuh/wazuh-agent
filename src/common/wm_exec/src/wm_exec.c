@@ -88,7 +88,7 @@ int wm_exec(char *command, char **output, int *status, int secs, const char * ad
         if (!env_path) {
             snprintf(new_path, OS_SIZE_6144 - 1, "PATH=%s", add_path);
         } else if (strlen(env_path) >= OS_SIZE_6144) {
-            //merror("at wm_exec(): PATH environment variable too large.");
+            LogError("at wm_exec(): PATH environment variable too large.");
             retval = -1;
         } else {
             snprintf(new_path, OS_SIZE_6144 - 1, "PATH=%s;%s", add_path, env_path);
@@ -96,7 +96,7 @@ int wm_exec(char *command, char **output, int *status, int secs, const char * ad
 
         // Using '_putenv' instead of '_putenv_s' for compatibility with Windows XP.
         if (_putenv(new_path) < 0) {
-            //merror("at wm_exec(): Unable to set new 'PATH' environment variable (%s).", strerror(errno));
+            LogError("at wm_exec(): Unable to set new 'PATH' environment variable (%s).", strerror(errno));
             retval = -1;
         }
 
@@ -116,7 +116,7 @@ int wm_exec(char *command, char **output, int *status, int secs, const char * ad
 
         if (!CreatePipe(&tinfo.pipe, &sinfo.hStdOutput, NULL, 0)) {
             winerror = GetLastError();
-            //merror("at wm_exec(): CreatePipe(%d): %s", winerror, win_strerror(winerror));
+            LogError("at wm_exec(): CreatePipe(%d): %s", winerror, win_strerror(winerror));
             return -1;
         }
 
@@ -124,7 +124,7 @@ int wm_exec(char *command, char **output, int *status, int secs, const char * ad
 
         if (!SetHandleInformation(sinfo.hStdOutput, HANDLE_FLAG_INHERIT, 1)) {
             winerror = GetLastError();
-            //merror("at wm_exec(): SetHandleInformation(%d): %s", winerror, win_strerror(winerror));
+            LogError("at wm_exec(): SetHandleInformation(%d): %s", winerror, win_strerror(winerror));
             return -1;
         }
     }
@@ -142,11 +142,11 @@ int wm_exec(char *command, char **output, int *status, int secs, const char * ad
     os_calloc(size, sizeof(wchar_t), wcommand);
 
     MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, command, -1, wcommand, size);
-    //mdebug2("UTF-8 command: %ls", wcommand);
+    LogDebug("UTF-8 command: %ls", wcommand);
 
     if (!CreateProcessW(NULL, wcommand, NULL, NULL, TRUE, dwCreationFlags, NULL, NULL, &sinfo, &pinfo)) {
         winerror = GetLastError();
-        //merror("at wm_exec(): CreateProcess(%d): %s", winerror, win_strerror(winerror));
+        LogError("at wm_exec(): CreateProcess(%d): %s", winerror, win_strerror(winerror));
         os_free(wcommand);
         return -1;
     }
@@ -178,7 +178,7 @@ int wm_exec(char *command, char **output, int *status, int secs, const char * ad
 
     default:
         winerror = GetLastError();
-        //merror("at wm_exec(): WaitForSingleObject(%d): %s", winerror, win_strerror(winerror));
+        LogError("at wm_exec(): WaitForSingleObject(%d): %s", winerror, win_strerror(winerror));
         TerminateProcess(pinfo.hProcess, 1);
         retval = -1;
     }
@@ -226,7 +226,7 @@ DWORD WINAPI Reader(LPVOID args) {
             length = nextsize;
             tinfo->output[length] = '\0';
         } else {
-            //mwarn("String limit reached.");
+            LogWarn("String limit reached.");
             break;
         }
     }
@@ -247,7 +247,7 @@ void wm_append_handle(HANDLE hProcess) {
         void * retval = OSList_AddData(wm_children_list, (void *)p_hProcess);
 
         if (retval == NULL) {
-            //merror("Child process handle %p could not be registered in the children list.", hProcess);
+            LogError("Child process handle %p could not be registered in the children list.", hProcess);
             os_free(p_hProcess);
         }
     }
@@ -271,7 +271,7 @@ void wm_remove_handle(HANDLE hProcess) {
                 return;
             }
         }
-        //mwarn("Child process handle %p could not be removed because it was not found in the children list.", hProcess);
+        LogWarn("Child process handle %p could not be removed because it was not found in the children list.", hProcess);
     }
     w_mutex_unlock(&wm_children_mutex);
 }
@@ -332,7 +332,7 @@ int wm_exec(char *command, char **output, int *exitcode, int secs, const char * 
 
     if (output) {
         if (pipe(pipe_fd) < 0) {
-            //merror("At wm_exec(): pipe(): %s", strerror(errno));
+            LogError("At wm_exec(): pipe(): %s", strerror(errno));
             return -1;
         }
         w_descriptor_cloexec(pipe_fd[0]);
@@ -345,7 +345,7 @@ int wm_exec(char *command, char **output, int *exitcode, int secs, const char * 
 
         // Error
 
-        //merror("Cannot run a subprocess: %s (%d)", strerror(errno), errno);
+        LogError("Cannot run a subprocess: %s (%d)", strerror(errno), errno);
 
         if (output) {
             close(pipe_fd[0]);
@@ -369,20 +369,20 @@ int wm_exec(char *command, char **output, int *exitcode, int secs, const char * 
             if (!env_path) {
                 snprintf(new_path, OS_SIZE_6144 - 1, "%s", add_path);
             } else if (strlen(env_path) >= OS_SIZE_6144) {
-                //merror("at wm_exec(): PATH environment variable too large.");
+                LogError("at wm_exec(): PATH environment variable too large.");
             } else {
                 const int bytes_written = snprintf(new_path, OS_SIZE_6144, "%s:%s", add_path, env_path);
 
                 if (bytes_written >= OS_SIZE_6144) {
-                    //merror("at wm_exec(): New environment variable too large.");
+                    LogError("at wm_exec(): New environment variable too large.");
                 }
                 else if (bytes_written < 0) {
-                    //merror("at wm_exec(): New environment variable error: %d (%s).", errno, strerror(errno));
+                    LogError("at wm_exec(): New environment variable error: %d (%s).", errno, strerror(errno));
                 }
             }
 
             if (setenv("PATH", new_path, 1) < 0) {
-                //merror("at wm_exec(): Unable to set new 'PATH' environment variable (%s).", strerror(errno));
+                LogError("at wm_exec(): Unable to set new 'PATH' environment variable (%s).", strerror(errno));
             }
 
             char * new_env = getenv("PATH");
@@ -397,7 +397,7 @@ int wm_exec(char *command, char **output, int *exitcode, int secs, const char * 
         int fd = open("/dev/null", O_RDWR, 0);
 
         if (fd < 0) {
-            //merror_exit(FOPEN_ERROR, "/dev/null", errno, strerror(errno));
+            LogCritical(FOPEN_ERROR, "/dev/null", errno, strerror(errno));
         }
 
         dup2(fd, STDIN_FILENO);
@@ -436,7 +436,7 @@ int wm_exec(char *command, char **output, int *exitcode, int secs, const char * 
             w_mutex_lock(&tinfo.mutex);
 
             if (pthread_create(&thread, NULL, reader, &tinfo)) {
-                //merror("Couldn't create reading thread.");
+                LogError("Couldn't create reading thread.");
                 w_mutex_unlock(&tinfo.mutex);
 
                 if (output) {
@@ -479,7 +479,7 @@ int wm_exec(char *command, char **output, int *exitcode, int secs, const char * 
 
             switch (waitpid(pid, &status, 0)) {
             case -1:
-                //merror("waitpid()");
+                LogError("waitpid()");
                 retval = -1;
                 break;
 
@@ -504,12 +504,12 @@ int wm_exec(char *command, char **output, int *exitcode, int secs, const char * 
                     case -1:
                         switch(errno) {
                         case ESRCH:
-                            //merror("At wm_exec(): No such process. Couldn't wait PID %d: (%d) %s.", pid, errno, strerror(errno));
+                            LogError("At wm_exec(): No such process. Couldn't wait PID %d: (%d) %s.", pid, errno, strerror(errno));
                             retval = -2;
                             break;
 
                         default:
-                            //merror("At wm_exec(): Couldn't wait PID %d: (%d) %s.", pid, errno, strerror(errno));
+                            LogError("At wm_exec(): Couldn't wait PID %d: (%d) %s.", pid, errno, strerror(errno));
                             retval = -3;
                         }
                         break;
@@ -552,7 +552,7 @@ int wm_exec(char *command, char **output, int *exitcode, int secs, const char * 
 
                 switch (waitpid(pid, &status, 0)) {
                 case -1:
-                    //merror("waitpid(): %s (%d)", strerror(errno), errno);
+                    LogError("waitpid(): %s (%d)", strerror(errno), errno);
                     retval = -1;
                     break;
 
@@ -569,7 +569,7 @@ int wm_exec(char *command, char **output, int *exitcode, int secs, const char * 
         } else {
             switch (waitpid(pid, &status, 0)) {
             case -1:
-                //merror("waitpid()");
+                LogError("waitpid()");
                 retval = -1;
                 break;
 
@@ -619,7 +619,7 @@ void* reader(void *args) {
             memcpy(tinfo->output + length, buffer, nbytes);
             length = nextsize;
         } else {
-            //mwarn("String limit reached.");
+            LogWarn("String limit reached.");
             break;
         }
     }
@@ -649,7 +649,7 @@ void wm_append_sid(pid_t sid) {
         void * retval = OSList_AddData(wm_children_list, (void *)p_sid);
 
         if (retval == NULL) {
-            //merror("Child process ID %d could not be registered in the children list.", sid);
+            LogError("Child process ID %d could not be registered in the children list.", sid);
             os_free(p_sid);
         }
     }
@@ -674,7 +674,7 @@ void wm_remove_sid(pid_t sid) {
                 return;
             }
         }
-        //mwarn("Child process ID %d could not be removed because it was not found in the children list.", sid);
+        LogWarn("Child process ID %d could not be removed because it was not found in the children list.", sid);
     }
     w_mutex_unlock(&wm_children_mutex);
 }
@@ -701,7 +701,7 @@ void wm_kill_children() {
 
                 switch (fork()) {
                 case -1:
-                    //merror("wm_kill_children(): Couldn't fork: (%d) %s.", errno, strerror(errno));
+                    LogError("wm_kill_children(): Couldn't fork: (%d) %s.", errno, strerror(errno));
                     break;
 
                 case 0: // Child
@@ -720,7 +720,7 @@ void wm_kill_children() {
                                 exit(EXIT_SUCCESS);
 
                             default:
-                                //merror("wm_kill_children(): Couldn't wait PID %d: (%d) %s.", sid, errno, strerror(errno));
+                                LogError("wm_kill_children(): Couldn't wait PID %d: (%d) %s.", sid, errno, strerror(errno));
                                 exit(EXIT_FAILURE);
                             }
 

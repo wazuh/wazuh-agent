@@ -307,20 +307,20 @@ STATIC wfd_t * w_macos_log_exec(char ** log_cmd_array, u_int32_t flags) {
     wfd_t * macos_log_wfd = wpopenv(*log_cmd_array, log_cmd_array, flags);
 
     if (macos_log_wfd == NULL) {
-        //merror(WPOPENV_ERROR, strerror(errno), errno);
+        LogError(WPOPENV_ERROR, strerror(errno), errno);
     } else {
         /* The file descriptor, from which the output of `log stream` will be read, is set to non-blocking */
         log_pipe_fd = fileno(macos_log_wfd->file_out); // Gets the file descriptor from a file pointer
 
         if (log_pipe_fd <= 0) {
-            //merror(FP_TO_FD_ERROR, strerror(errno), errno);
+            LogError(FP_TO_FD_ERROR, strerror(errno), errno);
             wpclose(macos_log_wfd);
             macos_log_wfd = NULL;
         } else {
             log_pipe_fd_flags = fcntl(log_pipe_fd, F_GETFL, 0); // Gets current flags
 
             if (log_pipe_fd_flags < 0) {
-                //merror(GET_FLAGS_ERROR, strerror(errno), errno);
+                LogError(GET_FLAGS_ERROR, strerror(errno), errno);
                 wpclose(macos_log_wfd);
                 macos_log_wfd = NULL;
             } else {
@@ -328,7 +328,7 @@ STATIC wfd_t * w_macos_log_exec(char ** log_cmd_array, u_int32_t flags) {
                 const int set_flags_retval = fcntl(log_pipe_fd, F_SETFL, log_pipe_fd_flags); // Sets the new Flags
 
                 if (set_flags_retval < 0) {
-                    //merror(SET_FLAGS_ERROR, strerror(errno), errno);
+                    LogError(SET_FLAGS_ERROR, strerror(errno), errno);
                     wpclose(macos_log_wfd);
                     macos_log_wfd = NULL;
                 }
@@ -347,7 +347,7 @@ STATIC wfd_t * w_macos_log_exec(char ** log_cmd_array, u_int32_t flags) {
 STATIC INLINE bool w_macos_is_log_executable(void) {
 
     if (w_is_macos_sierra() && access(SCRIPT_CMD_STR, X_OK) != 0) {
-        //merror(ACCESS_ERROR, SCRIPT_CMD_STR, strerror(errno), errno);
+        LogError(ACCESS_ERROR, SCRIPT_CMD_STR, strerror(errno), errno);
         return false;
     }
 
@@ -355,7 +355,7 @@ STATIC INLINE bool w_macos_is_log_executable(void) {
     if (retval == 0) {
         return true;
     }
-    //merror(ACCESS_ERROR, LOG_CMD_STR, strerror(errno), errno);
+    LogError(ACCESS_ERROR, LOG_CMD_STR, strerror(errno), errno);
     return false;
 }
 
@@ -385,9 +385,9 @@ STATIC INLINE void w_macos_create_log_show_env(logreader * lf) {
 
     if (lf->macos_log->processes.show.wfd != NULL) {
         lf->macos_log->state = LOG_RUNNING_SHOW;
-        //minfo(LOGCOLLECTOR_MACOS_LOG_SHOW_INFO, log_show_str);
+        LogInfo(LOGCOLLECTOR_MACOS_LOG_SHOW_INFO, log_show_str);
     } else {
-        //merror(LOGCOLLECTOR_MACOS_LOG_SHOW_EXEC_ERROR, log_show_str);
+        LogError(LOGCOLLECTOR_MACOS_LOG_SHOW_EXEC_ERROR, log_show_str);
     }
 
     os_free(timestamp);
@@ -416,9 +416,9 @@ STATIC INLINE void w_macos_create_log_stream_env(logreader * lf) {
         if (lf->macos_log->state == LOG_NOT_RUNNING) {
             lf->macos_log->state = LOG_RUNNING_STREAM;
         }
-        //minfo(LOGCOLLECTOR_MACOS_LOG_STREAM_INFO, log_stream_str);
+        LogInfo(LOGCOLLECTOR_MACOS_LOG_STREAM_INFO, log_stream_str);
     } else {
-        //merror(LOGCOLLECTOR_MACOS_LOG_STREAM_EXEC_ERROR, log_stream_str);
+        LogError(LOGCOLLECTOR_MACOS_LOG_STREAM_EXEC_ERROR, log_stream_str);
     }
 
     os_free(log_stream_str);
