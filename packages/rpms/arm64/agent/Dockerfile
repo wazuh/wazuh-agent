@@ -73,11 +73,3 @@ RUN curl -O http://packages.wazuh.com/utils/rpm/rpm-4.15.1.tar.bz2 && \
 RUN mkdir -p /usr/local/var/lib/rpm && \
     cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages && \
     /usr/local/bin/rpm --rebuilddb && rm -rf /root/rpmbuild
-
-# Add the scripts to build the RPM package
-ADD build.sh /usr/local/bin/build_package
-RUN chmod +x /usr/local/bin/build_package
-ADD helper_function.sh /usr/local/bin/helper_function.sh
-
-# Set the entrypoint
-ENTRYPOINT ["/usr/local/bin/build_package"]

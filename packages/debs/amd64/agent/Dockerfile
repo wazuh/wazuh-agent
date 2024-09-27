@@ -33,12 +33,3 @@ RUN curl -OL http://packages.wazuh.com/utils/cmake/cmake-3.18.3.tar.gz && \
         CC=/usr/local/gcc-9.4.0/bin/gcc && \
     make -j$(nproc) && make install && ln -s /usr/local/bin/cmake /usr/bin/cmake && \
     cd / && rm -rf cmake-*
-
-# Add the script and helper_funcitons to build the Debian package
-ADD build.sh /usr/local/bin/build_package
-RUN chmod +x /usr/local/bin/build_package
-ADD helper_function.sh /usr/local/bin/helper_function.sh
-ADD gen_permissions.sh /tmp/gen_permissions.sh
-
-# Set the entrypoint
-ENTRYPOINT ["/usr/local/bin/build_package"]

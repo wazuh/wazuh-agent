@@ -95,7 +95,9 @@ build_pkg() {
         -e IS_STAGE="${IS_STAGE}" \
         -e WAZUH_BRANCH="${BRANCH}" \
         ${CUSTOM_CODE_VOL} \
+        -v ${DOCKERFILE_PATH}:/home:Z \
         ${CONTAINER_NAME}:${DOCKER_TAG} \
+        /home/build.sh \
         ${REVISION} ${JOBS} ${DEBUG} \
         ${CHECKSUM} ${FUTURE} ${LEGACY} ${SRC}|| return 1
 

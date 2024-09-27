@@ -47,11 +47,3 @@ RUN curl -OL http://packages.wazuh.com/utils/perl/perl-5.10.1.tar.gz && \
     cd /perl-5.10.1 && ./Configure -des -Dcc='gcc' -Dusethreads && \
     make -j2 && make install && ln -fs /usr/local/bin/perl /bin/perl && \
     cd / && rm -rf /perl-5.10.1*
-
-# Add the scripts to build the RPM package
-ADD build.sh /usr/local/bin/build_package
-RUN chmod +x /usr/local/bin/build_package
-ADD helper_function.sh /usr/local/bin/helper_function.sh
-
-# Set the entrypoint
-ENTRYPOINT ["/usr/local/bin/build_package"]
