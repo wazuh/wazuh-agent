@@ -59,7 +59,7 @@ void Inventory::Stop() {
     Inventory::Instance().Destroy();
 }
 
-boost::asio::awaitable<CommandExecutionResult> Inventory::Command(const std::string query) {
+Co_CommandExecutionResult Inventory::Command(const std::string query) {
     LogInfo("Query: ",query);
     co_return CommandExecutionResult{0,"OK"};
 }

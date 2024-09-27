@@ -12,10 +12,12 @@ struct CommandExecutionResult {
     std::string Message = "";
 };
 
+using Co_CommandExecutionResult = boost::asio::awaitable<CommandExecutionResult>;
+
 struct ModuleWrapper {
     std::function<void()> Start;
     std::function<void(const configuration::ConfigurationParser&)> Setup;
     std::function<void()> Stop;
-    std::function<boost::asio::awaitable<CommandExecutionResult>(std::string)> Command;
+    std::function<Co_CommandExecutionResult(std::string)> Command;
     std::function<std::string()> Name;
 };
