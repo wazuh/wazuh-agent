@@ -33,7 +33,7 @@ static void _add_whodata_directory(const char *path) {
     whodata_directory_t *directory;
 
     if (whodata_directories == NULL) {
-        //merror(FIM_ERROR_WHODATA_UNINITIALIZED, path);
+        LogError(FIM_ERROR_WHODATA_UNINITIALIZED, path);
         return;
     }
 
@@ -95,7 +95,7 @@ int fim_rules_initial_load() {
     audit_close(auditd_fd);
 
     if (!res) {
-        //merror(FIM_ERROR_WHODATA_READ_RULE); // LCOV_EXCL_LINE
+        LogError(FIM_ERROR_WHODATA_READ_RULE); // LCOV_EXCL_LINE
     }
 
     w_rwlock_rdlock(&syscheck.directories_lock);
@@ -115,7 +115,7 @@ int fim_rules_initial_load() {
 
         // Add whodata directories until max_audit_entries is reached.
         if (rules_added >= syscheck.max_audit_entries) {
-            //merror(FIM_ERROR_WHODATA_MAXNUM_WATCHES, directory, syscheck.max_audit_entries);
+            LogError(FIM_ERROR_WHODATA_MAXNUM_WATCHES, directory, syscheck.max_audit_entries);
             free(directory);
             break;
         }
@@ -126,21 +126,21 @@ int fim_rules_initial_load() {
         // The rule is not in audit_rule_list
         case 0:
             if (retval = audit_add_rule(directory, WHODATA_PERMS, AUDIT_KEY), retval > 0) {
-                //mdebug2(FIM_AUDIT_NEWRULE, directory);
+                LogDebug(FIM_AUDIT_NEWRULE, directory);
                 rules_added++;
             } else if (retval != -EEXIST) {
-                //mwarn(FIM_WARN_WHODATA_ADD_RULE, directory);
+                LogWarn(FIM_WARN_WHODATA_ADD_RULE, directory);
             } else {
-                //mdebug2(FIM_AUDIT_ALREADY_ADDED, directory);
+                LogDebug(FIM_AUDIT_ALREADY_ADDED, directory);
             }
             break;
 
         case 1:
-            //mdebug2(FIM_AUDIT_RULEDUP, directory);
+            LogDebug(FIM_AUDIT_RULEDUP, directory);
             break;
 
         default:
-            //merror(FIM_ERROR_WHODATA_CHECK_RULE);
+            LogError(FIM_ERROR_WHODATA_CHECK_RULE);
             break;
         }
         // real_path can't be NULL
@@ -168,7 +168,7 @@ void fim_audit_reload_rules() {
     audit_close(auditd_fd);
 
     if (!res) {
-        //merror(FIM_ERROR_WHODATA_READ_RULE); // LCOV_EXCL_LINE
+        LogError(FIM_ERROR_WHODATA_READ_RULE); // LCOV_EXCL_LINE
     }
 
     w_mutex_lock(&rules_mutex);
@@ -191,21 +191,21 @@ void fim_audit_reload_rules() {
 
             if (rules_added >= syscheck.max_audit_entries) {
                 if (!reported) {
-                    //merror(FIM_ERROR_WHODATA_MAXNUM_WATCHES, directory->path, syscheck.max_audit_entries);
+                    LogError(FIM_ERROR_WHODATA_MAXNUM_WATCHES, directory->path, syscheck.max_audit_entries);
                 } else {
-                    //mdebug2(FIM_ERROR_WHODATA_MAXNUM_WATCHES, directory->path, syscheck.max_audit_entries);
+                    LogDebug(FIM_ERROR_WHODATA_MAXNUM_WATCHES, directory->path, syscheck.max_audit_entries);
                 }
                 reported = 1;
                 break;
             }
 
             if (retval = audit_add_rule(directory->path, WHODATA_PERMS, AUDIT_KEY), retval > 0) {
-                //mdebug2(FIM_AUDIT_NEWRULE, directory->path);
+                LogDebug(FIM_AUDIT_NEWRULE, directory->path);
                 rules_added++;
             } else if (retval != -EEXIST) {
                 LogDebug(FIM_WARN_WHODATA_ADD_RULE, directory->path);
             } else {
-                //mdebug2(FIM_AUDIT_ALREADY_ADDED, directory->path);
+                LogDebug(FIM_AUDIT_ALREADY_ADDED, directory->path);
             }
 
             break;
@@ -219,12 +219,12 @@ void fim_audit_reload_rules() {
                 node = OSList_GetCurrentlyNode(whodata_directories);
                 continue;
             } else {
-                //mdebug2(FIM_AUDIT_RULEDUP, directory->path);
+                LogDebug(FIM_AUDIT_RULEDUP, directory->path);
             }
             break;
 
         default:
-            //merror(FIM_ERROR_WHODATA_CHECK_RULE);
+            LogError(FIM_ERROR_WHODATA_CHECK_RULE);
             break;
         }
 
@@ -255,7 +255,7 @@ void clean_rules(void) {
     w_mutex_lock(&rules_mutex);
 
     atomic_int_set(&audit_thread_active, 0);
-    //mdebug2(FIM_AUDIT_DELETE_RULE);
+    LogDebug(FIM_AUDIT_DELETE_RULE);
 
     for (node = OSList_GetFirstNode(whodata_directories); node != NULL;
          node = OSList_GetNextNode(whodata_directories)) {

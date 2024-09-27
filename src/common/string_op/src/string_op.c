@@ -436,14 +436,14 @@ char *convert_windows_string(LPCWSTR string)
                                NULL);
 
     if (size == 0) {
-        //mferror(
+        LogError(
             "Could not WideCharToMultiByte() when determining size which returned (%lu)",
             GetLastError());
         return (NULL);
     }
 
     if ((dest = calloc(size, sizeof(char))) == NULL) {
-        //mferror(
+        LogError(
             "Could not calloc() memory for WideCharToMultiByte() which returned [(%d)-(%s)]",
             errno,
             strerror(errno)
@@ -461,7 +461,7 @@ char *convert_windows_string(LPCWSTR string)
                                  NULL);
 
     if (result == 0) {
-        //mferror(
+        LogError(
             "Could not WideCharToMultiByte() which returned (%lu)",
             GetLastError());
         free(dest);
@@ -1035,7 +1035,7 @@ int os_snprintf(char *str, size_t size, const char *format, ...) {
     va_start(args, format);
     ret = vsnprintf(str, size, format, args);
     if (ret >= size) {
-        //mwarn("String may be truncated because it is too long.");
+        LogWarn("String may be truncated because it is too long.");
     }
     va_end(args);
 

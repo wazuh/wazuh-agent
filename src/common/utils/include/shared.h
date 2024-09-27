@@ -91,9 +91,10 @@
 
 #ifdef __cplusplus
 #include <atomic>
-#include <logger.hpp>
 #define _Atomic(T) std::atomic<T>
 #endif
+
+#include <logger.hpp>
 
 #include <time.h>
 #include <errno.h>

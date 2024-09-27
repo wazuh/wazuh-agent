@@ -75,28 +75,28 @@ OSList *os_get_process_list()
                          TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, FALSE, &hpriv)) {
         if (GetLastError() == ERROR_NO_TOKEN) {
             if (!ImpersonateSelf(SecurityImpersonation)) {
-                //mterror(ARGV0, "os_get_win32_process_list -> ImpersonateSelf");
+                LogError(ARGV0, "os_get_win32_process_list -> ImpersonateSelf");
                 return (NULL);
             }
 
             if (!OpenThreadToken(GetCurrentThread(),
                                  TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
                                  FALSE, &hpriv)) {
-                //mterror(ARGV0, "os_get_win32_process_list -> OpenThread");
+                LogError(ARGV0, "os_get_win32_process_list -> OpenThread");
                 return (NULL) ;
             }
         } else {
-            //mterror(ARGV0, "os_get_win32_process_list -> OpenThread");
+            LogError(ARGV0, "os_get_win32_process_list -> OpenThread");
             return (NULL);
         }
     }
 
     /* Enable debug privilege */
     if (!os_win32_setdebugpriv(hpriv, 1)) {
-        //mterror(ARGV0, "os_win32_setdebugpriv");
+        LogError(ARGV0, "os_win32_setdebugpriv");
 
         if(CloseHandle(hpriv) == 0) {
-            //mdebug2("Can't close handle");
+            LogDebug("Can't close handle");
         }
 
         return (NULL);
@@ -105,10 +105,10 @@ OSList *os_get_process_list()
     /* Make a snapshot of every process */
     hsnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (hsnap == INVALID_HANDLE_VALUE) {
-        //mterror(ARGV0, "CreateToolhelp32Snapshot");
+        LogError(ARGV0, "CreateToolhelp32Snapshot");
 
         if (CloseHandle(hpriv) == 0) {
-            //mdebug2("Can't close handle");
+            LogDebug("Can't close handle");
         }
 
         return (NULL);
@@ -116,14 +116,14 @@ OSList *os_get_process_list()
 
     /* Get first and second processes -- system entries */
     if (!Process32First(hsnap, &p_entry) && !Process32Next(hsnap, &p_entry )) {
-        //mterror(ARGV0, "Process32First");
+        LogError(ARGV0, "Process32First");
 
         if (CloseHandle(hsnap) == 0) {
-            //mdebug2("Can't close handle");
+            LogDebug("Can't close handle");
         }
 
         if (CloseHandle(hpriv) == 0) {
-            //mdebug2("Can't close handle");
+            LogDebug("Can't close handle");
         }
 
         return (NULL);
@@ -134,14 +134,14 @@ OSList *os_get_process_list()
     if (!p_list) {
 
         if (CloseHandle(hsnap) == 0) {
-            //mdebug2("Can't close handle");
+            LogDebug("Can't close handle");
         }
 
         if (CloseHandle(hpriv) == 0) {
-            //mdebug2("Can't close handle");
+            LogDebug("Can't close handle");
         }
 
-        //mterror(ARGV0, LIST_ERROR);
+        LogError(ARGV0, LIST_ERROR);
         return (0);
     }
 
@@ -168,7 +168,7 @@ OSList *os_get_process_list()
             /* Get executable path (first entry in the module list) */
 
             if (CloseHandle(hmod) == 0){
-                //mdebug2("Can't close handle");
+                LogDebug("Can't close handle");
             }
 
             os_strdup(p_name, p_path);
@@ -177,7 +177,7 @@ OSList *os_get_process_list()
             os_strdup(m_entry.szExePath, p_path);
 
             if (CloseHandle(hmod) == 0) {
-                //mdebug2("Can't close handle");
+                LogDebug("Can't close handle");
             }
         }
 
@@ -191,11 +191,11 @@ OSList *os_get_process_list()
     os_win32_setdebugpriv(hpriv, 0);
 
     if (CloseHandle(hsnap) == 0) {
-        //mdebug2("Can't close handle");
+        LogDebug("Can't close handle");
     }
 
     if (CloseHandle(hpriv) == 0) {
-        //mdebug2("Can't close handle");
+        LogDebug("Can't close handle");
     }
 
     return (p_list);

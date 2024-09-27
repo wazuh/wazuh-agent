@@ -178,7 +178,7 @@ static void registry_key_transaction_callback(ReturnTypeCallback resultType,
                                             old_attributes);
 
         if (cJSON_GetArraySize(changed_attributes) == 0) {
-            //mdebug2(FIM_EMPTY_CHANGED_ATTRIBUTES, path);
+            LogDebug(FIM_EMPTY_CHANGED_ATTRIBUTES, path);
             goto end;
         }
     }
@@ -322,7 +322,7 @@ static void registry_value_transaction_callback(ReturnTypeCallback resultType,
                                               old_attributes);
 
         if (cJSON_GetArraySize(changed_attributes) == 0) {
-            //mdebug2(FIM_EMPTY_CHANGED_ATTRIBUTES, path);
+            LogDebug(FIM_EMPTY_CHANGED_ATTRIBUTES, path);
             goto end;
         }
     }
@@ -408,7 +408,7 @@ registry_t *fim_registry_configuration(const char *key, int arch) {
     }
 
     if (ret == NULL) {
-        //mdebug2(FIM_CONFIGURATION_NOTFOUND, "registry", key);
+        LogDebug(FIM_CONFIGURATION_NOTFOUND, "registry", key);
     }
 
     return ret;
@@ -444,7 +444,7 @@ int fim_registry_validate_recursion_level(const char *key_path, const registry_t
     }
 
     if (depth > configuration->recursion_level) {
-        //mdebug2(FIM_MAX_RECURSION_LEVEL, depth, configuration->recursion_level, key_path);
+        LogDebug(FIM_MAX_RECURSION_LEVEL, depth, configuration->recursion_level, key_path);
         return -1;
     }
 
@@ -482,7 +482,7 @@ int fim_registry_validate_ignore(const char *entry, const registry_t *configurat
                 continue;
             }
             if (strncasecmp((*ignore_list)[ign_it].entry, entry, strlen((*ignore_list)[ign_it].entry)) == 0) {
-                //mdebug2(FIM_REG_IGNORE_ENTRY, key ? "registry" : "value",
+                LogDebug(FIM_REG_IGNORE_ENTRY, key ? "registry" : "value",
                         (*ignore_list)[ign_it].arch == ARCH_32BIT ? "[x32]" : "[x64]", entry,
                         (*ignore_list)[ign_it].entry);
                 return -1;
@@ -496,7 +496,7 @@ int fim_registry_validate_ignore(const char *entry, const registry_t *configurat
 
             }
             if (OSMatch_Execute(entry, strlen(entry), (*ignore_list_regex)[ign_it].regex)) {
-                //mdebug2(FIM_REG_IGNORE_SREGEX, key ? "registry" : "value",
+                LogDebug(FIM_REG_IGNORE_SREGEX, key ? "registry" : "value",
                         (*ignore_list_regex)[ign_it].arch == ARCH_32BIT ? "[x32]" : "[x64]", entry,
                         (*ignore_list_regex)[ign_it].regex->raw);
                 return -1;
@@ -921,7 +921,7 @@ void fim_read_values(HKEY key_handle,
         int result_transaction = fim_db_transaction_sync_row(regval_txn_handler, &new);
 
         if (result_transaction < 0) {
-            //mdebug2("dbsync transaction failed due to %d", result_transaction);
+            LogDebug("dbsync transaction failed due to %d", result_transaction);
         }
     }
 
@@ -1059,7 +1059,7 @@ void fim_open_key(HKEY root_key_handle,
     result_transaction = fim_db_transaction_sync_row(regkey_txn_handler, &new);
 
     if(result_transaction < 0){
-        //merror("Dbsync registry transaction failed due to %d", result_transaction);
+        LogError("Dbsync registry transaction failed due to %d", result_transaction);
     }
 
     if (value_count) {
@@ -1093,7 +1093,7 @@ void fim_registry_scan() {
         }
 
         /* Read syscheck registry entry */
-        //mdebug2(FIM_READING_REGISTRY, syscheck.registry[i].arch == ARCH_64BIT ? "[x64] " : "[x32] ",
+        LogDebug(FIM_READING_REGISTRY, syscheck.registry[i].arch == ARCH_64BIT ? "[x64] " : "[x32] ",
                 syscheck.registry[i].entry);
 
         if (fim_set_root_key(&root_key_handle, syscheck.registry[i].entry, &sub_key) != 0) {

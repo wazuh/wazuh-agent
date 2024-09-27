@@ -214,18 +214,18 @@ STATIC char * wm_agent_upgrade_com_open(const cJSON* json_object) {
     const cJSON *file_path_obj = cJSON_GetObjectItem(json_object, "file");
 
     if (*file.path) {
-        //mtwarn(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_FILE_OPENED, "open", file.path);
+        LogWarn(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_FILE_OPENED, "open", file.path);
         fclose(file.fp);
         *file.path = '\0';
     }
 
     if (!mode_obj || (mode_obj->type != cJSON_String) || (strcmp(mode_obj->valuestring, "w") && strcmp(mode_obj->valuestring, "wb"))) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_UNSUPPORTED_MODE, "open");
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_UNSUPPORTED_MODE, "open");
         return wm_agent_upgrade_command_ack(ERROR_UNSOPPORTED_MODE, error_messages[ERROR_UNSOPPORTED_MODE]);
     }
 
     if (!file_path_obj || (file_path_obj->type != cJSON_String) || _jailfile(final_path, INCOMING_DIR, file_path_obj->valuestring) < 0) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_INVALID_FILE_NAME, "open");
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_INVALID_FILE_NAME, "open");
         return wm_agent_upgrade_command_ack(ERROR_INVALID_FILE_NAME, error_messages[ERROR_INVALID_FILE_NAME]);
     }
 
@@ -233,7 +233,7 @@ STATIC char * wm_agent_upgrade_com_open(const cJSON* json_object) {
         snprintf(file.path, sizeof(file.path), "%s", final_path);
         return wm_agent_upgrade_command_ack(ERROR_OK, error_messages[ERROR_OK]);
     } else {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, FOPEN_ERROR, file_path_obj->valuestring, errno, strerror(errno));
+        LogError(WM_AGENT_UPGRADE_LOGTAG, FOPEN_ERROR, file_path_obj->valuestring, errno, strerror(errno));
         char *output;
         os_malloc(OS_MAXSTR + 1, output);
         snprintf(output, OS_MAXSTR + 1, error_messages[ERROR_FILE_OPEN], strerror(errno));
@@ -250,17 +250,17 @@ STATIC char * wm_agent_upgrade_com_write(const cJSON* json_object) {
     char final_path[PATH_MAX + 1];
 
     if (!*file.path) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_FILE_NOT_OPENED_AUTO, "write");
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_FILE_NOT_OPENED_AUTO, "write");
         return wm_agent_upgrade_command_ack(ERROR_FILE_NOT_OPENED, error_messages[ERROR_FILE_NOT_OPENED]);
     }
 
     if (!file_path_obj || (file_path_obj->type != cJSON_String) || _jailfile(final_path, INCOMING_DIR, file_path_obj->valuestring) < 0) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_INVALID_FILE_NAME, "write");
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_INVALID_FILE_NAME, "write");
         return wm_agent_upgrade_command_ack(ERROR_INVALID_FILE_NAME, error_messages[ERROR_INVALID_FILE_NAME]);
     }
 
     if (strcmp(file.path, final_path) != 0) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_DIFFERENT_FILE, "write", file.path);
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_DIFFERENT_FILE, "write", file.path);
         return wm_agent_upgrade_command_ack(ERROR_TARGET_FILE_NOT_MATCH, error_messages[ERROR_TARGET_FILE_NOT_MATCH]);
     }
 
@@ -270,7 +270,7 @@ STATIC char * wm_agent_upgrade_com_write(const cJSON* json_object) {
         return wm_agent_upgrade_command_ack(ERROR_OK, error_messages[ERROR_OK]);
     } else {
         os_free(base64_string);
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_CANNOT_WRITE, "write", final_path);
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_CANNOT_WRITE, "write", final_path);
         return wm_agent_upgrade_command_ack(ERROR_WRITE_FILE, error_messages[ERROR_WRITE_FILE]);
     }
 }
@@ -280,24 +280,24 @@ STATIC char * wm_agent_upgrade_com_close(const cJSON* json_object) {
     char final_path[PATH_MAX + 1];
 
     if (!*file.path) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_FILE_NOT_OPENED, "close");
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_FILE_NOT_OPENED, "close");
         return wm_agent_upgrade_command_ack(ERROR_FILE_NOT_OPENED2, error_messages[ERROR_FILE_NOT_OPENED2]);
     }
 
     if (!file_path_obj || (file_path_obj->type != cJSON_String) || _jailfile(final_path, INCOMING_DIR, file_path_obj->valuestring) < 0) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_INVALID_FILE_NAME, "close");
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_INVALID_FILE_NAME, "close");
         return wm_agent_upgrade_command_ack(ERROR_INVALID_FILE_NAME, error_messages[ERROR_INVALID_FILE_NAME]);
     }
 
     if (strcmp(file.path, final_path) != 0) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_DIFFERENT_FILE, "close", file.path);
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_DIFFERENT_FILE, "close", file.path);
         return wm_agent_upgrade_command_ack(ERROR_TARGET_FILE_NOT_MATCH, error_messages[ERROR_TARGET_FILE_NOT_MATCH]);
     }
 
     *file.path = '\0';
 
     if (fclose(file.fp)) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_GERENIC_ERROR, "close", strerror(errno));
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_GERENIC_ERROR, "close", strerror(errno));
         return wm_agent_upgrade_command_ack(ERROR_CLOSE, error_messages[ERROR_CLOSE]);
     }
 
@@ -310,12 +310,12 @@ STATIC char * wm_agent_upgrade_com_sha1(const cJSON* json_object) {
     os_sha1 sha1;
 
     if (!file_path_obj || (file_path_obj->type != cJSON_String) || _jailfile(final_path, INCOMING_DIR, file_path_obj->valuestring) < 0) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_INVALID_FILE_NAME, "sha1");
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_INVALID_FILE_NAME, "sha1");
         return wm_agent_upgrade_command_ack(ERROR_INVALID_FILE_NAME, error_messages[ERROR_INVALID_FILE_NAME]);
     }
 
     if (OS_SHA1_File(final_path, sha1, OS_BINARY) < 0) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_GENERATING_SHA1_ERROR, "sha1");
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_GENERATING_SHA1_ERROR, "sha1");
         return wm_agent_upgrade_command_ack(ERROR_GEN_SHA1, error_messages[ERROR_GEN_SHA1]);
     }
 
@@ -335,27 +335,27 @@ STATIC char * wm_agent_upgrade_com_upgrade(const cJSON* json_object) {
 
     // Unsign
     if (!package_obj || (package_obj->type != cJSON_String) || _unsign(package_obj->valuestring, compressed) < 0) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_GERENIC_ERROR, "upgrade", error_messages[ERROR_SIGNATURE]);
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_GERENIC_ERROR, "upgrade", error_messages[ERROR_SIGNATURE]);
         return wm_agent_upgrade_command_ack(ERROR_SIGNATURE, error_messages[ERROR_SIGNATURE]);
     }
 
     // Uncompress
     if (_uncompress(compressed, package_obj->valuestring, merged) < 0) {
         unlink(compressed);
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_GERENIC_ERROR, "upgrade", error_messages[ERROR_COMPRESS]);
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_GERENIC_ERROR, "upgrade", error_messages[ERROR_COMPRESS]);
         return wm_agent_upgrade_command_ack(ERROR_COMPRESS, error_messages[ERROR_COMPRESS]);
     }
 
     // Clean up upgrade folder
     if (cldir_ex(UPGRADE_DIR)) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_GERENIC_ERROR, "upgrade", error_messages[ERROR_CLEAN_DIRECTORY]);
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_GERENIC_ERROR, "upgrade", error_messages[ERROR_CLEAN_DIRECTORY]);
         return wm_agent_upgrade_command_ack(ERROR_CLEAN_DIRECTORY, error_messages[ERROR_CLEAN_DIRECTORY]);
     }
 
     //Unmerge
     if (UnmergeFiles(merged, UPGRADE_DIR, OS_BINARY, NULL) == 0) {
         unlink(merged);
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_UNMERGING_FILE_ERROR, "upgrade", merged);
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_UNMERGING_FILE_ERROR, "upgrade", merged);
         return wm_agent_upgrade_command_ack(ERROR_UNMERGE, error_messages[ERROR_UNMERGE]);
     }
 
@@ -363,20 +363,20 @@ STATIC char * wm_agent_upgrade_com_upgrade(const cJSON* json_object) {
 
     // Installer executable file
     if (!installer_obj || (installer_obj->type != cJSON_String) || _jailfile(installer_j, UPGRADE_DIR, installer_obj->valuestring) < 0) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_INVALID_FILE_NAME, "upgrade");
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_INVALID_FILE_NAME, "upgrade");
         return wm_agent_upgrade_command_ack(ERROR_INVALID_FILE_NAME, error_messages[ERROR_INVALID_FILE_NAME]);
     }
 
     // Execute
 #ifndef WIN32
     if (chmod(installer_j, 0750) < 0) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_CHMOD_ERROR, "upgrade", installer_j);
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_CHMOD_ERROR, "upgrade", installer_j);
         return wm_agent_upgrade_command_ack(ERROR_CHMOD, error_messages[ERROR_CHMOD]);
     }
 #endif
 
     if (wm_exec(installer_j, &out, &status, req_timeout, NULL) < 0) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_COMMAND_ERROR, "upgrade", installer_j);
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_COMMAND_ERROR, "upgrade", installer_j);
         os_free(out);
         return wm_agent_upgrade_command_ack(ERROR_EXEC, error_messages[ERROR_EXEC]);
     } else {
@@ -393,7 +393,7 @@ STATIC char * wm_agent_upgrade_com_clear_result() {
         allow_upgrades = true;
         return wm_agent_upgrade_command_ack(ERROR_OK, error_messages[ERROR_OK]);
     } else {
-        //mtdebug1(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_ERASE_FILE_ERROR, "clear_upgrade_result", PATH);
+        LogDebug(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_ERASE_FILE_ERROR, "clear_upgrade_result", PATH);
         return wm_agent_upgrade_command_ack(ERROR_CLEAR_UPGRADE_FILE, error_messages[ERROR_CLEAR_UPGRADE_FILE]);
     }
 }
@@ -418,12 +418,12 @@ STATIC int _unsign(const char * source, char dest[PATH_MAX + 1]) {
     int output = 0;
 
     if (_jailfile(source_j, INCOMING_DIR, source) < 0) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_INVALID_FILE_NAME, "unsign()");
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_INVALID_FILE_NAME, "unsign()");
         return -1;
     }
 
     if (_jailfile(dest, TMP_DIR, source) < 0) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_INVALID_FILE_NAME, "unsign()");
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_INVALID_FILE_NAME, "unsign()");
         return -1;
     }
 
@@ -431,7 +431,7 @@ STATIC int _unsign(const char * source, char dest[PATH_MAX + 1]) {
     // which causes an error in the _jailfile instead of here
     // LCOV_EXCL_START
     if (length = strlen(dest), length + 10 > PATH_MAX) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_TOO_LONG_TEMP_FILE, "unsign()");
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_TOO_LONG_TEMP_FILE, "unsign()");
         return -1;
     }
     // LCOV_EXCL_STOP
@@ -446,20 +446,20 @@ STATIC int _unsign(const char * source, char dest[PATH_MAX + 1]) {
 
         if (chmod(dest, 0640) < 0) {
             unlink(dest);
-            //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_CHMOD_ERROR, "unsign()", dest);
+            LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_CHMOD_ERROR, "unsign()", dest);
             output = -1;
         }
     } else {
 #else
     if (_mktemp_s(dest, strlen(dest) + 1)) {
 #endif
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_COMPRESSED_FILE_ERROR, "unsign()");
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_COMPRESSED_FILE_ERROR, "unsign()");
         output = -1;
     }
 
     if ((output == 0) && w_wpk_unsign(source_j, dest, (const char **)wcom_ca_store) < 0) {
         unlink(dest);
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_UNSIGN_FILE_ERROR, "unsign()", source_j);
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_UNSIGN_FILE_ERROR, "unsign()", source_j);
         output = -1;
     }
     umask(old_mask);
@@ -474,7 +474,7 @@ STATIC int _uncompress(const char * source, const char *package, char dest[PATH_
     FILE *ftarget;
 
     if (_jailfile(dest, TMP_DIR, package) < 0) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_INVALID_FILE_NAME, "uncompress()");
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_INVALID_FILE_NAME, "uncompress()");
         return -1;
     }
 
@@ -482,7 +482,7 @@ STATIC int _uncompress(const char * source, const char *package, char dest[PATH_
         size_t length;
 
         if (length = strlen(dest), length + 10 > PATH_MAX) {
-            //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_TOO_LONG_TEMP_FILE, "uncompress()");
+            LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_TOO_LONG_TEMP_FILE, "uncompress()");
             return -1;
         }
 
@@ -490,13 +490,13 @@ STATIC int _uncompress(const char * source, const char *package, char dest[PATH_
     }
 
     if (fsource = gzopen(source, "rb"), !fsource) {
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_FILE_OPEN_ERROR, "uncompress()", source);
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_FILE_OPEN_ERROR, "uncompress()", source);
         return -1;
     }
 
     if (ftarget = wfopen(dest, "wb"), !ftarget) {
         gzclose(fsource);
-        //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_FILE_OPEN_ERROR, "uncompress()", dest);
+        LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_FILE_OPEN_ERROR, "uncompress()", dest);
         return -1;
     }
 
@@ -508,7 +508,7 @@ STATIC int _uncompress(const char * source, const char *package, char dest[PATH_
                 unlink(dest);
                 gzclose(fsource);
                 fclose(ftarget);
-                //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_CANNOT_WRITE, "uncompress()", source);
+                LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_CANNOT_WRITE, "uncompress()", source);
                 return -1;
             }
         }
@@ -518,7 +518,7 @@ STATIC int _uncompress(const char * source, const char *package, char dest[PATH_
 
         if (length < 0) {
             unlink(dest);
-            //mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_CANNOT_READ, "uncompress()", source);
+            LogError(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_CANNOT_READ, "uncompress()", source);
             return -1;
         }
     }

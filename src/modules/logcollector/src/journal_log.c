@@ -195,7 +195,7 @@ STATIC INLINE bool is_owned_by_root(const char * library_path) {
 STATIC INLINE bool load_and_validate_function(void * handle, const char * name, void ** func) {
     *func = dlsym(handle, name);
     if (*func == NULL) {
-        //mwarn(LOGCOLLECTOR_JOURNAL_LOG_LIB_FAIL_LOAD, name, dlerror());
+        LogWarn(LOGCOLLECTOR_JOURNAL_LOG_LIB_FAIL_LOAD, name, dlerror());
         return false;
     }
     return true;
@@ -215,7 +215,7 @@ STATIC INLINE w_journal_lib_t * w_journal_lib_init() {
     lib->handle = dlopen(W_LIB_SYSTEMD, RTLD_LAZY);
     if (lib->handle == NULL) {
         char * err = dlerror();
-        //mwarn(LOGCOLLECTOR_JOURNAL_LOG_LIB_FAIL_LOAD, W_LIB_SYSTEMD, err == NULL ? "Unknown error" : err);
+        LogWarn(LOGCOLLECTOR_JOURNAL_LOG_LIB_FAIL_LOAD, W_LIB_SYSTEMD, err == NULL ? "Unknown error" : err);
         os_free(lib);
         return NULL;
     }
@@ -223,7 +223,7 @@ STATIC INLINE w_journal_lib_t * w_journal_lib_init() {
     // Verify the ownership of the library
     char * library_path = find_library_path(W_LIB_SYSTEMD);
     if (library_path == NULL || !is_owned_by_root(library_path)) {
-        //mwarn(LOGCOLLECTOR_JOURNAL_LOG_LIB_FAIL_OWN, W_LIB_SYSTEMD);
+        LogWarn(LOGCOLLECTOR_JOURNAL_LOG_LIB_FAIL_OWN, W_LIB_SYSTEMD);
         os_free(library_path);
         dlclose(lib->handle);
         os_free(lib);
@@ -275,7 +275,7 @@ int w_journal_context_create(w_journal_context_t ** ctx) {
 
     ret = (*ctx)->lib->open(&((*ctx)->journal), W_SD_JOURNAL_LOCAL_ONLY);
     if (ret < 0) {
-        //mwarn(LOGCOLLECTOR_JOURNAL_LOG_FAIL_OPEN, strerror(-ret));
+        LogWarn(LOGCOLLECTOR_JOURNAL_LOG_FAIL_OPEN, strerror(-ret));
         dlclose((*ctx)->lib->handle);
         os_free((*ctx)->lib);
         os_free(*ctx);
@@ -305,7 +305,7 @@ void w_journal_context_update_timestamp(w_journal_context_t * ctx) {
         ctx->timestamp = w_get_epoch_time();
         if (!failed_logged) {
             failed_logged = true;
-            //mwarn(LOGCOLLECTOR_JOURNAL_LOG_FAIL_READ_TS, strerror(-err));
+            LogWarn(LOGCOLLECTOR_JOURNAL_LOG_FAIL_READ_TS, strerror(-err));
         }
     }
 }
@@ -337,7 +337,7 @@ int w_journal_context_seek_timestamp(w_journal_context_t * ctx, uint64_t timesta
 
     // If the timestamp is in the future or invalid, seek the most recent entry
     if (timestamp == 0 || timestamp > w_get_epoch_time()) {
-        //mwarn(LOGCOLLECTOR_JOURNAL_LOG_FUTURE_TS, timestamp);
+        LogWarn(LOGCOLLECTOR_JOURNAL_LOG_FUTURE_TS, timestamp);
         return w_journal_context_seek_most_recent(ctx);
     }
 
@@ -346,9 +346,9 @@ int w_journal_context_seek_timestamp(w_journal_context_t * ctx, uint64_t timesta
     int err = w_journal_context_get_oldest_timestamp(ctx, &oldest);
 
     if (err < 0) {
-        //mwarn(LOGCOLLECTOR_JOURNAL_LOG_FAIL_READ_OLD_TS, strerror(-err));
+        LogWarn(LOGCOLLECTOR_JOURNAL_LOG_FAIL_READ_OLD_TS, strerror(-err));
     } else if (timestamp < oldest) {
-        //mwarn(LOGCOLLECTOR_JOURNAL_LOG_CHANGE_TS, timestamp);
+        LogWarn(LOGCOLLECTOR_JOURNAL_LOG_CHANGE_TS, timestamp);
         timestamp = oldest;
     }
 
@@ -392,7 +392,7 @@ int w_journal_context_next_newest_filtered(w_journal_context_t * ctx, w_journal_
         if (// TODO : should this feature be added
 // isDebug()) {
             char * ts = w_timestamp_to_journalctl_since(ctx->timestamp);
-            //mdebug2(LOGCOLLECTOR_JOURNAL_LOG_CHECK_FILTER, ts == NULL ? "unknown" : ts);
+            LogDebug(LOGCOLLECTOR_JOURNAL_LOG_CHECK_FILTER, ts == NULL ? "unknown" : ts);
             os_free(ts);
         }
 
@@ -555,7 +555,7 @@ STATIC INLINE char * entry_as_syslog(w_journal_context_t * ctx) {
     char * timestamp = w_timestamp_to_string(ctx->timestamp);
 
     if (!hostname || !syslog_identifier || !message || !timestamp) {
-        //mdebug2(LOGCOLLECTOR_JOURNAL_LOG_NOT_SYSLOG, ctx->timestamp);
+        LogDebug(LOGCOLLECTOR_JOURNAL_LOG_NOT_SYSLOG, ctx->timestamp);
         os_free(hostname);
         os_free(syslog_identifier);
         os_free(message);
@@ -680,7 +680,7 @@ int w_journal_filter_apply(w_journal_context_t * ctx, w_journal_filter_t * filte
             if (unit->ignore_if_missing) {
                 continue;
             } else {
-                //mdebug2(LOGCOLLECTOR_JOURNAL_LOG_FIELD_ERROR, unit->field, ctx->timestamp, strerror(-err));
+                LogDebug(LOGCOLLECTOR_JOURNAL_LOG_FIELD_ERROR, unit->field, ctx->timestamp, strerror(-err));
                 return err;
             }
         }

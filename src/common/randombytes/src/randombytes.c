@@ -32,22 +32,22 @@ void randombytes(void *ptr, size_t length)
                 LogDebug("No default container was found. Attempting to create default container.");
 
                 if (!CryptAcquireContext(&prov, NULL, NULL, PROV_RSA_FULL, CRYPT_NEWKEYSET)) {
-                    //merror("CryptAcquireContext Flag: NewKeySet (1): (%lx)", GetLastError());
+                    LogError("CryptAcquireContext Flag: NewKeySet (1): (%lx)", GetLastError());
                     failed = 1;
                 }
             }else if(GetLastError() == (DWORD)NTE_KEYSET_ENTRY_BAD){
-                //mwarn("The agent's RSA key container for the random generator is corrupt. Resetting container...");
+                LogWarn("The agent's RSA key container for the random generator is corrupt. Resetting container...");
 
                 if (!CryptAcquireContext(&prov, NULL, NULL, PROV_RSA_FULL, CRYPT_DELETEKEYSET)){
-                    //merror("CryptAcquireContext Flag: DeleteKeySet: (%lx)", GetLastError());
+                    LogError("CryptAcquireContext Flag: DeleteKeySet: (%lx)", GetLastError());
                     failed = 1;
                 }
                 if (!CryptAcquireContext(&prov, NULL, NULL, PROV_RSA_FULL, CRYPT_NEWKEYSET)) {
-                    //merror("CryptAcquireContext Flag: NewKeySet (2): (%lx)", GetLastError());
+                    LogError("CryptAcquireContext Flag: NewKeySet (2): (%lx)", GetLastError());
                     failed = 1;
                 }
             } else {
-                //merror("CryptAcquireContext no Flag: (%lx)", GetLastError());
+                LogError("CryptAcquireContext no Flag: (%lx)", GetLastError());
                 failed = 1;
             }
         }
@@ -72,7 +72,7 @@ void randombytes(void *ptr, size_t length)
 #endif
 
     if (failed) {
-        //merror_exit("randombytes failed for all possible methods for accessing random data");
+        LogCritical("randombytes failed for all possible methods for accessing random data");
     }
 }
 

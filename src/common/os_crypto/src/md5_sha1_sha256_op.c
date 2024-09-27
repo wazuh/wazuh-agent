@@ -87,7 +87,7 @@ int OS_MD5_SHA1_SHA256_File(const char *fname,
         if (max_size > 0) {
             read = read + n;
             if (read >= max_size) {     // Maximum filesize error
-                //mwarn("'%s' filesize is larger than the maximum allowed (%d MB). File skipped.", fname, (int)max_size/1048576); // max_size is in bytes
+                LogWarn("'%s' filesize is larger than the maximum allowed (%d MB). File skipped.", fname, (int)max_size/1048576); // max_size is in bytes
                 if (prefilter_cmd == NULL) {
                     fclose(fp);
                 } else {

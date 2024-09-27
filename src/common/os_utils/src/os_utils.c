@@ -83,7 +83,7 @@ OSList *w_os_get_process_list()
     if (!w_is_file(ps)) {
         strncpy(ps, "/usr/bin/ps", OS_SIZE_1024);
         if (!w_is_file(ps)) {
-            //mterror(ARGV0, "'ps' not found.");
+            LogError(ARGV0, "'ps' not found.");
             return (NULL);
         }
     }
@@ -91,7 +91,7 @@ OSList *w_os_get_process_list()
     /* Create process list */
     p_list = OSList_Create();
     if (!p_list) {
-        //mterror(ARGV0, LIST_ERROR);
+        LogError(ARGV0, LIST_ERROR);
         return (NULL);
     }
 
@@ -238,25 +238,25 @@ OSList *w_os_get_process_list()
                          TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, FALSE, &hpriv)) {
         if (GetLastError() == ERROR_NO_TOKEN) {
             if (!ImpersonateSelf(SecurityImpersonation)) {
-                //mterror(ARGV0, "os_get_win32_process_list -> ImpersonateSelf");
+                LogError(ARGV0, "os_get_win32_process_list -> ImpersonateSelf");
                 return (NULL);
             }
 
             if (!OpenThreadToken(GetCurrentThread(),
                                  TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
                                  FALSE, &hpriv)) {
-                //mterror(ARGV0, "os_get_win32_process_list -> OpenThread");
+                LogError(ARGV0, "os_get_win32_process_list -> OpenThread");
                 return (NULL) ;
             }
         } else {
-            //mterror(ARGV0, "os_get_win32_process_list -> OpenThread");
+            LogError(ARGV0, "os_get_win32_process_list -> OpenThread");
             return (NULL);
         }
     }
 
     /* Enable debug privilege */
     if (!w_os_win32_setdebugpriv(hpriv, 1)) {
-        //mterror(ARGV0, "w_os_win32_setdebugpriv");
+        LogError(ARGV0, "w_os_win32_setdebugpriv");
         CloseHandle(hpriv);
         return (NULL);
     }
@@ -264,13 +264,13 @@ OSList *w_os_get_process_list()
     /* Make a snapshot of every process */
     hsnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (hsnap == INVALID_HANDLE_VALUE) {
-        //mterror(ARGV0, "CreateToolhelp32Snapshot");
+        LogError(ARGV0, "CreateToolhelp32Snapshot");
         return (NULL);
     }
 
     /* Get first and second processes -- system entries */
     if (!Process32First(hsnap, &p_entry) && !Process32Next(hsnap, &p_entry )) {
-        //mterror(ARGV0, "Process32First");
+        LogError(ARGV0, "Process32First");
         CloseHandle(hsnap);
         return (NULL);
     }
@@ -279,7 +279,7 @@ OSList *w_os_get_process_list()
     p_list = OSList_Create();
     if (!p_list) {
         CloseHandle(hsnap);
-        //mterror(ARGV0, LIST_ERROR);
+        LogError(ARGV0, LIST_ERROR);
         return (0);
     }
 

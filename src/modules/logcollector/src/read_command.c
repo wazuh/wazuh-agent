@@ -23,11 +23,11 @@ void *read_command(logreader *lf, int *rc, int drop_it) {
     str[OS_MAXSTR] = '\0';
     *rc = 0;
 
-    //mdebug2("Running command '%s'", lf->command);
+    LogDebug("Running command '%s'", lf->command);
 
     cmd_output = popen(lf->command, "r");
     if (!cmd_output) {
-        //merror("Unable to execute command: '%s'.",
+        LogError("Unable to execute command: '%s'.",
                lf->command);
 
         lf->command = NULL;
@@ -63,7 +63,7 @@ void *read_command(logreader *lf, int *rc, int drop_it) {
             continue;
         }
 
-        //mdebug2("Reading command message: '%s'", str);
+        LogDebug("Reading command message: '%s'", str);
 
         /* Send message to queue */
         if (drop_it == 0) {
@@ -75,6 +75,6 @@ void *read_command(logreader *lf, int *rc, int drop_it) {
 
     pclose(cmd_output);
 
-    //mdebug2("Read %d lines from command '%s'", lines, lf->command);
+    LogDebug("Read %d lines from command '%s'", lines, lf->command);
     return (NULL);
 }

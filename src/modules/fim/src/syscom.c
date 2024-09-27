@@ -134,7 +134,7 @@ void * syscom_main(__attribute__((unused)) void * arg) {
     LogDebug(FIM_SYSCOM_REQUEST_READY);
 
     if (sock = OS_BindUnixDomain(SYS_LOCAL_SOCK, SOCK_STREAM, OS_MAXSTR), sock < 0) {
-        //merror(FIM_ERROR_SYSCOM_BIND_SOCKET, SYS_LOCAL_SOCK, errno, strerror(errno));
+        LogError(FIM_ERROR_SYSCOM_BIND_SOCKET, SYS_LOCAL_SOCK, errno, strerror(errno));
         return NULL;
     }
 
@@ -147,7 +147,7 @@ void * syscom_main(__attribute__((unused)) void * arg) {
         switch (select(sock + 1, &fdset, NULL, NULL, NULL)) {
         case -1:
             if (errno != EINTR) {
-                //merror_exit(FIM_CRITICAL_ERROR_SELECT, "syscom_main()", strerror(errno));
+                LogCritical(FIM_CRITICAL_ERROR_SELECT, "syscom_main()", strerror(errno));
             }
 
             continue;
@@ -158,7 +158,7 @@ void * syscom_main(__attribute__((unused)) void * arg) {
 
         if (peer = accept(sock, NULL, NULL), peer < 0) {
             if (errno != EINTR) {
-                //merror(FIM_ERROR_SYSCOM_ACCEPT, strerror(errno));
+                LogError(FIM_ERROR_SYSCOM_ACCEPT, strerror(errno));
             }
 
             continue;
@@ -167,11 +167,11 @@ void * syscom_main(__attribute__((unused)) void * arg) {
         os_calloc(OS_MAXSTR, sizeof(char), buffer);
         switch (length = OS_RecvSecureTCP(peer, buffer,OS_MAXSTR), length) {
         case OS_SOCKTERR:
-            //merror(FIM_ERROR_SYSCOM_RECV_TOOLONG);
+            LogError(FIM_ERROR_SYSCOM_RECV_TOOLONG);
             break;
 
         case -1:
-            //merror(FIM_ERROR_SYSCOM_RECV, strerror(errno));
+            LogError(FIM_ERROR_SYSCOM_RECV, strerror(errno));
             break;
 
         case 0:
@@ -180,7 +180,7 @@ void * syscom_main(__attribute__((unused)) void * arg) {
             break;
 
         case OS_MAXLEN:
-            //merror(FIM_ERROR_SYSCOM_RECV_MAXLEN, MAX_DYN_STR);
+            LogError(FIM_ERROR_SYSCOM_RECV_MAXLEN, MAX_DYN_STR);
             close(peer);
             break;
 

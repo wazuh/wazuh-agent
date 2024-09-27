@@ -51,7 +51,7 @@ static int read_sys_file(const char *file_name, int do_read)
 
             notify_rk(ALERT_ROOTKIT_FOUND, op_msg);
         } else {
-            //mtdebug2(ARGV0, "Error %d (%s) with snprintf with file %s", errno, strerror(errno), file_name);
+            LogDebug(ARGV0, "Error %d (%s) with snprintf with file %s", errno, strerror(errno), file_name);
         }
 
         _sys_errors++;
@@ -116,7 +116,7 @@ static int read_sys_file(const char *file_name, int do_read)
 
                         notify_rk(ALERT_ROOTKIT_FOUND, op_msg);
                     } else {
-                        //mtdebug2(ARGV0, "Error %d (%s) with snprintf with file %s", errno, strerror(errno), file_name);
+                        LogDebug(ARGV0, "Error %d (%s) with snprintf with file %s", errno, strerror(errno), file_name);
                     }
 
                     _sys_errors++;
@@ -156,7 +156,7 @@ static int read_sys_file(const char *file_name, int do_read)
 
                 notify_rk(ALERT_SYSTEM_CRIT, op_msg);
             } else {
-                //mtdebug2(ARGV0, "Error %d (%s) with snprintf with file %s", errno, strerror(errno), file_name);
+                LogDebug(ARGV0, "Error %d (%s) with snprintf with file %s", errno, strerror(errno), file_name);
             }
 
             _sys_errors++;
@@ -189,7 +189,7 @@ static int read_sys_dir(const char *dir_name, int do_read)
 #endif
 
     if ((dir_name == NULL) || (strlen(dir_name) > PATH_MAX)) {
-        //mterror(ARGV0, "Invalid directory given.");
+        LogError(ARGV0, "Invalid directory given.");
         return (-1);
     }
 
@@ -372,7 +372,7 @@ void check_rc_sys(const char *basedir)
     char file_path[OS_SIZE_1024 + 1];
     char dir_path[OS_SIZE_1024 + 1];
 
-    //mtdebug1(ARGV0, "Starting on check_rc_sys");
+    LogDebug(ARGV0, "Starting on check_rc_sys");
 
     _sys_errors = 0;
     _sys_total = 0;

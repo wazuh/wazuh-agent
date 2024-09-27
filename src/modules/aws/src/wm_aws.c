@@ -59,7 +59,7 @@ void* wm_aws_main(wm_aws *aws_config) {
 
 
     wm_aws_setup(aws_config);
-    //mtinfo(WM_AWS_LOGTAG, "Module AWS started");
+    LogInfo(WM_AWS_LOGTAG, "Module AWS started");
 
     // Main loop
 
@@ -72,16 +72,16 @@ void* wm_aws_main(wm_aws *aws_config) {
         }
 
         if (wm_state_io(WM_AWS_CONTEXT.name, WM_IO_WRITE, &aws_config->state, sizeof(aws_config->state)) < 0)
-            //mterror(WM_AWS_LOGTAG, "Couldn't save running state.");
+            LogError(WM_AWS_LOGTAG, "Couldn't save running state.");
 
         if (time_sleep) {
             const int next_scan_time = sched_get_next_scan_time(aws_config->scan_config);
             timestamp = w_get_timestamp(next_scan_time);
-            //mtdebug2(WM_AWS_LOGTAG, "Sleeping until: %s", timestamp);
+            LogDebug(WM_AWS_LOGTAG, "Sleeping until: %s", timestamp);
             os_free(timestamp);
             w_sleep_until(next_scan_time);
         }
-        //mtinfo(WM_AWS_LOGTAG, "Starting fetching of logs.");
+        LogInfo(WM_AWS_LOGTAG, "Starting fetching of logs.");
 
         for (cur_bucket = aws_config->buckets; cur_bucket; cur_bucket = cur_bucket->next) {
 
@@ -133,7 +133,7 @@ void* wm_aws_main(wm_aws *aws_config) {
 
             wm_strcat(&log_info, ")", '\0');
 
-            //mtinfo(WM_AWS_LOGTAG, "%s", log_info);
+            LogInfo(WM_AWS_LOGTAG, "%s", log_info);
             wm_aws_run_s3(aws_config, cur_bucket);
             free(log_info);
         }
@@ -168,7 +168,7 @@ void* wm_aws_main(wm_aws *aws_config) {
 
             wm_strcat(&log_info, ")", '\0');
 
-            //mtinfo(WM_AWS_LOGTAG, "%s", log_info);
+            LogInfo(WM_AWS_LOGTAG, "%s", log_info);
             wm_aws_run_service(aws_config, cur_service);
             free(log_info);
         }
@@ -193,12 +193,12 @@ void* wm_aws_main(wm_aws *aws_config) {
 
             wm_strcat(&log_info, ")", '\0');
 
-            //mtinfo(WM_AWS_LOGTAG, "%s", log_info);
+            LogInfo(WM_AWS_LOGTAG, "%s", log_info);
             wm_aws_run_subscriber(aws_config, cur_subscriber);
             free(log_info);
         }
 
-        //mtinfo(WM_AWS_LOGTAG, "Fetching logs finished.");
+        LogInfo(WM_AWS_LOGTAG, "Fetching logs finished.");
 
     } while (FOREVER());
 
@@ -329,7 +329,7 @@ void wm_aws_setup(wm_aws *_aws_config) {
     aws_config->queue_fd = StartMQ(DEFAULTQUEUE, WRITE, INFINITE_OPENQ_ATTEMPTS);
 
     if (aws_config->queue_fd < 0) {
-        //mterror(WM_AWS_LOGTAG, "Can't connect to queue.");
+        LogError(WM_AWS_LOGTAG, "Can't connect to queue.");
         pthread_exit(NULL);
     }
 }
@@ -341,14 +341,14 @@ void wm_aws_check() {
     // Check if disabled
 
     if (!aws_config->enabled) {
-        //mtinfo(WM_AWS_LOGTAG, "Module AWS is disabled. Exiting...");
+        LogInfo(WM_AWS_LOGTAG, "Module AWS is disabled. Exiting...");
         pthread_exit(NULL);
     }
 
     // Check if there are buckets or services
 
     if (!aws_config->buckets && !aws_config->services && !aws_config->subscribers) {
-        //mtwarn(WM_AWS_LOGTAG, "No AWS buckets, services or subscribers defined. Exiting...");
+        LogWarn(WM_AWS_LOGTAG, "No AWS buckets, services or subscribers defined. Exiting...");
         pthread_exit(NULL);
     }
 
@@ -372,7 +372,7 @@ void wm_aws_run_s3(wm_aws *aws_config, wm_aws_bucket *exec_bucket) {
     int usec = 1000000 / wm_max_eps;
 
     // Create arguments
-    //mtdebug2(WM_AWS_LOGTAG, "Create argument list");
+    LogDebug(WM_AWS_LOGTAG, "Create argument list");
 
     // script path
     char * script = NULL;
@@ -482,47 +482,47 @@ void wm_aws_run_s3(wm_aws *aws_config, wm_aws_bucket *exec_bucket) {
     }
     wm_strcat(&trail_title, " - ", ' ');
 
-    //mtdebug1(WM_AWS_LOGTAG, "Launching S3 Command: %s", command);
+    LogDebug(WM_AWS_LOGTAG, "Launching S3 Command: %s", command);
 
     const int wm_exec_ret_code = wm_exec(command, &output, &status, 0, NULL);
 
     os_free(command);
 
     if (wm_exec_ret_code != 0){
-        //mterror(WM_AWS_LOGTAG, "Internal error. Exiting...");
+        LogError(WM_AWS_LOGTAG, "Internal error. Exiting...");
         os_free(trail_title);
         if (wm_exec_ret_code > 0) {
             os_free(output);
         }
         pthread_exit(NULL);
     } else if (status > 0) {
-        //mtwarn(WM_AWS_LOGTAG, "%s Returned exit code %d", trail_title, status);
+        LogWarn(WM_AWS_LOGTAG, "%s Returned exit code %d", trail_title, status);
         if(status == 1) {
             char * unknown_error_msg = strstr(output,"Unknown error");
             if (unknown_error_msg == NULL)
-                //mtwarn(WM_AWS_LOGTAG, "%s Unknown error.", trail_title);
+                LogWarn(WM_AWS_LOGTAG, "%s Unknown error.", trail_title);
             else
-                //mtwarn(WM_AWS_LOGTAG, "%s %s", trail_title, unknown_error_msg);
+                LogWarn(WM_AWS_LOGTAG, "%s %s", trail_title, unknown_error_msg);
         } else if(status == 2) {
             char * ptr;
             if (ptr = strstr(output, "aws.py: error:"), ptr) {
                 ptr += 14;
-                //mtwarn(WM_AWS_LOGTAG, "%s Error parsing arguments: %s", trail_title, ptr);
+                LogWarn(WM_AWS_LOGTAG, "%s Error parsing arguments: %s", trail_title, ptr);
             } else {
-                //mtwarn(WM_AWS_LOGTAG, "%s Error parsing arguments.", trail_title);
+                LogWarn(WM_AWS_LOGTAG, "%s Error parsing arguments.", trail_title);
             }
         } else {
             char * ptr;
             if (ptr = strstr(output, "ERROR: "), ptr) {
                 ptr += 7;
-                //mtwarn(WM_AWS_LOGTAG, "%s %s", trail_title, ptr);
+                LogWarn(WM_AWS_LOGTAG, "%s %s", trail_title, ptr);
             } else {
-                //mtwarn(WM_AWS_LOGTAG, "%s %s", trail_title, output);
+                LogWarn(WM_AWS_LOGTAG, "%s %s", trail_title, output);
             }
         }
-        //mtdebug1(WM_AWS_LOGTAG, "%s OUTPUT: %s", trail_title, output);
+        LogDebug(WM_AWS_LOGTAG, "%s OUTPUT: %s", trail_title, output);
     } else {
-        //mtdebug2(WM_AWS_LOGTAG, "%s OUTPUT: %s", trail_title, output);
+        LogDebug(WM_AWS_LOGTAG, "%s OUTPUT: %s", trail_title, output);
     }
 
     char *line;
@@ -546,7 +546,7 @@ void wm_aws_run_service(wm_aws *aws_config, wm_aws_service *exec_service) {
     int usec = 1000000 / wm_max_eps;
 
     // Create arguments
-    //mtdebug2(WM_AWS_LOGTAG, "Create argument list");
+    LogDebug(WM_AWS_LOGTAG, "Create argument list");
 
     // script path
     char * script = NULL;
@@ -645,14 +645,14 @@ void wm_aws_run_service(wm_aws *aws_config, wm_aws_service *exec_service) {
     }
     wm_strcat(&service_title, " - ", ' ');
 
-    //mtdebug1(WM_AWS_LOGTAG, "Launching S3 Command: %s", command);
+    LogDebug(WM_AWS_LOGTAG, "Launching S3 Command: %s", command);
 
     const int wm_exec_ret_code = wm_exec(command, &output, &status, 0, NULL);
 
     os_free(command);
 
     if (wm_exec_ret_code) {
-        //mterror(WM_AWS_LOGTAG, "Internal error. Exiting...");
+        LogError(WM_AWS_LOGTAG, "Internal error. Exiting...");
         os_free(service_title);
 
         if (wm_exec_ret_code > 0) {
@@ -660,33 +660,33 @@ void wm_aws_run_service(wm_aws *aws_config, wm_aws_service *exec_service) {
         }
         pthread_exit(NULL);
     } else if (status > 0) {
-        //mtwarn(WM_AWS_LOGTAG, "%s Returned exit code %d", service_title, status);
+        LogWarn(WM_AWS_LOGTAG, "%s Returned exit code %d", service_title, status);
         if(status == 1) {
             char * unknown_error_msg = strstr(output,"Unknown error");
             if (unknown_error_msg == NULL)
-                //mtwarn(WM_AWS_LOGTAG, "%s Unknown error.", service_title);
+                LogWarn(WM_AWS_LOGTAG, "%s Unknown error.", service_title);
             else
-                //mtwarn(WM_AWS_LOGTAG, "%s %s", service_title, unknown_error_msg);
+                LogWarn(WM_AWS_LOGTAG, "%s %s", service_title, unknown_error_msg);
         } else if(status == 2) {
             char * ptr;
             if (ptr = strstr(output, "aws.py: error:"), ptr) {
                 ptr += 14;
-                //mtwarn(WM_AWS_LOGTAG, "%s Error parsing arguments: %s", service_title, ptr);
+                LogWarn(WM_AWS_LOGTAG, "%s Error parsing arguments: %s", service_title, ptr);
             } else {
-                //mtwarn(WM_AWS_LOGTAG, "%s Error parsing arguments.", service_title);
+                LogWarn(WM_AWS_LOGTAG, "%s Error parsing arguments.", service_title);
             }
         } else {
             char * ptr;
             if (ptr = strstr(output, "ERROR: "), ptr) {
                 ptr += 7;
-                //mtwarn(WM_AWS_LOGTAG, "%s %s", service_title, ptr);
+                LogWarn(WM_AWS_LOGTAG, "%s %s", service_title, ptr);
             } else {
-                //mtwarn(WM_AWS_LOGTAG, "%s %s", service_title, output);
+                LogWarn(WM_AWS_LOGTAG, "%s %s", service_title, output);
             }
         }
-        //mtdebug1(WM_AWS_LOGTAG, "%s OUTPUT: %s", service_title, output);
+        LogDebug(WM_AWS_LOGTAG, "%s OUTPUT: %s", service_title, output);
     } else {
-        //mtdebug2(WM_AWS_LOGTAG, "%s OUTPUT: %s", service_title, output);
+        LogDebug(WM_AWS_LOGTAG, "%s OUTPUT: %s", service_title, output);
     }
 
     os_free(service_title);
@@ -710,7 +710,7 @@ void wm_aws_run_subscriber(wm_aws *aws_config, wm_aws_subscriber *exec_subscribe
     int usec = 1000000 / wm_max_eps;
 
     // Create arguments
-    //mtdebug2(WM_AWS_LOGTAG, "Create argument list");
+    LogDebug(WM_AWS_LOGTAG, "Create argument list");
 
     // script path
     char * script = NULL;
@@ -792,14 +792,14 @@ void wm_aws_run_subscriber(wm_aws *aws_config, wm_aws_subscriber *exec_subscribe
 
     wm_strcat(&subscriber_title, " - ", ' ');
 
-    //mtdebug1(WM_AWS_LOGTAG, "Launching S3 Subscriber Command: %s", command);
+    LogDebug(WM_AWS_LOGTAG, "Launching S3 Subscriber Command: %s", command);
 
     const int wm_exec_ret_code = wm_exec(command, &output, &status, 0, NULL);
 
     os_free(command);
 
     if (wm_exec_ret_code) {
-        //mterror(WM_AWS_LOGTAG, "Internal error. Exiting...");
+        LogError(WM_AWS_LOGTAG, "Internal error. Exiting...");
         os_free(subscriber_title);
 
         if (wm_exec_ret_code > 0) {
@@ -807,33 +807,33 @@ void wm_aws_run_subscriber(wm_aws *aws_config, wm_aws_subscriber *exec_subscribe
         }
         pthread_exit(NULL);
     } else if (status > 0) {
-        //mtwarn(WM_AWS_LOGTAG, "%s Returned exit code %d", subscriber_title, status);
+        LogWarn(WM_AWS_LOGTAG, "%s Returned exit code %d", subscriber_title, status);
         if(status == 1) {
             char * unknown_error_msg = strstr(output,"Unknown error");
             if (unknown_error_msg == NULL)
-                //mtwarn(WM_AWS_LOGTAG, "%s Unknown error.", subscriber_title);
+                LogWarn(WM_AWS_LOGTAG, "%s Unknown error.", subscriber_title);
             else
-                //mtwarn(WM_AWS_LOGTAG, "%s %s", subscriber_title, unknown_error_msg);
+                LogWarn(WM_AWS_LOGTAG, "%s %s", subscriber_title, unknown_error_msg);
         } else if(status == 2) {
             char * ptr;
             if (ptr = strstr(output, "aws.py: error:"), ptr) {
                 ptr += 14;
-                //mtwarn(WM_AWS_LOGTAG, "%s Error parsing arguments: %s", subscriber_title, ptr);
+                LogWarn(WM_AWS_LOGTAG, "%s Error parsing arguments: %s", subscriber_title, ptr);
             } else {
-                //mtwarn(WM_AWS_LOGTAG, "%s Error parsing arguments.", subscriber_title);
+                LogWarn(WM_AWS_LOGTAG, "%s Error parsing arguments.", subscriber_title);
             }
         } else {
             char * ptr;
             if (ptr = strstr(output, "ERROR: "), ptr) {
                 ptr += 7;
-                //mtwarn(WM_AWS_LOGTAG, "%s %s", subscriber_title, ptr);
+                LogWarn(WM_AWS_LOGTAG, "%s %s", subscriber_title, ptr);
             } else {
-                //mtwarn(WM_AWS_LOGTAG, "%s %s", subscriber_title, output);
+                LogWarn(WM_AWS_LOGTAG, "%s %s", subscriber_title, output);
             }
         }
-        //mtdebug1(WM_AWS_LOGTAG, "%s OUTPUT: %s", subscriber_title, output);
+        LogDebug(WM_AWS_LOGTAG, "%s OUTPUT: %s", subscriber_title, output);
     } else {
-        //mtdebug2(WM_AWS_LOGTAG, "%s OUTPUT: %s", subscriber_title, output);
+        LogDebug(WM_AWS_LOGTAG, "%s OUTPUT: %s", subscriber_title, output);
     }
 
     os_free(subscriber_title);

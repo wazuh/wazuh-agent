@@ -60,7 +60,7 @@ wm_agent_upgrade_start_agent_module(&upgrade_config->agent_config, upgrade_confi
 }
 
 STATIC void wm_agent_upgrade_destroy(wm_agent_upgrade* upgrade_config) {
-    //mtinfo(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_MODULE_FINISHED);
+    LogInfo(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_MODULE_FINISHED);
     os_free(upgrade_config);
 }
 

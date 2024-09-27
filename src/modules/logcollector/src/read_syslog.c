@@ -52,7 +52,7 @@ void *read_syslog(logreader *lf, int *rc, int drop_it) {
 
             if ((int64_t)strlen(str) != rbytes - 1)
             {
-                //mdebug2("Line in '%s' contains some zero-bytes (valid=" FTELL_TT "/ total=" FTELL_TT "). Dropping line.", lf->file, FTELL_INT64 strlen(str), FTELL_INT64 rbytes - 1);
+                LogDebug("Line in '%s' contains some zero-bytes (valid=" FTELL_TT "/ total=" FTELL_TT "). Dropping line.", lf->file, FTELL_INT64 strlen(str), FTELL_INT64 rbytes - 1);
                 continue;
             }
         }
@@ -73,7 +73,7 @@ void *read_syslog(logreader *lf, int *rc, int drop_it) {
              */
              if (feof(lf->fp)) {
                 /* Message not complete. Return. */
-                //mdebug2("Message not complete from '%s'. Trying again: '%.*s'%s", lf->file, sample_log_length, str, rbytes > sample_log_length ? "..." : "");
+                LogDebug("Message not complete from '%s'. Trying again: '%.*s'%s", lf->file, sample_log_length, str, rbytes > sample_log_length ? "..." : "");
                 if(current_position >= 0) {
                     w_fseek(lf->fp, current_position, SEEK_SET);
                 }
@@ -101,7 +101,7 @@ void *read_syslog(logreader *lf, int *rc, int drop_it) {
         }
 #endif
 
-        //mdebug2("Reading syslog message: '%.*s'%s", sample_log_length, str, rbytes > sample_log_length ? "..." : "");
+        LogDebug("Reading syslog message: '%.*s'%s", sample_log_length, str, rbytes > sample_log_length ? "..." : "");
 
         /* Check ignore and restrict log regex, if configured. */
         if (drop_it == 0 && !check_ignore_and_restrict(lf->regex_ignore, lf->regex_restrict, str)) {
@@ -115,10 +115,10 @@ void *read_syslog(logreader *lf, int *rc, int drop_it) {
             // truncate str before logging to ossec.log
 
             if (!__ms_reported) {
-                //merror("Large message size from file '%s' (length = " FTELL_TT "): '%.*s'...", lf->file, FTELL_INT64 rbytes, sample_log_length, str);
+                LogError("Large message size from file '%s' (length = " FTELL_TT "): '%.*s'...", lf->file, FTELL_INT64 rbytes, sample_log_length, str);
                 __ms_reported = 1;
             } else {
-                //mdebug2("Large message size from file '%s' (length = " FTELL_TT "): '%.*s'...", lf->file, FTELL_INT64 rbytes, sample_log_length, str);
+                LogDebug("Large message size from file '%s' (length = " FTELL_TT "): '%.*s'...", lf->file, FTELL_INT64 rbytes, sample_log_length, str);
             }
 
             for (offset += rbytes; fgets(str, OS_MAXSTR - 2, lf->fp) != NULL; offset += rbytes) {
@@ -149,6 +149,6 @@ void *read_syslog(logreader *lf, int *rc, int drop_it) {
         EVP_MD_CTX_free(context);
     }
 
-    //mdebug2("Read %d lines from %s", lines, lf->file);
+    LogDebug("Read %d lines from %s", lines, lf->file);
     return (NULL);
 }
