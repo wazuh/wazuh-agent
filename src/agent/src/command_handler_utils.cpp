@@ -18,9 +18,10 @@ DispatchCommand(command_store::CommandEntry commandEntry,
     const auto result = co_await module->Command(commandEntry.Command);
 
     nlohmann::json resultJson;
-    resultJson["data"] = result;
+    resultJson["result"] = result;
+    resultJson["id"] = commandEntry.Id;
 
-    Message message {MessageType::STATEFUL, {{resultJson, {"module", module->Name()}}}};
+    Message message {MessageType::STATEFUL, {resultJson}, "CommandHandler"};
     messageQueue->push(message);
 
     co_return std::make_tuple(command_store::Status::SUCCESS, result);
