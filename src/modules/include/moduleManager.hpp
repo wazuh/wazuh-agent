@@ -42,7 +42,7 @@ public:
             .Start = [&module]() { module.Start(); },
             .Setup = [&module](const configuration::ConfigurationParser& configurationParser) { module.Setup(configurationParser); },
             .Stop = [&module]() { module.Stop(); },
-            .Command = [&module](std::string query) -> boost::asio::awaitable<std::string>
+            .Command = [&module](std::string query) -> boost::asio::awaitable<CommandExecutionResult>
             {
                 co_return co_await module.Command(query);
             },

@@ -14,6 +14,8 @@
 #include <inventoryNormalizer.hpp>
 #include <multitype_queue.hpp>
 
+#include <moduleWrapper.hpp>
+
 #include <boost/asio/awaitable.hpp>
 
 class Inventory {
@@ -27,7 +29,7 @@ class Inventory {
         void Start();
         void Setup(const configuration::ConfigurationParser& configurationParser);
         void Stop();
-        boost::asio::awaitable<std::string> Command(const std::string query);
+        boost::asio::awaitable<CommandExecutionResult> Command(const std::string query);
         const std::string& Name() const { return m_moduleName; };
         void SetMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue);
 
