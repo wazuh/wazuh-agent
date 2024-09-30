@@ -41,8 +41,9 @@ namespace communicator
         {
             m_managerIp = getStringConfigValue("agent", "manager_ip");
             m_port = getStringConfigValue("agent", "agent_comms_api_port");
-            const std::string httpsEnabled =  getStringConfigValue("agent", "https_enabled");
-            if (httpsEnabled == "no") {
+            const std::string httpsEnabled = getStringConfigValue("agent", "https_enabled");
+            if (httpsEnabled == "no")
+            {
                 m_useHttps = false;
                 LogInfo("Using insecure connection.");
             }
@@ -100,8 +101,8 @@ namespace communicator
             return m_keepRunning.load();
         };
 
-        const auto reqParams =
-            http_client::HttpRequestParams(boost::beast::http::verb::get, m_managerIp, m_port, "/api/v1/commands", m_useHttps);
+        const auto reqParams = http_client::HttpRequestParams(
+            boost::beast::http::verb::get, m_managerIp, m_port, "/api/v1/commands", m_useHttps);
         co_await m_httpClient->Co_PerformHttpRequest(
             m_token, reqParams, {}, onAuthenticationFailed, onSuccess, loopCondition);
     }

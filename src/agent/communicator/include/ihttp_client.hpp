@@ -45,7 +45,8 @@ namespace http_client
         bool operator==(const HttpRequestParams& other) const
         {
             return Method == other.Method && Host == other.Host && Port == other.Port && Endpoint == other.Endpoint &&
-                   Token == other.Token && User_pass == other.User_pass && Body == other.Body && Use_Https == other.Use_Https;
+                   Token == other.Token && User_pass == other.User_pass && Body == other.Body &&
+                   Use_Https == other.Use_Https;
         }
     };
 

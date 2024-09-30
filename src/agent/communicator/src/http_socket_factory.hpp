@@ -14,8 +14,7 @@ namespace http_client
     class HttpSocketFactory : public IHttpSocketFactory
     {
     public:
-        std::unique_ptr<IHttpSocket> Create(const boost::asio::any_io_executor& executor,
-                                            const bool use_https) override
+        std::unique_ptr<IHttpSocket> Create(const boost::asio::any_io_executor& executor, const bool use_https) override
         {
             if (use_https)
                 return std::make_unique<HttpsSocket>(executor);

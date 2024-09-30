@@ -42,9 +42,10 @@ protected:
 
     void SetupMockSocketFactory()
     {
-        EXPECT_CALL(*mockSocketFactory, Create(_))
+        EXPECT_CALL(*mockSocketFactory, Create(_, _))
             .WillOnce(Invoke(
-                [&](const auto& executor) -> std::unique_ptr<http_client::IHttpSocket>
+                [&](const auto& executor,
+                    [[maybe_unused]] const bool useHttps) -> std::unique_ptr<http_client::IHttpSocket>
                 {
                     EXPECT_TRUE(executor);
                     return std::move(mockSocket);
@@ -106,7 +107,8 @@ protected:
 TEST(CreateHttpRequestTest, BasicGetRequest)
 {
     auto httpClient = http_client::HttpClient();
-    const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/test");
+    const auto reqParams =
+        http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/test", true);
     const auto req = httpClient.CreateHttpRequest(reqParams);
 
     EXPECT_EQ(req.method(), boost::beast::http::verb::get);
@@ -121,8 +123,8 @@ TEST(CreateHttpRequestTest, PostRequestWithBody)
 {
     auto httpClient = http_client::HttpClient();
     const std::string body = R"({"key": "value"})";
-    const auto reqParams =
-        http_client::HttpRequestParams(boost::beast::http::verb::post, "localhost", "8080", "/submit", "", "", body);
+    const auto reqParams = http_client::HttpRequestParams(
+        boost::beast::http::verb::post, "localhost", "8080", "/submit", false, "", "", body);
     const auto req = httpClient.CreateHttpRequest(reqParams);
 
     EXPECT_EQ(req.method(), boost::beast::http::verb::post);
@@ -140,7 +142,7 @@ TEST(CreateHttpRequestTest, AuthorizationBearerToken)
     auto httpClient = http_client::HttpClient();
     const std::string token = "dummy_token";
     const auto reqParams =
-        http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/secure", token);
+        http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/secure", true, token);
     const auto req = httpClient.CreateHttpRequest(reqParams);
 
     EXPECT_EQ(req[boost::beast::http::field::authorization], "Bearer dummy_token");
@@ -150,8 +152,8 @@ TEST(CreateHttpRequestTest, AuthorizationBasic)
 {
     auto httpClient = http_client::HttpClient();
     const std::string user_pass = "username:password";
-    const auto reqParams =
-        http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/secure", "", user_pass);
+    const auto reqParams = http_client::HttpRequestParams(
+        boost::beast::http::verb::get, "localhost", "8080", "/secure", true, "", user_pass);
     const auto req = httpClient.CreateHttpRequest(reqParams);
 
     EXPECT_EQ(req[boost::beast::http::field::authorization], "Basic username:password");
@@ -167,7 +169,7 @@ TEST_F(HttpClientTest, PerformHttpRequest_Success)
     EXPECT_CALL(*mockSocket, Write(_)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_)).WillOnce([](auto& res) { res.result(boost::beast::http::status::ok); });
 
-    const http_client::HttpRequestParams params(boost::beast::http::verb::get, "localhost", "80", "/");
+    const http_client::HttpRequestParams params(boost::beast::http::verb::get, "localhost", "80", "/", true);
     const auto response = client->PerformHttpRequest(params);
 
     EXPECT_EQ(response.result(), boost::beast::http::status::ok);
@@ -179,7 +181,7 @@ TEST_F(HttpClientTest, PerformHttpRequest_ExceptionThrown)
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Throw(std::runtime_error("Simulated resolution failure")));
 
-    const http_client::HttpRequestParams params(boost::beast::http::verb::get, "localhost", "80", "/");
+    const http_client::HttpRequestParams params(boost::beast::http::verb::get, "localhost", "80", "/", true);
     const auto response = client->PerformHttpRequest(params);
 
     EXPECT_EQ(response.result(), boost::beast::http::status::internal_server_error);
@@ -216,7 +218,9 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_Success)
         unauthorizedCalled = true;
     };
 
-    const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/");
+    const auto reqParams =
+        http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/", true);
+
     auto task = client->Co_PerformHttpRequest(
         std::make_shared<std::string>("token"), reqParams, getMessages, onUnauthorized, onSuccess, nullptr);
 
@@ -256,7 +260,8 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
         unauthorizedCalled = true;
     };
 
-    const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/");
+    const auto reqParams =
+        http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/", true);
     auto task = client->Co_PerformHttpRequest(
         std::make_shared<std::string>("token"), reqParams, getMessages, onUnauthorized, onSuccess, nullptr);
 
@@ -297,7 +302,8 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails
         unauthorizedCalled = true;
     };
 
-    const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/");
+    const auto reqParams =
+        http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/", true);
     auto task = client->Co_PerformHttpRequest(
         std::make_shared<std::string>("token"), reqParams, getMessages, onUnauthorized, onSuccess, nullptr);
 
@@ -340,7 +346,8 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
         unauthorizedCalled = true;
     };
 
-    const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/");
+    const auto reqParams =
+        http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/", true);
     auto task = client->Co_PerformHttpRequest(
         std::make_shared<std::string>("token"), reqParams, getMessages, onUnauthorized, onSuccess, nullptr);
 
@@ -382,7 +389,8 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_UnauthorizedCalledWhenAuthorization
         unauthorizedCalled = true;
     };
 
-    const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/");
+    const auto reqParams =
+        http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "8080", "/", true);
     auto task = client->Co_PerformHttpRequest(
         std::make_shared<std::string>("token"), reqParams, getMessages, onUnauthorized, onSuccess, nullptr);
 
@@ -411,7 +419,7 @@ TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_Success)
                 boost::beast::ostream(res.body()) << R"({"token":"valid_token"})";
             });
 
-    const auto token = client->AuthenticateWithUuidAndKey("localhost", "8080", "test-uuid", "test-key");
+    const auto token = client->AuthenticateWithUuidAndKey("localhost", "8080", "test-uuid", "test-key", true);
 
     ASSERT_TRUE(token.has_value());
 
@@ -429,7 +437,7 @@ TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_Failure)
     EXPECT_CALL(*mockSocket, Write(_)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_)).WillOnce([](auto& res) { res.result(boost::beast::http::status::unauthorized); });
 
-    const auto token = client->AuthenticateWithUuidAndKey("localhost", "8080", "test-uuid", "test-key");
+    const auto token = client->AuthenticateWithUuidAndKey("localhost", "8080", "test-uuid", "test-key", true);
 
     EXPECT_FALSE(token.has_value());
 }
@@ -450,7 +458,7 @@ TEST_F(HttpClientTest, AuthenticateWithUserPassword_Success)
                 boost::beast::ostream(res.body()) << R"({"data":{"token":"valid_token"}})";
             });
 
-    const auto token = client->AuthenticateWithUserPassword("localhost", "8080", "user", "password");
+    const auto token = client->AuthenticateWithUserPassword("localhost", "8080", "user", "password", true);
 
     ASSERT_TRUE(token.has_value());
 
@@ -468,7 +476,7 @@ TEST_F(HttpClientTest, AuthenticateWithUserPassword_Failure)
     EXPECT_CALL(*mockSocket, Write(_)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_)).WillOnce([](auto& res) { res.result(boost::beast::http::status::unauthorized); });
 
-    const auto token = client->AuthenticateWithUserPassword("localhost", "8080", "user", "password");
+    const auto token = client->AuthenticateWithUserPassword("localhost", "8080", "user", "password", true);
 
     EXPECT_FALSE(token.has_value());
 }

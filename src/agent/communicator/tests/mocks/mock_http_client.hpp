@@ -27,12 +27,19 @@ public:
 
     MOCK_METHOD(std::optional<std::string>,
                 AuthenticateWithUuidAndKey,
-                (const std::string& host, const std::string& port, const std::string& uuid, const std::string& key),
+                (const std::string& host,
+                 const std::string& port,
+                 const std::string& uuid,
+                 const std::string& key,
+                 const bool useHttps),
                 (override));
 
-    MOCK_METHOD(
-        std::optional<std::string>,
-        AuthenticateWithUserPassword,
-        (const std::string& host, const std::string& port, const std::string& user, const std::string& password),
-        (override));
+    MOCK_METHOD(std::optional<std::string>,
+                AuthenticateWithUserPassword,
+                (const std::string& host,
+                 const std::string& port,
+                 const std::string& user,
+                 const std::string& password,
+                 const bool useHttps),
+                (override));
 };

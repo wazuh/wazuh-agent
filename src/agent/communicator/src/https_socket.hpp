@@ -1,8 +1,8 @@
 #include <ihttp_socket.hpp>
 
 #include <boost/asio.hpp>
-#include <boost/beast.hpp>
 #include <boost/asio/ssl.hpp>
+#include <boost/beast.hpp>
 
 namespace http_client
 {
@@ -10,8 +10,8 @@ namespace http_client
     {
     public:
         HttpsSocket(const boost::asio::any_io_executor& io_context)
-              : m_ctx(boost::asio::ssl::context::sslv23),
-                m_ssl_socket(io_context, m_ctx)
+            : m_ctx(boost::asio::ssl::context::sslv23)
+            , m_ssl_socket(io_context, m_ctx)
         {
             m_ctx.set_verify_mode(boost::asio::ssl::verify_peer);
         }
@@ -29,8 +29,8 @@ namespace http_client
             co_await boost::asio::async_connect(
                 m_ssl_socket.lowest_layer(), endpoints, boost::asio::redirect_error(boost::asio::use_awaitable, code));
 
-            co_await m_ssl_socket.async_handshake(
-                boost::asio::ssl::stream_base::client, boost::asio::redirect_error(boost::asio::use_awaitable, code));
+            co_await m_ssl_socket.async_handshake(boost::asio::ssl::stream_base::client,
+                                                  boost::asio::redirect_error(boost::asio::use_awaitable, code));
         }
 
         void Write(const boost::beast::http::request<boost::beast::http::string_body>& req) override
