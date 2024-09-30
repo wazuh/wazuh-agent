@@ -10,7 +10,7 @@
 #include <memory>
 #include <tuple>
 
-boost::asio::awaitable<std::tuple<module_command::Status, std::string>>
+boost::asio::awaitable<module_command::CommandExecutionResult>
 DispatchCommand(module_command::CommandEntry commandEntry,
                 std::shared_ptr<ModuleWrapper> module,
                 std::shared_ptr<IMultiTypeQueue> messageQueue);

@@ -18,8 +18,7 @@ namespace command_handler
         boost::asio::awaitable<void> CommandsProcessingTask(
             const std::function<std::optional<T>()> GetCommandFromQueue,
             const std::function<void()> PopCommandFromQueue,
-            const std::function<boost::asio::awaitable<std::tuple<module_command::Status, std::string>>(T&)>
-                DispatchCommand)
+            const std::function<boost::asio::awaitable<module_command::CommandExecutionResult>(T&)> DispatchCommand)
         {
             using namespace std::chrono_literals;
             const auto executor = co_await boost::asio::this_coro::executor;
@@ -37,10 +36,8 @@ namespace command_handler
 
                 m_commandStore.StoreCommand(cmd.value());
                 PopCommandFromQueue();
-                auto result = co_await DispatchCommand(cmd.value());
 
-                cmd.value().ExecutionResult.ErrorCode = std::get<0>(result);
-                cmd.value().ExecutionResult.Message = std::get<1>(result);
+                cmd.value().ExecutionResult = co_await DispatchCommand(cmd.value());
                 m_commandStore.UpdateCommand(cmd.value());
 
                 LogInfo("Done processing command: {}({})", cmd.value().Command, cmd.value().Module);

@@ -2,7 +2,7 @@
 
 #include <logger.hpp>
 
-boost::asio::awaitable<std::tuple<module_command::Status, std::string>>
+boost::asio::awaitable<module_command::CommandExecutionResult>
 DispatchCommand(module_command::CommandEntry commandEntry,
                 std::shared_ptr<ModuleWrapper> module,
                 std::shared_ptr<IMultiTypeQueue> messageQueue)
@@ -10,7 +10,7 @@ DispatchCommand(module_command::CommandEntry commandEntry,
     if (!module)
     {
         LogError("Error dispatching command: module {} not found", commandEntry.Module);
-        co_return std::make_tuple(module_command::Status::FAILURE, "Module not found");
+        co_return module_command::CommandExecutionResult {module_command::Status::FAILURE, "Module not found"};
     }
 
     LogInfo("Dispatching command {}({})", commandEntry.Command, commandEntry.Module);
@@ -25,5 +25,5 @@ DispatchCommand(module_command::CommandEntry commandEntry,
     Message message {MessageType::STATEFUL, {resultJson}, "CommandHandler"};
     messageQueue->push(message);
 
-    co_return std::make_tuple(static_cast<module_command::Status>(result.ErrorCode), result.Message);
+    co_return result;
 }
