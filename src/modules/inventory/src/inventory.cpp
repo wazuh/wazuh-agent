@@ -61,7 +61,7 @@ void Inventory::Stop() {
 
 Co_CommandExecutionResult Inventory::Command(const std::string query) {
     LogInfo("Query: ",query);
-    co_return CommandExecutionResult{0,"OK"};
+    co_return module_command::CommandExecutionResult{module_command::Status::SUCCESS, "OK"};
 }
 
 void Inventory::SetMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue) {

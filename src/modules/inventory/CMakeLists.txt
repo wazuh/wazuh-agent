@@ -46,6 +46,7 @@ target_link_libraries(Inventory PUBLIC
     pthreads_op
     ConfigurationParser
     MultiTypeQueue
+    ModuleCommand
     Logger)
 
 include(../../cmake/ConfigureTarget.cmake)

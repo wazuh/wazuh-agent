@@ -1,18 +1,14 @@
 #pragma once
 
 #include <configuration_parser.hpp>
+#include <module_command/command_entry.hpp>
 
 #include <boost/asio/awaitable.hpp>
 
 #include <functional>
 #include <string>
 
-struct CommandExecutionResult {
-    int ErrorCode = 0;
-    std::string Message = "";
-};
-
-using Co_CommandExecutionResult = boost::asio::awaitable<CommandExecutionResult>;
+using Co_CommandExecutionResult = boost::asio::awaitable<module_command::CommandExecutionResult>;
 
 struct ModuleWrapper {
     std::function<void()> Start;
