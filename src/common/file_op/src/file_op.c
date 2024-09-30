@@ -27,7 +27,9 @@
 
 #ifndef WIN32
 #include <regex.h>
+#define ATTR_UNUSED __attribute__((unused))
 #else
+#define ATTR_UNUSED
 #include <aclapi.h>
 typedef int DIR;
 struct dirent {
@@ -3258,14 +3260,14 @@ int w_fseek(FILE *x, int64_t pos, int mode) {
 }
 
 /* Prevent children processes from inheriting a file pointer */
-void w_file_cloexec(__attribute__((unused)) FILE * fp) {
+void w_file_cloexec(ATTR_UNUSED FILE * fp) {
 #ifndef WIN32
     w_descriptor_cloexec(fileno(fp));
 #endif
 }
 
 /* Prevent children processes from inheriting a file descriptor */
-void w_descriptor_cloexec(__attribute__((unused)) int fd){
+void w_descriptor_cloexec(ATTR_UNUSED int fd){
 #ifndef WIN32
     if (fcntl(fd, F_SETFD, FD_CLOEXEC) < 0) {
         LogWarn("Cannot set close-on-exec flag to the descriptor: %s (%d)", strerror(errno), errno);
