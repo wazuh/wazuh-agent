@@ -89,9 +89,10 @@ namespace command_store
         fields.emplace_back("command", sqlite_manager::ColumnType::TEXT, cmd.Command);
         fields.emplace_back("time", sqlite_manager::ColumnType::REAL, std::to_string(GetCurrentTimestampAsReal()));
         fields.emplace_back("parameters", sqlite_manager::ColumnType::TEXT, cmd.Parameters);
-        fields.emplace_back("result", sqlite_manager::ColumnType::TEXT, cmd.Result);
-        fields.emplace_back(
-            "status", sqlite_manager::ColumnType::INTEGER, std::to_string(static_cast<int>(cmd.CurrentStatus)));
+        fields.emplace_back("result", sqlite_manager::ColumnType::TEXT, cmd.ExecutionResult.Message);
+        fields.emplace_back("status",
+                            sqlite_manager::ColumnType::INTEGER,
+                            std::to_string(static_cast<int>(cmd.ExecutionResult.ErrorCode)));
         try
         {
             m_dataBase->Insert(COMMANDSTORE_TABLE_NAME, fields);
@@ -153,11 +154,11 @@ namespace command_store
                 }
                 else if (col.Name == "result")
                 {
-                    cmd.Result = col.Value;
+                    cmd.ExecutionResult.Message = col.Value;
                 }
                 else if (col.Name == "status")
                 {
-                    cmd.CurrentStatus = StatusFromInt(std::stoi(col.Value));
+                    cmd.ExecutionResult.ErrorCode = StatusFromInt(std::stoi(col.Value));
                 }
                 else if (col.Name == "time")
                 {
@@ -182,11 +183,12 @@ namespace command_store
             fields.emplace_back("command", sqlite_manager::ColumnType::TEXT, cmd.Command);
         if (!cmd.Parameters.empty())
             fields.emplace_back("parameters", sqlite_manager::ColumnType::TEXT, cmd.Parameters);
-        if (!cmd.Result.empty())
-            fields.emplace_back("result", sqlite_manager::ColumnType::TEXT, cmd.Result);
-        if (cmd.CurrentStatus != module_command::Status::UNKNOWN)
-            fields.emplace_back(
-                "status", sqlite_manager::ColumnType::INTEGER, std::to_string(static_cast<int>(cmd.CurrentStatus)));
+        if (!cmd.ExecutionResult.Message.empty())
+            fields.emplace_back("result", sqlite_manager::ColumnType::TEXT, cmd.ExecutionResult.Message);
+        if (cmd.ExecutionResult.ErrorCode != module_command::Status::UNKNOWN)
+            fields.emplace_back("status",
+                                sqlite_manager::ColumnType::INTEGER,
+                                std::to_string(static_cast<int>(cmd.ExecutionResult.ErrorCode)));
 
         sqlite_manager::Column condition("id", sqlite_manager::ColumnType::TEXT, cmd.Id);
         try

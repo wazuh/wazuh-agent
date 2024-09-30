@@ -39,8 +39,8 @@ namespace command_handler
                 PopCommandFromQueue();
                 auto result = co_await DispatchCommand(cmd.value());
 
-                cmd.value().CurrentStatus = std::get<0>(result);
-                cmd.value().Result = std::get<1>(result);
+                cmd.value().ExecutionResult.ErrorCode = std::get<0>(result);
+                cmd.value().ExecutionResult.Message = std::get<1>(result);
                 m_commandStore.UpdateCommand(cmd.value());
 
                 LogInfo("Done processing command: {}({})", cmd.value().Command, cmd.value().Module);

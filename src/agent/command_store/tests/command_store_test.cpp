@@ -78,8 +78,8 @@ TEST_F(CommandStoreTest, UpdateCommandTest)
         ASSERT_EQ(cmd.Module, "Updated Module");
         ASSERT_EQ(cmd.Command, "Updated CommandEntry");
         ASSERT_EQ(cmd.Parameters, "Updated Parameter");
-        ASSERT_EQ(cmd.Result, "Updated Result");
-        ASSERT_EQ(cmd.CurrentStatus, module_command::Status::SUCCESS);
+        ASSERT_EQ(cmd.ExecutionResult.Message, "Updated Result");
+        ASSERT_EQ(cmd.ExecutionResult.ErrorCode, module_command::Status::SUCCESS);
     }
     else
     {
@@ -102,8 +102,8 @@ TEST_F(CommandStoreTest, UpdateCommandTest)
         ASSERT_EQ(cmd.Module, "Updated Module");
         ASSERT_EQ(cmd.Command, "Updated CommandEntry");
         ASSERT_EQ(cmd.Parameters, "Updated Parameter");
-        ASSERT_EQ(cmd.Result, "Newly Updated Result");
-        ASSERT_EQ(cmd.CurrentStatus, module_command::Status::SUCCESS);
+        ASSERT_EQ(cmd.ExecutionResult.Message, "Newly Updated Result");
+        ASSERT_EQ(cmd.ExecutionResult.ErrorCode, module_command::Status::SUCCESS);
     }
     else
     {

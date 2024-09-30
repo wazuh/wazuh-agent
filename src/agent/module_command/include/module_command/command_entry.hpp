@@ -14,27 +14,40 @@ namespace module_command
         UNKNOWN
     };
 
+    struct CommandExecutionResult
+    {
+        Status ErrorCode = Status::UNKNOWN;
+        std::string Message;
+
+        explicit CommandExecutionResult(Status code = Status::UNKNOWN, std::string message = "")
+            : ErrorCode(code)
+            , Message(std::move(message))
+        {
+        }
+    };
+
     class CommandEntry
     {
     public:
+        // Default constructor
         CommandEntry()
-            : CurrentStatus(Status::UNKNOWN)
-            , Time(0.0)
+            : Time(0.0)
+            , ExecutionResult(Status::UNKNOWN, "")
         {
         }
 
-        CommandEntry(const std::string& id,
-                     const std::string& module,
-                     const std::string& command,
-                     const std::string& parameters,
-                     const std::string& result,
+        CommandEntry(std::string id,
+                     std::string module,
+                     std::string command,
+                     std::string parameters,
+                     std::string result,
                      Status status)
-            : Id(id)
-            , Module(module)
-            , Command(command)
-            , Parameters(parameters)
-            , Result(result)
-            , CurrentStatus(status)
+            : Id(std::move(id))
+            , Module(std::move(module))
+            , Command(std::move(command))
+            , Parameters(std::move(parameters))
+            , Time(0.0)
+            , ExecutionResult(status, std::move(result))
         {
         }
 
@@ -42,8 +55,7 @@ namespace module_command
         std::string Module;
         std::string Command;
         std::string Parameters;
-        std::string Result;
-        Status CurrentStatus;
         double Time;
+        CommandExecutionResult ExecutionResult;
     };
 } // namespace module_command

@@ -119,7 +119,7 @@ TEST_F(MessageQueueUtilsTest, GetCommandFromQueueTest)
     ASSERT_EQ(cmd.has_value() ? cmd.value().Module : "", "origin_test");
     ASSERT_EQ(cmd.has_value() ? cmd.value().Command : "", "command_test");
     ASSERT_EQ(cmd.has_value() ? cmd.value().Parameters : "", "parameters_test");
-    ASSERT_EQ(cmd.has_value() ? cmd.value().CurrentStatus : module_command::Status::UNKNOWN,
+    ASSERT_EQ(cmd.has_value() ? cmd.value().ExecutionResult.ErrorCode : module_command::Status::UNKNOWN,
               module_command::Status::IN_PROGRESS);
 }
 
