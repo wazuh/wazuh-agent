@@ -15,7 +15,7 @@ DispatchCommand(module_command::CommandEntry commandEntry,
 
     LogInfo("Dispatching command {}({})", commandEntry.Command, commandEntry.Module);
 
-    const auto result = co_await module->Command(commandEntry.Command);
+    const auto result = co_await module->ExecuteCommand(commandEntry.Command);
 
     nlohmann::json resultJson;
     resultJson["error"] = result.ErrorCode;

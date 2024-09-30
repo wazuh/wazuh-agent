@@ -29,7 +29,7 @@ class Inventory {
         void Start();
         void Setup(const configuration::ConfigurationParser& configurationParser);
         void Stop();
-        Co_CommandExecutionResult Command(const std::string query);
+        Co_CommandExecutionResult ExecuteCommand(const std::string query);
         const std::string& Name() const { return m_moduleName; };
         void SetMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue);
 
