@@ -1,6 +1,6 @@
 #pragma once
 
-#include <command.hpp>
+#include <module_command/command_entry.hpp>
 
 #include <moduleWrapper.hpp>
 #include <multitype_queue.hpp>
@@ -10,7 +10,7 @@
 #include <memory>
 #include <tuple>
 
-boost::asio::awaitable<std::tuple<command_store::Status, std::string>>
-DispatchCommand(command_store::CommandEntry commandEntry,
+boost::asio::awaitable<std::tuple<module_command::Status, std::string>>
+DispatchCommand(module_command::CommandEntry commandEntry,
                 std::shared_ptr<ModuleWrapper> module,
                 std::shared_ptr<IMultiTypeQueue> messageQueue);

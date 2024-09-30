@@ -8,15 +8,15 @@ namespace command_store
 {
     constexpr double MILLISECS_IN_A_SEC = 1000.0;
 
-    Status CommandStore::StatusFromInt(const int i)
+    module_command::Status CommandStore::StatusFromInt(const int i)
     {
         switch (i)
         {
-            case 0: return Status::SUCCESS; break;
-            case 1: return Status::FAILURE; break;
-            case 2: return Status::IN_PROGRESS; break;
-            case 3: return Status::TIMEOUT; break;
-            default: return Status::UNKNOWN; break;
+            case 0: return module_command::Status::SUCCESS; break;
+            case 1: return module_command::Status::FAILURE; break;
+            case 2: return module_command::Status::IN_PROGRESS; break;
+            case 3: return module_command::Status::TIMEOUT; break;
+            default: return module_command::Status::UNKNOWN; break;
         }
     }
 
@@ -81,7 +81,7 @@ namespace command_store
                MILLISECS_IN_A_SEC;
     }
 
-    bool CommandStore::StoreCommand(const CommandEntry& cmd)
+    bool CommandStore::StoreCommand(const module_command::CommandEntry& cmd)
     {
         std::vector<sqlite_manager::Column> fields;
         fields.emplace_back("id", sqlite_manager::ColumnType::TEXT, cmd.Id);
@@ -120,7 +120,7 @@ namespace command_store
         return true;
     }
 
-    std::optional<CommandEntry> CommandStore::GetCommand(const std::string& id)
+    std::optional<module_command::CommandEntry> CommandStore::GetCommand(const std::string& id)
     {
         try
         {
@@ -132,7 +132,7 @@ namespace command_store
                 return std::nullopt;
             }
 
-            CommandEntry cmd;
+            module_command::CommandEntry cmd;
             for (const sqlite_manager::Column& col : cmdData[0])
             {
                 if (col.Name == "id")
@@ -173,7 +173,7 @@ namespace command_store
         }
     }
 
-    bool CommandStore::UpdateCommand(const CommandEntry& cmd)
+    bool CommandStore::UpdateCommand(const module_command::CommandEntry& cmd)
     {
         std::vector<sqlite_manager::Column> fields;
         if (!cmd.Module.empty())
@@ -184,7 +184,7 @@ namespace command_store
             fields.emplace_back("parameters", sqlite_manager::ColumnType::TEXT, cmd.Parameters);
         if (!cmd.Result.empty())
             fields.emplace_back("result", sqlite_manager::ColumnType::TEXT, cmd.Result);
-        if (cmd.CurrentStatus != Status::UNKNOWN)
+        if (cmd.CurrentStatus != module_command::Status::UNKNOWN)
             fields.emplace_back(
                 "status", sqlite_manager::ColumnType::INTEGER, std::to_string(static_cast<int>(cmd.CurrentStatus)));
 

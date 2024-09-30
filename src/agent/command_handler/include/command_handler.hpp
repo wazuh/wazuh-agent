@@ -18,7 +18,7 @@ namespace command_handler
         boost::asio::awaitable<void> CommandsProcessingTask(
             const std::function<std::optional<T>()> GetCommandFromQueue,
             const std::function<void()> PopCommandFromQueue,
-            const std::function<boost::asio::awaitable<std::tuple<command_store::Status, std::string>>(T&)>
+            const std::function<boost::asio::awaitable<std::tuple<module_command::Status, std::string>>(T&)>
                 DispatchCommand)
         {
             using namespace std::chrono_literals;

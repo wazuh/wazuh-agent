@@ -16,7 +16,7 @@ include(../../cmake/ConfigureTarget.cmake)
 configure_target(CommandStore)
 
 target_include_directories(CommandStore PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(CommandStore PUBLIC SQLiteManager PRIVATE Logger)
+target_link_libraries(CommandStore PUBLIC SQLiteManager ModuleCommand PRIVATE Logger)
 
 if(BUILD_TESTS)
     enable_testing()

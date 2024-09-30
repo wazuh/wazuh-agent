@@ -3,7 +3,7 @@
 #include <limits>
 #include <string>
 
-namespace command_store
+namespace module_command
 {
     enum class Status
     {
@@ -46,4 +46,4 @@ namespace command_store
         Status CurrentStatus;
         double Time;
     };
-} // namespace command_store
+} // namespace module_command

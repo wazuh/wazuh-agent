@@ -46,7 +46,7 @@ void PushCommandsToQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue, const 
     }
 }
 
-std::optional<command_store::CommandEntry> GetCommandFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue)
+std::optional<module_command::CommandEntry> GetCommandFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue)
 {
     if (multiTypeQueue->isEmpty(MessageType::COMMAND))
     {
@@ -90,7 +90,7 @@ std::optional<command_store::CommandEntry> GetCommandFromQueue(std::shared_ptr<I
         }
     }
 
-    command_store::CommandEntry cmd(id, module, command, parameters, "", command_store::Status::IN_PROGRESS);
+    module_command::CommandEntry cmd(id, module, command, parameters, "", module_command::Status::IN_PROGRESS);
 
     return cmd;
 }

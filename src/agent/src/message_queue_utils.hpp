@@ -1,7 +1,7 @@
 #pragma once
 
-#include <command.hpp>
 #include <message.hpp>
+#include <module_command/command_entry.hpp>
 
 #include <boost/asio/awaitable.hpp>
 
@@ -18,6 +18,6 @@ void PopMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue, Messa
 
 void PushCommandsToQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue, const std::string& commands);
 
-std::optional<command_store::CommandEntry> GetCommandFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue);
+std::optional<module_command::CommandEntry> GetCommandFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue);
 
 void PopCommandFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue);
