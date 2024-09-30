@@ -59,6 +59,7 @@ void Inventory::Stop() {
     Inventory::Instance().Destroy();
 }
 
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
 Co_CommandExecutionResult Inventory::ExecuteCommand(const std::string query) {
     LogInfo("Query: ",query);
     co_return module_command::CommandExecutionResult{module_command::Status::SUCCESS, "OK"};
