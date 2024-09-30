@@ -725,6 +725,7 @@ int UnmergeFiles(const char *finalpath, const char *optdir, int mode, char ***un
         if(!tmp_file){
             merror("Unmerging '%s': could not reserve temporary memory for '%s'", finalpath, files);
             state_ok = 0;
+            continue;
         }
         snprintf(tmp_file, tmp_file_size, "%sXXXXXX", final_name);
 
