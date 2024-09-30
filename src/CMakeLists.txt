@@ -20,6 +20,11 @@ add_subdirectory(agent)
 add_executable(wazuh-agent agent/src/main.cpp)
 target_link_libraries(wazuh-agent Agent Logger)
 
+if(WIN32)
+    include(cmake/SetWindowsManifest.cmake)
+    set_windows_manifest()
+endif()
+
 include(cmake/ConfigureTarget.cmake)
 configure_target(wazuh-agent)
 
