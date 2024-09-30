@@ -35,12 +35,6 @@ target_include_directories(Inventory PUBLIC
     ${COMMON_FOLDER}/timeHelper/include
     ${COMMON_FOLDER}/utils)
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_link_directories(Inventory PUBLIC ${SRC_FOLDER}/external/rpm/builddir/)
-endif()
-target_link_directories(Inventory PUBLIC ${SRC_FOLDER}/external/libdb/build_unix/)
-target_link_directories(Inventory PUBLIC ${SRC_FOLDER}/external/procps/)
-
 target_link_libraries(Inventory PUBLIC
     dbsync
     sysinfo

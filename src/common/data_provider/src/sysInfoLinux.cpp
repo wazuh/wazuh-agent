@@ -19,7 +19,7 @@
 #include "cmdHelper.h"
 #include "osinfo/sysOsParsers.h"
 #include "sysInfo.hpp"
-#include "readproc.h"
+#include <proc/readproc.h>
 #include "networkUnixHelper.h"
 #include "networkHelper.h"
 #include "network/networkLinuxWrapper.h"

@@ -5,9 +5,6 @@ project(sysinfo_test_tool)
 include_directories(${CMAKE_SOURCE_DIR}/include/)
 include_directories(${CMAKE_SOURCE_DIR}/src/)
 include_directories(${SRC_FOLDER}/shared_modules/common/)
-include_directories(${SRC_FOLDER}/external/nlohmann/)
-
-link_directories(${SRC_FOLDER}/external/procps/)
 
 if(COVERITY)
   add_definitions(-D__GNUC__=8)
@@ -42,7 +39,6 @@ else()
         sysinfo
         dl
         pthread
-        proc
     )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
