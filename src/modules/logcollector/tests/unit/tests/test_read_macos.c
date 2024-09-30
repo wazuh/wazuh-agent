@@ -70,8 +70,7 @@ static int group_teardown(void ** state) {
 
 /* wraps */
 
-int __wrap_// TODO : should this feature be added
-// isDebug() {
+int __wrap_isDebug() {
     return mock();
 }
 

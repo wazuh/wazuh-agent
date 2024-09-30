@@ -67,7 +67,7 @@ void read_internal(int debug_level)
         int debug_level = sys_debug_level;
         while (debug_level != 0) {
             // TODO : should this feature be added
-// nowDebug();
+            //nowDebug();
             debug_level--;
         }
     }

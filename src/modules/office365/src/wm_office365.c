@@ -361,14 +361,13 @@ STATIC void wm_office365_execute_scan(wm_office365* office365_config, int initia
                 if (wm_state_io(tenant_state_name, WM_IO_WRITE, &tenant_state_struc, sizeof(tenant_state_struc)) < 0) {
                     LogError(WM_OFFICE365_LOGTAG, "Couldn't save running state.");
                 }
-                else if (// TODO : should this feature be added
-// isDebug()) {
-                    memset(start_time_str, '\0', 80);
-                    gmtime_r(&now, &tm_aux);
-                    strftime(start_time_str, sizeof(start_time_str), "%Y-%m-%dT%H:%M:%SZ", &tm_aux);
-                    LogDebug(WM_OFFICE365_LOGTAG, "Bookmark updated to '%s' for tenant '%s' and subscription '%s', waiting '%ld' seconds to run first scan.",
-                        start_time_str, current_auth->tenant_id, current_subscription->subscription_name, office365_config->interval);
-                }
+                // else if (isDebug()) {
+                //     memset(start_time_str, '\0', 80);
+                //     gmtime_r(&now, &tm_aux);
+                //     strftime(start_time_str, sizeof(start_time_str), "%Y-%m-%dT%H:%M:%SZ", &tm_aux);
+                //     LogDebug(WM_OFFICE365_LOGTAG, "Bookmark updated to '%s' for tenant '%s' and subscription '%s', waiting '%ld' seconds to run first scan.",
+                //         start_time_str, current_auth->tenant_id, current_subscription->subscription_name, office365_config->interval);
+                // }
                 current_subscription = next_subscription;
                 continue;
             }

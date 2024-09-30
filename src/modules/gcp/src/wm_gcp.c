@@ -287,16 +287,14 @@ void wm_gcp_pubsub_run(const wm_gcp_pubsub *data) {
         os_free(int_to_string);
     }
 
-    if (// TODO : should this feature be added
-// isDebug()){
-        char *int_to_string;
-        os_malloc(OS_SIZE_1024, int_to_string);
-        sprintf(int_to_string, "%d", // TODO : should this feature be added
-// isDebug());
-        wm_strcat(&command, "--log_level", ' ');
-        wm_strcat(&command, int_to_string, ' ');
-        os_free(int_to_string);
-    }
+    // if (isDebug()){
+    //     char *int_to_string;
+    //     os_malloc(OS_SIZE_1024, int_to_string);
+    //     sprintf(int_to_string, "%d", isDebug());
+    //     wm_strcat(&command, "--log_level", ' ');
+    //     wm_strcat(&command, int_to_string, ' ');
+    //     os_free(int_to_string);
+    // }
 
     // Execute
 
@@ -323,8 +321,7 @@ void wm_gcp_pubsub_run(const wm_gcp_pubsub *data) {
 static void wm_gcp_parse_output(char *output, char *tag){
     char *line;
     char * parsing_output = output;
-    int debug_level = // TODO : should this feature be added
-// isDebug();
+    int debug_level = false;
 
     for (line = strstr(parsing_output, WM_GCP_LOGGING_TOKEN); line; line = strstr(parsing_output, WM_GCP_LOGGING_TOKEN)) {
         char * tokenized_line;
@@ -413,16 +410,14 @@ void wm_gcp_bucket_run(wm_gcp_bucket *exec_bucket) {
         wm_strcat(&command, "--remove", ' ');
     }
 
-    if (// TODO : should this feature be added
-// isDebug()){
-        char *int_to_string;
-        os_malloc(OS_SIZE_1024, int_to_string);
-        sprintf(int_to_string, "%d", // TODO : should this feature be added
-// isDebug());
-        wm_strcat(&command, "--log_level", ' ');
-        wm_strcat(&command, int_to_string, ' ');
-        os_free(int_to_string);
-    }
+    // if (isDebug()){
+    //     char *int_to_string;
+    //     os_malloc(OS_SIZE_1024, int_to_string);
+    //     sprintf(int_to_string, "%d", isDebug());
+    //     wm_strcat(&command, "--log_level", ' ');
+    //     wm_strcat(&command, int_to_string, ' ');
+    //     os_free(int_to_string);
+    // }
 
     // Execute
 
@@ -483,8 +478,7 @@ cJSON *wm_gcp_pubsub_dump(const wm_gcp_pubsub *data) {
     if (data->subscription_name) cJSON_AddStringToObject(wm_wd, "subscription_name", data->subscription_name);
     if (data->credentials_file) cJSON_AddStringToObject(wm_wd, "credentials_file", data->credentials_file);
 
-    int debug_level = // TODO : should this feature be added
-// isDebug();
+    int debug_level = false;
 
     if (debug_level >= 2) cJSON_AddStringToObject(wm_wd, "logging", "debug");
     if (debug_level == 1) cJSON_AddStringToObject(wm_wd, "logging", "info");
@@ -523,8 +517,7 @@ cJSON *wm_gcp_bucket_dump(const wm_gcp_bucket_base *data) {
         }
     }
 
-    int debug_level = // TODO : should this feature be added
-// isDebug();
+    int debug_level = false;
 
     if (debug_level >= 2) cJSON_AddStringToObject(wm_wd, "logging", "debug");
     if (debug_level == 1) cJSON_AddStringToObject(wm_wd, "logging", "info");

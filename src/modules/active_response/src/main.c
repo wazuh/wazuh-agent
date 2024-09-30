@@ -104,7 +104,6 @@ int main(int argc, char **argv)
         /* Get debug level */
         debug_level = getDefine_Int("execd", "debug", 0, 2);
         while (debug_level != 0) {
-            // TODO : should this feature be added
             // nowDebug();
             debug_level--;
         }

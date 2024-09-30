@@ -451,19 +451,16 @@ void wm_aws_run_s3(wm_aws *aws_config, wm_aws_bucket *exec_bucket) {
         wm_strcat(&command, "--type", ' ');
         wm_strcat(&command, exec_bucket->type, ' ');
     }
-    if (// TODO : should this feature be added
-// isDebug()) {
-        wm_strcat(&command, "--debug", ' ');
-        if (// TODO : should this feature be added
-// isDebug() > 2) {
-            wm_strcat(&command, "3", ' ');
-        } else if (// TODO : should this feature be added
-// isDebug() > 1) {
-            wm_strcat(&command, "2", ' ');
-        } else {
-            wm_strcat(&command, "1", ' ');
-        }
-    }
+    // if (isDebug()) {
+    //     wm_strcat(&command, "--debug", ' ');
+    //     if (isDebug() > 2) {
+    //         wm_strcat(&command, "3", ' ');
+    //     } else if (isDebug() > 1) {
+    //         wm_strcat(&command, "2", ' ');
+    //     } else {
+    //         wm_strcat(&command, "1", ' ');
+    //     }
+    // }
     if (aws_config->skip_on_error) {
         wm_strcat(&command, "--skip_on_error", ' ');
     }
@@ -613,19 +610,16 @@ void wm_aws_run_service(wm_aws *aws_config, wm_aws_service *exec_service) {
         wm_strcat(&command, "--service_endpoint", ' ');
         wm_strcat(&command, exec_service->service_endpoint, ' ');
     }
-    if (// TODO : should this feature be added
-// isDebug()) {
-        wm_strcat(&command, "--debug", ' ');
-        if (// TODO : should this feature be added
-// isDebug() > 2) {
-            wm_strcat(&command, "3", ' ');
-        } else if (// TODO : should this feature be added
-// isDebug() > 1) {
-            wm_strcat(&command, "2", ' ');
-        } else {
-            wm_strcat(&command, "1", ' ');
-        }
-    }
+    // if (isDebug()) {
+    //     wm_strcat(&command, "--debug", ' ');
+    //     if (isDebug() > 2) {
+    //         wm_strcat(&command, "3", ' ');
+    //     } else if (isDebug() > 1) {
+    //         wm_strcat(&command, "2", ' ');
+    //     } else {
+    //         wm_strcat(&command, "1", ' ');
+    //     }
+    // }
     if (aws_config->skip_on_error) {
         wm_strcat(&command, "--skip_on_error", ' ');
     }
@@ -763,19 +757,16 @@ void wm_aws_run_subscriber(wm_aws *aws_config, wm_aws_subscriber *exec_subscribe
         wm_strcat(&command, exec_subscriber->discard_regex, ' ');
     }
 
-    if (// TODO : should this feature be added
-// isDebug()) {
-        wm_strcat(&command, "--debug", ' ');
-        if (// TODO : should this feature be added
-// isDebug() > 2) {
-            wm_strcat(&command, "3", ' ');
-        } else if (// TODO : should this feature be added
-// isDebug() > 1) {
-            wm_strcat(&command, "2", ' ');
-        } else {
-            wm_strcat(&command, "1", ' ');
-        }
-    }
+    // if (isDebug()) {
+    //     wm_strcat(&command, "--debug", ' ');
+    //     if (isDebug() > 2) {
+    //         wm_strcat(&command, "3", ' ');
+    //     } else if (isDebug() > 1) {
+    //         wm_strcat(&command, "2", ' ');
+    //     } else {
+    //         wm_strcat(&command, "1", ' ');
+    //     }
+    // }
 
     if (aws_config->skip_on_error) {
         wm_strcat(&command, "--skip_on_error", ' ');

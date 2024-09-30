@@ -110,8 +110,7 @@ unsigned int __wrap_gmtime_r(__attribute__((__unused__)) const time_t * t, __att
     }
 }
 
-int __wrap_// TODO : should this feature be added
-// isDebug() { return mock(); }
+int __wrap_isDebug() { return mock(); }
 
 /* setup/teardown */
 

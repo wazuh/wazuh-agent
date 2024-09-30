@@ -148,16 +148,14 @@ void wm_azure_log_analytics(wm_azure_api_t *log_analytics) {
             wm_strcat(&command, "--la_time_offset", ' ');
             wm_strcat(&command, curr_request->time_offset, ' ');
         }
-        if (// TODO : should this feature be added
-// isDebug()) {
-            char *int_to_string;
-            os_malloc(OS_SIZE_1024, int_to_string);
-            sprintf(int_to_string, "%d", // TODO : should this feature be added
-// isDebug());
-            wm_strcat(&command, "--debug", ' ');
-            wm_strcat(&command, int_to_string, ' ');
-            os_free(int_to_string);
-        }
+        // if (isDebug()) {
+        //     char *int_to_string;
+        //     os_malloc(OS_SIZE_1024, int_to_string);
+        //     sprintf(int_to_string, "%d", isDebug());
+        //     wm_strcat(&command, "--debug", ' ');
+        //     wm_strcat(&command, int_to_string, ' ');
+        //     os_free(int_to_string);
+        // }
 
         // Check timeout defined
         if (curr_request->timeout)
@@ -232,16 +230,14 @@ void wm_azure_graphs(wm_azure_api_t *graph) {
             wm_strcat(&command, curr_request->time_offset, ' ');
         }
 
-        if (// TODO : should this feature be added
-// isDebug()) {
-            char *int_to_string;
-            os_malloc(OS_SIZE_1024, int_to_string);
-            sprintf(int_to_string, "%d", // TODO : should this feature be added
-// isDebug());
-            wm_strcat(&command, "--debug", ' ');
-            wm_strcat(&command, int_to_string, ' ');
-            os_free(int_to_string);
-        }
+        // if (isDebug()) {
+        //     char *int_to_string;
+        //     os_malloc(OS_SIZE_1024, int_to_string);
+        //     sprintf(int_to_string, "%d", isDebug());
+        //     wm_strcat(&command, "--debug", ' ');
+        //     wm_strcat(&command, int_to_string, ' ');
+        //     os_free(int_to_string);
+        // }
 
         // Check timeout defined
         if (curr_request->timeout)
@@ -334,16 +330,14 @@ void wm_azure_storage(wm_azure_storage_t *storage) {
             wm_strcat(&command, curr_container->path, ' ');
         }
 
-        if (// TODO : should this feature be added
-// isDebug()) {
-            char *int_to_string;
-            os_malloc(OS_SIZE_1024, int_to_string);
-            sprintf(int_to_string, "%d", // TODO : should this feature be added
-// isDebug());
-            wm_strcat(&command, "--debug", ' ');
-            wm_strcat(&command, int_to_string, ' ');
-            os_free(int_to_string);
-        }
+        // if (isDebug()) {
+        //     char *int_to_string;
+        //     os_malloc(OS_SIZE_1024, int_to_string);
+        //     sprintf(int_to_string, "%d", isDebug());
+        //     wm_strcat(&command, "--debug", ' ');
+        //     wm_strcat(&command, int_to_string, ' ');
+        //     os_free(int_to_string);
+        // }
 
         // Check timeout defined
         if (curr_container->timeout)

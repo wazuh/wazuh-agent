@@ -79,7 +79,7 @@ int main(int argc, char **argv)
                 break;
             case 'd':
                 // TODO : should this feature be added
-// nowDebug();
+                //nowDebug();
                 debug_level = 1;
                 break;
             case 'f':
@@ -119,8 +119,7 @@ int main(int argc, char **argv)
         /* Get debug level */
         debug_level = lc_debug_level;
         while (debug_level != 0) {
-            // TODO : should this feature be added
-// nowDebug();
+            //nowDebug();
             debug_level--;
         }
     }
@@ -180,7 +179,7 @@ int main(int argc, char **argv)
     if (!run_foreground) {
         /* Going on daemon mode */
         // TODO : should this feature be added
-// nowDaemon();
+        //nowDaemon();
         goDaemon();
     }
 
