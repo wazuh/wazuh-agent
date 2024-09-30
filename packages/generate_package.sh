@@ -27,6 +27,7 @@ CHECKSUM="no"
 FUTURE="no"
 LEGACY="no"
 IS_STAGE="no"
+ENTRYPOINT="/home/build.sh"
 
 
 trap ctrl_c INT
@@ -97,7 +98,7 @@ build_pkg() {
         ${CUSTOM_CODE_VOL} \
         -v ${DOCKERFILE_PATH}:/home:Z \
         ${CONTAINER_NAME}:${DOCKER_TAG} \
-        /home/build.sh \
+        ${ENTRYPOINT} \
         ${REVISION} ${JOBS} ${DEBUG} \
         ${CHECKSUM} ${FUTURE} ${LEGACY} ${SRC}|| return 1
 
@@ -126,6 +127,7 @@ help() {
     echo "    -d, --debug                [Optional] Build the binaries with debug symbols. By default: no."
     echo "    -c, --checksum             [Optional] Generate checksum on the same directory than the package. By default: no."
     echo "    -l, --legacy               [Optional only for RPM] Build package for CentOS 5."
+    echo "    -e, --entrypoint <path>    [Optional] Script to execute as entrypoint."
     echo "    --dont-build-docker        [Optional] Locally built docker image will be used instead of generating a new one."
     echo "    --tag                      [Optional] Tag to use with the docker image."
     echo "    --sources <path>           [Optional] Absolute path containing wazuh source code. This option will use local source code instead of downloading it from GitHub. By default use the script path."
@@ -193,6 +195,14 @@ main() {
         "-p"|"--path")
             if [ -n "$2" ]; then
                 INSTALLATION_PATH="$2"
+                shift 2
+            else
+                help 1
+            fi
+            ;;
+        "-e"|"--entrypoint")
+            if [ -n "$2" ]; then
+                ENTRYPOINT="$2"
                 shift 2
             else
                 help 1
