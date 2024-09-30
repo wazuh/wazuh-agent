@@ -164,10 +164,9 @@ void * read_journald(logreader * lf, int * rc, __attribute__((unused)) int drop_
         read_buffer[entry_str_len] = '\0';
         os_free(entry_str);
 
-        if (// TODO : should this feature be added
-// isDebug()) {
-            LogDebug(LOGCOLLECTOR_JOURNAL_LOG_READING, read_buffer);
-        }
+        // if (isDebug()) {
+        //     LogDebug(LOGCOLLECTOR_JOURNAL_LOG_READING, read_buffer);
+        // }
 
         // Send the message to the manager
         w_msg_hash_queues_push(read_buffer, JOURNALD_LOG, entry_str_len + 1, lf->log_target, LOCALFILE_MQ);

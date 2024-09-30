@@ -288,15 +288,14 @@ STATIC bool w_macos_log_getlog(char * buffer, int length, FILE * stream, w_macos
 
         last_line = w_macos_log_get_last_valid_line(buffer);
 
-        if (// TODO : should this feature be added
-// isDebug() == 2) {
-            char * d_str_msg = (last_line == NULL) ?  buffer : (last_line +1);
-            bool is_chunck_message = (int) w_strlen(d_str_msg) - 1 > sample_log_length;
-            int  d_str_lenght = is_chunck_message ? sample_log_length : (int) w_strlen(d_str_msg) - 1;
+        // if (isDebug() == 2) {
+        //     char * d_str_msg = (last_line == NULL) ?  buffer : (last_line +1);
+        //     bool is_chunck_message = (int) w_strlen(d_str_msg) - 1 > sample_log_length;
+        //     int  d_str_lenght = is_chunck_message ? sample_log_length : (int) w_strlen(d_str_msg) - 1;
 
-            LogDebug("Reading macOS message: '%.*s'%s", d_str_lenght, d_str_msg, is_chunck_message  ? "..." : "");
+        //     LogDebug("Reading macOS message: '%.*s'%s", d_str_lenght, d_str_msg, is_chunck_message  ? "..." : "");
 
-        }
+        // }
 
         /* If there are 2 logs, they should be splited before sending them */
         if (is_endline && last_line != NULL) {

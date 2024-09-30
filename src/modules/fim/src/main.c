@@ -79,7 +79,7 @@ int main(int argc, char **argv)
                 break;
             case 'd':
                 // TODO : should this feature be added
-// nowDebug();
+                //nowDebug();
                 debug_level ++;
                 break;
             case 'f':
@@ -172,7 +172,7 @@ int main(int argc, char **argv)
 
     if (!run_foreground) {
         // TODO : should this feature be added
-// nowDaemon();
+        //nowDaemon();
         goDaemon();
     }
 

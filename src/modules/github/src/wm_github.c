@@ -265,14 +265,14 @@ STATIC void wm_github_execute_scan(wm_github *github_config, int initial_scan) {
                     org_state_struc.last_log_time = new_scan_time;
                     if (wm_state_io(org_state_name, WM_IO_WRITE, &org_state_struc, sizeof(org_state_struc)) < 0) {
                         LogError(WM_GITHUB_LOGTAG, "Couldn't save running state.");
-                    } else if (// TODO : should this feature be added
-// isDebug()) {
-                        memset(new_scan_time_str, '\0', 80);
-                        gmtime_r(&new_scan_time, &tm_scan);
-                        strftime(new_scan_time_str, sizeof(new_scan_time_str), "%Y-%m-%dT%H:%M:%SZ", &tm_scan);
-                        LogDebug(WM_GITHUB_LOGTAG, "Bookmark updated to '%s' for organization '%s' and event type '%s', waiting '%ld' seconds to run first scan.",
-                            new_scan_time_str, current->org_name, event_types[event_types_it], github_config->interval);
                     }
+                    // else if (isDebug()) {
+                    //     memset(new_scan_time_str, '\0', 80);
+                    //     gmtime_r(&new_scan_time, &tm_scan);
+                    //     strftime(new_scan_time_str, sizeof(new_scan_time_str), "%Y-%m-%dT%H:%M:%SZ", &tm_scan);
+                    //     LogDebug(WM_GITHUB_LOGTAG, "Bookmark updated to '%s' for organization '%s' and event type '%s', waiting '%ld' seconds to run first scan.",
+                    //         new_scan_time_str, current->org_name, event_types[event_types_it], github_config->interval);
+                    // }
                     continue;
                 }
 

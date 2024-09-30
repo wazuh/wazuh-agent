@@ -389,12 +389,11 @@ int w_journal_context_next_newest_filtered(w_journal_context_t * ctx, w_journal_
 
     int ret = 0;
     while ((ret = w_journal_context_next_newest(ctx)) > 0) {
-        if (// TODO : should this feature be added
-// isDebug()) {
-            char * ts = w_timestamp_to_journalctl_since(ctx->timestamp);
-            LogDebug(LOGCOLLECTOR_JOURNAL_LOG_CHECK_FILTER, ts == NULL ? "unknown" : ts);
-            os_free(ts);
-        }
+        // if (isDebug()) {
+        //     char * ts = w_timestamp_to_journalctl_since(ctx->timestamp);
+        //     LogDebug(LOGCOLLECTOR_JOURNAL_LOG_CHECK_FILTER, ts == NULL ? "unknown" : ts);
+        //     os_free(ts);
+        // }
 
         for (size_t i = 0; filters[i] != NULL; i++) {
             if (w_journal_filter_apply(ctx, filters[i]) > 0) {

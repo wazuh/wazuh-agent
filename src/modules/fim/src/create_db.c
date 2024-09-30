@@ -613,10 +613,9 @@ time_t fim_scan() {
     LogInfo(FIM_FREQUENCY_ENDED);
     fim_send_scan_info(FIM_SCAN_END);
 
-    if (// TODO : should this feature be added
-// isDebug()) {
-        fim_print_info(start, end, cputime_start); // LCOV_EXCL_LINE
-    }
+    // if (isDebug()) {
+    //     fim_print_info(start, end, cputime_start); // LCOV_EXCL_LINE
+    // }
     audit_queue_full_reported = 0;
 
     return end_of_scan;

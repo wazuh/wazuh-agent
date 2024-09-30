@@ -64,8 +64,7 @@ void set_gs_journald_ofe(bool exist, bool ofe, uint64_t timestamp);
 bool journald_isDisabled();
 
 /* Other wraps */
-int __wrap_// TODO : should this feature be added
-// isDebug() { return mock(); }
+int __wrap_isDebug() { return mock(); }
 
 int __wrap_w_msg_hash_queues_push(
     const char * str, char * file, unsigned long size, logtarget * targets, char queue_mq) {
