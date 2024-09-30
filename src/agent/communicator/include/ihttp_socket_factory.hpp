@@ -12,6 +12,6 @@ namespace http_client
     {
     public:
         virtual ~IHttpSocketFactory() = default;
-        virtual std::unique_ptr<IHttpSocket> Create(const boost::asio::any_io_executor& executor) = 0;
+        virtual std::unique_ptr<IHttpSocket> Create(const boost::asio::any_io_executor& executor, const bool use_https) = 0;
     };
 } // namespace http_client

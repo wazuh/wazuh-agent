@@ -84,7 +84,7 @@ namespace http_client
 
         do
         {
-            auto socket = m_socketFactory->Create(executor);
+            auto socket = m_socketFactory->Create(executor, reqParams.Use_Https);
 
             const auto results = co_await resolver->AsyncResolve(reqParams.Host, reqParams.Port);
 
@@ -173,7 +173,7 @@ namespace http_client
 
             const auto results = resolver->Resolve(params.Host, params.Port);
 
-            auto socket = m_socketFactory->Create(io_context.get_executor());
+            auto socket = m_socketFactory->Create(io_context.get_executor(), params.Use_Https);
             socket->Connect(results);
 
             const auto req = CreateHttpRequest(params);
@@ -197,11 +197,12 @@ namespace http_client
     std::optional<std::string> HttpClient::AuthenticateWithUuidAndKey(const std::string& host,
                                                                       const std::string& port,
                                                                       const std::string& uuid,
-                                                                      const std::string& key)
+                                                                      const std::string& key,
+                                                                      const bool useHttps)
     {
         const std::string body = R"({"uuid":")" + uuid + R"(", "key":")" + key + "\"}";
         const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::post, host, port, "/api/v1/authentication", "", "", body);
+            boost::beast::http::verb::post, host, port, "/api/v1/authentication", useHttps, "", "", body);
 
         const auto res = PerformHttpRequest(reqParams);
 
@@ -219,7 +220,8 @@ namespace http_client
     std::optional<std::string> HttpClient::AuthenticateWithUserPassword(const std::string& host,
                                                                         const std::string& port,
                                                                         const std::string& user,
-                                                                        const std::string& password)
+                                                                        const std::string& password,
+                                                                        const bool useHttps)
     {
         std::string basicAuth {};
         std::string userPass {user + ":" + password};
@@ -229,7 +231,7 @@ namespace http_client
         boost::beast::detail::base64::encode(&basicAuth[0], userPass.c_str(), userPass.size());
 
         const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::post, host, port, "/security/user/authenticate", "", basicAuth);
+            boost::beast::http::verb::post, host, port, "/security/user/authenticate", useHttps, "", basicAuth);
 
         const auto res = PerformHttpRequest(reqParams);
 

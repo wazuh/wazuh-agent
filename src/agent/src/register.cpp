@@ -16,9 +16,10 @@ namespace registration
         const configuration::ConfigurationParser configurationParser;
         const auto managerIp = configurationParser.GetConfig<std::string>("agent", "manager_ip");
         const auto managerPort = configurationParser.GetConfig<std::string>("agent", "server_mgmt_api_port");
+        const bool useHttps = !(configurationParser.GetConfig<std::string>("agent", "https_enabled") == "no");
 
         const auto token = httpClient.AuthenticateWithUserPassword(
-            managerIp, managerPort, userCredentials.user, userCredentials.password);
+            managerIp, managerPort, userCredentials.user, userCredentials.password, useHttps);
 
         if (!token.has_value())
         {
@@ -36,7 +37,7 @@ namespace registration
         }
 
         const auto reqParams = http_client::HttpRequestParams(
-            http::verb::post, managerIp, managerPort, "/agents", token.value(), "", bodyJson.dump());
+            http::verb::post, managerIp, managerPort, "/agents", useHttps, token.value(), "", bodyJson.dump());
 
         const auto res = httpClient.PerformHttpRequest(reqParams);
 

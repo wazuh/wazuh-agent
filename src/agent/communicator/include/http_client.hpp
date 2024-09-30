@@ -38,12 +38,14 @@ namespace http_client
         std::optional<std::string> AuthenticateWithUuidAndKey(const std::string& host,
                                                               const std::string& port,
                                                               const std::string& uuid,
-                                                              const std::string& key) override;
+                                                              const std::string& key,
+                                                              const bool useHttps) override;
 
         std::optional<std::string> AuthenticateWithUserPassword(const std::string& host,
                                                                 const std::string& port,
                                                                 const std::string& user,
-                                                                const std::string& password) override;
+                                                                const std::string& password,
+                                                                const bool useHttps) override;
 
     private:
         std::shared_ptr<IHttpResolverFactory> m_resolverFactory;

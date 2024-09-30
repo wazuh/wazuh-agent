@@ -41,12 +41,17 @@ namespace communicator
         {
             m_managerIp = getStringConfigValue("agent", "manager_ip");
             m_port = getStringConfigValue("agent", "agent_comms_api_port");
+            const std::string httpsEnabled =  getStringConfigValue("agent", "https_enabled");
+            if (httpsEnabled == "no") {
+                m_useHttps = false;
+                LogInfo("Using insecure connection.");
+            }
         }
     }
 
     boost::beast::http::status Communicator::SendAuthenticationRequest()
     {
-        const auto token = m_httpClient->AuthenticateWithUuidAndKey(m_managerIp, m_port, m_uuid, m_key);
+        const auto token = m_httpClient->AuthenticateWithUuidAndKey(m_managerIp, m_port, m_uuid, m_key, m_useHttps);
 
         if (token.has_value())
         {
@@ -96,7 +101,7 @@ namespace communicator
         };
 
         const auto reqParams =
-            http_client::HttpRequestParams(boost::beast::http::verb::get, m_managerIp, m_port, "/api/v1/commands");
+            http_client::HttpRequestParams(boost::beast::http::verb::get, m_managerIp, m_port, "/api/v1/commands", m_useHttps);
         co_await m_httpClient->Co_PerformHttpRequest(
             m_token, reqParams, {}, onAuthenticationFailed, onSuccess, loopCondition);
     }
@@ -157,7 +162,7 @@ namespace communicator
         };
 
         const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::post, m_managerIp, m_port, "/api/v1/events/stateful");
+            boost::beast::http::verb::post, m_managerIp, m_port, "/api/v1/events/stateful", m_useHttps);
         co_await m_httpClient->Co_PerformHttpRequest(
             m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess, loopCondition);
     }
@@ -177,7 +182,7 @@ namespace communicator
         };
 
         const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::post, m_managerIp, m_port, "/api/v1/events/stateless");
+            boost::beast::http::verb::post, m_managerIp, m_port, "/api/v1/events/stateless", m_useHttps);
         co_await m_httpClient->Co_PerformHttpRequest(
             m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess, loopCondition);
     }

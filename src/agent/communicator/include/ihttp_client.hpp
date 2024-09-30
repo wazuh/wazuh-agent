@@ -18,6 +18,7 @@ namespace http_client
         std::string Host;
         std::string Port;
         std::string Endpoint;
+        bool Use_Https;
         std::string Token;
         std::string User_pass;
         std::string Body;
@@ -26,6 +27,7 @@ namespace http_client
                           const std::string& host,
                           const std::string& port,
                           const std::string& endpoint,
+                          const bool use_https,
                           const std::string& token = "",
                           const std::string& user_pass = "",
                           const std::string& body = "")
@@ -33,6 +35,7 @@ namespace http_client
             , Host(host)
             , Port(port)
             , Endpoint(endpoint)
+            , Use_Https(use_https)
             , Token(token)
             , User_pass(user_pass)
             , Body(body)
@@ -42,7 +45,7 @@ namespace http_client
         bool operator==(const HttpRequestParams& other) const
         {
             return Method == other.Method && Host == other.Host && Port == other.Port && Endpoint == other.Endpoint &&
-                   Token == other.Token && User_pass == other.User_pass && Body == other.Body;
+                   Token == other.Token && User_pass == other.User_pass && Body == other.Body && Use_Https == other.Use_Https;
         }
     };
 
@@ -68,11 +71,13 @@ namespace http_client
         virtual std::optional<std::string> AuthenticateWithUuidAndKey(const std::string& host,
                                                                       const std::string& port,
                                                                       const std::string& uuid,
-                                                                      const std::string& key) = 0;
+                                                                      const std::string& key,
+                                                                      const bool useHttps) = 0;
 
         virtual std::optional<std::string> AuthenticateWithUserPassword(const std::string& host,
                                                                         const std::string& port,
                                                                         const std::string& user,
-                                                                        const std::string& password) = 0;
+                                                                        const std::string& password,
+                                                                        const bool useHttps) = 0;
     };
 } // namespace http_client
