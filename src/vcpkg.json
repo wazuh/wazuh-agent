@@ -58,8 +58,7 @@
         "platform": "linux"
       },
       {
-        "name": "lua",
-        "version>=": "5.3.5#6"
+        "name": "lua"
       },
       {
         "name": "nlohmann-json",
@@ -102,7 +101,7 @@
     "overrides": [
       {
         "name": "lua",
-        "version": "5.3.5#6"
+        "version": "5.4.1"
       }
     ],
     "vcpkg-configuration": {

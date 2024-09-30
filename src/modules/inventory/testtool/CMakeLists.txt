@@ -41,6 +41,5 @@ else()
         sysinfo
         Inventory
         dl
-        proc
     )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")

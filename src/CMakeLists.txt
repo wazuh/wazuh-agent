@@ -7,13 +7,7 @@ project(wazuh-agent)
 include(cmake/CommonSettings.cmake)
 set_common_settings()
 
-if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    add_custom_target(external_deps ALL
-        COMMAND ${CMAKE_MAKE_PROGRAM} -C ${CMAKE_SOURCE_DIR}
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Downloading external dependencies"
-    )
-else()
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX-")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /WX-")
     add_compile_options(/w)

@@ -36,6 +36,3 @@ __pycache__
 
 ### Python Virtualenv
 venv
-
-# External dependencies
-src/external/*
