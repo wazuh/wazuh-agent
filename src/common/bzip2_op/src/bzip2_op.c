@@ -23,20 +23,20 @@ int bzip2_compress(const char *file, const char *filebz2) {
 
     input = wfopen(file, "rb");
     if (!input) {
-        mdebug2(FOPEN_ERROR, file, errno, strerror(errno));
+        LogDebug(FOPEN_ERROR, file, errno, strerror(errno));
         return -1;
     }
 
     output = wfopen(filebz2, "wb");
     if (!output) {
-        mdebug2(FOPEN_ERROR, filebz2, errno, strerror(errno));
+        LogDebug(FOPEN_ERROR, filebz2, errno, strerror(errno));
         fclose(input);
         return -1;
     }
 
     compressfile = BZ2_bzWriteOpen(&bzerror, output, 9, 0, 1);
     if (bzerror != BZ_OK) {
-        mdebug2("Could not open to write bz2 file (%d)'%s': (%d)-%s",
+        LogDebug("Could not open to write bz2 file (%d)'%s': (%d)-%s",
                 bzerror, filebz2, errno, strerror(errno));
 
         // compressfile is null at this point.
@@ -53,7 +53,7 @@ int bzip2_compress(const char *file, const char *filebz2) {
         BZ2_bzWrite(&bzerror, compressfile, (void*)buf, readbuff);
 
         if (bzerror != BZ_OK) {
-            mdebug2("Could not write bz2 file (%d)'%s': (%d)-%s",
+            LogDebug("Could not write bz2 file (%d)'%s': (%d)-%s",
                     bzerror, filebz2, errno, strerror(errno));
             BZ2_bzWriteClose(&bzerror, compressfile, 0, NULL, NULL);
             fclose(input);
@@ -82,20 +82,20 @@ int bzip2_uncompress(const char *filebz2, const char *file) {
 
     input = wfopen(filebz2, "rb");
     if (!input) {
-        mdebug2(FOPEN_ERROR, filebz2, errno, strerror(errno));
+        LogDebug(FOPEN_ERROR, filebz2, errno, strerror(errno));
         return -1;
     }
 
      output = wfopen(file, "wb");
     if (!output) {
-        mdebug2(FOPEN_ERROR, file, errno, strerror(errno));
+        LogDebug(FOPEN_ERROR, file, errno, strerror(errno));
         fclose(input);
         return -1;
     }
 
     compressfile = BZ2_bzReadOpen(&bzerror, input, 0, 0, unused, nUnused);
     if (compressfile == NULL || bzerror != BZ_OK) {
-        mdebug2("BZ2_bzReadOpen(%d)'%s': (%d)-%s",
+        LogDebug("BZ2_bzReadOpen(%d)'%s': (%d)-%s",
                 bzerror, filebz2, errno, strerror(errno));
 
         // compressfile is null at this point.
@@ -113,7 +113,7 @@ int bzip2_uncompress(const char *filebz2, const char *file) {
         if (bzerror == BZ_OK || bzerror == BZ_STREAM_END) {
             fwrite(buf, sizeof(char), readbuff, output);
         } else {
-            mdebug2("BZ2_bzRead(%d)'%s': (%d)-%s",
+            LogDebug("BZ2_bzRead(%d)'%s': (%d)-%s",
                     bzerror, filebz2, errno, strerror(errno));
             BZ2_bzReadClose(&bzerror, compressfile);
             fclose(input);

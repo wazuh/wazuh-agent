@@ -28,7 +28,7 @@ void check_rc_files(const char *basedir, FILE *fp)
     int _errors = 0;
     int _total = 0;
 
-    mtdebug1(ARGV0, "Starting on check_rc_files");
+    LogDebug(ARGV0, "Starting on check_rc_files");
 
     while (fgets(buf, OS_SIZE_1024, fp) != NULL) {
         char *nbuf;
@@ -123,7 +123,7 @@ void check_rc_files(const char *basedir, FILE *fp)
         if (*file == '*') {
             /* Maximum number of global files reached */
             if (rk_sys_count >= MAX_RK_SYS) {
-                mterror(ARGV0, MAX_RK_MSG, MAX_RK_SYS);
+                LogError(ARGV0, MAX_RK_MSG, MAX_RK_SYS);
             }
 
             else {
@@ -138,7 +138,7 @@ void check_rc_files(const char *basedir, FILE *fp)
 
                 if (!rk_sys_name[rk_sys_count] ||
                         !rk_sys_file[rk_sys_count] ) {
-                    mterror(ARGV0, MEM_ERROR, errno, strerror(errno));
+                    LogError(ARGV0, MEM_ERROR, errno, strerror(errno));
 
                     if (rk_sys_file[rk_sys_count]) {
                         free(rk_sys_file[rk_sys_count]);
@@ -172,7 +172,7 @@ void check_rc_files(const char *basedir, FILE *fp)
         }
 
        if (bytes_written < 0 || (size_t)bytes_written > (sizeof(file_path) - 1)) {
-            mtdebug2(ARGV0, "Path file was truncated (%s)\n", file_path);
+            LogDebug(ARGV0, "Path file was truncated (%s)\n", file_path);
             continue;
        }
 
@@ -207,7 +207,7 @@ void check_rc_files(const char *basedir, FILE *fp)
 
                 notify_rk(ALERT_ROOTKIT_FOUND, op_msg);
             } else {
-                mtdebug2(ARGV0, "Error %d (%s) with snprintf with file %s", errno, strerror(errno), file_path);
+                LogDebug(ARGV0, "Error %d (%s) with snprintf with file %s", errno, strerror(errno), file_path);
             }
 
             _errors = 1;

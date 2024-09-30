@@ -29,26 +29,26 @@ wfd_t * wpopenv(const char * path, char * const * argv, int flags) {
 
     if (flags & (W_BIND_STDOUT | W_BIND_STDERR)) {
         if (!CreatePipe(&hPipeOut[0], &hPipeOut[1], NULL, 0)) {
-            merror("CreatePipe(): %ld", GetLastError());
+            LogError("CreatePipe(): %ld", GetLastError());
             return NULL;
         }
 
         if (!SetHandleInformation(hPipeOut[1], HANDLE_FLAG_INHERIT, 1)) {
-            merror("SetHandleInformation(): %ld", GetLastError());
+            LogError("SetHandleInformation(): %ld", GetLastError());
             CloseHandle(hPipeOut[0]);
             CloseHandle(hPipeOut[1]);
             return NULL;
         }
 
         if (fd = _open_osfhandle((int)hPipeOut[0], 0), fd < 0) {
-            merror("_open_osfhandle(): %ld", GetLastError());
+            LogError("_open_osfhandle(): %ld", GetLastError());
             CloseHandle(hPipeOut[0]);
             CloseHandle(hPipeOut[1]);
             return NULL;
         }
 
         if (fp_out = _fdopen(fd, "r"), !fp_out) {
-            merror("_fdopen(): %ld", GetLastError());
+            LogError("_fdopen(): %ld", GetLastError());
             _close(fd);
             CloseHandle(hPipeOut[1]);
             return NULL;
@@ -60,7 +60,7 @@ wfd_t * wpopenv(const char * path, char * const * argv, int flags) {
 
     if (flags & W_BIND_STDIN) {
         if (!CreatePipe(&hPipeIn[0], &hPipeIn[1], NULL, 0)) {
-            merror("CreatePipe(): %ld", GetLastError());
+            LogError("CreatePipe(): %ld", GetLastError());
 
             if (flags & (W_BIND_STDOUT | W_BIND_STDERR)) {
                 fclose(fp_out);
@@ -71,7 +71,7 @@ wfd_t * wpopenv(const char * path, char * const * argv, int flags) {
         }
 
         if (!SetHandleInformation(hPipeIn[0], HANDLE_FLAG_INHERIT, 1)) {
-            merror("SetHandleInformation(): %ld", GetLastError());
+            LogError("SetHandleInformation(): %ld", GetLastError());
             CloseHandle(hPipeIn[0]);
             CloseHandle(hPipeIn[1]);
 
@@ -84,7 +84,7 @@ wfd_t * wpopenv(const char * path, char * const * argv, int flags) {
         }
 
         if (fd = _open_osfhandle((int)hPipeIn[1], 0), fd < 0) {
-            merror("_open_osfhandle(): %ld", GetLastError());
+            LogError("_open_osfhandle(): %ld", GetLastError());
             CloseHandle(hPipeIn[0]);
             CloseHandle(hPipeIn[1]);
 
@@ -97,7 +97,7 @@ wfd_t * wpopenv(const char * path, char * const * argv, int flags) {
         }
 
         if (fp_in = _fdopen(fd, "w"), !fp_in) {
-            merror("_fdopen(): %ld", GetLastError());
+            LogError("_fdopen(): %ld", GetLastError());
             _close(fd);
             CloseHandle(hPipeIn[0]);
 
@@ -128,11 +128,11 @@ wfd_t * wpopenv(const char * path, char * const * argv, int flags) {
             zcommand += zarg;
         }
 
-        mdebug2("path = '%s', command = '%s'", path, lpCommandLine);
+        LogDebug("path = '%s', command = '%s'", path, lpCommandLine);
     }
 
     if (!CreateProcess(NULL, lpCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, &sinfo, &pinfo)) {
-        mdebug1("CreateProcess(): %ld", GetLastError());
+        LogDebug("CreateProcess(): %ld", GetLastError());
 
         if (flags & (W_BIND_STDOUT | W_BIND_STDERR)) {
             fclose(fp_out);
@@ -224,14 +224,14 @@ wfd_t * wpopenv(const char * path, char * const * argv, int flags) {
         // Child code
 
         if (flags & W_CHECK_WRITE && !access(path, W_OK)) {
-            merror("At wpopenv(): file '%s' has write permissions.", path);
+            LogError("At wpopenv(): file '%s' has write permissions.", path);
             _exit(127);
         }
 
         int fd_null = open("/dev/null", O_RDWR, 0);
 
         if (fd_null < 0) {
-            merror_exit(FOPEN_ERROR, "/dev/null", errno, strerror(errno));
+            LogCritical(FOPEN_ERROR, "/dev/null", errno, strerror(errno));
         }
 
         if (flags & W_BIND_STDOUT) {
@@ -345,7 +345,7 @@ int wpclose(wfd_t * wfd) {
         wstatus = exitcode;
         break;
     default:
-        merror("WaitForSingleObject(): %ld", GetLastError());
+        LogError("WaitForSingleObject(): %ld", GetLastError());
         wstatus = -1;
     }
 

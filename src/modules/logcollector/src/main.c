@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     // Define current working directory
     char * home_path = w_homedir(argv[0]);
     if (chdir(home_path) == -1) {
-        merror_exit(CHDIR_ERROR, home_path, errno, strerror(errno));
+        LogCritical(CHDIR_ERROR, home_path, errno, strerror(errno));
     }
 
     const char *cfg = OSSECCONF;
@@ -78,7 +78,8 @@ int main(int argc, char **argv)
                 help_logcollector(home_path);
                 break;
             case 'd':
-                nowDebug();
+                // TODO : should this feature be added
+                //nowDebug();
                 debug_level = 1;
                 break;
             case 'f':
@@ -86,7 +87,7 @@ int main(int argc, char **argv)
                 break;
             case 'c':
                 if (!optarg) {
-                    merror_exit("-c needs an argument");
+                    LogCritical("-c needs an argument");
                 }
                 cfg = optarg;
                 break;
@@ -103,12 +104,12 @@ int main(int argc, char **argv)
     /* Check if the group given is valid */
     gid = Privsep_GetGroup(group);
     if (gid == (gid_t) - 1) {
-        merror_exit(USER_ERROR, "", group, strerror(errno), errno);
+        LogCritical(USER_ERROR, "", group, strerror(errno), errno);
     }
 
     /* Privilege separation */
     if (Privsep_SetGroup(gid) < 0) {
-        merror_exit(SETGID_ERROR, group, errno, strerror(errno));
+        LogCritical(SETGID_ERROR, group, errno, strerror(errno));
     }
 
     /* Check current debug_level
@@ -118,12 +119,12 @@ int main(int argc, char **argv)
         /* Get debug level */
         debug_level = lc_debug_level;
         while (debug_level != 0) {
-            nowDebug();
+            //nowDebug();
             debug_level--;
         }
     }
 
-    mdebug1(WAZUH_HOMEDIR, home_path);
+    LogDebug(WAZUH_HOMEDIR, home_path);
     os_free(home_path);
 
     /* Init message queue */
@@ -131,7 +132,7 @@ int main(int argc, char **argv)
 
     /* Read config file */
     if (LogCollectorConfig(cfg) < 0) {
-        mlerror_exit(LOGLEVEL_ERROR, CONFIG_ERROR, cfg);
+        LogError( CONFIG_ERROR, cfg);
     }
 
     /* Exit if test config */
@@ -149,7 +150,7 @@ int main(int argc, char **argv)
         logff[1].file = NULL;
         logff[1].logformat = NULL;
 
-        minfo(NO_FILE);
+        LogInfo(NO_FILE);
     }
 
     /* No sockets defined */
@@ -172,23 +173,24 @@ int main(int argc, char **argv)
     struct rlimit rlimit = { nofile, nofile };
 
     if (setrlimit(RLIMIT_NOFILE, &rlimit) < 0) {
-        merror("Could not set resource limit for file descriptors to %d: %s (%d)", (int)nofile, strerror(errno), errno);
+        LogError("Could not set resource limit for file descriptors to %d: %s (%d)", (int)nofile, strerror(errno), errno);
     }
 
     if (!run_foreground) {
         /* Going on daemon mode */
-        nowDaemon();
+        // TODO : should this feature be added
+        //nowDaemon();
         goDaemon();
     }
 
     /* Create PID file */
     if (CreatePID(ARGV0, getpid()) < 0) {
-        merror_exit(PID_ERROR);
+        LogCritical(PID_ERROR);
     }
 
     /* Start the queue */
     if ((logr_queue = StartMQ(DEFAULTQUEUE, WRITE, INFINITE_OPENQ_ATTEMPTS)) < 0) {
-        merror_exit(QUEUE_FATAL, DEFAULTQUEUE);
+        LogCritical(QUEUE_FATAL, DEFAULTQUEUE);
     }
 
     /* Main loop */

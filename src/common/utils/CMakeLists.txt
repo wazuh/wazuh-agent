@@ -1,3 +1,5 @@
 add_library(utils INTERFACE)
 
-target_include_directories(utils INTERFACE include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../logger/include)
+
+target_include_directories(utils INTERFACE include Logger)

@@ -9,7 +9,6 @@
 #include <memory>
 #include <sysInfoInterface.hpp>
 #include <configuration_parser.hpp>
-#include <logging_helper.h>
 #include <commonDefs.h>
 #include <dbsync.hpp>
 #include <inventoryNormalizer.hpp>
@@ -65,7 +64,6 @@ class Inventory {
         void SyncLoop(std::unique_lock<std::mutex>& lock);
         void ShowConfig();
         cJSON * Dump();
-        static void Log(const modules_log_level_t level, const std::string& log);
         static void LogErrorInventory(const std::string& log);
 
         const std::string                           m_moduleName {"inventory"};

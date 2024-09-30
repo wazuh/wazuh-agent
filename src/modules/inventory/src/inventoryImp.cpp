@@ -420,10 +420,10 @@ void Inventory::ScanHardware()
 {
     if (m_hardware)
     {
-        Log(LOG_DEBUG_VERBOSE, "Starting hardware scan");
+        LogTrace( "Starting hardware scan");
         const auto& hwData{GetHardwareData()};
         UpdateChanges(HW_TABLE, hwData);
-        Log(LOG_DEBUG_VERBOSE, "Ending hardware scan");
+        LogTrace( "Ending hardware scan");
     }
 }
 
@@ -439,10 +439,10 @@ void Inventory::ScanOs()
 {
     if (m_os)
     {
-        Log(LOG_DEBUG_VERBOSE, "Starting os scan");
+        LogTrace( "Starting os scan");
         const auto& osData{GetOSData()};
         UpdateChanges(OS_TABLE, osData);
-        Log(LOG_DEBUG_VERBOSE, "Ending os scan");
+        LogTrace( "Ending os scan");
     }
 }
 
@@ -560,7 +560,7 @@ void Inventory::ScanNetwork()
 {
     if (m_network)
     {
-        Log(LOG_DEBUG_VERBOSE, "Starting network scan");
+        LogTrace( "Starting network scan");
         const auto networkData(GetNetworkData());
 
         if (!networkData.is_null())
@@ -587,7 +587,7 @@ void Inventory::ScanNetwork()
             }
         }
 
-        Log(LOG_DEBUG_VERBOSE, "Ending network scan");
+        LogTrace( "Ending network scan");
     }
 }
 
@@ -595,7 +595,7 @@ void Inventory::ScanPackages()
 {
     if (m_packages)
     {
-        Log(LOG_DEBUG_VERBOSE, "Starting packages scan");
+        LogTrace( "Starting packages scan");
         const auto callback
         {
             [this](ReturnTypeCallback result, const nlohmann::json & data)
@@ -630,7 +630,7 @@ void Inventory::ScanPackages()
         });
         txn.getDeletedRows(callback);
 
-        Log(LOG_DEBUG_VERBOSE, "Ending packages scan");
+        LogTrace( "Ending packages scan");
     }
 }
 
@@ -638,7 +638,7 @@ void Inventory::ScanHotfixes()
 {
     if (m_hotfixes)
     {
-        Log(LOG_DEBUG_VERBOSE, "Starting hotfixes scan");
+        LogTrace( "Starting hotfixes scan");
         auto hotfixes = m_spInfo->hotfixes();
 
         if (!hotfixes.is_null())
@@ -651,7 +651,7 @@ void Inventory::ScanHotfixes()
             UpdateChanges(HOTFIXES_TABLE, hotfixes);
         }
 
-        Log(LOG_DEBUG_VERBOSE, "Ending hotfixes scan");
+        LogTrace( "Ending hotfixes scan");
     }
 }
 
@@ -722,10 +722,10 @@ void Inventory::ScanPorts()
 {
     if (m_ports)
     {
-        Log(LOG_DEBUG_VERBOSE, "Starting ports scan");
+        LogTrace( "Starting ports scan");
         const auto& portsData { GetPortsData() };
         UpdateChanges(PORTS_TABLE, portsData);
-        Log(LOG_DEBUG_VERBOSE, "Ending ports scan");
+        LogTrace( "Ending ports scan");
     }
 }
 
@@ -733,7 +733,7 @@ void Inventory::ScanProcesses()
 {
     if (m_processes)
     {
-        Log(LOG_DEBUG_VERBOSE, "Starting processes scan");
+        LogTrace( "Starting processes scan");
         const auto callback
         {
             [this](ReturnTypeCallback result, const nlohmann::json & data)
@@ -762,13 +762,13 @@ void Inventory::ScanProcesses()
         });
         txn.getDeletedRows(callback);
 
-        Log(LOG_DEBUG_VERBOSE, "Ending processes scan");
+        LogTrace( "Ending processes scan");
     }
 }
 
 void Inventory::Scan()
 {
-    Log(LOG_INFO, "Starting evaluation.");
+    LogInfo("Starting evaluation.");
     m_scanTime = Utils::getCurrentTimestamp();
 
     TryCatchTask([&]() { ScanHardware(); });
@@ -779,12 +779,12 @@ void Inventory::Scan()
     TryCatchTask([&]() { ScanPorts(); });
     TryCatchTask([&]() { ScanProcesses(); });
     m_notify = true;
-    Log(LOG_INFO, "Evaluation finished.");
+    LogInfo("Evaluation finished.");
 }
 
 void Inventory::SyncLoop(std::unique_lock<std::mutex>& lock)
 {
-    Log(LOG_INFO, "Module started.");
+    LogInfo("Module started.");
 
     if (m_scanOnStart)
     {

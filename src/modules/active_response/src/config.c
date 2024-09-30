@@ -33,7 +33,7 @@ int ExecdConfig(const char *cfgfile)
     /* Read XML file */
     if (OS_ReadXML(cfgfile, &xml) < 0)
     {
-        merror_exit(XML_ERROR, cfgfile, xml.err, xml.err_line);
+        LogCritical(XML_ERROR, cfgfile, xml.err, xml.err_line);
     }
 
     /* We do not validate the xml in here. It is done by other processes. */
@@ -50,7 +50,7 @@ int ExecdConfig(const char *cfgfile)
         }
         else
         {
-            merror(XML_VALUEERR, "disabled", disable_entry);
+            LogError(XML_VALUEERR, "disabled", disable_entry);
             free(disable_entry);
             return (-1);
         }
@@ -108,7 +108,7 @@ next:
         repeated_a = OS_StrBreak(',', repeated_t, 5);
         if (!repeated_a)
         {
-            merror(XML_VALUEERR, "repeated_offenders", repeated_t);
+            LogError(XML_VALUEERR, "repeated_offenders", repeated_t);
             free(repeated_t);
             return (-1);
         }
@@ -135,7 +135,7 @@ next:
             }
 
             repeated_offenders_timeout[j] = atoi(tmpt);
-            minfo("Adding offenders timeout: %d (for #%d)",
+            LogInfo("Adding offenders timeout: %d (for #%d)",
                 repeated_offenders_timeout[j], j + 1);
             j++;
             repeated_offenders_timeout[j] = 0;
@@ -214,17 +214,17 @@ cJSON *getClusterConfig(void) {
     if (sock = external_socket_connect(sockname, WAZUH_IPC_TIMEOUT), sock < 0) {
         switch (errno) {
         case ECONNREFUSED:
-            merror("At getClusterConfig(): Could not connect to socket '%s': %s (%d).", sockname, strerror(errno), errno);
+            LogError("At getClusterConfig(): Could not connect to socket '%s': %s (%d).", sockname, strerror(errno), errno);
             break;
 
         default:
-            merror("At getClusterConfig(): Could not connect to socket '%s': %s (%d).", sockname, strerror(errno), errno);
+            LogError("At getClusterConfig(): Could not connect to socket '%s': %s (%d).", sockname, strerror(errno), errno);
         }
         return NULL;
     }
 
     if (OS_SendSecureTCPCluster(sock, req, "", 0) != 0) {
-        merror("send(): %s", strerror(errno));
+        LogError("send(): %s", strerror(errno));
         close(sock);
         return NULL;
     }
@@ -233,25 +233,25 @@ cJSON *getClusterConfig(void) {
 
     switch (length = OS_RecvSecureClusterTCP(sock, buffer, OS_MAXSTR), length) {
     case -2:
-        merror("Cluster error detected");
+        LogError("Cluster error detected");
         free(buffer);
         close(sock);
         return NULL;
 
     case -1:
-        merror("At wcom_main(): OS_RecvSecureClusterTCP(): %s", strerror(errno));
+        LogError("At wcom_main(): OS_RecvSecureClusterTCP(): %s", strerror(errno));
         free(buffer);
         close(sock);
         return NULL;
 
     case 0:
-        mdebug1("Empty message from local client.");
+        LogDebug("Empty message from local client.");
         free(buffer);
         close(sock);
         return NULL;
 
     case OS_MAXLEN:
-        merror("Received message > %i", OS_MAXSTR);
+        LogError("Received message > %i", OS_MAXSTR);
         free(buffer);
         close(sock);
         return NULL;
@@ -263,7 +263,7 @@ cJSON *getClusterConfig(void) {
     const char *jsonErrPtr;
     cluster_config_cJSON = cJSON_ParseWithOpts(buffer, &jsonErrPtr, 0);
     if (!cluster_config_cJSON) {
-        mdebug1("Error parsing JSON event. %s", buffer);
+        LogDebug("Error parsing JSON event. %s", buffer);
         free(buffer);
         return NULL;
     }

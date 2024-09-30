@@ -93,7 +93,7 @@ char *os_LoadString(char *at, const char *str)
     if (at == NULL) {
         at = strdup(str);
         if (!at) {
-            merror(MEM_ERROR, errno, strerror(errno));
+            LogError(MEM_ERROR, errno, strerror(errno));
         }
         return (at);
     } else { /* at is not null. Need to reallocate its memory and copy str to it */
@@ -104,7 +104,7 @@ char *os_LoadString(char *at, const char *str)
         newat = (char *) realloc(at, finalsize * sizeof(char));
         if (newat == NULL) {
             free(at);
-            merror(MEM_ERROR, errno, strerror(errno));
+            LogError(MEM_ERROR, errno, strerror(errno));
             return (NULL);
         }
         at = newat;

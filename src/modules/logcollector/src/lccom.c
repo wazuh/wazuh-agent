@@ -51,7 +51,7 @@ size_t lccom_dispatch(char * command, char ** output){
     if (strcmp(rcv_comm, "getconfig") == 0){
         // getconfig section
         if (!rcv_args){
-            mdebug1("LCCOM getconfig needs arguments.");
+            LogDebug("LCCOM getconfig needs arguments.");
             os_strdup("err LCCOM getconfig needs arguments", *output);
             return strlen(*output);
         }
@@ -63,7 +63,7 @@ size_t lccom_dispatch(char * command, char ** output){
         }
         return lccom_getstate(output, false);
     } else {
-        mdebug1("LCCOM Unrecognized command '%s'.", rcv_comm);
+        LogDebug("LCCOM Unrecognized command '%s'.", rcv_comm);
         os_strdup("err Unrecognized command", *output);
         return strlen(*output);
     }
@@ -275,7 +275,7 @@ void addStartandEndTagsToJsonStrBlock(char *buffJson, char *headerGlobal, char *
                         }
                     } else {
                         flag_global = false;
-                        mwarn("'global' tag no found in logcollector JSON stats");
+                        LogWarn("'global' tag no found in logcollector JSON stats");
                     }
                 }
             }
@@ -345,11 +345,11 @@ bool isJsonUpdated(void) {
         /* Get localized date string. */
         strftime(date_string, sizeof(date_string), "%c", tm_stat);
         mtime_current = mktime(tm_stat);
-        mdebug2(" %s %s", date_string, LOGCOLLECTOR_STATE);
+        LogDebug(" %s %s", date_string, LOGCOLLECTOR_STATE);
     }
 
     if (difftime(mtime_current, mtime_prev) != 0 && mtime_prev != 0) {
-        mdebug2("Logcollector JSON stats have been updated.");
+        LogDebug("Logcollector JSON stats have been updated.");
         isJsonUpdated = true;
     }
     mtime_prev = mtime_current;
@@ -428,7 +428,7 @@ size_t lccom_getstate(char ** output, bool getNextPage) {
         cJSON_AddNumberToObject(w_packet, "error", 1);
         cJSON_AddObjectToObject(w_packet, "data");
         cJSON_AddStringToObject(w_packet, "message", "Statistics unavailable");
-        mdebug1("At LCCOM getstate: Statistics unavailable");
+        LogDebug("At LCCOM getstate: Statistics unavailable");
     } else {
         cJSON_AddNumberToObject(w_packet, "error", 0);
         cJSON_AddFalseToObject(w_packet, "remaining");
@@ -493,7 +493,7 @@ size_t lccom_getconfig(const char * section, char ** output) {
         goto error;
     }
 error:
-    mdebug1("At LCCOM getconfig: Could not get '%s' section", section);
+    LogDebug("At LCCOM getconfig: Could not get '%s' section", section);
     os_strdup("err Could not get requested section", *output);
     return strlen(*output);
 }
@@ -508,10 +508,10 @@ void * lccom_main(__attribute__((unused)) void * arg) {
     ssize_t length;
     fd_set fdset;
 
-    mdebug1("Local requests thread ready");
+    LogDebug("Local requests thread ready");
 
     if (sock = OS_BindUnixDomain(LC_LOCAL_SOCK, SOCK_STREAM, OS_MAXSTR), sock < 0) {
-        merror("Unable to bind to socket '%s': (%d) %s.", LC_LOCAL_SOCK, errno, strerror(errno));
+        LogError("Unable to bind to socket '%s': (%d) %s.", LC_LOCAL_SOCK, errno, strerror(errno));
         return NULL;
     }
 
@@ -524,7 +524,7 @@ void * lccom_main(__attribute__((unused)) void * arg) {
         switch (select(sock + 1, &fdset, NULL, NULL, NULL)) {
         case -1:
             if (errno != EINTR) {
-                merror_exit("At lccom_main(): select(): %s", strerror(errno));
+                LogCritical("At lccom_main(): select(): %s", strerror(errno));
             }
 
             continue;
@@ -535,7 +535,7 @@ void * lccom_main(__attribute__((unused)) void * arg) {
 
         if (peer = accept(sock, NULL, NULL), peer < 0) {
             if (errno != EINTR) {
-                merror("At lccom_main(): accept(): %s", strerror(errno));
+                LogError("At lccom_main(): accept(): %s", strerror(errno));
             }
 
             continue;
@@ -544,20 +544,20 @@ void * lccom_main(__attribute__((unused)) void * arg) {
         os_calloc(OS_MAXSTR, sizeof(char), buffer);
         switch (length = OS_RecvSecureTCP(peer, buffer,OS_MAXSTR), length) {
         case OS_SOCKTERR:
-            merror("At lccom_main(): OS_RecvSecureTCP(): response size is bigger than expected");
+            LogError("At lccom_main(): OS_RecvSecureTCP(): response size is bigger than expected");
             break;
 
         case -1:
-            merror("At lccom_main(): OS_RecvSecureTCP(): %s", strerror(errno));
+            LogError("At lccom_main(): OS_RecvSecureTCP(): %s", strerror(errno));
             break;
 
         case 0:
-            mdebug1("Empty message from local client.");
+            LogDebug("Empty message from local client.");
             close(peer);
             break;
 
         case OS_MAXLEN:
-            merror("Received message > %i", MAX_DYN_STR);
+            LogError("Received message > %i", MAX_DYN_STR);
             close(peer);
             break;
 
@@ -570,7 +570,7 @@ void * lccom_main(__attribute__((unused)) void * arg) {
         free(buffer);
     }
 
-    mdebug1("Local server thread finished.");
+    LogDebug("Local server thread finished.");
 
     close(sock);
     return NULL;
