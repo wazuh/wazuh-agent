@@ -81,7 +81,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
 include_directories(${SRC_FOLDER}/headers/)
 include_directories(${LUA_INCLUDE_DIR})
-include_directories(${SRC_FOLDER}/external/procps/)
 include_directories(${SRC_FOLDER}/common/)
 include_directories(${SRC_FOLDER}/common/utils/)
 include_directories(${SRC_FOLDER}/common/byteArrayHelper/include/)
@@ -93,11 +92,6 @@ include_directories(${SRC_FOLDER}/common/linuxHelper/include/)
 include_directories(${SRC_FOLDER}/common/stringHelper/include/)
 include_directories(${SRC_FOLDER}/common/timeHelper/include/)
 include_directories(${SRC_FOLDER}/shared_modules/common/)
-include_directories(${SRC_FOLDER}/external/libdb/build_unix/)
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  include_directories(${SRC_FOLDER}/external/rpm/include/)
-  include_directories(${SRC_FOLDER}/external/rpm/builddir/output/include/)
-endif()
 
 if(WIN32)
   include_directories(${SRC_FOLDER}/common/time_op/include/)
@@ -117,11 +111,6 @@ if(WIN32)
 endif()
 
 link_directories(${SRC_FOLDER})
-link_directories(${SRC_FOLDER}/external/procps/)
-link_directories(${SRC_FOLDER}/external/libdb/build_unix/)
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  link_directories(${SRC_FOLDER}/external/rpm/builddir/)
-endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   file(GLOB SYSINFO_SRC
@@ -164,14 +153,13 @@ else()
       "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
-
 add_library(sysinfo SHARED
     ${SYSINFO_SRC}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/sysInfo.cpp
     ${SRC_FOLDER}/${RESOURCE_OBJ})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-  target_link_libraries(sysinfo psapi iphlpapi ws2_32)
+  target_link_libraries(sysinfo PUBLIC psapi iphlpapi ws2_32)
   set_target_properties(sysinfo PROPERTIES
       PREFIX ""
       SUFFIX ".dll"
@@ -187,17 +175,17 @@ elseif(APPLE)
   if(NOT corefoundation_lib)
     message(FATAL_ERROR "CoreFoundation library not found! Aborting...")
   endif()
-  target_link_libraries(sysinfo
+
+  target_link_libraries(sysinfo PUBLIC
     unofficial::libplist::libplist
     unofficial::libplist::libplist++
     ${iokit_lib}
     ${corefoundation_lib}
     sqliteWrapper
-    proc
     LibArchive::LibArchive)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
-target_link_libraries(sysinfo
+target_link_libraries(sysinfo PUBLIC
   networkHelper
   nlohmann_json::nlohmann_json
   cjson
@@ -206,7 +194,17 @@ target_link_libraries(sysinfo
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   find_library(POPT_LIBRARY libpopt.a)
-  target_link_libraries(sysinfo db proc rpm LibArchive::LibArchive ${POPT_LIBRARY})
+  find_library(PROC_NG_LIBRARY NAMES proc-ng REQUIRED)
+  find_library(LIBDB_LIBRARY NAMES db REQUIRED)
+  find_library(LIBRPM_LIBRARY NAMES rpm REQUIRED)
+  find_library(LIBRPMIO_LIBRARY NAMES rpmio REQUIRED)
+  target_link_libraries(sysinfo PUBLIC
+    ${LIBDB_LIBRARY}
+    ${PROC_NG_LIBRARY}
+    ${LIBRPM_LIBRARY}
+    ${LIBRPMIO_LIBRARY}
+    LibArchive::LibArchive
+    ${POPT_LIBRARY})
 endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
 if(APPLE)
