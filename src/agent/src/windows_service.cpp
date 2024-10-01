@@ -4,6 +4,9 @@
 #include <logger.hpp>
 #include <signal_handler.hpp>
 
+#include <memory>
+#include <unordered_map>
+
 namespace
 {
     SERVICE_STATUS g_ServiceStatus = {};
@@ -12,6 +15,19 @@ namespace
     SERVICE_DESCRIPTION g_serviceDescription;
     const std::string AGENT_SERVICENAME = "Wazuh Agent";
     const std::string AGENT_SERVICEDESCRIPTION = "Wazuh Windows Agent";
+
+    struct ServiceHandleDeleter
+    {
+        void operator()(SC_HANDLE handle) const
+        {
+            if (handle)
+            {
+                CloseServiceHandle(handle);
+            }
+        }
+    };
+
+    using ServiceHandle = std::unique_ptr<std::remove_pointer_t<SC_HANDLE>, ServiceHandleDeleter>;
 
     std::string GetExecutablePath()
     {
@@ -44,6 +60,47 @@ namespace
         {
             LogError("Failed to set service status to {}. Error: {}", g_ServiceStatus.dwCurrentState, GetLastError());
         }
+    }
+
+    std::string ServiceStatusToString(DWORD currentState)
+    {
+        static const std::unordered_map<DWORD, std::string> statusMap = {
+            {SERVICE_STOPPED, "Service is stopped."},
+            {SERVICE_START_PENDING, "Service is starting..."},
+            {SERVICE_STOP_PENDING, "Service is stopping..."},
+            {SERVICE_RUNNING, "Service is running."},
+            {SERVICE_CONTINUE_PENDING, "Service is resuming..."},
+            {SERVICE_PAUSE_PENDING, "Service is pausing..."},
+            {SERVICE_PAUSED, "Service is paused."}};
+
+        auto it = statusMap.find(currentState);
+        if (it != statusMap.end())
+        {
+            return it->second;
+        }
+        else
+        {
+            return "Unknown service status.";
+        }
+    }
+
+    bool GetService(ServiceHandle& hSCManager, ServiceHandle& hService, DWORD desiredAccess)
+    {
+        hSCManager.reset(OpenSCManager(nullptr, nullptr, SC_MANAGER_ALL_ACCESS));
+        if (!hSCManager)
+        {
+            LogError("Error: Unable to open Service Control Manager. Error: {}", GetLastError());
+            return false;
+        }
+
+        hService.reset(OpenService(hSCManager.get(), AGENT_SERVICENAME.c_str(), desiredAccess));
+        if (!hService)
+        {
+            LogError("Error: Unable to open service.Error: {}", GetLastError());
+            return false;
+        }
+
+        return true;
     }
 } // namespace
 
@@ -168,6 +225,7 @@ namespace WindowsService
         SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
 
         LogInfo("Starting Wazuh Agent.");
+
         Agent agent;
         agent.Run();
 
@@ -195,4 +253,70 @@ namespace WindowsService
         }
     }
 
+    void ServiceStart()
+    {
+        ServiceHandle hService;
+        ServiceHandle hSCManager;
+
+        if (!GetService(hSCManager, hService, SERVICE_START))
+            return;
+
+        if (!::StartService(hService.get(), 0, nullptr))
+        {
+            LogError("Error: Unable to start service. Error: {}", GetLastError());
+        }
+        else
+        {
+            LogInfo("Service {} started successfully.", AGENT_SERVICENAME.c_str());
+        }
+    }
+
+    void ServiceStop()
+    {
+        ServiceHandle hService;
+        ServiceHandle hSCManager;
+
+        if (!GetService(hSCManager, hService, SERVICE_STOP))
+            return;
+
+        SERVICE_STATUS serviceStatus = {};
+        if (!ControlService(hService.get(), SERVICE_CONTROL_STOP, &serviceStatus))
+        {
+            LogError("Error: Unable to stop service. Error: {}", GetLastError());
+        }
+        else
+        {
+            LogInfo("Service {} stopped successfully.", AGENT_SERVICENAME.c_str());
+        }
+    }
+
+    void ServiceRestart()
+    {
+        ServiceStop();
+        ServiceStart();
+    }
+
+    void ServiceStatus()
+    {
+        ServiceHandle hService;
+        ServiceHandle hSCManager;
+
+        if (!GetService(hSCManager, hService, SERVICE_QUERY_STATUS))
+            return;
+
+        SERVICE_STATUS_PROCESS serviceStatus;
+        DWORD bytesNeeded;
+        if (!QueryServiceStatusEx(hService.get(),
+                                  SC_STATUS_PROCESS_INFO,
+                                  (LPBYTE)&serviceStatus,
+                                  sizeof(SERVICE_STATUS_PROCESS),
+                                  &bytesNeeded))
+        {
+            LogError("Error: Unable to query service status. Error: {}", GetLastError());
+        }
+        else
+        {
+            LogInfo("{}", ServiceStatusToString(serviceStatus.dwCurrentState));
+        }
+    }
 } // namespace WindowsService

@@ -8,18 +8,24 @@
 
 #include <vector>
 
-void RestartAgent() {}
+void RestartAgent()
+{
+    WindowsService::ServiceRestart();
+}
 
 void StartAgent()
 {
-    LogInfo("Starting Wazuh Agent.");
+    WindowsService::ServiceStart();
 }
 
-void StatusAgent() {}
+void StatusAgent()
+{
+    WindowsService::ServiceStatus();
+}
 
 void StopAgent()
 {
-    LogInfo("Stopping Wazuh Agent.");
+    WindowsService::ServiceStop();
 }
 
 bool InstallService()
