@@ -7,8 +7,6 @@ int main(int argc, char* argv[])
     Logger logger;
     CommandlineParser cmdParser(argc, argv);
 
-    LogInfo("Starting wazuh-agent service.");
-
     try
     {
         if (cmdParser.OptionExists("register"))
@@ -33,6 +31,20 @@ int main(int argc, char* argv[])
         else if (cmdParser.OptionExists("stop"))
         {
             StopAgent();
+        }
+        else if (cmdParser.OptionExists("install"))
+        {
+            if (!InstallService())
+                return 1;
+        }
+        else if (cmdParser.OptionExists("remove"))
+        {
+            if (!RemoveService())
+                return 1;
+        }
+        else if (cmdParser.OptionExists("service"))
+        {
+            SetDispatcherThread();
         }
         else
         {

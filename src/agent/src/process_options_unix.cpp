@@ -35,8 +35,14 @@ void StopAgent()
     LogInfo("Stopping wazuh-agent");
 }
 
-void InstallService([[maybe_unused]] const std::string& exePath) {}
+bool InstallService()
+{
+    return true;
+}
 
-void RemoveService() {}
+bool RemoveService()
+{
+    return true;
+}
 
 void SetDispatcherThread() {}
