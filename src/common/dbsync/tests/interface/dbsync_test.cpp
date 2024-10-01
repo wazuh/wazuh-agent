@@ -10,7 +10,7 @@
  */
 
 #include <iostream>
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "dbsync_test.h"
 #include "dbsync.h"
 #include "dbsync.hpp"
