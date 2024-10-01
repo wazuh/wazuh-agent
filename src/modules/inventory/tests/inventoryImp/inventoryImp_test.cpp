@@ -205,7 +205,7 @@ TEST_F(InventoryImpTest, intervalSeconds)
 
     std::string inventoryConfig = R"(
         [inventory]
-        disabled = false
+        enabled = true
         interval = 1
         scan_on_start = true
         hardware = true
@@ -254,7 +254,7 @@ TEST_F(InventoryImpTest, noScanOnStart)
 
     std::string inventoryConfig = R"(
         [inventory]
-        disabled = false
+        enabled = true
         interval = 3600
         scan_on_start = false
         hardware = true
@@ -382,7 +382,7 @@ TEST_F(InventoryImpTest, noHardware)
 
     std::string inventoryConfig = R"(
         [inventory]
-        disabled = false
+        enabled = true
         interval = 3600
         scan_on_start = true
         hardware = false
@@ -511,7 +511,7 @@ TEST_F(InventoryImpTest, noOs)
 
     std::string inventoryConfig = R"(
         [inventory]
-        disabled = false
+        enabled = true
         interval = 3600
         scan_on_start = true
         hardware = true
@@ -619,7 +619,7 @@ TEST_F(InventoryImpTest, noNetwork)
 
     std::string inventoryConfig = R"(
         [inventory]
-        disabled = false
+        enabled = true
         interval = 3600
         scan_on_start = true
         hardware = true
@@ -745,7 +745,7 @@ TEST_F(InventoryImpTest, noPackages)
 
     std::string inventoryConfig = R"(
         [inventory]
-        disabled = false
+        enabled = true
         interval = 3600
         scan_on_start = true
         hardware = true
@@ -873,7 +873,7 @@ TEST_F(InventoryImpTest, noPorts)
 
     std::string inventoryConfig = R"(
         [inventory]
-        disabled = false
+        enabled = true
         interval = 5
         scan_on_start = true
         hardware = true
@@ -1012,7 +1012,7 @@ TEST_F(InventoryImpTest, noPortsAll)
 
     std::string inventoryConfig = R"(
         [inventory]
-        disabled = false
+        enabled = true
         interval = 3600
         scan_on_start = true
         hardware = true
@@ -1138,7 +1138,7 @@ TEST_F(InventoryImpTest, noProcesses)
 
     std::string inventoryConfig = R"(
         [inventory]
-        disabled = false
+        enabled = true
         interval = 3600
         scan_on_start = true
         hardware = true
@@ -1267,7 +1267,7 @@ TEST_F(InventoryImpTest, noHotfixes)
 
     std::string inventoryConfig = R"(
         [inventory]
-        disabled = false
+        enabled = true
         interval = 3600
         scan_on_start = true
         hardware = true
@@ -1325,7 +1325,7 @@ TEST_F(InventoryImpTest, scanInvalidData)
 
     std::string inventoryConfig = R"(
         [inventory]
-        disabled = false
+        enabled = true
         interval = 60
         scan_on_start = true
         hardware = true
@@ -1469,7 +1469,7 @@ TEST_F(InventoryImpTest, portAllEnable)
 
     std::string inventoryConfig = R"(
         [inventory]
-        disabled = false
+        enabled = true
         interval = 3600
         scan_on_start = true
         hardware = false
@@ -1608,7 +1608,7 @@ TEST_F(InventoryImpTest, portAllDisable)
 
     std::string inventoryConfig = R"(
         [inventory]
-        disabled = false
+        enabled = true
         interval = 3600
         scan_on_start = true
         hardware = false
@@ -1678,7 +1678,7 @@ TEST_F(InventoryImpTest, PackagesDuplicated)
 
     std::string inventoryConfig = R"(
         [inventory]
-        disabled = false
+        enabled = true
         interval = 3600
         scan_on_start = true
         hardware = false

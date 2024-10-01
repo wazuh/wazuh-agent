@@ -1141,8 +1141,8 @@ void goDaemonLight()
 
     dup2(1, 2);
 
-    // TODO: should we add this feature?
-    //nowDaemon();
+    // Deleted alongside the old debugger.
+    // nowDaemon();
 }
 
 /* Daemonize a process */
@@ -1183,7 +1183,8 @@ void goDaemon()
         close(fd);
     }
 
-    //nowDaemon();
+    // Deleted alongside the old debugger.
+    // nowDaemon();
 }
 
 #else /* WIN32 */

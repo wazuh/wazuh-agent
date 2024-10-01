@@ -20,4 +20,3 @@ add_subdirectory(version_op)
 if(BUILD_TESTS)
     enable_testing()
 endif()
-

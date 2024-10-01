@@ -2,7 +2,7 @@
 #include <inventory.hpp>
 #include <moduleManager.hpp>
 
-shared_ptr<ModuleWrapper> ModuleManager::GetModule(const string & name) {
+std::shared_ptr<ModuleWrapper> ModuleManager::GetModule(const std::string & name) {
     auto it = m_modules.find(name);
     if (it != m_modules.end()) {
         return it->second;

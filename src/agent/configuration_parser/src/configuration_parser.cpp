@@ -27,7 +27,7 @@ namespace configuration
                 https_enabled = "yes"
 
                 [inventory]
-                disabled = false
+                enabled = true
                 interval = 3600
                 scan_on_start = true
                 hardware = true

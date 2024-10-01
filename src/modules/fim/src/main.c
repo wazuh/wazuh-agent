@@ -171,8 +171,7 @@ int main(int argc, char **argv)
 #endif
 
     if (!run_foreground) {
-        // TODO : should this feature be added
-        //nowDaemon();
+        nowDaemon();
         goDaemon();
     }
 
