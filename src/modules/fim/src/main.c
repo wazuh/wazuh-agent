@@ -46,7 +46,7 @@ extern bool is_fim_shutdown;
 static void fim_shutdown(int sig)
 {
     /* Close sync thread and release dbsync and rsync */
-    minfo(SK_SHUTDOWN);
+    LogInfo(SK_SHUTDOWN);
     is_fim_shutdown = true;
     fim_db_teardown();
     HandleSIG(sig);
@@ -78,7 +78,8 @@ int main(int argc, char **argv)
                 help_syscheckd();
                 break;
             case 'd':
-                nowDebug();
+                // TODO : should this feature be added
+                //nowDebug();
                 debug_level ++;
                 break;
             case 'f':
@@ -86,7 +87,7 @@ int main(int argc, char **argv)
                 break;
             case 'c':
                 if (!optarg) {
-                    merror_exit("-c needs an argument");
+                    LogCritical("-c needs an argument");
                 }
                 cfg = optarg;
                 break;
@@ -101,21 +102,21 @@ int main(int argc, char **argv)
 
     /* Change current working directory */
     if (chdir(home_path) == -1) {
-        merror_exit(CHDIR_ERROR, home_path, errno, strerror(errno));
+        LogCritical(CHDIR_ERROR, home_path, errno, strerror(errno));
     }
 
-    mdebug1(WAZUH_HOMEDIR, home_path);
+    LogDebug(WAZUH_HOMEDIR, home_path);
     os_free(home_path);
 
     /* Check if the group given is valid */
     gid = Privsep_GetGroup(group);
     if (gid == (gid_t) - 1) {
-        merror_exit(USER_ERROR, "", group, strerror(errno), errno);
+        LogCritical(USER_ERROR, "", group, strerror(errno), errno);
     }
 
     /* Privilege separation */
     if (Privsep_SetGroup(gid) < 0) {
-        merror_exit(SETGID_ERROR, group, errno, strerror(errno));
+        LogCritical(SETGID_ERROR, group, errno, strerror(errno));
     }
 
     /* Initialize error logging for shared modulesd */
@@ -127,17 +128,17 @@ int main(int argc, char **argv)
 
     /* Check if the configuration is present */
     if (File_DateofChange(cfg) < 0) {
-        merror_exit(NO_CONFIG, cfg);
+        LogCritical(NO_CONFIG, cfg);
     }
 
     /* Read syscheck config */
     if ((r = Read_Syscheck_Config(cfg)) < 0) {
-        mwarn(RCONFIG_ERROR, SYSCHECK, cfg);
+        LogWarn(RCONFIG_ERROR, SYSCHECK, cfg);
         syscheck.disabled = 1;
     } else if ((r == 1) || (syscheck.disabled == 1)) {
         if (syscheck.directories == NULL || OSList_GetFirstNode(syscheck.directories) == NULL) {
             if (!test_config) {
-                minfo(FIM_DIRECTORY_NOPROVIDED);
+                LogInfo(FIM_DIRECTORY_NOPROVIDED);
             }
         }
 
@@ -148,7 +149,7 @@ int main(int argc, char **argv)
         }
 
         if (!test_config) {
-            minfo(FIM_DISABLED);
+            LogInfo(FIM_DISABLED);
         }
     }
 
@@ -182,7 +183,7 @@ int main(int argc, char **argv)
 
     /* Create pid */
     if (CreatePID(ARGV0, getpid()) < 0) {
-        merror_exit(PID_ERROR);
+        LogCritical(PID_ERROR);
     }
 
     if (syscheck.rootcheck) {
@@ -192,14 +193,14 @@ int main(int argc, char **argv)
     /* Connect to the queue */
 
     if ((syscheck.queue = StartMQ(DEFAULTQUEUE, WRITE, INFINITE_OPENQ_ATTEMPTS)) < 0) {
-        merror_exit(QUEUE_FATAL, DEFAULTQUEUE);
+        LogCritical(QUEUE_FATAL, DEFAULTQUEUE);
     }
 
     if (!syscheck.disabled) {
         OSListNode *node_it;
 
         /* Start up message */
-        minfo(STARTUP_MSG, (int)getpid());
+        LogInfo(STARTUP_MSG, (int)getpid());
 
         /* Print directories to be monitored */
         OSList_foreach(node_it, syscheck.directories) {
@@ -207,49 +208,49 @@ int main(int argc, char **argv)
             char optstr[ 1024 ];
 
             if (dir_it->symbolic_links == NULL) {
-                minfo(FIM_MONITORING_DIRECTORY, dir_it->path,
+                LogInfo(FIM_MONITORING_DIRECTORY, dir_it->path,
                       syscheck_opts2str(optstr, sizeof(optstr), dir_it->options));
             } else {
-                minfo(FIM_MONITORING_LDIRECTORY, dir_it->path, dir_it->symbolic_links,
+                LogInfo(FIM_MONITORING_LDIRECTORY, dir_it->path, dir_it->symbolic_links,
                       syscheck_opts2str(optstr, sizeof(optstr), dir_it->options));
             }
 
             if (dir_it->tag != NULL)
-                mdebug2(FIM_TAG_ADDED, dir_it->tag, dir_it->path);
+                LogDebug(FIM_TAG_ADDED, dir_it->tag, dir_it->path);
 
             // Print diff file size limit
             if ((dir_it->options & CHECK_SEECHANGES) && syscheck.file_size_enabled) {
-                mdebug2(FIM_DIFF_FILE_SIZE_LIMIT, dir_it->diff_size_limit, dir_it->path);
+                LogDebug(FIM_DIFF_FILE_SIZE_LIMIT, dir_it->diff_size_limit, dir_it->path);
             }
         }
 
         if (!syscheck.file_size_enabled) {
-            minfo(FIM_FILE_SIZE_LIMIT_DISABLED);
+            LogInfo(FIM_FILE_SIZE_LIMIT_DISABLED);
         }
 
         // Print maximum disk quota to be used by the queue/diff/local folder
         if (syscheck.disk_quota_enabled) {
-            mdebug2(FIM_DISK_QUOTA_LIMIT, syscheck.disk_quota_limit);
+            LogDebug(FIM_DISK_QUOTA_LIMIT, syscheck.disk_quota_limit);
         }
         else {
-            minfo(FIM_DISK_QUOTA_LIMIT_DISABLED);
+            LogInfo(FIM_DISK_QUOTA_LIMIT_DISABLED);
         }
 
         /* Print ignores. */
         if(syscheck.ignore)
             for (r = 0; syscheck.ignore[r] != NULL; r++)
-                minfo(FIM_PRINT_IGNORE_ENTRY, "file", syscheck.ignore[r]);
+                LogInfo(FIM_PRINT_IGNORE_ENTRY, "file", syscheck.ignore[r]);
 
         /* Print sregex ignores. */
         if(syscheck.ignore_regex)
             for (r = 0; syscheck.ignore_regex[r] != NULL; r++)
-                minfo(FIM_PRINT_IGNORE_SREGEX, "file", syscheck.ignore_regex[r]->raw);
+                LogInfo(FIM_PRINT_IGNORE_SREGEX, "file", syscheck.ignore_regex[r]->raw);
 
         /* Print files with no diff. */
         if (syscheck.nodiff){
             r = 0;
             while (syscheck.nodiff[r] != NULL) {
-                minfo(FIM_NO_DIFF, syscheck.nodiff[r]);
+                LogInfo(FIM_NO_DIFF, syscheck.nodiff[r]);
                 r++;
             }
         }
@@ -259,10 +260,10 @@ int main(int argc, char **argv)
             dir_it = node_it->data;
             if (dir_it->options & REALTIME_ACTIVE) {
 #if defined (INOTIFY_ENABLED) || defined (WIN32)
-                minfo(FIM_REALTIME_MONITORING_DIRECTORY, dir_it->path);
+                LogInfo(FIM_REALTIME_MONITORING_DIRECTORY, dir_it->path);
                 start_realtime = 1;
 #else
-                mwarn(FIM_WARN_REALTIME_DISABLED, dir_it->path);
+                LogWarn(FIM_WARN_REALTIME_DISABLED, dir_it->path);
                 dir_it->options &= ~REALTIME_ACTIVE;
                 dir_it->options |= SCHEDULED_ACTIVE;
 #endif
@@ -276,7 +277,7 @@ int main(int argc, char **argv)
                 start_realtime = 1;
                 break;
 #else
-                mwarn(FIM_WARN_REALTIME_DISABLED, dir_it->path);
+                LogWarn(FIM_WARN_REALTIME_DISABLED, dir_it->path);
                 dir_it->options &= ~REALTIME_ACTIVE;
                 dir_it->options |= SCHEDULED_ACTIVE;
 #endif
@@ -297,7 +298,7 @@ int main(int argc, char **argv)
             directory_t *dir_it;
             OSListNode *node_it;
 
-            mwarn(FIM_WARN_AUDIT_THREAD_NOSTARTED);
+            LogWarn(FIM_WARN_AUDIT_THREAD_NOSTARTED);
 
             // Switch who-data to real-time mode
 
@@ -325,7 +326,7 @@ int main(int argc, char **argv)
 
         }
 #else
-        merror(FIM_ERROR_WHODATA_AUDIT_SUPPORT);
+        LogError(FIM_ERROR_WHODATA_AUDIT_SUPPORT);
 #endif
     }
 

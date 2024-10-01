@@ -90,57 +90,6 @@ TEST_F(SysInfoParsersTest, UnixCentos)
     EXPECT_EQ("8", output["os_major"]);
 }
 
-TEST_F(SysInfoParsersTest, UnixArch)
-{
-    constexpr auto UNIX_RELEASE_FILE
-    {
-        R"(
-        NAME="Arch Linux"
-        PRETTY_NAME="Arch Linux"
-        ID=arch
-        BUILD_ID=rolling
-        ANSI_COLOR="38;2;23;147;209"
-        HOME_URL="https://www.archlinux.org/"
-        DOCUMENTATION_URL="https://wiki.archlinux.org/"
-        SUPPORT_URL="https://bbs.archlinux.org/"
-        BUG_REPORT_URL="https://bugs.archlinux.org/"
-        LOGO=archlinux
-        )"
-    };
-    nlohmann::json output;
-    std::stringstream info{UNIX_RELEASE_FILE};
-    const auto spParser{FactorySysOsParser::create("unix")};
-    EXPECT_TRUE(spParser->parseFile(info, output));
-    EXPECT_EQ("Arch Linux", output["os_name"]);
-    EXPECT_EQ("arch", output["os_platform"]);
-}
-
-TEST_F(SysInfoParsersTest, UnixAlpine)
-{
-    constexpr auto UNIX_RELEASE_FILE
-    {
-        R"(
-        NAME="Alpine Linux"
-        ID=alpine
-        VERSION_ID=3.17.1
-        PRETTY_NAME="Alpine Linux v3.17"
-        HOME_URL="https://alpinelinux.org/"
-        BUG_REPORT_URL="https://gitlab.alpinelinux.org/alpine/aports/-/issues"
-        )"
-    };
-    nlohmann::json output;
-    std::stringstream info{UNIX_RELEASE_FILE};
-    const auto spParser{FactorySysOsParser::create("unix")};
-    EXPECT_TRUE(spParser->parseFile(info, output));
-    EXPECT_EQ("3.17.1", output["os_version"]);
-    EXPECT_EQ("Alpine Linux", output["os_name"]);
-    EXPECT_EQ("alpine", output["os_platform"]);
-    EXPECT_EQ("3", output["os_major"]);
-    EXPECT_EQ("17", output["os_minor"]);
-    EXPECT_EQ("1", output["os_patch"]);
-}
-
-
 TEST_F(SysInfoParsersTest, Ubuntu)
 {
     constexpr auto UBUNTU_RELEASE_FILE
@@ -254,38 +203,6 @@ TEST_F(SysInfoParsersTest, CentosBased)
     EXPECT_EQ("8.8", output["os_version"]);
 }
 
-TEST_F(SysInfoParsersTest, BSDFreeBSD)
-{
-    constexpr auto FREE_BSD_UNAME
-    {
-        "12.1-STABLE"
-    };
-    nlohmann::json output;
-    const auto spParser{FactorySysOsParser::create("bsd")};
-    EXPECT_TRUE(spParser->parseUname(FREE_BSD_UNAME, output));
-    EXPECT_EQ("12.1", output["os_version"]);
-    EXPECT_EQ("BSD", output["os_name"]);
-    EXPECT_EQ("bsd", output["os_platform"]);
-    EXPECT_EQ("12", output["os_major"]);
-    EXPECT_EQ("1", output["os_minor"]);
-}
-
-TEST_F(SysInfoParsersTest, BSDOpenBSD)
-{
-    constexpr auto FREE_BSD_UNAME
-    {
-        "6.6"
-    };
-    nlohmann::json output;
-    const auto spParser{FactorySysOsParser::create("bsd")};
-    EXPECT_TRUE(spParser->parseUname(FREE_BSD_UNAME, output));
-    EXPECT_EQ("6.6", output["os_version"]);
-    EXPECT_EQ("BSD", output["os_name"]);
-    EXPECT_EQ("bsd", output["os_platform"]);
-    EXPECT_EQ("6", output["os_major"]);
-    EXPECT_EQ("6", output["os_minor"]);
-}
-
 TEST_F(SysInfoParsersTest, RedHatCentos)
 {
     constexpr auto REDHAT_RELEASE_FILE
@@ -373,23 +290,6 @@ TEST_F(SysInfoParsersTest, Debian)
     EXPECT_EQ("6", output["os_minor"]);
 }
 
-TEST_F(SysInfoParsersTest, Arch)
-{
-    constexpr auto ARCH_VERSION_FILE
-    {
-        "10.6"
-    };
-    nlohmann::json output;
-    std::stringstream info{ARCH_VERSION_FILE};
-    const auto spParser{FactorySysOsParser::create("arch")};
-    EXPECT_TRUE(spParser->parseFile(info, output));
-    EXPECT_EQ("10.6", output["os_version"]);
-    EXPECT_EQ("Arch Linux", output["os_name"]);
-    EXPECT_EQ("arch", output["os_platform"]);
-    EXPECT_EQ("10", output["os_major"]);
-    EXPECT_EQ("6", output["os_minor"]);
-}
-
 TEST_F(SysInfoParsersTest, Slackware)
 {
     constexpr auto SLACKWARE_VERSION_FILE
@@ -461,105 +361,6 @@ TEST_F(SysInfoParsersTest, Fedora)
     EXPECT_EQ("fedora", output["os_platform"]);
     EXPECT_EQ("Twenty Two", output["os_codename"]);
     EXPECT_EQ("22", output["os_major"]);
-}
-
-TEST_F(SysInfoParsersTest, Solaris)
-{
-    constexpr auto SOLARIS_VERSION_FILE
-    {
-        R"(
-                                     Oracle Solaris 11.3 X86
-          Copyright (c) 1983, 2015, Oracle and/or its affiliates.  All rights reserved.
-                                    Assembled 06 October 2015
-        )"
-    };
-    nlohmann::json output;
-    std::stringstream info{SOLARIS_VERSION_FILE};
-    const auto spParser{FactorySysOsParser::create("solaris")};
-    EXPECT_TRUE(spParser->parseFile(info, output));
-    EXPECT_EQ("11.3", output["os_version"]);
-    EXPECT_EQ("SunOS", output["os_name"]);
-    EXPECT_EQ("sunos", output["os_platform"]);
-    EXPECT_EQ("11", output["os_major"]);
-    EXPECT_EQ("3", output["os_minor"]);
-}
-
-TEST_F(SysInfoParsersTest, Solaris1)
-{
-    constexpr auto SOLARIS_VERSION_FILE
-    {
-        R"(
-                            Oracle Solaris 10 1/13 s10x_u11wos_24a X86
-           Copyright (c) 1983, 2013, Oracle and/or its affiliates. All rights reserved.
-                            Assembled 17 January 2013
-        )"
-    };
-    nlohmann::json output;
-    std::stringstream info{SOLARIS_VERSION_FILE};
-    const auto spParser{FactorySysOsParser::create("solaris")};
-    EXPECT_TRUE(spParser->parseFile(info, output));
-    EXPECT_EQ("10", output["os_version"]);
-    EXPECT_EQ("SunOS", output["os_name"]);
-    EXPECT_EQ("sunos", output["os_platform"]);
-    EXPECT_EQ("10", output["os_major"]);
-}
-
-TEST_F(SysInfoParsersTest, Solaris2)
-{
-    constexpr auto SOLARIS_VERSION_FILE
-    {
-        R"(
-                            Solaris 10 5/09 s10x_u7wos_08 X86
-           Copyright 2009 Sun Microsystems, Inc. All rights reserved.
-                                Use is subject to license terms.
-                                Assembled 17 January 2013
-        )"
-    };
-    nlohmann::json output;
-    std::stringstream info{SOLARIS_VERSION_FILE};
-    const auto spParser{FactorySysOsParser::create("solaris")};
-    EXPECT_TRUE(spParser->parseFile(info, output));
-    EXPECT_EQ("10", output["os_version"]);
-    EXPECT_EQ("SunOS", output["os_name"]);
-    EXPECT_EQ("sunos", output["os_platform"]);
-    EXPECT_EQ("10", output["os_major"]);
-}
-
-TEST_F(SysInfoParsersTest, HPUX)
-{
-    // https://docstore.mik.ua/manuals/hp-ux/en/5992-4826/pr01s02.html
-    constexpr auto HPUX_UNAME
-    {
-        "B.11.23"
-    };
-    nlohmann::json output;
-    const auto spParser{FactorySysOsParser::create("hp-ux")};
-    EXPECT_TRUE(spParser->parseUname(HPUX_UNAME, output));
-    EXPECT_EQ("11.23", output["os_version"]);
-    EXPECT_EQ("HP-UX", output["os_name"]);
-    EXPECT_EQ("hp-ux", output["os_platform"]);
-    EXPECT_EQ("11", output["os_major"]);
-    EXPECT_EQ("23", output["os_minor"]);
-}
-
-TEST_F(SysInfoParsersTest, Alpine)
-{
-    constexpr auto ALPINE_RELEASE_FILE
-    {
-        R"(
-        3.17.1
-        )"
-    };
-    nlohmann::json output;
-    std::stringstream info{ALPINE_RELEASE_FILE};
-    const auto spParser{FactorySysOsParser::create("alpine")};
-    EXPECT_TRUE(spParser->parseFile(info, output));
-    EXPECT_EQ("3.17.1", output["os_version"]);
-    EXPECT_EQ("Alpine Linux", output["os_name"]);
-    EXPECT_EQ("alpine", output["os_platform"]);
-    EXPECT_EQ("3", output["os_major"]);
-    EXPECT_EQ("17", output["os_minor"]);
-    EXPECT_EQ("1", output["os_patch"]);
 }
 
 TEST_F(SysInfoParsersTest, UknownPlatform)

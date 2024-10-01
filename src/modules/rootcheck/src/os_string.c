@@ -116,7 +116,7 @@ struct exec {
 #endif /* N_TXTOFF */
 
 #include "headers/defs.h"
-#include "headers/debug_op.h"
+// #include "headers/debug_op.h"
 #include "headers/regex_op.h"
 
 #include "error_messages/error_messages.h"
@@ -164,7 +164,7 @@ int os_string(char *file, char *regex)
     /* Allocate the buffer */
     bfr = (unsigned char *) calloc(STR_MINLEN + 2, sizeof(unsigned char));
     if (!bfr) {
-        mterror(ARGV0, MEM_ERROR, errno, strerror(errno));
+        LogError(ARGV0, MEM_ERROR, errno, strerror(errno));
         return (0);
     }
 

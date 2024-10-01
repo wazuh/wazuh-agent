@@ -10,14 +10,13 @@
 
 /* Functions to handle operation with files */
 
-#ifndef FILE_OP_H
-#define FILE_OP_H
+#pragma once
 
 #include <stdint.h>
 #include <time.h>
 #include <stdbool.h>
 #include <sys/stat.h>
-#include <cJSON.h>
+#include <cjson/cJSON.h>
 
 #ifdef WIN32
 #include <winsock2.h>
@@ -41,6 +40,16 @@ extern int isVista;
 typedef ino_t wino_t;
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+#define ATTR_NONNULL __attribute__((nonnull))
+#define ATTR_NONNULL_ONE __attribute__((nonnull(1)))
+#define ATTR_NONNULL_ONE_TWO __attribute__((nonnull(1, 2)))
+#else
+#define ATTR_NONNULL
+#define ATTR_NONNULL_ONE
+#define ATTR_NONNULL_ONE_TWO
+#endif
+
 typedef struct File {
     char *name;
     FILE *fp;
@@ -51,7 +60,7 @@ typedef struct File {
  *
  * @param name Program name.
  */
-void OS_SetName(const char *name) __attribute__((nonnull));
+void OS_SetName(const char *name) ATTR_NONNULL;
 
 
 /**
@@ -68,7 +77,7 @@ cJSON* getunameJSON();
  * @param file File name.
  * @return Time of last modification or -1 on error.
  */
-time_t File_DateofChange(const char *file) __attribute__((nonnull));
+time_t File_DateofChange(const char *file) ATTR_NONNULL;
 
 
 /**
@@ -77,7 +86,7 @@ time_t File_DateofChange(const char *file) __attribute__((nonnull));
  * @param file File name.
  * @return File inode or 0 on error.
  */
-ino_t File_Inode(const char *file) __attribute__((nonnull));
+ino_t File_Inode(const char *file) ATTR_NONNULL;
 
 
 /**
@@ -135,7 +144,7 @@ long get_fp_size(FILE * fp);
  * @param file File path.
  * @return 0 if it is a directory, -1 otherwise.
  */
-int IsDir(const char *file) __attribute__((nonnull));
+int IsDir(const char *file) ATTR_NONNULL;
 
 
 /**
@@ -144,7 +153,7 @@ int IsDir(const char *file) __attribute__((nonnull));
  * @param file File path.
  * @return 0 if it is a regular file, -1 otherwise.
  */
-int IsFile(const char *file) __attribute__((nonnull));
+int IsFile(const char *file) ATTR_NONNULL;
 
 
 /**
@@ -153,7 +162,7 @@ int IsFile(const char *file) __attribute__((nonnull));
  * @param file File path.
  * @return 0 if it is a socket, -1 otherwise.
  */
-int IsSocket(const char * file) __attribute__((nonnull));
+int IsSocket(const char * file) ATTR_NONNULL;
 
 
 /**
@@ -162,7 +171,7 @@ int IsSocket(const char * file) __attribute__((nonnull));
  * @param dir File path.
  * @return 1 if it is a file, 2 if it is a directory, 0 otherwise.
  */
-int check_path_type(const char *dir) __attribute__((nonnull));
+int check_path_type(const char *dir) ATTR_NONNULL;
 
 
 #ifndef WIN32
@@ -172,7 +181,7 @@ int check_path_type(const char *dir) __attribute__((nonnull));
  * @param file File path.
  * @return 0 if it is a link, -1 otherwise.
  */
-int IsLink(const char * file) __attribute__((nonnull));
+int IsLink(const char * file) ATTR_NONNULL;
 #endif
 
 
@@ -191,7 +200,7 @@ char *GetRandomNoise();
  * @param pid Service PID.
  * @return 0 if the file was created, -1 on error.
  */
-int CreatePID(const char *name, int pid) __attribute__((nonnull));
+int CreatePID(const char *name, int pid) ATTR_NONNULL;
 
 
 /**
@@ -200,7 +209,7 @@ int CreatePID(const char *name, int pid) __attribute__((nonnull));
  * @param name Service name.
  * @return 0 if the file was deleted, -1 on error.
  */
-int DeletePID(const char *name) __attribute__((nonnull));
+int DeletePID(const char *name) ATTR_NONNULL;
 
 
 /**
@@ -219,7 +228,7 @@ void DeleteState();
  * @param path_offset Offset for recursion.
  * @return 1 if the merged file was created, 0 on error.
  */
-int MergeAppendFile(FILE *finalfp, const char *files, int path_offset) __attribute__((nonnull(1, 2)));
+int MergeAppendFile(FILE *finalfp, const char *files, int path_offset) ATTR_NONNULL_ONE_TWO;
 
 
 /**
@@ -230,7 +239,7 @@ int MergeAppendFile(FILE *finalfp, const char *files, int path_offset) __attribu
  * @param mode Indicates if the merged file must be readed as a binary file  or not. Use `#OS_TEXT`, `#OS_BINARY`.
  * @return 1 if the file was unmerged, 0 on error.
  */
-int UnmergeFiles(const char *finalpath, const char *optdir, int mode, char ***unmerged_files) __attribute__((nonnull(1)));
+int UnmergeFiles(const char *finalpath, const char *optdir, int mode, char ***unmerged_files) ATTR_NONNULL_ONE;
 
 
 /**
@@ -240,7 +249,7 @@ int UnmergeFiles(const char *finalpath, const char *optdir, int mode, char ***un
  * @param mode Indicates if the merged file must be readed as a binary file  or not. Use `#OS_TEXT`, `#OS_BINARY`.
  * @return 1 if the merged file is valid, 0 if not.
  */
-int TestUnmergeFiles(const char *finalpath, int mode) __attribute__((nonnull(1)));
+int TestUnmergeFiles(const char *finalpath, int mode) ATTR_NONNULL_ONE;
 
 
 /**
@@ -274,7 +283,7 @@ const char *getuname(void);
  *      string such as "/usr/".
  * @return Pointer to the path basename.
  */
-char *basename_ex(char *path) __attribute__((nonnull));
+char *basename_ex(char *path) ATTR_NONNULL;
 
 
 /**
@@ -284,7 +293,7 @@ char *basename_ex(char *path) __attribute__((nonnull));
  * @param destination Path of the renamed file/folder.
  * @return 0 on success and -1 on error.
  */
-int rename_ex(const char *source, const char *destination) __attribute__((nonnull));
+int rename_ex(const char *source, const char *destination) ATTR_NONNULL;
 
 
 /**
@@ -293,7 +302,7 @@ int rename_ex(const char *source, const char *destination) __attribute__((nonnul
  * @param tmp_path Temporary file path.
  * @return 0 on success and -1 on error.
  */
-int mkstemp_ex(char *tmp_path) __attribute__((nonnull));
+int mkstemp_ex(char *tmp_path) ATTR_NONNULL;
 
 
 /**
@@ -638,4 +647,4 @@ int w_is_compressed_bz2_file(const char * path);
  * @return Pointer to the Wazuh installation path on success
  */
 char *w_homedir(char *arg);
-#endif /* FILE_OP_H */
+

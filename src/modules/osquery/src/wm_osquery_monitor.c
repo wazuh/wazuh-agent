@@ -31,11 +31,11 @@
 #undef mdebug1
 #undef mdebug2
 
-#define minfo(msg, ...) _mtinfo(WM_OSQUERYMONITOR_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
-#define mwarn(msg, ...) _mtwarn(WM_OSQUERYMONITOR_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
-#define merror(msg, ...) _mterror(WM_OSQUERYMONITOR_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
-#define mdebug1(msg, ...) _mtdebug1(WM_OSQUERYMONITOR_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
-#define mdebug2(msg, ...) _mtdebug2(WM_OSQUERYMONITOR_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
+#define minfo(msg, ...) LogInfo(WM_OSQUERYMONITOR_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
+#define mwarn(msg, ...) LogWarn(WM_OSQUERYMONITOR_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
+#define merror(msg, ...) LogError(WM_OSQUERYMONITOR_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
+#define mtdebug1(msg, ...) LogDebug(WM_OSQUERYMONITOR_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
+#define mdebug2(msg, ...) LogDebug(WM_OSQUERYMONITOR_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
 
 #ifdef WAZUH_UNIT_TESTING
 // Remove static qualifier when unit testing
@@ -85,7 +85,7 @@ void *Read_Log(wm_osquery_monitor_t * osquery)
 
         while (result_log = wfopen(osquery->log_path, "r"), !result_log && active) {
             i += i < 60;
-            mwarn("Results file '%s' not available: %s (%d). Retrying in %d sec.", osquery->log_path, strerror(errno), errno, i);
+            LogWarn("Results file '%s' not available: %s (%d). Retrying in %d sec.", osquery->log_path, strerror(errno), errno, i);
             sleep(i);
         }
 
@@ -97,12 +97,12 @@ void *Read_Log(wm_osquery_monitor_t * osquery)
             break;
         }
 
-        minfo("Following osquery results file '%s'.", osquery->log_path);
+        LogInfo("Following osquery results file '%s'.", osquery->log_path);
 
         // Move to end of the file
 
         if (fseek(result_log, 0, SEEK_END) < 0) {
-            merror(FSEEK_ERROR, osquery->log_path, errno, strerror(errno));
+            LogError(FSEEK_ERROR, osquery->log_path, errno, strerror(errno));
             fclose(result_log);
             continue;
         }
@@ -110,7 +110,7 @@ void *Read_Log(wm_osquery_monitor_t * osquery)
         // Save file inode
 
         if (current_inode = get_fp_inode(result_log), current_inode == (wino_t)-1) {
-            merror("Couldn't get inode of file '%s': %s (%d)", osquery->log_path, strerror(errno), errno);
+            LogError("Couldn't get inode of file '%s': %s (%d)", osquery->log_path, strerror(errno), errno);
             fclose(result_log);
             continue;
         }
@@ -158,10 +158,10 @@ void *Read_Log(wm_osquery_monitor_t * osquery)
                     }
 
                     payload = cJSON_PrintUnformatted(root);
-                    mdebug2("Sending... '%s'", payload);
+                    LogDebug("Sending... '%s'", payload);
 
                     if (wm_sendmsg(osquery->msg_delay, osquery->queue_fd, payload, "osquery", LOCALFILE_MQ) < 0) {
-                        mterror(WM_OSQUERYMONITOR_LOGTAG, QUEUE_ERROR, DEFAULTQUEUE, strerror(errno));
+                        LogError(WM_OSQUERYMONITOR_LOGTAG, QUEUE_ERROR, DEFAULTQUEUE, strerror(errno));
                     }
 
                     free(payload);
@@ -170,7 +170,7 @@ void *Read_Log(wm_osquery_monitor_t * osquery)
                     static int reported = 0;
 
                     if (!reported) {
-                        mwarn("Result line not in JSON format: '%64s'...", line);
+                        LogWarn("Result line not in JSON format: '%64s'...", line);
                         reported = 1;
                     }
                 }
@@ -181,9 +181,9 @@ void *Read_Log(wm_osquery_monitor_t * osquery)
             switch (wm_osquery_check_logfile(osquery->log_path, result_log)) {
             case -1:
                 if (errno == ENOENT) {
-                    minfo("Results file '%s' was deleted.", osquery->log_path);
+                    LogInfo("Results file '%s' was deleted.", osquery->log_path);
                 } else {
-                    mwarn("Couldn't access results file '%s': %s (%d)", osquery->log_path, strerror(errno), errno);
+                    LogWarn("Couldn't access results file '%s': %s (%d)", osquery->log_path, strerror(errno), errno);
                 }
 
                 goto endloop;
@@ -192,16 +192,16 @@ void *Read_Log(wm_osquery_monitor_t * osquery)
                 sleep(1);
                 break;
             case 1:
-                minfo("Results file '%s' truncated. Reloading.", osquery->log_path);
+                LogInfo("Results file '%s' truncated. Reloading.", osquery->log_path);
 
                 if (fseek(result_log, 0, SEEK_SET) < 0) {
-                    merror(FSEEK_ERROR, osquery->log_path, errno, strerror(errno));
+                    LogError(FSEEK_ERROR, osquery->log_path, errno, strerror(errno));
                     goto endloop;
                 }
 
                 break;
             case 2:
-                minfo("Results file '%s' rotated. Reloading.", osquery->log_path);
+                LogInfo("Results file '%s' rotated. Reloading.", osquery->log_path);
                 goto endloop;
             }
         }
@@ -287,7 +287,7 @@ void *Execute_Osquery(wm_osquery_monitor_t *osquery)
         snprintf(osqueryd_path, sizeof(osqueryd_path), "%s/" OSQUERYD_BIN, osquery->bin_path);
     }
 
-    mdebug1("Launching '%s' with config file '%s'", osqueryd_path, osquery->config_path);
+    LogDebug("Launching '%s' with config file '%s'", osqueryd_path, osquery->config_path);
 
 #ifdef WIN32
     snprintf(config_path, sizeof(config_path), "--config_path=\"%s\"", osquery->config_path);
@@ -308,7 +308,7 @@ void *Execute_Osquery(wm_osquery_monitor_t *osquery)
         // Check that the configuration file is valid
 
         if (access(osquery->config_path, R_OK) < 0) {
-            mwarn("The configuration file '%s' is not accessible: %s (%d)", osquery->config_path, strerror(errno), errno);
+            LogWarn("The configuration file '%s' is not accessible: %s (%d)", osquery->config_path, strerror(errno), errno);
             sleep(600);
             continue;
         }
@@ -316,7 +316,7 @@ void *Execute_Osquery(wm_osquery_monitor_t *osquery)
         // Run osquery
 
         if (wfd = wpopenl(osqueryd_path, W_BIND_STDERR, osqueryd_path, config_path, NULL), !wfd) {
-            mwarn("Couldn't execute osquery (%s). Sleeping for 10 minutes.", osqueryd_path);
+            LogWarn("Couldn't execute osquery (%s). Sleeping for 10 minutes.", osqueryd_path);
             sleep(600);
             continue;
         }
@@ -346,9 +346,9 @@ void *Execute_Osquery(wm_osquery_monitor_t *osquery)
                 // Parse most common osquery errors
 
                 if (strstr(text, "[Ref #1382]")) {
-                    mwarn("osqueryd has unsafe permissions.");
+                    LogWarn("osqueryd has unsafe permissions.");
                 } else if (strstr(text, "[Ref #1629]")) {
-                    mwarn("osqueryd initialize failed: Could not initialize database.");
+                    LogWarn("osqueryd initialize failed: Could not initialize database.");
                 } else if (end = wm_osquery_already_running(text), end) {
                     os_free(strpid);
                     strpid = end;
@@ -363,17 +363,17 @@ void *Execute_Osquery(wm_osquery_monitor_t *osquery)
                     switch (text[0]) {
                     case 'E':
                     case 'W':
-                        mwarn("%s", text);
+                        LogWarn("%s", text);
                         break;
                     default:
-                        mdebug2("%s", text);
+                        LogDebug("%s", text);
                     }
                 }
 
                 // Report to manager
 
                 if (wm_sendmsg(osquery->msg_delay, osquery->queue_fd, text, "osquery", LOCALFILE_MQ) < 0) {
-                    mterror(WM_OSQUERYMONITOR_LOGTAG, QUEUE_ERROR, DEFAULTQUEUE, strerror(errno));
+                    LogError(WM_OSQUERYMONITOR_LOGTAG, QUEUE_ERROR, DEFAULTQUEUE, strerror(errno));
                 }
             }
         }
@@ -392,24 +392,24 @@ void *Execute_Osquery(wm_osquery_monitor_t *osquery)
 
         if (wstatus == 127) {
             // 127 means error in exec
-            merror("Couldn't execute osquery (%s). Check file and permissions. Sleeping for 10 minutes.", osqueryd_path);
+            LogError("Couldn't execute osquery (%s). Check file and permissions. Sleeping for 10 minutes.", osqueryd_path);
             sleep(600);
         } else if (strpid) {
             // Osquery is already running.
             if (running_count == 1) {
-                minfo("osqueryd is already running with pid %s. Will run again in 1 minute.", strpid);
+                LogInfo("osqueryd is already running with pid %s. Will run again in 1 minute.", strpid);
                 sleep(60);
             } else {
-                minfo("osqueryd is already running with pid %s. Will run again in 10 minutes.", strpid);
+                LogInfo("osqueryd is already running with pid %s. Will run again in 10 minutes.", strpid);
                 sleep(600);
             }
         } else if (time(NULL) - time_started < 10) {
             // If osquery was alive less than 10 seconds, give up
-            merror("Osquery exited with code %d. Closing module.", wstatus);
+            LogError("Osquery exited with code %d. Closing module.", wstatus);
             active = 0;
             break;
         } else {
-            mwarn("Osquery exited with code %d. Restarting.", wstatus);
+            LogWarn("Osquery exited with code %d. Restarting.", wstatus);
         }
     }
 
@@ -475,9 +475,9 @@ int wm_osquery_decorators(wm_osquery_monitor_t * osquery)
 
     if (root = json_fread(osquery->config_path, 1), !root) {
         if (errno) {
-            merror("Couldn't load configuration file '%s': %s (%d)", osquery->config_path, strerror(errno), errno);
+            LogError("Couldn't load configuration file '%s': %s (%d)", osquery->config_path, strerror(errno), errno);
         } else {
-            merror("Couldn't load configuration file '%s'. Maybe format is invalid.", osquery->config_path);
+            LogError("Couldn't load configuration file '%s'. Maybe format is invalid.", osquery->config_path);
         }
 
         goto end;
@@ -505,10 +505,10 @@ int wm_osquery_decorators(wm_osquery_monitor_t * osquery)
         value = wstr_replace(labels[i].value, "'", "''");
 
         if (snprintf(buffer, sizeof(buffer), "SELECT '%s' AS '%s';", value, key) < (int)sizeof(buffer)) {
-            mdebug2("Adding decorator: %s", buffer);
+            LogDebug("Adding decorator: %s", buffer);
             cJSON_AddItemToArray(always, cJSON_CreateString(buffer));
         } else {
-            mwarn("Label '%s' too long. Couldn't insert decorator.", labels[i].key);
+            LogWarn("Label '%s' too long. Couldn't insert decorator.", labels[i].key);
         }
 
         free(key);
@@ -524,7 +524,7 @@ int wm_osquery_decorators(wm_osquery_monitor_t * osquery)
     // Write new configuration
 
     if (json_fwrite(osquery->config_path, root) < 0) {
-        merror("Couldn't write JSON content into configuration '%s': %s (%d)", osquery->config_path, strerror(errno), errno);
+        LogError("Couldn't write JSON content into configuration '%s': %s (%d)", osquery->config_path, strerror(errno), errno);
         goto end;
     }
 
@@ -555,9 +555,9 @@ int wm_osquery_packs(wm_osquery_monitor_t *osquery)
 
     if (root = json_fread(osquery->config_path, 1), !root) {
         if (errno) {
-            merror("Couldn't load configuration file '%s': %s (%d)", osquery->config_path, strerror(errno), errno);
+            LogError("Couldn't load configuration file '%s': %s (%d)", osquery->config_path, strerror(errno), errno);
         } else {
-            merror("Couldn't load configuration file '%s'. Maybe format is invalid.", osquery->config_path);
+            LogError("Couldn't load configuration file '%s'. Maybe format is invalid.", osquery->config_path);
         }
 
         return -1;
@@ -575,11 +575,11 @@ int wm_osquery_packs(wm_osquery_monitor_t *osquery)
             // Check if the file exists
 
             if (access(osquery->packs[i]->path, R_OK) < 0) {
-                mwarn("Possible invalid configuration: Pack file '%s' is not accessible: %s (%d)", osquery->packs[i]->path, strerror(errno), errno);
+                LogWarn("Possible invalid configuration: Pack file '%s' is not accessible: %s (%d)", osquery->packs[i]->path, strerror(errno), errno);
             }
         } else if (!strchr(osquery->packs[i]->path, '*')) {
             // If name is "*" but no "*" is in the path, log a warning
-            mwarn("Possible invalid configuration for pack '*' (%s): no such wildcards.", osquery->packs[i]->path);
+            LogWarn("Possible invalid configuration for pack '*' (%s): no such wildcards.", osquery->packs[i]->path);
         }
 
         cJSON_AddStringToObject(packs, osquery->packs[i]->name, osquery->packs[i]->path);
@@ -594,7 +594,7 @@ int wm_osquery_packs(wm_osquery_monitor_t *osquery)
     // Write new configuration
 
     if (json_fwrite(osquery->config_path, root) < 0) {
-        merror("Couldn't write JSON content into configuration '%s': %s (%d)", osquery->config_path, strerror(errno), errno);
+        LogError("Couldn't write JSON content into configuration '%s': %s (%d)", osquery->config_path, strerror(errno), errno);
         retval = -1;
     }
 
@@ -612,7 +612,7 @@ void *wm_osquery_monitor_main(wm_osquery_monitor_t *osquery) {
     pthread_t treader = 0;
 
     if (osquery->disable) {
-        minfo("Module disabled. Exiting...");
+        LogInfo("Module disabled. Exiting...");
 #ifdef WIN32
         return 0;
 #else
@@ -620,7 +620,7 @@ void *wm_osquery_monitor_main(wm_osquery_monitor_t *osquery) {
 #endif
     }
 
-    minfo("Module started.");
+    LogInfo("Module started.");
     osquery->msg_delay = 1000000 / wm_max_eps;
 
 #ifndef WIN32
@@ -628,14 +628,14 @@ void *wm_osquery_monitor_main(wm_osquery_monitor_t *osquery) {
 
     osquery->queue_fd = StartMQ(DEFAULTQUEUE, WRITE, INFINITE_OPENQ_ATTEMPTS);
     if (osquery->queue_fd < 0) {
-        mterror(WM_OSQUERYMONITOR_LOGTAG, "Can't connect to queue. Closing module.");
+        LogError(WM_OSQUERYMONITOR_LOGTAG, "Can't connect to queue. Closing module.");
         return NULL;
     }
 
 #endif
 
     if( pthread_create(&treader, NULL, (void *)&Read_Log, osquery) != 0){
-        merror("Error while creating Read_Log thread.");
+        LogError("Error while creating Read_Log thread.");
 #ifdef WIN32
         return 0;
 #else
@@ -655,7 +655,7 @@ void *wm_osquery_monitor_main(wm_osquery_monitor_t *osquery) {
         }
 
         if( pthread_create(&tlauncher, NULL, (void *)&Execute_Osquery, osquery) != 0){
-            merror("Error while creating Execute_Osquery thread.");
+            LogError("Error while creating Execute_Osquery thread.");
 #ifdef WIN32
             return 0;
 #else
@@ -664,12 +664,12 @@ void *wm_osquery_monitor_main(wm_osquery_monitor_t *osquery) {
         }
         pthread_join(tlauncher, NULL);
     } else {
-        minfo("run_daemon disabled, finding detached osquery process results.");
+        LogInfo("run_daemon disabled, finding detached osquery process results.");
     }
 
     pthread_join(treader, NULL);
 
-    minfo("Closing module.");
+    LogInfo("Closing module.");
 #ifdef WIN32
     return 0;
 #else

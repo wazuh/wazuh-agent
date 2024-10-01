@@ -116,7 +116,7 @@ void *read_snortfull(logreader *lf, int *rc, int drop_it) {
 
 file_error:
 
-        merror("Bad formated snort full file.");
+        LogError("Bad formated snort full file.");
         *rc = -1;
         EVP_MD_CTX_free(context);
         return (NULL);
@@ -131,6 +131,6 @@ file_error:
         EVP_MD_CTX_free(context);
     }
 
-    mdebug2("Read %d lines from %s", lines, lf->file);
+    LogDebug("Read %d lines from %s", lines, lf->file);
     return (NULL);
 }

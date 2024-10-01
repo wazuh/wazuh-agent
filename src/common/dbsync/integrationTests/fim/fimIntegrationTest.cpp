@@ -11,7 +11,7 @@
 
 #include <fstream>
 #include <iostream>
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "dbsync.h"
 #include "fimIntegrationTest.h"
 #include "fimDbDump.h"

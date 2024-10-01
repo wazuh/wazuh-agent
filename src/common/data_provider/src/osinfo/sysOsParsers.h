@@ -13,7 +13,7 @@
 #define _SYS_OS_PARSERS_H
 
 #include <istream>
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 struct ISysOsParser
 {
@@ -78,14 +78,6 @@ class DebianOsParser : public ISysOsParser
         bool parseFile(std::istream& in, nlohmann::json& output) override;
 };
 
-class ArchOsParser : public ISysOsParser
-{
-    public:
-        ArchOsParser() = default;
-        ~ArchOsParser() = default;
-        bool parseFile(std::istream& in, nlohmann::json& output) override;
-};
-
 class SlackwareOsParser : public ISysOsParser
 {
     public:
@@ -115,30 +107,6 @@ class FedoraOsParser : public ISysOsParser
     public:
         FedoraOsParser() = default;
         ~FedoraOsParser() = default;
-        bool parseFile(std::istream& in, nlohmann::json& output) override;
-};
-
-class SolarisOsParser : public ISysOsParser
-{
-    public:
-        SolarisOsParser() = default;
-        ~SolarisOsParser() = default;
-        bool parseFile(std::istream& in, nlohmann::json& output) override;
-};
-
-class HpUxOsParser : public ISysOsParser
-{
-    public:
-        HpUxOsParser() = default;
-        ~HpUxOsParser() = default;
-        bool parseUname(const std::string& in, nlohmann::json& output) override;
-};
-
-class AlpineOsParser : public ISysOsParser
-{
-    public:
-        AlpineOsParser() = default;
-        ~AlpineOsParser() = default;
         bool parseFile(std::istream& in, nlohmann::json& output) override;
 };
 
@@ -182,11 +150,6 @@ class FactorySysOsParser final
                 return std::make_unique<FedoraOsParser>();
             }
 
-            if (platform == "solaris")
-            {
-                return std::make_unique<SolarisOsParser>();
-            }
-
             if (platform == "debian")
             {
                 return std::make_unique<DebianOsParser>();
@@ -207,24 +170,9 @@ class FactorySysOsParser final
                 return std::make_unique<SuSEOsParser>();
             }
 
-            if (platform == "arch")
-            {
-                return std::make_unique<ArchOsParser>();
-            }
-
             if (platform == "rhel")
             {
                 return std::make_unique<RedHatOsParser>();
-            }
-
-            if (platform == "hp-ux")
-            {
-                return std::make_unique<HpUxOsParser>();
-            }
-
-            if (platform == "alpine")
-            {
-                return std::make_unique<AlpineOsParser>();
             }
 
             throw std::runtime_error

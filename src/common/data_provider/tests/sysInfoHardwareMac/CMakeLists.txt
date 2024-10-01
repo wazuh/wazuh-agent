@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 3.12.4)
+cmake_minimum_required(VERSION 3.22)
 
 project(sysInfoHardwareMac_unit_test)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
 
 file(GLOB sysinfo_UNIT_TEST_SRC
-    "${CMAKE_SOURCE_DIR}/src/hardware/*X86_64Mac.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../src/hardware/*X86_64Mac.cpp"
     "sysInfoHardwareMac_test.cpp"
     "sysInfoHardwareWrapperMac_test.cpp"
     "main.cpp")
@@ -13,17 +13,12 @@ file(GLOB sysinfo_UNIT_TEST_SRC
 add_executable(sysInfoHardwareMac_unit_test
     ${sysinfo_UNIT_TEST_SRC})
 
-target_link_libraries(sysInfoHardwareMac_unit_test
-    debug gtestd
-    debug gmockd
-    debug gtest_maind
-    debug gmock_maind
-    optimized gtest
-    optimized gmock
-    optimized gtest_main
-    optimized gmock_main
-    pthread
-    cjson
+target_link_libraries(sysInfoHardwareMac_unit_test PRIVATE
+    sysinfo
+    GTest::gtest
+    GTest::gmock
+    GTest::gtest_main
+    GTest::gmock_main
 )
 
 add_test(NAME sysInfoHardwareMac_unit_test
@@ -31,7 +26,7 @@ add_test(NAME sysInfoHardwareMac_unit_test
 
 if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "arm64.*|ARM64.*")
     file(GLOB sysinfo_ARM_UNIT_TEST_SRC
-        "${CMAKE_SOURCE_DIR}/src/hardware/*ARMMac.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../src/hardware/*ARMMac.cpp"
         "sysInfoHardwareWrapperARMMac_test.cpp"
         "main.cpp")
 
@@ -46,20 +41,13 @@ if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "arm64.*|ARM64.*")
     if(NOT corefoundation_lib)
         message(FATAL_ERROR "CoreFoundation library not found! Aborting...")
     endif()
-        
-    target_link_libraries(sysInfoHardwareARMMac_unit_test
-        debug gtestd
-        debug gmockd
-        debug gtest_maind
-        debug gmock_maind
-        optimized gtest
-        optimized gmock
-        optimized gtest_main
-        optimized gmock_main
-        pthread
-        cjson
-        ${iokit_lib}
-        ${corefoundation_lib}
+
+    target_link_libraries(sysInfoHardwareARMMac_unit_test PRIVATE
+        sysinfo
+        GTest::gtest
+        GTest::gmock
+        GTest::gtest_main
+        GTest::gmock_main
     )
 
     add_test(NAME sysInfoHardwareARMMac_unit_test

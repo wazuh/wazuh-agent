@@ -97,9 +97,9 @@ int remove_empty_folders(const char *path) {
             subdir = wreaddir(parent);
             if (!(subdir && *subdir)) {
                 // Remove empty folder
-                mdebug1("Removing empty directory '%s'.", parent);
+                LogDebug("Removing empty directory '%s'.", parent);
                 if (rmdir_ex(parent) != 0) {
-                    mwarn("Empty directory '%s' couldn't be deleted. ('%s')", parent, strerror(errno));
+                    LogWarn("Empty directory '%s' couldn't be deleted. ('%s')", parent, strerror(errno));
                     retval = -1;
                 } else {
                     // Get parent and remove it if it's empty
@@ -131,19 +131,14 @@ char *get_user(int uid) {
 
     os_calloc(bufsize, sizeof(char), buf);
 
-#if defined(SUN_MAJOR_VERSION) && defined(SUN_MINOR_VERSION)  && \
-    (SUN_MAJOR_VERSION < 11) || \
-    ((SUN_MAJOR_VERSION == 11) && (SUN_MINOR_VERSION < 4))
-    result = getpwuid_r(uid, &pwd, buf, bufsize);
-#else
     errno = getpwuid_r(uid, &pwd, buf, bufsize, &result);
-#endif
+
     if (result == NULL) {
         if (errno == 0) {
-            mdebug2("User with uid '%d' not found.\n", uid);
+            LogDebug("User with uid '%d' not found.\n", uid);
         }
         else {
-            mdebug2("Failed getting user_name for uid %d: (%d): '%s'\n", uid, errno, strerror(errno));
+            LogDebug("Failed getting user_name for uid %d: (%d): '%s'\n", uid, errno, strerror(errno));
         }
     } else {
         os_strdup(pwd.pw_name, user_name);
@@ -172,9 +167,9 @@ char *get_group(int gid) {
 
     if (result == NULL) {
         if (errno == 0) {
-            mdebug2("Group with gid '%d' not found.\n", gid);
+            LogDebug("Group with gid '%d' not found.\n", gid);
         } else {
-            mdebug2("Failed getting group_name for gid %d: (%d): '%s'\n", gid, errno, strerror(errno));
+            LogDebug("Failed getting group_name for gid %d: (%d): '%s'\n", gid, errno, strerror(errno));
         }
     } else {
         os_strdup(grp.gr_name, group_name);
@@ -190,12 +185,12 @@ void ag_send_syscheck(char * message) {
     int sock = OS_ConnectUnixDomain(SYS_LOCAL_SOCK, SOCK_STREAM, OS_MAXSTR);
 
     if (sock < 0) {
-        mwarn("dbsync: cannot connect to syscheck: %s (%d)", strerror(errno), errno);
+        LogWarn("dbsync: cannot connect to syscheck: %s (%d)", strerror(errno), errno);
         return;
     }
 
     if (OS_SendSecureTCP(sock, strlen(message), message) < 0) {
-        mwarn("Cannot send message to syscheck: %s (%d)", strerror(errno), errno);
+        LogWarn("Cannot send message to syscheck: %s (%d)", strerror(errno), errno);
     }
 
     close(sock);
@@ -238,10 +233,10 @@ char *get_file_user(const char *path, char **sid) {
         switch (dwErrorCode) {
         case ERROR_ACCESS_DENIED:     // 5
         case ERROR_SHARING_VIOLATION: // 32
-            mdebug1("At get_user(%s): CreateFile(): %s (%lu)", path, messageBuffer, dwErrorCode);
+            LogDebug("At get_user(%s): CreateFile(): %s (%lu)", path, messageBuffer, dwErrorCode);
             break;
         default:
-            mwarn("At get_user(%s): CreateFile(): %s (%lu)", path, messageBuffer, dwErrorCode);
+            LogWarn("At get_user(%s): CreateFile(): %s (%lu)", path, messageBuffer, dwErrorCode);
         }
 
         LocalFree(messageBuffer);
@@ -285,14 +280,14 @@ char *get_user(const char *path, char **sid, HANDLE hndl, SE_OBJECT_TYPE object_
 
     if (!ConvertSidToStringSid(pSidOwner, &local_sid)) {
         os_strdup("", *sid);
-        mdebug1("The user's SID could not be extracted.");
+        LogDebug("The user's SID could not be extracted.");
     } else {
         os_strdup(local_sid, *sid);
         LocalFree(local_sid);
     }
 
     if (dwRtnCode != ERROR_SUCCESS) {
-        mdebug1("GetSecurityInfo error code = (%lu), '%s'", dwRtnCode, win_strerror(dwRtnCode));
+        LogDebug("GetSecurityInfo error code = (%lu), '%s'", dwRtnCode, win_strerror(dwRtnCode));
         *AcctName = '\0';
         goto end;
     }
@@ -313,7 +308,7 @@ char *get_user(const char *path, char **sid, HANDLE hndl, SE_OBJECT_TYPE object_
         dwErrorCode = GetLastError();
 
         if (dwErrorCode == ERROR_NONE_MAPPED) {
-            mdebug1("Account owner not found for '%s'", path);
+            LogDebug("Account owner not found for '%s'", path);
         }
         else {
             LPSTR messageBuffer = NULL;
@@ -325,7 +320,7 @@ char *get_user(const char *path, char **sid, HANDLE hndl, SE_OBJECT_TYPE object_
                 *end = '\0';
             }
 
-            mwarn(FIM_REGISTRY_ACC_SID, "user", dwErrorCode, messageBuffer);
+            LogWarn(FIM_REGISTRY_ACC_SID, "user", dwErrorCode, messageBuffer);
             LocalFree(messageBuffer);
         }
 
@@ -360,7 +355,7 @@ static void add_ace_to_json(cJSON *acl_json, char *sid, char *account_name, cons
     if (ace_json == NULL) {
         ace_json = cJSON_CreateObject();
         if (ace_json == NULL) {
-            mwarn(FIM_CJSON_ERROR_CREATE_ITEM);
+            LogWarn(FIM_CJSON_ERROR_CREATE_ITEM);
             return;
         }
         cJSON_AddStringToObject(ace_json, "name", account_name);
@@ -406,21 +401,21 @@ static int process_ace_info(void *ace, cJSON *acl_json) {
         mask = denied_ace->Mask;
         ace_type = 1;
     } else {
-        mdebug2("Invalid ACE type.");
+        LogDebug("Invalid ACE type.");
         return 1;
     }
 
     if (!IsValidSid(sid)) {
-        mdebug2("Invalid SID found in ACE.");
+        LogDebug("Invalid SID found in ACE.");
         return 1;
     }
 
     if (error = w_get_account_info(sid, &account_name, &domain_name), error) {
-        mdebug2("No information could be extracted from the account linked to the SID. Error: %d.", error);
+        LogDebug("No information could be extracted from the account linked to the SID. Error: %d.", error);
     }
 
     if (!ConvertSidToStringSid(sid, &sid_str)) {
-        mdebug2("Could not extract the SID.");
+        LogDebug("Could not extract the SID.");
         os_free(account_name);
         os_free(domain_name);
         return 1;
@@ -457,7 +452,7 @@ static int get_win_permissions(PSECURITY_DESCRIPTOR pSecurityDescriptor, cJSON *
     cJSON *acl_json = cJSON_CreateObject();
 
     if (acl_json == NULL) {
-        mwarn(FIM_CJSON_ERROR_CREATE_ITEM);
+        LogWarn(FIM_CJSON_ERROR_CREATE_ITEM);
         return -1;
     }
 
@@ -469,7 +464,7 @@ static int get_win_permissions(PSECURITY_DESCRIPTOR pSecurityDescriptor, cJSON *
 
     if (bRtnBool == FALSE) {
         dwErrorCode = GetLastError();
-        mdebug2("GetSecurityDescriptorDacl failed. GetLastError returned: %ld", dwErrorCode);
+        LogDebug("GetSecurityDescriptorDacl failed. GetLastError returned: %ld", dwErrorCode);
 
         cJSON_Delete(acl_json);
         return dwErrorCode;
@@ -477,7 +472,7 @@ static int get_win_permissions(PSECURITY_DESCRIPTOR pSecurityDescriptor, cJSON *
 
     // Check whether no DACL or a NULL DACL was retrieved from the security descriptor buffer.
     if (fDaclPresent == FALSE || pDacl == NULL) {
-        mdebug2("No DACL was found (all access is denied), or a NULL DACL (unrestricted access) was found.");
+        LogDebug("No DACL was found (all access is denied), or a NULL DACL (unrestricted access) was found.");
 
         cJSON_Delete(acl_json);
         return -2;
@@ -491,7 +486,7 @@ static int get_win_permissions(PSECURITY_DESCRIPTOR pSecurityDescriptor, cJSON *
 
     if (bRtnBool == FALSE) {
         dwErrorCode = GetLastError();
-        mdebug2("GetAclInformation failed. GetLastError returned: %ld", dwErrorCode);
+        LogDebug("GetAclInformation failed. GetLastError returned: %ld", dwErrorCode);
 
         cJSON_Delete(acl_json);
         return dwErrorCode;
@@ -501,11 +496,11 @@ static int get_win_permissions(PSECURITY_DESCRIPTOR pSecurityDescriptor, cJSON *
     for (cAce = 0; cAce < aclsizeinfo.AceCount; cAce++) {
         // Get ACE info
         if (GetAce(pDacl, cAce, (LPVOID*)&pAce) == FALSE) {
-            mdebug2("GetAce failed. GetLastError returned: %ld", GetLastError());
+            LogDebug("GetAce failed. GetLastError returned: %ld", GetLastError());
             continue;
         }
         if (process_ace_info(pAce, acl_json)) {
-            mdebug1("ACE number %lu could not be processed.", cAce);
+            LogDebug("ACE number %lu could not be processed.", cAce);
         }
     }
 
@@ -584,7 +579,7 @@ unsigned int w_get_file_attrs(const char *file_path) {
 
     if (attrs = GetFileAttributesA(file_path), attrs == INVALID_FILE_ATTRIBUTES) {
         attrs = 0;
-        mdebug2("The attributes for '%s' could not be obtained. Error '%ld'.", file_path, GetLastError());
+        LogDebug("The attributes for '%s' could not be obtained. Error '%ld'.", file_path, GetLastError());
     }
 
     return attrs;
@@ -622,14 +617,14 @@ char *get_registry_group(char **sid, HANDLE hndl) {
 
     if (!ConvertSidToStringSid(pSidGroup, &local_sid)) {
         os_strdup("", *sid);
-        mdebug1("The user's SID could not be extracted.");
+        LogDebug("The user's SID could not be extracted.");
     } else {
         os_strdup(local_sid, *sid);
         LocalFree(local_sid);
     }
 
     if (dwRtnCode != ERROR_SUCCESS) {
-        mdebug1("GetSecurityInfo error code = (%lu), '%s'", dwRtnCode, win_strerror(dwRtnCode));
+        LogDebug("GetSecurityInfo error code = (%lu), '%s'", dwRtnCode, win_strerror(dwRtnCode));
         *GrpName = '\0';
         goto end;
     }
@@ -653,7 +648,7 @@ char *get_registry_group(char **sid, HANDLE hndl) {
 
         dwErrorCode = GetLastError();
         if (dwErrorCode == ERROR_NONE_MAPPED) {
-            mdebug1("Group not found for registry key");
+            LogDebug("Group not found for registry key");
         }
         else {
             LPSTR messageBuffer = NULL;
@@ -665,7 +660,7 @@ char *get_registry_group(char **sid, HANDLE hndl) {
                 *end = '\0';
             }
 
-            mwarn(FIM_REGISTRY_ACC_SID, "group", dwErrorCode, messageBuffer);
+            LogWarn(FIM_REGISTRY_ACC_SID, "group", dwErrorCode, messageBuffer);
             LocalFree(messageBuffer);
         }
 
@@ -725,7 +720,7 @@ unsigned int get_registry_mtime(HKEY hndl) {
     dwRtnCode = RegQueryInfoKeyA(hndl, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &lpftLastWriteTime);
 
     if (dwRtnCode != ERROR_SUCCESS) {
-        mwarn("Couldn't get modification time for registry key.");
+        LogWarn("Couldn't get modification time for registry key.");
         return 0;
     }
 
@@ -756,7 +751,7 @@ HKEY w_switch_root_key(char* str_rootkey) {
         return HKEY_USERS;
     }
     else {
-        mdebug1("Invalid value of root Handle to Registry Key.");
+        LogDebug("Invalid value of root Handle to Registry Key.");
         return NULL;
     }
 }
@@ -1166,7 +1161,7 @@ void make_mask_readable (cJSON *ace_json, int mask, char *ace_type) {
 
     cJSON *perm_array = cJSON_CreateArray();
     if (perm_array == NULL) {
-        mwarn(FIM_CJSON_ERROR_CREATE_ITEM);
+        LogWarn(FIM_CJSON_ERROR_CREATE_ITEM);
         return;
     }
 
@@ -1315,7 +1310,7 @@ char *decode_win_permissions(char *raw_perm) {
 error:
     free(decoded_perm);
     free(account_name);
-    mdebug1("The file permissions could not be decoded: '%s'.", raw_perm);
+    LogDebug("The file permissions could not be decoded: '%s'.", raw_perm);
     return NULL;
 }
 
@@ -1440,7 +1435,7 @@ cJSON *win_perm_to_json(char *perms) {
         char *username = perm_node;
         perm_node = strchr(perm_node, '(');
         if (!perm_node) {
-            mdebug1("Uncontrolled condition when parsing the username from '%s'. Skipping permission.", username);
+            LogDebug("Uncontrolled condition when parsing the username from '%s'. Skipping permission.", username);
             continue;
         }
         *(perm_node++) = '\0';
@@ -1455,7 +1450,7 @@ cJSON *win_perm_to_json(char *perms) {
         char *perm_type = perm_node;
         perm_node = strchr(perm_node, ')');
         if (!perm_node) {
-            mdebug1("Uncontrolled condition when parsing the permission type from '%s'. Skipping permission.", perm_type);
+            LogDebug("Uncontrolled condition when parsing the permission type from '%s'. Skipping permission.", perm_type);
             continue;
         }
         *(perm_node++) = '\0';
@@ -1486,7 +1481,7 @@ cJSON *win_perm_to_json(char *perms) {
             if (!strcmp(obj->valuestring, username)) {
                 user_obj = json_it;
                 if (obj = cJSON_GetObjectItem(json_it, perm_type), obj) {
-                    mdebug1("ACL [%s] fragmented. All permissions may not be displayed.", perms);
+                    LogDebug("ACL [%s] fragmented. All permissions may not be displayed.", perms);
                     next_it = 1;
                 }
                 break;
@@ -1542,7 +1537,7 @@ cJSON *win_perm_to_json(char *perms) {
 
     return perms_json;
 error:
-    mdebug1("Uncontrolled condition when parsing a Windows permission from '%s'.", perms);
+    LogDebug("Uncontrolled condition when parsing a Windows permission from '%s'.", perms);
     cJSON_Delete(perms_json);
     free(perms_cpy);
     return NULL;

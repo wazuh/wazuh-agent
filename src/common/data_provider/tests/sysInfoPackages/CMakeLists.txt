@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 3.12.4)
+cmake_minimum_required(VERSION 3.22)
 
 project(sysInfoPackages_unit_test)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
 
-include_directories(${CMAKE_SOURCE_DIR}/src/packages)
-include_directories(${CMAKE_SOURCE_DIR}/../shared_modules/utils/tests/mocks)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../src/packages)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../mocks)
 
 file(GLOB sysinfo_UNIT_TEST_SRC
     "*.cpp")
@@ -13,16 +13,12 @@ file(GLOB sysinfo_UNIT_TEST_SRC
 add_executable(sysInfoPackages_unit_test
     ${sysinfo_UNIT_TEST_SRC})
 
-target_link_libraries(sysInfoPackages_unit_test
-    debug gtestd
-    debug gmockd
-    debug gtest_maind
-    debug gmock_maind
-    optimized gtest
-    optimized gmock
-    optimized gtest_main
-    optimized gmock_main
-    pthread
+target_link_libraries(sysInfoPackages_unit_test PRIVATE
+    sysinfo
+    GTest::gtest
+    GTest::gmock
+    GTest::gtest_main
+    GTest::gmock_main
 )
 
 add_test(NAME sysInfoPackages_unit_test COMMAND sysInfoPackages_unit_test)

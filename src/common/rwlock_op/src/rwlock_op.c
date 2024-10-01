@@ -20,12 +20,12 @@
 void rwlock_init(rwlock_t * rwlock) {
     errno = pthread_mutex_init(&rwlock->mutex, NULL);
     if (errno != 0) {
-        merror_exit(MUTEX_INIT, strerror(errno), errno);
+        LogCritical(MUTEX_INIT, strerror(errno), errno);
     }
 
     errno = pthread_rwlock_init(&rwlock->rwlock, NULL);
     if (errno != 0) {
-        merror_exit(RWLOCK_INIT, strerror(errno), errno);
+        LogCritical(RWLOCK_INIT, strerror(errno), errno);
     }
 }
 
@@ -34,17 +34,17 @@ void rwlock_init(rwlock_t * rwlock) {
 void rwlock_lock_read(rwlock_t * rwlock) {
     errno = pthread_mutex_lock(&rwlock->mutex);
     if (errno != 0) {
-        merror_exit(MUTEX_LOCK, strerror(errno), errno);
+        LogCritical(MUTEX_LOCK, strerror(errno), errno);
     }
 
     errno = pthread_rwlock_rdlock(&rwlock->rwlock);
     if (errno != 0) {
-        merror_exit(RWLOCK_LOCK_RD, strerror(errno), errno);
+        LogCritical(RWLOCK_LOCK_RD, strerror(errno), errno);
     }
 
     errno = pthread_mutex_unlock(&rwlock->mutex);
     if (errno != 0) {
-        merror_exit(MUTEX_UNLOCK, strerror(errno), errno);
+        LogCritical(MUTEX_UNLOCK, strerror(errno), errno);
     }
 }
 
@@ -53,17 +53,17 @@ void rwlock_lock_read(rwlock_t * rwlock) {
 void rwlock_lock_write(rwlock_t * rwlock) {
     errno = pthread_mutex_lock(&rwlock->mutex);
     if (errno != 0) {
-        merror_exit(MUTEX_LOCK, strerror(errno), errno);
+        LogCritical(MUTEX_LOCK, strerror(errno), errno);
     }
 
     errno = pthread_rwlock_wrlock(&rwlock->rwlock);
     if (errno != 0) {
-        merror_exit(RWLOCK_LOCK_WR, strerror(errno), errno);
+        LogCritical(RWLOCK_LOCK_WR, strerror(errno), errno);
     }
 
     errno = pthread_mutex_unlock(&rwlock->mutex);
     if (errno != 0) {
-        merror_exit(MUTEX_UNLOCK, strerror(errno), errno);
+        LogCritical(MUTEX_UNLOCK, strerror(errno), errno);
     }
 }
 
@@ -72,7 +72,7 @@ void rwlock_lock_write(rwlock_t * rwlock) {
 void rwlock_unlock(rwlock_t * rwlock) {
     errno = pthread_rwlock_unlock(&rwlock->rwlock);
     if (errno != 0) {
-        merror_exit(RWLOCK_UNLOCK, strerror(errno), errno);
+        LogCritical(RWLOCK_UNLOCK, strerror(errno), errno);
     }
 }
 
@@ -81,11 +81,11 @@ void rwlock_unlock(rwlock_t * rwlock) {
 void rwlock_destroy(rwlock_t * rwlock) {
     errno = pthread_mutex_destroy(&rwlock->mutex);
     if (errno != 0) {
-        merror_exit(MUTEX_DESTROY, strerror(errno), errno);
+        LogCritical(MUTEX_DESTROY, strerror(errno), errno);
     }
 
     errno = pthread_rwlock_destroy(&rwlock->rwlock);
     if (errno != 0) {
-        merror_exit(RWLOCK_DESTROY, strerror(errno), errno);
+        LogCritical(RWLOCK_DESTROY, strerror(errno), errno);
     }
 }

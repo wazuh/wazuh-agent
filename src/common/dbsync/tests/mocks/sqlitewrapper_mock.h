@@ -16,7 +16,7 @@
 #include <string>
 #include "sqlite/isqlite_wrapper.h"
 
-class MockConnection : public SQLite::IConnection
+class MockConnection : public SQLiteLegacy::IConnection
 {
     public:
         MockConnection() = default;
@@ -40,7 +40,7 @@ class MockConnection : public SQLite::IConnection
 
 };
 
-class MockTransaction : public SQLite::ITransaction
+class MockTransaction : public SQLiteLegacy::ITransaction
 {
     public:
         MOCK_METHOD(void,
@@ -53,7 +53,7 @@ class MockTransaction : public SQLite::ITransaction
                     (override));
 };
 
-class MockColumn : public SQLite::IColumn
+class MockColumn : public SQLiteLegacy::IColumn
 {
     public:
         MOCK_METHOD(bool,
@@ -90,7 +90,7 @@ class MockColumn : public SQLite::IColumn
                     (const override));
 };
 
-class MockStatement : public SQLite::IStatement
+class MockStatement : public SQLiteLegacy::IStatement
 {
     public:
         MockStatement() = default;
@@ -125,7 +125,7 @@ class MockStatement : public SQLite::IStatement
                     (),
                     (override));
 
-        MOCK_METHOD(std::unique_ptr<SQLite::IColumn>,
+        MOCK_METHOD(std::unique_ptr<SQLiteLegacy::IColumn>,
                     column,
                     (const int32_t index),
                     (override));

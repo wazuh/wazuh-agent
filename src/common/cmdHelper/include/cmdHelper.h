@@ -9,16 +9,21 @@
  * Foundation.
  */
 
-#ifndef _CMD_HELPER_H
-#define _CMD_HELPER_H
+#pragma once
 
 #include <string>
 #include <iostream>
 #include <cstdio>
 #include <memory>
+#include <vector>
 
+#ifndef WIN32
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
+#else
+FILE *popen(const char *command, const char *mode) { return NULL; }
+int pclose(FILE *stream){ return 0; }
+#endif
 
 namespace Utils
 {
@@ -32,14 +37,14 @@ namespace Utils
     static std::string exec(const std::string& cmd, const size_t bufferSize = 128)
     {
         const std::unique_ptr<FILE, FileSmartDeleter> file{popen(cmd.c_str(), "r")};
-        char buffer[bufferSize];
+        std::vector<char> buffer(bufferSize);
         std::string result;
 
         if (file)
         {
-            while (fgets(buffer, bufferSize, file.get()))
+            while (fgets(buffer.data(), bufferSize, file.get()))
             {
-                result += buffer;
+                result += buffer.data();
             }
         }
 
@@ -49,4 +54,3 @@ namespace Utils
 
 #pragma GCC diagnostic pop
 
-#endif // _CMD_HELPER_H

@@ -71,7 +71,7 @@ int init_djbmultilog(logreader *lf) {
     os_strdup(djbp_name + 1, lf->djb_program_name);
     tmp_str[0] = '/';
 
-    minfo("Using program name '%s' for DJB multilog file: '%s'.",
+    LogInfo("Using program name '%s' for DJB multilog file: '%s'.",
             lf->djb_program_name, lf->file);
 
     return (1);
@@ -165,15 +165,15 @@ void *read_djbmultilog(logreader *lf, int *rc, int drop_it) {
                          p);
 
                 if (size < 0) {
-                    merror("Error %d (%s) while reading message: '%s' (length = " FTELL_TT "): '%s'...", errno, strerror(errno), lf->file, FTELL_INT64 size, buffer);
+                    LogError("Error %d (%s) while reading message: '%s' (length = " FTELL_TT "): '%s'...", errno, strerror(errno), lf->file, FTELL_INT64 size, buffer);
                 } else if ((size_t)size >= sizeof(buffer)) {
-                    merror("Message size too big on file '%s' (length = " FTELL_TT "): '%s'...", lf->file, FTELL_INT64 size, buffer);
+                    LogError("Message size too big on file '%s' (length = " FTELL_TT "): '%s'...", lf->file, FTELL_INT64 size, buffer);
                 }
             }
         }
 
         else {
-            mdebug2("Invalid DJB log: '%s'", str);
+            LogDebug("Invalid DJB log: '%s'", str);
             continue;
         }
 
@@ -182,7 +182,7 @@ void *read_djbmultilog(logreader *lf, int *rc, int drop_it) {
             continue;
         }
 
-        mdebug2("Reading DJB multilog message: '%s'", buffer);
+        LogDebug("Reading DJB multilog message: '%s'", buffer);
 
         /* Send message to queue */
         if (drop_it == 0) {
@@ -198,6 +198,6 @@ void *read_djbmultilog(logreader *lf, int *rc, int drop_it) {
         EVP_MD_CTX_free(context);
     }
 
-    mdebug2("Read %d lines from %s", lines, lf->file);
+    LogDebug("Read %d lines from %s", lines, lf->file);
     return (NULL);
 }

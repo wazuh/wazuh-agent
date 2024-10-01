@@ -220,12 +220,12 @@ void *read_nmapg(logreader *lf, int *rc, int drop_it) {
 
         if (bytes_written < 0) {
             final_msg_s = 0;
-            merror("Error %d (%s) formatting string from file '%s' (length = " FTELL_TT "): '%s'...", errno, strerror(errno), lf->file, FTELL_INT64 bytes_written, final_msg);
+            LogError("Error %d (%s) formatting string from file '%s' (length = " FTELL_TT "): '%s'...", errno, strerror(errno), lf->file, FTELL_INT64 bytes_written, final_msg);
         } else if ((size_t)bytes_written < sizeof(final_msg)) {
             final_msg_s = OS_MAX_LOG_SIZE - strlen(final_msg);
         } else {
             final_msg_s = 0;
-            merror("Large message size from file '%s' (length = " FTELL_TT "): '%s'...", lf->file, FTELL_INT64 bytes_written, final_msg);
+            LogError("Large message size from file '%s' (length = " FTELL_TT "): '%s'...", lf->file, FTELL_INT64 bytes_written, final_msg);
         }
 
         /* Get port and protocol */
@@ -237,7 +237,7 @@ void *read_nmapg(logreader *lf, int *rc, int drop_it) {
 
             p = __get_port(p, proto, port, 9);
             if (!p) {
-                mdebug1("Bad formated nmap grepable file (port).");
+                LogDebug("Bad formated nmap grepable file (port).");
                 break;
             }
 
@@ -265,7 +265,7 @@ void *read_nmapg(logreader *lf, int *rc, int drop_it) {
         /* Handle errors */
 file_error:
 
-        merror("Bad formated nmap grepable file.");
+        LogError("Bad formated nmap grepable file.");
         EVP_MD_CTX_free(context);
         *rc = -1;
         return (NULL);
@@ -279,6 +279,6 @@ file_error:
         EVP_MD_CTX_free(context);
     }
 
-    mdebug2("Read %d lines from %s", lines, lf->file);
+    LogDebug("Read %d lines from %s", lines, lf->file);
     return (NULL);
 }

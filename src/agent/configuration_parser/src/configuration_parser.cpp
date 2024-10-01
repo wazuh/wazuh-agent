@@ -19,11 +19,26 @@ namespace configuration
             LogError("Using default values due to error parsing wazuh.conf file: {}", e.what());
 
             tbl = toml::parse_str(
-                R"([agent]
+                R"(
+                [agent]
                 server_mgmt_api_port = "55000"
                 agent_comms_api_port = "27000"
                 manager_ip = "localhost"
-                https_enabled = "yes")",
+                https_enabled = "yes"
+
+                [inventory]
+                enabled = true
+                interval = 3600
+                scan_on_start = true
+                hardware = true
+                os = true
+                network = true
+                packages = true
+                ports = true
+                ports_all = true
+                processes = true
+                hotfixes = true
+                )",
                 toml::spec::v(1, 0, 0));
         }
     }

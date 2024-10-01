@@ -43,7 +43,7 @@ void* wm_docker_main(wm_docker_t *docker_conf) {
     int attempts = 0;
 
     wm_docker_setup(docker_conf);
-    mtinfo(WM_DOCKER_LOGTAG, "Module docker-listener started.");
+    LogInfo(WM_DOCKER_LOGTAG, "Module docker-listener started.");
 
     // Main
     do {
@@ -52,20 +52,20 @@ void* wm_docker_main(wm_docker_t *docker_conf) {
         if (time_sleep) {
             const int next_scan_time = sched_get_next_scan_time(docker_conf->scan_config);
             timestamp = w_get_timestamp(next_scan_time);
-            mtdebug2(WM_DOCKER_LOGTAG, "Sleeping until: %s", timestamp);
+            LogDebug(WM_DOCKER_LOGTAG, "Sleeping until: %s", timestamp);
             os_free(timestamp);
             w_sleep_until(next_scan_time);
         }
-        mtinfo(WM_DOCKER_LOGTAG, "Starting to listening Docker events.");
+        LogInfo(WM_DOCKER_LOGTAG, "Starting to listening Docker events.");
 
         // Running the docker listener script
 
-        mtdebug1(WM_DOCKER_LOGTAG, "Launching command '%s'", command);
+        LogDebug(WM_DOCKER_LOGTAG, "Launching command '%s'", command);
 
         wfd_t * wfd = wpopenl(command, W_BIND_STDERR, command, NULL);
 
         if (wfd == NULL) {
-            mterror(WM_DOCKER_LOGTAG, "Cannot launch Docker integration due to an internal error.");
+            LogError(WM_DOCKER_LOGTAG, "Cannot launch Docker integration due to an internal error.");
             pthread_exit(NULL);
         }
 
@@ -85,7 +85,7 @@ void* wm_docker_main(wm_docker_t *docker_conf) {
                 *end = '\0';
             }
 
-            mterror(WM_DOCKER_LOGTAG, "%s", buffer);
+            LogError(WM_DOCKER_LOGTAG, "%s", buffer);
         }
 
         // At this point, DockerListener terminated
@@ -101,15 +101,15 @@ void* wm_docker_main(wm_docker_t *docker_conf) {
 
         switch (exitcode) {
         case 127:
-            mterror(WM_DOCKER_LOGTAG, "Cannot launch Docker integration. Please check the file '%s'", command);
+            LogError(WM_DOCKER_LOGTAG, "Cannot launch Docker integration. Please check the file '%s'", command);
             pthread_exit(NULL);
 
         default:
             if (++attempts >= docker_conf->attempts) {
-                mterror(WM_DOCKER_LOGTAG, "Maximum attempts reached to run the listener. Exiting...");
+                LogError(WM_DOCKER_LOGTAG, "Maximum attempts reached to run the listener. Exiting...");
                 pthread_exit(NULL);
             }
-            mtwarn(WM_DOCKER_LOGTAG, "Docker-listener finished unexpectedly (code %d). Retrying to run in next scheduled time...", exitcode);
+            LogWarn(WM_DOCKER_LOGTAG, "Docker-listener finished unexpectedly (code %d). Retrying to run in next scheduled time...", exitcode);
         }
     } while (FOREVER());
 
@@ -160,7 +160,7 @@ void wm_docker_check() {
     // Check if disabled
 
     if (!docker_conf->flags.enabled) {
-        mtinfo(WM_DOCKER_LOGTAG, "Module disabled. Exiting...");
+        LogInfo(WM_DOCKER_LOGTAG, "Module disabled. Exiting...");
         pthread_exit(NULL);
     }
 
@@ -174,7 +174,7 @@ void wm_docker_check() {
 // Cleanup function, doesn't overwrite wm_cleanup
 
 void wm_docker_cleanup() {
-    mtinfo(WM_DOCKER_LOGTAG, "Module finished.");
+    LogInfo(WM_DOCKER_LOGTAG, "Module finished.");
 }
 
 #endif

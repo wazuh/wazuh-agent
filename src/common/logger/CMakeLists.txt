@@ -31,8 +31,8 @@ elseif(UNIX)
 endif()
 
 add_library(Logger ${SOURCES})
-target_include_directories(Logger PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(Logger PUBLIC ${LIBRARIES})
+target_include_directories(Logger PUBLIC include)
+target_link_libraries(Logger PUBLIC ${LIBRARIES} utils)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(Logger)

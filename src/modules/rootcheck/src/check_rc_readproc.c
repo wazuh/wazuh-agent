@@ -47,7 +47,7 @@ int read_proc_dir(const char *dir_name, const char *pid, int position)
     struct dirent *entry = NULL;
 
     if ((dir_name == NULL) || (strlen(dir_name) > PATH_MAX)) {
-        mterror(ARGV0, "Invalid directory given");
+        LogError(ARGV0, "Invalid directory given");
         return (-1);
     }
 

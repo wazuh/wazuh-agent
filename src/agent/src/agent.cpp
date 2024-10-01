@@ -1,4 +1,5 @@
 #include <agent.hpp>
+#include <inventory.hpp>
 
 #include <command.hpp>
 #include <command_handler_utils.hpp>
@@ -19,6 +20,7 @@ Agent::Agent(std::unique_ptr<ISignalHandler> signalHandler)
                      m_agentInfo.GetKey(),
                      [this](std::string table, std::string key) -> std::string
                      { return m_configurationParser.GetConfig<std::string>(std::move(table), std::move(key)); })
+    , m_moduleManager(m_messageQueue, m_configurationParser)
 {
     m_taskManager.Start(std::thread::hardware_concurrency());
 }
@@ -50,7 +52,11 @@ void Agent::Run()
         [this]() { return PopCommandFromQueue(m_messageQueue); },
         [](command_store::Command& cmd) { return DispatchCommand(cmd); }));
 
+    m_moduleManager.AddModule(Inventory::Instance());
+    m_moduleManager.Setup();
+    m_taskManager.EnqueueTask([this]() { m_moduleManager.Start(); });
+
     m_signalHandler->WaitForSignal();
+    m_moduleManager.Stop();
     m_communicator.Stop();
-    m_commandHandler.Stop();
 }

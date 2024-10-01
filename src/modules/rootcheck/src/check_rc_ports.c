@@ -37,7 +37,7 @@ static int run_netstat(int proto, int port)
     } else if (proto == IPPROTO_UDP) {
         snprintf(nt, OS_SIZE_1024, NETSTAT, "udp", port);
     } else {
-        mterror(ARGV0, "Netstat error (wrong protocol)");
+        LogError(ARGV0, "Netstat error (wrong protocol)");
         return (0);
     }
 

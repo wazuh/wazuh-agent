@@ -164,14 +164,14 @@ static int setup_regex(void **state) {
 
     regex_config->regex_ignore = OSList_Create();
     if (regex_config->regex_ignore == NULL) {
-        merror(MEM_ERROR, errno, strerror(errno));
+        LogError(MEM_ERROR, errno, strerror(errno));
         return -1;
     }
     OSList_SetFreeDataPointer(regex_config->regex_ignore, (void (*)(void *))w_free_expression);
 
     regex_config->regex_restrict = OSList_Create();
     if (regex_config->regex_restrict == NULL) {
-        merror(MEM_ERROR, errno, strerror(errno));
+        LogError(MEM_ERROR, errno, strerror(errno));
         return -1;
     }
     OSList_SetFreeDataPointer(regex_config->regex_restrict, (void (*)(void *))w_free_expression);

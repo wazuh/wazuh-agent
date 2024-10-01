@@ -235,16 +235,16 @@ TEST(SysInfoPackageLinuxParserRPM_test, rpmFromBerkleyDB)
     const auto total_len {FIRST_ENTRY_OFFSET + ENTRY_SIZE* total_fields + total_fields_len + 1};
 
     DBT data {}, key {};
-    char bytes[total_len] {};
+    std::vector<char> bytes(total_len, 0);
     int bytes_count {};
 
     char* cp;
     int* ip;
 
-    data.data = bytes;
+    data.data = bytes.data();
     data.size = total_len;
 
-    cp = bytes;
+    cp = bytes.data();
 
     auto entry
     {

@@ -12,7 +12,7 @@
 #ifndef _MODERN_PACKAGE_DATA_RETRIEVER_HPP
 #define _MODERN_PACKAGE_DATA_RETRIEVER_HPP
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "sharedDefs.h"
 #include <functional>
 #include <map>
