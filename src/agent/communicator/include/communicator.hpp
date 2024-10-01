@@ -54,5 +54,6 @@ namespace communicator
         std::shared_ptr<std::string> m_token;
         long long m_tokenExpTimeInSeconds = 0;
         std::unique_ptr<boost::asio::steady_timer> m_tokenExpTimer;
+        bool m_useHttps = true;
     };
 } // namespace communicator
