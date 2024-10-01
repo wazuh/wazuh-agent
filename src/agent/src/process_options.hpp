@@ -11,6 +11,6 @@ void StartAgent();
 void StatusAgent();
 void StopAgent();
 void PrintHelp();
-void InstallService([[maybe_unused]] const std::string& exePath);
-void RemoveService();
+bool InstallService();
+bool RemoveService();
 void SetDispatcherThread();

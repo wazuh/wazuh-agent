@@ -1,3 +1,14 @@
 #pragma once
 
-#include <process_options.hpp>
+#include <string>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+namespace WindowsService
+{
+    bool InstallService();
+    bool RemoveService();
+    void SetDispatcherThread();
+    void WINAPI ServiceMain();
+    void WINAPI ServiceCtrlHandler(DWORD CtrlCode);
+} // namespace WindowsService
