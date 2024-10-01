@@ -41,6 +41,9 @@ void PrintHelp()
     std::cout << "     status          Get wazuh-agent daemon status\n";
     std::cout << "     stop            Stop wazuh-agent daemon\n";
     std::cout << "     restart         Restart wazuh-agent daemon\n";
-    std::cout << "     register        Register wazuh-agent daemon\n";
+    std::cout << "     register        Register wazuh-agent\n";
+    std::cout << "     install         Install Windows Service\n";
+    std::cout << "     remove          Remove Windows Service\n";
+    std::cout << "     service         Used by Windows SCM to run as Service\n";
     std::cout << "     --help          This help message\n";
 }
