@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12.4)
+cmake_minimum_required(VERSION 3.22)
 
 project(sysInfoNetworkLinux_unit_test)
 
@@ -10,23 +10,16 @@ file(GLOB sysinfo_UNIT_TEST_SRC
 file(GLOB SYSINFO_SRC
     "${CMAKE_SOURCE_DIR}/src/network/networkInterfaceLinux.cpp")
 
-add_executable(sysInfoNetworkLinux_unit_test 
+add_executable(sysInfoNetworkLinux_unit_test
     ${sysinfo_UNIT_TEST_SRC}
     ${SYSINFO_SRC})
 
-target_link_libraries(sysInfoNetworkLinux_unit_test
-    debug gtestd
-    debug gmockd
-    debug gtest_maind
-    debug gmock_maind
-    optimized gtest
-    optimized gmock
-    optimized gtest_main
-    optimized gmock_main
-    pthread
-    sqlite3
-    cjson
-    dl
+target_link_libraries(sysInfoNetworkLinux_unit_test PRIVATE
+    sysinfo
+    GTest::gtest
+    GTest::gmock
+    GTest::gtest_main
+    GTest::gmock_main
 )
 
 add_test(NAME sysInfoNetworkLinux_unit_test

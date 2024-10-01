@@ -1,7 +1,7 @@
 /*
  * Wazuh DBSYNC
  * Copyright (C) 2015, Wazuh Inc.
- * June 16, 2020.
+ * July 31, 2023.
  *
  * This program is free software; you can redistribute it
  * and/or modify it under the terms of the GNU General Public
@@ -9,12 +9,12 @@
  * Foundation.
  */
 
-#ifndef _MOCKSQLITEWRAPPER_TEST_H
-#define _MOCKSQLITEWRAPPER_TEST_H
+#ifndef _SQLITEWRAPPERMOCK_H
+#define _SQLITEWRAPPERMOCK_H
 
 #include <gmock/gmock.h>
 #include <string>
-#include "sqlite/isqlite_wrapper.h"
+#include "sqliteWrapperTemp.h"
 
 class MockConnection : public SQLiteLegacy::IConnection
 {
@@ -140,4 +140,4 @@ class MockStatement : public SQLiteLegacy::IStatement
                     (const override));
 };
 
-#endif //_MOCKSQLITEWRAPPER_TEST_H
+#endif //_SQLITEWRAPPERMOCK_H
