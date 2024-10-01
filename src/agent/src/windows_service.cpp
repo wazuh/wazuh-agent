@@ -1,9 +1,8 @@
 #include <windows_service.hpp>
 
+#include <agent.hpp>
 #include <logger.hpp>
-
-#include <chrono>
-#include <thread>
+#include <signal_handler.hpp>
 
 namespace
 {
@@ -19,6 +18,32 @@ namespace
         char buffer[MAX_PATH];
         GetModuleFileName(NULL, buffer, MAX_PATH);
         return std::string(buffer);
+    }
+
+    void HandleStopSignal(const char* logMessage, DWORD ctrlCode)
+    {
+        if (g_ServiceStatus.dwCurrentState != SERVICE_RUNNING)
+        {
+            return;
+        }
+
+        g_ServiceStatus.dwCurrentState = SERVICE_STOP_PENDING;
+        if (!SetServiceStatus(g_StatusHandle, &g_ServiceStatus))
+        {
+            LogError("Failed to set service status to {}. Error: {}", g_ServiceStatus.dwCurrentState, GetLastError());
+        }
+
+        SignalHandler::HandleSignal(ctrlCode);
+
+        LogInfo("{}", logMessage);
+
+        SetEvent(g_ServiceStopEvent);
+
+        g_ServiceStatus.dwCurrentState = SERVICE_STOPPED;
+        if (!SetServiceStatus(g_StatusHandle, &g_ServiceStatus))
+        {
+            LogError("Failed to set service status to {}. Error: {}", g_ServiceStatus.dwCurrentState, GetLastError());
+        }
     }
 } // namespace
 
@@ -103,7 +128,7 @@ namespace WindowsService
     void SetDispatcherThread()
     {
         SERVICE_TABLE_ENTRY ServiceTable[] = {{(LPSTR)AGENT_SERVICENAME.c_str(), (LPSERVICE_MAIN_FUNCTION)ServiceMain},
-                                              {NULL, NULL}};
+                                              {nullptr, nullptr}};
 
         if (!StartServiceCtrlDispatcher(ServiceTable))
         {
@@ -143,11 +168,8 @@ namespace WindowsService
         SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
 
         LogInfo("Starting Wazuh Agent.");
-        while (true)
-        {
-            LogInfo("Agent is still running in the registration loop...");
-            std::this_thread::sleep_for(std::chrono::seconds(5));
-        }
+        Agent agent;
+        agent.Run();
 
         WaitForSingleObject(g_ServiceStopEvent, INFINITE);
 
@@ -156,15 +178,15 @@ namespace WindowsService
         SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
     }
 
-    void WINAPI ServiceCtrlHandler(DWORD CtrlCode)
+    void WINAPI ServiceCtrlHandler(DWORD ctrlCode)
     {
-        switch (CtrlCode)
+        switch (ctrlCode)
         {
             case SERVICE_CONTROL_STOP:
-                // TO DO
+                HandleStopSignal("Wazuh Agent is stopping. Performing cleanup.", ctrlCode);
                 break;
             case SERVICE_CONTROL_SHUTDOWN:
-                // TO DO
+                HandleStopSignal("System is shutting down. Performing cleanup.", ctrlCode);
                 break;
             case SERVICE_CONTROL_PARAMCHANGE:
                 // TO DO
