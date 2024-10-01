@@ -79,14 +79,14 @@ src="$7"
 
 build_dir="/build_wazuh"
 
-source helper_function.sh
+source /home/helper_function.sh
 
 set -x
 
 # Download source code if it is not shared from the local host
 if [ ! -d "/wazuh-local-src" ] ; then
-    curl -sL https://github.com/wazuh/wazuh/tarball/${WAZUH_BRANCH} | tar zx
-    short_commit_hash="$(curl -s https://api.github.com/repos/wazuh/wazuh/commits/${WAZUH_BRANCH} \
+    curl -sL https://github.com/wazuh/wazuh-agent/tarball/${WAZUH_BRANCH} | tar zx
+    short_commit_hash="$(curl -s https://api.github.com/repos/wazuh/wazuh-agent/commits/${WAZUH_BRANCH} \
                           | grep '"sha"' | head -n 1| cut -d '"' -f 4 | cut -c 1-11)"
 else
     if [ "${legacy}" = "no" ]; then

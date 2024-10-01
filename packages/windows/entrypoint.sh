@@ -19,7 +19,7 @@ if [ -z "${BRANCH}"]; then
     mkdir /wazuh-local-src
     cp -r /local-src/* /wazuh-local-src
 else
-    URL_REPO=https://github.com/wazuh/wazuh/archive/${BRANCH}.zip
+    URL_REPO=https://github.com/wazuh/wazuh-agent/archive/${BRANCH}.zip
 
     # Download the wazuh repository
     wget -O wazuh.zip ${URL_REPO} && unzip wazuh.zip

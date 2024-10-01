@@ -64,11 +64,3 @@ RUN curl -OL http://packages.wazuh.com/utils/cmake/cmake-3.18.3.tar.gz && \
     ./bootstrap --no-system-curl CC=/usr/local/gcc-9.4.0/bin/gcc \
         CXX=/usr/local/gcc-9.4.0/bin/g++ && \
     make -j$(nproc) && make install && cd / && rm -rf cmake-*
-
-# Add the scripts to build the RPM package
-ADD build.sh /usr/local/bin/build_package
-RUN chmod +x /usr/local/bin/build_package
-ADD helper_function.sh /usr/local/bin/helper_function.sh
-
-# Set the entrypoint
-ENTRYPOINT ["/usr/local/bin/build_package"]
