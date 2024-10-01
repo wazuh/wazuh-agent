@@ -158,6 +158,7 @@ int Privsep_Chroot(const char *path)
         return (OS_INVALID);
     }
 
+    // Deleted alongside the old debugger.
     // nowChroot();
     return (OS_SUCCESS);
 }

@@ -4,12 +4,11 @@
 #include <string>
 #include <configuration_parser.hpp>
 
-using namespace std;
 
 struct ModuleWrapper {
-    function<void()> Start;
-    function<void(const configuration::ConfigurationParser&)> Setup;
-    function<void()> Stop;
-    function<string(const string&)> Command;
-    function<string()> Name;
+    std::function<void()> Start;
+    std::function<void(const configuration::ConfigurationParser&)> Setup;
+    std::function<void()> Stop;
+    std::function<std::string(const std::string&)> Command;
+    std::function<std::string()> Name;
 };

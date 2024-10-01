@@ -50,7 +50,7 @@
 #include <sys/resource.h>
 
 // Only Linux and FreeBSD need mount.h */
-#if defined(Linux) || defined(FreeBSD)
+#if defined(Linux)
 #include <sys/mount.h>
 #endif
 

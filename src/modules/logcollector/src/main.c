@@ -178,8 +178,7 @@ int main(int argc, char **argv)
 
     if (!run_foreground) {
         /* Going on daemon mode */
-        // TODO : should this feature be added
-        //nowDaemon();
+        nowDaemon();
         goDaemon();
     }
 

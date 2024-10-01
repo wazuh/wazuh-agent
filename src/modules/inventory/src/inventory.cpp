@@ -1,13 +1,11 @@
 #include <iostream>
 #include <cjson/cJSON.h>
-// #include <shared.h>
 #include <defs.h>
 #include <logger.hpp>
 
 #include <inventory.hpp>
 #include <sysInfo.hpp>
 
-using namespace std;
 
 constexpr const char* INV_LOGTAG = "modules:inventory"; // Tag for log messages
 
@@ -43,7 +41,7 @@ void Inventory::Start() {
 
 void Inventory::Setup(const configuration::ConfigurationParser& configurationParser) {
 
-    m_enabled = !configurationParser.GetConfig<bool>("inventory", "disabled");
+    m_enabled = configurationParser.GetConfig<bool>("inventory", "enabled");
     m_intervalValue = std::chrono::seconds{configurationParser.GetConfig<int>("inventory", "interval")};
     m_scanOnStart = configurationParser.GetConfig<bool>("inventory", "scan_on_start");
     m_hardware = configurationParser.GetConfig<bool>("inventory", "hardware");
@@ -61,7 +59,7 @@ void Inventory::Stop() {
     Inventory::Instance().Destroy();
 }
 
-string Inventory::Command(const string & query) {
+std::string Inventory::Command(const std::string & query) {
     LogInfo("Query: ",query);
     return "OK";
 }
@@ -70,7 +68,7 @@ void Inventory::SetMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue) {
     m_messageQueue = queue;
 }
 
-void Inventory::SendDeltaEvent(const string& data) {
+void Inventory::SendDeltaEvent(const std::string& data) {
 
     const auto jsonData = nlohmann::json::parse(data);
     const Message message{ MessageType::STATELESS, jsonData, Name() };
@@ -103,7 +101,7 @@ cJSON * Inventory::Dump() {
     cJSON *invJson = cJSON_CreateObject();
 
     // System provider values
-    if (m_enabled) cJSON_AddStringToObject(invJson,"disabled","no"); else cJSON_AddStringToObject(invJson,"disabled","yes");
+    if (m_enabled) cJSON_AddStringToObject(invJson,"enabled","yes"); else cJSON_AddStringToObject(invJson,"enabled","no");
     if (m_scanOnStart) cJSON_AddStringToObject(invJson,"scan-on-start","yes"); else cJSON_AddStringToObject(invJson,"scan-on-start","no");
     cJSON_AddNumberToObject(invJson, "interval", static_cast<double>(m_intervalValue.count()));
     if (m_network) cJSON_AddStringToObject(invJson,"network","yes"); else cJSON_AddStringToObject(invJson,"network","no");

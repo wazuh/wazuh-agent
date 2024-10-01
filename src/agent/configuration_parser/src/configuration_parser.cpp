@@ -26,7 +26,7 @@ namespace configuration
                 manager_ip = "localhost"
 
                 [inventory]
-                disabled = false
+                enabled = true
                 interval = 3600
                 scan_on_start = true
                 hardware = true
