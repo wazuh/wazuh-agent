@@ -11,4 +11,8 @@ namespace WindowsService
     void SetDispatcherThread();
     void WINAPI ServiceMain();
     void WINAPI ServiceCtrlHandler(DWORD CtrlCode);
+    void ServiceStart();
+    void ServiceStop();
+    void ServiceRestart();
+    void ServiceStatus();
 } // namespace WindowsService
