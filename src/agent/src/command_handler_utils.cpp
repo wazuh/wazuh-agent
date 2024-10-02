@@ -20,37 +20,37 @@ DispatchCommand(module_command::CommandEntry commandEntry,
     LogInfo("Dispatching command {}({})", commandEntry.Command, commandEntry.Module);
 
     const auto timeout = std::chrono::minutes(60);
-    boost::asio::steady_timer timer {co_await boost::asio::this_coro::executor};
-    timer.expires_after(timeout);
+    auto timer = std::make_shared<boost::asio::steady_timer>(co_await boost::asio::this_coro::executor);
+    timer->expires_after(timeout);
 
-    module_command::CommandExecutionResult result;
-    bool commandCompleted = false;
+    auto result = std::make_shared<module_command::CommandExecutionResult>();
+    auto commandCompleted = std::make_shared<bool>(false);
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    auto executeCommandTask = [&]() -> boost::asio::awaitable<void>
+    auto executeCommandTask = [module, commandEntry, result, commandCompleted, timer]() -> boost::asio::awaitable<void>
     {
-        result = co_await module->ExecuteCommand(commandEntry.Command);
-        commandCompleted = true;
-        timer.cancel();
+        *result = co_await module->ExecuteCommand(commandEntry.Command);
+        *commandCompleted = true;
+        timer->cancel();
     };
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    auto timerTask = [&]() -> boost::asio::awaitable<void>
+    auto timerTask = [timer, result, commandCompleted]() -> boost::asio::awaitable<void>
     {
         try
         {
-            co_await timer.async_wait(boost::asio::use_awaitable);
+            co_await timer->async_wait(boost::asio::use_awaitable);
 
-            if (!commandCompleted)
+            if (!(*commandCompleted))
             {
-                result.ErrorCode = module_command::Status::TIMEOUT;
-                result.Message = "Command timed out";
+                result->ErrorCode = module_command::Status::TIMEOUT;
+                result->Message = "Command timed out";
             }
         }
         catch (const std::exception& e)
         {
-            result.ErrorCode = module_command::Status::FAILURE;
-            result.Message = "Error occurred while waiting for command to complete";
+            result->ErrorCode = module_command::Status::FAILURE;
+            result->Message = "Error occurred while waiting for command to complete";
         }
     };
 
@@ -58,12 +58,12 @@ DispatchCommand(module_command::CommandEntry commandEntry,
     co_await executeCommandTask();
 
     nlohmann::json resultJson;
-    resultJson["error"] = result.ErrorCode;
-    resultJson["message"] = result.Message;
+    resultJson["error"] = result->ErrorCode;
+    resultJson["message"] = result->Message;
     resultJson["id"] = commandEntry.Id;
 
     Message message {MessageType::STATEFUL, {resultJson}, "CommandHandler"};
     messageQueue->push(message);
 
-    co_return result;
+    co_return *result;
 }
