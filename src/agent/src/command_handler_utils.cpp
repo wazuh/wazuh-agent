@@ -1,6 +1,8 @@
 #include <command_handler_utils.hpp>
 
 #include <boost/asio/awaitable.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/experimental/awaitable_operators.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/system/system_error.hpp>
 #include <logger.hpp>
@@ -12,6 +14,8 @@ DispatchCommand(module_command::CommandEntry commandEntry,
                 std::shared_ptr<ModuleWrapper> module,
                 std::shared_ptr<IMultiTypeQueue> messageQueue)
 {
+    using namespace boost::asio::experimental::awaitable_operators;
+
     if (!module)
     {
         LogError("Error dispatching command: module {} not found", commandEntry.Module);
@@ -74,8 +78,7 @@ DispatchCommand(module_command::CommandEntry commandEntry,
         }
     };
 
-    co_await timerTask();
-    co_await executeCommandTask();
+    co_await (timerTask() || executeCommandTask());
 
     nlohmann::json resultJson;
     resultJson["error"] = result->ErrorCode;
