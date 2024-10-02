@@ -1,6 +1,10 @@
 #include <command_handler_utils.hpp>
 
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <logger.hpp>
+
+#include <chrono>
 
 boost::asio::awaitable<module_command::CommandExecutionResult>
 DispatchCommand(module_command::CommandEntry commandEntry,
@@ -15,7 +19,43 @@ DispatchCommand(module_command::CommandEntry commandEntry,
 
     LogInfo("Dispatching command {}({})", commandEntry.Command, commandEntry.Module);
 
-    const auto result = co_await module->ExecuteCommand(commandEntry.Command);
+    const auto timeout = std::chrono::minutes(60);
+    boost::asio::steady_timer timer {co_await boost::asio::this_coro::executor};
+    timer.expires_after(timeout);
+
+    module_command::CommandExecutionResult result;
+    bool commandCompleted = false;
+
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+    auto executeCommandTask = [&]() -> boost::asio::awaitable<void>
+    {
+        result = co_await module->ExecuteCommand(commandEntry.Command);
+        commandCompleted = true;
+        timer.cancel();
+    };
+
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+    auto timerTask = [&]() -> boost::asio::awaitable<void>
+    {
+        try
+        {
+            co_await timer.async_wait(boost::asio::use_awaitable);
+
+            if (!commandCompleted)
+            {
+                result.ErrorCode = module_command::Status::TIMEOUT;
+                result.Message = "Command timed out";
+            }
+        }
+        catch (const std::exception& e)
+        {
+            result.ErrorCode = module_command::Status::FAILURE;
+            result.Message = "Error occurred while waiting for command to complete";
+        }
+    };
+
+    co_await timerTask();
+    co_await executeCommandTask();
 
     nlohmann::json resultJson;
     resultJson["error"] = result.ErrorCode;
