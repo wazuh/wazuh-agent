@@ -2,6 +2,7 @@
 
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/steady_timer.hpp>
+#include <boost/system/system_error.hpp>
 #include <logger.hpp>
 
 #include <chrono>
@@ -55,10 +56,21 @@ DispatchCommand(module_command::CommandEntry commandEntry,
                 result->Message = "Command timed out";
             }
         }
+        catch (const boost::system::system_error& e)
+        {
+            if (!(*commandCompleted) && e.code() != boost::asio::error::operation_aborted)
+            {
+                result->ErrorCode = module_command::Status::FAILURE;
+                result->Message = "System error: " + std::string(e.what());
+            }
+        }
         catch (const std::exception& e)
         {
-            result->ErrorCode = module_command::Status::FAILURE;
-            result->Message = "Error occurred while waiting for command to complete";
+            if (!(*commandCompleted))
+            {
+                result->ErrorCode = module_command::Status::FAILURE;
+                result->Message = "Unexpected error: " + std::string(e.what());
+            }
         }
     };
 
