@@ -115,12 +115,12 @@ TEST_F(MessageQueueUtilsTest, GetCommandFromQueueTest)
 
     auto cmd = GetCommandFromQueue(mockQueue);
 
-    ASSERT_EQ(cmd.has_value() ? cmd.value().m_id : "", "112233");
-    ASSERT_EQ(cmd.has_value() ? cmd.value().m_module : "", "origin_test");
-    ASSERT_EQ(cmd.has_value() ? cmd.value().m_command : "", "command_test");
-    ASSERT_EQ(cmd.has_value() ? cmd.value().m_parameters : "", "parameters_test");
-    ASSERT_EQ(cmd.has_value() ? cmd.value().m_status : command_store::Status::UNKNOWN,
-              command_store::Status::IN_PROGRESS);
+    ASSERT_EQ(cmd.has_value() ? cmd.value().Id : "", "112233");
+    ASSERT_EQ(cmd.has_value() ? cmd.value().Module : "", "origin_test");
+    ASSERT_EQ(cmd.has_value() ? cmd.value().Command : "", "command_test");
+    ASSERT_EQ(cmd.has_value() ? cmd.value().Parameters : "", "parameters_test");
+    ASSERT_EQ(cmd.has_value() ? cmd.value().ExecutionResult.ErrorCode : module_command::Status::UNKNOWN,
+              module_command::Status::IN_PROGRESS);
 }
 
 int main(int argc, char** argv)

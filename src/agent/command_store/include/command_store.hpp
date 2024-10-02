@@ -1,6 +1,6 @@
 #pragma once
 
-#include <command.hpp>
+#include <module_command/command_entry.hpp>
 #include <sqlite_manager.hpp>
 
 #include <memory>
@@ -18,16 +18,16 @@ namespace command_store
         std::unique_ptr<sqlite_manager::SQLiteManager> m_dataBase;
 
         double GetCurrentTimestampAsReal();
-        Status StatusFromInt(const int i);
+        module_command::Status StatusFromInt(const int i);
 
     public:
         CommandStore();
 
         bool Clear();
         int GetCount();
-        bool StoreCommand(const Command& cmd);
+        bool StoreCommand(const module_command::CommandEntry& cmd);
         bool DeleteCommand(const std::string& id);
-        std::optional<Command> GetCommand(const std::string& id);
-        bool UpdateCommand(const Command& cmd);
+        std::optional<module_command::CommandEntry> GetCommand(const std::string& id);
+        bool UpdateCommand(const module_command::CommandEntry& cmd);
     };
 } // namespace command_store

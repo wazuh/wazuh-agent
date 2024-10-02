@@ -7,6 +7,7 @@
 #include <multitype_queue.hpp>
 #include <moduleWrapper.hpp>
 
+#include <boost/asio/awaitable.hpp>
 
 template<typename T>
 concept Module = requires(T t, const configuration::ConfigurationParser& configurationParser, const std::string & query,
@@ -14,7 +15,7 @@ concept Module = requires(T t, const configuration::ConfigurationParser& configu
     { t.Start() } -> std::same_as<void>;
     { t.Setup(configurationParser) } -> std::same_as<void>;
     { t.Stop() } -> std::same_as<void>;
-    { t.Command(query) } -> std::same_as<std::string>;
+    { t.ExecuteCommand(query) } -> std::same_as<std::string>;
     { t.Name() } -> std::same_as<std::string>;
     { t.SetMessageQueue(queue) } -> std::same_as<void>;
 };
@@ -41,7 +42,10 @@ public:
             .Start = [&module]() { module.Start(); },
             .Setup = [&module](const configuration::ConfigurationParser& configurationParser) { module.Setup(configurationParser); },
             .Stop = [&module]() { module.Stop(); },
-            .Command = [&module](const std::string & query) { return module.Command(query); },
+            .ExecuteCommand = [&module](std::string query) -> Co_CommandExecutionResult
+            {
+                co_return co_await module.ExecuteCommand(query);
+            },
             .Name = [&module]() { return module.Name(); }
         });
 

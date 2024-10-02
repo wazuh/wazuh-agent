@@ -1,11 +1,11 @@
 #include <agent.hpp>
 #include <inventory.hpp>
 
-#include <command.hpp>
 #include <command_handler_utils.hpp>
 #include <http_client.hpp>
 #include <message.hpp>
 #include <message_queue_utils.hpp>
+#include <module_command/command_entry.hpp>
 #include <signal_handler.hpp>
 
 #include <memory>
@@ -47,10 +47,11 @@ void Agent::Run()
         [this]([[maybe_unused]] const std::string& response)
         { PopMessagesFromQueue(m_messageQueue, MessageType::STATELESS); }));
 
-    m_taskManager.EnqueueTask(m_commandHandler.ProcessCommandsFromQueue<command_store::Command>(
+    m_taskManager.EnqueueTask(m_commandHandler.CommandsProcessingTask<module_command::CommandEntry>(
         [this]() { return GetCommandFromQueue(m_messageQueue); },
         [this]() { return PopCommandFromQueue(m_messageQueue); },
-        [](command_store::Command& cmd) { return DispatchCommand(cmd); }));
+        [this](module_command::CommandEntry& cmd)
+        { return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue); }));
 
     m_moduleManager.AddModule(Inventory::Instance());
     m_moduleManager.Setup();
