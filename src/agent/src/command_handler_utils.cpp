@@ -29,9 +29,17 @@ DispatchCommand(module_command::CommandEntry commandEntry,
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
     auto executeCommandTask = [module, commandEntry, result, commandCompleted, timer]() -> boost::asio::awaitable<void>
     {
-        *result = co_await module->ExecuteCommand(commandEntry.Command);
-        *commandCompleted = true;
-        timer->cancel();
+        try
+        {
+            *result = co_await module->ExecuteCommand(commandEntry.Command);
+            *commandCompleted = true;
+            timer->cancel();
+        }
+        catch (const std::exception& e)
+        {
+            result->ErrorCode = module_command::Status::FAILURE;
+            result->Message = "Error during command execution: " + std::string(e.what());
+        }
     };
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
