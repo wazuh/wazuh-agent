@@ -9,6 +9,28 @@
 
 #include <chrono>
 
+namespace
+{
+    boost::asio::awaitable<void> ExecuteCommandTask(std::shared_ptr<ModuleWrapper> module,
+                                                    module_command::CommandEntry commandEntry,
+                                                    std::shared_ptr<module_command::CommandExecutionResult> result,
+                                                    std::shared_ptr<bool> commandCompleted,
+                                                    std::shared_ptr<boost::asio::steady_timer> timer)
+    {
+        try
+        {
+            *result = co_await module->ExecuteCommand(commandEntry.Command);
+            *commandCompleted = true;
+            timer->cancel();
+        }
+        catch (const std::exception& e)
+        {
+            result->ErrorCode = module_command::Status::FAILURE;
+            result->Message = "Error during command execution: " + std::string(e.what());
+        }
+    }
+} // namespace
+
 boost::asio::awaitable<module_command::CommandExecutionResult>
 DispatchCommand(module_command::CommandEntry commandEntry,
                 std::shared_ptr<ModuleWrapper> module,
@@ -30,22 +52,6 @@ DispatchCommand(module_command::CommandEntry commandEntry,
 
     auto result = std::make_shared<module_command::CommandExecutionResult>();
     auto commandCompleted = std::make_shared<bool>(false);
-
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    auto executeCommandTask = [module, commandEntry, result, commandCompleted, timer]() -> boost::asio::awaitable<void>
-    {
-        try
-        {
-            *result = co_await module->ExecuteCommand(commandEntry.Command);
-            *commandCompleted = true;
-            timer->cancel();
-        }
-        catch (const std::exception& e)
-        {
-            result->ErrorCode = module_command::Status::FAILURE;
-            result->Message = "Error during command execution: " + std::string(e.what());
-        }
-    };
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
     auto timerTask = [timer, result, commandCompleted]() -> boost::asio::awaitable<void>
@@ -78,7 +84,7 @@ DispatchCommand(module_command::CommandEntry commandEntry,
         }
     };
 
-    co_await (timerTask() || executeCommandTask());
+    co_await (timerTask() || ExecuteCommandTask(module, commandEntry, result, commandCompleted, timer));
 
     nlohmann::json resultJson;
     resultJson["error"] = result->ErrorCode;
