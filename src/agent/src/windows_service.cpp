@@ -36,6 +36,31 @@ namespace
         return std::string(buffer);
     }
 
+    void ReportServiceStatus(DWORD currentState, DWORD win32ExitCode, DWORD waitHint)
+    {
+        static DWORD dwCheckPoint = 1;
+
+        g_ServiceStatus.dwCurrentState = currentState;
+        g_ServiceStatus.dwWin32ExitCode = win32ExitCode;
+        g_ServiceStatus.dwWaitHint = waitHint;
+
+        if (currentState == SERVICE_START_PENDING)
+            g_ServiceStatus.dwControlsAccepted = 0;
+        else
+            g_ServiceStatus.dwControlsAccepted =
+                SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN | SERVICE_ACCEPT_PARAMCHANGE;
+
+        if ((currentState == SERVICE_RUNNING) || (currentState == SERVICE_STOPPED))
+            g_ServiceStatus.dwCheckPoint = 0;
+        else
+            g_ServiceStatus.dwCheckPoint = dwCheckPoint++;
+
+        if (!SetServiceStatus(g_StatusHandle, &g_ServiceStatus))
+        {
+            LogError("Failed to set service status to {}. Error: {}", g_ServiceStatus.dwCurrentState, GetLastError());
+        }
+    }
+
     void HandleStopSignal(const char* logMessage, DWORD ctrlCode)
     {
         if (g_ServiceStatus.dwCurrentState != SERVICE_RUNNING)
@@ -43,23 +68,14 @@ namespace
             return;
         }
 
-        g_ServiceStatus.dwCurrentState = SERVICE_STOP_PENDING;
-        if (!SetServiceStatus(g_StatusHandle, &g_ServiceStatus))
-        {
-            LogError("Failed to set service status to {}. Error: {}", g_ServiceStatus.dwCurrentState, GetLastError());
-        }
+        ReportServiceStatus(SERVICE_STOP_PENDING, NO_ERROR, 0);
 
         SignalHandler::HandleSignal(ctrlCode);
 
         LogInfo("{}", logMessage);
 
         SetEvent(g_ServiceStopEvent);
-
-        g_ServiceStatus.dwCurrentState = SERVICE_STOPPED;
-        if (!SetServiceStatus(g_StatusHandle, &g_ServiceStatus))
-        {
-            LogError("Failed to set service status to {}. Error: {}", g_ServiceStatus.dwCurrentState, GetLastError());
-        }
+        ReportServiceStatus(g_ServiceStatus.dwCurrentState, NO_ERROR, 0);
     }
 
     std::string ServiceStatusToString(DWORD currentState)
@@ -204,25 +220,19 @@ namespace WindowsService
         }
 
         g_ServiceStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
-        g_ServiceStatus.dwCurrentState = SERVICE_START_PENDING;
-        g_ServiceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN | SERVICE_ACCEPT_PARAMCHANGE;
-        g_ServiceStatus.dwWin32ExitCode = 0;
         g_ServiceStatus.dwServiceSpecificExitCode = 0;
-        g_ServiceStatus.dwCheckPoint = 0;
 
-        SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
+        ReportServiceStatus(SERVICE_START_PENDING, NO_ERROR, 3000);
 
         g_ServiceStopEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
         if (!g_ServiceStopEvent)
         {
             LogError("Failed to create stop event. Error: {}", GetLastError());
-            g_ServiceStatus.dwCurrentState = SERVICE_STOPPED;
-            SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
+            ReportServiceStatus(SERVICE_STOPPED, NO_ERROR, 0);
             return;
         }
 
-        g_ServiceStatus.dwCurrentState = SERVICE_RUNNING;
-        SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
+        ReportServiceStatus(SERVICE_RUNNING, NO_ERROR, 0);
 
         LogInfo("Starting Wazuh Agent.");
 
@@ -232,8 +242,7 @@ namespace WindowsService
         WaitForSingleObject(g_ServiceStopEvent, INFINITE);
 
         CloseHandle(g_ServiceStopEvent);
-        g_ServiceStatus.dwCurrentState = SERVICE_STOPPED;
-        SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
+        ReportServiceStatus(SERVICE_STOPPED, NO_ERROR, 0);
     }
 
     void WINAPI ServiceCtrlHandler(DWORD ctrlCode)
