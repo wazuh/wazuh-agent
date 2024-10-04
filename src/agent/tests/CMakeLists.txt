@@ -14,11 +14,11 @@ target_include_directories(task_manager_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 target_link_libraries(task_manager_test PRIVATE Agent GTest::gtest)
 add_test(NAME TaskManagerTest COMMAND task_manager_test)
 
-add_executable(register_test register_test.cpp)
-configure_target(register_test)
-target_include_directories(register_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include ${CMAKE_CURRENT_SOURCE_DIR}/../src)
-target_link_libraries(register_test PRIVATE Agent GTest::gmock GTest::gtest)
-add_test(NAME RegisterTest COMMAND register_test)
+add_executable(agent_registration_test agent_registration_test.cpp)
+configure_target(agent_registration_test)
+target_include_directories(agent_registration_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+target_link_libraries(agent_registration_test PRIVATE Agent GTest::gmock GTest::gtest)
+add_test(NAME AgentRegistrationTest COMMAND agent_registration_test)
 
 add_executable(signal_handler_test signal_handler_test.cpp)
 configure_target(signal_handler_test)
