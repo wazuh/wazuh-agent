@@ -25,10 +25,12 @@ find_package(Boost REQUIRED COMPONENTS asio beast)
 
 if(WIN32)
     set(SOURCES
+        src/windows_service.cpp
         src/process_options_win.cpp
     )
 elseif(UNIX)
     set(SOURCES
+        src/unix_daemon.cpp
         src/process_options_unix.cpp
     )
 endif()
