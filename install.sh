@@ -2,9 +2,13 @@
 
 source ./src/init/install_helpers.sh
 
-sys=$(get_system)
-set_dafault_installation_variables $sys
+echo "Running wazuh-agent installation"
+
+system=$(get_system)
+set_dafault_installation_variables $system
 build_binary
 add_user
 create_installation_directories
 install_files
+
+echo "Installation completed"

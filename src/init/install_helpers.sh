@@ -4,7 +4,7 @@ WAZUH_GROUP='wazuh'
 WAZUH_USER='wazuh'
 
 get_system(){
-    #Function to detect sytem
+    #Function to detect system
     if [[ "$OSTYPE" == "darwin"* ]]; then
         echo "macOS"
     elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
@@ -14,9 +14,11 @@ get_system(){
             echo "RPM"
         else
             echo "Unknown Linux system"
+            exit
         fi
     else
         echo "Unknown system"
+        exit
     fi
 }
 
@@ -48,6 +50,7 @@ set_dafault_installation_variables(){
             ;;
         *)
             echo "$system is not a supported system"
+            exit
             ;;
     esac
 }
@@ -56,7 +59,12 @@ build_binary(){
     #Function to build the agent binary
     echo "Building binary" 
     cd src && git submodule update --init --recursive
-    mkdir build && cd build
+    if [ -d "build" ]; then
+        rm -rf build/*
+    else
+        mkdir build
+    fi
+    cd build
     cmake .. && make -j $NUM_CPUS
     cd ../..
 }
@@ -85,11 +93,10 @@ create_installation_directories(){
 
     install -d -m 0770 -o ${WAZUH_USER} -g ${WAZUH_GROUP} ${DATA_FOLDER}/dbs
     install -d -m 0770 -o ${WAZUH_USER} -g ${WAZUH_GROUP} ${DATA_FOLDER}/logs
-
 }
 
 install_files(){
-    #Function to build the agent's installation directories
+    #Function to install agent's binary
     echo "Installing files"
     install -m 0750 -o root -g 0 src/build/wazuh-agent ${BIN_FOLDER}/wazuh-agent
 }
@@ -132,29 +139,27 @@ add_user_macos(){
         exit 5;
     fi
 
-
      # Creating the groups.
-    sudo ${DSCL} localhost -create /Local/Default/Groups/${GROUP}
-    echo "Error creating group $GROUP" "67"
-    sudo ${DSCL} localhost -createprop /Local/Default/Groups/${GROUP} PrimaryGroupID ${new_gid}
-    sudo ${DSCL} localhost -createprop /Local/Default/Groups/${GROUP} RealName ${GROUP}
-    sudo ${DSCL} localhost -createprop /Local/Default/Groups/${GROUP} RecordName ${GROUP}
-    sudo ${DSCL} localhost -createprop /Local/Default/Groups/${GROUP} RecordType: dsRecTypeStandard:Groups
-    sudo ${DSCL} localhost -createprop /Local/Default/Groups/${GROUP} Password "*"
+    sudo ${DSCL} localhost -create /Local/Default/Groups/${WAZUH_GROUP}
+    echo "Error creating group $WAZUH_GROUP" "67"
+    sudo ${DSCL} localhost -createprop /Local/Default/Groups/${WAZUH_GROUP} PrimaryGroupID ${new_gid}
+    sudo ${DSCL} localhost -createprop /Local/Default/Groups/${WAZUH_GROUP} RealName ${WAZUH_GROUP}
+    sudo ${DSCL} localhost -createprop /Local/Default/Groups/${WAZUH_GROUP} RecordName ${WAZUH_GROUP}
+    sudo ${DSCL} localhost -createprop /Local/Default/Groups/${WAZUH_GROUP} RecordType: dsRecTypeStandard:Groups
+    sudo ${DSCL} localhost -createprop /Local/Default/Groups/${WAZUH_GROUP} Password "*"
 
     # Creating the users.
-    if [[ $(${DSCL} . -read /Users/${USER} 2>/dev/null) ]]; then
-        echo "${USER} already exists";
+    if [[ $(${DSCL} . -read /Users/${WAZUH_USER} 2>/dev/null) ]]; then
+        echo "${WAZUH_USER} already exists";
     else
-        sudo ${DSCL} localhost -create /Local/Default/Users/${USER}
-        echo "Error creating user ${USER}" "87"
-        sudo ${DSCL} localhost -createprop /Local/Default/Users/${USER} RecordName ${USER}
-        sudo ${DSCL} localhost -createprop /Local/Default/Users/${USER} RealName "${USER}acct"
-        sudo ${DSCL} localhost -createprop /Local/Default/Users/${USER} NFSHomeDirectory ${DIR}
-        sudo ${DSCL} localhost -createprop /Local/Default/Users/${USER} UniqueID ${i}
-        sudo ${DSCL} localhost -createprop /Local/Default/Users/${USER} PrimaryGroupID ${new_gid}
-        sudo ${DSCL} localhost -append /Local/Default/Groups/${GROUP} GroupMembership ${USER}
-        sudo ${DSCL} localhost -createprop /Local/Default/Users/${USER} Password "*"
+        sudo ${DSCL} localhost -create /Local/Default/Users/${WAZUH_USER}
+        echo "Error creating user ${WAZUH_USER}" "87"
+        sudo ${DSCL} localhost -createprop /Local/Default/Users/${WAZUH_USER} RecordName ${WAZUH_USER}
+        sudo ${DSCL} localhost -createprop /Local/Default/Users/${WAZUH_USER} RealName "${WAZUH_USER}acct"
+        sudo ${DSCL} localhost -createprop /Local/Default/Users/${WAZUH_USER} UniqueID ${i}
+        sudo ${DSCL} localhost -createprop /Local/Default/Users/${WAZUH_USER} PrimaryGroupID ${new_gid}
+        sudo ${DSCL} localhost -append /Local/Default/Groups/${WAZUH_GROUP} GroupMembership ${WAZUH_USER}
+        sudo ${DSCL} localhost -createprop /Local/Default/Users/${WAZUH_USER} Password "*"
     fi
 
     sudo ${DSCL} . create /Users/wazuh IsHidden 1
