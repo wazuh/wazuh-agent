@@ -21,7 +21,7 @@ add_executable(wazuh-agent agent/src/main.cpp)
 target_link_libraries(wazuh-agent Agent Logger)
 
 include(cmake/ConfigureTarget.cmake)
-configure_target(Agent)
+configure_target(wazuh-agent)
 
 if(BUILD_TESTS)
     enable_testing()
