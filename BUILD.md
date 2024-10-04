@@ -59,8 +59,17 @@ The following dependencies are required for this project:
     cmake src -B build -DBUILD_TESTS=1
     cmake --build build
     ```
+5. **Run the Agent**
+    To run the agent, copy the file `src/agent/service/wazuh-agent.service` to `/etc/systemd/system/`.
+    Set the environment variable WAZUH_HOME to the wazuh-agent executable directory.
+    You can start and stop the agent, and get status with:
+    ```
+    systemctl start wazuh-agent
+    systemctl stop wazuh-agent
+    systemctl is-active wazuh-agent
+    ```
 
-5. **Run tests**
+6. **Run tests**
 
     If built with CMake and `-DBUILD_TESTS=1`, you can run tests with:
 
