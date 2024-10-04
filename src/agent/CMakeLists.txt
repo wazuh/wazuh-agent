@@ -24,9 +24,9 @@ find_package(Boost REQUIRED COMPONENTS asio beast)
 
 set(SOURCES
     src/agent.cpp
+    src/agent_registration.cpp
     src/command_handler_utils.cpp
     src/message_queue_utils.cpp
-    src/register.cpp
     src/signal_handler.cpp
     $<$<BOOL:$<PLATFORM_ID:Windows>>:src/signal_handler_win.cpp>
     $<$<NOT:$<PLATFORM_ID:Windows>>:src/signal_handler_unix.cpp>

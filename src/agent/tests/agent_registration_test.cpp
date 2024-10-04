@@ -2,9 +2,9 @@
 #include <gtest/gtest.h>
 
 #include <agent_info.hpp>
+#include <agent_registration.hpp>
 #include <ihttp_client.hpp>
 #include <ihttp_socket.hpp>
-#include <register.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
@@ -62,18 +62,21 @@ protected:
     void SetUp() override
     {
         agent = std::make_unique<AgentInfo>("agent_name", "agent_key", "agent_uuid");
+        registration =
+            std::make_unique<agent_registration::AgentRegistration>("user", "password", "agent_key", "agent_name");
     }
 
-    MockHttpClient mockHttpClient;
     std::unique_ptr<AgentInfo> agent;
-    registration::UserCredentials userCredentials {"user", "password"};
+    std::unique_ptr<agent_registration::AgentRegistration> registration;
 };
 
 TEST_F(RegisterTest, RegistrationTestSuccess)
 {
+
+    MockHttpClient mockHttpClient;
+
     EXPECT_CALL(mockHttpClient,
-                AuthenticateWithUserPassword(
-                    testing::_, testing::_, userCredentials.user, userCredentials.password, testing::_))
+                AuthenticateWithUserPassword(testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return("token"));
 
     nlohmann::json bodyJson = {{"id", agent->GetUUID()}, {"key", agent->GetKey()}};
@@ -92,26 +95,27 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
     EXPECT_CALL(mockHttpClient, PerformHttpRequest(testing::Eq(reqParams))).WillOnce(testing::Return(expectedResponse));
 
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
-    const bool res = registration::RegisterAgent(userCredentials, mockHttpClient);
+    const bool res = registration->Register(mockHttpClient);
     ASSERT_TRUE(res);
 }
 
 TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
 {
-    EXPECT_CALL(mockHttpClient,
-                AuthenticateWithUserPassword(testing::_, testing::_, testing::_, testing::_, testing::_))
+    MockHttpClient mockHttpClient;
+
+    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, "user", "password", testing::_))
         .WillOnce(testing::Return(std::nullopt));
 
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
-    const bool res = registration::RegisterAgent(userCredentials, mockHttpClient);
+    const bool res = registration->Register(mockHttpClient);
     ASSERT_FALSE(res);
 }
 
 TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
 {
-    EXPECT_CALL(mockHttpClient,
-                AuthenticateWithUserPassword(
-                    testing::_, testing::_, userCredentials.user, userCredentials.password, testing::_))
+    MockHttpClient mockHttpClient;
+
+    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, "user", "password", testing::_))
         .WillOnce(testing::Return("token"));
 
     boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
@@ -120,7 +124,7 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
     EXPECT_CALL(mockHttpClient, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
-    const bool res = registration::RegisterAgent(userCredentials, mockHttpClient);
+    const bool res = registration->Register(mockHttpClient);
     ASSERT_FALSE(res);
 }
 

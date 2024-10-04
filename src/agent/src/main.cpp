@@ -1,9 +1,9 @@
 #include <agent.hpp>
 #include <agent_info.hpp>
+#include <agent_registration.hpp>
 #include <cmd_ln_parser.hpp>
 #include <http_client.hpp>
 #include <logger.hpp>
-#include <register.hpp>
 
 #include <optional>
 
@@ -39,9 +39,9 @@ int main(int argc, char* argv[])
                 }
 
                 http_client::HttpClient httpClient;
-                const registration::UserCredentials userCredentials {user, password};
 
-                if (registration::RegisterAgent(userCredentials, httpClient))
+                agent_registration::AgentRegistration reg(user, password, agentInfo.GetKey(), agentInfo.GetName());
+                if (reg.Register(httpClient))
                 {
                     LogInfo("Agent registered.");
                 }
