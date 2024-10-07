@@ -6,9 +6,6 @@
 #include <inventory.hpp>
 #include <sysInfo.hpp>
 
-
-constexpr const char* INV_LOGTAG = "modules:inventory"; // Tag for log messages
-
 void Inventory::Start() {
 
     if (!m_enabled) {
@@ -61,7 +58,7 @@ void Inventory::Stop() {
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
 Co_CommandExecutionResult Inventory::ExecuteCommand(const std::string query) {
-    LogInfo("Query: ",query);
+    LogInfo("Query: {}", query);
     co_return module_command::CommandExecutionResult{module_command::Status::SUCCESS, "OK"};
 }
 
@@ -72,13 +69,22 @@ void Inventory::SetMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue) {
 void Inventory::SendDeltaEvent(const std::string& data) {
 
     const auto jsonData = nlohmann::json::parse(data);
-    const Message message{ MessageType::STATELESS, jsonData, Name() };
+    const Message statelessMessage{ MessageType::STATELESS, jsonData, Name() };
+    const Message statefulMessage{ MessageType::STATEFUL, jsonData, Name() };
 
-    if(!m_messageQueue->push(message)) {
-        LogWarn("Delta event can't be pushed into the message queue: ", data);
+    if(!m_messageQueue->push(statelessMessage)) {
+        LogWarn("Stateless event can't be pushed into the message queue: {}", data);
     }
     else {
-        LogTrace("Delta sent: ", data);
+        LogTrace("Stateless event queued: {}", data);
+
+    }
+
+    if(!m_messageQueue->push(statefulMessage)) {
+        LogWarn("Stateful event can't be pushed into the message queue: {}", data);
+    }
+    else {
+        LogTrace("Stateful event queued: {}", data);
 
     }
 }
@@ -89,7 +95,7 @@ void Inventory::ShowConfig()
     if (configJson) {
         char * configString = cJSON_PrintUnformatted(configJson);
         if (configString) {
-            LogTrace("{}",configString);
+            LogTrace("{}", configString);
             cJSON_free(configString);
         }
         cJSON_Delete(configJson);
@@ -123,5 +129,5 @@ cJSON * Inventory::Dump() {
 
 void Inventory::LogErrorInventory(const std::string& log)
 {
-    LogError("{}",log.c_str(), INV_LOGTAG);
+    LogError("{}", log.c_str());
 }
