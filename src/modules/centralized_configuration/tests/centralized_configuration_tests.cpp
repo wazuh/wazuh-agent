@@ -11,6 +11,14 @@ TEST(CentralizedConfiguration, Constructor)
     );
 }
 
+TEST(CentralizedConfiguration, ImplementsModuleWrapperInterface)
+{
+    CentralizedConfiguration centralizedConfiguration;
+    EXPECT_NO_THROW(centralizedConfiguration.Start());
+    EXPECT_NO_THROW(centralizedConfiguration.Stop());
+    EXPECT_NO_THROW(centralizedConfiguration.Name());
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
