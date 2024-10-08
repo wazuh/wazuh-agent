@@ -12,35 +12,40 @@ system API.
 
 ```yaml
 logcollector:
-  - type: file
-    location: /var/log/*.log
-    age: 1d
-    delim-regex: "\n"
-    use-bookmark: true
-  - type: windows
-    channel: Application
-    query: Event[System/EventID = 4624]
-    use-bookmark: true
-    reconnect-time: 5s
-  - type: journald
-    filter:
+  enabled: true
+  file:
+    - location: /var/log/*.log
+      age: 1d
+      delim-regex: "\n"
+      use-bookmark: true
+  windows:
+    - channel: Application
+      query: Event[System/EventID = 4624]
+      use-bookmark: true
+      reconnect-time: 5s
+  journald:
+    - filter:
       - field: "_SYSTEMD_UNIT"
         query: ^ssh.service$
       - field: PRIORITY
         query: "[0-3]"
         ignore-missing: true
-    use-bookmark: true
-  - type: macos
-    query:
-    use-bookmark: true
+      use-bookmark: true
+  macos:
+    - query: process == "sshd" OR message CONTAINS "invalid"
+      use-bookmark: true
 ```
 
 ### Reference
 
+|Mandatory|Option|Description|Default|
+|:-:|--|--|--|
+||`enabled`|Sets the module as enabled.|yes|
+
 #### File Collector
 
 ```yaml
-- type: file
+- file:
 ```
 
 The File collector handles plain-text log files.
@@ -55,7 +60,7 @@ The File collector handles plain-text log files.
 #### Journald Collector
 
 ```yaml
-- type: journald
+- journald:
 ```
 
 This collector gets logs from Journald on Linux.
@@ -76,7 +81,7 @@ This collector gets logs from Journald on Linux.
 #### Windows Collector
 
 ```yaml
-- type: windows
+- windows:
 ```
 
 This collector gets logs from the Windows Event Viewer.
@@ -88,8 +93,10 @@ This collector gets logs from the Windows Event Viewer.
 ||`use-bookmark`|Whether the agent should jump to the latest line read on startup.|`yes`|
 ||`reconnect-time`|Interval of reconnection attempts to the Windows Event API.|`5s`|
 
+#### macOS (ULS) Collector
+
 ```yaml
-- type: windows
+- macos:
 ```
 
 This collector gets logs from macOS through the Unified Logging System.
@@ -105,13 +112,14 @@ This collector gets logs from macOS through the Unified Logging System.
 classDiagram
     class ModuleWrapper
     class Logcollector {
-        - maxLogSize : int
+        - enabled : bool
+        - queue : MultiTypeQueue
         + start()
         + setup(ConfigurationParser)
         + stop()
         + executeCommand(CommandResult(string))
         + name() : string
-        + getMaxLogSize() : int
+        + setMessageQueue(queue)
     }
     class IReader {
         + run()
