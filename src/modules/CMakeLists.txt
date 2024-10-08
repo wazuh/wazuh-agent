@@ -6,10 +6,12 @@ include(../cmake/CommonSettings.cmake)
 set_common_settings()
 
 add_subdirectory(inventory)
+add_subdirectory(logcollector)
 
 add_library(ModuleManager src/moduleManager.cpp)
 target_include_directories(ModuleManager PUBLIC include)
 target_link_libraries(ModuleManager PUBLIC Inventory)
+target_link_libraries(ModuleManager PUBLIC Logcollector)
 
 include(../cmake/ConfigureTarget.cmake)
 configure_target(ModuleManager)
