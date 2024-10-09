@@ -13,6 +13,8 @@
 #include <string>
 #include <thread>
 
+using logcollector::Logcollector;
+
 Agent::Agent(std::unique_ptr<ISignalHandler> signalHandler)
     : m_messageQueue(std::make_shared<MultiTypeQueue>())
     , m_signalHandler(std::move(signalHandler))
