@@ -30,20 +30,3 @@ void RegisterAgent(const std::string& user,
         LogError("--user, --password and --key args are mandatory");
     }
 }
-
-void PrintHelp()
-{
-    LogInfo("Wazuh Agent help.");
-
-    // TO DO
-    std::cout << "wazuh-agent [start/status/stop]\n";
-    std::cout << "     start           Start wazuh-agent daemon\n";
-    std::cout << "     status          Get wazuh-agent daemon status\n";
-    std::cout << "     stop            Stop wazuh-agent daemon\n";
-    std::cout << "     restart         Restart wazuh-agent daemon\n";
-    std::cout << "     register        Register wazuh-agent\n";
-    std::cout << "     install         Install Windows Service\n";
-    std::cout << "     remove          Remove Windows Service\n";
-    std::cout << "     service         Used by Windows SCM to run as Service\n";
-    std::cout << "     --help          This help message\n";
-}
