@@ -3,15 +3,26 @@
 #include <SQLiteCpp/SQLiteCpp.h>
 #include <logger.hpp>
 
+namespace
+{
+    const std::string AGENT_INFO_TABLE_NAME = "agent_info";
+    const std::string AGENT_GROUP_TABLE_NAME = "agent_group";
+} // namespace
+
 AgentInfoPersistance::AgentInfoPersistance(const std::string& dbPath)
 {
     try
     {
         m_db = std::make_unique<SQLite::Database>(dbPath, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
 
-        if (!AgentInfoTableExists())
+        if (!TableExists(AGENT_INFO_TABLE_NAME))
         {
             CreateAgentInfoTable();
+        }
+
+        if (!TableExists(AGENT_GROUP_TABLE_NAME))
+        {
+            CreateAgentGroupTable();
         }
 
         if (AgentInfoIsEmpty())
@@ -28,11 +39,11 @@ AgentInfoPersistance::AgentInfoPersistance(const std::string& dbPath)
 
 AgentInfoPersistance::~AgentInfoPersistance() = default;
 
-bool AgentInfoPersistance::AgentInfoTableExists() const
+bool AgentInfoPersistance::TableExists(const std::string& table) const
 {
     try
     {
-        SQLite::Statement query(*m_db, "SELECT name FROM sqlite_master WHERE type='table' AND name='agent_info';");
+        SQLite::Statement query(*m_db, "SELECT name FROM sqlite_master WHERE type='table' AND name='" + table + "';");
         return query.executeStep();
     }
     catch (const std::exception& e)
@@ -67,6 +78,22 @@ void AgentInfoPersistance::CreateAgentInfoTable()
                    "name TEXT, "
                    "key TEXT, "
                    "uuid TEXT"
+                   ");");
+    }
+    catch (const std::exception& e)
+    {
+        LogError("Error creating table: {}.", e.what());
+    }
+}
+
+void AgentInfoPersistance::CreateAgentGroupTable()
+{
+    try
+    {
+        m_db->exec("CREATE TABLE IF NOT EXISTS " + AGENT_GROUP_TABLE_NAME +
+                   " ("
+                   "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                   "name TEXT NOT NULL UNIQUE"
                    ");");
     }
     catch (const std::exception& e)
@@ -127,6 +154,52 @@ std::string AgentInfoPersistance::GetAgentInfoValue(const std::string& column) c
     return value;
 }
 
+void AgentInfoPersistance::SetAgentGroups(const std::vector<std::string>& group_list)
+{
+    try
+    {
+        SQLite::Transaction transaction(*m_db);
+
+        m_db->exec("DELETE FROM " + AGENT_GROUP_TABLE_NAME + ";");
+
+        SQLite::Statement query(*m_db, "INSERT INTO " + AGENT_GROUP_TABLE_NAME + " (name) VALUES (?);");
+
+        for (const std::string& group : group_list)
+        {
+            query.bind(1, group);
+            query.exec();
+            query.reset();
+        }
+
+        transaction.commit();
+    }
+    catch (const std::exception& e)
+    {
+        LogError("Error inserting group: {}.", e.what());
+    }
+}
+
+std::vector<std::string> AgentInfoPersistance::GetAgentGroupList() const
+{
+    std::vector<std::string> group_list;
+
+    try
+    {
+        SQLite::Statement query(*m_db, "SELECT name FROM " + AGENT_GROUP_TABLE_NAME + " ORDER BY id ASC;");
+
+        while (query.executeStep())
+        {
+            group_list.push_back(query.getColumn(0).getString());
+        }
+    }
+    catch (const std::exception& e)
+    {
+        LogError("Error getting agent group list: {}.", e.what());
+    }
+
+    return group_list;
+}
+
 std::string AgentInfoPersistance::GetName() const
 {
     return GetAgentInfoValue("name");
@@ -140,6 +213,11 @@ std::string AgentInfoPersistance::GetKey() const
 std::string AgentInfoPersistance::GetUUID() const
 {
     return GetAgentInfoValue("uuid");
+}
+
+std::vector<std::string> AgentInfoPersistance::GetGroups() const
+{
+    return GetAgentGroupList();
 }
 
 void AgentInfoPersistance::SetName(const std::string& name)
@@ -157,11 +235,17 @@ void AgentInfoPersistance::SetUUID(const std::string& uuid)
     SetAgentInfoValue("uuid", uuid);
 }
 
+void AgentInfoPersistance::SetGroups(const std::vector<std::string>& group_list)
+{
+    SetAgentGroups(group_list);
+}
+
 void AgentInfoPersistance::ResetToDefault()
 {
     try
     {
-        m_db->exec("DELETE FROM agent_info;");
+        m_db->exec("DELETE FROM " + AGENT_INFO_TABLE_NAME + ";");
+        m_db->exec("DELETE FROM " + AGENT_GROUP_TABLE_NAME + ";");
         InsertDefaultAgentInfo();
     }
     catch (const std::exception& e)

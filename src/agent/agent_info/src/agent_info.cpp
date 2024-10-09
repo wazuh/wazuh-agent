@@ -13,6 +13,7 @@ AgentInfo::AgentInfo()
     m_name = agentInfoPersistance.GetName();
     m_key = agentInfoPersistance.GetKey();
     m_uuid = agentInfoPersistance.GetUUID();
+    m_groups = agentInfoPersistance.GetGroups();
 
     if (m_uuid.empty())
     {
@@ -47,6 +48,11 @@ std::string AgentInfo::GetUUID() const
     return m_uuid;
 }
 
+std::vector<std::string> AgentInfo::GetGroups() const
+{
+    return m_groups;
+}
+
 void AgentInfo::SetName(const std::string& name)
 {
     AgentInfoPersistance agentInfoPersistance;
@@ -66,4 +72,11 @@ void AgentInfo::SetUUID(const std::string& uuid)
     AgentInfoPersistance agentInfoPersistance;
     agentInfoPersistance.SetUUID(uuid);
     m_uuid = uuid;
+}
+
+void AgentInfo::SetGroups(const std::vector<std::string>& group_list)
+{
+    AgentInfoPersistance agentInfoPersistance;
+    agentInfoPersistance.SetGroups(group_list);
+    m_groups = group_list;
 }
