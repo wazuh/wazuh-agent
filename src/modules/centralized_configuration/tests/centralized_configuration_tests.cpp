@@ -14,6 +14,24 @@ using centralized_configuration::CentralizedConfiguration;
 namespace
 {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-reference-coroutine-parameters)
+    boost::asio::awaitable<void> TestExecuteCommandSetGroup(CentralizedConfiguration& centralizedConfiguration)
+    {
+        const std::string command = R"({"command": "set-group"})";
+        const auto commandResult = co_await centralizedConfiguration.ExecuteCommand(command);
+
+        EXPECT_EQ(commandResult.ErrorCode, module_command::Status::SUCCESS);
+    }
+
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-reference-coroutine-parameters)
+    boost::asio::awaitable<void> TestExecuteCommandUpdateGroup(CentralizedConfiguration& centralizedConfiguration)
+    {
+        const std::string command = R"({"command": "update-group"})";
+        const auto commandResult = co_await centralizedConfiguration.ExecuteCommand(command);
+
+        EXPECT_EQ(commandResult.ErrorCode, module_command::Status::SUCCESS);
+    }
+
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-reference-coroutine-parameters)
     boost::asio::awaitable<void> TestExecuteCommandUnrecognized(CentralizedConfiguration& centralizedConfiguration)
     {
         const std::string command = R"({"command": "unknown-command"})";
@@ -50,6 +68,27 @@ TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnUnrecognizedCommand
     boost::asio::co_spawn(
         io_context,
         TestExecuteCommandUnrecognized(centralizedConfiguration),
+        boost::asio::detached
+    );
+
+    io_context.run();
+}
+
+TEST(CentralizedConfiguration, ExecuteCommandHandlesRecognizedCommands)
+{
+    CentralizedConfiguration centralizedConfiguration;
+
+    boost::asio::io_context io_context;
+
+    boost::asio::co_spawn(
+        io_context,
+        TestExecuteCommandSetGroup(centralizedConfiguration),
+        boost::asio::detached
+    );
+
+    boost::asio::co_spawn(
+        io_context,
+        TestExecuteCommandUpdateGroup(centralizedConfiguration),
         boost::asio::detached
     );
 
