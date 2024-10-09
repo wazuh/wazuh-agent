@@ -124,7 +124,7 @@ namespace WindowsService
 {
     bool InstallService()
     {
-        const std::string exePath = GetExecutablePath() + " service";
+        const std::string exePath = GetExecutablePath() + " --run-service";
 
         SC_HANDLE schSCManager = OpenSCManager(nullptr, nullptr, SC_MANAGER_CREATE_SERVICE);
         if (!schSCManager)

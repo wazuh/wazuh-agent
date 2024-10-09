@@ -2,8 +2,6 @@
 
 #include <unix_daemon.hpp>
 
-#include <string>
-
 class UnixDaemonTest : public ::testing::Test
 {
 protected:
