@@ -9,42 +9,46 @@ int main(int argc, char* argv[])
 
     try
     {
-        if (cmdParser.OptionExists("register"))
+        if (cmdParser.OptionExists("--register-agent"))
         {
             RegisterAgent(cmdParser.GetOptionValue("--user"),
                           cmdParser.GetOptionValue("--password"),
                           cmdParser.GetOptionValue("--key"),
                           cmdParser.GetOptionValue("--name"));
         }
-        else if (cmdParser.OptionExists("start"))
+        else if (cmdParser.OptionExists("--start"))
         {
-            StartAgent();
+            StartAgentDaemon();
         }
-        else if (cmdParser.OptionExists("restart"))
+        else if (cmdParser.OptionExists("--restart"))
         {
             RestartAgent();
         }
-        else if (cmdParser.OptionExists("status"))
+        else if (cmdParser.OptionExists("--status"))
         {
             StatusAgent();
         }
-        else if (cmdParser.OptionExists("stop"))
+        else if (cmdParser.OptionExists("--stop"))
         {
             StopAgent();
         }
-        else if (cmdParser.OptionExists("install"))
+        else if (cmdParser.OptionExists("--install-service"))
         {
             if (!InstallService())
                 return 1;
         }
-        else if (cmdParser.OptionExists("remove"))
+        else if (cmdParser.OptionExists("--remove-service"))
         {
             if (!RemoveService())
                 return 1;
         }
-        else if (cmdParser.OptionExists("service"))
+        else if (cmdParser.OptionExists("--set-dispatcher"))
         {
             SetDispatcherThread();
+        }
+        else if (cmdParser.OptionExists("--run"))
+        {
+            StartAgent();
         }
         else
         {

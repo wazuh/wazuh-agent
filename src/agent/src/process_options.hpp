@@ -8,6 +8,7 @@ void RegisterAgent(const std::string& user,
                    const std::string& name);
 void RestartAgent();
 void StartAgent();
+void StartAgentDaemon();
 void StatusAgent();
 void StopAgent();
 void PrintHelp();

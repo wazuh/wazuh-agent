@@ -15,11 +15,15 @@ void RestartAgent()
     StartAgent();
 }
 
+void StartAgentDaemon()
+{
+    unix_daemon::PIDFileHandler handler = unix_daemon::GeneratePIDFile();
+    StartAgent();
+}
+
 void StartAgent()
 {
     LogInfo("Starting wazuh-agent");
-
-    unix_daemon::PIDFileHandler handler = unix_daemon::GeneratePIDFile();
 
     Agent agent;
     agent.Run();

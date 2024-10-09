@@ -13,6 +13,8 @@ void RestartAgent()
     WindowsService::ServiceRestart();
 }
 
+void StartAgentDaemon() {}
+
 void StartAgent()
 {
     WindowsService::ServiceStart();
