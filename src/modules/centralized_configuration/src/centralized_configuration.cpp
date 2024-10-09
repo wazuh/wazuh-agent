@@ -6,6 +6,10 @@ namespace centralized_configuration
     {
     }
 
+    void CentralizedConfiguration::Setup(const configuration::ConfigurationParser&) const
+    {
+    }
+
     void CentralizedConfiguration::Stop() const
     {
     }
