@@ -1,5 +1,8 @@
 #pragma once
 
+#include <configuration_parser.hpp>
+
+#include <functional>
 #include <string>
 
 namespace centralized_configuration
@@ -8,6 +11,7 @@ namespace centralized_configuration
     {
     public:
         void Start() const;
+        void Setup(const configuration::ConfigurationParser&) const;
         void Stop() const;
         std::string Name() const;
     };
