@@ -6,6 +6,7 @@
 #include <logger.hpp>
 #include <windows_service.hpp>
 
+#include <iostream>
 #include <vector>
 
 void RestartAgent()
@@ -28,6 +29,25 @@ void StatusAgent()
 void StopAgent()
 {
     WindowsService::ServiceStop();
+}
+
+void PrintHelp()
+{
+    LogInfo("Wazuh Agent help.");
+
+    // TO DO
+    std::cout << "Usage: wazuh-agent [options]\n";
+    std::cout << "\n";
+    std::cout << "Options:\n";
+    std::cout << "     --start                Start wazuh-agent daemon\n";
+    std::cout << "     --status               Get wazuh-agent daemon status\n";
+    std::cout << "     --stop                 Stop wazuh-agent daemon\n";
+    std::cout << "     --restart              Restart wazuh-agent daemon\n";
+    std::cout << "     --register-agent       Register wazuh-agent\n";
+    std::cout << "     --install-service      Install Windows Service\n";
+    std::cout << "     --remove-service       Remove Windows Service\n";
+    std::cout << "     --set-dispatcher       Used by Windows SCM to run as Service\n";
+    std::cout << "     --help                 This help message\n";
 }
 
 bool InstallService()
