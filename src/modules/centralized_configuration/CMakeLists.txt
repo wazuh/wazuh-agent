@@ -9,7 +9,7 @@ include_directories(${CMAKE_SOURCE_DIR}/common/logger/include)
 
 add_library(CentralizedConfiguration src/centralized_configuration.cpp)
 target_include_directories(CentralizedConfiguration PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(CentralizedConfiguration PUBLIC ConfigurationParser)
+target_link_libraries(CentralizedConfiguration PUBLIC ConfigurationParser ModuleManager)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(CentralizedConfiguration)
