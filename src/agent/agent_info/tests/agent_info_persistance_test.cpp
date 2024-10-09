@@ -50,6 +50,13 @@ TEST_F(AgentInfoPersistanceTest, TestSetUUID)
     EXPECT_EQ(persistance->GetUUID(), newUUID);
 }
 
+TEST_F(AgentInfoPersistanceTest, TestSetGroups)
+{
+    const std::vector<std::string> newGroups = {"group_1", "group_2"};
+    persistance->SetGroups(newGroups);
+    EXPECT_EQ(persistance->GetGroups(), newGroups);
+}
+
 TEST_F(AgentInfoPersistanceTest, TestResetToDefault)
 {
     const std::string newName = "new_name";

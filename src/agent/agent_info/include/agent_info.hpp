@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 class AgentInfo
 {
@@ -11,13 +12,16 @@ public:
     std::string GetName() const;
     std::string GetKey() const;
     std::string GetUUID() const;
+    std::vector<std::string> GetGroups() const;
 
     void SetName(const std::string& name);
     void SetKey(const std::string& key);
     void SetUUID(const std::string& uuid);
+    void SetGroups(const std::vector<std::string>& group_list);
 
 private:
     std::string m_name;
     std::string m_key;
     std::string m_uuid;
+    std::vector<std::string> m_groups;
 };

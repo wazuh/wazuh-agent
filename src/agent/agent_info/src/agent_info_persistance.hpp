@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 static constexpr char sqlitedb_path[] = "agent_info.db";
 
@@ -24,20 +25,25 @@ public:
     std::string GetName() const;
     std::string GetKey() const;
     std::string GetUUID() const;
+    std::vector<std::string> GetGroups() const;
 
     void SetName(const std::string& name);
     void SetKey(const std::string& key);
     void SetUUID(const std::string& uuid);
+    void SetGroups(const std::vector<std::string>& group_list);
 
     void ResetToDefault();
 
 private:
-    bool AgentInfoTableExists() const;
+    bool TableExists(const std::string& table) const;
     bool AgentInfoIsEmpty() const;
     void CreateAgentInfoTable();
+    void CreateAgentGroupTable();
     void InsertDefaultAgentInfo();
     void SetAgentInfoValue(const std::string& column, const std::string& value);
     std::string GetAgentInfoValue(const std::string& column) const;
+    void SetAgentGroups(const std::vector<std::string>& group_list);
+    std::vector<std::string> GetAgentGroupList() const;
 
     std::unique_ptr<SQLite::Database> m_db;
 };
