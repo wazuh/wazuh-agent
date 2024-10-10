@@ -39,6 +39,18 @@ namespace
 
         EXPECT_EQ(commandResult.ErrorCode, module_command::Status::FAILURE);
     }
+
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-reference-coroutine-parameters)
+    boost::asio::awaitable<void> TestSetGroupIdFunction(CentralizedConfiguration& centralizedConfiguration, bool& wasSetGroupIdFunctionCalled)
+    {
+        EXPECT_FALSE(wasSetGroupIdFunctionCalled);
+
+        const std::string command = R"({"command": "set-group"})";
+        const auto commandResult = co_await centralizedConfiguration.ExecuteCommand(command);
+
+        EXPECT_EQ(commandResult.ErrorCode, module_command::Status::SUCCESS);
+        EXPECT_TRUE(wasSetGroupIdFunctionCalled);
+    }
 }
 
 TEST(CentralizedConfiguration, Constructor)
@@ -77,6 +89,11 @@ TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnUnrecognizedCommand
 TEST(CentralizedConfiguration, ExecuteCommandHandlesRecognizedCommands)
 {
     CentralizedConfiguration centralizedConfiguration;
+    centralizedConfiguration.SetGroupIdFunction(
+        [](const std::vector<std::string>&)
+        {
+        }
+    );
 
     boost::asio::io_context io_context;
 
@@ -89,6 +106,29 @@ TEST(CentralizedConfiguration, ExecuteCommandHandlesRecognizedCommands)
     boost::asio::co_spawn(
         io_context,
         TestExecuteCommandUpdateGroup(centralizedConfiguration),
+        boost::asio::detached
+    );
+
+    io_context.run();
+}
+
+TEST(CentralizedConfiguration, SetGroupIdFunctionIsCalledAndReturnsCorrectResult)
+{
+    CentralizedConfiguration centralizedConfiguration;
+    bool wasSetGroupIdFunctionCalled = false;
+
+    centralizedConfiguration.SetGroupIdFunction(
+        [&wasSetGroupIdFunctionCalled](const std::vector<std::string>&)
+        {
+            wasSetGroupIdFunctionCalled = true;
+        }
+    );
+
+    boost::asio::io_context io_context;
+
+    boost::asio::co_spawn(
+        io_context,
+        TestSetGroupIdFunction(centralizedConfiguration, wasSetGroupIdFunctionCalled),
         boost::asio::detached
     );
 
