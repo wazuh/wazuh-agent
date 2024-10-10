@@ -1,5 +1,4 @@
 #include <agent.hpp>
-#include <inventory.hpp>
 
 #ifdef ENABLE_LOGCOLLECTOR
 #include <logcollector.hpp>
@@ -70,8 +69,6 @@ void Agent::Run()
         [this]() { return PopCommandFromQueue(m_messageQueue); },
         [this](module_command::CommandEntry& cmd)
         { return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue); }));
-
-    m_moduleManager.AddModule(Inventory::Instance());
 
 #ifdef ENABLE_LOGCOLLECTOR
     m_moduleManager.AddModule(Logcollector::Instance());
