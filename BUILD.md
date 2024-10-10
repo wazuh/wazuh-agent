@@ -60,10 +60,23 @@ The following dependencies are required for this project:
     cmake --build build
     ```
 5. **Run the Agent**
-    To run the agent, copy the file `src/agent/service/wazuh-agent.service` to `/etc/systemd/system/`.
-    Set the environment variable WAZUH_HOME to the wazuh-agent executable directory.
-    You can start and stop the agent, and get status with:
+    To run the agent, copy the file `src/agent/service/wazuh-agent.service` to `/usr/lib/systemd/system/`.
+    Replace the placeholder WAZUH_HOME to your wazuh-agent executable directory.
+    Reload unit files.
+
+    ```bash
+    systemctl daemon-reload
     ```
+
+    Enable service.
+    
+    ```bash
+    systemctl enable wazuh-agent
+    ```
+    
+    You can start and stop the agent, and get status with:
+    
+    ```bash
     systemctl start wazuh-agent
     systemctl stop wazuh-agent
     systemctl is-active wazuh-agent
