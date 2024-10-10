@@ -1,5 +1,9 @@
 #include <iostream>
+
+#ifdef ENABLE_MODULE_INVENTORY
 #include <inventory.hpp>
+#endif
+
 #include <moduleManager.hpp>
 
 std::shared_ptr<ModuleWrapper> ModuleManager::GetModule(const std::string & name) {
@@ -32,4 +36,16 @@ void ModuleManager::Stop() {
             thread.join();
         }
     }
+}
+
+void ModuleManager::Init() {
+
+#ifdef ENABLE_MODULE_INVENTORY
+    AddModule(Inventory::Instance());
+#endif
+
+    Setup();
+
+    Start();
+
 }

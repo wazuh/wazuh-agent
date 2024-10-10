@@ -53,6 +53,7 @@ public:
     }
 
     std::shared_ptr<ModuleWrapper> GetModule(const std::string & name);
+    void Init();
     void Start();
     void Setup();
     void Stop();
