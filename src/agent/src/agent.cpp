@@ -1,5 +1,4 @@
 #include <agent.hpp>
-#include <inventory.hpp>
 
 #include <command_handler_utils.hpp>
 #include <http_client.hpp>
@@ -53,9 +52,7 @@ void Agent::Run()
         [this](module_command::CommandEntry& cmd)
         { return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue); }));
 
-    m_moduleManager.AddModule(Inventory::Instance());
-    m_moduleManager.Setup();
-    m_taskManager.EnqueueTask([this]() { m_moduleManager.Start(); });
+    m_taskManager.EnqueueTask([this]() { m_moduleManager.Init(); });
 
     m_signalHandler->WaitForSignal();
     m_moduleManager.Stop();
