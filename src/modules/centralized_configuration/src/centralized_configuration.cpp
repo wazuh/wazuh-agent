@@ -25,10 +25,24 @@ namespace centralized_configuration
 
         if (commnandAsJson["command"] == "set-group")
         {
-            co_return module_command::CommandExecutionResult{
-                module_command::Status::SUCCESS,
-                "CentralizedConfiguration group set"
-            };
+            if (m_setGroupIdFunction)
+            {
+                std::vector<std::string> groupIds;
+
+                m_setGroupIdFunction(groupIds);
+
+                co_return module_command::CommandExecutionResult{
+                    module_command::Status::SUCCESS,
+                    "CentralizedConfiguration group set"
+                };
+            }
+            else
+            {
+                co_return module_command::CommandExecutionResult{
+                    module_command::Status::FAILURE,
+                    "CentralizedConfiguration group set failed, no function set"
+                };
+            }
         }
         else if (commnandAsJson["command"] == "update-group")
         {
@@ -47,5 +61,10 @@ namespace centralized_configuration
     std::string CentralizedConfiguration::Name() const
     {
         return "CentralizedConfiguration";
+    }
+
+    void CentralizedConfiguration::SetGroupIdFunction(std::function<void(const std::vector<std::string>&)> setGroupIdFunction)
+    {
+        m_setGroupIdFunction = std::move(setGroupIdFunction);
     }
 } // namespace centralized_configuration
