@@ -20,7 +20,6 @@ public:
     void SetMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue);
     void SendMessage(const std::string& location, const std::string& log);
     void EnqueueTask(boost::asio::awaitable<void> task);
-    boost::asio::io_context & GetExecutor() { return m_ioContext; }
 
     static Logcollector& Instance()
     {

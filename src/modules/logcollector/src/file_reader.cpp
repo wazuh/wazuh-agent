@@ -3,6 +3,7 @@
 #include <logger.hpp>
 
 #include <string>
+#include <vector>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/posix/stream_descriptor.hpp>
@@ -14,18 +15,20 @@
 
 using namespace logcollector;
 using namespace std;
-using boost::asio::posix::stream_descriptor;
-using boost::asio::mutable_buffer;
-using boost::asio::use_awaitable;
+using namespace boost::asio;
 
 constexpr auto BUFFER_SIZE = 4096;
+constexpr auto FILE_WAIT = std::chrono::milliseconds(500);
 
 Awaitable FileReader::run() {
     auto & logcollector = Logcollector::Instance();
 
-    string path = "/var/log/syslog";
-    auto lf = Localfile(path);
-    logcollector.EnqueueTask(lf.run());
+    m_localfiles.emplace_back("/var/log/syslog");
+    m_localfiles.emplace_back("/root/test/test.log");
+
+    for (auto & lf : m_localfiles) {
+        logcollector.EnqueueTask(lf.run());
+    }
 
     // TODO: Resolve wildcards
     // TODO: Check for file rotation
@@ -43,8 +46,7 @@ Awaitable Localfile::run() {
     // TODO: Save/load file state
 
     auto & logcollector = Logcollector::Instance();
-    logcollector.SendMessage("test", "Hello World (from Localfile)");
-
+    auto executor = co_await this_coro::executor;
     auto fd = open(m_filePath.c_str(), O_RDONLY | O_CLOEXEC, 0);
 
     if (fd == -1) {
@@ -52,21 +54,29 @@ Awaitable Localfile::run() {
         co_return;
     }
 
-    auto file = stream_descriptor(logcollector.GetExecutor(), fd);
+    lseek(fd, 0, SEEK_END);
+    auto file = posix::stream_descriptor(executor, fd);
+    auto chunk = vector<char>(BUFFER_SIZE);
     string data;
 
     while (true) {
-        char buffer[BUFFER_SIZE];
-        std::size_t n = co_await file.async_read_some(boost::asio::buffer(buffer), use_awaitable);
+        size_t n = 0;
+
+        try {
+            n = co_await file.async_read_some(buffer(chunk), use_awaitable);
+        } catch (boost::system::system_error &) {
+            n = 0;
+        }
 
         if (n == 0) {
+            co_await steady_timer(executor, FILE_WAIT).async_wait(use_awaitable);
             continue;
         }
 
-        data.append(buffer, n);
+        data.append(chunk.data(), n);
         std::size_t newline_pos = 0;
 
-        while ((newline_pos = data.find('\n')) != std::string::npos) {
+        while ((newline_pos = data.find('\n')) != string::npos) {
             auto line = data.substr(0, newline_pos);
             logcollector.SendMessage(m_filePath, line);
             data.erase(0, newline_pos + 1);
