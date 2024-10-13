@@ -37,7 +37,9 @@ function(configure_target target)
         target_compile_options(${target} PRIVATE ${msvc_warnings})
     endif()
 
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+    option(ENABLE_CLANG_TIDY "Enable clang-tidy analysis" ON)
+
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU" AND ENABLE_CLANG_TIDY)
         find_program(CLANG_TIDY_EXECUTABLE NAMES clang-tidy-18)
 
         if(CLANG_TIDY_EXECUTABLE)
