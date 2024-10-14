@@ -16,8 +16,8 @@ void Logcollector::Start() {
 
     LogInfo("Logcollector started");
 
-    auto fileReader = FileReader();
-    boost::asio::co_spawn(m_ioContext, fileReader.run(), boost::asio::detached);
+    // fileReader = FileReader();
+    // boost::asio::co_spawn(m_ioContext, fileReader.run(), boost::asio::detached);
 
     m_ioContext.run();
 }

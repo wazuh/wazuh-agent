@@ -1,25 +1,27 @@
 #pragma once
 
 #include <vector>
-#include <boost/asio/posix/stream_descriptor.hpp>
+#include <fstream>
+#include <exception>
 
 #include "reader.hpp"
 
 namespace logcollector {
 
-
 class Localfile {
 public:
-    Localfile(std::string filePath, boost::asio::any_io_executor executor);
-    Awaitable run();
+    Localfile(std::string filename);
+    Localfile(std::shared_ptr<std::istream> stream);
+    //Awaitable run();
+    std::string NextLog();
 
 private:
-    Awaitable Follow();
-    void SplitData(std::string & accumulator);
-    std::string m_filePath;
-    unsigned long m_offset;
-    unsigned long m_inode;
-    boost::asio::posix::stream_descriptor m_file;
+    // Awaitable Follow();
+    // void SplitData(std::string & accumulator);
+
+    std::string m_filename;
+    std::shared_ptr<std::istream> m_stream;
+    std::streampos m_pos;
 };
 
 class FileReader : public IReader {
@@ -32,6 +34,15 @@ private:
     std::string delimRegex;
     bool m_useBookmark;
     std::vector<Localfile> m_localfiles;
+};
+
+class OpenError : public std::exception {
+public:
+    OpenError(const std::string& filename);
+    const char * what() const noexcept override;
+
+private:
+    std::string m_what;
 };
 
 }
