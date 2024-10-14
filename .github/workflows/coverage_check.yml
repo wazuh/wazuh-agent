@@ -34,7 +34,7 @@ jobs:
     - name: Generate CMake project
       run: |
         mkdir -p build && cd build
-        cmake -DCMAKE_CXX_COMPILER=clang++-16 -DCMAKE_C_COMPILER=clang-16 ../src -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=1 -DCOVERAGE=1 -G "Unix Makefiles"
+        cmake -DCMAKE_CXX_COMPILER=clang++-16 -DCMAKE_C_COMPILER=clang-16 ../src -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=1 -DCOVERAGE=1 -DENABLE_CLANG_TIDY=OFF -G "Unix Makefiles"
       shell: bash
 
     - name: Compile
