@@ -68,6 +68,13 @@ The following dependencies are required for this project:
     ctest --test-dir build --output-log build
     ```
 
+### Options
+
+|Option|Description|Default|
+|---|---|---|
+|`BUILD_TESTS`|Enable tests compilation||
+|`ENABLE_CLANG_TIDY`|Check code with _clang-tidy_|`ON`|
+
 ## Notes
 
 - The project uses `vcpkg` as a submodule to manage dependencies. By initializing the submodules, `vcpkg` will automatically fetch the necessary dependencies when running CMake.
