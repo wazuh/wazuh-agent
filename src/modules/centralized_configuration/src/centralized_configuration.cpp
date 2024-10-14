@@ -21,34 +21,44 @@ namespace centralized_configuration
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
     Co_CommandExecutionResult CentralizedConfiguration::ExecuteCommand(const std::string command)
     {
-        const auto commnandAsJson = nlohmann::json::parse(command);
-
-        if (commnandAsJson["command"] == "set-group")
+        try
         {
-            if (m_setGroupIdFunction)
+            const auto commnandAsJson = nlohmann::json::parse(command);
+
+            if (commnandAsJson["command"] == "set-group")
             {
-                std::vector<std::string> groupIds;
+                if (m_setGroupIdFunction)
+                {
+                    std::vector<std::string> groupIds;
 
-                m_setGroupIdFunction(groupIds);
+                    m_setGroupIdFunction(groupIds);
 
+                    co_return module_command::CommandExecutionResult{
+                        module_command::Status::SUCCESS,
+                        "CentralizedConfiguration group set"
+                    };
+                }
+                else
+                {
+                    co_return module_command::CommandExecutionResult{
+                        module_command::Status::FAILURE,
+                        "CentralizedConfiguration group set failed, no function set"
+                    };
+                }
+            }
+            else if (commnandAsJson["command"] == "update-group")
+            {
                 co_return module_command::CommandExecutionResult{
                     module_command::Status::SUCCESS,
-                    "CentralizedConfiguration group set"
-                };
-            }
-            else
-            {
-                co_return module_command::CommandExecutionResult{
-                    module_command::Status::FAILURE,
-                    "CentralizedConfiguration group set failed, no function set"
+                    "CentralizedConfiguration group updated"
                 };
             }
         }
-        else if (commnandAsJson["command"] == "update-group")
+        catch (const nlohmann::json::exception&)
         {
             co_return module_command::CommandExecutionResult{
-                module_command::Status::SUCCESS,
-                "CentralizedConfiguration group updated"
+                module_command::Status::FAILURE,
+                "CentralizedConfiguration error while parsing command"
             };
         }
 
