@@ -13,9 +13,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     add_compile_options(/w)
 endif()
 
-# Enable/disable optional modules compilation
-option(ENABLE_MODULE_INVENTORY "Enable module Inventory" ON)
-
 add_subdirectory(common)
 add_subdirectory(modules)
 add_subdirectory(agent)

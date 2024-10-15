@@ -14,6 +14,9 @@ endif()
 add_library(ModuleManager src/moduleManager.cpp)
 target_include_directories(ModuleManager PUBLIC include)
 
+# Enable/disable optional modules compilation
+option(ENABLE_MODULE_INVENTORY "Enable module Inventory" ON)
+
 message(STATUS "-------------------")
 message(STATUS "Wazuh agent modules")
 message(STATUS "-------------------")
