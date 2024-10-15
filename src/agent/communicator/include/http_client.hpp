@@ -47,6 +47,9 @@ namespace http_client
                                                                 const std::string& password,
                                                                 const bool useHttps) override;
 
+        boost::beast::http::response<boost::beast::http::dynamic_body>
+        PerformHttpRequestDownload(const HttpRequestParams& params, const std::string& output_file) override;
+
     private:
         std::shared_ptr<IHttpResolverFactory> m_resolverFactory;
         std::shared_ptr<IHttpSocketFactory> m_socketFactory;

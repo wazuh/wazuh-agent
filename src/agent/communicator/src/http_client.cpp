@@ -246,4 +246,37 @@ namespace http_client
             .at("token")
             .get_ref<const std::string&>();
     }
+
+    boost::beast::http::response<boost::beast::http::dynamic_body>
+    HttpClient::PerformHttpRequestDownload(const HttpRequestParams& params, const std::string& output_file)
+    {
+        boost::beast::http::response_parser<boost::beast::http::dynamic_body> res_parser;
+
+        try
+        {
+            boost::asio::io_context io_context;
+            auto resolver = m_resolverFactory->Create(io_context.get_executor());
+
+            const auto results = resolver->Resolve(params.Host, params.Port);
+
+            auto socket = m_socketFactory->Create(io_context.get_executor(), params.Use_Https);
+            socket->Connect(results);
+
+            const auto req = CreateHttpRequest(params);
+            socket->Write(req);
+            socket->ReadToFile(res_parser, output_file);
+
+            LogDebug("Response code: {}.", res_parser.get().result_int());
+        }
+        catch (std::exception const& e)
+        {
+            LogError("Error: {}.", e.what());
+
+            auto& res = res_parser.get();
+            res.result(boost::beast::http::status::internal_server_error);
+            boost::beast::ostream(res.body()) << "Internal server error: " << e.what();
+        }
+
+        return res_parser.release();
+    }
 } // namespace http_client
