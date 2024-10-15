@@ -60,10 +60,32 @@ namespace centralized_configuration
             }
             else if (commnandAsJson["command"] == "update-group")
             {
-                co_return module_command::CommandExecutionResult{
-                    module_command::Status::SUCCESS,
-                    "CentralizedConfiguration group updated"
-                };
+                if (m_getGroupIdFunction && m_downloadGroupFilesFunction)
+                {
+                    const auto groupIds = m_getGroupIdFunction();
+
+                    for (const auto& groupId : groupIds)
+                    {
+                        m_downloadGroupFilesFunction(
+                            groupId,
+                            std::filesystem::temp_directory_path().string()
+                        );
+                    }
+
+                    // TODO validate groupFiles, apply configuration
+
+                    co_return module_command::CommandExecutionResult{
+                        module_command::Status::SUCCESS,
+                        "CentralizedConfiguration group updated"
+                    };
+                }
+                else
+                {
+                    co_return module_command::CommandExecutionResult{
+                        module_command::Status::FAILURE,
+                        "CentralizedConfiguration group set failed, no function set"
+                    };
+                }
             }
         }
         catch (const nlohmann::json::exception&)
@@ -88,6 +110,11 @@ namespace centralized_configuration
     void CentralizedConfiguration::SetGroupIdFunction(SetGroupIdFunctionType setGroupIdFunction)
     {
         m_setGroupIdFunction = std::move(setGroupIdFunction);
+    }
+
+    void CentralizedConfiguration::GetGroupIdFunction(GetGroupIdFunctionType getGroupIdFunction)
+    {
+        m_getGroupIdFunction = std::move(getGroupIdFunction);
     }
 
     void CentralizedConfiguration::SetDownloadGroupFilesFunction(DownloadGroupFilesFunctionType downloadGroupFilesFunction)

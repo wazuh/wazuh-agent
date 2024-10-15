@@ -14,6 +14,7 @@ namespace centralized_configuration
     {
     public:
         using SetGroupIdFunctionType = std::function<void(const std::vector<std::string>&)>;
+        using GetGroupIdFunctionType = std::function<std::vector<std::string>()>;
         using DownloadGroupFilesFunctionType = std::function<bool(const std::string&, const std::string&)>;
 
         void Start() const;
@@ -23,10 +24,12 @@ namespace centralized_configuration
         std::string Name() const;
 
         void SetGroupIdFunction(SetGroupIdFunctionType setGroupIdFunction);
+        void GetGroupIdFunction(GetGroupIdFunctionType getGroupIdFunction);
         void SetDownloadGroupFilesFunction(DownloadGroupFilesFunctionType downloadGroupFilesFunction);
 
     private:
         SetGroupIdFunctionType m_setGroupIdFunction;
+        GetGroupIdFunctionType m_getGroupIdFunction;
         DownloadGroupFilesFunctionType m_downloadGroupFilesFunction;
     };
 } // namespace centralized_configuration
