@@ -7,6 +7,7 @@
 #include "file_reader.hpp"
 
 using namespace logcollector;
+using namespace std;
 
 void Logcollector::Start() {
     if (!m_enabled) {
@@ -15,10 +16,6 @@ void Logcollector::Start() {
     }
 
     LogInfo("Logcollector started");
-
-    // fileReader = FileReader();
-    // boost::asio::co_spawn(m_ioContext, fileReader.run(), boost::asio::detached);
-
     m_ioContext.run();
 }
 
@@ -28,6 +25,8 @@ void Logcollector::EnqueueTask(boost::asio::awaitable<void> task) {
 
 void Logcollector::Setup(const configuration::ConfigurationParser& configurationParser) {
     m_enabled = configurationParser.GetConfig<bool>("logcollector", "enabled");
+    auto fileReader = make_shared<FileReader>(*this, "/var/log/syslog");
+    AddReader(fileReader);
 }
 
 void Logcollector::Stop() {
@@ -55,4 +54,13 @@ void Logcollector::SendMessage(const std::string& location, const std::string& l
     m_messageQueue->push(message);
 
     LogTrace("Message pushed: '{}':'{}'", location, log);
+}
+
+void Logcollector::AddReader(shared_ptr<IReader> reader) {
+    m_readers.push_back(reader);
+    EnqueueTask(reader->Run(*this));
+}
+
+Awaitable Logcollector::Wait(chrono::milliseconds ms) {
+    co_await boost::asio::steady_timer(m_ioContext, ms).async_wait(boost::asio::use_awaitable);
 }

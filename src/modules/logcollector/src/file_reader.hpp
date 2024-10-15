@@ -1,9 +1,10 @@
 #pragma once
 
-#include <vector>
+#include <list>
 #include <fstream>
 #include <exception>
 
+#include <logcollector.hpp>
 #include "reader.hpp"
 
 namespace logcollector {
@@ -12,13 +13,11 @@ class Localfile {
 public:
     Localfile(std::string filename);
     Localfile(std::shared_ptr<std::istream> stream);
-    //Awaitable run();
     std::string NextLog();
+    void SeekEnd();
+    inline const std::string& Filename() const { return m_filename; }
 
 private:
-    // Awaitable Follow();
-    // void SplitData(std::string & accumulator);
-
     std::string m_filename;
     std::shared_ptr<std::istream> m_stream;
     std::streampos m_pos;
@@ -26,14 +25,17 @@ private:
 
 class FileReader : public IReader {
 public:
-    Awaitable run();
+    FileReader(Logcollector& logcollector, std::string globexp);
+    Awaitable Run(Logcollector& logcollector);
+    void Reload(std::function<void (Localfile &)> callback);
+    Awaitable ReadLocalfile(Localfile& lf);
 
 private:
+    void AddLocalfiles(const std::list<std::string>& paths, std::function<void (Localfile &)> callback);
+
+    Logcollector& m_logcollector;
     std::string m_fileGlob;
-    int m_ageThreshold;
-    std::string delimRegex;
-    bool m_useBookmark;
-    std::vector<Localfile> m_localfiles;
+    std::list<Localfile> m_localfiles;
 };
 
 class OpenError : public std::exception {
