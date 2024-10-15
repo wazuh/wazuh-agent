@@ -62,8 +62,8 @@ Co_CommandExecutionResult Inventory::ExecuteCommand(const std::string query) {
     co_return module_command::CommandExecutionResult{module_command::Status::SUCCESS, "OK"};
 }
 
-void Inventory::SetMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue) {
-    m_messageQueue = queue;
+void Inventory::SetPushMessageFunction(const std::function<int(Message)>& pushMessage) {
+    m_pushMessage = pushMessage;
 }
 
 void Inventory::SendDeltaEvent(const std::string& data) {
@@ -72,7 +72,7 @@ void Inventory::SendDeltaEvent(const std::string& data) {
     const Message statelessMessage{ MessageType::STATELESS, jsonData, Name() };
     const Message statefulMessage{ MessageType::STATEFUL, jsonData, Name() };
 
-    if(!m_messageQueue->push(statelessMessage)) {
+    if(!m_pushMessage(statelessMessage)) {
         LogWarn("Stateless event can't be pushed into the message queue: {}", data);
     }
     else {
@@ -80,7 +80,7 @@ void Inventory::SendDeltaEvent(const std::string& data) {
 
     }
 
-    if(!m_messageQueue->push(statefulMessage)) {
+    if(!m_pushMessage(statefulMessage)) {
         LogWarn("Stateful event can't be pushed into the message queue: {}", data);
     }
     else {

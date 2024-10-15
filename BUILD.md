@@ -74,6 +74,7 @@ The following dependencies are required for this project:
 |---|---|---|
 |`BUILD_TESTS`|Enable tests compilation||
 |`ENABLE_CLANG_TIDY`|Check code with _clang-tidy_|`ON`|
+|`ENABLE_MODULE_INVENTORY`|Enable _'Inventory'_ module compilation|`ON`|
 
 ## Notes
 
