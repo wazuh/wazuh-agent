@@ -2,36 +2,85 @@
 #include <logcollector.hpp>
 #include <logger.hpp>
 
+#include <algorithm>
 #include <string>
-#include <vector>
-#include <boost/asio/co_spawn.hpp>
-#include <boost/asio/detached.hpp>
 
-// POSIX only
-#include <fcntl.h>
-#include <cerrno>
-#include <cstring>
+constexpr auto FILE_WAIT = std::chrono::milliseconds(500);
+
+// UNIX
+#include <glob.h>
 
 using namespace logcollector;
 using namespace std;
-using namespace boost::asio;
 
 constexpr auto BUFFER_SIZE = 4096;
-// constexpr auto FILE_WAIT = std::chrono::milliseconds(500);
 
-// Awaitable FileReader::run() {
-//     // auto & logcollector = Logcollector::Instance();
+FileReader::FileReader(Logcollector& logcollector, string globexp) :
+    m_logcollector(logcollector),
+    m_fileGlob(std::move(globexp)),
+    m_localfiles() { }
 
-//     m_localfiles.emplace_back("/var/log/syslog");
-//     m_localfiles.emplace_back("/root/test/test.log");
+Awaitable FileReader::Run(Logcollector& logcollector) {
+    Reload([&](Localfile & lf) {
+        lf.SeekEnd();
+        logcollector.EnqueueTask(ReadLocalfile(lf));
+    });
 
-//     // for (auto & lf : m_localfiles) {
-//     //     // logcollector.EnqueueTask(lf.run());
-//     // }
+    // TODO: Check for file rotation
 
-//     // TODO: Resolve wildcards
-//     // TODO: Check for file rotation
-// }
+    co_return;
+}
+
+void FileReader::Reload(function<void (Localfile &)> callback) {
+    glob_t globResult;
+
+    int ret = glob(m_fileGlob.c_str(), 0, nullptr, &globResult);
+
+    if (ret != 0) {
+        if (ret == GLOB_NOMATCH) {
+            LogTrace("No matches found for pattern: {}", m_fileGlob);
+        } else {
+            LogWarn("Cannot use glob with pattern: {}", m_fileGlob);
+        }
+
+        globfree(&globResult);
+        return;
+    }
+
+    list<string> localfiles;
+    auto paths = std::span<char *>(globResult.gl_pathv, globResult.gl_pathc);
+
+    for (auto& path : paths) {
+        localfiles.emplace_back(path);
+    }
+
+    AddLocalfiles(localfiles, callback);
+    globfree(&globResult);
+}
+
+Awaitable FileReader::ReadLocalfile(Localfile& lf) {
+    while (true) {
+        auto log = lf.NextLog();
+
+        while (!log.empty()) {
+            m_logcollector.SendMessage(lf.Filename(), log);
+            log = lf.NextLog();
+        }
+
+        co_await m_logcollector.Wait(FILE_WAIT);
+    }
+
+    co_return;
+}
+
+void FileReader::AddLocalfiles(const list<string>& paths, function<void (Localfile &)> callback) {
+    for (auto & path : paths) {
+        if (none_of(m_localfiles.begin(), m_localfiles.end(), [&path](Localfile & lf) { return lf.Filename() == path; })) {
+            m_localfiles.emplace_back(path);
+            callback(m_localfiles.back());
+        }
+    }
+}
 
 Localfile::Localfile(string filename) :
     m_filename(std::move(filename)),
@@ -54,8 +103,13 @@ string Localfile::NextLog() {
         return { buffer.data(), static_cast<size_t>(m_stream->gcount()) - 1 };
     } else {
         m_stream->seekg(m_pos);
+        m_stream->clear();
         return { };
     }
+}
+
+void Localfile::SeekEnd() {
+    m_stream->seekg(0, ios::end);
 }
 
 // Localfile::Localfile(std::string filePath, boost::asio::any_io_executor & executor) :

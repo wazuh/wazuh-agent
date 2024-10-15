@@ -9,7 +9,7 @@ using Awaitable = boost::asio::awaitable<void>;
 class IReader {
 public:
     virtual ~IReader() = default;
-    virtual Awaitable run() = 0;
+    virtual Awaitable Run(Logcollector& logcollector) = 0;
 };
 
 }
