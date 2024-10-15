@@ -77,4 +77,9 @@ namespace centralized_configuration
     {
         m_setGroupIdFunction = std::move(setGroupIdFunction);
     }
+
+    void CentralizedConfiguration::SetDownloadGroupFilesFunction(std::function<bool(const std::string&, const std::string&)> downloadGroupFilesFunction)
+    {
+        m_downloadGroupFilesFunction = std::move(downloadGroupFilesFunction);
+    }
 } // namespace centralized_configuration
