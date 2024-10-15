@@ -23,6 +23,9 @@ namespace http_client
 
         virtual void Read(boost::beast::http::response<boost::beast::http::dynamic_body>& res) = 0;
 
+        virtual void ReadToFile(boost::beast::http::response_parser<boost::beast::http::dynamic_body>& res,
+                                const std::string& output_file) = 0;
+
         virtual boost::asio::awaitable<void>
         AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
                   boost::beast::error_code& ec) = 0;
