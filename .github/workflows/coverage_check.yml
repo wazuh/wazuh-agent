@@ -40,13 +40,13 @@ jobs:
     - name: Compile
       run: |
         cd build
-        cmake --build . --config Debug
+        cmake --build . --config Debug -j $(nproc)
       shell: bash
 
     - name: Generate and Check Coverage
       run: |
         cd build
-        cmake --build . --target coverage
+        cmake --build . --target coverage -j $(nproc)
       shell: bash
 
     - name: Zip Coverage Files
