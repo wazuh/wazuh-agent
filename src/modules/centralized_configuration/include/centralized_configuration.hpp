@@ -2,6 +2,7 @@
 
 #include <configuration_parser.hpp>
 #include <moduleWrapper.hpp>
+#include <multitype_queue.hpp>
 
 #include <filesystem>
 #include <functional>
@@ -22,6 +23,7 @@ namespace centralized_configuration
         void Stop() const;
         Co_CommandExecutionResult ExecuteCommand(std::string command);
         std::string Name() const;
+        void SetMessageQueue(const std::shared_ptr<IMultiTypeQueue>);
 
         void SetGroupIdFunction(SetGroupIdFunctionType setGroupIdFunction);
         void GetGroupIdFunction(GetGroupIdFunctionType getGroupIdFunction);

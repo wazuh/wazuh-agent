@@ -107,6 +107,10 @@ namespace centralized_configuration
         return "CentralizedConfiguration";
     }
 
+    void CentralizedConfiguration::SetMessageQueue(const std::shared_ptr<IMultiTypeQueue>)
+    {
+    }
+
     void CentralizedConfiguration::SetGroupIdFunction(SetGroupIdFunctionType setGroupIdFunction)
     {
         m_setGroupIdFunction = std::move(setGroupIdFunction);
