@@ -154,7 +154,58 @@ std::string AgentInfoPersistance::GetAgentInfoValue(const std::string& column) c
     return value;
 }
 
-void AgentInfoPersistance::SetAgentGroups(const std::vector<std::string>& groupList)
+std::string AgentInfoPersistance::GetName() const
+{
+    return GetAgentInfoValue("name");
+}
+
+std::string AgentInfoPersistance::GetKey() const
+{
+    return GetAgentInfoValue("key");
+}
+
+std::string AgentInfoPersistance::GetUUID() const
+{
+    return GetAgentInfoValue("uuid");
+}
+
+std::vector<std::string> AgentInfoPersistance::GetGroups() const
+{
+    std::vector<std::string> groupList;
+
+    try
+    {
+        SQLite::Statement query(*m_db, "SELECT name FROM " + AGENT_GROUP_TABLE_NAME + " ORDER BY id ASC;");
+
+        while (query.executeStep())
+        {
+            groupList.push_back(query.getColumn(0).getString());
+        }
+    }
+    catch (const std::exception& e)
+    {
+        LogError("Error getting agent group list: {}.", e.what());
+    }
+
+    return groupList;
+}
+
+void AgentInfoPersistance::SetName(const std::string& name)
+{
+    SetAgentInfoValue("name", name);
+}
+
+void AgentInfoPersistance::SetKey(const std::string& key)
+{
+    SetAgentInfoValue("key", key);
+}
+
+void AgentInfoPersistance::SetUUID(const std::string& uuid)
+{
+    SetAgentInfoValue("uuid", uuid);
+}
+
+void AgentInfoPersistance::SetGroups(const std::vector<std::string>& groupList)
 {
     try
     {
@@ -177,67 +228,6 @@ void AgentInfoPersistance::SetAgentGroups(const std::vector<std::string>& groupL
     {
         LogError("Error inserting group: {}.", e.what());
     }
-}
-
-std::vector<std::string> AgentInfoPersistance::GetAgentGroupList() const
-{
-    std::vector<std::string> groupList;
-
-    try
-    {
-        SQLite::Statement query(*m_db, "SELECT name FROM " + AGENT_GROUP_TABLE_NAME + " ORDER BY id ASC;");
-
-        while (query.executeStep())
-        {
-            groupList.push_back(query.getColumn(0).getString());
-        }
-    }
-    catch (const std::exception& e)
-    {
-        LogError("Error getting agent group list: {}.", e.what());
-    }
-
-    return groupList;
-}
-
-std::string AgentInfoPersistance::GetName() const
-{
-    return GetAgentInfoValue("name");
-}
-
-std::string AgentInfoPersistance::GetKey() const
-{
-    return GetAgentInfoValue("key");
-}
-
-std::string AgentInfoPersistance::GetUUID() const
-{
-    return GetAgentInfoValue("uuid");
-}
-
-std::vector<std::string> AgentInfoPersistance::GetGroups() const
-{
-    return GetAgentGroupList();
-}
-
-void AgentInfoPersistance::SetName(const std::string& name)
-{
-    SetAgentInfoValue("name", name);
-}
-
-void AgentInfoPersistance::SetKey(const std::string& key)
-{
-    SetAgentInfoValue("key", key);
-}
-
-void AgentInfoPersistance::SetUUID(const std::string& uuid)
-{
-    SetAgentInfoValue("uuid", uuid);
-}
-
-void AgentInfoPersistance::SetGroups(const std::vector<std::string>& groupList)
-{
-    SetAgentGroups(groupList);
 }
 
 void AgentInfoPersistance::ResetToDefault()

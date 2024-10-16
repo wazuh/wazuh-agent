@@ -42,8 +42,6 @@ private:
     void InsertDefaultAgentInfo();
     void SetAgentInfoValue(const std::string& column, const std::string& value);
     std::string GetAgentInfoValue(const std::string& column) const;
-    void SetAgentGroups(const std::vector<std::string>& groupList);
-    std::vector<std::string> GetAgentGroupList() const;
 
     std::unique_ptr<SQLite::Database> m_db;
 };
