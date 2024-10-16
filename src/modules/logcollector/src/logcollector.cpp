@@ -28,6 +28,7 @@ void Logcollector::Setup(const configuration::ConfigurationParser& configuration
     auto fileReader = make_shared<FileReader>(*this, "/var/log/syslog");
     AddReader(fileReader);
     AddReader(make_shared<FileReader>(*this, "/root/test/*.log"));
+    AddReader(make_shared<FileReader>(*this, "C:\\*.log"));
 }
 
 void Logcollector::Stop() {

@@ -8,17 +8,14 @@
 constexpr auto FILE_WAIT = std::chrono::milliseconds(500);
 constexpr auto RELOAD_INTERVAL = std::chrono::seconds(60);
 
-// UNIX
-#include <glob.h>
-
 using namespace logcollector;
 using namespace std;
 
 constexpr auto BUFFER_SIZE = 4096;
 
-FileReader::FileReader(Logcollector& logcollector, string globexp) :
+FileReader::FileReader(Logcollector& logcollector, string pattern) :
     IReader(logcollector),
-    m_fileGlob(std::move(globexp)),
+    m_filePattern(std::move(pattern)),
     m_localfiles() { }
 
 Awaitable FileReader::Run() {
@@ -32,32 +29,7 @@ Awaitable FileReader::Run() {
     }
 }
 
-void FileReader::Reload(const function<void (Localfile &)> & callback) {
-    glob_t globResult;
 
-    int ret = glob(m_fileGlob.c_str(), 0, nullptr, &globResult);
-
-    if (ret != 0) {
-        if (ret == GLOB_NOMATCH) {
-            LogTrace("No matches found for pattern: {}", m_fileGlob);
-        } else {
-            LogWarn("Cannot use glob with pattern: {}", m_fileGlob);
-        }
-
-        globfree(&globResult);
-        return;
-    }
-
-    list<string> localfiles;
-    auto paths = std::span<char *>(globResult.gl_pathv, globResult.gl_pathc);
-
-    for (auto& path : paths) {
-        localfiles.emplace_back(path);
-    }
-
-    AddLocalfiles(localfiles, callback);
-    globfree(&globResult);
-}
 
 Awaitable FileReader::ReadLocalfile(Localfile* lf) {
     while (true) {

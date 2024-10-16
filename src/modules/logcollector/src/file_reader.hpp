@@ -27,7 +27,7 @@ private:
 
 class FileReader : public IReader {
 public:
-    FileReader(Logcollector& logcollector, std::string globexp);
+    FileReader(Logcollector& logcollector, std::string pattern);
     Awaitable Run();
     void Reload(const std::function<void (Localfile &)> & callback);
     Awaitable ReadLocalfile(Localfile* lf);
@@ -36,7 +36,7 @@ private:
     void AddLocalfiles(const std::list<std::string>& paths, const std::function<void (Localfile &)> & callback);
     void RemoveLocalfile(const std::string& filename);
 
-    std::string m_fileGlob;
+    std::string m_filePattern;
     std::list<Localfile> m_localfiles;
 };
 
