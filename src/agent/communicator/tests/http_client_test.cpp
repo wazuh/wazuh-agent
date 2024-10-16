@@ -481,6 +481,40 @@ TEST_F(HttpClientTest, AuthenticateWithUserPassword_Failure)
     EXPECT_FALSE(token.has_value());
 }
 
+TEST_F(HttpClientTest, PerformHttpRequestDownload_Success)
+{
+    SetupMockResolverFactory();
+    SetupMockSocketFactory();
+
+    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
+    EXPECT_CALL(*mockSocket, Connect(_)).Times(1);
+    EXPECT_CALL(*mockSocket, Write(_)).Times(1);
+    EXPECT_CALL(*mockSocket, ReadToFile(_, _))
+        .WillOnce([](auto& res, [[maybe_unused]] auto& output_file)
+                  { res.get().result(boost::beast::http::status::ok); });
+
+    const http_client::HttpRequestParams params(boost::beast::http::verb::get, "localhost", "80", "/", true);
+    const std::string output_file = "output_file";
+    const auto response = client->PerformHttpRequestDownload(params, output_file);
+
+    EXPECT_EQ(response.result(), boost::beast::http::status::ok);
+}
+
+TEST_F(HttpClientTest, PerformHttpRequestDownload_ExceptionThrown)
+{
+    SetupMockResolverFactory();
+
+    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Throw(std::runtime_error("Simulated resolution failure")));
+
+    const http_client::HttpRequestParams params(boost::beast::http::verb::get, "localhost", "80", "/", true);
+    const std::string output_file = "output_file";
+    const auto response = client->PerformHttpRequestDownload(params, output_file);
+
+    EXPECT_EQ(response.result(), boost::beast::http::status::internal_server_error);
+    EXPECT_TRUE(boost::beast::buffers_to_string(response.body().data()).find("Simulated resolution failure") !=
+                std::string::npos);
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
