@@ -68,8 +68,20 @@ Awaitable FileReader::ReadLocalfile(Localfile* lf) {
             log = lf->NextLog();
         }
 
+        try {
+            if (lf->Rotated()) {
+                LogInfo("File '{}' rotated, reloading", lf->Filename());
+                lf->Reopen();
+            }
+        } catch (OpenError & e) {
+            LogInfo("File inaccesible: {}", lf->Filename());
+            co_return;
+        }
+
         co_await m_logcollector.Wait(FILE_WAIT);
     }
+
+    RemoveLocalfile(lf->Filename());
 }
 
 void FileReader::AddLocalfiles(const list<string>& paths, const function<void (Localfile &)> & callback) {
@@ -80,6 +92,10 @@ void FileReader::AddLocalfiles(const list<string>& paths, const function<void (L
             callback(m_localfiles.back());
         }
     }
+}
+
+void FileReader::RemoveLocalfile(const string& filename) {
+    m_localfiles.remove_if([&filename](Localfile & lf) { return lf.Filename() == filename; });
 }
 
 Localfile::Localfile(string filename) :
@@ -110,6 +126,24 @@ string Localfile::NextLog() {
 
 void Localfile::SeekEnd() {
     m_stream->seekg(0, ios::end);
+}
+
+bool Localfile::Rotated() {
+    try {
+        auto fileSize = filesystem::file_size(m_filename);
+        auto streamSize = static_cast<uintmax_t>(m_stream->tellg());
+        return fileSize < streamSize;
+    } catch (filesystem::filesystem_error & e) {
+        throw OpenError(m_filename);
+    }
+}
+
+void Localfile::Reopen() {
+    m_stream = make_shared<ifstream>(m_filename);
+
+    if (m_stream->fail()) {
+        throw OpenError(m_filename);
+    }
 }
 
 OpenError::OpenError(const string& filename) :

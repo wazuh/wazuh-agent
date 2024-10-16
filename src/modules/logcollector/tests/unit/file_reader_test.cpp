@@ -10,6 +10,7 @@
 #include "logcollector_mock.hpp"
 
 using namespace logcollector;
+using namespace std;
 
 class MockCallback {
 public:
@@ -50,6 +51,33 @@ TEST(Localfile, OpenError)
     }
 }
 
+TEST(Localfile, Rotated)
+{
+    auto fileA = TempFile("/tmp/A.log", "Hello World");
+    auto lf = Localfile("/tmp/A.log");
+
+    lf.SeekEnd();
+    ASSERT_FALSE(lf.Rotated());
+
+    fileA.Truncate();
+    ASSERT_TRUE(lf.Rotated());
+}
+
+TEST(Localfile, Deleted)
+{
+    auto fileA = make_unique<TempFile>("/tmp/A.log", "Hello World");
+    auto lf = Localfile("/tmp/A.log");
+
+    fileA.reset();
+
+    try {
+        lf.Rotated();
+        FAIL() << "Expected OpenError";
+    } catch (OpenError & err) {
+        ASSERT_STREQ(err.what(), "Cannot open file: /tmp/A.log");
+    }
+}
+
 TEST(FileReader, Reload) {
     spdlog::default_logger()->sinks().clear();
     MockCallback mockCallback;
@@ -68,14 +96,4 @@ TEST(FileReader, Reload) {
 
     auto d = TempFile("/tmp/D.log");
     reader.Reload([&](Localfile& lf) { mockCallback.Call(lf.Filename()); });
-}
-
-TEST(Logcollector, AddReader) {
-    auto logcollector = LogcollectorMock();
-    auto a = TempFile("/tmp/A.log");
-    auto fileReader = make_shared<FileReader>(logcollector, "/tmp/*.log");
-
-    EXPECT_CALL(logcollector, EnqueueTask(::testing::_)).Times(1);
-
-    logcollector.AddReader(fileReader);
 }

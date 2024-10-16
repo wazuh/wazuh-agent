@@ -15,6 +15,8 @@ public:
     Localfile(std::shared_ptr<std::istream> stream);
     std::string NextLog();
     void SeekEnd();
+    bool Rotated();
+    void Reopen();
     inline const std::string& Filename() const { return m_filename; }
 
 private:
@@ -32,6 +34,7 @@ public:
 
 private:
     void AddLocalfiles(const std::list<std::string>& paths, const std::function<void (Localfile &)> & callback);
+    void RemoveLocalfile(const std::string& filename);
 
     std::string m_fileGlob;
     std::list<Localfile> m_localfiles;
