@@ -42,4 +42,9 @@ public:
                  const std::string& password,
                  const bool useHttps),
                 (override));
+
+    MOCK_METHOD(boost::beast::http::response<boost::beast::http::dynamic_body>,
+                PerformHttpRequestDownload,
+                (const http_client::HttpRequestParams& params, const std::string& output_file),
+                (override));
 };
