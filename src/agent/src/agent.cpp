@@ -55,6 +55,7 @@ void Agent::Run()
         { return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue); }));
 
     m_moduleManager.AddModule(Inventory::Instance());
+    m_moduleManager.AddModule(m_centralizedConfiguration);
     m_moduleManager.Setup();
     m_taskManager.EnqueueTask([this]() { m_moduleManager.Start(); });
 
