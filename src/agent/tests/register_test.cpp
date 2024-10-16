@@ -57,7 +57,7 @@ public:
 
     MOCK_METHOD(boost::beast::http::response<boost::beast::http::dynamic_body>,
                 PerformHttpRequestDownload,
-                (const http_client::HttpRequestParams& params, const std::string& output_file),
+                (const http_client::HttpRequestParams& params, const std::string& dstFilePath),
                 (override));
 };
 

@@ -248,7 +248,7 @@ namespace http_client
     }
 
     boost::beast::http::response<boost::beast::http::dynamic_body>
-    HttpClient::PerformHttpRequestDownload(const HttpRequestParams& params, const std::string& output_file)
+    HttpClient::PerformHttpRequestDownload(const HttpRequestParams& params, const std::string& dstFilePath)
     {
         boost::beast::http::response_parser<boost::beast::http::dynamic_body> res_parser;
 
@@ -264,7 +264,7 @@ namespace http_client
 
             const auto req = CreateHttpRequest(params);
             socket->Write(req);
-            socket->ReadToFile(res_parser, output_file);
+            socket->ReadToFile(res_parser, dstFilePath);
 
             LogDebug("Response code: {}.", res_parser.get().result_int());
         }

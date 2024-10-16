@@ -52,53 +52,9 @@ namespace http_client
         }
 
         void ReadToFile(boost::beast::http::response_parser<boost::beast::http::dynamic_body>& res,
-                        const std::string& output_file) override
+                        const std::string& dstFilePath) override
         {
-            res.body_limit(std::numeric_limits<std::uint64_t>::max());
-            boost::beast::flat_buffer buffer;
-            boost::system::error_code error;
-
-            boost::beast::http::read_header(m_ssl_socket, buffer, res, error);
-
-            if (error && error != boost::beast::http::error::need_buffer)
-            {
-                throw boost::system::system_error(error);
-            }
-
-            unsigned int status_code = res.get().result_int();
-            if (status_code != 200)
-            {
-                return;
-            }
-
-            std::ofstream file(output_file, std::ios::binary);
-            if (!file)
-            {
-                throw std::runtime_error("The file could not be opened for writing: " + output_file);
-            }
-
-            while (!res.is_done())
-            {
-                boost::beast::http::read(m_ssl_socket, buffer, res, error);
-
-                if (error && error != boost::beast::http::error::need_buffer && error != boost::asio::error::eof)
-                {
-                    file.close();
-                    throw boost::system::system_error(error);
-                }
-
-                auto body_data = res.get().body().data();
-
-                for (auto const& buffer_seq : body_data)
-                {
-                    std::streamsize chunk_size = static_cast<std::streamsize>(buffer_seq.size());
-                    file.write(static_cast<const char*>(buffer_seq.data()), chunk_size);
-                }
-
-                res.get().body().consume(res.get().body().size());
-            }
-
-            file.close();
+            http_client_utils::ReadToFile(m_ssl_socket, res, dstFilePath);
         }
 
         boost::asio::awaitable<void> AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,

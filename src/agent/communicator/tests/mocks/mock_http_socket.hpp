@@ -24,7 +24,7 @@ public:
     MOCK_METHOD(void,
                 ReadToFile,
                 (boost::beast::http::response_parser<boost::beast::http::dynamic_body> & res,
-                 const std::string& output_file),
+                 const std::string& dstFilePath),
                 (override));
 
     MOCK_METHOD(boost::asio::awaitable<void>,
