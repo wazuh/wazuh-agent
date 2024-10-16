@@ -2,6 +2,7 @@
 
 #include <gmock/gmock.h>
 #include <logcollector.hpp>
+#include <reader.hpp>
 
 using namespace logcollector;
 

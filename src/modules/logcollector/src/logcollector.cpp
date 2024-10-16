@@ -47,9 +47,11 @@ void Logcollector::SetMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue)
 
 void Logcollector::SendMessage(const std::string& location, const std::string& log) {
     auto data = nlohmann::json::object();
+    auto event = nlohmann::json::object();
 
     data["location"] = location;
-    data["event_original"] = log;
+    data["event"] = event;
+    event["original"] = log;
 
     auto message = Message(MessageType::STATELESS, data, m_moduleName);
     m_messageQueue->push(message);

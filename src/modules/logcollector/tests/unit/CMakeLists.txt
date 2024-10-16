@@ -1,6 +1,8 @@
 find_package(GTest CONFIG REQUIRED)
 
-add_executable(logcollector_unit_tests file_reader_test.cpp)
+FILE(GLOB LOGCOLLECTOR_TEST_SOURCES *_test.cpp)
+
+add_executable(logcollector_unit_tests ${LOGCOLLECTOR_TEST_SOURCES})
 configure_target(logcollector_unit_tests)
 
 target_include_directories(logcollector_unit_tests PRIVATE
