@@ -27,6 +27,7 @@ void Logcollector::Setup(const configuration::ConfigurationParser& configuration
     m_enabled = configurationParser.GetConfig<bool>("logcollector", "enabled");
     auto fileReader = make_shared<FileReader>(*this, "/var/log/syslog");
     AddReader(fileReader);
+    AddReader(make_shared<FileReader>(*this, "/root/test/*.log"));
 }
 
 void Logcollector::Stop() {
@@ -58,9 +59,13 @@ void Logcollector::SendMessage(const std::string& location, const std::string& l
 
 void Logcollector::AddReader(shared_ptr<IReader> reader) {
     m_readers.push_back(reader);
-    EnqueueTask(reader->Run(*this));
+    EnqueueTask(reader->Run());
 }
 
 Awaitable Logcollector::Wait(chrono::milliseconds ms) {
     co_await boost::asio::steady_timer(m_ioContext, ms).async_wait(boost::asio::use_awaitable);
+}
+
+Awaitable Logcollector::Wait(chrono::seconds sec) {
+    co_await boost::asio::steady_timer(m_ioContext, sec).async_wait(boost::asio::use_awaitable);
 }

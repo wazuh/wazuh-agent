@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <sstream>
 #include <list>
+#include <spdlog/spdlog.h>
 
 #include <logcollector.hpp>
 #include <file_reader.hpp>
@@ -50,6 +51,7 @@ TEST(Localfile, OpenError)
 }
 
 TEST(FileReader, Reload) {
+    spdlog::default_logger()->sinks().clear();
     MockCallback mockCallback;
 
     EXPECT_CALL(mockCallback, Call("/tmp/A.log")).Times(1);
