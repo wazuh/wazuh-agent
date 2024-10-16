@@ -154,7 +154,7 @@ std::string AgentInfoPersistance::GetAgentInfoValue(const std::string& column) c
     return value;
 }
 
-void AgentInfoPersistance::SetAgentGroups(const std::vector<std::string>& group_list)
+void AgentInfoPersistance::SetAgentGroups(const std::vector<std::string>& groupList)
 {
     try
     {
@@ -164,7 +164,7 @@ void AgentInfoPersistance::SetAgentGroups(const std::vector<std::string>& group_
 
         SQLite::Statement query(*m_db, "INSERT INTO " + AGENT_GROUP_TABLE_NAME + " (name) VALUES (?);");
 
-        for (const std::string& group : group_list)
+        for (const std::string& group : groupList)
         {
             query.bind(1, group);
             query.exec();
@@ -181,7 +181,7 @@ void AgentInfoPersistance::SetAgentGroups(const std::vector<std::string>& group_
 
 std::vector<std::string> AgentInfoPersistance::GetAgentGroupList() const
 {
-    std::vector<std::string> group_list;
+    std::vector<std::string> groupList;
 
     try
     {
@@ -189,7 +189,7 @@ std::vector<std::string> AgentInfoPersistance::GetAgentGroupList() const
 
         while (query.executeStep())
         {
-            group_list.push_back(query.getColumn(0).getString());
+            groupList.push_back(query.getColumn(0).getString());
         }
     }
     catch (const std::exception& e)
@@ -197,7 +197,7 @@ std::vector<std::string> AgentInfoPersistance::GetAgentGroupList() const
         LogError("Error getting agent group list: {}.", e.what());
     }
 
-    return group_list;
+    return groupList;
 }
 
 std::string AgentInfoPersistance::GetName() const
@@ -235,9 +235,9 @@ void AgentInfoPersistance::SetUUID(const std::string& uuid)
     SetAgentInfoValue("uuid", uuid);
 }
 
-void AgentInfoPersistance::SetGroups(const std::vector<std::string>& group_list)
+void AgentInfoPersistance::SetGroups(const std::vector<std::string>& groupList)
 {
-    SetAgentGroups(group_list);
+    SetAgentGroups(groupList);
 }
 
 void AgentInfoPersistance::ResetToDefault()

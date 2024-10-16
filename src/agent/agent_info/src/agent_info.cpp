@@ -74,9 +74,9 @@ void AgentInfo::SetUUID(const std::string& uuid)
     m_uuid = uuid;
 }
 
-void AgentInfo::SetGroups(const std::vector<std::string>& group_list)
+void AgentInfo::SetGroups(const std::vector<std::string>& groupList)
 {
     AgentInfoPersistance agentInfoPersistance;
-    agentInfoPersistance.SetGroups(group_list);
-    m_groups = group_list;
+    agentInfoPersistance.SetGroups(groupList);
+    m_groups = groupList;
 }

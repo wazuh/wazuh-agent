@@ -17,7 +17,7 @@ public:
     void SetName(const std::string& name);
     void SetKey(const std::string& key);
     void SetUUID(const std::string& uuid);
-    void SetGroups(const std::vector<std::string>& group_list);
+    void SetGroups(const std::vector<std::string>& groupList);
 
 private:
     std::string m_name;
