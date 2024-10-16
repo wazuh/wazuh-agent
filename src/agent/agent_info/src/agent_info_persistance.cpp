@@ -57,7 +57,7 @@ bool AgentInfoPersistance::AgentInfoIsEmpty() const
 {
     try
     {
-        SQLite::Statement query(*m_db, "SELECT COUNT(*) FROM agent_info;");
+        SQLite::Statement query(*m_db, "SELECT COUNT(*) FROM " + AGENT_INFO_TABLE_NAME + ";");
         query.executeStep();
         const auto count = query.getColumn(0).getInt();
         return count == 0;
@@ -74,7 +74,8 @@ void AgentInfoPersistance::CreateAgentInfoTable()
 {
     try
     {
-        m_db->exec("CREATE TABLE IF NOT EXISTS agent_info ("
+        m_db->exec("CREATE TABLE IF NOT EXISTS " + AGENT_INFO_TABLE_NAME +
+                   " ("
                    "name TEXT, "
                    "key TEXT, "
                    "uuid TEXT"
@@ -106,13 +107,14 @@ void AgentInfoPersistance::InsertDefaultAgentInfo()
 {
     try
     {
-        SQLite::Statement query(*m_db, "SELECT COUNT(*) FROM agent_info;");
+        SQLite::Statement query(*m_db, "SELECT COUNT(*) FROM " + AGENT_INFO_TABLE_NAME + ";");
         query.executeStep();
         const auto count = query.getColumn(0).getInt();
 
         if (count == 0)
         {
-            SQLite::Statement insert(*m_db, "INSERT INTO agent_info (name, key, uuid) VALUES (?, ?, ?);");
+            SQLite::Statement insert(*m_db,
+                                     "INSERT INTO " + AGENT_INFO_TABLE_NAME + " (name, key, uuid) VALUES (?, ?, ?);");
             insert.exec();
         }
     }
@@ -126,7 +128,7 @@ void AgentInfoPersistance::SetAgentInfoValue(const std::string& column, const st
 {
     try
     {
-        SQLite::Statement query(*m_db, "UPDATE agent_info SET " + column + " = ?;");
+        SQLite::Statement query(*m_db, "UPDATE " + AGENT_INFO_TABLE_NAME + " SET " + column + " = ?;");
         query.bind(1, value);
         query.exec();
     }
@@ -141,7 +143,7 @@ std::string AgentInfoPersistance::GetAgentInfoValue(const std::string& column) c
     std::string value;
     try
     {
-        SQLite::Statement query(*m_db, "SELECT " + column + " FROM agent_info LIMIT 1;");
+        SQLite::Statement query(*m_db, "SELECT " + column + " FROM " + AGENT_INFO_TABLE_NAME + " LIMIT 1;");
         if (query.executeStep())
         {
             value = query.getColumn(0).getText();
