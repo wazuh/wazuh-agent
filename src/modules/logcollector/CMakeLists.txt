@@ -14,7 +14,14 @@ find_package(cJSON CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
 
+if (WIN32)
+    FILE(GLOB EXCLUDED_SOURCES src/*_unix.cpp)
+else()
+    FILE(GLOB EXCLUDED_SOURCES src/*_win.cpp)
+endif()
+
 FILE(GLOB LOGCOLLECTOR_SOURCES src/*.cpp)
+list(REMOVE_ITEM LOGCOLLECTOR_SOURCES ${EXCLUDED_SOURCES})
 
 add_library(Logcollector ${LOGCOLLECTOR_SOURCES})
 
