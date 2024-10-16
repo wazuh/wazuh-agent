@@ -1,13 +1,15 @@
 #pragma once
 
-#include <map>
-#include <memory>
-#include <string>
-#include <thread>
 #include <multitype_queue.hpp>
 #include <moduleWrapper.hpp>
 
 #include <boost/asio/awaitable.hpp>
+
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+#include <thread>
 
 template<typename T>
 concept Module = requires(T t, const configuration::ConfigurationParser& configurationParser, const std::string & query,
@@ -42,9 +44,9 @@ public:
             .Start = [&module]() { module.Start(); },
             .Setup = [&module](const configuration::ConfigurationParser& configurationParser) { module.Setup(configurationParser); },
             .Stop = [&module]() { module.Stop(); },
-            .ExecuteCommand = [&module](std::string query) -> Co_CommandExecutionResult
+            .ExecuteCommand = [&module](std::string command, std::vector<std::string> parameters) -> Co_CommandExecutionResult
             {
-                co_return co_await module.ExecuteCommand(query);
+                co_return co_await module.ExecuteCommand(command, parameters);
             },
             .Name = [&module]() { return module.Name(); }
         });
