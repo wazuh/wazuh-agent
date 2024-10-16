@@ -25,6 +25,7 @@ public:
     virtual void EnqueueTask(boost::asio::awaitable<void> task);
     void AddReader(std::shared_ptr<IReader> reader);
     boost::asio::awaitable<void> Wait(std::chrono::milliseconds ms);
+    boost::asio::awaitable<void> Wait(std::chrono::seconds sec);
 
     static Logcollector& Instance()
     {

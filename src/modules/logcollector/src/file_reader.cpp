@@ -6,6 +6,7 @@
 #include <string>
 
 constexpr auto FILE_WAIT = std::chrono::milliseconds(500);
+constexpr auto RELOAD_INTERVAL = std::chrono::seconds(60);
 
 // UNIX
 #include <glob.h>
@@ -16,22 +17,22 @@ using namespace std;
 constexpr auto BUFFER_SIZE = 4096;
 
 FileReader::FileReader(Logcollector& logcollector, string globexp) :
-    m_logcollector(logcollector),
+    IReader(logcollector),
     m_fileGlob(std::move(globexp)),
     m_localfiles() { }
 
-Awaitable FileReader::Run(Logcollector& logcollector) {
-    Reload([&](Localfile & lf) {
-        lf.SeekEnd();
-        logcollector.EnqueueTask(ReadLocalfile(lf));
-    });
+Awaitable FileReader::Run() {
+    while (true) {
+        Reload([&](Localfile & lf) {
+            lf.SeekEnd();
+            m_logcollector.EnqueueTask(ReadLocalfile(&lf));
+        });
 
-    // TODO: Check for file rotation
-
-    co_return;
+        co_await m_logcollector.Wait(RELOAD_INTERVAL);
+    }
 }
 
-void FileReader::Reload(function<void (Localfile &)> callback) {
+void FileReader::Reload(const function<void (Localfile &)> & callback) {
     glob_t globResult;
 
     int ret = glob(m_fileGlob.c_str(), 0, nullptr, &globResult);
@@ -58,25 +59,24 @@ void FileReader::Reload(function<void (Localfile &)> callback) {
     globfree(&globResult);
 }
 
-Awaitable FileReader::ReadLocalfile(Localfile& lf) {
+Awaitable FileReader::ReadLocalfile(Localfile* lf) {
     while (true) {
-        auto log = lf.NextLog();
+        auto log = lf->NextLog();
 
         while (!log.empty()) {
-            m_logcollector.SendMessage(lf.Filename(), log);
-            log = lf.NextLog();
+            m_logcollector.SendMessage(lf->Filename(), log);
+            log = lf->NextLog();
         }
 
         co_await m_logcollector.Wait(FILE_WAIT);
     }
-
-    co_return;
 }
 
-void FileReader::AddLocalfiles(const list<string>& paths, function<void (Localfile &)> callback) {
+void FileReader::AddLocalfiles(const list<string>& paths, const function<void (Localfile &)> & callback) {
     for (auto & path : paths) {
         if (none_of(m_localfiles.begin(), m_localfiles.end(), [&path](Localfile & lf) { return lf.Filename() == path; })) {
             m_localfiles.emplace_back(path);
+            LogInfo("Reading log file: {}", m_localfiles.back().Filename());
             callback(m_localfiles.back());
         }
     }
@@ -111,63 +111,6 @@ string Localfile::NextLog() {
 void Localfile::SeekEnd() {
     m_stream->seekg(0, ios::end);
 }
-
-// Localfile::Localfile(std::string filePath, boost::asio::any_io_executor & executor) :
-//     m_filePath(std::move(filePath)),
-//     m_offset(0),
-//     m_inode(0),
-//     m_file(executor) { }
-
-// Awaitable Localfile::run() {
-//     // TODO: Save/load file state
-
-//     m_file = make_unique<FileWrapper>(m_filePath);
-
-//     if (!m_file->good()) {
-//         LogWarn("Cannot open file '{}': {}", m_filePath, strerror(errno));
-//         co_return;
-//     }
-
-//     lseek(fd, 0, SEEK_END);
-//     m_file.assign(fd);
-
-//     co_await Follow();
-// }
-
-// Awaitable Localfile::Follow() {
-//     auto executor = co_await this_coro::executor;
-//     auto chunk = vector<char>(BUFFER_SIZE);
-//     string accumulator;
-
-//     while (true) {
-//         bool n;
-
-//         try {
-//             n = m_file.getline(chunk);
-//         } catch (boost::system::system_error &) {
-//             n = 0;
-//         }
-
-//         if (!n) {
-//             co_await steady_timer(executor, FILE_WAIT).async_wait(use_awaitable);
-//             continue;
-//         }
-
-//         accumulator.append(chunk.data(), n);
-//         SplitData(accumulator);
-//     }
-// }
-
-// void Localfile::SplitData(string & accumulator) {
-//     auto & logcollector = Logcollector::Instance();
-//     std::size_t newline_pos = 0;
-
-//     while ((newline_pos = accumulator.find('\n')) != string::npos) {
-//         auto line = accumulator.substr(0, newline_pos);
-//         logcollector.SendMessage(m_filePath, line);
-//         accumulator.erase(0, newline_pos + 1);
-//     }
-// }
 
 OpenError::OpenError(const string& filename) :
     m_what(string("Cannot open file: ") + filename) { }
