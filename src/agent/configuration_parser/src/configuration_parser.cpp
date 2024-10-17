@@ -8,11 +8,11 @@ namespace
 
 namespace configuration
 {
-    ConfigurationParser::ConfigurationParser()
+    ConfigurationParser::ConfigurationParser(const std::filesystem::path& configPath)
     {
         try
         {
-            tbl = toml::parse(CONFIG_FILE_NAME, toml::spec::v(1, 0, 0));
+            tbl = toml::parse(configPath.string(), toml::spec::v(1, 0, 0));
         }
         catch (const std::exception& e)
         {
@@ -41,6 +41,11 @@ namespace configuration
                 )",
                 toml::spec::v(1, 0, 0));
         }
+    }
+
+    ConfigurationParser::ConfigurationParser()
+        : ConfigurationParser(std::filesystem::path(CONFIG_FILE_NAME))
+    {
     }
 
     ConfigurationParser::ConfigurationParser(std::string stringToParse)

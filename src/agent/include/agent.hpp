@@ -11,11 +11,13 @@
 #include <task_manager.hpp>
 
 #include <memory>
+#include <string>
 
 class Agent
 {
 public:
-    Agent(std::unique_ptr<ISignalHandler> signalHandler = std::make_unique<SignalHandler>());
+    Agent(const std::string& configPath,
+          std::unique_ptr<ISignalHandler> signalHandler = std::make_unique<SignalHandler>());
     ~Agent();
 
     void Run();
