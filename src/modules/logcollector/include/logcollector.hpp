@@ -23,7 +23,7 @@ public:
     void SetMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue);
     virtual void SendMessage(const std::string& location, const std::string& log);
     virtual void EnqueueTask(boost::asio::awaitable<void> task);
-    void AddReader(std::shared_ptr<IReader> reader);
+    virtual void AddReader(std::shared_ptr<IReader> reader);
     boost::asio::awaitable<void> Wait(std::chrono::milliseconds ms);
     boost::asio::awaitable<void> Wait(std::chrono::seconds sec);
 
@@ -36,10 +36,11 @@ public:
 protected:
     Logcollector() { }
     virtual ~Logcollector() = default;
+    void SetupFileReader(const configuration::ConfigurationParser& configurationParser);
 
 private:
     const std::string m_moduleName = "logcollector";
-    bool m_enabled;
+    bool m_enabled = true;
     std::shared_ptr<IMultiTypeQueue> m_messageQueue;
     boost::asio::io_context m_ioContext;
     std::list<std::shared_ptr<IReader>> m_readers;
