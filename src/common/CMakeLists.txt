@@ -1,5 +1,6 @@
 add_subdirectory(binaries_op)
 add_subdirectory(bzip2_op)
+add_subdirectory(config)
 add_subdirectory(data_provider)
 add_subdirectory(dbsync)
 add_subdirectory(error_messages)
