@@ -1,6 +1,6 @@
 #include <logger.hpp>
 
-#include "spdlog/sinks/stdout_color_sinks.h"
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 Logger::Logger()
 {
