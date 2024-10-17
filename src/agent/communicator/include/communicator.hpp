@@ -31,6 +31,7 @@ namespace communicator
         boost::asio::awaitable<void>
         StatelessMessageProcessingTask(std::function<boost::asio::awaitable<std::string>()> getMessages,
                                        std::function<void(const std::string&)> onSuccess);
+        bool GetGroupConfigurationFromManager(const std::string& groupName, const std::string& dstFilePath);
 
         void Stop();
 

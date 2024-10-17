@@ -209,6 +209,22 @@ namespace communicator
         }
     }
 
+    bool Communicator::GetGroupConfigurationFromManager(const std::string& groupName, const std::string& dstFilePath)
+    {
+        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get,
+                                                              m_managerIp,
+                                                              m_port,
+                                                              "/api/v1/files?file_name=" + groupName + ".conf",
+                                                              m_useHttps,
+                                                              *m_token,
+                                                              "",
+                                                              "");
+
+        const auto result = m_httpClient->PerformHttpRequestDownload(reqParams, dstFilePath);
+
+        return result.result() == boost::beast::http::status::ok;
+    }
+
     void Communicator::Stop()
     {
         m_keepRunning.store(false);

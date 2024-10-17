@@ -80,5 +80,8 @@ namespace http_client
                                                                         const std::string& user,
                                                                         const std::string& password,
                                                                         const bool useHttps) = 0;
+
+        virtual boost::beast::http::response<boost::beast::http::dynamic_body>
+        PerformHttpRequestDownload(const HttpRequestParams& params, const std::string& dstFilePath) = 0;
     };
 } // namespace http_client

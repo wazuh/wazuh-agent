@@ -179,6 +179,48 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
     EXPECT_EQ(capturedToken, mockedToken);
 }
 
+TEST(CommunicatorTest, GetGroupConfigurationFromManager_Success)
+{
+    auto mockHttpClient = std::make_unique<MockHttpClient>();
+    auto mockHttpClientPtr = mockHttpClient.get();
+
+    // not really a leak, as its lifetime is managed by the Communicator
+    testing::Mock::AllowLeak(mockHttpClientPtr);
+    auto communicatorPtr =
+        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr);
+
+    std::string groupName = "group1";
+    std::string dstFilePath = "/path/to/file";
+
+    boost::beast::http::response<boost::beast::http::dynamic_body> mockResponse;
+    mockResponse.result(boost::beast::http::status::ok);
+
+    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequestDownload(_, dstFilePath)).WillOnce(Return(mockResponse));
+
+    EXPECT_TRUE(communicatorPtr->GetGroupConfigurationFromManager(groupName, dstFilePath));
+}
+
+TEST(CommunicatorTest, GetGroupConfigurationFromManager_Error)
+{
+    auto mockHttpClient = std::make_unique<MockHttpClient>();
+    auto mockHttpClientPtr = mockHttpClient.get();
+
+    // not really a leak, as its lifetime is managed by the Communicator
+    testing::Mock::AllowLeak(mockHttpClientPtr);
+    auto communicatorPtr =
+        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr);
+
+    std::string groupName = "group1";
+    std::string dstFilePath = "/path/to/file";
+
+    boost::beast::http::response<boost::beast::http::dynamic_body> mockResponse;
+    mockResponse.result(boost::beast::http::status::internal_server_error);
+
+    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequestDownload(_, dstFilePath)).WillOnce(Return(mockResponse));
+
+    EXPECT_FALSE(communicatorPtr->GetGroupConfigurationFromManager(groupName, dstFilePath));
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
