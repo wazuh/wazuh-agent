@@ -4,6 +4,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include <filesystem>
+
 namespace centralized_configuration
 {
     void CentralizedConfiguration::Start() const
@@ -27,11 +29,21 @@ namespace centralized_configuration
 
             if (commnandAsJson["command"] == "set-group")
             {
-                if (m_setGroupIdFunction)
+                if (m_setGroupIdFunction && m_downloadGroupFilesFunction)
                 {
-                    std::vector<std::string> groupIds;
+                    const auto groupIds = commnandAsJson["groups"].get<std::vector<std::string>>();
 
                     m_setGroupIdFunction(groupIds);
+
+                    for (const auto& groupId : groupIds)
+                    {
+                        m_downloadGroupFilesFunction(
+                            groupId,
+                            std::filesystem::temp_directory_path().string()
+                        );
+                    }
+
+                    // TODO validate groupFiles, apply configuration
 
                     co_return module_command::CommandExecutionResult{
                         module_command::Status::SUCCESS,
