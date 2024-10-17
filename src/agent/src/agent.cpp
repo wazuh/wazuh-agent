@@ -1,5 +1,4 @@
 #include <agent.hpp>
-#include <inventory.hpp>
 
 #include <command_handler_utils.hpp>
 #include <http_client.hpp>
@@ -20,7 +19,9 @@ Agent::Agent(std::unique_ptr<ISignalHandler> signalHandler)
                      m_agentInfo.GetKey(),
                      [this](std::string table, std::string key) -> std::string
                      { return m_configurationParser.GetConfig<std::string>(std::move(table), std::move(key)); })
-    , m_moduleManager(m_messageQueue, m_configurationParser)
+    , m_moduleManager([this](Message message) -> int { return m_messageQueue->push(std::move(message)); },
+                      m_configurationParser,
+                      [this](std::function<void()> task) { m_taskManager.EnqueueTask(std::move(task)); })
 {
     m_taskManager.Start(std::thread::hardware_concurrency());
 }
@@ -53,8 +54,7 @@ void Agent::Run()
         [this](module_command::CommandEntry& cmd)
         { return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue); }));
 
-    m_moduleManager.AddModule(Inventory::Instance());
-    m_moduleManager.Setup();
+    m_moduleManager.AddModules();
     m_taskManager.EnqueueTask([this]() { m_moduleManager.Start(); });
 
     m_signalHandler->WaitForSignal();
