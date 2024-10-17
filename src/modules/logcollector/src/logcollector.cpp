@@ -34,19 +34,19 @@ void Logcollector::Setup(const configuration::ConfigurationParser& configuration
 }
 
 void Logcollector::SetupFileReader(const configuration::ConfigurationParser& configurationParser) {
-    long fileWait = DEFAULT_FILE_WAIT;
-    long reloadInterval = DEFAULT_RELOAD_INTERVAL;
+    long fileWait = config::DEFAULT_FILE_WAIT;
+    long reloadInterval = config::DEFAULT_RELOAD_INTERVAL;
 
     try {
         fileWait = m_enabled = configurationParser.GetConfig<long>("logcollector", "file_wait");
     } catch (exception & e) {
-        fileWait = DEFAULT_FILE_WAIT;
+        fileWait = config::DEFAULT_FILE_WAIT;
     }
 
     try {
         reloadInterval = m_enabled = configurationParser.GetConfig<long>("logcollector", "reload_interval");
     } catch (exception & e) {
-        reloadInterval = DEFAULT_FILE_WAIT;
+        reloadInterval = config::DEFAULT_FILE_WAIT;
     }
 
     try {

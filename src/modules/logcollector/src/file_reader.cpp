@@ -8,8 +8,6 @@
 using namespace logcollector;
 using namespace std;
 
-constexpr auto BUFFER_SIZE = 4096;
-
 FileReader::FileReader(Logcollector& logcollector, string pattern, long fileWait, long reloadInterval) :
     IReader(logcollector),
     m_filePattern(std::move(pattern)),
@@ -81,9 +79,9 @@ Localfile::Localfile(shared_ptr<istream> stream) :
     m_stream(std::move(stream)) { }
 
 string Localfile::NextLog() {
-    auto buffer = vector<char>(BUFFER_SIZE);
+    auto buffer = vector<char>(config::BUFFER_SIZE);
 
-    if (m_stream->getline(buffer.data(), BUFFER_SIZE).good()) {
+    if (m_stream->getline(buffer.data(), config::BUFFER_SIZE).good()) {
         m_pos = m_stream->tellg();
         return { buffer.data(), static_cast<size_t>(m_stream->gcount()) - 1 };
     } else {
