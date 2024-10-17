@@ -1,6 +1,10 @@
 #include <agent.hpp>
 #include <inventory.hpp>
+
+#ifdef ENABLE_LOGCOLLECTOR
 #include <logcollector.hpp>
+using logcollector::Logcollector;
+#endif
 
 #include <command_handler_utils.hpp>
 #include <http_client.hpp>
@@ -12,8 +16,6 @@
 #include <memory>
 #include <string>
 #include <thread>
-
-using logcollector::Logcollector;
 
 Agent::Agent(std::unique_ptr<ISignalHandler> signalHandler)
     : m_messageQueue(std::make_shared<MultiTypeQueue>())
@@ -57,7 +59,11 @@ void Agent::Run()
         { return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue); }));
 
     m_moduleManager.AddModule(Inventory::Instance());
+
+#ifdef ENABLE_LOGCOLLECTOR
     m_moduleManager.AddModule(Logcollector::Instance());
+#endif
+
     m_moduleManager.Setup();
     m_taskManager.EnqueueTask([this]() { m_moduleManager.Start(); });
 
