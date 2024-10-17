@@ -12,7 +12,10 @@ add_subdirectory(logcollector)
 add_library(ModuleManager src/moduleManager.cpp)
 target_include_directories(ModuleManager PUBLIC include)
 target_link_libraries(ModuleManager PUBLIC Inventory)
-target_link_libraries(ModuleManager PUBLIC Logcollector)
+
+if (ENABLE_LOGCOLLECTOR)
+    target_link_libraries(ModuleManager PUBLIC Logcollector)
+endif()
 
 include(../cmake/ConfigureTarget.cmake)
 configure_target(ModuleManager)
