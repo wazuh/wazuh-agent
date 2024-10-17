@@ -24,11 +24,40 @@ void Logcollector::EnqueueTask(boost::asio::awaitable<void> task) {
 }
 
 void Logcollector::Setup(const configuration::ConfigurationParser& configurationParser) {
-    m_enabled = configurationParser.GetConfig<bool>("logcollector", "enabled");
-    auto fileReader = make_shared<FileReader>(*this, "/var/log/syslog");
-    AddReader(fileReader);
-    AddReader(make_shared<FileReader>(*this, "/root/test/*.log"));
-    AddReader(make_shared<FileReader>(*this, "C:\\*.log"));
+    try {
+        m_enabled = configurationParser.GetConfig<bool>("logcollector", "enabled");
+    } catch (exception & e) {
+        m_enabled = true;
+    }
+
+    SetupFileReader(configurationParser);
+}
+
+void Logcollector::SetupFileReader(const configuration::ConfigurationParser& configurationParser) {
+    long fileWait = DEFAULT_FILE_WAIT;
+    long reloadInterval = DEFAULT_RELOAD_INTERVAL;
+
+    try {
+        fileWait = m_enabled = configurationParser.GetConfig<long>("logcollector", "file_wait");
+    } catch (exception & e) {
+        fileWait = DEFAULT_FILE_WAIT;
+    }
+
+    try {
+        reloadInterval = m_enabled = configurationParser.GetConfig<long>("logcollector", "reload_interval");
+    } catch (exception & e) {
+        reloadInterval = DEFAULT_FILE_WAIT;
+    }
+
+    try {
+        auto localfiles = configurationParser.GetConfig<vector<string>>("logcollector", "localfiles");
+
+        for (auto& lf : localfiles) {
+            AddReader(make_shared<FileReader>(*this, lf, fileWait, reloadInterval));
+        }
+    } catch (exception & e) {
+        LogTrace("No localfiles defined");
+    }
 }
 
 void Logcollector::Stop() {

@@ -9,6 +9,9 @@
 
 namespace logcollector {
 
+constexpr auto DEFAULT_FILE_WAIT = 500;
+constexpr auto DEFAULT_RELOAD_INTERVAL = 60;
+
 class Localfile {
 public:
     Localfile(std::string filename);
@@ -27,7 +30,7 @@ private:
 
 class FileReader : public IReader {
 public:
-    FileReader(Logcollector& logcollector, std::string pattern);
+    FileReader(Logcollector& logcollector, std::string pattern, long fileWait = DEFAULT_FILE_WAIT, long reloadInterval = DEFAULT_RELOAD_INTERVAL);
     Awaitable Run();
     void Reload(const std::function<void (Localfile &)> & callback);
     Awaitable ReadLocalfile(Localfile* lf);
@@ -38,6 +41,8 @@ private:
 
     std::string m_filePattern;
     std::list<Localfile> m_localfiles;
+    long m_fileWaitMs;
+    long m_reloadIntervalSec;
 };
 
 class OpenError : public std::exception {

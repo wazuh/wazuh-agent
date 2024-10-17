@@ -38,6 +38,12 @@ namespace configuration
                 ports_all = true
                 processes = true
                 hotfixes = true
+
+                [logcollector]
+                enabled = true
+                localfiles = [ "/var/log/auth.log" ]
+                reload_interval = 60
+                file_wait = 500
                 )",
                 toml::spec::v(1, 0, 0));
         }

@@ -5,18 +5,17 @@
 #include <algorithm>
 #include <string>
 
-constexpr auto FILE_WAIT = std::chrono::milliseconds(500);
-constexpr auto RELOAD_INTERVAL = std::chrono::seconds(60);
-
 using namespace logcollector;
 using namespace std;
 
 constexpr auto BUFFER_SIZE = 4096;
 
-FileReader::FileReader(Logcollector& logcollector, string pattern) :
+FileReader::FileReader(Logcollector& logcollector, string pattern, long fileWait, long reloadInterval) :
     IReader(logcollector),
     m_filePattern(std::move(pattern)),
-    m_localfiles() { }
+    m_localfiles(),
+    m_fileWaitMs(fileWait),
+    m_reloadIntervalSec(reloadInterval) { }
 
 Awaitable FileReader::Run() {
     while (true) {
@@ -25,11 +24,9 @@ Awaitable FileReader::Run() {
             m_logcollector.EnqueueTask(ReadLocalfile(&lf));
         });
 
-        co_await m_logcollector.Wait(RELOAD_INTERVAL);
+        co_await m_logcollector.Wait(chrono::seconds(m_reloadIntervalSec));
     }
 }
-
-
 
 Awaitable FileReader::ReadLocalfile(Localfile* lf) {
     while (true) {
@@ -50,7 +47,7 @@ Awaitable FileReader::ReadLocalfile(Localfile* lf) {
             co_return;
         }
 
-        co_await m_logcollector.Wait(FILE_WAIT);
+        co_await m_logcollector.Wait(chrono::milliseconds(m_fileWaitMs));
     }
 
     RemoveLocalfile(lf->Filename());
