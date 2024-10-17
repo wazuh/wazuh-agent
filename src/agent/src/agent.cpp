@@ -8,13 +8,14 @@
 #include <module_command/command_entry.hpp>
 #include <signal_handler.hpp>
 
+#include <filesystem>
 #include <memory>
-#include <string>
 #include <thread>
 
-Agent::Agent(std::unique_ptr<ISignalHandler> signalHandler)
+Agent::Agent(const std::string& configPath, std::unique_ptr<ISignalHandler> signalHandler)
     : m_messageQueue(std::make_shared<MultiTypeQueue>())
     , m_signalHandler(std::move(signalHandler))
+    , m_configurationParser(std::filesystem::path(configPath))
     , m_communicator(std::make_unique<http_client::HttpClient>(),
                      m_agentInfo.GetUUID(),
                      m_agentInfo.GetKey(),

@@ -13,7 +13,7 @@ public:
 
 TEST(AgentTests, AgentDefaultConstruction)
 {
-    EXPECT_NO_THROW(Agent {});
+    EXPECT_NO_THROW(Agent {""});
 }
 
 TEST(AgentTests, AgentStopsWhenSignalReceived)
@@ -25,7 +25,7 @@ TEST(AgentTests, AgentStopsWhenSignalReceived)
         .Times(1)
         .WillOnce([]() { std::this_thread::sleep_for(std::chrono::seconds(1)); });
 
-    Agent agent(std::move(mockSignalHandler));
+    Agent agent("", std::move(mockSignalHandler));
 
     EXPECT_NO_THROW(agent.Run());
 }

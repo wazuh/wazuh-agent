@@ -1,0 +1,17 @@
+[Unit]
+Description=Wazuh agent
+Wants=network-online.target
+After=network.target network-online.target
+
+[Service]
+Type=simple
+
+ExecStart=/usr/bin/env WAZUH_HOME/wazuh-agent --start
+ExecStop=/usr/bin/env WAZUH_HOME/wazuh-agent --stop
+ExecReload=/usr/bin/env WAZUH_HOME/wazuh-agent --restart
+
+KillMode=process
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
