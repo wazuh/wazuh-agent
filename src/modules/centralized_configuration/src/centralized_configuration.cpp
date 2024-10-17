@@ -73,12 +73,12 @@ namespace centralized_configuration
         return "CentralizedConfiguration";
     }
 
-    void CentralizedConfiguration::SetGroupIdFunction(std::function<void(const std::vector<std::string>&)> setGroupIdFunction)
+    void CentralizedConfiguration::SetGroupIdFunction(SetGroupIdFunctionType setGroupIdFunction)
     {
         m_setGroupIdFunction = std::move(setGroupIdFunction);
     }
 
-    void CentralizedConfiguration::SetDownloadGroupFilesFunction(std::function<bool(const std::string&, const std::string&)> downloadGroupFilesFunction)
+    void CentralizedConfiguration::SetDownloadGroupFilesFunction(DownloadGroupFilesFunctionType downloadGroupFilesFunction)
     {
         m_downloadGroupFilesFunction = std::move(downloadGroupFilesFunction);
     }
