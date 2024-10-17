@@ -236,7 +236,7 @@ namespace WindowsService
 
         LogInfo("Starting Wazuh Agent.");
 
-        Agent agent;
+        Agent agent("");
         agent.Run();
 
         WaitForSingleObject(g_ServiceStopEvent, INFINITE);

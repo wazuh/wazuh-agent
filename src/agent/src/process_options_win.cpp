@@ -9,14 +9,14 @@
 #include <iostream>
 #include <vector>
 
-void RestartAgent()
+void RestartAgent([[maybe_unused]] const std::string& configPath)
 {
     WindowsService::ServiceRestart();
 }
 
-void StartAgentDaemon() {}
+void StartAgentDaemon([[maybe_unused]] const std::string& configPath) {}
 
-void StartAgent()
+void StartAgent([[maybe_unused]] const std::string& configPath)
 {
     WindowsService::ServiceStart();
 }

@@ -2,13 +2,22 @@
 #include <cmd_ln_parser.hpp>
 #include <logger.hpp>
 
+#include <string>
+
 int main(int argc, char* argv[])
 {
     Logger logger;
     CommandlineParser cmdParser(argc, argv);
 
+    std::string configPath;
+
     try
     {
+        if (cmdParser.OptionExists("--config-path"))
+        {
+            configPath = cmdParser.GetOptionValue("--config-path");
+        }
+
         if (cmdParser.OptionExists("--register-agent"))
         {
             RegisterAgent(cmdParser.GetOptionValue("--user"),
@@ -16,13 +25,9 @@ int main(int argc, char* argv[])
                           cmdParser.GetOptionValue("--key"),
                           cmdParser.GetOptionValue("--name"));
         }
-        else if (cmdParser.OptionExists("--start"))
-        {
-            StartAgentDaemon();
-        }
         else if (cmdParser.OptionExists("--restart"))
         {
-            RestartAgent();
+            RestartAgent(configPath);
         }
         else if (cmdParser.OptionExists("--status"))
         {
@@ -46,9 +51,9 @@ int main(int argc, char* argv[])
         {
             SetDispatcherThread();
         }
-        else if (cmdParser.OptionExists("--run"))
+        else if (cmdParser.OptionExists("--run") || cmdParser.OptionExists("--start"))
         {
-            StartAgent();
+            StartAgent(configPath);
         }
         else
         {

@@ -6,26 +6,33 @@
 #include <logger.hpp>
 #include <unix_daemon.hpp>
 
+#include <csignal>
 #include <iostream>
+#include <thread>
 #include <vector>
 
-void RestartAgent()
+void RestartAgent(const std::string& configPath)
 {
     StopAgent();
-    StartAgent();
+
+    std::this_thread::sleep_for(std::chrono::seconds(1)); // NOLINT
+
+    StartAgent(configPath);
 }
 
-void StartAgentDaemon()
-{
-    unix_daemon::PIDFileHandler handler = unix_daemon::GeneratePIDFile();
-    StartAgent();
-}
-
-void StartAgent()
+void StartAgent([[maybe_unused]] const std::string& configPath)
 {
     LogInfo("Starting wazuh-agent");
 
-    Agent agent;
+    pid_t pid = unix_daemon::PIDFileHandler::ReadPIDFromFile();
+    if (pid != 0)
+    {
+        LogInfo("wazuh-agent already running");
+        return;
+    }
+
+    unix_daemon::PIDFileHandler handler = unix_daemon::GeneratePIDFile();
+    Agent agent(configPath);
     agent.Run();
 }
 
@@ -37,6 +44,16 @@ void StatusAgent()
 void StopAgent()
 {
     LogInfo("Stopping wazuh-agent");
+    pid_t pid = unix_daemon::PIDFileHandler::ReadPIDFromFile();
+    if (!kill(pid, SIGTERM))
+    {
+        LogInfo("Wazuh-agent terminated");
+    }
+    else
+    {
+        kill(pid, SIGKILL);
+        LogInfo("Wazuh-agent killed");
+    }
 }
 
 void PrintHelp()

@@ -24,7 +24,7 @@ namespace unix_daemon
 
     bool PIDFileHandler::removePIDFile() const
     {
-        const std::string filePath = fmt::format("{}/wazuh-agent.pid", PID_PATH);
+        const std::string filePath = fmt::format("{}/{}/wazuh-agent.pid", GetExecutablePath(), PID_PATH);
         try
         {
             std::filesystem::remove(filePath);
@@ -81,7 +81,7 @@ namespace unix_daemon
 
     pid_t PIDFileHandler::ReadPIDFromFile()
     {
-        const std::string filename = fmt::format("{}/wazuh-agent.pid", PID_PATH);
+        const std::string filename = fmt::format("{}/{}/wazuh-agent.pid", GetExecutablePath(), PID_PATH);
         std::ifstream file(filename);
 
         if (!file.is_open())
