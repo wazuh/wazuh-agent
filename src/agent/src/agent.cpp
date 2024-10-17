@@ -23,6 +23,15 @@ Agent::Agent(const std::string& configPath, std::unique_ptr<ISignalHandler> sign
                      { return m_configurationParser.GetConfig<std::string>(std::move(table), std::move(key)); })
     , m_moduleManager(m_messageQueue, m_configurationParser)
 {
+    m_centralizedConfiguration.SetGroupIdFunction([this](const std::vector<std::string>& groups)
+                                                  { return m_agentInfo.SetGroups(groups); });
+
+    m_centralizedConfiguration.GetGroupIdFunction([this]() { return m_agentInfo.GetGroups(); });
+
+    m_centralizedConfiguration.SetDownloadGroupFilesFunction(
+        [this](const std::string& groupId, const std::string& destinationPath)
+        { return m_communicator.GetGroupConfigurationFromManager(groupId, destinationPath); });
+
     m_taskManager.Start(std::thread::hardware_concurrency());
 }
 
