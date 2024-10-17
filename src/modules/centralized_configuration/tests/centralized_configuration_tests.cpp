@@ -46,12 +46,19 @@ TEST(CentralizedConfiguration, ImplementsModuleWrapperInterface)
 
 TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnUnrecognizedCommand)
 {
-    CentralizedConfiguration centralizedConfiguration;
-
     boost::asio::io_context io_context;
+
     boost::asio::co_spawn(
         io_context,
-        TestExecuteCommand(centralizedConfiguration, R"({"command": "unknown-command"})", module_command::Status::FAILURE),
+        [] () -> boost::asio::awaitable<void>
+        {
+            CentralizedConfiguration centralizedConfiguration;
+            co_await TestExecuteCommand(
+                centralizedConfiguration,
+                R"({"command": "unknown-command"})",
+                module_command::Status::FAILURE
+            );
+        }(),
         boost::asio::detached
     );
 
@@ -60,31 +67,50 @@ TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnUnrecognizedCommand
 
 TEST(CentralizedConfiguration, ExecuteCommandHandlesRecognizedCommands)
 {
-    CentralizedConfiguration centralizedConfiguration;
-    centralizedConfiguration.SetGroupIdFunction(
-        [](const std::vector<std::string>&)
-        {
-        }
-    );
-
     boost::asio::io_context io_context;
 
     boost::asio::co_spawn(
         io_context,
-        TestExecuteCommand(centralizedConfiguration, R"({"command": "set-group"})", module_command::Status::SUCCESS),
-        boost::asio::detached
-    );
+        [] () -> boost::asio::awaitable<void>
+        {
+            CentralizedConfiguration centralizedConfiguration;
+            centralizedConfiguration.SetGroupIdFunction(
+                [](const std::vector<std::string>&)
+                {
+                }
+            );
+            centralizedConfiguration.SetDownloadGroupFilesFunction(
+                [](const std::string&, const std::string&)
+                {
+                    return true;
+                }
+            );
 
-    boost::asio::co_spawn(
-        io_context,
-        TestExecuteCommand(centralizedConfiguration, R"({"command": "update-group"})", module_command::Status::SUCCESS),
+            co_await TestExecuteCommand(
+                centralizedConfiguration,
+                R"({"command": "set-group", "groups": ["group1", "group2"]})",
+                module_command::Status::SUCCESS
+            );
+
+            co_await TestExecuteCommand(
+                centralizedConfiguration,
+                R"({"command": "update-group"})",
+                module_command::Status::SUCCESS
+            );
+
+            co_await TestExecuteCommand(
+                centralizedConfiguration,
+                R"({"command": "unknown-command"})",
+                module_command::Status::FAILURE
+            );
+        }(),
         boost::asio::detached
     );
 
     io_context.run();
 }
 
-TEST(CentralizedConfiguration, SetGroupIdFunctionIsCalledAndReturnsCorrectResult)
+TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResults)
 {
     boost::asio::io_context io_context;
 
@@ -96,11 +122,12 @@ TEST(CentralizedConfiguration, SetGroupIdFunctionIsCalledAndReturnsCorrectResult
 
             co_await TestExecuteCommand(
                 centralizedConfiguration,
-                R"({"command": "set-group"})",
+                R"({"command": "set-group", "groups": ["group1", "group2"]})",
                 module_command::Status::FAILURE
             );
 
             bool wasSetGroupIdFunctionCalled = false;
+            bool wasDownloadGroupFilesFunctionCalled = false;
 
             centralizedConfiguration.SetGroupIdFunction(
                 [&wasSetGroupIdFunctionCalled](const std::vector<std::string>&)
@@ -109,15 +136,25 @@ TEST(CentralizedConfiguration, SetGroupIdFunctionIsCalledAndReturnsCorrectResult
                 }
             );
 
+            centralizedConfiguration.SetDownloadGroupFilesFunction(
+                [&wasDownloadGroupFilesFunctionCalled](const std::string&, const std::string&)
+                {
+                    wasDownloadGroupFilesFunctionCalled = true;
+                    return wasDownloadGroupFilesFunctionCalled;
+                }
+            );
+
             EXPECT_FALSE(wasSetGroupIdFunctionCalled);
+            EXPECT_FALSE(wasDownloadGroupFilesFunctionCalled);
 
             co_await TestExecuteCommand(
                 centralizedConfiguration,
-                R"({"command": "set-group"})",
+                R"({"command": "set-group", "groups": ["group1", "group2"]})",
                 module_command::Status::SUCCESS
             );
 
             EXPECT_TRUE(wasSetGroupIdFunctionCalled);
+            EXPECT_TRUE(wasDownloadGroupFilesFunctionCalled);
         }(),
         boost::asio::detached
     );
