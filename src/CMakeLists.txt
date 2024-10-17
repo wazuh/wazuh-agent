@@ -23,6 +23,41 @@ target_link_libraries(wazuh-agent Agent Logger)
 include(cmake/ConfigureTarget.cmake)
 configure_target(Agent)
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(BIN_INSTALL_DIR "/usr/local/bin") 
+    set(CONFIG_INSTALL_DIR "/etc/wazuh-agent")
+    set(SERVICE_INSTALL_DIR "/etc/systemd/system")
+    set(DATA_INSTALL_DIR "/var/wazuh-agent") 
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(BIN_INSTALL_DIR "/usr/local/bin")  
+    set(CONFIG_INSTALL_DIR "/etc/wazuh-agent")
+    set(SERVICE_INSTALL_DIR "/etc/systemd/system")
+    set(DATA_INSTALL_DIR "/var/wazuh-agent")  
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(BIN_INSTALL_DIR "C:/Program Files/wazuh-agent/bin")  
+    set(CONFIG_INSTALL_DIR "C:/Program Files/wazuh-agent/config")
+    set(DATA_INSTALL_DIR "C:/Program Files/wazuh-agent/var")  
+else()
+    message(FATAL_ERROR "Not supported OS")
+endif()
+
+install(TARGETS wazuh-agent
+        DESTINATION ${BIN_INSTALL_DIR}) 
+
+install(CODE "file(MAKE_DIRECTORY ${DATA_INSTALL_DIR})")
+install(CODE "file(MAKE_DIRECTORY ${CONFIG_INSTALL_DIR})")
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    install(CODE "file(MAKE_DIRECTORY ${SERVICE_INSTALL_DIR})")
+endif()
+
+#install(FILES wazuh-agent.conf
+#        DESTINATION ${CONFIG_INSTALL_DIR})
+
+#if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+#install(FILES agent/service/wazuh-agent.service
+#        DESTINATION ${SERVICE_INSTALL_DIR}) 
+
 if(BUILD_TESTS)
     enable_testing()
 endif()
