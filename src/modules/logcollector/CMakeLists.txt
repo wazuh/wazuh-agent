@@ -35,7 +35,8 @@ target_link_libraries(Logcollector PUBLIC
     ConfigurationParser
     MultiTypeQueue
     ModuleCommand
-    Logger)
+    Logger
+    Config)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(Logcollector)
