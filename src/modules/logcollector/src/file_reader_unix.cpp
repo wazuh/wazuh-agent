@@ -2,6 +2,7 @@
 #include <logcollector.hpp>
 #include <logger.hpp>
 #include <glob.h>
+#include <span>
 
 using namespace logcollector;
 using namespace std;
