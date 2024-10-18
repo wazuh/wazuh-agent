@@ -313,7 +313,11 @@ void Inventory::UpdateChanges(const std::string& table,
 {
     const auto callback
     {
+<<<<<<< Updated upstream
         // NOLINTNEXTLINE(bugprone-exception-escape,-warnings-as-errors)
+=======
+        // NOLINTNEXTLINE(bugprone-exception-escape)
+>>>>>>> Stashed changes
         [this, table](ReturnTypeCallback result, const nlohmann::json & data)
         {
             NotifyChange(result, data, table);
