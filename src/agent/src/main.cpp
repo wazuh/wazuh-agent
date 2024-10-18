@@ -23,7 +23,8 @@ int main(int argc, char* argv[])
             RegisterAgent(cmdParser.GetOptionValue("--user"),
                           cmdParser.GetOptionValue("--password"),
                           cmdParser.GetOptionValue("--key"),
-                          cmdParser.GetOptionValue("--name"));
+                          cmdParser.GetOptionValue("--name"),
+                          configPath);
         }
         else if (cmdParser.OptionExists("--restart"))
         {
