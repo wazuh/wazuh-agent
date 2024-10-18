@@ -20,8 +20,13 @@ add_subdirectory(agent)
 add_executable(wazuh-agent agent/src/main.cpp)
 target_link_libraries(wazuh-agent Agent Logger)
 
+if(WIN32)
+    include(cmake/SetWindowsManifest.cmake)
+    set_windows_manifest()
+endif()
+
 include(cmake/ConfigureTarget.cmake)
-configure_target(Agent)
+configure_target(wazuh-agent)
 
 ## Installation
 set(INSTALL_ROOT "" CACHE PATH "Root directory for installation")
@@ -33,8 +38,9 @@ endif()
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(BIN_INSTALL_DIR "/usr/local/bin") 
     set(CONFIG_INSTALL_DIR "/etc/wazuh-agent")
-    set(SERVICE_INSTALL_DIR "/etc/systemd/system")
-    set(DATA_INSTALL_DIR "/var/wazuh-agent") 
+    set(SERVICE_INSTALL_DIR "/usr/lib/systemd/system")
+    set(DATA_INSTALL_DIR "/var/wazuh-agent")
+    set(LIB_INSTALL_DIR "/usr/local/lib")  
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set(BIN_INSTALL_DIR "/usr/local/bin")  
     set(CONFIG_INSTALL_DIR "/etc/wazuh-agent")
@@ -54,8 +60,18 @@ install(TARGETS wazuh-agent
 install(CODE "file(MAKE_DIRECTORY ${INSTALL_ROOT}${DATA_INSTALL_DIR})")
 install(CODE "file(MAKE_DIRECTORY ${INSTALL_ROOT}${CONFIG_INSTALL_DIR})")
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    install(CODE "file(MAKE_DIRECTORY ${INSTALL_ROOT}${SERVICE_INSTALL_DIR})")
+message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    #add_custom_command(
+    #    OUTPUT ${CMAKE_BINARY_DIR}/wazuh-agent.service
+    #    COMMAND sed "s|WAZUH_HOME|${INSTALL_ROOT}${BIN_INSTALL_DIR}|g" agent/service/wazuh-agent.service > ${CMAKE_BINARY_DIR}/wazuh-agent.service)
+    install(FILES agent/service/wazuh-agent.service
+        DESTINATION ${INSTALL_ROOT}${SERVICE_INSTALL_DIR})
+    install(FILES 
+        ${CMAKE_BINARY_DIR}/lib/libdbsync.so
+        ${CMAKE_BINARY_DIR}/lib/libsysinfo.so
+        DESTINATION ${INSTALL_ROOT}${LIB_INSTALL_DIR})
 endif()
 
 if(BUILD_TESTS)
