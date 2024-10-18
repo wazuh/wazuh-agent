@@ -6,9 +6,8 @@
 #include <string>
 
 using namespace logcollector;
-using namespace std;
 
-FileReader::FileReader(Logcollector& logcollector, string pattern, long fileWait, long reloadInterval) :
+FileReader::FileReader(Logcollector& logcollector, std::string pattern, long fileWait, long reloadInterval) :
     IReader(logcollector),
     m_filePattern(std::move(pattern)),
     m_localfiles(),
@@ -22,7 +21,7 @@ Awaitable FileReader::Run() {
             m_logcollector.EnqueueTask(ReadLocalfile(&lf));
         });
 
-        co_await m_logcollector.Wait(chrono::seconds(m_reloadIntervalSec));
+        co_await m_logcollector.Wait(std::chrono::seconds(m_reloadIntervalSec));
     }
 }
 
@@ -45,13 +44,13 @@ Awaitable FileReader::ReadLocalfile(Localfile* lf) {
             co_return;
         }
 
-        co_await m_logcollector.Wait(chrono::milliseconds(m_fileWaitMs));
+        co_await m_logcollector.Wait(std::chrono::milliseconds(m_fileWaitMs));
     }
 
     RemoveLocalfile(lf->Filename());
 }
 
-void FileReader::AddLocalfiles(const list<string>& paths, const function<void (Localfile &)> & callback) {
+void FileReader::AddLocalfiles(const std::list<std::string>& paths, const std::function<void (Localfile &)> & callback) {
     for (auto & path : paths) {
         if (none_of(m_localfiles.begin(), m_localfiles.end(), [&path](Localfile & lf) { return lf.Filename() == path; })) {
             m_localfiles.emplace_back(path);
@@ -61,25 +60,25 @@ void FileReader::AddLocalfiles(const list<string>& paths, const function<void (L
     }
 }
 
-void FileReader::RemoveLocalfile(const string& filename) {
+void FileReader::RemoveLocalfile(const std::string& filename) {
     m_localfiles.remove_if([&filename](Localfile & lf) { return lf.Filename() == filename; });
 }
 
-Localfile::Localfile(string filename) :
+Localfile::Localfile(std::string filename) :
     m_filename(std::move(filename)),
-    m_stream(make_shared<ifstream>(m_filename)),
+    m_stream(make_shared<std::ifstream>(m_filename)),
     m_pos() {
         if (m_stream->fail()) {
             throw OpenError(m_filename);
         }
     }
 
-Localfile::Localfile(shared_ptr<istream> stream) :
+Localfile::Localfile(std::shared_ptr<std::istream> stream) :
     m_filename(),
     m_stream(std::move(stream)) { }
 
-string Localfile::NextLog() {
-    auto buffer = vector<char>(config::BUFFER_SIZE);
+std::string Localfile::NextLog() {
+    auto buffer = std::vector<char>(config::BUFFER_SIZE);
 
     if (m_stream->getline(buffer.data(), config::BUFFER_SIZE).good()) {
         m_pos = m_stream->tellg();
@@ -92,29 +91,29 @@ string Localfile::NextLog() {
 }
 
 void Localfile::SeekEnd() {
-    m_stream->seekg(0, ios::end);
+    m_stream->seekg(0, std::ios::end);
 }
 
 bool Localfile::Rotated() {
     try {
-        auto fileSize = filesystem::file_size(m_filename);
+        auto fileSize = std::filesystem::file_size(m_filename);
         auto streamSize = static_cast<uintmax_t>(m_stream->tellg());
         return fileSize < streamSize;
-    } catch (filesystem::filesystem_error & e) {
+    } catch (std::filesystem::filesystem_error & e) {
         throw OpenError(m_filename);
     }
 }
 
 void Localfile::Reopen() {
-    m_stream = make_shared<ifstream>(m_filename);
+    m_stream = std::make_shared<std::ifstream>(m_filename);
 
     if (m_stream->fail()) {
         throw OpenError(m_filename);
     }
 }
 
-OpenError::OpenError(const string& filename) :
-    m_what(string("Cannot open file: ") + filename) { }
+OpenError::OpenError(const std::string& filename) :
+    m_what(std::string("Cannot open file: ") + filename) { }
 
 const char * OpenError::what() const noexcept {
     return m_what.c_str();

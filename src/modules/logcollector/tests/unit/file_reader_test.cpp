@@ -10,16 +10,15 @@
 #include "logcollector_mock.hpp"
 
 using namespace logcollector;
-using namespace std;
 
 class MockCallback {
 public:
-    MOCK_METHOD(void, Call, (const string &), ());
+    MOCK_METHOD(void, Call, (const std::string &), ());
 };
 
 TEST(Localfile, FullLine)
 {
-    auto stream = make_shared<stringstream>();
+    auto stream = std::make_shared<std::stringstream>();
     auto lf = Localfile(stream);
 
     *stream << "Hello World\n";
@@ -29,7 +28,7 @@ TEST(Localfile, FullLine)
 
 TEST(Localfile, PartialLine)
 {
-    auto stream = make_shared<stringstream>();
+    auto stream = std::make_shared<std::stringstream>();
     auto lf = Localfile(stream);
 
     *stream << "Hello World";
@@ -65,7 +64,7 @@ TEST(Localfile, Rotated)
 
 TEST(Localfile, Deleted)
 {
-    auto fileA = make_unique<TempFile>("/tmp/A.log", "Hello World");
+    auto fileA = std::make_unique<TempFile>("/tmp/A.log", "Hello World");
     auto lf = Localfile("/tmp/A.log");
 
     fileA.reset();

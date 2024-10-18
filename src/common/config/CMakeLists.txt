@@ -14,7 +14,6 @@ configure_file(
     "${CMAKE_CURRENT_BINARY_DIR}/include/config.h"
 )
 
-# Incluir el directorio donde está el archivo generado
 target_include_directories(Config INTERFACE
     "${CMAKE_CURRENT_BINARY_DIR}/include"
 )

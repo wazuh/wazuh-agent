@@ -7,12 +7,11 @@
 #include <list>
 
 using namespace logcollector;
-using namespace std;
 
-void FileReader::Reload(const function<void (Localfile &)> & callback) {
+void FileReader::Reload(const std::function<void (Localfile &)> & callback) {
     WIN32_FIND_DATA findFileData;
     HANDLE hFind = FindFirstFile(m_filePattern.c_str(), &findFileData);
-    list<string> files;
+    std::list<std::string> files;
 
     auto baseDir = m_filePattern.substr(0, m_filePattern.find_last_of("\\/"));
 

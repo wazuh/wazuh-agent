@@ -7,7 +7,6 @@
 #include "file_reader.hpp"
 
 using namespace logcollector;
-using namespace std;
 
 void Logcollector::Start() {
     if (!m_enabled) {
@@ -26,7 +25,7 @@ void Logcollector::EnqueueTask(boost::asio::awaitable<void> task) {
 void Logcollector::Setup(const configuration::ConfigurationParser& configurationParser) {
     try {
         m_enabled = configurationParser.GetConfig<bool>("logcollector", "enabled");
-    } catch (exception & e) {
+    } catch (std::exception & e) {
         m_enabled = true;
     }
 
@@ -39,23 +38,23 @@ void Logcollector::SetupFileReader(const configuration::ConfigurationParser& con
 
     try {
         fileWait = m_enabled = configurationParser.GetConfig<long>("logcollector", "file_wait");
-    } catch (exception & e) {
+    } catch (std::exception & e) {
         fileWait = config::DEFAULT_FILE_WAIT;
     }
 
     try {
         reloadInterval = m_enabled = configurationParser.GetConfig<long>("logcollector", "reload_interval");
-    } catch (exception & e) {
+    } catch (std::exception & e) {
         reloadInterval = config::DEFAULT_FILE_WAIT;
     }
 
     try {
-        auto localfiles = configurationParser.GetConfig<vector<string>>("logcollector", "localfiles");
+        auto localfiles = configurationParser.GetConfig<std::vector<std::string>>("logcollector", "localfiles");
 
         for (auto& lf : localfiles) {
-            AddReader(make_shared<FileReader>(*this, lf, fileWait, reloadInterval));
+            AddReader(std::make_shared<FileReader>(*this, lf, fileWait, reloadInterval));
         }
-    } catch (exception & e) {
+    } catch (std::exception & e) {
         LogTrace("No localfiles defined");
     }
 }
@@ -89,15 +88,15 @@ void Logcollector::SendMessage(const std::string& location, const std::string& l
     LogTrace("Message pushed: '{}':'{}'", location, log);
 }
 
-void Logcollector::AddReader(shared_ptr<IReader> reader) {
+void Logcollector::AddReader(std::shared_ptr<IReader> reader) {
     m_readers.push_back(reader);
     EnqueueTask(reader->Run());
 }
 
-Awaitable Logcollector::Wait(chrono::milliseconds ms) {
+Awaitable Logcollector::Wait(std::chrono::milliseconds ms) {
     co_await boost::asio::steady_timer(m_ioContext, ms).async_wait(boost::asio::use_awaitable);
 }
 
-Awaitable Logcollector::Wait(chrono::seconds sec) {
+Awaitable Logcollector::Wait(std::chrono::seconds sec) {
     co_await boost::asio::steady_timer(m_ioContext, sec).async_wait(boost::asio::use_awaitable);
 }

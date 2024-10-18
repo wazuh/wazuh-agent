@@ -5,9 +5,8 @@
 #include <span>
 
 using namespace logcollector;
-using namespace std;
 
-void FileReader::Reload(const function<void (Localfile &)> & callback) {
+void FileReader::Reload(const std::function<void (Localfile &)> & callback) {
     glob_t globResult;
 
     int ret = glob(m_filePattern.c_str(), 0, nullptr, &globResult);
@@ -23,8 +22,8 @@ void FileReader::Reload(const function<void (Localfile &)> & callback) {
         return;
     }
 
-    list<string> localfiles;
-    auto paths = span<char *>(globResult.gl_pathv, globResult.gl_pathc);
+    std::list<std::string> localfiles;
+    auto paths = std::span<char *>(globResult.gl_pathv, globResult.gl_pathc);
 
     for (auto& path : paths) {
         localfiles.emplace_back(path);
