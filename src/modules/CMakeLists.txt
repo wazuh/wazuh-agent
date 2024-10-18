@@ -5,6 +5,7 @@ project(ModuleManager)
 include(../cmake/CommonSettings.cmake)
 set_common_settings()
 
+add_subdirectory(centralized_configuration)
 add_subdirectory(inventory)
 
 add_library(ModuleManager src/moduleManager.cpp)

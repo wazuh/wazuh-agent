@@ -1,6 +1,7 @@
 #pragma once
 
 #include <agent_info.hpp>
+#include <centralized_configuration.hpp>
 #include <command_handler.hpp>
 #include <communicator.hpp>
 #include <configuration_parser.hpp>
@@ -32,4 +33,5 @@ private:
     communicator::Communicator m_communicator;
     command_handler::CommandHandler m_commandHandler;
     ModuleManager m_moduleManager;
+    centralized_configuration::CentralizedConfiguration m_centralizedConfiguration;
 };
