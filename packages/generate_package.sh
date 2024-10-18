@@ -265,7 +265,7 @@ main() {
         esac
     done
 
-    if [ -z "${BRANCH}" ]; then
+    if [ -z "${CUSTOM_CODE_VOL}" ] && [ -z "${BRANCH}" ]; then
         CUSTOM_CODE_VOL="-v $WAZUH_PATH:/wazuh-local-src:Z"
     fi
 

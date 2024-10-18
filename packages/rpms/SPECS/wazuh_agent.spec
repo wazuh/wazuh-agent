@@ -24,7 +24,6 @@ Vendor:      Wazuh, Inc <info@wazuh.com>
 Packager:    Wazuh, Inc <info@wazuh.com>
 Requires(pre):    /usr/sbin/groupadd /usr/sbin/useradd
 Requires(postun): /usr/sbin/groupdel /usr/sbin/userdel
-Conflicts:   ossec-hids ossec-hids-agent wazuh-manager wazuh-local
 AutoReqProv: no
 
 ExclusiveOS: linux
@@ -50,6 +49,8 @@ rm -fr %{buildroot}
 pushd src
 pushd build
 make install -j $(nproc)
+sed -i "s|WAZUH_HOME|/usr/local/bin|g" %{buildroot}%{_localstatedir}/usr/lib/systemd/system/wazuh-agent.service
+cp /usr/local/gcc-13.2.0/lib64/libstdc++.so.6 %{buildroot}%{_localstatedir}/usr/local/lib
 exit 0
 
 %pre
@@ -66,26 +67,26 @@ if ! getent passwd wazuh > /dev/null 2>&1; then
 fi
 
 ## STOP AGENT HERE IF IT EXIST
-
+if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1 && systemctl is-active --quiet wazuh-agent > /dev/null 2>&1; then
+  systemctl stop wazuh-agent > /dev/null 2>&1
+# Check for SysV
+elif command -v service > /dev/null 2>&1 && service wazuh-agent status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
+  service wazuh-agent stop > /dev/null 2>&1
+fi
 
 %post
 # If the package is being upgraded
-if [ $1 = 2 ]; then
-
-fi
 
 # If the package is being installed
 if [ $1 = 1 ]; then
-
+  systemctl daemon-reload
+  systemctl enable wazuh-agent
+  touch /etc/ld.so.conf.d/wazuh-agentlibs.conf
+  echo "/usr/local/lib" >> /etc/ld.so.conf.d/wazuh-agentlibs.conf
+  sudo ldconfig
 fi
 
-if [[ -d /run/systemd/system ]]; then
-  rm -f %{_initrddir}/wazuh-agent
-fi
-
-# Delete the installation files used to configure the agent
-
-# Remove unnecessary files from shared directory
+## SCA RELATED
 
 #AlmaLinux
 if [ -r "/etc/almalinux-release" ]; then
@@ -182,61 +183,16 @@ if [ -r ${SCA_TMP_FILE} ]; then
   done
 fi
 
-# Set the proper selinux context
-if ([ "X${DIST_NAME}" = "Xrhel" ] || [ "X${DIST_NAME}" = "Xcentos" ] || [ "X${DIST_NAME}" = "XCentOS" ]) && [ "${DIST_VER}" == "5" ]; then
-  if command -v getenforce > /dev/null 2>&1; then
-    if [ $(getenforce) !=  "Disabled" ]; then
-      chcon -t textrel_shlib_t  %{_localstatedir}/lib/libwazuhext.so
-      chcon -t textrel_shlib_t  %{_localstatedir}/lib/libwazuhshared.so
-    fi
-  fi
-else
-  # Add the SELinux policy
-  if command -v getenforce > /dev/null 2>&1 && command -v semodule > /dev/null 2>&1; then
-    if [ $(getenforce) != "Disabled" ]; then
-      semodule -i %{_localstatedir}/var/selinux/wazuh.pp
-      semodule -e wazuh
-    fi
-  fi
-fi
-
-# Restore ossec.conf permissions after upgrading
-chmod 0660 %{_localstatedir}/etc/ossec.conf
-
-# Remove old ossec user and group if exists and change ownwership of files
-
-if getent group ossec > /dev/null 2>&1; then
-  find %{_localstatedir}/ -group ossec -user root -exec chown root:wazuh {} \; > /dev/null 2>&1 || true
-  if getent passwd ossec > /dev/null 2>&1; then
-    find %{_localstatedir}/ -group ossec -user ossec -exec chown wazuh:wazuh {} \; > /dev/null 2>&1 || true
-    userdel ossec > /dev/null 2>&1
-  fi
-  if getent passwd ossecm > /dev/null 2>&1; then
-    find %{_localstatedir}/ -group ossec -user ossecm -exec chown wazuh:wazuh {} \; > /dev/null 2>&1 || true
-    userdel ossecm > /dev/null 2>&1
-  fi
-  if getent passwd ossecr > /dev/null 2>&1; then
-    find %{_localstatedir}/ -group ossec -user ossecr -exec chown wazuh:wazuh {} \; > /dev/null 2>&1 || true
-    userdel ossecr > /dev/null 2>&1
-  fi
-  if grep -q ossec /etc/group; then
-    groupdel ossec > /dev/null 2>&1
-  fi
-fi
-
 %preun
-
 if [ $1 = 0 ]; then
-
   # Stop the services before uninstall the package
   # Check for systemd
   if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1 && systemctl is-active --quiet wazuh-agent > /dev/null 2>&1; then
-    systemctl stop wazuh-agent.service > /dev/null 2>&1
+    systemctl stop wazuh-agent > /dev/null 2>&1
   # Check for SysV
   elif command -v service > /dev/null 2>&1 && service wazuh-agent status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
     service wazuh-agent stop > /dev/null 2>&1
   fi
-  %{_localstatedir}/bin/wazuh-control stop > /dev/null 2>&1
 
   # Remove the SELinux policy
   if command -v getenforce > /dev/null 2>&1 && command -v semodule > /dev/null 2>&1; then
@@ -258,38 +214,11 @@ if [ $1 = 0 ]; then
 
   # Remove SCA files
   rm -f %{_localstatedir}/ruleset/sca/*
-
 fi
-
-%triggerin -- glibc
-[ -r %{_sysconfdir}/localtime ] && cp -fpL %{_sysconfdir}/localtime %{_localstatedir}/etc
- chown root:wazuh %{_localstatedir}/etc/localtime
- chmod 0640 %{_localstatedir}/etc/localtime
 
 %postun
-
-DELETE_WAZUH_USER_AND_GROUP=0
-
-# If the upgrade downgrades to earlier versions, it will create the ossec
-# group and user, we need to delete wazuh ones
-if [ $1 = 1 ]; then
-  if command -v %{_localstatedir}/bin/ossec-control > /dev/null 2>&1; then
-    find %{_localstatedir} -group wazuh -exec chgrp ossec {} +
-    find %{_localstatedir} -user wazuh -exec chown ossec {} +
-    DELETE_WAZUH_USER_AND_GROUP=1
-  fi
-
-  if [ ! -f %{_localstatedir}/etc/client.keys ]; then
-    if [ -f %{_localstatedir}/etc/client.keys.rpmsave ]; then
-      mv %{_localstatedir}/etc/client.keys.rpmsave %{_localstatedir}/etc/client.keys
-    elif [ -f %{_localstatedir}/etc/client.keys.rpmnew ]; then
-      mv %{_localstatedir}/etc/client.keys.rpmnew %{_localstatedir}/etc/client.keys
-    fi
-  fi
-fi
-
-# If the package is been uninstalled or we want to delete wazuh user and group
-if [ $1 = 0 ] || [ $DELETE_WAZUH_USER_AND_GROUP = 1 ]; then
+# If the package is being uninstalled or we want to delete wazuh user and group
+if [ $1 = 0 ]; then
   # Remove the wazuh user if it exists
   if getent passwd wazuh > /dev/null 2>&1; then
     userdel wazuh >/dev/null 2>&1
@@ -303,54 +232,31 @@ if [ $1 = 0 ] || [ $DELETE_WAZUH_USER_AND_GROUP = 1 ]; then
 
   if [ $1 = 0 ];then
     # Remove lingering folders and files
-    rm -rf %{_localstatedir}usr/local/bin/wazuh-agent
+    rm -f %{_localstatedir}usr/local/bin/wazuh-agent
+    rm -f %{_localstatedir}usr/lib/systemd/system/wazuh-agent.service
+    rm -f %{_localstatedir}usr/local/lib/libdbsync.so
+    rm -f %{_localstatedir}usr/local/lib/libsysinfo.so
+    rm -f %{_localstatedir}usr/local/lib/libstdc++.so.6
     rm -rf %{_localstatedir}etc/wazuh-agent
-    rm -rf %{_localstatedir}etc/systemd/system
     rm -rf %{_localstatedir}var/wazuh-agent
   fi
 fi
 
 # posttrans code is the last thing executed in a install/upgrade
 %posttrans
-if [ -f %{_sysconfdir}/systemd/system/wazuh-agent.service ]; then
-  rm -rf %{_sysconfdir}/systemd/system/wazuh-agent.service
-  systemctl daemon-reload > /dev/null 2>&1
-fi
-
-if [ -f %{_localstatedir}/tmp/wazuh.restart ]; then
-  rm -f %{_localstatedir}/tmp/wazuh.restart
-  if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1 ; then
-    systemctl daemon-reload > /dev/null 2>&1
-    systemctl restart wazuh-agent.service > /dev/null 2>&1
-  elif command -v service > /dev/null 2>&1; then
-    service wazuh-agent restart > /dev/null 2>&1
-  else
-    %{_localstatedir}/bin/wazuh-control restart > /dev/null 2>&1
-  fi
-fi
-
-if [ -d %{_localstatedir}/logs/ossec ]; then
-  rm -rf %{_localstatedir}/logs/ossec/
-fi
-
-if [ -d %{_localstatedir}/queue/ossec ]; then
-  rm -rf %{_localstatedir}/queue/ossec/
-fi
-
-if [ -f %{_sysconfdir}/ossec-init.conf ]; then
-  rm -f %{_sysconfdir}/ossec-init.conf
-  rm -f %{_localstatedir}/etc/ossec-init.conf
-fi
+systemctl daemon-reload > /dev/null 2>&1
 
 %clean
 rm -fr %{buildroot}
 
 %files
 %defattr(-,root,root)
-%dir %attr(750, root, wazuh) %{_localstatedir}usr/local/bin
 %attr(750, root, wazuh) %{_localstatedir}usr/local/bin/wazuh-agent
+%attr(750, root, wazuh) %{_localstatedir}usr/lib/systemd/system/wazuh-agent.service
+%attr(750, root, wazuh) %{_localstatedir}usr/local/lib/libdbsync.so
+%attr(750, root, wazuh) %{_localstatedir}usr/local/lib/libsysinfo.so
+%attr(750, root, wazuh) %{_localstatedir}usr/local/lib/libstdc++.so.6
 %dir %attr(770, root, wazuh) %{_localstatedir}etc/wazuh-agent
-%dir %attr(750, root, wazuh) %{_localstatedir}etc/systemd/system
 %dir %attr(750, root, wazuh) %{_localstatedir}var/wazuh-agent
 
 %changelog
