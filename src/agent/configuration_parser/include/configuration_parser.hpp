@@ -5,6 +5,8 @@
 #include <toml.hpp>
 
 #include <exception>
+#include <filesystem>
+#include <iostream>
 #include <string>
 
 namespace configuration
@@ -16,6 +18,7 @@ namespace configuration
 
     public:
         ConfigurationParser();
+        ConfigurationParser(const std::filesystem::path& configPath);
         ConfigurationParser(std::string stringToParse);
 
         template<typename T, typename... Ks>
