@@ -31,7 +31,7 @@ class Inventory {
         void Stop();
         Co_CommandExecutionResult ExecuteCommand(const std::string query);
         const std::string& Name() const { return m_moduleName; };
-        void SetMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue);
+        void SetPushMessageFunction(const std::function<int(Message)>& pushMessage);
 
         void Init(const std::shared_ptr<ISysInfo>& spInfo,
                     const std::function<void(const std::string&)>& reportDiffFunction,
@@ -91,6 +91,5 @@ class Inventory {
         std::mutex                                  m_mutex;
         std::unique_ptr<InvNormalizer>              m_spNormalizer;
         std::string                                 m_scanTime;
-        std::shared_ptr<IMultiTypeQueue>            m_messageQueue;
-
+        std::function<int(Message)>                 m_pushMessage;
 };
