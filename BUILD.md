@@ -66,9 +66,10 @@ The following dependencies are required for this project:
     You can start and stop the agent, and get status with:
 
     ```bash
-    systemctl start wazuh-agent --run
-    systemctl stop wazuh-agent
-    systemctl is-active wazuh-agent
+    ./wazuh-agent --run
+    ./wazuh-agent --stop
+    ./wazuh-agent --restart
+    ./wazuh-agent --status
     ```
 
     **To run the agent as a systemd service**
@@ -94,15 +95,6 @@ The following dependencies are required for this project:
     systemctl stop wazuh-agent
     systemctl is-active wazuh-agent
     systemctl status wazuh-agent
-    ```
-
-    You can start and stop the agent, and get status from CLI:
-
-    ```bash
-    ./wazuh-agent --run
-    ./wazuh-agent --stop
-    ./wazuh-agent --restart
-    ./wazuh-agent --status
     ```
 
 6. **Run tests**
