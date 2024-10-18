@@ -117,8 +117,10 @@ The following dependencies are required for this project:
 
 |Option|Description|Default|
 |---|---|---|
-|`BUILD_TESTS`|Enable tests compilation||
+|`BUILD_TESTS`|Enable tests compilation|`OFF`|
+|`COVERAGE`|Enable coverage report|`OFF`|
 |`ENABLE_CLANG_TIDY`|Check code with _clang-tidy_|`ON`|
+|`ENABLE_LOGCOLLECTOR`|Enable Logcollector module|`ON`|
 
 ## Notes
 
