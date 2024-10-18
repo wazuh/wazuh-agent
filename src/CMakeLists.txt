@@ -28,6 +28,41 @@ endif()
 include(cmake/ConfigureTarget.cmake)
 configure_target(wazuh-agent)
 
+## Installation
+set(INSTALL_ROOT "" CACHE PATH "Root directory for installation")
+
+if("${INSTALL_ROOT}" STREQUAL "/")
+    set(INSTALL_ROOT "")
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(BIN_INSTALL_DIR "/usr/local/bin") 
+    set(CONFIG_INSTALL_DIR "/etc/wazuh-agent")
+    set(SERVICE_INSTALL_DIR "/etc/systemd/system")
+    set(DATA_INSTALL_DIR "/var/wazuh-agent") 
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(BIN_INSTALL_DIR "/usr/local/bin")  
+    set(CONFIG_INSTALL_DIR "/etc/wazuh-agent")
+    set(SERVICE_INSTALL_DIR "/etc/systemd/system")
+    set(DATA_INSTALL_DIR "/var/wazuh-agent")  
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(BIN_INSTALL_DIR "C:/Program Files/wazuh-agent/bin")  
+    set(CONFIG_INSTALL_DIR "C:/Program Files/wazuh-agent/config")
+    set(DATA_INSTALL_DIR "C:/Program Files/wazuh-agent/var")  
+else()
+    message(FATAL_ERROR "Not supported OS")
+endif()
+
+install(TARGETS wazuh-agent
+        DESTINATION ${INSTALL_ROOT}${BIN_INSTALL_DIR}) 
+
+install(CODE "file(MAKE_DIRECTORY ${INSTALL_ROOT}${DATA_INSTALL_DIR})")
+install(CODE "file(MAKE_DIRECTORY ${INSTALL_ROOT}${CONFIG_INSTALL_DIR})")
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    install(CODE "file(MAKE_DIRECTORY ${INSTALL_ROOT}${SERVICE_INSTALL_DIR})")
+endif()
+
 if(BUILD_TESTS)
     enable_testing()
 endif()
