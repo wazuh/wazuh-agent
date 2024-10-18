@@ -68,7 +68,7 @@ protected:
     {
         agent = std::make_unique<AgentInfo>("agent_name", "agent_key", "agent_uuid");
         registration =
-            std::make_unique<agent_registration::AgentRegistration>("user", "password", "agent_key", "agent_name");
+            std::make_unique<agent_registration::AgentRegistration>("user", "password", "agent_key", "agent_name", "");
     }
 
     std::unique_ptr<AgentInfo> agent;

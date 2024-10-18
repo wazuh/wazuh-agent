@@ -9,11 +9,12 @@
 void RegisterAgent(const std::string& user,
                    const std::string& password,
                    const std::string& key,
-                   const std::string& name)
+                   const std::string& name,
+                   const std::string& configPath)
 {
     if (!user.empty() && !password.empty() && !key.empty())
     {
-        agent_registration::AgentRegistration reg(user, password, key, name);
+        agent_registration::AgentRegistration reg(user, password, key, name, configPath);
 
         http_client::HttpClient httpClient;
         if (reg.Register(httpClient))
