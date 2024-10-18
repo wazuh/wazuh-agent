@@ -30,3 +30,8 @@ RUN curl -OL https://github.com/Kitware/CMake/releases/download/v3.30.3/cmake-3.
     tar -zxf cmake-3.*.tar.gz && cd cmake-3.* && ./bootstrap && \
     make -j$(nproc) && make install && ln -s /usr/local/bin/cmake /usr/bin/cmake && \
     cd / && rm -rf cmake-*
+
+RUN git config --global --add safe.directory /wazuh-local-src
+
+RUN git clone --branch test/128-140-packages --single-branch --recurse-submodules https://github.com/wazuh/wazuh-agent.git && \
+    cd wazuh-agent/src && mkdir build && cd build && cmake .. && cd / && rm -rf wazuh-*
