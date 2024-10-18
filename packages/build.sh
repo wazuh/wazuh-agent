@@ -85,7 +85,7 @@ set -x
 
 # Download source code if it is not shared from the local host
 if [ ! -d "/wazuh-local-src" ] ; then
-    curl -sL https://github.com/wazuh/wazuh-agent/tarball/${WAZUH_BRANCH} | tar zx
+    git clone --branch ${WAZUH_BRANCH} --single-branch https://github.com/wazuh/wazuh-agent.git
     short_commit_hash="$(curl -s https://api.github.com/repos/wazuh/wazuh-agent/commits/${WAZUH_BRANCH} \
                           | grep '"sha"' | head -n 1| cut -d '"' -f 4 | cut -c 1-11)"
 else
