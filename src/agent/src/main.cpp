@@ -4,6 +4,7 @@
 
 #include <string>
 
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char* argv[])
 {
     Logger logger;

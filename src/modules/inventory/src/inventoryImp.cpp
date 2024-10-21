@@ -313,6 +313,7 @@ void Inventory::UpdateChanges(const std::string& table,
 {
     const auto callback
     {
+        // NOLINTNEXTLINE(bugprone-exception-escape)
         [this, table](ReturnTypeCallback result, const nlohmann::json & data)
         {
             NotifyChange(result, data, table);
