@@ -64,14 +64,13 @@ void PrintHelp()
     std::cout << "\n";
     std::cout << "Options:\n";
     std::cout << "     --run                Start wazuh-agent\n";
-    std::cout << "       [--config-path <path>]   Specify configuration file path (optional)\n";
     std::cout << "     --start              Start wazuh-agent daemon\n";
     std::cout << "     --status             Get wazuh-agent daemon status\n";
     std::cout << "     --stop               Stop wazuh-agent daemon\n";
     std::cout << "     --restart            Restart wazuh-agent daemon\n";
-    std::cout << "       [--config-path <path>]   Specify configuration file path (optional)\n";
     std::cout << "     --register-agent     Register wazuh-agent\n";
-    std::cout << "       [--config-path <path>]   Specify configuration file path (optional)\n";
+    std::cout << "     --config-path <path> Specify configuration file path (optional).\n";
+    std::cout << "                          Used with --start, --restart, or --register-agent.\n";
     std::cout << "     --help               This help message\n";
 }
 
