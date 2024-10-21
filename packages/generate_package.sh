@@ -22,7 +22,7 @@ DEBUG="no"
 SRC="no"
 BUILD_DOCKER="yes"
 DOCKER_TAG="latest"
-INSTALLATION_PATH="/var/ossec"
+INSTALLATION_PATH="/"
 CHECKSUM="no"
 FUTURE="no"
 LEGACY="no"
@@ -265,7 +265,7 @@ main() {
         esac
     done
 
-    if [ -z "${CUSTOM_CODE_VOL}" ]; then
+    if [ -z "${CUSTOM_CODE_VOL}" ] && [ -z "${BRANCH}" ]; then
         CUSTOM_CODE_VOL="-v $WAZUH_PATH:/wazuh-local-src:Z"
     fi
 

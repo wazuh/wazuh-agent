@@ -85,7 +85,7 @@ set -x
 
 # Download source code if it is not shared from the local host
 if [ ! -d "/wazuh-local-src" ] ; then
-    curl -sL https://github.com/wazuh/wazuh-agent/tarball/${WAZUH_BRANCH} | tar zx
+    git clone --branch ${WAZUH_BRANCH} --single-branch https://github.com/wazuh/wazuh-agent.git
     short_commit_hash="$(curl -s https://api.github.com/repos/wazuh/wazuh-agent/commits/${WAZUH_BRANCH} \
                           | grep '"sha"' | head -n 1| cut -d '"' -f 4 | cut -c 1-11)"
 else
@@ -101,7 +101,7 @@ fi
 # Build directories
 source_dir=$(build_directories "$build_dir/${BUILD_TARGET}" "wazuh*" $future)
 
-wazuh_version="$(cat $source_dir/src/VERSION| cut -d 'v' -f 2)"
+wazuh_version="$(cat wazuh*/src/VERSION| cut -d 'v' -f 2)"
 # TODO: Improve how we handle package_name
 # Changing the "-" to "_" between target and version breaks the convention for RPM or DEB packages.
 # For now, I added extra code that fixes it.
