@@ -67,8 +67,8 @@ protected:
     void SetUp() override
     {
         agent = std::make_unique<AgentInfo>("agent_name", "agent_key", "agent_uuid");
-        registration =
-            std::make_unique<agent_registration::AgentRegistration>("user", "password", "agent_key", "agent_name", "");
+        registration = std::make_unique<agent_registration::AgentRegistration>(
+            "user", "password", "agent_key", "agent_name", std::nullopt);
     }
 
     std::unique_ptr<AgentInfo> agent;

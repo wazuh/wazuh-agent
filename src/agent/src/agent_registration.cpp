@@ -13,10 +13,10 @@ namespace agent_registration
                                          std::string password,
                                          const std::string& key,
                                          const std::string& name,
-                                         const std::string& configPath)
-        : m_configurationParser(configPath.empty()
-                                    ? configuration::ConfigurationParser()
-                                    : configuration::ConfigurationParser(std::filesystem::path(configPath)))
+                                         std::optional<std::string> configPath)
+        : m_configurationParser(configPath.has_value() && !configPath->empty()
+                                    ? configuration::ConfigurationParser(std::filesystem::path(configPath.value()))
+                                    : configuration::ConfigurationParser())
         , m_managerIp(m_configurationParser.GetConfig<std::string>("agent", "manager_ip"))
         , m_managerPort(m_configurationParser.GetConfig<std::string>("agent", "server_mgmt_api_port"))
         , m_user(std::move(user))
