@@ -11,8 +11,8 @@ get_filename_component(COMMON_FOLDER    ${SRC_FOLDER}/common/ ABSOLUTE)
 include_directories(${COMMON_FOLDER}/logger/include)
 
 find_package(cJSON CONFIG REQUIRED)
-find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
+find_package(Boost REQUIRED COMPONENTS asio)
 
 if (WIN32)
     FILE(GLOB EXCLUDED_SOURCES src/*_unix.cpp)
@@ -30,13 +30,16 @@ target_include_directories(Logcollector PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
     ${COMMON_FOLDER})
 
-target_link_libraries(Logcollector PUBLIC
-    nlohmann_json::nlohmann_json
+target_link_libraries(Logcollector
+    PUBLIC
     ConfigurationParser
     MultiTypeQueue
     ModuleCommand
+    Config
+    Boost::asio
+    PRIVATE
     Logger
-    Config)
+)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(Logcollector)

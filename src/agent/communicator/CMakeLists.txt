@@ -17,7 +17,7 @@ find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
 
 add_library(Communicator src/communicator.cpp src/http_client.cpp)
 target_include_directories(Communicator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include SYSTEM INTERFACE ${JWT_CPP_INCLUDE_DIRS})
-target_link_libraries(Communicator PUBLIC Boost::asio PRIVATE Boost::beast OpenSSL::SSL OpenSSL::Crypto Logger)
+target_link_libraries(Communicator PUBLIC Boost::asio Boost::beast PRIVATE OpenSSL::SSL OpenSSL::Crypto Logger nlohmann_json::nlohmann_json)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(Communicator)
