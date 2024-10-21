@@ -58,9 +58,8 @@ void StopAgent()
 
 void PrintHelp()
 {
-    LogInfo("Wazuh Agent help.");
-
     // TO DO
+    std::cout << "Wazuh Agent help.\n ";
     std::cout << "Usage: wazuh-agent [options]\n";
     std::cout << "\n";
     std::cout << "Options:\n";
@@ -70,6 +69,8 @@ void PrintHelp()
     std::cout << "     --stop               Stop wazuh-agent daemon\n";
     std::cout << "     --restart            Restart wazuh-agent daemon\n";
     std::cout << "     --register-agent     Register wazuh-agent\n";
+    std::cout << "     --config-path <path> Specify configuration file path (optional).\n";
+    std::cout << "                          Used with --start, --restart, or --register-agent.\n";
     std::cout << "     --help               This help message\n";
 }
 

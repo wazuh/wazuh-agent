@@ -17,7 +17,11 @@ namespace agent_registration
     class AgentRegistration
     {
     public:
-        AgentRegistration(std::string user, std::string password, const std::string& key, const std::string& name);
+        AgentRegistration(std::string user,
+                          std::string password,
+                          const std::string& key,
+                          const std::string& name,
+                          std::optional<std::string> configPath);
         bool Register(http_client::IHttpClient& httpClient);
 
     private:
