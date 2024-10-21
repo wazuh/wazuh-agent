@@ -13,6 +13,7 @@ include_directories(${COMMON_FOLDER}/logger/include)
 find_package(cJSON CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
+find_package(Boost REQUIRED COMPONENTS asio)
 
 add_library(Inventory
     src/inventory.cpp
@@ -39,10 +40,10 @@ target_include_directories(Inventory PUBLIC
     ${COMMON_FOLDER}/timeHelper/include
     ${COMMON_FOLDER}/utils)
 
-target_link_libraries(Inventory PUBLIC
+target_link_libraries(Inventory
+    PUBLIC
     dbsync
     sysinfo
-    cjson
     nlohmann_json::nlohmann_json
     OpenSSL::SSL
     OpenSSL::Crypto
@@ -51,7 +52,11 @@ target_link_libraries(Inventory PUBLIC
     ConfigurationParser
     MultiTypeQueue
     ModuleCommand
-    Logger)
+    Logger
+    Boost::asio
+    PRIVATE
+    cjson
+)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(Inventory)

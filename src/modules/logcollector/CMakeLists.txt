@@ -36,15 +36,18 @@ target_include_directories(Logcollector PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
     ${COMMON_FOLDER})
 
-target_link_libraries(Logcollector PUBLIC
-    Boost::asio
-    Boost::system
-    nlohmann_json::nlohmann_json
+target_link_libraries(Logcollector
+    PUBLIC
     ConfigurationParser
     MultiTypeQueue
     ModuleCommand
+    Config
+    Boost::asio
+    Boost::system
+    nlohmann_json::nlohmann_json
+    PRIVATE
     Logger
-    Config)
+)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(Logcollector)
