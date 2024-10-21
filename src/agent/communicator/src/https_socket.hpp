@@ -51,6 +51,12 @@ namespace http_client
             boost::beast::http::read(m_ssl_socket, buffer, res);
         }
 
+        void ReadToFile(boost::beast::http::response_parser<boost::beast::http::dynamic_body>& res,
+                        const std::string& dstFilePath) override
+        {
+            http_client_utils::ReadToFile(m_ssl_socket, res, dstFilePath);
+        }
+
         boost::asio::awaitable<void> AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
                                                boost::beast::error_code& ec) override
         {

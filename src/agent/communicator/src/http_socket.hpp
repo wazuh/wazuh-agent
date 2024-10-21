@@ -1,7 +1,10 @@
+#include "http_client_utils.hpp"
 #include <ihttp_socket.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
+
+#include <fstream>
 
 namespace http_client
 {
@@ -41,6 +44,12 @@ namespace http_client
         {
             boost::beast::flat_buffer buffer;
             boost::beast::http::read(m_socket, buffer, res);
+        }
+
+        void ReadToFile(boost::beast::http::response_parser<boost::beast::http::dynamic_body>& res,
+                        const std::string& dstFilePath) override
+        {
+            http_client_utils::ReadToFile(m_socket, res, dstFilePath);
         }
 
         boost::asio::awaitable<void> AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,

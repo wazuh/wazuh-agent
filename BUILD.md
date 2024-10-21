@@ -21,7 +21,7 @@ The following dependencies are required for this project:
 
     ```bash
     sudo apt-get update
-    sudo apt-get install cmake make gcc git zip curl tar ninja-build pkg-config libsystemd-dev wget gnupg lsb-release software-properties-common
+    sudo apt-get install cmake make gcc git zip curl tar ninja-build pkg-config libsystemd-dev wget gnupg lsb-release software-properties-common libbz2-dev
     wget https://apt.llvm.org/llvm.sh
     chmod +x llvm.sh
     sudo ./llvm.sh 18
@@ -59,14 +59,68 @@ The following dependencies are required for this project:
     cmake src -B build -DBUILD_TESTS=1
     cmake --build build
     ```
+5. **Run the Agent**
 
-5. **Run tests**
+    **To run the agent in the foreground from the CLI**
+
+    You can start and stop the agent, and get status with:
+
+    ```bash
+    systemctl start wazuh-agent --run
+    systemctl stop wazuh-agent
+    systemctl is-active wazuh-agent
+    ```
+
+    **To run the agent as a systemd service**
+
+    Copy the file `src/agent/service/wazuh-agent.service` to `/usr/lib/systemd/system/`.
+    Replace the placeholder WAZUH_HOME to your wazuh-agent executable directory.
+    Reload unit files.
+
+    ```bash
+    systemctl daemon-reload
+    ```
+
+    Enable service.
+
+    ```bash
+    systemctl enable wazuh-agent
+    ```
+
+    You can start and stop the agent, and get status from systemctl:
+
+    ```bash
+    systemctl start wazuh-agent
+    systemctl stop wazuh-agent
+    systemctl is-active wazuh-agent
+    systemctl status wazuh-agent
+    ```
+
+    You can start and stop the agent, and get status from CLI:
+
+    ```bash
+    ./wazuh-agent --run
+    ./wazuh-agent --stop
+    ./wazuh-agent --restart
+    ./wazuh-agent --status
+    ```
+
+6. **Run tests**
 
     If built with CMake and `-DBUILD_TESTS=1`, you can run tests with:
 
     ```bash
     ctest --test-dir build --output-log build
     ```
+
+### Options
+
+|Option|Description|Default|
+|---|---|---|
+|`BUILD_TESTS`|Enable tests compilation|`OFF`|
+|`COVERAGE`|Enable coverage report|`OFF`|
+|`ENABLE_CLANG_TIDY`|Check code with _clang-tidy_|`ON`|
+|`ENABLE_LOGCOLLECTOR`|Enable Logcollector module|`ON`|
 
 ## Notes
 

@@ -84,6 +84,18 @@ TEST_F(AgentInfoTest, TestSetUUID)
     EXPECT_EQ(agentInfoReloaded.GetUUID(), newUUID);
 }
 
+TEST_F(AgentInfoTest, TestSetGroups)
+{
+    AgentInfo agentInfo;
+    const std::vector<std::string> newGroups = {"t_group_1", "t_group_2"};
+
+    agentInfo.SetGroups(newGroups);
+    EXPECT_EQ(agentInfo.GetGroups(), newGroups);
+
+    const AgentInfo agentInfoReloaded;
+    EXPECT_EQ(agentInfoReloaded.GetGroups(), newGroups);
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);

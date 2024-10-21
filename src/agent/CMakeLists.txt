@@ -22,11 +22,25 @@ add_subdirectory(command_store)
 find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio beast)
 
-set(SOURCES
+
+if(WIN32)
+    set(SOURCES
+        src/windows_service.cpp
+        src/process_options_win.cpp
+    )
+elseif(UNIX)
+    set(SOURCES
+        src/unix_daemon.cpp
+        src/process_options_unix.cpp
+    )
+endif()
+
+list(APPEND SOURCES
     src/agent.cpp
+    src/agent_registration.cpp
     src/command_handler_utils.cpp
     src/message_queue_utils.cpp
-    src/register.cpp
+    src/process_options.cpp
     src/signal_handler.cpp
     $<$<BOOL:$<PLATFORM_ID:Windows>>:src/signal_handler_win.cpp>
     $<$<NOT:$<PLATFORM_ID:Windows>>:src/signal_handler_unix.cpp>
@@ -35,7 +49,22 @@ set(SOURCES
 
 add_library(Agent ${SOURCES})
 target_include_directories(Agent PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_link_libraries(Agent PUBLIC ConfigurationParser Communicator AgentInfo CommandHandler MultiTypeQueue ModuleManager ModuleCommand PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::asio Boost::beast)
+target_link_libraries(Agent
+    PUBLIC
+    ConfigurationParser
+    Communicator
+    AgentInfo
+    CommandHandler
+    MultiTypeQueue
+    ModuleManager
+    ModuleCommand
+    CentralizedConfiguration
+    PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    Boost::asio
+    Boost::beast
+)
 
 include(../cmake/ConfigureTarget.cmake)
 configure_target(Agent)

@@ -8,11 +8,11 @@ namespace
 
 namespace configuration
 {
-    ConfigurationParser::ConfigurationParser()
+    ConfigurationParser::ConfigurationParser(const std::filesystem::path& configPath)
     {
         try
         {
-            tbl = toml::parse(CONFIG_FILE_NAME, toml::spec::v(1, 0, 0));
+            tbl = toml::parse(configPath.string(), toml::spec::v(1, 0, 0));
         }
         catch (const std::exception& e)
         {
@@ -38,9 +38,20 @@ namespace configuration
                 ports_all = true
                 processes = true
                 hotfixes = true
+
+                [logcollector]
+                enabled = true
+                localfiles = [ "/var/log/auth.log" ]
+                reload_interval = 60
+                file_wait = 500
                 )",
                 toml::spec::v(1, 0, 0));
         }
+    }
+
+    ConfigurationParser::ConfigurationParser()
+        : ConfigurationParser(std::filesystem::path(CONFIG_FILE_NAME))
+    {
     }
 
     ConfigurationParser::ConfigurationParser(std::string stringToParse)
