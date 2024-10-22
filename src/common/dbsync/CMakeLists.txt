@@ -55,6 +55,7 @@ include_directories(${COMMON_FOLDER}/pipelineHelper/include/)
 include_directories(${COMMON_FOLDER}/stringHelper/include/)
 include_directories(${COMMON_FOLDER}/threadDispatcher/include/)
 include_directories(${COMMON_FOLDER}/utils/)
+include_directories(${COMMON_FOLDER}/pal/include)
 
 add_definitions(-DPROMISE_TYPE=PromiseType::NORMAL)
 
