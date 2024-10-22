@@ -13,6 +13,19 @@ case "$1" in
             rm -rf ${WAZUH_TMP_DIR}
         fi
 
+        # If INSTALLATION_WAZUH_DIR is "/", then set it empty
+        if [ "${INSTALLATION_WAZUH_DIR}" == "/" ]; then
+            INSTALLATION_WAZUH_DIR=""
+        fi
+
+        rm -f ${INSTALLATION_WAZUH_DIR}/usr/local/bin/wazuh-agent
+        rm -f ${INSTALLATION_WAZUH_DIR}/usr/lib/systemd/system/wazuh-agent.service
+        rm -f ${INSTALLATION_WAZUH_DIR}/usr/local/lib/libdbsync.so
+        rm -f ${INSTALLATION_WAZUH_DIR}/usr/local/lib/libsysinfo.so
+        rm -f ${INSTALLATION_WAZUH_DIR}/usr/local/lib/libstdc++.so.6
+        rm -rf ${INSTALLATION_WAZUH_DIR}/etc/wazuh-agent
+        rm -rf ${INSTALLATION_WAZUH_DIR}/var/wazuh-agent
+
         if [ "$1" = "remove" ]; then
             rm -rf ${INSTALLATION_WAZUH_DIR}
             # Rename the files
@@ -32,8 +45,14 @@ case "$1" in
         if getent group wazuh >/dev/null 2>&1; then
             delgroup wazuh > /dev/null 2>&1
         fi
-        rm -rf ${INSTALLATION_WAZUH_DIR}
-        rm -rf /etc/opt/wazuh-agent
+        rm -rf /opt/wazuh-agent
+        rm -f ${INSTALLATION_WAZUH_DIR}/usr/local/bin/wazuh-agent
+        rm -f ${INSTALLATION_WAZUH_DIR}/usr/lib/systemd/system/wazuh-agent.service
+        rm -f ${INSTALLATION_WAZUH_DIR}/usr/local/lib/libdbsync.so
+        rm -f ${INSTALLATION_WAZUH_DIR}/usr/local/lib/libsysinfo.so
+        rm -f ${INSTALLATION_WAZUH_DIR}/usr/local/lib/libstdc++.so.6
+        rm -rf ${INSTALLATION_WAZUH_DIR}/etc/wazuh-agent
+        rm -rf ${INSTALLATION_WAZUH_DIR}/var/wazuh-agent
     ;;
 
     upgrade)

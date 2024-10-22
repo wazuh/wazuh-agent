@@ -10,7 +10,8 @@ RUN apt-get update && apt-get install -y build-essential \
             zlib1g-dev libgcrypt20-dev libmagic-dev libpopt-dev \
             libmagic-dev libsqlite3-dev  gettext \
             ninja-build libsystemd-dev libaudit-dev selinux-basics \
-            libarchive-dev debhelper && rm -rf /var/lib/apt/lists/*
+            libarchive-dev debhelper libssl-dev libbz2-dev \
+            && rm -rf /var/lib/apt/lists/*
 
 RUN echo "deb http://ftp.de.debian.org/debian bullseye main" >>/etc/apt/sources.list && \
     apt-get update && apt-get install -y g++-10 && rm -rf /var/lib/apt/lists/*
@@ -47,3 +48,7 @@ RUN mkdir -p /usr/local/lib/pkgconfig && \
     echo "Version: 5.4.7" >> /usr/local/lib/pkgconfig/lua.pc && \
     echo "Libs: -L\${libdir} -llua -lm" >> /usr/local/lib/pkgconfig/lua.pc && \
     echo "Cflags: -I\${includedir}" >> /usr/local/lib/pkgconfig/lua.pc
+
+RUN git config --global --add safe.directory /wazuh-local-src
+
+RUN git clone --branch test/deb-package-generation --single-branch --recurse-submodules https://github.com/wazuh/wazuh-agent.git && cd wazuh-agent/src && mkdir build && cd build && cmake .. && cd / && rm -rf wazuh-*

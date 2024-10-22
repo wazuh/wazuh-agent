@@ -19,6 +19,7 @@ export DH_OPTIONS
 export TARGET_DIR=${CURDIR}/debian/wazuh-agent
 
 # Package build options
+export INSTALLATION_DIR=""
 export INSTALLATION_WAZUH_DIR="/opt/wazuh-agent"
 export JOBS=$(shell nproc)
 export DEBUG_ENABLED="no"
@@ -40,30 +41,16 @@ override_dh_install:
 
 	# Build the binaries
 	git submodule update --init --recursive
-	cmake src -B build
+	cmake -DINSTALL_ROOT=${INSTALLATION_DIR} src -B build
 	cmake --build build --parallel $(JOBS)
-
-	# Copying init.d script
-	mkdir -p ${TARGET_DIR}/etc/init.d/
-	sed -i "s:WAZUH_HOME_TMP:${INSTALLATION_WAZUH_DIR}:g" src/init/templates/hids-debian.init
-	cp src/init/templates/hids-debian.init ${TARGET_DIR}/etc/init.d/wazuh-agent
-
-	# # Copying systemd file
-	# mkdir -p ${TARGET_DIR}/usr/lib/systemd/system/
-	# sed -i "s:WAZUH_HOME_TMP:${INSTALLATION_WAZUH_DIR}:g" src/init/templates/wazuh-agent.service
-	# install -m 0644 src/init/templates/wazuh-agent.service ${TARGET_DIR}/usr/lib/systemd/system/
-
-	# Copying wazuh-agent binary
-	mkdir -p ${TARGET_DIR}$(INSTALLATION_WAZUH_DIR)/bin
-	cp -r build/wazuh-agent $(TARGET_DIR)$(INSTALLATION_WAZUH_DIR)/bin
 
 	cp src/VERSION ${TARGET_DIR}$(INSTALLATION_WAZUH_DIR)
 	cp src/REVISION ${TARGET_DIR}$(INSTALLATION_WAZUH_DIR)
 
-	# Copying systemd file
-	mkdir -p ${TARGET_DIR}/etc/systemd/system/
-	sed -i "s:WAZUH_HOME_TMP:${INSTALLATION_WAZUH_DIR}:g" src/init/templates/wazuh-agent.service
-	cp src/init/templates/wazuh-agent.service ${TARGET_DIR}/etc/systemd/system/
+	make install -j $(nproc)
+
+	sed -i "s|WAZUH_HOME|/usr/local/bin|g" ${INSTALLATION_DIR}/usr/lib/systemd/system/wazuh-agent.service
+	cp /usr/local/gcc-13.2.0/lib64/libstdc++.so.6 ${INSTALLATION_DIR}/usr/local/lib
 
 override_dh_auto_clean:
 	$(MAKE) -C src clean
