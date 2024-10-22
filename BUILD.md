@@ -72,10 +72,31 @@ The following dependencies are required for this project:
     ./wazuh-agent --status
     ```
 
+    **To run the agent as a launchd service**
+    Copy the file `src/agent/service/com.wazuh.agent.plist` to `/Library/LaunchDaemons/`.
+    Replace the placeholder path with your wazuh-agent executable directory.
+
+    ```bash
+    sudo chown root:wheel /Library/LaunchDaemons/com.wazuh.agent.plist
+    sudo chmod 644 /Library/LaunchDaemons/com.wazuh.agent.plist
+    ```
+
+    Load the service
+
+    ```bash
+    sudo launchctl bootstrap system /Library/LaunchDaemons/com.example.service.plist
+    ```
+
+    Verify the service is running
+
+    ```
+    sudo launchctl print system/com.wazuh.agent
+    ```
+
     **To run the agent as a systemd service**
 
     Copy the file `src/agent/service/wazuh-agent.service` to `/usr/lib/systemd/system/`.
-    Replace the placeholder WAZUH_HOME to your wazuh-agent executable directory.
+    Replace the placeholder WAZUH_HOME with your wazuh-agent executable directory.
     Reload unit files.
 
     ```bash
