@@ -31,7 +31,7 @@ public:
     /// @brief Executes a command
     /// @param query Command to execute
     /// @return Awaitable (coroutine) which will return the result of the command execution
-    Co_CommandExecutionResult ExecuteCommand(const std::string query);
+    Co_CommandExecutionResult ExecuteCommand(const std::string command, std::vector<std::string> parameters);
 
     /// @brief Gets the name of the Logcollector module
     /// @return Name of the module

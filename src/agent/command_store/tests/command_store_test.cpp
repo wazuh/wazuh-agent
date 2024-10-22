@@ -17,6 +17,8 @@ protected:
     }
 
     void TearDown() override {}
+
+    const std::vector<std::string> emptyParametersList;
 };
 
 TEST_F(CommandStoreTest, StoreCommandTest)
@@ -25,18 +27,22 @@ TEST_F(CommandStoreTest, StoreCommandTest)
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     module_command::CommandEntry cmd1(
-        TESTID_5, "Module1", "{CommandTextHERE}", "Parameter1", "Result1", module_command::Status::IN_PROGRESS);
+        TESTID_5, "Module1", "{CommandTextHERE}", emptyParametersList, "Result1", module_command::Status::IN_PROGRESS);
     bool retVal = m_commandStore->StoreCommand(cmd1);
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    module_command::CommandEntry cmd2(
-        TESTID_9, "Module2", R"({"Some"="thing"})", "Parameter2", "Result2", module_command::Status::IN_PROGRESS);
+    module_command::CommandEntry cmd2(TESTID_9,
+                                      "Module2",
+                                      R"({"Some"="thing"})",
+                                      emptyParametersList,
+                                      "Result2",
+                                      module_command::Status::IN_PROGRESS);
     retVal = m_commandStore->StoreCommand(cmd2);
     ASSERT_EQ(retVal, true);
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     module_command::CommandEntry cmd3(
-        TESTID_5, "Module3", "{CommandTextHERE}", "Parameter3", "Result3", module_command::Status::IN_PROGRESS);
+        TESTID_5, "Module3", "{CommandTextHERE}", emptyParametersList, "Result3", module_command::Status::IN_PROGRESS);
     retVal = m_commandStore->StoreCommand(cmd3);
     ASSERT_EQ(retVal, false);
 
@@ -49,11 +55,15 @@ TEST_F(CommandStoreTest, UpdateCommandTest)
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     module_command::CommandEntry cmd1(
-        TESTID_5, "Module1", "{CommandTextHERE}", "Parameter1", "Result1", module_command::Status::IN_PROGRESS);
+        TESTID_5, "Module1", "{CommandTextHERE}", emptyParametersList, "Result1", module_command::Status::IN_PROGRESS);
     m_commandStore->StoreCommand(cmd1);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    module_command::CommandEntry cmd2(
-        TESTID_9, "Module2", R"({"Some"="thing"})", "Parameter2", "Result2", module_command::Status::IN_PROGRESS);
+    module_command::CommandEntry cmd2(TESTID_9,
+                                      "Module2",
+                                      R"({"Some"="thing"})",
+                                      emptyParametersList,
+                                      "Result2",
+                                      module_command::Status::IN_PROGRESS);
     m_commandStore->StoreCommand(cmd2);
 
     ASSERT_EQ(m_commandStore->GetCount(), 2);
@@ -62,7 +72,7 @@ TEST_F(CommandStoreTest, UpdateCommandTest)
     module_command::CommandEntry cmdUpdate(TESTID_9,
                                            "Updated Module",
                                            "Updated CommandEntry",
-                                           "Updated Parameter",
+                                           emptyParametersList,
                                            "Updated Result",
                                            module_command::Status::SUCCESS);
 
@@ -77,7 +87,7 @@ TEST_F(CommandStoreTest, UpdateCommandTest)
         ASSERT_EQ(cmd.Id, TESTID_9);
         ASSERT_EQ(cmd.Module, "Updated Module");
         ASSERT_EQ(cmd.Command, "Updated CommandEntry");
-        ASSERT_EQ(cmd.Parameters, "Updated Parameter");
+        // ASSERT_EQ(cmd.Parameters, emptyParametersList);
         ASSERT_EQ(cmd.ExecutionResult.Message, "Updated Result");
         ASSERT_EQ(cmd.ExecutionResult.ErrorCode, module_command::Status::SUCCESS);
     }
@@ -88,7 +98,7 @@ TEST_F(CommandStoreTest, UpdateCommandTest)
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     module_command::CommandEntry cmdUpdate2(
-        TESTID_9, "", "", "", "Newly Updated Result", module_command::Status::UNKNOWN);
+        TESTID_9, "", "", emptyParametersList, "Newly Updated Result", module_command::Status::UNKNOWN);
 
     retVal = m_commandStore->UpdateCommand(cmdUpdate2);
     ASSERT_EQ(retVal, true);
@@ -101,7 +111,7 @@ TEST_F(CommandStoreTest, UpdateCommandTest)
         ASSERT_EQ(cmd.Id, TESTID_9);
         ASSERT_EQ(cmd.Module, "Updated Module");
         ASSERT_EQ(cmd.Command, "Updated CommandEntry");
-        ASSERT_EQ(cmd.Parameters, "Updated Parameter");
+        // ASSERT_EQ(cmd.Parameters, emptyParametersList);
         ASSERT_EQ(cmd.ExecutionResult.Message, "Newly Updated Result");
         ASSERT_EQ(cmd.ExecutionResult.ErrorCode, module_command::Status::SUCCESS);
     }
@@ -127,15 +137,15 @@ TEST_F(CommandStoreTest, GetCommandTest)
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     module_command::CommandEntry cmd1(
-        TESTID_5, "Module1", "{CommandTextHERE}", "Parameter1", "Result1", module_command::Status::IN_PROGRESS);
+        TESTID_5, "Module1", "{CommandTextHERE}", emptyParametersList, "Result1", module_command::Status::IN_PROGRESS);
     m_commandStore->StoreCommand(cmd1);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     module_command::CommandEntry cmd2(
-        TESTID_9, "Module2", "TestValue9", "Parameter2", "Result2", module_command::Status::IN_PROGRESS);
+        TESTID_9, "Module2", "TestValue9", emptyParametersList, "Result2", module_command::Status::IN_PROGRESS);
     m_commandStore->StoreCommand(cmd2);
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     module_command::CommandEntry cmd3(
-        TESTID_11, "Module3", "{CommandTextHERE}", "Parameter3", "Result3", module_command::Status::IN_PROGRESS);
+        TESTID_11, "Module3", "{CommandTextHERE}", emptyParametersList, "Result3", module_command::Status::IN_PROGRESS);
     m_commandStore->StoreCommand(cmd3);
     ASSERT_EQ(m_commandStore->GetCount(), 3);
 

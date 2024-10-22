@@ -1,4 +1,6 @@
 #include <imultitype_queue.hpp>
+
+#include <logger.hpp>
 #include <message_queue_utils.hpp>
 #include <nlohmann/json.hpp>
 
@@ -59,7 +61,7 @@ std::optional<module_command::CommandEntry> GetCommandFromQueue(std::shared_ptr<
     std::string id;
     std::string module;
     std::string command;
-    std::string parameters;
+    std::vector<std::string> parameters;
 
     if (jsonData.contains("id") && jsonData["id"].is_string())
     {
@@ -83,8 +85,26 @@ std::optional<module_command::CommandEntry> GetCommandFromQueue(std::shared_ptr<
                     break;
                 default:
                     if (!parameters.empty())
-                        parameters += " ";
-                    parameters += arg.is_string() ? arg.get<std::string>() : arg.dump();
+                    {
+                        if (arg.is_array())
+                        {
+                            for (const auto& param : arg)
+                            {
+                                if (param.is_string())
+                                {
+                                    parameters.push_back(param.get<std::string>());
+                                }
+                            }
+                        }
+                        else if (arg.is_string())
+                        {
+                            parameters.push_back(arg.get<std::string>());
+                        }
+                        else
+                        {
+                            parameters.push_back(arg.dump());
+                        }
+                    }
                     break;
             }
         }

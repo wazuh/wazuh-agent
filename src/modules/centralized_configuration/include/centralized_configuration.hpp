@@ -46,7 +46,7 @@ namespace centralized_configuration
          * @details Required by the ModuleWrapper interface to be used within the ModuleManager
          * @return Co_CommandExecutionResult The result of executing the command, either success or failure.
          */
-        Co_CommandExecutionResult ExecuteCommand(std::string command);
+        Co_CommandExecutionResult ExecuteCommand(std::string command, std::vector<std::string> parameters);
 
         /**
          * @brief Gets the name of the centralized configuration system.

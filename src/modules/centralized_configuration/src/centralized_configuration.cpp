@@ -21,7 +21,7 @@ namespace centralized_configuration
     }
 
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
-    Co_CommandExecutionResult CentralizedConfiguration::ExecuteCommand(const std::string command)
+    Co_CommandExecutionResult CentralizedConfiguration::ExecuteCommand(std::string command, std::vector<std::string> parameters)
     {
         try
         {

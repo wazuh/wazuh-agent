@@ -19,7 +19,7 @@ namespace
     {
         try
         {
-            *result = co_await module->ExecuteCommand(commandEntry.Command);
+            *result = co_await module->ExecuteCommand(commandEntry.Command, commandEntry.Parameters);
             *commandCompleted = true;
             timer->cancel();
         }
