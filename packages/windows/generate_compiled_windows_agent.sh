@@ -16,6 +16,7 @@ DOCKER_IMAGE_NAME="compile_windows_agent"
 TAG=$1
 
 
+
 help() {
     set +x
     echo
