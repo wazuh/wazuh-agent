@@ -1,16 +1,17 @@
 #pragma once
 
-#include <string>
+#include <windows_api_facade.hpp>
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 namespace WindowsService
 {
     bool InstallService();
-    bool RemoveService();
+    bool RemoveService(windows_api_facade::IWindowsApiFacade& windowsApiFacade);
     void SetDispatcherThread();
     void WINAPI ServiceMain();
-    void WINAPI ServiceCtrlHandler(DWORD CtrlCode);
+    void WINAPI ServiceCtrlHandler(DWORD ctrlCode);
     void ServiceStart();
     void ServiceStop();
     void ServiceRestart();

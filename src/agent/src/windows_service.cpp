@@ -165,16 +165,17 @@ namespace WindowsService
         return true;
     }
 
-    bool RemoveService()
+    bool RemoveService(windows_api_facade::IWindowsApiFacade& windowsApiFacade)
     {
-        SC_HANDLE schSCManager = OpenSCManager(nullptr, nullptr, SC_MANAGER_CREATE_SERVICE);
+        SC_HANDLE schSCManager = static_cast<SC_HANDLE>(windowsApiFacade.OpenSCM(SC_MANAGER_CREATE_SERVICE));
         if (!schSCManager)
         {
             LogError("OpenSCManager fail: {}", GetLastError());
             return false;
         }
 
-        SC_HANDLE schService = OpenService(schSCManager, AGENT_SERVICENAME.c_str(), DELETE);
+        SC_HANDLE schService =
+            static_cast<SC_HANDLE>(windowsApiFacade.OpenSvc(schSCManager, AGENT_SERVICENAME.c_str(), DELETE));
         if (!schService)
         {
             LogError("OpenService fail: {}", GetLastError());
@@ -182,7 +183,7 @@ namespace WindowsService
             return false;
         }
 
-        if (!DeleteService(schService))
+        if (!windowsApiFacade.DeleteSvc(schService))
         {
             LogError("DeleteService fail: {}", GetLastError());
             CloseServiceHandle(schService);
