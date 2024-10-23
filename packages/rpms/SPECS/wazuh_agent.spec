@@ -260,6 +260,7 @@ rm -fr %{buildroot}
 %attr(750, root, wazuh) %{_localstatedir}usr/local/lib/libstdc++.so.6
 %dir %attr(770, root, wazuh) %{_localstatedir}etc/wazuh-agent
 %dir %attr(750, root, wazuh) %{_localstatedir}var/wazuh-agent
+%attr(750, root, wazuh) %{_localstatedir}etc/wazuh-agent/wazuh.conf
 
 %changelog
 * Wed Jul 10 2024 support <info@wazuh.com> - 4.9.0

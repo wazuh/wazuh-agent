@@ -50,5 +50,3 @@ RUN mkdir -p /usr/local/lib/pkgconfig && \
     echo "Cflags: -I\${includedir}" >> /usr/local/lib/pkgconfig/lua.pc
 
 RUN git config --global --add safe.directory /wazuh-local-src
-
-RUN git clone --branch test/deb-package-generation --single-branch --recurse-submodules https://github.com/wazuh/wazuh-agent.git && cd wazuh-agent/src && mkdir build && cd build && cmake .. && cd / && rm -rf wazuh-*

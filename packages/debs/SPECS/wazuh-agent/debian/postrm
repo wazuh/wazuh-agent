@@ -13,23 +13,16 @@ case "$1" in
             rm -rf ${WAZUH_TMP_DIR}
         fi
 
-        # If INSTALLATION_WAZUH_DIR is "/", then set it empty
-        if [ "${INSTALLATION_WAZUH_DIR}" == "/" ]; then
-            INSTALLATION_WAZUH_DIR=""
-        fi
-
-        rm -f ${INSTALLATION_WAZUH_DIR}/usr/local/bin/wazuh-agent
-        rm -f ${INSTALLATION_WAZUH_DIR}/usr/lib/systemd/system/wazuh-agent.service
-        rm -f ${INSTALLATION_WAZUH_DIR}/usr/local/lib/libdbsync.so
-        rm -f ${INSTALLATION_WAZUH_DIR}/usr/local/lib/libsysinfo.so
-        rm -f ${INSTALLATION_WAZUH_DIR}/usr/local/lib/libstdc++.so.6
-        rm -rf ${INSTALLATION_WAZUH_DIR}/etc/wazuh-agent
-        rm -rf ${INSTALLATION_WAZUH_DIR}/var/wazuh-agent
-
         if [ "$1" = "remove" ]; then
-            rm -rf ${INSTALLATION_WAZUH_DIR}
-            # Rename the files
-            find /etc/opt/wazuh-agent -type f -exec mv {} ${INSTALLATION_WAZUH_DIR}/tmp/{}.save \;
+            rm -f /usr/local/bin/wazuh-agent
+            rm -f /usr/lib/systemd/system/wazuh-agent.service
+            rm -f /usr/local/lib/libdbsync.so
+            rm -f /usr/local/lib/libsysinfo.so
+            rm -f /usr/local/lib/libstdc++.so.6
+            rm -rf /etc/wazuh-agent
+            rm -rf /var/wazuh-agent
+            # Rename the files (avoid errors if command fail)
+            find /etc/wazuh-agent -type f -exec mv {} ${INSTALLATION_WAZUH_DIR}/tmp/{}.save \; 2>/dev/null || true
         fi
 
         if getent passwd wazuh >/dev/null 2>&1; then
@@ -45,14 +38,7 @@ case "$1" in
         if getent group wazuh >/dev/null 2>&1; then
             delgroup wazuh > /dev/null 2>&1
         fi
-        rm -rf /opt/wazuh-agent
-        rm -f ${INSTALLATION_WAZUH_DIR}/usr/local/bin/wazuh-agent
-        rm -f ${INSTALLATION_WAZUH_DIR}/usr/lib/systemd/system/wazuh-agent.service
-        rm -f ${INSTALLATION_WAZUH_DIR}/usr/local/lib/libdbsync.so
-        rm -f ${INSTALLATION_WAZUH_DIR}/usr/local/lib/libsysinfo.so
-        rm -f ${INSTALLATION_WAZUH_DIR}/usr/local/lib/libstdc++.so.6
-        rm -rf ${INSTALLATION_WAZUH_DIR}/etc/wazuh-agent
-        rm -rf ${INSTALLATION_WAZUH_DIR}/var/wazuh-agent
+        rm -rf ${INSTALLATION_WAZUH_DIR}
     ;;
 
     upgrade)

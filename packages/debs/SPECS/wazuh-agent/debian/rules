@@ -41,22 +41,25 @@ override_dh_install:
 
 	# Build the binaries
 	git submodule update --init --recursive
-	cmake -DINSTALL_ROOT=${INSTALLATION_DIR} src -B build
+	cmake src -B build -DINSTALL_ROOT=${TARGET_DIR}$(INSTALLATION_DIR)
 	cmake --build build --parallel $(JOBS)
 
-	cp src/VERSION ${TARGET_DIR}$(INSTALLATION_WAZUH_DIR)
-	cp src/REVISION ${TARGET_DIR}$(INSTALLATION_WAZUH_DIR)
+	mkdir -p ${TARGET_DIR}$(INSTALLATION_DIR)/src
+	cp src/VERSION ${TARGET_DIR}$(INSTALLATION_DIR)/src
+	cp src/REVISION ${TARGET_DIR}$(INSTALLATION_DIR)/src
 
-	make install -j $(nproc)
+	make -C build install -j $(JOBS)
 
-	sed -i "s|WAZUH_HOME|/usr/local/bin|g" ${INSTALLATION_DIR}/usr/lib/systemd/system/wazuh-agent.service
-	cp /usr/local/gcc-13.2.0/lib64/libstdc++.so.6 ${INSTALLATION_DIR}/usr/local/lib
+	sed -i "s|WAZUH_HOME|/usr/local/bin|g" ${TARGET_DIR}$(INSTALLATION_DIR)/usr/lib/systemd/system/wazuh-agent.service
+	cp /usr/local/gcc-13.2.0/lib64/libstdc++.so.6 ${TARGET_DIR}$(INSTALLATION_DIR)/usr/local/lib
 
 override_dh_auto_clean:
-	$(MAKE) -C src clean
+	make -C src clean
+
+override_dh_usrlocal:
 
 
 override_dh_strip:
 	dh_strip --no-automatic-dbgsym
 
-.PHONY: override_dh_install override_dh_strip override_dh_auto_clean override_dh_auto_build override_dh_auto_configure
+.PHONY: override_dh_install override_dh_strip override_dh_auto_clean override_dh_auto_build override_dh_auto_configure override_dh_usrlocal
