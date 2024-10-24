@@ -7,8 +7,14 @@
 
 #include <boost/asio/awaitable.hpp>
 
+#include <functional>
 #include <memory>
 #include <tuple>
+
+boost::asio::awaitable<module_command::CommandExecutionResult> DispatchCommand(
+    module_command::CommandEntry commandEntry,
+    std::function<boost::asio::awaitable<module_command::CommandExecutionResult>(std::string command)> executeFunction,
+    std::shared_ptr<IMultiTypeQueue> messageQueue);
 
 boost::asio::awaitable<module_command::CommandExecutionResult>
 DispatchCommand(module_command::CommandEntry commandEntry,
