@@ -57,7 +57,8 @@ bool InstallService()
 
 bool RemoveService()
 {
-    return WindowsService::RemoveService();
+    windows_api_facade::WindowsApiFacade windowsApiFacade;
+    return WindowsService::RemoveService(windowsApiFacade);
 }
 
 void SetDispatcherThread()
