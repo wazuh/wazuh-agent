@@ -1,5 +1,8 @@
 #include <agent.hpp>
+
+#ifdef ENABLE_INVENTORY
 #include <inventory.hpp>
+#endif
 
 #ifdef ENABLE_LOGCOLLECTOR
 #include <logcollector.hpp>
@@ -71,7 +74,9 @@ void Agent::Run()
         [this](module_command::CommandEntry& cmd)
         { return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue); }));
 
+#ifdef ENABLE_INVENTORY
     m_moduleManager.AddModule(Inventory::Instance());
+#endif
 
 #ifdef ENABLE_LOGCOLLECTOR
     m_moduleManager.AddModule(Logcollector::Instance());

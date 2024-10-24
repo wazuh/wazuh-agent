@@ -6,6 +6,7 @@ function(set_common_settings)
     option(BUILD_TESTS "Enable tests building" OFF)
     option(COVERAGE "Enable coverage report" OFF)
     option(ENABLE_LOGCOLLECTOR "Enable Logcollector module" ON)
+    option(ENABLE_INVENTORY "Enable Inventory module" OFF)
 
     if(COVERAGE)
         if(NOT TARGET coverage)
@@ -51,5 +52,9 @@ function(set_common_settings)
 
     if(ENABLE_LOGCOLLECTOR)
         add_definitions(-DENABLE_LOGCOLLECTOR)
+    endif()
+
+    if(ENABLE_INVENTORY)
+        add_definitions(-DENABLE_INVENTORY)
     endif()
 endfunction()

@@ -14,3 +14,4 @@ set(DEFAULT_FILE_WAIT 500)
 set(DEFAULT_RELOAD_INTERVAL 60)
 
 option(ENABLE_LOGCOLLECTOR "Enable Logcollector module" ON)
+option(ENABLE_INVENTORY "Enable Inventory module" OFF)
