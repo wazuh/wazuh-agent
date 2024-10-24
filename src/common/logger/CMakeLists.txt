@@ -24,9 +24,7 @@ endif()
 
 if(WIN32)
     set(SOURCES src/logger_win.cpp)
-elseif(APPLE)
-    set(SOURCES src/logger_macos.cpp)
-elseif(UNIX)
+else()
     set(SOURCES src/logger_linux.cpp)
 endif()
 

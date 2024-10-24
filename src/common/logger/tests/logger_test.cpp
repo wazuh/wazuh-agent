@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include <spdlog/sinks/ostream_sink.h>
 #ifdef __APPLE__
-#include <spdlog/sinks/syslog_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 #endif
 #ifdef __linux__
 #include <spdlog/sinks/syslog_sink.h>
@@ -52,34 +52,6 @@ protected:
     }
 };
 
-#ifdef __linux__
-TEST_F(LoggerConstructorTest, LinuxLoggerConstructor)
-{
-    auto current_logger = spdlog::default_logger();
-    EXPECT_EQ(current_logger->name(), "wazuh-agent");
-
-    EXPECT_EQ(spdlog::get_level(), spdlog::level::trace);
-
-    auto sinks = current_logger->sinks();
-    ASSERT_FALSE(sinks.empty());
-    auto systemd_sink = std::dynamic_pointer_cast<spdlog::sinks::stdout_color_sink_mt>(sinks[0]);
-    EXPECT_NE(systemd_sink, nullptr);
-}
-
-TEST_F(LoggerConstructorTest, LinuxLoggerConstructorFail)
-{
-    auto current_logger = spdlog::default_logger();
-    EXPECT_EQ(current_logger->name(), "wazuh-agent");
-
-    EXPECT_EQ(spdlog::get_level(), spdlog::level::trace);
-
-    auto sinks = current_logger->sinks();
-    ASSERT_FALSE(sinks.empty());
-    auto systemd_sink = std::dynamic_pointer_cast<spdlog::sinks::syslog_sink_mt>(sinks[0]);
-    EXPECT_EQ(systemd_sink, nullptr);
-}
-#endif // __linux__
-
 #ifdef _WIN32
 TEST_F(LoggerConstructorTest, WindowsLoggerConstructor)
 {
@@ -93,10 +65,8 @@ TEST_F(LoggerConstructorTest, WindowsLoggerConstructor)
     auto win_sink = std::dynamic_pointer_cast<spdlog::sinks::win_eventlog_sink_st>(sinks[0]);
     EXPECT_NE(win_sink, nullptr);
 }
-#endif // _WIN32
-
-#ifdef __APPLE__
-TEST_F(LoggerConstructorTest, MacOSLoggerConstructor)
+#else // _WIN32
+TEST_F(LoggerConstructorTest, LinuxLoggerConstructor)
 {
     auto current_logger = spdlog::default_logger();
     EXPECT_EQ(current_logger->name(), "wazuh-agent");
@@ -105,10 +75,10 @@ TEST_F(LoggerConstructorTest, MacOSLoggerConstructor)
 
     auto sinks = current_logger->sinks();
     ASSERT_FALSE(sinks.empty());
-    auto syslog_sink = std::dynamic_pointer_cast<spdlog::sinks::syslog_sink_mt>(sinks[0]);
-    EXPECT_NE(syslog_sink, nullptr);
+    auto systemd_sink = std::dynamic_pointer_cast<spdlog::sinks::stdout_color_sink_mt>(sinks[0]);
+    EXPECT_NE(systemd_sink, nullptr);
 }
-#endif // __APPLE__
+#endif // __linux__ || __APPLE__
 
 TEST_F(LoggerMessageTest, LogsTraceMessage)
 {
