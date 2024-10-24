@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include <centralized_configuration.hpp>
-#include <configuration_parser.hpp>
 
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/co_spawn.hpp>
@@ -30,18 +29,6 @@ TEST(CentralizedConfiguration, Constructor)
     EXPECT_NO_THROW(
         [[maybe_unused]] CentralizedConfiguration centralizedConfiguration
     );
-}
-
-TEST(CentralizedConfiguration, ImplementsModuleWrapperInterface)
-{
-    CentralizedConfiguration centralizedConfiguration;
-    EXPECT_NO_THROW(centralizedConfiguration.Start());
-    EXPECT_NO_THROW(centralizedConfiguration.Stop());
-    EXPECT_NO_THROW(centralizedConfiguration.Name());
-
-    const std::string emptyConfig;
-    configuration::ConfigurationParser configurationParser(emptyConfig);
-    EXPECT_NO_THROW(centralizedConfiguration.Setup(configurationParser));
 }
 
 TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnUnrecognizedCommand)

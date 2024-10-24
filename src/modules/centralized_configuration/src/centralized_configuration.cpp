@@ -1,27 +1,13 @@
 #include <centralized_configuration.hpp>
 
-#include <module_command/command_entry.hpp>
-
 #include <nlohmann/json.hpp>
 
 #include <filesystem>
 
 namespace centralized_configuration
 {
-    void CentralizedConfiguration::Start() const
-    {
-    }
-
-    void CentralizedConfiguration::Setup(const configuration::ConfigurationParser&) const
-    {
-    }
-
-    void CentralizedConfiguration::Stop() const
-    {
-    }
-
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
-    Co_CommandExecutionResult CentralizedConfiguration::ExecuteCommand(const std::string command)
+    boost::asio::awaitable<module_command::CommandExecutionResult> CentralizedConfiguration::ExecuteCommand(const std::string command)
     {
         try
         {
@@ -100,15 +86,6 @@ namespace centralized_configuration
             module_command::Status::FAILURE,
             "CentralizedConfiguration command not recognized"
         };
-    }
-
-    std::string CentralizedConfiguration::Name() const
-    {
-        return "CentralizedConfiguration";
-    }
-
-    void CentralizedConfiguration::SetMessageQueue(const std::shared_ptr<IMultiTypeQueue>)
-    {
     }
 
     void CentralizedConfiguration::SetGroupIdFunction(SetGroupIdFunctionType setGroupIdFunction)
