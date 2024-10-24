@@ -5,8 +5,6 @@ project(ModuleManager)
 include(../cmake/CommonSettings.cmake)
 set_common_settings()
 
-add_subdirectory(centralized_configuration)
-
 add_library(ModuleManager src/moduleManager.cpp)
 target_include_directories(ModuleManager PUBLIC include)
 
@@ -18,11 +16,11 @@ message(STATUS "Logcollector:   ${ENABLE_LOGCOLLECTOR}")
 message(STATUS "-------------------")
 
 if(ENABLE_INVENTORY)
-    target_link_libraries(ModuleManager PRIVATE Inventory)
     add_subdirectory(inventory)
+    target_link_libraries(ModuleManager PRIVATE Inventory)
 endif()
 
-if (ENABLE_LOGCOLLECTOR)
+if(ENABLE_LOGCOLLECTOR)
     add_subdirectory(logcollector)
     target_link_libraries(ModuleManager PUBLIC Logcollector)
 endif()
