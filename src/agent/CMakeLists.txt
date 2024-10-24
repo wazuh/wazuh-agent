@@ -11,6 +11,7 @@ set_common_settings()
 include_directories(${CMAKE_SOURCE_DIR}/common/logger/include)
 
 add_subdirectory(agent_info)
+add_subdirectory(centralized_configuration)
 add_subdirectory(command_handler)
 add_subdirectory(communicator)
 add_subdirectory(configuration_parser)
@@ -51,6 +52,7 @@ add_library(Agent ${SOURCES})
 target_include_directories(Agent PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(Agent
     PUBLIC
+    CentralizedConfiguration
     ConfigurationParser
     Communicator
     AgentInfo
