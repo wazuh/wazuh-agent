@@ -32,6 +32,6 @@ private:
     configuration::ConfigurationParser m_configurationParser;
     communicator::Communicator m_communicator;
     command_handler::CommandHandler m_commandHandler;
-    ModuleManager m_moduleManager;
+    std::shared_ptr<ModuleManager> m_moduleManager;
     centralized_configuration::CentralizedConfiguration m_centralizedConfiguration;
 };

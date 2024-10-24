@@ -27,7 +27,7 @@ Agent::Agent(const std::string& configPath, std::unique_ptr<ISignalHandler> sign
                      m_agentInfo.GetKey(),
                      [this](std::string table, std::string key) -> std::string
                      { return m_configurationParser.GetConfig<std::string>(std::move(table), std::move(key)); })
-    , m_moduleManager(m_messageQueue, m_configurationParser)
+    , m_moduleManager(std::make_shared<ModuleManager>(m_messageQueue, m_configurationParser))
 {
     m_centralizedConfiguration.SetGroupIdFunction([this](const std::vector<std::string>& groups)
                                                   { return m_agentInfo.SetGroups(groups); });
@@ -67,18 +67,18 @@ void Agent::Run()
         [this]() { return GetCommandFromQueue(m_messageQueue); },
         [this]() { return PopCommandFromQueue(m_messageQueue); },
         [this](module_command::CommandEntry& cmd)
-        { return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue); }));
+        { return DispatchCommand(cmd, m_moduleManager->GetModule(cmd.Module), m_messageQueue); }));
 
-    m_moduleManager.AddModule(Inventory::Instance());
+    m_moduleManager->AddModule(Inventory::Instance());
 
 #ifdef ENABLE_LOGCOLLECTOR
-    m_moduleManager.AddModule(Logcollector::Instance());
+    m_moduleManager->AddModule(Logcollector::Instance());
 #endif
 
-    m_moduleManager.Setup();
-    m_taskManager.EnqueueTask([this]() { m_moduleManager.Start(); });
+    m_moduleManager->Setup();
+    m_taskManager.EnqueueTask([this]() { m_moduleManager->Start(); });
 
     m_signalHandler->WaitForSignal();
-    m_moduleManager.Stop();
+    m_moduleManager->Stop();
     m_communicator.Stop();
 }
