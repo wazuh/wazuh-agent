@@ -77,7 +77,6 @@ void Agent::Run()
     m_moduleManager.AddModule(Logcollector::Instance());
 #endif
 
-    m_moduleManager.AddModule(m_centralizedConfiguration);
     m_moduleManager.Setup();
     m_taskManager.EnqueueTask([this]() { m_moduleManager.Start(); });
 
