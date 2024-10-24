@@ -41,7 +41,7 @@ pushd src
 git submodule update --init --recursive
 mkdir build
 pushd build
-cmake .. -DINSTALL_ROOT=%{buildroot}%{_localstatedir} && make -j $(nproc) 
+cmake .. -DINSTALL_ROOT=%{buildroot}%{_localstatedir} && make -j $(nproc)
 
 %install
 # Clean BUILDROOT
@@ -79,11 +79,13 @@ fi
 
 # If the package is being installed
 if [ $1 = 1 ]; then
-  systemctl daemon-reload
-  systemctl enable wazuh-agent
+  if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1 && systemctl is-active --quiet wazuh-agent > /dev/null 2>&1; then
+    systemctl daemon-reload
+    systemctl enable wazuh-agent
+  fi
   touch /etc/ld.so.conf.d/wazuh-agentlibs.conf
   echo "/usr/local/lib" >> /etc/ld.so.conf.d/wazuh-agentlibs.conf
-  sudo ldconfig
+  ldconfig
 fi
 
 ## SCA RELATED
@@ -258,6 +260,7 @@ rm -fr %{buildroot}
 %attr(750, root, wazuh) %{_localstatedir}usr/local/lib/libstdc++.so.6
 %dir %attr(770, root, wazuh) %{_localstatedir}etc/wazuh-agent
 %dir %attr(750, root, wazuh) %{_localstatedir}var/wazuh-agent
+%attr(750, root, wazuh) %{_localstatedir}etc/wazuh-agent/wazuh.conf
 
 %changelog
 * Wed Jul 10 2024 support <info@wazuh.com> - 4.9.0

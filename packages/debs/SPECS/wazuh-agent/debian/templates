@@ -1,0 +1,4 @@
+Template: wazuh-agent/server-ip
+Type: string
+Default: 127.0.0.1
+Description: Wazuh server IP address for this agent.
