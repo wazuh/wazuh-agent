@@ -16,7 +16,8 @@ namespace centralized_configuration
     public:
         using SetGroupIdFunctionType = std::function<void(const std::vector<std::string>& groupList)>;
         using GetGroupIdFunctionType = std::function<std::vector<std::string>()>;
-        using DownloadGroupFilesFunctionType = std::function<bool(const std::string& group, const std::string& dstFilePath)>;
+        using DownloadGroupFilesFunctionType =
+            std::function<bool(const std::string& group, const std::string& dstFilePath)>;
 
         /**
          * @brief Executes a command for the centralized configuration system.
