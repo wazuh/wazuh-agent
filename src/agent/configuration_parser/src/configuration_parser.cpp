@@ -3,7 +3,7 @@
 
 namespace
 {
-    const std::string CONFIG_FILE_NAME = "wazuh.conf";
+    const std::string CONFIG_FILE_NAME = "/etc/wazuh-agent/wazuh.conf";
 }
 
 namespace configuration
