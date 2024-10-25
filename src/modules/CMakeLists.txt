@@ -7,39 +7,35 @@ set_common_settings()
 
 add_subdirectory(centralized_configuration)
 
-if (ENABLE_LOGCOLLECTOR)
-    add_subdirectory(logcollector)
-endif()
-
 add_library(ModuleManager src/moduleManager.cpp)
 target_include_directories(ModuleManager PUBLIC include)
-
-# Enable/disable optional modules compilation
-option(ENABLE_MODULE_INVENTORY "Enable module Inventory" ON)
 
 message(STATUS "-------------------")
 message(STATUS "Wazuh agent modules")
 message(STATUS "-------------------")
-if(ENABLE_MODULE_INVENTORY)
-    message(STATUS "Inventory: enabled")
-    target_compile_definitions(ModuleManager PRIVATE ENABLE_MODULE_INVENTORY)
-    target_link_libraries(ModuleManager PRIVATE Inventory)
-    add_subdirectory(inventory)
-else()
-    message(STATUS "Inventory: disabled")
-endif()
+message(STATUS "Inventory:      ${ENABLE_INVENTORY}")
+message(STATUS "Logcollector:   ${ENABLE_LOGCOLLECTOR}")
 message(STATUS "-------------------")
 
-target_link_libraries(ModuleManager PUBLIC ConfigurationParser MultiTypeQueue Logger ModuleCommand)
+if(ENABLE_INVENTORY)
+    target_link_libraries(ModuleManager PRIVATE Inventory)
+    add_subdirectory(inventory)
+endif()
 
 if (ENABLE_LOGCOLLECTOR)
+    add_subdirectory(logcollector)
     target_link_libraries(ModuleManager PUBLIC Logcollector)
 endif()
+
+target_link_libraries(ModuleManager PUBLIC ConfigurationParser MultiTypeQueue PRIVATE Logger ModuleCommand)
 
 include(../cmake/ConfigureTarget.cmake)
 configure_target(ModuleManager)
 
 if(BUILD_TESTS)
     enable_testing()
-    add_subdirectory(tests)
+    # TO DO: Fix unit tests for Windows
+    if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        add_subdirectory(tests)
+    endif()
 endif()

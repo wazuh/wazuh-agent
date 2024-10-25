@@ -1,15 +1,24 @@
 #include <iostream>
 
-#ifdef ENABLE_MODULE_INVENTORY
+#ifdef ENABLE_INVENTORY
 #include <inventory.hpp>
+#endif
+
+#ifdef ENABLE_LOGCOLLECTOR
+#include <logcollector.hpp>
+using logcollector::Logcollector;
 #endif
 
 #include <moduleManager.hpp>
 
 void ModuleManager::AddModules() {
 
-#ifdef ENABLE_MODULE_INVENTORY
+#ifdef ENABLE_INVENTORY
     AddModule(Inventory::Instance());
+#endif
+
+#ifdef ENABLE_LOGCOLLECTOR
+    AddModule(Logcollector::Instance());
 #endif
 
     Setup();

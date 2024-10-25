@@ -1,10 +1,5 @@
 #include <agent.hpp>
 
-#ifdef ENABLE_LOGCOLLECTOR
-#include <logcollector.hpp>
-using logcollector::Logcollector;
-#endif
-
 #include <command_handler_utils.hpp>
 #include <http_client.hpp>
 #include <message.hpp>
@@ -15,8 +10,6 @@ using logcollector::Logcollector;
 #include <filesystem>
 #include <memory>
 #include <thread>
-
-using logcollector::Logcollector;
 
 Agent::Agent(const std::string& configPath, std::unique_ptr<ISignalHandler> signalHandler)
     : m_messageQueue(std::make_shared<MultiTypeQueue>())
@@ -66,14 +59,14 @@ void Agent::Run()
         [this]([[maybe_unused]] const std::string& response)
         { PopMessagesFromQueue(m_messageQueue, MessageType::STATELESS); }));
 
+    m_moduleManager.AddModules();
+    m_taskManager.EnqueueTask([this]() { m_moduleManager.Start(); });
+
     m_taskManager.EnqueueTask(m_commandHandler.CommandsProcessingTask<module_command::CommandEntry>(
         [this]() { return GetCommandFromQueue(m_messageQueue); },
         [this]() { return PopCommandFromQueue(m_messageQueue); },
         [this](module_command::CommandEntry& cmd)
         { return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue); }));
-
-    m_moduleManager.AddModules();
-    m_taskManager.EnqueueTask([this]() { m_moduleManager.Start(); });
 
     m_signalHandler->WaitForSignal();
     m_moduleManager.Stop();

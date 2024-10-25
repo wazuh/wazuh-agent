@@ -9,17 +9,6 @@
 
 #include <boost/asio/awaitable.hpp>
 
-template<typename T>
-concept Module = requires(T t, const configuration::ConfigurationParser& configurationParser, const std::string & query,
-                             const std::function<int(Message)>& pushMessage) {
-    { t.Start() } -> std::same_as<void>;
-    { t.Setup(configurationParser) } -> std::same_as<void>;
-    { t.Stop() } -> std::same_as<void>;
-    { t.ExecuteCommand(query) } -> std::same_as<std::string>;
-    { t.Name() } -> std::same_as<std::string>;
-    { t.SetPushMessageFunction(pushMessage) } -> std::same_as<void>;
-};
-
 class ModuleManager {
 public:
     ModuleManager(const std::function<int(Message)>& pushMessage,
