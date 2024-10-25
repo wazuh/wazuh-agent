@@ -4,6 +4,8 @@
 
 #include <chrono>
 
+#include <nlohmann/json.hpp>
+
 namespace command_store
 {
     constexpr double MILLISECS_IN_A_SEC = 1000.0;
@@ -88,7 +90,10 @@ namespace command_store
         fields.emplace_back("module", sqlite_manager::ColumnType::TEXT, cmd.Module);
         fields.emplace_back("command", sqlite_manager::ColumnType::TEXT, cmd.Command);
         fields.emplace_back("time", sqlite_manager::ColumnType::REAL, std::to_string(GetCurrentTimestampAsReal()));
-        fields.emplace_back("parameters", sqlite_manager::ColumnType::TEXT, cmd.Parameters);
+
+        nlohmann::json serializedJsonArray = cmd.Parameters;
+        fields.emplace_back("parameters", sqlite_manager::ColumnType::TEXT, serializedJsonArray.dump());
+
         fields.emplace_back("result", sqlite_manager::ColumnType::TEXT, cmd.ExecutionResult.Message);
         fields.emplace_back("status",
                             sqlite_manager::ColumnType::INTEGER,
@@ -150,7 +155,8 @@ namespace command_store
                 }
                 else if (col.Name == "parameters")
                 {
-                    cmd.Parameters = col.Value;
+                    const auto deserializedJsonArray = nlohmann::json::parse(col.Value);
+                    cmd.Parameters = deserializedJsonArray.get<decltype(cmd.Parameters)>();
                 }
                 else if (col.Name == "result")
                 {
@@ -182,7 +188,10 @@ namespace command_store
         if (!cmd.Command.empty())
             fields.emplace_back("command", sqlite_manager::ColumnType::TEXT, cmd.Command);
         if (!cmd.Parameters.empty())
-            fields.emplace_back("parameters", sqlite_manager::ColumnType::TEXT, cmd.Parameters);
+        {
+            const nlohmann::json serializedJsonArray = cmd.Parameters;
+            fields.emplace_back("parameters", sqlite_manager::ColumnType::TEXT, serializedJsonArray.dump());
+        }
         if (!cmd.ExecutionResult.Message.empty())
             fields.emplace_back("result", sqlite_manager::ColumnType::TEXT, cmd.ExecutionResult.Message);
         if (cmd.ExecutionResult.ErrorCode != module_command::Status::UNKNOWN)

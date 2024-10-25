@@ -2,6 +2,7 @@
 
 #include <limits>
 #include <string>
+#include <vector>
 
 namespace module_command
 {
@@ -39,7 +40,7 @@ namespace module_command
         CommandEntry(std::string id,
                      std::string module,
                      std::string command,
-                     std::string parameters,
+                     std::vector<std::string> parameters,
                      std::string result,
                      Status status)
             : Id(std::move(id))
@@ -54,7 +55,7 @@ namespace module_command
         std::string Id;
         std::string Module;
         std::string Command;
-        std::string Parameters;
+        std::vector<std::string> Parameters;
         double Time;
         CommandExecutionResult ExecutionResult;
     };

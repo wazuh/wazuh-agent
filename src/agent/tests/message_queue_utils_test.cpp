@@ -118,7 +118,8 @@ TEST_F(MessageQueueUtilsTest, GetCommandFromQueueTest)
     ASSERT_EQ(cmd.has_value() ? cmd.value().Id : "", "112233");
     ASSERT_EQ(cmd.has_value() ? cmd.value().Module : "", "origin_test");
     ASSERT_EQ(cmd.has_value() ? cmd.value().Command : "", "command_test");
-    ASSERT_EQ(cmd.has_value() ? cmd.value().Parameters : "", "parameters_test");
+    ASSERT_EQ(cmd.has_value() ? cmd.value().Parameters : std::vector<std::string> {""},
+              std::vector<std::string> {"\"parameters_test\""});
     ASSERT_EQ(cmd.has_value() ? cmd.value().ExecutionResult.ErrorCode : module_command::Status::UNKNOWN,
               module_command::Status::IN_PROGRESS);
 }

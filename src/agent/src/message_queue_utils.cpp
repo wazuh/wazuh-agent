@@ -59,7 +59,7 @@ std::optional<module_command::CommandEntry> GetCommandFromQueue(std::shared_ptr<
     std::string id;
     std::string module;
     std::string command;
-    std::string parameters;
+    std::vector<std::string> parameters;
 
     if (jsonData.contains("id") && jsonData["id"].is_string())
     {
@@ -81,11 +81,7 @@ std::optional<module_command::CommandEntry> GetCommandFromQueue(std::shared_ptr<
                     if (arg.is_string())
                         command = arg.get<std::string>();
                     break;
-                default:
-                    if (!parameters.empty())
-                        parameters += " ";
-                    parameters += arg.is_string() ? arg.get<std::string>() : arg.dump();
-                    break;
+                default: parameters.push_back(arg.dump()); break;
             }
         }
     }
