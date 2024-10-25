@@ -50,8 +50,8 @@ override_dh_install:
 
 	make -C build install -j $(JOBS)
 
-	sed -i "s|WAZUH_HOME|/usr/local/bin|g" ${TARGET_DIR}$(INSTALLATION_DIR)/usr/lib/systemd/system/wazuh-agent.service
-	cp /usr/local/gcc-13.2.0/lib64/libstdc++.so.6 ${TARGET_DIR}$(INSTALLATION_DIR)/usr/local/lib
+	sed -i "s|WAZUH_HOME|/usr/share/wazuh-agent/bin|g" ${TARGET_DIR}$(INSTALLATION_DIR)/usr/lib/systemd/system/wazuh-agent.service
+	cp /usr/local/gcc-13.2.0/lib64/libstdc++.so.6 ${TARGET_DIR}$(INSTALLATION_DIR)/usr/share/wazuh-agent/lib
 
 override_dh_auto_clean:
 	make -C src clean

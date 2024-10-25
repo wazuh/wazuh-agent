@@ -5,7 +5,7 @@
 set -ex
 
 export INSTALLATION_WAZUH_DIR="/opt/wazuh-agent"
-BINARY_DIR="/usr/local/bin/"
+BINARY_DIR="/usr/share/wazuh-agent/bin/"
 
 case "$1" in
     upgrade|deconfigure)
