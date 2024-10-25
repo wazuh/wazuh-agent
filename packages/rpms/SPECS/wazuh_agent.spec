@@ -73,6 +73,7 @@ if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1 && system
 elif command -v service > /dev/null 2>&1 && service wazuh-agent status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
   service wazuh-agent stop > /dev/null 2>&1
 fi
+/usr/local/bin/wazuh-agent --stop > /dev/null 2>&1
 
 %post
 # If the package is being upgraded
@@ -195,6 +196,7 @@ if [ $1 = 0 ]; then
   elif command -v service > /dev/null 2>&1 && service wazuh-agent status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
     service wazuh-agent stop > /dev/null 2>&1
   fi
+  /usr/local/bin/wazuh-agent --stop > /dev/null 2>&1
 
   # Remove the SELinux policy
   if command -v getenforce > /dev/null 2>&1 && command -v semodule > /dev/null 2>&1; then
