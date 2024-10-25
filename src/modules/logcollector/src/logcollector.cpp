@@ -70,8 +70,8 @@ Co_CommandExecutionResult Logcollector::ExecuteCommand(const std::string query) 
     co_return module_command::CommandExecutionResult{module_command::Status::SUCCESS, "OK"};
 }
 
-void Logcollector::SetMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue) {
-    m_messageQueue = queue;
+void Logcollector::SetPushMessageFunction(const std::function<int(Message)>& pushMessage) {
+    m_pushMessage = pushMessage;
 }
 
 void Logcollector::SendMessage(const std::string& location, const std::string& log) {
@@ -83,7 +83,7 @@ void Logcollector::SendMessage(const std::string& location, const std::string& l
     event["original"] = log;
 
     auto message = Message(MessageType::STATELESS, data, m_moduleName);
-    m_messageQueue->push(message);
+    m_pushMessage(message);
 
     LogTrace("Message pushed: '{}':'{}'", location, log);
 }

@@ -1,10 +1,4 @@
 #include <agent.hpp>
-#include <inventory.hpp>
-
-#ifdef ENABLE_LOGCOLLECTOR
-#include <logcollector.hpp>
-using logcollector::Logcollector;
-#endif
 
 #include <command_handler_utils.hpp>
 #include <http_client.hpp>
@@ -17,8 +11,6 @@ using logcollector::Logcollector;
 #include <memory>
 #include <thread>
 
-using logcollector::Logcollector;
-
 Agent::Agent(const std::string& configPath, std::unique_ptr<ISignalHandler> signalHandler)
     : m_messageQueue(std::make_shared<MultiTypeQueue>())
     , m_signalHandler(std::move(signalHandler))
@@ -29,7 +21,9 @@ Agent::Agent(const std::string& configPath, std::unique_ptr<ISignalHandler> sign
                      m_agentInfo.GetKey(),
                      [this](std::string table, std::string key) -> std::string
                      { return m_configurationParser.GetConfig<std::string>(std::move(table), std::move(key)); })
-    , m_moduleManager(m_messageQueue, m_configurationParser)
+    , m_moduleManager([this](Message message) -> int { return m_messageQueue->push(std::move(message)); },
+                      m_configurationParser,
+                      [this](std::function<void()> task) { m_taskManager.EnqueueTask(std::move(task)); })
 {
     m_centralizedConfiguration.SetGroupIdFunction([this](const std::vector<std::string>& groups)
                                                   { return m_agentInfo.SetGroups(groups); });
@@ -65,21 +59,14 @@ void Agent::Run()
         [this]([[maybe_unused]] const std::string& response)
         { PopMessagesFromQueue(m_messageQueue, MessageType::STATELESS); }));
 
+    m_moduleManager.AddModules();
+    m_taskManager.EnqueueTask([this]() { m_moduleManager.Start(); });
+
     m_taskManager.EnqueueTask(m_commandHandler.CommandsProcessingTask<module_command::CommandEntry>(
         [this]() { return GetCommandFromQueue(m_messageQueue); },
         [this]() { return PopCommandFromQueue(m_messageQueue); },
         [this](module_command::CommandEntry& cmd)
         { return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue); }));
-
-    m_moduleManager.AddModule(Inventory::Instance());
-
-#ifdef ENABLE_LOGCOLLECTOR
-    m_moduleManager.AddModule(Logcollector::Instance());
-#endif
-
-    m_moduleManager.AddModule(m_centralizedConfiguration);
-    m_moduleManager.Setup();
-    m_taskManager.EnqueueTask([this]() { m_moduleManager.Start(); });
 
     m_signalHandler->WaitForSignal();
     m_moduleManager.Stop();
