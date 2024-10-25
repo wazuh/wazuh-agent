@@ -37,9 +37,9 @@ public:
     /// @return Name of the module
     const std::string& Name() const { return m_moduleName; };
 
-    /// @brief Sets the message queue
-    /// @param queue Message queue
-    void SetMessageQueue(const std::shared_ptr<IMultiTypeQueue> queue);
+    /// @brief Sets the push message function
+    /// @param pushMessage Push message function
+    void SetPushMessageFunction(const std::function<int(Message)>& pushMessage);
 
     /// @brief Sends a message to que queue
     /// @param location Location of the message
@@ -90,8 +90,8 @@ private:
     /// @brief Is the module enabled
     bool m_enabled = true;
 
-    /// @brief Output message queue
-    std::shared_ptr<IMultiTypeQueue> m_messageQueue;
+    /// @brief Push message function
+    std::function<int(Message)> m_pushMessage;
 
     /// @brief Boost ASIO context
     boost::asio::io_context m_ioContext;

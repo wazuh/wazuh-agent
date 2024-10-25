@@ -1,10 +1,5 @@
 #include <agent.hpp>
 
-#ifdef ENABLE_LOGCOLLECTOR
-#include <logcollector.hpp>
-using logcollector::Logcollector;
-#endif
-
 #include <command_handler_utils.hpp>
 #include <http_client.hpp>
 #include <message.hpp>
@@ -15,8 +10,6 @@ using logcollector::Logcollector;
 #include <filesystem>
 #include <memory>
 #include <thread>
-
-using logcollector::Logcollector;
 
 Agent::Agent(const std::string& configPath, std::unique_ptr<ISignalHandler> signalHandler)
     : m_messageQueue(std::make_shared<MultiTypeQueue>())

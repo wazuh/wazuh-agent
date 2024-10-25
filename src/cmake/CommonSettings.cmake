@@ -5,6 +5,7 @@ function(set_common_settings)
 
     option(BUILD_TESTS "Enable tests building" OFF)
     option(COVERAGE "Enable coverage report" OFF)
+    option(ENABLE_INVENTORY "Enable Inventory module" ON)
     option(ENABLE_LOGCOLLECTOR "Enable Logcollector module" ON)
 
     if(COVERAGE)
@@ -47,6 +48,10 @@ function(set_common_settings)
         add_compile_options(/Zc:preprocessor)
     else()
         set(CMAKE_CXX_FLAGS "-g3" PARENT_SCOPE)
+    endif()
+
+    if(ENABLE_INVENTORY)
+        add_definitions(-DENABLE_INVENTORY)
     endif()
 
     if(ENABLE_LOGCOLLECTOR)
