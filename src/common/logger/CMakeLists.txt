@@ -25,7 +25,7 @@ endif()
 if(WIN32)
     set(SOURCES src/logger_win.cpp)
 else()
-    set(SOURCES src/logger_linux.cpp)
+    set(SOURCES src/logger_unix.cpp)
 endif()
 
 add_library(Logger ${SOURCES})
