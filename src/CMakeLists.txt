@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
 get_filename_component(SRC_FOLDER ${CMAKE_SOURCE_DIR}/../ ABSOLUTE)
+get_filename_component(CONFIG_FOLDER ${CMAKE_SOURCE_DIR}/../etc/config/ ABSOLUTE)
 project(wazuh-agent)
 
 include(cmake/CommonSettings.cmake)
@@ -36,29 +37,33 @@ if("${INSTALL_ROOT}" STREQUAL "/")
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(BIN_INSTALL_DIR "/usr/local/bin") 
+    set(BIN_INSTALL_DIR "/usr/local/bin")
     set(CONFIG_INSTALL_DIR "/etc/wazuh-agent")
     set(SERVICE_INSTALL_DIR "/usr/lib/systemd/system")
     set(DATA_INSTALL_DIR "/var/wazuh-agent")
-    set(LIB_INSTALL_DIR "/usr/local/lib")  
+    set(LIB_INSTALL_DIR "/usr/local/lib")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(BIN_INSTALL_DIR "/usr/local/bin")  
+    set(BIN_INSTALL_DIR "/usr/local/bin")
     set(CONFIG_INSTALL_DIR "/etc/wazuh-agent")
     set(SERVICE_INSTALL_DIR "/etc/systemd/system")
-    set(DATA_INSTALL_DIR "/var/wazuh-agent")  
+    set(DATA_INSTALL_DIR "/var/wazuh-agent")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set(BIN_INSTALL_DIR "C:/Program Files/wazuh-agent/bin")  
+    set(BIN_INSTALL_DIR "C:/Program Files/wazuh-agent/bin")
     set(CONFIG_INSTALL_DIR "C:/Program Files/wazuh-agent/config")
-    set(DATA_INSTALL_DIR "C:/Program Files/wazuh-agent/var")  
+    set(DATA_INSTALL_DIR "C:/Program Files/wazuh-agent/var")
 else()
     message(FATAL_ERROR "Not supported OS")
 endif()
 
+install(CODE "file(MAKE_DIRECTORY ${INSTALL_ROOT}${BIN_INSTALL_DIR})")
+
 install(TARGETS wazuh-agent
-        DESTINATION ${INSTALL_ROOT}${BIN_INSTALL_DIR}) 
+        DESTINATION ${INSTALL_ROOT}${BIN_INSTALL_DIR})
 
 install(CODE "file(MAKE_DIRECTORY ${INSTALL_ROOT}${DATA_INSTALL_DIR})")
 install(CODE "file(MAKE_DIRECTORY ${INSTALL_ROOT}${CONFIG_INSTALL_DIR})")
+install(FILES ${CONFIG_FOLDER}/wazuh.conf
+        DESTINATION ${INSTALL_ROOT}${CONFIG_INSTALL_DIR})
 
 message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 
@@ -68,7 +73,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     #    COMMAND sed "s|WAZUH_HOME|${INSTALL_ROOT}${BIN_INSTALL_DIR}|g" agent/service/wazuh-agent.service > ${CMAKE_BINARY_DIR}/wazuh-agent.service)
     install(FILES agent/service/wazuh-agent.service
         DESTINATION ${INSTALL_ROOT}${SERVICE_INSTALL_DIR})
-    install(FILES 
+    install(FILES
         ${CMAKE_BINARY_DIR}/lib/libdbsync.so
         ${CMAKE_BINARY_DIR}/lib/libsysinfo.so
         DESTINATION ${INSTALL_ROOT}${LIB_INSTALL_DIR})

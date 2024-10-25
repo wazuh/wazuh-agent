@@ -1,0 +1,82 @@
+diff --git a/top.c b/top.c
+index c22d4f00..0aba1b15 100644
+--- a/top.c
++++ b/top.c
+@@ -1713,8 +1713,8 @@ static void zap_fieldstab (void) {
+ 
+    if (once) goto always;
+ 
+-   Fieldstab[P_PID].head = "  PID ";
+-   Fieldstab[P_PID].fmts = "%5d ";
++   Fieldstab[Px_PID].head = "  PID ";
++   Fieldstab[Px_PID].fmts = "%5d ";
+    Fieldstab[P_PPD].head = " PPID ";
+    Fieldstab[P_PPD].fmts = "%5d ";
+    Fieldstab[P_PGD].head = " PGRP ";
+@@ -1728,8 +1728,8 @@ static void zap_fieldstab (void) {
+    if (5 < (digits = get_pid_digits())) {
+       if (10 < digits) error_exit("failed pid size test");
+       snprintf(fmts_pid, sizeof(fmts_pid), "%%%uu ", digits);
+-      Fieldstab[P_PID].head = "       PID " + 10 - digits;
+-      Fieldstab[P_PID].fmts = fmts_pid;
++      Fieldstab[Px_PID].head = "       PID " + 10 - digits;
++      Fieldstab[Px_PID].fmts = fmts_pid;
+       Fieldstab[P_PPD].head = "      PPID " + 10 - digits;
+       Fieldstab[P_PPD].fmts = fmts_pid;
+       Fieldstab[P_PGD].head = "      PGRP " + 10 - digits;
+@@ -3075,7 +3075,7 @@ static void keys_xtra (int ch) {
+ //       xmsg = "Memory";
+          break;
+       case 'N':
+-         w->rc.sortindx = P_PID;
++         w->rc.sortindx = Px_PID;
+ //       xmsg = "Numerical";
+          break;
+       case 'P':
+@@ -3446,7 +3446,7 @@ static void task_show (const WIN_t *q, const proc_t *p) {
+          case P_PGD:
+             makeCOL(p->pgrp);
+             break;
+-         case P_PID:
++         case Px_PID:
+             makeCOL(p->tid);
+             break;
+          case P_PPD:
+diff --git a/top.h b/top.h
+index a409c61a..c2e8a0a6 100644
+--- a/top.h
++++ b/top.h
+@@ -124,7 +124,7 @@
+         /* Flags for each possible field (and then some) --
+            these MUST be kept in sync with the FLD_t Fieldstab[] array !! */
+ enum pflag {
+-   P_PID = 0, P_PPD,
++   Px_PID = 0, P_PPD,
+    P_UED, P_UEN, P_URD, P_URN, P_USD, P_USN,
+    P_GID, P_GRP, P_PGD, P_TTY, P_TPG, P_SID,
+    P_PRI, P_NCE, P_THD,
+@@ -448,11 +448,11 @@ typedef struct WIN_t {
+            ( with values chosen to avoid the need to escape ) */
+ #define FLD_OFFSET  '%'
+    //   seq_fields  "%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ["
+-#define DEF_FIELDS  "¥¨³´»½ÀÄ·º¹Å&')*+,-./012568<>?ABCFGHIJKLMNOPQRSTUVWXYZ["
++#define DEF_FIELDS  "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä·ï¿½ï¿½ï¿½&')*+,-./012568<>?ABCFGHIJKLMNOPQRSTUVWXYZ["
+         /* Pre-configured windows/field groups */
+-#define JOB_FIELDS  "¥¦¹·º³´Ä»¼½§Å()*+,-./012568>?@ABCFGHIJKLMNOPQRSTUVWXYZ["
+-#define MEM_FIELDS  "¥º»¼½¾¿ÀÁÃÄ³´·Å&'()*+,-./0125689BFGHIJKLMNOPQRSTUVWXYZ["
+-#define USR_FIELDS  "¥¦§¨ª°¹·ºÄÅ)+,-./1234568;<=>?@ABCFGHIJKLMNOPQRSTUVWXYZ["
++#define JOB_FIELDS  "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä»ï¿½ï¿½ï¿½ï¿½()*+,-./012568>?@ABCFGHIJKLMNOPQRSTUVWXYZ["
++#define MEM_FIELDS  "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä³ï¿½ï¿½ï¿½&'()*+,-./0125689BFGHIJKLMNOPQRSTUVWXYZ["
++#define USR_FIELDS  "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)+,-./1234568;<=>?@ABCFGHIJKLMNOPQRSTUVWXYZ["
+ 
+         /* The default values for the local config file */
+ #define DEF_RCFILE { \
+@@ -460,7 +460,7 @@ typedef struct WIN_t {
+    { P_CPU, DEF_WINFLGS, 0, \
+       COLOR_RED, COLOR_RED, COLOR_YELLOW, COLOR_RED, \
+       "Def", DEF_FIELDS }, \
+-   { P_PID, DEF_WINFLGS, 0, \
++   { Px_PID, DEF_WINFLGS, 0, \
+       COLOR_CYAN, COLOR_CYAN, COLOR_WHITE, COLOR_CYAN, \
+       "Job", JOB_FIELDS }, \
+    { P_MEM, DEF_WINFLGS, 0, \
