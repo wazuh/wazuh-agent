@@ -66,7 +66,17 @@ void Agent::Run()
         [this]() { return GetCommandFromQueue(m_messageQueue); },
         [this]() { return PopCommandFromQueue(m_messageQueue); },
         [this](module_command::CommandEntry& cmd)
-        { return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue); }));
+        {
+            if (cmd.Module == "CentralizedConfiguration")
+            {
+                return DispatchCommand(
+                    cmd,
+                    [this](std::string command)
+                    { return m_centralizedConfiguration.ExecuteCommand(std::move(command)); },
+                    m_messageQueue);
+            }
+            return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue);
+        }));
 
     m_signalHandler->WaitForSignal();
     m_moduleManager.Stop();

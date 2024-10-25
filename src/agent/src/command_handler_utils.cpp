@@ -8,10 +8,12 @@
 #include <logger.hpp>
 
 #include <chrono>
+#include <functional>
 
 namespace
 {
-    boost::asio::awaitable<void> ExecuteCommandTask(std::shared_ptr<ModuleWrapper> module,
+    template<typename ExecuteFunction>
+    boost::asio::awaitable<void> ExecuteCommandTask(ExecuteFunction executeFunction,
                                                     module_command::CommandEntry commandEntry,
                                                     std::shared_ptr<module_command::CommandExecutionResult> result,
                                                     std::shared_ptr<bool> commandCompleted,
@@ -19,7 +21,7 @@ namespace
     {
         try
         {
-            *result = co_await module->ExecuteCommand(commandEntry.Command);
+            *result = co_await executeFunction(commandEntry.Command);
             *commandCompleted = true;
             timer->cancel();
         }
@@ -63,18 +65,12 @@ namespace
     }
 } // namespace
 
-boost::asio::awaitable<module_command::CommandExecutionResult>
-DispatchCommand(module_command::CommandEntry commandEntry,
-                std::shared_ptr<ModuleWrapper> module,
-                std::shared_ptr<IMultiTypeQueue> messageQueue)
+boost::asio::awaitable<module_command::CommandExecutionResult> DispatchCommand(
+    module_command::CommandEntry commandEntry,
+    std::function<boost::asio::awaitable<module_command::CommandExecutionResult>(std::string command)> executeFunction,
+    std::shared_ptr<IMultiTypeQueue> messageQueue)
 {
     using namespace boost::asio::experimental::awaitable_operators;
-
-    if (!module)
-    {
-        LogError("Error dispatching command: module {} not found", commandEntry.Module);
-        co_return module_command::CommandExecutionResult {module_command::Status::FAILURE, "Module not found"};
-    }
 
     LogInfo("Dispatching command {}({})", commandEntry.Command, commandEntry.Module);
 
@@ -86,7 +82,7 @@ DispatchCommand(module_command::CommandEntry commandEntry,
     auto commandCompleted = std::make_shared<bool>(false);
 
     co_await (TimerTask(timer, result, commandCompleted) ||
-              ExecuteCommandTask(module, commandEntry, result, commandCompleted, timer));
+              ExecuteCommandTask(executeFunction, commandEntry, result, commandCompleted, timer));
 
     nlohmann::json resultJson;
     resultJson["error"] = result->ErrorCode;
@@ -97,4 +93,24 @@ DispatchCommand(module_command::CommandEntry commandEntry,
     messageQueue->push(message);
 
     co_return *result;
+}
+
+boost::asio::awaitable<module_command::CommandExecutionResult>
+DispatchCommand(module_command::CommandEntry commandEntry,
+                std::shared_ptr<ModuleWrapper> module,
+                std::shared_ptr<IMultiTypeQueue> messageQueue)
+{
+    if (!module)
+    {
+        LogError("Error dispatching command: module {} not found", commandEntry.Module);
+        co_return module_command::CommandExecutionResult {module_command::Status::FAILURE, "Module not found"};
+    }
+
+    auto moduleExecuteFunction =
+        [module](const std::string& command) -> boost::asio::awaitable<module_command::CommandExecutionResult>
+    {
+        return module->ExecuteCommand(command);
+    };
+
+    co_return co_await DispatchCommand(commandEntry, moduleExecuteFunction, messageQueue);
 }
