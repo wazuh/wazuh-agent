@@ -15,9 +15,10 @@ namespace
     // NOLINTBEGIN(cppcoreguidelines-avoid-reference-coroutine-parameters)
     boost::asio::awaitable<void> TestExecuteCommand(CentralizedConfiguration& centralizedConfiguration,
                                                     const std::string& command,
+                                                    const std::vector<std::string>& parameters,
                                                     module_command::Status expectedErrorCode)
     {
-        const auto commandResult = co_await centralizedConfiguration.ExecuteCommand(command);
+        const auto commandResult = co_await centralizedConfiguration.ExecuteCommand(command, parameters);
         EXPECT_EQ(commandResult.ErrorCode, expectedErrorCode);
     }
 
@@ -39,7 +40,7 @@ TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnUnrecognizedCommand
         {
             CentralizedConfiguration centralizedConfiguration;
             co_await TestExecuteCommand(
-                centralizedConfiguration, R"({"command": "unknown-command"})", module_command::Status::FAILURE);
+                centralizedConfiguration, R"({"command": "unknown-command"})", {},module_command::Status::FAILURE);
         }(),
         boost::asio::detached);
 
@@ -62,13 +63,14 @@ TEST(CentralizedConfiguration, ExecuteCommandHandlesRecognizedCommands)
 
             co_await TestExecuteCommand(centralizedConfiguration,
                                         R"({"command": "set-group", "groups": ["group1", "group2"]})",
+                                        {},
                                         module_command::Status::SUCCESS);
 
             co_await TestExecuteCommand(
-                centralizedConfiguration, R"({"command": "update-group"})", module_command::Status::SUCCESS);
+                centralizedConfiguration, R"({"command": "update-group"})", {}, module_command::Status::SUCCESS);
 
             co_await TestExecuteCommand(
-                centralizedConfiguration, R"({"command": "unknown-command"})", module_command::Status::FAILURE);
+                centralizedConfiguration, R"({"command": "unknown-command"})", {}, module_command::Status::FAILURE);
         }(),
         boost::asio::detached);
 
@@ -87,6 +89,7 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForS
 
             co_await TestExecuteCommand(centralizedConfiguration,
                                         R"({"command": "set-group", "groups": ["group1", "group2"]})",
+                                        {},
                                         module_command::Status::FAILURE);
 
             bool wasSetGroupIdFunctionCalled = false;
@@ -107,6 +110,7 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForS
 
             co_await TestExecuteCommand(centralizedConfiguration,
                                         R"({"command": "set-group", "groups": ["group1", "group2"]})",
+                                        {},
                                         module_command::Status::SUCCESS);
 
             EXPECT_TRUE(wasSetGroupIdFunctionCalled);
@@ -128,7 +132,7 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForU
             CentralizedConfiguration centralizedConfiguration;
 
             co_await TestExecuteCommand(
-                centralizedConfiguration, R"({"command": "update-group"})", module_command::Status::FAILURE);
+                centralizedConfiguration, R"({"command": "update-group"})", {}, module_command::Status::FAILURE);
 
             bool wasGetGroupIdFunctionCalled = false;
             bool wasDownloadGroupFilesFunctionCalled = false;
@@ -151,7 +155,7 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForU
             EXPECT_FALSE(wasDownloadGroupFilesFunctionCalled);
 
             co_await TestExecuteCommand(
-                centralizedConfiguration, R"({"command": "update-group"})", module_command::Status::SUCCESS);
+                centralizedConfiguration, R"({"command": "update-group"})", {}, module_command::Status::SUCCESS);
 
             EXPECT_TRUE(wasGetGroupIdFunctionCalled);
             EXPECT_TRUE(wasDownloadGroupFilesFunctionCalled);

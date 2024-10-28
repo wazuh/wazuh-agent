@@ -3,11 +3,13 @@
 #include <nlohmann/json.hpp>
 
 #include <filesystem>
+#include <vector>
 
 namespace centralized_configuration
 {
-    boost::asio::awaitable<module_command::CommandExecutionResult>
-    CentralizedConfiguration::ExecuteCommand(const std::string command) // NOLINT(performance-unnecessary-value-param)
+    boost::asio::awaitable<module_command::CommandExecutionResult> CentralizedConfiguration::ExecuteCommand(
+        const std::string command,                                  // NOLINT(performance-unnecessary-value-param)
+        [[maybe_unused]] const std::vector<std::string> parameters) // NOLINT(performance-unnecessary-value-param)
     {
         try
         {
