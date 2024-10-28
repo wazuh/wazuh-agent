@@ -49,8 +49,8 @@ rm -fr %{buildroot}
 pushd src
 pushd build
 make install -j $(nproc)
-sed -i "s|WAZUH_HOME|/usr/local/bin|g" %{buildroot}%{_localstatedir}/usr/lib/systemd/system/wazuh-agent.service
-cp /usr/local/gcc-13.2.0/lib64/libstdc++.so.6 %{buildroot}%{_localstatedir}/usr/local/lib
+sed -i "s|WAZUH_HOME|/usr/share/wazuh-agent/bin|g" %{buildroot}%{_localstatedir}/usr/lib/systemd/system/wazuh-agent.service
+cp /usr/local/gcc-13.2.0/lib64/libstdc++.so.6 %{buildroot}%{_localstatedir}/usr/share/wazuh-agent/lib
 exit 0
 
 %pre
@@ -69,11 +69,12 @@ fi
 ## STOP AGENT HERE IF IT EXIST
 if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1 && systemctl is-active --quiet wazuh-agent > /dev/null 2>&1; then
   systemctl stop wazuh-agent > /dev/null 2>&1
+elif /usr/share/wazuh-agent/bin/wazuh-agent --status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
+  /usr/share/wazuh-agent/bin/wazuh-agent --stop 2>/dev/null
 # Check for SysV
 elif command -v service > /dev/null 2>&1 && service wazuh-agent status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
   service wazuh-agent stop > /dev/null 2>&1
 fi
-/usr/local/bin/wazuh-agent --stop > /dev/null 2>&1
 
 %post
 # If the package is being upgraded
@@ -85,7 +86,7 @@ if [ $1 = 1 ]; then
     systemctl enable wazuh-agent
   fi
   touch /etc/ld.so.conf.d/wazuh-agentlibs.conf
-  echo "/usr/local/lib" >> /etc/ld.so.conf.d/wazuh-agentlibs.conf
+  echo "/usr/share/wazuh-agent/lib" >> /etc/ld.so.conf.d/wazuh-agentlibs.conf
   ldconfig
 fi
 
@@ -192,11 +193,12 @@ if [ $1 = 0 ]; then
   # Check for systemd
   if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1 && systemctl is-active --quiet wazuh-agent > /dev/null 2>&1; then
     systemctl stop wazuh-agent > /dev/null 2>&1
+  elif /usr/share/wazuh-agent/bin/wazuh-agent --status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
+    /usr/share/wazuh-agent/bin/wazuh-agent --stop 2>/dev/null
   # Check for SysV
   elif command -v service > /dev/null 2>&1 && service wazuh-agent status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
     service wazuh-agent stop > /dev/null 2>&1
   fi
-  /usr/local/bin/wazuh-agent --stop > /dev/null 2>&1
 
   # Remove the SELinux policy
   if command -v getenforce > /dev/null 2>&1 && command -v semodule > /dev/null 2>&1; then
@@ -236,13 +238,13 @@ if [ $1 = 0 ]; then
 
   if [ $1 = 0 ];then
     # Remove lingering folders and files
-    rm -f %{_localstatedir}usr/local/bin/wazuh-agent
+    rm -rf %{_localstatedir}usr/share/wazuh-agent/bin/wazuh-agent
     rm -f %{_localstatedir}usr/lib/systemd/system/wazuh-agent.service
-    rm -f %{_localstatedir}usr/local/lib/libdbsync.so
-    rm -f %{_localstatedir}usr/local/lib/libsysinfo.so
-    rm -f %{_localstatedir}usr/local/lib/libstdc++.so.6
+    rm -f %{_localstatedir}usr/share/wazuh-agent/lib/libdbsync.so
+    rm -f %{_localstatedir}usr/share/wazuh-agent/lib/libsysinfo.so
+    rm -f %{_localstatedir}usr/share/wazuh-agent/lib/libstdc++.so.6
     rm -rf %{_localstatedir}etc/wazuh-agent
-    rm -rf %{_localstatedir}var/wazuh-agent
+    rm -rf %{_localstatedir}var/lib/wazuh-agent
   fi
 fi
 
@@ -255,13 +257,13 @@ rm -fr %{buildroot}
 
 %files
 %defattr(-,root,root)
-%attr(750, root, wazuh) %{_localstatedir}usr/local/bin/wazuh-agent
+%attr(750, root, wazuh) %{_localstatedir}usr/share/wazuh-agent/bin/wazuh-agent
 %attr(750, root, wazuh) %{_localstatedir}usr/lib/systemd/system/wazuh-agent.service
-%attr(750, root, wazuh) %{_localstatedir}usr/local/lib/libdbsync.so
-%attr(750, root, wazuh) %{_localstatedir}usr/local/lib/libsysinfo.so
-%attr(750, root, wazuh) %{_localstatedir}usr/local/lib/libstdc++.so.6
+%attr(750, root, wazuh) %{_localstatedir}usr/share/wazuh-agent/lib/libdbsync.so
+%attr(750, root, wazuh) %{_localstatedir}usr/share/wazuh-agent/lib/libsysinfo.so
+%attr(750, root, wazuh) %{_localstatedir}usr/share/wazuh-agent/lib/libstdc++.so.6
 %dir %attr(770, root, wazuh) %{_localstatedir}etc/wazuh-agent
-%dir %attr(750, root, wazuh) %{_localstatedir}var/wazuh-agent
+%dir %attr(750, root, wazuh) %{_localstatedir}var/lib/wazuh-agent
 %attr(750, root, wazuh) %{_localstatedir}etc/wazuh-agent/wazuh.conf
 
 %changelog

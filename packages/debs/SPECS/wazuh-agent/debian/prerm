@@ -5,7 +5,7 @@
 set -ex
 
 export INSTALLATION_WAZUH_DIR="/opt/wazuh-agent"
-BINARY_DIR="/usr/local/bin/"
+BINARY_DIR="/usr/share/wazuh-agent/bin/"
 
 case "$1" in
     upgrade|deconfigure)
@@ -13,10 +13,11 @@ case "$1" in
       # Stop the services before uninstalling the package
       if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1 && systemctl is-active --quiet wazuh-agent > /dev/null 2>&1; then
           systemctl stop wazuh-agent > /dev/null 2>&1
+      elif ${BINARY_DIR}wazuh-agent --status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
+          ${BINARY_DIR}wazuh-agent --stop 2>/dev/null
       elif command -v service > /dev/null 2>&1 && service wazuh-agent status 2>/dev/null | grep "running" > /dev/null 2>&1; then
           service wazuh-agent stop > /dev/null 2>&1
       fi
-      ${BINARY_DIR}wazuh-agent --stop > /dev/null 2>&1
 
       # # Process: wazuh-agent
       # if pgrep -f "wazuh-agent" > /dev/null 2>&1; then
@@ -34,11 +35,12 @@ case "$1" in
       # Check for systemd
       if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1 && systemctl is-active --quiet wazuh-agent > /dev/null 2>&1; then
           systemctl stop wazuh-agent > /dev/null 2>&1
+      elif ${BINARY_DIR}wazuh-agent --status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
+          ${BINARY_DIR}wazuh-agent --stop 2>/dev/null
       # Check for SysV
       elif command -v service > /dev/null 2>&1 && service wazuh-agent status 2>/dev/null | grep "running" > /dev/null 2>&1; then
           service wazuh-agent stop > /dev/null 2>&1
       fi
-      ${BINARY_DIR}wazuh-agent --stop > /dev/null 2>&1
 
     ;;
 
@@ -47,10 +49,12 @@ case "$1" in
       # Stop the services before uninstalling the package
       if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1 && systemctl is-active --quiet wazuh-agent > /dev/null 2>&1; then
           systemctl stop wazuh-agent > /dev/null 2>&1
+      elif ${BINARY_DIR}wazuh-agent --status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
+          ${BINARY_DIR}wazuh-agent --stop 2>/dev/null
       elif command -v service > /dev/null 2>&1 && service wazuh-agent status 2>/dev/null | grep "running" > /dev/null 2>&1; then
           service wazuh-agent stop > /dev/null 2>&1
       fi
-      ${BINARY_DIR}wazuh-agent --stop > /dev/null 2>&1
+
       # if [ -f ${INSTALLATION_WAZUH_DIR}/bin/wazuh-agent ]; then
       #   # pkill wazuh-agent
       #   if pgrep -f "wazuh-agent" > /dev/null 2>&1; then
