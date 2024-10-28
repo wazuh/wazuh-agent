@@ -18,7 +18,7 @@ namespace configuration
 
     public:
         ConfigurationParser();
-        ConfigurationParser(const std::filesystem::path& configPath);
+        ConfigurationParser(const std::filesystem::path& configFile);
         ConfigurationParser(std::string stringToParse);
 
         template<typename T, typename... Ks>

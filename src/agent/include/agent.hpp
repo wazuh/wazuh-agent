@@ -17,7 +17,7 @@
 class Agent
 {
 public:
-    Agent(const std::string& configPath,
+    Agent(const std::string& configFile,
           std::unique_ptr<ISignalHandler> signalHandler = std::make_unique<SignalHandler>());
     ~Agent();
 

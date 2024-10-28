@@ -10,11 +10,11 @@ void RegisterAgent(const std::string& user,
                    const std::string& password,
                    const std::string& key,
                    const std::string& name,
-                   const std::string& configPath)
+                   const std::string& configFile)
 {
     if (!user.empty() && !password.empty() && !key.empty())
     {
-        agent_registration::AgentRegistration reg(user, password, key, name, configPath);
+        agent_registration::AgentRegistration reg(user, password, key, name, configFile);
 
         http_client::HttpClient httpClient;
         if (reg.Register(httpClient))
@@ -28,6 +28,6 @@ void RegisterAgent(const std::string& user,
     }
     else
     {
-        LogError("--user, --password and --key args are mandatory");
+        LogError("{}, {}, and {} args are mandatory", OPT_USER, OPT_PASSWORD, OPT_KEY);
     }
 }

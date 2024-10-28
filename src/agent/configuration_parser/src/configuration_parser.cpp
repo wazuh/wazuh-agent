@@ -3,16 +3,16 @@
 
 namespace
 {
-    const std::string CONFIG_FILE_NAME = "wazuh.conf";
+    const std::string CONFIG_FILE_NAME = "/etc/wazuh-agent/wazuh.conf";
 }
 
 namespace configuration
 {
-    ConfigurationParser::ConfigurationParser(const std::filesystem::path& configPath)
+    ConfigurationParser::ConfigurationParser(const std::filesystem::path& configFile)
     {
         try
         {
-            tbl = toml::parse(configPath.string(), toml::spec::v(1, 0, 0));
+            tbl = toml::parse(configFile.string(), toml::spec::v(1, 0, 0));
         }
         catch (const std::exception& e)
         {

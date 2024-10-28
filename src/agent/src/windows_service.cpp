@@ -1,5 +1,6 @@
 #include <windows_service.hpp>
 
+#include "process_options.hpp"
 #include <agent.hpp>
 #include <logger.hpp>
 #include <signal_handler.hpp>
@@ -124,7 +125,7 @@ namespace WindowsService
 {
     bool InstallService()
     {
-        const std::string exePath = GetExecutablePath() + " --run-service";
+        const std::string exePath = GetExecutablePath() + " " + OPT_RUN_SERVICE;
 
         SC_HANDLE schSCManager = OpenSCManager(nullptr, nullptr, SC_MANAGER_CREATE_SERVICE);
         if (!schSCManager)
