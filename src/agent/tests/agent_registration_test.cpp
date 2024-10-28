@@ -39,20 +39,12 @@ public:
 
     MOCK_METHOD(std::optional<std::string>,
                 AuthenticateWithUuidAndKey,
-                (const std::string& host,
-                 const std::string& port,
-                 const std::string& uuid,
-                 const std::string& key,
-                 const bool useHttps),
+                (const std::string& host, const std::string& uuid, const std::string& key),
                 (override));
 
     MOCK_METHOD(std::optional<std::string>,
                 AuthenticateWithUserPassword,
-                (const std::string& host,
-                 const std::string& port,
-                 const std::string& user,
-                 const std::string& password,
-                 const bool useHttps),
+                (const std::string& host, const std::string& user, const std::string& password),
                 (override));
 
     MOCK_METHOD(boost::beast::http::response<boost::beast::http::dynamic_body>,
@@ -80,8 +72,7 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
 
     MockHttpClient mockHttpClient;
 
-    EXPECT_CALL(mockHttpClient,
-                AuthenticateWithUserPassword(testing::_, testing::_, testing::_, testing::_, testing::_))
+    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, testing::_))
         .WillOnce(testing::Return("token"));
 
     nlohmann::json bodyJson = {{"id", agent->GetUUID()}, {"key", agent->GetKey()}};
@@ -92,7 +83,7 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
     }
 
     http_client::HttpRequestParams reqParams(
-        boost::beast::http::verb::post, "localhost", "55000", "/agents", true, "token", "", bodyJson.dump());
+        boost::beast::http::verb::post, "https://localhost:55000", "/agents", "token", "", bodyJson.dump());
 
     boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
     expectedResponse.result(boost::beast::http::status::ok);
@@ -108,7 +99,7 @@ TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
 {
     MockHttpClient mockHttpClient;
 
-    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, "user", "password", testing::_))
+    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, "user", "password"))
         .WillOnce(testing::Return(std::nullopt));
 
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
@@ -120,7 +111,7 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
 {
     MockHttpClient mockHttpClient;
 
-    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, "user", "password", testing::_))
+    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, "user", "password"))
         .WillOnce(testing::Return("token"));
 
     boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;

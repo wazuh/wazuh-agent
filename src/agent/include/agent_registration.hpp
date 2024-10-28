@@ -26,11 +26,10 @@ namespace agent_registration
 
     private:
         configuration::ConfigurationParser m_configurationParser;
-        std::string m_managerIp;
-        std::string m_managerPort;
+        std::string m_serverUrl;
+        std::string m_registrationUrl;
         std::string m_user;
         std::string m_password;
-        bool m_useHttps;
         AgentInfo m_agentInfo;
     };
 } // namespace agent_registration

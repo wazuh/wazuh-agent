@@ -21,10 +21,8 @@ namespace configuration
             tbl = toml::parse_str(
                 R"(
                 [agent]
-                server_mgmt_api_port = "55000"
-                agent_comms_api_port = "27000"
-                manager_ip = "localhost"
-                https_enabled = "yes"
+                server_url = "https://localhost:27000"
+                registration_url = "https://localhost:55000"
 
                 [inventory]
                 enabled = true
