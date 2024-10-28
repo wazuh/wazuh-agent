@@ -63,11 +63,6 @@ namespace http_client
         return req;
     }
 
-// Silence false positive warning introduced in newer versions of GCC
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmismatched-new-delete"
-#endif
     boost::asio::awaitable<void>
     HttpClient::Co_PerformHttpRequest(std::shared_ptr<std::string> token,
                                       HttpRequestParams reqParams,
@@ -157,9 +152,6 @@ namespace http_client
             co_await timer.async_wait(boost::asio::use_awaitable);
         } while (loopRequestCondition != nullptr && loopRequestCondition());
     }
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
     boost::beast::http::response<boost::beast::http::dynamic_body>
     HttpClient::PerformHttpRequest(const HttpRequestParams& params)
