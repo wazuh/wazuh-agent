@@ -69,11 +69,12 @@ fi
 ## STOP AGENT HERE IF IT EXIST
 if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1 && systemctl is-active --quiet wazuh-agent > /dev/null 2>&1; then
   systemctl stop wazuh-agent > /dev/null 2>&1
+elif /usr/share/wazuh-agent/bin/wazuh-agent --status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
+  /usr/share/wazuh-agent/bin/wazuh-agent --stop 2>/dev/null
 # Check for SysV
 elif command -v service > /dev/null 2>&1 && service wazuh-agent status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
   service wazuh-agent stop > /dev/null 2>&1
 fi
-/usr/share/wazuh-agent/bin/wazuh-agent --stop > /dev/null 2>&1
 
 %post
 # If the package is being upgraded
@@ -192,11 +193,12 @@ if [ $1 = 0 ]; then
   # Check for systemd
   if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1 && systemctl is-active --quiet wazuh-agent > /dev/null 2>&1; then
     systemctl stop wazuh-agent > /dev/null 2>&1
+  elif /usr/share/wazuh-agent/bin/wazuh-agent --status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
+    /usr/share/wazuh-agent/bin/wazuh-agent --stop 2>/dev/null
   # Check for SysV
   elif command -v service > /dev/null 2>&1 && service wazuh-agent status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
     service wazuh-agent stop > /dev/null 2>&1
   fi
-  /usr/share/wazuh-agent/bin/wazuh-agent --stop > /dev/null 2>&1
 
   # Remove the SELinux policy
   if command -v getenforce > /dev/null 2>&1 && command -v semodule > /dev/null 2>&1; then
@@ -236,7 +238,7 @@ if [ $1 = 0 ]; then
 
   if [ $1 = 0 ];then
     # Remove lingering folders and files
-    rm -f %{_localstatedir}usr/share/wazuh-agent/bin/wazuh-agent
+    rm -rf %{_localstatedir}usr/share/wazuh-agent/bin/wazuh-agent
     rm -f %{_localstatedir}usr/lib/systemd/system/wazuh-agent.service
     rm -f %{_localstatedir}usr/share/wazuh-agent/lib/libdbsync.so
     rm -f %{_localstatedir}usr/share/wazuh-agent/lib/libsysinfo.so

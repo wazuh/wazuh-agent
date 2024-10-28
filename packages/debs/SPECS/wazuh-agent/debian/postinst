@@ -40,6 +40,10 @@ case "$1" in
         ${BINARY_DIR}wazuh-agent --restart > /dev/null 2>&1
     fi
 
+    touch /etc/ld.so.conf.d/wazuh-agentlibs.conf
+    echo "/usr/share/wazuh-agent/lib" >> /etc/ld.so.conf.d/wazuh-agentlibs.conf
+    ldconfig
+
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

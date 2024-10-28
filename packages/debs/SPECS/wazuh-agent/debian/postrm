@@ -16,7 +16,7 @@ case "$1" in
         fi
 
         if [ "$1" = "remove" ]; then
-            rm -f ${BINARY_DIR}wazuh-agent
+            rm -rf ${BINARY_DIR}
             rm -f /usr/lib/systemd/system/wazuh-agent.service
             rm -f ${BINARY_LIB_DIR}libdbsync.so
             rm -f ${BINARY_LIB_DIR}libsysinfo.so
