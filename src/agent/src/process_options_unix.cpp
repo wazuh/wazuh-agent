@@ -22,15 +22,13 @@ void RestartAgent(const std::string& configFile)
 
 void StartAgent([[maybe_unused]] const std::string& configFile)
 {
-    LogInfo("Starting wazuh-agent");
-
     pid_t pid = unix_daemon::PIDFileHandler::ReadPIDFromFile();
     if (pid != 0)
     {
-        LogInfo("wazuh-agent already running");
+        std::cout << "wazuh-agent already running\n";
         return;
     }
-
+    LogInfo("Starting wazuh-agent");
     unix_daemon::PIDFileHandler handler = unix_daemon::GeneratePIDFile();
     Agent agent(configFile);
     agent.Run();

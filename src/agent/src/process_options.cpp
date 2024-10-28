@@ -2,6 +2,7 @@
 
 #include <agent.hpp>
 #include <agent_registration.hpp>
+#include <fmt/format.h>
 
 #include <iostream>
 #include <string>
@@ -19,15 +20,15 @@ void RegisterAgent(const std::string& user,
         http_client::HttpClient httpClient;
         if (reg.Register(httpClient))
         {
-            LogInfo("wazuh-agent registered.");
+            std::cout << "wazuh-agent registered\n";
         }
         else
         {
-            LogError("wazuh-agent registration fail.");
+            std::cout << "wazuh-agent registration failed\n";
         }
     }
     else
     {
-        LogError("{}, {}, and {} args are mandatory", OPT_USER, OPT_PASSWORD, OPT_KEY);
+        std::cout << fmt::format("{}, {}, and {} args are mandatory\n", OPT_USER, OPT_PASSWORD, OPT_KEY);
     }
 }

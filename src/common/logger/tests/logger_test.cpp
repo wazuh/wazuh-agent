@@ -62,7 +62,7 @@ TEST_F(LoggerConstructorTest, LinuxLoggerConstructor)
 
     auto sinks = current_logger->sinks();
     ASSERT_FALSE(sinks.empty());
-    auto systemd_sink = std::dynamic_pointer_cast<spdlog::sinks::stdout_color_sink_mt>(sinks[0]);
+    auto systemd_sink = std::dynamic_pointer_cast<spdlog::sinks::stderr_color_sink_mt>(sinks[0]);
     EXPECT_NE(systemd_sink, nullptr);
 }
 
@@ -75,7 +75,7 @@ TEST_F(LoggerConstructorTest, LinuxLoggerConstructorFail)
 
     auto sinks = current_logger->sinks();
     ASSERT_FALSE(sinks.empty());
-    auto systemd_sink = std::dynamic_pointer_cast<spdlog::sinks::syslog_sink_mt>(sinks[0]);
+    auto systemd_sink = std::dynamic_pointer_cast<spdlog::sinks::stdout_color_sink_mt>(sinks[0]);
     EXPECT_EQ(systemd_sink, nullptr);
 }
 #endif // __linux__
