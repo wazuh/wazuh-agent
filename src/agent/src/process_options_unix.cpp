@@ -11,16 +11,16 @@
 #include <thread>
 #include <vector>
 
-void RestartAgent(const std::string& configPath)
+void RestartAgent(const std::string& configFile)
 {
     StopAgent();
 
     std::this_thread::sleep_for(std::chrono::seconds(1)); // NOLINT
 
-    StartAgent(configPath);
+    StartAgent(configFile);
 }
 
-void StartAgent([[maybe_unused]] const std::string& configPath)
+void StartAgent([[maybe_unused]] const std::string& configFile)
 {
     LogInfo("Starting wazuh-agent");
 
@@ -32,7 +32,7 @@ void StartAgent([[maybe_unused]] const std::string& configPath)
     }
 
     unix_daemon::PIDFileHandler handler = unix_daemon::GeneratePIDFile();
-    Agent agent(configPath);
+    Agent agent(configFile);
     agent.Run();
 }
 
@@ -69,7 +69,7 @@ void PrintHelp()
     std::cout << "     --stop               Stop wazuh-agent daemon\n";
     std::cout << "     --restart            Restart wazuh-agent daemon\n";
     std::cout << "     --register-agent     Register wazuh-agent\n";
-    std::cout << "     --config-path <path> Specify configuration file path (optional).\n";
+    std::cout << "     --config-file        Specify the full path of the configuration file (optional).\n";
     std::cout << "                          Used with --start, --restart, or --register-agent.\n";
     std::cout << "     --help               This help message\n";
 }

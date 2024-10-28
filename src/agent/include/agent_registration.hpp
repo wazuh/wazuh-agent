@@ -21,7 +21,7 @@ namespace agent_registration
                           std::string password,
                           const std::string& key,
                           const std::string& name,
-                          std::optional<std::string> configPath);
+                          std::optional<std::string> configFile);
         bool Register(http_client::IHttpClient& httpClient);
 
     private:

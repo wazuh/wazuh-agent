@@ -9,13 +9,13 @@ int main(int argc, char* argv[])
     Logger logger;
     CommandlineParser cmdParser(argc, argv);
 
-    std::string configPath;
+    std::string configFile;
 
     try
     {
-        if (cmdParser.OptionExists("--config-path"))
+        if (cmdParser.OptionExists("--config-file"))
         {
-            configPath = cmdParser.GetOptionValue("--config-path");
+            configFile = cmdParser.GetOptionValue("--config-file");
         }
 
         if (cmdParser.OptionExists("--register-agent"))
@@ -24,11 +24,11 @@ int main(int argc, char* argv[])
                           cmdParser.GetOptionValue("--password"),
                           cmdParser.GetOptionValue("--key"),
                           cmdParser.GetOptionValue("--name"),
-                          configPath);
+                          configFile);
         }
         else if (cmdParser.OptionExists("--restart"))
         {
-            RestartAgent(configPath);
+            RestartAgent(configFile);
         }
         else if (cmdParser.OptionExists("--status"))
         {
@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
         }
         else if (cmdParser.OptionExists("--run") || cmdParser.OptionExists("--start"))
         {
-            StartAgent(configPath);
+            StartAgent(configFile);
         }
         else
         {
