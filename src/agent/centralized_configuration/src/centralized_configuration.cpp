@@ -8,18 +8,23 @@
 namespace centralized_configuration
 {
     boost::asio::awaitable<module_command::CommandExecutionResult> CentralizedConfiguration::ExecuteCommand(
-        const std::string command,                                  // NOLINT(performance-unnecessary-value-param)
-        [[maybe_unused]] const std::vector<std::string> parameters) // NOLINT(performance-unnecessary-value-param)
+        const std::string command,                 // NOLINT(performance-unnecessary-value-param)
+        const std::vector<std::string> parameters) // NOLINT(performance-unnecessary-value-param)
     {
         try
         {
-            const auto commnandAsJson = nlohmann::json::parse(command);
 
-            if (commnandAsJson["command"] == "set-group")
+            if (command == "set-group")
             {
                 if (m_setGroupIdFunction && m_downloadGroupFilesFunction)
                 {
-                    const auto groupIds = commnandAsJson["groups"].get<std::vector<std::string>>();
+                    if (parameters.empty())
+                        co_return module_command::CommandExecutionResult {
+                            module_command::Status::FAILURE,
+                            "CentralizedConfiguration group set failed, no group list"};
+
+                    const auto parametersAsJson = nlohmann::json::parse(parameters[0]);
+                    const auto groupIds = parametersAsJson.get<std::vector<std::string>>();
 
                     m_setGroupIdFunction(groupIds);
 
@@ -39,7 +44,7 @@ namespace centralized_configuration
                         module_command::Status::FAILURE, "CentralizedConfiguration group set failed, no function set"};
                 }
             }
-            else if (commnandAsJson["command"] == "update-group")
+            else if (command == "update-group")
             {
                 if (m_getGroupIdFunction && m_downloadGroupFilesFunction)
                 {
@@ -64,8 +69,8 @@ namespace centralized_configuration
         }
         catch (const nlohmann::json::exception&)
         {
-            co_return module_command::CommandExecutionResult {module_command::Status::FAILURE,
-                                                              "CentralizedConfiguration error while parsing command"};
+            co_return module_command::CommandExecutionResult {
+                module_command::Status::FAILURE, "CentralizedConfiguration error while parsing parameters"};
         }
 
         co_return module_command::CommandExecutionResult {module_command::Status::FAILURE,
