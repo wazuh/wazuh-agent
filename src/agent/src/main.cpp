@@ -13,46 +13,46 @@ int main(int argc, char* argv[])
 
     try
     {
-        if (cmdParser.OptionExists("--config-file"))
+        if (cmdParser.OptionExists(OPT_CONFIG_FILE))
         {
-            configFile = cmdParser.GetOptionValue("--config-file");
+            configFile = cmdParser.GetOptionValue(OPT_CONFIG_FILE);
         }
 
-        if (cmdParser.OptionExists("--register-agent"))
+        if (cmdParser.OptionExists(OPT_REGISTER_AGENT))
         {
-            RegisterAgent(cmdParser.GetOptionValue("--user"),
-                          cmdParser.GetOptionValue("--password"),
-                          cmdParser.GetOptionValue("--key"),
-                          cmdParser.GetOptionValue("--name"),
+            RegisterAgent(cmdParser.GetOptionValue(OPT_USER),
+                          cmdParser.GetOptionValue(OPT_PASSWORD),
+                          cmdParser.GetOptionValue(OPT_KEY),
+                          cmdParser.GetOptionValue(OPT_NAME),
                           configFile);
         }
-        else if (cmdParser.OptionExists("--restart"))
+        else if (cmdParser.OptionExists(OPT_RESTART))
         {
             RestartAgent(configFile);
         }
-        else if (cmdParser.OptionExists("--status"))
+        else if (cmdParser.OptionExists(OPT_STATUS))
         {
             StatusAgent();
         }
-        else if (cmdParser.OptionExists("--stop"))
+        else if (cmdParser.OptionExists(OPT_STOP))
         {
             StopAgent();
         }
-        else if (cmdParser.OptionExists("--install-service"))
+        else if (cmdParser.OptionExists(OPT_INSTALL_SERVICE))
         {
             if (!InstallService())
                 return 1;
         }
-        else if (cmdParser.OptionExists("--remove-service"))
+        else if (cmdParser.OptionExists(OPT_REMOVE_SERVICE))
         {
             if (!RemoveService())
                 return 1;
         }
-        else if (cmdParser.OptionExists("--run-service"))
+        else if (cmdParser.OptionExists(OPT_RUN_SERVICE))
         {
             SetDispatcherThread();
         }
-        else if (cmdParser.OptionExists("--run") || cmdParser.OptionExists("--start"))
+        else if (cmdParser.OptionExists(OPT_RUN) || cmdParser.OptionExists(OPT_START))
         {
             StartAgent(configFile);
         }

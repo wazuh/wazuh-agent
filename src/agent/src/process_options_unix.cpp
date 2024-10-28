@@ -63,15 +63,16 @@ void PrintHelp()
     std::cout << "Usage: wazuh-agent [options]\n";
     std::cout << "\n";
     std::cout << "Options:\n";
-    std::cout << "     --run                Start wazuh-agent\n";
-    std::cout << "     --start              Start wazuh-agent daemon\n";
-    std::cout << "     --status             Get wazuh-agent daemon status\n";
-    std::cout << "     --stop               Stop wazuh-agent daemon\n";
-    std::cout << "     --restart            Restart wazuh-agent daemon\n";
-    std::cout << "     --register-agent     Register wazuh-agent\n";
-    std::cout << "     --config-file        Specify the full path of the configuration file (optional).\n";
-    std::cout << "                          Used with --start, --restart, or --register-agent.\n";
-    std::cout << "     --help               This help message\n";
+    std::cout << "     " << OPT_RUN << "                Start wazuh-agent\n";
+    std::cout << "     " << OPT_START << "              Start wazuh-agent daemon\n";
+    std::cout << "     " << OPT_STATUS << "             Get wazuh-agent daemon status\n";
+    std::cout << "     " << OPT_STOP << "               Stop wazuh-agent daemon\n";
+    std::cout << "     " << OPT_RESTART << "            Restart wazuh-agent daemon\n";
+    std::cout << "     " << OPT_REGISTER_AGENT << "     Register wazuh-agent\n";
+    std::cout << "     " << OPT_CONFIG_FILE << "        Specify the full path of the configuration file (optional).\n";
+    std::cout << "                          Used with " << OPT_RUN << ", " << OPT_RESTART << ", or "
+              << OPT_REGISTER_AGENT << ".\n";
+    std::cout << "     " << OPT_HELP << "               This help message\n";
 }
 
 bool InstallService()

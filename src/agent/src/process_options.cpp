@@ -28,6 +28,6 @@ void RegisterAgent(const std::string& user,
     }
     else
     {
-        LogError("--user, --password and --key args are mandatory");
+        LogError("{}, {}, and {} args are mandatory", OPT_USER, OPT_PASSWORD, OPT_KEY);
     }
 }
