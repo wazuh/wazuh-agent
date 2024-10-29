@@ -11,8 +11,15 @@ class MockWindowsApiFacade : public windows_api_facade::IWindowsApiFacade
 {
 public:
     MOCK_METHOD(void*, OpenSCM, (unsigned int desiredAccess), (const override));
-    MOCK_METHOD(void*, OpenSvc, (void* sHandle, const std::string& serviceName, unsigned int desiredAccess), (const override));
-    MOCK_METHOD(bool, DeleteSvc, (void* sHandle), (const override));
+    MOCK_METHOD(void*,
+                OpenSvc,
+                (void* serviceHandle, const std::string& serviceName, unsigned int desiredAccess),
+                (const override));
+    MOCK_METHOD(void*,
+                CreateSvc,
+                (void* serviceHandle, const std::string& serviceName, const std::string& exePath),
+                (const override));
+    MOCK_METHOD(bool, DeleteSvc, (void* serviceHandle), (const override));
 };
 
 class WindowsServiceTest : public ::testing::Test
@@ -24,6 +31,38 @@ protected:
 
     void TearDown() override {}
 };
+
+TEST_F(WindowsServiceTest, InstallService_FailOpenSCM)
+{
+    EXPECT_CALL(mockWindowsApiFacade, OpenSCM(SC_MANAGER_CREATE_SERVICE)).WillOnce(testing::Return(nullptr));
+
+    bool result = WindowsService::InstallService(mockWindowsApiFacade);
+
+    EXPECT_FALSE(result);
+}
+
+TEST_F(WindowsServiceTest, InstallService_FailCreateSvc)
+{
+    EXPECT_CALL(mockWindowsApiFacade, OpenSCM(SC_MANAGER_CREATE_SERVICE))
+        .WillOnce(testing::Return(reinterpret_cast<SC_HANDLE>(1)));
+    EXPECT_CALL(mockWindowsApiFacade, CreateSvc(testing::_, testing::_, testing::_)).WillOnce(testing::Return(nullptr));
+
+    bool result = WindowsService::InstallService(mockWindowsApiFacade);
+
+    EXPECT_FALSE(result);
+}
+
+TEST_F(WindowsServiceTest, InstallService_Success)
+{
+    EXPECT_CALL(mockWindowsApiFacade, OpenSCM(SC_MANAGER_CREATE_SERVICE))
+        .WillOnce(testing::Return(reinterpret_cast<SC_HANDLE>(1)));
+    EXPECT_CALL(mockWindowsApiFacade, CreateSvc(testing::_, "Wazuh Agent", testing::_))
+        .WillOnce(testing::Return(reinterpret_cast<SC_HANDLE>(1)));
+
+    bool result = WindowsService::InstallService(mockWindowsApiFacade);
+
+    EXPECT_TRUE(result);
+}
 
 TEST_F(WindowsServiceTest, RemoveService_FailOpenSCM)
 {

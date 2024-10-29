@@ -52,7 +52,8 @@ void PrintHelp()
 
 bool InstallService()
 {
-    return WindowsService::InstallService();
+    windows_api_facade::WindowsApiFacade windowsApiFacade;
+    return WindowsService::InstallService(windowsApiFacade);
 }
 
 bool RemoveService()

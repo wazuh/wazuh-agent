@@ -123,30 +123,19 @@ namespace
 
 namespace WindowsService
 {
-    bool InstallService()
+    bool InstallService(const windows_api_facade::IWindowsApiFacade& windowsApiFacade)
     {
         const std::string exePath = GetExecutablePath() + " " + OPT_RUN_SERVICE;
 
-        SC_HANDLE schSCManager = OpenSCManager(nullptr, nullptr, SC_MANAGER_CREATE_SERVICE);
+        SC_HANDLE schSCManager = static_cast<SC_HANDLE>(windowsApiFacade.OpenSCM(SC_MANAGER_CREATE_SERVICE));
         if (!schSCManager)
         {
             LogError("OpenSCManager fail: {}", GetLastError());
             return false;
         }
 
-        SC_HANDLE schService = CreateService(schSCManager,
-                                             AGENT_SERVICENAME.c_str(),
-                                             AGENT_SERVICENAME.c_str(),
-                                             SERVICE_ALL_ACCESS,
-                                             SERVICE_WIN32_OWN_PROCESS,
-                                             SERVICE_AUTO_START,
-                                             SERVICE_ERROR_NORMAL,
-                                             exePath.c_str(),
-                                             nullptr,
-                                             nullptr,
-                                             nullptr,
-                                             nullptr,
-                                             nullptr);
+        SC_HANDLE schService = static_cast<SC_HANDLE>(
+            windowsApiFacade.CreateSvc(schSCManager, AGENT_SERVICENAME.c_str(), exePath.c_str()));
 
         if (!schService)
         {

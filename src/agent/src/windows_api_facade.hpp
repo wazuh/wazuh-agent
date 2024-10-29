@@ -9,6 +9,7 @@ namespace windows_api_facade
     public:
         void* OpenSCM(unsigned int desiredAccess) const override;
         void* OpenSvc(void* serviceHandle, const std::string& serviceName, unsigned int desiredAccess) const override;
+        void* CreateSvc(void* serviceHandle, const std::string& serviceName, const std::string& exePath) const override;
         bool DeleteSvc(void* serviceHandle) const override;
     };
 } // namespace windows_api_facade

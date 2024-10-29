@@ -7,7 +7,7 @@
 
 namespace WindowsService
 {
-    bool InstallService();
+    bool InstallService(const windows_api_facade::IWindowsApiFacade& windowsApiFacade);
     bool RemoveService(const windows_api_facade::IWindowsApiFacade& windowsApiFacade);
     void SetDispatcherThread();
     void WINAPI ServiceMain();
