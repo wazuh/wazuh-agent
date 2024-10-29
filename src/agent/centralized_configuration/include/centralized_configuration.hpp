@@ -4,6 +4,8 @@
 
 #include <boost/asio/awaitable.hpp>
 
+#include <nlohmann/json.hpp>
+
 #include <filesystem>
 #include <functional>
 #include <string>
@@ -22,11 +24,11 @@ namespace centralized_configuration
         /**
          * @brief Executes a command for the centralized configuration system.
          * @param command A string containing a JSON command to execute.
-         * @param parameters A vector of strings containing the parameters of the command to be executed.
+         * @param parameters A json object containing the parameters of the command to be executed.
          * @return An awaitable with the result of executing the command, either success or failure.
          */
-        boost::asio::awaitable<module_command::CommandExecutionResult>
-        ExecuteCommand(std::string command, std::vector<std::string> parameters);
+        boost::asio::awaitable<module_command::CommandExecutionResult> ExecuteCommand(std::string command,
+                                                                                      nlohmann::json parameters);
 
         /**
          * @brief Sets the function to assign group IDs.

@@ -8,6 +8,8 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/use_awaitable.hpp>
 
+#include <nlohmann/json.hpp>
+
 using centralized_configuration::CentralizedConfiguration;
 
 namespace
@@ -15,7 +17,7 @@ namespace
     // NOLINTBEGIN(cppcoreguidelines-avoid-reference-coroutine-parameters)
     boost::asio::awaitable<void> TestExecuteCommand(CentralizedConfiguration& centralizedConfiguration,
                                                     const std::string& command,
-                                                    const std::vector<std::string>& parameters,
+                                                    const nlohmann::json& parameters,
                                                     module_command::Status expectedErrorCode)
     {
         const auto commandResult = co_await centralizedConfiguration.ExecuteCommand(command, parameters);
@@ -96,7 +98,7 @@ TEST(CentralizedConfiguration, ExecuteCommandHandlesRecognizedCommands)
             centralizedConfiguration.SetDownloadGroupFilesFunction([](const std::string&, const std::string&)
                                                                    { return true; });
 
-            const std::vector<std::string> groupsList = {R"(["group1", "group2"])"};
+            const nlohmann::json groupsList = nlohmann::json::parse(R"([["group1", "group2"]])");
 
             co_await TestExecuteCommand(
                 centralizedConfiguration, "set-group", groupsList, module_command::Status::SUCCESS);
@@ -121,7 +123,7 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForS
         {
             CentralizedConfiguration centralizedConfiguration;
 
-            const std::vector<std::string> groupsList = {R"(["group1", "group2"])"};
+            const nlohmann::json groupsList = nlohmann::json::parse(R"([["group1", "group2"]])");
 
             co_await TestExecuteCommand(
                 centralizedConfiguration, "set-group", groupsList, module_command::Status::FAILURE);

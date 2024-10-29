@@ -1,8 +1,9 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
+
 #include <limits>
 #include <string>
-#include <vector>
 
 namespace module_command
 {
@@ -40,7 +41,7 @@ namespace module_command
         CommandEntry(std::string id,
                      std::string module,
                      std::string command,
-                     std::vector<std::string> parameters,
+                     nlohmann::json parameters,
                      std::string result,
                      Status status)
             : Id(std::move(id))
@@ -55,7 +56,7 @@ namespace module_command
         std::string Id;
         std::string Module;
         std::string Command;
-        std::vector<std::string> Parameters;
+        nlohmann::json Parameters;
         double Time;
         CommandExecutionResult ExecutionResult;
     };

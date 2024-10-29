@@ -3,13 +3,12 @@
 #include <nlohmann/json.hpp>
 
 #include <filesystem>
-#include <vector>
 
 namespace centralized_configuration
 {
     boost::asio::awaitable<module_command::CommandExecutionResult> CentralizedConfiguration::ExecuteCommand(
-        const std::string command,                 // NOLINT(performance-unnecessary-value-param)
-        const std::vector<std::string> parameters) // NOLINT(performance-unnecessary-value-param)
+        const std::string command,       // NOLINT(performance-unnecessary-value-param)
+        const nlohmann::json parameters) // NOLINT(performance-unnecessary-value-param)
     {
         try
         {
@@ -23,8 +22,7 @@ namespace centralized_configuration
                             module_command::Status::FAILURE,
                             "CentralizedConfiguration group set failed, no group list"};
 
-                    const auto parametersAsJson = nlohmann::json::parse(parameters[0]);
-                    const auto groupIds = parametersAsJson.get<std::vector<std::string>>();
+                    const auto groupIds = parameters[0].get<std::vector<std::string>>();
 
                     m_setGroupIdFunction(groupIds);
 

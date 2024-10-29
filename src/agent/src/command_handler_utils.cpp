@@ -7,6 +7,8 @@
 #include <boost/system/system_error.hpp>
 #include <logger.hpp>
 
+#include <nlohmann/json.hpp>
+
 #include <chrono>
 #include <functional>
 
@@ -68,7 +70,7 @@ namespace
 boost::asio::awaitable<module_command::CommandExecutionResult>
 DispatchCommand(module_command::CommandEntry commandEntry,
                 std::function<boost::asio::awaitable<module_command::CommandExecutionResult>(
-                    std::string command, std::vector<std::string> parameters)> executeFunction,
+                    std::string command, nlohmann::json parameters)> executeFunction,
                 std::shared_ptr<IMultiTypeQueue> messageQueue)
 {
     using namespace boost::asio::experimental::awaitable_operators;
@@ -107,8 +109,7 @@ DispatchCommand(module_command::CommandEntry commandEntry,
         co_return module_command::CommandExecutionResult {module_command::Status::FAILURE, "Module not found"};
     }
 
-    auto moduleExecuteFunction = [module](const std::string& command,
-                                          [[maybe_unused]] const std::vector<std::string>& parameters)
+    auto moduleExecuteFunction = [module](const std::string& command, [[maybe_unused]] const nlohmann::json& parameters)
         -> boost::asio::awaitable<module_command::CommandExecutionResult>
     {
         return module->ExecuteCommand(command);
