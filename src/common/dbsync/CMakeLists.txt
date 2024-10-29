@@ -28,7 +28,7 @@ if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address,leak,undefined")
   endif(FSANITIZE)
 else()
-set(CMAKE_CXX_FLAGS "/W4 /permissive- /std:c++14 /MT /EHsc")
+  set(CMAKE_CXX_FLAGS "/W4 /permissive- /std:c++14 /MT /EHsc")
 endif()
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -64,36 +64,25 @@ file(GLOB DBSYNC_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/sqlite/*.cpp")
 
-add_library(dbsync SHARED
+add_library(dbsync STATIC
     ${DBSYNC_SRC}
     ${SRC_FOLDER}/${RESOURCE_OBJ})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   add_definitions(-DWIN_EXPORT)
-  set_target_properties(dbsync PROPERTIES
-        PREFIX ""
-        SUFFIX ".dll"
-        LINK_FLAGS "-Wl,--add-stdcall-alias"
-        POSITION_INDEPENDENT_CODE 0 # this is to avoid MinGW warning;
-        # MinGW generates position-independent-code for DLL by default
-  )
-elseif(UNIX AND NOT APPLE)
-  string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,-rpath=$ORIGIN")
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
 target_link_libraries(dbsync utils nlohmann_json::nlohmann_json cjson unofficial::sqlite3::sqlite3)
 
 if(BUILD_TESTS)
-  if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-      target_link_libraries(dbsync -fprofile-arcs)
-    else()
-      target_link_libraries(dbsync gcov)
-    endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_link_libraries(dbsync -fprofile-arcs)
+  else()
+    target_link_libraries(dbsync gcov)
+  endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
-    add_subdirectory(tests)
-    add_subdirectory(integrationTests)
-  endif(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  add_subdirectory(tests)
+  add_subdirectory(integrationTests)
 endif(BUILD_TESTS)
 
 if(NOT DEFINED COVERITY AND NOT DEFINED BUILD_TESTS)

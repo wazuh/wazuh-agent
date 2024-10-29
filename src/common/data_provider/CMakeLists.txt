@@ -156,19 +156,13 @@ else()
       "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
-add_library(sysinfo SHARED
+add_library(sysinfo STATIC
     ${SYSINFO_SRC}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/sysInfo.cpp
     ${SRC_FOLDER}/${RESOURCE_OBJ})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   target_link_libraries(sysinfo PUBLIC psapi iphlpapi ws2_32)
-  set_target_properties(sysinfo PROPERTIES
-      PREFIX ""
-      SUFFIX ".dll"
-  )
-elseif(UNIX AND NOT APPLE)
-  string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,-rpath=$ORIGIN")
 elseif(APPLE)
   find_library(iokit_lib IOKit)
   if(NOT iokit_lib)
@@ -209,13 +203,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     LibArchive::LibArchive
     ${POPT_LIBRARY})
 endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-
-if(APPLE)
-  add_custom_command(TARGET sysinfo
-    POST_BUILD COMMAND
-    ${CMAKE_INSTALL_NAME_TOOL} -id "@rpath/libsysinfo.dylib"
-    $<TARGET_FILE:sysinfo>)
-endif(APPLE)
 
 if(BUILD_TESTS)
   if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
