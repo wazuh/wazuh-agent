@@ -95,6 +95,7 @@ build_pkg() {
         -e INSTALLATION_PATH="${INSTALLATION_PATH}" \
         -e IS_STAGE="${IS_STAGE}" \
         -e WAZUH_BRANCH="${BRANCH}" \
+        -e WAZUH_VERBOSE="${VERBOSE}" \
         ${CUSTOM_CODE_VOL} \
         -v ${DOCKERFILE_PATH}:/home:Z \
         ${CONTAINER_NAME}:${DOCKER_TAG} \
@@ -135,6 +136,7 @@ help() {
     echo "    --system                   [Optional] Select Package OS [rpm, deb]. By default is 'deb'."
     echo "    --src                      [Optional] Generate the source package in the destination directory."
     echo "    --future                   [Optional] Build test future package x.30.0 Used for development purposes."
+    echo "    --verbose                  [Optional] Print commands and their arguments as they are executed."
     echo "    -h, --help                 Show this help."
     echo
     exit $1
@@ -260,10 +262,18 @@ main() {
             SYSTEM="$2"
             shift 2
             ;;
+        "--verbose")
+            VERBOSE="yes"
+            shift 1
+            ;;
         *)
             help 1
         esac
     done
+
+    if [ -n "${VERBOSE}" ]; then
+        set -x
+    fi
 
     if [ -z "${CUSTOM_CODE_VOL}" ] && [ -z "${BRANCH}" ]; then
         CUSTOM_CODE_VOL="-v $WAZUH_PATH:/wazuh-local-src:Z"
