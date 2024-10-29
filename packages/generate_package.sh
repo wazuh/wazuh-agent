@@ -15,6 +15,7 @@ ARCHITECTURE="amd64"
 SYSTEM="deb"
 OUTDIR="${CURRENT_PATH}/output/"
 BRANCH=""
+VCPKG_KEY=""
 REVISION="0"
 TARGET="agent"
 JOBS="2"
@@ -96,6 +97,7 @@ build_pkg() {
         -e IS_STAGE="${IS_STAGE}" \
         -e WAZUH_BRANCH="${BRANCH}" \
         -e WAZUH_VERBOSE="${VERBOSE}" \
+        -e VCPKG_KEY="${VCPKG_KEY}" \
         ${CUSTOM_CODE_VOL} \
         -v ${DOCKERFILE_PATH}:/home:Z \
         ${CONTAINER_NAME}:${DOCKER_TAG} \
@@ -130,6 +132,7 @@ help() {
     echo "    -l, --legacy               [Optional only for RPM] Build package for CentOS 5."
     echo "    -e, --entrypoint <path>    [Optional] Script to execute as entrypoint."
     echo "    --dont-build-docker        [Optional] Locally built docker image will be used instead of generating a new one."
+    echo "    --vcpkg-binary-caching-key [Optional] VCPK remote binary caching repository key."
     echo "    --tag                      [Optional] Tag to use with the docker image."
     echo "    --sources <path>           [Optional] Absolute path containing wazuh source code. This option will use local source code instead of downloading it from GitHub. By default use the script path."
     echo "    --is_stage                 [Optional] Use release name in package."
@@ -259,8 +262,20 @@ main() {
             shift 1
             ;;
         "--system")
-            SYSTEM="$2"
-            shift 2
+            if [ -n "$2" ]; then
+                SYSTEM="$2"
+                shift 2
+            else
+                help 1
+            fi
+            ;;
+        "--vcpkg-binary-caching-key")
+            if [ -n "$2" ]; then
+                VCPKG_KEY="$2"
+                shift 2
+            else
+                help 1
+            fi
             ;;
         "--verbose")
             VERBOSE="yes"

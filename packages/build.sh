@@ -66,6 +66,45 @@ post_process() {
   fi
 }
 
+set_vcpkg_remote_binary_cache(){
+  local vcpkg_token="$1"
+
+  if [[ $(mono --version 2>/dev/null) =~ [0-9] ]]; then
+      echo "mono already installed."
+  else
+    if [ -n "$(command -v yum)" ]; then
+      rpmkeys --import "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF"
+      su -c 'curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo'
+      yum install mono-devel -y
+    elif [ -n "$(command -v dpkg)" ]; then
+      apt install ca-certificates gnupg
+      gpg --homedir /tmp --no-default-keyring \
+        --keyring /usr/share/keyrings/mono-official-archive-keyring.gpg \
+        --keyserver hkp://keyserver.ubuntu.com:80 \
+        --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+      echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+      apt update
+      apt install mono-devel -y
+    else
+      echo "Couldn't find type of system"
+      exit 1
+    fi
+  fi
+
+  export VCPKG_INSTALL_OPTIONS='--debug'
+  $sources_dir/src/vcpkg/bootstrap-vcpkg.sh
+  
+  mono `$sources_dir/src/vcpkg/vcpkg fetch nuget | tail -n 1` \
+      sources add \
+      -source "https://nuget.pkg.github.com/wazuh/index.json" \
+      -name "GitHub" \
+      -username "wazuh" \
+      -password "$vcpkg_token"
+  mono `$sources_dir/src/vcpkg/vcpkg fetch nuget | tail -n 1` \
+      setapikey "$vcpkg_token" \
+      -source "https://nuget.pkg.github.com/wazuh/index.json"
+}
+
 # Main script body
 
 # Script parameters
@@ -87,7 +126,7 @@ fi
 
 # Download source code if it is not shared from the local host
 if [ ! -d "/wazuh-local-src" ] ; then
-    git clone --branch ${WAZUH_BRANCH} --single-branch https://github.com/wazuh/wazuh-agent.git
+    git clone --branch ${WAZUH_BRANCH} --single-branch --recurse-submodules https://github.com/wazuh/wazuh-agent.git
     short_commit_hash="$(curl -s https://api.github.com/repos/wazuh/wazuh-agent/commits/${WAZUH_BRANCH} \
                           | grep '"sha"' | head -n 1| cut -d '"' -f 4 | cut -c 1-11)"
 else
@@ -98,6 +137,7 @@ else
       hash_commit=$(cat /wazuh-local-src/.git/$(cat /wazuh-local-src/.git/HEAD|cut -d" " -f2))
       short_commit_hash="$(cut -c 1-11 <<< $hash_commit)"
     fi
+
 fi
 
 # Build directories
@@ -116,6 +156,16 @@ set_debug $debug $sources_dir
 
 # Installing build dependencies
 cd $sources_dir
+
+echo $sources_dir
+echo "antes de vcpkg"
+
+if [ -n "${VCPKG_KEY}" ]; then
+  set_vcpkg_remote_binary_cache "$VCPKG_KEY"
+else
+  export VCPKG_MAX_CONCURRENCY=1
+fi
+
 build_deps $legacy
 build_package $package_name $debug "$short_commit_hash" "$wazuh_version"
 
