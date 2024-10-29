@@ -7,8 +7,6 @@
 #include <boost/system/system_error.hpp>
 #include <logger.hpp>
 
-#include <nlohmann/json.hpp>
-
 #include <chrono>
 #include <functional>
 

@@ -7,6 +7,8 @@
 
 #include <boost/asio/awaitable.hpp>
 
+#include <nlohmann/json.hpp>
+
 #include <functional>
 #include <memory>
 #include <tuple>
