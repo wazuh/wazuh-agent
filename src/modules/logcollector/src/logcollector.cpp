@@ -65,8 +65,8 @@ void Logcollector::Stop() {
 }
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
-Co_CommandExecutionResult Logcollector::ExecuteCommand(const std::string query, [[maybe_unused]] const nlohmann::json parameters) {
-    LogInfo("Logcollector query: ", query);
+Co_CommandExecutionResult Logcollector::ExecuteCommand(const std::string command, [[maybe_unused]] const nlohmann::json parameters) {
+    LogInfo("Logcollector command: ", command);
     co_return module_command::CommandExecutionResult{module_command::Status::SUCCESS, "OK"};
 }
 

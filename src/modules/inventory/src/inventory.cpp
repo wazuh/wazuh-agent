@@ -57,8 +57,8 @@ void Inventory::Stop() {
 }
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
-Co_CommandExecutionResult Inventory::ExecuteCommand(const std::string query, [[maybe_unused]] const nlohmann::json parameters) {
-    LogInfo("Query: {}", query);
+Co_CommandExecutionResult Inventory::ExecuteCommand(const std::string command, [[maybe_unused]] const nlohmann::json parameters) {
+    LogInfo("Command: {}", command);
     co_return module_command::CommandExecutionResult{module_command::Status::SUCCESS, "OK"};
 }
 

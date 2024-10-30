@@ -33,9 +33,9 @@ public:
             .Start = [&module]() { module.Start(); },
             .Setup = [&module](const configuration::ConfigurationParser& configurationParser) { module.Setup(configurationParser); },
             .Stop = [&module]() { module.Stop(); },
-            .ExecuteCommand = [&module](std::string query, nlohmann::json parameters) -> Co_CommandExecutionResult
+            .ExecuteCommand = [&module](std::string command, nlohmann::json parameters) -> Co_CommandExecutionResult
             {
-                co_return co_await module.ExecuteCommand(query, parameters);
+                co_return co_await module.ExecuteCommand(command, parameters);
             },
             .Name = [&module]() { return module.Name(); }
         });
