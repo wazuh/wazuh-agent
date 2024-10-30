@@ -8,6 +8,8 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/use_awaitable.hpp>
 
+#include <nlohmann/json.hpp>
+
 using centralized_configuration::CentralizedConfiguration;
 
 namespace
@@ -15,9 +17,10 @@ namespace
     // NOLINTBEGIN(cppcoreguidelines-avoid-reference-coroutine-parameters)
     boost::asio::awaitable<void> TestExecuteCommand(CentralizedConfiguration& centralizedConfiguration,
                                                     const std::string& command,
+                                                    const nlohmann::json& parameters,
                                                     module_command::Status expectedErrorCode)
     {
-        const auto commandResult = co_await centralizedConfiguration.ExecuteCommand(command);
+        const auto commandResult = co_await centralizedConfiguration.ExecuteCommand(command, parameters);
         EXPECT_EQ(commandResult.ErrorCode, expectedErrorCode);
     }
 
@@ -39,7 +42,42 @@ TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnUnrecognizedCommand
         {
             CentralizedConfiguration centralizedConfiguration;
             co_await TestExecuteCommand(
-                centralizedConfiguration, R"({"command": "unknown-command"})", module_command::Status::FAILURE);
+                centralizedConfiguration, "unknown-command", {}, module_command::Status::FAILURE);
+        }(),
+        boost::asio::detached);
+
+    io_context.run();
+}
+
+TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnEmptyList)
+{
+    boost::asio::io_context io_context;
+
+    boost::asio::co_spawn(
+        io_context,
+        []() -> boost::asio::awaitable<void>
+        {
+            CentralizedConfiguration centralizedConfiguration;
+            co_await TestExecuteCommand(centralizedConfiguration, "set-group", {}, module_command::Status::FAILURE);
+        }(),
+        boost::asio::detached);
+
+    io_context.run();
+}
+
+TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnParseParameters)
+{
+    boost::asio::io_context io_context;
+
+    boost::asio::co_spawn(
+        io_context,
+        []() -> boost::asio::awaitable<void>
+        {
+            CentralizedConfiguration centralizedConfiguration;
+
+            const std::vector<std::string> parameterList = {true, "group2"};
+            co_await TestExecuteCommand(
+                centralizedConfiguration, "set-group", parameterList, module_command::Status::FAILURE);
         }(),
         boost::asio::detached);
 
@@ -60,15 +98,15 @@ TEST(CentralizedConfiguration, ExecuteCommandHandlesRecognizedCommands)
             centralizedConfiguration.SetDownloadGroupFilesFunction([](const std::string&, const std::string&)
                                                                    { return true; });
 
-            co_await TestExecuteCommand(centralizedConfiguration,
-                                        R"({"command": "set-group", "groups": ["group1", "group2"]})",
-                                        module_command::Status::SUCCESS);
+            const nlohmann::json groupsList = nlohmann::json::parse(R"([["group1", "group2"]])");
 
             co_await TestExecuteCommand(
-                centralizedConfiguration, R"({"command": "update-group"})", module_command::Status::SUCCESS);
+                centralizedConfiguration, "set-group", groupsList, module_command::Status::SUCCESS);
+
+            co_await TestExecuteCommand(centralizedConfiguration, "update-group", {}, module_command::Status::SUCCESS);
 
             co_await TestExecuteCommand(
-                centralizedConfiguration, R"({"command": "unknown-command"})", module_command::Status::FAILURE);
+                centralizedConfiguration, "unknown-command", {}, module_command::Status::FAILURE);
         }(),
         boost::asio::detached);
 
@@ -85,9 +123,10 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForS
         {
             CentralizedConfiguration centralizedConfiguration;
 
-            co_await TestExecuteCommand(centralizedConfiguration,
-                                        R"({"command": "set-group", "groups": ["group1", "group2"]})",
-                                        module_command::Status::FAILURE);
+            const nlohmann::json groupsList = nlohmann::json::parse(R"([["group1", "group2"]])");
+
+            co_await TestExecuteCommand(
+                centralizedConfiguration, "set-group", groupsList, module_command::Status::FAILURE);
 
             bool wasSetGroupIdFunctionCalled = false;
             bool wasDownloadGroupFilesFunctionCalled = false;
@@ -105,9 +144,8 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForS
             EXPECT_FALSE(wasSetGroupIdFunctionCalled);
             EXPECT_FALSE(wasDownloadGroupFilesFunctionCalled);
 
-            co_await TestExecuteCommand(centralizedConfiguration,
-                                        R"({"command": "set-group", "groups": ["group1", "group2"]})",
-                                        module_command::Status::SUCCESS);
+            co_await TestExecuteCommand(
+                centralizedConfiguration, "set-group", groupsList, module_command::Status::SUCCESS);
 
             EXPECT_TRUE(wasSetGroupIdFunctionCalled);
             EXPECT_TRUE(wasDownloadGroupFilesFunctionCalled);
@@ -127,8 +165,7 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForU
         {
             CentralizedConfiguration centralizedConfiguration;
 
-            co_await TestExecuteCommand(
-                centralizedConfiguration, R"({"command": "update-group"})", module_command::Status::FAILURE);
+            co_await TestExecuteCommand(centralizedConfiguration, "update-group", {}, module_command::Status::FAILURE);
 
             bool wasGetGroupIdFunctionCalled = false;
             bool wasDownloadGroupFilesFunctionCalled = false;
@@ -150,8 +187,7 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForU
             EXPECT_FALSE(wasGetGroupIdFunctionCalled);
             EXPECT_FALSE(wasDownloadGroupFilesFunctionCalled);
 
-            co_await TestExecuteCommand(
-                centralizedConfiguration, R"({"command": "update-group"})", module_command::Status::SUCCESS);
+            co_await TestExecuteCommand(centralizedConfiguration, "update-group", {}, module_command::Status::SUCCESS);
 
             EXPECT_TRUE(wasGetGroupIdFunctionCalled);
             EXPECT_TRUE(wasDownloadGroupFilesFunctionCalled);

@@ -71,8 +71,8 @@ void Agent::Run()
             {
                 return DispatchCommand(
                     cmd,
-                    [this](std::string command)
-                    { return m_centralizedConfiguration.ExecuteCommand(std::move(command)); },
+                    [this](std::string command, nlohmann::json parameters)
+                    { return m_centralizedConfiguration.ExecuteCommand(std::move(command), std::move(parameters)); },
                     m_messageQueue);
             }
             return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue);

@@ -29,7 +29,7 @@ class Inventory {
         void Start();
         void Setup(const configuration::ConfigurationParser& configurationParser);
         void Stop();
-        Co_CommandExecutionResult ExecuteCommand(const std::string query);
+        Co_CommandExecutionResult ExecuteCommand(const std::string command, const nlohmann::json parameters);
         const std::string& Name() const { return m_moduleName; };
         void SetPushMessageFunction(const std::function<int(Message)>& pushMessage);
 

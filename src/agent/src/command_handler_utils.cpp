@@ -21,7 +21,7 @@ namespace
     {
         try
         {
-            *result = co_await executeFunction(commandEntry.Command);
+            *result = co_await executeFunction(commandEntry.Command, commandEntry.Parameters);
             *commandCompleted = true;
             timer->cancel();
         }
@@ -65,10 +65,11 @@ namespace
     }
 } // namespace
 
-boost::asio::awaitable<module_command::CommandExecutionResult> DispatchCommand(
-    module_command::CommandEntry commandEntry,
-    std::function<boost::asio::awaitable<module_command::CommandExecutionResult>(std::string command)> executeFunction,
-    std::shared_ptr<IMultiTypeQueue> messageQueue)
+boost::asio::awaitable<module_command::CommandExecutionResult>
+DispatchCommand(module_command::CommandEntry commandEntry,
+                std::function<boost::asio::awaitable<module_command::CommandExecutionResult>(
+                    std::string command, nlohmann::json parameters)> executeFunction,
+                std::shared_ptr<IMultiTypeQueue> messageQueue)
 {
     using namespace boost::asio::experimental::awaitable_operators;
 
@@ -107,9 +108,10 @@ DispatchCommand(module_command::CommandEntry commandEntry,
     }
 
     auto moduleExecuteFunction =
-        [module](const std::string& command) -> boost::asio::awaitable<module_command::CommandExecutionResult>
+        [module](const std::string& command,
+                 const nlohmann::json& parameters) -> boost::asio::awaitable<module_command::CommandExecutionResult>
     {
-        return module->ExecuteCommand(command);
+        return module->ExecuteCommand(command, parameters);
     };
 
     co_return co_await DispatchCommand(commandEntry, moduleExecuteFunction, messageQueue);
