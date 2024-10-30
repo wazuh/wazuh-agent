@@ -56,12 +56,7 @@ public:
 class RegisterTest : public ::testing::Test
 {
 protected:
-    void SetUp() override
-    {
-        agent = std::make_unique<AgentInfo>("agent_name", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_uuid");
-        registration = std::make_unique<agent_registration::AgentRegistration>(
-            "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", std::nullopt);
-    }
+    void SetUp() override {}
 
     std::unique_ptr<AgentInfo> agent;
     std::unique_ptr<agent_registration::AgentRegistration> registration;
@@ -69,6 +64,9 @@ protected:
 
 TEST_F(RegisterTest, RegistrationTestSuccess)
 {
+    registration = std::make_unique<agent_registration::AgentRegistration>(
+        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", std::nullopt);
+    agent = std::make_unique<AgentInfo>();
 
     MockHttpClient mockHttpClient;
 
@@ -97,6 +95,10 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
 
 TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
 {
+    registration = std::make_unique<agent_registration::AgentRegistration>(
+        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", std::nullopt);
+    agent = std::make_unique<AgentInfo>();
+
     MockHttpClient mockHttpClient;
 
     EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, "user", "password"))
@@ -109,6 +111,10 @@ TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
 
 TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
 {
+    registration = std::make_unique<agent_registration::AgentRegistration>(
+        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", std::nullopt);
+    agent = std::make_unique<AgentInfo>();
+
     MockHttpClient mockHttpClient;
 
     EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, "user", "password"))
@@ -122,6 +128,38 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
     const bool res = registration->Register(mockHttpClient);
     ASSERT_FALSE(res);
+}
+
+TEST_F(RegisterTest, RegistrationTestSuccessWithEmptyKey)
+{
+    registration =
+        std::make_unique<agent_registration::AgentRegistration>("user", "password", "", "agent_name", std::nullopt);
+    agent = std::make_unique<AgentInfo>();
+
+    MockHttpClient mockHttpClient;
+
+    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, testing::_))
+        .WillOnce(testing::Return("token"));
+
+    nlohmann::json bodyJson = {{"id", agent->GetUUID()}, {"key", agent->GetKey()}, {"name", agent->GetName()}};
+
+    http_client::HttpRequestParams reqParams(
+        boost::beast::http::verb::post, "https://localhost:55000", "/agents", "token", "", bodyJson.dump());
+
+    boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
+    expectedResponse.result(boost::beast::http::status::ok);
+
+    EXPECT_CALL(mockHttpClient, PerformHttpRequest(testing::Eq(reqParams))).WillOnce(testing::Return(expectedResponse));
+
+    // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
+    const bool res = registration->Register(mockHttpClient);
+    ASSERT_TRUE(res);
+}
+
+TEST_F(RegisterTest, RegistrationTestFailWithBadKey)
+{
+    ASSERT_THROW(agent_registration::AgentRegistration("user", "password", "badKey", "agent_name", std::nullopt),
+                 std::invalid_argument);
 }
 
 int main(int argc, char** argv)

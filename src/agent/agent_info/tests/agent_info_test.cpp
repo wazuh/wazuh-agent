@@ -27,24 +27,15 @@ TEST_F(AgentInfoTest, TestDefaultConstructorDefaultValues)
     EXPECT_NE(agentInfo.GetUUID(), "");
 }
 
-TEST_F(AgentInfoTest, TestParameterizedConstructor)
-{
-    const std::string name = "new_name";
-    const std::string key = "new_key";
-    const std::string uuid = "new_uuid";
-
-    const AgentInfo agentInfo(name, key, uuid);
-    EXPECT_EQ(agentInfo.GetName(), name);
-    EXPECT_EQ(agentInfo.GetKey(), key);
-    EXPECT_EQ(agentInfo.GetUUID(), uuid);
-}
-
 TEST_F(AgentInfoTest, TestPersistedValues)
 {
-    const AgentInfo agentInfo("test_name", "test_key", "test_uuid");
+    AgentInfo agentInfo;
+    agentInfo.SetName("test_name");
+    agentInfo.SetKey("4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
+    agentInfo.SetUUID("test_uuid");
     const AgentInfo agentInfoReloaded;
     EXPECT_EQ(agentInfoReloaded.GetName(), "test_name");
-    EXPECT_EQ(agentInfoReloaded.GetKey(), "test_key");
+    EXPECT_EQ(agentInfoReloaded.GetKey(), "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
     EXPECT_EQ(agentInfoReloaded.GetUUID(), "test_uuid");
 }
 
@@ -70,6 +61,28 @@ TEST_F(AgentInfoTest, TestSetKey)
 
     const AgentInfo agentInfoReloaded;
     EXPECT_EQ(agentInfoReloaded.GetKey(), newKey);
+}
+
+TEST_F(AgentInfoTest, TestSetBadKey)
+{
+    AgentInfo agentInfo;
+    const std::string newKey1 = "4GhT7uFm";
+    const std::string newKey2 = "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrN=";
+
+    ASSERT_FALSE(agentInfo.SetKey(newKey1));
+    ASSERT_FALSE(agentInfo.SetKey(newKey2));
+}
+
+TEST_F(AgentInfoTest, TestSetEmptyKey)
+{
+    AgentInfo agentInfo;
+    const std::string newKey;
+
+    agentInfo.SetKey(newKey);
+    EXPECT_NE(agentInfo.GetKey(), newKey);
+
+    const AgentInfo agentInfoReloaded;
+    EXPECT_NE(agentInfoReloaded.GetKey(), newKey);
 }
 
 TEST_F(AgentInfoTest, TestSetUUID)
