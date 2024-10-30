@@ -107,10 +107,11 @@ DispatchCommand(module_command::CommandEntry commandEntry,
         co_return module_command::CommandExecutionResult {module_command::Status::FAILURE, "Module not found"};
     }
 
-    auto moduleExecuteFunction = [module](const std::string& command, [[maybe_unused]] const nlohmann::json& parameters)
-        -> boost::asio::awaitable<module_command::CommandExecutionResult>
+    auto moduleExecuteFunction =
+        [module](const std::string& command,
+                 const nlohmann::json& parameters) -> boost::asio::awaitable<module_command::CommandExecutionResult>
     {
-        return module->ExecuteCommand(command);
+        return module->ExecuteCommand(command, parameters);
     };
 
     co_return co_await DispatchCommand(commandEntry, moduleExecuteFunction, messageQueue);

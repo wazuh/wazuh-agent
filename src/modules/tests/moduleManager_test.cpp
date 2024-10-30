@@ -8,7 +8,7 @@ public:
     MOCK_METHOD(void, Start, (), ());
     MOCK_METHOD(void, Setup, (const configuration::ConfigurationParser&), ());
     MOCK_METHOD(void, Stop, (), ());
-    MOCK_METHOD(boost::asio::awaitable<module_command::CommandExecutionResult>, ExecuteCommand, (const std::string&), ());
+    MOCK_METHOD(boost::asio::awaitable<module_command::CommandExecutionResult>, ExecuteCommand, (const std::string&, const nlohmann::json&), ());
     MOCK_METHOD(std::string, Name, (), (const));
     MOCK_METHOD(void, SetPushMessageFunction, (const std::function<int(Message)>));
 };

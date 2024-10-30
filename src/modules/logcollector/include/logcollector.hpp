@@ -30,8 +30,9 @@ public:
 
     /// @brief Executes a command
     /// @param query Command to execute
+    /// @param parameters A json object containing the parameters of the command to be executed
     /// @return Awaitable (coroutine) which will return the result of the command execution
-    Co_CommandExecutionResult ExecuteCommand(const std::string query);
+    Co_CommandExecutionResult ExecuteCommand(const std::string query, [[maybe_unused]] const nlohmann::json parameters);
 
     /// @brief Gets the name of the Logcollector module
     /// @return Name of the module

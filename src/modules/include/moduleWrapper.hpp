@@ -5,6 +5,8 @@
 
 #include <boost/asio/awaitable.hpp>
 
+#include <nlohmann/json.hpp>
+
 #include <functional>
 #include <string>
 
@@ -14,6 +16,6 @@ struct ModuleWrapper {
     std::function<void()> Start;
     std::function<void(const configuration::ConfigurationParser&)> Setup;
     std::function<void()> Stop;
-    std::function<Co_CommandExecutionResult(std::string)> ExecuteCommand;
+    std::function<Co_CommandExecutionResult(std::string, nlohmann::json)> ExecuteCommand;
     std::function<std::string()> Name;
 };
