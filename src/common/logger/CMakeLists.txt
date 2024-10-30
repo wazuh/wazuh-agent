@@ -16,8 +16,7 @@ set(LIBRARIES
 
 if(UNIX AND NOT APPLE)
     find_package(PkgConfig REQUIRED)
-    pkg_check_modules(SYSTEMD REQUIRED libsystemd)
-    list(APPEND LIBRARIES ${SYSTEMD_LIBRARIES})
+    list(APPEND LIBRARIES)
 endif()
 
 if(WIN32)
