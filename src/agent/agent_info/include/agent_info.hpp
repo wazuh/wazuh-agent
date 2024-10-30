@@ -7,7 +7,6 @@ class AgentInfo
 {
 public:
     AgentInfo();
-    AgentInfo(std::string name, std::string key, std::string uuid);
 
     std::string GetName() const;
     std::string GetKey() const;

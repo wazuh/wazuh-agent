@@ -1,7 +1,6 @@
 #include <agent_registration.hpp>
 
 #include <boost/beast/http.hpp>
-#include <fmt/format.h>
 #include <iostream>
 #include <nlohmann/json.hpp>
 
@@ -46,12 +45,8 @@ namespace agent_registration
             return false;
         }
 
-        nlohmann::json bodyJson = {{"id", m_agentInfo.GetUUID()}, {"key", m_agentInfo.GetKey()}};
-
-        if (!m_agentInfo.GetName().empty())
-        {
-            bodyJson["name"] = m_agentInfo.GetName();
-        }
+        nlohmann::json bodyJson = {
+            {"id", m_agentInfo.GetUUID()}, {"key", m_agentInfo.GetKey()}, {"name", m_agentInfo.GetName()}};
 
         const auto reqParams = http_client::HttpRequestParams(
             http::verb::post, m_serverUrl, "/agents", token.value(), "", bodyJson.dump());
@@ -60,7 +55,7 @@ namespace agent_registration
 
         if (res.result() != http::status::ok)
         {
-            std::cout << fmt::format("Registration error: {}.\n", res.result_int());
+            std::cout << "Registration error: " << res.result_int() << ".\n";
             return false;
         }
 

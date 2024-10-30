@@ -2,7 +2,6 @@
 
 #include <agent.hpp>
 #include <agent_registration.hpp>
-#include <fmt/format.h>
 
 #include <iostream>
 #include <string>
@@ -38,6 +37,6 @@ void RegisterAgent(const std::string& user,
     }
     else
     {
-        std::cout << fmt::format("{} and {} args are mandatory\n", OPT_USER, OPT_PASSWORD);
+        std::cout << OPT_USER << " and " << OPT_PASSWORD << " args are mandatory\n";
     }
 }

@@ -28,17 +28,6 @@ AgentInfo::AgentInfo()
     }
 }
 
-AgentInfo::AgentInfo(std::string name, std::string key, std::string uuid)
-    : m_name(std::move(name))
-    , m_key(std::move(key))
-    , m_uuid(std::move(uuid))
-{
-    AgentInfoPersistance agentInfoPersistance;
-    agentInfoPersistance.SetName(m_name);
-    agentInfoPersistance.SetKey(m_key);
-    agentInfoPersistance.SetUUID(m_uuid);
-}
-
 std::string AgentInfo::GetName() const
 {
     return m_name;
@@ -69,6 +58,7 @@ void AgentInfo::SetName(const std::string& name)
 bool AgentInfo::SetKey(const std::string& key)
 {
     AgentInfoPersistance agentInfoPersistance;
+
     if (!key.empty())
     {
         if (!ValidateKey(key))
