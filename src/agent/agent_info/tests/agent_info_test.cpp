@@ -63,7 +63,7 @@ TEST_F(AgentInfoTest, TestSetName)
 TEST_F(AgentInfoTest, TestSetKey)
 {
     AgentInfo agentInfo;
-    const std::string newKey = "new_key";
+    const std::string newKey = "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj";
 
     agentInfo.SetKey(newKey);
     EXPECT_EQ(agentInfo.GetKey(), newKey);

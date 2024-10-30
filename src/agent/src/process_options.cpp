@@ -13,22 +13,31 @@ void RegisterAgent(const std::string& user,
                    const std::string& name,
                    const std::string& configFile)
 {
-    if (!user.empty() && !password.empty() && !key.empty())
+    if (!user.empty() && !password.empty())
     {
-        agent_registration::AgentRegistration reg(user, password, key, name, configFile);
+        try
+        {
+            std::cout << "Starting wazuh-agent registration\n";
 
-        http_client::HttpClient httpClient;
-        if (reg.Register(httpClient))
-        {
-            std::cout << "wazuh-agent registered\n";
+            agent_registration::AgentRegistration reg(user, password, key, name, configFile);
+
+            http_client::HttpClient httpClient;
+            if (reg.Register(httpClient))
+            {
+                std::cout << "wazuh-agent registered\n";
+            }
+            else
+            {
+                std::cout << "wazuh-agent registration failed\n";
+            }
         }
-        else
+        catch (const std::exception& e)
         {
-            std::cout << "wazuh-agent registration failed\n";
+            std::cerr << "Error: " << e.what() << '\n';
         }
     }
     else
     {
-        std::cout << fmt::format("{}, {}, and {} args are mandatory\n", OPT_USER, OPT_PASSWORD, OPT_KEY);
+        std::cout << fmt::format("{} and {} args are mandatory\n", OPT_USER, OPT_PASSWORD);
     }
 }

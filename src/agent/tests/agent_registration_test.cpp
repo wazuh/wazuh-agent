@@ -58,9 +58,9 @@ class RegisterTest : public ::testing::Test
 protected:
     void SetUp() override
     {
-        agent = std::make_unique<AgentInfo>("agent_name", "agent_key", "agent_uuid");
+        agent = std::make_unique<AgentInfo>("agent_name", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_uuid");
         registration = std::make_unique<agent_registration::AgentRegistration>(
-            "user", "password", "agent_key", "agent_name", std::nullopt);
+            "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", std::nullopt);
     }
 
     std::unique_ptr<AgentInfo> agent;

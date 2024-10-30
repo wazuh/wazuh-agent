@@ -1,8 +1,8 @@
 #include <agent_registration.hpp>
 
-#include <logger.hpp>
-
 #include <boost/beast/http.hpp>
+#include <fmt/format.h>
+#include <iostream>
 #include <nlohmann/json.hpp>
 
 namespace http = boost::beast::http;
@@ -21,7 +21,11 @@ namespace agent_registration
         , m_user(std::move(user))
         , m_password(std::move(password))
     {
-        m_agentInfo.SetKey(key);
+        if (!m_agentInfo.SetKey(key))
+        {
+            throw std::invalid_argument("--key argument must be alphanumeric and 32 characters in length");
+        }
+
         if (!name.empty())
         {
             m_agentInfo.SetName(name);
@@ -38,7 +42,7 @@ namespace agent_registration
 
         if (!token.has_value())
         {
-            LogError("Failed to authenticate with the manager");
+            std::cout << "Failed to authenticate with the manager\n";
             return false;
         }
 
@@ -56,7 +60,7 @@ namespace agent_registration
 
         if (res.result() != http::status::ok)
         {
-            LogError("Registration error: {}.", res.result_int());
+            std::cout << fmt::format("Registration error: {}.\n", res.result_int());
             return false;
         }
 

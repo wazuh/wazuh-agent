@@ -5,7 +5,13 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <random>
 #include <utility>
+
+namespace
+{
+    constexpr size_t KEY_LENGTH = 32;
+}
 
 AgentInfo::AgentInfo()
 {
@@ -60,11 +66,25 @@ void AgentInfo::SetName(const std::string& name)
     m_name = name;
 }
 
-void AgentInfo::SetKey(const std::string& key)
+bool AgentInfo::SetKey(const std::string& key)
 {
     AgentInfoPersistance agentInfoPersistance;
-    agentInfoPersistance.SetKey(key);
-    m_key = key;
+    if (!key.empty())
+    {
+        if (!ValidateKey(key))
+        {
+            return false;
+        }
+        m_key = key;
+    }
+    else
+    {
+        m_key = CreateKey();
+    }
+
+    agentInfoPersistance.SetKey(m_key);
+
+    return true;
 }
 
 void AgentInfo::SetUUID(const std::string& uuid)
@@ -79,4 +99,26 @@ void AgentInfo::SetGroups(const std::vector<std::string>& groupList)
     AgentInfoPersistance agentInfoPersistance;
     agentInfoPersistance.SetGroups(groupList);
     m_groups = groupList;
+}
+
+std::string AgentInfo::CreateKey()
+{
+    constexpr std::string_view charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    std::random_device rd;
+    std::mt19937 generator(rd());
+    std::uniform_int_distribution<size_t> distribution(0, charset.size() - 1);
+
+    std::string key;
+    for (size_t i = 0; i < KEY_LENGTH; ++i)
+    {
+        key += charset[distribution(generator)];
+    }
+
+    return key;
+}
+
+bool AgentInfo::ValidateKey(const std::string& key)
+{
+    return key.length() == KEY_LENGTH && std::ranges::all_of(key, ::isalnum);
 }

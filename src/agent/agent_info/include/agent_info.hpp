@@ -15,11 +15,14 @@ public:
     std::vector<std::string> GetGroups() const;
 
     void SetName(const std::string& name);
-    void SetKey(const std::string& key);
+    bool SetKey(const std::string& key);
     void SetUUID(const std::string& uuid);
     void SetGroups(const std::vector<std::string>& groupList);
 
 private:
+    std::string CreateKey();
+    bool ValidateKey(const std::string& key);
+
     std::string m_name;
     std::string m_key;
     std::string m_uuid;
