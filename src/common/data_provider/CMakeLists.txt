@@ -122,8 +122,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
       "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*Windows.cpp"
       "${CMAKE_CURRENT_SOURCE_DIR}/src/packages/*Windows.cpp")
   add_definitions(-DWIN32=1
-                  -D_WIN32_WINNT=0x600
-                  -DWIN_EXPORT)
+                  -D_WIN32_WINNT=0x600)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   file(GLOB SYSINFO_SRC
       "${CMAKE_CURRENT_SOURCE_DIR}/src/*Linux.cpp"

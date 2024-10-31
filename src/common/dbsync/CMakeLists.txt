@@ -68,10 +68,6 @@ add_library(dbsync STATIC
     ${DBSYNC_SRC}
     ${SRC_FOLDER}/${RESOURCE_OBJ})
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-  add_definitions(-DWIN_EXPORT)
-endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-
 target_link_libraries(dbsync utils nlohmann_json::nlohmann_json cjson unofficial::sqlite3::sqlite3)
 
 if(BUILD_TESTS)

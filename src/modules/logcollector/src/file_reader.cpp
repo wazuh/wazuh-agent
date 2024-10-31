@@ -99,7 +99,7 @@ bool Localfile::Rotated() {
         auto fileSize = std::filesystem::file_size(m_filename);
         auto streamSize = static_cast<uintmax_t>(m_stream->tellg());
         return fileSize < streamSize;
-    } catch (std::filesystem::filesystem_error & e) {
+    } catch (std::filesystem::filesystem_error&) {
         throw OpenError(m_filename);
     }
 }

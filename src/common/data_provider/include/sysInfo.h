@@ -13,25 +13,7 @@
 #ifndef _SYS_INFO_H
 #define _SYS_INFO_H
 
-// Define EXPORTED for any platform
 #include "commonDefs.h"
-#ifdef WAZUH_UNIT_TESTING
-#define EXPORTED
-#else
-#ifndef EXPORTED
-#ifdef _WIN32
-#ifdef WIN_EXPORT
-#define EXPORTED __declspec(dllexport)
-#else
-#define EXPORTED __declspec(dllimport)
-#endif
-#elif __GNUC__ >= 4
-#define EXPORTED __attribute__((visibility("default")))
-#else
-#define EXPORTED
-#endif
-#endif
-#endif
 
 #include <cjson/cJSON.h>
 #ifdef __cplusplus
@@ -45,7 +27,7 @@ extern "C" {
  *
  * @return 0 on success, -1 otherwise.
  */
-EXPORTED int sysinfo_hardware(cJSON** js_result);
+int sysinfo_hardware(cJSON** js_result);
 
 /**
  * @brief Obtains the installed packages information from the current OS being analyzed.
@@ -54,7 +36,7 @@ EXPORTED int sysinfo_hardware(cJSON** js_result);
  *
  * @return 0 on success, -1 otherwise.
  */
-EXPORTED int sysinfo_packages(cJSON** js_result);
+int sysinfo_packages(cJSON** js_result);
 
 /**
  * @brief Obtains the Operating System information from the current OS being analyzed.
@@ -63,7 +45,7 @@ EXPORTED int sysinfo_packages(cJSON** js_result);
  *
  * @return 0 on success, -1 otherwise.
  */
-EXPORTED int sysinfo_os(cJSON** js_result);
+int sysinfo_os(cJSON** js_result);
 
 /**
  * @brief Obtains the processes information from the current OS being analyzed.
@@ -72,7 +54,7 @@ EXPORTED int sysinfo_os(cJSON** js_result);
  *
  * @return 0 on success, -1 otherwise.
  */
-EXPORTED int sysinfo_processes(cJSON** js_result);
+int sysinfo_processes(cJSON** js_result);
 
 /**
  * @brief Obtains the network information from the current OS being analyzed.
@@ -81,7 +63,7 @@ EXPORTED int sysinfo_processes(cJSON** js_result);
  *
  * @return 0 on success, -1 otherwise.
  */
-EXPORTED int sysinfo_networks(cJSON** js_result);
+int sysinfo_networks(cJSON** js_result);
 
 /**
  * @brief Obtains the ports information from the current OS being analyzed.
@@ -90,14 +72,14 @@ EXPORTED int sysinfo_networks(cJSON** js_result);
  *
  * @return 0 on success, -1 otherwise.
  */
-EXPORTED int sysinfo_ports(cJSON** js_result);
+int sysinfo_ports(cJSON** js_result);
 
 /**
  * @brief Frees the \p js_data information.
  *
  * @param js_data Information to be freed.
  */
-EXPORTED void sysinfo_free_result(cJSON** js_data);
+void sysinfo_free_result(cJSON** js_data);
 
 /**
  * @brief Obtains the processes information from the current OS being analyzed.
@@ -106,7 +88,7 @@ EXPORTED void sysinfo_free_result(cJSON** js_data);
  *
  * return 0 on success, -1 otherwhise.
  */
-EXPORTED int sysinfo_processes_cb(callback_data_t cb);
+int sysinfo_processes_cb(callback_data_t cb);
 
 /**
  * @brief Obtains the packages information from the current OS being analyzed.
@@ -115,7 +97,7 @@ EXPORTED int sysinfo_processes_cb(callback_data_t cb);
  *
  * return 0 on success, -1 otherwhise.
  */
-EXPORTED int sysinfo_packages_cb(callback_data_t cb);
+int sysinfo_packages_cb(callback_data_t cb);
 
 /**
  * @brief Obtains the hotfixes information from the current OS being analyzed.
@@ -124,7 +106,7 @@ EXPORTED int sysinfo_packages_cb(callback_data_t cb);
  *
  * @return 0 on success, -1 otherwise.
  */
-EXPORTED int sysinfo_hotfixes(cJSON** js_result);
+int sysinfo_hotfixes(cJSON** js_result);
 
 
 typedef int(*sysinfo_networks_func)(cJSON** jsresult);
