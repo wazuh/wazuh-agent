@@ -64,7 +64,7 @@ TEST_F(LoggerConstructorTest, LinuxLoggerConstructor)
     auto current_logger = spdlog::default_logger();
     EXPECT_EQ(current_logger->name(), "wazuh-agent");
 
-    EXPECT_EQ(spdlog::get_level(), spdlog::level::trace);
+    EXPECT_EQ(spdlog::get_level(), spdlog::level::info);
 
     auto sinks = current_logger->sinks();
     ASSERT_FALSE(sinks.empty());
@@ -77,7 +77,7 @@ TEST_F(LoggerConstructorTest, LinuxLoggerConstructorFail)
     auto current_logger = spdlog::default_logger();
     EXPECT_EQ(current_logger->name(), "wazuh-agent");
 
-    EXPECT_EQ(spdlog::get_level(), spdlog::level::trace);
+    EXPECT_EQ(spdlog::get_level(), spdlog::level::info);
 
     auto sinks = current_logger->sinks();
     ASSERT_FALSE(sinks.empty());
@@ -92,7 +92,7 @@ TEST_F(LoggerConstructorTest, WindowsLoggerConstructor)
     auto current_logger = spdlog::default_logger();
     EXPECT_EQ(current_logger->name(), "wazuh-agent");
 
-    EXPECT_EQ(spdlog::get_level(), spdlog::level::trace);
+    EXPECT_EQ(spdlog::get_level(), spdlog::level::info);
 
     auto sinks = current_logger->sinks();
     ASSERT_FALSE(sinks.empty());
@@ -107,7 +107,7 @@ TEST_F(LoggerConstructorTest, MacOSLoggerConstructor)
     auto current_logger = spdlog::default_logger();
     EXPECT_EQ(current_logger->name(), "wazuh-agent");
 
-    EXPECT_EQ(spdlog::get_level(), spdlog::level::trace);
+    EXPECT_EQ(spdlog::get_level(), spdlog::level::info);
 
     auto sinks = current_logger->sinks();
     ASSERT_FALSE(sinks.empty());
