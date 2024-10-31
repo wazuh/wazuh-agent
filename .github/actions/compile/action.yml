@@ -37,5 +37,5 @@ runs:
         run: |
           set +e
           cd build
-          ctest -C RelWithDebInfo -j $(nproc)
+          ctest -C RelWithDebInfo --output-on-failure -j $(nproc)
         shell: bash

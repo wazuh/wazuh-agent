@@ -48,13 +48,12 @@ namespace communicator
         std::mutex m_reAuthMutex;
         std::atomic<bool> m_isReAuthenticating = false;
 
-        std::string m_managerIp;
-        std::string m_port;
+        std::string m_serverUrl;
+        std::string m_registrationUrl;
         std::string m_uuid;
         std::string m_key;
         std::shared_ptr<std::string> m_token;
         long long m_tokenExpTimeInSeconds = 0;
         std::unique_ptr<boost::asio::steady_timer> m_tokenExpTimer;
-        bool m_useHttps = true;
     };
 } // namespace communicator

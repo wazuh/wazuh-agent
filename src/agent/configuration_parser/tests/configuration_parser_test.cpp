@@ -11,11 +11,11 @@ TEST(ConfigurationParser, GetConfigString)
 {
     std::string strConfig = R"(
         [agent]
-        manager_ip = "192.168.0.11"
+        server_url = "192.168.0.11"
         string_conf = "string"
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<std::string>("agent", "manager_ip");
+    const auto ret = parserStr->GetConfig<std::string>("agent", "server_url");
     ASSERT_EQ(ret, "192.168.0.11");
 }
 

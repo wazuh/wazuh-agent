@@ -17,11 +17,9 @@ namespace agent_registration
         : m_configurationParser(configFile.has_value() && !configFile->empty()
                                     ? configuration::ConfigurationParser(std::filesystem::path(configFile.value()))
                                     : configuration::ConfigurationParser())
-        , m_managerIp(m_configurationParser.GetConfig<std::string>("agent", "manager_ip"))
-        , m_managerPort(m_configurationParser.GetConfig<std::string>("agent", "server_mgmt_api_port"))
+        , m_serverUrl(m_configurationParser.GetConfig<std::string>("agent", "registration_url"))
         , m_user(std::move(user))
         , m_password(std::move(password))
-        , m_useHttps(!(m_configurationParser.GetConfig<std::string>("agent", "https_enabled") == "no"))
     {
         m_agentInfo.SetKey(key);
         if (!name.empty())
@@ -36,8 +34,7 @@ namespace agent_registration
 
     bool AgentRegistration::Register(http_client::IHttpClient& httpClient)
     {
-        const auto token =
-            httpClient.AuthenticateWithUserPassword(m_managerIp, m_managerPort, m_user, m_password, m_useHttps);
+        const auto token = httpClient.AuthenticateWithUserPassword(m_serverUrl, m_user, m_password);
 
         if (!token.has_value())
         {
@@ -53,7 +50,7 @@ namespace agent_registration
         }
 
         const auto reqParams = http_client::HttpRequestParams(
-            http::verb::post, m_managerIp, m_managerPort, "/agents", m_useHttps, token.value(), "", bodyJson.dump());
+            http::verb::post, m_serverUrl, "/agents", token.value(), "", bodyJson.dump());
 
         const auto res = httpClient.PerformHttpRequest(reqParams);
 

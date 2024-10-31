@@ -80,13 +80,11 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
         std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr);
 
     // A failed authentication won't return a token
-    EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _, _, _))
+    EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _))
         .WillOnce(Invoke(
             [communicatorPtr]([[maybe_unused]] const std::string& host,
-                              [[maybe_unused]] const std::string& port,
                               [[maybe_unused]] const std::string& uuid,
-                              [[maybe_unused]] const std::string& key,
-                              [[maybe_unused]] const bool useHttps) -> std::optional<std::string>
+                              [[maybe_unused]] const std::string& key) -> std::optional<std::string>
             {
                 communicatorPtr->Stop();
                 return std::nullopt;
@@ -139,7 +137,7 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
         std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr);
 
     const auto mockedToken = CreateToken();
-    EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _, _, _)).WillOnce(Return(mockedToken));
+    EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _)).WillOnce(Return(mockedToken));
 
     std::string capturedToken;
     EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(_, _, _, _, _, _))

@@ -4,6 +4,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
+#include <boost/url.hpp>
 #include <nlohmann/json.hpp>
 
 #if defined(__GNUC__) && !defined(__clang__)
@@ -39,12 +40,10 @@ namespace communicator
     {
         if (getStringConfigValue != nullptr)
         {
-            m_managerIp = getStringConfigValue("agent", "manager_ip");
-            m_port = getStringConfigValue("agent", "agent_comms_api_port");
-            const std::string httpsEnabled = getStringConfigValue("agent", "https_enabled");
-            if (httpsEnabled == "no")
+            m_serverUrl = getStringConfigValue("agent", "server_url");
+
+            if (boost::urls::url_view url(m_serverUrl); url.scheme() != "https")
             {
-                m_useHttps = false;
                 LogInfo("Using insecure connection.");
             }
         }
@@ -52,7 +51,7 @@ namespace communicator
 
     boost::beast::http::status Communicator::SendAuthenticationRequest()
     {
-        const auto token = m_httpClient->AuthenticateWithUuidAndKey(m_managerIp, m_port, m_uuid, m_key, m_useHttps);
+        const auto token = m_httpClient->AuthenticateWithUuidAndKey(m_serverUrl, m_uuid, m_key);
 
         if (token.has_value())
         {
@@ -101,8 +100,8 @@ namespace communicator
             return m_keepRunning.load();
         };
 
-        const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::get, m_managerIp, m_port, "/api/v1/commands", m_useHttps);
+        const auto reqParams =
+            http_client::HttpRequestParams(boost::beast::http::verb::get, m_serverUrl, "/api/v1/commands");
         co_await m_httpClient->Co_PerformHttpRequest(
             m_token, reqParams, {}, onAuthenticationFailed, onSuccess, loopCondition);
     }
@@ -162,8 +161,8 @@ namespace communicator
             return m_keepRunning.load();
         };
 
-        const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::post, m_managerIp, m_port, "/api/v1/events/stateful", m_useHttps);
+        const auto reqParams =
+            http_client::HttpRequestParams(boost::beast::http::verb::post, m_serverUrl, "/api/v1/events/stateful");
         co_await m_httpClient->Co_PerformHttpRequest(
             m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess, loopCondition);
     }
@@ -182,8 +181,8 @@ namespace communicator
             return m_keepRunning.load();
         };
 
-        const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::post, m_managerIp, m_port, "/api/v1/events/stateless", m_useHttps);
+        const auto reqParams =
+            http_client::HttpRequestParams(boost::beast::http::verb::post, m_serverUrl, "/api/v1/events/stateless");
         co_await m_httpClient->Co_PerformHttpRequest(
             m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess, loopCondition);
     }
@@ -212,10 +211,8 @@ namespace communicator
     bool Communicator::GetGroupConfigurationFromManager(const std::string& groupName, const std::string& dstFilePath)
     {
         const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get,
-                                                              m_managerIp,
-                                                              m_port,
+                                                              m_serverUrl,
                                                               "/api/v1/files?file_name=" + groupName + ".conf",
-                                                              m_useHttps,
                                                               *m_token,
                                                               "",
                                                               "");
