@@ -44,11 +44,19 @@ namespace agent_registration
         bool Register(http_client::IHttpClient& httpClient);
 
     private:
+        /// @brief The configuration parser.
         configuration::ConfigurationParser m_configurationParser;
+
+        /// @brief The URL of the manager.
         std::string m_serverUrl;
-        std::string m_registrationUrl;
+
+        /// @brief The user's username.
         std::string m_user;
+
+        /// @brief The user's password.
         std::string m_password;
+
+        /// @brief The agent's information.
         AgentInfo m_agentInfo;
     };
 } // namespace agent_registration

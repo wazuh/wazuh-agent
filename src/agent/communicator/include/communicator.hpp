@@ -49,7 +49,6 @@ namespace communicator
 
         long m_retryIntervalSecs = 30;
         std::string m_serverUrl;
-        std::string m_registrationUrl;
         std::string m_uuid;
         std::string m_key;
         std::shared_ptr<std::string> m_token;
