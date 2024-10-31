@@ -22,6 +22,7 @@ add_subdirectory(command_store)
 
 find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio beast)
+find_package(fmt REQUIRED)
 
 
 if(WIN32)
@@ -66,6 +67,7 @@ target_link_libraries(Agent
     OpenSSL::Crypto
     Boost::asio
     Boost::beast
+    fmt::fmt
 )
 
 include(../cmake/ConfigureTarget.cmake)
