@@ -25,7 +25,7 @@ void Logcollector::EnqueueTask(boost::asio::awaitable<void> task) {
 void Logcollector::Setup(const configuration::ConfigurationParser& configurationParser) {
     try {
         m_enabled = configurationParser.GetConfig<bool>("logcollector", "enabled");
-    } catch (std::exception & e) {
+    } catch (std::exception&) {
         m_enabled = true;
     }
 
@@ -38,13 +38,13 @@ void Logcollector::SetupFileReader(const configuration::ConfigurationParser& con
 
     try {
         fileWait = m_enabled = configurationParser.GetConfig<long>("logcollector", "file_wait");
-    } catch (std::exception & e) {
+    } catch (std::exception&) {
         fileWait = config::DEFAULT_FILE_WAIT;
     }
 
     try {
         reloadInterval = m_enabled = configurationParser.GetConfig<long>("logcollector", "reload_interval");
-    } catch (std::exception & e) {
+    } catch (std::exception&) {
         reloadInterval = config::DEFAULT_FILE_WAIT;
     }
 
@@ -54,7 +54,7 @@ void Logcollector::SetupFileReader(const configuration::ConfigurationParser& con
         for (auto& lf : localfiles) {
             AddReader(std::make_shared<FileReader>(*this, lf, fileWait, reloadInterval));
         }
-    } catch (std::exception & e) {
+    } catch (std::exception&) {
         LogTrace("No localfiles defined");
     }
 }

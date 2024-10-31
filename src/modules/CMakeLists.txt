@@ -32,8 +32,5 @@ configure_target(ModuleManager)
 
 if(BUILD_TESTS)
     enable_testing()
-    # TO DO: Fix unit tests for Windows
-    if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
-        add_subdirectory(tests)
-    endif()
+    add_subdirectory(tests)
 endif()

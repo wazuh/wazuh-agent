@@ -122,8 +122,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
       "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*Windows.cpp"
       "${CMAKE_CURRENT_SOURCE_DIR}/src/packages/*Windows.cpp")
   add_definitions(-DWIN32=1
-                  -D_WIN32_WINNT=0x600
-                  -DWIN_EXPORT)
+                  -D_WIN32_WINNT=0x600)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   file(GLOB SYSINFO_SRC
       "${CMAKE_CURRENT_SOURCE_DIR}/src/*Linux.cpp"
@@ -156,19 +155,13 @@ else()
       "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
-add_library(sysinfo SHARED
+add_library(sysinfo STATIC
     ${SYSINFO_SRC}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/sysInfo.cpp
     ${SRC_FOLDER}/${RESOURCE_OBJ})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   target_link_libraries(sysinfo PUBLIC psapi iphlpapi ws2_32)
-  set_target_properties(sysinfo PROPERTIES
-      PREFIX ""
-      SUFFIX ".dll"
-  )
-elseif(UNIX AND NOT APPLE)
-  string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,-rpath=$ORIGIN")
 elseif(APPLE)
   find_library(iokit_lib IOKit)
   if(NOT iokit_lib)
@@ -192,8 +185,7 @@ target_link_libraries(sysinfo PUBLIC
   networkHelper
   nlohmann_json::nlohmann_json
   cjson
-  unofficial::sqlite3::sqlite3
-  ${LUA_LIBRARIES})
+  unofficial::sqlite3::sqlite3)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   find_library(POPT_LIBRARY libpopt.a)
@@ -207,15 +199,10 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     ${LIBRPM_LIBRARY}
     ${LIBRPMIO_LIBRARY}
     LibArchive::LibArchive
-    ${POPT_LIBRARY})
+    ${POPT_LIBRARY}
+    ${LUA_LIBRARIES}
+  )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-
-if(APPLE)
-  add_custom_command(TARGET sysinfo
-    POST_BUILD COMMAND
-    ${CMAKE_INSTALL_NAME_TOOL} -id "@rpath/libsysinfo.dylib"
-    $<TARGET_FILE:sysinfo>)
-endif(APPLE)
 
 if(BUILD_TESTS)
   if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")

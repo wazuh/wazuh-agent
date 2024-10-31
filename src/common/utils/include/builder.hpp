@@ -12,8 +12,10 @@
 #ifndef _BUILDER_PATTERN_HPP
 #define _BUILDER_PATTERN_HPP
 
+#ifndef _MSC_VER
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
+#endif
 
 namespace Utils
 {
@@ -49,8 +51,8 @@ namespace Utils
     };
 }
 
+#ifndef _MSC_VER
 #pragma GCC diagnostic pop
+#endif
 
 #endif // _BUILDER_PATTERN_HPP
-
-

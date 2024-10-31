@@ -8,12 +8,6 @@ project(wazuh-agent)
 include(cmake/CommonSettings.cmake)
 set_common_settings()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX-")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /WX-")
-    add_compile_options(/w)
-endif()
-
 add_subdirectory(common)
 add_subdirectory(modules)
 add_subdirectory(agent)
