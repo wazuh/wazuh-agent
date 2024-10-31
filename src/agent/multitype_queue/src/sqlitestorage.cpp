@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <exception>
+#include <stdexcept>
+#include <string_view>
 
 SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::vector<std::string>& tableNames)
     : m_dbName(dbName)

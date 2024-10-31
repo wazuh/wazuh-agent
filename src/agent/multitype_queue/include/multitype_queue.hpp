@@ -4,10 +4,12 @@
 #include <message.hpp>
 #include <persistence.hpp>
 
+#include <chrono>
 #include <condition_variable>
 #include <map>
 #include <memory>
 #include <mutex>
+#include <string>
 #include <vector>
 
 #include <boost/asio.hpp>

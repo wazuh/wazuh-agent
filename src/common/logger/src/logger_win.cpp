@@ -2,6 +2,8 @@
 
 #include <spdlog/sinks/win_eventlog_sink.h>
 
+#include <memory>
+
 Logger::Logger()
 {
     auto sink = std::make_shared<spdlog::sinks::win_eventlog_sink_st>("Wazuh-Agent");

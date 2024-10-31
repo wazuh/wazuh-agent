@@ -2,7 +2,6 @@
 
 #include <ihttp_client.hpp>
 #include <ihttp_resolver_factory.hpp>
-#include <ihttp_socket.hpp>
 #include <ihttp_socket_factory.hpp>
 
 #include <boost/asio.hpp>

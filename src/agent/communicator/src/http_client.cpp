@@ -2,11 +2,14 @@
 
 #include "http_resolver_factory.hpp"
 #include "http_socket_factory.hpp"
+#include "ihttp_socket.hpp"
 
 #include <logger.hpp>
 
 #include <boost/beast/core/detail/base64.hpp>
 #include <nlohmann/json.hpp>
+
+#include <chrono>
 
 namespace http_client
 {

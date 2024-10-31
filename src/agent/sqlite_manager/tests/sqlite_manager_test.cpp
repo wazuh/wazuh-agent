@@ -2,6 +2,10 @@
 
 #include <sqlite_manager.hpp>
 
+#include <memory>
+#include <string>
+#include <vector>
+
 class SQLiteManagerTest : public ::testing::Test
 {
 protected:

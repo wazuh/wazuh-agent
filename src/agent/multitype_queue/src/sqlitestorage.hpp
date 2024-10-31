@@ -1,17 +1,16 @@
 #pragma once
 
+#include <persistence.hpp>
+
+#include <SQLiteCpp/SQLiteCpp.h>
+#include <SQLiteCpp/VariadicBind.h>
+#include <nlohmann/json.hpp>
+
 #include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <string>
-#include <string_view>
-#include <sys/stat.h>
-
-#include <SQLiteCpp/SQLiteCpp.h>
-#include <SQLiteCpp/VariadicBind.h>
-#include <stdexcept>
-
-#include "persistence.hpp"
+#include <vector>
 
 /**
  * @brief SQLite implementation of the Persistence interface.

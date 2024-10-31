@@ -2,6 +2,8 @@
 
 #include <spdlog/sinks/syslog_sink.h>
 
+#include <memory>
+
 Logger::Logger()
 {
     auto sink = std::make_shared<spdlog::sinks::syslog_sink_mt>("wazuh-agent", LOG_PID, LOG_USER, true);

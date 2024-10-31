@@ -1,18 +1,25 @@
 #include <logger.hpp>
 
 #include <gtest/gtest.h>
+
 #include <spdlog/sinks/ostream_sink.h>
+
 #ifdef __APPLE__
 #include <spdlog/sinks/syslog_sink.h>
 #endif
+
 #ifdef __linux__
 #include <spdlog/sinks/syslog_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #endif
+
 #ifdef _WIN32
 #include <spdlog/sinks/win_eventlog_sink.h>
 #endif
+
 #include <sstream>
+#include <memory>
+#include <string>
 
 class LoggerConstructorTest : public ::testing::Test
 {

@@ -2,8 +2,9 @@
 
 #include <agent_info.hpp>
 #include <configuration_parser.hpp>
-#include <http_client.hpp>
+#include <ihttp_client.hpp>
 
+#include <optional>
 #include <string>
 
 namespace agent_registration

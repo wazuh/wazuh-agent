@@ -8,9 +8,11 @@
 #include "mocks/mock_http_socket.hpp"
 #include "mocks/mock_http_socket_factory.hpp"
 
-#include <boost/beast/http.hpp>
-#include <boost/beast/version.hpp>
+#include <boost/asio.hpp>
+#include <boost/beast.hpp>
 
+#include <functional>
+#include <memory>
 #include <string>
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines,cppcoreguidelines-avoid-reference-coroutine-parameters)
