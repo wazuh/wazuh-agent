@@ -1,8 +1,7 @@
 #include <agent_registration.hpp>
 
-#include <logger.hpp>
-
 #include <boost/beast/http.hpp>
+#include <iostream>
 #include <nlohmann/json.hpp>
 
 namespace http = boost::beast::http;
@@ -21,7 +20,11 @@ namespace agent_registration
         , m_user(std::move(user))
         , m_password(std::move(password))
     {
-        m_agentInfo.SetKey(key);
+        if (!m_agentInfo.SetKey(key))
+        {
+            throw std::invalid_argument("--key argument must be alphanumeric and 32 characters in length");
+        }
+
         if (!name.empty())
         {
             m_agentInfo.SetName(name);
@@ -38,16 +41,12 @@ namespace agent_registration
 
         if (!token.has_value())
         {
-            LogError("Failed to authenticate with the manager");
+            std::cout << "Failed to authenticate with the manager\n";
             return false;
         }
 
-        nlohmann::json bodyJson = {{"id", m_agentInfo.GetUUID()}, {"key", m_agentInfo.GetKey()}};
-
-        if (!m_agentInfo.GetName().empty())
-        {
-            bodyJson["name"] = m_agentInfo.GetName();
-        }
+        nlohmann::json bodyJson = {
+            {"id", m_agentInfo.GetUUID()}, {"key", m_agentInfo.GetKey()}, {"name", m_agentInfo.GetName()}};
 
         const auto reqParams = http_client::HttpRequestParams(
             http::verb::post, m_serverUrl, "/agents", token.value(), "", bodyJson.dump());
@@ -56,7 +55,7 @@ namespace agent_registration
 
         if (res.result() != http::status::ok)
         {
-            LogError("Registration error: {}.", res.result_int());
+            std::cout << "Registration error: " << res.result_int() << ".\n";
             return false;
         }
 

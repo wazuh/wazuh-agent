@@ -8,12 +8,10 @@ project(Logger)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
-find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)
 
 set(LIBRARIES
     spdlog::spdlog
-    fmt::fmt
 )
 
 if(UNIX AND NOT APPLE)
