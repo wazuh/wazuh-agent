@@ -39,7 +39,7 @@ Awaitable FileReader::ReadLocalfile(Localfile* lf) {
                 LogInfo("File '{}' rotated, reloading", lf->Filename());
                 lf->Reopen();
             }
-        } catch (OpenError & e) {
+        } catch (OpenError&) {
             LogInfo("File inaccesible: {}", lf->Filename());
             co_return;
         }

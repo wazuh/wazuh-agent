@@ -5,6 +5,12 @@ project(Inventory)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX-")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /WX-")
+    add_compile_options(/w)
+endif()
+
 get_filename_component(SRC_FOLDER       ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
 get_filename_component(COMMON_FOLDER    ${SRC_FOLDER}/common/ ABSOLUTE)
 
