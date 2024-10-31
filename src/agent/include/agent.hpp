@@ -14,24 +14,52 @@
 #include <memory>
 #include <string>
 
+/// @brief Agent class
+///
+/// This class handles the configuration, communication with the manager,
+/// command handling, task management, and module management.
 class Agent
 {
 public:
+    /// @brief Constructor
+    /// @param configFile Path to the configuration file
+    /// @param signalHandler Pointer to a custom ISignalHandler implementation
     Agent(const std::string& configFile,
           std::unique_ptr<ISignalHandler> signalHandler = std::make_unique<SignalHandler>());
+
+    /// @brief Destructor
     ~Agent();
 
+    /// @brief Runs the agent
+    ///
+    /// This method sets up the agent and starts the task manager.
     void Run();
 
 private:
+    /// @brief Queue for storing messages
     std::shared_ptr<MultiTypeQueue> m_messageQueue;
 
+    /// @brief Pointer to a custom ISignalHandler implementation
     std::unique_ptr<ISignalHandler> m_signalHandler;
+
+    /// @brief Task manager
     TaskManager m_taskManager;
+
+    /// @brief Agent info
     AgentInfo m_agentInfo;
+
+    /// @brief Configuration parser
     configuration::ConfigurationParser m_configurationParser;
+
+    /// @brief Communicator
     communicator::Communicator m_communicator;
+
+    /// @brief Command handler
     command_handler::CommandHandler m_commandHandler;
+
+    /// @brief Module manager
     ModuleManager m_moduleManager;
+
+    /// @brief Centralized configuration
     centralized_configuration::CentralizedConfiguration m_centralizedConfiguration;
 };
