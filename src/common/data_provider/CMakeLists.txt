@@ -71,6 +71,7 @@ endif()
 
 find_package(cJSON CONFIG REQUIRED)
 find_package(LibArchive REQUIRED)
+find_package(Lua REQUIRED)
 if(APPLE)
   find_package(unofficial-libplist CONFIG REQUIRED)
 endif()
@@ -79,9 +80,6 @@ find_package(unofficial-sqlite3 CONFIG REQUIRED)
 
 find_path(POPT_INCLUDE_DIR include/popt.h)
 include_directories(${POPT_INCLUDE_DIR})
-
-set(LUA_LIBRARIES "${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/lib/liblua.a")
-set(LUA_INCLUDE_DIR "${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/include")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
