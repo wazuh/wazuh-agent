@@ -63,7 +63,7 @@ void SQLiteStorage::ReleaseDatabaseAccess()
     m_cv.notify_one();
 }
 
-int SQLiteStorage::Store(const json& message, const std::string& tableName, const std::string& moduleName)
+int SQLiteStorage::Store(const nlohmann::json& message, const std::string& tableName, const std::string& moduleName)
 {
     constexpr std::string_view INSERT_QUERY {"INSERT INTO {} (module, message) VALUES (\"{}\", ?);"};
     std::string insertQuery = fmt::format(INSERT_QUERY, tableName, moduleName);
@@ -105,7 +105,7 @@ int SQLiteStorage::Store(const json& message, const std::string& tableName, cons
 }
 
 // TODO: we shouldn't use rowid outside the table itself
-json SQLiteStorage::Retrieve(int id, const std::string& tableName, const std::string& moduleName)
+nlohmann::json SQLiteStorage::Retrieve(int id, const std::string& tableName, const std::string& moduleName)
 {
 
     std::string selectQuery;
@@ -125,7 +125,7 @@ json SQLiteStorage::Retrieve(int id, const std::string& tableName, const std::st
     {
         SQLite::Statement query(*m_db, selectQuery);
         query.bind(1, id);
-        json outputJson = {{"module", ""}, {"data", {}}};
+        nlohmann::json outputJson = {{"module", ""}, {"data", {}}};
         if (query.executeStep())
         {
             std::string dataString;
@@ -139,7 +139,7 @@ json SQLiteStorage::Retrieve(int id, const std::string& tableName, const std::st
 
                 if (!dataString.empty())
                 {
-                    outputJson["data"] = json::parse(dataString);
+                    outputJson["data"] = nlohmann::json::parse(dataString);
                 }
 
                 if (!moduleString.empty())
@@ -158,7 +158,7 @@ json SQLiteStorage::Retrieve(int id, const std::string& tableName, const std::st
     }
 }
 
-json SQLiteStorage::RetrieveMultiple(int n, const std::string& tableName, const std::string& moduleName)
+nlohmann::json SQLiteStorage::RetrieveMultiple(int n, const std::string& tableName, const std::string& moduleName)
 {
     std::string selectQuery;
     if (moduleName.empty())
@@ -177,10 +177,10 @@ json SQLiteStorage::RetrieveMultiple(int n, const std::string& tableName, const 
     {
         SQLite::Statement query(*m_db, selectQuery);
         query.bind(1, n);
-        json messages = json::array();
+        nlohmann::json messages = nlohmann::json::array();
         while (query.executeStep())
         {
-            // getting data json
+            // getting data nlohmann::json
             std::string dataString;
             std::string moduleString;
 
@@ -190,11 +190,11 @@ json SQLiteStorage::RetrieveMultiple(int n, const std::string& tableName, const 
                 moduleString = query.getColumn(0).getString();
                 dataString = query.getColumn(1).getString();
 
-                json outputJson = {{"module", ""}, {"data", {}}};
+                nlohmann::json outputJson = {{"module", ""}, {"data", {}}};
 
                 if (!dataString.empty())
                 {
-                    outputJson["data"] = json::parse(dataString);
+                    outputJson["data"] = nlohmann::json::parse(dataString);
                 }
 
                 if (!moduleString.empty())

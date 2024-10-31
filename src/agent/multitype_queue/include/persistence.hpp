@@ -5,8 +5,6 @@
 #include <string>
 #include <vector>
 
-using json = nlohmann::json;
-
 /**
  * @brief Interface for persistence storage.
  *
@@ -28,7 +26,8 @@ public:
      * @param moduleName The name of the module.
      * @return int The number of messages stored.
      */
-    virtual int Store(const json& message, const std::string& queueName, const std::string& moduleName = "") = 0;
+    virtual int
+    Store(const nlohmann::json& message, const std::string& queueName, const std::string& moduleName = "") = 0;
 
     /**
      * @brief Retrieve a JSON message from the specified queue.
@@ -36,9 +35,9 @@ public:
      * @param id rowid of the message to be retrieved.
      * @param queueName The name of the queue.
      * @param moduleName The name of the module.
-     * @return json The retrieved JSON message.
+     * @return nlohmann::json The retrieved JSON message.
      */
-    virtual json Retrieve(int id, const std::string& queueName, const std::string& moduleName = "") = 0;
+    virtual nlohmann::json Retrieve(int id, const std::string& queueName, const std::string& moduleName = "") = 0;
 
     /**
      * @brief Retrieve multiple JSON messages from the specified queue.
@@ -46,9 +45,10 @@ public:
      * @param n number of messages to be retrieved.
      * @param queueName The name of the queue.
      * @param moduleName The name of the module.
-     * @return json The retrieved JSON messages.
+     * @return nlohmann::json The retrieved JSON messages.
      */
-    virtual json RetrieveMultiple(int n, const std::string& queueName, const std::string& moduleName = "") = 0;
+    virtual nlohmann::json
+    RetrieveMultiple(int n, const std::string& queueName, const std::string& moduleName = "") = 0;
 
     /**
      * @brief Remove a JSON message from the specified queue.
