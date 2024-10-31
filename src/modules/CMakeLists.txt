@@ -17,7 +17,7 @@ message(STATUS "-------------------")
 
 if(ENABLE_INVENTORY)
     add_subdirectory(inventory)
-    target_link_libraries(ModuleManager PUBLIC Inventory)
+    target_link_libraries(ModuleManager PRIVATE Inventory)
 endif()
 
 if(ENABLE_LOGCOLLECTOR)
