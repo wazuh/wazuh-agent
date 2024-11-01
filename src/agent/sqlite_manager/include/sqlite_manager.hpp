@@ -61,6 +61,7 @@ namespace sqlite_manager
         SQLiteManager(const std::string& dbName);
 
         void CreateTable(const std::string& tableName, const std::vector<Column>& cols);
+        bool TableExists(const std::string& tableName) const;
         void Insert(const std::string& tableName, const std::vector<Column>& cols);
         int GetCount(const std::string& tableName);
         std::vector<Row> Select(const std::string& tableName,

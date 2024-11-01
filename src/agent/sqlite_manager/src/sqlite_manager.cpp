@@ -52,6 +52,21 @@ namespace sqlite_manager
         Execute(queryString);
     }
 
+    bool SQLiteManager::TableExists(const std::string& table) const
+    {
+        try
+        {
+            SQLite::Statement query(*m_db,
+                                    "SELECT name FROM sqlite_master WHERE type='table' AND name='" + table + "';");
+            return query.executeStep();
+        }
+        catch (const std::exception& e)
+        {
+            LogError("Failed to check if table exists: {}.", e.what());
+            return false;
+        }
+    }
+
     void SQLiteManager::Insert(const std::string& tableName, const std::vector<Column>& cols)
     {
         std::vector<std::string> names;
