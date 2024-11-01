@@ -19,9 +19,16 @@ public:
     /// @brief Destructor for AgentInfoPersistance.
     ~AgentInfoPersistance();
 
+    /// @brief Deleted copy constructor.
     AgentInfoPersistance(const AgentInfoPersistance&) = delete;
+
+    /// @brief Deleted copy assignment operator.
     AgentInfoPersistance& operator=(const AgentInfoPersistance&) = delete;
+
+    /// @brief Deleted move constructor.
     AgentInfoPersistance(AgentInfoPersistance&&) = delete;
+
+    /// @brief Deleted move assignment operator.
     AgentInfoPersistance& operator=(AgentInfoPersistance&&) = delete;
 
     /// @brief Retrieves the agent's name from the database.

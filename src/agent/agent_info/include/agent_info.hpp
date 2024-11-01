@@ -61,8 +61,15 @@ private:
     /// otherwise.
     bool ValidateKey(const std::string& key) const;
 
+    /// @brief The agent's name.
     std::string m_name;
+
+    /// @brief The agent's key.
     std::string m_key;
+
+    /// @brief The agent's UUID.
     std::string m_uuid;
+
+    /// @brief The agent's groups.
     std::vector<std::string> m_groups;
 };

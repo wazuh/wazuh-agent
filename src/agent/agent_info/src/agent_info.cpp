@@ -11,7 +11,7 @@
 namespace
 {
     constexpr size_t KEY_LENGTH = 32;
-}
+} // namespace
 
 AgentInfo::AgentInfo()
 {
