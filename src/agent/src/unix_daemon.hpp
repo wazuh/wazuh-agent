@@ -6,48 +6,59 @@
 
 namespace unix_daemon
 {
-    /// @brief A class for handling PID files.
+    /// @class PIDFileHandler class
+    /// @brief Handles the creation, reading, and deletion of PID files for managing process IDs
     class PIDFileHandler
     {
     public:
-        /// @brief Constructor for the PIDFileHandler class.
+        /// @brief Default constructor
+        /// @details Creates a PID file when the instance is created
         PIDFileHandler();
+
+        /// @brief Destructor
+        /// @details Deletes the PID file
         ~PIDFileHandler();
 
+        /// @brief Copy constructor
         PIDFileHandler(const PIDFileHandler&) = delete;
+
+        /// @brief Copy assignment operator
         PIDFileHandler& operator=(const PIDFileHandler&) = delete;
 
+        /// @brief Move constructor
         PIDFileHandler(PIDFileHandler&&) = default;
+
+        /// @brief Move assignment operator
         PIDFileHandler& operator=(PIDFileHandler&&) = default;
 
-        /// @brief Reads the PID file and returns its value.
-        /// @return The value read from the PID file or 0 if the file does not exist.
+        /// @brief Reads the process ID from the PID file
+        /// @return The process ID from the PID file
         static pid_t ReadPIDFromFile();
 
     private:
-        /// @brief Creates a directory relative to the current path.
-        /// @param relativePath  the path of the directory to create.
-        /// @return True if the directory was created successfully, false otherwise.
+        /// @brief Creates the directory path for the PID file
+        /// @param relativePath The relative path for the PID file
+        /// @return True if the directory is created, false otherwise
         bool createDirectory(const std::string_view relativePath) const;
 
-        /// @brief Writes the current process' PID to the PID file.
-        /// @return True if the PID was written successfully, false otherwise.
+        /// @brief Writes the current process ID to the PID file
+        /// @return True if the PID file is written, false otherwise
         bool writePIDFile() const;
 
-        /// @brief Removes the PID file.
-        /// @return True if the file was removed successfully, false otherwise.
+        /// @brief Removes the PID file
+        /// @return True if the PID file is removed, false otherwise
         bool removePIDFile() const;
 
-        /// @brief Uses the readlink() function to read the path of the current executable file.
-        /// @return A string representing the current process' executable path.
+        /// @brief Gets the executable path
+        /// @return The executable path
         static std::string GetExecutablePath();
     };
 
-    /// @brief Returns the current status of the daemon.
-    /// @return A string representing the daemon's status.
+    /// @brief Gets the status of the daemon
+    /// @return A string indicating whether the daemon is "running" or "stopped"
     std::string GetDaemonStatus();
 
-    /// @brief Generates a PID file for the daemon.
-    /// @return A PIDFileHandler object that will delete the generated PID file on destruction (RAII style).
+    /// @brief Generates a PID file for the daemon
+    /// @return A PIDFileHandler object
     PIDFileHandler GeneratePIDFile();
 } // namespace unix_daemon
