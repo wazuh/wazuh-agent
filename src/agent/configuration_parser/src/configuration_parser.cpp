@@ -3,7 +3,7 @@
 
 namespace
 {
-    const std::string CONFIG_FILE_NAME = "/etc/wazuh-agent/wazuh.conf";
+    const std::string CONFIG_FILE_NAME = "/etc/wazuh-agent/wazuh-agent.yml";
 }
 
 namespace configuration
@@ -12,38 +12,37 @@ namespace configuration
     {
         try
         {
-            tbl = toml::parse(configFile.string(), toml::spec::v(1, 0, 0));
+            config = YAML::LoadFile(configFile.string());
         }
         catch (const std::exception& e)
         {
-            LogError("Using default values due to error parsing wazuh.conf file: {}", e.what());
+            LogError("Using default values due to error parsing wazuh-agent.yml file: {}", e.what());
 
-            tbl = toml::parse_str(
-                R"(
-                [agent]
-                server_url = "https://localhost:27000"
-                registration_url = "https://localhost:55000"
+            const std::string yamlStr = R"(
+                agent:
+                    server_url: https://localhost:27000
+                    registration_url: https://localhost:55000
+                inventory:
+                    enabled: true
+                    interval: 3600
+                    scan_on_start: true
+                    hardware: true
+                    os: true
+                    network: true
+                    packages: true
+                    ports: true
+                    ports_all: true
+                    processes: true
+                    hotfixes: true
+                logcollector:
+                    enabled: true
+                    localfiles:
+                    - /var/log/auth.log
+                    reload_interval: 60
+                    file_wait: 500
+                )";
 
-                [inventory]
-                enabled = true
-                interval = 3600
-                scan_on_start = true
-                hardware = true
-                os = true
-                network = true
-                packages = true
-                ports = true
-                ports_all = true
-                processes = true
-                hotfixes = true
-
-                [logcollector]
-                enabled = true
-                localfiles = [ "/var/log/auth.log" ]
-                reload_interval = 60
-                file_wait = 500
-                )",
-                toml::spec::v(1, 0, 0));
+            config = YAML::Load(yamlStr);
         }
     }
 
@@ -52,15 +51,15 @@ namespace configuration
     {
     }
 
-    ConfigurationParser::ConfigurationParser(std::string stringToParse)
+    ConfigurationParser::ConfigurationParser(const std::string& stringToParse)
     {
         try
         {
-            tbl = toml::parse_str(std::move(stringToParse), toml::spec::v(1, 0, 0));
+            config = YAML::Load(stringToParse);
         }
         catch (const std::exception& e)
         {
-            LogError("Error parsing wazuh.conf file: {}.", e.what());
+            LogError("Error parsing yaml string: {}.", e.what());
             throw;
         }
     }

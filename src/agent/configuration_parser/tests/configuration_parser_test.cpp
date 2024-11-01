@@ -10,9 +10,9 @@ using namespace configuration;
 TEST(ConfigurationParser, GetConfigString)
 {
     std::string strConfig = R"(
-        [agent]
-        server_url = "192.168.0.11"
-        string_conf = "string"
+        agent:
+          server_url: 192.168.0.11
+          string_conf: string
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
     const auto ret = parserStr->GetConfig<std::string>("agent", "server_url");
@@ -22,9 +22,11 @@ TEST(ConfigurationParser, GetConfigString)
 TEST(ConfigurationParser, GetConfigArrayString)
 {
     std::string strConfig = R"(
-        [agent_array]
-        array_manager_ip = ["192.168.0.0", "192.168.0.1"]
-        string_conf = "string"
+        agent_array:
+          array_manager_ip:
+            - 192.168.0.0
+            - 192.168.0.1
+          string_conf: string
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
     const auto ret = parserStr->GetConfig<std::vector<std::string>>("agent_array", "array_manager_ip");
@@ -35,9 +37,11 @@ TEST(ConfigurationParser, GetConfigArrayString)
 TEST(ConfigurationParser, GetConfigInt)
 {
     std::string strConfig = R"(
-        [agent_array]
-        array_manager_ip = ["192.168.0.0", "192.168.0.1"]
-        int_conf = 10
+        agent_array:
+          array_manager_ip:
+            - 192.168.0.0
+            - 192.168.0.1
+          int_conf: 10
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
     const auto ret = parserStr->GetConfig<int>("agent_array", "int_conf");
@@ -47,9 +51,11 @@ TEST(ConfigurationParser, GetConfigInt)
 TEST(ConfigurationParser, GetConfigFloat)
 {
     std::string strConfig = R"(
-        [agent_array]
-        array_manager_ip = ["192.168.0.0", "192.168.0.1"]
-        float_conf = 12.34
+        agent_array:
+          array_manager_ip:
+            - 192.168.0.0
+            - 192.168.0.1
+          float_conf: 12.34
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
     const auto ret = parserStr->GetConfig<float>("agent_array", "float_conf");
@@ -59,9 +65,11 @@ TEST(ConfigurationParser, GetConfigFloat)
 TEST(ConfigurationParser, GetConfigNoKey)
 {
     std::string strConfig = R"(
-        [agent_array]
-        array_manager_ip = ["192.168.0.0", "192.168.0.1"]
-        float_conf = 12.34
+        agent_array:
+          array_manager_ip:
+            - 192.168.0.0
+            - 192.168.0.1
+          float_conf: 12.34
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
     EXPECT_ANY_THROW(parserStr->GetConfig<float>("agent_array", "no_key"));
@@ -70,11 +78,13 @@ TEST(ConfigurationParser, GetConfigNoKey)
 TEST(ConfigurationParser, GetConfigIntSubTable)
 {
     std::string strConfig = R"(
-        [agent_array]
-        array_manager_ip = ["192.168.0.0", "192.168.0.1"]
-        int_conf = 10
-        [agent_array.sub_table]
-        int_conf = 1234
+        agent_array:
+          array_manager_ip:
+            - 192.168.0.0
+            - 192.168.0.1
+          int_conf: 10
+          sub_table:
+            int_conf: 1234
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
     const auto ret = parserStr->GetConfig<int>("agent_array", "sub_table", "int_conf");
@@ -84,12 +94,14 @@ TEST(ConfigurationParser, GetConfigIntSubTable)
 TEST(ConfigurationParser, GetConfigBoolSubTable)
 {
     std::string strConfig = R"(
-        [agent_array]
-        array_manager_ip = ["192.168.0.0", "192.168.0.1"]
-        int_conf = 10
-        [agent_array.sub_table]
-        int_conf = 1234
-        bool_conf = true
+        agent_array:
+          array_manager_ip:
+            - 192.168.0.0
+            - 192.168.0.1
+          int_conf: 10
+          sub_table:
+            int_conf: 1234
+            bool_conf: true
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
     const auto ret = parserStr->GetConfig<bool>("agent_array", "sub_table", "bool_conf");
@@ -99,10 +111,16 @@ TEST(ConfigurationParser, GetConfigBoolSubTable)
 TEST(ConfigurationParser, GetConfigArrayMap)
 {
     std::string strConfig = R"(
-        [agent_array]
-        array_manager_ip = ["192.168.0.0", "192.168.0.1"]
-        string_conf = "string"
-        api_auth = [{org_name = "dummy1", api_token = "api_token1"}, {org_name = "dummy2", api_token = "api_token2"}]
+        agent_array:
+          array_manager_ip:
+            - 192.168.0.0
+            - 192.168.0.1
+          string_conf: string
+          api_auth:
+            - org_name: dummy1
+              api_token: api_token1
+            - org_name: dummy2
+              api_token: api_token2
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
     const auto ret = parserStr->GetConfig<std::vector<std::map<std::string, std::string>>>("agent_array", "api_auth");
@@ -115,9 +133,9 @@ TEST(ConfigurationParser, GetConfigArrayMap)
 TEST(ConfigurationParser, GetConfigMap)
 {
     std::string strConfig = R"(
-        [map_string]
-        string_conf_1 = "string_1"
-        string_conf_2 = "string_2"
+        map_string:
+          string_conf_1: string_1
+          string_conf_2: string_2
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
     const auto ret = parserStr->GetConfig<std::map<std::string, std::string>>("map_string");
@@ -128,9 +146,9 @@ TEST(ConfigurationParser, GetConfigMap)
 TEST(ConfigurationParser, GetConfigBadCast)
 {
     std::string strConfig = R"(
-        [bad_cast_array]
-        string_conf_1 = "string_1"
-        int_conf = 10
+        bad_cast_array:
+          string_conf_1: string_1
+          int_conf: 10
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
     EXPECT_ANY_THROW(parserStr->GetConfig<std::vector<std::string>>("bad_cast_array"));

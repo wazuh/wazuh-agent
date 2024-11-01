@@ -2,7 +2,7 @@
 
 #include <logger.hpp>
 
-#include <toml.hpp>
+#include <yaml-cpp/yaml.h>
 
 #include <exception>
 #include <filesystem>
@@ -14,20 +14,32 @@ namespace configuration
     class ConfigurationParser
     {
     private:
-        toml::value tbl;
+        YAML::Node config;
 
     public:
         ConfigurationParser();
         ConfigurationParser(const std::filesystem::path& configFile);
-        ConfigurationParser(std::string stringToParse);
+        ConfigurationParser(const std::string& stringToParse);
 
-        template<typename T, typename... Ks>
-        auto GetConfig(Ks... ks) const
+        template<typename T, typename... Keys>
+        T GetConfig(Keys... keys) const
         {
             try
             {
-                auto config = toml::find<T>(tbl, ks...);
-                return config;
+                YAML::Node current = YAML::Clone(config);
+
+                (
+                    [&current](const auto& key)
+                    {
+                        current = current[key];
+                        if (!current.IsDefined())
+                        {
+                            throw YAML::Exception(YAML::Mark::null_mark(), "Key not found: " + std::string(key));
+                        }
+                    }(keys),
+                    ...);
+
+                return current.as<T>();
             }
             catch (const std::exception& e)
             {
