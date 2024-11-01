@@ -53,13 +53,13 @@ private:
     /// The key is 32 alphanumeric characters.
     ///
     /// @return A randomly generated key.
-    std::string CreateKey();
+    std::string CreateKey() const;
 
     /// @brief Validates a given key.
     /// @param key The key to validate.
     /// @return True if the key is valid (32 alphanumeric characters), false
     /// otherwise.
-    bool ValidateKey(const std::string& key);
+    bool ValidateKey(const std::string& key) const;
 
     std::string m_name;
     std::string m_key;
