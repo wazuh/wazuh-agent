@@ -9,13 +9,13 @@ include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
 include_directories(${CMAKE_SOURCE_DIR}/common/logger/include)
+include_directories(${CMAKE_SOURCE_DIR}/agent/sqlite_manager/include)
 
-find_package(SQLiteCpp REQUIRED)
 find_package(Boost REQUIRED COMPONENTS uuid)
 
 add_library(AgentInfo src/agent_info.cpp src/agent_info_persistance.cpp)
 target_include_directories(AgentInfo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_link_libraries(AgentInfo PRIVATE SQLiteCpp Boost::uuid Logger)
+target_link_libraries(AgentInfo PRIVATE SQLiteManager Boost::uuid Logger)
 
 if(MSVC)
     target_link_libraries(AgentInfo PRIVATE bcrypt)

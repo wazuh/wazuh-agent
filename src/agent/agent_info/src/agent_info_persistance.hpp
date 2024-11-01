@@ -1,15 +1,12 @@
 #pragma once
 
+#include <sqlite_manager.hpp>
+
 #include <memory>
 #include <string>
 #include <vector>
 
 static constexpr char sqlitedb_path[] = "agent_info.db";
-
-namespace SQLite
-{
-    class Database;
-}
 
 class AgentInfoPersistance
 {
@@ -35,7 +32,6 @@ public:
     void ResetToDefault();
 
 private:
-    bool TableExists(const std::string& table) const;
     bool AgentInfoIsEmpty() const;
     void CreateAgentInfoTable();
     void CreateAgentGroupTable();
@@ -43,5 +39,5 @@ private:
     void SetAgentInfoValue(const std::string& column, const std::string& value);
     std::string GetAgentInfoValue(const std::string& column) const;
 
-    std::unique_ptr<SQLite::Database> m_db;
+    std::unique_ptr<sqlite_manager::SQLiteManager> m_db;
 };
