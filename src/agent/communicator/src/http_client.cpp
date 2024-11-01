@@ -13,6 +13,8 @@
 
 namespace http_client
 {
+    constexpr int CONNECTION_RETRY_MSECS = 5000;
+
     HttpClient::HttpClient(std::shared_ptr<IHttpResolverFactory> resolverFactory,
                            std::shared_ptr<IHttpSocketFactory> socketFactory)
     {
@@ -93,7 +95,7 @@ namespace http_client
             {
                 LogError("Connect failed: {}.", code.message());
                 socket->Close();
-                const auto duration = std::chrono::milliseconds(1000);
+                const auto duration = std::chrono::milliseconds(CONNECTION_RETRY_MSECS);
                 timer.expires_after(duration);
                 co_await timer.async_wait(boost::asio::use_awaitable);
                 continue;
@@ -150,7 +152,7 @@ namespace http_client
             LogDebug("Response code: {}.", res.result_int());
             LogDebug("Response body: {}.", boost::beast::buffers_to_string(res.body().data()));
 
-            const auto duration = std::chrono::milliseconds(1000);
+            const auto duration = std::chrono::milliseconds(CONNECTION_RETRY_MSECS);
             timer.expires_after(duration);
             co_await timer.async_wait(boost::asio::use_awaitable);
         } while (loopRequestCondition != nullptr && loopRequestCondition());
