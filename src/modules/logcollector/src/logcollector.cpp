@@ -76,11 +76,9 @@ void Logcollector::SetPushMessageFunction(const std::function<int(Message)>& pus
 
 void Logcollector::SendMessage(const std::string& location, const std::string& log) {
     auto data = nlohmann::json::object();
-    auto event = nlohmann::json::object();
 
-    data["location"] = location;
-    data["event"] = event;
-    event["original"] = log;
+    data["file"]["path"] = location;
+    data["event"]["original"] = log;
 
     auto message = Message(MessageType::STATELESS, data, m_moduleName);
     m_pushMessage(message);
