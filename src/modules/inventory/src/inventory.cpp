@@ -69,23 +69,27 @@ void Inventory::SetPushMessageFunction(const std::function<int(Message)>& pushMe
 void Inventory::SendDeltaEvent(const std::string& data) {
 
     const auto jsonData = nlohmann::json::parse(data);
-    const Message statelessMessage{ MessageType::STATELESS, jsonData, Name() };
-    const Message statefulMessage{ MessageType::STATEFUL, jsonData, Name() };
+
+    std::string dataType;
+    if (jsonData.contains("type") ) {
+        dataType = jsonData["type"].get<std::string>();
+    }
+
+    const Message statelessMessage{ MessageType::STATELESS, jsonData, Name(), dataType};
+    const Message statefulMessage{ MessageType::STATEFUL, jsonData, Name(), dataType};
 
     if(!m_pushMessage(statelessMessage)) {
         LogWarn("Stateless event can't be pushed into the message queue: {}", data);
     }
     else {
         LogTrace("Stateless event queued: {}", data);
-
     }
 
     if(!m_pushMessage(statefulMessage)) {
         LogWarn("Stateful event can't be pushed into the message queue: {}", data);
     }
     else {
-        LogTrace("Stateful event queued: {}", data);
-
+        LogTrace("Stateful event queued: {}, dataType {}", data, dataType);
     }
 }
 
