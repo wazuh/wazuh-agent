@@ -2,10 +2,80 @@
 
 #include <gtest/gtest.h>
 
+#include <filesystem>
+#include <fstream>
 #include <map>
 #include <memory>
 
 using namespace configuration;
+
+class ConfigurationParserFileTest : public ::testing::Test
+{
+protected:
+    std::filesystem::path tempConfigFilePath;
+
+    void SetUp() override
+    {
+        tempConfigFilePath = "temp_wazuh-agent.yml";
+
+        std::ofstream outFile(tempConfigFilePath);
+        outFile << R"(
+            agent:
+                server_url: https://myserver:28000
+                registration_url: https://myserver:56000
+            inventory:
+                enabled: false
+                interval: 7200
+                scan_on_start: false
+            logcollector:
+                enabled: false
+                localfiles:
+                - /var/log/other.log
+                reload_interval: 120
+                file_wait: 1000
+        )";
+        outFile.close();
+    }
+
+    void TearDown() override
+    {
+        std::filesystem::remove(tempConfigFilePath);
+    }
+};
+
+class ConfigurationParserInvalidYamlFileTest : public ::testing::Test
+{
+protected:
+    std::filesystem::path tempConfigFilePath;
+
+    void SetUp() override
+    {
+        tempConfigFilePath = "temp_wazuh-agent.yml";
+
+        std::ofstream outFile(tempConfigFilePath);
+        outFile << R"(
+            agent:
+                server_url: https://myserver:28000
+                registration_url: https://myserver:56000
+            inventory:
+                enabled: false
+                interval: 7200
+                scan_on_start: false
+            logcollector:
+                enabled: false
+                localfiles:
+                - /var/log/other.log
+                reload_interval: 120
+                  file_wait: 1000
+        )";
+        outFile.close();
+    }
+
+    void TearDown() override
+    {
+        std::filesystem::remove(tempConfigFilePath);
+    }
+};
 
 TEST(ConfigurationParser, GetConfigString)
 {
@@ -152,6 +222,67 @@ TEST(ConfigurationParser, GetConfigBadCast)
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
     EXPECT_ANY_THROW(parserStr->GetConfig<std::vector<std::string>>("bad_cast_array"));
+}
+
+TEST(ConfigurationParser, GetConfigMultiNode)
+{
+    std::string strConfig = R"(
+        agent_array:
+          array_manager_ip:
+            - 192.168.0.0
+            - 192.168.0.1
+          string_conf: string
+        logcollector:
+          enabled: true
+          localfiles:
+          - /var/log/auth.log
+          - /var/log/other.log
+          reload_interval: 60
+          file_wait: 500
+    )";
+    const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
+    const auto ret = parserStr->GetConfig<std::vector<std::string>>("agent_array", "array_manager_ip");
+    const auto retEnabled = parserStr->GetConfig<bool>("logcollector", "enabled");
+    const auto retFileWait = parserStr->GetConfig<int>("logcollector", "file_wait");
+    const auto retLocalFiles = parserStr->GetConfig<std::vector<std::string>>("logcollector", "localfiles");
+    ASSERT_EQ(ret[0], "192.168.0.0");
+    ASSERT_EQ(ret[1], "192.168.0.1");
+    ASSERT_TRUE(retEnabled);
+    ASSERT_EQ(retLocalFiles[0], "/var/log/auth.log");
+    ASSERT_EQ(retLocalFiles[1], "/var/log/other.log");
+    ASSERT_EQ(retFileWait, 500);
+}
+
+TEST(ConfigurationParser, ConfigurationParserStringMisaligned)
+{
+    std::string strConfig = R"(
+        users:
+          - name: Alice
+           - name: Bob
+    )";
+    EXPECT_THROW(std::make_unique<configuration::ConfigurationParser>(strConfig), std::exception);
+}
+
+TEST_F(ConfigurationParserFileTest, ValidConfigFileLoadsCorrectly)
+{
+    const auto parser = std::make_unique<configuration::ConfigurationParser>(tempConfigFilePath);
+
+    EXPECT_EQ(parser->GetConfig<std::string>("agent", "server_url"), "https://myserver:28000");
+    EXPECT_FALSE(parser->GetConfig<bool>("inventory", "enabled"));
+    EXPECT_EQ(parser->GetConfig<int>("inventory", "interval"), 7200);
+    EXPECT_FALSE(parser->GetConfig<bool>("logcollector", "enabled"));
+    EXPECT_EQ(parser->GetConfig<int>("logcollector", "file_wait"), 1000);
+}
+
+TEST_F(ConfigurationParserInvalidYamlFileTest, InvalidConfigFileLoadsDefault)
+{
+    const auto parser = std::make_unique<configuration::ConfigurationParser>(tempConfigFilePath);
+
+    EXPECT_EQ(parser->GetConfig<std::string>("agent", "server_url"), "https://localhost:27000");
+    EXPECT_TRUE(parser->GetConfig<bool>("inventory", "enabled"));
+    EXPECT_EQ(parser->GetConfig<int>("inventory", "interval"), 3600);
+    EXPECT_TRUE(parser->GetConfig<bool>("logcollector", "enabled"));
+    EXPECT_EQ(parser->GetConfig<int>("logcollector", "file_wait"), 500);
 }
 
 int main(int argc, char** argv)
