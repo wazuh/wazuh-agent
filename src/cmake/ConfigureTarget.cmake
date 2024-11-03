@@ -43,7 +43,7 @@ function(configure_target target)
         find_program(CLANG_TIDY_EXECUTABLE NAMES clang-tidy-18)
 
         if(CLANG_TIDY_EXECUTABLE)
-            set_target_properties(${target} PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_EXECUTABLE}")
+            set_target_properties(${target} PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_EXECUTABLE};-header-filter='^((?!/boost/).)*$'")
         else()
             message(WARNING "Not Found: clang-tidy-18")
         endif()
