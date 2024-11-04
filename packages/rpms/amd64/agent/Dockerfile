@@ -7,7 +7,7 @@ RUN rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
 RUN yum clean all && yum update -y
 
 RUN yum install -y gcc make wget git \
-    openssh-clients sudo gnupg \
+    openssh-clients sudo gnupg libdb libdb-devel\
     automake autoconf libtool policycoreutils-python \
     yum-utils epel-release redhat-rpm-config rpm-devel \
     autopoint gettext nspr nspr-devel \
@@ -21,8 +21,6 @@ RUN yum install -y gcc make wget git \
     file-devel gettext-devel curl-devel systemd-devel
 
 RUN yum-builddep python34 -y
-RUN curl --silent --location https://rpm.nodesource.com/setup_8.x | bash -
-RUN yum install -y nodejs
 
 RUN wget https://ftp.gnu.org/gnu/gcc/gcc-13.2.0/gcc-13.2.0.tar.gz && \
     tar xzf gcc-13.2.0.tar.gz  && cd gcc-13.2.0/ && \
@@ -83,7 +81,7 @@ RUN git clone https://github.com/rpm-software-management/popt.git --branch popt-
     cd popt && ./autogen.sh && ./configure && make -j$(nproc) && make install -j$(nproc) && \
     cd / && rm -rf popt*
 
-RUN git clone https://github.com/rpm-software-management/rpm.git --branch rpm-4.18.2-release --single-branch && \
+RUN git clone https://github.com/rpm-software-management/rpm.git --branch rpm-4.15.1-release --single-branch && \
     cd rpm && ./autogen.sh && make -j$(nproc) && make install && cd / && rm -rf rpm*
 
 RUN mkdir -p /usr/local/var/lib/rpm && \

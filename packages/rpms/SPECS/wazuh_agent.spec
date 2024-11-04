@@ -49,8 +49,8 @@ rm -fr %{buildroot}
 pushd src
 pushd build
 make install -j $(nproc)
-sed -i "s|WAZUH_HOME|/usr/share/wazuh-agent/bin|g" %{buildroot}%{_localstatedir}/usr/lib/systemd/system/wazuh-agent.service
-cp /usr/local/gcc-13.2.0/lib64/libstdc++.so.6 %{buildroot}%{_localstatedir}/usr/share/wazuh-agent/lib
+sed -i "s|WAZUH_HOME|/usr/share/wazuh-agent/bin|g" %{buildroot}%{_localstatedir}usr/lib/systemd/system/wazuh-agent.service
+cp /usr/local/gcc-13.2.0/lib64/libstdc++.so.6 %{buildroot}%{_localstatedir}usr/share/wazuh-agent/lib
 exit 0
 
 %pre
