@@ -37,7 +37,7 @@ clean() {
     exit_code=$1
 
     # Clean the files
-    find "${DOCKERFILE_PATH}" \( -name '*.sh' -o -name '*.tar.gz' -o -name 'wazuh-*' \) ! -name 'docker_builder.sh' -exec rm -rf {} +
+    find "${DOCKERFILE_PATH}" \( -name '*.sh' -o -name '*.tar.gz' -o -name 'wazuh-*' -o -name '*.config' \) ! -name 'docker_builder.sh' -exec rm -rf {} +
 
     exit ${exit_code}
 }
@@ -80,6 +80,9 @@ build_pkg() {
     fi
 
     # Copy the necessary files
+    if [ -n "${VCPKG_KEY}" ]; then
+        cp ${CURRENT_PATH}/nuget.config ${DOCKERFILE_PATH}
+    fi
     cp ${CURRENT_PATH}/build.sh ${DOCKERFILE_PATH}
     cp ${CURRENT_PATH}/${SYSTEM}s/utils/* ${DOCKERFILE_PATH}
 
