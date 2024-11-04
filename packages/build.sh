@@ -71,33 +71,14 @@ set_vcpkg_remote_binary_cache(){
   local nuget_config_path="/home/nuget.config"
 
   if [[ $(mono --version 2>/dev/null) =~ [0-9] ]]; then
-      echo "mono already installed."
+    echo "mono already installed, proceeding"
+    export VCPKG_BINARY_SOURCES="clear;nugetconfig,$nuget_config_path"
+    $sources_dir/src/vcpkg/bootstrap-vcpkg.sh
+    sed -i "s/TOKEN/$vcpkg_token/g" $nuget_config_path
+    mono `$sources_dir/src/vcpkg/vcpkg fetch nuget | tail -n 1` sources add -source $nuget_config_path -ConfigFile $nuget_config_path
   else
-    if [ -n "$(command -v yum)" ]; then
-      rpmkeys --import "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF"
-      su -c 'curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo'
-      yum install mono-devel -y
-    elif [ -n "$(command -v dpkg)" ]; then
-      apt install ca-certificates gnupg
-      gpg --homedir /tmp --no-default-keyring \
-        --keyring /usr/share/keyrings/mono-official-archive-keyring.gpg \
-        --keyserver hkp://keyserver.ubuntu.com:80 \
-        --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-      echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-      apt update
-      apt install mono-devel -y
-    else
-      echo "Couldn't find type of system"
-      exit 1
-    fi
+    echo "mono in not installed, remote binary caching not being enabled"
   fi
-
-  export VCPKG_INSTALL_OPTIONS='--debug'
-  export VCPKG_BINARY_SOURCES="clear;nugetconfig,$nuget_config_path"
-  $sources_dir/src/vcpkg/bootstrap-vcpkg.sh
-  
-  sed -i "s/TOKEN/$vcpkg_token/g" $nuget_config_path
-  mono `$sources_dir/src/vcpkg/vcpkg fetch nuget | tail -n 1` sources add -source $nuget_config_path -ConfigFile $nuget_config_path
 }
 
 # Main script body
@@ -151,9 +132,6 @@ set_debug $debug $sources_dir
 
 # Installing build dependencies
 cd $sources_dir
-
-echo $sources_dir
-echo "antes de vcpkg"
 
 if [ -n "${VCPKG_KEY}" ]; then
   set_vcpkg_remote_binary_cache "$VCPKG_KEY"
