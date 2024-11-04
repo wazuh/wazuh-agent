@@ -24,4 +24,5 @@ class MapWrapperSafeTest : public ::testing::Test
         void SetUp() override;
         void TearDown() override;
 };
+
 #endif //MAP_WRAPPER_SAFE_TESTS_H

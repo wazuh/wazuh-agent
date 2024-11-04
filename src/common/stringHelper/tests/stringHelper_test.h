@@ -23,4 +23,5 @@ class StringUtilsTest : public ::testing::Test
         void SetUp() override;
         void TearDown() override;
 };
+
 #endif //STRING_HELPER_TESTS_H

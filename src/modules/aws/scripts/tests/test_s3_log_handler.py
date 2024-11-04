@@ -204,7 +204,7 @@ def test_process_file_sends_expected_messages(mock_debug):
                 }
             }
         }
-        expected_msg['aws'].update(formatted_logs_no_full_log[0]) 
+        expected_msg['aws'].update(formatted_logs_no_full_log[0])
         processor.send_msg.assert_called_once_with(expected_msg)
 
         log_with_match = {'full_log': 'some log entry matching discard regex'}

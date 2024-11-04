@@ -584,10 +584,10 @@ int restore_audit_policies() {
         }
         i++;
     } while (i <= retries && cmd_failed);
-    
+
     if (i == retries + 1) {
        LogError(FIM_AUDITPOL_FINAL_FAIL, i);
-    } 
+    }
 
     return cmd_failed;
 }
@@ -1316,7 +1316,7 @@ int set_policies() {
 
     // Set the new policies
     i = 0;
-    do { 
+    do {
         wm_exec_ret_code = wm_exec(command, NULL, &result_code, timeout+i, NULL);
         if (wm_exec_ret_code || result_code) {
             retval = 2;
