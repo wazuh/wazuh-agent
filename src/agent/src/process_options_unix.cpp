@@ -23,11 +23,17 @@ void RestartAgent(const std::string& configFile)
 void StartAgent([[maybe_unused]] const std::string& configFile)
 {
     pid_t pid = unix_daemon::PIDFileHandler::ReadPIDFromFile();
-    if (pid != 0)
+    if (pid > 0)
     {
         std::cout << "wazuh-agent already running\n";
         return;
     }
+    else if (pid < 0)
+    {
+        std::cout << "Error reading pid file\n";
+        return;
+    }
+
     LogInfo("Starting wazuh-agent");
     unix_daemon::PIDFileHandler handler = unix_daemon::GeneratePIDFile();
     Agent agent(configFile);
@@ -43,6 +49,13 @@ void StopAgent()
 {
     LogInfo("Stopping wazuh-agent");
     pid_t pid = unix_daemon::PIDFileHandler::ReadPIDFromFile();
+
+    if (pid < 0)
+    {
+        std::cout << "Error reading pid file\n";
+        return;
+    }
+
     if (!kill(pid, SIGTERM))
     {
         LogInfo("Wazuh-agent terminated");

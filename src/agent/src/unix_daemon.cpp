@@ -86,7 +86,6 @@ namespace unix_daemon
 
         if (!file.is_open())
         {
-            LogCritical("Error opening file: {}({}) {}", filename.c_str(), errno, std::strerror(errno));
             return 0;
         }
 
@@ -95,8 +94,8 @@ namespace unix_daemon
 
         if (file.fail())
         {
-            LogCritical("Error reading PID file: {}({})", filename.c_str(), errno, std::strerror(errno));
-            return 0;
+            LogError("Error reading PID file: {}({})", filename.c_str(), errno, std::strerror(errno));
+            return -1;
         }
 
         return value;
