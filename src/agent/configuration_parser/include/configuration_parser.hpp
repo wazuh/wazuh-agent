@@ -20,7 +20,7 @@ namespace configuration
     {
     private:
         /// @brief Holds the parsed YAML configuration.
-        YAML::Node config;
+        YAML::Node m_config;
 
     public:
         /// @brief Default constructor. Loads configuration from a default file path.
@@ -55,7 +55,7 @@ namespace configuration
         {
             try
             {
-                YAML::Node current = YAML::Clone(config);
+                YAML::Node current = YAML::Clone(m_config);
 
                 (
                     [&current](const auto& key)

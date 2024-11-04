@@ -12,13 +12,13 @@ using namespace configuration;
 class ConfigurationParserFileTest : public ::testing::Test
 {
 protected:
-    std::filesystem::path tempConfigFilePath;
+    std::filesystem::path m_tempConfigFilePath;
 
     void SetUp() override
     {
-        tempConfigFilePath = "temp_wazuh-agent.yml";
+        m_tempConfigFilePath = "temp_wazuh-agent.yml";
 
-        std::ofstream outFile(tempConfigFilePath);
+        std::ofstream outFile(m_tempConfigFilePath);
         outFile << R"(
             agent:
                 server_url: https://myserver:28000
@@ -39,20 +39,22 @@ protected:
 
     void TearDown() override
     {
-        std::filesystem::remove(tempConfigFilePath);
+        std::filesystem::remove(m_tempConfigFilePath);
     }
 };
 
 class ConfigurationParserInvalidYamlFileTest : public ::testing::Test
 {
 protected:
-    std::filesystem::path tempConfigFilePath;
+    std::filesystem::path m_tempConfigFilePath;
 
     void SetUp() override
     {
-        tempConfigFilePath = "temp_wazuh-agent.yml";
+        m_tempConfigFilePath = "temp_wazuh-agent.yml";
 
-        std::ofstream outFile(tempConfigFilePath);
+        std::ofstream outFile(m_tempConfigFilePath);
+        // This string does not respect the yaml format in the line of the file_wait field, the field is misaligned.
+        // With this case we want it to fail when parsing the file.
         outFile << R"(
             agent:
                 server_url: https://myserver:28000
@@ -73,7 +75,7 @@ protected:
 
     void TearDown() override
     {
-        std::filesystem::remove(tempConfigFilePath);
+        std::filesystem::remove(m_tempConfigFilePath);
     }
 };
 
@@ -265,24 +267,42 @@ TEST(ConfigurationParser, ConfigurationParserStringMisaligned)
 
 TEST_F(ConfigurationParserFileTest, ValidConfigFileLoadsCorrectly)
 {
-    const auto parser = std::make_unique<configuration::ConfigurationParser>(tempConfigFilePath);
+    try
+    {
+        const auto parser = std::make_unique<configuration::ConfigurationParser>(m_tempConfigFilePath);
 
-    EXPECT_EQ(parser->GetConfig<std::string>("agent", "server_url"), "https://myserver:28000");
-    EXPECT_FALSE(parser->GetConfig<bool>("inventory", "enabled"));
-    EXPECT_EQ(parser->GetConfig<int>("inventory", "interval"), 7200);
-    EXPECT_FALSE(parser->GetConfig<bool>("logcollector", "enabled"));
-    EXPECT_EQ(parser->GetConfig<int>("logcollector", "file_wait"), 1000);
+        EXPECT_EQ(parser->GetConfig<std::string>("agent", "server_url"), "https://myserver:28000");
+        EXPECT_FALSE(parser->GetConfig<bool>("inventory", "enabled"));
+        EXPECT_EQ(parser->GetConfig<int>("inventory", "interval"), 7200);
+        EXPECT_FALSE(parser->GetConfig<bool>("logcollector", "enabled"));
+        EXPECT_EQ(parser->GetConfig<int>("logcollector", "file_wait"), 1000);
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error: " << e.what() << '\n';
+        std::filesystem::remove(m_tempConfigFilePath);
+        throw;
+    }
 }
 
 TEST_F(ConfigurationParserInvalidYamlFileTest, InvalidConfigFileLoadsDefault)
 {
-    const auto parser = std::make_unique<configuration::ConfigurationParser>(tempConfigFilePath);
+    try
+    {
+        const auto parser = std::make_unique<configuration::ConfigurationParser>(m_tempConfigFilePath);
 
-    EXPECT_EQ(parser->GetConfig<std::string>("agent", "server_url"), "https://localhost:27000");
-    EXPECT_TRUE(parser->GetConfig<bool>("inventory", "enabled"));
-    EXPECT_EQ(parser->GetConfig<int>("inventory", "interval"), 3600);
-    EXPECT_TRUE(parser->GetConfig<bool>("logcollector", "enabled"));
-    EXPECT_EQ(parser->GetConfig<int>("logcollector", "file_wait"), 500);
+        EXPECT_EQ(parser->GetConfig<std::string>("agent", "server_url"), "https://localhost:27000");
+        EXPECT_TRUE(parser->GetConfig<bool>("inventory", "enabled"));
+        EXPECT_EQ(parser->GetConfig<int>("inventory", "interval"), 3600);
+        EXPECT_TRUE(parser->GetConfig<bool>("logcollector", "enabled"));
+        EXPECT_EQ(parser->GetConfig<int>("logcollector", "file_wait"), 500);
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error: " << e.what() << '\n';
+        std::filesystem::remove(m_tempConfigFilePath);
+        throw;
+    }
 }
 
 int main(int argc, char** argv)

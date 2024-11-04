@@ -12,7 +12,7 @@ namespace configuration
     {
         try
         {
-            config = YAML::LoadFile(configFile.string());
+            m_config = YAML::LoadFile(configFile.string());
         }
         catch (const std::exception& e)
         {
@@ -42,7 +42,7 @@ namespace configuration
                     file_wait: 500
                 )";
 
-            config = YAML::Load(yamlStr);
+            m_config = YAML::Load(yamlStr);
         }
     }
 
@@ -55,7 +55,7 @@ namespace configuration
     {
         try
         {
-            config = YAML::Load(stringToParse);
+            m_config = YAML::Load(stringToParse);
         }
         catch (const std::exception& e)
         {
