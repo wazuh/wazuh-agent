@@ -6,6 +6,8 @@
 
 namespace http_client
 {
+    /// @struct HttpRequestParams
+    /// @brief Parameters for HTTP requests
     struct HttpRequestParams
     {
         boost::beast::http::verb Method;
@@ -17,6 +19,13 @@ namespace http_client
         std::string User_pass;
         std::string Body;
 
+        /// @brief Constructs HttpRequestParams with specified parameters
+        /// @param method The HTTP method to use
+        /// @param serverUrl The server URL for the request
+        /// @param endpoint The endpoint for the request
+        /// @param token Optional token for authorization
+        /// @param userPass Optional user credentials for basic authentication
+        /// @param body Optional body for the request
         HttpRequestParams(boost::beast::http::verb method,
                           const std::string& serverUrl,
                           std::string endpoint,
@@ -24,6 +33,9 @@ namespace http_client
                           std::string userPass = "",
                           std::string body = "");
 
+        /// @brief Equality operator for comparing two HttpRequestParams objects
+        /// @param other The other HttpRequestParams object to compare with
+        /// @return True if equal, false otherwise
         bool operator==(const HttpRequestParams& other) const;
     };
 } // namespace http_client

@@ -8,10 +8,17 @@
 
 namespace http_client
 {
+    /// @brief Interface for HTTP socket factories
     class IHttpSocketFactory
     {
     public:
+        /// @brief Destroys the IHttpSocketFactory
         virtual ~IHttpSocketFactory() = default;
+
+        /// @brief Creates a new IHttpSocket
+        /// @param executor The executor to use for the socket
+        /// @param use_https Indicates whether to use HTTPS
+        /// @return The created IHttpSocket
         virtual std::unique_ptr<IHttpSocket> Create(const boost::asio::any_io_executor& executor,
                                                     const bool use_https) = 0;
     };

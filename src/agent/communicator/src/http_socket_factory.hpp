@@ -11,9 +11,14 @@
 
 namespace http_client
 {
+    /// @brief Implementation of IHttpSocketFactory
     class HttpSocketFactory : public IHttpSocketFactory
     {
     public:
+        /// @brief Creates a new IHttpSocket
+        /// @param executor The executor to use for the socket
+        /// @param use_https Indicates whether to use HTTPS
+        /// @return The created IHttpSocket
         std::unique_ptr<IHttpSocket> Create(const boost::asio::any_io_executor& executor, const bool use_https) override
         {
             if (use_https)
