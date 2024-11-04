@@ -37,13 +37,13 @@ void Logcollector::SetupFileReader(const configuration::ConfigurationParser& con
     long reloadInterval = config::DEFAULT_RELOAD_INTERVAL;
 
     try {
-        fileWait = m_enabled = configurationParser.GetConfig<long>("logcollector", "file_wait");
+        fileWait = configurationParser.GetConfig<long>("logcollector", "file_wait");
     } catch (std::exception&) {
         fileWait = config::DEFAULT_FILE_WAIT;
     }
 
     try {
-        reloadInterval = m_enabled = configurationParser.GetConfig<long>("logcollector", "reload_interval");
+        reloadInterval = configurationParser.GetConfig<long>("logcollector", "reload_interval");
     } catch (std::exception&) {
         reloadInterval = config::DEFAULT_FILE_WAIT;
     }
