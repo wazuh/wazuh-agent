@@ -46,10 +46,12 @@ namespace communicator
         if (token.has_value())
         {
             *m_token = token.value();
+            LogInfo("Successfully authenticated with the manager.");
         }
         else
         {
-            LogError("Failed to authenticate with the manager.");
+            LogWarn("Failed to authenticate with the manager. Retrying in {} seconds",
+                    CONNECTION_RETRY_MSECS / A_SEC_IN_MSECS);
             return boost::beast::http::status::unauthorized;
         }
 

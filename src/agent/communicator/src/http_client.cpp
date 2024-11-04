@@ -93,7 +93,10 @@ namespace http_client
 
             if (code != boost::system::errc::success)
             {
-                LogError("Connect failed: {}.", code.message());
+                LogWarn("Failed to send http request. {}. Retrying in {} seconds",
+                        reqParams.Endpoint,
+                        CONNECTION_RETRY_MSECS / 1000); // NOLINT
+                LogDebug("Http request failed: {} - {}", code.message(), code.what());
                 socket->Close();
                 const auto duration = std::chrono::milliseconds(CONNECTION_RETRY_MSECS);
                 timer.expires_after(duration);
@@ -152,7 +155,7 @@ namespace http_client
             LogDebug("Response code: {}.", res.result_int());
             LogDebug("Response body: {}.", boost::beast::buffers_to_string(res.body().data()));
 
-            const auto duration = std::chrono::milliseconds(CONNECTION_RETRY_MSECS);
+            const auto duration = std::chrono::milliseconds(1000);
             timer.expires_after(duration);
             co_await timer.async_wait(boost::asio::use_awaitable);
         } while (loopRequestCondition != nullptr && loopRequestCondition());
@@ -182,7 +185,8 @@ namespace http_client
         }
         catch (std::exception const& e)
         {
-            LogError("Error: {}.", e.what());
+            LogDebug("Error: {}.", e.what());
+
             res.result(boost::beast::http::status::internal_server_error);
             boost::beast::ostream(res.body()) << "Internal server error: " << e.what();
             res.prepare_payload();
@@ -203,7 +207,7 @@ namespace http_client
 
         if (res.result() != boost::beast::http::status::ok)
         {
-            LogError("Error: {}.", res.result_int());
+            LogDebug("Error: {}.", res.result_int());
             return std::nullopt;
         }
 
@@ -230,7 +234,7 @@ namespace http_client
 
         if (res.result() != boost::beast::http::status::ok)
         {
-            LogError("Error: {}.", res.result_int());
+            LogDebug("Error: {}.", res.result_int());
             return std::nullopt;
         }
 
