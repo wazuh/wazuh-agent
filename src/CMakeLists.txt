@@ -8,7 +8,12 @@ project(wazuh-agent)
 include(cmake/CommonSettings.cmake)
 set_common_settings()
 
-add_subdirectory(common)
+if(ENABLE_LOGCOLLECTOR OR ENABLE_INVENTORY)
+    add_subdirectory(common)
+else()
+    add_subdirectory(common/logger)
+    add_subdirectory(common/utils)
+endif()
 add_subdirectory(modules)
 add_subdirectory(agent)
 
@@ -56,8 +61,11 @@ install(TARGETS wazuh-agent
 
 install(CODE "file(MAKE_DIRECTORY ${INSTALL_ROOT}${DATA_INSTALL_DIR})")
 install(CODE "file(MAKE_DIRECTORY ${INSTALL_ROOT}${CONFIG_INSTALL_DIR})")
+install(CODE "file(MAKE_DIRECTORY ${INSTALL_ROOT}${LIB_INSTALL_DIR})")
 install(FILES ${CONFIG_FOLDER}/wazuh.conf
         DESTINATION ${INSTALL_ROOT}${CONFIG_INSTALL_DIR})
+install(TARGETS wazuh-agent
+         DESTINATION ${INSTALL_ROOT}${BIN_INSTALL_DIR})
 
 message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 
@@ -67,10 +75,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     #    COMMAND sed "s|WAZUH_HOME|${INSTALL_ROOT}${BIN_INSTALL_DIR}|g" agent/service/wazuh-agent.service > ${CMAKE_BINARY_DIR}/wazuh-agent.service)
     install(FILES agent/service/wazuh-agent.service
         DESTINATION ${INSTALL_ROOT}${SERVICE_INSTALL_DIR})
-    install(FILES
-        ${CMAKE_BINARY_DIR}/lib/libdbsync.so
-        ${CMAKE_BINARY_DIR}/lib/libsysinfo.so
-        DESTINATION ${INSTALL_ROOT}${LIB_INSTALL_DIR})
 endif()
 
 if(BUILD_TESTS)
