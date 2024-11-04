@@ -7,7 +7,6 @@
 #endif
 #ifdef __linux__
 #include <spdlog/sinks/syslog_sink.h>
-#include <spdlog/sinks/systemd_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #endif
 #ifdef _WIN32
@@ -62,8 +61,8 @@ TEST_F(LoggerConstructorTest, LinuxLoggerConstructor)
 
     auto sinks = current_logger->sinks();
     ASSERT_FALSE(sinks.empty());
-    auto systemd_sink = std::dynamic_pointer_cast<spdlog::sinks::stderr_color_sink_mt>(sinks[0]);
-    EXPECT_NE(systemd_sink, nullptr);
+    auto sink = std::dynamic_pointer_cast<spdlog::sinks::stderr_color_sink_mt>(sinks[0]);
+    EXPECT_NE(sink, nullptr);
 }
 
 TEST_F(LoggerConstructorTest, LinuxLoggerConstructorFail)
@@ -75,8 +74,8 @@ TEST_F(LoggerConstructorTest, LinuxLoggerConstructorFail)
 
     auto sinks = current_logger->sinks();
     ASSERT_FALSE(sinks.empty());
-    auto systemd_sink = std::dynamic_pointer_cast<spdlog::sinks::stdout_color_sink_mt>(sinks[0]);
-    EXPECT_EQ(systemd_sink, nullptr);
+    auto sink = std::dynamic_pointer_cast<spdlog::sinks::stdout_color_sink_mt>(sinks[0]);
+    EXPECT_EQ(sink, nullptr);
 }
 #endif // __linux__
 

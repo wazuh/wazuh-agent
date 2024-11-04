@@ -11,7 +11,6 @@ The following dependencies are required for this project:
 - **Tar** (for [vcpkg](https://vcpkg.io))
 - **Ninja-build** (for [vcpkg](https://vcpkg.io))
 - **Pkg-config**
-- **libsystemd-dev**
 
 ## Compilation steps
 
@@ -21,7 +20,7 @@ The following dependencies are required for this project:
 
     ```bash
     sudo apt-get update
-    sudo apt-get install cmake make gcc git zip curl tar ninja-build pkg-config libsystemd-dev wget gnupg lsb-release software-properties-common libbz2-dev
+    sudo apt-get install cmake make gcc git zip curl tar ninja-build pkg-config wget gnupg lsb-release software-properties-common libbz2-dev
     wget https://apt.llvm.org/llvm.sh
     chmod +x llvm.sh
     sudo ./llvm.sh 18

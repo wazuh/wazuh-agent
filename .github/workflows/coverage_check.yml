@@ -24,7 +24,7 @@ jobs:
     - name: Set up dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake llvm gcovr libsystemd-dev autopoint \
+        sudo apt-get install -y cmake llvm gcovr autopoint \
           libtool zlib1g-dev libgcrypt20-dev libmagic-dev libpopt-dev \
           libmagic-dev libsqlite3-dev liblua5.4-dev gettext libarchive-dev
       shell: bash
