@@ -20,10 +20,12 @@ TEST(Logcollector, AddReader) {
 
 TEST(Logcollector, SetupFileReader) {
     auto constexpr CONFIG_RAW = R"(
-    [logcollector]
-    localfiles = [ "/var/log/auth.log", "/var/log/syslog" ]
-    reload_interval = 60
-    file_wait = 500
+    logcollector:
+      localfiles:
+        - /var/log/auth.log
+        - /var/log/syslog
+      reload_interval: 60
+      file_wait: 500
     )";
 
     std::shared_ptr<IReader> capturedReader1;

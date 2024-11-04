@@ -204,18 +204,18 @@ TEST_F(InventoryImpTest, intervalSeconds)
                     (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
     std::string inventoryConfig = R"(
-        [inventory]
-        enabled = true
-        interval = 1
-        scan_on_start = true
-        hardware = true
-        os = true
-        network = true
-        packages = true
-        ports = true
-        ports_all = true
-        processes = true
-        hotfixes = true
+        inventory:
+            enabled: true
+            interval: 1
+            scan_on_start: true
+            hardware: true
+            os: true
+            network: true
+            packages: true
+            ports: true
+            ports_all: true
+            processes: true
+            hotfixes: true
     )";
     Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
@@ -253,18 +253,18 @@ TEST_F(InventoryImpTest, noScanOnStart)
     EXPECT_CALL(*spInfoWrapper, hotfixes()).Times(0);
 
     std::string inventoryConfig = R"(
-        [inventory]
-        enabled = true
-        interval = 3600
-        scan_on_start = false
-        hardware = true
-        os = true
-        network = true
-        packages = true
-        ports = true
-        ports_all = true
-        processes = true
-        hotfixes = true
+        inventory:
+            enabled: true
+            interval: 3600
+            scan_on_start: false
+            hardware: true
+            os: true
+            network: true
+            packages: true
+            ports: true
+            ports_all: true
+            processes: true
+            hotfixes: true
     )";
     Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
@@ -381,18 +381,18 @@ TEST_F(InventoryImpTest, noHardware)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
 
     std::string inventoryConfig = R"(
-        [inventory]
-        enabled = true
-        interval = 3600
-        scan_on_start = true
-        hardware = false
-        os = true
-        network = true
-        packages = true
-        ports = true
-        ports_all = true
-        processes = true
-        hotfixes = true
+        inventory:
+            enabled: true
+            interval: 3600
+            scan_on_start: true
+            hardware: false
+            os: true
+            network: true
+            packages: true
+            ports: true
+            ports_all: true
+            processes: true
+            hotfixes: true
     )";
     Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
@@ -510,18 +510,18 @@ TEST_F(InventoryImpTest, noOs)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
 
     std::string inventoryConfig = R"(
-        [inventory]
-        enabled = true
-        interval = 3600
-        scan_on_start = true
-        hardware = true
-        os = false
-        network = true
-        packages = true
-        ports = true
-        ports_all = true
-        processes = true
-        hotfixes = true
+        inventory:
+            enabled: true
+            interval: 3600
+            scan_on_start: true
+            hardware: true
+            os: false
+            network: true
+            packages: true
+            ports: true
+            ports_all: true
+            processes: true
+            hotfixes: true
     )";
     Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
@@ -618,18 +618,18 @@ TEST_F(InventoryImpTest, noNetwork)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult10)).Times(1);
 
     std::string inventoryConfig = R"(
-        [inventory]
-        enabled = true
-        interval = 3600
-        scan_on_start = true
-        hardware = true
-        os = true
-        network = false
-        packages = true
-        ports = true
-        ports_all = true
-        processes = true
-        hotfixes = true
+        inventory:
+            enabled: true
+            interval: 3600
+            scan_on_start: true
+            hardware: true
+            os: true
+            network: false
+            packages: true
+            ports: true
+            ports_all: true
+            processes: true
+            hotfixes: true
     )";
     Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
@@ -744,18 +744,18 @@ TEST_F(InventoryImpTest, noPackages)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
 
     std::string inventoryConfig = R"(
-        [inventory]
-        enabled = true
-        interval = 3600
-        scan_on_start = true
-        hardware = true
-        os = true
-        network = true
-        packages = false
-        ports = true
-        ports_all = true
-        processes = true
-        hotfixes = true
+        inventory:
+            enabled: true
+            interval: 3600
+            scan_on_start: true
+            hardware: true
+            os: true
+            network: true
+            packages: false
+            ports: true
+            ports_all: true
+            processes: true
+            hotfixes: true
     )";
     Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
@@ -872,18 +872,18 @@ TEST_F(InventoryImpTest, noPorts)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult20)).Times(1);
 
     std::string inventoryConfig = R"(
-        [inventory]
-        enabled = true
-        interval = 5
-        scan_on_start = true
-        hardware = true
-        os = true
-        network = true
-        packages = true
-        ports = false
-        ports_all = true
-        processes = true
-        hotfixes = true
+        inventory:
+            enabled: true
+            interval: 5
+            scan_on_start: true
+            hardware: true
+            os: true
+            network: true
+            packages: true
+            ports: false
+            ports_all: true
+            processes: true
+            hotfixes: true
     )";
     Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
@@ -1011,18 +1011,18 @@ TEST_F(InventoryImpTest, noPortsAll)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult12)).Times(1);
 
     std::string inventoryConfig = R"(
-        [inventory]
-        enabled = true
-        interval = 3600
-        scan_on_start = true
-        hardware = true
-        os = true
-        network = true
-        packages = true
-        ports = true
-        ports_all = false
-        processes = true
-        hotfixes = true
+        inventory:
+            enabled: true
+            interval: 3600
+            scan_on_start: true
+            hardware: true
+            os: true
+            network: true
+            packages: true
+            ports: true
+            ports_all: false
+            processes: true
+            hotfixes: true
     )";
     Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
@@ -1137,18 +1137,18 @@ TEST_F(InventoryImpTest, noProcesses)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult11)).Times(1);
 
     std::string inventoryConfig = R"(
-        [inventory]
-        enabled = true
-        interval = 3600
-        scan_on_start = true
-        hardware = true
-        os = true
-        network = true
-        packages = true
-        ports = true
-        ports_all = true
-        processes = false
-        hotfixes = true
+        inventory:
+            enabled: true
+            interval: 3600
+            scan_on_start: true
+            hardware: true
+            os: true
+            network: true
+            packages: true
+            ports: true
+            ports_all: true
+            processes: false
+            hotfixes: true
     )";
     Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
@@ -1266,18 +1266,18 @@ TEST_F(InventoryImpTest, noHotfixes)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult18)).Times(1);
 
     std::string inventoryConfig = R"(
-        [inventory]
-        enabled = true
-        interval = 3600
-        scan_on_start = true
-        hardware = true
-        os = true
-        network = true
-        packages = true
-        ports = true
-        ports_all = true
-        processes = true
-        hotfixes = false
+        inventory:
+            enabled: true
+            interval: 3600
+            scan_on_start: true
+            hardware: true
+            os: true
+            network: true
+            packages: true
+            ports: true
+            ports_all: true
+            processes: true
+            hotfixes: false
     )";
     Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
@@ -1324,18 +1324,18 @@ TEST_F(InventoryImpTest, scanInvalidData)
               (R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":431625,"ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
 
     std::string inventoryConfig = R"(
-        [inventory]
-        enabled = true
-        interval = 60
-        scan_on_start = true
-        hardware = true
-        os = true
-        network = true
-        packages = true
-        ports = true
-        ports_all = true
-        processes = true
-        hotfixes = true
+        inventory:
+            enabled: true
+            interval: 60
+            scan_on_start: true
+            hardware: true
+            os: true
+            network: true
+            packages: true
+            ports: true
+            ports_all: true
+            processes: true
+            hotfixes: true
     )";
     Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
@@ -1468,18 +1468,18 @@ TEST_F(InventoryImpTest, portAllEnable)
     EXPECT_CALL(wrapper, callbackMock(expectedResult4)).Times(1);
 
     std::string inventoryConfig = R"(
-        [inventory]
-        enabled = true
-        interval = 3600
-        scan_on_start = true
-        hardware = false
-        os = false
-        network = false
-        packages = false
-        ports = true
-        ports_all = true
-        processes = false
-        hotfixes = false
+        inventory:
+            enabled: true
+            interval: 3600
+            scan_on_start: true
+            hardware: false
+            os: false
+            network: false
+            packages: false
+            ports: true
+            ports_all: true
+            processes: false
+            hotfixes: false
     )";
     Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
@@ -1607,18 +1607,18 @@ TEST_F(InventoryImpTest, portAllDisable)
     EXPECT_CALL(wrapper, callbackMock(expectedResult3)).Times(1);
 
     std::string inventoryConfig = R"(
-        [inventory]
-        enabled = true
-        interval = 3600
-        scan_on_start = true
-        hardware = false
-        os = false
-        network = false
-        packages = false
-        ports = true
-        ports_all = false
-        processes = false
-        hotfixes = false
+        inventory:
+            enabled: true
+            interval: 3600
+            scan_on_start: true
+            hardware: false
+            os: false
+            network: false
+            packages: false
+            ports: true
+            ports_all: false
+            processes: false
+            hotfixes: false
     )";
     Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
@@ -1677,18 +1677,18 @@ TEST_F(InventoryImpTest, PackagesDuplicated)
     EXPECT_CALL(wrapper, callbackMock(expectedResult1)).Times(1);
 
     std::string inventoryConfig = R"(
-        [inventory]
-        enabled = true
-        interval = 3600
-        scan_on_start = true
-        hardware = false
-        os = false
-        network = false
-        packages = true
-        ports = false
-        ports_all = false
-        processes = false
-        hotfixes = false
+        inventory:
+            enabled: true
+            interval: 3600
+            scan_on_start: true
+            hardware: false
+            os: false
+            network: false
+            packages: true
+            ports: false
+            ports_all: false
+            processes: false
+            hotfixes: false
     )";
     Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
 
