@@ -184,8 +184,7 @@ endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 target_link_libraries(sysinfo PUBLIC
   networkHelper
   nlohmann_json::nlohmann_json
-  cjson
-  unofficial::sqlite3::sqlite3)
+  cjson)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   find_library(POPT_LIBRARY libpopt.a)
@@ -203,6 +202,9 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     ${LUA_LIBRARIES}
   )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+
+target_link_libraries(sysinfo PUBLIC
+  unofficial::sqlite3::sqlite3)
 
 if(BUILD_TESTS)
   if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
