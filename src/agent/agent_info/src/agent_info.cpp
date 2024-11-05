@@ -118,6 +118,11 @@ nlohmann::json AgentInfo::GetEndpointInfo() const
         R"({"os": "Amazon Linux 2","platform": "Linux","ip": "192.168.1.2","arch": "x86_64"})");
 }
 
+std::string AgentInfo::GetHeaderInfo() const
+{
+    return "WazuhXDR/5.0.0 (Endpoint; x86_64; Linux)";
+}
+
 nlohmann::json AgentInfo::GetMetadataInfo([[maybe_unused]] const bool includeKey) const
 {
     return nlohmann::json::parse(

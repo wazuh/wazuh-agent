@@ -53,6 +53,10 @@ public:
     /// @return A json object with information about OS and networks.
     nlohmann::json GetEndpointInfo() const;
 
+    /// @brief Gets the agent information for the request header.
+    /// @return A string with the information for the request header.
+    std::string GetHeaderInfo() const;
+
     /// @brief Gets all the information about the agent.
     /// @param includeKey Indicates whether or not the Key should be included in the answer..
     /// @return A json object with all information about the agent.
