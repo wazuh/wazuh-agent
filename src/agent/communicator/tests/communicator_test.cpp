@@ -54,12 +54,13 @@ TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
         EXPECT_EQ(message, "message-content");
     };
 
-    EXPECT_CALL(*mockHttpClient, Co_PerformHttpRequest(_, _, _, _, _, _))
+    EXPECT_CALL(*mockHttpClient, Co_PerformHttpRequest(_, _, _, _, _, _, _))
         .WillOnce(Invoke(
             [](std::shared_ptr<std::string>,
                http_client::HttpRequestParams,
                std::function<boost::asio::awaitable<std::string>()> pGetMessages,
                std::function<void()>,
+               [[maybe_unused]] long connectionRetrySecs,
                std::function<void(const std::string&)> pOnSuccess,
                [[maybe_unused]] std::function<bool()> loopRequestCondition) -> boost::asio::awaitable<void>
             {
@@ -99,12 +100,13 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
             }));
 
     // A following call to Co_PerformHttpRequest should not have a token
-    EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(_, _, _, _, _, _))
+    EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(_, _, _, _, _, _, _))
         .WillOnce(Invoke(
             [](std::shared_ptr<std::string> token,
                http_client::HttpRequestParams,
                [[maybe_unused]] std::function<boost::asio::awaitable<std::string>()> getMessages,
                [[maybe_unused]] std::function<void()> onUnauthorized,
+               [[maybe_unused]] long connectionRetrySecs,
                [[maybe_unused]] std::function<void(const std::string&)> onSuccess,
                [[maybe_unused]] std::function<bool()> loopCondition) -> boost::asio::awaitable<void>
             {
@@ -148,12 +150,13 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
     EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _)).WillOnce(Return(mockedToken));
 
     std::string capturedToken;
-    EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(_, _, _, _, _, _))
+    EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(_, _, _, _, _, _, _))
         .WillOnce(Invoke(
             [&capturedToken](std::shared_ptr<std::string> token,
                              http_client::HttpRequestParams,
                              [[maybe_unused]] std::function<boost::asio::awaitable<std::string>()> getMessages,
                              [[maybe_unused]] std::function<void()> onUnauthorized,
+                             [[maybe_unused]] long connectionRetrySecs,
                              [[maybe_unused]] std::function<void(const std::string&)> onSuccess,
                              [[maybe_unused]] std::function<bool()> loopCondition) -> boost::asio::awaitable<void>
             {

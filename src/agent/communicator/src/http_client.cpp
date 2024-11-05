@@ -13,8 +13,6 @@
 
 namespace http_client
 {
-    constexpr int CONNECTION_RETRY_MSECS = 5000;
-
     HttpClient::HttpClient(std::shared_ptr<IHttpResolverFactory> resolverFactory,
                            std::shared_ptr<IHttpSocketFactory> socketFactory)
     {
@@ -73,6 +71,7 @@ namespace http_client
                                       HttpRequestParams reqParams,
                                       std::function<boost::asio::awaitable<std::string>()> messageGetter,
                                       std::function<void()> onUnauthorized,
+                                      long connectionRetrySecs,
                                       std::function<void(const std::string&)> onSuccess,
                                       std::function<bool()> loopRequestCondition)
     {
@@ -95,10 +94,10 @@ namespace http_client
             {
                 LogWarn("Failed to send http request. {}. Retrying in {} seconds",
                         reqParams.Endpoint,
-                        CONNECTION_RETRY_MSECS / 1000); // NOLINT
+                        connectionRetrySecs); // NOLINT
                 LogDebug("Http request failed: {} - {}", code.message(), code.what());
                 socket->Close();
-                const auto duration = std::chrono::milliseconds(CONNECTION_RETRY_MSECS);
+                const auto duration = std::chrono::milliseconds(connectionRetrySecs * 1000);
                 timer.expires_after(duration);
                 co_await timer.async_wait(boost::asio::use_awaitable);
                 continue;

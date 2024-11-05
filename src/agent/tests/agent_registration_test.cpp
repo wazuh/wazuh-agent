@@ -28,6 +28,7 @@ public:
                  http_client::HttpRequestParams params,
                  std::function<boost::asio::awaitable<std::string>()> messageGetter,
                  std::function<void()> onUnauthorized,
+                 long connectionRetrySecs,
                  std::function<void(const std::string&)> onSuccess,
                  std::function<bool()> loopRequestCondition),
                 (override));
