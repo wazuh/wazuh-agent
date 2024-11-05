@@ -20,7 +20,7 @@ void RestartAgent(const std::string& configFile)
     StartAgent(configFile);
 }
 
-void StartAgent([[maybe_unused]] const std::string& configFile)
+void StartAgent(const std::string& configFile)
 {
     pid_t pid = unix_daemon::PIDFileHandler::ReadPIDFromFile();
     if (pid > 0)

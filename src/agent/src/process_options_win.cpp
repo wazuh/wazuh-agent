@@ -9,16 +9,14 @@
 #include <iostream>
 #include <vector>
 
-void RestartAgent([[maybe_unused]] const std::string& configFile)
+void RestartAgent(const std::string& configFile)
 {
-    WindowsService::ServiceRestart();
+    WindowsService::ServiceRestart(configFile);
 }
 
-void StartAgentDaemon([[maybe_unused]] const std::string& configFile) {}
-
-void StartAgent([[maybe_unused]] const std::string& configFile)
+void StartAgent(const std::string& configFile)
 {
-    WindowsService::ServiceStart();
+    WindowsService::ServiceStart(configFile);
 }
 
 void StatusAgent()
@@ -46,7 +44,6 @@ void PrintHelp()
     std::cout << "     " << OPT_REGISTER_AGENT << "       Register wazuh-agent\n";
     std::cout << "     " << OPT_INSTALL_SERVICE << "      Install Windows Service\n";
     std::cout << "     " << OPT_REMOVE_SERVICE << "       Remove Windows Service\n";
-    std::cout << "     " << OPT_RUN_SERVICE << "          Used by Windows SCM to run as Service\n";
     std::cout << "     " << OPT_HELP << "                 This help message\n";
 }
 

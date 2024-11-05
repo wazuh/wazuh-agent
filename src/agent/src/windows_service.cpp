@@ -200,7 +200,7 @@ namespace WindowsService
         }
     }
 
-    void WINAPI ServiceMain()
+    void WINAPI ServiceMain(DWORD argc, LPSTR* argv)
     {
         g_StatusHandle = RegisterServiceCtrlHandler(AGENT_SERVICENAME.c_str(), ServiceCtrlHandler);
 
@@ -227,7 +227,19 @@ namespace WindowsService
 
         LogInfo("Starting Wazuh Agent.");
 
-        Agent agent("");
+        std::string configFile;
+        if (argc > 1 && argv[1] != nullptr)
+        {
+            configFile = argv[1];
+            LogInfo("Config file parameter received: {}", configFile);
+        }
+        else
+        {
+            configFile = "";
+            LogDebug("Using default configuration.");
+        }
+
+        Agent agent(configFile);
         agent.Run();
 
         WaitForSingleObject(g_ServiceStopEvent, INFINITE);
@@ -253,7 +265,7 @@ namespace WindowsService
         }
     }
 
-    void ServiceStart()
+    void ServiceStart(const std::string& configFile)
     {
         ServiceHandle hService;
         ServiceHandle hSCManager;
@@ -261,7 +273,18 @@ namespace WindowsService
         if (!GetService(hSCManager, hService, SERVICE_START))
             return;
 
-        if (!::StartService(hService.get(), 0, nullptr))
+        bool res;
+        if (!configFile.empty())
+        {
+            const char* args[] = {configFile.c_str()};
+            res = ::StartService(hService.get(), 1, args);
+        }
+        else
+        {
+            res = ::StartService(hService.get(), 0, nullptr);
+        }
+
+        if (!res)
         {
             LogError("Error: Unable to start service. Error: {}", GetLastError());
         }
@@ -290,10 +313,10 @@ namespace WindowsService
         }
     }
 
-    void ServiceRestart()
+    void ServiceRestart(const std::string& configFile)
     {
         ServiceStop();
-        ServiceStart();
+        ServiceStart(configFile);
     }
 
     void ServiceStatus()
