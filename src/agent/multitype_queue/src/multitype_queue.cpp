@@ -3,7 +3,6 @@
 #include <logger.hpp>
 #include <persistence_factory.hpp>
 
-#include <chrono>
 #include <stop_token>
 #include <utility>
 

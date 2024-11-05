@@ -91,7 +91,7 @@ void AgentInfo::SetGroups(const std::vector<std::string>& groupList)
     m_groups = groupList;
 }
 
-std::string AgentInfo::CreateKey()
+std::string AgentInfo::CreateKey() const
 {
     constexpr std::string_view charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
@@ -108,7 +108,7 @@ std::string AgentInfo::CreateKey()
     return key;
 }
 
-bool AgentInfo::ValidateKey(const std::string& key)
+bool AgentInfo::ValidateKey(const std::string& key) const
 {
     return key.length() == KEY_LENGTH && std::ranges::all_of(key, ::isalnum);
 }

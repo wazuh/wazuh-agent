@@ -8,8 +8,6 @@ project(Agent)
 include(../cmake/CommonSettings.cmake)
 set_common_settings()
 
-include_directories(${CMAKE_SOURCE_DIR}/common/logger/include)
-
 add_subdirectory(agent_info)
 add_subdirectory(centralized_configuration)
 add_subdirectory(command_handler)
@@ -21,9 +19,9 @@ add_subdirectory(sqlite_manager)
 add_subdirectory(command_store)
 
 find_package(OpenSSL REQUIRED)
-find_package(Boost REQUIRED COMPONENTS asio beast)
+find_package(Boost REQUIRED COMPONENTS asio beast system)
+find_package(nlohmann_json CONFIG REQUIRED)
 find_package(fmt REQUIRED)
-
 
 if(WIN32)
     set(SOURCES
@@ -62,12 +60,15 @@ target_link_libraries(Agent
     ModuleManager
     ModuleCommand
     CentralizedConfiguration
+    Boost::asio
     PRIVATE
     OpenSSL::SSL
     OpenSSL::Crypto
-    Boost::asio
     Boost::beast
+    Boost::system
+    nlohmann_json::nlohmann_json
     fmt::fmt
+    Logger
 )
 
 include(../cmake/ConfigureTarget.cmake)

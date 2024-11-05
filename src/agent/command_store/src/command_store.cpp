@@ -3,6 +3,7 @@
 #include <logger.hpp>
 
 #include <chrono>
+#include <vector>
 
 #include <nlohmann/json.hpp>
 

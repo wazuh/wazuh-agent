@@ -2,6 +2,7 @@
 
 #include <agent.hpp>
 #include <agent_registration.hpp>
+#include <http_client.hpp>
 
 #include <iostream>
 #include <string>

@@ -1,4 +1,5 @@
 #include <configuration_parser.hpp>
+
 #include <utility>
 
 namespace

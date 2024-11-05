@@ -8,6 +8,14 @@
 
 #include "mocks/mock_http_client.hpp"
 
+#include <boost/asio.hpp>
+#include <boost/beast.hpp>
+
+#include <chrono>
+#include <functional>
+#include <memory>
+#include <string>
+
 // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
 using namespace testing;

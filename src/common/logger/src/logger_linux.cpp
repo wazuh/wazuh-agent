@@ -2,6 +2,8 @@
 
 #include <spdlog/sinks/stdout_color_sinks.h>
 
+#include <memory>
+
 Logger::Logger()
 {
     auto console_sink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();

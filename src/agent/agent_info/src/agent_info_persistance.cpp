@@ -1,7 +1,8 @@
 #include <agent_info_persistance.hpp>
 
-#include <SQLiteCpp/SQLiteCpp.h>
 #include <logger.hpp>
+
+using namespace sqlite_manager;
 
 namespace
 {
@@ -13,14 +14,14 @@ AgentInfoPersistance::AgentInfoPersistance(const std::string& dbPath)
 {
     try
     {
-        m_db = std::make_unique<SQLite::Database>(dbPath, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
+        m_db = std::make_unique<SQLiteManager>(dbPath);
 
-        if (!TableExists(AGENT_INFO_TABLE_NAME))
+        if (!m_db->TableExists(AGENT_INFO_TABLE_NAME))
         {
             CreateAgentInfoTable();
         }
 
-        if (!TableExists(AGENT_GROUP_TABLE_NAME))
+        if (!m_db->TableExists(AGENT_GROUP_TABLE_NAME))
         {
             CreateAgentGroupTable();
         }
@@ -39,28 +40,11 @@ AgentInfoPersistance::AgentInfoPersistance(const std::string& dbPath)
 
 AgentInfoPersistance::~AgentInfoPersistance() = default;
 
-bool AgentInfoPersistance::TableExists(const std::string& table) const
-{
-    try
-    {
-        SQLite::Statement query(*m_db, "SELECT name FROM sqlite_master WHERE type='table' AND name='" + table + "';");
-        return query.executeStep();
-    }
-    catch (const std::exception& e)
-    {
-        LogError("Failed to check if table exists: {}.", e.what());
-        return false;
-    }
-}
-
 bool AgentInfoPersistance::AgentInfoIsEmpty() const
 {
     try
     {
-        SQLite::Statement query(*m_db, "SELECT COUNT(*) FROM " + AGENT_INFO_TABLE_NAME + ";");
-        query.executeStep();
-        const auto count = query.getColumn(0).getInt();
-        return count == 0;
+        return m_db->GetCount(AGENT_INFO_TABLE_NAME) == 0;
     }
     catch (const std::exception& e)
     {
@@ -74,12 +58,11 @@ void AgentInfoPersistance::CreateAgentInfoTable()
 {
     try
     {
-        m_db->exec("CREATE TABLE IF NOT EXISTS " + AGENT_INFO_TABLE_NAME +
-                   " ("
-                   "name TEXT, "
-                   "key TEXT, "
-                   "uuid TEXT"
-                   ");");
+        const std::vector<Column> columns = {Column("name", ColumnType::TEXT, true, false),
+                                             Column("key", ColumnType::TEXT, true, false),
+                                             Column("uuid", ColumnType::TEXT, true, false, true)};
+
+        m_db->CreateTable(AGENT_INFO_TABLE_NAME, columns);
     }
     catch (const std::exception& e)
     {
@@ -91,11 +74,10 @@ void AgentInfoPersistance::CreateAgentGroupTable()
 {
     try
     {
-        m_db->exec("CREATE TABLE IF NOT EXISTS " + AGENT_GROUP_TABLE_NAME +
-                   " ("
-                   "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                   "name TEXT NOT NULL UNIQUE"
-                   ");");
+        const std::vector<Column> columns = {Column("id", ColumnType::INTEGER, true, true, true),
+                                             Column("name", ColumnType::TEXT, true, false)};
+
+        m_db->CreateTable(AGENT_GROUP_TABLE_NAME, columns);
     }
     catch (const std::exception& e)
     {
@@ -107,15 +89,15 @@ void AgentInfoPersistance::InsertDefaultAgentInfo()
 {
     try
     {
-        SQLite::Statement query(*m_db, "SELECT COUNT(*) FROM " + AGENT_INFO_TABLE_NAME + ";");
-        query.executeStep();
-        const auto count = query.getColumn(0).getInt();
+        const auto count = m_db->GetCount(AGENT_INFO_TABLE_NAME);
 
         if (count == 0)
         {
-            SQLite::Statement insert(*m_db,
-                                     "INSERT INTO " + AGENT_INFO_TABLE_NAME + " (name, key, uuid) VALUES (?, ?, ?);");
-            insert.exec();
+            const std::vector<Column> columns = {Column("name", ColumnType::TEXT, ""),
+                                                 Column("key", ColumnType::TEXT, ""),
+                                                 Column("uuid", ColumnType::TEXT, "")};
+
+            m_db->Insert(AGENT_INFO_TABLE_NAME, columns);
         }
     }
     catch (const std::exception& e)
@@ -128,9 +110,8 @@ void AgentInfoPersistance::SetAgentInfoValue(const std::string& column, const st
 {
     try
     {
-        SQLite::Statement query(*m_db, "UPDATE " + AGENT_INFO_TABLE_NAME + " SET " + column + " = ?;");
-        query.bind(1, value);
-        query.exec();
+        const std::vector<Column> columns = {Column(column, ColumnType::TEXT, value)};
+        m_db->Update(AGENT_INFO_TABLE_NAME, columns);
     }
     catch (const std::exception& e)
     {
@@ -141,18 +122,22 @@ void AgentInfoPersistance::SetAgentInfoValue(const std::string& column, const st
 std::string AgentInfoPersistance::GetAgentInfoValue(const std::string& column) const
 {
     std::string value;
+
     try
     {
-        SQLite::Statement query(*m_db, "SELECT " + column + " FROM " + AGENT_INFO_TABLE_NAME + " LIMIT 1;");
-        if (query.executeStep())
+        const std::vector<Column> columns = {Column(column, ColumnType::TEXT, "")};
+        const std::vector<Row> results = m_db->Select(AGENT_INFO_TABLE_NAME, columns);
+
+        if (!results.empty() && !results[0].empty())
         {
-            value = query.getColumn(0).getText();
+            value = results[0][0].Value;
         }
     }
     catch (const std::exception& e)
     {
         LogError("Error fetching {}: {}.", column, e.what());
     }
+
     return value;
 }
 
@@ -177,11 +162,15 @@ std::vector<std::string> AgentInfoPersistance::GetGroups() const
 
     try
     {
-        SQLite::Statement query(*m_db, "SELECT name FROM " + AGENT_GROUP_TABLE_NAME + " ORDER BY id ASC;");
+        const std::vector<Column> columns = {Column("name", ColumnType::TEXT, "")};
+        const std::vector<Row> results = m_db->Select(AGENT_GROUP_TABLE_NAME, columns);
 
-        while (query.executeStep())
+        for (const auto& row : results)
         {
-            groupList.push_back(query.getColumn(0).getString());
+            if (!row.empty())
+            {
+                groupList.push_back(row[0].Value);
+            }
         }
     }
     catch (const std::exception& e)
@@ -209,26 +198,24 @@ void AgentInfoPersistance::SetUUID(const std::string& uuid)
 
 void AgentInfoPersistance::SetGroups(const std::vector<std::string>& groupList)
 {
+    auto transaction = m_db->BeginTransaction();
+
     try
     {
-        SQLite::Transaction transaction(*m_db);
+        m_db->Remove(AGENT_GROUP_TABLE_NAME);
 
-        m_db->exec("DELETE FROM " + AGENT_GROUP_TABLE_NAME + ";");
-
-        SQLite::Statement query(*m_db, "INSERT INTO " + AGENT_GROUP_TABLE_NAME + " (name) VALUES (?);");
-
-        for (const std::string& group : groupList)
+        for (const auto& group : groupList)
         {
-            query.bind(1, group);
-            query.exec();
-            query.reset();
+            const std::vector<Column> columns = {Column("name", ColumnType::TEXT, group)};
+            m_db->Insert(AGENT_GROUP_TABLE_NAME, columns);
         }
 
-        transaction.commit();
+        m_db->CommitTransaction(transaction);
     }
     catch (const std::exception& e)
     {
         LogError("Error inserting group: {}.", e.what());
+        m_db->RollbackTransaction(transaction);
     }
 }
 
@@ -236,8 +223,8 @@ void AgentInfoPersistance::ResetToDefault()
 {
     try
     {
-        m_db->exec("DELETE FROM " + AGENT_INFO_TABLE_NAME + ";");
-        m_db->exec("DELETE FROM " + AGENT_GROUP_TABLE_NAME + ";");
+        m_db->Remove(AGENT_INFO_TABLE_NAME);
+        m_db->Remove(AGENT_GROUP_TABLE_NAME);
         InsertDefaultAgentInfo();
     }
     catch (const std::exception& e)

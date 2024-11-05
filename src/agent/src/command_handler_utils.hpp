@@ -1,17 +1,15 @@
 #pragma once
 
+#include <imultitype_queue.hpp>
+#include <moduleWrapper.hpp>
 #include <module_command/command_entry.hpp>
 
-#include <moduleWrapper.hpp>
-#include <multitype_queue.hpp>
-
 #include <boost/asio/awaitable.hpp>
-
 #include <nlohmann/json.hpp>
 
 #include <functional>
 #include <memory>
-#include <tuple>
+#include <string>
 
 boost::asio::awaitable<module_command::CommandExecutionResult>
 DispatchCommand(module_command::CommandEntry commandEntry,

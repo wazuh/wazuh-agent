@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 class AgentInfoPersistanceTest : public ::testing::Test
 {

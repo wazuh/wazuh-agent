@@ -15,13 +15,11 @@
 #include "multitype_queue.hpp"
 #include "multitype_queue_test.hpp"
 
-using json = nlohmann::json;
-
 constexpr int BIG_QUEUE_CAPACITY = 10;
 constexpr int SMALL_QUEUE_CAPACITY = 2;
 
-const json BASE_DATA_CONTENT = R"({{"data": "for STATELESS_0"}})";
-const json MULTIPLE_DATA_CONTENT = {"content 1", "content 2", "content 3"};
+const nlohmann::json BASE_DATA_CONTENT = R"({{"data": "for STATELESS_0"}})";
+const nlohmann::json MULTIPLE_DATA_CONTENT = {"content 1", "content 2", "content 3"};
 
 namespace
 {
@@ -85,36 +83,37 @@ void MultiTypeQueueTest::TearDown() {};
 // JSON Basic methods. Move or delete if JSON Wrapper is done
 TEST_F(JsonTest, JSONConversionComparisson)
 {
-    json uj1 = {{"version", 1}, {"type", "integer"}};
-    // From string. If not unescape then it throws errors
-    json uj2 = json::parse(UnescapeString(R"({\"type\":\"integer\",\"version\":1})"));
+    const nlohmann::json uj1 = {{"version", 1}, {"type", "integer"}};
 
-    nlohmann::ordered_json oj1 = {{"version", 1}, {"type", "integer"}};
-    nlohmann::ordered_json oj2 = {{"type", "integer"}, {"version", 1}};
+    // From string. If not unescape then it throws errors
+    const auto uj2 = nlohmann::json::parse(UnescapeString(R"({\"type\":\"integer\",\"version\":1})"));
+
+    const nlohmann::ordered_json oj1 = {{"version", 1}, {"type", "integer"}};
+    const nlohmann::ordered_json oj2 = {{"type", "integer"}, {"version", 1}};
     EXPECT_FALSE(oj1 == oj2);
 
     auto versionUj1 = uj1["version"].template get<int>();
     auto versionUj2 = uj2["version"].template get<int>();
     EXPECT_EQ(versionUj1, versionUj2);
 
-    auto versionUj12 = uj1.at("version");
-    auto versionUj22 = uj2.at("version");
+    const auto& versionUj12 = uj1.at("version");
+    const auto& versionUj22 = uj2.at("version");
     EXPECT_EQ(versionUj12, versionUj22);
 
     auto typeUj1 = uj1["type"].template get<std::string>();
     auto typeUj2 = uj2["type"].template get<std::string>();
     EXPECT_EQ(typeUj1, typeUj2);
 
-    auto typeUj12 = uj1.at("type");
-    auto typeUj22 = uj2.at("type");
+    const auto& typeUj12 = uj1.at("type");
+    const auto& typeUj22 = uj2.at("type");
     EXPECT_EQ(typeUj12, typeUj22);
 }
 
 TEST_F(JsonTest, JSONArrays)
 {
     // create JSON values
-    const json j_object = {{"one", 1}, {"two", 2}, {"three", 3}};
-    const json j_array = {1, 2, 4, 8, 16};
+    const nlohmann::json j_object = {{"one", 1}, {"two", 2}, {"three", 3}};
+    const nlohmann::json j_array = {1, 2, 4, 8, 16};
     // TODO: test string: const std::string multipleDataContent = R"({"data": {"content 1", "content 2", "content 3"})";
 
     // call is_array()
@@ -210,11 +209,11 @@ TEST_F(MultiTypeQueueTest, SinglePushPopFullWithTimeout)
     const MessageType messageType {MessageType::COMMAND};
     for (int i : {1, 2})
     {
-        const json dataContent = R"({"Data" : "for COMMAND)" + std::to_string(i) + R"("})";
+        const nlohmann::json dataContent = R"({"Data" : "for COMMAND)" + std::to_string(i) + R"("})";
         EXPECT_EQ(multiTypeQueue.push({messageType, dataContent}), 1);
     }
 
-    const json dataContent = R"({"Data" : "for COMMAND3"})";
+    const nlohmann::json dataContent = R"({"Data" : "for COMMAND3"})";
     Message exampleMessage {messageType, dataContent};
     EXPECT_EQ(multiTypeQueue.push({messageType, dataContent}, true), 0);
 
@@ -253,7 +252,7 @@ TEST_F(MultiTypeQueueTest, MultithreadDifferentType)
     {
         for (int i = 0; i < count; ++i)
         {
-            const json dataContent = R"({{"Data", "Number )" + std::to_string(i) + R"("}})";
+            const nlohmann::json dataContent = R"({{"Data", "Number )" + std::to_string(i) + R"("}})";
             EXPECT_EQ(multiTypeQueue.push(Message(MessageType::STATELESS, dataContent)), 1);
             EXPECT_EQ(multiTypeQueue.push(Message(MessageType::STATEFUL, dataContent)), 1);
         }
@@ -324,7 +323,7 @@ TEST_F(MultiTypeQueueTest, MultithreadSameType)
     {
         for (int i = 0; i < count; ++i)
         {
-            const json dataContent = R"({{"Data": "for COMMAND)" + std::to_string(i) + R"("}})";
+            const nlohmann::json dataContent = R"({{"Data": "for COMMAND)" + std::to_string(i) + R"("}})";
             EXPECT_EQ(multiTypeQueue.push(Message(messageType, dataContent)), 1);
         }
     };
@@ -382,7 +381,7 @@ TEST_F(MultiTypeQueueTest, PushMultipleWithMessageVector)
     const MessageType messageType {MessageType::STATELESS};
     for (std::string i : {"0", "1", "2"})
     {
-        const json multipleDataContent = {"content " + i};
+        const nlohmann::json multipleDataContent = {"content " + i};
         messages.emplace_back(messageType, multipleDataContent);
     }
     EXPECT_EQ(messages.size(), 3);
@@ -405,7 +404,7 @@ TEST_F(MultiTypeQueueTest, PushVectorWithAMultipleInside)
     // triple message vector
     for (std::string i : {"0", "1", "2"})
     {
-        const json dataContent = {"content " + i};
+        const nlohmann::json dataContent = {"content " + i};
         messages.emplace_back(messageType, dataContent);
     }
 
@@ -458,7 +457,7 @@ TEST_F(MultiTypeQueueTest, PushSinglesleGetMultipleWithModule)
     for (std::string i : {"1", "2", "3", "4", "5"})
     {
         const MessageType messageType {MessageType::STATELESS};
-        const json multipleDataContent = {"content-" + i};
+        const nlohmann::json multipleDataContent = {"content-" + i};
         const std::string moduleName = "module-" + i;
         const Message messageToSend {messageType, multipleDataContent, moduleName};
         EXPECT_EQ(1, multiTypeQueue.push(messageToSend));
@@ -503,7 +502,7 @@ TEST_F(MultiTypeQueueTest, GetNextAwaitableBase)
         {
             std::this_thread::sleep_for(std::chrono::seconds(2));
             const MessageType messageType {MessageType::STATELESS};
-            const json multipleDataContent = {"content-1", "content-2", "content-3"};
+            const nlohmann::json multipleDataContent = {"content-1", "content-2", "content-3"};
             const Message messageToSend {messageType, multipleDataContent};
             EXPECT_EQ(multiTypeQueue.push(messageToSend), 3);
         });
@@ -519,7 +518,7 @@ TEST_F(MultiTypeQueueTest, PushAwaitable)
 
     for (int i : {1, 2})
     {
-        const json dataContent = R"({"Data" : "for STATEFUL)" + std::to_string(i) + R"("})";
+        const nlohmann::json dataContent = R"({"Data" : "for STATEFUL)" + std::to_string(i) + R"("})";
         EXPECT_EQ(multiTypeQueue.push({MessageType::STATEFUL, dataContent}), 1);
     }
 
@@ -532,7 +531,7 @@ TEST_F(MultiTypeQueueTest, PushAwaitable)
         // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
         [&multiTypeQueue]() -> boost::asio::awaitable<void>
         {
-            const json dataContent = {"content-1"};
+            const nlohmann::json dataContent = {"content-1"};
             const Message messageToSend {MessageType::STATEFUL, dataContent};
             EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATEFUL), 2);
             auto messagesPushed = co_await multiTypeQueue.pushAwaitable(messageToSend);
@@ -564,7 +563,7 @@ TEST_F(MultiTypeQueueTest, FifoOrderCheck)
     const MessageType messageType {MessageType::STATEFUL};
     for (int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
     {
-        const json dataContent = R"({"Data" : "for STATEFUL)" + std::to_string(i) + R"("})";
+        const nlohmann::json dataContent = R"({"Data" : "for STATEFUL)" + std::to_string(i) + R"("})";
         EXPECT_EQ(multiTypeQueue.push({messageType, dataContent}), 1);
     }
 

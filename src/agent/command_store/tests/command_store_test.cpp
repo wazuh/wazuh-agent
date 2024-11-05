@@ -1,6 +1,12 @@
 #include <gtest/gtest.h>
 
 #include <command_store.hpp>
+#include <module_command/command_entry.hpp>
+
+#include <memory>
+#include <optional>
+#include <string>
+#include <vector>
 
 constexpr char TESTID_5[] = "5";
 constexpr char TESTID_9[] = "9";

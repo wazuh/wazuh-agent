@@ -3,6 +3,9 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/beast.hpp>
+#include <boost/system/error_code.hpp>
+
+#include <string>
 
 namespace http_client
 {

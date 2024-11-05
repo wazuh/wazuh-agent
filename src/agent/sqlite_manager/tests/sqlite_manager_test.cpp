@@ -2,6 +2,10 @@
 
 #include <sqlite_manager.hpp>
 
+#include <memory>
+#include <string>
+#include <vector>
+
 class SQLiteManagerTest : public ::testing::Test
 {
 protected:
@@ -59,6 +63,7 @@ TEST_F(SQLiteManagerTest, CreateTableTest)
     sqlite_manager::Column col5 {"Orden", sqlite_manager::ColumnType::INTEGER, false, false, false};
     sqlite_manager::Column col6 {"Amount", sqlite_manager::ColumnType::REAL, false, false, false};
     EXPECT_NO_THROW(m_db->CreateTable(m_tableName, {col1, col2, col3, col4, col5, col6}));
+    EXPECT_TRUE(m_db->TableExists(m_tableName));
 
     sqlite_manager::Column col21 {"Id", sqlite_manager::ColumnType::INTEGER, true, false, true};
     sqlite_manager::Column col212 {"Id2", sqlite_manager::ColumnType::INTEGER, true, false, true};
@@ -68,6 +73,7 @@ TEST_F(SQLiteManagerTest, CreateTableTest)
     sqlite_manager::Column col25 {"Orden", sqlite_manager::ColumnType::INTEGER, false, false, false};
     sqlite_manager::Column col26 {"Amount", sqlite_manager::ColumnType::REAL, false, false, false};
     EXPECT_NO_THROW(m_db->CreateTable("TableTest2", {col21, col212, col22, col23, col24, col25, col26}));
+    EXPECT_TRUE(m_db->TableExists("TableTest2"));
 }
 
 TEST_F(SQLiteManagerTest, InsertTest)
@@ -340,7 +346,9 @@ TEST_F(SQLiteManagerTest, DropTableTest)
     sqlite_manager::Column col5 {"Orden", sqlite_manager::ColumnType::INTEGER, false, false, false};
 
     EXPECT_NO_THROW(m_db->CreateTable("DropMe", {col1, col2, col3, col4, col5}));
+    EXPECT_TRUE(m_db->TableExists("DropMe"));
     EXPECT_NO_THROW(m_db->DropTable("DropMe"));
+    EXPECT_FALSE(m_db->TableExists("DropMe"));
 
     EXPECT_ANY_THROW(auto ret = m_db->Select("DropMe", {}, {}));
 }

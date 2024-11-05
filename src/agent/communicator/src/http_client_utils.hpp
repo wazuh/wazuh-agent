@@ -2,8 +2,10 @@
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
+#include <boost/system.hpp>
 
 #include <fstream>
+#include <ios>
 #include <string>
 
 namespace http_client_utils

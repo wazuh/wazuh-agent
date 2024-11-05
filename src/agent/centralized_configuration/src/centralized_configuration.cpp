@@ -1,7 +1,5 @@
 #include <centralized_configuration.hpp>
 
-#include <nlohmann/json.hpp>
-
 #include <filesystem>
 
 namespace centralized_configuration

@@ -3,6 +3,9 @@
 #include <agent_info.hpp>
 #include <agent_info_persistance.hpp>
 
+#include <string>
+#include <vector>
+
 class AgentInfoTest : public ::testing::Test
 {
 protected:

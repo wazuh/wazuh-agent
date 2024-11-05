@@ -1,6 +1,5 @@
 #include <command_handler_utils.hpp>
 
-#include <boost/asio/awaitable.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/experimental/awaitable_operators.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -8,7 +7,6 @@
 #include <logger.hpp>
 
 #include <chrono>
-#include <functional>
 
 namespace
 {

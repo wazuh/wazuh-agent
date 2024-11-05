@@ -10,6 +10,9 @@
 
 #include <nlohmann/json.hpp>
 
+#include <string>
+#include <vector>
+
 using centralized_configuration::CentralizedConfiguration;
 
 namespace

@@ -5,7 +5,6 @@
 #include <message.hpp>
 #include <message_queue_utils.hpp>
 #include <module_command/command_entry.hpp>
-#include <signal_handler.hpp>
 
 #include <filesystem>
 #include <memory>

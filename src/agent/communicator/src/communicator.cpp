@@ -5,22 +5,11 @@
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 #include <boost/url.hpp>
-#include <nlohmann/json.hpp>
-
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
-
 #include <jwt-cpp/jwt.h>
-
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 #include <algorithm>
 #include <chrono>
-#include <queue>
+#include <sstream>
 #include <thread>
 #include <utility>
 
