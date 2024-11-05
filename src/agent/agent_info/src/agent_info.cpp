@@ -11,6 +11,8 @@
 namespace
 {
     constexpr size_t KEY_LENGTH = 32;
+    const std::string AGENT_TYPE = "Endpoint";
+    const std::string AGENT_VERSION = "5.0.0";
 } // namespace
 
 AgentInfo::AgentInfo()
@@ -98,4 +100,34 @@ std::string AgentInfo::CreateKey() const
 bool AgentInfo::ValidateKey(const std::string& key) const
 {
     return key.length() == KEY_LENGTH && std::ranges::all_of(key, ::isalnum);
+}
+
+std::string AgentInfo::GetType() const
+{
+    return AGENT_TYPE;
+}
+
+std::string AgentInfo::GetVersion() const
+{
+    return AGENT_VERSION;
+}
+
+nlohmann::json AgentInfo::GetEndpointInfo() const
+{
+    return nlohmann::json::parse(
+        R"({"os": "Amazon Linux 2","platform": "Linux","ip": "192.168.1.2","arch": "x86_64"})");
+}
+
+nlohmann::json AgentInfo::GetMetadataInfo([[maybe_unused]] const bool includeKey) const
+{
+    return nlohmann::json::parse(
+        R"({"os": "Amazon Linux 2",
+        "platform": "Linux",
+        "ip": "192.168.1.2",
+        "arch": "x86_64",
+        "type": "Endpoint",
+        "version": "5.0.0",
+        "groups": ["pepa", "pepe"],
+        "uuid": "skjrowegj12355",
+        "key": "key"})");
 }

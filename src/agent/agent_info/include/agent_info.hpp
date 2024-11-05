@@ -1,5 +1,7 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
+
 #include <string>
 #include <vector>
 
@@ -38,6 +40,23 @@ public:
     /// @brief Sets the agent's groups.
     /// @param groupList A vector of the agent's new groups.
     void SetGroups(const std::vector<std::string>& groupList);
+
+    /// @brief Gets the agent's type.
+    /// @return The agent's type.
+    std::string GetType() const;
+
+    /// @brief Gets the agent's version.
+    /// @return The agent's version.
+    std::string GetVersion() const;
+
+    /// @brief Gets information about OS and networks.
+    /// @return A json object with information about OS and networks.
+    nlohmann::json GetEndpointInfo() const;
+
+    /// @brief Gets all the information about the agent.
+    /// @param includeKey Indicates whether or not the Key should be included in the answer..
+    /// @return A json object with all information about the agent.
+    nlohmann::json GetMetadataInfo(const bool includeKey) const;
 
 private:
     /// @brief Creates a random key for the agent.
