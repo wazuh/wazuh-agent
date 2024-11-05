@@ -16,7 +16,6 @@ namespace
 AgentInfo::AgentInfo()
 {
     AgentInfoPersistance agentInfoPersistance;
-    m_name = agentInfoPersistance.GetName();
     m_key = agentInfoPersistance.GetKey();
     m_uuid = agentInfoPersistance.GetUUID();
     m_groups = agentInfoPersistance.GetGroups();
@@ -26,11 +25,6 @@ AgentInfo::AgentInfo()
         m_uuid = boost::uuids::to_string(boost::uuids::random_generator()());
         agentInfoPersistance.SetUUID(m_uuid);
     }
-}
-
-std::string AgentInfo::GetName() const
-{
-    return m_name;
 }
 
 std::string AgentInfo::GetKey() const
@@ -46,13 +40,6 @@ std::string AgentInfo::GetUUID() const
 std::vector<std::string> AgentInfo::GetGroups() const
 {
     return m_groups;
-}
-
-void AgentInfo::SetName(const std::string& name)
-{
-    AgentInfoPersistance agentInfoPersistance;
-    agentInfoPersistance.SetName(name);
-    m_name = name;
 }
 
 bool AgentInfo::SetKey(const std::string& key)

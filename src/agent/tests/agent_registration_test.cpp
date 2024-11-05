@@ -66,7 +66,7 @@ protected:
 TEST_F(RegisterTest, RegistrationTestSuccess)
 {
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", std::nullopt);
+        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", std::nullopt);
     agent = std::make_unique<AgentInfo>();
 
     MockHttpClient mockHttpClient;
@@ -75,11 +75,6 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
         .WillOnce(testing::Return("token"));
 
     nlohmann::json bodyJson = {{"id", agent->GetUUID()}, {"key", agent->GetKey()}};
-
-    if (!agent->GetName().empty())
-    {
-        bodyJson["name"] = agent->GetName();
-    }
 
     http_client::HttpRequestParams reqParams(
         boost::beast::http::verb::post, "https://localhost:55000", "/agents", "token", "", bodyJson.dump());
@@ -97,7 +92,7 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
 TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
 {
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", std::nullopt);
+        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", std::nullopt);
     agent = std::make_unique<AgentInfo>();
 
     MockHttpClient mockHttpClient;
@@ -113,7 +108,7 @@ TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
 TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
 {
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", std::nullopt);
+        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", std::nullopt);
     agent = std::make_unique<AgentInfo>();
 
     MockHttpClient mockHttpClient;
@@ -134,7 +129,7 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
 TEST_F(RegisterTest, RegistrationTestSuccessWithEmptyKey)
 {
     registration =
-        std::make_unique<agent_registration::AgentRegistration>("user", "password", "", "agent_name", std::nullopt);
+        std::make_unique<agent_registration::AgentRegistration>("user", "password", "", std::nullopt);
     agent = std::make_unique<AgentInfo>();
 
     MockHttpClient mockHttpClient;
@@ -142,7 +137,7 @@ TEST_F(RegisterTest, RegistrationTestSuccessWithEmptyKey)
     EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, testing::_))
         .WillOnce(testing::Return("token"));
 
-    nlohmann::json bodyJson = {{"id", agent->GetUUID()}, {"key", agent->GetKey()}, {"name", agent->GetName()}};
+    nlohmann::json bodyJson = {{"id", agent->GetUUID()}, {"key", agent->GetKey()}};
 
     http_client::HttpRequestParams reqParams(
         boost::beast::http::verb::post, "https://localhost:55000", "/agents", "token", "", bodyJson.dump());
@@ -159,7 +154,7 @@ TEST_F(RegisterTest, RegistrationTestSuccessWithEmptyKey)
 
 TEST_F(RegisterTest, RegistrationTestFailWithBadKey)
 {
-    ASSERT_THROW(agent_registration::AgentRegistration("user", "password", "badKey", "agent_name", std::nullopt),
+    ASSERT_THROW(agent_registration::AgentRegistration("user", "password", "badKey", std::nullopt),
                  std::invalid_argument);
 }
 

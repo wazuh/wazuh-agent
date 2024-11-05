@@ -11,7 +11,6 @@ namespace agent_registration
     AgentRegistration::AgentRegistration(std::string user,
                                          std::string password,
                                          const std::string& key,
-                                         const std::string& name,
                                          std::optional<std::string> configFile)
         : m_configurationParser(configFile.has_value() && !configFile->empty()
                                     ? configuration::ConfigurationParser(std::filesystem::path(configFile.value()))
@@ -23,15 +22,6 @@ namespace agent_registration
         if (!m_agentInfo.SetKey(key))
         {
             throw std::invalid_argument("--key argument must be alphanumeric and 32 characters in length");
-        }
-
-        if (!name.empty())
-        {
-            m_agentInfo.SetName(name);
-        }
-        else
-        {
-            m_agentInfo.SetName(boost::asio::ip::host_name());
         }
     }
 
@@ -46,7 +36,7 @@ namespace agent_registration
         }
 
         nlohmann::json bodyJson = {
-            {"id", m_agentInfo.GetUUID()}, {"key", m_agentInfo.GetKey()}, {"name", m_agentInfo.GetName()}};
+            {"id", m_agentInfo.GetUUID()}, {"key", m_agentInfo.GetKey()}};
 
         const auto reqParams = http_client::HttpRequestParams(
             http::verb::post, m_serverUrl, "/agents", token.value(), "", bodyJson.dump());

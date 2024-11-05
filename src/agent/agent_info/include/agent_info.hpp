@@ -5,7 +5,7 @@
 
 /// @brief Stores and manages information about an agent.
 ///
-/// This class provides methods for getting and setting the agent's name, key,
+/// This class provides methods for getting and setting the agent's key,
 /// UUID, and groups. It also includes private methods for creating and
 /// validating the key.
 class AgentInfo
@@ -13,10 +13,6 @@ class AgentInfo
 public:
     /// @brief Default constructor for the AgentInfo class.
     AgentInfo();
-
-    /// @brief Gets the agent's name.
-    /// @return The agent's name.
-    std::string GetName() const;
 
     /// @brief Gets the agent's key.
     /// @return The agent's key.
@@ -29,10 +25,6 @@ public:
     /// @brief Gets the agent's groups.
     /// @return A vector of the agent's groups.
     std::vector<std::string> GetGroups() const;
-
-    /// @brief Sets the agent's name.
-    /// @param name The agent's new name.
-    void SetName(const std::string& name);
 
     /// @brief Sets the agent's key.
     /// @param key The agent's new key.
@@ -60,9 +52,6 @@ private:
     /// @return True if the key is valid (32 alphanumeric characters), false
     /// otherwise.
     bool ValidateKey(const std::string& key) const;
-
-    /// @brief The agent's name.
-    std::string m_name;
 
     /// @brief The agent's key.
     std::string m_key;

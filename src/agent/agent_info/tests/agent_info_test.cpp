@@ -25,7 +25,6 @@ TEST_F(AgentInfoTest, TestDefaultConstructor)
 TEST_F(AgentInfoTest, TestDefaultConstructorDefaultValues)
 {
     const AgentInfo agentInfo;
-    EXPECT_EQ(agentInfo.GetName(), "");
     EXPECT_EQ(agentInfo.GetKey(), "");
     EXPECT_NE(agentInfo.GetUUID(), "");
 }
@@ -33,25 +32,11 @@ TEST_F(AgentInfoTest, TestDefaultConstructorDefaultValues)
 TEST_F(AgentInfoTest, TestPersistedValues)
 {
     AgentInfo agentInfo;
-    agentInfo.SetName("test_name");
     agentInfo.SetKey("4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
     agentInfo.SetUUID("test_uuid");
     const AgentInfo agentInfoReloaded;
-    EXPECT_EQ(agentInfoReloaded.GetName(), "test_name");
     EXPECT_EQ(agentInfoReloaded.GetKey(), "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
     EXPECT_EQ(agentInfoReloaded.GetUUID(), "test_uuid");
-}
-
-TEST_F(AgentInfoTest, TestSetName)
-{
-    AgentInfo agentInfo;
-    const std::string newName = "new_name";
-
-    agentInfo.SetName(newName);
-    EXPECT_EQ(agentInfo.GetName(), newName);
-
-    const AgentInfo agentInfoReloaded;
-    EXPECT_EQ(agentInfoReloaded.GetName(), newName);
 }
 
 TEST_F(AgentInfoTest, TestSetKey)
