@@ -12,7 +12,7 @@ The following dependencies are required for this project:
 - **Ninja-build** (for [vcpkg](https://vcpkg.io))
 - **Pkg-config**
 
-## Compilation steps
+## Compilation steps for Linux
 
 1. **Installing Dependencies on Debian**
 
@@ -103,6 +103,90 @@ The following dependencies are required for this project:
     ```bash
     ctest --test-dir build --output-log build
     ```
+
+## Compilation steps for Windows
+
+1. **Installing Dependencies**
+
+- Visual Studio Community 2022 (with MSVC 14)
+- Chocolatey
+    ```bash
+    Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+    ```
+- Make
+    ```bash
+    choco install make
+    ```
+- Cmake 3.30.x
+    ```bash
+    choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+    ```
+- OpenSSL
+    ```bash
+    choco install openssl
+    ```
+- Git
+
+2. **Clone the Repository**
+
+    First, clone the repository using the following command:
+
+    ```bash
+    git clone https://github.com/wazuh/wazuh-agent.git
+    ```
+
+3. **Initialize Submodules**
+
+    The project uses submodules, so you need to initialize and update them. Run the following commands:
+
+    ```bash
+    cd wazuh-agent
+    git submodule update --init --recursive
+    ```
+
+4. **Configure and Build the Project**
+
+    ```bash
+    cmake src -B build -G "Visual Studio 17 2022" -A x64
+    cmake --build build
+    ```
+
+    If you want to include tests, configure the project with the following command:
+
+    ```bash
+    cmake src -B build -DBUILD_TESTS=1 -G "Visual Studio 17 2022" -A x64
+    cmake --build build --config RelWithDebInfo
+    ```
+
+5. **Run the Agent**
+
+    **Install windows service**
+
+    ```bash
+    .\RelWithDebInfo\wazuh-agent --install-service
+    ```
+    You can start, stop or restart the service from Windows SCM.
+
+    Or from the CLI
+    ```bash
+    .\RelWithDebInfo\wazuh-agent --start
+    .\RelWithDebInfo\wazuh-agent --stop
+    .\RelWithDebInfo\wazuh-agent --status
+    ```
+
+    **To remove the service**
+    ```bash
+    .\RelWithDebInfo\wazuh-agent --remove-service
+    ```
+
+6. **Run tests**
+
+    If built with CMake and `-DBUILD_TESTS=1`, you can run tests with:
+
+    ```bash
+    ctest -C RelWithDebInfo --test-dir build --output-log build
+    ```
+
 
 ### Options
 
