@@ -404,6 +404,36 @@ TEST_F(ConfigurationParserInvalidYamlFileTest, InvalidConfigFileLoadsDefault)
     }
 }
 
+TEST_F(ConfigurationParserInvalidYamlFileTest, isValidYamlFileInvalid)
+{
+    try
+    {
+        const auto parser = std::make_unique<configuration::ConfigurationParser>();
+
+        EXPECT_FALSE(parser->isValidYamlFile(m_tempConfigFilePath));
+    }
+    catch (const std::exception&)
+    {
+        std::filesystem::remove(m_tempConfigFilePath);
+        throw;
+    }
+}
+
+TEST_F(ConfigurationParserFileTest, isValidYamlFileValid)
+{
+    try
+    {
+        const auto parser = std::make_unique<configuration::ConfigurationParser>();
+
+        EXPECT_TRUE(parser->isValidYamlFile(m_tempConfigFilePath));
+    }
+    catch (const std::exception&)
+    {
+        std::filesystem::remove(m_tempConfigFilePath);
+        throw;
+    }
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);

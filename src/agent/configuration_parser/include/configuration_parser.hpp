@@ -99,5 +99,14 @@ namespace configuration
                 return std::nullopt;
             }
         }
+
+        /// @brief Checks if the specified YAML file is valid.
+        ///
+        /// This function attempts to load the YAML file located at the given path.
+        /// If the file can be loaded without throwing an exception, it is considered valid.
+        ///
+        /// @param configFile The path to the YAML file to be validated.
+        /// @return `true` if the file is a valid YAML file; `false` otherwise.
+        bool isValidYamlFile(const std::filesystem::path& configFile) const;
     };
 } // namespace configuration

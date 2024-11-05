@@ -123,4 +123,17 @@ namespace configuration
 
         return static_cast<std::time_t>(std::stoul(number) * multiplier);
     }
+    bool ConfigurationParser::isValidYamlFile(const std::filesystem::path& configFile) const
+    {
+        try
+        {
+            YAML::LoadFile(configFile.string());
+            return true;
+        }
+        catch (const std::exception&)
+        {
+            return false;
+        }
+    }
+
 } // namespace configuration
