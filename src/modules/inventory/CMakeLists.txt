@@ -5,10 +5,8 @@ project(Inventory)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
-get_filename_component(SRC_FOLDER       ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
-get_filename_component(COMMON_FOLDER    ${SRC_FOLDER}/common/ ABSOLUTE)
-
-include_directories(${COMMON_FOLDER}/logger/include)
+get_filename_component(SRC_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
+get_filename_component(COMMON_FOLDER ${SRC_FOLDER}/common/ ABSOLUTE)
 
 find_package(cJSON CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
@@ -20,7 +18,7 @@ add_library(Inventory
     src/inventoryImp.cpp
     src/inventoryNormalizer.cpp)
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_options(Inventory PRIVATE /WX- /w)
 endif()
 
@@ -52,9 +50,9 @@ target_link_libraries(Inventory
     ConfigurationParser
     MultiTypeQueue
     ModuleCommand
-    Logger
     Boost::asio
     PRIVATE
+    Logger
     cjson
 )
 

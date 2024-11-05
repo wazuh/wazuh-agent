@@ -8,8 +8,6 @@ project(Agent)
 include(../cmake/CommonSettings.cmake)
 set_common_settings()
 
-include_directories(${CMAKE_SOURCE_DIR}/common/logger/include)
-
 add_subdirectory(agent_info)
 add_subdirectory(centralized_configuration)
 add_subdirectory(command_handler)

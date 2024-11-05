@@ -8,8 +8,6 @@ project(ConfigurationParser)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
-include_directories(${CMAKE_SOURCE_DIR}/common/logger/include)
-
 find_package(yaml-cpp CONFIG REQUIRED)
 
 add_library(ConfigurationParser src/configuration_parser.cpp)

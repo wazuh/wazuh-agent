@@ -15,7 +15,7 @@ add_library(CommandHandler src/command_handler.cpp)
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(CommandHandler)
 
-target_include_directories(CommandHandler PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/../command_store/include)
+target_include_directories(CommandHandler PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(CommandHandler PUBLIC CommandStore Boost::asio Logger)
 
 if(BUILD_TESTS)

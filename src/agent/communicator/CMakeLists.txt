@@ -8,8 +8,6 @@ project(Communicator)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
-include_directories(${CMAKE_SOURCE_DIR}/common/logger/include)
-
 find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio beast system url)
 find_package(nlohmann_json CONFIG REQUIRED)

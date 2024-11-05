@@ -2,7 +2,7 @@ find_package(GTest REQUIRED)
 
 add_executable(test_MultiTypeQueue multitype_queue_test.cpp)
 configure_target(test_MultiTypeQueue)
-target_include_directories(test_MultiTypeQueue PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+target_include_directories(test_MultiTypeQueue PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 target_link_libraries(test_MultiTypeQueue PUBLIC
     MultiTypeQueue
     GTest::gtest
@@ -13,7 +13,7 @@ add_test(NAME MultiTypeQueueTest COMMAND test_MultiTypeQueue)
 
 add_executable(test_sqlitestorage sqlitestorage_test.cpp)
 configure_target(test_sqlitestorage)
-target_include_directories(test_sqlitestorage PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+target_include_directories(test_sqlitestorage PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 target_link_libraries(test_sqlitestorage
     MultiTypeQueue
     SQLiteCpp

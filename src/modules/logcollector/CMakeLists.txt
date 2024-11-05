@@ -10,17 +10,15 @@ set_common_settings()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-get_filename_component(SRC_FOLDER       ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
-get_filename_component(COMMON_FOLDER    ${SRC_FOLDER}/common/ ABSOLUTE)
-
-include_directories(${COMMON_FOLDER}/logger/include)
+get_filename_component(SRC_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
+get_filename_component(COMMON_FOLDER ${SRC_FOLDER}/common/ ABSOLUTE)
 
 find_package(cJSON CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio system)
 
-if (WIN32)
+if(WIN32)
     FILE(GLOB EXCLUDED_SOURCES src/*_unix.cpp)
 else()
     FILE(GLOB EXCLUDED_SOURCES src/*_win.cpp)

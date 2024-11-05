@@ -8,9 +8,6 @@ project(AgentInfo)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
-include_directories(${CMAKE_SOURCE_DIR}/common/logger/include)
-include_directories(${CMAKE_SOURCE_DIR}/agent/sqlite_manager/include)
-
 find_package(Boost REQUIRED COMPONENTS uuid)
 
 add_library(AgentInfo src/agent_info.cpp src/agent_info_persistance.cpp)

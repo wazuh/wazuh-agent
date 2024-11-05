@@ -8,8 +8,6 @@ project(CommandStore)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
-include_directories(${CMAKE_SOURCE_DIR}/common/logger/include)
-
 add_library(CommandStore src/command_store.cpp)
 
 include(../../cmake/ConfigureTarget.cmake)
