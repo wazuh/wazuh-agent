@@ -16,8 +16,7 @@
 namespace communicator
 {
     constexpr int TOKEN_PRE_EXPIRY_SECS = 2;
-    constexpr int CONNECTION_RETRY_MSECS = 30000;
-    constexpr int A_SEC_IN_MSECS = 1000;
+    constexpr int A_SECOND_IN_MILLIS = 1000;
 
     Communicator::Communicator(std::unique_ptr<http_client::IHttpClient> httpClient,
                                std::string uuid,
@@ -36,6 +35,8 @@ namespace communicator
             {
                 LogInfo("Using insecure connection.");
             }
+
+            m_retryIntervalSecs = std::stol(getStringConfigValue("agent", "retry_interval_secs"));
         }
     }
 
@@ -50,8 +51,7 @@ namespace communicator
         }
         else
         {
-            LogWarn("Failed to authenticate with the manager. Retrying in {} seconds",
-                    CONNECTION_RETRY_MSECS / A_SEC_IN_MSECS);
+            LogWarn("Failed to authenticate with the manager. Retrying in {} seconds", m_retryIntervalSecs);
             return boost::beast::http::status::unauthorized;
         }
 
@@ -111,12 +111,12 @@ namespace communicator
                 const auto result = SendAuthenticationRequest();
                 if (result != boost::beast::http::status::ok)
                 {
-                    return std::chrono::milliseconds(CONNECTION_RETRY_MSECS);
+                    return std::chrono::milliseconds(A_SECOND_IN_MILLIS);
                 }
                 else
                 {
                     return std::chrono::milliseconds((GetTokenRemainingSecs() - TOKEN_PRE_EXPIRY_SECS) *
-                                                     A_SEC_IN_MSECS);
+                                                     A_SECOND_IN_MILLIS);
                 }
             }();
 
