@@ -26,7 +26,6 @@ DOCKER_TAG="latest"
 INSTALLATION_PATH="/"
 CHECKSUM="no"
 FUTURE="no"
-LEGACY="no"
 IS_STAGE="no"
 ENTRYPOINT="/home/build.sh"
 
@@ -57,26 +56,11 @@ download_file() {
 }
 
 build_pkg() {
-    if [ "$LEGACY" = "yes" ]; then
-        REVISION="${REVISION}.el5"
-        TAR_URL="https://packages-dev.wazuh.com/utils/centos-5-i386-build/centos-5-i386.tar.gz"
-        TAR_FILE="${CURRENT_PATH}/${SYSTEM}s/${ARCHITECTURE}/legacy/centos-5-i386.tar.gz"
-        if [ ! -f "$TAR_FILE" ]; then
-            download_file ${TAR_URL} "${CURRENT_PATH}/${SYSTEM}s/${ARCHITECTURE}/legacy"
-        fi
-        DOCKERFILE_PATH="${CURRENT_PATH}/${SYSTEM}s/${ARCHITECTURE}/legacy"
-        CONTAINER_NAME="pkg_${SYSTEM}_legacy_builder_${ARCHITECTURE}"
-        if [ "$SYSTEM" != "rpm" ]; then
-            echo "Legacy mode is only available for RPM packages."
-            clean 1
-        fi
+    CONTAINER_NAME="pkg_${SYSTEM}_${TARGET}_builder_${ARCHITECTURE}"
+    if [ "${ARCHITECTURE}" = "arm64" ] || [ "${ARCHITECTURE}" = "ppc64le" ]; then
+        DOCKERFILE_PATH="${CURRENT_PATH}/${SYSTEM}s/${ARCHITECTURE}"
     else
-        CONTAINER_NAME="pkg_${SYSTEM}_${TARGET}_builder_${ARCHITECTURE}"
-        if [ "${ARCHITECTURE}" = "arm64" ] || [ "${ARCHITECTURE}" = "ppc64le" ]; then
-            DOCKERFILE_PATH="${CURRENT_PATH}/${SYSTEM}s/${ARCHITECTURE}"
-        else
-            DOCKERFILE_PATH="${CURRENT_PATH}/${SYSTEM}s/${ARCHITECTURE}/${TARGET}"
-        fi
+        DOCKERFILE_PATH="${CURRENT_PATH}/${SYSTEM}s/${ARCHITECTURE}/${TARGET}"
     fi
 
     # Copy the necessary files
@@ -106,7 +90,7 @@ build_pkg() {
         ${CONTAINER_NAME}:${DOCKER_TAG} \
         ${ENTRYPOINT} \
         ${REVISION} ${JOBS} ${DEBUG} \
-        ${CHECKSUM} ${FUTURE} ${LEGACY} ${SRC}|| return 1
+        ${CHECKSUM} ${FUTURE} ${SRC}|| return 1
 
     echo "Package $(ls -Art ${OUTDIR} | tail -n 1) added to ${OUTDIR}."
 
@@ -132,7 +116,6 @@ help() {
     echo "    -p, --path <path>          [Optional] Installation path for the package. By default: /var/ossec."
     echo "    -d, --debug                [Optional] Build the binaries with debug symbols. By default: no."
     echo "    -c, --checksum             [Optional] Generate checksum on the same directory than the package. By default: no."
-    echo "    -l, --legacy               [Optional only for RPM] Build package for CentOS 5."
     echo "    -e, --entrypoint <path>    [Optional] Script to execute as entrypoint."
     echo "    --dont-build-docker        [Optional] Locally built docker image will be used instead of generating a new one."
     echo "    --vcpkg-binary-caching-key [Optional] VCPK remote binary caching repository key."
@@ -179,10 +162,6 @@ main() {
             else
                 help 1
             fi
-            ;;
-        "-l"|"--legacy")
-            LEGACY="yes"
-            shift 1
             ;;
         "-j"|"--jobs")
             if [ -n "$2" ]; then

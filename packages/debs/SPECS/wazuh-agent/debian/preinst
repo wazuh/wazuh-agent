@@ -2,7 +2,7 @@
 # preinst script for wazuh-agent
 # Wazuh, Inc 2024
 
-set -ex
+set -e
 export INSTALLATION_WAZUH_DIR="/opt/wazuh-agent"
 BINARY_DIR="/usr/share/wazuh-agent/bin/"
 

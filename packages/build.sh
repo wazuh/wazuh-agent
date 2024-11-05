@@ -89,8 +89,7 @@ export JOBS="$2"
 debug="$3"
 checksum="$4"
 future="$5"
-legacy="$6"
-src="$7"
+src="$6"
 
 build_dir="/build_wazuh"
 
@@ -102,18 +101,11 @@ fi
 
 # Download source code if it is not shared from the local host
 if [ ! -d "/wazuh-local-src" ] ; then
-    git clone --branch ${WAZUH_BRANCH} --single-branch --recurse-submodules https://github.com/wazuh/wazuh-agent.git
-    short_commit_hash="$(curl -s https://api.github.com/repos/wazuh/wazuh-agent/commits/${WAZUH_BRANCH} \
+  git clone --branch ${WAZUH_BRANCH} --single-branch --recurse-submodules https://github.com/wazuh/wazuh-agent.git
+  short_commit_hash="$(curl -s https://api.github.com/repos/wazuh/wazuh-agent/commits/${WAZUH_BRANCH} \
                           | grep '"sha"' | head -n 1| cut -d '"' -f 4 | cut -c 1-11)"
 else
-    if [ "${legacy}" = "no" ]; then
-      short_commit_hash="$(cd /wazuh-local-src && git rev-parse --short HEAD)"
-    else
-      # Git package is not available in the CentOS 5 repositories.
-      hash_commit=$(cat /wazuh-local-src/.git/$(cat /wazuh-local-src/.git/HEAD|cut -d" " -f2))
-      short_commit_hash="$(cut -c 1-11 <<< $hash_commit)"
-    fi
-
+  short_commit_hash="$(cd /wazuh-local-src && git rev-parse --short HEAD)"
 fi
 
 # Build directories
@@ -137,7 +129,7 @@ if [ -n "${VCPKG_KEY}" ]; then
   set_vcpkg_remote_binary_cache "$VCPKG_KEY"
 fi
 
-build_deps $legacy
+build_deps
 build_package $package_name $debug "$short_commit_hash" "$wazuh_version"
 
 # Post-processing
