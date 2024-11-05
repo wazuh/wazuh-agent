@@ -10,6 +10,8 @@ namespace centralized_configuration
     {
         try
         {
+            std::vector<std::string> groupIds {};
+            std::string messageOnSuccess {};
 
             if (command == "set-group")
             {
@@ -20,19 +22,10 @@ namespace centralized_configuration
                             module_command::Status::FAILURE,
                             "CentralizedConfiguration group set failed, no group list"};
 
-                    const auto groupIds = parameters[0].get<std::vector<std::string>>();
+                    groupIds = parameters[0].get<std::vector<std::string>>();
+                    messageOnSuccess = "CentralizedConfiguration group set";
 
                     m_setGroupIdFunction(groupIds);
-
-                    for (const auto& groupId : groupIds)
-                    {
-                        m_downloadGroupFilesFunction(groupId, std::filesystem::temp_directory_path().string());
-                    }
-
-                    // TODO validate groupFiles, apply configuration
-
-                    co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS,
-                                                                      "CentralizedConfiguration group set"};
                 }
                 else
                 {
@@ -44,33 +37,36 @@ namespace centralized_configuration
             {
                 if (m_getGroupIdFunction && m_downloadGroupFilesFunction)
                 {
-                    const auto groupIds = m_getGroupIdFunction();
-
-                    for (const auto& groupId : groupIds)
-                    {
-                        m_downloadGroupFilesFunction(groupId, std::filesystem::temp_directory_path().string());
-                    }
-
-                    // TODO validate groupFiles, apply configuration
-
-                    co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS,
-                                                                      "CentralizedConfiguration group updated"};
+                    groupIds = m_getGroupIdFunction();
+                    messageOnSuccess = "CentralizedConfiguration group updated";
                 }
                 else
                 {
                     co_return module_command::CommandExecutionResult {
-                        module_command::Status::FAILURE, "CentralizedConfiguration group set failed, no function set"};
+                        module_command::Status::FAILURE,
+                        "CentralizedConfiguration group update failed, no function set"};
                 }
             }
+            else
+            {
+                co_return module_command::CommandExecutionResult {module_command::Status::FAILURE,
+                                                                  "CentralizedConfiguration command not recognized"};
+            }
+
+            for (const auto& groupId : groupIds)
+            {
+                m_downloadGroupFilesFunction(groupId, std::filesystem::temp_directory_path().string());
+            }
+
+            // TODO validate groupFiles, apply configuration
+
+            co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS, messageOnSuccess};
         }
         catch (const nlohmann::json::exception&)
         {
             co_return module_command::CommandExecutionResult {
                 module_command::Status::FAILURE, "CentralizedConfiguration error while parsing parameters"};
         }
-
-        co_return module_command::CommandExecutionResult {module_command::Status::FAILURE,
-                                                          "CentralizedConfiguration command not recognized"};
     }
 
     void CentralizedConfiguration::SetGroupIdFunction(SetGroupIdFunctionType setGroupIdFunction)
