@@ -57,11 +57,7 @@ download_file() {
 
 build_pkg() {
     CONTAINER_NAME="pkg_${SYSTEM}_${TARGET}_builder_${ARCHITECTURE}"
-    if [ "${ARCHITECTURE}" = "arm64" ] || [ "${ARCHITECTURE}" = "ppc64le" ]; then
-        DOCKERFILE_PATH="${CURRENT_PATH}/${SYSTEM}s/${ARCHITECTURE}"
-    else
-        DOCKERFILE_PATH="${CURRENT_PATH}/${SYSTEM}s/${ARCHITECTURE}/${TARGET}"
-    fi
+    DOCKERFILE_PATH="${CURRENT_PATH}/${SYSTEM}s/${ARCHITECTURE}/${TARGET}"
 
     # Copy the necessary files
     if [ -n "${VCPKG_KEY}" ]; then
@@ -108,7 +104,6 @@ help() {
     echo "Usage: $0 [OPTIONS]"
     echo
     echo "    -b, --branch <branch>      [Optional] Select Git branch."
-    echo "    -t, --target <target>      [Required] Target package to build: manager or agent."
     echo "    -a, --architecture <arch>  [Optional] Target architecture of the package [amd64/i386/ppc64le/arm64/armhf]."
     echo "    -j, --jobs <number>        [Optional] Change number of parallel jobs when compiling the manager or agent. By default: 2."
     echo "    -r, --revision <rev>       [Optional] Package revision. By default: 0."
@@ -146,14 +141,6 @@ main() {
             ;;
         "-h"|"--help")
             help 0
-            ;;
-        "-t"|"--target")
-            if [ -n "$2" ]; then
-                TARGET="$2"
-                shift 2
-            else
-                help 1
-            fi
             ;;
         "-a"|"--architecture")
             if [ -n "$2" ]; then

@@ -28,13 +28,12 @@ setup_build(){
     sed -i "s:RELEASE:${REVISION}:g" ${sources_dir}/debian/changelog
     sed -i "s:export JOBS=.*:export JOBS=${JOBS}:g" ${sources_dir}/debian/rules
     sed -i "s:export DEBUG_ENABLED=.*:export DEBUG_ENABLED=${debug}:g" ${sources_dir}/debian/rules
-    sed -i "s#export PATH=.*#export PATH=/usr/local/gcc-5.5.0/bin:${PATH}#g" ${sources_dir}/debian/rules
-    sed -i "s#export LD_LIBRARY_PATH=.*#export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}#g" ${sources_dir}/debian/rules
+    sed -i "s#export PATH=.*#export PATH=/usr/local/gcc-13.2.0/bin:${PATH}#g" ${sources_dir}/debian/rules
+    sed -i "s#export LD_LIBRARY_PATH=.*#export LD_LIBRARY_PATH=/usr/local/gcc-13.2.0/lib64/:${LD_LIBRARY_PATH}#g" ${sources_dir}/debian/rules
     if [ "${INSTALLATION_PATH}" == "/" ]; then
         sed -i "s:export INSTALLATION_DIR=.*:export INSTALLATION_DIR="":g" ${sources_dir}/debian/rules
     else
         sed -i "s:export INSTALLATION_DIR=.*:export INSTALLATION_DIR=${INSTALLATION_PATH}:g" ${sources_dir}/debian/rules
-        sed -i "s:INSTALLATION_WAZUH_DIR=\"/opt/wazuh-agent\":INSTALLATION_WAZUH_DIR=\"${INSTALLATION_PATH}\":g" ${sources_dir}/debian/{preinst,postinst,prerm,postrm}
     fi
 }
 

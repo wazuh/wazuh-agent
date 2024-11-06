@@ -116,7 +116,7 @@ wazuh_version="$(cat wazuh*/src/VERSION| cut -d 'v' -f 2)"
 # Changing the "-" to "_" between target and version breaks the convention for RPM or DEB packages.
 # For now, I added extra code that fixes it.
 package_name="wazuh-${BUILD_TARGET}-${wazuh_version}"
-specs_path="$(find $source_dir -name SPECS|grep $SYSTEM)"
+specs_path="$(find $source_dir/packages -name SPECS|grep $SYSTEM)"
 
 setup_build "$source_dir" "$specs_path" "$build_dir" "$package_name" "$debug"
 
@@ -124,6 +124,10 @@ set_debug $debug $sources_dir
 
 # Installing build dependencies
 cd $sources_dir
+
+if [ "${ARCHITECTURE_TARGET}" != "amd64" ]; then
+  export VCPKG_FORCE_SYSTEM_BINARIES=1
+fi
 
 if [ -n "${VCPKG_KEY}" ]; then
   set_vcpkg_remote_binary_cache "$VCPKG_KEY"

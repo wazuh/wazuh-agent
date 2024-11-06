@@ -20,7 +20,6 @@ export TARGET_DIR=${CURDIR}/debian/wazuh-agent
 
 # Package build options
 export INSTALLATION_DIR=""
-export INSTALLATION_WAZUH_DIR="/opt/wazuh-agent"
 export JOBS=$(shell nproc)
 export DEBUG_ENABLED="no"
 export PATH="${PATH}"
@@ -37,20 +36,12 @@ override_dh_auto_install:
 
 override_dh_install:
 
-	rm -rf $(INSTALLATION_WAZUH_DIR)/
-
 	# Build the binaries
 	git submodule update --init --recursive
 	cmake src -B build -DINSTALL_ROOT=${TARGET_DIR}$(INSTALLATION_DIR)
 	cmake --build build --parallel $(JOBS)
 
-	mkdir -p ${TARGET_DIR}$(INSTALLATION_DIR)/src
-	cp src/VERSION ${TARGET_DIR}$(INSTALLATION_DIR)/src
-	cp src/REVISION ${TARGET_DIR}$(INSTALLATION_DIR)/src
-
 	make -C build install -j $(JOBS)
-
-	sed -i "s|WAZUH_HOME|/usr/share/wazuh-agent/bin|g" ${TARGET_DIR}$(INSTALLATION_DIR)/usr/lib/systemd/system/wazuh-agent.service
 	cp /usr/local/gcc-13.2.0/lib64/libstdc++.so.6 ${TARGET_DIR}$(INSTALLATION_DIR)/usr/share/wazuh-agent/lib
 
 override_dh_auto_clean:
