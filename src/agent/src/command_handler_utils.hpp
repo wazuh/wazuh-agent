@@ -22,7 +22,7 @@
 boost::asio::awaitable<module_command::CommandExecutionResult>
 DispatchCommand(module_command::CommandEntry commandEntry,
                 std::function<boost::asio::awaitable<module_command::CommandExecutionResult>(
-                std::string command, nlohmann::json parameters)> executeFunction,
+                    std::string command, nlohmann::json parameters)> executeFunction,
                 std::shared_ptr<IMultiTypeQueue> messageQueue);
 
 /// @brief Dispatch a command to the proper module

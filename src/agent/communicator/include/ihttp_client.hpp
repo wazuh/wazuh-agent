@@ -58,11 +58,10 @@ namespace http_client
         /// @param uuid The UUID
         /// @param key The key
         /// @return The authentication token
-        virtual std::optional<std::string>
-        AuthenticateWithUuidAndKey(const std::string& serverUrl,
-                                   const std::string& userAgent,
-                                   const std::string& uuid,
-                                   const std::string& key) = 0;
+        virtual std::optional<std::string> AuthenticateWithUuidAndKey(const std::string& serverUrl,
+                                                                      const std::string& userAgent,
+                                                                      const std::string& uuid,
+                                                                      const std::string& key) = 0;
 
         /// @brief Authenticate with a user and password
         /// @param serverUrl The URL of the server

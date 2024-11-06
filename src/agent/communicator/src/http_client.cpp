@@ -200,13 +200,8 @@ namespace http_client
                                                                       const std::string& key)
     {
         const std::string body = R"({"uuid":")" + uuid + R"(", "key":")" + key + "\"}";
-        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
-                                                              serverUrl,
-                                                              "/api/v1/authentication",
-                                                              userAgent,
-                                                              "",
-                                                              "",
-                                                              body);
+        const auto reqParams = http_client::HttpRequestParams(
+            boost::beast::http::verb::post, serverUrl, "/api/v1/authentication", userAgent, "", "", body);
 
         const auto res = PerformHttpRequest(reqParams);
 
@@ -233,12 +228,8 @@ namespace http_client
 
         boost::beast::detail::base64::encode(&basicAuth[0], userPass.c_str(), userPass.size());
 
-        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
-                                                              serverUrl,
-                                                              "/security/user/authenticate",
-                                                              userAgent,
-                                                              "",
-                                                              basicAuth);
+        const auto reqParams = http_client::HttpRequestParams(
+            boost::beast::http::verb::post, serverUrl, "/security/user/authenticate", userAgent, "", basicAuth);
 
         const auto res = PerformHttpRequest(reqParams);
 

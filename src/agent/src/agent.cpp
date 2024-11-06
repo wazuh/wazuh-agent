@@ -15,12 +15,13 @@ Agent::Agent(const std::string& configFile, std::unique_ptr<ISignalHandler> sign
     , m_signalHandler(std::move(signalHandler))
     , m_configurationParser(configFile.empty() ? configuration::ConfigurationParser()
                                                : configuration::ConfigurationParser(std::filesystem::path(configFile)))
-    , m_communicator(std::make_unique<http_client::HttpClient>(),
-                     m_agentInfo.GetUUID(),
-                     m_agentInfo.GetKey(),
-                     [this]() { return m_agentInfo.GetHeaderInfo(); },
-                     [this](std::string table, std::string key) -> std::string
-                     { return m_configurationParser.GetConfig<std::string>(std::move(table), std::move(key)); })
+    , m_communicator(
+          std::make_unique<http_client::HttpClient>(),
+          m_agentInfo.GetUUID(),
+          m_agentInfo.GetKey(),
+          [this]() { return m_agentInfo.GetHeaderInfo(); },
+          [this](std::string table, std::string key) -> std::string
+          { return m_configurationParser.GetConfig<std::string>(std::move(table), std::move(key)); })
     , m_moduleManager([this](Message message) -> int { return m_messageQueue->push(std::move(message)); },
                       m_configurationParser,
                       [this](std::function<void()> task) { m_taskManager.EnqueueTask(std::move(task)); })
@@ -50,16 +51,20 @@ void Agent::Run()
         [this](const std::string& response) { PushCommandsToQueue(m_messageQueue, response); }));
 
     m_taskManager.EnqueueTask(m_communicator.StatefulMessageProcessingTask(
-        [this]() { return GetMessagesFromQueue(m_messageQueue,
-                                               MessageType::STATEFUL,
-                                               [this]() { return m_agentInfo.GetMetadataInfo(false); }); },
+        [this]()
+        {
+            return GetMessagesFromQueue(
+                m_messageQueue, MessageType::STATEFUL, [this]() { return m_agentInfo.GetMetadataInfo(false); });
+        },
         [this]([[maybe_unused]] const std::string& response)
         { PopMessagesFromQueue(m_messageQueue, MessageType::STATEFUL); }));
 
     m_taskManager.EnqueueTask(m_communicator.StatelessMessageProcessingTask(
-        [this]() { return GetMessagesFromQueue(m_messageQueue,
-                                               MessageType::STATELESS,
-                                               [this]() { return m_agentInfo.GetMetadataInfo(false); }); },
+        [this]()
+        {
+            return GetMessagesFromQueue(
+                m_messageQueue, MessageType::STATELESS, [this]() { return m_agentInfo.GetMetadataInfo(false); });
+        },
         [this]([[maybe_unused]] const std::string& response)
         { PopMessagesFromQueue(m_messageQueue, MessageType::STATELESS); }));
 

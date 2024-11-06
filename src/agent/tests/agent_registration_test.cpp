@@ -38,15 +38,17 @@ public:
                 (const http_client::HttpRequestParams& params),
                 (override));
 
-    MOCK_METHOD(std::optional<std::string>,
-                AuthenticateWithUuidAndKey,
-                (const std::string& host, const std::string& userAgent, const std::string& uuid, const std::string& key),
-                (override));
+    MOCK_METHOD(
+        std::optional<std::string>,
+        AuthenticateWithUuidAndKey,
+        (const std::string& host, const std::string& userAgent, const std::string& uuid, const std::string& key),
+        (override));
 
-    MOCK_METHOD(std::optional<std::string>,
-                AuthenticateWithUserPassword,
-                (const std::string& host, const std::string& userAgent, const std::string& user, const std::string& password),
-                (override));
+    MOCK_METHOD(
+        std::optional<std::string>,
+        AuthenticateWithUserPassword,
+        (const std::string& host, const std::string& userAgent, const std::string& user, const std::string& password),
+        (override));
 
     MOCK_METHOD(boost::beast::http::response<boost::beast::http::dynamic_body>,
                 PerformHttpRequestDownload,
@@ -76,8 +78,13 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
 
     nlohmann::json bodyJson = agent->GetMetadataInfo(true);
 
-    http_client::HttpRequestParams reqParams(
-        boost::beast::http::verb::post, "https://localhost:55000", "/agents", agent->GetHeaderInfo(), "token", "", bodyJson.dump());
+    http_client::HttpRequestParams reqParams(boost::beast::http::verb::post,
+                                             "https://localhost:55000",
+                                             "/agents",
+                                             agent->GetHeaderInfo(),
+                                             "token",
+                                             "",
+                                             bodyJson.dump());
 
     boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
     expectedResponse.result(boost::beast::http::status::ok);
@@ -128,8 +135,7 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
 
 TEST_F(RegisterTest, RegistrationTestSuccessWithEmptyKey)
 {
-    registration =
-        std::make_unique<agent_registration::AgentRegistration>("user", "password", "", std::nullopt);
+    registration = std::make_unique<agent_registration::AgentRegistration>("user", "password", "", std::nullopt);
     agent = std::make_unique<AgentInfo>();
 
     MockHttpClient mockHttpClient;
@@ -139,8 +145,13 @@ TEST_F(RegisterTest, RegistrationTestSuccessWithEmptyKey)
 
     nlohmann::json bodyJson = agent->GetMetadataInfo(true);
 
-    http_client::HttpRequestParams reqParams(
-        boost::beast::http::verb::post, "https://localhost:55000", "/agents", agent->GetHeaderInfo(), "token", "", bodyJson.dump());
+    http_client::HttpRequestParams reqParams(boost::beast::http::verb::post,
+                                             "https://localhost:55000",
+                                             "/agents",
+                                             agent->GetHeaderInfo(),
+                                             "token",
+                                             "",
+                                             bodyJson.dump());
 
     boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
     expectedResponse.result(boost::beast::http::status::ok);
