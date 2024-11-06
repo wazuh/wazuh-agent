@@ -23,6 +23,7 @@ namespace configuration
                 agent:
                     server_url: https://localhost:27000
                     registration_url: https://localhost:55000
+                    retry_interval_secs: 30
                 inventory:
                     enabled: true
                     interval: 3600

@@ -35,6 +35,8 @@ namespace communicator
             {
                 LogInfo("Using insecure connection.");
             }
+
+            m_retryIntervalSecs = std::stol(getStringConfigValue("agent", "retry_interval_secs"));
         }
     }
 
@@ -45,10 +47,11 @@ namespace communicator
         if (token.has_value())
         {
             *m_token = token.value();
+            LogInfo("Successfully authenticated with the manager.");
         }
         else
         {
-            LogError("Failed to authenticate with the manager.");
+            LogWarn("Failed to authenticate with the manager. Retrying in {} seconds", m_retryIntervalSecs);
             return boost::beast::http::status::unauthorized;
         }
 
@@ -92,7 +95,7 @@ namespace communicator
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::get, m_serverUrl, "/api/v1/commands");
         co_await m_httpClient->Co_PerformHttpRequest(
-            m_token, reqParams, {}, onAuthenticationFailed, onSuccess, loopCondition);
+            m_token, reqParams, {}, onAuthenticationFailed, m_retryIntervalSecs, onSuccess, loopCondition);
     }
 
     boost::asio::awaitable<void> Communicator::WaitForTokenExpirationAndAuthenticate()
@@ -153,7 +156,7 @@ namespace communicator
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::post, m_serverUrl, "/api/v1/events/stateful");
         co_await m_httpClient->Co_PerformHttpRequest(
-            m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess, loopCondition);
+            m_token, reqParams, getMessages, onAuthenticationFailed, m_retryIntervalSecs, onSuccess, loopCondition);
     }
 
     boost::asio::awaitable<void>
@@ -173,7 +176,7 @@ namespace communicator
         const auto reqParams =
             http_client::HttpRequestParams(boost::beast::http::verb::post, m_serverUrl, "/api/v1/events/stateless");
         co_await m_httpClient->Co_PerformHttpRequest(
-            m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess, loopCondition);
+            m_token, reqParams, getMessages, onAuthenticationFailed, m_retryIntervalSecs, onSuccess, loopCondition);
     }
 
     void Communicator::TryReAuthenticate()

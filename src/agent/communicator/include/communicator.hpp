@@ -47,6 +47,7 @@ namespace communicator
         std::mutex m_reAuthMutex;
         std::atomic<bool> m_isReAuthenticating = false;
 
+        long m_retryIntervalSecs = 30;
         std::string m_serverUrl;
         std::string m_registrationUrl;
         std::string m_uuid;

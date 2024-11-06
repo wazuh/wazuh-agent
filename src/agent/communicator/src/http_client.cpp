@@ -71,6 +71,7 @@ namespace http_client
                                       HttpRequestParams reqParams,
                                       std::function<boost::asio::awaitable<std::string>()> messageGetter,
                                       std::function<void()> onUnauthorized,
+                                      long connectionRetrySecs,
                                       std::function<void(const std::string&)> onSuccess,
                                       std::function<bool()> loopRequestCondition)
     {
@@ -91,9 +92,12 @@ namespace http_client
 
             if (code != boost::system::errc::success)
             {
-                LogError("Connect failed: {}.", code.message());
+                LogWarn("Failed to send http request. {}. Retrying in {} seconds",
+                        reqParams.Endpoint,
+                        connectionRetrySecs); // NOLINT
+                LogDebug("Http request failed: {} - {}", code.message(), code.what());
                 socket->Close();
-                const auto duration = std::chrono::milliseconds(1000);
+                const auto duration = std::chrono::milliseconds(connectionRetrySecs * 1000);
                 timer.expires_after(duration);
                 co_await timer.async_wait(boost::asio::use_awaitable);
                 continue;
@@ -180,7 +184,8 @@ namespace http_client
         }
         catch (std::exception const& e)
         {
-            LogError("Error: {}.", e.what());
+            LogDebug("Error: {}.", e.what());
+
             res.result(boost::beast::http::status::internal_server_error);
             boost::beast::ostream(res.body()) << "Internal server error: " << e.what();
             res.prepare_payload();
@@ -201,7 +206,7 @@ namespace http_client
 
         if (res.result() != boost::beast::http::status::ok)
         {
-            LogError("Error: {}.", res.result_int());
+            LogDebug("Error: {}.", res.result_int());
             return std::nullopt;
         }
 
@@ -228,7 +233,7 @@ namespace http_client
 
         if (res.result() != boost::beast::http::status::ok)
         {
-            LogError("Error: {}.", res.result_int());
+            LogDebug("Error: {}.", res.result_int());
             return std::nullopt;
         }
 

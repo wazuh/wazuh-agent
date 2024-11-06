@@ -220,8 +220,13 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_Success)
 
     const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "https://localhost:8080", "/");
 
-    auto task = client->Co_PerformHttpRequest(
-        std::make_shared<std::string>("token"), reqParams, getMessages, onUnauthorized, onSuccess, nullptr);
+    auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
+                                              reqParams,
+                                              getMessages,
+                                              onUnauthorized,
+                                              5, // NOLINT
+                                              onSuccess,
+                                              nullptr);
 
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);
@@ -260,8 +265,13 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
     };
 
     const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "https://localhost:8080", "/");
-    auto task = client->Co_PerformHttpRequest(
-        std::make_shared<std::string>("token"), reqParams, getMessages, onUnauthorized, onSuccess, nullptr);
+    auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
+                                              reqParams,
+                                              getMessages,
+                                              onUnauthorized,
+                                              5, // NOLINT
+                                              onSuccess,
+                                              nullptr);
 
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);
@@ -301,8 +311,13 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails
     };
 
     const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "https://localhost:8080", "/");
-    auto task = client->Co_PerformHttpRequest(
-        std::make_shared<std::string>("token"), reqParams, getMessages, onUnauthorized, onSuccess, nullptr);
+    auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
+                                              reqParams,
+                                              getMessages,
+                                              onUnauthorized,
+                                              5, // NOLINT
+                                              onSuccess,
+                                              nullptr);
 
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);
@@ -344,8 +359,13 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
     };
 
     const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "https://localhost:8080", "/");
-    auto task = client->Co_PerformHttpRequest(
-        std::make_shared<std::string>("token"), reqParams, getMessages, onUnauthorized, onSuccess, nullptr);
+    auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
+                                              reqParams,
+                                              getMessages,
+                                              onUnauthorized,
+                                              5, // NOLINT
+                                              onSuccess,
+                                              nullptr);
 
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);
@@ -386,8 +406,13 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_UnauthorizedCalledWhenAuthorization
     };
 
     const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get, "https://localhost:8080", "/");
-    auto task = client->Co_PerformHttpRequest(
-        std::make_shared<std::string>("token"), reqParams, getMessages, onUnauthorized, onSuccess, nullptr);
+    auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
+                                              reqParams,
+                                              getMessages,
+                                              onUnauthorized,
+                                              5, // NOLINT
+                                              onSuccess,
+                                              nullptr);
 
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);
