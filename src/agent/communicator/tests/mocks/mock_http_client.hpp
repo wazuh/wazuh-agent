@@ -28,12 +28,12 @@ public:
 
     MOCK_METHOD(std::optional<std::string>,
                 AuthenticateWithUuidAndKey,
-                (const std::string& host, const std::string& uuid, const std::string& key),
+                (const std::string& host, const std::string& userAgent, const std::string& uuid, const std::string& key),
                 (override));
 
     MOCK_METHOD(std::optional<std::string>,
                 AuthenticateWithUserPassword,
-                (const std::string& host, const std::string& user, const std::string& password),
+                (const std::string& host, const std::string& userAgent, const std::string& user, const std::string& password),
                 (override));
 
     MOCK_METHOD(boost::beast::http::response<boost::beast::http::dynamic_body>,

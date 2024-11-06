@@ -50,7 +50,7 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
     io_context.restart();
 
     auto result = boost::asio::co_spawn(
-        io_context, GetMessagesFromQueue(mockQueue, MessageType::STATEFUL), boost::asio::use_future);
+        io_context, GetMessagesFromQueue(mockQueue, MessageType::STATEFUL, nullptr), boost::asio::use_future);
 
     const auto timeout = std::chrono::steady_clock::now() + std::chrono::milliseconds(1);
     io_context.run_until(timeout);
@@ -60,6 +60,8 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
     const auto jsonResult = result.get();
 
     nlohmann::json expectedJson;
+    expectedJson["agent"] = "{}"_json;
+    expectedJson["agent"] = nlohmann::json::object();
     expectedJson["events"] = nlohmann::json::array();
     expectedJson["events"].push_back("test_data");
 
