@@ -111,7 +111,7 @@ namespace communicator
                 const auto result = SendAuthenticationRequest();
                 if (result != boost::beast::http::status::ok)
                 {
-                    return std::chrono::milliseconds(A_SECOND_IN_MILLIS);
+                    return std::chrono::milliseconds(m_retryIntervalSecs * A_SECOND_IN_MILLIS);
                 }
                 else
                 {
