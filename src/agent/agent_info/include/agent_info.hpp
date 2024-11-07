@@ -2,6 +2,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -21,8 +22,8 @@ public:
     ///
     /// @param getOSInfo Function to retrieve OS information in JSON format.
     /// @param getNetworksInfo Function to retrieve network information in JSON format.
-    AgentInfo(const std::function<nlohmann::json()>& getOSInfo,
-              const std::function<nlohmann::json()>& getNetworksInfo);
+    AgentInfo(std::function<nlohmann::json()> getOSInfo = nullptr,
+              std::function<nlohmann::json()> getNetworksInfo = nullptr);
 
     /// @brief Gets the agent's key.
     /// @return The agent's key.

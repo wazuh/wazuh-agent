@@ -16,8 +16,7 @@ namespace
     const std::string PRODUCT_NAME = "WazuhXDR";
 } // namespace
 
-AgentInfo::AgentInfo(const std::function<nlohmann::json()>& getOSInfo,
-                     const std::function<nlohmann::json()>& getNetworksInfo)
+AgentInfo::AgentInfo(std::function<nlohmann::json()> getOSInfo, std::function<nlohmann::json()> getNetworksInfo)
 {
     AgentInfoPersistance agentInfoPersistance;
     m_key = agentInfoPersistance.GetKey();
@@ -32,12 +31,12 @@ AgentInfo::AgentInfo(const std::function<nlohmann::json()>& getOSInfo,
 
     if (getOSInfo != nullptr)
     {
-        m_getOSInfo = getOSInfo;
+        m_getOSInfo = std::move(getOSInfo);
     }
 
     if (getNetworksInfo != nullptr)
     {
-        m_getNetworksInfo = getNetworksInfo;
+        m_getNetworksInfo = std::move(getNetworksInfo);
     }
 
     LoadEndpointInfo();
