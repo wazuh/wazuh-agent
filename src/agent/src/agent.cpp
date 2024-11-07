@@ -11,9 +11,7 @@
 #include <thread>
 
 Agent::Agent(const std::string& configFile, std::unique_ptr<ISignalHandler> signalHandler)
-    : m_agentInfo(
-          [this]() { return m_sysInfo.os(); },
-          [this]() { return m_sysInfo.networks(); })
+    : m_agentInfo([this]() { return m_sysInfo.os(); }, [this]() { return m_sysInfo.networks(); })
     , m_messageQueue(std::make_shared<MultiTypeQueue>())
     , m_signalHandler(std::move(signalHandler))
     , m_configurationParser(configFile.empty() ? configuration::ConfigurationParser()
