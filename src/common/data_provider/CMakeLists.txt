@@ -112,6 +112,9 @@ if(WIN32)
   include_directories(${SRC_FOLDER}/common/mem_op/include/)
 endif()
 
+get_filename_component(COMMON_FOLDER  ${CMAKE_CURRENT_SOURCE_DIR}/../ ABSOLUTE)
+include_directories(${COMMON_FOLDER}/pal/include)
+
 link_directories(${SRC_FOLDER})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")

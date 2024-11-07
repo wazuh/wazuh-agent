@@ -11,13 +11,11 @@
 #pragma once
 
 #include <stdlib.h>
+#include "pal.h"
 
 #if defined(__GNUC__) || defined(__clang__)
-#define ATTR_NONNULL __attribute__((nonnull))
-#define ATTR_NONNULL_TWO __attribute__((nonnull(2)))
+
 #else
-#define ATTR_NONNULL
-#define ATTR_NONNULL_TWO
 #define win_alloc(x) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (x))
 #define win_free(x) HeapFree(GetProcessHeap(), 0, (x))
 #endif

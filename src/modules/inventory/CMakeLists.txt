@@ -36,7 +36,8 @@ target_include_directories(Inventory PUBLIC
     ${COMMON_FOLDER}/stringHelper/include
     ${COMMON_FOLDER}/time_op/include
     ${COMMON_FOLDER}/timeHelper/include
-    ${COMMON_FOLDER}/utils)
+    ${COMMON_FOLDER}/utils
+    ${COMMON_FOLDER}/pal/include)
 
 target_link_libraries(Inventory
     PUBLIC
