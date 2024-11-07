@@ -53,7 +53,7 @@ int MultiTypeQueue::push(Message message, bool shouldWait)
                 {
                     for (const auto& singleMessageData : messageData)
                     {
-                        result += m_persistenceDest->Store(singleMessageData, sMessageType, message.moduleName);
+                        result += m_persistenceDest->Store(singleMessageData, sMessageType, message.moduleName, message.moduleType);
                         m_cv.notify_all();
                     }
                 }
@@ -61,7 +61,7 @@ int MultiTypeQueue::push(Message message, bool shouldWait)
             else
             {
                 result =
-                    m_persistenceDest->Store(message.data, m_mapMessageTypeName.at(message.type), message.moduleName);
+                    m_persistenceDest->Store(message.data, m_mapMessageTypeName.at(message.type), message.moduleName, message.moduleType);
                 m_cv.notify_all();
             }
         }
@@ -99,7 +99,7 @@ boost::asio::awaitable<int> MultiTypeQueue::pushAwaitable(Message message)
                 {
                     for (const auto& singleMessageData : messageData)
                     {
-                        result += m_persistenceDest->Store(singleMessageData, sMessageType, message.moduleName);
+                        result += m_persistenceDest->Store(singleMessageData, sMessageType, message.moduleName, message.moduleType);
                         m_cv.notify_all();
                     }
                 }
@@ -107,7 +107,7 @@ boost::asio::awaitable<int> MultiTypeQueue::pushAwaitable(Message message)
             else
             {
                 result =
-                    m_persistenceDest->Store(message.data, m_mapMessageTypeName.at(message.type), message.moduleName);
+                    m_persistenceDest->Store(message.data, m_mapMessageTypeName.at(message.type), message.moduleName, message.moduleType);
                 m_cv.notify_all();
             }
         }

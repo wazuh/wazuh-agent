@@ -16,7 +16,7 @@ enum class MessageType
 };
 
 /**
- * @brief Wrapper for Message, contains the message type, the json data and the module name.
+ * @brief Wrapper for Message, contains the message type, the json data, the module name and the module type.
  *
  */
 class Message
@@ -25,11 +25,13 @@ public:
     MessageType type;
     nlohmann::json data;
     std::string moduleName;
+    std::string moduleType;
 
-    Message(MessageType t, nlohmann::json d, std::string mN = "")
+    Message(MessageType t, nlohmann::json d, std::string mN = "", std::string mT = "")
         : type(t)
         , data(d)
         , moduleName(mN)
+        , moduleType(mT)
     {
     }
 

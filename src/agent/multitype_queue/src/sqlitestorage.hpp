@@ -54,10 +54,11 @@ public:
      * @param message The JSON message to store.
      * @param tableName The name of the table to store the message in.
      * @param moduleName The name of the module that created the message.
+     * @param moduleType The type of the module that created the message.
      * @return The number of stored elements.
      */
-    int Store(const nlohmann::json& message, const std::string& tableName, const std::string& moduleName = "") override;
-
+    int Store(const nlohmann::json& message, const std::string& tableName,
+              const std::string& moduleName = "", const std::string& moduleType = "") override;
     /**
      * @brief Retrieve a JSON message by its ID.
      *

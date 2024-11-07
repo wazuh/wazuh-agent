@@ -24,10 +24,11 @@ public:
      * @param message The JSON message to be stored.
      * @param queueName The name of the queue.
      * @param moduleName The name of the module.
+     * @param moduleType The type of the module.
      * @return int The number of messages stored.
      */
-    virtual int
-    Store(const nlohmann::json& message, const std::string& queueName, const std::string& moduleName = "") = 0;
+    virtual int Store(const nlohmann::json& message, const std::string& tableName,
+                      const std::string& moduleName = "", const std::string& moduleType = "") = 0;
 
     /**
      * @brief Retrieve a JSON message from the specified queue.
