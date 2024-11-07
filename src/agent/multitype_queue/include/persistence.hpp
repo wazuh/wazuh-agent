@@ -25,13 +25,14 @@ public:
      * @param queueName The name of the queue.
      * @param moduleName The name of the module.
      * @param moduleType The type of the module.
+     * @param metadata The metadata message to store.
      * @return int The number of messages stored.
      */
     virtual int Store(const nlohmann::json& message,
                       const std::string& tableName,
                       const std::string& moduleName = "",
-                      const std::string& moduleType = "") = 0;
-
+                      const std::string& moduleType = "",
+                      const std::string& metadata = "") = 0;
     /**
      * @brief Retrieve a JSON message from the specified queue.
      *
@@ -40,7 +41,8 @@ public:
      * @param moduleName The name of the module.
      * @return nlohmann::json The retrieved JSON message.
      */
-    virtual nlohmann::json Retrieve(int id, const std::string& queueName, const std::string& moduleName = "") = 0;
+    virtual nlohmann::json Retrieve(int id, const std::string& queueName,
+                        const std::string& moduleName = "", const std::string& moduleType = "") = 0;
 
     /**
      * @brief Retrieve multiple JSON messages from the specified queue.
@@ -50,8 +52,8 @@ public:
      * @param moduleName The name of the module.
      * @return nlohmann::json The retrieved JSON messages.
      */
-    virtual nlohmann::json
-    RetrieveMultiple(int n, const std::string& queueName, const std::string& moduleName = "") = 0;
+    virtual nlohmann::json RetrieveMultiple(int n, const std::string& queueName,
+                            const std::string& moduleName = "", const std::string& moduleType = "") = 0;
 
     /**
      * @brief Remove a JSON message from the specified queue.
