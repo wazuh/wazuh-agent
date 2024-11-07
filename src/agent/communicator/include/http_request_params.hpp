@@ -14,21 +14,24 @@ namespace http_client
         std::string Host;
         std::string Port;
         std::string Endpoint;
-        bool Use_Https;
+        std::string User_agent;
         std::string Token;
         std::string User_pass;
         std::string Body;
+        bool Use_Https;
 
         /// @brief Constructs HttpRequestParams with specified parameters
         /// @param method The HTTP method to use
         /// @param serverUrl The server URL for the request
         /// @param endpoint The endpoint for the request
+        /// @param userAgent The user agent property for the request header
         /// @param token Optional token for authorization
         /// @param userPass Optional user credentials for basic authentication
         /// @param body Optional body for the request
         HttpRequestParams(boost::beast::http::verb method,
                           const std::string& serverUrl,
                           std::string endpoint,
+                          std::string userAgent,
                           std::string token = "",
                           std::string userPass = "",
                           std::string body = "");

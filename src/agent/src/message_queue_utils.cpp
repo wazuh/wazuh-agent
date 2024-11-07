@@ -1,6 +1,5 @@
 #include <imultitype_queue.hpp>
 #include <message_queue_utils.hpp>
-#include <nlohmann/json.hpp>
 
 #include <vector>
 
@@ -11,11 +10,13 @@ namespace
 } // namespace
 
 boost::asio::awaitable<std::string> GetMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue,
-                                                         MessageType messageType)
+                                                         MessageType messageType,
+                                                         std::function<nlohmann::json()> getMetadataInfo)
 {
     const auto message = co_await multiTypeQueue->getNextNAwaitable(messageType, NUM_EVENTS);
 
     nlohmann::json jsonObj;
+    jsonObj["agent"] = getMetadataInfo ? getMetadataInfo() : "{}"_json;
     jsonObj["events"] = message.data;
 
     co_return jsonObj.dump();

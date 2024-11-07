@@ -118,23 +118,22 @@ std::string AgentInfo::GetVersion() const
     return AGENT_VERSION;
 }
 
-nlohmann::json AgentInfo::GetEndpointInfo() const
-{
-    return m_endpointInfo;
-}
-
 std::string AgentInfo::GetHeaderInfo() const
 {
     return m_headerInfo;
 }
 
-nlohmann::json AgentInfo::GetMetadataInfo(const bool includeKey) const
+nlohmann::json AgentInfo::GetMetadataInfo(const bool agentIsRegistering) const
 {
     nlohmann::json metadataInfo = m_metadataInfo;
 
-    if (includeKey)
+    if (agentIsRegistering)
     {
         metadataInfo["key"] = GetKey();
+    }
+    else
+    {
+        metadataInfo["groups"] = GetGroups();
     }
 
     return metadataInfo;
@@ -175,14 +174,15 @@ void AgentInfo::LoadEndpointInfo()
 
 void AgentInfo::LoadMetadataInfo()
 {
+    // Endpoint information
     m_metadataInfo["os"] = m_endpointInfo.value("os", "Unknown");
     m_metadataInfo["platform"] = m_endpointInfo.value("platform", "Unknown");
     m_metadataInfo["ip"] = m_endpointInfo.value("ip", "Unknown");
     m_metadataInfo["arch"] = m_endpointInfo.value("arch", "Unknown");
 
+    // Agent information
     m_metadataInfo["type"] = GetType();
     m_metadataInfo["version"] = GetVersion();
-    m_metadataInfo["groups"] = GetGroups();
     m_metadataInfo["uuid"] = GetUUID();
 }
 

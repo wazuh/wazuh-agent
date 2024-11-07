@@ -58,19 +58,23 @@ namespace http_client
 
         /// @brief Authenticates using UUID and key
         /// @param serverUrl Server URL for authentication
+        /// @param userAgent User agent header
         /// @param uuid Unique user identifier
         /// @param key Authentication key
         /// @return Authentication token if successful, otherwise nullopt
         std::optional<std::string> AuthenticateWithUuidAndKey(const std::string& serverUrl,
+                                                              const std::string& userAgent,
                                                               const std::string& uuid,
                                                               const std::string& key) override;
 
         /// @brief Authenticates using username and password
         /// @param serverUrl Server URL for authentication
+        /// @param userAgent User agent header
         /// @param user Username for authentication
         /// @param password User password
         /// @return Authentication token if successful, otherwise nullopt
         std::optional<std::string> AuthenticateWithUserPassword(const std::string& serverUrl,
+                                                                const std::string& userAgent,
                                                                 const std::string& user,
                                                                 const std::string& password) override;
 

@@ -116,7 +116,6 @@ TEST(CreateHttpRequestTest, BasicGetRequest)
     EXPECT_EQ(req.target(), "/test");
     EXPECT_EQ(req.version(), 11);
     EXPECT_EQ(req[boost::beast::http::field::host], "localhost");
-    EXPECT_EQ(req[boost::beast::http::field::user_agent], BOOST_BEAST_VERSION_STRING);
     EXPECT_EQ(req[boost::beast::http::field::accept], "application/json");
 }
 
@@ -125,14 +124,14 @@ TEST(CreateHttpRequestTest, PostRequestWithBody)
     auto httpClient = http_client::HttpClient();
     const std::string body = R"({"key": "value"})";
     const auto reqParams = http_client::HttpRequestParams(
-        boost::beast::http::verb::post, "https://localhost:8080", "/submit", "", "", body);
+        boost::beast::http::verb::post, "https://localhost:8080", "/submit", "", "", "Wazuh 5.0.0", body);
     const auto req = httpClient.CreateHttpRequest(reqParams);
 
     EXPECT_EQ(req.method(), boost::beast::http::verb::post);
     EXPECT_EQ(req.target(), "/submit");
     EXPECT_EQ(req.version(), 11);
     EXPECT_EQ(req[boost::beast::http::field::host], "localhost");
-    EXPECT_EQ(req[boost::beast::http::field::user_agent], BOOST_BEAST_VERSION_STRING);
+    EXPECT_EQ(req[boost::beast::http::field::user_agent], "Wazuh 5.0.0");
     EXPECT_EQ(req[boost::beast::http::field::accept], "application/json");
     EXPECT_EQ(req[boost::beast::http::field::content_type], "application/json");
     EXPECT_EQ(req.body(), body);

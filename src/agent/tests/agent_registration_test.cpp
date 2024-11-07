@@ -77,7 +77,7 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
     nlohmann::json bodyJson = {{"id", agent->GetUUID()}, {"key", agent->GetKey()}};
 
     http_client::HttpRequestParams reqParams(
-        boost::beast::http::verb::post, "https://localhost:55000", "/agents", "token", "", bodyJson.dump());
+        boost::beast::http::verb::post, "https://localhost:55000", "/agents", "token", "", agent->GetHeaderInfo(), bodyJson.dump());
 
     boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
     expectedResponse.result(boost::beast::http::status::ok);
@@ -140,7 +140,7 @@ TEST_F(RegisterTest, RegistrationTestSuccessWithEmptyKey)
     nlohmann::json bodyJson = {{"id", agent->GetUUID()}, {"key", agent->GetKey()}};
 
     http_client::HttpRequestParams reqParams(
-        boost::beast::http::verb::post, "https://localhost:55000", "/agents", "token", "", bodyJson.dump());
+        boost::beast::http::verb::post, "https://localhost:55000", "/agents", "token", "", agent->GetHeaderInfo(), bodyJson.dump());
 
     boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
     expectedResponse.result(boost::beast::http::status::ok);

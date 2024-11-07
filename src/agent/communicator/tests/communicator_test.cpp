@@ -38,7 +38,7 @@ namespace
 
 TEST(CommunicatorTest, CommunicatorConstructor)
 {
-    EXPECT_NO_THROW(communicator::Communicator communicator(nullptr, "uuid", "key", nullptr));
+    EXPECT_NO_THROW(communicator::Communicator communicator(nullptr, "Wazuh 5.0.0", "uuid", "key", nullptr));
 }
 
 TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
@@ -70,7 +70,7 @@ TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
                 co_return;
             }));
 
-    communicator::Communicator communicator(std::move(mockHttpClient), "uuid", "key", nullptr);
+    communicator::Communicator communicator(std::move(mockHttpClient), "Wazuh 5.0.0", "uuid", "key", nullptr);
 
     auto task = communicator.StatefulMessageProcessingTask(getMessages, onSuccess);
     boost::asio::io_context ioContext;
@@ -87,7 +87,7 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
     testing::Mock::AllowLeak(mockHttpClientPtr);
 
     auto communicatorPtr =
-        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr);
+        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "Wazuh 5.0.0", "uuid", "key", nullptr);
 
     // A failed authentication won't return a token
     EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _))
@@ -145,7 +145,7 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
     testing::Mock::AllowLeak(mockHttpClientPtr);
 
     auto communicatorPtr =
-        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr);
+        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "Wazuh 5.0.0", "uuid", "key", nullptr);
 
     const auto mockedToken = CreateToken();
     EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _)).WillOnce(Return(mockedToken));
@@ -197,7 +197,7 @@ TEST(CommunicatorTest, GetGroupConfigurationFromManager_Success)
     // not really a leak, as its lifetime is managed by the Communicator
     testing::Mock::AllowLeak(mockHttpClientPtr);
     auto communicatorPtr =
-        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr);
+        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "Wazuh 5.0.0", "uuid", "key", nullptr);
 
     std::string groupName = "group1";
     std::string dstFilePath = "/path/to/file";
@@ -218,7 +218,7 @@ TEST(CommunicatorTest, GetGroupConfigurationFromManager_Error)
     // not really a leak, as its lifetime is managed by the Communicator
     testing::Mock::AllowLeak(mockHttpClientPtr);
     auto communicatorPtr =
-        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr);
+        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "Wazuh 5.0.0", "uuid", "key", nullptr);
 
     std::string groupName = "group1";
     std::string dstFilePath = "/path/to/file";

@@ -27,10 +27,12 @@ namespace communicator
         /// @param httpClient The HTTP client to use for communication
         /// @param uuid The unique identifier for the agent
         /// @param key The key for authentication
+        /// @param getHeaderInfo Function to get the user agent header
         /// @param getStringConfigValue Function to retrieve configuration values
         Communicator(std::unique_ptr<http_client::IHttpClient> httpClient,
                      std::string uuid,
                      std::string key,
+                     std::function<std::string()> getHeaderInfo,
                      const std::function<std::string(std::string, std::string)>& getStringConfigValue);
 
         /// @brief Waits for the authentication token to expire and authenticates again
@@ -98,6 +100,9 @@ namespace communicator
 
         /// @brief The agent's key
         std::string m_key;
+
+        /// @brief The user agent header
+        std::function<std::string()> m_getHeaderInfo;
 
         /// @brief The authentication token
         std::shared_ptr<std::string> m_token;
