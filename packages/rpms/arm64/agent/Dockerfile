@@ -1,75 +1,91 @@
 FROM arm64v8/centos:7
 
-# Enable EPEL
-RUN yum install -y http://packages.wazuh.com/utils/pkg/epel-release-latest-7.noarch.rpm
-
 # Install all the necessary tools to build the packages
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+RUN sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+
 RUN yum install -y gcc make wget git \
-    openssh-clients sudo gnupg file-devel\
+    openssh-clients sudo gnupg libdb libdb-devel\
     automake autoconf libtool policycoreutils-python \
-    yum-utils system-rpm-config rpm-devel \
-    gettext nspr nspr-devel \
-    nss nss-devel libdb libdb-devel \
-    zlib zlib-devel rpm-build bison \
+    yum-utils epel-release redhat-rpm-config rpm-devel \
+    autopoint gettext nspr nspr-devel \
+    nss nss-devel magic magic-devel ninja-build \
+    db4 db4-devel zlib zlib-devel rpm-build bison \
     sharutils bzip2-devel xz-devel lzo-devel \
     e2fsprogs-devel libacl-devel libattr-devel \
     openssl-devel libxml2-devel kexec-tools elfutils \
-    libcurl-devel elfutils-libelf-devel \
-    elfutils-libelf patchelf elfutils-devel libgcrypt-devel \
-    libarchive-devel libarchive bluez-libs-devel bzip2 \
-    desktop-file-utils expat-devel findutils gcc-c++ gdbm-devel \
-    glibc-devel gmp-devel gnupg2 libappstream-glib \
-    libffi-devel libtirpc-devel libGL-devel libuuid-devel \
-    libX11-devel ncurses-devel pkgconfig readline-devel \
-    redhat-rpm-config sqlite-devel gdb tar tcl-devel tix-devel tk-devel \
-    valgrind-devel python-rpm-macros python34 nodejs
+    libarchive-devel elfutils-libelf-devel \
+    patchelf elfutils-devel libgcrypt-devel \
+    file-devel gettext-devel curl-devel systemd-devel
 
-RUN curl -OL http://packages.wazuh.com/utils/gcc/gcc-9.4.0.tar.gz && \
-    tar xzf gcc-9.4.0.tar.gz  && cd gcc-9.4.0/ && \
+RUN yum-builddep python34 -y
+
+RUN wget https://ftp.gnu.org/gnu/gcc/gcc-13.2.0/gcc-13.2.0.tar.gz && \
+    tar xzf gcc-13.2.0.tar.gz  && cd gcc-13.2.0/ && \
     ./contrib/download_prerequisites && \
-    ./configure --prefix=/usr/local/gcc-9.4.0 --enable-languages=c,c++ --disable-multilib \
-        --disable-libsanitizer --disable-bootstrap && \
-    make -j$(nproc) && make install && \
-    ln -fs /usr/local/gcc-9.4.0/bin/g++ /usr/bin/c++ && \
-    ln -fs /usr/local/gcc-9.4.0/bin/gcc /usr/bin/cc && cd / && rm -rf gcc-*
+    ./configure --prefix=/usr/local/gcc-13.2.0 --enable-languages=c,c++ \
+        --disable-multilib --disable-libsanitizer && \
+    make -j$(nproc) && make install -j$(nproc) && \
+    ln -fs /usr/local/gcc-13.2.0/bin/g++ /usr/bin/c++ && \
+    ln -fs /usr/local/gcc-13.2.0/bin/gcc /usr/bin/cc && cd .. && rm -rf gcc-*
 
-ENV CPLUS_INCLUDE_PATH "/usr/local/gcc-9.4.0/include/c++/9.4.0/"
-ENV LD_LIBRARY_PATH "/usr/local/gcc-9.4.0/lib64/"
-ENV PATH "/usr/local/gcc-9.4.0/bin:${PATH}"
+ENV CPLUS_INCLUDE_PATH "/usr/local/gcc-13.2.0/include/c++/13.2.0/"
+ENV LD_LIBRARY_PATH "/usr/local/gcc-13.2.0/lib64/"
+ENV PATH "/usr/local/gcc-13.2.0/bin:${PATH}"
+ENV PKG_CONFIG_PATH "/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH}"
 
-RUN curl -OL http://packages.wazuh.com/utils/cmake/cmake-3.18.3.tar.gz && \
-    tar -zxf cmake-3.18.3.tar.gz && cd cmake-3.18.3 && \
-    ./bootstrap --no-system-curl CC=/usr/local/gcc-9.4.0/bin/gcc \
-        CXX=/usr/local/gcc-9.4.0/bin/g++ && \
+RUN curl -OL https://github.com/Kitware/CMake/releases/download/v3.30.3/cmake-3.30.3.tar.gz && \
+    tar -zxf cmake-3.30.3.tar.gz && cd cmake-3.30.3 && \
+    ./bootstrap --no-system-curl CC=/usr/local/gcc-13.2.0/bin/gcc \
+        CXX=/usr/local/gcc-13.2.0/bin/g++ && \
     make -j$(nproc) && make install && cd / && rm -rf cmake-*
 
-# Install Perl 5.10
-RUN curl -OL http://packages.wazuh.com/utils/perl/perl-5.10.1.tar.gz && \
-    gunzip perl-5.10.1.tar.gz && tar -xf perl*.tar && \
-    cd /perl-5.10.1 && ./Configure -des -Dcc='gcc' -Dusethreads && \
-    make -j2 && make install && ln -fs /usr/local/bin/perl /bin/perl && \
-    cd / && rm -rf /perl-5.10.1*
+RUN git clone https://github.com/git/git.git --branch v2.30.2 --single-branch && \
+    cd git && make prefix=/usr/local && make install prefix=/usr/local && \
+    ln -fs /usr/local/bin/git /usr/bin/git && cd .. && rm -rf git*
 
-RUN curl -O http://packages.wazuh.com/utils/openssl/openssl-1.1.1a.tar.gz && \
-    tar -xzf openssl-1.1.1a.tar.gz && cd openssl* && \
-    ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' && \
-    make -j $(nproc) && make install && cd / && rm -rf openssl-*
+RUN git clone https://github.com/Perl/perl5.git --branch v5.34.0 --single-branch && \
+    cd perl5 && ./Configure -des -Dcc='gcc' -Dusethreads && \
+    make -j$(nproc) && make install && ln -fs /usr/local/bin/perl /bin/perl && \
+    cd / && rm -rf perl*
 
-RUN curl -O http://packages.wazuh.com/utils/nodejs/node-v12.16.1-linux-arm64.tar.xz && \
-    tar -xJf node-v12.16.1-linux-arm64.tar.xz && \
-    cd node-v12.16* && cp -R * /usr/local/ && cd / && rm -rf node-v*
-
-# Update rpmbuild, rpm and autoconf
 RUN curl -O http://packages.wazuh.com/utils/autoconf/autoconf-2.69.tar.gz && \
     gunzip autoconf-2.69.tar.gz && tar xvf autoconf-2.69.tar && \
-    cd autoconf-2.69 && ./configure && \
-    make -j $(nproc) && make install && cd / && rm -rf autoconf-*
+    cd autoconf-2.69 && ./configure && make -j$(nproc) && \
+    make install && cd / && rm -rf autoconf-*
 
-RUN curl -O http://packages.wazuh.com/utils/rpm/rpm-4.15.1.tar.bz2 && \
-    tar -xjf rpm-4.15.1.tar.bz2 && cd rpm-4.15.1 && \
-    ./configure --without-lua && make -j $(nproc) && \
-    make install && cd / && rm -rf rpm-*
+RUN git clone https://github.com/sqlite/sqlite.git --branch version-3.46.1 --single-branch && \
+    cd sqlite && ./configure && make -j$(nproc) && \
+    make install -j$(nproc) && ln -fs /usr/local/bin/sqlite3 /usr/bin/sqlite3 && \
+    cd / && rm -rf sqlit*
+
+RUN curl -sO https://lua.org/ftp/lua-5.4.7.tar.gz && tar -xzvf lua-5.4.7.tar.gz && \
+    cd lua-5.4.7 && make -j$(nproc) linux CFLAGS+="-fPIC" LDFLAGS+="-fPIC" && make install && \
+    ln -fs /usr/local/bin/lua /usr/bin/lua && cd / && rm -rf lua*
+
+RUN echo "# Package Information for pkg-config" > /usr/local/lib/pkgconfig/lua.pc && \
+    echo "prefix=/usr/local" >> /usr/local/lib/pkgconfig/lua.pc && \
+    echo "exec_prefix=\${prefix}" >> /usr/local/lib/pkgconfig/lua.pc && \
+    echo "libdir=\${exec_prefix}/lib" >> /usr/local/lib/pkgconfig/lua.pc && \
+    echo "includedir=\${prefix}/include" >> /usr/local/lib/pkgconfig/lua.pc && \
+    echo "" >> /usr/local/lib/pkgconfig/lua.pc && \
+    echo "Name: Lua" >> /usr/local/lib/pkgconfig/lua.pc && \
+    echo "Description: Lua" >> /usr/local/lib/pkgconfig/lua.pc && \
+    echo "Version: 5.4.7" >> /usr/local/lib/pkgconfig/lua.pc && \
+    echo "Libs: -L\${libdir} -llua -lm" >> /usr/local/lib/pkgconfig/lua.pc && \
+    echo "Cflags: -I\${includedir}" >> /usr/local/lib/pkgconfig/lua.pc
+
+RUN git clone https://github.com/rpm-software-management/popt.git --branch popt-1.19-release --single-branch && \
+    cd popt && ./autogen.sh && ./configure && make -j$(nproc) && make install -j$(nproc) && \
+    cd / && rm -rf popt*
+
+RUN git clone https://github.com/rpm-software-management/rpm.git --branch rpm-4.15.1-release --single-branch && \
+    cd rpm && ./autogen.sh && make -j$(nproc) && make install && cd / && rm -rf rpm*
 
 RUN mkdir -p /usr/local/var/lib/rpm && \
     cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages && \
     /usr/local/bin/rpm --rebuilddb && rm -rf /root/rpmbuild
+
+RUN rpmkeys --import "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF" && \
+    su -c 'curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo' && \
+    yum install mono-devel -y
