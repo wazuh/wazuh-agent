@@ -14,6 +14,7 @@
 #include "shared.h"
 #include "cust_types.h"
 #include "version_op.h"
+#include "pal.h"
 
 #include <zlib.h>
 
@@ -27,9 +28,7 @@
 
 #ifndef WIN32
 #include <regex.h>
-#define ATTR_UNUSED __attribute__((unused))
 #else
-#define ATTR_UNUSED
 #include <aclapi.h>
 typedef int DIR;
 struct dirent {
