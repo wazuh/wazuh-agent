@@ -117,6 +117,7 @@ TEST(CreateHttpRequestTest, BasicGetRequest)
     EXPECT_EQ(req.target(), "/test");
     EXPECT_EQ(req.version(), 11);
     EXPECT_EQ(req[boost::beast::http::field::host], "localhost");
+    EXPECT_EQ(req[boost::beast::http::field::user_agent], "Wazuh 5.0.0");
     EXPECT_EQ(req[boost::beast::http::field::accept], "application/json");
 }
 
@@ -146,6 +147,7 @@ TEST(CreateHttpRequestTest, AuthorizationBearerToken)
         http_client::HttpRequestParams(boost::beast::http::verb::get, "localhost", "/secure", "Wazuh 5.0.0", token);
     const auto req = httpClient.CreateHttpRequest(reqParams);
 
+    EXPECT_EQ(req[boost::beast::http::field::user_agent], "Wazuh 5.0.0");
     EXPECT_EQ(req[boost::beast::http::field::authorization], "Bearer dummy_token");
 }
 
@@ -157,6 +159,7 @@ TEST(CreateHttpRequestTest, AuthorizationBasic)
         boost::beast::http::verb::get, "https://localhost:8080", "/secure", "Wazuh 5.0.0", "", user_pass);
     const auto req = httpClient.CreateHttpRequest(reqParams);
 
+    EXPECT_EQ(req[boost::beast::http::field::user_agent], "Wazuh 5.0.0");
     EXPECT_EQ(req[boost::beast::http::field::authorization], "Basic username:password");
 }
 
