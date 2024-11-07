@@ -27,8 +27,10 @@ public:
      * @param moduleType The type of the module.
      * @return int The number of messages stored.
      */
-    virtual int Store(const nlohmann::json& message, const std::string& tableName,
-                      const std::string& moduleName = "", const std::string& moduleType = "") = 0;
+    virtual int Store(const nlohmann::json& message,
+                      const std::string& tableName,
+                      const std::string& moduleName = "",
+                      const std::string& moduleType = "") = 0;
 
     /**
      * @brief Retrieve a JSON message from the specified queue.

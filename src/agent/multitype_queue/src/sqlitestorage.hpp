@@ -57,8 +57,11 @@ public:
      * @param moduleType The type of the module that created the message.
      * @return The number of stored elements.
      */
-    int Store(const nlohmann::json& message, const std::string& tableName,
-              const std::string& moduleName = "", const std::string& moduleType = "") override;
+    int Store(const nlohmann::json& message,
+              const std::string& tableName,
+              const std::string& moduleName = "",
+              const std::string& moduleType = "") override;
+
     /**
      * @brief Retrieve a JSON message by its ID.
      *

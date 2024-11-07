@@ -471,7 +471,7 @@ TEST_F(MultiTypeQueueTest, PushSinglesleGetMultipleWithModule)
     {
         auto val = ++i;
         EXPECT_EQ("content-" + std::to_string(val), singleMessage.data.at("data").get<std::string>());
-        EXPECT_EQ("module-" + std::to_string(val), singleMessage.data.at("module").get<std::string>());
+        EXPECT_EQ("module-" + std::to_string(val), singleMessage.data["module"]["name"].get<std::string>());
     }
 
     auto messageReceivedContent1 = multiTypeQueue.getNextN(

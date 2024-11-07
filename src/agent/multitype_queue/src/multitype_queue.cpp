@@ -53,15 +53,16 @@ int MultiTypeQueue::push(Message message, bool shouldWait)
                 {
                     for (const auto& singleMessageData : messageData)
                     {
-                        result += m_persistenceDest->Store(singleMessageData, sMessageType, message.moduleName, message.moduleType);
+                        result += m_persistenceDest->Store(
+                            singleMessageData, sMessageType, message.moduleName, message.moduleType);
                         m_cv.notify_all();
                     }
                 }
             }
             else
             {
-                result =
-                    m_persistenceDest->Store(message.data, m_mapMessageTypeName.at(message.type), message.moduleName, message.moduleType);
+                result = m_persistenceDest->Store(
+                    message.data, m_mapMessageTypeName.at(message.type), message.moduleName, message.moduleType);
                 m_cv.notify_all();
             }
         }
@@ -99,15 +100,16 @@ boost::asio::awaitable<int> MultiTypeQueue::pushAwaitable(Message message)
                 {
                     for (const auto& singleMessageData : messageData)
                     {
-                        result += m_persistenceDest->Store(singleMessageData, sMessageType, message.moduleName, message.moduleType);
+                        result += m_persistenceDest->Store(
+                            singleMessageData, sMessageType, message.moduleName, message.moduleType);
                         m_cv.notify_all();
                     }
                 }
             }
             else
             {
-                result =
-                    m_persistenceDest->Store(message.data, m_mapMessageTypeName.at(message.type), message.moduleName, message.moduleType);
+                result = m_persistenceDest->Store(
+                    message.data, m_mapMessageTypeName.at(message.type), message.moduleName, message.moduleType);
                 m_cv.notify_all();
             }
         }
@@ -140,7 +142,7 @@ Message MultiTypeQueue::getNext(MessageType type, const std::string moduleName)
             result.data = resultData;
             if (moduleName.empty())
             {
-                result.moduleName = result.data.at(0).at("module");
+                result.moduleName = result.data[0]["module"]["name"];
             }
         }
     }
@@ -173,7 +175,7 @@ MultiTypeQueue::getNextNAwaitable(MessageType type, int messageQuantity, const s
             result.data = resultData;
             if (moduleName.empty())
             {
-                result.moduleName = result.data.at(0).at("module");
+                result.moduleName = result.data[0]["module"]["name"];
             }
         }
     }
@@ -197,7 +199,7 @@ std::vector<Message> MultiTypeQueue::getNextN(MessageType type, int messageQuant
             auto finalModuleName = moduleName;
             if (moduleName.empty())
             {
-                finalModuleName = singleJson["module"];
+                finalModuleName = singleJson["module"]["name"];
             }
             result.emplace_back(type, singleJson, finalModuleName);
         }
