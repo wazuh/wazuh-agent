@@ -97,6 +97,56 @@ TEST_F(AgentInfoTest, TestSetGroups)
     EXPECT_EQ(agentInfoReloaded.GetGroups(), newGroups);
 }
 
+TEST_F(AgentInfoTest, TestLoadMetadataInfoRegistration)
+{
+    const AgentInfo agentInfo;
+
+    auto metadataInfo = agentInfo.GetMetadataInfo(true);
+
+    // Endpoint information
+    EXPECT_TRUE(metadataInfo["os"] != nullptr);
+    EXPECT_TRUE(metadataInfo["platform"] != nullptr);
+    EXPECT_TRUE(metadataInfo["ip"] != nullptr);
+    EXPECT_TRUE(metadataInfo["arch"] != nullptr);
+
+    // Agent information
+    EXPECT_EQ(metadataInfo["type"], agentInfo.GetType());
+    EXPECT_EQ(metadataInfo["version"], agentInfo.GetVersion());
+    EXPECT_EQ(metadataInfo["uuid"], agentInfo.GetUUID());
+    EXPECT_EQ(metadataInfo["key"], agentInfo.GetKey());
+    EXPECT_TRUE(metadataInfo["groups"] == nullptr);
+}
+
+TEST_F(AgentInfoTest, TestLoadMetadataInfoConnected)
+{
+    const AgentInfo agentInfo;
+
+    auto metadataInfo = agentInfo.GetMetadataInfo(false);
+
+    // Endpoint information
+    EXPECT_TRUE(metadataInfo["os"] != nullptr);
+    EXPECT_TRUE(metadataInfo["platform"] != nullptr);
+    EXPECT_TRUE(metadataInfo["ip"] != nullptr);
+    EXPECT_TRUE(metadataInfo["arch"] != nullptr);
+
+    // Agent information
+    EXPECT_EQ(metadataInfo["type"], agentInfo.GetType());
+    EXPECT_EQ(metadataInfo["version"], agentInfo.GetVersion());
+    EXPECT_EQ(metadataInfo["uuid"], agentInfo.GetUUID());
+    EXPECT_TRUE(metadataInfo["groups"] != nullptr);
+    EXPECT_TRUE(metadataInfo["key"] == nullptr);
+}
+
+TEST_F(AgentInfoTest, TestLoadHeaderInfo)
+{
+    const AgentInfo agentInfo;
+
+    auto headerInfo = agentInfo.GetHeaderInfo();
+
+    EXPECT_NE(headerInfo, "");
+    EXPECT_TRUE(headerInfo.starts_with("WazuhXDR/" + agentInfo.GetVersion() + " (" + agentInfo.GetType() + "; "));
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
