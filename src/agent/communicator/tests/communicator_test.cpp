@@ -5,6 +5,7 @@
 #include <ihttp_client.hpp>
 
 #include <jwt-cpp/jwt.h>
+#include <jwt-cpp/traits/nlohmann-json/traits.h>
 
 #include "mocks/mock_http_client.hpp"
 
@@ -27,10 +28,10 @@ namespace
         const auto now = std::chrono::system_clock::now();
         const auto exp = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count() + 3600;
 
-        return jwt::create()
+        return jwt::create<jwt::traits::nlohmann_json>()
             .set_issuer("auth0")
             .set_type("JWS")
-            .set_payload_claim("exp", jwt::claim(std::to_string(exp)))
+            .set_payload_claim("exp", jwt::basic_claim<jwt::traits::nlohmann_json>(std::to_string(exp)))
             .sign(jwt::algorithm::hs256 {"secret"});
     }
 } // namespace

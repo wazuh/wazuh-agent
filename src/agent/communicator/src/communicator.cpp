@@ -6,6 +6,7 @@
 #include <boost/beast.hpp>
 #include <boost/url.hpp>
 #include <jwt-cpp/jwt.h>
+#include <jwt-cpp/traits/nlohmann-json/traits.h>
 
 #include <algorithm>
 #include <chrono>
@@ -55,7 +56,7 @@ namespace communicator
             return boost::beast::http::status::unauthorized;
         }
 
-        if (const auto decoded = jwt::decode(*m_token); decoded.has_payload_claim("exp"))
+        if (const auto decoded = jwt::decode<jwt::traits::nlohmann_json>(*m_token); decoded.has_payload_claim("exp"))
         {
             const auto exp_claim = decoded.get_payload_claim("exp");
             const auto exp_time = exp_claim.as_date();

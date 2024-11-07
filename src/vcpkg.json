@@ -111,6 +111,7 @@
         "baseline": "f7423ee180c4b7f40d43402c2feb3859161ef625"
       },
       "overlay-ports": [
+        "./ports-overlay/jwt-cpp",
         "./ports-overlay/procps",
         "./ports-overlay/libdb",
         "./ports-overlay/librpm"
