@@ -76,6 +76,20 @@ private:
     /// otherwise.
     bool ValidateKey(const std::string& key) const;
 
+    /// @brief Loads the endpoint information into `m_endpointInfo`.
+    void LoadEndpointInfo();
+
+    /// @brief Loads the metadata information into `m_metadataInfo`.
+    void LoadMetadataInfo();
+
+    /// @brief Loads the header information into `m_headerInfo`.
+    void LoadHeaderInfo();
+
+    /// @brief Extracts the active IP address from the network JSON data.
+    /// @param networksJson JSON object containing network interface information.
+    /// @return Optional string with the active IP address if found; otherwise, `std::nullopt`.
+    std::optional<std::string> GetActiveIPAddress(const nlohmann::json& networksJson) const;
+
     /// @brief The agent's key.
     std::string m_key;
 
@@ -84,4 +98,13 @@ private:
 
     /// @brief The agent's groups.
     std::vector<std::string> m_groups;
+
+    /// @brief The agent's endpoint information.
+    nlohmann::json m_endpointInfo;
+
+    /// @brief The agent's metadata information.
+    nlohmann::json m_metadataInfo;
+
+    /// @brief The agent's header information.
+    std::string m_headerInfo;
 };

@@ -1,6 +1,7 @@
 #include <agent_info.hpp>
 
 #include <agent_info_persistance.hpp>
+#include <sysInfo.hpp>
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -13,6 +14,7 @@ namespace
     constexpr size_t KEY_LENGTH = 32;
     const std::string AGENT_TYPE = "Endpoint";
     const std::string AGENT_VERSION = "5.0.0";
+    const std::string PRODUCT_NAME = "WazuhXDR";
 } // namespace
 
 AgentInfo::AgentInfo()
@@ -27,6 +29,10 @@ AgentInfo::AgentInfo()
         m_uuid = boost::uuids::to_string(boost::uuids::random_generator()());
         agentInfoPersistance.SetUUID(m_uuid);
     }
+
+    LoadEndpointInfo();
+    LoadMetadataInfo();
+    LoadHeaderInfo();
 }
 
 std::string AgentInfo::GetKey() const
@@ -114,25 +120,74 @@ std::string AgentInfo::GetVersion() const
 
 nlohmann::json AgentInfo::GetEndpointInfo() const
 {
-    return nlohmann::json::parse(
-        R"({"os": "Amazon Linux 2","platform": "Linux","ip": "192.168.1.2","arch": "x86_64"})");
+    return m_endpointInfo;
 }
 
 std::string AgentInfo::GetHeaderInfo() const
 {
-    return "WazuhXDR/5.0.0 (Endpoint; x86_64; Linux)";
+    return m_headerInfo;
 }
 
-nlohmann::json AgentInfo::GetMetadataInfo([[maybe_unused]] const bool includeKey) const
+nlohmann::json AgentInfo::GetMetadataInfo(const bool includeKey) const
 {
-    return nlohmann::json::parse(
-        R"({"os": "Amazon Linux 2",
-        "platform": "Linux",
-        "ip": "192.168.1.2",
-        "arch": "x86_64",
-        "type": "Endpoint",
-        "version": "5.0.0",
-        "groups": ["pepa", "pepe"],
-        "uuid": "skjrowegj12355",
-        "key": "key"})");
+    nlohmann::json metadataInfo = m_metadataInfo;
+
+    if (includeKey)
+    {
+        metadataInfo["key"] = GetKey();
+    }
+
+    return metadataInfo;
+}
+
+std::optional<std::string> AgentInfo::GetActiveIPAddress(const nlohmann::json& networksJson) const
+{
+    if (networksJson.contains("iface"))
+    {
+        for (const auto& iface : networksJson["iface"])
+        {
+            if (iface.contains("state") && iface["state"] == "up")
+            {
+                if (iface.contains("IPv4") && !iface["IPv4"].empty())
+                {
+                    return iface["IPv4"][0].value("address", "");
+                }
+            }
+        }
+    }
+    return std::nullopt;
+}
+
+void AgentInfo::LoadEndpointInfo()
+{
+    std::shared_ptr<SysInfo> spInfo = std::make_shared<SysInfo>();
+
+    nlohmann::json osInfo = spInfo->os();
+    nlohmann::json networksInfo = spInfo->networks();
+
+    m_endpointInfo["os"] = osInfo.value("os_name", "Unknown");
+    m_endpointInfo["platform"] = osInfo.value("sysname", "Unknown");
+    m_endpointInfo["arch"] = osInfo.value("architecture", "Unknown");
+
+    auto ipAddress = GetActiveIPAddress(networksInfo);
+    m_endpointInfo["ip"] = ipAddress.value_or("Unknown");
+}
+
+void AgentInfo::LoadMetadataInfo()
+{
+    m_metadataInfo["os"] = m_endpointInfo.value("os", "Unknown");
+    m_metadataInfo["platform"] = m_endpointInfo.value("platform", "Unknown");
+    m_metadataInfo["ip"] = m_endpointInfo.value("ip", "Unknown");
+    m_metadataInfo["arch"] = m_endpointInfo.value("arch", "Unknown");
+
+    m_metadataInfo["type"] = GetType();
+    m_metadataInfo["version"] = GetVersion();
+    m_metadataInfo["groups"] = GetGroups();
+    m_metadataInfo["uuid"] = GetUUID();
+}
+
+void AgentInfo::LoadHeaderInfo()
+{
+    m_headerInfo = PRODUCT_NAME + "/" + GetVersion() + " (" + GetType() + "; " +
+                   m_endpointInfo.value("arch", "Unknown") + "; " + m_endpointInfo.value("platform", "Unknown") + ")";
 }
