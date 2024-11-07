@@ -12,7 +12,10 @@ namespace agent_registration
                                          std::string password,
                                          const std::string& key,
                                          std::optional<std::string> configFile)
-        : m_configurationParser(configFile.has_value() && !configFile->empty()
+        : m_agentInfo(
+              [this]() { return m_sysInfo.os(); },
+              [this]() { return m_sysInfo.networks(); })
+        , m_configurationParser(configFile.has_value() && !configFile->empty()
                                     ? configuration::ConfigurationParser(std::filesystem::path(configFile.value()))
                                     : configuration::ConfigurationParser())
         , m_serverUrl(m_configurationParser.GetConfig<std::string>("agent", "registration_url"))

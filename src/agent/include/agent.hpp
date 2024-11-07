@@ -11,6 +11,8 @@
 #include <signal_handler.hpp>
 #include <task_manager.hpp>
 
+#include <sysInfo.hpp>
+
 #include <memory>
 #include <string>
 
@@ -36,17 +38,20 @@ public:
     void Run();
 
 private:
+    /// @brief Task manager
+    TaskManager m_taskManager;
+
+    /// @brief System info
+    SysInfo m_sysInfo;
+
+    /// @brief Agent info
+    AgentInfo m_agentInfo;
+
     /// @brief Queue for storing messages
     std::shared_ptr<MultiTypeQueue> m_messageQueue;
 
     /// @brief Pointer to a custom ISignalHandler implementation
     std::unique_ptr<ISignalHandler> m_signalHandler;
-
-    /// @brief Task manager
-    TaskManager m_taskManager;
-
-    /// @brief Agent info
-    AgentInfo m_agentInfo;
 
     /// @brief Configuration parser
     configuration::ConfigurationParser m_configurationParser;
@@ -54,11 +59,11 @@ private:
     /// @brief Communicator
     communicator::Communicator m_communicator;
 
-    /// @brief Command handler
-    command_handler::CommandHandler m_commandHandler;
-
     /// @brief Module manager
     ModuleManager m_moduleManager;
+
+    /// @brief Command handler
+    command_handler::CommandHandler m_commandHandler;
 
     /// @brief Centralized configuration
     centralized_configuration::CentralizedConfiguration m_centralizedConfiguration;

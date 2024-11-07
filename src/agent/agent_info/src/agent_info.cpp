@@ -1,7 +1,6 @@
 #include <agent_info.hpp>
 
 #include <agent_info_persistance.hpp>
-#include <sysInfo.hpp>
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -17,7 +16,8 @@ namespace
     const std::string PRODUCT_NAME = "WazuhXDR";
 } // namespace
 
-AgentInfo::AgentInfo()
+AgentInfo::AgentInfo(const std::function<nlohmann::json()>& getOSInfo,
+                     const std::function<nlohmann::json()>& getNetworksInfo)
 {
     AgentInfoPersistance agentInfoPersistance;
     m_key = agentInfoPersistance.GetKey();
@@ -28,6 +28,16 @@ AgentInfo::AgentInfo()
     {
         m_uuid = boost::uuids::to_string(boost::uuids::random_generator()());
         agentInfoPersistance.SetUUID(m_uuid);
+    }
+
+    if (getOSInfo != nullptr)
+    {
+        m_getOSInfo = getOSInfo;
+    }
+
+    if (getNetworksInfo != nullptr)
+    {
+        m_getNetworksInfo = getNetworksInfo;
     }
 
     LoadEndpointInfo();
@@ -159,17 +169,20 @@ std::optional<std::string> AgentInfo::GetActiveIPAddress(const nlohmann::json& n
 
 void AgentInfo::LoadEndpointInfo()
 {
-    std::shared_ptr<SysInfo> spInfo = std::make_shared<SysInfo>();
+    if (m_getOSInfo != nullptr)
+    {
+        nlohmann::json osInfo = m_getOSInfo();
+        m_endpointInfo["os"] = osInfo.value("os_name", "Unknown");
+        m_endpointInfo["platform"] = osInfo.value("sysname", "Unknown");
+        m_endpointInfo["arch"] = osInfo.value("architecture", "Unknown");
+    }
 
-    nlohmann::json osInfo = spInfo->os();
-    nlohmann::json networksInfo = spInfo->networks();
-
-    m_endpointInfo["os"] = osInfo.value("os_name", "Unknown");
-    m_endpointInfo["platform"] = osInfo.value("sysname", "Unknown");
-    m_endpointInfo["arch"] = osInfo.value("architecture", "Unknown");
-
-    auto ipAddress = GetActiveIPAddress(networksInfo);
-    m_endpointInfo["ip"] = ipAddress.value_or("Unknown");
+    if (m_getNetworksInfo != nullptr)
+    {
+        nlohmann::json networksInfo = m_getNetworksInfo();
+        auto ipAddress = GetActiveIPAddress(networksInfo);
+        m_endpointInfo["ip"] = ipAddress.value_or("Unknown");
+    }
 }
 
 void AgentInfo::LoadMetadataInfo()

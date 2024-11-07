@@ -4,6 +4,8 @@
 #include <configuration_parser.hpp>
 #include <ihttp_client.hpp>
 
+#include <sysInfo.hpp>
+
 #include <optional>
 #include <string>
 
@@ -42,6 +44,12 @@ namespace agent_registration
         bool Register(http_client::IHttpClient& httpClient);
 
     private:
+        /// @brief The system's information.
+        SysInfo m_sysInfo;
+
+        /// @brief The agent's information.
+        AgentInfo m_agentInfo;
+
         /// @brief The configuration parser.
         configuration::ConfigurationParser m_configurationParser;
 
@@ -53,8 +61,5 @@ namespace agent_registration
 
         /// @brief The user's password.
         std::string m_password;
-
-        /// @brief The agent's information.
-        AgentInfo m_agentInfo;
     };
 } // namespace agent_registration

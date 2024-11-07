@@ -13,8 +13,16 @@
 class AgentInfo
 {
 public:
-    /// @brief Default constructor for the AgentInfo class.
-    AgentInfo();
+    /// @brief Constructs an AgentInfo object with OS and network information retrieval functions.
+    ///
+    /// This constructor initializes the AgentInfo object by setting up OS and network
+    /// information retrieval functions. It also generates a UUID for the agent if one
+    /// does not already exist, and loads endpoint, metadata, and header information.
+    ///
+    /// @param getOSInfo Function to retrieve OS information in JSON format.
+    /// @param getNetworksInfo Function to retrieve network information in JSON format.
+    AgentInfo(const std::function<nlohmann::json()>& getOSInfo,
+              const std::function<nlohmann::json()>& getNetworksInfo);
 
     /// @brief Gets the agent's key.
     /// @return The agent's key.
@@ -103,4 +111,10 @@ private:
 
     /// @brief The agent's header information.
     std::string m_headerInfo;
+
+    /// @brief The OS information
+    std::function<nlohmann::json()> m_getOSInfo;
+
+    /// @brief The networks information
+    std::function<nlohmann::json()> m_getNetworksInfo;
 };
