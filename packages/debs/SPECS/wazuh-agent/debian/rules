@@ -24,6 +24,7 @@ export JOBS=$(shell nproc)
 export DEBUG_ENABLED="no"
 export PATH="${PATH}"
 export LD_LIBRARY_PATH=""
+export VCPKG_BINARY_SOURCES=""
 
 %:
 	dh $@

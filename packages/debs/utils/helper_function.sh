@@ -27,6 +27,7 @@ setup_build(){
     # Configure the package with the different parameters
     sed -i "s:RELEASE:${REVISION}:g" ${sources_dir}/debian/changelog
     sed -i "s:export JOBS=.*:export JOBS=${JOBS}:g" ${sources_dir}/debian/rules
+    sed -i "s:export VCPKG_BINARY_SOURCES=.*:export VCPKG_BINARY_SOURCES=clear;nuget,GitHub,readwrite:g" ${sources_dir}/debian/rules
     sed -i "s:export DEBUG_ENABLED=.*:export DEBUG_ENABLED=${debug}:g" ${sources_dir}/debian/rules
     sed -i "s#export PATH=.*#export PATH=/usr/local/gcc-13.2.0/bin:${PATH}#g" ${sources_dir}/debian/rules
     sed -i "s#export LD_LIBRARY_PATH=.*#export LD_LIBRARY_PATH=/usr/local/gcc-13.2.0/lib64/:${LD_LIBRARY_PATH}#g" ${sources_dir}/debian/rules
@@ -50,7 +51,6 @@ build_deps(){
 }
 
 build_package(){
-
     if [[ "${ARCHITECTURE_TARGET}" == "amd64" ]] ||  [[ "${ARCHITECTURE_TARGET}" == "ppc64le" ]] || \
         [[ "${ARCHITECTURE_TARGET}" == "arm64" ]]; then
         debuild --rootcmd=sudo -b -uc -us -nc

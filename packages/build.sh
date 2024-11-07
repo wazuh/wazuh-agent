@@ -68,14 +68,20 @@ post_process() {
 
 set_vcpkg_remote_binary_cache(){
   local vcpkg_token="$1"
-  local nuget_config_path="/home/nuget.config"
 
   if [[ $(mono --version 2>/dev/null) =~ [0-9] ]]; then
     echo "mono already installed, proceeding"
-    export VCPKG_BINARY_SOURCES="clear;nugetconfig,$nuget_config_path"
+    export VCPKG_BINARY_SOURCES="clear;nuget,GitHub,readwrite"
     $sources_dir/src/vcpkg/bootstrap-vcpkg.sh
-    sed -i "s/TOKEN/$vcpkg_token/g" $nuget_config_path
-    mono `$sources_dir/src/vcpkg/vcpkg fetch nuget | tail -n 1` sources add -source $nuget_config_path -ConfigFile $nuget_config_path
+    mono `$sources_dir/src/vcpkg/vcpkg fetch nuget | tail -n 1` \
+        sources add \
+        -source "https://nuget.pkg.github.com/wazuh/index.json" \
+        -name "GitHub" \
+        -username "wazuh" \
+        -password "$vcpkg_token"
+    mono `$sources_dir/src/vcpkg/vcpkg fetch nuget | tail -n 1` \
+        setapikey "$vcpkg_token" \
+        -source "https://nuget.pkg.github.com/wazuh/index.json"  
   else
     echo "mono in not installed, remote binary caching not being enabled"
   fi
