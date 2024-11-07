@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <cjson/cJSON.h>
+#include "pal.h"
 
 #ifdef WIN32
 #include <winsock2.h>
@@ -38,16 +39,6 @@ extern int isVista;
 #else
 #define PATH_SEP '/'
 typedef ino_t wino_t;
-#endif
-
-#if defined(__GNUC__) || defined(__clang__)
-#define ATTR_NONNULL __attribute__((nonnull))
-#define ATTR_NONNULL_ONE __attribute__((nonnull(1)))
-#define ATTR_NONNULL_ONE_TWO __attribute__((nonnull(1, 2)))
-#else
-#define ATTR_NONNULL
-#define ATTR_NONNULL_ONE
-#define ATTR_NONNULL_ONE_TWO
 #endif
 
 typedef struct File {
