@@ -17,6 +17,8 @@ GROUPS_FILES_DIR = 'group_files'
 # Secret key to sign the JWT (you can change it for a secure key)
 SECRET_KEY = "my_secret_key"
 
+log_file_path = None
+
 def generate_authentication_response(expiration_seconds=60):
     # Set the expiration time in seconds
     expiration_time = datetime.utcnow() + timedelta(seconds=expiration_seconds)
@@ -41,6 +43,14 @@ def generate_authentication_response(expiration_seconds=60):
 
     return json.dumps(response)
 
+def log_request(method, endpoint, headers, body):
+    if log_file_path:
+        with open(log_file_path, 'a') as log_file:
+            timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            log_file.write(f"\n[{timestamp}] {method} {endpoint}\n")
+            log_file.write(f"Headers:\n{headers}\n")
+            log_file.write(f"Body:\n{body}\n\n")
+
 class MockHandler(BaseHTTPRequestHandler):
     def _set_headers(self, code, content_type="application/json", content_length=None):
         self.send_response(code)
@@ -58,8 +68,11 @@ class MockHandler(BaseHTTPRequestHandler):
             return json.dumps({"error": "Response file not found"})
 
     def do_POST(self):
-        response = None
+        content_length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(content_length).decode('utf-8')
+        log_request("POST", self.path, self.headers, body)
 
+        response = None
         if self.path == "/security/user/authenticate":
             response = self._load_response("user_authenticate.json")
             self._set_headers(code=200, content_length=len(response))
@@ -85,8 +98,9 @@ class MockHandler(BaseHTTPRequestHandler):
         self.close_connection = True
 
     def do_GET(self):
-        response = None
+        log_request("GET", self.path, self.headers, "")
 
+        response = None
         if self.path == "/api/v1/commands":
             response = self._load_response("commands.json")
             self._set_headers(code=200, content_length=len(response))
@@ -126,8 +140,10 @@ class MockHandler(BaseHTTPRequestHandler):
         self.wfile.flush()
         self.close_connection = True
 
-def run_server(port, ssl_key=None, ssl_cert=None, handler_class=MockHandler, use_https=True):
+def run_server(port, ssl_key=None, ssl_cert=None, handler_class=MockHandler, use_https=True, outfile=None):
     server_address = ('', port)
+    global log_file_path
+    log_file_path = outfile
 
     # Use HTTPS if both an SSL certificate and key are provided and the protocol is HTTPS
     if use_https and ssl_key and ssl_cert:
@@ -169,6 +185,10 @@ if __name__ == "__main__":
         "--protocol", type=str, choices=["http", "https"], default="https",
         help="Specify whether to use HTTP or HTTPS (default: https)"
     )
+    parser.add_argument(
+        "--outfile", type=str,
+        help="File path to save incoming request logs"
+    )
 
     # Parse the command-line arguments
     args = parser.parse_args()
@@ -176,8 +196,8 @@ if __name__ == "__main__":
     use_https = args.protocol == "https"
 
     # Create threads for each server with the configured parameters
-    thread1 = threading.Thread(target=run_server, args=(args.port1, args.ssl_key, args.ssl_cert, MockHandler, use_https))
-    thread2 = threading.Thread(target=run_server, args=(args.port2, args.ssl_key, args.ssl_cert, MockHandler, use_https))
+    thread1 = threading.Thread(target=run_server, args=(args.port1, args.ssl_key, args.ssl_cert, MockHandler, use_https, args.outfile))
+    thread2 = threading.Thread(target=run_server, args=(args.port2, args.ssl_key, args.ssl_cert, MockHandler, use_https, args.outfile))
 
     # Start servers
     thread1.start()

@@ -34,6 +34,7 @@ You can configure and start the server by specifying the desired ports and SSL c
  - `--ssl_key`: Path to the SSL key file for HTTPS (default: key.pem)
  - `--ssl_cert`: Path to the SSL certificate file for HTTPS (default: cert.pem)
  - `--protocol`: Specify the protocol to use (http or https). Defaults to https.
+ - `--outfile`: File path to save incoming request logs
 
 #### Examples
 Run the server over HTTPS (default):
