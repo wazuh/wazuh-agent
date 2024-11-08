@@ -104,6 +104,93 @@ The following dependencies are required for this project:
     ctest --test-dir build --output-log build
     ```
 
+## Compilation steps for macOS
+
+1. **Install brew, a package manager for macOS**
+    ```bash
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    ```
+
+2. **Install dependencies**
+    ```bash
+    brew install automake autoconf libtool cmake pkg-config openssl
+    ```
+
+3. **Clone the Repository**
+
+    Clone the repository:
+
+    ```bash
+    git clone https://github.com/wazuh/wazuh-agent.git
+    ```
+
+4. **Initialize Submodules**
+
+    The project uses submodules, so you need to initialize and update them. Run the following commands:
+
+    ```bash
+    cd wazuh-agent
+    git submodule update --init --recursive
+    ```
+
+5. **Configure and Build the Project**
+
+    ```bash
+    cmake src -B build
+    cmake --build build
+    ```
+
+    If you want to include tests, configure the project with the following command:
+
+    ```bash
+    cmake src -B build -DBUILD_TESTS=1
+    cmake --build build
+    ```
+
+6. **Run the Agent**
+
+    **To run the agent in the foreground from the CLI**
+
+    You can start and stop the agent, and get status with:
+
+    ```bash
+    ./wazuh-agent --run
+    ./wazuh-agent --stop
+    ./wazuh-agent --restart
+    ./wazuh-agent --status
+    ```
+
+    **To run the agent as a launchd service**
+
+    Copy the file `src/agent/service/com.wazuh.agent.plist` to `/Library/LaunchDaemons/`.
+    Edit the file and replace the placeholder path with your wazuh-agent executable directory as well as the working directory.
+
+    ```bash
+    sudo chown root:wheel /Library/LaunchDaemons/com.wazuh.agent.plist
+    sudo chmod 644 /Library/LaunchDaemons/com.wazuh.agent.plist
+    ```
+
+    Load the service
+
+    ```bash
+    sudo launchctl bootstrap system /Library/LaunchDaemons/com.wazuh.agent.plist
+    ```
+
+    Verify the service is running
+
+    ```
+    sudo launchctl print system/com.wazuh.agent
+    ```
+
+7. **Run tests**
+
+    If built with CMake and `-DBUILD_TESTS=1`, you can run tests with:
+
+    ```bash
+    ctest --test-dir build --output-log build
+    ```
+
+
 ## Compilation steps for Windows
 
 1. **Installing Dependencies**
