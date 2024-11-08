@@ -69,7 +69,9 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
 {
     registration = std::make_unique<agent_registration::AgentRegistration>(
         "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", std::nullopt);
-    agent = std::make_unique<AgentInfo>();
+    SysInfo sysInfo;
+    agent = std::make_unique<AgentInfo>([&sysInfo]() mutable { return sysInfo.os(); },
+                                        [&sysInfo]() mutable { return sysInfo.networks(); });
 
     MockHttpClient mockHttpClient;
 
@@ -136,7 +138,9 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
 TEST_F(RegisterTest, RegistrationTestSuccessWithEmptyKey)
 {
     registration = std::make_unique<agent_registration::AgentRegistration>("user", "password", "", std::nullopt);
-    agent = std::make_unique<AgentInfo>();
+    SysInfo sysInfo;
+    agent = std::make_unique<AgentInfo>([&sysInfo]() mutable { return sysInfo.os(); },
+                                        [&sysInfo]() mutable { return sysInfo.networks(); });
 
     MockHttpClient mockHttpClient;
 

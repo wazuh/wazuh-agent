@@ -60,8 +60,41 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
     const auto jsonResult = result.get();
 
     nlohmann::json expectedJson;
-    expectedJson["agent"] = "{}"_json;
-    expectedJson["agent"] = nlohmann::json::object();
+    expectedJson["events"] = nlohmann::json::array();
+    expectedJson["events"].push_back("test_data");
+
+    ASSERT_EQ(jsonResult, expectedJson.dump());
+}
+
+TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueMetadataTest)
+{
+    std::vector<std::string> data {"test_data"};
+    Message testMessage {MessageType::STATEFUL, data};
+
+    nlohmann::json metadata;
+    metadata["agent"] = "test";
+
+    // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+    EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATEFUL, 1, ""))
+        .WillOnce([&testMessage]() -> boost::asio::awaitable<Message> { co_return testMessage; });
+    // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+
+    io_context.restart();
+
+    auto result = boost::asio::co_spawn(
+        io_context,
+        GetMessagesFromQueue(mockQueue, MessageType::STATEFUL, [&metadata]() { return metadata; }),
+        boost::asio::use_future);
+
+    const auto timeout = std::chrono::steady_clock::now() + std::chrono::milliseconds(1);
+    io_context.run_until(timeout);
+
+    ASSERT_TRUE(result.wait_for(std::chrono::milliseconds(1)) == std::future_status::ready);
+
+    const auto jsonResult = result.get();
+
+    nlohmann::json expectedJson;
+    expectedJson["agent"] = "test";
     expectedJson["events"] = nlohmann::json::array();
     expectedJson["events"].push_back("test_data");
 

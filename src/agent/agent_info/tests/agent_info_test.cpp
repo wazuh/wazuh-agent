@@ -97,44 +97,113 @@ TEST_F(AgentInfoTest, TestSetGroups)
     EXPECT_EQ(agentInfoReloaded.GetGroups(), newGroups);
 }
 
-TEST_F(AgentInfoTest, TestLoadMetadataInfoRegistration)
+TEST_F(AgentInfoTest, TestLoadMetadataInfoNoSysInfo)
 {
     const AgentInfo agentInfo;
 
     auto metadataInfo = agentInfo.GetMetadataInfo(true);
 
-    // Endpoint information
-    EXPECT_TRUE(metadataInfo["os"] != nullptr);
-    EXPECT_TRUE(metadataInfo["platform"] != nullptr);
-    EXPECT_TRUE(metadataInfo["ip"] != nullptr);
-    EXPECT_TRUE(metadataInfo["arch"] != nullptr);
+    EXPECT_TRUE(metadataInfo["agent"] != nullptr);
 
     // Agent information
-    EXPECT_EQ(metadataInfo["type"], agentInfo.GetType());
-    EXPECT_EQ(metadataInfo["version"], agentInfo.GetVersion());
-    EXPECT_EQ(metadataInfo["uuid"], agentInfo.GetUUID());
-    EXPECT_EQ(metadataInfo["key"], agentInfo.GetKey());
-    EXPECT_TRUE(metadataInfo["groups"] == nullptr);
+    EXPECT_EQ(metadataInfo["agent"]["type"], agentInfo.GetType());
+    EXPECT_EQ(metadataInfo["agent"]["version"], agentInfo.GetVersion());
+    EXPECT_EQ(metadataInfo["agent"]["id"], agentInfo.GetUUID());
+    EXPECT_EQ(metadataInfo["agent"]["key"], agentInfo.GetKey());
+    EXPECT_TRUE(metadataInfo["agent"]["groups"] != nullptr);
+
+    // Endpoint information
+    EXPECT_TRUE(metadataInfo["agent"]["host"] == nullptr);
+}
+
+TEST_F(AgentInfoTest, TestLoadMetadataInfoRegistration)
+{
+    nlohmann::json os;
+    nlohmann::json networks;
+    nlohmann::json ip;
+    nlohmann::json address;
+
+    os["hostname"] = "test_name";
+    os["os_name"] = "test_os";
+    os["sysname"] = "test_platform";
+    os["architecture"] = "test_arch";
+
+    networks["iface"] = nlohmann::json::array();
+
+    ip["state"] = "up";
+    ip["IPv4"] = nlohmann::json::array();
+
+    address["address"] = "127.0.0.1";
+    ip["IPv4"].push_back(address);
+
+    networks["iface"].push_back(ip);
+
+    const AgentInfo agentInfo([os]() { return os; }, [networks]() { return networks; });
+
+    auto metadataInfo = agentInfo.GetMetadataInfo(true);
+
+    EXPECT_TRUE(metadataInfo["agent"] != nullptr);
+
+    // Agent information
+    EXPECT_EQ(metadataInfo["agent"]["type"], agentInfo.GetType());
+    EXPECT_EQ(metadataInfo["agent"]["version"], agentInfo.GetVersion());
+    EXPECT_EQ(metadataInfo["agent"]["id"], agentInfo.GetUUID());
+    EXPECT_EQ(metadataInfo["agent"]["key"], agentInfo.GetKey());
+    EXPECT_TRUE(metadataInfo["agent"]["groups"] != nullptr);
+
+    // Endpoint information
+    EXPECT_TRUE(metadataInfo["agent"]["host"] != nullptr);
+    EXPECT_TRUE(metadataInfo["agent"]["host"]["os"] != nullptr);
+    EXPECT_EQ(metadataInfo["agent"]["host"]["os"]["name"], "test_os");
+    EXPECT_EQ(metadataInfo["agent"]["host"]["os"]["platform"], "test_platform");
+    EXPECT_EQ(metadataInfo["agent"]["host"]["ip"], "127.0.0.1");
+    EXPECT_EQ(metadataInfo["agent"]["host"]["architecture"], "test_arch");
+    EXPECT_EQ(metadataInfo["agent"]["host"]["hostname"], "test_name");
 }
 
 TEST_F(AgentInfoTest, TestLoadMetadataInfoConnected)
 {
-    const AgentInfo agentInfo;
+    nlohmann::json os;
+    nlohmann::json networks;
+    nlohmann::json ip;
+    nlohmann::json address;
+
+    os["hostname"] = "test_name";
+    os["os_name"] = "test_os";
+    os["sysname"] = "test_platform";
+    os["architecture"] = "test_arch";
+
+    networks["iface"] = nlohmann::json::array();
+
+    ip["state"] = "up";
+    ip["IPv4"] = nlohmann::json::array();
+
+    address["address"] = "127.0.0.1";
+    ip["IPv4"].push_back(address);
+
+    networks["iface"].push_back(ip);
+
+    const AgentInfo agentInfo([os]() { return os; }, [networks]() { return networks; });
 
     auto metadataInfo = agentInfo.GetMetadataInfo(false);
 
-    // Endpoint information
-    EXPECT_TRUE(metadataInfo["os"] != nullptr);
-    EXPECT_TRUE(metadataInfo["platform"] != nullptr);
-    EXPECT_TRUE(metadataInfo["ip"] != nullptr);
-    EXPECT_TRUE(metadataInfo["arch"] != nullptr);
+    EXPECT_TRUE(metadataInfo["agent"] != nullptr);
 
     // Agent information
-    EXPECT_EQ(metadataInfo["type"], agentInfo.GetType());
-    EXPECT_EQ(metadataInfo["version"], agentInfo.GetVersion());
-    EXPECT_EQ(metadataInfo["uuid"], agentInfo.GetUUID());
-    EXPECT_TRUE(metadataInfo["groups"] != nullptr);
-    EXPECT_TRUE(metadataInfo["key"] == nullptr);
+    EXPECT_EQ(metadataInfo["agent"]["type"], agentInfo.GetType());
+    EXPECT_EQ(metadataInfo["agent"]["version"], agentInfo.GetVersion());
+    EXPECT_EQ(metadataInfo["agent"]["id"], agentInfo.GetUUID());
+    EXPECT_TRUE(metadataInfo["agent"]["key"] == nullptr);
+    EXPECT_TRUE(metadataInfo["agent"]["groups"] != nullptr);
+
+    // Endpoint information
+    EXPECT_TRUE(metadataInfo["agent"]["host"] != nullptr);
+    EXPECT_TRUE(metadataInfo["agent"]["host"]["os"] != nullptr);
+    EXPECT_EQ(metadataInfo["agent"]["host"]["os"]["name"], "test_os");
+    EXPECT_EQ(metadataInfo["agent"]["host"]["os"]["platform"], "test_platform");
+    EXPECT_EQ(metadataInfo["agent"]["host"]["ip"], "127.0.0.1");
+    EXPECT_EQ(metadataInfo["agent"]["host"]["architecture"], "test_arch");
+    EXPECT_EQ(metadataInfo["agent"]["host"]["hostname"], "test_name");
 }
 
 TEST_F(AgentInfoTest, TestLoadHeaderInfo)
