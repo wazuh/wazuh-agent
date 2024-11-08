@@ -25,6 +25,7 @@ find_package(fmt REQUIRED)
 
 if(WIN32)
     set(SOURCES
+        src/windows_api_facade.cpp
         src/windows_service.cpp
         src/process_options_win.cpp
     )

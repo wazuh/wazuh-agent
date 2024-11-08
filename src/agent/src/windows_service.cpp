@@ -123,30 +123,19 @@ namespace
 
 namespace WindowsService
 {
-    bool InstallService()
+    bool InstallService(const windows_api_facade::IWindowsApiFacade& windowsApiFacade)
     {
         const std::string exePath = GetExecutablePath() + " " + OPT_RUN_SERVICE;
 
-        SC_HANDLE schSCManager = OpenSCManager(nullptr, nullptr, SC_MANAGER_CREATE_SERVICE);
+        SC_HANDLE schSCManager = static_cast<SC_HANDLE>(windowsApiFacade.OpenSCM(SC_MANAGER_CREATE_SERVICE));
         if (!schSCManager)
         {
             LogError("OpenSCManager fail: {}", GetLastError());
             return false;
         }
 
-        SC_HANDLE schService = CreateService(schSCManager,
-                                             AGENT_SERVICENAME.c_str(),
-                                             AGENT_SERVICENAME.c_str(),
-                                             SERVICE_ALL_ACCESS,
-                                             SERVICE_WIN32_OWN_PROCESS,
-                                             SERVICE_AUTO_START,
-                                             SERVICE_ERROR_NORMAL,
-                                             exePath.c_str(),
-                                             nullptr,
-                                             nullptr,
-                                             nullptr,
-                                             nullptr,
-                                             nullptr);
+        SC_HANDLE schService = static_cast<SC_HANDLE>(
+            windowsApiFacade.CreateSvc(schSCManager, AGENT_SERVICENAME.c_str(), exePath.c_str()));
 
         if (!schService)
         {
@@ -166,16 +155,17 @@ namespace WindowsService
         return true;
     }
 
-    bool RemoveService()
+    bool RemoveService(const windows_api_facade::IWindowsApiFacade& windowsApiFacade)
     {
-        SC_HANDLE schSCManager = OpenSCManager(nullptr, nullptr, SC_MANAGER_CREATE_SERVICE);
+        SC_HANDLE schSCManager = static_cast<SC_HANDLE>(windowsApiFacade.OpenSCM(SC_MANAGER_CREATE_SERVICE));
         if (!schSCManager)
         {
             LogError("OpenSCManager fail: {}", GetLastError());
             return false;
         }
 
-        SC_HANDLE schService = OpenService(schSCManager, AGENT_SERVICENAME.c_str(), DELETE);
+        SC_HANDLE schService =
+            static_cast<SC_HANDLE>(windowsApiFacade.OpenSvc(schSCManager, AGENT_SERVICENAME.c_str(), DELETE));
         if (!schService)
         {
             LogError("OpenService fail: {}", GetLastError());
@@ -183,7 +173,7 @@ namespace WindowsService
             return false;
         }
 
-        if (!DeleteService(schService))
+        if (!windowsApiFacade.DeleteSvc(schService))
         {
             LogError("DeleteService fail: {}", GetLastError());
             CloseServiceHandle(schService);
@@ -210,7 +200,7 @@ namespace WindowsService
         }
     }
 
-    void WINAPI ServiceMain()
+    void WINAPI ServiceMain(DWORD argc, LPSTR* argv)
     {
         g_StatusHandle = RegisterServiceCtrlHandler(AGENT_SERVICENAME.c_str(), ServiceCtrlHandler);
 
@@ -237,7 +227,19 @@ namespace WindowsService
 
         LogInfo("Starting Wazuh Agent.");
 
-        Agent agent("");
+        std::string configFile;
+        if (argc > 1 && argv[1] != nullptr)
+        {
+            configFile = argv[1];
+            LogInfo("Config file parameter received: {}", configFile);
+        }
+        else
+        {
+            configFile = "";
+            LogDebug("Using default configuration.");
+        }
+
+        Agent agent(configFile);
         agent.Run();
 
         WaitForSingleObject(g_ServiceStopEvent, INFINITE);
@@ -263,7 +265,7 @@ namespace WindowsService
         }
     }
 
-    void ServiceStart()
+    void ServiceStart(const std::string& configFile)
     {
         ServiceHandle hService;
         ServiceHandle hSCManager;
@@ -271,7 +273,18 @@ namespace WindowsService
         if (!GetService(hSCManager, hService, SERVICE_START))
             return;
 
-        if (!::StartService(hService.get(), 0, nullptr))
+        bool res;
+        if (!configFile.empty())
+        {
+            const char* args[] = {configFile.c_str()};
+            res = ::StartService(hService.get(), 1, args);
+        }
+        else
+        {
+            res = ::StartService(hService.get(), 0, nullptr);
+        }
+
+        if (!res)
         {
             LogError("Error: Unable to start service. Error: {}", GetLastError());
         }
@@ -300,10 +313,10 @@ namespace WindowsService
         }
     }
 
-    void ServiceRestart()
+    void ServiceRestart(const std::string& configFile)
     {
         ServiceStop();
-        ServiceStart();
+        ServiceStart(configFile);
     }
 
     void ServiceStatus()
