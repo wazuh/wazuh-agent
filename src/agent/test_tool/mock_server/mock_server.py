@@ -61,11 +61,25 @@ class MockHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def _load_response(self, filename):
+        file_path = os.path.join(RESPONSES_DIR, filename)
+
         try:
-            with open(os.path.join(RESPONSES_DIR, filename), 'r') as f:
-                return f.read()
-        except FileNotFoundError:
-            return json.dumps({"error": "Response file not found"})
+            with open(file_path, 'r') as f:
+                lines = f.readlines()
+
+            if not lines:
+                return json.dumps({})
+
+            response_line = lines[0].strip()
+            response = json.loads(response_line)
+
+            with open(file_path, 'w') as f:
+                f.writelines(lines[1:])
+
+            return json.dumps(response)
+
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            return json.dumps({"error": f"File error: {str(e)}"})
 
     def do_POST(self):
         content_length = int(self.headers.get('Content-Length', 0))
@@ -83,11 +97,11 @@ class MockHandler(BaseHTTPRequestHandler):
             response = generate_authentication_response()
             self._set_headers(code=200, content_length=len(response))
         elif self.path == "/api/v1/events/stateful":
-            #response = self._load_response("events_stateful.json")
-            self._set_headers(code=200) # If an response is given, add the size of the response.
+            response = self._load_response("events_stateful.json")
+            self._set_headers(code=200, content_length=len(response))
         elif self.path == "/api/v1/events/stateless":
-            #response = self._load_response("events_stateless.json")
-            self._set_headers(code=200) # If an response is given, add the size of the response.
+            response = self._load_response("events_stateless.json")
+            self._set_headers(code=200, content_length=len(response))
         else:
             self.send_error(404, f"Not found: {self.path}")
             return
