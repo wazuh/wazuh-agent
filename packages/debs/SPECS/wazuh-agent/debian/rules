@@ -25,6 +25,7 @@ export DEBUG_ENABLED="no"
 export PATH="${PATH}"
 export LD_LIBRARY_PATH=""
 export VCPKG_BINARY_SOURCES=""
+export VCPKG_FORCE_SYSTEM_BINARIES=""
 
 %:
 	dh $@

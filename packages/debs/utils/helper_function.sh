@@ -24,7 +24,11 @@ setup_build(){
     # Generating directory structure to build the .deb package
     cd ${build_dir}/${BUILD_TARGET} && tar -czf ${package_name}.orig.tar.gz "${package_name}"
 
+
     # Configure the package with the different parameters
+    if [ "${ARCHITECTURE_TARGET}" != "amd64" ]; then
+        sed -i "s:export VCPKG_FORCE_SYSTEM_BINARIES=.*:export VCPKG_FORCE_SYSTEM_BINARIES=1:g" ${sources_dir}/debian/rules
+    fi
     sed -i "s:RELEASE:${REVISION}:g" ${sources_dir}/debian/changelog
     sed -i "s:export JOBS=.*:export JOBS=${JOBS}:g" ${sources_dir}/debian/rules
     sed -i "s:export VCPKG_BINARY_SOURCES=.*:export VCPKG_BINARY_SOURCES=clear;nuget,GitHub,readwrite:g" ${sources_dir}/debian/rules
