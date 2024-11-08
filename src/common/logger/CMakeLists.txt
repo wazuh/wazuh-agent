@@ -21,10 +21,8 @@ endif()
 
 if(WIN32)
     set(SOURCES src/logger_win.cpp)
-elseif(APPLE)
-    set(SOURCES src/logger_macos.cpp)
-elseif(UNIX)
-    set(SOURCES src/logger_linux.cpp)
+else()
+    set(SOURCES src/logger_unix.cpp)
 endif()
 
 add_library(Logger ${SOURCES})
