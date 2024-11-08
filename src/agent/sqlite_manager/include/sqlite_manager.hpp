@@ -58,11 +58,22 @@ namespace sqlite_manager
         {
         }
 
+        /// @brief The name of the column
         std::string Name;
+
+        /// @brief The type of the column
         ColumnType Type;
+
+        /// @brief Whether the column can contain NULL values
         bool NotNull;
+
+        /// @brief Whether the column is an auto-incrementing primary key
         bool AutoIncrement;
+
+        /// @brief Whether the column is a primary key
         bool PrimaryKey;
+
+        /// @brief The value of the column as a string
         std::string Value;
     };
 

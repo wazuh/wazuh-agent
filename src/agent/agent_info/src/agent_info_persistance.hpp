@@ -19,14 +19,17 @@ public:
     /// @brief Destructor for AgentInfoPersistance.
     ~AgentInfoPersistance();
 
+    /// @brief Deleted copy constructor.
     AgentInfoPersistance(const AgentInfoPersistance&) = delete;
-    AgentInfoPersistance& operator=(const AgentInfoPersistance&) = delete;
-    AgentInfoPersistance(AgentInfoPersistance&&) = delete;
-    AgentInfoPersistance& operator=(AgentInfoPersistance&&) = delete;
 
-    /// @brief Retrieves the agent's name from the database.
-    /// @return The name of the agent as a string.
-    std::string GetName() const;
+    /// @brief Deleted copy assignment operator.
+    AgentInfoPersistance& operator=(const AgentInfoPersistance&) = delete;
+
+    /// @brief Deleted move constructor.
+    AgentInfoPersistance(AgentInfoPersistance&&) = delete;
+
+    /// @brief Deleted move assignment operator.
+    AgentInfoPersistance& operator=(AgentInfoPersistance&&) = delete;
 
     /// @brief Retrieves the agent's key from the database.
     /// @return The key of the agent as a string.
@@ -39,10 +42,6 @@ public:
     /// @brief Retrieves the list of agent groups from the database.
     /// @return A vector of strings, each representing a group name.
     std::vector<std::string> GetGroups() const;
-
-    /// @brief Sets the agent's name in the database.
-    /// @param name The name to set.
-    void SetName(const std::string& name);
 
     /// @brief Sets the agent's key in the database.
     /// @param key The key to set.

@@ -22,6 +22,7 @@ namespace communicator
     Communicator::Communicator(std::unique_ptr<http_client::IHttpClient> httpClient,
                                std::string uuid,
                                std::string key,
+                               std::function<std::string()> getHeaderInfo,
                                const std::function<std::string(std::string, std::string)>& getStringConfigValue)
         : m_httpClient(std::move(httpClient))
         , m_uuid(std::move(uuid))
@@ -39,11 +40,21 @@ namespace communicator
 
             m_retryIntervalSecs = std::stol(getStringConfigValue("agent", "retry_interval_secs"));
         }
+
+        if (getHeaderInfo != nullptr)
+        {
+            m_getHeaderInfo = std::move(getHeaderInfo);
+        }
+        else
+        {
+            LogWarn("Header info not set.");
+        }
     }
 
     boost::beast::http::status Communicator::SendAuthenticationRequest()
     {
-        const auto token = m_httpClient->AuthenticateWithUuidAndKey(m_serverUrl, m_uuid, m_key);
+        const auto token = m_httpClient->AuthenticateWithUuidAndKey(
+            m_serverUrl, m_getHeaderInfo ? m_getHeaderInfo() : "", m_uuid, m_key);
 
         if (token.has_value())
         {
@@ -93,8 +104,8 @@ namespace communicator
             return m_keepRunning.load();
         };
 
-        const auto reqParams =
-            http_client::HttpRequestParams(boost::beast::http::verb::get, m_serverUrl, "/api/v1/commands");
+        const auto reqParams = http_client::HttpRequestParams(
+            boost::beast::http::verb::get, m_serverUrl, "/api/v1/commands", m_getHeaderInfo ? m_getHeaderInfo() : "");
         co_await m_httpClient->Co_PerformHttpRequest(
             m_token, reqParams, {}, onAuthenticationFailed, m_retryIntervalSecs, onSuccess, loopCondition);
     }
@@ -130,11 +141,11 @@ namespace communicator
             {
                 if (ec == boost::asio::error::operation_aborted)
                 {
-                    LogError("Token expiration timer was canceled.");
+                    LogDebug("Token expiration timer was canceled.");
                 }
                 else
                 {
-                    LogError("Timer wait failed: {}.", ec.message());
+                    LogDebug("Timer wait failed: {}.", ec.message());
                 }
             }
         }
@@ -154,8 +165,10 @@ namespace communicator
             return m_keepRunning.load();
         };
 
-        const auto reqParams =
-            http_client::HttpRequestParams(boost::beast::http::verb::post, m_serverUrl, "/api/v1/events/stateful");
+        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
+                                                              m_serverUrl,
+                                                              "/api/v1/events/stateful",
+                                                              m_getHeaderInfo ? m_getHeaderInfo() : "");
         co_await m_httpClient->Co_PerformHttpRequest(
             m_token, reqParams, getMessages, onAuthenticationFailed, m_retryIntervalSecs, onSuccess, loopCondition);
     }
@@ -174,8 +187,10 @@ namespace communicator
             return m_keepRunning.load();
         };
 
-        const auto reqParams =
-            http_client::HttpRequestParams(boost::beast::http::verb::post, m_serverUrl, "/api/v1/events/stateless");
+        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
+                                                              m_serverUrl,
+                                                              "/api/v1/events/stateless",
+                                                              m_getHeaderInfo ? m_getHeaderInfo() : "");
         co_await m_httpClient->Co_PerformHttpRequest(
             m_token, reqParams, getMessages, onAuthenticationFailed, m_retryIntervalSecs, onSuccess, loopCondition);
     }
@@ -206,9 +221,8 @@ namespace communicator
         const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get,
                                                               m_serverUrl,
                                                               "/api/v1/files?file_name=" + groupName + ".conf",
-                                                              *m_token,
-                                                              "",
-                                                              "");
+                                                              m_getHeaderInfo ? m_getHeaderInfo() : "",
+                                                              *m_token);
 
         const auto result = m_httpClient->PerformHttpRequestDownload(reqParams, dstFilePath);
 

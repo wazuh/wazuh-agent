@@ -58,8 +58,7 @@ void AgentInfoPersistance::CreateAgentInfoTable()
 {
     try
     {
-        const std::vector<Column> columns = {Column("name", ColumnType::TEXT, true, false),
-                                             Column("key", ColumnType::TEXT, true, false),
+        const std::vector<Column> columns = {Column("key", ColumnType::TEXT, true, false),
                                              Column("uuid", ColumnType::TEXT, true, false, true)};
 
         m_db->CreateTable(AGENT_INFO_TABLE_NAME, columns);
@@ -93,8 +92,7 @@ void AgentInfoPersistance::InsertDefaultAgentInfo()
 
         if (count == 0)
         {
-            const std::vector<Column> columns = {Column("name", ColumnType::TEXT, ""),
-                                                 Column("key", ColumnType::TEXT, ""),
+            const std::vector<Column> columns = {Column("key", ColumnType::TEXT, ""),
                                                  Column("uuid", ColumnType::TEXT, "")};
 
             m_db->Insert(AGENT_INFO_TABLE_NAME, columns);
@@ -141,11 +139,6 @@ std::string AgentInfoPersistance::GetAgentInfoValue(const std::string& column) c
     return value;
 }
 
-std::string AgentInfoPersistance::GetName() const
-{
-    return GetAgentInfoValue("name");
-}
-
 std::string AgentInfoPersistance::GetKey() const
 {
     return GetAgentInfoValue("key");
@@ -179,11 +172,6 @@ std::vector<std::string> AgentInfoPersistance::GetGroups() const
     }
 
     return groupList;
-}
-
-void AgentInfoPersistance::SetName(const std::string& name)
-{
-    SetAgentInfoValue("name", name);
 }
 
 void AgentInfoPersistance::SetKey(const std::string& key)

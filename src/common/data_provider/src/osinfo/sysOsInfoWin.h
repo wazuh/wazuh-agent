@@ -41,7 +41,4 @@ class SysOsInfoProviderWindows final : public ISysOsInfoProvider
         const std::string m_nodeName;
 };
 
-
-
-
 #endif //_SYS_OS_INFO_WINDOWS_H

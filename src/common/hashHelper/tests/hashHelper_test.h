@@ -24,4 +24,5 @@ class HashHelperTest : public ::testing::Test
         void SetUp() override;
         void TearDown() override;
 };
+
 #endif //HASH_HELPER_TESTS_H

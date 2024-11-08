@@ -343,7 +343,7 @@ static void test_wm_remove_handle_not_found(void ** state) {
 
     will_return(__wrap_OSList_GetFirstNode, NULL);
 
-    expect_string(__wrap__mwarn, formatted_msg, 
+    expect_string(__wrap__mwarn, formatted_msg,
                  "Child process handle 00112233 could not be removed because "
                  "it was not found in the children list.");
 

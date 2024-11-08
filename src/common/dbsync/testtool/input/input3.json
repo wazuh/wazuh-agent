@@ -1,4 +1,4 @@
-{   
+{
    "action": "dbsync_update_with_snapshot",
    "body": {
       "table":"processes",
@@ -101,5 +101,4 @@
          }
       ]
    }
-   
- }
+}

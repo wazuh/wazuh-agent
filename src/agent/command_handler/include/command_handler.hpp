@@ -12,9 +12,23 @@
 
 namespace command_handler
 {
+    /// @brief CommandHandler class
+    ///
+    /// This class is responsible for executing commands retrieved from the command
+    /// store. It provides a way to dispatch commands to the corresponding
+    /// command handlers and manage the command execution results.
     class CommandHandler
     {
     public:
+        /// @brief Processes commands asynchronously
+        ///
+        /// This task retrieves commands from the queue and dispatches them for execution.
+        /// If no command is available, it waits for a specified duration before retrying.
+        ///
+        /// @tparam T The type of the command to process
+        /// @param GetCommandFromQueue Function to retrieve a command from the queue
+        /// @param PopCommandFromQueue Function to remove a command from the queue
+        /// @param DispatchCommand Function to dispatch the command for execution
         template<typename T>
         boost::asio::awaitable<void> CommandsProcessingTask(
             const std::function<std::optional<T>()> GetCommandFromQueue,
@@ -51,10 +65,14 @@ namespace command_handler
             }
         }
 
+        /// @brief Stops the command handler
         void Stop();
 
     private:
+        /// @brief Indicates whether the command handler is running or not
         std::atomic<bool> m_keepRunning = true;
+
+        /// @brief An instance of the command store
         command_store::CommandStore m_commandStore;
     };
 } // namespace command_handler

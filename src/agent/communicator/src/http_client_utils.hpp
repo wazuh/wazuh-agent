@@ -10,6 +10,10 @@
 
 namespace http_client_utils
 {
+    /// @brief Reads a response from a socket and writes it to a file
+    /// @param socket The socket to read from
+    /// @param res The response parser to use
+    /// @param dstFilePath The path to the file to write to
     template<typename SocketType>
     void ReadToFile(SocketType& socket,
                     boost::beast::http::response_parser<boost::beast::http::dynamic_body>& res,

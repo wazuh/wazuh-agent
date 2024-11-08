@@ -10,7 +10,6 @@
 void RegisterAgent(const std::string& user,
                    const std::string& password,
                    const std::string& key,
-                   const std::string& name,
                    const std::string& configFile)
 {
     if (!user.empty() && !password.empty())
@@ -19,7 +18,7 @@ void RegisterAgent(const std::string& user,
         {
             std::cout << "Starting wazuh-agent registration\n";
 
-            agent_registration::AgentRegistration reg(user, password, key, name, configFile);
+            agent_registration::AgentRegistration reg(user, password, key, configFile);
 
             http_client::HttpClient httpClient;
             if (reg.Register(httpClient))

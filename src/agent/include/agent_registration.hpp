@@ -4,6 +4,8 @@
 #include <configuration_parser.hpp>
 #include <ihttp_client.hpp>
 
+#include <sysInfo.hpp>
+
 #include <optional>
 #include <string>
 
@@ -29,12 +31,10 @@ namespace agent_registration
         /// @param user The user's username.
         /// @param password The user's password.
         /// @param key The agent's key.
-        /// @param name The agent's name.
         /// @param configFile The path to the configuration file.
         AgentRegistration(std::string user,
                           std::string password,
                           const std::string& key,
-                          const std::string& name,
                           std::optional<std::string> configFile);
 
         /// @brief Registers the agent with the manager.
@@ -44,11 +44,22 @@ namespace agent_registration
         bool Register(http_client::IHttpClient& httpClient);
 
     private:
-        configuration::ConfigurationParser m_configurationParser;
-        std::string m_serverUrl;
-        std::string m_registrationUrl;
-        std::string m_user;
-        std::string m_password;
+        /// @brief The system's information.
+        SysInfo m_sysInfo;
+
+        /// @brief The agent's information.
         AgentInfo m_agentInfo;
+
+        /// @brief The configuration parser.
+        configuration::ConfigurationParser m_configurationParser;
+
+        /// @brief The URL of the manager.
+        std::string m_serverUrl;
+
+        /// @brief The user's username.
+        std::string m_user;
+
+        /// @brief The user's password.
+        std::string m_password;
     };
 } // namespace agent_registration

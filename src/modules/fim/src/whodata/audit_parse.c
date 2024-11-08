@@ -958,7 +958,7 @@ void audit_parse(char *buffer) {
             char *syscall = NULL;
             os_malloc(match_size + 1, syscall);
             snprintf(syscall, match_size + 1, "%.*s", match_size, buffer + match[1].rm_so);
-            if (!strcmp(syscall, "2") || !strcmp(syscall, "257") || !strcmp(syscall, "5") || 
+            if (!strcmp(syscall, "2") || !strcmp(syscall, "257") || !strcmp(syscall, "5") ||
                 !strcmp(syscall, "295") || !strcmp(syscall, "56")) {
                 // x86_64: 2 open
                 // x86_64: 257 openat

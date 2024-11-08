@@ -11,9 +11,9 @@ namespace agent_registration
     AgentRegistration::AgentRegistration(std::string user,
                                          std::string password,
                                          const std::string& key,
-                                         const std::string& name,
                                          std::optional<std::string> configFile)
-        : m_configurationParser(configFile.has_value() && !configFile->empty()
+        : m_agentInfo([this]() { return m_sysInfo.os(); }, [this]() { return m_sysInfo.networks(); })
+        , m_configurationParser(configFile.has_value() && !configFile->empty()
                                     ? configuration::ConfigurationParser(std::filesystem::path(configFile.value()))
                                     : configuration::ConfigurationParser())
         , m_serverUrl(m_configurationParser.GetConfig<std::string>("agent", "registration_url"))
@@ -24,20 +24,12 @@ namespace agent_registration
         {
             throw std::invalid_argument("--key argument must be alphanumeric and 32 characters in length");
         }
-
-        if (!name.empty())
-        {
-            m_agentInfo.SetName(name);
-        }
-        else
-        {
-            m_agentInfo.SetName(boost::asio::ip::host_name());
-        }
     }
 
     bool AgentRegistration::Register(http_client::IHttpClient& httpClient)
     {
-        const auto token = httpClient.AuthenticateWithUserPassword(m_serverUrl, m_user, m_password);
+        const auto token =
+            httpClient.AuthenticateWithUserPassword(m_serverUrl, m_agentInfo.GetHeaderInfo(), m_user, m_password);
 
         if (!token.has_value())
         {
@@ -45,11 +37,13 @@ namespace agent_registration
             return false;
         }
 
-        nlohmann::json bodyJson = {
-            {"id", m_agentInfo.GetUUID()}, {"key", m_agentInfo.GetKey()}, {"name", m_agentInfo.GetName()}};
-
-        const auto reqParams = http_client::HttpRequestParams(
-            http::verb::post, m_serverUrl, "/agents", token.value(), "", bodyJson.dump());
+        const auto reqParams = http_client::HttpRequestParams(http::verb::post,
+                                                              m_serverUrl,
+                                                              "/agents",
+                                                              m_agentInfo.GetHeaderInfo(),
+                                                              token.value(),
+                                                              "",
+                                                              m_agentInfo.GetMetadataInfo(true).dump());
 
         const auto res = httpClient.PerformHttpRequest(reqParams);
 

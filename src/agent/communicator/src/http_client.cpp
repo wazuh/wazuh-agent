@@ -13,6 +13,8 @@
 
 namespace http_client
 {
+    constexpr int A_SECOND_IN_MILLIS = 1000;
+
     HttpClient::HttpClient(std::shared_ptr<IHttpResolverFactory> resolverFactory,
                            std::shared_ptr<IHttpSocketFactory> socketFactory)
     {
@@ -43,7 +45,7 @@ namespace http_client
         boost::beast::http::request<boost::beast::http::string_body> req {
             params.Method, params.Endpoint, HttpVersion1_1};
         req.set(boost::beast::http::field::host, params.Host);
-        req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+        req.set(boost::beast::http::field::user_agent, params.User_agent);
         req.set(boost::beast::http::field::accept, "application/json");
 
         if (!params.Token.empty())
@@ -83,6 +85,8 @@ namespace http_client
 
         do
         {
+            long timerSleep = A_SECOND_IN_MILLIS;
+
             auto socket = m_socketFactory->Create(executor, reqParams.Use_Https);
 
             const auto results = co_await resolver->AsyncResolve(reqParams.Host, reqParams.Port);
@@ -92,12 +96,11 @@ namespace http_client
 
             if (code != boost::system::errc::success)
             {
-                LogWarn("Failed to send http request. {}. Retrying in {} seconds",
-                        reqParams.Endpoint,
-                        connectionRetrySecs); // NOLINT
+                LogWarn(
+                    "Failed to send http request. {}. Retrying in {} seconds", reqParams.Endpoint, connectionRetrySecs);
                 LogDebug("Http request failed: {} - {}", code.message(), code.what());
                 socket->Close();
-                const auto duration = std::chrono::milliseconds(connectionRetrySecs * 1000);
+                const auto duration = std::chrono::milliseconds(connectionRetrySecs * A_SECOND_IN_MILLIS);
                 timer.expires_after(duration);
                 co_await timer.async_wait(boost::asio::use_awaitable);
                 continue;
@@ -149,12 +152,13 @@ namespace http_client
                 {
                     onUnauthorized();
                 }
+                timerSleep = connectionRetrySecs * A_SECOND_IN_MILLIS;
             }
 
             LogDebug("Response code: {}.", res.result_int());
             LogDebug("Response body: {}.", boost::beast::buffers_to_string(res.body().data()));
 
-            const auto duration = std::chrono::milliseconds(1000);
+            const auto duration = std::chrono::milliseconds(timerSleep);
             timer.expires_after(duration);
             co_await timer.async_wait(boost::asio::use_awaitable);
         } while (loopRequestCondition != nullptr && loopRequestCondition());
@@ -195,12 +199,13 @@ namespace http_client
     }
 
     std::optional<std::string> HttpClient::AuthenticateWithUuidAndKey(const std::string& serverUrl,
+                                                                      const std::string& userAgent,
                                                                       const std::string& uuid,
                                                                       const std::string& key)
     {
         const std::string body = R"({"uuid":")" + uuid + R"(", "key":")" + key + "\"}";
         const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::post, serverUrl, "/api/v1/authentication", "", "", body);
+            boost::beast::http::verb::post, serverUrl, "/api/v1/authentication", userAgent, "", "", body);
 
         const auto res = PerformHttpRequest(reqParams);
 
@@ -216,6 +221,7 @@ namespace http_client
     }
 
     std::optional<std::string> HttpClient::AuthenticateWithUserPassword(const std::string& serverUrl,
+                                                                        const std::string& userAgent,
                                                                         const std::string& user,
                                                                         const std::string& password)
     {
@@ -227,7 +233,7 @@ namespace http_client
         boost::beast::detail::base64::encode(&basicAuth[0], userPass.c_str(), userPass.size());
 
         const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::post, serverUrl, "/security/user/authenticate", "", basicAuth);
+            boost::beast::http::verb::post, serverUrl, "/security/user/authenticate", userAgent, "", basicAuth);
 
         const auto res = PerformHttpRequest(reqParams);
 

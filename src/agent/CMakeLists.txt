@@ -49,7 +49,9 @@ list(APPEND SOURCES
 )
 
 add_library(Agent ${SOURCES})
-target_include_directories(Agent PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(Agent
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(Agent
     PUBLIC
     CentralizedConfiguration
@@ -62,6 +64,7 @@ target_link_libraries(Agent
     ModuleCommand
     CentralizedConfiguration
     Boost::asio
+    sysinfo
     PRIVATE
     OpenSSL::SSL
     OpenSSL::Crypto

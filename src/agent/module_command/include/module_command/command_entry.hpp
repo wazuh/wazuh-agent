@@ -7,6 +7,7 @@
 
 namespace module_command
 {
+    /// @enum Status of a command execution
     enum class Status
     {
         SUCCESS,
@@ -16,11 +17,15 @@ namespace module_command
         UNKNOWN
     };
 
+    /// @struct Result of a command execution
     struct CommandExecutionResult
     {
         Status ErrorCode = Status::UNKNOWN;
         std::string Message;
 
+        /// @brief Construct a CommandExecutionResult object
+        /// @param code The status of the command execution
+        /// @param message A message associated with the command execution result
         explicit CommandExecutionResult(Status code = Status::UNKNOWN, std::string message = "")
             : ErrorCode(code)
             , Message(std::move(message))
@@ -28,16 +33,24 @@ namespace module_command
         }
     };
 
+    /// @brief Data structure to hold the command execution entry
     class CommandEntry
     {
     public:
-        // Default constructor
+        /// @brief Construct a CommandEntry object
         CommandEntry()
             : Time(0.0)
             , ExecutionResult(Status::UNKNOWN, "")
         {
         }
 
+        /// @brief Construct a CommandEntry object
+        /// @param id The identifier of the command entry
+        /// @param module The module of the command
+        /// @param command The command to be executed
+        /// @param parameters The parameters for the command
+        /// @param result The result of the command execution
+        /// @param status The status of the command execution
         CommandEntry(std::string id,
                      std::string module,
                      std::string command,
@@ -53,11 +66,22 @@ namespace module_command
         {
         }
 
+        /// @brief Unique identifier of the command entry
         std::string Id;
+
+        /// @brief Module the command belongs to
         std::string Module;
+
+        /// @brief Command to be executed
         std::string Command;
+
+        /// @brief Parameters for the command
         nlohmann::json Parameters;
+
+        /// @brief Time of the command execution
         double Time;
+
+        /// @brief Result of the command execution
         CommandExecutionResult ExecutionResult;
     };
 } // namespace module_command

@@ -2400,7 +2400,7 @@ static void test_wm_gcp_bucket_main_run_on_start(void **state) {
     expect_string(__wrap__mtdebug1, formatted_msg, "Fetching logs finished.");
 
     will_return(__wrap_FOREVER, 0);
-    
+
 
     ret = wm_gcp_bucket_main(gcp_config);
 
