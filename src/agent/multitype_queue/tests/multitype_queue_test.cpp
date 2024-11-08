@@ -571,17 +571,17 @@ TEST_F(MultiTypeQueueTest, FifoOrderCheck)
         multiTypeQueue.getNextN(messageType, 10); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     EXPECT_EQ(messageReceivedVector.size(), 10);
 
-    std::for_each(
-        messageReceivedVector.begin(),
-        messageReceivedVector.end(),
-        [i = 0](const auto& singleMessage) mutable
-        { EXPECT_EQ(singleMessage.data, (nlohmann::json{{"Data", "for STATEFUL" + std::to_string(++i)}})); });
+    std::for_each(messageReceivedVector.begin(),
+                  messageReceivedVector.end(),
+                  [i = 0](const auto& singleMessage) mutable {
+                      EXPECT_EQ(singleMessage.data, (nlohmann::json {{"Data", "for STATEFUL" + std::to_string(++i)}}));
+                  });
 
     // Keep the order of the message: FIFO
     for (int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
     {
         auto messageReceived = multiTypeQueue.getNextN(messageType, 1);
-        EXPECT_EQ(messageReceived[0].data, (nlohmann::json{{"Data", "for STATEFUL" + std::to_string(i)}}));
+        EXPECT_EQ(messageReceived[0].data, (nlohmann::json {{"Data", "for STATEFUL" + std::to_string(i)}}));
         EXPECT_TRUE(multiTypeQueue.pop(messageType));
     }
 }

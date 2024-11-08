@@ -55,8 +55,7 @@ public:
      * @param moduleType The type of the module requesting the messages.
      * @return Message The next message from the queue.
      */
-    virtual Message getNext(MessageType type, const std::string module = "",
-                            const std::string moduleType = "") = 0;
+    virtual Message getNext(MessageType type, const std::string module = "", const std::string moduleType = "") = 0;
 
     /**
      * @brief Retrieves the next message from the queue asynchronously.
@@ -67,10 +66,10 @@ public:
      * @param moduleType The type of the module requesting the messages.
      * @return boost::asio::awaitable<Message> Awaitable object representing the next message.
      */
-    virtual boost::asio::awaitable<Message>
-    getNextNAwaitable(MessageType type, int messageQuantity,
-                      const std::string moduleName = "",
-                      const std::string moduleType = "") = 0;
+    virtual boost::asio::awaitable<Message> getNextNAwaitable(MessageType type,
+                                                              int messageQuantity,
+                                                              const std::string moduleName = "",
+                                                              const std::string moduleType = "") = 0;
 
     /**
      * @brief Retrieves the next N messages from the queue.
@@ -81,10 +80,10 @@ public:
      * @param moduleType The type of the module requesting the messages.
      * @return std::vector<Message> A vector of messages fetched from the queue.
      */
-    virtual std::vector<Message>
-    getNextN(MessageType type, int messageQuantity,
-             const std::string moduleName = "",
-             const std::string moduleType = "") = 0;
+    virtual std::vector<Message> getNextN(MessageType type,
+                                          int messageQuantity,
+                                          const std::string moduleName = "",
+                                          const std::string moduleType = "") = 0;
 
     /**
      * @brief Deletes a message from the queue.

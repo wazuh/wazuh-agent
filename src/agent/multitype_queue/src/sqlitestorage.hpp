@@ -72,8 +72,10 @@ public:
      * @param moduleName The name of the module that created the message.
      * @return The retrieved JSON message.
      */
-    nlohmann::json Retrieve(int id, const std::string& tableName,
-                    const std::string& moduleName = "", const std::string& moduleType = "") override;
+    nlohmann::json Retrieve(int id,
+                            const std::string& tableName,
+                            const std::string& moduleName = "",
+                            const std::string& moduleType = "") override;
 
     /**
      * @brief Retrieve multiple JSON messages.
@@ -83,8 +85,10 @@ public:
      * @param moduleName The name of the module that created the message.
      * @return A vector of retrieved JSON messages.
      */
-    nlohmann::json RetrieveMultiple(int n, const std::string& tableName,
-                        const std::string& moduleName = "", const std::string& moduleType = "") override;
+    nlohmann::json RetrieveMultiple(int n,
+                                    const std::string& tableName,
+                                    const std::string& moduleName = "",
+                                    const std::string& moduleType = "") override;
 
     /**
      * @brief Remove a JSON message by its ID.

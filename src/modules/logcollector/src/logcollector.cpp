@@ -5,6 +5,7 @@
 #include <boost/asio/detached.hpp>
 
 #include "file_reader.hpp"
+//#include "timeHelper/include/timeHelper.h"
 
 using namespace logcollector;
 
@@ -64,25 +65,33 @@ void Logcollector::Stop() {
     LogInfo("Logcollector stopped");
 }
 
-// NOLINTNEXTLINE(performance-unnecessary-value-param)
-Co_CommandExecutionResult
- Logcollector::ExecuteCommand(const std::string command, [[maybe_unused]] const nlohmann::json parameters) {
+// NOLINTBEGIN(performance-unnecessary-value-param)
+Co_CommandExecutionResult Logcollector::ExecuteCommand(const std::string command,
+                                                    [[maybe_unused]] const nlohmann::json parameters) {
   LogInfo("Logcollector command: ", command);
-  co_return module_command::CommandExecutionResult{
-      module_command::Status::SUCCESS, "OK"};
+  co_return module_command::CommandExecutionResult{module_command::Status::SUCCESS, "OK"};
 }
+// NOLINTEND(performance-unnecessary-value-param)
 
 void Logcollector::SetPushMessageFunction(const std::function<int(Message)>& pushMessage) {
     m_pushMessage = pushMessage;
 }
 
-void Logcollector::SendMessage(const std::string& location, const std::string& log) {
+void Logcollector::SendMessage(const std::string& location, const std::string& log, const std::string& collectorType) {
+    auto metadata = nlohmann::json::object();
     auto data = nlohmann::json::object();
 
-    data["file"]["path"] = location;
-    data["event"]["original"] = log;
+    metadata["module"] = m_moduleName;
+    metadata["type"] = collectorType;
 
-    auto message = Message(MessageType::STATELESS, data, m_moduleName);
+    data["log"]["file"]["path"] = location;
+    data["tags"] = nlohmann::json::array({"mvp"});
+    data["event"]["original"] = log;
+    data["event"]["ingested"] = ""; //getCurrentTimestamp();
+    data["event"]["module"] = m_moduleName;
+    data["event"]["provider"] = "syslog";
+
+    auto message = Message(MessageType::STATELESS, data, m_moduleName, collectorType, metadata.dump());
     m_pushMessage(message);
 
     LogTrace("Message pushed: '{}':'{}'", location, log);

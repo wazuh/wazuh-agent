@@ -20,7 +20,8 @@ enum class MessageType
  * module name, the module type and the metadata.
  *
  */
-class Message {
+class Message
+{
 public:
     MessageType type;
     nlohmann::json data;

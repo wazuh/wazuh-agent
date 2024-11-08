@@ -63,7 +63,6 @@ void SQLiteStorage::ReleaseDatabaseAccess()
     m_cv.notify_one();
 }
 
-
 int SQLiteStorage::Store(const nlohmann::json& message,
                          const std::string& tableName,
                          const std::string& moduleName,
@@ -74,7 +73,7 @@ int SQLiteStorage::Store(const nlohmann::json& message,
     std::string insertQuery;
 
     constexpr std::string_view INSERT_QUERY {
-        R"(INSERT INTO {} (module_name, module_type, metadata, message) VALUES ("{}", "{}", "{}", ?);)"};
+        R"(INSERT INTO {} (module_name, module_type, metadata, message) VALUES ("{}", "{}", '{}', ?);)"};
     insertQuery = fmt::format(INSERT_QUERY, tableName, moduleName, moduleType, metadata);
 
     int result = 0;
@@ -115,16 +114,17 @@ int SQLiteStorage::Store(const nlohmann::json& message,
 }
 
 // TODO: we shouldn't use rowid outside the table itself
-nlohmann::json SQLiteStorage::Retrieve(int id, const std::string& tableName,
-                            const std::string& moduleName,  [[maybe_unused]] const std::string& moduleType)
+nlohmann::json SQLiteStorage::Retrieve(int id,
+                                       const std::string& tableName,
+                                       const std::string& moduleName,
+                                       [[maybe_unused]] const std::string& moduleType)
 {
     std::string selectQuery;
     if (moduleName.empty())
     {
-      constexpr std::string_view SELECT_QUERY{
-          "SELECT module_name, module_type, metadata, message FROM {} WHERE "
-          "rowid = ?;"};
-      selectQuery = fmt::format(SELECT_QUERY, tableName);
+        constexpr std::string_view SELECT_QUERY {"SELECT module_name, module_type, metadata, message FROM {} WHERE "
+                                                 "rowid = ?;"};
+        selectQuery = fmt::format(SELECT_QUERY, tableName);
     }
     else
     {
@@ -137,12 +137,12 @@ nlohmann::json SQLiteStorage::Retrieve(int id, const std::string& tableName,
     {
         SQLite::Statement query(*m_db, selectQuery);
         query.bind(1, id);
-        nlohmann::json outputJson = {{"moduleName", ""},{"moduleType", ""},{"metadata", ""},{"data", {}}};
+        nlohmann::json outputJson = {{"moduleName", ""}, {"moduleType", ""}, {"metadata", ""}, {"data", {}}};
         if (query.executeStep())
         {
-            if (query.getColumnCount() == 4 &&
-                query.getColumn(3).getType() == SQLite::TEXT && query.getColumn(2).getType() == SQLite::TEXT &&
-                query.getColumn(1).getType() == SQLite::TEXT && query.getColumn(0).getType() == SQLite::TEXT)
+            if (query.getColumnCount() == 4 && query.getColumn(3).getType() == SQLite::TEXT &&
+                query.getColumn(2).getType() == SQLite::TEXT && query.getColumn(1).getType() == SQLite::TEXT &&
+                query.getColumn(0).getType() == SQLite::TEXT)
             {
                 std::string moduleNameString = query.getColumn(0).getString();
                 std::string moduleTypeString = query.getColumn(1).getString();
@@ -181,8 +181,10 @@ nlohmann::json SQLiteStorage::Retrieve(int id, const std::string& tableName,
     }
 }
 
-nlohmann::json SQLiteStorage::RetrieveMultiple(int n, const std::string& tableName,
-                                    const std::string& moduleName,  [[maybe_unused]] const std::string& moduleType)
+nlohmann::json SQLiteStorage::RetrieveMultiple(int n,
+                                               const std::string& tableName,
+                                               const std::string& moduleName,
+                                               [[maybe_unused]] const std::string& moduleType)
 {
     std::string selectQuery;
     if (moduleName.empty())
@@ -193,10 +195,10 @@ nlohmann::json SQLiteStorage::RetrieveMultiple(int n, const std::string& tableNa
     }
     else
     {
-      constexpr std::string_view SELECT_MULTIPLE_QUERY{
-          "SELECT module_name, module_type, metadata, message FROM {} WHERE "
-          "module_name LIKE \"{}\" ORDER BY rowid ASC LIMIT ?;"};
-      selectQuery = fmt::format(SELECT_MULTIPLE_QUERY, tableName, moduleName);
+        constexpr std::string_view SELECT_MULTIPLE_QUERY {
+            "SELECT module_name, module_type, metadata, message FROM {} WHERE "
+            "module_name LIKE \"{}\" ORDER BY rowid ASC LIMIT ?;"};
+        selectQuery = fmt::format(SELECT_MULTIPLE_QUERY, tableName, moduleName);
     }
 
     try
@@ -206,16 +208,16 @@ nlohmann::json SQLiteStorage::RetrieveMultiple(int n, const std::string& tableNa
         nlohmann::json messages = nlohmann::json::array();
         while (query.executeStep())
         {
-            if (query.getColumnCount() == 4 &&
-                query.getColumn(3).getType() == SQLite::TEXT && query.getColumn(2).getType() == SQLite::TEXT &&
-                query.getColumn(1).getType() == SQLite::TEXT && query.getColumn(0).getType() == SQLite::TEXT)
+            if (query.getColumnCount() == 4 && query.getColumn(3).getType() == SQLite::TEXT &&
+                query.getColumn(2).getType() == SQLite::TEXT && query.getColumn(1).getType() == SQLite::TEXT &&
+                query.getColumn(0).getType() == SQLite::TEXT)
             {
                 std::string moduleNameString = query.getColumn(0).getString();
                 std::string moduleTypeString = query.getColumn(1).getString();
                 std::string metadataString = query.getColumn(2).getString();
                 std::string dataString = query.getColumn(3).getString();
 
-                nlohmann::json outputJson = {{"moduleName", ""},{"moduleType", ""},{"metadata", ""},{"data", {}}};
+                nlohmann::json outputJson = {{"moduleName", ""}, {"moduleType", ""}, {"metadata", ""}, {"data", {}}};
 
                 if (!dataString.empty())
                 {
@@ -292,12 +294,10 @@ int SQLiteStorage::RemoveMultiple(int n, const std::string& tableName, const std
     }
     else
     {
-      constexpr std::string_view DELETE_MULTIPLE_QUERY{
-          "DELETE FROM {} WHERE module_name LIKE \"{}\" AND rowid IN "
-          "(SELECT rowid FROM {} WHERE module_name LIKE \"{}\" ORDER "
-          "BY rowid ASC LIMIT ?);"};
-      deleteQuery = fmt::format(DELETE_MULTIPLE_QUERY, tableName, moduleName,
-                                tableName, moduleName);
+        constexpr std::string_view DELETE_MULTIPLE_QUERY {"DELETE FROM {} WHERE module_name LIKE \"{}\" AND rowid IN "
+                                                          "(SELECT rowid FROM {} WHERE module_name LIKE \"{}\" ORDER "
+                                                          "BY rowid ASC LIMIT ?);"};
+        deleteQuery = fmt::format(DELETE_MULTIPLE_QUERY, tableName, moduleName, tableName, moduleName);
     }
 
     try
