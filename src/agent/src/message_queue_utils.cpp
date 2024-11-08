@@ -16,7 +16,12 @@ boost::asio::awaitable<std::string> GetMessagesFromQueue(std::shared_ptr<IMultiT
     const auto message = co_await multiTypeQueue->getNextNAwaitable(messageType, NUM_EVENTS);
 
     nlohmann::json jsonObj;
-    jsonObj["agent"] = getMetadataInfo ? getMetadataInfo() : "{}"_json;
+
+    if (getMetadataInfo != nullptr)
+    {
+        jsonObj = getMetadataInfo();
+    }
+
     jsonObj["events"] = message.data;
 
     co_return jsonObj.dump();
