@@ -141,11 +141,11 @@ namespace communicator
             {
                 if (ec == boost::asio::error::operation_aborted)
                 {
-                    LogError("Token expiration timer was canceled.");
+                    LogDebug("Token expiration timer was canceled.");
                 }
                 else
                 {
-                    LogError("Timer wait failed: {}.", ec.message());
+                    LogDebug("Timer wait failed: {}.", ec.message());
                 }
             }
         }

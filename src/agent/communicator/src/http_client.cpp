@@ -13,6 +13,8 @@
 
 namespace http_client
 {
+    constexpr int A_SECOND_IN_MILLIS = 1000;
+
     HttpClient::HttpClient(std::shared_ptr<IHttpResolverFactory> resolverFactory,
                            std::shared_ptr<IHttpSocketFactory> socketFactory)
     {
@@ -83,6 +85,8 @@ namespace http_client
 
         do
         {
+            long timerSleep = A_SECOND_IN_MILLIS;
+
             auto socket = m_socketFactory->Create(executor, reqParams.Use_Https);
 
             const auto results = co_await resolver->AsyncResolve(reqParams.Host, reqParams.Port);
@@ -92,12 +96,11 @@ namespace http_client
 
             if (code != boost::system::errc::success)
             {
-                LogWarn("Failed to send http request. {}. Retrying in {} seconds",
-                        reqParams.Endpoint,
-                        connectionRetrySecs); // NOLINT
+                LogWarn(
+                    "Failed to send http request. {}. Retrying in {} seconds", reqParams.Endpoint, connectionRetrySecs);
                 LogDebug("Http request failed: {} - {}", code.message(), code.what());
                 socket->Close();
-                const auto duration = std::chrono::milliseconds(connectionRetrySecs * 1000);
+                const auto duration = std::chrono::milliseconds(connectionRetrySecs * A_SECOND_IN_MILLIS);
                 timer.expires_after(duration);
                 co_await timer.async_wait(boost::asio::use_awaitable);
                 continue;
@@ -149,12 +152,13 @@ namespace http_client
                 {
                     onUnauthorized();
                 }
+                timerSleep = connectionRetrySecs * A_SECOND_IN_MILLIS;
             }
 
             LogDebug("Response code: {}.", res.result_int());
             LogDebug("Response body: {}.", boost::beast::buffers_to_string(res.body().data()));
 
-            const auto duration = std::chrono::milliseconds(1000);
+            const auto duration = std::chrono::milliseconds(timerSleep);
             timer.expires_after(duration);
             co_await timer.async_wait(boost::asio::use_awaitable);
         } while (loopRequestCondition != nullptr && loopRequestCondition());
