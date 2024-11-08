@@ -49,8 +49,7 @@ rm -fr %{buildroot}
 pushd src
 pushd build
 make install -j $(nproc)
-sed -i "s|WAZUH_HOME|/usr/share/wazuh-agent/bin|g" %{buildroot}%{_localstatedir}/usr/lib/systemd/system/wazuh-agent.service
-cp /usr/local/gcc-13.2.0/lib64/libstdc++.so.6 %{buildroot}%{_localstatedir}/usr/share/wazuh-agent/lib
+cp /usr/local/gcc-13.2.0/lib64/libstdc++.so.6 %{buildroot}%{_localstatedir}usr/share/wazuh-agent/lib
 exit 0
 
 %pre
@@ -260,7 +259,7 @@ rm -fr %{buildroot}
 %attr(750, root, wazuh) %{_localstatedir}usr/share/wazuh-agent/lib/libstdc++.so.6
 %dir %attr(770, root, wazuh) %{_localstatedir}etc/wazuh-agent
 %dir %attr(750, root, wazuh) %{_localstatedir}var/lib/wazuh-agent
-%attr(750, root, wazuh) %{_localstatedir}etc/wazuh-agent/wazuh.conf
+%attr(750, root, wazuh) %{_localstatedir}etc/wazuh-agent/wazuh-agent.yml
 
 %changelog
 * Wed Jul 10 2024 support <info@wazuh.com> - 4.9.0
