@@ -1,0 +1,8 @@
+# commands-config.yaml
+---
+plugin: rest
+resources:
+- path: "/api/v1/commands"
+  method: GET
+  response:
+    statusCode: 401

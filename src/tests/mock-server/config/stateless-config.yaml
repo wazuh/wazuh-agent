@@ -1,0 +1,8 @@
+# stateless-config.yaml
+---
+plugin: rest
+resources:
+- path: "/api/v1/events/stateless"
+  method: POST
+  response:
+    statusCode: 401

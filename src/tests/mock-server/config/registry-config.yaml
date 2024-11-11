@@ -1,6 +1,0 @@
-# simple-example-config.yaml
----
-plugin: rest
-path: "/security/user/authenticate"
-response:
-  file: example-data.json

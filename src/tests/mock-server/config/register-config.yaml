@@ -1,0 +1,43 @@
+# register-config.yaml
+---
+plugin: rest
+resources:
+
+# Allow registration with name=dummy
+- path: "/agents"
+  method: POST
+  requestBody:
+    allOf:
+    # - jsonPath: $.name
+    #   value: dummy
+    - jsonPath: $.agent.id
+      operator: NotEqualTo
+      value: null
+    - jsonPath: $.agent.key
+      operator: NotEqualTo
+      value: null
+  response:
+    statusCode: 200
+
+# Deny registration with name != dummy
+- path: "/agents"
+  method: POST
+  requestBody:
+    allOf:
+    - jsonPath: $.agent.name
+      operator: NotEqualTo
+      value: null
+    - jsonPath: $.agent.id
+      operator: NotEqualTo
+      value: null
+    - jsonPath: $.agent.key
+      operator: NotEqualTo
+      value: null
+  response:
+    statusCode: 403
+
+# Deny other conditions
+- path: "/agents"
+  method: POST
+  response:
+    statusCode: 400
