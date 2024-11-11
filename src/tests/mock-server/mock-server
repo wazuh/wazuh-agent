@@ -1,0 +1,38 @@
+#! /bin/bash
+
+set -e
+
+HTTPS=1
+COMMS_PORT=27000
+MGMT_PORT=55000
+
+for arg in "$@"; do
+    case "$arg" in
+        --http)
+            HTTPS=''
+            ;;
+        --https)
+            HTTPS=1
+            ;;
+        *)
+            echo "Usage: $0 [--http] [--https]"
+            echo "  --http      Use HTTP (:8080)"
+            echo "  --https     Use HTTPS (:8443) (default)"
+            exit 0
+            ;;
+    esac
+done
+
+args=("--configDir=/opt/imposter/config")
+
+if [ -n "$HTTPS" ]; then
+    port=8443
+    args+=("--tlsEnabled")
+    args+=("--keystorePath=/opt/imposter/config/ssl.jks")
+    args+=("--keystorePassword=password")
+else
+    port=8080
+fi
+
+docker build -t mock-server .
+docker run --rm -p $COMMS_PORT:$port -p $MGMT_PORT:$port mock-server ${args[@]}
