@@ -39,6 +39,7 @@ public:
      * @param id rowid of the message to be retrieved.
      * @param queueName The name of the queue.
      * @param moduleName The name of the module.
+     * @param moduleType The type of the module.
      * @return nlohmann::json The retrieved JSON message.
      */
     virtual nlohmann::json Retrieve(int id,
@@ -52,6 +53,7 @@ public:
      * @param n number of messages to be retrieved.
      * @param queueName The name of the queue.
      * @param moduleName The name of the module.
+     * @param moduleType The type of the module.
      * @return nlohmann::json The retrieved JSON messages.
      */
     virtual nlohmann::json RetrieveMultiple(int n,

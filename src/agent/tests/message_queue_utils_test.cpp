@@ -39,17 +39,17 @@ protected:
 
 TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
 {
-
-    std::vector<std::string> data {"test_data"};
-    Message testMessage {MessageType::STATEFUL, data};
+    std::vector<std::string> data {R"({"event":{"original":"Testing message!"}})"};
+    std::string metadata {R"({"module":"logcollector","type":"file"})"};
+    Message testMessage {MessageType::STATELESS, data, "", "", metadata};
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATEFUL, 1, "", ""))
+    EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATELESS, 1, "", ""))
         .WillOnce([&testMessage]() -> boost::asio::awaitable<Message> { co_return testMessage; });
     // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
     auto result = boost::asio::co_spawn(
-        io_context, GetMessagesFromQueue(mockQueue, MessageType::STATEFUL, nullptr), boost::asio::use_future);
+        io_context, GetMessagesFromQueue(mockQueue, MessageType::STATELESS, nullptr), boost::asio::use_future);
 
     const auto timeout = std::chrono::steady_clock::now() + std::chrono::milliseconds(1);
     io_context.run_until(timeout);
@@ -58,23 +58,23 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
 
     const auto jsonResult = result.get();
 
-    nlohmann::json expectedJson;
-    expectedJson["events"] = nlohmann::json::array();
-    expectedJson["events"].push_back("test_data");
+    std::string expectedString = R"({"module":"logcollector","type":"file"})" + std::string("\n") +
+                                 R"(["{\"event\":{\"original\":\"Testing message!\"}}"])";
 
-    ASSERT_EQ(jsonResult, expectedJson.dump());
+    ASSERT_EQ(jsonResult, expectedString);
 }
 
 TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueMetadataTest)
 {
-    std::vector<std::string> data {"test_data"};
-    Message testMessage {MessageType::STATEFUL, data};
+    std::vector<std::string> data {R"({"event":{"original":"Testing message!"}})"};
+    std::string moduleMetadata {R"({"module":"logcollector","type":"file"})"};
+    Message testMessage {MessageType::STATELESS, data, "", "", moduleMetadata};
 
     nlohmann::json metadata;
     metadata["agent"] = "test";
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATEFUL, 1, "", ""))
+    EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATELESS, 1, "", ""))
         .WillOnce([&testMessage]() -> boost::asio::awaitable<Message> { co_return testMessage; });
     // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
@@ -82,7 +82,7 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueMetadataTest)
 
     auto result = boost::asio::co_spawn(
         io_context,
-        GetMessagesFromQueue(mockQueue, MessageType::STATEFUL, [&metadata]() { return metadata; }),
+        GetMessagesFromQueue(mockQueue, MessageType::STATELESS, [&metadata]() { return metadata; }),
         boost::asio::use_future);
 
     const auto timeout = std::chrono::steady_clock::now() + std::chrono::milliseconds(1);
@@ -92,12 +92,11 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueMetadataTest)
 
     const auto jsonResult = result.get();
 
-    nlohmann::json expectedJson;
-    expectedJson["agent"] = "test";
-    expectedJson["events"] = nlohmann::json::array();
-    expectedJson["events"].push_back("test_data");
+    std::string expectedString = R"({"agent":"test"})" + std::string("\n") +
+                                 R"({"module":"logcollector","type":"file"})" + std::string("\n") +
+                                 R"(["{\"event\":{\"original\":\"Testing message!\"}}"])";
 
-    ASSERT_EQ(jsonResult, expectedJson.dump());
+    ASSERT_EQ(jsonResult, expectedString);
 }
 
 TEST_F(MessageQueueUtilsTest, PopMessagesFromQueueTest)

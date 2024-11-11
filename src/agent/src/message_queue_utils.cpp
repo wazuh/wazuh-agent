@@ -13,18 +13,18 @@ boost::asio::awaitable<std::string> GetMessagesFromQueue(std::shared_ptr<IMultiT
                                                          MessageType messageType,
                                                          std::function<nlohmann::json()> getMetadataInfo)
 {
-    const auto message = co_await multiTypeQueue->getNextNAwaitable(messageType, NUM_EVENTS);
+    const auto message = co_await multiTypeQueue->getNextNAwaitable(messageType, NUM_EVENTS, "", "");
 
     nlohmann::json jsonObj;
+    std::string output;
 
     if (getMetadataInfo != nullptr)
     {
         jsonObj = getMetadataInfo();
+        output = jsonObj.dump() + "\n";
     }
 
-    jsonObj["events"] = message.data;
-
-    co_return jsonObj.dump();
+    co_return output + message.metaData + "\n" + message.data.dump();
 }
 
 void PopMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue, MessageType messageType)

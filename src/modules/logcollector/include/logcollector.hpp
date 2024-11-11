@@ -45,7 +45,7 @@ public:
     /// @brief Sends a message to que queue
     /// @param location Location of the message
     /// @param log Message to send
-    /// @param fileType type of logcollector
+    /// @param collectorType type of logcollector
     /// @pre The message queue must be set with SetMessageQueue
     virtual void SendMessage(const std::string& location, const std::string& log, const std::string& collectorType);
 

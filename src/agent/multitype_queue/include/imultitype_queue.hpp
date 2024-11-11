@@ -51,11 +51,11 @@ public:
      * @brief Retrieves the next message from the queue.
      *
      * @param type The type of the queue to use as the source.
-     * @param module The name of the module requesting the message.
+     * @param moduleName The name of the module requesting the message.
      * @param moduleType The type of the module requesting the messages.
      * @return Message The next message from the queue.
      */
-    virtual Message getNext(MessageType type, const std::string module = "", const std::string moduleType = "") = 0;
+    virtual Message getNext(MessageType type, const std::string moduleName = "", const std::string moduleType = "") = 0;
 
     /**
      * @brief Retrieves the next message from the queue asynchronously.

@@ -41,6 +41,7 @@ public:
     // Define equality operator
     bool operator==(const Message& other) const
     {
-        return type == other.type && data == other.data;
+        return type == other.type && data == other.data && moduleName == other.moduleName &&
+               moduleType == other.moduleType && metaData == other.metaData;
     }
 };

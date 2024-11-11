@@ -177,12 +177,13 @@ boost::asio::awaitable<Message> MultiTypeQueue::getNextNAwaitable(MessageType ty
 
         auto resultData =
             m_persistenceDest->RetrieveMultiple(messageQuantity, m_mapMessageTypeName.at(type), moduleName, moduleType);
+
         if (!resultData.empty())
         {
-            result.data = resultData["data"];
-            result.metaData = resultData["metadata"];
-            result.moduleName = resultData["moduleName"];
-            result.moduleType = resultData["moduleType"];
+            result.data = resultData[0]["data"];
+            result.metaData = resultData[0]["metadata"];
+            result.moduleName = resultData[0]["moduleName"];
+            result.moduleType = resultData[0]["moduleType"];
         }
     }
     else

@@ -70,6 +70,7 @@ public:
      * @param id The ID of the message to retrieve.
      * @param tableName The name of the table to retrieve the message from.
      * @param moduleName The name of the module that created the message.
+     * @param moduleType The module type that created the message.
      * @return The retrieved JSON message.
      */
     nlohmann::json Retrieve(int id,
@@ -83,6 +84,7 @@ public:
      * @param n The number of messages to retrieve.
      * @param tableName The name of the table to retrieve the message from.
      * @param moduleName The name of the module that created the message.
+     * @param moduleType The module type that created the message.
      * @return A vector of retrieved JSON messages.
      */
     nlohmann::json RetrieveMultiple(int n,

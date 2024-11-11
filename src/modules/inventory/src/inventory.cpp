@@ -75,15 +75,7 @@ void Inventory::SendDeltaEvent(const std::string& data) {
         dataType = jsonData["type"].get<std::string>();
     }
 
-    const Message statelessMessage{ MessageType::STATELESS, jsonData, Name(), dataType};
-    const Message statefulMessage{ MessageType::STATEFUL, jsonData, Name(), dataType};
-
-    if(!m_pushMessage(statelessMessage)) {
-        LogWarn("Stateless event can't be pushed into the message queue: {}", data);
-    }
-    else {
-        LogTrace("Stateless event queued: {}", data);
-    }
+    const Message statefulMessage{ MessageType::STATEFUL, jsonData, Name(), dataType };
 
     if(!m_pushMessage(statefulMessage)) {
         LogWarn("Stateful event can't be pushed into the message queue: {}", data);

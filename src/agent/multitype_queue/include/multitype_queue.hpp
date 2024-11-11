@@ -92,7 +92,7 @@ public:
     /**
      * @copydoc IMultiTypeQueue::getNext(MessageType, const std::string)
      */
-    Message getNext(MessageType type, const std::string module = "", const std::string moduleType = "") override;
+    Message getNext(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
     /**
      * @copydoc IMultiTypeQueue::getNextNAwaitable(MessageType, int, const std::string)
