@@ -125,7 +125,7 @@ namespace http_client
             {
                 LogError("Error writing request ({}): {}.", std::to_string(ec.value()), ec.message());
                 socket->Close();
-                co_return;
+                continue;
             }
 
             boost::beast::http::response<boost::beast::http::dynamic_body> res;
@@ -135,7 +135,7 @@ namespace http_client
             {
                 LogError("Error reading response. Response code: {}.", res.result_int());
                 socket->Close();
-                co_return;
+                continue;
             }
 
             if (res.result() == boost::beast::http::status::ok)
