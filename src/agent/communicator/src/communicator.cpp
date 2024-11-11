@@ -67,16 +67,27 @@ namespace communicator
             return boost::beast::http::status::unauthorized;
         }
 
-        if (const auto decoded = jwt::decode<jwt::traits::nlohmann_json>(*m_token); decoded.has_payload_claim("exp"))
+        try
         {
-            const auto exp_claim = decoded.get_payload_claim("exp");
-            const auto exp_time = exp_claim.as_date();
-            m_tokenExpTimeInSeconds =
-                std::chrono::duration_cast<std::chrono::seconds>(exp_time.time_since_epoch()).count();
+            if (const auto decoded = jwt::decode<jwt::traits::nlohmann_json>(*m_token);
+                decoded.has_payload_claim("exp"))
+            {
+                const auto exp_claim = decoded.get_payload_claim("exp");
+                const auto exp_time = exp_claim.as_date();
+                m_tokenExpTimeInSeconds =
+                    std::chrono::duration_cast<std::chrono::seconds>(exp_time.time_since_epoch()).count();
+            }
+            else
+            {
+                LogError("Token does not contain an 'exp' claim.");
+                m_token->clear();
+                m_tokenExpTimeInSeconds = 1;
+                return boost::beast::http::status::unauthorized;
+            }
         }
-        else
+        catch (const std::exception& e)
         {
-            LogError("Token does not contain an 'exp' claim.");
+            LogError("Failed to decode token: {}", e.what());
             m_token->clear();
             m_tokenExpTimeInSeconds = 1;
             return boost::beast::http::status::unauthorized;
