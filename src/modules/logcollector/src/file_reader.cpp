@@ -30,7 +30,7 @@ Awaitable FileReader::ReadLocalfile(Localfile* lf) {
         auto log = lf->NextLog();
 
         while (!log.empty()) {
-            m_logcollector.SendMessage(lf->Filename(), log);
+            m_logcollector.SendMessage(lf->Filename(), log, m_collectorType);
             log = lf->NextLog();
         }
 

@@ -116,6 +116,9 @@ private:
 
     /// @brief Reload (wildcard expand) interval in seconds
     long m_reloadIntervalSec;
+
+    /// @brief File pattern
+    const std::string m_collectorType = "file";
 };
 
 /// @brief Open error class

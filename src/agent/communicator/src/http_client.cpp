@@ -61,6 +61,7 @@ namespace http_client
         if (!params.Body.empty())
         {
             req.set(boost::beast::http::field::content_type, "application/json");
+            req.set(boost::beast::http::field::transfer_encoding, "chunked");
             req.body() = params.Body;
             req.prepare_payload();
         }

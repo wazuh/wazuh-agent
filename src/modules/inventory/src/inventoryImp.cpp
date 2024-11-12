@@ -26,7 +26,7 @@ static const std::map<ReturnTypeCallback, std::string> OPERATION_MAP
 
 constexpr auto OS_SQL_STATEMENT
 {
-    R"(CREATE TABLE dbsync_osinfo (
+    R"(CREATE TABLE osinfo (
     hostname TEXT,
     architecture TEXT,
     os_name TEXT,
@@ -48,7 +48,7 @@ constexpr auto OS_SQL_STATEMENT
 
 constexpr auto HW_SQL_STATEMENT
 {
-    R"(CREATE TABLE dbsync_hwinfo (
+    R"(CREATE TABLE hwinfo (
     board_serial TEXT,
     cpu_name TEXT,
     cpu_cores INTEGER,
@@ -62,7 +62,7 @@ constexpr auto HW_SQL_STATEMENT
 
 constexpr auto HOTFIXES_SQL_STATEMENT
 {
-    R"(CREATE TABLE dbsync_hotfixes(
+    R"(CREATE TABLE hotfixes(
     hotfix TEXT,
     checksum TEXT,
     PRIMARY KEY (hotfix)) WITHOUT ROWID;)"
@@ -70,7 +70,7 @@ constexpr auto HOTFIXES_SQL_STATEMENT
 
 constexpr auto PACKAGES_SQL_STATEMENT
 {
-    R"(CREATE TABLE dbsync_packages(
+    R"(CREATE TABLE packages(
     name TEXT,
     version TEXT,
     vendor TEXT,
@@ -92,7 +92,7 @@ static const std::vector<std::string> PACKAGES_ITEM_ID_FIELDS{"name", "version",
 
 constexpr auto PROCESSES_SQL_STATEMENT
 {
-    R"(CREATE TABLE dbsync_processes (
+    R"(CREATE TABLE processes (
     pid TEXT,
     name TEXT,
     state TEXT,
@@ -127,7 +127,7 @@ constexpr auto PROCESSES_SQL_STATEMENT
 
 constexpr auto PORTS_SQL_STATEMENT
 {
-    R"(CREATE TABLE dbsync_ports (
+    R"(CREATE TABLE ports (
        protocol TEXT,
        local_ip TEXT,
        local_port BIGINT,
@@ -147,7 +147,7 @@ static const std::vector<std::string> PORTS_ITEM_ID_FIELDS{"inode", "protocol", 
 
 constexpr auto NETIFACE_SQL_STATEMENT
 {
-    R"(CREATE TABLE dbsync_network_iface (
+    R"(CREATE TABLE network_iface (
        name TEXT,
        adapter TEXT,
        type TEXT,
@@ -170,7 +170,7 @@ static const std::vector<std::string> NETIFACE_ITEM_ID_FIELDS{"name", "adapter",
 
 constexpr auto NETPROTO_SQL_STATEMENT
 {
-    R"(CREATE TABLE dbsync_network_protocol (
+    R"(CREATE TABLE network_protocol (
        iface TEXT,
        type TEXT,
        gateway TEXT,
@@ -184,7 +184,7 @@ static const std::vector<std::string> NETPROTO_ITEM_ID_FIELDS{"iface", "type"};
 
 constexpr auto NETADDR_SQL_STATEMENT
 {
-    R"(CREATE TABLE dbsync_network_address (
+    R"(CREATE TABLE network_address (
        iface TEXT,
        proto INTEGER,
        address TEXT,
@@ -196,15 +196,15 @@ constexpr auto NETADDR_SQL_STATEMENT
 };
 static const std::vector<std::string> NETADDRESS_ITEM_ID_FIELDS{"iface", "proto", "address"};
 
-constexpr auto NET_IFACE_TABLE    { "dbsync_network_iface"    };
-constexpr auto NET_PROTOCOL_TABLE { "dbsync_network_protocol" };
-constexpr auto NET_ADDRESS_TABLE  { "dbsync_network_address"  };
-constexpr auto PACKAGES_TABLE     { "dbsync_packages"         };
-constexpr auto HOTFIXES_TABLE     { "dbsync_hotfixes"         };
-constexpr auto PORTS_TABLE        { "dbsync_ports"            };
-constexpr auto PROCESSES_TABLE    { "dbsync_processes"        };
-constexpr auto OS_TABLE           { "dbsync_osinfo"           };
-constexpr auto HW_TABLE           { "dbsync_hwinfo"           };
+constexpr auto NET_IFACE_TABLE    { "network_iface"    };
+constexpr auto NET_PROTOCOL_TABLE { "network_protocol" };
+constexpr auto NET_ADDRESS_TABLE  { "network_address"  };
+constexpr auto PACKAGES_TABLE     { "packages"         };
+constexpr auto HOTFIXES_TABLE     { "hotfixes"         };
+constexpr auto PORTS_TABLE        { "ports"            };
+constexpr auto PROCESSES_TABLE    { "processes"        };
+constexpr auto OS_TABLE           { "osinfo"           };
+constexpr auto HW_TABLE           { "hwinfo"           };
 
 
 static std::string GetItemId(const nlohmann::json& item, const std::vector<std::string>& idFields)
