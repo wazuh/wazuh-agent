@@ -49,34 +49,7 @@ namespace configuration
         }
         catch (const std::exception& e)
         {
-            LogError("Using default values due to error parsing wazuh-agent.yml file: {}", e.what());
-
-            const std::string yamlStr = R"(
-                agent:
-                    server_url: https://localhost:27000
-                    registration_url: https://localhost:55000
-                    retry_interval_secs: 30
-                inventory:
-                    enabled: true
-                    interval: 3600
-                    scan_on_start: true
-                    hardware: true
-                    os: true
-                    network: true
-                    packages: true
-                    ports: true
-                    ports_all: true
-                    processes: true
-                    hotfixes: true
-                logcollector:
-                    enabled: true
-                    localfiles:
-                    - /var/log/auth.log
-                    reload_interval: 60
-                    file_wait: 500
-                )";
-
-            m_config = YAML::Load(yamlStr);
+            LogWarn("Using default values due to error parsing wazuh-agent.yml file: {}", e.what());
         }
     }
 
