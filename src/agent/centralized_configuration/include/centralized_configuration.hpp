@@ -20,6 +20,7 @@ namespace centralized_configuration
         using GetGroupIdFunctionType = std::function<std::vector<std::string>()>;
         using DownloadGroupFilesFunctionType =
             std::function<bool(const std::string& group, const std::string& dstFilePath)>;
+        using ValidateFileFunctionType = std::function<bool(const std::filesystem::path& configFile)>;
 
         /// @brief Executes a command for the centralized configuration system.
         /// @param command A string containing a JSON command to execute.
@@ -45,6 +46,11 @@ namespace centralized_configuration
         /// @param downloadGroupFilesFunction A function to download files for a given group ID.
         void SetDownloadGroupFilesFunction(DownloadGroupFilesFunctionType downloadGroupFilesFunction);
 
+        /// @brief Sets the function to validate a file.
+        /// @details The "set-group" and "update-group" commands requires such function to validate files
+        /// @param validateFileFunction A function to validate a file.
+        void ValidateFileFunction(ValidateFileFunctionType validateFileFunction);
+
     private:
         /// @brief Function to set group IDs.
         SetGroupIdFunctionType m_setGroupIdFunction;
@@ -54,5 +60,8 @@ namespace centralized_configuration
 
         /// @brief Function to download group configuration files.
         DownloadGroupFilesFunctionType m_downloadGroupFilesFunction;
+
+        /// @brief Function to validate group configuration files.
+        ValidateFileFunctionType m_validateFileFunction;
     };
 } // namespace centralized_configuration

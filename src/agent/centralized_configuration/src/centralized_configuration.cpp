@@ -1,4 +1,5 @@
 #include <centralized_configuration.hpp>
+#include <logger.hpp>
 
 #include <filesystem>
 
@@ -18,9 +19,12 @@ namespace centralized_configuration
                 if (m_setGroupIdFunction && m_downloadGroupFilesFunction)
                 {
                     if (parameters.empty())
+                    {
+                        LogWarn("Group set failed, no group list");
                         co_return module_command::CommandExecutionResult {
                             module_command::Status::FAILURE,
                             "CentralizedConfiguration group set failed, no group list"};
+                    }
 
                     groupIds = parameters[0].get<std::vector<std::string>>();
                     messageOnSuccess = "CentralizedConfiguration group set";
@@ -29,6 +33,7 @@ namespace centralized_configuration
                 }
                 else
                 {
+                    LogWarn("Group set failed, no function set");
                     co_return module_command::CommandExecutionResult {
                         module_command::Status::FAILURE, "CentralizedConfiguration group set failed, no function set"};
                 }
@@ -42,6 +47,7 @@ namespace centralized_configuration
                 }
                 else
                 {
+                    LogWarn("Group update failed, no function set");
                     co_return module_command::CommandExecutionResult {
                         module_command::Status::FAILURE,
                         "CentralizedConfiguration group update failed, no function set"};
@@ -49,21 +55,31 @@ namespace centralized_configuration
             }
             else
             {
+                LogWarn("CentralizedConfiguration command not recognized");
                 co_return module_command::CommandExecutionResult {module_command::Status::FAILURE,
                                                                   "CentralizedConfiguration command not recognized"};
             }
 
             for (const auto& groupId : groupIds)
             {
-                m_downloadGroupFilesFunction(groupId, std::filesystem::temp_directory_path().string());
+                const std::filesystem::path tmpGroupFile = std::filesystem::temp_directory_path() / (groupId + ".conf");
+                m_downloadGroupFilesFunction(groupId, tmpGroupFile.string());
+                if (!m_validateFileFunction(tmpGroupFile))
+                {
+                    LogWarn("Validate file failed, invalid group file received: {}", tmpGroupFile.string());
+                    co_return module_command::CommandExecutionResult {
+                        module_command::Status::FAILURE,
+                        "CentralizedConfiguration validate file failed, invalid file received."};
+                }
             }
 
-            // TODO validate groupFiles, apply configuration
+            // TODO apply configuration, remove old group files
 
             co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS, messageOnSuccess};
         }
         catch (const nlohmann::json::exception&)
         {
+            LogWarn("CentralizedConfiguration error while parsing parameters");
             co_return module_command::CommandExecutionResult {
                 module_command::Status::FAILURE, "CentralizedConfiguration error while parsing parameters"};
         }
@@ -83,5 +99,10 @@ namespace centralized_configuration
     CentralizedConfiguration::SetDownloadGroupFilesFunction(DownloadGroupFilesFunctionType downloadGroupFilesFunction)
     {
         m_downloadGroupFilesFunction = std::move(downloadGroupFilesFunction);
+    }
+
+    void CentralizedConfiguration::ValidateFileFunction(ValidateFileFunctionType validateFileFunction)
+    {
+        m_validateFileFunction = std::move(validateFileFunction);
     }
 } // namespace centralized_configuration

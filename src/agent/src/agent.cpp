@@ -46,6 +46,9 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
         [this](const std::string& groupId, const std::string& destinationPath)
         { return m_communicator.GetGroupConfigurationFromManager(groupId, destinationPath); });
 
+    m_centralizedConfiguration.ValidateFileFunction([this](const std::filesystem::path& fileToValidate)
+                                                    { return m_configurationParser.isValidYamlFile(fileToValidate); });
+
     m_taskManager.Start(
         m_configurationParser.GetConfig<size_t>("agent", "thread_count").value_or(config::DEFAULT_THREAD_COUNT));
 }
