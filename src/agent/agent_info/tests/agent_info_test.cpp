@@ -173,7 +173,8 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoRegistration)
     EXPECT_TRUE(metadataInfo["agent"]["host"]["os"] != nullptr);
     EXPECT_EQ(metadataInfo["agent"]["host"]["os"]["name"], "test_os");
     EXPECT_EQ(metadataInfo["agent"]["host"]["os"]["platform"], "test_platform");
-    EXPECT_EQ(metadataInfo["agent"]["host"]["ip"], "127.0.0.1");
+    EXPECT_TRUE(metadataInfo["agent"]["host"]["ip"] != nullptr);
+    EXPECT_EQ(metadataInfo["agent"]["host"]["ip"][0], "127.0.0.1");
     EXPECT_EQ(metadataInfo["agent"]["host"]["architecture"], "test_arch");
     EXPECT_EQ(metadataInfo["agent"]["host"]["hostname"], "test_name");
 }
@@ -219,7 +220,8 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoConnected)
     EXPECT_TRUE(metadataInfo["agent"]["host"]["os"] != nullptr);
     EXPECT_EQ(metadataInfo["agent"]["host"]["os"]["name"], "test_os");
     EXPECT_EQ(metadataInfo["agent"]["host"]["os"]["platform"], "test_platform");
-    EXPECT_EQ(metadataInfo["agent"]["host"]["ip"], "127.0.0.1");
+    EXPECT_TRUE(metadataInfo["agent"]["host"]["ip"] != nullptr);
+    EXPECT_EQ(metadataInfo["agent"]["host"]["ip"][0], "127.0.0.1");
     EXPECT_EQ(metadataInfo["agent"]["host"]["architecture"], "test_arch");
     EXPECT_EQ(metadataInfo["agent"]["host"]["hostname"], "test_name");
 }

@@ -19,12 +19,12 @@ boost::asio::awaitable<std::string> GetMessagesFromQueue(std::shared_ptr<IMultiT
 
     if (getMetadataInfo != nullptr)
     {
-        output = getMetadataInfo() + "\n";
+        output = getMetadataInfo();
     }
 
     for (const auto& message : messages)
     {
-        output += message.metaData + "\n" + message.data.dump() + "\n";
+        output += "\n" + message.metaData + "\n" + message.data.dump();
     }
 
     co_return output;

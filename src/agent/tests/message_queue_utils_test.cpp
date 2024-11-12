@@ -59,8 +59,8 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
 
     const auto jsonResult = result.get();
 
-    std::string expectedString = R"({"module":"logcollector","type":"file"})" + std::string("\n") +
-                                 R"(["{\"event\":{\"original\":\"Testing message!\"}}"])" + std::string("\n");
+    std::string expectedString = std::string("\n") + R"({"module":"logcollector","type":"file"})" + std::string("\n") +
+                                 R"(["{\"event\":{\"original\":\"Testing message!\"}}"])";
 
     ASSERT_EQ(jsonResult, expectedString);
 }
@@ -96,7 +96,7 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueMetadataTest)
 
     std::string expectedString = R"({"agent":"test"})" + std::string("\n") +
                                  R"({"module":"logcollector","type":"file"})" + std::string("\n") +
-                                 R"(["{\"event\":{\"original\":\"Testing message!\"}}"])" + std::string("\n");
+                                 R"(["{\"event\":{\"original\":\"Testing message!\"}}"])";
 
     ASSERT_EQ(jsonResult, expectedString);
 }

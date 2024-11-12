@@ -159,8 +159,10 @@ std::string AgentInfo::GetMetadataInfo(const bool agentIsRegistering) const
     return metadataInfo.dump();
 }
 
-std::optional<std::string> AgentInfo::GetActiveIPAddress(const nlohmann::json& networksJson) const
+std::vector<std::string> AgentInfo::GetActiveIPAddresses(const nlohmann::json& networksJson) const
 {
+    std::vector<std::string> ipAddresses;
+
     if (networksJson.contains("iface"))
     {
         for (const auto& iface : networksJson["iface"])
@@ -169,12 +171,12 @@ std::optional<std::string> AgentInfo::GetActiveIPAddress(const nlohmann::json& n
             {
                 if (iface.contains("IPv4") && !iface["IPv4"].empty())
                 {
-                    return iface["IPv4"][0].value("address", "");
+                    ipAddresses.emplace_back(iface["IPv4"][0].value("address", ""));
                 }
             }
         }
     }
-    return std::nullopt;
+    return ipAddresses;
 }
 
 void AgentInfo::LoadEndpointInfo()
@@ -191,8 +193,7 @@ void AgentInfo::LoadEndpointInfo()
     if (m_getNetworksInfo != nullptr)
     {
         nlohmann::json networksInfo = m_getNetworksInfo();
-        auto ipAddress = GetActiveIPAddress(networksInfo);
-        m_endpointInfo["ip"] = ipAddress.value_or("Unknown");
+        m_endpointInfo["ip"] = GetActiveIPAddresses(networksInfo);
     }
 }
 
@@ -209,8 +210,8 @@ void AgentInfo::LoadMetadataInfo()
         nlohmann::json host;
         nlohmann::json os;
 
+        host["ip"] = m_endpointInfo["ip"];
         host["hostname"] = m_endpointInfo.value("hostname", "Unknown");
-        host["ip"] = m_endpointInfo.value("ip", "Unknown");
         host["architecture"] = m_endpointInfo.value("architecture", "Unknown");
 
         os["name"] = m_endpointInfo.value("os", "Unknown");

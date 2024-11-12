@@ -100,8 +100,8 @@ private:
 
     /// @brief Extracts the active IP address from the network JSON data.
     /// @param networksJson JSON object containing network interface information.
-    /// @return Optional string with the active IP address if found; otherwise, `std::nullopt`.
-    std::optional<std::string> GetActiveIPAddress(const nlohmann::json& networksJson) const;
+    /// @return Vector of strings with the active IP addresses.
+    std::vector<std::string> GetActiveIPAddresses(const nlohmann::json& networksJson) const;
 
     /// @brief The agent's name.
     std::string m_name;
