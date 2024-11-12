@@ -126,7 +126,7 @@ namespace http_client
             {
                 LogError("Error writing request ({}): {}.", std::to_string(ec.value()), ec.message());
                 socket->Close();
-                co_return;
+                continue;
             }
 
             boost::beast::http::response<boost::beast::http::dynamic_body> res;
@@ -136,7 +136,7 @@ namespace http_client
             {
                 LogError("Error reading response. Response code: {}.", res.result_int());
                 socket->Close();
-                co_return;
+                continue;
             }
 
             if (res.result() == boost::beast::http::status::ok)
@@ -216,9 +216,18 @@ namespace http_client
             return std::nullopt;
         }
 
-        return nlohmann::json::parse(boost::beast::buffers_to_string(res.body().data()))
-            .at("token")
-            .get_ref<const std::string&>();
+        try
+        {
+            return nlohmann::json::parse(boost::beast::buffers_to_string(res.body().data()))
+                .at("token")
+                .get_ref<const std::string&>();
+        }
+        catch (const std::exception& e)
+        {
+            LogError("Error parsing token in response: {}.", e.what());
+        }
+
+        return std::nullopt;
     }
 
     std::optional<std::string> HttpClient::AuthenticateWithUserPassword(const std::string& serverUrl,
@@ -244,10 +253,19 @@ namespace http_client
             return std::nullopt;
         }
 
-        return nlohmann::json::parse(boost::beast::buffers_to_string(res.body().data()))
-            .at("data")
-            .at("token")
-            .get_ref<const std::string&>();
+        try
+        {
+            return nlohmann::json::parse(boost::beast::buffers_to_string(res.body().data()))
+                .at("data")
+                .at("token")
+                .get_ref<const std::string&>();
+        }
+        catch (const std::exception& e)
+        {
+            LogError("Error parsing token in response: {}.", e.what());
+        }
+
+        return std::nullopt;
     }
 
     boost::beast::http::response<boost::beast::http::dynamic_body>

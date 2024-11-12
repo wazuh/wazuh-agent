@@ -86,6 +86,10 @@ class MockHandler(BaseHTTPRequestHandler):
         body = self.rfile.read(content_length).decode('utf-8')
         log_request("POST", self.path, self.headers, body)
 
+        if not self.is_authorized():
+            self.send_error(401, f"Unauthorized: {self.path}")
+            return
+
         response = None
         if self.path == "/security/user/authenticate":
             response = self._load_response("user_authenticate.json")
@@ -113,6 +117,10 @@ class MockHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         log_request("GET", self.path, self.headers, "")
+
+        if not self.is_authorized():
+            self.send_error(401, f"Unauthorized: {self.path}")
+            return
 
         response = None
         if self.path == "/api/v1/commands":
@@ -153,6 +161,28 @@ class MockHandler(BaseHTTPRequestHandler):
             self.wfile.write(response.encode('utf-8'))
         self.wfile.flush()
         self.close_connection = True
+
+    def is_authorized(self):
+        if self.path == "/security/user/authenticate":
+            return True
+
+        if self.path == "/api/v1/authentication":
+            return True
+
+        auth_header = self.headers.get('Authorization', None)
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return False
+
+        token = auth_header.split(" ")[1]
+
+        try:
+            jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        except jwt.ExpiredSignatureError:
+            return False
+        except jwt.InvalidTokenError:
+            return False
+
+        return True
 
 def run_server(port, ssl_key=None, ssl_cert=None, handler_class=MockHandler, use_https=True, outfile=None):
     server_address = ('', port)

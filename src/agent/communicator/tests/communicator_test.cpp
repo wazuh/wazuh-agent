@@ -26,12 +26,12 @@ namespace
     std::string CreateToken()
     {
         const auto now = std::chrono::system_clock::now();
-        const auto exp = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count() + 3600;
+        const auto exp = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count() + 10;
 
         return jwt::create<jwt::traits::nlohmann_json>()
             .set_issuer("auth0")
             .set_type("JWS")
-            .set_payload_claim("exp", jwt::basic_claim<jwt::traits::nlohmann_json>(std::to_string(exp)))
+            .set_payload_claim("exp", jwt::basic_claim<jwt::traits::nlohmann_json>(exp))
             .sign(jwt::algorithm::hs256 {"secret"});
     }
 } // namespace
@@ -121,17 +121,12 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
     boost::asio::co_spawn(
         ioContext,
         [communicatorPtr]() mutable -> boost::asio::awaitable<void>
-        { co_await communicatorPtr->WaitForTokenExpirationAndAuthenticate(); },
-        boost::asio::detached);
-
-    boost::asio::co_spawn(
-        ioContext,
-        [communicatorPtr]() mutable -> boost::asio::awaitable<void>
         {
+            co_await communicatorPtr->WaitForTokenExpirationAndAuthenticate();
             co_await communicatorPtr->StatelessMessageProcessingTask([]() -> boost::asio::awaitable<std::string>
                                                                      { co_return "message"; },
                                                                      []([[maybe_unused]] const std::string& msg) {});
-        },
+        }(),
         boost::asio::detached);
 
     ioContext.run();
@@ -149,7 +144,16 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
         std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr, nullptr);
 
     const auto mockedToken = CreateToken();
-    EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _, _)).WillOnce(Return(mockedToken));
+    EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _, _))
+        .WillOnce(Invoke(
+            [communicatorPtr, mockedToken]([[maybe_unused]] const std::string& host,
+                                           [[maybe_unused]] const std::string& userAgent,
+                                           [[maybe_unused]] const std::string& uuid,
+                                           [[maybe_unused]] const std::string& key) -> std::optional<std::string>
+            {
+                communicatorPtr->Stop();
+                return mockedToken;
+            }));
 
     std::string capturedToken;
     EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(_, _, _, _, _, _, _))
@@ -171,17 +175,12 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
     boost::asio::co_spawn(
         ioContext,
         [communicatorPtr]() mutable -> boost::asio::awaitable<void>
-        { co_await communicatorPtr->WaitForTokenExpirationAndAuthenticate(); },
-        boost::asio::detached);
-
-    boost::asio::co_spawn(
-        ioContext,
-        [communicatorPtr]() mutable -> boost::asio::awaitable<void>
         {
+            co_await communicatorPtr->WaitForTokenExpirationAndAuthenticate();
             co_await communicatorPtr->StatelessMessageProcessingTask([]() -> boost::asio::awaitable<std::string>
                                                                      { co_return "message"; },
                                                                      []([[maybe_unused]] const std::string& msg) {});
-        },
+        }(),
         boost::asio::detached);
 
     ioContext.run();

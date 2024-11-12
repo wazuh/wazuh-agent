@@ -19,14 +19,15 @@ namespace http_client
         , User_pass(std::move(userPass))
         , Body(std::move(body))
     {
-        auto result = boost::urls::parse_uri(serverUrl);
+        const auto result = boost::urls::parse_uri(serverUrl);
+
         if (!result)
         {
             LogError("Invalid URL: {}", result.error().message());
             return;
         }
 
-        boost::urls::url_view url = *result;
+        const auto& url = *result;
         Use_Https = url.scheme().empty() || url.scheme() == "https";
         Host = url.host();
         Port = url.port();
