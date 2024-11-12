@@ -13,7 +13,7 @@ public:
               (MessageType type, const std::string module,
                const std::string moduleType),
               (override));
-  MOCK_METHOD(boost::asio::awaitable<Message>, getNextNAwaitable,
+  MOCK_METHOD(boost::asio::awaitable<std::vector<Message>>, getNextNAwaitable,
               (MessageType type, int messageQuantity,
                const std::string moduleName, const std::string moduleType),
               (override));

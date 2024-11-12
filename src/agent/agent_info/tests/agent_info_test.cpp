@@ -116,7 +116,7 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoNoSysInfo)
 {
     const AgentInfo agentInfo;
 
-    auto metadataInfo = agentInfo.GetMetadataInfo(true);
+    auto metadataInfo = nlohmann::json::parse(agentInfo.GetMetadataInfo(true));
 
     EXPECT_TRUE(metadataInfo["agent"] != nullptr);
 
@@ -124,6 +124,7 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoNoSysInfo)
     EXPECT_EQ(metadataInfo["agent"]["type"], agentInfo.GetType());
     EXPECT_EQ(metadataInfo["agent"]["version"], agentInfo.GetVersion());
     EXPECT_EQ(metadataInfo["agent"]["id"], agentInfo.GetUUID());
+    EXPECT_EQ(metadataInfo["agent"]["name"], agentInfo.GetName());
     EXPECT_EQ(metadataInfo["agent"]["key"], agentInfo.GetKey());
     EXPECT_TRUE(metadataInfo["agent"]["groups"] != nullptr);
 
@@ -155,7 +156,7 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoRegistration)
 
     const AgentInfo agentInfo([os]() { return os; }, [networks]() { return networks; });
 
-    auto metadataInfo = agentInfo.GetMetadataInfo(true);
+    auto metadataInfo = nlohmann::json::parse(agentInfo.GetMetadataInfo(true));
 
     EXPECT_TRUE(metadataInfo["agent"] != nullptr);
 
@@ -163,6 +164,7 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoRegistration)
     EXPECT_EQ(metadataInfo["agent"]["type"], agentInfo.GetType());
     EXPECT_EQ(metadataInfo["agent"]["version"], agentInfo.GetVersion());
     EXPECT_EQ(metadataInfo["agent"]["id"], agentInfo.GetUUID());
+    EXPECT_EQ(metadataInfo["agent"]["name"], agentInfo.GetName());
     EXPECT_EQ(metadataInfo["agent"]["key"], agentInfo.GetKey());
     EXPECT_TRUE(metadataInfo["agent"]["groups"] != nullptr);
 
@@ -200,7 +202,7 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoConnected)
 
     const AgentInfo agentInfo([os]() { return os; }, [networks]() { return networks; });
 
-    auto metadataInfo = agentInfo.GetMetadataInfo(false);
+    auto metadataInfo = nlohmann::json::parse(agentInfo.GetMetadataInfo(false));
 
     EXPECT_TRUE(metadataInfo["agent"] != nullptr);
 
@@ -208,6 +210,7 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoConnected)
     EXPECT_EQ(metadataInfo["agent"]["type"], agentInfo.GetType());
     EXPECT_EQ(metadataInfo["agent"]["version"], agentInfo.GetVersion());
     EXPECT_EQ(metadataInfo["agent"]["id"], agentInfo.GetUUID());
+    EXPECT_EQ(metadataInfo["agent"]["name"], agentInfo.GetName());
     EXPECT_TRUE(metadataInfo["agent"]["key"] == nullptr);
     EXPECT_TRUE(metadataInfo["agent"]["groups"] != nullptr);
 

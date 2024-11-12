@@ -145,7 +145,7 @@ std::string AgentInfo::GetHeaderInfo() const
     return m_headerInfo;
 }
 
-nlohmann::json AgentInfo::GetMetadataInfo(const bool agentIsRegistering) const
+std::string AgentInfo::GetMetadataInfo(const bool agentIsRegistering) const
 {
     nlohmann::json metadataInfo;
 
@@ -156,7 +156,7 @@ nlohmann::json AgentInfo::GetMetadataInfo(const bool agentIsRegistering) const
         metadataInfo["agent"]["key"] = GetKey();
     }
 
-    return metadataInfo;
+    return metadataInfo.dump();
 }
 
 std::optional<std::string> AgentInfo::GetActiveIPAddress(const nlohmann::json& networksJson) const

@@ -53,7 +53,7 @@ namespace agent_registration
                                                               m_agentInfo.GetHeaderInfo(),
                                                               token.value(),
                                                               "",
-                                                              m_agentInfo.GetMetadataInfo(true).dump());
+                                                              m_agentInfo.GetMetadataInfo(true));
 
         const auto res = httpClient.PerformHttpRequest(reqParams);
 

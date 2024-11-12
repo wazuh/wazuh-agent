@@ -72,8 +72,8 @@ public:
 
     /// @brief Gets all the information about the agent.
     /// @param agentIsRegistering Indicates if the agent is about to register.
-    /// @return A json object with all information about the agent.
-    nlohmann::json GetMetadataInfo(const bool agentIsRegistering) const;
+    /// @return A string with all information about the agent.
+    std::string GetMetadataInfo(const bool agentIsRegistering) const;
 
 private:
     /// @brief Creates a random key for the agent.

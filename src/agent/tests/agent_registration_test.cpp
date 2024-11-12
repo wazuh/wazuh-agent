@@ -86,7 +86,7 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
                                              agent->GetHeaderInfo(),
                                              "token",
                                              "",
-                                             bodyJson.dump());
+                                             bodyJson);
 
     boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
     expectedResponse.result(boost::beast::http::status::ok);
@@ -156,7 +156,7 @@ TEST_F(RegisterTest, RegistrationTestSuccessWithEmptyKey)
                                              agent->GetHeaderInfo(),
                                              "token",
                                              "",
-                                             bodyJson.dump());
+                                             bodyJson);
 
     boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
     expectedResponse.result(boost::beast::http::status::ok);

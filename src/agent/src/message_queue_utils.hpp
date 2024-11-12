@@ -16,10 +16,10 @@ class IMultiTypeQueue;
 /// @param multiTypeQueue The queue to get messages from
 /// @param messageType The type of messages to get from the queue
 /// @param getMetadataInfo Function to get the agent metadata
-/// @return A JSON string containing the messages from the queue
+/// @return A string containing the messages from the queue
 boost::asio::awaitable<std::string> GetMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue,
                                                          MessageType messageType,
-                                                         std::function<nlohmann::json()> getMetadataInfo);
+                                                         std::function<std::string()> getMetadataInfo);
 
 /// @brief Removes a fixed number of messages from the specified queue
 /// @param multiTypeQueue The queue from which to remove messages
