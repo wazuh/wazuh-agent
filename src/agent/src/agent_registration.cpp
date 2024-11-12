@@ -11,6 +11,7 @@ namespace agent_registration
     AgentRegistration::AgentRegistration(std::string user,
                                          std::string password,
                                          const std::string& key,
+                                         const std::string& name,
                                          std::optional<std::string> configFile)
         : m_agentInfo([this]() { return m_sysInfo.os(); }, [this]() { return m_sysInfo.networks(); })
         , m_configurationParser(configFile.has_value() && !configFile->empty()
@@ -23,6 +24,15 @@ namespace agent_registration
         if (!m_agentInfo.SetKey(key))
         {
             throw std::invalid_argument("--key argument must be alphanumeric and 32 characters in length");
+        }
+
+        if (!name.empty())
+        {
+            m_agentInfo.SetName(name);
+        }
+        else
+        {
+            m_agentInfo.SetName(boost::asio::ip::host_name());
         }
     }
 

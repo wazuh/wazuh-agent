@@ -8,7 +8,7 @@
 
 /// @brief Stores and manages information about an agent.
 ///
-/// This class provides methods for getting and setting the agent's key,
+/// This class provides methods for getting and setting the agent's name, key,
 /// UUID, and groups. It also includes private methods for creating and
 /// validating the key.
 class AgentInfo
@@ -25,6 +25,10 @@ public:
     AgentInfo(std::function<nlohmann::json()> getOSInfo = nullptr,
               std::function<nlohmann::json()> getNetworksInfo = nullptr);
 
+    /// @brief Gets the agent's name.
+    /// @return The agent's name.
+    std::string GetName() const;
+
     /// @brief Gets the agent's key.
     /// @return The agent's key.
     std::string GetKey() const;
@@ -36,6 +40,10 @@ public:
     /// @brief Gets the agent's groups.
     /// @return A vector of the agent's groups.
     std::vector<std::string> GetGroups() const;
+
+    /// @brief Sets the agent's name.
+    /// @param name The agent's new name.
+    void SetName(const std::string& name);
 
     /// @brief Sets the agent's key.
     /// @param key The agent's new key.
@@ -94,6 +102,9 @@ private:
     /// @param networksJson JSON object containing network interface information.
     /// @return Optional string with the active IP address if found; otherwise, `std::nullopt`.
     std::optional<std::string> GetActiveIPAddress(const nlohmann::json& networksJson) const;
+
+    /// @brief The agent's name.
+    std::string m_name;
 
     /// @brief The agent's key.
     std::string m_key;

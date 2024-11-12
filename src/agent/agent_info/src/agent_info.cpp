@@ -19,6 +19,7 @@ namespace
 AgentInfo::AgentInfo(std::function<nlohmann::json()> getOSInfo, std::function<nlohmann::json()> getNetworksInfo)
 {
     AgentInfoPersistance agentInfoPersistance;
+    m_name = agentInfoPersistance.GetName();
     m_key = agentInfoPersistance.GetKey();
     m_uuid = agentInfoPersistance.GetUUID();
     m_groups = agentInfoPersistance.GetGroups();
@@ -44,6 +45,11 @@ AgentInfo::AgentInfo(std::function<nlohmann::json()> getOSInfo, std::function<nl
     LoadHeaderInfo();
 }
 
+std::string AgentInfo::GetName() const
+{
+    return m_name;
+}
+
 std::string AgentInfo::GetKey() const
 {
     return m_key;
@@ -57,6 +63,13 @@ std::string AgentInfo::GetUUID() const
 std::vector<std::string> AgentInfo::GetGroups() const
 {
     return m_groups;
+}
+
+void AgentInfo::SetName(const std::string& name)
+{
+    AgentInfoPersistance agentInfoPersistance;
+    agentInfoPersistance.SetName(name);
+    m_name = name;
 }
 
 bool AgentInfo::SetKey(const std::string& key)
@@ -186,6 +199,7 @@ void AgentInfo::LoadEndpointInfo()
 void AgentInfo::LoadMetadataInfo()
 {
     m_metadataInfo["id"] = GetUUID();
+    m_metadataInfo["name"] = GetName();
     m_metadataInfo["type"] = GetType();
     m_metadataInfo["version"] = GetVersion();
     m_metadataInfo["groups"] = GetGroups();

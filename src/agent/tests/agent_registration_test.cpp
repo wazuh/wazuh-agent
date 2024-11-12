@@ -68,7 +68,7 @@ protected:
 TEST_F(RegisterTest, RegistrationTestSuccess)
 {
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", std::nullopt);
+        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", std::nullopt);
     SysInfo sysInfo;
     agent = std::make_unique<AgentInfo>([&sysInfo]() mutable { return sysInfo.os(); },
                                         [&sysInfo]() mutable { return sysInfo.networks(); });
@@ -101,7 +101,7 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
 TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
 {
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", std::nullopt);
+        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", std::nullopt);
     agent = std::make_unique<AgentInfo>();
 
     MockHttpClient mockHttpClient;
@@ -117,7 +117,7 @@ TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
 TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
 {
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", std::nullopt);
+        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", std::nullopt);
     agent = std::make_unique<AgentInfo>();
 
     MockHttpClient mockHttpClient;
@@ -137,7 +137,8 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
 
 TEST_F(RegisterTest, RegistrationTestSuccessWithEmptyKey)
 {
-    registration = std::make_unique<agent_registration::AgentRegistration>("user", "password", "", std::nullopt);
+    registration =
+        std::make_unique<agent_registration::AgentRegistration>("user", "password", "", "agent_name", std::nullopt);
     SysInfo sysInfo;
     agent = std::make_unique<AgentInfo>([&sysInfo]() mutable { return sysInfo.os(); },
                                         [&sysInfo]() mutable { return sysInfo.networks(); });
@@ -169,7 +170,7 @@ TEST_F(RegisterTest, RegistrationTestSuccessWithEmptyKey)
 
 TEST_F(RegisterTest, RegistrationTestFailWithBadKey)
 {
-    ASSERT_THROW(agent_registration::AgentRegistration("user", "password", "badKey", std::nullopt),
+    ASSERT_THROW(agent_registration::AgentRegistration("user", "password", "badKey", "agent_name", std::nullopt),
                  std::invalid_argument);
 }
 

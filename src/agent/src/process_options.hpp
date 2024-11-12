@@ -16,6 +16,7 @@ static const auto OPT_RUN_SERVICE {"--run-service"};
 static const auto OPT_USER {"--user"};
 static const auto OPT_PASSWORD {"--password"};
 static const auto OPT_KEY {"--key"};
+static const auto OPT_NAME {"--name"};
 static const auto OPT_HELP {"--help"};
 
 /// @brief Registers the agent with the given parameters.
@@ -27,6 +28,7 @@ static const auto OPT_HELP {"--help"};
 void RegisterAgent(const std::string& user,
                    const std::string& password,
                    const std::string& key,
+                   const std::string& name,
                    const std::string& configFile);
 
 /// @brief Restarts the agent using the specified configuration file.
