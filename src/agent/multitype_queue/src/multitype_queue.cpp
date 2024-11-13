@@ -159,14 +159,14 @@ Message MultiTypeQueue::getNext(MessageType type, const std::string moduleName, 
     return result;
 }
 
-boost::asio::awaitable<Message> MultiTypeQueue::getNextNAwaitable(MessageType type,
-                                                                  int messageQuantity,
-                                                                  const std::string moduleName,
-                                                                  const std::string moduleType)
+boost::asio::awaitable<std::vector<Message>> MultiTypeQueue::getNextNAwaitable(MessageType type,
+                                                                               int messageQuantity,
+                                                                               const std::string moduleName,
+                                                                               const std::string moduleType)
 {
     boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
 
-    Message result(type, "{}"_json, moduleName, moduleType, "");
+    std::vector<Message> result;
     if (m_mapMessageTypeName.contains(type))
     {
         while (isEmpty(type))
@@ -174,17 +174,7 @@ boost::asio::awaitable<Message> MultiTypeQueue::getNextNAwaitable(MessageType ty
             timer.expires_after(std::chrono::milliseconds(DEFAULT_TIMER_IN_MS));
             co_await timer.async_wait(boost::asio::use_awaitable);
         }
-
-        auto resultData =
-            m_persistenceDest->RetrieveMultiple(messageQuantity, m_mapMessageTypeName.at(type), moduleName, moduleType);
-
-        if (!resultData.empty())
-        {
-            result.data = resultData[0]["data"];
-            result.metaData = resultData[0]["metadata"];
-            result.moduleName = resultData[0]["moduleName"];
-            result.moduleType = resultData[0]["moduleType"];
-        }
+        result = getNextN(type, messageQuantity, moduleName, moduleType);
     }
     else
     {

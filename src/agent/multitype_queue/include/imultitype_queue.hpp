@@ -64,12 +64,12 @@ public:
      * @param messageQuantity The quantity of messages to return.
      * @param moduleName The name of the module requesting the message.
      * @param moduleType The type of the module requesting the messages.
-     * @return boost::asio::awaitable<Message> Awaitable object representing the next message.
+     * @return boost::asio::awaitable<std::vector<Message>> Awaitable object representing the next N messages.
      */
-    virtual boost::asio::awaitable<Message> getNextNAwaitable(MessageType type,
-                                                              int messageQuantity,
-                                                              const std::string moduleName = "",
-                                                              const std::string moduleType = "") = 0;
+    virtual boost::asio::awaitable<std::vector<Message>> getNextNAwaitable(MessageType type,
+                                                                           int messageQuantity,
+                                                                           const std::string moduleName = "",
+                                                                           const std::string moduleType = "") = 0;
 
     /**
      * @brief Retrieves the next N messages from the queue.

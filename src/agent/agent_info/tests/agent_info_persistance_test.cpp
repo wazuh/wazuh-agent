@@ -25,8 +25,16 @@ TEST_F(AgentInfoPersistanceTest, TestConstruction)
 
 TEST_F(AgentInfoPersistanceTest, TestDefaultValues)
 {
+    EXPECT_EQ(persistance->GetName(), "");
     EXPECT_EQ(persistance->GetKey(), "");
     EXPECT_EQ(persistance->GetUUID(), "");
+}
+
+TEST_F(AgentInfoPersistanceTest, TestSetName)
+{
+    const std::string newName = "new_name";
+    persistance->SetName(newName);
+    EXPECT_EQ(persistance->GetName(), newName);
 }
 
 TEST_F(AgentInfoPersistanceTest, TestSetKey)
@@ -58,6 +66,18 @@ TEST_F(AgentInfoPersistanceTest, TestSetGroupsDelete)
     EXPECT_EQ(persistance->GetGroups(), oldGroups);
     persistance->SetGroups(newGroups);
     EXPECT_EQ(persistance->GetGroups(), newGroups);
+}
+
+TEST_F(AgentInfoPersistanceTest, TestResetToDefault)
+{
+    const std::string newName = "new_name";
+    persistance->SetName(newName);
+    EXPECT_EQ(persistance->GetName(), newName);
+
+    persistance->ResetToDefault();
+    EXPECT_EQ(persistance->GetName(), "");
+    EXPECT_EQ(persistance->GetKey(), "");
+    EXPECT_EQ(persistance->GetUUID(), "");
 }
 
 int main(int argc, char** argv)

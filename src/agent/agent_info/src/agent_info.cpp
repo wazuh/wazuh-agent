@@ -19,6 +19,7 @@ namespace
 AgentInfo::AgentInfo(std::function<nlohmann::json()> getOSInfo, std::function<nlohmann::json()> getNetworksInfo)
 {
     AgentInfoPersistance agentInfoPersistance;
+    m_name = agentInfoPersistance.GetName();
     m_key = agentInfoPersistance.GetKey();
     m_uuid = agentInfoPersistance.GetUUID();
     m_groups = agentInfoPersistance.GetGroups();
@@ -40,8 +41,12 @@ AgentInfo::AgentInfo(std::function<nlohmann::json()> getOSInfo, std::function<nl
     }
 
     LoadEndpointInfo();
-    LoadMetadataInfo();
     LoadHeaderInfo();
+}
+
+std::string AgentInfo::GetName() const
+{
+    return m_name;
 }
 
 std::string AgentInfo::GetKey() const
@@ -57,6 +62,13 @@ std::string AgentInfo::GetUUID() const
 std::vector<std::string> AgentInfo::GetGroups() const
 {
     return m_groups;
+}
+
+void AgentInfo::SetName(const std::string& name)
+{
+    AgentInfoPersistance agentInfoPersistance;
+    agentInfoPersistance.SetName(name);
+    m_name = name;
 }
 
 bool AgentInfo::SetKey(const std::string& key)
@@ -132,22 +144,33 @@ std::string AgentInfo::GetHeaderInfo() const
     return m_headerInfo;
 }
 
-nlohmann::json AgentInfo::GetMetadataInfo(const bool agentIsRegistering) const
+std::string AgentInfo::GetMetadataInfo(const bool agentIsRegistering) const
 {
-    nlohmann::json metadataInfo;
+    nlohmann::json agentMetadataInfo;
+    agentMetadataInfo["agent"] = nlohmann::json::object();
+    agentMetadataInfo["agent"]["id"] = GetUUID();
+    agentMetadataInfo["agent"]["name"] = GetName();
+    agentMetadataInfo["agent"]["type"] = GetType();
+    agentMetadataInfo["agent"]["version"] = GetVersion();
+    agentMetadataInfo["agent"]["groups"] = GetGroups();
 
-    metadataInfo["agent"] = m_metadataInfo;
+    if (!m_endpointInfo.empty())
+    {
+        agentMetadataInfo["agent"]["host"] = m_endpointInfo;
+    }
 
     if (agentIsRegistering)
     {
-        metadataInfo["agent"]["key"] = GetKey();
+        agentMetadataInfo["agent"]["key"] = GetKey();
     }
 
-    return metadataInfo;
+    return agentMetadataInfo.dump();
 }
 
-std::optional<std::string> AgentInfo::GetActiveIPAddress(const nlohmann::json& networksJson) const
+std::vector<std::string> AgentInfo::GetActiveIPAddresses(const nlohmann::json& networksJson) const
 {
+    std::vector<std::string> ipAddresses;
+
     if (networksJson.contains("iface"))
     {
         for (const auto& iface : networksJson["iface"])
@@ -156,12 +179,12 @@ std::optional<std::string> AgentInfo::GetActiveIPAddress(const nlohmann::json& n
             {
                 if (iface.contains("IPv4") && !iface["IPv4"].empty())
                 {
-                    return iface["IPv4"][0].value("address", "");
+                    ipAddresses.emplace_back(iface["IPv4"][0].value("address", ""));
                 }
             }
         }
     }
-    return std::nullopt;
+    return ipAddresses;
 }
 
 void AgentInfo::LoadEndpointInfo()
@@ -170,51 +193,26 @@ void AgentInfo::LoadEndpointInfo()
     {
         nlohmann::json osInfo = m_getOSInfo();
         m_endpointInfo["hostname"] = osInfo.value("hostname", "Unknown");
-        m_endpointInfo["os"] = osInfo.value("os_name", "Unknown");
-        m_endpointInfo["platform"] = osInfo.value("sysname", "Unknown");
         m_endpointInfo["architecture"] = osInfo.value("architecture", "Unknown");
+        m_endpointInfo["os"] = nlohmann::json::object();
+        m_endpointInfo["os"]["name"] = osInfo.value("os_name", "Unknown");
+        m_endpointInfo["os"]["platform"] = osInfo.value("sysname", "Unknown");
     }
 
     if (m_getNetworksInfo != nullptr)
     {
         nlohmann::json networksInfo = m_getNetworksInfo();
-        auto ipAddress = GetActiveIPAddress(networksInfo);
-        m_endpointInfo["ip"] = ipAddress.value_or("Unknown");
-    }
-}
-
-void AgentInfo::LoadMetadataInfo()
-{
-    m_metadataInfo["id"] = GetUUID();
-    m_metadataInfo["type"] = GetType();
-    m_metadataInfo["version"] = GetVersion();
-    m_metadataInfo["groups"] = GetGroups();
-
-    if (!m_endpointInfo.empty())
-    {
-        nlohmann::json host;
-        nlohmann::json os;
-
-        host["hostname"] = m_endpointInfo.value("hostname", "Unknown");
-        host["ip"] = m_endpointInfo.value("ip", "Unknown");
-        host["architecture"] = m_endpointInfo.value("architecture", "Unknown");
-
-        os["name"] = m_endpointInfo.value("os", "Unknown");
-        os["platform"] = m_endpointInfo.value("platform", "Unknown");
-
-        host["os"] = os;
-
-        m_metadataInfo["host"] = host;
+        m_endpointInfo["ip"] = GetActiveIPAddresses(networksInfo);
     }
 }
 
 void AgentInfo::LoadHeaderInfo()
 {
-    if (!m_endpointInfo.empty())
+    if (!m_endpointInfo.empty() && m_endpointInfo.contains("os"))
     {
         m_headerInfo = PRODUCT_NAME + "/" + GetVersion() + " (" + GetType() + "; " +
                        m_endpointInfo.value("architecture", "Unknown") + "; " +
-                       m_endpointInfo.value("platform", "Unknown") + ")";
+                       m_endpointInfo["os"].value("platform", "Unknown") + ")";
     }
     else
     {

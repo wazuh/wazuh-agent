@@ -491,8 +491,8 @@ TEST_F(MultiTypeQueueTest, GetNextAwaitableBase)
         [&multiTypeQueue]() -> boost::asio::awaitable<void>
         {
             auto messageReceived = co_await multiTypeQueue.getNextNAwaitable(MessageType::STATELESS, 2);
-            EXPECT_EQ(messageReceived.data.at(0).at("data"), "content-1");
-            EXPECT_EQ(messageReceived.data.at(1).at("data"), "content-2");
+            EXPECT_EQ(messageReceived[0].data.at("data"), "content-1");
+            EXPECT_EQ(messageReceived[1].data.at("data"), "content-2");
         },
         boost::asio::detached);
 

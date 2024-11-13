@@ -8,7 +8,7 @@
 
 /// @brief Stores and manages information about an agent.
 ///
-/// This class provides methods for getting and setting the agent's key,
+/// This class provides methods for getting and setting the agent's name, key,
 /// UUID, and groups. It also includes private methods for creating and
 /// validating the key.
 class AgentInfo
@@ -25,6 +25,10 @@ public:
     AgentInfo(std::function<nlohmann::json()> getOSInfo = nullptr,
               std::function<nlohmann::json()> getNetworksInfo = nullptr);
 
+    /// @brief Gets the agent's name.
+    /// @return The agent's name.
+    std::string GetName() const;
+
     /// @brief Gets the agent's key.
     /// @return The agent's key.
     std::string GetKey() const;
@@ -36,6 +40,10 @@ public:
     /// @brief Gets the agent's groups.
     /// @return A vector of the agent's groups.
     std::vector<std::string> GetGroups() const;
+
+    /// @brief Sets the agent's name.
+    /// @param name The agent's new name.
+    void SetName(const std::string& name);
 
     /// @brief Sets the agent's key.
     /// @param key The agent's new key.
@@ -64,8 +72,8 @@ public:
 
     /// @brief Gets all the information about the agent.
     /// @param agentIsRegistering Indicates if the agent is about to register.
-    /// @return A json object with all information about the agent.
-    nlohmann::json GetMetadataInfo(const bool agentIsRegistering) const;
+    /// @return A string with all information about the agent.
+    std::string GetMetadataInfo(const bool agentIsRegistering) const;
 
 private:
     /// @brief Creates a random key for the agent.
@@ -84,16 +92,16 @@ private:
     /// @brief Loads the endpoint information into `m_endpointInfo`.
     void LoadEndpointInfo();
 
-    /// @brief Loads the metadata information into `m_metadataInfo`.
-    void LoadMetadataInfo();
-
     /// @brief Loads the header information into `m_headerInfo`.
     void LoadHeaderInfo();
 
     /// @brief Extracts the active IP address from the network JSON data.
     /// @param networksJson JSON object containing network interface information.
-    /// @return Optional string with the active IP address if found; otherwise, `std::nullopt`.
-    std::optional<std::string> GetActiveIPAddress(const nlohmann::json& networksJson) const;
+    /// @return Vector of strings with the active IP addresses.
+    std::vector<std::string> GetActiveIPAddresses(const nlohmann::json& networksJson) const;
+
+    /// @brief The agent's name.
+    std::string m_name;
 
     /// @brief The agent's key.
     std::string m_key;
@@ -106,9 +114,6 @@ private:
 
     /// @brief The agent's endpoint information.
     nlohmann::json m_endpointInfo;
-
-    /// @brief The agent's metadata information.
-    nlohmann::json m_metadataInfo;
 
     /// @brief The agent's header information.
     std::string m_headerInfo;

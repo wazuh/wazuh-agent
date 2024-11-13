@@ -31,10 +31,12 @@ namespace agent_registration
         /// @param user The user's username.
         /// @param password The user's password.
         /// @param key The agent's key.
+        /// @param name The agent's name.
         /// @param configFile The path to the configuration file.
         AgentRegistration(std::string user,
                           std::string password,
                           const std::string& key,
+                          const std::string& name,
                           std::optional<std::string> configFile);
 
         /// @brief Registers the agent with the manager.
