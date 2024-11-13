@@ -1,10 +1,11 @@
-#include <iostream>
+#include <inventory.hpp>
+
 #include <cjson/cJSON.h>
+#include <config.h>
 #include <defs.h>
 #include <logger.hpp>
-
-#include <inventory.hpp>
 #include <sysInfo.hpp>
+
 
 void Inventory::Start() {
 
@@ -38,17 +39,17 @@ void Inventory::Start() {
 
 void Inventory::Setup(const configuration::ConfigurationParser& configurationParser) {
 
-    m_enabled = configurationParser.GetConfig<bool>("inventory", "enabled");
-    m_intervalValue = std::chrono::seconds{configurationParser.GetConfig<int>("inventory", "interval")};
-    m_scanOnStart = configurationParser.GetConfig<bool>("inventory", "scan_on_start");
-    m_hardware = configurationParser.GetConfig<bool>("inventory", "hardware");
-    m_os = configurationParser.GetConfig<bool>("inventory", "os");
-    m_network = configurationParser.GetConfig<bool>("inventory", "network");
-    m_packages = configurationParser.GetConfig<bool>("inventory", "packages");
-    m_ports = configurationParser.GetConfig<bool>("inventory", "ports");
-    m_portsAll = configurationParser.GetConfig<bool>("inventory", "ports_all");
-    m_processes = configurationParser.GetConfig<bool>("inventory", "processes");
-    m_hotfixes = configurationParser.GetConfig<bool>("inventory", "hotfixes");
+    m_enabled = configurationParser.GetConfig<bool>( "inventory", "enabled").value_or(config::inventory::DEFAULT_ENABLED);
+    m_intervalValue = std::chrono::seconds{configurationParser.GetConfig<int>("inventory", "interval").value_or(config::inventory::DEFAULT_INTERVAL)};
+    m_scanOnStart = configurationParser.GetConfig<bool>("inventory", "scan_on_start").value_or(config::inventory::DEFAULT_SCAN_ON_START);
+    m_hardware = configurationParser.GetConfig<bool>("inventory", "hardware").value_or(config::inventory::DEFAULT_HARDWARE);
+    m_os = configurationParser.GetConfig<bool>("inventory", "os").value_or(config::inventory::DEFAULT_OS);
+    m_network = configurationParser.GetConfig<bool>("inventory", "network").value_or(config::inventory::DEFAULT_NETWORK);
+    m_packages = configurationParser.GetConfig<bool>("inventory", "packages").value_or(config::inventory::DEFAULT_PACKAGES);
+    m_ports = configurationParser.GetConfig<bool>("inventory", "ports").value_or(config::inventory::DEFAULT_PORTS);
+    m_portsAll = configurationParser.GetConfig<bool>("inventory", "ports_all").value_or(config::inventory::DEFAULT_PORTS_ALL);
+    m_processes = configurationParser.GetConfig<bool>("inventory", "processes").value_or(config::inventory::DEFAULT_PROCESSES);
+    m_hotfixes = configurationParser.GetConfig<bool>("inventory", "hotfixes").value_or(config::inventory::DEFAULT_HOTFIXES);
 }
 
 void Inventory::Stop() {

@@ -40,6 +40,7 @@ target_include_directories(Inventory PUBLIC
 
 target_link_libraries(Inventory
     PUBLIC
+    Config
     dbsync
     sysinfo
     nlohmann_json::nlohmann_json
