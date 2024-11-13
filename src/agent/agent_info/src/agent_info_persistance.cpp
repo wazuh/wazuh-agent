@@ -223,8 +223,10 @@ void AgentInfoPersistance::ResetToDefault()
 {
     try
     {
-        m_db->Remove(AGENT_INFO_TABLE_NAME);
-        m_db->Remove(AGENT_GROUP_TABLE_NAME);
+        m_db->DropTable(AGENT_INFO_TABLE_NAME);
+        m_db->DropTable(AGENT_GROUP_TABLE_NAME);
+        CreateAgentInfoTable();
+        CreateAgentGroupTable();
         InsertDefaultAgentInfo();
     }
     catch (const std::exception& e)

@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 
 #include <agent_info.hpp>
+#include <agent_info_persistance.hpp>
 #include <agent_registration.hpp>
 #include <ihttp_client.hpp>
 #include <ihttp_socket.hpp>
@@ -67,6 +68,9 @@ protected:
 
 TEST_F(RegisterTest, RegistrationTestSuccess)
 {
+    AgentInfoPersistance agentInfoPersistance;
+    agentInfoPersistance.ResetToDefault();
+
     registration = std::make_unique<agent_registration::AgentRegistration>(
         "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", std::nullopt);
     SysInfo sysInfo;
@@ -78,7 +82,7 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
     EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return("token"));
 
-    nlohmann::json bodyJson = agent->GetMetadataInfo(true);
+    const auto bodyJson = agent->GetMetadataInfo(true);
 
     http_client::HttpRequestParams reqParams(boost::beast::http::verb::post,
                                              "https://localhost:55000",
@@ -100,6 +104,9 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
 
 TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
 {
+    AgentInfoPersistance agentInfoPersistance;
+    agentInfoPersistance.ResetToDefault();
+
     registration = std::make_unique<agent_registration::AgentRegistration>(
         "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", std::nullopt);
     agent = std::make_unique<AgentInfo>();
@@ -116,6 +123,9 @@ TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
 
 TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
 {
+    AgentInfoPersistance agentInfoPersistance;
+    agentInfoPersistance.ResetToDefault();
+
     registration = std::make_unique<agent_registration::AgentRegistration>(
         "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", std::nullopt);
     agent = std::make_unique<AgentInfo>();
@@ -137,6 +147,9 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
 
 TEST_F(RegisterTest, RegistrationTestSuccessWithEmptyKey)
 {
+    AgentInfoPersistance agentInfoPersistance;
+    agentInfoPersistance.ResetToDefault();
+
     registration =
         std::make_unique<agent_registration::AgentRegistration>("user", "password", "", "agent_name", std::nullopt);
     SysInfo sysInfo;
@@ -148,7 +161,7 @@ TEST_F(RegisterTest, RegistrationTestSuccessWithEmptyKey)
     EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return("token"));
 
-    nlohmann::json bodyJson = agent->GetMetadataInfo(true);
+    const auto bodyJson = agent->GetMetadataInfo(true);
 
     http_client::HttpRequestParams reqParams(boost::beast::http::verb::post,
                                              "https://localhost:55000",
