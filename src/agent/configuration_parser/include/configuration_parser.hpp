@@ -71,7 +71,7 @@ namespace configuration
             }
             catch (const std::exception& e)
             {
-                LogWarn("Requested setting not found. Default value used. {}", e.what());
+                LogWarn("Requested setting not found, default value used. {}", e.what());
                 return std::nullopt;
             }
         }

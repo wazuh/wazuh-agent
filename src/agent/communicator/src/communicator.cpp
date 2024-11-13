@@ -5,6 +5,7 @@
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 #include <boost/url.hpp>
+#include <config.h>
 #include <jwt-cpp/jwt.h>
 #include <jwt-cpp/traits/nlohmann-json/traits.h>
 
@@ -19,11 +20,12 @@ namespace communicator
     constexpr int TOKEN_PRE_EXPIRY_SECS = 2;
     constexpr int A_SECOND_IN_MILLIS = 1000;
 
-    Communicator::Communicator(std::unique_ptr<http_client::IHttpClient> httpClient,
-                               std::string uuid,
-                               std::string key,
-                               std::function<std::string()> getHeaderInfo,
-                               const std::function<std::string(std::string, std::string)>& getStringConfigValue)
+    Communicator::Communicator(
+        std::unique_ptr<http_client::IHttpClient> httpClient,
+        std::string uuid,
+        std::string key,
+        std::function<std::string()> getHeaderInfo,
+        const std::function<std::optional<std::string>(std::string, std::string)>& getStringConfigValue)
         : m_httpClient(std::move(httpClient))
         , m_uuid(std::move(uuid))
         , m_key(std::move(key))
@@ -31,14 +33,15 @@ namespace communicator
     {
         if (getStringConfigValue != nullptr)
         {
-            m_serverUrl = getStringConfigValue("agent", "server_url");
+            m_serverUrl = getStringConfigValue("agent", "server_url").value_or(config::agent::DEFAULT_SERVER_URL);
 
             if (boost::urls::url_view url(m_serverUrl); url.scheme() != "https")
             {
                 LogInfo("Using insecure connection.");
             }
 
-            m_retryIntervalSecs = std::stol(getStringConfigValue("agent", "retry_interval_secs"));
+            m_retryIntervalSecs = std::stol(getStringConfigValue("agent", "retry_interval_secs")
+                                                .value_or(std::to_string(config::agent::DEFAULT_RETRY_INTERVAL)));
         }
 
         if (getHeaderInfo != nullptr)

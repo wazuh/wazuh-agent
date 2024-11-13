@@ -18,8 +18,6 @@ set(DEFAULT_RELOAD_INTERVAL 60 CACHE STRING "Default Logcollector reload interva
 
 set(DEFAULT_LOGCOLLECTOR_ENABLED true CACHE BOOL "Default Logcollector enabled")
 
-set(DEFAULT_LOCALFILES "/var/log/auth.log" CACHE PATH "Default localfiles")
-
 set(DEFAULT_INVENTORY_ENABLED true CACHE BOOL "Default inventory enabled")
 
 set(DEFAULT_INTERVAL 3600 CACHE STRING "Default inventory interval")

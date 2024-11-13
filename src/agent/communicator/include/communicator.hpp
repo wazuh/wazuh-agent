@@ -33,7 +33,7 @@ namespace communicator
                      std::string uuid,
                      std::string key,
                      std::function<std::string()> getHeaderInfo,
-                     const std::function<std::string(std::string, std::string)>& getStringConfigValue);
+                     const std::function<std::optional<std::string>(std::string, std::string)>& getStringConfigValue);
 
         /// @brief Waits for the authentication token to expire and authenticates again
         boost::asio::awaitable<void> WaitForTokenExpirationAndAuthenticate();
