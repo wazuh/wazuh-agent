@@ -137,7 +137,8 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoRegistration)
     nlohmann::json os;
     nlohmann::json networks;
     nlohmann::json ip;
-    nlohmann::json address;
+    nlohmann::json address4;
+    nlohmann::json address6;
 
     os["hostname"] = "test_name";
     os["os_name"] = "test_os";
@@ -147,10 +148,14 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoRegistration)
     networks["iface"] = nlohmann::json::array();
 
     ip["state"] = "up";
-    ip["IPv4"] = nlohmann::json::array();
 
-    address["address"] = "127.0.0.1";
-    ip["IPv4"].push_back(address);
+    ip["IPv4"] = nlohmann::json::array();
+    address4["address"] = "127.0.0.1";
+    ip["IPv4"].push_back(address4);
+
+    ip["IPv6"] = nlohmann::json::array();
+    address6["address"] = "fe80::0000";
+    ip["IPv6"].push_back(address6);
 
     networks["iface"].push_back(ip);
 
@@ -175,6 +180,8 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoRegistration)
     EXPECT_EQ(metadataInfo["agent"]["host"]["os"]["platform"], "test_platform");
     EXPECT_TRUE(metadataInfo["agent"]["host"]["ip"] != nullptr);
     EXPECT_EQ(metadataInfo["agent"]["host"]["ip"][0], "127.0.0.1");
+    EXPECT_EQ(metadataInfo["agent"]["host"]["ip"][1], "fe80::0000");
+    EXPECT_TRUE(metadataInfo["agent"]["host"]["ip"][2] == nullptr);
     EXPECT_EQ(metadataInfo["agent"]["host"]["architecture"], "test_arch");
     EXPECT_EQ(metadataInfo["agent"]["host"]["hostname"], "test_name");
 }

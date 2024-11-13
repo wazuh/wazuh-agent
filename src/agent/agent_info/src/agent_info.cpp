@@ -181,6 +181,10 @@ std::vector<std::string> AgentInfo::GetActiveIPAddresses(const nlohmann::json& n
                 {
                     ipAddresses.emplace_back(iface["IPv4"][0].value("address", ""));
                 }
+                if (iface.contains("IPv6") && !iface["IPv6"].empty())
+                {
+                    ipAddresses.emplace_back(iface["IPv6"][0].value("address", ""));
+                }
             }
         }
     }
