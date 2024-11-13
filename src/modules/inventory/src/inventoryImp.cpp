@@ -270,6 +270,16 @@ static bool IsElementDuplicated(const nlohmann::json& input, const std::pair<std
     return it != input.end();
 }
 
+nlohmann::json Inventory::EcsData(const nlohmann::json& data, const std::string& table)
+{
+    nlohmann::json ret;
+    if(table == HW_TABLE)
+    {
+        ret = EcsHardwareData(data);
+    }
+    return ret;
+}
+
 void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& data, const std::string& table)
 {
     if (DB_ERROR == result)
@@ -285,9 +295,10 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
                 nlohmann::json msg;
                 msg["type"] = table;
                 msg["operation"] = OPERATION_MAP.at(result);
-                msg["data"] = item;
+                msg["data"] = EcsData(item, table);
                 msg["data"]["scan_time"] = m_scanTime;
-                RemoveKeysWithEmptyValue(msg["data"]);
+                // TO DO: this is necesary for ECS?
+                //RemoveKeysWithEmptyValue(msg["data"]);
                 const auto msgToSend{msg.dump()};
                 m_reportDiffFunction(msgToSend);
             }
@@ -298,7 +309,7 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
             nlohmann::json msg;
             msg["type"] = table;
             msg["operation"] = OPERATION_MAP.at(result);
-            msg["data"] = data;
+            msg["data"] = EcsData(data, table);
             msg["data"]["scan_time"] = m_scanTime;
             RemoveKeysWithEmptyValue(msg["data"]);
             const auto msgToSend{msg.dump()};
@@ -408,11 +419,27 @@ void Inventory::Destroy()
     lock.unlock();
 }
 
+
+nlohmann::json Inventory::EcsHardwareData(const nlohmann::json& originalData)
+{
+    nlohmann::json ret;
+
+    ret["observer"]["serial_number"] = originalData.contains("board_serial") ? originalData["board_serial"] : "";
+    ret["host"]["cpu"]["name"] = originalData.contains("cpu_name") ? originalData["cpu_name"] : "";
+    ret["host"]["cpu"]["cores"] = originalData.contains("cpu_cores") ? originalData["cpu_cores"] : nlohmann::json(0);
+    ret["host"]["cpu"]["speed"] = originalData.contains("cpu_mhz") ? originalData["cpu_mhz"] : nlohmann::json(0);
+    ret["host"]["memory"]["total"] = originalData.contains("ram_total") ? originalData["ram_total"] : nlohmann::json(0);
+    ret["host"]["memory"]["free"] = originalData.contains("ram_free") ? originalData["ram_free"] : nlohmann::json(0);
+    ret["host"]["memory"]["used"]["percentage"] = originalData.contains("ram_usage") ? originalData["ram_usage"] : nlohmann::json(0);
+
+    return ret;
+}
+
+
 nlohmann::json Inventory::GetHardwareData()
 {
     nlohmann::json ret;
     ret[0] = m_spInfo->hardware();
-    ret[0]["checksum"] = GetItemChecksum(ret[0]);
     return ret;
 }
 
@@ -772,12 +799,13 @@ void Inventory::Scan()
     m_scanTime = Utils::getCurrentTimestamp();
 
     TryCatchTask([&]() { ScanHardware(); });
-    TryCatchTask([&]() { ScanOs(); });
-    TryCatchTask([&]() { ScanNetwork(); });
-    TryCatchTask([&]() { ScanPackages(); });
-    TryCatchTask([&]() { ScanHotfixes(); });
-    TryCatchTask([&]() { ScanPorts(); });
-    TryCatchTask([&]() { ScanProcesses(); });
+    // TO DO: enable each scan once the ECS translation is done
+    //TryCatchTask([&]() { ScanOs(); });
+    //TryCatchTask([&]() { ScanNetwork(); });
+    //TryCatchTask([&]() { ScanPackages(); });
+    //TryCatchTask([&]() { ScanHotfixes(); });
+    //TryCatchTask([&]() { ScanPorts(); });
+    //TryCatchTask([&]() { ScanProcesses(); });
     m_notify = true;
     LogInfo("Evaluation finished.");
 }

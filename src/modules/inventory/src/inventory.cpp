@@ -87,7 +87,7 @@ void Inventory::SendDeltaEvent(const std::string& data) {
         LogWarn("Stateful event can't be pushed into the message queue: {}", data);
     }
     else {
-        LogError("Stateful event queued: {}, metadata {}", data, metadata.dump());
+        LogTrace("Stateful event queued: {}, metadata {}", data, metadata.dump());
     }
 }
 
