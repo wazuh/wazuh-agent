@@ -32,7 +32,7 @@ namespace agent_registration
         }
         else
         {
-            m_agentInfo.SetName(boost::asio::ip::host_name());
+            m_agentInfo.SetName(m_sysInfo.os().value("hostname", "Unknown"));
         }
     }
 

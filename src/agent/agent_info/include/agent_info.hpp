@@ -92,9 +92,6 @@ private:
     /// @brief Loads the endpoint information into `m_endpointInfo`.
     void LoadEndpointInfo();
 
-    /// @brief Loads the metadata information into `m_metadataInfo`.
-    void LoadMetadataInfo();
-
     /// @brief Loads the header information into `m_headerInfo`.
     void LoadHeaderInfo();
 
@@ -117,9 +114,6 @@ private:
 
     /// @brief The agent's endpoint information.
     nlohmann::json m_endpointInfo;
-
-    /// @brief The agent's metadata information.
-    nlohmann::json m_metadataInfo;
 
     /// @brief The agent's header information.
     std::string m_headerInfo;
