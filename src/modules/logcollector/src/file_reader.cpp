@@ -78,9 +78,9 @@ Localfile::Localfile(std::shared_ptr<std::istream> stream) :
     m_stream(std::move(stream)) { }
 
 std::string Localfile::NextLog() {
-    auto buffer = std::vector<char>(config::BUFFER_SIZE);
+    auto buffer = std::vector<char>(config::logcollector::BUFFER_SIZE);
 
-    if (m_stream->getline(buffer.data(), config::BUFFER_SIZE).good()) {
+    if (m_stream->getline(buffer.data(), config::logcollector::BUFFER_SIZE).good()) {
         m_pos = m_stream->tellg();
         return { buffer.data(), static_cast<size_t>(m_stream->gcount()) - 1 };
     } else {
