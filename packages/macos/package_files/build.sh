@@ -14,6 +14,7 @@ BUILD_JOBS=$3
 DEBUG=$4
 MAKE_COMPILATION=$5
 INSTALLATION_SCRIPTS_DIR=${DESTINATION_PATH}/packages_files/agent_installation_scripts
+SEARCH_DIR=${SOURCES_PATH}/src
 
 function configure() {
     echo USER_LANGUAGE="en" > ${CONFIG}
@@ -26,6 +27,8 @@ function configure() {
     echo USER_AGENT_SERVER_IP="MANAGER_IP" >> ${CONFIG}
     echo USER_ENABLE_SYSCHECK="y" >> ${CONFIG}
     echo USER_ENABLE_ROOTCHECK="y" >> ${CONFIG}
+    echo USER_ENABLE_OPENSCAP="n" >> ${CONFIG}
+    echo USER_ENABLE_CISCAT="n" >> ${CONFIG}
     echo USER_ENABLE_ACTIVE_RESPONSE="y" >> ${CONFIG}
     echo USER_CA_STORE="n" >> ${CONFIG}
 }
@@ -40,6 +43,14 @@ function build() {
     echo "Generating Wazuh executables"
     make -j $BUILD_JOBS -C ${SOURCES_PATH}/src DYLD_FORCE_FLAT_NAMESPACE=1 DEBUG=$DEBUG TARGET=agent build
     fi
+
+    EXECUTABLE_FILES=$(find "${SEARCH_DIR}" -maxdepth 1 -type f ! -name "*.py" -exec file {} + | grep 'executable' | cut -d: -f1)
+    EXECUTABLE_FILES+=" $(find "${SEARCH_DIR}" -type f ! -name "*.py" ! -path "${SEARCH_DIR}/external/*" ! -path "${SEARCH_DIR}/symbols/*" -name "*.dylib" -print 2>/dev/null)"
+
+    for var in $EXECUTABLE_FILES; do
+        filename=$(basename "$var")
+        dsymutil -o "${SEARCH_DIR}/symbols/${filename}.dSYM" "$var" 2>/dev/null && strip -S "$var"
+    done
 
     echo "Running install script"
     ${SOURCES_PATH}/install.sh
@@ -60,13 +71,13 @@ function build() {
     find ${SOURCES_PATH}/src/init/ -name *.sh -type f -exec install -m 0640 {} ${INSTALLATION_SCRIPTS_DIR}/src/init \;
 
     mkdir -p ${INSTALLATION_SCRIPTS_DIR}/sca/generic
-    mkdir -p ${INSTALLATION_SCRIPTS_DIR}/sca/darwin/{15,16,17,18,20,21,22,23}
+    mkdir -p ${INSTALLATION_SCRIPTS_DIR}/sca/darwin/{15,16,17,18,20,21,22,23,24}
 
     cp -r ${SOURCES_PATH}/ruleset/sca/darwin ${INSTALLATION_SCRIPTS_DIR}/sca
     cp -r ${SOURCES_PATH}/ruleset/sca/generic ${INSTALLATION_SCRIPTS_DIR}/sca
     cp ${SOURCES_PATH}/etc/templates/config/generic/sca.files ${INSTALLATION_SCRIPTS_DIR}/sca/generic/
 
-    for n in $(seq 15 23); do
+    for n in $(seq 15 24); do
         cp ${SOURCES_PATH}/etc/templates/config/darwin/$n/sca.files ${INSTALLATION_SCRIPTS_DIR}/sca/darwin/$n/
     done
 
