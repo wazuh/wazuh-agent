@@ -91,3 +91,5 @@ RUN mkdir -p /usr/local/var/lib/rpm && \
 RUN rpmkeys --import "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF" && \
     su -c 'curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo' && \
     yum install mono-devel -y
+
+RUN curl -o /usr/local/bin/nuget https://dist.nuget.org/win-x86-commandline/v6.10.2/nuget.exe
