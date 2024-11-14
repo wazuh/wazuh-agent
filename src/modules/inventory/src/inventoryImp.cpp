@@ -263,6 +263,10 @@ nlohmann::json Inventory::EcsData(const nlohmann::json& data, const std::string&
     {
         ret = EcsSystemData(data);
     }
+    else if (table == PACKAGES_TABLE)
+    {
+        ret = EcsPackageData(data);
+    }
     return ret;
 }
 
@@ -276,6 +280,10 @@ std::string Inventory::GetPrimaryKeys([[maybe_unused]] const nlohmann::json& dat
     else if (table == OS_TABLE)
     {
         ret = data["host"]["os"]["name"];
+    }
+    else if (table == PACKAGES_TABLE)
+    {
+        ret = data["package"]["name"].dump() + ":" + data["package"]["version"].dump() + ":" + data["package"]["architecture"].dump() + ":" + data["package"]["type"].dump() + ":" + data["package"]["path"].dump();
     }
     return ret;
 }
@@ -457,6 +465,22 @@ nlohmann::json Inventory::EcsSystemData(const nlohmann::json& originalData)
     ret["host"]["os"]["platform"] = originalData.contains("os_platform") ? originalData["os_platform"] : "";
     ret["host"]["os"]["version"]= originalData.contains("os_version") ? originalData["os_version"] : "";
     ret["host"]["os"]["type"]= originalData.contains("sysname") ? originalData["sysname"] : "";
+
+    return ret;
+}
+
+nlohmann::json Inventory::EcsPackageData(const nlohmann::json& originalData)
+{
+    nlohmann::json ret;
+
+    ret["package"]["architecture"] = originalData.contains("architecture") ? originalData["architecture"] : "";
+    ret["package"]["description"] = originalData.contains("description") ? originalData["description"] : "";
+    ret["package"]["installed"] = originalData.contains("install_time") ? originalData["install_time"] : "";
+    ret["package"]["name"] = originalData.contains("name") ? originalData["name"] : "";
+    ret["package"]["path"] = originalData.contains("location") ? originalData["location"] : "";
+    ret["package"]["size"] = originalData.contains("size") ? originalData["size"] : nlohmann::json(0);
+    ret["package"]["type"] = originalData.contains("format") ? originalData["format"] : "";
+    ret["package"]["version"] = originalData.contains("version") ? originalData["version"] : "";
 
     return ret;
 }
@@ -666,7 +690,6 @@ void Inventory::ScanPackages()
         {
             nlohmann::json input;
 
-            rawData["checksum"] = GetItemChecksum(rawData);
             rawData["item_id"] = GetItemId(rawData, PACKAGES_ITEM_ID_FIELDS);
 
             input["table"] = PACKAGES_TABLE;
@@ -827,7 +850,7 @@ void Inventory::Scan()
 
     // TO DO: enable each scan once the ECS translation is done
     //TryCatchTask([&]() { ScanNetwork(); });
-    //TryCatchTask([&]() { ScanPackages(); });
+    TryCatchTask([&]() { ScanPackages(); });
     //TryCatchTask([&]() { ScanHotfixes(); });
     //TryCatchTask([&]() { ScanPorts(); });
     //TryCatchTask([&]() { ScanProcesses(); });
