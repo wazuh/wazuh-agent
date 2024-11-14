@@ -49,6 +49,7 @@ class Inventory {
         void Destroy();
 
         std::string GetCreateStatement() const;
+        nlohmann::json EcsSystemData(const nlohmann::json& originalData);
         nlohmann::json GetOSData();
         nlohmann::json EcsHardwareData(const nlohmann::json& originalData);
         nlohmann::json GetHardwareData();

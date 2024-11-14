@@ -88,7 +88,7 @@ TEST_F(InventoryImpTest, defaultCtor)
         {
             auto delta = nlohmann::json::parse(data);
 
-            if (delta.at("type").get_ref<const std::string&>().compare("osinfo") == 0)
+            if (delta.at("type").get_ref<const std::string&>().compare("system") == 0)
             {
                 delta["data"].erase("checksum");
             }
@@ -104,7 +104,7 @@ TEST_F(InventoryImpTest, defaultCtor)
     };
     const auto expectedResult2
     {
-        R"({"data":{"architecture":"x86_64","hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"},"operation":"INSERTED","type":"osinfo"})"
+        R"({"data":{"architecture":"x86_64","hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"},"operation":"INSERTED","type":"system"})"
     };
     const auto expectedResult3
     {
@@ -318,7 +318,7 @@ TEST_F(InventoryImpTest, noHardware)
         {
             auto delta = nlohmann::json::parse(data);
 
-            if (delta["type"].get_ref<const std::string&>().compare("osinfo") == 0)
+            if (delta["type"].get_ref<const std::string&>().compare("system") == 0)
             {
                 delta["data"].erase("checksum");
             }
@@ -330,7 +330,7 @@ TEST_F(InventoryImpTest, noHardware)
 
     const auto expectedResult2
     {
-        R"({"data":{"architecture":"x86_64","hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"},"operation":"INSERTED","type":"osinfo"})"
+        R"({"data":{"architecture":"x86_64","hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"},"operation":"INSERTED","type":"system"})"
     };
     const auto expectedResult3
     {
@@ -447,7 +447,7 @@ TEST_F(InventoryImpTest, noOs)
         {
             auto delta = nlohmann::json::parse(data);
 
-            if (delta["type"].get_ref<const std::string&>().compare("osinfo") == 0)
+            if (delta["type"].get_ref<const std::string&>().compare("system") == 0)
             {
                 delta["data"].erase("checksum");
             }
@@ -575,7 +575,7 @@ TEST_F(InventoryImpTest, noNetwork)
         {
             auto delta = nlohmann::json::parse(data);
 
-            if (delta["type"].get_ref<const std::string&>().compare("osinfo") == 0)
+            if (delta["type"].get_ref<const std::string&>().compare("system") == 0)
             {
                 delta["data"].erase("checksum");
             }
@@ -591,7 +591,7 @@ TEST_F(InventoryImpTest, noNetwork)
     };
     const auto expectedResult2
     {
-        R"({"data":{"architecture":"x86_64","hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"},"operation":"INSERTED","type":"osinfo"})"
+        R"({"data":{"architecture":"x86_64","hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"},"operation":"INSERTED","type":"system"})"
     };
     const auto expectedResult7
     {
@@ -681,7 +681,7 @@ TEST_F(InventoryImpTest, noPackages)
         {
             auto delta = nlohmann::json::parse(data);
 
-            if (delta["type"].get_ref<const std::string&>().compare("osinfo") == 0)
+            if (delta["type"].get_ref<const std::string&>().compare("system") == 0)
             {
                 delta["data"].erase("checksum");
             }
@@ -697,7 +697,7 @@ TEST_F(InventoryImpTest, noPackages)
     };
     const auto expectedResult2
     {
-        R"({"data":{"architecture":"x86_64","hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"},"operation":"INSERTED","type":"osinfo"})"
+        R"({"data":{"architecture":"x86_64","hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"},"operation":"INSERTED","type":"system"})"
     };
     const auto expectedResult3
     {
@@ -809,7 +809,7 @@ TEST_F(InventoryImpTest, noPorts)
         {
             auto delta = nlohmann::json::parse(data);
 
-            if (delta["type"].get_ref<const std::string&>().compare("osinfo") == 0)
+            if (delta["type"].get_ref<const std::string&>().compare("system") == 0)
             {
                 delta["data"].erase("checksum");
             }
@@ -825,7 +825,7 @@ TEST_F(InventoryImpTest, noPorts)
     };
     const auto expectedResult2
     {
-        R"({"data":{"architecture":"x86_64","hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"},"operation":"INSERTED","type":"osinfo"})"
+        R"({"data":{"architecture":"x86_64","hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"},"operation":"INSERTED","type":"system"})"
     };
     const auto expectedResult3
     {
@@ -938,7 +938,7 @@ TEST_F(InventoryImpTest, noPortsAll)
         {
             auto delta = nlohmann::json::parse(data);
 
-            if (delta["type"].get_ref<const std::string&>().compare("osinfo") == 0)
+            if (delta["type"].get_ref<const std::string&>().compare("system") == 0)
             {
                 delta["data"].erase("checksum");
             }
@@ -954,7 +954,7 @@ TEST_F(InventoryImpTest, noPortsAll)
     };
     const auto expectedResult2
     {
-        R"({"data":{"architecture":"x86_64","hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"},"operation":"INSERTED","type":"osinfo"})"
+        R"({"data":{"architecture":"x86_64","hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"},"operation":"INSERTED","type":"system"})"
     };
     const auto expectedResult3
     {
@@ -1074,7 +1074,7 @@ TEST_F(InventoryImpTest, noProcesses)
         {
             auto delta = nlohmann::json::parse(data);
 
-            if (delta["type"].get_ref<const std::string&>().compare("osinfo") == 0)
+            if (delta["type"].get_ref<const std::string&>().compare("system") == 0)
             {
                 delta["data"].erase("checksum");
             }
@@ -1090,7 +1090,7 @@ TEST_F(InventoryImpTest, noProcesses)
     };
     const auto expectedResult2
     {
-        R"({"data":{"architecture":"x86_64","hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"},"operation":"INSERTED","type":"osinfo"})"
+        R"({"data":{"architecture":"x86_64","hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"},"operation":"INSERTED","type":"system"})"
     };
     const auto expectedResult3
     {
@@ -1203,7 +1203,7 @@ TEST_F(InventoryImpTest, noHotfixes)
         {
             auto delta = nlohmann::json::parse(data);
 
-            if (delta["type"].get_ref<const std::string&>().compare("osinfo") == 0)
+            if (delta["type"].get_ref<const std::string&>().compare("system") == 0)
             {
                 delta["data"].erase("checksum");
             }
@@ -1219,7 +1219,7 @@ TEST_F(InventoryImpTest, noHotfixes)
     };
     const auto expectedResult2
     {
-        R"({"data":{"architecture":"x86_64","hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"},"operation":"INSERTED","type":"osinfo"})"
+        R"({"data":{"architecture":"x86_64","hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"},"operation":"INSERTED","type":"system"})"
     };
     const auto expectedResult3
     {
