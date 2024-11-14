@@ -50,6 +50,7 @@ class Inventory {
 
         std::string GetCreateStatement() const;
         nlohmann::json GetOSData();
+        nlohmann::json EcsHardwareData(const nlohmann::json& originalData);
         nlohmann::json GetHardwareData();
         nlohmann::json GetNetworkData();
         nlohmann::json GetPortsData();
@@ -69,6 +70,9 @@ class Inventory {
         void ShowConfig();
         cJSON * Dump();
         static void LogErrorInventory(const std::string& log);
+        nlohmann::json EcsData(const nlohmann::json& data, const std::string& table);
+        std::string GetPrimaryKeys(const nlohmann::json& data, const std::string& table);
+        std::string CalculateBase64Id(const nlohmann::json& data, const std::string& table);
 
         const std::string                           m_moduleName {"inventory"};
         std::shared_ptr<ISysInfo>                   m_spInfo;
