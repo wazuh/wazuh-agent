@@ -71,17 +71,12 @@ void Inventory::SendDeltaEvent(const std::string& data) {
     const auto jsonData = nlohmann::json::parse(data);
     auto metadata = nlohmann::json::object();
 
-    std::string dataType;
-    if (jsonData.contains("type") ) {
-        dataType = jsonData["type"].get<std::string>();
-    }
-
     metadata["module"] = Name();
-    metadata["type"] = dataType;
+    metadata["type"] = jsonData["type"];
     metadata["operation"] = jsonData["operation"];
-    metadata["id"] = "id";
+    metadata["id"] = jsonData["id"];
 
-    const Message statefulMessage{ MessageType::STATEFUL, jsonData["data"], Name(), dataType, metadata.dump() };
+    const Message statefulMessage{ MessageType::STATEFUL, jsonData["data"], Name(), jsonData["type"], metadata.dump() };
 
     if(!m_pushMessage(statefulMessage)) {
         LogWarn("Stateful event can't be pushed into the message queue: {}", data);

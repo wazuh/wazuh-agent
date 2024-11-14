@@ -4,6 +4,7 @@
 #include <stringHelper.h>
 #include <hashHelper.h>
 #include <timeHelper.h>
+#include <boost/beast/core/detail/base64.hpp>
 
 constexpr std::chrono::seconds INVENTORY_DEFAULT_INTERVAL { 3600 };
 
@@ -15,12 +16,12 @@ constexpr auto QUEUE_SIZE
 static const std::map<ReturnTypeCallback, std::string> OPERATION_MAP
 {
     // LCOV_EXCL_START
-    {MODIFIED, "MODIFIED"},
-    {DELETED, "DELETED"},
-    {INSERTED, "INSERTED"},
-    {MAX_ROWS, "MAX_ROWS"},
-    {DB_ERROR, "DB_ERROR"},
-    {SELECTED, "SELECTED"},
+    {MODIFIED, "modified"},
+    {DELETED, "deleted"},
+    {INSERTED, "create"},
+    {MAX_ROWS, "max_rows"},
+    {DB_ERROR, "db_error"},
+    {SELECTED, "selected"},
     // LCOV_EXCL_STOP
 };
 
@@ -48,7 +49,7 @@ constexpr auto OS_SQL_STATEMENT
 
 constexpr auto HW_SQL_STATEMENT
 {
-    R"(CREATE TABLE hwinfo (
+    R"(CREATE TABLE hardware (
     board_serial TEXT,
     cpu_name TEXT,
     cpu_cores INTEGER,
@@ -204,7 +205,7 @@ constexpr auto HOTFIXES_TABLE     { "hotfixes"         };
 constexpr auto PORTS_TABLE        { "ports"            };
 constexpr auto PROCESSES_TABLE    { "processes"        };
 constexpr auto OS_TABLE           { "osinfo"           };
-constexpr auto HW_TABLE           { "hwinfo"           };
+constexpr auto HW_TABLE           { "hardware"         };
 
 
 static std::string GetItemId(const nlohmann::json& item, const std::vector<std::string>& idFields)
@@ -239,25 +240,6 @@ static std::string GetItemChecksum(const nlohmann::json& item)
     return Utils::asciiToHex(hash.hash());
 }
 
-static void RemoveKeysWithEmptyValue(nlohmann::json& input)
-{
-    for (auto& data : input)
-    {
-        for (auto it = data.begin(); it != data.end(); )
-        {
-            if (it.value().type() == nlohmann::detail::value_t::string &&
-                    it.value().get_ref<const std::string&>().empty())
-            {
-                it = data.erase(it);
-            }
-            else
-            {
-                ++it;
-            }
-        }
-    }
-}
-
 static bool IsElementDuplicated(const nlohmann::json& input, const std::pair<std::string, std::string>& keyValue)
 {
     const auto it
@@ -280,6 +262,26 @@ nlohmann::json Inventory::EcsData(const nlohmann::json& data, const std::string&
     return ret;
 }
 
+std::string Inventory::GetPrimaryKeys([[maybe_unused]] const nlohmann::json& data, const std::string& table)
+{
+    std::string ret;
+    if (table == HW_TABLE)
+    {
+        ret = data["observer"]["serial_number"];
+    }
+    return ret;
+}
+
+std::string Inventory::CalculateBase64Id(const nlohmann::json& data, const std::string& table)
+{
+    std::string primaryKey = GetPrimaryKeys(data, table);
+    std::string baseId = Name() + ":" + table + ":" + primaryKey;
+    std::string idBase64;
+    idBase64.resize(boost::beast::detail::base64::encoded_size(baseId.size()));
+    boost::beast::detail::base64::encode(&idBase64[0], baseId.c_str(), baseId.size());
+    return idBase64;
+}
+
 void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& data, const std::string& table)
 {
     if (DB_ERROR == result)
@@ -288,6 +290,7 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
     }
     else if (m_notify && !m_stopping)
     {
+
         if (data.is_array())
         {
             for (const auto& item : data)
@@ -296,9 +299,8 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
                 msg["type"] = table;
                 msg["operation"] = OPERATION_MAP.at(result);
                 msg["data"] = EcsData(item, table);
+                msg["id"] = CalculateBase64Id(msg["data"], table);
                 msg["data"]["scan_time"] = m_scanTime;
-                // TO DO: this is necesary for ECS?
-                //RemoveKeysWithEmptyValue(msg["data"]);
                 const auto msgToSend{msg.dump()};
                 m_reportDiffFunction(msgToSend);
             }
@@ -310,8 +312,8 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
             msg["type"] = table;
             msg["operation"] = OPERATION_MAP.at(result);
             msg["data"] = EcsData(data, table);
+            msg["id"] = CalculateBase64Id(msg["data"], table);
             msg["data"]["scan_time"] = m_scanTime;
-            RemoveKeysWithEmptyValue(msg["data"]);
             const auto msgToSend{msg.dump()};
             m_reportDiffFunction(msgToSend);
             // LCOV_EXCL_STOP
