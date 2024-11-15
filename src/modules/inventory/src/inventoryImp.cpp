@@ -267,6 +267,10 @@ nlohmann::json Inventory::EcsData(const nlohmann::json& data, const std::string&
     {
         ret = EcsPackageData(data);
     }
+    else if (table == PROCESSES_TABLE)
+    {
+        ret = EcsProcessesData(data);
+    }
     return ret;
 }
 
@@ -284,6 +288,10 @@ std::string Inventory::GetPrimaryKeys([[maybe_unused]] const nlohmann::json& dat
     else if (table == PACKAGES_TABLE)
     {
         ret = data["package"]["name"].get<std::string>() + ":" + data["package"]["version"].get<std::string>() + ":" + data["package"]["architecture"].get<std::string>() + ":" + data["package"]["type"].get<std::string>() + ":" + data["package"]["path"].get<std::string>();
+    }
+    else if (table == PROCESSES_TABLE)
+    {
+        ret = data["process"]["pid"];
     }
     return ret;
 }
@@ -481,6 +489,28 @@ nlohmann::json Inventory::EcsPackageData(const nlohmann::json& originalData)
     ret["package"]["size"] = originalData.contains("size") ? originalData["size"] : nlohmann::json(0);
     ret["package"]["type"] = originalData.contains("format") ? originalData["format"] : "";
     ret["package"]["version"] = originalData.contains("version") ? originalData["version"] : "";
+
+    return ret;
+}
+
+nlohmann::json Inventory::EcsProcessesData(const nlohmann::json& originalData)
+{
+    nlohmann::json ret;
+
+    ret["process"]["pid"] = originalData.contains("pid") ? originalData["pid"] : nlohmann::json(0);
+    ret["process"]["name"] = originalData.contains("name") ? originalData["name"] : "";
+    ret["process"]["parent"]["pid"] = originalData.contains("ppid") ? originalData["ppid"] : nlohmann::json(0);
+    ret["process"]["command_line"] = originalData.contains("cmd") ? originalData["cmd"] : "";
+    ret["process"]["args"] = originalData.contains("argvs") ? originalData["argvs"] : "";
+    ret["process"]["user"]["id"] = originalData.contains("euser") ? originalData["euser"] : "";
+    ret["process"]["real_user"]["id"]= originalData.contains("ruser") ? originalData["ruser"] : "";
+    ret["process"]["saved_user"]["id"]= originalData.contains("suser") ? originalData["suser"] : "";
+    ret["process"]["group"]["id"]= originalData.contains("egroup") ? originalData["egroup"] : "";
+    ret["process"]["real_group"]["id"]= originalData.contains("rgroup") ? originalData["rgroup"] : "";
+    ret["process"]["saved_group"]["id"]= originalData.contains("sgroup") ? originalData["sgroup"] : "";
+    ret["process"]["start"]= originalData.contains("start_time") ? originalData["start_time"] : "";
+    ret["process"]["thread"]["id"]= originalData.contains("tgid") ? originalData["tgid"] : "";
+    ret["process"]["tty"]= originalData.contains("tty") ? originalData["tty"] : "";
 
     return ret;
 }
@@ -827,8 +857,6 @@ void Inventory::ScanProcesses()
         {
             nlohmann::json input;
 
-            rawData["checksum"] = GetItemChecksum(rawData);
-
             input["table"] = PROCESSES_TABLE;
             input["data"] = nlohmann::json::array( { rawData } );
 
@@ -847,13 +875,13 @@ void Inventory::Scan()
 
     TryCatchTask([&]() { ScanHardware(); });
     TryCatchTask([&]() { ScanOs(); });
+    TryCatchTask([&]() { ScanPackages(); });
+    TryCatchTask([&]() { ScanProcesses(); });
 
     // TO DO: enable each scan once the ECS translation is done
     //TryCatchTask([&]() { ScanNetwork(); });
-    TryCatchTask([&]() { ScanPackages(); });
     //TryCatchTask([&]() { ScanHotfixes(); });
     //TryCatchTask([&]() { ScanPorts(); });
-    //TryCatchTask([&]() { ScanProcesses(); });
     m_notify = true;
     LogInfo("Evaluation finished.");
 }
