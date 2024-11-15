@@ -271,6 +271,9 @@ nlohmann::json Inventory::EcsData(const nlohmann::json& data, const std::string&
     {
         ret = EcsProcessesData(data);
     }
+    else if(table == HOTFIXES_TABLE){
+        ret = EcsHotfixesData(data);
+    }
     return ret;
 }
 
@@ -292,6 +295,9 @@ std::string Inventory::GetPrimaryKeys([[maybe_unused]] const nlohmann::json& dat
     else if (table == PROCESSES_TABLE)
     {
         ret = data["process"]["pid"];
+    }
+    else if(table == HOTFIXES_TABLE){
+        ret = data["package"]["hotfix"]["name"];
     }
     return ret;
 }
@@ -511,6 +517,15 @@ nlohmann::json Inventory::EcsProcessesData(const nlohmann::json& originalData)
     ret["process"]["start"]= originalData.contains("start_time") ? originalData["start_time"] : "";
     ret["process"]["thread"]["id"]= originalData.contains("tgid") ? originalData["tgid"] : "";
     ret["process"]["tty"]= originalData.contains("tty") ? originalData["tty"] : "";
+
+    return ret;
+}
+
+nlohmann::json Inventory::EcsHotfixesData(const nlohmann::json& originalData){
+
+    nlohmann::json ret;
+
+    ret["package"]["hotfix"]["name"] = originalData.contains("hotfix") ? originalData["hotfix"] : "";
 
     return ret;
 }
@@ -747,11 +762,6 @@ void Inventory::ScanHotfixes()
 
         if (!hotfixes.is_null())
         {
-            for (auto& hotfix : hotfixes)
-            {
-                hotfix["checksum"] = GetItemChecksum(hotfix);
-            }
-
             UpdateChanges(HOTFIXES_TABLE, hotfixes);
         }
 
@@ -877,10 +887,10 @@ void Inventory::Scan()
     TryCatchTask([&]() { ScanOs(); });
     TryCatchTask([&]() { ScanPackages(); });
     TryCatchTask([&]() { ScanProcesses(); });
+    TryCatchTask([&]() { ScanHotfixes(); });
 
     // TO DO: enable each scan once the ECS translation is done
     //TryCatchTask([&]() { ScanNetwork(); });
-    //TryCatchTask([&]() { ScanHotfixes(); });
     //TryCatchTask([&]() { ScanPorts(); });
     m_notify = true;
     LogInfo("Evaluation finished.");
