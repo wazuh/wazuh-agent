@@ -27,7 +27,7 @@ static const std::map<ReturnTypeCallback, std::string> OPERATION_MAP
 
 constexpr auto OS_SQL_STATEMENT
 {
-    R"(CREATE TABLE osinfo (
+    R"(CREATE TABLE system (
     hostname TEXT,
     architecture TEXT,
     os_name TEXT,
@@ -204,7 +204,7 @@ constexpr auto PACKAGES_TABLE     { "packages"         };
 constexpr auto HOTFIXES_TABLE     { "hotfixes"         };
 constexpr auto PORTS_TABLE        { "ports"            };
 constexpr auto PROCESSES_TABLE    { "processes"        };
-constexpr auto OS_TABLE           { "osinfo"           };
+constexpr auto OS_TABLE           { "system"           };
 constexpr auto HW_TABLE           { "hardware"         };
 
 
@@ -259,6 +259,10 @@ nlohmann::json Inventory::EcsData(const nlohmann::json& data, const std::string&
     {
         ret = EcsHardwareData(data);
     }
+    else if (table == OS_TABLE)
+    {
+        ret = EcsSystemData(data);
+    }
     return ret;
 }
 
@@ -268,6 +272,10 @@ std::string Inventory::GetPrimaryKeys([[maybe_unused]] const nlohmann::json& dat
     if (table == HW_TABLE)
     {
         ret = data["observer"]["serial_number"];
+    }
+    else if (table == OS_TABLE)
+    {
+        ret = data["host"]["os"]["name"];
     }
     return ret;
 }
@@ -300,7 +308,7 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
                 msg["operation"] = OPERATION_MAP.at(result);
                 msg["data"] = EcsData(item, table);
                 msg["id"] = CalculateBase64Id(msg["data"], table);
-                msg["data"]["scan_time"] = m_scanTime;
+                msg["data"]["@timestamp"] = m_scanTime;
                 const auto msgToSend{msg.dump()};
                 m_reportDiffFunction(msgToSend);
             }
@@ -313,7 +321,7 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
             msg["operation"] = OPERATION_MAP.at(result);
             msg["data"] = EcsData(data, table);
             msg["id"] = CalculateBase64Id(msg["data"], table);
-            msg["data"]["scan_time"] = m_scanTime;
+            msg["data"]["@timestamp"] = m_scanTime;
             const auto msgToSend{msg.dump()};
             m_reportDiffFunction(msgToSend);
             // LCOV_EXCL_STOP
@@ -437,6 +445,21 @@ nlohmann::json Inventory::EcsHardwareData(const nlohmann::json& originalData)
     return ret;
 }
 
+nlohmann::json Inventory::EcsSystemData(const nlohmann::json& originalData)
+{
+    nlohmann::json ret;
+
+    ret["host"]["architecture"] = originalData.contains("architecture") ? originalData["architecture"] : "";
+    ret["host"]["hostname"] = originalData.contains("hostname") ? originalData["hostname"] : "";
+    ret["host"]["os"]["kernel"] = originalData.contains("os_build") ? originalData["os_build"] : "";
+    ret["host"]["os"]["full"] = originalData.contains("os_codename") ? originalData["os_codename"] : "";
+    ret["host"]["os"]["name"] = originalData.contains("os_name") ? originalData["os_name"] : "";
+    ret["host"]["os"]["platform"] = originalData.contains("os_platform") ? originalData["os_platform"] : "";
+    ret["host"]["os"]["version"]= originalData.contains("os_version") ? originalData["os_version"] : "";
+    ret["host"]["os"]["type"]= originalData.contains("sysname") ? originalData["sysname"] : "";
+
+    return ret;
+}
 
 nlohmann::json Inventory::GetHardwareData()
 {
@@ -460,7 +483,6 @@ nlohmann::json Inventory::GetOSData()
 {
     nlohmann::json ret;
     ret[0] = m_spInfo->os();
-    ret[0]["checksum"] = std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
     return ret;
 }
 
@@ -801,8 +823,9 @@ void Inventory::Scan()
     m_scanTime = Utils::getCurrentTimestamp();
 
     TryCatchTask([&]() { ScanHardware(); });
+    TryCatchTask([&]() { ScanOs(); });
+
     // TO DO: enable each scan once the ECS translation is done
-    //TryCatchTask([&]() { ScanOs(); });
     //TryCatchTask([&]() { ScanNetwork(); });
     //TryCatchTask([&]() { ScanPackages(); });
     //TryCatchTask([&]() { ScanHotfixes(); });
