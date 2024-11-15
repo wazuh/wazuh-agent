@@ -68,6 +68,10 @@ TEST_F(InventoryImpTest, defaultCtor)
     EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
         R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})"
     )));
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
+    .Times(::testing::AtLeast(1))
+    .WillOnce(::testing::InvokeArgument<0>
+              (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
     CallbackMock wrapperDelta;
     std::function<void(const std::string&)> callbackDataDelta
@@ -88,9 +92,14 @@ TEST_F(InventoryImpTest, defaultCtor)
     {
         R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":"","kernel":"7601","name":"Microsoft Windows 7","platform":"","type":"","version":"6.1.7601"}}},"id":"aW52ZW50b3J5OnN5c3RlbTpNaWNyb3NvZnQgV2luZG93cyA3","operation":"create","type":"system"})"
     };
+    const auto expectedResult3
+    {
+        R"({"data":{"package":{"architecture":"amd64","description":"","installed":"","name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
+    };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(1);
 
     const configuration::ConfigurationParser configurationParser;
     Inventory::Instance().Setup(configurationParser);
@@ -125,7 +134,10 @@ TEST_F(InventoryImpTest, intervalSeconds)
     EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
         R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})"
     )));
-
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
+    .Times(::testing::AtLeast(2))
+    .WillRepeatedly(::testing::InvokeArgument<0>
+                    (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
     std::string inventoryConfig = R"(
         inventory:
@@ -171,6 +183,11 @@ TEST_F(InventoryImpTest, noScanOnStart)
 
     EXPECT_CALL(*spInfoWrapper, hardware()).Times(0);
     EXPECT_CALL(*spInfoWrapper, os()).Times(0);
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_)).Times(0);
+    EXPECT_CALL(*spInfoWrapper, networks()).Times(0);
+    EXPECT_CALL(*spInfoWrapper, processes(testing::_)).Times(0);
+    EXPECT_CALL(*spInfoWrapper, ports()).Times(0);
+    EXPECT_CALL(*spInfoWrapper, hotfixes()).Times(0);
 
     std::string inventoryConfig = R"(
         inventory:
@@ -217,6 +234,10 @@ TEST_F(InventoryImpTest, noHardware)
     EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
         R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})"
     )));
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
+    .Times(::testing::AtLeast(1))
+    .WillOnce(::testing::InvokeArgument<0>
+              (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
     CallbackMock wrapperDelta;
     std::function<void(const std::string&)> callbackDataDelta
@@ -233,8 +254,13 @@ TEST_F(InventoryImpTest, noHardware)
     {
         R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":"","kernel":"7601","name":"Microsoft Windows 7","platform":"","type":"","version":"6.1.7601"}}},"id":"aW52ZW50b3J5OnN5c3RlbTpNaWNyb3NvZnQgV2luZG93cyA3","operation":"create","type":"system"})"
     };
+    const auto expectedResult3
+    {
+        R"({"data":{"package":{"architecture":"amd64","description":"","installed":"","name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
+    };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(1);
 
     std::string inventoryConfig = R"(
         inventory:
@@ -281,6 +307,10 @@ TEST_F(InventoryImpTest, noOs)
         R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})"
     )));
     EXPECT_CALL(*spInfoWrapper, os()).Times(0);
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
+    .Times(::testing::AtLeast(1))
+    .WillOnce(::testing::InvokeArgument<0>
+              (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
     CallbackMock wrapperDelta;
     std::function<void(const std::string&)> callbackDataDelta
@@ -297,8 +327,13 @@ TEST_F(InventoryImpTest, noOs)
     {
         R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":0},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"id":"aW52ZW50b3J5OmhhcmR3YXJlOkludGVsIENvcnBvcmF0aW9u","operation":"create","type":"hardware"})"
     };
+    const auto expectedResult2
+    {
+        R"({"data":{"package":{"architecture":"amd64","description":"","installed":"","name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
+    };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
 
     std::string inventoryConfig = R"(
         inventory:
@@ -347,8 +382,11 @@ TEST_F(InventoryImpTest, noNetwork)
     EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
         R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})"
     )));
-
     EXPECT_CALL(*spInfoWrapper, networks()).Times(0);
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
+    .Times(::testing::AtLeast(1))
+    .WillOnce(::testing::InvokeArgument<0>
+              (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
 
     CallbackMock wrapperDelta;
@@ -370,9 +408,14 @@ TEST_F(InventoryImpTest, noNetwork)
     {
         R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":"","kernel":"7601","name":"Microsoft Windows 7","platform":"","type":"","version":"6.1.7601"}}},"id":"aW52ZW50b3J5OnN5c3RlbTpNaWNyb3NvZnQgV2luZG93cyA3","operation":"create","type":"system"})"
     };
+    const auto expectedResult3
+    {
+        R"({"data":{"package":{"architecture":"amd64","description":"","installed":"","name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
+    };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(1);
 
     std::string inventoryConfig = R"(
         inventory:
@@ -495,9 +538,11 @@ TEST_F(InventoryImpTest, noPorts)
     EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
         R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})"
     )));
-
     EXPECT_CALL(*spInfoWrapper, ports()).Times(0);
-
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
+    .Times(::testing::AtLeast(1))
+    .WillOnce(::testing::InvokeArgument<0>
+              (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
     CallbackMock wrapperDelta;
     std::function<void(const std::string&)> callbackDataDelta
@@ -518,9 +563,14 @@ TEST_F(InventoryImpTest, noPorts)
     {
         R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":"","kernel":"7601","name":"Microsoft Windows 7","platform":"","type":"","version":"6.1.7601"}}},"id":"aW52ZW50b3J5OnN5c3RlbTpNaWNyb3NvZnQgV2luZG93cyA3","operation":"create","type":"system"})"
     };
+    const auto expectedResult3
+    {
+        R"({"data":{"package":{"architecture":"amd64","description":"","installed":"","name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
+    };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(1);
 
     std::string inventoryConfig = R"(
         inventory:
@@ -569,7 +619,10 @@ TEST_F(InventoryImpTest, noPortsAll)
     EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
         R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})"
     )));
-
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
+    .Times(::testing::AtLeast(1))
+    .WillOnce(::testing::InvokeArgument<0>
+              (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
     CallbackMock wrapperDelta;
     std::function<void(const std::string&)> callbackDataDelta
@@ -590,9 +643,14 @@ TEST_F(InventoryImpTest, noPortsAll)
     {
         R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":"","kernel":"7601","name":"Microsoft Windows 7","platform":"","type":"","version":"6.1.7601"}}},"id":"aW52ZW50b3J5OnN5c3RlbTpNaWNyb3NvZnQgV2luZG93cyA3","operation":"create","type":"system"})"
     };
+    const auto expectedResult3
+    {
+        R"({"data":{"package":{"architecture":"amd64","description":"","installed":"","name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
+    };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(1);
 
     std::string inventoryConfig = R"(
         inventory:
@@ -642,8 +700,11 @@ TEST_F(InventoryImpTest, noProcesses)
     EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
         R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})"
     )));
-
     EXPECT_CALL(*spInfoWrapper, processes(testing::_)).Times(0);
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
+    .Times(::testing::AtLeast(1))
+    .WillOnce(::testing::InvokeArgument<0>
+              (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
     CallbackMock wrapperDelta;
     std::function<void(const std::string&)> callbackDataDelta
@@ -664,9 +725,14 @@ TEST_F(InventoryImpTest, noProcesses)
     {
         R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":"","kernel":"7601","name":"Microsoft Windows 7","platform":"","type":"","version":"6.1.7601"}}},"id":"aW52ZW50b3J5OnN5c3RlbTpNaWNyb3NvZnQgV2luZG93cyA3","operation":"create","type":"system"})"
     };
+    const auto expectedResult3
+    {
+        R"({"data":{"package":{"architecture":"amd64","description":"","installed":"","name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
+    };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(1);
 
     std::string inventoryConfig = R"(
         inventory:
@@ -715,8 +781,11 @@ TEST_F(InventoryImpTest, noHotfixes)
     EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
         R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})"
     )));
-
     EXPECT_CALL(*spInfoWrapper, hotfixes()).Times(0);
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
+    .Times(::testing::AtLeast(1))
+    .WillOnce(::testing::InvokeArgument<0>
+              (R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
     CallbackMock wrapperDelta;
     std::function<void(const std::string&)> callbackDataDelta
@@ -737,9 +806,14 @@ TEST_F(InventoryImpTest, noHotfixes)
     {
         R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":"","kernel":"7601","name":"Microsoft Windows 7","platform":"","type":"","version":"6.1.7601"}}},"id":"aW52ZW50b3J5OnN5c3RlbTpNaWNyb3NvZnQgV2luZG93cyA3","operation":"create","type":"system"})"
     };
+    const auto expectedResult3
+    {
+        R"({"data":{"package":{"architecture":"amd64","description":"","installed":"","name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
+    };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(1);
 
     std::string inventoryConfig = R"(
         inventory:
@@ -781,11 +855,15 @@ TEST_F(InventoryImpTest, noHotfixes)
 TEST_F(InventoryImpTest, scanInvalidData)
 {
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
-
     EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
                                                                       R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
     EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
                                                                 R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})")));
+    EXPECT_CALL(*spInfoWrapper, packages(testing::_))
+    .Times(::testing::AtLeast(1))
+    .WillOnce(::testing::InvokeArgument<0>
+              (R"({"name":"TEXT", "scan_time":"2020/12/28 21:49:50", "version":"TEXT", "vendor":"TEXT", "install_time":"TEXT", "location":"TEXT", "architecture":"TEXT", "groups":"TEXT", "description":"TEXT", "size":"TEXT", "priority":"TEXT", "multiarch":"TEXT", "source":"TEXT", "os_patch":"TEXT"})"_json));
+
 
     std::string inventoryConfig = R"(
         inventory:
@@ -1115,9 +1193,6 @@ TEST_F(InventoryImpTest, portAllDisable)
 
 TEST_F(InventoryImpTest, PackagesDuplicated)
 {
-    //TO DO Enable this test when migrating the Packages table.
-    GTEST_SKIP();
-
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
 
     EXPECT_CALL(*spInfoWrapper, packages(testing::_))
@@ -1136,15 +1211,14 @@ TEST_F(InventoryImpTest, PackagesDuplicated)
         [&wrapper](const std::string & data)
         {
             auto delta = nlohmann::json::parse(data);
-            delta["data"].erase("checksum");
-            delta["data"].erase("scan_time");
+            delta["data"].erase("@timestamp");
             wrapper.callbackMock(delta.dump());
         }
     };
 
     const auto expectedResult1
     {
-        R"({"data":{"architecture":"amd64","format":"deb","group":"x11","item_id":"4846c220a185b0fc251a07843efbfbb0d90ac4a5","location":" ","name":"xserver-xorg","priority":"optional","size":411,"source":"xorg","version":"1:7.7+19ubuntu14"},"operation":"INSERTED","type":"packages"})"
+        R"({"data":{"package":{"architecture":"amd64","description":"","installed":"","name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
     };
 
     EXPECT_CALL(wrapper, callbackMock(expectedResult1)).Times(1);

@@ -283,7 +283,7 @@ std::string Inventory::GetPrimaryKeys([[maybe_unused]] const nlohmann::json& dat
     }
     else if (table == PACKAGES_TABLE)
     {
-        ret = data["package"]["name"].dump() + ":" + data["package"]["version"].dump() + ":" + data["package"]["architecture"].dump() + ":" + data["package"]["type"].dump() + ":" + data["package"]["path"].dump();
+        ret = data["package"]["name"].get<std::string>() + ":" + data["package"]["version"].get<std::string>() + ":" + data["package"]["architecture"].get<std::string>() + ":" + data["package"]["type"].get<std::string>() + ":" + data["package"]["path"].get<std::string>();
     }
     return ret;
 }
