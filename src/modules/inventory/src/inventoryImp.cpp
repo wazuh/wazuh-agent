@@ -288,6 +288,7 @@ std::string Inventory::GetPrimaryKeys([[maybe_unused]] const nlohmann::json& dat
     else if (table == PACKAGES_TABLE)
     {
         ret = data["package"]["name"].get<std::string>() + ":" + data["package"]["version"].get<std::string>() + ":" + data["package"]["architecture"].get<std::string>() + ":" + data["package"]["type"].get<std::string>() + ":" + data["package"]["path"].get<std::string>();
+    }
     else if (table == PROCESSES_TABLE)
     {
         ret = data["process"]["pid"];
@@ -488,8 +489,9 @@ nlohmann::json Inventory::EcsPackageData(const nlohmann::json& originalData)
     ret["package"]["size"] = originalData.contains("size") ? originalData["size"] : nlohmann::json(0);
     ret["package"]["type"] = originalData.contains("format") ? originalData["format"] : "";
     ret["package"]["version"] = originalData.contains("version") ? originalData["version"] : "";
-}
 
+    return ret;
+}
 
 nlohmann::json Inventory::EcsProcessesData(const nlohmann::json& originalData)
 {
@@ -873,11 +875,11 @@ void Inventory::Scan()
 
     TryCatchTask([&]() { ScanHardware(); });
     TryCatchTask([&]() { ScanOs(); });
+    TryCatchTask([&]() { ScanPackages(); });
     TryCatchTask([&]() { ScanProcesses(); });
 
     // TO DO: enable each scan once the ECS translation is done
     //TryCatchTask([&]() { ScanNetwork(); });
-    TryCatchTask([&]() { ScanPackages(); });
     //TryCatchTask([&]() { ScanHotfixes(); });
     //TryCatchTask([&]() { ScanPorts(); });
     m_notify = true;
