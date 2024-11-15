@@ -1,9 +1,10 @@
 agent:
   server_url: https://localhost:27000
   registration_url: https://localhost:55000
+  retry_interval: 30s
 inventory:
   enabled: true
-  interval: 3600
+  interval: 1h
   scan_on_start: true
   hardware: true
   os: true
@@ -17,5 +18,5 @@ logcollector:
   enabled: true
   localfiles:
     - /var/log/auth.log
-  reload_interval: 60
-  file_wait: 500
+  reload_interval: 1m
+  file_wait: 500ms

@@ -4,6 +4,11 @@
 
 namespace
 {
+    constexpr unsigned int A_SECOND_IN_MILLIS = 1000;
+    constexpr unsigned int A_MINUTE_IN_MILLIS = 60 * A_SECOND_IN_MILLIS;
+    constexpr unsigned int A_HOUR_IN_MILLIS = 60 * A_MINUTE_IN_MILLIS;
+    constexpr unsigned int A_DAY_IN_MILLIS = 24 * A_HOUR_IN_MILLIS;
+
 #ifdef _WIN32
     /// @brief Gets the path to the configuration file.
     ///
@@ -71,4 +76,47 @@ namespace configuration
         }
     }
 
+    unsigned long ConfigurationParser::ParseTimeUnit(const std::string& option)
+    {
+        std::string number;
+        unsigned int multiplier = 1;
+
+        if (option.ends_with("ms"))
+        {
+            number = option.substr(0, option.length() - 2);
+        }
+        else if (option.ends_with("s"))
+        {
+            number = option.substr(0, option.length() - 1);
+            multiplier = A_SECOND_IN_MILLIS;
+        }
+        else if (option.ends_with("m"))
+        {
+            number = option.substr(0, option.length() - 1);
+            multiplier = A_MINUTE_IN_MILLIS;
+        }
+        else if (option.ends_with("h"))
+        {
+            number = option.substr(0, option.length() - 1);
+            multiplier = A_HOUR_IN_MILLIS;
+        }
+        else if (option.ends_with("d"))
+        {
+            number = option.substr(0, option.length() - 1);
+            multiplier = A_DAY_IN_MILLIS;
+        }
+        else
+        {
+            // By default, assume seconds
+            number = option;
+            multiplier = A_SECOND_IN_MILLIS;
+        }
+
+        if (all_of(number.begin(), number.end(), ::isdigit) == false)
+        {
+            throw std::invalid_argument("Invalid time unit: " + option);
+        }
+
+        return static_cast<unsigned long>(std::stoul(number) * multiplier);
+    }
 } // namespace configuration

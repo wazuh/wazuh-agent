@@ -90,7 +90,7 @@ namespace communicator
         std::atomic<bool> m_isReAuthenticating = false;
 
         /// @brief Time between authentication attemps in case of failure
-        long m_retryIntervalSecs = 1;
+        long m_retryInterval = 1;
 
         /// @brief The server URL
         std::string m_serverUrl;

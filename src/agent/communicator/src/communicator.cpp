@@ -40,8 +40,8 @@ namespace communicator
                 LogInfo("Using insecure connection.");
             }
 
-            m_retryIntervalSecs = std::stol(getStringConfigValue("agent", "retry_interval_secs")
-                                                .value_or(std::to_string(config::agent::DEFAULT_RETRY_INTERVAL)));
+            m_retryInterval = std::stol(getStringConfigValue("agent", "retry_interval")
+                                            .value_or(std::to_string(config::agent::DEFAULT_RETRY_INTERVAL)));
         }
 
         if (getHeaderInfo != nullptr)
@@ -66,7 +66,7 @@ namespace communicator
         }
         else
         {
-            LogWarn("Failed to authenticate with the manager. Retrying in {} seconds", m_retryIntervalSecs);
+            LogWarn("Failed to authenticate with the manager. Retrying in {} seconds", m_retryInterval);
             return boost::beast::http::status::unauthorized;
         }
 
@@ -117,7 +117,7 @@ namespace communicator
         const auto reqParams = http_client::HttpRequestParams(
             boost::beast::http::verb::get, m_serverUrl, "/api/v1/commands", m_getHeaderInfo ? m_getHeaderInfo() : "");
         co_await m_httpClient->Co_PerformHttpRequest(
-            m_token, reqParams, {}, onAuthenticationFailed, m_retryIntervalSecs, onSuccess, loopCondition);
+            m_token, reqParams, {}, onAuthenticationFailed, m_retryInterval, onSuccess, loopCondition);
     }
 
     boost::asio::awaitable<void> Communicator::WaitForTokenExpirationAndAuthenticate()
@@ -133,7 +133,7 @@ namespace communicator
                 const auto result = SendAuthenticationRequest();
                 if (result != boost::beast::http::status::ok)
                 {
-                    return std::chrono::milliseconds(m_retryIntervalSecs * A_SECOND_IN_MILLIS);
+                    return std::chrono::milliseconds(m_retryInterval * A_SECOND_IN_MILLIS);
                 }
                 else
                 {
@@ -180,7 +180,7 @@ namespace communicator
                                                               "/api/v1/events/stateful",
                                                               m_getHeaderInfo ? m_getHeaderInfo() : "");
         co_await m_httpClient->Co_PerformHttpRequest(
-            m_token, reqParams, getMessages, onAuthenticationFailed, m_retryIntervalSecs, onSuccess, loopCondition);
+            m_token, reqParams, getMessages, onAuthenticationFailed, m_retryInterval, onSuccess, loopCondition);
     }
 
     boost::asio::awaitable<void>
@@ -202,7 +202,7 @@ namespace communicator
                                                               "/api/v1/events/stateless",
                                                               m_getHeaderInfo ? m_getHeaderInfo() : "");
         co_await m_httpClient->Co_PerformHttpRequest(
-            m_token, reqParams, getMessages, onAuthenticationFailed, m_retryIntervalSecs, onSuccess, loopCondition);
+            m_token, reqParams, getMessages, onAuthenticationFailed, m_retryInterval, onSuccess, loopCondition);
     }
 
     void Communicator::TryReAuthenticate()
