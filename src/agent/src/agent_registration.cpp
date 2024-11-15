@@ -1,8 +1,10 @@
 #include <agent_registration.hpp>
 
 #include <boost/beast/http.hpp>
-#include <iostream>
+#include <config.h>
 #include <nlohmann/json.hpp>
+
+#include <iostream>
 
 namespace http = boost::beast::http;
 
@@ -17,7 +19,8 @@ namespace agent_registration
         , m_configurationParser(configFile.has_value() && !configFile->empty()
                                     ? configuration::ConfigurationParser(std::filesystem::path(configFile.value()))
                                     : configuration::ConfigurationParser())
-        , m_serverUrl(m_configurationParser.GetConfig<std::string>("agent", "registration_url"))
+        , m_serverUrl(m_configurationParser.GetConfig<std::string>("agent", "registration_url")
+                          .value_or(config::agent::DEFAULT_REGISTRATION_URL))
         , m_user(std::move(user))
         , m_password(std::move(password))
     {

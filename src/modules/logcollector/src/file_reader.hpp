@@ -71,7 +71,7 @@ public:
     /// @param pattern File pattern
     /// @param fileWait File wait time in milliseconds
     /// @param reloadInterval Reload interval in seconds
-    FileReader(Logcollector& logcollector, std::string pattern, long fileWait = config::DEFAULT_FILE_WAIT, long reloadInterval = config::DEFAULT_RELOAD_INTERVAL);
+    FileReader(Logcollector& logcollector, std::string pattern, long fileWait = config::logcollector::DEFAULT_FILE_WAIT, long reloadInterval = config::logcollector::DEFAULT_RELOAD_INTERVAL);
 
     /// @brief Runs the file reader
     /// @return Awaitable result

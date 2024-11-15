@@ -6,6 +6,7 @@
 
 #include <exception>
 #include <filesystem>
+#include <optional>
 #include <string>
 
 namespace configuration
@@ -45,17 +46,16 @@ namespace configuration
         /// @tparam T The expected type of the configuration value to retrieve.
         /// @tparam Keys Variadic template parameters representing the hierarchical path to the desired value.
         /// @param keys A sequence of keys to locate the configuration value within the YAML structure.
-        /// @return The configuration value corresponding to the specified keys.
-        /// @throws std::exception if the specified path is invalid or if the type does not match the expected type `T`.
+        /// @return The configuration value corresponding to the specified keys or std::nullopt.
         /// @details This method provides a flexible way to retrieve deeply nested configuration values using
         /// a variadic sequence of keys, which allows specifying paths within the YAML structure.
         template<typename T, typename... Keys>
-        T GetConfig(Keys... keys) const
+        std::optional<T> GetConfig(Keys... keys) const
         {
+            YAML::Node current = YAML::Clone(m_config);
+
             try
             {
-                YAML::Node current = YAML::Clone(m_config);
-
                 (
                     [&current](const auto& key)
                     {
@@ -71,8 +71,8 @@ namespace configuration
             }
             catch (const std::exception& e)
             {
-                LogError("The requested value could not be obtained: {}.", e.what());
-                throw;
+                LogWarn("Requested setting not found, default value used. {}", e.what());
+                return std::nullopt;
             }
         }
     };
