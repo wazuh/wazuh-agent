@@ -127,5 +127,5 @@ cJSON * Inventory::Dump() {
 
 void Inventory::LogErrorInventory(const std::string& log)
 {
-    LogError("{}", log.c_str());
+    LogError("{}", log);
 }
