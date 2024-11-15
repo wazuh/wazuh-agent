@@ -5,4 +5,4 @@ resources:
 - path: "/api/v1/events/stateful"
   method: POST
   response:
-    statusCode: 401
+    scriptFile: stateful.groovy
