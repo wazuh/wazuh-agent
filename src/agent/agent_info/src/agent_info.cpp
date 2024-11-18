@@ -147,21 +147,22 @@ std::string AgentInfo::GetHeaderInfo() const
 std::string AgentInfo::GetMetadataInfo(const bool agentIsRegistering) const
 {
     nlohmann::json agentMetadataInfo;
-    agentMetadataInfo["agent"] = nlohmann::json::object();
-    agentMetadataInfo["agent"]["id"] = GetUUID();
-    agentMetadataInfo["agent"]["name"] = GetName();
-    agentMetadataInfo["agent"]["type"] = GetType();
-    agentMetadataInfo["agent"]["version"] = GetVersion();
-    agentMetadataInfo["agent"]["groups"] = GetGroups();
+    auto& target = agentIsRegistering ? agentMetadataInfo : agentMetadataInfo["agent"];
+
+    target["id"] = GetUUID();
+    target["name"] = GetName();
+    target["type"] = GetType();
+    target["version"] = GetVersion();
+    target["groups"] = GetGroups();
 
     if (!m_endpointInfo.empty())
     {
-        agentMetadataInfo["agent"]["host"] = m_endpointInfo;
+        target["host"] = m_endpointInfo;
     }
 
     if (agentIsRegistering)
     {
-        agentMetadataInfo["agent"]["key"] = GetKey();
+        target["key"] = GetKey();
     }
 
     return agentMetadataInfo.dump();
