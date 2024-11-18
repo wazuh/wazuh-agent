@@ -14,10 +14,18 @@ for arg in "$@"; do
         --https)
             HTTPS=1
             ;;
+        --log-stateful)
+            LOG_STATEFUL=1
+            ;;
+        --log-stateless)
+            LOG_STATELESS=1
+            ;;
         *)
             echo "Usage: $0 [--http] [--https]"
             echo "  --http      Use HTTP (:8080)"
             echo "  --https     Use HTTPS (:8443) (default)"
+            echo "  --log-stateful      Log stateful requests"
+            echo "  --log-stateless     Log stateless requests"
             exit 0
             ;;
     esac
@@ -34,5 +42,13 @@ else
     port=8080
 fi
 
+if [ -n "$LOG_STATEFUL" ]; then
+    env+=(-e "LOG_STATEFUL=1")
+fi
+
+if [ -n "$LOG_STATELESS" ]; then
+    env+=(-e "LOG_STATELESS=1")
+fi
+
 docker build -t mock-server .
-docker run --rm -p $COMMS_PORT:$port -p $MGMT_PORT:$port mock-server ${args[@]}
+docker run --rm -p $COMMS_PORT:$port -p $MGMT_PORT:$port ${env[@]} mock-server ${args[@]}
