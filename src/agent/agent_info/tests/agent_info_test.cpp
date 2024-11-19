@@ -36,6 +36,7 @@ TEST_F(AgentInfoTest, TestPersistedValues)
     agentInfo.SetName("test_name");
     agentInfo.SetKey("4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
     agentInfo.SetUUID("test_uuid");
+    agentInfo.Save();
     const AgentInfo agentInfoReloaded;
     EXPECT_EQ(agentInfoReloaded.GetName(), "test_name");
     EXPECT_EQ(agentInfoReloaded.GetKey(), "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
@@ -45,25 +46,27 @@ TEST_F(AgentInfoTest, TestPersistedValues)
 TEST_F(AgentInfoTest, TestSetName)
 {
     AgentInfo agentInfo;
+    const std::string oldName = agentInfo.GetName();
     const std::string newName = "new_name";
 
     agentInfo.SetName(newName);
     EXPECT_EQ(agentInfo.GetName(), newName);
 
     const AgentInfo agentInfoReloaded;
-    EXPECT_EQ(agentInfoReloaded.GetName(), newName);
+    EXPECT_EQ(agentInfoReloaded.GetName(), oldName);
 }
 
 TEST_F(AgentInfoTest, TestSetKey)
 {
     AgentInfo agentInfo;
+    const std::string oldKey = agentInfo.GetKey();
     const std::string newKey = "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj";
 
     agentInfo.SetKey(newKey);
     EXPECT_EQ(agentInfo.GetKey(), newKey);
 
     const AgentInfo agentInfoReloaded;
-    EXPECT_EQ(agentInfoReloaded.GetKey(), newKey);
+    EXPECT_EQ(agentInfoReloaded.GetKey(), oldKey);
 }
 
 TEST_F(AgentInfoTest, TestSetBadKey)
@@ -80,12 +83,13 @@ TEST_F(AgentInfoTest, TestSetEmptyKey)
 {
     AgentInfo agentInfo;
     const std::string newKey;
+    const std::string oldKey = agentInfo.GetKey();
 
     agentInfo.SetKey(newKey);
     EXPECT_NE(agentInfo.GetKey(), newKey);
 
     const AgentInfo agentInfoReloaded;
-    EXPECT_NE(agentInfoReloaded.GetKey(), newKey);
+    EXPECT_EQ(agentInfoReloaded.GetKey(), oldKey);
 }
 
 TEST_F(AgentInfoTest, TestSetUUID)
@@ -97,19 +101,20 @@ TEST_F(AgentInfoTest, TestSetUUID)
     EXPECT_EQ(agentInfo.GetUUID(), newUUID);
 
     const AgentInfo agentInfoReloaded;
-    EXPECT_EQ(agentInfoReloaded.GetUUID(), newUUID);
+    EXPECT_NE(agentInfoReloaded.GetUUID(), newUUID);
 }
 
 TEST_F(AgentInfoTest, TestSetGroups)
 {
     AgentInfo agentInfo;
+    const std::vector<std::string> oldGroups = agentInfo.GetGroups();
     const std::vector<std::string> newGroups = {"t_group_1", "t_group_2"};
 
     agentInfo.SetGroups(newGroups);
     EXPECT_EQ(agentInfo.GetGroups(), newGroups);
 
     const AgentInfo agentInfoReloaded;
-    EXPECT_EQ(agentInfoReloaded.GetGroups(), newGroups);
+    EXPECT_EQ(agentInfoReloaded.GetGroups(), oldGroups);
 }
 
 TEST_F(AgentInfoTest, TestLoadMetadataInfoNoSysInfo)
