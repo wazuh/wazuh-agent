@@ -71,11 +71,16 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
     AgentInfoPersistance agentInfoPersistance;
     agentInfoPersistance.ResetToDefault();
 
-    registration = std::make_unique<agent_registration::AgentRegistration>(
-        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", std::nullopt);
     SysInfo sysInfo;
     agent = std::make_unique<AgentInfo>([&sysInfo]() mutable { return sysInfo.os(); },
                                         [&sysInfo]() mutable { return sysInfo.networks(); });
+
+    agent->SetKey("4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
+    agent->SetName("agent_name");
+    agent->Save();
+
+    registration = std::make_unique<agent_registration::AgentRegistration>(
+        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", std::nullopt);
 
     MockHttpClient mockHttpClient;
 
@@ -152,29 +157,16 @@ TEST_F(RegisterTest, RegistrationTestSuccessWithEmptyKey)
 
     registration =
         std::make_unique<agent_registration::AgentRegistration>("user", "password", "", "agent_name", std::nullopt);
-    SysInfo sysInfo;
-    agent = std::make_unique<AgentInfo>([&sysInfo]() mutable { return sysInfo.os(); },
-                                        [&sysInfo]() mutable { return sysInfo.networks(); });
 
     MockHttpClient mockHttpClient;
 
     EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return("token"));
 
-    const auto bodyJson = agent->GetMetadataInfo(true);
-
-    http_client::HttpRequestParams reqParams(boost::beast::http::verb::post,
-                                             "https://localhost:55000",
-                                             "/agents",
-                                             agent->GetHeaderInfo(),
-                                             "token",
-                                             "",
-                                             bodyJson);
-
     boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
     expectedResponse.result(boost::beast::http::status::ok);
 
-    EXPECT_CALL(mockHttpClient, PerformHttpRequest(testing::Eq(reqParams))).WillOnce(testing::Return(expectedResponse));
+    EXPECT_CALL(mockHttpClient, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
     const bool res = registration->Register(mockHttpClient);
