@@ -86,7 +86,6 @@ bool AgentInfo::SetKey(const std::string& key)
     return true;
 }
 
-
 void AgentInfo::SetUUID(const std::string& uuid)
 {
     m_uuid = uuid;
@@ -158,7 +157,8 @@ std::string AgentInfo::GetMetadataInfo(const bool agentIsRegistering) const
     return agentMetadataInfo.dump();
 }
 
-void AgentInfo::Save() const {
+void AgentInfo::Save() const
+{
     AgentInfoPersistance agentInfoPersistance;
     agentInfoPersistance.SetName(m_name);
     agentInfoPersistance.SetKey(m_key);
