@@ -80,7 +80,7 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
     agent->Save();
 
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", std::nullopt);
+        "user", "password", agent->GetKey(), agent->GetName(), std::nullopt);
 
     MockHttpClient mockHttpClient;
 
@@ -150,10 +150,13 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
     ASSERT_FALSE(res);
 }
 
-TEST_F(RegisterTest, RegistrationTestSuccessWithEmptyKey)
+TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
 {
     AgentInfoPersistance agentInfoPersistance;
     agentInfoPersistance.ResetToDefault();
+
+    agent = std::make_unique<AgentInfo>();
+    EXPECT_TRUE(agent->GetKey().empty());
 
     registration =
         std::make_unique<agent_registration::AgentRegistration>("user", "password", "", "agent_name", std::nullopt);
@@ -171,6 +174,9 @@ TEST_F(RegisterTest, RegistrationTestSuccessWithEmptyKey)
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
     const bool res = registration->Register(mockHttpClient);
     ASSERT_TRUE(res);
+
+    agent = std::make_unique<AgentInfo>();
+    EXPECT_FALSE(agent->GetKey().empty());
 }
 
 TEST_F(RegisterTest, RegistrationTestFailWithBadKey)
