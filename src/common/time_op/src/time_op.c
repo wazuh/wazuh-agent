@@ -15,6 +15,8 @@
 
 #include "shared.h"
 #include "time_op.h"
+#include "pal.h"
+
 
 #ifndef WIN32
 
@@ -43,7 +45,7 @@ void gettime(struct timespec *ts) {
 
 #include <windows.h>
 #define EPOCH_DIFFERENCE 11644473600LL
-struct tm *localtime_r(const time_t *timer, struct tm *result){}
+
 // Get the epoch time
 
 long long int get_windows_time_epoch() {
