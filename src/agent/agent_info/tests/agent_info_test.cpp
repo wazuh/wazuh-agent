@@ -118,18 +118,18 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoNoSysInfo)
 
     auto metadataInfo = nlohmann::json::parse(agentInfo.GetMetadataInfo(true));
 
-    EXPECT_TRUE(metadataInfo["agent"] != nullptr);
+    EXPECT_TRUE(metadataInfo != nullptr);
 
     // Agent information
-    EXPECT_EQ(metadataInfo["agent"]["type"], agentInfo.GetType());
-    EXPECT_EQ(metadataInfo["agent"]["version"], agentInfo.GetVersion());
-    EXPECT_EQ(metadataInfo["agent"]["id"], agentInfo.GetUUID());
-    EXPECT_EQ(metadataInfo["agent"]["name"], agentInfo.GetName());
-    EXPECT_EQ(metadataInfo["agent"]["key"], agentInfo.GetKey());
-    EXPECT_TRUE(metadataInfo["agent"]["groups"] != nullptr);
+    EXPECT_EQ(metadataInfo["type"], agentInfo.GetType());
+    EXPECT_EQ(metadataInfo["version"], agentInfo.GetVersion());
+    EXPECT_EQ(metadataInfo["id"], agentInfo.GetUUID());
+    EXPECT_EQ(metadataInfo["name"], agentInfo.GetName());
+    EXPECT_EQ(metadataInfo["key"], agentInfo.GetKey());
+    EXPECT_TRUE(metadataInfo["groups"] != nullptr);
 
     // Endpoint information
-    EXPECT_TRUE(metadataInfo["agent"]["host"] == nullptr);
+    EXPECT_TRUE(metadataInfo["host"] == nullptr);
 }
 
 TEST_F(AgentInfoTest, TestLoadMetadataInfoRegistration)
@@ -163,27 +163,27 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoRegistration)
 
     auto metadataInfo = nlohmann::json::parse(agentInfo.GetMetadataInfo(true));
 
-    EXPECT_TRUE(metadataInfo["agent"] != nullptr);
+    EXPECT_TRUE(metadataInfo != nullptr);
 
     // Agent information
-    EXPECT_EQ(metadataInfo["agent"]["type"], agentInfo.GetType());
-    EXPECT_EQ(metadataInfo["agent"]["version"], agentInfo.GetVersion());
-    EXPECT_EQ(metadataInfo["agent"]["id"], agentInfo.GetUUID());
-    EXPECT_EQ(metadataInfo["agent"]["name"], agentInfo.GetName());
-    EXPECT_EQ(metadataInfo["agent"]["key"], agentInfo.GetKey());
-    EXPECT_TRUE(metadataInfo["agent"]["groups"] != nullptr);
+    EXPECT_EQ(metadataInfo["type"], agentInfo.GetType());
+    EXPECT_EQ(metadataInfo["version"], agentInfo.GetVersion());
+    EXPECT_EQ(metadataInfo["id"], agentInfo.GetUUID());
+    EXPECT_EQ(metadataInfo["name"], agentInfo.GetName());
+    EXPECT_EQ(metadataInfo["key"], agentInfo.GetKey());
+    EXPECT_TRUE(metadataInfo["groups"] != nullptr);
 
     // Endpoint information
-    EXPECT_TRUE(metadataInfo["agent"]["host"] != nullptr);
-    EXPECT_TRUE(metadataInfo["agent"]["host"]["os"] != nullptr);
-    EXPECT_EQ(metadataInfo["agent"]["host"]["os"]["name"], "test_os");
-    EXPECT_EQ(metadataInfo["agent"]["host"]["os"]["platform"], "test_platform");
-    EXPECT_TRUE(metadataInfo["agent"]["host"]["ip"] != nullptr);
-    EXPECT_EQ(metadataInfo["agent"]["host"]["ip"][0], "127.0.0.1");
-    EXPECT_EQ(metadataInfo["agent"]["host"]["ip"][1], "fe80::0000");
-    EXPECT_TRUE(metadataInfo["agent"]["host"]["ip"][2] == nullptr);
-    EXPECT_EQ(metadataInfo["agent"]["host"]["architecture"], "test_arch");
-    EXPECT_EQ(metadataInfo["agent"]["host"]["hostname"], "test_name");
+    EXPECT_TRUE(metadataInfo["host"] != nullptr);
+    EXPECT_TRUE(metadataInfo["host"]["os"] != nullptr);
+    EXPECT_EQ(metadataInfo["host"]["os"]["name"], "test_os");
+    EXPECT_EQ(metadataInfo["host"]["os"]["platform"], "test_platform");
+    EXPECT_TRUE(metadataInfo["host"]["ip"] != nullptr);
+    EXPECT_EQ(metadataInfo["host"]["ip"][0], "127.0.0.1");
+    EXPECT_EQ(metadataInfo["host"]["ip"][1], "fe80::0000");
+    EXPECT_TRUE(metadataInfo["host"]["ip"][2] == nullptr);
+    EXPECT_EQ(metadataInfo["host"]["architecture"], "test_arch");
+    EXPECT_EQ(metadataInfo["host"]["hostname"], "test_name");
 }
 
 TEST_F(AgentInfoTest, TestLoadMetadataInfoConnected)
