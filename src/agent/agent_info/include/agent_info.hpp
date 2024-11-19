@@ -41,20 +41,20 @@ public:
     /// @return A vector of the agent's groups.
     std::vector<std::string> GetGroups() const;
 
-    /// @brief Sets the agent's name.
+    /// @brief Sets the agent's name. The change is not saved to the database until `Save` is called.
     /// @param name The agent's new name.
     void SetName(const std::string& name);
 
-    /// @brief Sets the agent's key.
+    /// @brief Sets the agent's key. The change is not saved to the database until `Save` is called.
     /// @param key The agent's new key.
     /// @return True if the key was successfully set, false otherwise.
     bool SetKey(const std::string& key);
 
-    /// @brief Sets the agent's UUID.
+    /// @brief Sets the agent's UUID. The change is not saved to the database until `Save` is called.
     /// @param uuid The agent's new UUID.
     void SetUUID(const std::string& uuid);
 
-    /// @brief Sets the agent's groups.
+    /// @brief Sets the agent's groups. The change is not saved to the database until `Save` is called.
     /// @param groupList A vector of the agent's new groups.
     void SetGroups(const std::vector<std::string>& groupList);
 
@@ -74,6 +74,9 @@ public:
     /// @param agentIsRegistering Indicates if the agent is about to register.
     /// @return A string with all information about the agent.
     std::string GetMetadataInfo(const bool agentIsRegistering) const;
+
+    /// @brief Saves the agent's information to the database.
+    void Save() const;
 
 private:
     /// @brief Creates a random key for the agent.

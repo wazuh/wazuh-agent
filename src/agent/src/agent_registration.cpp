@@ -60,12 +60,13 @@ namespace agent_registration
 
         const auto res = httpClient.PerformHttpRequest(reqParams);
 
-        if (res.result() != http::status::ok)
+        if (res.result() != http::status::created)
         {
             std::cout << "Registration error: " << res.result_int() << ".\n";
             return false;
         }
 
+        m_agentInfo.Save();
         return true;
     }
 

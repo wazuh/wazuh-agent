@@ -27,7 +27,6 @@ AgentInfo::AgentInfo(std::function<nlohmann::json()> getOSInfo, std::function<nl
     if (m_uuid.empty())
     {
         m_uuid = boost::uuids::to_string(boost::uuids::random_generator()());
-        agentInfoPersistance.SetUUID(m_uuid);
     }
 
     if (getOSInfo != nullptr)
@@ -66,15 +65,11 @@ std::vector<std::string> AgentInfo::GetGroups() const
 
 void AgentInfo::SetName(const std::string& name)
 {
-    AgentInfoPersistance agentInfoPersistance;
-    agentInfoPersistance.SetName(name);
     m_name = name;
 }
 
 bool AgentInfo::SetKey(const std::string& key)
 {
-    AgentInfoPersistance agentInfoPersistance;
-
     if (!key.empty())
     {
         if (!ValidateKey(key))
@@ -88,22 +83,16 @@ bool AgentInfo::SetKey(const std::string& key)
         m_key = CreateKey();
     }
 
-    agentInfoPersistance.SetKey(m_key);
-
     return true;
 }
 
 void AgentInfo::SetUUID(const std::string& uuid)
 {
-    AgentInfoPersistance agentInfoPersistance;
-    agentInfoPersistance.SetUUID(uuid);
     m_uuid = uuid;
 }
 
 void AgentInfo::SetGroups(const std::vector<std::string>& groupList)
 {
-    AgentInfoPersistance agentInfoPersistance;
-    agentInfoPersistance.SetGroups(groupList);
     m_groups = groupList;
 }
 
@@ -166,6 +155,15 @@ std::string AgentInfo::GetMetadataInfo(const bool agentIsRegistering) const
     }
 
     return agentMetadataInfo.dump();
+}
+
+void AgentInfo::Save() const
+{
+    AgentInfoPersistance agentInfoPersistance;
+    agentInfoPersistance.SetName(m_name);
+    agentInfoPersistance.SetKey(m_key);
+    agentInfoPersistance.SetUUID(m_uuid);
+    agentInfoPersistance.SetGroups(m_groups);
 }
 
 std::vector<std::string> AgentInfo::GetActiveIPAddresses(const nlohmann::json& networksJson) const
