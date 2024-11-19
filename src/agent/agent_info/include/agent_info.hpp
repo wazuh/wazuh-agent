@@ -75,6 +75,9 @@ public:
     /// @return A string with all information about the agent.
     std::string GetMetadataInfo(const bool agentIsRegistering) const;
 
+    /// @brief Saves the agent's information to the database.
+    void Save() const;
+
 private:
     /// @brief Creates a random key for the agent.
     ///

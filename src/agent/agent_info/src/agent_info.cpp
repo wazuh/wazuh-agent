@@ -158,6 +158,14 @@ std::string AgentInfo::GetMetadataInfo(const bool agentIsRegistering) const
     return agentMetadataInfo.dump();
 }
 
+void AgentInfo::Save() const {
+    AgentInfoPersistance agentInfoPersistance;
+    agentInfoPersistance.SetName(m_name);
+    agentInfoPersistance.SetKey(m_key);
+    agentInfoPersistance.SetUUID(m_uuid);
+    agentInfoPersistance.SetGroups(m_groups);
+}
+
 std::vector<std::string> AgentInfo::GetActiveIPAddresses(const nlohmann::json& networksJson) const
 {
     std::vector<std::string> ipAddresses;

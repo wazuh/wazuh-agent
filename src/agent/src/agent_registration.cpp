@@ -66,6 +66,7 @@ namespace agent_registration
             return false;
         }
 
+        m_agentInfo.Save();
         return true;
     }
 
