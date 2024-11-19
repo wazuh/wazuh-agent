@@ -1,7 +1,6 @@
 #pragma once
 
 #include <agent_info.hpp>
-#include <configuration_parser.hpp>
 #include <ihttp_client.hpp>
 
 #include <sysInfo.hpp>
@@ -28,16 +27,16 @@ namespace agent_registration
     public:
         ///@brief Constructor for the AgentRegistration class.
         ///
+        /// @param url The server URL.
         /// @param user The user's username.
         /// @param password The user's password.
         /// @param key The agent's key.
         /// @param name The agent's name.
-        /// @param configFile The path to the configuration file.
-        AgentRegistration(std::string user,
+        AgentRegistration(std::string url,
+                          std::string user,
                           std::string password,
                           const std::string& key,
-                          const std::string& name,
-                          std::optional<std::string> configFile);
+                          const std::string& name);
 
         /// @brief Registers the agent with the manager.
         ///
@@ -51,9 +50,6 @@ namespace agent_registration
 
         /// @brief The agent's information.
         AgentInfo m_agentInfo;
-
-        /// @brief The configuration parser.
-        configuration::ConfigurationParser m_configurationParser;
 
         /// @brief The URL of the manager.
         std::string m_serverUrl;

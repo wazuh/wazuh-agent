@@ -8,7 +8,6 @@ namespace config
     namespace agent
     {
     constexpr auto DEFAULT_SERVER_URL = "@DEFAULT_SERVER_URL@";
-    constexpr auto DEFAULT_REGISTRATION_URL = "@DEFAULT_REGISTRATION_URL@";
     constexpr auto DEFAULT_RETRY_INTERVAL = @DEFAULT_RETRY_INTERVAL@;
     }
 

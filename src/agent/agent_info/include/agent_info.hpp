@@ -43,7 +43,8 @@ public:
 
     /// @brief Sets the agent's name. The change is not saved to the database until `Save` is called.
     /// @param name The agent's new name.
-    void SetName(const std::string& name);
+    /// @return True if the name was successfully set, false otherwise.
+    bool SetName(const std::string& name);
 
     /// @brief Sets the agent's key. The change is not saved to the database until `Save` is called.
     /// @param key The agent's new key.

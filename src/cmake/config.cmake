@@ -6,8 +6,6 @@ set(VERSION "0.1")
 
 set(DEFAULT_SERVER_URL "https://localhost:27000" CACHE STRING "Default Agent Server Url")
 
-set(DEFAULT_REGISTRATION_URL "https://localhost:55000" CACHE STRING "Default Agent Registration Url")
-
 set(DEFAULT_RETRY_INTERVAL 30 CACHE STRING "Default Agent retry interval")
 
 set(BUFFER_SIZE 4096 CACHE STRING "Default Logcollector reading buffer size")
