@@ -63,7 +63,7 @@ std::optional<module_command::CommandEntry> GetCommandFromQueue(std::shared_ptr<
     }
 
     Message m = multiTypeQueue->getNext(MessageType::COMMAND);
-    nlohmann::json jsonData = m.data.at(0).at("data");
+    nlohmann::json jsonData = m.data;
 
     std::string id;
     std::string module;
