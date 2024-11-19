@@ -202,6 +202,7 @@ void AgentInfo::LoadEndpointInfo()
         m_endpointInfo["os"] = nlohmann::json::object();
         m_endpointInfo["os"]["name"] = osInfo.value("os_name", "Unknown");
         m_endpointInfo["os"]["platform"] = osInfo.value("sysname", "Unknown");
+        m_endpointInfo["os"]["version"] = osInfo.value("os_version", "Unknown");
     }
 
     if (m_getNetworksInfo != nullptr)
