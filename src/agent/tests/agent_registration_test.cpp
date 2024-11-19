@@ -98,7 +98,7 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
                                              bodyJson);
 
     boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
-    expectedResponse.result(boost::beast::http::status::ok);
+    expectedResponse.result(boost::beast::http::status::created);
 
     EXPECT_CALL(mockHttpClient, PerformHttpRequest(testing::Eq(reqParams))).WillOnce(testing::Return(expectedResponse));
 
@@ -164,7 +164,7 @@ TEST_F(RegisterTest, RegistrationTestSuccessWithEmptyKey)
         .WillOnce(testing::Return("token"));
 
     boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
-    expectedResponse.result(boost::beast::http::status::ok);
+    expectedResponse.result(boost::beast::http::status::created);
 
     EXPECT_CALL(mockHttpClient, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
