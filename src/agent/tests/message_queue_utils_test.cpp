@@ -8,8 +8,8 @@
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
 
-const nlohmann::json BASE_DATA_CONTENT = R"([{"data": {"id":"112233", "args": ["origin_test",
-                                        "command_test", "parameters_test"]}}])"_json;
+const nlohmann::json BASE_DATA_CONTENT = R"({"id":"112233", "args": ["origin_test",
+                                        "command_test", "parameters_test"]})"_json;
 
 class MockMultiTypeQueue : public MultiTypeQueue
 {
