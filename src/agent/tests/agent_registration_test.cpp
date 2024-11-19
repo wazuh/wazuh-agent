@@ -181,8 +181,9 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
 
 TEST_F(RegisterTest, RegistrationTestFailWithBadKey)
 {
-    ASSERT_THROW(agent_registration::AgentRegistration(
-        "https://localhost:55000", "user", "password", "badKey", "agent_name"), std::invalid_argument);
+    ASSERT_THROW(
+        agent_registration::AgentRegistration("https://localhost:55000", "user", "password", "badKey", "agent_name"),
+        std::invalid_argument);
 }
 
 int main(int argc, char** argv)
