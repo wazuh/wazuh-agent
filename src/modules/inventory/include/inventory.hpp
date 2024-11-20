@@ -55,6 +55,7 @@ class Inventory {
         nlohmann::json EcsHotfixesData(const nlohmann::json& originalData);
         nlohmann::json EcsHardwareData(const nlohmann::json& originalData);
         nlohmann::json EcsPackageData(const nlohmann::json& originalData);
+        nlohmann::json EcsPortData(const nlohmann::json& originalData);
         nlohmann::json GetHardwareData();
         nlohmann::json GetNetworkData();
         nlohmann::json GetPortsData();

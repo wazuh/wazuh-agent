@@ -69,7 +69,8 @@ TEST_F(InventoryImpTest, defaultCtor)
     EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
         R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})"
     )));
-
+    EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
+                                                                   R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
     EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
@@ -113,12 +114,17 @@ TEST_F(InventoryImpTest, defaultCtor)
     {
         R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"id":"aW52ZW50b3J5OmhvdGZpeGVzOktCMTIzNDU2Nzg=","operation":"create","type":"hotfixes"})"
     };
+    const auto expectedResult6
+    {
+        R"({"data":{"destination":{"ip":"0.0.0.0","port":0},"device":{"id":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":"","pid":0},"source":{"ip":"127.0.0.1","port":631}},"id":"aW52ZW50b3J5OnBvcnRzOjA6dGNwOjEyNy4wLjAuMTo2MzE=","operation":"create","type":"ports"})"
+    };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult4)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult5)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult6)).Times(1);
 
     const configuration::ConfigurationParser configurationParser;
     Inventory::Instance().Setup(configurationParser);
@@ -153,6 +159,8 @@ TEST_F(InventoryImpTest, intervalSeconds)
     EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
         R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})"
     )));
+    EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
+                                                                   R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
     EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(2))
     .WillRepeatedly(::testing::InvokeArgument<0>
@@ -259,6 +267,8 @@ TEST_F(InventoryImpTest, noHardware)
     EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
         R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})"
     )));
+    EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
+                                                                   R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
     EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
@@ -296,11 +306,16 @@ TEST_F(InventoryImpTest, noHardware)
     {
         R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"id":"aW52ZW50b3J5OmhvdGZpeGVzOktCMTIzNDU2Nzg=","operation":"create","type":"hotfixes"})"
     };
+    const auto expectedResult6
+    {
+        R"({"data":{"destination":{"ip":"0.0.0.0","port":0},"device":{"id":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":"","pid":0},"source":{"ip":"127.0.0.1","port":631}},"id":"aW52ZW50b3J5OnBvcnRzOjA6dGNwOjEyNy4wLjAuMTo2MzE=","operation":"create","type":"ports"})"
+    };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult4)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult5)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult6)).Times(1);
 
     std::string inventoryConfig = R"(
         inventory:
@@ -337,6 +352,7 @@ TEST_F(InventoryImpTest, noHardware)
     {
         t.join();
     }
+
 }
 
 TEST_F(InventoryImpTest, noOs)
@@ -346,6 +362,8 @@ TEST_F(InventoryImpTest, noOs)
     EXPECT_CALL(*spInfoWrapper, hardware()).WillRepeatedly(Return(nlohmann::json::parse(
         R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})"
     )));
+    EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
+                                                                   R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
     EXPECT_CALL(*spInfoWrapper, os()).Times(0);
     EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(1))
@@ -384,11 +402,16 @@ TEST_F(InventoryImpTest, noOs)
     {
         R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"id":"aW52ZW50b3J5OmhvdGZpeGVzOktCMTIzNDU2Nzg=","operation":"create","type":"hotfixes"})"
     };
+    const auto expectedResult5
+    {
+        R"({"data":{"destination":{"ip":"0.0.0.0","port":0},"device":{"id":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":"","pid":0},"source":{"ip":"127.0.0.1","port":631}},"id":"aW52ZW50b3J5OnBvcnRzOjA6dGNwOjEyNy4wLjAuMTo2MzE=","operation":"create","type":"ports"})"
+    };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult4)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult5)).Times(1);
 
     std::string inventoryConfig = R"(
         inventory:
@@ -437,6 +460,8 @@ TEST_F(InventoryImpTest, noNetwork)
     EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
         R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})"
     )));
+    EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
+                                                                   R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
     EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
@@ -480,12 +505,17 @@ TEST_F(InventoryImpTest, noNetwork)
     {
         R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"id":"aW52ZW50b3J5OmhvdGZpeGVzOktCMTIzNDU2Nzg=","operation":"create","type":"hotfixes"})"
     };
+    const auto expectedResult6
+    {
+        R"({"data":{"destination":{"ip":"0.0.0.0","port":0},"device":{"id":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":"","pid":0},"source":{"ip":"127.0.0.1","port":631}},"id":"aW52ZW50b3J5OnBvcnRzOjA6dGNwOjEyNy4wLjAuMTo2MzE=","operation":"create","type":"ports"})"
+    };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult4)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult5)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult6)).Times(1);
 
     std::string inventoryConfig = R"(
         inventory:
@@ -534,6 +564,8 @@ TEST_F(InventoryImpTest, noPackages)
     EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
         R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})"
     )));
+    EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
+                                                                   R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
     EXPECT_CALL(*spInfoWrapper, processes(testing::_))
     .Times(testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
@@ -569,11 +601,16 @@ TEST_F(InventoryImpTest, noPackages)
     {
         R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"id":"aW52ZW50b3J5OmhvdGZpeGVzOktCMTIzNDU2Nzg=","operation":"create","type":"hotfixes"})"
     };
+    const auto expectedResult5
+    {
+        R"({"data":{"destination":{"ip":"0.0.0.0","port":0},"device":{"id":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":"","pid":0},"source":{"ip":"127.0.0.1","port":631}},"id":"aW52ZW50b3J5OnBvcnRzOjA6dGNwOjEyNy4wLjAuMTo2MzE=","operation":"create","type":"ports"})"
+    };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult4)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult5)).Times(1);
 
     std::string inventoryConfig = R"(
         inventory:
@@ -622,6 +659,7 @@ TEST_F(InventoryImpTest, noPorts)
     EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
         R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})"
     )));
+    EXPECT_CALL(*spInfoWrapper, ports()).Times(0);
     EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
@@ -719,6 +757,8 @@ TEST_F(InventoryImpTest, noPortsAll)
     EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
         R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})"
     )));
+    EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
+                                                                   R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"udp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"","tx_queue":0},{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
     EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
@@ -760,12 +800,23 @@ TEST_F(InventoryImpTest, noPortsAll)
     {
         R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"id":"aW52ZW50b3J5OmhvdGZpeGVzOktCMTIzNDU2Nzg=","operation":"create","type":"hotfixes"})"
     };
+    const auto expectedResult6
+    {
+        R"({"data":{"destination":{"ip":"0.0.0.0","port":0},"device":{"id":"7046b3f9cda975eb6567259c2469748e634dde49"},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":""},"network":{"protocol":"udp"},"process":{"name":"","pid":0},"source":{"ip":"127.0.0.1","port":631}},"id":"aW52ZW50b3J5OnBvcnRzOjA6dWRwOjEyNy4wLjAuMTo2MzE=","operation":"create","type":"ports"})"
+    };
+    const auto expectedResult7
+    {
+        R"({"data":{"destination":{"ip":"0.0.0.0","port":0},"device":{"id":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":"","pid":0},"source":{"ip":"127.0.0.1","port":631}},"id":"aW52ZW50b3J5OnBvcnRzOjA6dGNwOjEyNy4wLjAuMTo2MzE=","operation":"create","type":"ports"})"
+    };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult4)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult5)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult6)).Times(1);
+    //TODO: check!
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult7)).Times(1);
 
     std::string inventoryConfig = R"(
         inventory:
@@ -815,6 +866,8 @@ TEST_F(InventoryImpTest, noProcesses)
     EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
         R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})"
     )));
+    EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
+                                                                   R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
     EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
@@ -850,11 +903,16 @@ TEST_F(InventoryImpTest, noProcesses)
     {
         R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"id":"aW52ZW50b3J5OmhvdGZpeGVzOktCMTIzNDU2Nzg=","operation":"create","type":"hotfixes"})"
     };
+    const auto expectedResult5
+    {
+        R"({"data":{"destination":{"ip":"0.0.0.0","port":0},"device":{"id":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":"","pid":0},"source":{"ip":"127.0.0.1","port":631}},"id":"aW52ZW50b3J5OnBvcnRzOjA6dGNwOjEyNy4wLjAuMTo2MzE=","operation":"create","type":"ports"})"
+    };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult4)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult5)).Times(1);
 
     std::string inventoryConfig = R"(
         inventory:
@@ -903,6 +961,8 @@ TEST_F(InventoryImpTest, noHotfixes)
     EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
         R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})"
     )));
+    EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
+                                                                   R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
     EXPECT_CALL(*spInfoWrapper, hotfixes()).Times(0);
     EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(1))
@@ -941,11 +1001,16 @@ TEST_F(InventoryImpTest, noHotfixes)
     {
         R"({"data":{"process":{"args":"","command_line":"","group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":0,"user":{"id":"root"}}},"id":"aW52ZW50b3J5OnByb2Nlc3Nlczo0MzE2MjU=","operation":"create","type":"processes"})"
     };
+    const auto expectedResult5
+    {
+        R"({"data":{"destination":{"ip":"0.0.0.0","port":0},"device":{"id":"cbf2ac25a6775175f912ebf2abc72f6f51ab48ba"},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":"","pid":0},"source":{"ip":"127.0.0.1","port":631}},"id":"aW52ZW50b3J5OnBvcnRzOjA6dGNwOjEyNy4wLjAuMTo2MzE=","operation":"create","type":"ports"})"
+    };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult4)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult5)).Times(1);
 
     std::string inventoryConfig = R"(
         inventory:
@@ -991,6 +1056,8 @@ TEST_F(InventoryImpTest, scanInvalidData)
                                                                       R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
     EXPECT_CALL(*spInfoWrapper, os()).WillRepeatedly(Return(nlohmann::json::parse(
                                                                 R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})")));
+    EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(
+                                                                   R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
     EXPECT_CALL(*spInfoWrapper, packages(testing::_))
     .Times(::testing::AtLeast(1))
     .WillOnce(::testing::InvokeArgument<0>
@@ -1039,9 +1106,6 @@ TEST_F(InventoryImpTest, scanInvalidData)
 
 TEST_F(InventoryImpTest, portAllEnable)
 {
-    // TO DO Enable this test when migrating the portAll table.
-    GTEST_SKIP();
-
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(R"(
     [
@@ -1118,29 +1182,28 @@ TEST_F(InventoryImpTest, portAllEnable)
         [&wrapper](const std::string & data)
         {
             auto delta = nlohmann::json::parse(data);
-            delta["data"].erase("checksum");
-            delta["data"].erase("scan_time");
+            delta["data"].erase("@timestamp");
             wrapper.callbackMock(delta.dump());
         }
     };
     const auto expectedResult1
     {
-        R"({"data":{"inode":43481,"item_id":"12903a43db24ab10d872547cdd1d786a5876a0da","local_ip":"0.0.0.0","local_port":47748,"pid":0,"process_name":null,"protocol":"udp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":null,"tx_queue":0},"operation":"INSERTED","type":"ports"})"
+        R"({"data":{"destination":{"ip":"0.0.0.0","port":0},"device":{"id":"12903a43db24ab10d872547cdd1d786a5876a0da"},"file":{"inode":43481},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":""},"network":{"protocol":"udp"},"process":{"name":"","pid":0},"source":{"ip":"0.0.0.0","port":47748}},"id":"aW52ZW50b3J5OnBvcnRzOjQzNDgxOnVkcDowLjAuMC4wOjQ3NzQ4","operation":"create","type":"ports"})"
     };
 
     const auto expectedResult2
     {
-        R"({"data":{"inode":43482,"item_id":"ca7c9aff241cb251c6ad31e30b806366ecb2ad5f","local_ip":"::","local_port":51087,"pid":0,"process_name":null,"protocol":"udp6","remote_ip":"::","remote_port":0,"rx_queue":0,"state":null,"tx_queue":0},"operation":"INSERTED","type":"ports"})"
+        R"({"data":{"destination":{"ip":"::","port":0},"device":{"id":"ca7c9aff241cb251c6ad31e30b806366ecb2ad5f"},"file":{"inode":43482},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":""},"network":{"protocol":"udp6"},"process":{"name":"","pid":0},"source":{"ip":"::","port":51087}},"id":"aW52ZW50b3J5OnBvcnRzOjQzNDgyOnVkcDY6Ojo6NTEwODc=","operation":"create","type":"ports"})"
     };
 
     const auto expectedResult3
     {
-        R"({"data":{"inode":50324,"item_id":"8c790ef53962dd27f4516adb1d7f3f6096bc6d29","local_ip":"127.0.0.1","local_port":33060,"pid":0,"process_name":null,"protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0},"operation":"INSERTED","type":"ports"})"
+        R"({"data":{"destination":{"ip":"0.0.0.0","port":0},"device":{"id":"8c790ef53962dd27f4516adb1d7f3f6096bc6d29"},"file":{"inode":50324},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":"","pid":0},"source":{"ip":"127.0.0.1","port":33060}},"id":"aW52ZW50b3J5OnBvcnRzOjUwMzI0OnRjcDoxMjcuMC4wLjE6MzMwNjA=","operation":"create","type":"ports"})"
     };
 
     const auto expectedResult4
     {
-        R"({"data":{"inode":122575,"item_id":"d5511242275bd3f2d57175f248108d6c3b39c438","local_ip":"192.168.0.104","local_port":39106,"pid":0,"process_name":null,"protocol":"tcp","remote_ip":"44.238.116.130","remote_port":443,"rx_queue":0,"state":"established","tx_queue":0},"operation":"INSERTED","type":"ports"})"
+        R"({"data":{"destination":{"ip":"44.238.116.130","port":443},"device":{"id":"d5511242275bd3f2d57175f248108d6c3b39c438"},"file":{"inode":122575},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"established"},"network":{"protocol":"tcp"},"process":{"name":"","pid":0},"source":{"ip":"192.168.0.104","port":39106}},"id":"aW52ZW50b3J5OnBvcnRzOjEyMjU3NTp0Y3A6MTkyLjE2OC4wLjEwNDozOTEwNg==","operation":"create","type":"ports"})"
     };
 
     EXPECT_CALL(wrapper, callbackMock(expectedResult1)).Times(1);
@@ -1187,9 +1250,6 @@ TEST_F(InventoryImpTest, portAllEnable)
 
 TEST_F(InventoryImpTest, portAllDisable)
 {
-    // TO DO Enable this test when migrating the portAll table.
-    GTEST_SKIP();
-
     const auto spInfoWrapper{std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, ports()).WillRepeatedly(Return(nlohmann::json::parse(R"(
     [
@@ -1266,24 +1326,23 @@ TEST_F(InventoryImpTest, portAllDisable)
         [&wrapper](const std::string & data)
         {
             auto delta = nlohmann::json::parse(data);
-            delta["data"].erase("checksum");
-            delta["data"].erase("scan_time");
+            delta["data"].erase("@timestamp");
             wrapper.callbackMock(delta.dump());
         }
     };
     const auto expectedResult1
     {
-        R"({"data":{"inode":43481,"item_id":"12903a43db24ab10d872547cdd1d786a5876a0da","local_ip":"0.0.0.0","local_port":47748,"pid":0,"process_name":null,"protocol":"udp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":null,"tx_queue":0},"operation":"INSERTED","type":"ports"})"
+        R"({"data":{"destination":{"ip":"0.0.0.0","port":0},"device":{"id":"12903a43db24ab10d872547cdd1d786a5876a0da"},"file":{"inode":43481},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":""},"network":{"protocol":"udp"},"process":{"name":"","pid":0},"source":{"ip":"0.0.0.0","port":47748}},"id":"aW52ZW50b3J5OnBvcnRzOjQzNDgxOnVkcDowLjAuMC4wOjQ3NzQ4","operation":"create","type":"ports"})"
     };
 
     const auto expectedResult2
     {
-        R"({"data":{"inode":43482,"item_id":"ca7c9aff241cb251c6ad31e30b806366ecb2ad5f","local_ip":"::","local_port":51087,"pid":0,"process_name":null,"protocol":"udp6","remote_ip":"::","remote_port":0,"rx_queue":0,"state":null,"tx_queue":0},"operation":"INSERTED","type":"ports"})"
+        R"({"data":{"destination":{"ip":"::","port":0},"device":{"id":"ca7c9aff241cb251c6ad31e30b806366ecb2ad5f"},"file":{"inode":43482},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":""},"network":{"protocol":"udp6"},"process":{"name":"","pid":0},"source":{"ip":"::","port":51087}},"id":"aW52ZW50b3J5OnBvcnRzOjQzNDgyOnVkcDY6Ojo6NTEwODc=","operation":"create","type":"ports"})"
     };
 
     const auto expectedResult3
     {
-        R"({"data":{"inode":50324,"item_id":"8c790ef53962dd27f4516adb1d7f3f6096bc6d29","local_ip":"127.0.0.1","local_port":33060,"pid":0,"process_name":null,"protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0},"operation":"INSERTED","type":"ports"})"
+        R"({"data":{"destination":{"ip":"0.0.0.0","port":0},"device":{"id":"8c790ef53962dd27f4516adb1d7f3f6096bc6d29"},"file":{"inode":50324},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":"","pid":0},"source":{"ip":"127.0.0.1","port":33060}},"id":"aW52ZW50b3J5OnBvcnRzOjUwMzI0OnRjcDoxMjcuMC4wLjE6MzMwNjA=","operation":"create","type":"ports"})"
     };
 
     EXPECT_CALL(wrapper, callbackMock(expectedResult1)).Times(1);
@@ -1401,3 +1460,4 @@ int main(int argc, char** argv)
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
+

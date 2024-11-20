@@ -142,7 +142,7 @@ constexpr auto PORTS_SQL_STATEMENT
        process TEXT,
        checksum TEXT,
        item_id TEXT,
-       PRIMARY KEY (inode, protocol, local_ip, local_port)) WITHOUT ROWID;)"
+       PRIMARY KEY (inode,protocol,local_ip,local_port)) WITHOUT ROWID;)"
 };
 static const std::vector<std::string> PORTS_ITEM_ID_FIELDS{"inode", "protocol", "local_ip", "local_port"};
 
@@ -271,8 +271,13 @@ nlohmann::json Inventory::EcsData(const nlohmann::json& data, const std::string&
     {
         ret = EcsProcessesData(data);
     }
-    else if(table == HOTFIXES_TABLE){
+    else if(table == HOTFIXES_TABLE)
+    {
         ret = EcsHotfixesData(data);
+    }
+    else if (table == PORTS_TABLE)
+    {
+        ret = EcsPortData(data);
     }
     return ret;
 }
@@ -298,6 +303,10 @@ std::string Inventory::GetPrimaryKeys([[maybe_unused]] const nlohmann::json& dat
     }
     else if(table == HOTFIXES_TABLE){
         ret = data["package"]["hotfix"]["name"];
+    }
+    else if (table == PORTS_TABLE)
+    {
+        ret = std::to_string(data["file"]["inode"].get<int>()) + ":" + data["network"]["protocol"].get<std::string>() + ":" + data["source"]["ip"].get<std::string>() + ":" + std::to_string(data["source"]["port"].get<int>());
     }
     return ret;
 }
@@ -526,6 +535,26 @@ nlohmann::json Inventory::EcsHotfixesData(const nlohmann::json& originalData){
     nlohmann::json ret;
 
     ret["package"]["hotfix"]["name"] = originalData.contains("hotfix") ? originalData["hotfix"] : "";
+
+    return ret;
+}
+
+nlohmann::json Inventory::EcsPortData(const nlohmann::json& originalData)
+{
+    nlohmann::json ret;
+
+    ret["network"]["protocol"] = originalData.contains("protocol") ? originalData["protocol"] : "";
+    ret["source"]["ip"] = originalData.contains("local_ip") ? originalData["local_ip"] : "";
+    ret["source"]["port"] = originalData.contains("local_port") ? originalData["local_port"] : nlohmann::json(0);
+    ret["destination"]["ip"] = originalData.contains("remote_ip") ? originalData["remote_ip"] : "";
+    ret["destination"]["port"] = originalData.contains("remote_port") ? originalData["remote_port"] : nlohmann::json(0);
+    ret["host"]["network"]["egress"]["queue"] = originalData.contains("tx_queue") ? originalData["tx_queue"] : nlohmann::json(0);
+    ret["host"]["network"]["ingress"]["queue"] = originalData.contains("rx_queue") ? originalData["rx_queue"] : nlohmann::json(0);
+    ret["file"]["inode"] = originalData.contains("inode") ? originalData["inode"] : nlohmann::json(0);
+    ret["interface"]["state"] = originalData.contains("state") ? originalData["state"] : "";
+    ret["process"]["pid"] = originalData.contains("pid") ? originalData["pid"] : nlohmann::json(0);
+    ret["process"]["name"] = originalData.contains("process") ? originalData["process"] : "";
+    ret["device"]["id"] = originalData.contains("item_id") ? originalData["item_id"] : "";
 
     return ret;
 }
@@ -792,7 +821,6 @@ nlohmann::json Inventory::GetPortsData()
 
                     if (!IsElementDuplicated(ret, std::make_pair("item_id", itemId)))
                     {
-                        item["checksum"] = GetItemChecksum(item);
                         item["item_id"] = itemId;
                         ret.push_back(item);
                     }
@@ -808,7 +836,6 @@ nlohmann::json Inventory::GetPortsData()
 
                         if (!IsElementDuplicated(ret, std::make_pair("item_id", itemId)))
                         {
-                            item["checksum"] = GetItemChecksum(item);
                             item["item_id"] = itemId;
                             ret.push_back(item);
                         }
@@ -821,7 +848,6 @@ nlohmann::json Inventory::GetPortsData()
 
                 if (!IsElementDuplicated(ret, std::make_pair("item_id", itemId)))
                 {
-                    item["checksum"] = GetItemChecksum(item);
                     item["item_id"] = itemId;
                     ret.push_back(item);
                 }
@@ -888,10 +914,11 @@ void Inventory::Scan()
     TryCatchTask([&]() { ScanPackages(); });
     TryCatchTask([&]() { ScanProcesses(); });
     TryCatchTask([&]() { ScanHotfixes(); });
+    TryCatchTask([&]() { ScanPorts(); });
 
     // TO DO: enable each scan once the ECS translation is done
     //TryCatchTask([&]() { ScanNetwork(); });
-    //TryCatchTask([&]() { ScanPorts(); });
+
     m_notify = true;
     LogInfo("Evaluation finished.");
 }
