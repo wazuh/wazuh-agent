@@ -5,6 +5,7 @@ import ssl
 import jwt
 import threading
 import argparse
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from datetime import datetime, timedelta
 from urllib.parse import urlparse, parse_qs, unquote
@@ -17,9 +18,12 @@ GROUPS_FILES_DIR = 'group_files'
 # Secret key to sign the JWT (you can change it for a secure key)
 SECRET_KEY = "my_secret_key"
 
+# Default expiration time
+EXPIRATION_TIME = 60
+
 log_file_path = None
 
-def generate_authentication_response(expiration_seconds=60):
+def generate_authentication_response(expiration_seconds=EXPIRATION_TIME, add_data=False):
     # Set the expiration time in seconds
     expiration_time = datetime.utcnow() + timedelta(seconds=expiration_seconds)
     expiration_timestamp = int(expiration_time.timestamp())
@@ -27,7 +31,7 @@ def generate_authentication_response(expiration_seconds=60):
     # Generate the JWT token with the data and the configured expiration time
     payload = {
         "iss": "wazuh",
-        "aud": "Wazuh Communications API",
+        "aud": "Wazuh Comms API",
         "iat": datetime.utcnow(),
         "exp": expiration_time,
         "uuid": "edab9ef6-f02d-4a4b-baa4-f2ad12789890"
@@ -35,11 +39,10 @@ def generate_authentication_response(expiration_seconds=60):
 
     token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
-    response = {
-        "token": token,
-        "exp": expiration_timestamp,
-        "error": 0
-    }
+    if add_data:
+        response = {"data": {"token": token, "error": 0}}
+    else:
+        response = {"token": token, "error": 0}
 
     return json.dumps(response)
 
@@ -92,11 +95,10 @@ class MockHandler(BaseHTTPRequestHandler):
 
         response = None
         if self.path == "/security/user/authenticate":
-            response = self._load_response("user_authenticate.json")
+            response = generate_authentication_response(add_data=True)
             self._set_headers(code=200, content_length=len(response))
         elif self.path == "/agents":
-            response = self._load_response("agents.json")
-            self._set_headers(code=201, content_length=len(response))
+            self._set_headers(code=201)
         elif self.path == "/api/v1/authentication":
             response = generate_authentication_response()
             self._set_headers(code=200, content_length=len(response))
@@ -124,6 +126,7 @@ class MockHandler(BaseHTTPRequestHandler):
 
         response = None
         if self.path == "/api/v1/commands":
+            time.sleep(EXPIRATION_TIME)
             response = self._load_response("commands.json")
             self._set_headers(code=200, content_length=len(response))
         elif self.path.startswith("/api/v1/files"):
@@ -176,7 +179,7 @@ class MockHandler(BaseHTTPRequestHandler):
         token = auth_header.split(" ")[1]
 
         try:
-            jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            jwt.decode(token, SECRET_KEY, algorithms=["HS256"], audience=["Wazuh Comms API"])
         except jwt.ExpiredSignatureError:
             return False
         except jwt.InvalidTokenError:

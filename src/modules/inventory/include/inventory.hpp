@@ -7,6 +7,8 @@
 #include <memory>
 #include <string>
 #include <memory>
+#include <ctime>
+
 #include <sysInfoInterface.hpp>
 #include <configuration_parser.hpp>
 #include <commonDefs.h>
@@ -73,7 +75,7 @@ class Inventory {
         void Scan();
         void SyncLoop(std::unique_lock<std::mutex>& lock);
         void ShowConfig();
-        cJSON * Dump();
+        cJSON * Dump() const;
         static void LogErrorInventory(const std::string& log);
         nlohmann::json EcsData(const nlohmann::json& data, const std::string& table);
         std::string GetPrimaryKeys(const nlohmann::json& data, const std::string& table);
@@ -83,7 +85,7 @@ class Inventory {
         std::shared_ptr<ISysInfo>                   m_spInfo;
         std::function<void(const std::string&)>     m_reportDiffFunction;
         bool                                        m_enabled;          // Main switch
-        std::chrono::seconds                        m_intervalValue;    // Scan interval
+        std::time_t                                 m_intervalValue;    // Scan interval
         bool                                        m_scanOnStart;      // Scan always on start
         bool                                        m_hardware;         // Hardware inventory
         bool                                        m_os;               // OS inventory

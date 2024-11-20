@@ -7,16 +7,16 @@ namespace config
 
     namespace agent
     {
-    constexpr auto DEFAULT_SERVER_URL = "@DEFAULT_SERVER_URL@";
-    constexpr auto DEFAULT_RETRY_INTERVAL = @DEFAULT_RETRY_INTERVAL@;
+        constexpr auto DEFAULT_SERVER_URL = "@DEFAULT_SERVER_URL@";
+        constexpr auto DEFAULT_RETRY_INTERVAL = @DEFAULT_RETRY_INTERVAL@;
     }
 
     namespace logcollector
     {
+        constexpr auto DEFAULT_ENABLED = @DEFAULT_LOGCOLLECTOR_ENABLED@;
         constexpr auto BUFFER_SIZE = @BUFFER_SIZE@;
         constexpr auto DEFAULT_FILE_WAIT = @DEFAULT_FILE_WAIT@;
         constexpr auto DEFAULT_RELOAD_INTERVAL = @DEFAULT_RELOAD_INTERVAL@;
-        constexpr auto DEFAULT_ENABLED = @DEFAULT_LOGCOLLECTOR_ENABLED@;
         constexpr auto DEFAULT_LOCALFILES = "/var/log/auth.log";
     }
 

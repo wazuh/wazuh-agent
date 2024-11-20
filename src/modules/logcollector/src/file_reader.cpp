@@ -7,12 +7,12 @@
 
 using namespace logcollector;
 
-FileReader::FileReader(Logcollector& logcollector, std::string pattern, long fileWait, long reloadInterval) :
+FileReader::FileReader(Logcollector& logcollector, std::string pattern, std::time_t fileWait, std::time_t reloadInterval) :
     IReader(logcollector),
     m_filePattern(std::move(pattern)),
     m_localfiles(),
-    m_fileWaitMs(fileWait),
-    m_reloadIntervalSec(reloadInterval) { }
+    m_fileWait(fileWait),
+    m_reloadInterval(reloadInterval) { }
 
 Awaitable FileReader::Run() {
     while (true) {
@@ -21,7 +21,7 @@ Awaitable FileReader::Run() {
             m_logcollector.EnqueueTask(ReadLocalfile(&lf));
         });
 
-        co_await m_logcollector.Wait(std::chrono::seconds(m_reloadIntervalSec));
+        co_await m_logcollector.Wait(std::chrono::milliseconds(m_reloadInterval));
     }
 }
 
@@ -44,7 +44,7 @@ Awaitable FileReader::ReadLocalfile(Localfile* lf) {
             co_return;
         }
 
-        co_await m_logcollector.Wait(std::chrono::milliseconds(m_fileWaitMs));
+        co_await m_logcollector.Wait(std::chrono::milliseconds(m_fileWait));
     }
 
     RemoveLocalfile(lf->Filename());

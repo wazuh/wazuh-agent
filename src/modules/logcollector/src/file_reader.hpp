@@ -3,6 +3,7 @@
 #include <list>
 #include <fstream>
 #include <exception>
+#include <ctime>
 
 #include <logcollector.hpp>
 #include "reader.hpp"
@@ -70,8 +71,8 @@ public:
     /// @param logcollector Log collector instance
     /// @param pattern File pattern
     /// @param fileWait File wait time in milliseconds
-    /// @param reloadInterval Reload interval in seconds
-    FileReader(Logcollector& logcollector, std::string pattern, long fileWait = config::logcollector::DEFAULT_FILE_WAIT, long reloadInterval = config::logcollector::DEFAULT_RELOAD_INTERVAL);
+    /// @param reloadInterval Reload interval in milliseconds
+    FileReader(Logcollector& logcollector, std::string pattern, std::time_t fileWait, std::time_t reloadInterval);
 
     /// @brief Runs the file reader
     /// @return Awaitable result
@@ -112,10 +113,10 @@ private:
     std::list<Localfile> m_localfiles;
 
     /// @brief File reading interval in milliseconds
-    long m_fileWaitMs;
+    std::time_t m_fileWait;
 
-    /// @brief Reload (wildcard expand) interval in seconds
-    long m_reloadIntervalSec;
+    /// @brief Reload (wildcard expand) interval in milliseconds
+    std::time_t m_reloadInterval;
 
     /// @brief File pattern
     const std::string m_collectorType = "file";

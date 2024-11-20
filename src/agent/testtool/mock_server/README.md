@@ -4,9 +4,9 @@ This is a configurable mock server in Python that responds to specific endpoints
 
 ## Features
 
-- **JWT Authentication**: The `/api/v1/authentication` endpoint generates and returns a JWT token with a configurable expiration time.
+- **JWT Authentication**: The `/security/user/authenticate` and `/api/v1/authentication` endpoints generate and return a JWT token with a configurable expiration time.
 - **File Serving**: The `/api/v1/files` endpoint serves files from a specified directory.
-- **Custom Endpoints**: Includes endpoints like `/security/user/authenticate`, `/agents`, `/api/v1/events/stateful`, and others, each returning mock JSON responses from local files.
+- **Custom Endpoints**: Includes endpoints like `/api/v1/events/commands`, each returning mock JSON responses from local files.
 
 ## Prerequisites
 
@@ -52,9 +52,11 @@ python3 mock_server.py --port1 55000 --port2 27000 --protocol http
 ## Endpoints
 
 ### POST Endpoints
- - `/security/user/authenticate`: Returns a mock authentication response from `responses/user_authenticate.json`.
- - `/agents`: Returns a mock response from `responses/agents.json`.
+ - `/security/user/authenticate`: Returns a generated JWT token with a configurable expiration time.
+ - `/agents`: Returns successful response.
  - `/api/v1/authentication`: Returns a generated JWT token with a configurable expiration time.
+ - `/api/v1/events/stateful`: Returns a mock response from `responses/events_stateful.json`.
+ - `/api/v1/events/stateless`: Returns a mock response from `responses/events_stateless.json`.
 
 ### GET Endpoints
  - `/api/v1/commands`: Returns a mock response from `responses/commands.json`.
@@ -66,10 +68,9 @@ To serve files and responses, organize your directory structure as follows:
 ```
 mock_server/
     responses/
-        user_authenticate.json
-        agents.json
         commands.json
-        ...
+        events_stateful.json
+        events_stateless.json
     group_files/
         file1.txt
         file2.conf
@@ -77,5 +78,6 @@ mock_server/
     key.pem
     mock_server.py
 ```
+
 ## License
 This project is open-source. Use it as a reference for your own mock server setup and customization.

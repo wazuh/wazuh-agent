@@ -29,39 +29,20 @@ void Logcollector::EnqueueTask(boost::asio::awaitable<void> task) {
 }
 
 void Logcollector::Setup(const configuration::ConfigurationParser& configurationParser) {
-    try {
-        m_enabled = configurationParser.GetConfig<bool>("logcollector", "enabled").value_or(config::logcollector::DEFAULT_ENABLED);
-    } catch (std::exception&) {
-        m_enabled = true;
-    }
+    m_enabled = configurationParser.GetConfig<bool>("logcollector", "enabled").value_or(config::logcollector::DEFAULT_ENABLED);
 
     SetupFileReader(configurationParser);
 }
 
 void Logcollector::SetupFileReader(const configuration::ConfigurationParser& configurationParser) {
-    long fileWait = config::logcollector::DEFAULT_FILE_WAIT;
-    long reloadInterval = config::logcollector::DEFAULT_RELOAD_INTERVAL;
+    auto fileWait = configurationParser.GetConfig<std::time_t>("logcollector", "file_wait").value_or(config::logcollector::DEFAULT_FILE_WAIT);
 
-    try {
-        fileWait = configurationParser.GetConfig<long>("logcollector", "file_wait").value_or(config::logcollector::DEFAULT_FILE_WAIT);
-    } catch (std::exception&) {
-        fileWait = config::logcollector::DEFAULT_FILE_WAIT;
-    }
+    auto reloadInterval = configurationParser.GetConfig<std::time_t>("logcollector", "reload_interval").value_or(config::logcollector::DEFAULT_RELOAD_INTERVAL);
 
-    try {
-        reloadInterval = configurationParser.GetConfig<long>("logcollector", "reload_interval").value_or(config::logcollector::DEFAULT_RELOAD_INTERVAL);
-    } catch (std::exception&) {
-        reloadInterval = config::logcollector::DEFAULT_FILE_WAIT;
-    }
+    auto localfiles = configurationParser.GetConfig<std::vector<std::string>>("logcollector", "localfiles").value_or(std::vector<std::string>({config::logcollector::DEFAULT_LOCALFILES}));
 
-    try {
-        auto localfiles = configurationParser.GetConfig<std::vector<std::string>>("logcollector", "localfiles").value_or(std::vector<std::string>({config::logcollector::DEFAULT_LOCALFILES}));
-
-        for (auto& lf : localfiles) {
-            AddReader(std::make_shared<FileReader>(*this, lf, fileWait, reloadInterval));
-        }
-    } catch (std::exception&) {
-        LogTrace("No localfiles defined");
+    for (auto& lf : localfiles) {
+        AddReader(std::make_shared<FileReader>(*this, lf, fileWait, reloadInterval));
     }
 }
 
@@ -131,8 +112,4 @@ void Logcollector::AddReader(std::shared_ptr<IReader> reader) {
 
 Awaitable Logcollector::Wait(std::chrono::milliseconds ms) {
     co_await boost::asio::steady_timer(m_ioContext, ms).async_wait(boost::asio::use_awaitable);
-}
-
-Awaitable Logcollector::Wait(std::chrono::seconds sec) {
-    co_await boost::asio::steady_timer(m_ioContext, sec).async_wait(boost::asio::use_awaitable);
 }
