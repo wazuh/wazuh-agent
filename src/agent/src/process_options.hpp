@@ -3,8 +3,6 @@
 #include <string>
 
 /// Command-line options
-static const auto OPT_RUN {"--run"};
-static const auto OPT_START {"--start"};
 static const auto OPT_STATUS {"--status"};
 static const auto OPT_STOP {"--stop"};
 static const auto OPT_RESTART {"--restart"};

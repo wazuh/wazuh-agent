@@ -52,13 +52,13 @@ int main(int argc, char* argv[])
         {
             SetDispatcherThread();
         }
-        else if (cmdParser.OptionExists(OPT_RUN) || cmdParser.OptionExists(OPT_START))
+        else if (cmdParser.OptionExists(OPT_HELP))
         {
-            StartAgent(configFile);
+            PrintHelp();
         }
         else
         {
-            PrintHelp();
+            StartAgent(configFile);
         }
 
         return 0;

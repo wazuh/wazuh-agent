@@ -11,33 +11,23 @@
 #include <thread>
 #include <vector>
 
-void RestartAgent(const std::string& configFile)
-{
-    StopAgent();
-
-    std::this_thread::sleep_for(std::chrono::seconds(1)); // NOLINT
-
-    StartAgent(configFile);
-}
+void RestartAgent([[maybe_unused]] const std::string& configFile) {}
 
 void StartAgent(const std::string& configFile)
 {
-    pid_t pid = unix_daemon::PIDFileHandler::ReadPIDFromFile();
-    if (pid > 0)
+    unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile();
+
+    if (!lockFileHandler.isLockFileCreated())
     {
         std::cout << "wazuh-agent already running\n";
         return;
     }
-    else if (pid < 0)
-    {
-        std::cout << "Error reading pid file\n";
-        return;
-    }
 
     LogInfo("Starting wazuh-agent");
-    unix_daemon::PIDFileHandler handler = unix_daemon::GeneratePIDFile();
     Agent agent(configFile);
     agent.Run();
+
+    lockFileHandler.removeLockFile();
 }
 
 void StatusAgent()
@@ -45,27 +35,7 @@ void StatusAgent()
     std::cout << fmt::format("wazuh-agent is {}\n", unix_daemon::GetDaemonStatus());
 }
 
-void StopAgent()
-{
-    LogInfo("Stopping wazuh-agent");
-    pid_t pid = unix_daemon::PIDFileHandler::ReadPIDFromFile();
-
-    if (pid < 0)
-    {
-        std::cout << "Error reading pid file\n";
-        return;
-    }
-
-    if (!kill(pid, SIGTERM))
-    {
-        LogInfo("Wazuh-agent terminated");
-    }
-    else
-    {
-        kill(pid, SIGKILL);
-        LogInfo("Wazuh-agent killed");
-    }
-}
+void StopAgent() {}
 
 void PrintHelp()
 {
@@ -74,14 +44,10 @@ void PrintHelp()
     std::cout << "Usage: wazuh-agent [options]\n";
     std::cout << "\n";
     std::cout << "Options:\n";
-    std::cout << "     " << OPT_RUN << "                Start wazuh-agent\n";
-    std::cout << "     " << OPT_START << "              Start wazuh-agent daemon\n";
     std::cout << "     " << OPT_STATUS << "             Get wazuh-agent daemon status\n";
-    std::cout << "     " << OPT_STOP << "               Stop wazuh-agent daemon\n";
-    std::cout << "     " << OPT_RESTART << "            Restart wazuh-agent daemon\n";
     std::cout << "     " << OPT_REGISTER_AGENT << "     Register wazuh-agent\n";
     std::cout << "     " << OPT_CONFIG_FILE << "        Specify the full path of the configuration file (optional).\n";
-    std::cout << "                          Used with " << OPT_RUN << ", " << OPT_RESTART << ", or "
+    std::cout << "                          Can be used when running the application normally or with"
               << OPT_REGISTER_AGENT << ".\n";
     std::cout << "     " << OPT_HELP << "               This help message\n";
 }

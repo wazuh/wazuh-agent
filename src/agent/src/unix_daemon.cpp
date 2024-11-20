@@ -5,26 +5,22 @@
 #include <cerrno>
 #include <filesystem>
 #include <fstream>
+#include <sys/file.h>
 
 namespace fs = std::filesystem;
 
 namespace unix_daemon
 {
-    constexpr std::string_view PID_PATH = "var/run";
+    constexpr std::string_view LOCK_PATH = "var/run";
 
-    PIDFileHandler::PIDFileHandler()
+    LockFileHandler::LockFileHandler()
+        : m_lockFileCreated(createLockFile())
     {
-        writePIDFile();
     }
 
-    PIDFileHandler::~PIDFileHandler()
+    bool LockFileHandler::removeLockFile() const
     {
-        removePIDFile();
-    }
-
-    bool PIDFileHandler::removePIDFile() const
-    {
-        const std::string filePath = fmt::format("{}/{}/wazuh-agent.pid", GetExecutablePath(), PID_PATH);
+        const std::string filePath = fmt::format("{}/{}/wazuh-agent.lock", GetExecutablePath(), LOCK_PATH);
         try
         {
             std::filesystem::remove(filePath);
@@ -37,12 +33,12 @@ namespace unix_daemon
         }
     }
 
-    bool PIDFileHandler::createDirectory(const std::string_view relativePath) const
+    bool LockFileHandler::createDirectory(const std::string_view path) const
     {
         try
         {
             const fs::path curDir = fs::current_path();
-            const fs::path fullPath = curDir / relativePath;
+            const fs::path fullPath = curDir / path;
 
             if (fs::exists(fullPath) && fs::is_directory(fullPath))
             {
@@ -59,49 +55,38 @@ namespace unix_daemon
         }
     }
 
-    bool PIDFileHandler::writePIDFile() const
+    bool LockFileHandler::createLockFile()
     {
-        const std::string path = fmt::format("{}/{}", GetExecutablePath(), PID_PATH);
-        createDirectory(path);
-
-        const std::string filename = fmt::format("{}/{}/wazuh-agent.pid", GetExecutablePath(), PID_PATH);
-        std::ofstream file(filename);
-
-        if (!file.is_open())
+        const std::string path = fmt::format("{}/{}", GetExecutablePath(), LOCK_PATH);
+        if (!createDirectory(path))
         {
-            LogCritical("Unable to write PID file: {}. Error: {} ({})", filename.c_str(), errno, std::strerror(errno));
+            LogError("Unable to create lock directory: {}", path);
             return false;
         }
 
-        file << getpid();
-        file.close();
+        const std::string filename = fmt::format("{}/wazuh-agent.lock", path);
+
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, cppcoreguidelines-avoid-magic-numbers)
+        int fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (fd == -1)
+        {
+            LogError("Unable to open lock file: {}. Error: {} ({})", filename.c_str(), errno, std::strerror(errno));
+            return false;
+        }
+
+        if (flock(fd, LOCK_EX | LOCK_NB) == -1)
+        {
+            LogDebug("Unable to lock lock file: {}. Error: {} ({})", filename.c_str(), errno, std::strerror(errno));
+            close(fd);
+            return false;
+        }
+
+        LogDebug("Lock file created: {}", filename);
 
         return true;
     }
 
-    pid_t PIDFileHandler::ReadPIDFromFile()
-    {
-        const std::string filename = fmt::format("{}/{}/wazuh-agent.pid", GetExecutablePath(), PID_PATH);
-        std::ifstream file(filename);
-
-        if (!file.is_open())
-        {
-            return 0;
-        }
-
-        pid_t value {};
-        file >> value;
-
-        if (file.fail())
-        {
-            LogError("Error reading PID file: {}({})", filename.c_str(), errno, std::strerror(errno));
-            return -1;
-        }
-
-        return value;
-    }
-
-    std::string PIDFileHandler::GetExecutablePath()
+    std::string LockFileHandler::GetExecutablePath()
     {
         std::vector<char> pathBuffer(PATH_MAX);
         const ssize_t len = readlink("/proc/self/exe", pathBuffer.data(), pathBuffer.size() - 1);
@@ -118,18 +103,21 @@ namespace unix_daemon
         }
     }
 
-    PIDFileHandler GeneratePIDFile()
+    LockFileHandler GenerateLockFile()
     {
         return {};
     }
 
     std::string GetDaemonStatus()
     {
-        const pid_t pid = PIDFileHandler::ReadPIDFromFile();
-        if (pid == 0)
+        LockFileHandler lockFileHandler = GenerateLockFile();
+
+        if (!lockFileHandler.isLockFileCreated())
         {
-            return "stopped";
+            return "running";
         }
-        return "running";
+
+        lockFileHandler.removeLockFile();
+        return "stopped";
     }
 } // namespace unix_daemon
