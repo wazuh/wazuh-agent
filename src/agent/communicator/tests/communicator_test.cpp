@@ -34,11 +34,17 @@ namespace
             .set_payload_claim("exp", jwt::basic_claim<jwt::traits::nlohmann_json>(exp))
             .sign(jwt::algorithm::hs256 {"secret"});
     }
+
+    const auto FUNC = []<typename T>([[maybe_unused]] const std::string&,
+                                     [[maybe_unused]] const std::string&) -> std::optional<T>
+    {
+        return T {};
+    };
 } // namespace
 
 TEST(CommunicatorTest, CommunicatorConstructor)
 {
-    EXPECT_NO_THROW(communicator::Communicator communicator(nullptr, "uuid", "key", nullptr, nullptr));
+    EXPECT_NO_THROW(communicator::Communicator communicator(nullptr, "uuid", "key", nullptr, FUNC));
 }
 
 TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
@@ -70,7 +76,7 @@ TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
                 co_return;
             }));
 
-    communicator::Communicator communicator(std::move(mockHttpClient), "uuid", "key", nullptr, nullptr);
+    communicator::Communicator communicator(std::move(mockHttpClient), "uuid", "key", nullptr, FUNC);
 
     auto task = communicator.StatefulMessageProcessingTask(getMessages, onSuccess);
     boost::asio::io_context ioContext;
@@ -87,7 +93,7 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
     testing::Mock::AllowLeak(mockHttpClientPtr);
 
     auto communicatorPtr =
-        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr, nullptr);
+        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr, FUNC);
 
     // A failed authentication won't return a token
     EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _, _))
@@ -141,7 +147,7 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
     testing::Mock::AllowLeak(mockHttpClientPtr);
 
     auto communicatorPtr =
-        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr, nullptr);
+        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr, FUNC);
 
     const auto mockedToken = CreateToken();
     EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _, _))
@@ -197,7 +203,7 @@ TEST(CommunicatorTest, GetGroupConfigurationFromManager_Success)
     // not really a leak, as its lifetime is managed by the Communicator
     testing::Mock::AllowLeak(mockHttpClientPtr);
     auto communicatorPtr =
-        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr, nullptr);
+        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr, FUNC);
 
     std::string groupName = "group1";
     std::string dstFilePath = "/path/to/file";
@@ -218,7 +224,7 @@ TEST(CommunicatorTest, GetGroupConfigurationFromManager_Error)
     // not really a leak, as its lifetime is managed by the Communicator
     testing::Mock::AllowLeak(mockHttpClientPtr);
     auto communicatorPtr =
-        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr, nullptr);
+        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr, FUNC);
 
     std::string groupName = "group1";
     std::string dstFilePath = "/path/to/file";

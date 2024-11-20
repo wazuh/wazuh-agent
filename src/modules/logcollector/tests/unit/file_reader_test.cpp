@@ -90,7 +90,7 @@ TEST(FileReader, Reload) {
     auto b = TempFile("/tmp/B.log");
     auto c = TempFile("/tmp/C.log");
 
-    FileReader reader(Logcollector::Instance(), "/tmp/*.log");
+    FileReader reader(Logcollector::Instance(), "/tmp/*.log", 500, 60000); //NOLINT
     reader.Reload([&](Localfile& lf) { mockCallback.Call(lf.Filename()); });
 
     auto d = TempFile("/tmp/D.log");

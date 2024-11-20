@@ -10,7 +10,7 @@ using namespace logcollector;
 TEST(Logcollector, AddReader) {
     auto logcollector = LogcollectorMock();
     auto a = TempFile("/tmp/A.log");
-    auto fileReader = std::make_shared<FileReader>(logcollector, "/tmp/*.log");
+    auto fileReader = std::make_shared<FileReader>(logcollector, "/tmp/*.log", 500, 60000); //NOLINT
 
     EXPECT_CALL(logcollector, EnqueueTask(::testing::_)).Times(1);
     EXPECT_CALL(logcollector, AddReader(::testing::_));

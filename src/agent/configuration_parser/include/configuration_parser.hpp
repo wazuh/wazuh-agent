@@ -77,8 +77,7 @@ namespace configuration
                             throw YAML::Exception(YAML::Mark::null_mark(), "Key not found: " + std::string(key));
                         }
                     }(keys),
-                    ...
-                );
+                    ...);
 
                 if constexpr (std::is_same_v<T, std::time_t>)
                 {
