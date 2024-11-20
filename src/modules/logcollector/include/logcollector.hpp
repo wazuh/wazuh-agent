@@ -62,10 +62,6 @@ public:
     /// @param ms Time to wait in milliseconds
     boost::asio::awaitable<void> Wait(std::chrono::milliseconds ms);
 
-    /// @brief Waits for a specified amount of time
-    /// @param sec Time to wait in seconds
-    boost::asio::awaitable<void> Wait(std::chrono::seconds sec);
-
     /// @brief Gets the instance of the Logcollector module
     /// @return Instance of the Logcollector module
     static Logcollector& Instance()

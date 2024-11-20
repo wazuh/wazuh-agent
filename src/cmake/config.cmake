@@ -6,21 +6,21 @@ set(VERSION "0.1")
 
 set(DEFAULT_SERVER_URL "https://localhost:27000" CACHE STRING "Default Agent Server Url")
 
-set(DEFAULT_RETRY_INTERVAL 30 CACHE STRING "Default Agent retry interval")
-
-set(BUFFER_SIZE 4096 CACHE STRING "Default Logcollector reading buffer size")
-
-set(DEFAULT_FILE_WAIT 500 CACHE STRING "Default Logcollector file reading interval (ms)")
-
-set(DEFAULT_RELOAD_INTERVAL 60 CACHE STRING "Default Logcollector reload interval (sec)")
+set(DEFAULT_RETRY_INTERVAL 30000 CACHE STRING "Default Agent retry interval (30s)")
 
 set(DEFAULT_LOGCOLLECTOR_ENABLED true CACHE BOOL "Default Logcollector enabled")
 
+set(BUFFER_SIZE 4096 CACHE STRING "Default Logcollector reading buffer size")
+
+set(DEFAULT_FILE_WAIT 500 CACHE STRING "Default Logcollector file reading interval (500ms)")
+
+set(DEFAULT_RELOAD_INTERVAL 60000 CACHE STRING "Default Logcollector reload interval (1m)")
+
 set(DEFAULT_INVENTORY_ENABLED true CACHE BOOL "Default inventory enabled")
 
-set(DEFAULT_INTERVAL 3600 CACHE STRING "Default inventory interval")
+set(DEFAULT_INTERVAL 3600000 CACHE STRING "Default inventory interval (1h)")
 
-set(DEFAULT_SCAN_ON_START true CACHE STRING "Default inventory scan on start")
+set(DEFAULT_SCAN_ON_START true CACHE BOOL "Default inventory scan on start")
 
 set(DEFAULT_HARDWARE true CACHE BOOL "Default inventory hardware")
 

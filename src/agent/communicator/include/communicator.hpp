@@ -2,11 +2,16 @@
 
 #include <ihttp_client.hpp>
 
+#include <config.h>
+#include <logger.hpp>
+
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/beast/http/status.hpp>
+#include <boost/url.hpp>
 
 #include <atomic>
+#include <ctime>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -24,16 +29,35 @@ namespace communicator
     {
     public:
         /// @brief Communicator constructor
+        /// @tparam ConfigGetter Type of the configuration getter function
         /// @param httpClient The HTTP client to use for communication
         /// @param uuid The unique identifier for the agent
         /// @param key The key for authentication
         /// @param getHeaderInfo Function to get the user agent header
-        /// @param getStringConfigValue Function to retrieve configuration values
+        /// @param getConfigValue Function to retrieve configuration values
+        template<typename ConfigGetter>
         Communicator(std::unique_ptr<http_client::IHttpClient> httpClient,
                      std::string uuid,
                      std::string key,
                      std::function<std::string()> getHeaderInfo,
-                     const std::function<std::optional<std::string>(std::string, std::string)>& getStringConfigValue);
+                     const ConfigGetter& getConfigValue)
+            : m_httpClient(std::move(httpClient))
+            , m_uuid(std::move(uuid))
+            , m_key(std::move(key))
+            , m_getHeaderInfo(std::move(getHeaderInfo))
+            , m_token(std::make_shared<std::string>())
+        {
+            m_serverUrl = getConfigValue.template operator()<std::string>("agent", "server_url")
+                              .value_or(config::agent::DEFAULT_SERVER_URL);
+
+            if (boost::urls::url_view url(m_serverUrl); url.scheme() != "https")
+            {
+                LogInfo("Using insecure connection.");
+            }
+
+            m_retryInterval = getConfigValue.template operator()<std::time_t>("agent", "retry_interval")
+                                  .value_or(config::agent::DEFAULT_RETRY_INTERVAL);
+        }
 
         /// @brief Waits for the authentication token to expire and authenticates again
         boost::asio::awaitable<void> WaitForTokenExpirationAndAuthenticate();
@@ -90,7 +114,7 @@ namespace communicator
         std::atomic<bool> m_isReAuthenticating = false;
 
         /// @brief Time between authentication attemps in case of failure
-        long m_retryInterval = 1;
+        std::time_t m_retryInterval = 1;
 
         /// @brief The server URL
         std::string m_serverUrl;

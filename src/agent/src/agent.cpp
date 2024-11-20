@@ -21,8 +21,8 @@ Agent::Agent(const std::string& configFile, std::unique_ptr<ISignalHandler> sign
           m_agentInfo.GetUUID(),
           m_agentInfo.GetKey(),
           [this]() { return m_agentInfo.GetHeaderInfo(); },
-          [this](std::string table, std::string key) -> std::optional<std::string>
-          { return m_configurationParser.GetConfig<std::string>(std::move(table), std::move(key)); })
+          [this]<typename T>(std::string table, std::string key) -> std::optional<T>
+          { return m_configurationParser.GetConfig<T>(std::move(table), std::move(key)); })
     , m_moduleManager([this](Message message) -> int { return m_messageQueue->push(std::move(message)); },
                       m_configurationParser,
                       [this](std::function<void()> task) { m_taskManager.EnqueueTask(std::move(task)); })

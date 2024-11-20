@@ -6,6 +6,7 @@
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 
+#include <ctime>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -34,6 +35,7 @@ namespace http_client
         /// @param params The parameters for the request
         /// @param messageGetter Function to retrieve messages
         /// @param onUnauthorized Action to take on unauthorized access
+        /// @param connectionRetry Time to wait before retrying the connection
         /// @param onSuccess Action to take on successful request
         /// @param loopRequestCondition Condition to continue the request loop
         /// @return Awaitable task for the HTTP request
@@ -42,7 +44,7 @@ namespace http_client
                               HttpRequestParams params,
                               std::function<boost::asio::awaitable<std::string>()> messageGetter,
                               std::function<void()> onUnauthorized,
-                              long connectionRetrySecs,
+                              std::time_t connectionRetry,
                               std::function<void(const std::string&)> onSuccess = {},
                               std::function<bool()> loopRequestCondition = {}) = 0;
 

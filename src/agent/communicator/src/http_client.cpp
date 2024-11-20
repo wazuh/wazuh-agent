@@ -74,7 +74,7 @@ namespace http_client
                                       HttpRequestParams reqParams,
                                       std::function<boost::asio::awaitable<std::string>()> messageGetter,
                                       std::function<void()> onUnauthorized,
-                                      long connectionRetrySecs,
+                                      std::time_t connectionRetry,
                                       std::function<void(const std::string&)> onSuccess,
                                       std::function<bool()> loopRequestCondition)
     {
@@ -86,7 +86,7 @@ namespace http_client
 
         do
         {
-            long timerSleep = A_SECOND_IN_MILLIS;
+            std::time_t timerSleep = A_SECOND_IN_MILLIS;
 
             auto socket = m_socketFactory->Create(executor, reqParams.Use_Https);
 
@@ -97,11 +97,12 @@ namespace http_client
 
             if (code != boost::system::errc::success)
             {
-                LogWarn(
-                    "Failed to send http request. {}. Retrying in {} seconds", reqParams.Endpoint, connectionRetrySecs);
+                LogWarn("Failed to send http request. {}. Retrying in {} seconds.",
+                        reqParams.Endpoint,
+                        connectionRetry / A_SECOND_IN_MILLIS);
                 LogDebug("Http request failed: {} - {}", code.message(), code.what());
                 socket->Close();
-                const auto duration = std::chrono::milliseconds(connectionRetrySecs * A_SECOND_IN_MILLIS);
+                const auto duration = std::chrono::milliseconds(connectionRetry * A_SECOND_IN_MILLIS);
                 timer.expires_after(duration);
                 co_await timer.async_wait(boost::asio::use_awaitable);
                 continue;
@@ -153,7 +154,7 @@ namespace http_client
                 {
                     onUnauthorized();
                 }
-                timerSleep = connectionRetrySecs * A_SECOND_IN_MILLIS;
+                timerSleep = connectionRetry * A_SECOND_IN_MILLIS;
             }
 
             LogDebug("Response code: {}.", res.result_int());

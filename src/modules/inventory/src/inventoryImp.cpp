@@ -6,7 +6,7 @@
 #include <timeHelper.h>
 #include <boost/beast/core/detail/base64.hpp>
 
-constexpr std::chrono::seconds INVENTORY_DEFAULT_INTERVAL { 3600 };
+constexpr std::time_t INVENTORY_DEFAULT_INTERVAL { 3600000 };
 
 constexpr auto QUEUE_SIZE
 {
@@ -932,7 +932,7 @@ void Inventory::SyncLoop(std::unique_lock<std::mutex>& lock)
         Scan();
     }
 
-    while (!m_cv.wait_for(lock, std::chrono::seconds{m_intervalValue}, [&]()
+    while (!m_cv.wait_for(lock, std::chrono::milliseconds{m_intervalValue}, [&]()
 {
     return m_stopping;
 }))
@@ -941,4 +941,3 @@ void Inventory::SyncLoop(std::unique_lock<std::mutex>& lock)
     }
     m_spDBSync.reset(nullptr);
 }
-

@@ -1,5 +1,7 @@
 #include <configuration_parser.hpp>
 
+#include <algorithm>
+#include <cctype>
 #include <utility>
 
 namespace
@@ -76,7 +78,7 @@ namespace configuration
         }
     }
 
-    unsigned long ConfigurationParser::ParseTimeUnit(const std::string& option)
+    std::time_t ConfigurationParser::ParseTimeUnit(const std::string& option) const
     {
         std::string number;
         unsigned int multiplier = 1;
@@ -112,11 +114,11 @@ namespace configuration
             multiplier = A_SECOND_IN_MILLIS;
         }
 
-        if (all_of(number.begin(), number.end(), ::isdigit) == false)
+        if (!std::all_of(number.begin(), number.end(), static_cast<int (*)(int)>(std::isdigit)))
         {
             throw std::invalid_argument("Invalid time unit: " + option);
         }
 
-        return static_cast<unsigned long>(std::stoul(number) * multiplier);
+        return static_cast<std::time_t>(std::stoul(number) * multiplier);
     }
 } // namespace configuration

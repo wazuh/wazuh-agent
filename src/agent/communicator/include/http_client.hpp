@@ -38,6 +38,7 @@ namespace http_client
         /// @param params Request parameters
         /// @param messageGetter Function to get the message body asynchronously
         /// @param onUnauthorized Callback for unauthorized access
+        /// @param connectionRetry Time to wait before retrying the connection
         /// @param onSuccess Callback for successful request completion
         /// @param loopRequestCondition Condition to continue looping requests
         /// @return Awaitable task for the HTTP request
@@ -46,7 +47,7 @@ namespace http_client
                               HttpRequestParams params,
                               std::function<boost::asio::awaitable<std::string>()> messageGetter,
                               std::function<void()> onUnauthorized,
-                              long connectionRetrySecs,
+                              std::time_t connectionRetry,
                               std::function<void(const std::string&)> onSuccess = {},
                               std::function<bool()> loopRequestCondition = {}) override;
 

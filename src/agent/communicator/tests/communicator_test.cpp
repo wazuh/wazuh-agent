@@ -61,7 +61,7 @@ TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
                http_client::HttpRequestParams,
                std::function<boost::asio::awaitable<std::string>()> pGetMessages,
                std::function<void()>,
-               [[maybe_unused]] long connectionRetrySecs,
+               [[maybe_unused]] std::time_t connectionRetry,
                std::function<void(const std::string&)> pOnSuccess,
                [[maybe_unused]] std::function<bool()> loopRequestCondition) -> boost::asio::awaitable<void>
             {
@@ -108,7 +108,7 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
                http_client::HttpRequestParams,
                [[maybe_unused]] std::function<boost::asio::awaitable<std::string>()> getMessages,
                [[maybe_unused]] std::function<void()> onUnauthorized,
-               [[maybe_unused]] long connectionRetrySecs,
+               [[maybe_unused]] std::time_t connectionRetry,
                [[maybe_unused]] std::function<void(const std::string&)> onSuccess,
                [[maybe_unused]] std::function<bool()> loopCondition) -> boost::asio::awaitable<void>
             {
@@ -162,7 +162,7 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
                              http_client::HttpRequestParams,
                              [[maybe_unused]] std::function<boost::asio::awaitable<std::string>()> getMessages,
                              [[maybe_unused]] std::function<void()> onUnauthorized,
-                             [[maybe_unused]] long connectionRetrySecs,
+                             [[maybe_unused]] std::time_t connectionRetry,
                              [[maybe_unused]] std::function<void(const std::string&)> onSuccess,
                              [[maybe_unused]] std::function<bool()> loopCondition) -> boost::asio::awaitable<void>
             {

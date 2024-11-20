@@ -40,7 +40,7 @@ void Inventory::Start() {
 void Inventory::Setup(const configuration::ConfigurationParser& configurationParser) {
 
     m_enabled = configurationParser.GetConfig<bool>( "inventory", "enabled").value_or(config::inventory::DEFAULT_ENABLED);
-    m_intervalValue = std::chrono::seconds{configurationParser.GetConfig<int>("inventory", "interval").value_or(config::inventory::DEFAULT_INTERVAL)};
+    m_intervalValue = configurationParser.GetConfig<std::time_t>("inventory", "interval").value_or(config::inventory::DEFAULT_INTERVAL);
     m_scanOnStart = configurationParser.GetConfig<bool>("inventory", "scan_on_start").value_or(config::inventory::DEFAULT_SCAN_ON_START);
     m_hardware = configurationParser.GetConfig<bool>("inventory", "hardware").value_or(config::inventory::DEFAULT_HARDWARE);
     m_os = configurationParser.GetConfig<bool>("inventory", "os").value_or(config::inventory::DEFAULT_OS);
@@ -100,15 +100,15 @@ void Inventory::ShowConfig()
     }
 }
 
-cJSON * Inventory::Dump() {
-
+cJSON * Inventory::Dump() const
+{
     cJSON *rootJson = cJSON_CreateObject();
     cJSON *invJson = cJSON_CreateObject();
 
     // System provider values
     if (m_enabled) cJSON_AddStringToObject(invJson,"enabled","yes"); else cJSON_AddStringToObject(invJson,"enabled","no");
     if (m_scanOnStart) cJSON_AddStringToObject(invJson,"scan-on-start","yes"); else cJSON_AddStringToObject(invJson,"scan-on-start","no");
-    cJSON_AddNumberToObject(invJson, "interval", static_cast<double>(m_intervalValue.count()));
+    cJSON_AddNumberToObject(invJson, "interval", static_cast<double>(m_intervalValue));
     if (m_network) cJSON_AddStringToObject(invJson,"network","yes"); else cJSON_AddStringToObject(invJson,"network","no");
     if (m_os) cJSON_AddStringToObject(invJson,"os","yes"); else cJSON_AddStringToObject(invJson,"os","no");
     if (m_hardware) cJSON_AddStringToObject(invJson,"hardware","yes"); else cJSON_AddStringToObject(invJson,"hardware","no");
