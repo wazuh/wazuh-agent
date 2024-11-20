@@ -1,0 +1,43 @@
+# register-config.yaml
+---
+plugin: rest
+resources:
+
+# Allow registration with name=dummy
+- path: "/agents"
+  method: POST
+  requestBody:
+    allOf:
+    - jsonPath: $.name
+      value: dummy
+    - jsonPath: $.id
+      operator: NotEqualTo
+      value: null
+    - jsonPath: $.key
+      operator: NotEqualTo
+      value: null
+  response:
+    scriptFile: register.groovy
+
+# Deny registration with name != dummy
+- path: "/agents"
+  method: POST
+  requestBody:
+    allOf:
+    - jsonPath: $.name
+      operator: NotEqualTo
+      value: null
+    - jsonPath: $.id
+      operator: NotEqualTo
+      value: null
+    - jsonPath: $.key
+      operator: NotEqualTo
+      value: null
+  response:
+    statusCode: 403
+
+# Deny other conditions
+- path: "/agents"
+  method: POST
+  response:
+    statusCode: 400
