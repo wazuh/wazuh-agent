@@ -25,7 +25,6 @@ protected:
         outFile << R"(
             agent:
                 server_url: https://myserver:28000
-                registration_url: https://myserver:56000
             inventory:
                 enabled: false
                 interval: 7200
@@ -61,7 +60,6 @@ protected:
         outFile << R"(
             agent:
                 server_url: https://myserver:28000
-                registration_url: https://myserver:56000
             inventory:
                 enabled: false
                 interval: 7200

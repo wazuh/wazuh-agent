@@ -96,7 +96,7 @@ class MockHandler(BaseHTTPRequestHandler):
             self._set_headers(code=200, content_length=len(response))
         elif self.path == "/agents":
             response = self._load_response("agents.json")
-            self._set_headers(code=200, content_length=len(response))
+            self._set_headers(code=201, content_length=len(response))
         elif self.path == "/api/v1/authentication":
             response = generate_authentication_response()
             self._set_headers(code=200, content_length=len(response))

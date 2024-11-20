@@ -10,17 +10,10 @@ namespace http = boost::beast::http;
 
 namespace agent_registration
 {
-    AgentRegistration::AgentRegistration(std::string user,
-                                         std::string password,
-                                         const std::string& key,
-                                         const std::string& name,
-                                         std::optional<std::string> configFile)
+    AgentRegistration::AgentRegistration(
+        std::string url, std::string user, std::string password, const std::string& key, const std::string& name)
         : m_agentInfo([this]() { return m_sysInfo.os(); }, [this]() { return m_sysInfo.networks(); })
-        , m_configurationParser(configFile.has_value() && !configFile->empty()
-                                    ? configuration::ConfigurationParser(std::filesystem::path(configFile.value()))
-                                    : configuration::ConfigurationParser())
-        , m_serverUrl(m_configurationParser.GetConfig<std::string>("agent", "registration_url")
-                          .value_or(config::agent::DEFAULT_REGISTRATION_URL))
+        , m_serverUrl(std::move(url))
         , m_user(std::move(user))
         , m_password(std::move(password))
     {
@@ -29,13 +22,9 @@ namespace agent_registration
             throw std::invalid_argument("--key argument must be alphanumeric and 32 characters in length");
         }
 
-        if (!name.empty())
+        if (!m_agentInfo.SetName(name))
         {
-            m_agentInfo.SetName(name);
-        }
-        else
-        {
-            m_agentInfo.SetName(m_sysInfo.os().value("hostname", "Unknown"));
+            throw std::runtime_error("Couldn't set agent name");
         }
     }
 

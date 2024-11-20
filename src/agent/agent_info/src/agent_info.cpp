@@ -63,9 +63,22 @@ std::vector<std::string> AgentInfo::GetGroups() const
     return m_groups;
 }
 
-void AgentInfo::SetName(const std::string& name)
+bool AgentInfo::SetName(const std::string& name)
 {
-    m_name = name;
+    if (!name.empty())
+    {
+        m_name = name;
+    }
+    else if (m_getOSInfo != nullptr)
+    {
+        m_name = m_getOSInfo().value("hostname", "Unknown");
+    }
+    else
+    {
+        return false;
+    }
+
+    return true;
 }
 
 bool AgentInfo::SetKey(const std::string& key)

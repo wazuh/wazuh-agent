@@ -80,7 +80,7 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
     agent->Save();
 
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "user", "password", agent->GetKey(), agent->GetName(), std::nullopt);
+        "https://localhost:55000", "user", "password", agent->GetKey(), agent->GetName());
 
     MockHttpClient mockHttpClient;
 
@@ -113,7 +113,7 @@ TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
     agentInfoPersistance.ResetToDefault();
 
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", std::nullopt);
+        "https://localhost:55000", "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name");
     agent = std::make_unique<AgentInfo>();
 
     MockHttpClient mockHttpClient;
@@ -132,7 +132,7 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
     agentInfoPersistance.ResetToDefault();
 
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", std::nullopt);
+        "https://localhost:55000", "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name");
     agent = std::make_unique<AgentInfo>();
 
     MockHttpClient mockHttpClient;
@@ -158,8 +158,8 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
     agent = std::make_unique<AgentInfo>();
     EXPECT_TRUE(agent->GetKey().empty());
 
-    registration =
-        std::make_unique<agent_registration::AgentRegistration>("user", "password", "", "agent_name", std::nullopt);
+    registration = std::make_unique<agent_registration::AgentRegistration>(
+        "https://localhost:55000", "user", "password", "", "agent_name");
 
     MockHttpClient mockHttpClient;
 
@@ -181,8 +181,9 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
 
 TEST_F(RegisterTest, RegistrationTestFailWithBadKey)
 {
-    ASSERT_THROW(agent_registration::AgentRegistration("user", "password", "badKey", "agent_name", std::nullopt),
-                 std::invalid_argument);
+    ASSERT_THROW(
+        agent_registration::AgentRegistration("https://localhost:55000", "user", "password", "badKey", "agent_name"),
+        std::invalid_argument);
 }
 
 int main(int argc, char** argv)

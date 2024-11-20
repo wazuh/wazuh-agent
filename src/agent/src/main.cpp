@@ -20,11 +20,11 @@ int main(int argc, char* argv[])
 
         if (cmdParser.OptionExists(OPT_REGISTER_AGENT))
         {
-            RegisterAgent(cmdParser.GetOptionValue(OPT_USER),
+            RegisterAgent(cmdParser.GetOptionValue(OPT_URL),
+                          cmdParser.GetOptionValue(OPT_USER),
                           cmdParser.GetOptionValue(OPT_PASSWORD),
                           cmdParser.GetOptionValue(OPT_KEY),
-                          cmdParser.GetOptionValue(OPT_NAME),
-                          configFile);
+                          cmdParser.GetOptionValue(OPT_NAME));
         }
         else if (cmdParser.OptionExists(OPT_RESTART))
         {

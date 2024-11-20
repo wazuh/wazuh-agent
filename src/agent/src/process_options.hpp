@@ -13,6 +13,7 @@ static const auto OPT_REGISTER_AGENT {"--register-agent"};
 static const auto OPT_INSTALL_SERVICE {"--install-service"};
 static const auto OPT_REMOVE_SERVICE {"--remove-service"};
 static const auto OPT_RUN_SERVICE {"--run-service"};
+static const auto OPT_URL {"--url"};
 static const auto OPT_USER {"--user"};
 static const auto OPT_PASSWORD {"--password"};
 static const auto OPT_KEY {"--key"};
@@ -20,16 +21,16 @@ static const auto OPT_NAME {"--name"};
 static const auto OPT_HELP {"--help"};
 
 /// @brief Registers the agent with the given parameters.
+/// @param url The Server Management API URL.
 /// @param user The user to use for authentication with Server Management API.
 /// @param password The password to use for authentication with Server Management API.
 /// @param key The key to use for registration.
 /// @param name The name to use for the agent.
-/// @param configFile The file path to the configuration file.
-void RegisterAgent(const std::string& user,
+void RegisterAgent(const std::string& url,
+                   const std::string& user,
                    const std::string& password,
                    const std::string& key,
-                   const std::string& name,
-                   const std::string& configFile);
+                   const std::string& name);
 
 /// @brief Restarts the agent using the specified configuration file.
 /// @param configFile The file path to the configuration file to use for restarting the agent.
