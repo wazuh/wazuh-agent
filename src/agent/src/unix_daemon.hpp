@@ -30,7 +30,7 @@ namespace unix_daemon
         /// @brief Creates the directory path for the lock file
         /// @param path The path for the lock file
         /// @return True if the directory is created, false otherwise
-        bool createDirectory(const std::string_view path) const;
+        bool createDirectory(const std::string& path) const;
 
         /// @brief Creates the lock file
         /// @return True if the lock file is created, false otherwise

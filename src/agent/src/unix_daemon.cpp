@@ -7,6 +7,14 @@
 #include <fstream>
 #include <sys/file.h>
 
+#if defined(__linux__)
+#include <unistd.h>
+#elif defined(__APPLE__)
+#include <mach-o/dyld.h>
+#else
+#error "Unsupported platform"
+#endif
+
 namespace fs = std::filesystem;
 
 namespace unix_daemon
@@ -33,19 +41,16 @@ namespace unix_daemon
         }
     }
 
-    bool LockFileHandler::createDirectory(const std::string_view path) const
+    bool LockFileHandler::createDirectory(const std::string& path) const
     {
         try
         {
-            const fs::path curDir = fs::current_path();
-            const fs::path fullPath = curDir / path;
-
-            if (fs::exists(fullPath) && fs::is_directory(fullPath))
+            if (fs::exists(path) && fs::is_directory(path))
             {
                 return true;
             }
 
-            fs::create_directories(fullPath);
+            fs::create_directories(path);
             return true;
         }
         catch (const fs::filesystem_error& e)
@@ -89,18 +94,38 @@ namespace unix_daemon
     std::string LockFileHandler::GetExecutablePath()
     {
         std::vector<char> pathBuffer(PATH_MAX);
-        const ssize_t len = readlink("/proc/self/exe", pathBuffer.data(), pathBuffer.size() - 1);
 
+#if defined(__linux__)
+        ssize_t len = readlink("/proc/self/exe", pathBuffer.data(), pathBuffer.size() - 1);
         if (len != -1)
         {
             pathBuffer[static_cast<std::size_t>(len)] = '\0';
-            const std::filesystem::path exePath(pathBuffer.data());
-            return exePath.parent_path().string(); // Return the directory part only
+            return std::filesystem::path(pathBuffer.data()).parent_path().string();
         }
         else
         {
-            return "";
+            throw std::runtime_error("Failed to retrieve executable path on Linux");
         }
+
+#elif defined(__APPLE__)
+        uint32_t size = static_cast<uint32_t>(pathBuffer.size());
+        if (_NSGetExecutablePath(pathBuffer.data(), &size) == 0)
+        {
+            return std::filesystem::path(pathBuffer.data()).parent_path().string();
+        }
+        else
+        {
+            pathBuffer.resize(size);
+            if (_NSGetExecutablePath(pathBuffer.data(), &size) == 0)
+            {
+                return std::filesystem::path(pathBuffer.data()).parent_path().string();
+            }
+            else
+            {
+                throw std::runtime_error("Failed to retrieve executable path on macOS");
+            }
+        }
+#endif
     }
 
     LockFileHandler GenerateLockFile()
