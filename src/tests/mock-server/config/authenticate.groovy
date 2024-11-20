@@ -1,10 +1,9 @@
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
-final JWT_EXPIRATION = 900
+final JWT_EXPIRATION_SECS = 900
 
-GroovyShell shell = new GroovyShell()
-def jwt = shell.parse(new File('/opt/imposter/lib/jwt.groovy'))
+def jwt = loadDynamic('/opt/imposter/config/lib/jwt.groovy')
 
 def jsonSlurper = new JsonSlurper()
 def body = jsonSlurper.parseText(context.request.body)
@@ -14,7 +13,7 @@ def payload = [
     iss: "Wazuh",
     aud: "Wazuh Communications API",
     iat: timestamp,
-    exp: timestamp + JWT_EXPIRATION,
+    exp: timestamp + JWT_EXPIRATION_SECS,
     uuid: body.uuid
 ]
 
