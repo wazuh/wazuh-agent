@@ -2,6 +2,7 @@
 
 set -e
 
+VERSION=4.2.1
 HTTPS=1
 COMMS_PORT=27000
 MGMT_PORT=55000
@@ -42,6 +43,8 @@ else
     port=8080
 fi
 
+env=(-e "IMPOSTER_LOG_LEVEL=INFO")
+
 if [ -n "$LOG_STATEFUL" ]; then
     env+=(-e "LOG_STATEFUL=1")
 fi
@@ -50,5 +53,8 @@ if [ -n "$LOG_STATELESS" ]; then
     env+=(-e "LOG_STATELESS=1")
 fi
 
-docker build -t mock-server .
-docker run --rm -p $COMMS_PORT:$port -p $MGMT_PORT:$port ${env[@]} mock-server ${args[@]}
+if [ ! -f config/ssl.jks ]; then
+    curl -Lo config/ssl.jks https://github.com/outofcoffee/imposter/raw/refs/tags/v${VERSION}/server/src/main/resources/keystore/ssl.jks
+fi
+
+docker run --rm -v ./config:/opt/imposter/config -p $COMMS_PORT:$port -p $MGMT_PORT:$port ${env[@]} outofcoffee/imposter:${VERSION} ${args[@]}
