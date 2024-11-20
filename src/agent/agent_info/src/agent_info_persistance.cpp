@@ -8,13 +8,14 @@ namespace
 {
     const std::string AGENT_INFO_TABLE_NAME = "agent_info";
     const std::string AGENT_GROUP_TABLE_NAME = "agent_group";
+    const std::string AGENT_INFO_DB_NAME = "agent_info.db";
 } // namespace
 
-AgentInfoPersistance::AgentInfoPersistance(const std::string& dbPath)
+AgentInfoPersistance::AgentInfoPersistance(const std::string& dbFolderPath)
 {
     try
     {
-        m_db = std::make_unique<SQLiteManager>(dbPath);
+        m_db = std::make_unique<SQLiteManager>(dbFolderPath + "/" + AGENT_INFO_DB_NAME);
 
         if (!m_db->TableExists(AGENT_INFO_TABLE_NAME))
         {

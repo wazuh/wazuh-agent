@@ -44,9 +44,6 @@ private:
     /// @brief System info
     SysInfo m_sysInfo;
 
-    /// @brief Agent info
-    AgentInfo m_agentInfo;
-
     /// @brief Queue for storing messages
     std::shared_ptr<MultiTypeQueue> m_messageQueue;
 
@@ -55,6 +52,9 @@ private:
 
     /// @brief Configuration parser
     configuration::ConfigurationParser m_configurationParser;
+
+    /// @brief Agent info
+    AgentInfo m_agentInfo;
 
     /// @brief Communicator
     communicator::Communicator m_communicator;

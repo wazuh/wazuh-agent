@@ -11,8 +11,8 @@ namespace http = boost::beast::http;
 namespace agent_registration
 {
     AgentRegistration::AgentRegistration(
-        std::string url, std::string user, std::string password, const std::string& key, const std::string& name)
-        : m_agentInfo([this]() { return m_sysInfo.os(); }, [this]() { return m_sysInfo.networks(); })
+        std::string url, std::string user, std::string password, const std::string& key, const std::string& name, const std::string& dbFolderPath)
+        : m_agentInfo(dbFolderPath, [this]() { return m_sysInfo.os(); }, [this]() { return m_sysInfo.networks(); })
         , m_serverUrl(std::move(url))
         , m_user(std::move(user))
         , m_password(std::move(password))

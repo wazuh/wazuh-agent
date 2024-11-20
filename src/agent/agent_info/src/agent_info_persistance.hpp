@@ -6,15 +6,13 @@
 #include <string>
 #include <vector>
 
-static constexpr char sqlitedb_path[] = "agent_info.db";
-
 /// @brief Manages persistence of agent information and groups in a SQLite database.
 class AgentInfoPersistance
 {
 public:
     /// @brief Constructs the persistence manager for agent info, initializing the database and tables if necessary.
-    /// @param dbPath Path to the SQLite database file.
-    explicit AgentInfoPersistance(const std::string& dbPath = sqlitedb_path);
+    /// @param dbFolderPath Path to the SQLite database folder.
+    explicit AgentInfoPersistance(const std::string& dbFolderPath);
 
     /// @brief Destructor for AgentInfoPersistance.
     ~AgentInfoPersistance();

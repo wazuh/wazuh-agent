@@ -4,6 +4,7 @@ namespace config
 {
     constexpr auto PROJECT_NAME = "@PROJECT_NAME@";
     constexpr auto VERSION = "@VERSION@";
+    constexpr auto DEFAULT_DATA_PATH = "@DEFAULT_DATA_PATH@";
 
     namespace agent
     {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nlohmann/json.hpp>
+#include <config.h>
 
 #include <functional>
 #include <string>
@@ -20,9 +21,11 @@ public:
     /// information retrieval functions. It also generates a UUID for the agent if one
     /// does not already exist, and loads endpoint, metadata, and header information.
     ///
+    /// @param dbFolderPath Path to the SQLite database folder.
     /// @param getOSInfo Function to retrieve OS information in JSON format.
     /// @param getNetworksInfo Function to retrieve network information in JSON format.
-    AgentInfo(std::function<nlohmann::json()> getOSInfo = nullptr,
+    AgentInfo(std::string dbFolderPath = config::DEFAULT_DATA_PATH,
+              std::function<nlohmann::json()> getOSInfo = nullptr,
               std::function<nlohmann::json()> getNetworksInfo = nullptr);
 
     /// @brief Gets the agent's name.
@@ -103,6 +106,9 @@ private:
     /// @param networksJson JSON object containing network interface information.
     /// @return Vector of strings with the active IP addresses.
     std::vector<std::string> GetActiveIPAddresses(const nlohmann::json& networksJson) const;
+
+    /// @brief The agent's data folder path.
+    std::string m_dataFolderPath;
 
     /// @brief The agent's name.
     std::string m_name;

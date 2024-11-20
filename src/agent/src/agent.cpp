@@ -1,6 +1,7 @@
 #include <agent.hpp>
 
 #include <command_handler_utils.hpp>
+#include <config.h>
 #include <http_client.hpp>
 #include <message.hpp>
 #include <message_queue_utils.hpp>
@@ -11,11 +12,11 @@
 #include <thread>
 
 Agent::Agent(const std::string& configFile, std::unique_ptr<ISignalHandler> signalHandler)
-    : m_agentInfo([this]() { return m_sysInfo.os(); }, [this]() { return m_sysInfo.networks(); })
-    , m_messageQueue(std::make_shared<MultiTypeQueue>())
+    : m_messageQueue(std::make_shared<MultiTypeQueue>())
     , m_signalHandler(std::move(signalHandler))
     , m_configurationParser(configFile.empty() ? configuration::ConfigurationParser()
                                                : configuration::ConfigurationParser(std::filesystem::path(configFile)))
+    , m_agentInfo(m_configurationParser.GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH), [this]() { return m_sysInfo.os(); }, [this]() { return m_sysInfo.networks(); })
     , m_communicator(
           std::make_unique<http_client::HttpClient>(),
           m_agentInfo.GetUUID(),
