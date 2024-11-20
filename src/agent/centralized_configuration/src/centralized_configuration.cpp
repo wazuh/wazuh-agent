@@ -71,6 +71,21 @@ namespace centralized_configuration
                         module_command::Status::FAILURE,
                         "CentralizedConfiguration validate file failed, invalid file received."};
                 }
+
+                const std::filesystem::path destGroupFile =
+                    std::filesystem::path("/etc/wazuh-agent") / "shared" / (groupId + ".conf");
+
+                try
+                {
+                    std::filesystem::create_directories(destGroupFile.parent_path());
+                    std::filesystem::rename(tmpGroupFile, destGroupFile);
+                }
+                catch (const std::filesystem::filesystem_error& e)
+                {
+                    LogWarn("Failed to move file to destination: {}. Error: {}", destGroupFile.string(), e.what());
+                    co_return module_command::CommandExecutionResult {module_command::Status::FAILURE,
+                                                                      "Failed to move shared file to destination."};
+                }
             }
 
             // TODO apply configuration, remove old group files
