@@ -7,8 +7,12 @@ HTTPS=1
 COMMS_PORT=27000
 MGMT_PORT=55000
 
-for arg in "$@"; do
-    case "$arg" in
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --comms-port)
+            COMMS_PORT=$2
+            shift
+            ;;
         --http)
             HTTPS=''
             ;;
@@ -21,15 +25,23 @@ for arg in "$@"; do
         --log-stateless)
             LOG_STATELESS=1
             ;;
+        --mgmt-port)
+            MGMT_PORT=$2
+            shift
+            ;;
         *)
-            echo "Usage: $0 [--http] [--https]"
-            echo "  --http      Use HTTP (:8080)"
-            echo "  --https     Use HTTPS (:8443) (default)"
-            echo "  --log-stateful      Log stateful requests"
-            echo "  --log-stateless     Log stateless requests"
+            echo "Usage: $0 [--comms-port <PORT>] [--http] [--https] [--mgmt-port <PORT>]"
+            echo "  --comms-port <PORT>     Comms API port (default: 27000)"
+            echo "  --http                  Use HTTP"
+            echo "  --https                 Use HTTPS (default)"
+            echo "  --log-stateful          Log stateful requests"
+            echo "  --log-stateless         Log stateless requests"
+            echo "  --mgmt-port <PORT>      Management API port (default: 55000)"
             exit 0
             ;;
     esac
+
+    shift
 done
 
 args=("--configDir=/opt/imposter/config")
