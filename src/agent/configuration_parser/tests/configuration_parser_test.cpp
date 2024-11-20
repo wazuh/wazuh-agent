@@ -3,6 +3,7 @@
 #include <config.h>
 #include <gtest/gtest.h>
 
+#include <ctime>
 #include <filesystem>
 #include <fstream>
 #include <map>
@@ -120,6 +121,90 @@ TEST(ConfigurationParser, GetConfigInt)
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
     const auto ret = parserStr->GetConfig<int>("agent_array", "int_conf").value_or(1234);
     ASSERT_EQ(ret, 10);
+}
+
+TEST(ConfigurationParser, GetConfigMilliseconds)
+{
+    std::string strConfig = R"(
+        agent_array:
+          array_manager_ip:
+            - 192.168.0.0
+            - 192.168.0.1
+          milliseconds_conf: 500ms
+    )";
+    const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
+    const auto ret = parserStr->GetConfig<std::time_t>("agent_array", "milliseconds_conf").value_or(1234);
+    ASSERT_EQ(ret, 500);
+}
+
+TEST(ConfigurationParser, GetConfigSeconds)
+{
+    std::string strConfig = R"(
+        agent_array:
+          array_manager_ip:
+            - 192.168.0.0
+            - 192.168.0.1
+          seconds_conf: 45s
+    )";
+    const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
+    const auto ret = parserStr->GetConfig<std::time_t>("agent_array", "seconds_conf").value_or(1234);
+    ASSERT_EQ(ret, 45000);
+}
+
+TEST(ConfigurationParser, GetConfigMinutes)
+{
+    std::string strConfig = R"(
+        agent_array:
+          array_manager_ip:
+            - 192.168.0.0
+            - 192.168.0.1
+          minutes_conf: 3m
+    )";
+    const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
+    const auto ret = parserStr->GetConfig<std::time_t>("agent_array", "minutes_conf").value_or(1234);
+    ASSERT_EQ(ret, 180000);
+}
+
+TEST(ConfigurationParser, GetConfigHours)
+{
+    std::string strConfig = R"(
+        agent_array:
+          array_manager_ip:
+            - 192.168.0.0
+            - 192.168.0.1
+          hours_conf: 2h
+    )";
+    const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
+    const auto ret = parserStr->GetConfig<std::time_t>("agent_array", "hours_conf").value_or(1234);
+    ASSERT_EQ(ret, 7200000);
+}
+
+TEST(ConfigurationParser, GetConfigDays)
+{
+    std::string strConfig = R"(
+        agent_array:
+          array_manager_ip:
+            - 192.168.0.0
+            - 192.168.0.1
+          days_conf: 1d
+    )";
+    const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
+    const auto ret = parserStr->GetConfig<std::time_t>("agent_array", "days_conf").value_or(1234);
+    ASSERT_EQ(ret, 86400000);
+}
+
+TEST(ConfigurationParser, GetConfigTimeInvalid)
+{
+    std::string strConfig = R"(
+        agent_array:
+          array_manager_ip:
+            - 192.168.0.0
+            - 192.168.0.1
+          time_invalid_conf: 30k
+    )";
+    const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
+    const auto ret = parserStr->GetConfig<std::time_t>("agent_array", "time_invalid_conf").value_or(1234);
+    ASSERT_EQ(ret, 1234);
 }
 
 TEST(ConfigurationParser, GetConfigFloat)
