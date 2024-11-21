@@ -8,6 +8,11 @@ namespace config
     constexpr auto DEFAULT_DATA_PATH = "@DEFAULT_DATA_PATH@";
     constexpr auto DEFAULT_RUN_PATH = "@DEFAULT_RUN_PATH@";
 
+    namespace path
+    {
+        constexpr auto SHARED_CONFIG_DIR = "@SHARED_CONFIG_DIR@";
+    }
+
     namespace agent
     {
         constexpr auto DEFAULT_SERVER_URL = "@DEFAULT_SERVER_URL@";

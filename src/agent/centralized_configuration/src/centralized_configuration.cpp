@@ -1,4 +1,5 @@
 #include <centralized_configuration.hpp>
+#include <config.h>
 #include <logger.hpp>
 
 #include <filesystem>
@@ -73,7 +74,7 @@ namespace centralized_configuration
                 }
 
                 const std::filesystem::path destGroupFile =
-                    std::filesystem::path("/etc/wazuh-agent") / "shared" / (groupId + ".conf");
+                    std::filesystem::path(config::path::SHARED_CONFIG_DIR) / (groupId + ".conf");
 
                 try
                 {
