@@ -8,7 +8,6 @@
          <key>ProgramArguments</key>
          <array>
              <string>/path/to/executable/wazuh-agent</string>
-             <string>--start</string>
          </array>
 
         <key>WorkingDirectory</key>
@@ -27,4 +26,3 @@
          <true/>
      </dict>
  </plist>
- 
