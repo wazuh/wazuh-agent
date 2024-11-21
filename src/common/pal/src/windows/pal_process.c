@@ -1,51 +1,94 @@
 #include <windows.h>
-#include <memory>
-#include <string>
-#include <vector>
-#include <cstdio>
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <io.h>
 
-FILE* popen(const char* command, const char* mode) {
-    HANDLE hReadPipe, hWritePipe;
-    SECURITY_ATTRIBUTES sa;
-    sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-    sa.bInheritHandle = TRUE;
-    sa.lpSecurityDescriptor = NULL;
+typedef struct {
+    HANDLE hProcess;
+    FILE* pipeStream;
+} PopenHandle;
 
+PopenHandle* popen(const char* command, const char* mode) {
+    HANDLE hReadPipe = NULL, hWritePipe = NULL;
+    SECURITY_ATTRIBUTES sa = {sizeof(SECURITY_ATTRIBUTES), NULL, TRUE};
+
+    // Create a pipe
     if (!CreatePipe(&hReadPipe, &hWritePipe, &sa, 0)) {
-        return nullptr;
+        return NULL;
     }
 
-    STARTUPINFO si;
-    PROCESS_INFORMATION pi;
-    ZeroMemory(&si, sizeof(si));
-    si.cb = sizeof(si);
-    si.dwFlags |= STARTF_USESTDHANDLES;
-    si.hStdOutput = (strcmp(mode, "r") == 0) ? hWritePipe : GetStdHandle(STD_OUTPUT_HANDLE);
-    si.hStdError = si.hStdOutput;
+    STARTUPINFO si = {0};
+    PROCESS_INFORMATION pi = {0};
 
-    ZeroMemory(&pi, sizeof(pi));
+    si.cb = sizeof(STARTUPINFO);
+    si.dwFlags = STARTF_USESTDHANDLES;
 
-    // Crear el proceso
-    if (!CreateProcess(NULL, const_cast<LPSTR>(command), NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi)) {
-        CloseHandle(hWritePipe);
+    if (strcmp(mode, "r") == 0) {
+        si.hStdOutput = hWritePipe;
+        si.hStdError = hWritePipe;
+        si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+    } else if (strcmp(mode, "w") == 0) {
+        si.hStdInput = hReadPipe;
+        si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+        si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+    } else {
         CloseHandle(hReadPipe);
-        return nullptr;
+        CloseHandle(hWritePipe);
+        return NULL;
     }
 
-    // Cerramos el lado de escritura del pipe
-    CloseHandle(hWritePipe);
+    // Create the process
+    if (!CreateProcess(NULL, (LPSTR)command, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi)) {
+        CloseHandle(hReadPipe);
+        CloseHandle(hWritePipe);
+        return NULL;
+    }
 
-    // Devolver el handle del pipe de lectura como FILE*
-    return _fdopen(_open_osfhandle((intptr_t)hReadPipe, _O_RDONLY), "r");
+    // Close the unused end of the pipe
+    if (strcmp(mode, "r") == 0) {
+        CloseHandle(hWritePipe);
+    } else {
+        CloseHandle(hReadPipe);
+    }
+
+    // Convert the HANDLE to a FILE*
+    FILE* pipeStream = _fdopen(_open_osfhandle((intptr_t)(strcmp(mode, "r") == 0 ? hReadPipe : hWritePipe), _O_BINARY), mode);
+    if (!pipeStream) {
+        CloseHandle(pi.hProcess);
+        CloseHandle(hReadPipe);
+        CloseHandle(hWritePipe);
+        return NULL;
+    }
+
+    // Store the process handle and stream in a custom struct
+    PopenHandle* popenHandle = (PopenHandle*)malloc(sizeof(PopenHandle));
+    popenHandle->hProcess = pi.hProcess;
+    popenHandle->pipeStream = pipeStream;
+
+    return popenHandle;
 }
 
-int pclose(FILE* stream) {
-    if (stream == nullptr) return -1;
+int pclose(PopenHandle* handle) {
+    if (!handle || !handle->pipeStream) {
+        return -1;
+    }
 
-    HANDLE hReadPipe = (HANDLE)_get_osfhandle(_fileno(stream));
-    CloseHandle(hReadPipe);
-    fclose(stream);
+    // Close the FILE* stream
+    fclose(handle->pipeStream);
 
-    // Aquí puedes agregar lógica para esperar el proceso y obtener su código de salida si es necesario
-    return 0; // Deberías devolver el código de salida real del proceso
+    // Wait for the process to exit
+    WaitForSingleObject(handle->hProcess, INFINITE);
+
+    // Get the exit code
+    DWORD exitCode = 0;
+    if (!GetExitCodeProcess(handle->hProcess, &exitCode)) {
+        exitCode = -1; // Error occurred
+    }
+
+    // Close the process handle
+    CloseHandle(handle->hProcess);
+    free(handle);
+
+    return (int)exitCode;
 }
