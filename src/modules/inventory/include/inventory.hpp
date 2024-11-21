@@ -89,8 +89,8 @@ class Inventory {
         std::time_t                                 m_intervalValue;    // Scan interval
         bool                                        m_scanOnStart;      // Scan always on start
         bool                                        m_hardware;         // Hardware inventory
-        bool                                        m_os;               // OS inventory
-        bool                                        m_network;          // Network inventory
+        bool                                        m_system;           // System inventory
+        bool                                        m_networks;         // Networks inventory
         bool                                        m_packages;         // Installed packages inventory
         bool                                        m_ports;            // Opened ports inventory
         bool                                        m_portsAll;         // Scan only listening ports or all

@@ -7,8 +7,8 @@ inventory:
   interval: 1h
   scan_on_start: true
   hardware: true
-  os: true
-  network: true
+  system: true
+  networks: true
   packages: true
   ports: true
   ports_all: true

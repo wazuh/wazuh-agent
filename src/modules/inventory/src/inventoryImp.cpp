@@ -387,8 +387,8 @@ Inventory::Inventory()
     , m_intervalValue { INVENTORY_DEFAULT_INTERVAL }
     , m_scanOnStart { true }
     , m_hardware { true }
-    , m_os { true }
-    , m_network { true }
+    , m_system { true }
+    , m_networks { true }
     , m_packages { true }
     , m_ports { true }
     , m_portsAll { true }
@@ -566,7 +566,7 @@ nlohmann::json Inventory::GetOSData()
 
 void Inventory::ScanOs()
 {
-    if (m_os)
+    if (m_system)
     {
         LogTrace( "Starting os scan");
         const auto& osData{GetOSData()};
@@ -663,7 +663,7 @@ nlohmann::json Inventory::GetNetworkData()
 
 void Inventory::ScanNetwork()
 {
-    if (m_network)
+    if (m_networks)
     {
         LogTrace( "Starting network scan");
         const auto networkData(GetNetworkData());

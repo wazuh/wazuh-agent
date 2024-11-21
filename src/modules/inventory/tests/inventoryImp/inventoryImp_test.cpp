@@ -178,8 +178,8 @@ TEST_F(InventoryImpTest, intervalSeconds)
             interval: 1
             scan_on_start: true
             hardware: true
-            os: true
-            network: true
+            system: true
+            networks: true
             packages: true
             ports: true
             ports_all: true
@@ -228,8 +228,8 @@ TEST_F(InventoryImpTest, noScanOnStart)
             interval: 3600
             scan_on_start: false
             hardware: true
-            os: true
-            network: true
+            system: true
+            networks: true
             packages: true
             ports: true
             ports_all: true
@@ -323,8 +323,8 @@ TEST_F(InventoryImpTest, noHardware)
             interval: 3600
             scan_on_start: true
             hardware: false
-            os: true
-            network: true
+            system: true
+            networks: true
             packages: true
             ports: true
             ports_all: true
@@ -419,8 +419,8 @@ TEST_F(InventoryImpTest, noOs)
             interval: 3600
             scan_on_start: true
             hardware: true
-            os: false
-            network: true
+            system: false
+            networks: true
             packages: true
             ports: true
             ports_all: true
@@ -523,8 +523,8 @@ TEST_F(InventoryImpTest, noNetwork)
             interval: 3600
             scan_on_start: true
             hardware: true
-            os: true
-            network: false
+            system: true
+            networks: false
             packages: true
             ports: true
             ports_all: true
@@ -618,8 +618,8 @@ TEST_F(InventoryImpTest, noPackages)
             interval: 3600
             scan_on_start: true
             hardware: true
-            os: true
-            network: true
+            system: true
+            networks: true
             packages: false
             ports: true
             ports_all: true
@@ -716,8 +716,8 @@ TEST_F(InventoryImpTest, noPorts)
             interval: 5
             scan_on_start: true
             hardware: true
-            os: true
-            network: true
+            system: true
+            networks: true
             packages: true
             ports: false
             ports_all: true
@@ -824,8 +824,8 @@ TEST_F(InventoryImpTest, noPortsAll)
             interval: 3600
             scan_on_start: true
             hardware: true
-            os: true
-            network: true
+            system: true
+            networks: true
             packages: true
             ports: true
             ports_all: false
@@ -920,8 +920,8 @@ TEST_F(InventoryImpTest, noProcesses)
             interval: 3600
             scan_on_start: true
             hardware: true
-            os: true
-            network: true
+            system: true
+            networks: true
             packages: true
             ports: true
             ports_all: true
@@ -1018,8 +1018,8 @@ TEST_F(InventoryImpTest, noHotfixes)
             interval: 3600
             scan_on_start: true
             hardware: true
-            os: true
-            network: true
+            system: true
+            networks: true
             packages: true
             ports: true
             ports_all: true
@@ -1074,8 +1074,8 @@ TEST_F(InventoryImpTest, scanInvalidData)
             interval: 60
             scan_on_start: true
             hardware: true
-            os: true
-            network: true
+            system: true
+            networks: true
             packages: true
             ports: true
             ports_all: true
@@ -1217,8 +1217,8 @@ TEST_F(InventoryImpTest, portAllEnable)
             interval: 3600
             scan_on_start: true
             hardware: false
-            os: false
-            network: false
+            system: false
+            networks: false
             packages: false
             ports: true
             ports_all: true
@@ -1355,8 +1355,8 @@ TEST_F(InventoryImpTest, portAllDisable)
             interval: 3600
             scan_on_start: true
             hardware: false
-            os: false
-            network: false
+            system: false
+            networks: false
             packages: false
             ports: true
             ports_all: false
@@ -1424,8 +1424,8 @@ TEST_F(InventoryImpTest, PackagesDuplicated)
             interval: 3600
             scan_on_start: true
             hardware: false
-            os: false
-            network: false
+            system: false
+            networks: false
             packages: true
             ports: false
             ports_all: false
