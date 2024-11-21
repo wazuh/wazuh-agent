@@ -16,7 +16,9 @@ namespace
     const std::string PRODUCT_NAME = "WazuhXDR";
 } // namespace
 
-AgentInfo::AgentInfo(std::string dbFolderPath, std::function<nlohmann::json()> getOSInfo, std::function<nlohmann::json()> getNetworksInfo)
+AgentInfo::AgentInfo(std::string dbFolderPath,
+                     std::function<nlohmann::json()> getOSInfo,
+                     std::function<nlohmann::json()> getNetworksInfo)
     : m_dataFolderPath(std::move(dbFolderPath))
 {
     AgentInfoPersistance agentInfoPersistance(m_dataFolderPath);

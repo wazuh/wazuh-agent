@@ -1,7 +1,7 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
 #include <config.h>
+#include <nlohmann/json.hpp>
 
 #include <functional>
 #include <string>
