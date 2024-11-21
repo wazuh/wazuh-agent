@@ -68,11 +68,14 @@ fi
 ## STOP AGENT HERE IF IT EXIST
 if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1 && systemctl is-active --quiet wazuh-agent > /dev/null 2>&1; then
   systemctl stop wazuh-agent > /dev/null 2>&1
-elif /usr/share/wazuh-agent/bin/wazuh-agent --status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
-  /usr/share/wazuh-agent/bin/wazuh-agent --stop 2>/dev/null
 # Check for SysV
 elif command -v service > /dev/null 2>&1 && service wazuh-agent status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
   service wazuh-agent stop > /dev/null 2>&1
+elif /usr/share/wazuh-agent/bin/wazuh-agent --status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
+  pid=$(ps -ef | grep "${BINARY_DIR}wazuh-agent" | grep -v grep | awk '{print $2}')
+  if [ -n "$pid" ]; then
+    kill -SIGTERM "$pid" 2>/dev/null
+  fi
 fi
 
 %post
@@ -192,11 +195,14 @@ if [ $1 = 0 ]; then
   # Check for systemd
   if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1 && systemctl is-active --quiet wazuh-agent > /dev/null 2>&1; then
     systemctl stop wazuh-agent > /dev/null 2>&1
-  elif /usr/share/wazuh-agent/bin/wazuh-agent --status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
-    /usr/share/wazuh-agent/bin/wazuh-agent --stop 2>/dev/null
   # Check for SysV
   elif command -v service > /dev/null 2>&1 && service wazuh-agent status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
     service wazuh-agent stop > /dev/null 2>&1
+  elif /usr/share/wazuh-agent/bin/wazuh-agent --status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
+    pid=$(ps -ef | grep "${BINARY_DIR}wazuh-agent" | grep -v grep | awk '{print $2}')
+    if [ -n "$pid" ]; then
+      kill -SIGTERM "$pid" 2>/dev/null
+    fi
   fi
 
   # Remove the SELinux policy
