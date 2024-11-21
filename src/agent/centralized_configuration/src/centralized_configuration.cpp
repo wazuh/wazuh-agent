@@ -31,6 +31,26 @@ namespace centralized_configuration
                     messageOnSuccess = "CentralizedConfiguration group set";
 
                     m_setGroupIdFunction(groupIds);
+
+                    try
+                    {
+                        std::filesystem::path sharedDirPath(config::path::SHARED_CONFIG_DIR);
+
+                        if (std::filesystem::exists(sharedDirPath) && std::filesystem::is_directory(sharedDirPath))
+                        {
+                            for (const auto& entry : std::filesystem::directory_iterator(sharedDirPath))
+                            {
+                                std::filesystem::remove_all(entry);
+                            }
+                        }
+                    }
+                    catch (const std::filesystem::filesystem_error& e)
+                    {
+                        LogWarn("Error while cleaning the shared directory.");
+                        co_return module_command::CommandExecutionResult {
+                            module_command::Status::FAILURE,
+                            "CentralizedConfiguration group set failed, error while cleaning the shared directory"};
+                    }
                 }
                 else
                 {
@@ -89,7 +109,7 @@ namespace centralized_configuration
                 }
             }
 
-            // TODO apply configuration, remove old group files
+            // TODO apply configuration
 
             co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS, messageOnSuccess};
         }
