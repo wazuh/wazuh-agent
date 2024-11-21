@@ -68,19 +68,19 @@ protected:
 
 TEST_F(RegisterTest, RegistrationTestSuccess)
 {
-    AgentInfoPersistance agentInfoPersistance;
+    AgentInfoPersistance agentInfoPersistance(".");
     agentInfoPersistance.ResetToDefault();
 
     SysInfo sysInfo;
-    agent = std::make_unique<AgentInfo>([&sysInfo]() mutable { return sysInfo.os(); },
-                                        [&sysInfo]() mutable { return sysInfo.networks(); });
+    agent = std::make_unique<AgentInfo>(
+        ".", [&sysInfo]() mutable { return sysInfo.os(); }, [&sysInfo]() mutable { return sysInfo.networks(); });
 
     agent->SetKey("4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
     agent->SetName("agent_name");
     agent->Save();
 
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "https://localhost:55000", "user", "password", agent->GetKey(), agent->GetName());
+        "https://localhost:55000", "user", "password", agent->GetKey(), agent->GetName(), ".");
 
     MockHttpClient mockHttpClient;
 
@@ -109,12 +109,12 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
 
 TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
 {
-    AgentInfoPersistance agentInfoPersistance;
+    AgentInfoPersistance agentInfoPersistance(".");
     agentInfoPersistance.ResetToDefault();
 
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "https://localhost:55000", "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name");
-    agent = std::make_unique<AgentInfo>();
+        "https://localhost:55000", "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", ".");
+    agent = std::make_unique<AgentInfo>(".");
 
     MockHttpClient mockHttpClient;
 
@@ -128,12 +128,12 @@ TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
 
 TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
 {
-    AgentInfoPersistance agentInfoPersistance;
+    AgentInfoPersistance agentInfoPersistance(".");
     agentInfoPersistance.ResetToDefault();
 
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "https://localhost:55000", "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name");
-    agent = std::make_unique<AgentInfo>();
+        "https://localhost:55000", "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", ".");
+    agent = std::make_unique<AgentInfo>(".");
 
     MockHttpClient mockHttpClient;
 
@@ -152,14 +152,14 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
 
 TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
 {
-    AgentInfoPersistance agentInfoPersistance;
+    AgentInfoPersistance agentInfoPersistance(".");
     agentInfoPersistance.ResetToDefault();
 
-    agent = std::make_unique<AgentInfo>();
+    agent = std::make_unique<AgentInfo>(".");
     EXPECT_TRUE(agent->GetKey().empty());
 
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "https://localhost:55000", "user", "password", "", "agent_name");
+        "https://localhost:55000", "user", "password", "", "agent_name", ".");
 
     MockHttpClient mockHttpClient;
 
@@ -175,15 +175,15 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
     const bool res = registration->Register(mockHttpClient);
     ASSERT_TRUE(res);
 
-    agent = std::make_unique<AgentInfo>();
+    agent = std::make_unique<AgentInfo>(".");
     EXPECT_FALSE(agent->GetKey().empty());
 }
 
 TEST_F(RegisterTest, RegistrationTestFailWithBadKey)
 {
-    ASSERT_THROW(
-        agent_registration::AgentRegistration("https://localhost:55000", "user", "password", "badKey", "agent_name"),
-        std::invalid_argument);
+    ASSERT_THROW(agent_registration::AgentRegistration(
+                     "https://localhost:55000", "user", "password", "badKey", "agent_name", "."),
+                 std::invalid_argument);
 }
 
 int main(int argc, char** argv)

@@ -12,32 +12,29 @@ protected:
     void SetUp() override
     {
         // We need to reset the database to the default state before each test
-        AgentInfoPersistance agentInfoPersistance;
+        AgentInfoPersistance agentInfoPersistance(".");
         agentInfoPersistance.ResetToDefault();
     }
 };
 
-TEST_F(AgentInfoTest, TestDefaultConstructor)
-{
-    EXPECT_NO_THROW(AgentInfo {});
-}
-
 TEST_F(AgentInfoTest, TestDefaultConstructorDefaultValues)
 {
-    const AgentInfo agentInfo;
-    EXPECT_EQ(agentInfo.GetName(), "");
-    EXPECT_EQ(agentInfo.GetKey(), "");
-    EXPECT_NE(agentInfo.GetUUID(), "");
+    EXPECT_NO_THROW({
+        const AgentInfo agentInfo(".");
+        EXPECT_EQ(agentInfo.GetName(), "");
+        EXPECT_EQ(agentInfo.GetKey(), "");
+        EXPECT_NE(agentInfo.GetUUID(), "");
+    });
 }
 
 TEST_F(AgentInfoTest, TestPersistedValues)
 {
-    AgentInfo agentInfo;
+    AgentInfo agentInfo(".");
     agentInfo.SetName("test_name");
     agentInfo.SetKey("4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
     agentInfo.SetUUID("test_uuid");
     agentInfo.Save();
-    const AgentInfo agentInfoReloaded;
+    const AgentInfo agentInfoReloaded(".");
     EXPECT_EQ(agentInfoReloaded.GetName(), "test_name");
     EXPECT_EQ(agentInfoReloaded.GetKey(), "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
     EXPECT_EQ(agentInfoReloaded.GetUUID(), "test_uuid");
@@ -45,33 +42,33 @@ TEST_F(AgentInfoTest, TestPersistedValues)
 
 TEST_F(AgentInfoTest, TestSetName)
 {
-    AgentInfo agentInfo;
+    AgentInfo agentInfo(".");
     const std::string oldName = agentInfo.GetName();
     const std::string newName = "new_name";
 
     agentInfo.SetName(newName);
     EXPECT_EQ(agentInfo.GetName(), newName);
 
-    const AgentInfo agentInfoReloaded;
+    const AgentInfo agentInfoReloaded(".");
     EXPECT_EQ(agentInfoReloaded.GetName(), oldName);
 }
 
 TEST_F(AgentInfoTest, TestSetKey)
 {
-    AgentInfo agentInfo;
+    AgentInfo agentInfo(".");
     const std::string oldKey = agentInfo.GetKey();
     const std::string newKey = "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj";
 
     agentInfo.SetKey(newKey);
     EXPECT_EQ(agentInfo.GetKey(), newKey);
 
-    const AgentInfo agentInfoReloaded;
+    const AgentInfo agentInfoReloaded(".");
     EXPECT_EQ(agentInfoReloaded.GetKey(), oldKey);
 }
 
 TEST_F(AgentInfoTest, TestSetBadKey)
 {
-    AgentInfo agentInfo;
+    AgentInfo agentInfo(".");
     const std::string newKey1 = "4GhT7uFm";
     const std::string newKey2 = "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrN=";
 
@@ -81,45 +78,45 @@ TEST_F(AgentInfoTest, TestSetBadKey)
 
 TEST_F(AgentInfoTest, TestSetEmptyKey)
 {
-    AgentInfo agentInfo;
+    AgentInfo agentInfo(".");
     const std::string newKey;
     const std::string oldKey = agentInfo.GetKey();
 
     agentInfo.SetKey(newKey);
     EXPECT_NE(agentInfo.GetKey(), newKey);
 
-    const AgentInfo agentInfoReloaded;
+    const AgentInfo agentInfoReloaded(".");
     EXPECT_EQ(agentInfoReloaded.GetKey(), oldKey);
 }
 
 TEST_F(AgentInfoTest, TestSetUUID)
 {
-    AgentInfo agentInfo;
+    AgentInfo agentInfo(".");
     const std::string newUUID = "new_uuid";
 
     agentInfo.SetUUID(newUUID);
     EXPECT_EQ(agentInfo.GetUUID(), newUUID);
 
-    const AgentInfo agentInfoReloaded;
+    const AgentInfo agentInfoReloaded(".");
     EXPECT_NE(agentInfoReloaded.GetUUID(), newUUID);
 }
 
 TEST_F(AgentInfoTest, TestSetGroups)
 {
-    AgentInfo agentInfo;
+    AgentInfo agentInfo(".");
     const std::vector<std::string> oldGroups = agentInfo.GetGroups();
     const std::vector<std::string> newGroups = {"t_group_1", "t_group_2"};
 
     agentInfo.SetGroups(newGroups);
     EXPECT_EQ(agentInfo.GetGroups(), newGroups);
 
-    const AgentInfo agentInfoReloaded;
+    const AgentInfo agentInfoReloaded(".");
     EXPECT_EQ(agentInfoReloaded.GetGroups(), oldGroups);
 }
 
 TEST_F(AgentInfoTest, TestLoadMetadataInfoNoSysInfo)
 {
-    const AgentInfo agentInfo;
+    const AgentInfo agentInfo(".");
 
     auto metadataInfo = nlohmann::json::parse(agentInfo.GetMetadataInfo(true));
 
@@ -165,7 +162,7 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoRegistration)
 
     networks["iface"].push_back(ip);
 
-    const AgentInfo agentInfo([os]() { return os; }, [networks]() { return networks; });
+    const AgentInfo agentInfo(".", [os]() { return os; }, [networks]() { return networks; });
 
     auto metadataInfo = nlohmann::json::parse(agentInfo.GetMetadataInfo(true));
 
@@ -216,7 +213,7 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoConnected)
 
     networks["iface"].push_back(ip);
 
-    const AgentInfo agentInfo([os]() { return os; }, [networks]() { return networks; });
+    const AgentInfo agentInfo(".", [os]() { return os; }, [networks]() { return networks; });
 
     auto metadataInfo = nlohmann::json::parse(agentInfo.GetMetadataInfo(false));
 
@@ -244,7 +241,7 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoConnected)
 
 TEST_F(AgentInfoTest, TestLoadHeaderInfo)
 {
-    const AgentInfo agentInfo;
+    const AgentInfo agentInfo(".");
 
     auto headerInfo = agentInfo.GetHeaderInfo();
 
