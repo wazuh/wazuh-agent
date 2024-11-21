@@ -81,7 +81,8 @@ enum MacOsPackageTypes
 {
     PKG,
     BREW,
-    MACPORTS
+    MACPORTS,
+    RCP
 };
 
 enum RPMFields
