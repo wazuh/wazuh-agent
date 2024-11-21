@@ -37,6 +37,8 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
         throw std::runtime_error("The agent is not registered");
     }
 
+    m_configurationParser.SetGetGroupIdsFunction([this]() { return m_agentInfo.GetGroups(); });
+
     m_centralizedConfiguration.SetGroupIdFunction([this](const std::vector<std::string>& groups)
                                                   { return m_agentInfo.SetGroups(groups); });
 

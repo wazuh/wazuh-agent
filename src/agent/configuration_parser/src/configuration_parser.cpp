@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <queue>
 #include <utility>
 
 namespace
@@ -123,6 +124,7 @@ namespace configuration
 
         return static_cast<std::time_t>(std::stoul(number) * multiplier);
     }
+
     bool ConfigurationParser::isValidYamlFile(const std::filesystem::path& configFile) const
     {
         try
@@ -134,6 +136,92 @@ namespace configuration
         {
             return false;
         }
+    }
+
+    void ConfigurationParser::MergeYamlNodes(YAML::Node& base, const YAML::Node& override)
+    {
+        // Queue to manage nodes to be merged. Pairs of nodes are handled directly.
+        std::queue<std::pair<YAML::Node, YAML::Node>> nodesToProcess;
+        nodesToProcess.push({base, override});
+
+        while (!nodesToProcess.empty())
+        {
+            auto [baseNode, overrideNode] = nodesToProcess.front();
+            nodesToProcess.pop();
+
+            // Traverse each key-value pair in the override node.
+            for (auto it = overrideNode.begin(); it != overrideNode.end(); ++it)
+            {
+                const std::string key = it->first.as<std::string>();
+                YAML::Node value = it->second;
+
+                if (baseNode[key])
+                {
+                    // Key exists in the base node.
+                    if (value.IsMap() && baseNode[key].IsMap())
+                    {
+                        // Both values are maps: enqueue for further merging.
+                        nodesToProcess.push({baseNode[key], value});
+                    }
+                    else if (value.IsSequence() && baseNode[key].IsSequence())
+                    {
+                        // Both values are sequences(lists): concatenate the elements.
+                        for (const auto& elem : value)
+                        {
+                            baseNode[key].push_back(elem);
+                        }
+                    }
+                    else
+                    {
+                        // Other cases (scalar, alias, null): overwrite the value.
+                        baseNode[key] = value;
+                    }
+                }
+                else
+                {
+                    // Key does not exist in the base node: add it directly.
+                    baseNode[key] = value;
+                }
+            }
+        }
+    }
+
+    void ConfigurationParser::LoadSharedConfig()
+    {
+        if (m_getGroups == nullptr)
+        {
+            LogWarn("Load shared configuration failed, no get groups function set");
+            return;
+        }
+
+        try
+        {
+            const std::vector<std::string> groupIds = m_getGroups();
+            YAML::Node tmpConfig = m_config;
+
+            for (const auto& groupId : groupIds)
+            {
+                const std::filesystem::path groupFile =
+                    std::filesystem::path("/etc/wazuh-agent") / "shared" / (groupId + ".conf");
+
+                YAML::Node fileToAppend = YAML::LoadFile(groupFile.string());
+
+                MergeYamlNodes(tmpConfig, fileToAppend);
+            }
+
+            m_config = tmpConfig;
+        }
+        catch (const YAML::Exception& e)
+        {
+            LogWarn("Load shared configuration failed: {}", e.what());
+            throw;
+        }
+    }
+
+    void ConfigurationParser::SetGetGroupIdsFunction(std::function<std::vector<std::string>()> getGroupIdsFunction)
+    {
+        m_getGroups = std::move(getGroupIdsFunction);
+        LoadSharedConfig();
     }
 
 } // namespace configuration

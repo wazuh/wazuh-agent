@@ -34,6 +34,22 @@ namespace configuration
         /// seconds.
         std::time_t ParseTimeUnit(const std::string& option) const;
 
+        /// @brief The groups infromation
+        std::function<std::vector<std::string>()> m_getGroups;
+
+        /// @brief Merges two YAML nodes, modifying the base node to include or override values from the
+        /// override node.
+        ///
+        /// This function traverses the two YAML nodes. If a key exists in both nodes:
+        /// - If both values are maps, the function recurses to merge their content.
+        /// - If both values are sequences, their elements are concatenated.
+        /// - In all other cases (scalars, aliases, null values), the value from the override node replaces the value in
+        /// the base node. If a key only exists in the override node, it is added to the base node.
+        ///
+        /// @param base Reference to the base YAML::Node that will be modified.
+        /// @param override Const reference to the YAML::Node containing values to merge into the base.
+        void MergeYamlNodes(YAML::Node& base, const YAML::Node& override);
+
     public:
         /// @brief Default constructor. Loads configuration from a default file path.
         ///
@@ -108,5 +124,17 @@ namespace configuration
         /// @param configFile The path to the YAML file to be validated.
         /// @return `true` if the file is a valid YAML file; `false` otherwise.
         bool isValidYamlFile(const std::filesystem::path& configFile) const;
+
+        /// @brief Loads shared configuration files for specific groups and merges them into the main configuration.
+        ///
+        /// This function attempts to load configuration files for each group from a shared directory.
+        /// The loaded configurations are merged into the main configuration.
+        ///
+        /// @throws YAML::Exception If there is an error while loading or parsing a YAML file.
+        void LoadSharedConfig();
+
+        /// @brief Sets the function to get group IDs.
+        /// @param getGroupIdsFunction A function to get group IDs.
+        void SetGetGroupIdsFunction(std::function<std::vector<std::string>()> getGroupIdsFunction);
     };
 } // namespace configuration
