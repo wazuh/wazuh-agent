@@ -12,7 +12,7 @@ set -e
 export PATH=/usr/local/bin:/Applications/CMake.app/Contents/bin:/opt/homebrew/bin:/opt/homebrew/sbin:$PATH
 CURRENT_PATH="$( cd $(dirname ${0}) ; pwd -P )"
 ARCH="intel64"
-WAZUH_SOURCE_REPOSITORY="https://github.com/wazuh/wazuh"
+WAZUH_SOURCE_REPOSITORY="https://github.com/wazuh/wazuh-agent"
 SERVICE_PATH="/Library/LaunchDaemons/com.wazuh.agent.plist"
 STARTUP_PATH="/Library/StartupItems/WAZUH/StartupParameters.plist"
 LAUNCHER_SCRIPT_PATH="/Library/StartupItems/WAZUH/Wazuh-launcher"
@@ -38,6 +38,7 @@ ALTOOL_PASS=""                        # Temporary Application password for altoo
 TEAM_ID=""                            # Team ID of the Apple Developer ID.
 pkg_name=""
 notarization_path=""
+VCPKG_KEY=""
 
 trap ctrl_c INT
 
@@ -161,13 +162,12 @@ function build_package() {
     if [ -n "$BRANCH_TAG" ]; then
         SOURCES_DIRECTORY="${CURRENT_PATH}/repository"
         WAZUH_PATH="${SOURCES_DIRECTORY}/wazuh"
-        git clone --depth=1 -b ${BRANCH_TAG} ${WAZUH_SOURCE_REPOSITORY} "${WAZUH_PATH}"
+        git clone -b ${BRANCH_TAG} --single-branch --recurse-submodules ${WAZUH_SOURCE_REPOSITORY} "${WAZUH_PATH}"
     else
         WAZUH_PATH="${CURRENT_PATH}/../.."
     fi
     short_commit_hash="$(cd "${WAZUH_PATH}" && git rev-parse --short HEAD)"
 
-    export CONFIG="${WAZUH_PATH}/etc/preloaded-vars.conf"
     WAZUH_PACKAGES_PATH="${WAZUH_PATH}/packages/macos"
     ENTITLEMENTS_PATH="${WAZUH_PACKAGES_PATH}/entitlements.plist"
 
@@ -229,6 +229,7 @@ function help() {
     echo "    -c, --checksum                [Optional] Generate checksum on the store path."
     echo "    --is_stage                    [Optional] Use release name in package"
     echo "    -nc, --not-compile            [Optional] Set whether or not to compile the code."
+    echo "    --vcpkg-binary-caching-key    [Optional] VCPK remote binary caching repository key."
     echo "    -h, --help                    [  Util  ] Show this help."
     echo "    -i, --install-deps            [  Util  ] Install build dependencies."
     echo "    -x, --install-xcode           [  Util  ] Install X-Code and brew. Can't be executed as root."
@@ -251,25 +252,44 @@ function help() {
 
 function testdep() {
 
-    if [[ $(munkipkg --version 2>/dev/null) =~ [0-9] ]]; then
-        return 0
-    else
+    if [[ ! $(brew --version 2>/dev/null) =~ [0-9] ]]; then
+        echo "Error: brew not found. Download and install it."
+        echo "Use $0 -x for install it."
+        exit 1
+    fi  
+
+    if [[ ! $(munkipkg --version 2>/dev/null) =~ [0-9] ]]; then
         echo "Error: munkipkg not found. Download and install dependencies."
         echo "Use $0 -i for install it."
         exit 1
     fi
+
+    if [ -n "${VCPKG_KEY}" ]; then
+        if [[ ! $(mono --version 2>/dev/null) =~ [0-9] ]]; then
+            echo "Error: mono not found. Download and install dependencies."
+            echo "Use $0 -i for install it."
+            exit 1
+        fi    
+    fi
 }
 
 function install_deps() {
+
+    if [[ $(mono --version 2>/dev/null) =~ [0-9] ]]; then
+        echo "mono already installed installed."
+    else
+        # Install mono tool
+        curl -sO https://download.mono-project.com/archive/6.12.0/macos-10-universal/MonoFramework-MDK-6.12.0.206.macos10.xamarin.universal.pkg
+        installer -pkg MonoFramework-MDK* -target /
+        rm MonoFramework-MDK*
+    fi 
 
     if [[ $(munkipkg --version 2>/dev/null) =~ [0-9] ]]; then
         echo "Munkipkg already installed installed."
     else
         # Install munkipkg tool
         git clone https://github.com/munki/munki-pkg.git ~/Developer/munki-pkg
-
         mkdir -p /usr/local/bin
-
         sudo ln -s "$HOME/Developer/munki-pkg/munkipkg" /usr/local/bin/munkipkg
 
         if [[ $(munkipkg --version 2>/dev/null) =~ [0-9] ]]; then
@@ -281,9 +301,9 @@ function install_deps() {
 
     echo "Installing build dependencies for $(uname -m) architecture."
     if [ "$(uname -m)" = "arm64" ]; then
-        brew install gcc binutils autoconf automake libtool cmake
+        brew install gcc binutils autoconf automake libtool cmake git pkg-config openssl
     else
-        brew install cmake
+        brew install cmake git pkg-config openssl
     fi
     exit 0
 }
@@ -292,22 +312,19 @@ function install_xcode() {
 
     # Install brew tool. Brew will install X-Code if it is not already installed in the host.
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-
     exit 0
 }
 
 function check_root() {
 
     if [[ $EUID -ne 0 ]]; then
-        echo "This script must be run as root"
-        echo
+        echo "This script must be run as root\n"
         exit 1
     fi
 }
 
 function main() {
 
-    BUILD="yes"
     while [ -n "$1" ]
     do
         case "$1" in
@@ -379,6 +396,14 @@ function main() {
         "-nc"|"--not-compile")
             MAKE_COMPILATION="no"
             shift 1
+            ;;
+       "--vcpkg-binary-caching-key")
+            if [ -n "$2" ]; then
+                VCPKG_KEY="$2"
+                shift 2
+            else
+                help 1
+            fi
             ;;
         "--keychain")
             if [ -n "$2" ]; then
@@ -457,34 +482,30 @@ function main() {
         set -ex
     fi
 
-    testdep
-
     if [ "${ARCH}" != "intel64" ] && [ "${ARCH}" != "arm64" ]; then
         echo "Error: architecture not supported."
         echo "Supported architectures: intel64, arm64"
         exit 1
     fi
 
-    if [[ "${BUILD}" != "no" ]]; then
-        check_root
-        build_package
-        "${CURRENT_PATH}/uninstall.sh"
-    fi
+    testdep
+
+    check_root
+    build_package
+    ${CURRENT_PATH}/uninstall.sh
 
     if [ "${NOTARIZE}" = "yes" ]; then
-        if [ "${BUILD}" = "yes" ]; then
-            notarization_path="${DESTINATION}/${pkg_name}.pkg"
-        fi
+    
+        notarization_path="${DESTINATION}/${pkg_name}.pkg"
+    
         if [ -z "${notarization_path}" ]; then
             echo "The path of the package to be notarized has not been specified."
             help 1
         fi
         notarize_pkg "${notarization_path}"
     fi
-
-    if [ "${BUILD}" = "no" ] && [ "${NOTARIZE}" = "no" ]; then
-        echo "The branch has not been specified and notarization has not been selected."
-        help 1
+    else
+        echo "Notarization has not been selected."
     fi
 
     return 0

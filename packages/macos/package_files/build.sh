@@ -16,32 +16,36 @@ MAKE_COMPILATION=$5
 INSTALLATION_SCRIPTS_DIR=${DESTINATION_PATH}/packages_files/agent_installation_scripts
 SEARCH_DIR=${SOURCES_PATH}/src
 
-function configure() {
-    echo USER_LANGUAGE="en" > ${CONFIG}
-    echo USER_NO_STOP="y" >> ${CONFIG}
-    echo USER_INSTALL_TYPE="agent" >> ${CONFIG}
-    echo USER_DIR="${DESTINATION_PATH}" >> ${CONFIG}
-    echo USER_DELETE_DIR="y" >> ${CONFIG}
-    echo USER_CLEANINSTALL="y" >> ${CONFIG}
-    echo USER_BINARYINSTALL="y" >> ${CONFIG}
-    echo USER_AGENT_SERVER_IP="MANAGER_IP" >> ${CONFIG}
-    echo USER_ENABLE_SYSCHECK="y" >> ${CONFIG}
-    echo USER_ENABLE_ROOTCHECK="y" >> ${CONFIG}
-    echo USER_ENABLE_OPENSCAP="n" >> ${CONFIG}
-    echo USER_ENABLE_CISCAT="n" >> ${CONFIG}
-    echo USER_ENABLE_ACTIVE_RESPONSE="y" >> ${CONFIG}
-    echo USER_CA_STORE="n" >> ${CONFIG}
+set_vcpkg_remote_binary_cache(){
+  local vcpkg_token="$1"
+
+  if [[ $(mono --version 2>/dev/null) =~ [0-9] ]]; then
+    echo "mono already installed, proceeding"
+    export VCPKG_BINARY_SOURCES="clear;nuget,GitHub,readwrite"
+    $SOURCES_PATH/src/vcpkg/bootstrap-vcpkg.sh
+    mono `$SOURCES_PATH/src/vcpkg/vcpkg fetch nuget | tail -n 1` \
+        sources add \
+        -source "https://nuget.pkg.github.com/wazuh/index.json" \
+        -name "GitHub" \
+        -username "wazuh" \
+        -password "$vcpkg_token"
+    mono `$SOURCES_PATH/src/vcpkg/vcpkg fetch nuget | tail -n 1` \
+        setapikey "$vcpkg_token" \
+        -source "https://nuget.pkg.github.com/wazuh/index.json"  
+  else
+    echo "mono in not installed, remote binary caching not being enabled"
+  fi
 }
 
 function build() {
 
-    configure
+    set_vcpkg_remote_binary_cache
 
     if [ "${MAKE_COMPILATION}" == "yes" ]; then
-    make -C ${SOURCES_PATH}/src deps TARGET=agent
+        make -C ${SOURCES_PATH}/src deps TARGET=agent
 
-    echo "Generating Wazuh executables"
-    make -j $BUILD_JOBS -C ${SOURCES_PATH}/src DYLD_FORCE_FLAT_NAMESPACE=1 DEBUG=$DEBUG TARGET=agent build
+        echo "Generating Wazuh executables"
+        make -j $BUILD_JOBS -C ${SOURCES_PATH}/src DYLD_FORCE_FLAT_NAMESPACE=1 DEBUG=$DEBUG TARGET=agent build
     fi
 
     EXECUTABLE_FILES=$(find "${SEARCH_DIR}" -maxdepth 1 -type f ! -name "*.py" -exec file {} + | grep 'executable' | cut -d: -f1)
