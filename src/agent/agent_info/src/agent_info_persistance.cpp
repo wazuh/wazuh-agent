@@ -13,9 +13,11 @@ namespace
 
 AgentInfoPersistance::AgentInfoPersistance(const std::string& dbFolderPath)
 {
+    const auto dbFilePath = dbFolderPath + "/" + AGENT_INFO_DB_NAME;
+
     try
     {
-        m_db = std::make_unique<SQLiteManager>(dbFolderPath + "/" + AGENT_INFO_DB_NAME);
+        m_db = std::make_unique<SQLiteManager>(dbFilePath);
 
         if (!m_db->TableExists(AGENT_INFO_TABLE_NAME))
         {
@@ -34,8 +36,7 @@ AgentInfoPersistance::AgentInfoPersistance(const std::string& dbFolderPath)
     }
     catch (const std::exception& e)
     {
-        LogError("Can't open database: {}.", e.what());
-        m_db.reset();
+        throw std::runtime_error(std::string("Cannot open database: " + dbFilePath));
     }
 }
 
