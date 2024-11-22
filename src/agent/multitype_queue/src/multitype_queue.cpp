@@ -8,14 +8,16 @@
 
 constexpr int DEFAULT_TIMER_IN_MS = 100;
 
-MultiTypeQueue::MultiTypeQueue(size_t size, int timeout)
+MultiTypeQueue::MultiTypeQueue(const std::string& dbFolderPath, size_t size, int timeout)
     : m_maxItems(size)
     , m_timeout(timeout)
 {
+    const auto dbFilePath = dbFolderPath + "/" + QUEUE_DB_NAME;
+
     try
     {
         m_persistenceDest = PersistenceFactory::createPersistence(PersistenceFactory::PersistenceType::SQLITE3,
-                                                                  {QUEUE_DEFAULT_DB_PATH, m_vMessageTypeStrings});
+                                                                  {dbFilePath, m_vMessageTypeStrings});
     }
     catch (const std::exception& e)
     {
