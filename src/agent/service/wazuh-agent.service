@@ -6,11 +6,14 @@ After=network.target network-online.target
 [Service]
 Type=simple
 
-ExecStart=/usr/bin/env WAZUH_HOME/wazuh-agent --start
-ExecStop=/usr/bin/env WAZUH_HOME/wazuh-agent --stop
-ExecReload=/usr/bin/env WAZUH_HOME/wazuh-agent --restart
+ExecStart=/usr/bin/env WAZUH_HOME/wazuh-agent
+
+KillSignal=SIGTERM
 
 KillMode=process
+
+SendSIGKILL=no
+
 RemainAfterExit=yes
 
 [Install]

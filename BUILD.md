@@ -62,12 +62,10 @@ The following dependencies are required for this project:
 
     **To run the agent in the foreground from the CLI**
 
-    You can start and stop the agent, and get status with:
+    You can start and get status with:
 
     ```bash
-    ./wazuh-agent --run
-    ./wazuh-agent --stop
-    ./wazuh-agent --restart
+    ./wazuh-agent
     ./wazuh-agent --status
     ```
 
@@ -151,12 +149,10 @@ The following dependencies are required for this project:
 
     **To run the agent in the foreground from the CLI**
 
-    You can start and stop the agent, and get status with:
+    You can start and get status with:
 
     ```bash
-    ./wazuh-agent --run
-    ./wazuh-agent --stop
-    ./wazuh-agent --restart
+    ./wazuh-agent
     ./wazuh-agent --status
     ```
 
@@ -256,8 +252,9 @@ The following dependencies are required for this project:
 
     Or from the CLI
     ```bash
-    .\RelWithDebInfo\wazuh-agent --start
+    .\RelWithDebInfo\wazuh-agent
     .\RelWithDebInfo\wazuh-agent --stop
+    .\RelWithDebInfo\wazuh-agent --restart
     .\RelWithDebInfo\wazuh-agent --status
     ```
 

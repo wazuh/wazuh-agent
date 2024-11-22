@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -13,10 +14,16 @@ public:
     /// @brief Constructor
     /// @param argc The number of command line arguments
     /// @param argv The command line arguments
-    CommandlineParser(int argc, char** argv)
+    /// @param options The command line options available
+    CommandlineParser(int argc, char** argv, const std::vector<std::string>& options)
     {
         for (int i = 1; i < argc; ++i)
         {
+            auto isValid = std::find(options.begin(), options.end(), argv[i]);
+            if (isValid == options.end() && argv[i][0] == '-')
+            {
+                throw std::invalid_argument("Invalid option: " + std::string(argv[i]));
+            }
             m_tokens.push_back(std::string(argv[i]));
         }
     }

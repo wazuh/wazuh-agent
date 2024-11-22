@@ -37,7 +37,6 @@ void PrintHelp()
     std::cout << "Usage: wazuh-agent [options]\n";
     std::cout << "\n";
     std::cout << "Options:\n";
-    std::cout << "     " << OPT_START << "                Start wazuh-agent daemon\n";
     std::cout << "     " << OPT_STATUS << "               Get wazuh-agent daemon status\n";
     std::cout << "     " << OPT_STOP << "                 Stop wazuh-agent daemon\n";
     std::cout << "     " << OPT_RESTART << "              Restart wazuh-agent daemon\n";
