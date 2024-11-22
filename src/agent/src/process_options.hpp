@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 /// Command-line options
 static const auto OPT_STATUS {"--status"};
@@ -16,6 +17,20 @@ static const auto OPT_PASSWORD {"--password"};
 static const auto OPT_KEY {"--key"};
 static const auto OPT_NAME {"--name"};
 static const auto OPT_HELP {"--help"};
+
+const std::vector<std::string> validOptions = {{OPT_STATUS},
+                                               {OPT_STOP},
+                                               {OPT_RESTART},
+                                               {OPT_CONFIG_FILE},
+                                               {OPT_REGISTER_AGENT},
+                                               {OPT_INSTALL_SERVICE},
+                                               {OPT_REMOVE_SERVICE},
+                                               {OPT_RUN_SERVICE},
+                                               {OPT_USER},
+                                               {OPT_PASSWORD},
+                                               {OPT_KEY},
+                                               {OPT_NAME},
+                                               {OPT_HELP}};
 
 /// @brief Registers the agent with the given parameters.
 /// @param user The user to use for authentication with Server Management API.

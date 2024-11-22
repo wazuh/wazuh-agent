@@ -7,12 +7,13 @@
 int main(int argc, char* argv[])
 {
     Logger logger;
-    CommandlineParser cmdParser(argc, argv);
-
-    std::string configFile;
 
     try
     {
+        CommandlineParser cmdParser(argc, argv, validOptions);
+
+        std::string configFile;
+
         if (cmdParser.OptionExists(OPT_CONFIG_FILE))
         {
             configFile = cmdParser.GetOptionValue(OPT_CONFIG_FILE);

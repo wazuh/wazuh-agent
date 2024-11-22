@@ -11,8 +11,9 @@ protected:
     std::string program = "program";
     std::string option = "--option";
     std::string value = "value";
+    std::vector<std::string> validOptions = {"--option"};
     std::array<char*, 3> args = {program.data(), option.data(), value.data()};
-    CommandlineParser parser {static_cast<int>(args.size()), args.data()};
+    CommandlineParser parser {static_cast<int>(args.size()), args.data(), validOptions};
 };
 
 TEST_F(CommandlineParserTest, GetOptionValue_OptionExists)
@@ -38,7 +39,7 @@ TEST_F(CommandlineParserTest, OptionExists_OptionDoesNotExist)
 TEST_F(CommandlineParserTest, GetOptionValue_NoValueForOption)
 {
     std::array<char*, 2> noValueArgs = {program.data(), option.data()};
-    CommandlineParser noValueParser {static_cast<int>(noValueArgs.size()), noValueArgs.data()};
+    CommandlineParser noValueParser {static_cast<int>(noValueArgs.size()), noValueArgs.data(), validOptions};
 
     EXPECT_EQ(noValueParser.GetOptionValue(option), "");
 }
