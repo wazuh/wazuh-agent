@@ -24,7 +24,7 @@ void Inventory::Start() {
     {
         Inventory::Instance().Init(std::make_shared<SysInfo>(),
                                     [this](const std::string& diff) { this->SendDeltaEvent(diff); },
-                                    INVENTORY_DB_DISK_PATH,
+                                    m_dbFilePath,
                                     INVENTORY_NORM_CONFIG_DISK_PATH,
                                     INVENTORY_NORM_TYPE);
     }
@@ -40,6 +40,7 @@ void Inventory::Start() {
 void Inventory::Setup(const configuration::ConfigurationParser& configurationParser) {
 
     m_enabled = configurationParser.GetConfig<bool>( "inventory", "enabled").value_or(config::inventory::DEFAULT_ENABLED);
+    m_dbFilePath = configurationParser.GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH) + "/" + INVENTORY_DB_DISK_NAME;
     m_intervalValue = configurationParser.GetConfig<std::time_t>("inventory", "interval").value_or(config::inventory::DEFAULT_INTERVAL);
     m_scanOnStart = configurationParser.GetConfig<bool>("inventory", "scan_on_start").value_or(config::inventory::DEFAULT_SCAN_ON_START);
     m_hardware = configurationParser.GetConfig<bool>("inventory", "hardware").value_or(config::inventory::DEFAULT_HARDWARE);

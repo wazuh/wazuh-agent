@@ -85,6 +85,7 @@ class Inventory {
         std::shared_ptr<ISysInfo>                   m_spInfo;
         std::function<void(const std::string&)>     m_reportDiffFunction;
         bool                                        m_enabled;          // Main switch
+        std::string                                 m_dbFilePath;       // Database path
         std::time_t                                 m_intervalValue;    // Scan interval
         bool                                        m_scanOnStart;      // Scan always on start
         bool                                        m_hardware;         // Hardware inventory
