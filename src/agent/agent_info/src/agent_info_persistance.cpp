@@ -34,7 +34,7 @@ AgentInfoPersistance::AgentInfoPersistance(const std::string& dbFolderPath)
             InsertDefaultAgentInfo();
         }
     }
-    catch (const std::exception& e)
+    catch (const std::exception&)
     {
         throw std::runtime_error(std::string("Cannot open database: " + dbFilePath));
     }

@@ -4,7 +4,7 @@ set(PROJECT_NAME "Wazuh Agent")
 # Project version
 set(VERSION "0.1")
 
-set(DEFAULT_DATA_PATH "/var/lib/wazuh-agent" CACHE STRING "Default folder path for agent data")
+string(REPLACE "\\" "\\\\" DEFAULT_DATA_PATH "${DATA_INSTALL_DIR}")
 
 set(DEFAULT_SERVER_URL "https://localhost:27000" CACHE STRING "Default Agent Server Url")
 
