@@ -60,7 +60,7 @@ namespace
         for (const auto& entry : std::filesystem::directory_iterator("."))
         {
             const auto fileFullPath = entry.path().string();
-            if (fileFullPath.find(QUEUE_DEFAULT_DB_PATH) != std::string::npos)
+            if (fileFullPath.find(QUEUE_DB_NAME) != std::string::npos)
             {
                 std::error_code ec;
                 std::filesystem::remove(fileFullPath, ec);
@@ -132,7 +132,7 @@ TEST_F(JsonTest, JSONArrays)
 // Push, get and check the queue is not empty
 TEST_F(MultiTypeQueueTest, SinglePushGetNotEmpty)
 {
-    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(".", BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, BASE_DATA_CONTENT};
 
@@ -152,7 +152,7 @@ TEST_F(MultiTypeQueueTest, SinglePushGetNotEmpty)
 // push and pop on a non-full queue
 TEST_F(MultiTypeQueueTest, SinglePushPopEmpty)
 {
-    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(".", BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, BASE_DATA_CONTENT};
 
@@ -176,7 +176,7 @@ TEST_F(MultiTypeQueueTest, SinglePushPopEmpty)
 
 TEST_F(MultiTypeQueueTest, SinglePushGetWithModule)
 {
-    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(".", BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
     const std::string moduleFakeName = "fake-module";
     const std::string moduleName = "module";
@@ -203,7 +203,7 @@ TEST_F(MultiTypeQueueTest, SinglePushGetWithModule)
 // Push, get and check while the queue is full
 TEST_F(MultiTypeQueueTest, SinglePushPopFullWithTimeout)
 {
-    MultiTypeQueue multiTypeQueue(SMALL_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(".", SMALL_QUEUE_CAPACITY);
 
     // complete the queue with messages
     const MessageType messageType {MessageType::COMMAND};
@@ -230,7 +230,7 @@ TEST_F(MultiTypeQueueTest, SinglePushPopFullWithTimeout)
 // Accesing different types of queues from several threads
 TEST_F(MultiTypeQueueTest, MultithreadDifferentType)
 {
-    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(".", BIG_QUEUE_CAPACITY);
 
     auto consumerStateLess = [&](const int& count)
     {
@@ -300,7 +300,7 @@ TEST_F(MultiTypeQueueTest, MultithreadDifferentType)
 // Accesing same queue from 2 different threads
 TEST_F(MultiTypeQueueTest, MultithreadSameType)
 {
-    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(".", BIG_QUEUE_CAPACITY);
     auto messageType = MessageType::COMMAND;
 
     auto consumerCommand1 = [&](const int& count)
@@ -355,7 +355,7 @@ TEST_F(MultiTypeQueueTest, MultithreadSameType)
 // several gets, checks and pops
 TEST_F(MultiTypeQueueTest, PushMultipleSeveralSingleGets)
 {
-    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(".", BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT};
 
@@ -375,7 +375,7 @@ TEST_F(MultiTypeQueueTest, PushMultipleSeveralSingleGets)
 
 TEST_F(MultiTypeQueueTest, PushMultipleWithMessageVector)
 {
-    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(".", BIG_QUEUE_CAPACITY);
 
     std::vector<Message> messages;
     const MessageType messageType {MessageType::STATELESS};
@@ -392,7 +392,7 @@ TEST_F(MultiTypeQueueTest, PushMultipleWithMessageVector)
 // push message vector with a mutiple data element
 TEST_F(MultiTypeQueueTest, PushVectorWithAMultipleInside)
 {
-    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(".", BIG_QUEUE_CAPACITY);
 
     std::vector<Message> messages;
 
@@ -414,7 +414,7 @@ TEST_F(MultiTypeQueueTest, PushVectorWithAMultipleInside)
 // Push Multiple, pop multiples
 TEST_F(MultiTypeQueueTest, PushMultipleGetMultiple)
 {
-    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(".", BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT};
 
@@ -429,7 +429,7 @@ TEST_F(MultiTypeQueueTest, PushMultipleGetMultiple)
 // Push Multiple, pop multiples
 TEST_F(MultiTypeQueueTest, PushMultipleGetMultipleWithModule)
 {
-    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(".", BIG_QUEUE_CAPACITY);
     const MessageType messageType {MessageType::STATELESS};
     const std::string moduleName = "testModule";
     const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT, moduleName};
@@ -452,7 +452,7 @@ TEST_F(MultiTypeQueueTest, PushMultipleGetMultipleWithModule)
 
 TEST_F(MultiTypeQueueTest, PushSinglesleGetMultipleWithModule)
 {
-    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(".", BIG_QUEUE_CAPACITY);
 
     for (std::string i : {"1", "2", "3", "4", "5"})
     {
@@ -481,7 +481,7 @@ TEST_F(MultiTypeQueueTest, PushSinglesleGetMultipleWithModule)
 
 TEST_F(MultiTypeQueueTest, GetNextAwaitableBase)
 {
-    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(".", BIG_QUEUE_CAPACITY);
     boost::asio::io_context io_context;
 
     // Coroutine that waits till there's a message of the needed type on the queue
@@ -513,7 +513,7 @@ TEST_F(MultiTypeQueueTest, GetNextAwaitableBase)
 
 TEST_F(MultiTypeQueueTest, PushAwaitable)
 {
-    MultiTypeQueue multiTypeQueue(SMALL_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(".", SMALL_QUEUE_CAPACITY);
     boost::asio::io_context io_context;
 
     for (int i : {1, 2})
@@ -557,7 +557,7 @@ TEST_F(MultiTypeQueueTest, PushAwaitable)
 
 TEST_F(MultiTypeQueueTest, FifoOrderCheck)
 {
-    MultiTypeQueue multiTypeQueue(BIG_QUEUE_CAPACITY);
+    MultiTypeQueue multiTypeQueue(".", BIG_QUEUE_CAPACITY);
 
     // complete the queue with messages
     const MessageType messageType {MessageType::STATEFUL};
