@@ -46,7 +46,7 @@ namespace centralized_configuration
                     }
                     catch (const std::filesystem::filesystem_error& e)
                     {
-                        LogWarn("Error while cleaning the shared directory.");
+                        LogWarn("Error while cleaning the shared directory {}.", e.what());
                         co_return module_command::CommandExecutionResult {
                             module_command::Status::FAILURE,
                             "CentralizedConfiguration group set failed, error while cleaning the shared directory"};
