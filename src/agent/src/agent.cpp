@@ -31,6 +31,15 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
                       [this](std::function<void()> task) { m_taskManager.EnqueueTask(std::move(task)); })
     , m_commandHandler(m_dataPath)
 {
+    m_maxBatchingSize =
+        m_configurationParser.GetConfig<int>("agent", "max_batching_size").value_or(config::agent::DEFAULT_BATCH_SIZE);
+
+    if (m_maxBatchingSize < 1)
+    {
+        LogWarn("max_batching_size cannot be lower than 1s. Using default value.");
+        m_maxBatchingSize = config::agent::DEFAULT_BATCH_SIZE;
+    }
+
     m_centralizedConfiguration.SetGroupIdFunction([this](const std::vector<std::string>& groups)
                                                   { return m_agentInfo.SetGroups(groups); });
 

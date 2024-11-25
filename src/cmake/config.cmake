@@ -14,6 +14,10 @@ set(DEFAULT_SERVER_URL "https://localhost:27000" CACHE STRING "Default Agent Ser
 
 set(DEFAULT_RETRY_INTERVAL 30000 CACHE STRING "Default Agent retry interval (30s)")
 
+set(DEFAULT_BATCH_INTERVAL 10000 CACHE STRING "Default Agent batch interval (10s)")
+
+set(DEFAULT_BATCH_SIZE 1000 CACHE STRING "Default Agent batch size limit (1000)")
+
 set(DEFAULT_LOGCOLLECTOR_ENABLED true CACHE BOOL "Default Logcollector enabled")
 
 set(BUFFER_SIZE 4096 CACHE STRING "Default Logcollector reading buffer size")

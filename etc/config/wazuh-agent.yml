@@ -2,6 +2,9 @@ agent:
   thread_count: 4
   server_url: https://localhost:27000
   retry_interval: 30s
+events:
+  batch_interval: 10s
+  batch_size: 1000
 inventory:
   enabled: true
   interval: 1h
