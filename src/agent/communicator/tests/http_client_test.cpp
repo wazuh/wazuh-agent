@@ -242,6 +242,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_Success)
                                               getMessages,
                                               onUnauthorized,
                                               5, // NOLINT
+                                              1, // NOLINT
                                               onSuccess,
                                               nullptr);
 
@@ -288,6 +289,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
                                               getMessages,
                                               onUnauthorized,
                                               5, // NOLINT
+                                              1, // NOLINT
                                               onSuccess,
                                               nullptr);
 
@@ -335,6 +337,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails
                                               getMessages,
                                               onUnauthorized,
                                               5, // NOLINT
+                                              1, // NOLINT
                                               onSuccess,
                                               nullptr);
 
@@ -384,6 +387,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
                                               getMessages,
                                               onUnauthorized,
                                               5, // NOLINT
+                                              1, // NOLINT
                                               onSuccess,
                                               nullptr);
 
@@ -432,6 +436,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_UnauthorizedCalledWhenAuthorization
                                               getMessages,
                                               onUnauthorized,
                                               5, // NOLINT
+                                              1, // NOLINT
                                               onSuccess,
                                               nullptr);
 

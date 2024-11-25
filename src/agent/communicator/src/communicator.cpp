@@ -80,7 +80,7 @@ namespace communicator
         const auto reqParams = http_client::HttpRequestParams(
             boost::beast::http::verb::get, m_serverUrl, "/api/v1/commands", m_getHeaderInfo ? m_getHeaderInfo() : "");
         co_await m_httpClient->Co_PerformHttpRequest(
-            m_token, reqParams, {}, onAuthenticationFailed, m_retryInterval, onSuccess, loopCondition);
+            m_token, reqParams, {}, onAuthenticationFailed, m_retryInterval, m_batchInterval, onSuccess, loopCondition);
     }
 
     boost::asio::awaitable<void> Communicator::WaitForTokenExpirationAndAuthenticate()
@@ -142,8 +142,14 @@ namespace communicator
                                                               m_serverUrl,
                                                               "/api/v1/events/stateful",
                                                               m_getHeaderInfo ? m_getHeaderInfo() : "");
-        co_await m_httpClient->Co_PerformHttpRequest(
-            m_token, reqParams, getMessages, onAuthenticationFailed, m_retryInterval, onSuccess, loopCondition);
+        co_await m_httpClient->Co_PerformHttpRequest(m_token,
+                                                     reqParams,
+                                                     getMessages,
+                                                     onAuthenticationFailed,
+                                                     m_retryInterval,
+                                                     m_batchInterval,
+                                                     onSuccess,
+                                                     loopCondition);
     }
 
     boost::asio::awaitable<void>
@@ -164,8 +170,14 @@ namespace communicator
                                                               m_serverUrl,
                                                               "/api/v1/events/stateless",
                                                               m_getHeaderInfo ? m_getHeaderInfo() : "");
-        co_await m_httpClient->Co_PerformHttpRequest(
-            m_token, reqParams, getMessages, onAuthenticationFailed, m_retryInterval, onSuccess, loopCondition);
+        co_await m_httpClient->Co_PerformHttpRequest(m_token,
+                                                     reqParams,
+                                                     getMessages,
+                                                     onAuthenticationFailed,
+                                                     m_retryInterval,
+                                                     m_batchInterval,
+                                                     onSuccess,
+                                                     loopCondition);
     }
 
     void Communicator::TryReAuthenticate()

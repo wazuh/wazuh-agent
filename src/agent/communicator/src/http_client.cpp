@@ -101,6 +101,7 @@ namespace http_client
                                       std::function<boost::asio::awaitable<std::string>()> messageGetter,
                                       std::function<void()> onUnauthorized,
                                       std::time_t connectionRetry,
+                                      std::time_t batchInterval,
                                       std::function<void(const std::string&)> onSuccess,
                                       std::function<bool()> loopRequestCondition)
     {
@@ -184,7 +185,7 @@ namespace http_client
                 continue;
             }
 
-            std::time_t timerSleep = A_SECOND_IN_MILLIS;
+            std::time_t timerSleep = batchInterval;
 
             if (res.result() == boost::beast::http::status::ok)
             {
