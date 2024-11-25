@@ -14,6 +14,11 @@ const nlohmann::json BASE_DATA_CONTENT = R"({"id":"112233", "args": ["origin_tes
 class MockMultiTypeQueue : public MultiTypeQueue
 {
 public:
+    MockMultiTypeQueue()
+        : MultiTypeQueue(".")
+    {
+    }
+
     MOCK_METHOD(boost::asio::awaitable<std::vector<Message>>,
                 getNextNAwaitable,
                 (MessageType, int, const std::string, const std::string),

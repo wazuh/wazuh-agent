@@ -1,3 +1,5 @@
+#include <config.h>
+#include <defs.h>
 #include <inventory.hpp>
 #include <nlohmann/json.hpp>
 #include <iostream>
@@ -402,6 +404,7 @@ void Inventory::TryCatchTask(const std::function<void()>& task) const
 
 Inventory::Inventory()
     : m_enabled { true }
+    , m_dbFilePath { std::string(config::DEFAULT_DATA_PATH) + "/" + INVENTORY_DB_DISK_NAME }
     , m_intervalValue { INVENTORY_DEFAULT_INTERVAL }
     , m_scanOnStart { true }
     , m_hardware { true }

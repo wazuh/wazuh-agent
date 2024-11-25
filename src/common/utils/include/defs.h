@@ -213,15 +213,7 @@ https://www.gnu.org/licenses/gpl.html\n"
 
 
 /* Inventory db directory */
-#ifndef WAZUH_UNIT_TESTING
-#define INVENTORY_DB_DISK_PATH    "./local.db"
-#else
-#ifndef WIN32
-#define INVENTORY_DB_DISK_PATH    "./local.db"
-#else
-#define INVENTORY_DB_DISK_PATH    ".\\local.db"
-#endif // WIN32
-#endif // WAZUH_UNIT_TESTING
+#define INVENTORY_DB_DISK_NAME    "local.db"
 
 /* Wazuh Database */
 #define WDB_DIR                "var/db"

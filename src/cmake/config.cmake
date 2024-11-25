@@ -4,6 +4,8 @@ set(PROJECT_NAME "Wazuh Agent")
 # Project version
 set(VERSION "0.1")
 
+string(REPLACE "\\" "\\\\" DEFAULT_DATA_PATH "${DATA_INSTALL_DIR}")
+
 set(DEFAULT_SERVER_URL "https://localhost:27000" CACHE STRING "Default Agent Server Url")
 
 set(DEFAULT_RETRY_INTERVAL 30000 CACHE STRING "Default Agent retry interval (30s)")

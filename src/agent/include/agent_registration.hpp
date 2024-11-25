@@ -32,8 +32,13 @@ namespace agent_registration
         /// @param password The user's password.
         /// @param key The agent's key.
         /// @param name The agent's name.
-        AgentRegistration(
-            std::string url, std::string user, std::string password, const std::string& key, const std::string& name);
+        /// @param dbFolderPath The path to the database folder.
+        AgentRegistration(std::string url,
+                          std::string user,
+                          std::string password,
+                          const std::string& key,
+                          const std::string& name,
+                          const std::string& dbFolderPath);
 
         /// @brief Registers the agent with the manager.
         ///

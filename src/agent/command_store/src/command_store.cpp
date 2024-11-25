@@ -23,8 +23,8 @@ namespace command_store
         }
     }
 
-    CommandStore::CommandStore()
-        : m_dataBase(std::make_unique<sqlite_manager::SQLiteManager>(COMMANDSTORE_DEFAULT_DB_PATH))
+    CommandStore::CommandStore(const std::string& dbFolderPath)
+        : m_dataBase(std::make_unique<sqlite_manager::SQLiteManager>(dbFolderPath + "/" + COMMANDSTORE_DB_NAME))
     {
         sqlite_manager::Column colId {"id", sqlite_manager::ColumnType::TEXT, true, false, true};
         sqlite_manager::Column colModule {"module", sqlite_manager::ColumnType::TEXT, true, false, false};

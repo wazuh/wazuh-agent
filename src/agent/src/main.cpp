@@ -25,7 +25,8 @@ int main(int argc, char* argv[])
                           cmdParser.GetOptionValue(OPT_USER),
                           cmdParser.GetOptionValue(OPT_PASSWORD),
                           cmdParser.GetOptionValue(OPT_KEY),
-                          cmdParser.GetOptionValue(OPT_NAME));
+                          cmdParser.GetOptionValue(OPT_NAME),
+                          configFile);
         }
         else if (cmdParser.OptionExists(OPT_RESTART))
         {

@@ -8,13 +8,16 @@ namespace
 {
     const std::string AGENT_INFO_TABLE_NAME = "agent_info";
     const std::string AGENT_GROUP_TABLE_NAME = "agent_group";
+    const std::string AGENT_INFO_DB_NAME = "agent_info.db";
 } // namespace
 
-AgentInfoPersistance::AgentInfoPersistance(const std::string& dbPath)
+AgentInfoPersistance::AgentInfoPersistance(const std::string& dbFolderPath)
 {
+    const auto dbFilePath = dbFolderPath + "/" + AGENT_INFO_DB_NAME;
+
     try
     {
-        m_db = std::make_unique<SQLiteManager>(dbPath);
+        m_db = std::make_unique<SQLiteManager>(dbFilePath);
 
         if (!m_db->TableExists(AGENT_INFO_TABLE_NAME))
         {
@@ -31,10 +34,9 @@ AgentInfoPersistance::AgentInfoPersistance(const std::string& dbPath)
             InsertDefaultAgentInfo();
         }
     }
-    catch (const std::exception& e)
+    catch (const std::exception&)
     {
-        LogError("Can't open database: {}.", e.what());
-        m_db.reset();
+        throw std::runtime_error(std::string("Cannot open database: " + dbFilePath));
     }
 }
 

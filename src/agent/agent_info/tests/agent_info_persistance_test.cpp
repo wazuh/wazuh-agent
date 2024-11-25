@@ -11,7 +11,7 @@ class AgentInfoPersistanceTest : public ::testing::Test
 protected:
     void SetUp() override
     {
-        persistance = std::make_unique<AgentInfoPersistance>("agent_info_test.db");
+        persistance = std::make_unique<AgentInfoPersistance>(".");
         persistance->ResetToDefault();
     }
 

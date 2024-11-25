@@ -17,7 +17,7 @@
 // TODO: move to a configuration setting
 constexpr int DEFAULT_MAX = 10000;
 constexpr int DEFAULT_TIMEOUT_S = 3;
-const std::string QUEUE_DEFAULT_DB_PATH = "queue.db";
+const std::string QUEUE_DB_NAME = "queue.db";
 
 /**
  * @brief MultiTypeQueue implementation that handles multiple types of messages.
@@ -44,10 +44,11 @@ public:
     /**
      * @brief Constructor.
      *
+     * @param dbFolderPath The path to the database folder.
      * @param size The maximum number of items in the queue.
      * @param timeout The timeout period in seconds.
      */
-    MultiTypeQueue(size_t size = DEFAULT_MAX, int timeout = DEFAULT_TIMEOUT_S);
+    MultiTypeQueue(const std::string& dbFolderPath, size_t size = DEFAULT_MAX, int timeout = DEFAULT_TIMEOUT_S);
 
     /**
      * @brief Delete copy constructor

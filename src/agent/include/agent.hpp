@@ -44,8 +44,10 @@ private:
     /// @brief System info
     SysInfo m_sysInfo;
 
-    /// @brief Agent info
-    AgentInfo m_agentInfo;
+    /// @brief Configuration parser
+    configuration::ConfigurationParser m_configurationParser;
+
+    std::string m_dataPath;
 
     /// @brief Queue for storing messages
     std::shared_ptr<MultiTypeQueue> m_messageQueue;
@@ -53,8 +55,8 @@ private:
     /// @brief Pointer to a custom ISignalHandler implementation
     std::unique_ptr<ISignalHandler> m_signalHandler;
 
-    /// @brief Configuration parser
-    configuration::ConfigurationParser m_configurationParser;
+    /// @brief Agent info
+    AgentInfo m_agentInfo;
 
     /// @brief Communicator
     communicator::Communicator m_communicator;

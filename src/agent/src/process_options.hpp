@@ -40,11 +40,13 @@ const std::vector<std::string> validOptions = {{OPT_STATUS},
 /// @param password The password to use for authentication with Server Management API.
 /// @param key The key to use for registration.
 /// @param name The name to use for the agent.
+/// @param configFile The path to the configuration file.
 void RegisterAgent(const std::string& url,
                    const std::string& user,
                    const std::string& password,
                    const std::string& key,
-                   const std::string& name);
+                   const std::string& name,
+                   const std::string& configFile);
 
 /// @brief Restarts the agent using the specified configuration file.
 /// @param configFile The file path to the configuration file to use for restarting the agent.

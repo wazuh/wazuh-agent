@@ -16,9 +16,12 @@ namespace
     const std::string PRODUCT_NAME = "WazuhXDR";
 } // namespace
 
-AgentInfo::AgentInfo(std::function<nlohmann::json()> getOSInfo, std::function<nlohmann::json()> getNetworksInfo)
+AgentInfo::AgentInfo(std::string dbFolderPath,
+                     std::function<nlohmann::json()> getOSInfo,
+                     std::function<nlohmann::json()> getNetworksInfo)
+    : m_dataFolderPath(std::move(dbFolderPath))
 {
-    AgentInfoPersistance agentInfoPersistance;
+    AgentInfoPersistance agentInfoPersistance(m_dataFolderPath);
     m_name = agentInfoPersistance.GetName();
     m_key = agentInfoPersistance.GetKey();
     m_uuid = agentInfoPersistance.GetUUID();
@@ -172,7 +175,7 @@ std::string AgentInfo::GetMetadataInfo(const bool agentIsRegistering) const
 
 void AgentInfo::Save() const
 {
-    AgentInfoPersistance agentInfoPersistance;
+    AgentInfoPersistance agentInfoPersistance(m_dataFolderPath);
     agentInfoPersistance.SetName(m_name);
     agentInfoPersistance.SetKey(m_key);
     agentInfoPersistance.SetUUID(m_uuid);

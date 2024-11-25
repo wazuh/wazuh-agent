@@ -9,7 +9,7 @@
 
 namespace command_store
 {
-    const std::string COMMANDSTORE_DEFAULT_DB_PATH = "command_store.db";
+    const std::string COMMANDSTORE_DB_NAME = "command_store.db";
     const std::string COMMANDSTORE_TABLE_NAME = "COMMAND";
 
     /// @brief CommandStore class
@@ -34,7 +34,8 @@ namespace command_store
 
     public:
         /// @brief CommandStore constructor
-        CommandStore();
+        /// @param dbFolderPath The path to the database folder
+        CommandStore(const std::string& dbFolderPath);
 
         /// @brief Clears all commands from the database
         /// @return True if successful, false otherwise
