@@ -20,6 +20,13 @@ namespace command_handler
     class CommandHandler
     {
     public:
+        /// @brief CommandHandler constructor
+        /// @param dbFolderPath The path to the database folder
+        CommandHandler(const std::string& dbFolderPath)
+            : m_commandStore(dbFolderPath)
+        {
+        }
+
         /// @brief Processes commands asynchronously
         ///
         /// This task retrieves commands from the queue and dispatches them for execution.

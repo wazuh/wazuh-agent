@@ -7,18 +7,29 @@
 
 constexpr auto AGENT_CONFIG_PATH {"/tmp/wazuh-agent.yml"};
 
-void CreateTempConfigFile();
-
 class MockSignalHandler : public ISignalHandler
 {
 public:
     MOCK_METHOD(void, WaitForSignal, (), (override));
 };
 
-void CreateTempConfigFile()
+class AgentTests : public ::testing::Test
 {
-    std::ofstream configFile(AGENT_CONFIG_PATH);
-    configFile << R"(
+protected:
+    void SetUp() override
+    {
+        CreateTempConfigFile();
+    }
+
+    void TearDown() override
+    {
+        std::remove(AGENT_CONFIG_PATH);
+    }
+
+    void CreateTempConfigFile()
+    {
+        std::ofstream configFile(AGENT_CONFIG_PATH);
+        configFile << R"(
 agent:
   server_url: https://localhost:27000
   registration_url: https://localhost:55000
@@ -42,22 +53,18 @@ logcollector:
     - /var/log/auth.log
   reload_interval: 1m
   file_wait: 500ms
-
 )";
-    configFile.close();
-}
+        configFile.close();
+    }
+};
 
-TEST(AgentTests, AgentDefaultConstruction)
+TEST_F(AgentTests, AgentDefaultConstruction)
 {
-    CreateTempConfigFile();
     EXPECT_NO_THROW(Agent {AGENT_CONFIG_PATH});
-    std::remove(AGENT_CONFIG_PATH);
 }
 
-TEST(AgentTests, AgentStopsWhenSignalReceived)
+TEST_F(AgentTests, AgentStopsWhenSignalReceived)
 {
-    CreateTempConfigFile();
-
     auto mockSignalHandler = std::make_unique<MockSignalHandler>();
     MockSignalHandler* mockSignalHandlerPtr = mockSignalHandler.get();
 
@@ -68,7 +75,6 @@ TEST(AgentTests, AgentStopsWhenSignalReceived)
     Agent agent(AGENT_CONFIG_PATH, std::move(mockSignalHandler));
 
     EXPECT_NO_THROW(agent.Run());
-    std::remove(AGENT_CONFIG_PATH);
 }
 
 int main(int argc, char** argv)

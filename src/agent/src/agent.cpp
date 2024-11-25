@@ -29,6 +29,7 @@ Agent::Agent(const std::string& configFile, std::unique_ptr<ISignalHandler> sign
     , m_moduleManager([this](Message message) -> int { return m_messageQueue->push(std::move(message)); },
                       m_configurationParser,
                       [this](std::function<void()> task) { m_taskManager.EnqueueTask(std::move(task)); })
+    , m_commandHandler(m_dataPath)
 {
     m_centralizedConfiguration.SetGroupIdFunction([this](const std::vector<std::string>& groups)
                                                   { return m_agentInfo.SetGroups(groups); });

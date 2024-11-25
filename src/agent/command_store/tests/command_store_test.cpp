@@ -19,7 +19,7 @@ protected:
 
     void SetUp() override
     {
-        m_commandStore = std::make_unique<command_store::CommandStore>();
+        m_commandStore = std::make_unique<command_store::CommandStore>(".");
     }
 
     void TearDown() override {}
