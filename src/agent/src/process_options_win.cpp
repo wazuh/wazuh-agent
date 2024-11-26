@@ -19,7 +19,7 @@ void StartAgent(const std::string& configFile)
     WindowsService::ServiceStart(configFile);
 }
 
-void StatusAgent()
+void StatusAgent([[maybe_unused]] const std::string& configFile)
 {
     WindowsService::ServiceStatus();
 }
