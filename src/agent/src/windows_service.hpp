@@ -33,13 +33,6 @@ namespace WindowsService
     /// @param configFile The path to the configuration file.
     void ServiceStart(const std::string& configFile);
 
-    /// @brief Stops the Wazuh Agent Service.
-    void ServiceStop();
-
-    /// @brief Restarts the Wazuh Agent Service.
-    /// @param configFile The path to the configuration file.
-    void ServiceRestart(const std::string& configFile);
-
     /// @brief Shows the status of the Wazuh Agent Service.
     void ServiceStatus();
 } // namespace WindowsService

@@ -18,16 +18,6 @@ void StatusAgent([[maybe_unused]] const std::string& configFile)
     WindowsService::ServiceStatus();
 }
 
-void StopAgent()
-{
-    WindowsService::ServiceStop();
-}
-
-void RestartAgent(const std::string& configFile)
-{
-    WindowsService::ServiceRestart(configFile);
-}
-
 bool InstallService()
 {
     windows_api_facade::WindowsApiFacade windowsApiFacade;

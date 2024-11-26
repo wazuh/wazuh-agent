@@ -125,7 +125,7 @@ namespace WindowsService
 {
     bool InstallService(const windows_api_facade::IWindowsApiFacade& windowsApiFacade)
     {
-        const std::string exePath = GetExecutablePath() + " " + OPT_RUN_SERVICE;
+        const std::string exePath = GetExecutablePath() + " --run-service";
 
         SC_HANDLE schSCManager = static_cast<SC_HANDLE>(windowsApiFacade.OpenSCM(SC_MANAGER_CREATE_SERVICE));
         if (!schSCManager)
@@ -292,31 +292,6 @@ namespace WindowsService
         {
             LogInfo("Service {} started successfully.", AGENT_SERVICENAME.c_str());
         }
-    }
-
-    void ServiceStop()
-    {
-        ServiceHandle hService;
-        ServiceHandle hSCManager;
-
-        if (!GetService(hSCManager, hService, SERVICE_STOP))
-            return;
-
-        SERVICE_STATUS serviceStatus = {};
-        if (!ControlService(hService.get(), SERVICE_CONTROL_STOP, &serviceStatus))
-        {
-            LogError("Error: Unable to stop service. Error: {}", GetLastError());
-        }
-        else
-        {
-            LogInfo("Service {} stopped successfully.", AGENT_SERVICENAME.c_str());
-        }
-    }
-
-    void ServiceRestart(const std::string& configFile)
-    {
-        ServiceStop();
-        ServiceStart(configFile);
     }
 
     void ServiceStatus()

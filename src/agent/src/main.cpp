@@ -19,8 +19,6 @@ static const auto OPT_PASS {"password"};
 static const auto OPT_KEY {"key"};
 static const auto OPT_NAME {"name"};
 #ifdef _WIN32
-static const auto OPT_STOP {"stop"};
-static const auto OPT_RESTART {"restart"};
 static const auto OPT_INSTALL_SERVICE {"install-service"};
 static const auto OPT_REMOVE_SERVICE {"remove-service"};
 static const auto OPT_RUN_SERVICE {"run-service"};
@@ -44,9 +42,7 @@ int main(int argc, char* argv[])
             OPT_NAME, program_options::value<std::string>(), "Name to register the agent (optional)");
 
 #ifdef _WIN32
-        cmdParser.add_options()(OPT_STOP, "Stop the agent service (only available in Windows)")(
-            OPT_RESTART, "Restart the agent service (only available in Windows)")(
-            OPT_INSTALL_SERVICE, "Use this option to install Wazuh as a Windows service")(
+        cmdParser.add_options()(OPT_INSTALL_SERVICE, "Use this option to install Wazuh as a Windows service")(
             OPT_REMOVE_SERVICE, "Use this option to remove Wazuh Windows service")(
             OPT_RUN_SERVICE, "Use this option to run Wazuh as a Windows service");
 #endif
@@ -69,14 +65,6 @@ int main(int argc, char* argv[])
             StatusAgent(validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
         }
 #ifdef _WIN32
-        else if (validOptions.count(OPT_STOP) > 0)
-        {
-            StopAgent();
-        }
-        else if (validOptions.count(OPT_RESTART) > 0)
-        {
-            RestartAgent(validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
-        }
         else if (validOptions.count(OPT_INSTALL_SERVICE) > 0)
         {
             if (!InstallService())

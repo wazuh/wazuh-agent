@@ -26,13 +26,6 @@ void StartAgent(const std::string& configFile);
 void StatusAgent(const std::string& configFile);
 
 #ifdef _WIN32
-/// @brief Stops the agent.
-void StopAgent();
-
-/// @brief Restarts the agent using the specified configuration file.
-/// @param configFile The file path to the configuration file to use for restarting the agent.
-void RestartAgent(const std::string& configFile);
-
 /// @brief Installs the agent as a service.
 /// @return True if the installation is successful, false otherwise.
 bool InstallService();
