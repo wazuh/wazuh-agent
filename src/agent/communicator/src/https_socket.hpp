@@ -102,8 +102,15 @@ namespace http_client
         /// @param res The response to read
         void Read(boost::beast::http::response<boost::beast::http::dynamic_body>& res) override
         {
-            boost::beast::flat_buffer buffer;
-            boost::beast::http::read(m_ssl_socket, buffer, res);
+            try
+            {
+                boost::beast::flat_buffer buffer;
+                boost::beast::http::read(m_ssl_socket, buffer, res);
+            }
+            catch (const std::exception& e)
+            {
+                LogError("Exception thrown during read: {}", e.what());
+            }
         }
 
         /// @brief Reads a response from the socket and writes it to a file
@@ -112,7 +119,14 @@ namespace http_client
         void ReadToFile(boost::beast::http::response_parser<boost::beast::http::dynamic_body>& res,
                         const std::string& dstFilePath) override
         {
-            http_client_utils::ReadToFile(m_ssl_socket, res, dstFilePath);
+            try
+            {
+                http_client_utils::ReadToFile(m_ssl_socket, res, dstFilePath);
+            }
+            catch (const std::exception& e)
+            {
+                LogError("Exception thrown during read to file: {}", e.what());
+            }
         }
 
         /// @brief Asynchronous version of Read
@@ -121,9 +135,17 @@ namespace http_client
         boost::asio::awaitable<void> AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
                                                boost::beast::error_code& ec) override
         {
-            boost::beast::flat_buffer buffer;
-            co_await boost::beast::http::async_read(
-                m_ssl_socket, buffer, res, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+            try
+            {
+                boost::beast::flat_buffer buffer;
+                co_await boost::beast::http::async_read(
+                    m_ssl_socket, buffer, res, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+            }
+            catch (const std::exception& e)
+            {
+                LogError("Exception thrown during async read: {}", e.what());
+                ec = boost::asio::error::operation_aborted;
+            }
         }
 
         /// @brief Closes the socket
