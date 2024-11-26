@@ -1,4 +1,5 @@
 agent:
+  thread_count: 4
   server_url: https://localhost:27000
   retry_interval: 30s
 inventory:
