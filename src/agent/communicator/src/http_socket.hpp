@@ -26,7 +26,14 @@ namespace http_client
         /// @param endpoints The endpoints to connect to
         void Connect(const boost::asio::ip::tcp::resolver::results_type& endpoints) override
         {
-            boost::asio::connect(m_socket, endpoints);
+            try
+            {
+                boost::asio::connect(m_socket, endpoints);
+            }
+            catch (const std::exception& e)
+            {
+                LogError("Exception thrown: {}", e.what());
+            }
         }
 
         /// @brief Asynchronous version of Connect
@@ -35,8 +42,15 @@ namespace http_client
         boost::asio::awaitable<void> AsyncConnect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
                                                   boost::system::error_code& code) override
         {
-            co_await boost::asio::async_connect(
-                m_socket, endpoints, boost::asio::redirect_error(boost::asio::use_awaitable, code));
+            try
+            {
+                co_await boost::asio::async_connect(
+                    m_socket, endpoints, boost::asio::redirect_error(boost::asio::use_awaitable, code));
+            }
+            catch (const std::exception& e)
+            {
+                LogError("Exception thrown during async connect: {}", e.what());
+            }
         }
 
         /// @brief Writes the given request to the socket

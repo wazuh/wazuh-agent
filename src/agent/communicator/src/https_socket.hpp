@@ -28,9 +28,15 @@ namespace http_client
         /// @param endpoints The endpoints to connect to
         void Connect(const boost::asio::ip::tcp::resolver::results_type& endpoints) override
         {
-            boost::asio::connect(m_ssl_socket.next_layer(), endpoints.begin(), endpoints.end());
-
-            m_ssl_socket.handshake(boost::asio::ssl::stream_base::client);
+            try
+            {
+                boost::asio::connect(m_ssl_socket.next_layer(), endpoints.begin(), endpoints.end());
+                m_ssl_socket.handshake(boost::asio::ssl::stream_base::client);
+            }
+            catch (const std::exception& e)
+            {
+                LogError("Exception thrown: {}", e.what());
+            }
         }
 
         /// @brief Asynchronous version of Connect
@@ -39,11 +45,25 @@ namespace http_client
         boost::asio::awaitable<void> AsyncConnect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
                                                   boost::system::error_code& code) override
         {
-            co_await boost::asio::async_connect(
-                m_ssl_socket.lowest_layer(), endpoints, boost::asio::redirect_error(boost::asio::use_awaitable, code));
+            try
+            {
+                co_await boost::asio::async_connect(m_ssl_socket.lowest_layer(),
+                                                    endpoints,
+                                                    boost::asio::redirect_error(boost::asio::use_awaitable, code));
 
-            co_await m_ssl_socket.async_handshake(boost::asio::ssl::stream_base::client,
-                                                  boost::asio::redirect_error(boost::asio::use_awaitable, code));
+                if (code)
+                {
+                    LogWarn("boost::asio::async_connect returned error code: {} {}", code.value(), code.message());
+                }
+
+                co_await m_ssl_socket.async_handshake(boost::asio::ssl::stream_base::client,
+                                                      boost::asio::redirect_error(boost::asio::use_awaitable, code));
+            }
+            catch (const std::exception& e)
+            {
+                LogError("Exception thrown: {}", e.what());
+                code = boost::asio::error::operation_aborted;
+            }
         }
 
         /// @brief Writes the given request to the socket
