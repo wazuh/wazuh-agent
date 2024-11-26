@@ -148,66 +148,45 @@ constexpr auto PORTS_SQL_STATEMENT
 };
 static const std::vector<std::string> PORTS_ITEM_ID_FIELDS{"inode", "protocol", "local_ip", "local_port"};
 
-constexpr auto NETIFACE_SQL_STATEMENT
+constexpr auto NETWORK_SQL_STATEMENT
 {
-    R"(CREATE TABLE network_iface (
-       name TEXT,
-       adapter TEXT,
-       type TEXT,
-       state TEXT,
-       mtu BIGINT,
-       mac TEXT,
-       tx_packets INTEGER,
-       rx_packets INTEGER,
-       tx_bytes BIGINT,
-       rx_bytes BIGINT,
-       tx_errors INTEGER,
-       rx_errors INTEGER,
-       tx_dropped INTEGER,
-       rx_dropped INTEGER,
-       checksum TEXT,
-       item_id TEXT,
-       PRIMARY KEY (name,adapter,type)) WITHOUT ROWID;)"
+    R"(CREATE TABLE network (
+        iface TEXT,
+        adapter TEXT,
+        iface_type TEXT,
+        state TEXT,
+        mtu BIGINT,
+        mac TEXT,
+        tx_packets INTEGER,
+        rx_packets INTEGER,
+        tx_bytes BIGINT,
+        rx_bytes BIGINT,
+        tx_errors INTEGER,
+        rx_errors INTEGER,
+        tx_dropped INTEGER,
+        rx_dropped INTEGER,
+        proto_type TEXT,
+        gateway TEXT,
+        dhcp TEXT NOT NULL CHECK (dhcp IN ('enabled', 'disabled', 'unknown', 'BOOTP')) DEFAULT 'unknown',
+        metric TEXT,
+        address TEXT,
+        netmask TEXT,
+        broadcast TEXT,
+        network_item_id TEXT,
+        network_checksum TEXT,
+        PRIMARY KEY (iface, adapter, iface_type, proto_type, address)
+        ) WITHOUT ROWID;)"
 };
-static const std::vector<std::string> NETIFACE_ITEM_ID_FIELDS{"name", "adapter", "type"};
 
-constexpr auto NETPROTO_SQL_STATEMENT
-{
-    R"(CREATE TABLE network_protocol (
-       iface TEXT,
-       type TEXT,
-       gateway TEXT,
-       dhcp TEXT NOT NULL CHECK (dhcp IN ('enabled', 'disabled', 'unknown', 'BOOTP')) DEFAULT 'unknown',
-       metric TEXT,
-       checksum TEXT,
-       item_id TEXT,
-       PRIMARY KEY (iface,type)) WITHOUT ROWID;)"
-};
-static const std::vector<std::string> NETPROTO_ITEM_ID_FIELDS{"iface", "type"};
+static const std::vector<std::string> NETWORK_ITEM_ID_FIELDS{"iface", "adapter", "iface_type", "proto_type", "address"};
 
-constexpr auto NETADDR_SQL_STATEMENT
-{
-    R"(CREATE TABLE network_address (
-       iface TEXT,
-       proto INTEGER,
-       address TEXT,
-       netmask TEXT,
-       broadcast TEXT,
-       checksum TEXT,
-       item_id TEXT,
-       PRIMARY KEY (iface,proto,address)) WITHOUT ROWID;)"
-};
-static const std::vector<std::string> NETADDRESS_ITEM_ID_FIELDS{"iface", "proto", "address"};
-
-constexpr auto NET_IFACE_TABLE    { "network_iface"    };
-constexpr auto NET_PROTOCOL_TABLE { "network_protocol" };
-constexpr auto NET_ADDRESS_TABLE  { "network_address"  };
-constexpr auto PACKAGES_TABLE     { "packages"         };
-constexpr auto HOTFIXES_TABLE     { "hotfixes"         };
-constexpr auto PORTS_TABLE        { "ports"            };
-constexpr auto PROCESSES_TABLE    { "processes"        };
-constexpr auto OS_TABLE           { "system"           };
-constexpr auto HW_TABLE           { "hardware"         };
+constexpr auto NETWORKS_TABLE     { "networks"  };
+constexpr auto PACKAGES_TABLE     { "packages"  };
+constexpr auto HOTFIXES_TABLE     { "hotfixes"  };
+constexpr auto PORTS_TABLE        { "ports"     };
+constexpr auto PROCESSES_TABLE    { "processes" };
+constexpr auto OS_TABLE           { "system"    };
+constexpr auto HW_TABLE           { "hardware"  };
 
 
 static std::string GetItemId(const nlohmann::json& item, const std::vector<std::string>& idFields)
@@ -429,9 +408,7 @@ std::string Inventory::GetCreateStatement() const
     ret += HOTFIXES_SQL_STATEMENT;
     ret += PROCESSES_SQL_STATEMENT;
     ret += PORTS_SQL_STATEMENT;
-    ret += NETIFACE_SQL_STATEMENT;
-    ret += NETPROTO_SQL_STATEMENT;
-    ret += NETADDR_SQL_STATEMENT;
+    ret += NETWORK_SQL_STATEMENT;
     return ret;
 }
 
@@ -600,11 +577,8 @@ void Inventory::ScanOs()
 
 nlohmann::json Inventory::GetNetworkData()
 {
-    nlohmann::json ret;
-    const auto& networks { m_spInfo->networks() };
-    nlohmann::json ifaceTableDataList {};
-    nlohmann::json protoTableDataList {};
-    nlohmann::json addressTableDataList {};
+    nlohmann::json ret ;
+    nlohmann::json networkTableData {};
     constexpr auto IPV4 { 0 };
     constexpr auto IPV6 { 1 };
     static const std::map<int, std::string> IP_TYPE
@@ -613,6 +587,9 @@ nlohmann::json Inventory::GetNetworkData()
         { IPV6, "ipv6" }
     };
 
+    const auto& networks { m_spInfo->networks() };
+
+    ret[NETWORKS_TABLE] = nlohmann::json::array();
     if (!networks.is_null())
     {
         const auto& itIface { networks.find("iface") };
@@ -621,87 +598,63 @@ nlohmann::json Inventory::GetNetworkData()
         {
             for (const auto& item : itIface.value())
             {
-                // Split the resulting networks data into the specific DB tables
-                // "dbsync_network_iface" table data to update and notify
-                nlohmann::json ifaceTableData {};
-                ifaceTableData["name"]       = item.at("name");
-                ifaceTableData["adapter"]    = item.at("adapter");
-                ifaceTableData["type"]       = item.at("type");
-                ifaceTableData["state"]      = item.at("state");
-                ifaceTableData["mtu"]        = item.at("mtu");
-                ifaceTableData["mac"]        = item.at("mac");
-                ifaceTableData["tx_packets"] = item.at("tx_packets");
-                ifaceTableData["rx_packets"] = item.at("rx_packets");
-                ifaceTableData["tx_errors"]  = item.at("tx_errors");
-                ifaceTableData["rx_errors"]  = item.at("rx_errors");
-                ifaceTableData["tx_bytes"]   = item.at("tx_bytes");
-                ifaceTableData["rx_bytes"]   = item.at("rx_bytes");
-                ifaceTableData["tx_dropped"] = item.at("tx_dropped");
-                ifaceTableData["rx_dropped"] = item.at("rx_dropped");
-                ifaceTableData["checksum"]   = GetItemChecksum(ifaceTableData);
-                ifaceTableData["item_id"]    = GetItemId(ifaceTableData, NETIFACE_ITEM_ID_FIELDS);
-                ifaceTableDataList.push_back(std::move(ifaceTableData));
+                networkTableData["iface"]      = item.at("name");
+                networkTableData["adapter"]    = item.at("adapter");
+                networkTableData["iface_type"] = item.at("type");
+                networkTableData["state"]      = item.at("state");
+                networkTableData["mtu"]        = item.at("mtu");
+                networkTableData["mac"]        = item.at("mac");
+                networkTableData["tx_packets"] = item.at("tx_packets");
+                networkTableData["rx_packets"] = item.at("rx_packets");
+                networkTableData["tx_errors"]  = item.at("tx_errors");
+                networkTableData["rx_errors"]  = item.at("rx_errors");
+                networkTableData["tx_bytes"]   = item.at("tx_bytes");
+                networkTableData["rx_bytes"]   = item.at("rx_bytes");
+                networkTableData["tx_dropped"] = item.at("tx_dropped");
+                networkTableData["rx_dropped"] = item.at("rx_dropped");
+                networkTableData["gateway"] = item.at("gateway");
 
                 if (item.find("IPv4") != item.end())
                 {
-                    // "dbsync_network_protocol" table data to update and notify
-                    nlohmann::json protoTableData {};
-                    protoTableData["iface"]   = item.at("name");
-                    protoTableData["gateway"] = item.at("gateway");
-                    protoTableData["type"]    = IP_TYPE.at(IPV4);
-                    protoTableData["dhcp"]    = item.at("IPv4").begin()->at("dhcp");
-                    protoTableData["metric"]  = item.at("IPv4").begin()->at("metric");
-                    protoTableData["checksum"]  = GetItemChecksum(protoTableData);
-                    protoTableData["item_id"]   = GetItemId(protoTableData, NETPROTO_ITEM_ID_FIELDS);
-                    protoTableDataList.push_back(std::move(protoTableData));
-
                     for (auto addressTableData : item.at("IPv4"))
                     {
-                        // "dbsync_network_address" table data to update and notify
-                        addressTableData["iface"]     = item.at("name");
-                        addressTableData["proto"]     = IPV4;
-                        addressTableData["checksum"]  = GetItemChecksum(addressTableData);
-                        addressTableData["item_id"]   = GetItemId(addressTableData, NETADDRESS_ITEM_ID_FIELDS);
-                        // Remove unwanted fields for dbsync_network_address table
-                        addressTableData.erase("dhcp");
-                        addressTableData.erase("metric");
+                        nlohmann::json networkAddressData {};
+                        networkAddressData["proto_type"]    = IP_TYPE.at(IPV4);
+                        networkAddressData["address"] = addressTableData.at("address");
+                        networkAddressData["broadcast"] = addressTableData.at("broadcast");
+                        networkAddressData["dhcp"]    = addressTableData.at("dhcp");
+                        networkAddressData["metric"]  = addressTableData.at("metric");
+                        networkAddressData["netmask"] = addressTableData.at("netmask");
+                        networkTableData.update(networkAddressData);
 
-                        addressTableDataList.push_back(std::move(addressTableData));
+                        networkTableData["network_checksum"]   = GetItemChecksum(networkTableData);
+                        networkTableData["network_item_id"]    = GetItemId(networkTableData, NETWORK_ITEM_ID_FIELDS);
+
+                        ret[NETWORKS_TABLE].push_back(networkTableData);
+
                     }
                 }
 
                 if (item.find("IPv6") != item.end())
                 {
-                    // "dbsync_network_protocol" table data to update and notify
-                    nlohmann::json protoTableData {};
-                    protoTableData["iface"]   = item.at("name");
-                    protoTableData["gateway"] = item.at("gateway");
-                    protoTableData["type"]    = IP_TYPE.at(IPV6);
-                    protoTableData["dhcp"]    = item.at("IPv6").begin()->at("dhcp");
-                    protoTableData["metric"]  = item.at("IPv6").begin()->at("metric");
-                    protoTableData["checksum"]  = GetItemChecksum(protoTableData);
-                    protoTableData["item_id"]   = GetItemId(protoTableData, NETPROTO_ITEM_ID_FIELDS);
-                    protoTableDataList.push_back(std::move(protoTableData));
-
                     for (auto addressTableData : item.at("IPv6"))
                     {
-                        // "dbsync_network_address" table data to update and notify
-                        addressTableData["iface"]     = item.at("name");
-                        addressTableData["proto"]     = IPV6;
-                        addressTableData["checksum"]  = GetItemChecksum(addressTableData);
-                        addressTableData["item_id"]   = GetItemId(addressTableData, NETADDRESS_ITEM_ID_FIELDS);
-                        // Remove unwanted fields for dbsync_network_address table
-                        addressTableData.erase("dhcp");
-                        addressTableData.erase("metric");
+                        nlohmann::json networkAddressData {};
+                        networkAddressData["proto_type"]  = IP_TYPE.at(IPV6);
+                        networkAddressData["address"] = addressTableData.at("address");
+                        networkAddressData["broadcast"] = addressTableData.at("broadcast");
+                        networkAddressData["dhcp"]    = addressTableData.at("dhcp");
+                        networkAddressData["metric"]  = addressTableData.at("metric");
+                        networkAddressData["netmask"] = addressTableData.at("netmask");
+                        networkTableData.update(networkAddressData);
 
-                        addressTableDataList.push_back(std::move(addressTableData));
+                        networkTableData["network_checksum"]   = GetItemChecksum(networkTableData);
+                        networkTableData["network_item_id"]    = GetItemId(networkTableData, NETWORK_ITEM_ID_FIELDS);
+
+                        ret[NETWORKS_TABLE].push_back(networkTableData);
                     }
                 }
             }
-
-            ret[NET_IFACE_TABLE] = std::move(ifaceTableDataList);
-            ret[NET_PROTOCOL_TABLE] = std::move(protoTableDataList);
-            ret[NET_ADDRESS_TABLE] = std::move(addressTableDataList);
         }
     }
 
@@ -717,25 +670,11 @@ void Inventory::ScanNetwork()
 
         if (!networkData.is_null())
         {
-            const auto itIface { networkData.find(NET_IFACE_TABLE) };
+            const auto itNet { networkData.find(NETWORKS_TABLE) };
 
-            if (itIface != networkData.end())
+            if (itNet != networkData.end())
             {
-                UpdateChanges(NET_IFACE_TABLE, itIface.value());
-            }
-
-            const auto itProtocol { networkData.find(NET_PROTOCOL_TABLE) };
-
-            if (itProtocol != networkData.end())
-            {
-                UpdateChanges(NET_PROTOCOL_TABLE, itProtocol.value());
-            }
-
-            const auto itAddress { networkData.find(NET_ADDRESS_TABLE) };
-
-            if (itAddress != networkData.end())
-            {
-                UpdateChanges(NET_ADDRESS_TABLE, itAddress.value());
+                UpdateChanges(NETWORKS_TABLE, itNet.value());
             }
         }
 
@@ -918,8 +857,6 @@ void Inventory::Scan()
     TryCatchTask([&]() { ScanProcesses(); });
     TryCatchTask([&]() { ScanHotfixes(); });
     TryCatchTask([&]() { ScanPorts(); });
-
-    // TO DO: enable each scan once the ECS translation is done
     //TryCatchTask([&]() { ScanNetwork(); });
 
     m_notify = true;
