@@ -17,6 +17,7 @@
 #include "sysInfo.hpp"
 #include "sysinfoapi.h"
 #include "timeHelper.hpp"
+#include "utilsWrapperWin.hpp"
 #include "windowsHelper.hpp"
 #include <iphlpapi.h>
 #include <list>
@@ -906,6 +907,38 @@ void SysInfo::getPackages(const std::function<void(nlohmann::json&)>& callback) 
 nlohmann::json SysInfo::getHotfixes() const
 {
     std::set<std::string> hotfixes;
+    std::ostringstream oss;
+    ComHelper comHelper;
+
+    // Initialize COM
+    HRESULT hres = CoInitializeEx(0, COINIT_MULTITHREADED);
+
+    if (SUCCEEDED(hres))
+    {
+        try
+        {
+            // Query hotfixes using WMI
+            QueryWMIHotFixes(hotfixes, comHelper);
+        }
+        catch (...)
+        {
+            // Ignore the error. The OS does not support WMI API.
+        }
+
+        try
+        {
+            // Query hotfixes using Windows Update API
+            QueryWUHotFixes(hotfixes, comHelper);
+        }
+        catch (...)
+        {
+            // Ignore the error. The OS does not support WUA API.
+        }
+
+        // Uninitialize COM
+        CoUninitialize();
+    }
+
     PackageWindowsHelper::getHotFixFromReg(HKEY_LOCAL_MACHINE, PackageWindowsHelper::WIN_REG_HOTFIX, hotfixes);
     PackageWindowsHelper::getHotFixFromRegNT(HKEY_LOCAL_MACHINE, PackageWindowsHelper::VISTA_REG_HOTFIX, hotfixes);
     PackageWindowsHelper::getHotFixFromRegWOW(HKEY_LOCAL_MACHINE, PackageWindowsHelper::WIN_REG_WOW_HOTFIX, hotfixes);

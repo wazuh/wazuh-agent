@@ -27,6 +27,7 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
 
 if(WIN32)
+    add_definitions(-DWIN32=1 -DWIN_EXPORT)
     file(GLOB SYSINFO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/*Win.cpp"
          "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsInfoWin.cpp"
          "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*Windows.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/packages/*Windows.cpp")
@@ -89,6 +90,10 @@ target_link_libraries(
            $<$<PLATFORM_ID:Windows>:psapi>
            $<$<PLATFORM_ID:Windows>:iphlpapi>
            $<$<PLATFORM_ID:Windows>:ws2_32>
+           $<$<PLATFORM_ID:Windows>:wbemuuid>
+           $<$<PLATFORM_ID:Windows>:comsuppw>
+           $<$<PLATFORM_ID:Windows>:WindowsApp>
+           $<$<PLATFORM_ID:Windows>:ole32>
            $<$<PLATFORM_ID:Darwin>:unofficial::libplist::libplist>
            $<$<PLATFORM_ID:Darwin>:unofficial::libplist::libplist++>
            $<$<PLATFORM_ID:Darwin>:${iokit_lib}>
