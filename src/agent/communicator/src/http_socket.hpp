@@ -50,6 +50,7 @@ namespace http_client
             catch (const std::exception& e)
             {
                 LogError("Exception thrown during async connect: {}", e.what());
+                code = boost::asio::error::operation_aborted;
             }
         }
 
@@ -57,7 +58,14 @@ namespace http_client
         /// @param req The request to write
         void Write(const boost::beast::http::request<boost::beast::http::string_body>& req) override
         {
-            boost::beast::http::write(m_socket, req);
+            try
+            {
+                boost::beast::http::write(m_socket, req);
+            }
+            catch (const std::exception& e)
+            {
+                LogError("Exception thrown during write: {}", e.what());
+            }
         }
 
         /// @brief Asynchronous version of Write
@@ -66,8 +74,16 @@ namespace http_client
         boost::asio::awaitable<void> AsyncWrite(const boost::beast::http::request<boost::beast::http::string_body>& req,
                                                 boost::beast::error_code& ec) override
         {
-            co_await boost::beast::http::async_write(
-                m_socket, req, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+            try
+            {
+                co_await boost::beast::http::async_write(
+                    m_socket, req, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+            }
+            catch (const std::exception& e)
+            {
+                LogError("Exception thrown during async write: {}", e.what());
+                ec = boost::asio::error::operation_aborted;
+            }
         }
 
         /// @brief Reads a response from the socket
