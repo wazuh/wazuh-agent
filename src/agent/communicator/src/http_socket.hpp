@@ -1,10 +1,12 @@
 #include "http_client_utils.hpp"
 #include <ihttp_socket.hpp>
+#include <logger.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 #include <boost/system/error_code.hpp>
 
+#include <exception>
 #include <string>
 
 namespace http_client
@@ -85,7 +87,14 @@ namespace http_client
         /// @brief Closes the socket
         void Close() override
         {
-            m_socket.close();
+            try
+            {
+                m_socket.close();
+            }
+            catch (const std::exception& e)
+            {
+                LogError("Exception thrown on socket closing: {}", e.what());
+            }
         }
 
     private:
