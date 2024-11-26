@@ -9,7 +9,6 @@
 
 #include <filesystem>
 #include <memory>
-#include <thread>
 
 Agent::Agent(const std::string& configFile, std::unique_ptr<ISignalHandler> signalHandler)
     : m_configurationParser(configFile.empty() ? configuration::ConfigurationParser()
@@ -40,7 +39,8 @@ Agent::Agent(const std::string& configFile, std::unique_ptr<ISignalHandler> sign
         [this](const std::string& groupId, const std::string& destinationPath)
         { return m_communicator.GetGroupConfigurationFromManager(groupId, destinationPath); });
 
-    m_taskManager.Start(std::thread::hardware_concurrency());
+    m_taskManager.Start(
+        m_configurationParser.GetConfig<size_t>("agent", "thread_count").value_or(config::DEFAULT_THREAD_COUNT));
 }
 
 Agent::~Agent()
