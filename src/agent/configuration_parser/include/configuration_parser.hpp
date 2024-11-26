@@ -88,9 +88,14 @@ namespace configuration
                     return current.as<T>();
                 }
             }
+            catch (const std::invalid_argument& e)
+            {
+                LogWarn("Requested setting is invalid, default value used. {}", e.what());
+                return std::nullopt;
+            }
             catch (const std::exception& e)
             {
-                LogDebug("Requested setting not found or invalid, default value used. {}", e.what());
+                LogDebug("Requested setting not found, default value used. {}", e.what());
                 return std::nullopt;
             }
         }
