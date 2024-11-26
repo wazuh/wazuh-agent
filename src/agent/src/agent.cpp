@@ -44,6 +44,8 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
 
     m_centralizedConfiguration.GetGroupIdFunction([this]() { return m_agentInfo.GetGroups(); });
 
+    m_centralizedConfiguration.SaveGroupIdFunction([this]() { return m_agentInfo.SaveGroups(); });
+
     m_centralizedConfiguration.SetDownloadGroupFilesFunction(
         [this](const std::string& groupId, const std::string& destinationPath)
         { return m_communicator.GetGroupConfigurationFromManager(groupId, destinationPath); });

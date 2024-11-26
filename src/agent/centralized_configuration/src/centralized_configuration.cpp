@@ -31,6 +31,7 @@ namespace centralized_configuration
                     messageOnSuccess = "CentralizedConfiguration group set";
 
                     m_setGroupIdFunction(groupIds);
+                    m_saveGroupIdFunction();
 
                     try
                     {
@@ -129,6 +130,11 @@ namespace centralized_configuration
     void CentralizedConfiguration::GetGroupIdFunction(GetGroupIdFunctionType getGroupIdFunction)
     {
         m_getGroupIdFunction = std::move(getGroupIdFunction);
+    }
+
+    void CentralizedConfiguration::SaveGroupIdFunction(SaveGroupIdFunctionType saveGroupIdFunction)
+    {
+        m_saveGroupIdFunction = std::move(saveGroupIdFunction);
     }
 
     void
