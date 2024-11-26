@@ -182,6 +182,12 @@ void AgentInfo::Save() const
     agentInfoPersistance.SetGroups(m_groups);
 }
 
+void AgentInfo::SaveGroups() const
+{
+    AgentInfoPersistance agentInfoPersistance(m_dataFolderPath);
+    agentInfoPersistance.SetGroups(m_groups);
+}
+
 std::vector<std::string> AgentInfo::GetActiveIPAddresses(const nlohmann::json& networksJson) const
 {
     std::vector<std::string> ipAddresses;

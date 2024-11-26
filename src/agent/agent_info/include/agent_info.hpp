@@ -82,6 +82,9 @@ public:
     /// @brief Saves the agent's information to the database.
     void Save() const;
 
+    /// @brief Saves the agent's group information to the database.
+    void SaveGroups() const;
+
 private:
     /// @brief Creates a random key for the agent.
     ///
