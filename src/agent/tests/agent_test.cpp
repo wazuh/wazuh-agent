@@ -32,7 +32,6 @@ protected:
         configFile << R"(
 agent:
   server_url: https://localhost:27000
-  registration_url: https://localhost:55000
   path.data: /tmp/
   retry_interval: 30s
 inventory:
