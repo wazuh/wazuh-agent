@@ -19,14 +19,20 @@ namespace
 
 namespace configuration
 {
-    ConfigurationParser::ConfigurationParser(const std::filesystem::path& configFile)
+    ConfigurationParser::ConfigurationParser(const std::filesystem::path& configFilePath)
     {
         try
         {
-            m_config = YAML::LoadFile(configFile.string());
+            m_config = YAML::LoadFile(configFilePath.string());
+
+            if (!m_config.IsMap() && !m_config.IsSequence())
+            {
+                throw std::runtime_error("The file does not contain a valid YAML structure.");
+            }
         }
         catch (const std::exception& e)
         {
+            m_config = YAML::Node();
             LogWarn("Using default values due to error parsing wazuh-agent.yml file: {}", e.what());
         }
     }
@@ -97,7 +103,11 @@ namespace configuration
     {
         try
         {
-            YAML::LoadFile(configFile.string());
+            YAML::Node mapToValidte = YAML::LoadFile(configFile.string());
+            if (!mapToValidte.IsMap() && !mapToValidte.IsSequence())
+            {
+                throw std::runtime_error("The file does not contain a valid YAML structure.");
+            }
             return true;
         }
         catch (const std::exception&)
@@ -174,7 +184,14 @@ namespace configuration
 
                 YAML::Node fileToAppend = YAML::LoadFile(groupFile.string());
 
-                MergeYamlNodes(tmpConfig, fileToAppend);
+                if (!tmpConfig.IsDefined() || tmpConfig.IsNull())
+                {
+                    tmpConfig = fileToAppend;
+                }
+                else
+                {
+                    MergeYamlNodes(tmpConfig, fileToAppend);
+                }
             }
 
             m_config = tmpConfig;
