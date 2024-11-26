@@ -113,7 +113,7 @@ namespace communicator
         /// @brief Indicates if an authentication attempt is currently in progress
         std::atomic<bool> m_isReAuthenticating = false;
 
-        /// @brief Time between authentication attemps in case of failure
+        /// @brief Time in milliseconds between authentication attemps in case of failure
         std::time_t m_retryInterval = 1;
 
         /// @brief The server URL

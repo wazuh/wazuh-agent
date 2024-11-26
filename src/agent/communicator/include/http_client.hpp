@@ -38,7 +38,7 @@ namespace http_client
         /// @param params Request parameters
         /// @param messageGetter Function to get the message body asynchronously
         /// @param onUnauthorized Callback for unauthorized access
-        /// @param connectionRetry Time to wait before retrying the connection
+        /// @param connectionRetry Time in milliseconds to wait before retrying the connection
         /// @param onSuccess Callback for successful request completion
         /// @param loopRequestCondition Condition to continue looping requests
         /// @return Awaitable task for the HTTP request

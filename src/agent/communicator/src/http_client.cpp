@@ -102,7 +102,7 @@ namespace http_client
                         connectionRetry / A_SECOND_IN_MILLIS);
                 LogDebug("Http request failed: {} - {}", code.message(), code.what());
                 socket->Close();
-                const auto duration = std::chrono::milliseconds(connectionRetry * A_SECOND_IN_MILLIS);
+                const auto duration = std::chrono::milliseconds(connectionRetry);
                 timer.expires_after(duration);
                 co_await timer.async_wait(boost::asio::use_awaitable);
                 continue;
@@ -154,7 +154,7 @@ namespace http_client
                 {
                     onUnauthorized();
                 }
-                timerSleep = connectionRetry * A_SECOND_IN_MILLIS;
+                timerSleep = connectionRetry;
             }
 
             LogDebug("Response code: {}.", res.result_int());
