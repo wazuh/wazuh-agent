@@ -10,6 +10,10 @@ string(REPLACE "\\" "\\\\" DEFAULT_DATA_PATH "${DATA_INSTALL_DIR}")
 
 string(REPLACE "\\" "\\\\" DEFAULT_RUN_PATH "${RUN_INSTALL_DIR}")
 
+string(REPLACE "\\" "\\\\" DEFAULT_SHARED_CONFIG_PATH "${SHARED_CONFIG_INSTALL_DIR}")
+
+string(REPLACE "\\" "\\\\" DEFAULT_CONFIG_PATH "${CONFIG_INSTALL_DIR}")
+
 set(DEFAULT_SERVER_URL "https://localhost:27000" CACHE STRING "Default Agent Server Url")
 
 set(DEFAULT_RETRY_INTERVAL 30000 CACHE STRING "Default Agent retry interval (30s)")
@@ -47,17 +51,3 @@ set(DEFAULT_PORTS_ALL true CACHE BOOL "Default inventory ports all")
 set(DEFAULT_PROCESSES true CACHE BOOL "Default inventory processes")
 
 set(DEFAULT_HOTFIXES true CACHE BOOL "Default inventory hotfixes")
-
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(SHARED_CONFIG_DIR "/etc/wazuh-agent/shared")
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(SHARED_CONFIG_DIR "/etc/wazuh-agent/shared")
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    if(DEFINED ENV{ProgramData})
-        set(SHARED_CONFIG_DIR "$ENV{ProgramData}\\wazuh-agent\\config\\shared")
-    else()
-        set(SHARED_CONFIG_DIR "C:\\ProgramData\\wazuh-agent\\config\\shared")
-    endif()
-else()
-    message(FATAL_ERROR "Not supported OS")
-endif()

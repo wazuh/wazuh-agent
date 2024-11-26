@@ -7,11 +7,8 @@ namespace config
     constexpr auto DEFAULT_THREAD_COUNT = @DEFAULT_THREAD_COUNT@;
     constexpr auto DEFAULT_DATA_PATH = "@DEFAULT_DATA_PATH@";
     constexpr auto DEFAULT_RUN_PATH = "@DEFAULT_RUN_PATH@";
-
-    namespace path
-    {
-        constexpr auto SHARED_CONFIG_DIR = "@SHARED_CONFIG_DIR@";
-    }
+    constexpr auto DEFAULT_SHARED_CONFIG_PATH = "@DEFAULT_SHARED_CONFIG_PATH@";
+    constexpr auto DEFAULT_CONFIG_PATH = "@DEFAULT_CONFIG_PATH@";
 
     namespace agent
     {

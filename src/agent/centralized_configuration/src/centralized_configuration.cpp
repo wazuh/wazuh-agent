@@ -34,7 +34,7 @@ namespace centralized_configuration
 
                     try
                     {
-                        std::filesystem::path sharedDirPath(config::path::SHARED_CONFIG_DIR);
+                        std::filesystem::path sharedDirPath(config::DEFAULT_SHARED_CONFIG_PATH);
 
                         if (std::filesystem::exists(sharedDirPath) && std::filesystem::is_directory(sharedDirPath))
                         {
@@ -94,7 +94,7 @@ namespace centralized_configuration
                 }
 
                 const std::filesystem::path destGroupFile =
-                    std::filesystem::path(config::path::SHARED_CONFIG_DIR) / (groupId + ".conf");
+                    std::filesystem::path(config::DEFAULT_SHARED_CONFIG_PATH) / (groupId + ".conf");
 
                 try
                 {

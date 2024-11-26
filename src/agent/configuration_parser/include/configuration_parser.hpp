@@ -34,7 +34,7 @@ namespace configuration
         /// seconds.
         std::time_t ParseTimeUnit(const std::string& option) const;
 
-        /// @brief The groups infromation
+        /// @brief The groups information
         std::function<std::vector<std::string>()> m_getGroups;
 
         /// @brief Merges two YAML nodes, modifying the base node to include or override values from the
