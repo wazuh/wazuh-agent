@@ -150,7 +150,7 @@ static const std::vector<std::string> PORTS_ITEM_ID_FIELDS{"inode", "protocol", 
 
 constexpr auto NETWORK_SQL_STATEMENT
 {
-    R"(CREATE TABLE network (
+    R"(CREATE TABLE networks (
         iface TEXT,
         adapter TEXT,
         iface_type TEXT,
@@ -213,14 +213,6 @@ static std::string GetItemId(const nlohmann::json& item, const std::vector<std::
     return Utils::asciiToHex(hash.hash());
 }
 
-static std::string GetItemChecksum(const nlohmann::json& item)
-{
-    const auto content{item.dump()};
-    Utils::HashData hash;
-    hash.update(content.c_str(), content.size());
-    return Utils::asciiToHex(hash.hash());
-}
-
 static bool IsElementDuplicated(const nlohmann::json& input, const std::pair<std::string, std::string>& keyValue)
 {
     const auto it
@@ -260,6 +252,10 @@ nlohmann::json Inventory::EcsData(const nlohmann::json& data, const std::string&
     {
         ret = EcsPortData(data);
     }
+    else if (table == NETWORKS_TABLE)
+    {
+        ret = EcsNetworkData(data);
+    }
     return ret;
 }
 
@@ -282,12 +278,17 @@ std::string Inventory::GetPrimaryKeys([[maybe_unused]] const nlohmann::json& dat
     {
         ret = data["process"]["pid"];
     }
-    else if(table == HOTFIXES_TABLE){
+    else if(table == HOTFIXES_TABLE)
+    {
         ret = data["package"]["hotfix"]["name"];
     }
     else if (table == PORTS_TABLE)
     {
-        ret = std::to_string(data["file"]["inode"].get<int>()) + ":" + data["network"]["protocol"].get<std::string>() + ":" + data["source"]["ip"].get<std::string>() + ":" + std::to_string(data["source"]["port"].get<int>());
+        ret = std::to_string(data["file"]["inode"].get<int>()) + ":" + data["network"]["protocol"].get<std::string>() + ":" + data["source"]["ip"][0].get<std::string>() + ":" + std::to_string(data["source"]["port"].get<int>());
+    }
+    else if (table == NETWORKS_TABLE)
+    {
+        ret = data["observer"]["ingress"]["interface"]["name"].get<std::string>() + ":" + data["observer"]["ingress"]["interface"]["alias"].get<std::string>() + ":" + data["network"]["type"].get<std::string>() + ":" + data["network"]["protocol"].get<std::string>() + ":" + data["host"]["ip"][0].get<std::string>();
     }
     return ret;
 }
@@ -524,9 +525,11 @@ nlohmann::json Inventory::EcsPortData(const nlohmann::json& originalData)
     nlohmann::json ret;
 
     ret["network"]["protocol"] = originalData.contains("protocol") ? originalData["protocol"] : "";
-    ret["source"]["ip"] = originalData.contains("local_ip") ? originalData["local_ip"] : "";
+    ret["source"]["ip"] = nlohmann::json::array();
+    ret["source"]["ip"].push_back(originalData.contains("local_ip") ? originalData["local_ip"] : "");
     ret["source"]["port"] = originalData.contains("local_port") ? originalData["local_port"] : nlohmann::json(0);
-    ret["destination"]["ip"] = originalData.contains("remote_ip") ? originalData["remote_ip"] : "";
+    ret["destination"]["ip"] = nlohmann::json::array();
+    ret["destination"]["ip"].push_back(originalData.contains("remote_ip") ? originalData["remote_ip"] : "");
     ret["destination"]["port"] = originalData.contains("remote_port") ? originalData["remote_port"] : nlohmann::json(0);
     ret["host"]["network"]["egress"]["queue"] = originalData.contains("tx_queue") ? originalData["tx_queue"] : nlohmann::json(0);
     ret["host"]["network"]["ingress"]["queue"] = originalData.contains("rx_queue") ? originalData["rx_queue"] : nlohmann::json(0);
@@ -535,6 +538,44 @@ nlohmann::json Inventory::EcsPortData(const nlohmann::json& originalData)
     ret["process"]["pid"] = originalData.contains("pid") ? originalData["pid"] : nlohmann::json(0);
     ret["process"]["name"] = originalData.contains("process") ? originalData["process"] : "";
     ret["device"]["id"] = originalData.contains("item_id") ? originalData["item_id"] : "";
+
+    return ret;
+}
+
+nlohmann::json Inventory::EcsNetworkData(const nlohmann::json& originalData)
+{
+    nlohmann::json ret;
+
+    ret["host"]["ip"] = nlohmann::json::array();
+    ret["host"]["ip"].push_back(originalData.contains("address") ? originalData["address"] : "");
+    ret["host"]["mac"] = originalData.contains("mac") ? originalData["mac"] : "";
+    ret["host"]["network"]["egress"]["bytes"] = originalData.contains("tx_bytes") ? originalData["tx_bytes"] : nlohmann::json(0);
+    ret["host"]["network"]["egress"]["packets"] = originalData.contains("tx_packets") ? originalData["tx_packets"] : nlohmann::json(0);
+    ret["host"]["network"]["ingress"]["bytes"] = originalData.contains("rx_bytes") ? originalData["rx_bytes"] : nlohmann::json(0);
+    ret["host"]["network"]["ingress"]["packets"] = originalData.contains("rx_packets") ? originalData["rx_packets"] : nlohmann::json(0);
+    ret["host"]["network"]["egress"]["drops"] = originalData.contains("rx_dropped") ? originalData["rx_dropped"] : nlohmann::json(0);
+    ret["host"]["network"]["egress"]["errors"] = originalData.contains("tx_errors") ? originalData["tx_errors"] : nlohmann::json(0);
+    ret["host"]["network"]["ingress"]["drops"] = originalData.contains("tx_dropped") ? originalData["tx_dropped"] : nlohmann::json(0);
+    ret["host"]["network"]["ingress"]["errors"] = originalData.contains("rx_errors") ? originalData["rx_errors"] : nlohmann::json(0);
+
+    ret["interface"]["mtu"] = originalData.contains("mtu") ? originalData["mtu"] : nlohmann::json(0);
+    ret["interface"]["state"] = originalData.contains("state") ? originalData["state"] : "";
+    ret["interface"]["type"] = originalData.contains("iface_type") ? originalData["iface_type"] : "";
+
+    ret["network"]["netmask"] = nlohmann::json::array();
+    ret["network"]["netmask"].push_back(originalData.contains("netmask") ? originalData["netmask"] : "");
+    ret["network"]["gateway"] = nlohmann::json::array();
+    ret["network"]["gateway"].push_back(originalData.contains("gateway") ? originalData["gateway"] : "");
+    ret["network"]["broadcast"] = nlohmann::json::array();
+    ret["network"]["broadcast"].push_back(originalData.contains("broadcast") ? originalData["broadcast"] : "");
+    ret["network"]["dhcp"] = originalData.contains("dhcp") ? originalData["dhcp"] : "";
+    ret["network"]["type"] = originalData.contains("proto_type") ? originalData["proto_type"] : "";
+    ret["network"]["metric"] = originalData.contains("metric") ? originalData["metric"] : nlohmann::json(0);
+    /* TODO this field should include http or https, it's related to an application not to a interface */
+    ret["network"]["protocol"] = "";
+
+    ret["observer"]["ingress"]["interface"]["alias"] = originalData.contains("adapter") ? originalData["adapter"] : "";
+    ret["observer"]["ingress"]["interface"]["name"] = originalData.contains("iface") ? originalData["iface"] : "";
 
     return ret;
 }
@@ -627,8 +668,7 @@ nlohmann::json Inventory::GetNetworkData()
                         networkAddressData["netmask"] = addressTableData.at("netmask");
                         networkTableData.update(networkAddressData);
 
-                        networkTableData["network_checksum"]   = GetItemChecksum(networkTableData);
-                        networkTableData["network_item_id"]    = GetItemId(networkTableData, NETWORK_ITEM_ID_FIELDS);
+                        networkTableData["network_item_id"] = GetItemId(networkTableData, NETWORK_ITEM_ID_FIELDS);
 
                         ret[NETWORKS_TABLE].push_back(networkTableData);
 
@@ -648,8 +688,7 @@ nlohmann::json Inventory::GetNetworkData()
                         networkAddressData["netmask"] = addressTableData.at("netmask");
                         networkTableData.update(networkAddressData);
 
-                        networkTableData["network_checksum"]   = GetItemChecksum(networkTableData);
-                        networkTableData["network_item_id"]    = GetItemId(networkTableData, NETWORK_ITEM_ID_FIELDS);
+                        networkTableData["network_item_id"] = GetItemId(networkTableData, NETWORK_ITEM_ID_FIELDS);
 
                         ret[NETWORKS_TABLE].push_back(networkTableData);
                     }
@@ -857,7 +896,7 @@ void Inventory::Scan()
     TryCatchTask([&]() { ScanProcesses(); });
     TryCatchTask([&]() { ScanHotfixes(); });
     TryCatchTask([&]() { ScanPorts(); });
-    //TryCatchTask([&]() { ScanNetwork(); });
+    TryCatchTask([&]() { ScanNetwork(); });
 
     m_notify = true;
     LogInfo("Evaluation finished.");

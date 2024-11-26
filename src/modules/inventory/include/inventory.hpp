@@ -53,11 +53,12 @@ class Inventory {
         std::string GetCreateStatement() const;
         nlohmann::json EcsProcessesData(const nlohmann::json& originalData);
         nlohmann::json EcsSystemData(const nlohmann::json& originalData);
-        nlohmann::json GetOSData();
         nlohmann::json EcsHotfixesData(const nlohmann::json& originalData);
         nlohmann::json EcsHardwareData(const nlohmann::json& originalData);
         nlohmann::json EcsPackageData(const nlohmann::json& originalData);
         nlohmann::json EcsPortData(const nlohmann::json& originalData);
+        nlohmann::json EcsNetworkData(const nlohmann::json& originalData);
+        nlohmann::json GetOSData();
         nlohmann::json GetHardwareData();
         nlohmann::json GetNetworkData();
         nlohmann::json GetPortsData();
