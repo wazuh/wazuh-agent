@@ -56,11 +56,12 @@ namespace http_client
 
         /// @brief Writes the given request to the socket
         /// @param req The request to write
-        void Write(const boost::beast::http::request<boost::beast::http::string_body>& req) override
+        void Write(const boost::beast::http::request<boost::beast::http::string_body>& req,
+                   boost::beast::error_code& ec) override
         {
             try
             {
-                boost::beast::http::write(m_socket, req);
+                boost::beast::http::write(m_socket, req, ec);
             }
             catch (const std::exception& e)
             {

@@ -27,7 +27,8 @@ namespace http_client
 
         /// @brief Writes the given request to the socket
         /// @param req The request to write
-        virtual void Write(const boost::beast::http::request<boost::beast::http::string_body>& req) = 0;
+        virtual void Write(const boost::beast::http::request<boost::beast::http::string_body>& req,
+                           boost::beast::error_code& ec) = 0;
 
         /// @brief Asynchronous version of Write
         /// @param req The request to write

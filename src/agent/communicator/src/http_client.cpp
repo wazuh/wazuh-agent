@@ -192,7 +192,9 @@ namespace http_client
             socket->Connect(results);
 
             const auto req = CreateHttpRequest(params);
-            socket->Write(req);
+
+            boost::beast::error_code ec;
+            socket->Write(req, ec);
             socket->Read(res);
 
             LogDebug("Response code: {}.", res.result_int());
@@ -295,7 +297,9 @@ namespace http_client
             socket->Connect(results);
 
             const auto req = CreateHttpRequest(params);
-            socket->Write(req);
+
+            boost::beast::error_code ec;
+            socket->Write(req, ec);
             socket->ReadToFile(res_parser, dstFilePath);
 
             LogDebug("Response code: {}.", res_parser.get().result_int());

@@ -12,7 +12,10 @@ public:
                 (const boost::asio::ip::tcp::resolver::results_type& endpoints, boost::system::error_code& code),
                 (override));
 
-    MOCK_METHOD(void, Write, (const boost::beast::http::request<boost::beast::http::string_body>& req), (override));
+    MOCK_METHOD(void,
+                Write,
+                (const boost::beast::http::request<boost::beast::http::string_body>& req, boost::beast::error_code& ec),
+                (override));
 
     MOCK_METHOD(boost::asio::awaitable<void>,
                 AsyncWrite,
