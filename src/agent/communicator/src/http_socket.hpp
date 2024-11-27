@@ -24,12 +24,13 @@ namespace http_client
 
         /// @brief Connects the socket to the given endpoints
         /// @param endpoints The endpoints to connect to
+        /// @param ec The error code, if any occurred
         void Connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
-                     boost::system::error_code& code) override
+                     boost::system::error_code& ec) override
         {
             try
             {
-                boost::asio::connect(m_socket, endpoints, code);
+                boost::asio::connect(m_socket, endpoints, ec);
             }
             catch (const std::exception& e)
             {
@@ -39,24 +40,25 @@ namespace http_client
 
         /// @brief Asynchronous version of Connect
         /// @param endpoints The endpoints to connect to
-        /// @param code The error code to store the result in
+        /// @param ec The error code, if any occurred
         boost::asio::awaitable<void> AsyncConnect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
-                                                  boost::system::error_code& code) override
+                                                  boost::system::error_code& ec) override
         {
             try
             {
                 co_await boost::asio::async_connect(
-                    m_socket, endpoints, boost::asio::redirect_error(boost::asio::use_awaitable, code));
+                    m_socket, endpoints, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
             }
             catch (const std::exception& e)
             {
                 LogDebug("Exception thrown during async connect: {}", e.what());
-                code = boost::asio::error::operation_aborted;
+                ec = boost::asio::error::operation_aborted;
             }
         }
 
         /// @brief Writes the given request to the socket
         /// @param req The request to write
+        /// @param ec The error code, if any occurred
         void Write(const boost::beast::http::request<boost::beast::http::string_body>& req,
                    boost::beast::error_code& ec) override
         {
@@ -72,7 +74,7 @@ namespace http_client
 
         /// @brief Asynchronous version of Write
         /// @param req The request to write
-        /// @param ec The error code to store the result in
+        /// @param ec The error code, if any occurred
         boost::asio::awaitable<void> AsyncWrite(const boost::beast::http::request<boost::beast::http::string_body>& req,
                                                 boost::beast::error_code& ec) override
         {
@@ -90,6 +92,7 @@ namespace http_client
 
         /// @brief Reads a response from the socket
         /// @param res The response to read
+        /// @param ec The error code, if any occurred
         void Read(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
                   boost::beast::error_code& ec) override
         {
@@ -122,7 +125,7 @@ namespace http_client
 
         /// @brief Asynchronous version of Read
         /// @param res The response to read
-        /// @param ec The error code to store the result in
+        /// @param ec The error code, if any occurred
         boost::asio::awaitable<void> AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
                                                boost::beast::error_code& ec) override
         {
