@@ -39,7 +39,8 @@ namespace http_client
 
         /// @brief Reads a response from the socket
         /// @param res The response to read
-        virtual void Read(boost::beast::http::response<boost::beast::http::dynamic_body>& res) = 0;
+        virtual void Read(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
+                          boost::beast::error_code& ec) = 0;
 
         /// @brief Reads a response from the socket and writes it to a file
         /// @param res The response to read

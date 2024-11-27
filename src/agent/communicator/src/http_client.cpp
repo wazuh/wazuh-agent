@@ -202,7 +202,7 @@ namespace http_client
                 throw std::runtime_error("Error writing request: " + ec.message());
             }
 
-            socket->Read(res);
+            socket->Read(res, ec);
 
             LogDebug("Response code: {}.", res.result_int());
             LogDebug("Response body: {}.", boost::beast::buffers_to_string(res.body().data()));

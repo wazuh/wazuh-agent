@@ -171,7 +171,7 @@ TEST_F(HttpClientTest, PerformHttpRequest_Success)
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
     EXPECT_CALL(*mockSocket, Connect(_)).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, Read(_)).WillOnce([](auto& res) { res.result(boost::beast::http::status::ok); });
+    EXPECT_CALL(*mockSocket, Read(_, _)).WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::ok); });
 
     const http_client::HttpRequestParams params(
         boost::beast::http::verb::get, "https://localhost:80", "/", "Wazuh 5.0.0");
@@ -442,9 +442,9 @@ TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_Success)
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
     EXPECT_CALL(*mockSocket, Connect(_)).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, Read(_))
+    EXPECT_CALL(*mockSocket, Read(_, _))
         .WillOnce(
-            [](auto& res)
+            [](auto& res, auto&)
             {
                 res.result(boost::beast::http::status::ok);
                 boost::beast::ostream(res.body()) << R"({"token":"valid_token"})";
@@ -467,7 +467,8 @@ TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_Failure)
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
     EXPECT_CALL(*mockSocket, Connect(_)).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, Read(_)).WillOnce([](auto& res) { res.result(boost::beast::http::status::unauthorized); });
+    EXPECT_CALL(*mockSocket, Read(_, _))
+        .WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::unauthorized); });
 
     const auto token =
         client->AuthenticateWithUuidAndKey("https://localhost:8080", "Wazuh 5.0.0", "test-uuid", "test-key");
@@ -483,9 +484,9 @@ TEST_F(HttpClientTest, AuthenticateWithUserPassword_Success)
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
     EXPECT_CALL(*mockSocket, Connect(_)).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, Read(_))
+    EXPECT_CALL(*mockSocket, Read(_, _))
         .WillOnce(
-            [](auto& res)
+            [](auto& res, auto&)
             {
                 res.result(boost::beast::http::status::ok);
                 boost::beast::ostream(res.body()) << R"({"data":{"token":"valid_token"}})";
@@ -508,7 +509,8 @@ TEST_F(HttpClientTest, AuthenticateWithUserPassword_Failure)
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
     EXPECT_CALL(*mockSocket, Connect(_)).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, Read(_)).WillOnce([](auto& res) { res.result(boost::beast::http::status::unauthorized); });
+    EXPECT_CALL(*mockSocket, Read(_, _))
+        .WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::unauthorized); });
 
     const auto token =
         client->AuthenticateWithUserPassword("https://localhost:8080", "Wazuh 5.0.0", "user", "password");

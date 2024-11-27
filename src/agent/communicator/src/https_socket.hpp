@@ -101,12 +101,13 @@ namespace http_client
 
         /// @brief Reads a response from the socket
         /// @param res The response to read
-        void Read(boost::beast::http::response<boost::beast::http::dynamic_body>& res) override
+        void Read(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
+                  boost::beast::error_code& ec) override
         {
             try
             {
                 boost::beast::flat_buffer buffer;
-                boost::beast::http::read(m_ssl_socket, buffer, res);
+                boost::beast::http::read(m_ssl_socket, buffer, res, ec);
             }
             catch (const std::exception& e)
             {

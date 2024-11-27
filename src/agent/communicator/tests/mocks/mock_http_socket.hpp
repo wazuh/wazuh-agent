@@ -22,7 +22,10 @@ public:
                 (const boost::beast::http::request<boost::beast::http::string_body>& req, boost::beast::error_code& ec),
                 (override));
 
-    MOCK_METHOD(void, Read, (boost::beast::http::response<boost::beast::http::dynamic_body> & res), (override));
+    MOCK_METHOD(void,
+                Read,
+                (boost::beast::http::response<boost::beast::http::dynamic_body> & res, boost::beast::error_code& ec),
+                (override));
 
     MOCK_METHOD(void,
                 ReadToFile,
