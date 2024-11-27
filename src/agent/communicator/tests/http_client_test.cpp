@@ -22,6 +22,15 @@ using namespace testing;
 class HttpClientTest : public Test
 {
 protected:
+    HttpClientTest()
+    {
+        const auto port = 80;
+        dummyResults = boost::asio::ip::tcp::resolver::results_type::create(
+            boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), port),
+            "127.0.0.1",
+            "80");
+    }
+
     void SetUp() override
     {
         mockResolverFactory = std::make_shared<MockHttpResolverFactory>();
@@ -57,10 +66,9 @@ protected:
     void SetupMockResolverExpectations()
     {
         EXPECT_CALL(*mockResolver, AsyncResolve(_, _))
-            .WillOnce(
-                Invoke([](const std::string&,
-                          const std::string&) -> boost::asio::awaitable<boost::asio::ip::tcp::resolver::results_type>
-                       { co_return boost::asio::ip::tcp::resolver::results_type {}; }));
+            .WillOnce(Invoke([this](const std::string&, const std::string&)
+                                 -> boost::asio::awaitable<boost::asio::ip::tcp::resolver::results_type>
+                             { co_return dummyResults; }));
     }
 
     void SetupMockSocketConnectExpectations(boost::system::error_code connectEc = {})
@@ -104,6 +112,8 @@ protected:
     std::unique_ptr<MockHttpResolver> mockResolver;
     std::unique_ptr<MockHttpSocket> mockSocket;
     std::unique_ptr<http_client::HttpClient> client;
+
+    boost::asio::ip::tcp::resolver::results_type dummyResults;
 };
 
 TEST(CreateHttpRequestTest, BasicGetRequest)
@@ -168,7 +178,7 @@ TEST_F(HttpClientTest, PerformHttpRequest_Success)
     SetupMockResolverFactory();
     SetupMockSocketFactory();
 
-    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
+    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
     EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_, _)).WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::ok); });
@@ -439,7 +449,7 @@ TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_Success)
     SetupMockResolverFactory();
     SetupMockSocketFactory();
 
-    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
+    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
     EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_, _))
@@ -464,7 +474,7 @@ TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_Failure)
     SetupMockResolverFactory();
     SetupMockSocketFactory();
 
-    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
+    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
     EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_, _))
@@ -481,7 +491,7 @@ TEST_F(HttpClientTest, AuthenticateWithUserPassword_Success)
     SetupMockResolverFactory();
     SetupMockSocketFactory();
 
-    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
+    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
     EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_, _))
@@ -506,7 +516,7 @@ TEST_F(HttpClientTest, AuthenticateWithUserPassword_Failure)
     SetupMockResolverFactory();
     SetupMockSocketFactory();
 
-    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
+    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
     EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_, _))
@@ -523,7 +533,7 @@ TEST_F(HttpClientTest, PerformHttpRequestDownload_Success)
     SetupMockResolverFactory();
     SetupMockSocketFactory();
 
-    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
+    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
     EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, ReadToFile(_, _))
