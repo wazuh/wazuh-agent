@@ -112,8 +112,6 @@ namespace http_client
 
         do
         {
-            std::time_t timerSleep = A_SECOND_IN_MILLIS;
-
             auto socket = m_socketFactory->Create(executor, reqParams.Use_Https);
 
             if (!socket)
@@ -178,6 +176,8 @@ namespace http_client
                 co_await WaitForTimer(timer, connectionRetry);
                 continue;
             }
+
+            std::time_t timerSleep = A_SECOND_IN_MILLIS;
 
             if (res.result() == boost::beast::http::status::ok)
             {
