@@ -194,7 +194,14 @@ namespace http_client
             const auto req = CreateHttpRequest(params);
 
             boost::beast::error_code ec;
+
             socket->Write(req, ec);
+
+            if (ec)
+            {
+                throw std::runtime_error("Error writing request: " + ec.message());
+            }
+
             socket->Read(res);
 
             LogDebug("Response code: {}.", res.result_int());
@@ -299,7 +306,14 @@ namespace http_client
             const auto req = CreateHttpRequest(params);
 
             boost::beast::error_code ec;
+
             socket->Write(req, ec);
+
+            if (ec)
+            {
+                throw std::runtime_error("Error writing request: " + ec.message());
+            }
+
             socket->ReadToFile(res_parser, dstFilePath);
 
             LogDebug("Response code: {}.", res_parser.get().result_int());
