@@ -112,6 +112,12 @@ namespace http_client
 
         do
         {
+            if (!token || token->empty())
+            {
+                co_await WaitForTimer(timer, A_SECOND_IN_MILLIS);
+                continue;
+            }
+
             auto socket = m_socketFactory->Create(executor, reqParams.Use_Https);
 
             if (!socket)
