@@ -537,8 +537,8 @@ TEST_F(HttpClientTest, PerformHttpRequestDownload_Success)
     EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, ReadToFile(_, _))
-        .WillOnce([](auto& res, [[maybe_unused]] auto& dstFilePath)
-                  { res.get().result(boost::beast::http::status::ok); });
+        .WillOnce([](boost::beast::http::response<boost::beast::http::dynamic_body>& res,
+                     [[maybe_unused]] auto& dstFilePath) { res.result(boost::beast::http::status::ok); });
 
     const http_client::HttpRequestParams params(
         boost::beast::http::verb::get, "https://localhost:80", "/", "Wazuh 5.0.0");

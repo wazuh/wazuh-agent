@@ -343,7 +343,7 @@ namespace http_client
     boost::beast::http::response<boost::beast::http::dynamic_body>
     HttpClient::PerformHttpRequestDownload(const HttpRequestParams& params, const std::string& dstFilePath)
     {
-        boost::beast::http::response_parser<boost::beast::http::dynamic_body> res_parser;
+        boost::beast::http::response<boost::beast::http::dynamic_body> res;
 
         try
         {
@@ -382,19 +382,19 @@ namespace http_client
                 throw std::runtime_error("Error writing request: " + ec.message());
             }
 
-            socket->ReadToFile(res_parser, dstFilePath);
+            socket->ReadToFile(res, dstFilePath);
 
-            LogDebug("Response code: {}.", res_parser.get().result_int());
+            LogDebug("{}", ResponseToString(params.Endpoint, res));
         }
         catch (std::exception const& e)
         {
             LogError("Error: {}.", e.what());
 
-            auto& res = res_parser.get();
             res.result(boost::beast::http::status::internal_server_error);
             boost::beast::ostream(res.body()) << "Internal server error: " << e.what();
+            res.prepare_payload();
         }
 
-        return res_parser.release();
+        return res;
     }
 } // namespace http_client

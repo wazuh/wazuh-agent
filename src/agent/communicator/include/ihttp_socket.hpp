@@ -49,7 +49,7 @@ namespace http_client
         /// @brief Reads a response from the socket and writes it to a file
         /// @param res The response to read
         /// @param dstFilePath The path to the file to write to
-        virtual void ReadToFile(boost::beast::http::response_parser<boost::beast::http::dynamic_body>& res,
+        virtual void ReadToFile(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
                                 const std::string& dstFilePath) = 0;
 
         /// @brief Asynchronous version of Read
