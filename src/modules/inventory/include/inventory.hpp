@@ -53,11 +53,12 @@ class Inventory {
         std::string GetCreateStatement() const;
         nlohmann::json EcsProcessesData(const nlohmann::json& originalData);
         nlohmann::json EcsSystemData(const nlohmann::json& originalData);
-        nlohmann::json GetOSData();
         nlohmann::json EcsHotfixesData(const nlohmann::json& originalData);
         nlohmann::json EcsHardwareData(const nlohmann::json& originalData);
         nlohmann::json EcsPackageData(const nlohmann::json& originalData);
         nlohmann::json EcsPortData(const nlohmann::json& originalData);
+        nlohmann::json EcsNetworkData(const nlohmann::json& originalData);
+        nlohmann::json GetOSData();
         nlohmann::json GetHardwareData();
         nlohmann::json GetNetworkData();
         nlohmann::json GetPortsData();
@@ -89,8 +90,8 @@ class Inventory {
         std::time_t                                 m_intervalValue;    // Scan interval
         bool                                        m_scanOnStart;      // Scan always on start
         bool                                        m_hardware;         // Hardware inventory
-        bool                                        m_os;               // OS inventory
-        bool                                        m_network;          // Network inventory
+        bool                                        m_system;           // System inventory
+        bool                                        m_networks;         // Networks inventory
         bool                                        m_packages;         // Installed packages inventory
         bool                                        m_ports;            // Opened ports inventory
         bool                                        m_portsAll;         // Scan only listening ports or all

@@ -44,8 +44,8 @@ void Inventory::Setup(const configuration::ConfigurationParser& configurationPar
     m_intervalValue = configurationParser.GetConfig<std::time_t>("inventory", "interval").value_or(config::inventory::DEFAULT_INTERVAL);
     m_scanOnStart = configurationParser.GetConfig<bool>("inventory", "scan_on_start").value_or(config::inventory::DEFAULT_SCAN_ON_START);
     m_hardware = configurationParser.GetConfig<bool>("inventory", "hardware").value_or(config::inventory::DEFAULT_HARDWARE);
-    m_os = configurationParser.GetConfig<bool>("inventory", "os").value_or(config::inventory::DEFAULT_OS);
-    m_network = configurationParser.GetConfig<bool>("inventory", "network").value_or(config::inventory::DEFAULT_NETWORK);
+    m_system = configurationParser.GetConfig<bool>("inventory", "system").value_or(config::inventory::DEFAULT_OS);
+    m_networks = configurationParser.GetConfig<bool>("inventory", "networks").value_or(config::inventory::DEFAULT_NETWORK);
     m_packages = configurationParser.GetConfig<bool>("inventory", "packages").value_or(config::inventory::DEFAULT_PACKAGES);
     m_ports = configurationParser.GetConfig<bool>("inventory", "ports").value_or(config::inventory::DEFAULT_PORTS);
     m_portsAll = configurationParser.GetConfig<bool>("inventory", "ports_all").value_or(config::inventory::DEFAULT_PORTS_ALL);
@@ -110,8 +110,8 @@ cJSON * Inventory::Dump() const
     if (m_enabled) cJSON_AddStringToObject(invJson,"enabled","yes"); else cJSON_AddStringToObject(invJson,"enabled","no");
     if (m_scanOnStart) cJSON_AddStringToObject(invJson,"scan-on-start","yes"); else cJSON_AddStringToObject(invJson,"scan-on-start","no");
     cJSON_AddNumberToObject(invJson, "interval", static_cast<double>(m_intervalValue));
-    if (m_network) cJSON_AddStringToObject(invJson,"network","yes"); else cJSON_AddStringToObject(invJson,"network","no");
-    if (m_os) cJSON_AddStringToObject(invJson,"os","yes"); else cJSON_AddStringToObject(invJson,"os","no");
+    if (m_networks) cJSON_AddStringToObject(invJson,"networks","yes"); else cJSON_AddStringToObject(invJson,"networks","no");
+    if (m_system) cJSON_AddStringToObject(invJson,"system","yes"); else cJSON_AddStringToObject(invJson,"system","no");
     if (m_hardware) cJSON_AddStringToObject(invJson,"hardware","yes"); else cJSON_AddStringToObject(invJson,"hardware","no");
     if (m_packages) cJSON_AddStringToObject(invJson,"packages","yes"); else cJSON_AddStringToObject(invJson,"packages","no");
     if (m_ports) cJSON_AddStringToObject(invJson,"ports","yes"); else cJSON_AddStringToObject(invJson,"ports","no");
