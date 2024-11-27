@@ -11,6 +11,22 @@
 
 #include <chrono>
 
+namespace
+{
+    boost::asio::awaitable<void> WaitForTimer(std::shared_ptr<boost::asio::steady_timer> timer,
+                                              const std::time_t retryInMillis)
+    {
+        if (!timer)
+        {
+            LogError("Timer is null.");
+            co_return;
+        }
+        const auto duration = std::chrono::milliseconds(retryInMillis);
+        (*timer).expires_after(duration);
+        co_await timer->async_wait(boost::asio::use_awaitable);
+    }
+} // namespace
+
 namespace http_client
 {
     constexpr int A_SECOND_IN_MILLIS = 1000;
@@ -81,7 +97,7 @@ namespace http_client
         using namespace std::chrono_literals;
 
         auto executor = co_await boost::asio::this_coro::executor;
-        boost::asio::steady_timer timer(executor);
+        auto timer = std::make_shared<boost::asio::steady_timer>(executor);
         auto resolver = m_resolverFactory->Create(executor);
 
         do
@@ -90,7 +106,21 @@ namespace http_client
 
             auto socket = m_socketFactory->Create(executor, reqParams.Use_Https);
 
+            if (!socket)
+            {
+                LogWarn("Failed to create socket. Retrying in {} seconds.", connectionRetry / A_SECOND_IN_MILLIS);
+                co_await WaitForTimer(timer, connectionRetry);
+                continue;
+            }
+
             const auto results = co_await resolver->AsyncResolve(reqParams.Host, reqParams.Port);
+
+            if (results.empty())
+            {
+                LogWarn("Failed to resolve host. Retrying in {} seconds.", connectionRetry / A_SECOND_IN_MILLIS);
+                co_await WaitForTimer(timer, connectionRetry);
+                continue;
+            }
 
             boost::system::error_code code;
             co_await socket->AsyncConnect(results, code);
@@ -101,9 +131,7 @@ namespace http_client
                         reqParams.Endpoint,
                         connectionRetry / A_SECOND_IN_MILLIS);
                 LogDebug("Http request failed: {} - {}", code.message(), code.what());
-                const auto duration = std::chrono::milliseconds(connectionRetry);
-                timer.expires_after(duration);
-                co_await timer.async_wait(boost::asio::use_awaitable);
+                co_await WaitForTimer(timer, connectionRetry);
                 continue;
             }
 
@@ -126,6 +154,7 @@ namespace http_client
             {
                 LogWarn("Error writing request ({}): {}.", std::to_string(ec.value()), ec.message());
                 socket->Close();
+                co_await WaitForTimer(timer, connectionRetry);
                 continue;
             }
 
@@ -136,6 +165,7 @@ namespace http_client
             {
                 LogWarn("Error reading response. Response code: {}.", res.result_int());
                 socket->Close();
+                co_await WaitForTimer(timer, connectionRetry);
                 continue;
             }
 
@@ -159,9 +189,7 @@ namespace http_client
             LogDebug("Response code: {}.", res.result_int());
             LogDebug("Response body: {}.", boost::beast::buffers_to_string(res.body().data()));
 
-            const auto duration = std::chrono::milliseconds(timerSleep);
-            timer.expires_after(duration);
-            co_await timer.async_wait(boost::asio::use_awaitable);
+            co_await WaitForTimer(timer, timerSleep);
         } while (loopRequestCondition != nullptr && loopRequestCondition());
     }
 
