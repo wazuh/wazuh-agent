@@ -46,6 +46,6 @@ void RegisterAgent(const std::string& url,
     }
     else
     {
-        std::cout << OPT_URL << ", " << OPT_USER << " and " << OPT_PASSWORD << " args are mandatory\n";
+        std::cout << "--url, --user and --password args are mandatory\n";
     }
 }

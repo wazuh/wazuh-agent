@@ -23,21 +23,21 @@ namespace
     /// @return The path to the configuration file.
     std::string getConfigFilePath()
     {
-        std::string configFilePath;
+        std::string configFile;
         char* programData = nullptr;
         std::size_t len = 0;
         int error = _dupenv_s(&programData, &len, "ProgramData");
 
         if (error || programData == nullptr)
         {
-            configFilePath = "C:\\ProgramData\\wazuh-agent\\config\\wazuh-agent.yml";
+            configFile = "C:\\ProgramData\\wazuh-agent\\config\\wazuh-agent.yml";
         }
         else
         {
-            configFilePath = std::string(programData) + "\\wazuh-agent\\config\\wazuh-agent.yml";
+            configFile = std::string(programData) + "\\wazuh-agent\\config\\wazuh-agent.yml";
         }
         free(programData);
-        return configFilePath;
+        return configFile;
     }
 
     const std::string CONFIG_FILE_NAME = getConfigFilePath();

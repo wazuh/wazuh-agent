@@ -1,8 +1,30 @@
 #include "process_options.hpp"
-#include <cmd_ln_parser.hpp>
+
 #include <logger.hpp>
 
+#include <boost/program_options.hpp>
+#include <iostream>
 #include <string>
+
+namespace program_options = boost::program_options;
+
+/// Command-line options
+static const auto OPT_HELP {"help"};
+static const auto OPT_STATUS {"status"};
+static const auto OPT_CONFIG_FILE {"config-file"};
+static const auto OPT_REGISTER_AGENT {"register-agent"};
+static const auto OPT_URL {"url"};
+static const auto OPT_USER {"user"};
+static const auto OPT_PASS {"password"};
+static const auto OPT_KEY {"key"};
+static const auto OPT_NAME {"name"};
+#ifdef _WIN32
+static const auto OPT_STOP {"stop"};
+static const auto OPT_RESTART {"restart"};
+static const auto OPT_INSTALL_SERVICE {"install-service"};
+static const auto OPT_REMOVE_SERVICE {"remove-service"};
+static const auto OPT_RUN_SERVICE {"run-service"};
+#endif
 
 int main(int argc, char* argv[])
 {
@@ -10,57 +32,73 @@ int main(int argc, char* argv[])
 
     try
     {
-        CommandlineParser cmdParser(argc, argv, validOptions);
+        program_options::options_description cmdParser("Allowed options");
+        cmdParser.add_options()(OPT_HELP, "Display this help menu")(
+            OPT_STATUS, "Check if the agent is running (running or stopped)")(
+            OPT_CONFIG_FILE, program_options::value<std::string>(), "Path to the Wazuh configuration file (optional)")(
+            OPT_REGISTER_AGENT, "Use this option to register as a new agent")(
+            OPT_URL, program_options::value<std::string>(), "URL of the server management API")(
+            OPT_USER, program_options::value<std::string>(), "User to authenticate with the server management API")(
+            OPT_PASS, program_options::value<std::string>(), "Password to authenticate with the server management API")(
+            OPT_KEY, program_options::value<std::string>(), "Key to register the agent (optional)")(
+            OPT_NAME, program_options::value<std::string>(), "Name to register the agent (optional)");
 
-        std::string configFile;
+#ifdef _WIN32
+        cmdParser.add_options()(OPT_STOP, "Stop the agent service (only available in Windows)")(
+            OPT_RESTART, "Restart the agent service (only available in Windows)")(
+            OPT_INSTALL_SERVICE, "Use this option to install Wazuh as a Windows service")(
+            OPT_REMOVE_SERVICE, "Use this option to remove Wazuh Windows service")(
+            OPT_RUN_SERVICE, "Use this option to run Wazuh as a Windows service");
+#endif
 
-        if (cmdParser.OptionExists(OPT_CONFIG_FILE))
-        {
-            configFile = cmdParser.GetOptionValue(OPT_CONFIG_FILE);
-        }
+        program_options::variables_map validOptions;
+        program_options::store(program_options::parse_command_line(argc, argv, cmdParser), validOptions);
+        program_options::notify(validOptions);
 
-        if (cmdParser.OptionExists(OPT_REGISTER_AGENT))
+        if (validOptions.count(OPT_REGISTER_AGENT) > 0)
         {
-            RegisterAgent(cmdParser.GetOptionValue(OPT_URL),
-                          cmdParser.GetOptionValue(OPT_USER),
-                          cmdParser.GetOptionValue(OPT_PASSWORD),
-                          cmdParser.GetOptionValue(OPT_KEY),
-                          cmdParser.GetOptionValue(OPT_NAME),
-                          configFile);
+            RegisterAgent(validOptions.count(OPT_URL) ? validOptions[OPT_URL].as<std::string>() : "",
+                          validOptions.count(OPT_USER) ? validOptions[OPT_USER].as<std::string>() : "",
+                          validOptions.count(OPT_PASS) ? validOptions[OPT_PASS].as<std::string>() : "",
+                          validOptions.count(OPT_KEY) ? validOptions[OPT_KEY].as<std::string>() : "",
+                          validOptions.count(OPT_NAME) ? validOptions[OPT_NAME].as<std::string>() : "",
+                          validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
         }
-        else if (cmdParser.OptionExists(OPT_RESTART))
+        else if (validOptions.count(OPT_STATUS) > 0)
         {
-            RestartAgent(configFile);
+            StatusAgent(validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
         }
-        else if (cmdParser.OptionExists(OPT_STATUS))
-        {
-            StatusAgent(configFile);
-        }
-        else if (cmdParser.OptionExists(OPT_STOP))
+#ifdef _WIN32
+        else if (validOptions.count(OPT_STOP) > 0)
         {
             StopAgent();
         }
-        else if (cmdParser.OptionExists(OPT_INSTALL_SERVICE))
+        else if (validOptions.count(OPT_RESTART) > 0)
+        {
+            RestartAgent(validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
+        }
+        else if (validOptions.count(OPT_INSTALL_SERVICE) > 0)
         {
             if (!InstallService())
                 return 1;
         }
-        else if (cmdParser.OptionExists(OPT_REMOVE_SERVICE))
+        else if (validOptions.count(OPT_REMOVE_SERVICE) > 0)
         {
             if (!RemoveService())
                 return 1;
         }
-        else if (cmdParser.OptionExists(OPT_RUN_SERVICE))
+        else if (validOptions.count(OPT_RUN_SERVICE) > 0)
         {
             SetDispatcherThread();
         }
-        else if (cmdParser.OptionExists(OPT_HELP))
+#endif
+        else if (validOptions.count(OPT_HELP) > 0)
         {
-            PrintHelp();
+            std::cout << cmdParser << '\n';
         }
         else
         {
-            StartAgent(configFile);
+            StartAgent(validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
         }
 
         return 0;

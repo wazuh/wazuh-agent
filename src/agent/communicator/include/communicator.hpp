@@ -114,7 +114,7 @@ namespace communicator
         std::atomic<bool> m_isReAuthenticating = false;
 
         /// @brief Time in milliseconds between authentication attemps in case of failure
-        std::time_t m_retryInterval = 1;
+        std::time_t m_retryInterval = config::agent::DEFAULT_RETRY_INTERVAL;
 
         /// @brief The server URL
         std::string m_serverUrl;
