@@ -25,14 +25,16 @@ find_package(fmt REQUIRED)
 
 if(WIN32)
     set(SOURCES
-        src/windows_api_facade.cpp
-        src/windows_service.cpp
+        src/windows/windows_api_facade.cpp
+        src/windows/windows_service.cpp
         src/process_options_win.cpp
+        src/signal_handler_win.cpp
     )
 elseif(UNIX)
     set(SOURCES
-        src/unix_daemon.cpp
+        src/unix/unix_daemon.cpp
         src/process_options_unix.cpp
+        src/signal_handler_unix.cpp
     )
 endif()
 
@@ -43,15 +45,15 @@ list(APPEND SOURCES
     src/message_queue_utils.cpp
     src/process_options.cpp
     src/signal_handler.cpp
-    $<$<BOOL:$<PLATFORM_ID:Windows>>:src/signal_handler_win.cpp>
-    $<$<NOT:$<PLATFORM_ID:Windows>>:src/signal_handler_unix.cpp>
     src/task_manager.cpp
 )
 
 add_library(Agent ${SOURCES})
 target_include_directories(Agent
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/unix
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/windows)
 target_link_libraries(Agent
     PUBLIC
     CentralizedConfiguration
