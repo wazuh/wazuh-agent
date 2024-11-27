@@ -183,6 +183,12 @@ namespace http_client
             }
 
             auto socket = m_socketFactory->Create(io_context.get_executor(), params.Use_Https);
+
+            if (!socket)
+            {
+                throw std::runtime_error("Failed to create socket.");
+            }
+
             socket->Connect(results);
 
             const auto req = CreateHttpRequest(params);
