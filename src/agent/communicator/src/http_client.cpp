@@ -10,6 +10,8 @@
 #include <nlohmann/json.hpp>
 
 #include <chrono>
+#include <sstream>
+#include <string>
 
 namespace
 {
@@ -24,6 +26,14 @@ namespace
         const auto duration = std::chrono::milliseconds(retryInMillis);
         (*timer).expires_after(duration);
         co_await timer->async_wait(boost::asio::use_awaitable);
+    }
+
+    std::string ResponseToString(const std::string& endpoint,
+                                 const boost::beast::http::response<boost::beast::http::dynamic_body>& res)
+    {
+        std::ostringstream stream;
+        stream << "Request endpoint: " << endpoint << "\nResponse: " << res;
+        return stream.str();
     }
 } // namespace
 
@@ -127,7 +137,7 @@ namespace http_client
 
             if (code != boost::system::errc::success)
             {
-                LogWarn("Failed to send http request. {}. Retrying in {} seconds.",
+                LogWarn("Failed to send http request to endpoint: {}. Retrying in {} seconds.",
                         reqParams.Endpoint,
                         connectionRetry / A_SECOND_IN_MILLIS);
                 LogDebug("Http request failed: {} - {}", code.message(), code.what());
@@ -186,8 +196,7 @@ namespace http_client
                 timerSleep = connectionRetry;
             }
 
-            LogDebug("Response code: {}.", res.result_int());
-            LogDebug("Response body: {}.", boost::beast::buffers_to_string(res.body().data()));
+            LogDebug("{}", ResponseToString(reqParams.Endpoint, res));
 
             co_await WaitForTimer(timer, timerSleep);
         } while (loopRequestCondition != nullptr && loopRequestCondition());
@@ -242,8 +251,7 @@ namespace http_client
                 throw std::runtime_error("Error reading response: " + ec.message());
             }
 
-            LogDebug("Response code: {}.", res.result_int());
-            LogDebug("Response body: {}.", boost::beast::buffers_to_string(res.body().data()));
+            LogDebug("{}", ResponseToString(params.Endpoint, res));
         }
         catch (std::exception const& e)
         {
