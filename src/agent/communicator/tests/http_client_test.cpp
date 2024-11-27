@@ -169,7 +169,7 @@ TEST_F(HttpClientTest, PerformHttpRequest_Success)
     SetupMockSocketFactory();
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
-    EXPECT_CALL(*mockSocket, Connect(_)).Times(1);
+    EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_, _)).WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::ok); });
 
@@ -440,7 +440,7 @@ TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_Success)
     SetupMockSocketFactory();
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
-    EXPECT_CALL(*mockSocket, Connect(_)).Times(1);
+    EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_, _))
         .WillOnce(
@@ -465,7 +465,7 @@ TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_Failure)
     SetupMockSocketFactory();
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
-    EXPECT_CALL(*mockSocket, Connect(_)).Times(1);
+    EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_, _))
         .WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::unauthorized); });
@@ -482,7 +482,7 @@ TEST_F(HttpClientTest, AuthenticateWithUserPassword_Success)
     SetupMockSocketFactory();
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
-    EXPECT_CALL(*mockSocket, Connect(_)).Times(1);
+    EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_, _))
         .WillOnce(
@@ -507,7 +507,7 @@ TEST_F(HttpClientTest, AuthenticateWithUserPassword_Failure)
     SetupMockSocketFactory();
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
-    EXPECT_CALL(*mockSocket, Connect(_)).Times(1);
+    EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_, _))
         .WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::unauthorized); });
@@ -524,7 +524,7 @@ TEST_F(HttpClientTest, PerformHttpRequestDownload_Success)
     SetupMockSocketFactory();
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(boost::asio::ip::tcp::resolver::results_type {}));
-    EXPECT_CALL(*mockSocket, Connect(_)).Times(1);
+    EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, ReadToFile(_, _))
         .WillOnce([](auto& res, [[maybe_unused]] auto& dstFilePath)

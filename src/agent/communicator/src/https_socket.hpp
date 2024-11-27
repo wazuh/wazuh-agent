@@ -26,16 +26,29 @@ namespace http_client
 
         /// @brief Connects the socket to the given endpoints
         /// @param endpoints The endpoints to connect to
-        void Connect(const boost::asio::ip::tcp::resolver::results_type& endpoints) override
+        void Connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
+                     boost::system::error_code& ec) override
         {
             try
             {
-                boost::asio::connect(m_ssl_socket.next_layer(), endpoints.begin(), endpoints.end());
-                m_ssl_socket.handshake(boost::asio::ssl::stream_base::client);
+                boost::asio::connect(m_ssl_socket.next_layer(), endpoints.begin(), endpoints.end(), ec);
+                if (ec)
+                {
+                    LogWarn("Connect failed: {}", ec.message());
+                    return;
+                }
+
+                m_ssl_socket.handshake(boost::asio::ssl::stream_base::client, ec);
+                if (ec)
+                {
+                    LogWarn("Handshake failed: {}", ec.message());
+                    return;
+                }
             }
             catch (const std::exception& e)
             {
                 LogError("Exception thrown: {}", e.what());
+                ec = boost::asio::error::operation_aborted;
             }
         }
 

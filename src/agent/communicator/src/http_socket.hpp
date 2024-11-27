@@ -24,11 +24,12 @@ namespace http_client
 
         /// @brief Connects the socket to the given endpoints
         /// @param endpoints The endpoints to connect to
-        void Connect(const boost::asio::ip::tcp::resolver::results_type& endpoints) override
+        void Connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
+                     boost::system::error_code& code) override
         {
             try
             {
-                boost::asio::connect(m_socket, endpoints);
+                boost::asio::connect(m_socket, endpoints, code);
             }
             catch (const std::exception& e)
             {

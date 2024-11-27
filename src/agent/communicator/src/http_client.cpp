@@ -189,11 +189,16 @@ namespace http_client
                 throw std::runtime_error("Failed to create socket.");
             }
 
-            socket->Connect(results);
+            boost::beast::error_code ec;
+
+            socket->Connect(results, ec);
+
+            if (ec)
+            {
+                throw std::runtime_error("Error connecting to host: " + ec.message());
+            }
 
             const auto req = CreateHttpRequest(params);
-
-            boost::beast::error_code ec;
 
             socket->Write(req, ec);
 
@@ -306,11 +311,15 @@ namespace http_client
             const auto results = resolver->Resolve(params.Host, params.Port);
 
             auto socket = m_socketFactory->Create(io_context.get_executor(), params.Use_Https);
-            socket->Connect(results);
+            boost::beast::error_code ec;
+            socket->Connect(results, ec);
+
+            if (ec)
+            {
+                throw std::runtime_error("Error connecting to host: " + ec.message());
+            }
 
             const auto req = CreateHttpRequest(params);
-
-            boost::beast::error_code ec;
 
             socket->Write(req, ec);
 

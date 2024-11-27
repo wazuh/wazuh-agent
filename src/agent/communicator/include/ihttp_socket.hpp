@@ -17,7 +17,8 @@ namespace http_client
 
         /// @brief Connects the socket to the given endpoints
         /// @param endpoints The endpoints to connect to
-        virtual void Connect(const boost::asio::ip::tcp::resolver::results_type& endpoints) = 0;
+        virtual void Connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
+                             boost::system::error_code& code) = 0;
 
         /// @brief Asynchronous version of Connect
         /// @param endpoints The endpoints to connect to
