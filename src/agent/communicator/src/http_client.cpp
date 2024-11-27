@@ -352,8 +352,20 @@ namespace http_client
 
             const auto results = resolver->Resolve(params.Host, params.Port);
 
+            if (results.empty())
+            {
+                throw std::runtime_error("Failed to resolve host.");
+            }
+
             auto socket = m_socketFactory->Create(io_context.get_executor(), params.Use_Https);
+
+            if (!socket)
+            {
+                throw std::runtime_error("Failed to create socket.");
+            }
+
             boost::beast::error_code ec;
+
             socket->Connect(results, ec);
 
             if (ec)
