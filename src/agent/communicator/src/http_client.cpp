@@ -101,7 +101,6 @@ namespace http_client
                         reqParams.Endpoint,
                         connectionRetry / A_SECOND_IN_MILLIS);
                 LogDebug("Http request failed: {} - {}", code.message(), code.what());
-                socket->Close();
                 const auto duration = std::chrono::milliseconds(connectionRetry);
                 timer.expires_after(duration);
                 co_await timer.async_wait(boost::asio::use_awaitable);
