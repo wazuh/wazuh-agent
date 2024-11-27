@@ -2,6 +2,7 @@
 #include <logger.hpp>
 
 #include <boost/asio.hpp>
+#include <boost/system/error_code.hpp>
 
 #include <exception>
 #include <string>
@@ -27,12 +28,21 @@ namespace http_client
         {
             try
             {
-                return m_resolver.resolve(host, port);
+                boost::system::error_code ec;
+
+                const auto results = m_resolver.resolve(host, port, ec);
+
+                if (ec)
+                {
+                    throw std::runtime_error(ec.message());
+                }
+
+                return results;
             }
             catch (const std::exception& e)
             {
                 LogError("Failed to resolve host: {} port: {} with error: {}", host, port, e.what());
-                return boost::asio::ip::tcp::resolver::results_type {};
+                return {};
             }
         }
 
