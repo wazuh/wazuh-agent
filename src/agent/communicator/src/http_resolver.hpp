@@ -41,7 +41,7 @@ namespace http_client
             }
             catch (const std::exception& e)
             {
-                LogError("Failed to resolve host: {} port: {} with error: {}", host, port, e.what());
+                LogDebug("Failed to resolve host: {} port: {} with error: {}", host, port, e.what());
                 return {};
             }
         }
@@ -59,7 +59,7 @@ namespace http_client
             }
             catch (const std::exception& e)
             {
-                LogError("Failed to asynchronously resolve host: {} port: {} with error: {}", host, port, e.what());
+                LogDebug("Failed to asynchronously resolve host: {} port: {} with error: {}", host, port, e.what());
                 co_return boost::asio::ip::tcp::resolver::results_type {};
             }
         }

@@ -34,20 +34,20 @@ namespace http_client
                 boost::asio::connect(m_ssl_socket.next_layer(), endpoints.begin(), endpoints.end(), ec);
                 if (ec)
                 {
-                    LogWarn("Connect failed: {}", ec.message());
+                    LogDebug("Connect failed: {}", ec.message());
                     return;
                 }
 
                 m_ssl_socket.handshake(boost::asio::ssl::stream_base::client, ec);
                 if (ec)
                 {
-                    LogWarn("Handshake failed: {}", ec.message());
+                    LogDebug("Handshake failed: {}", ec.message());
                     return;
                 }
             }
             catch (const std::exception& e)
             {
-                LogError("Exception thrown: {}", e.what());
+                LogDebug("Exception thrown: {}", e.what());
                 ec = boost::asio::error::operation_aborted;
             }
         }
@@ -66,7 +66,7 @@ namespace http_client
 
                 if (code)
                 {
-                    LogWarn("boost::asio::async_connect returned error code: {} {}", code.value(), code.message());
+                    LogDebug("boost::asio::async_connect returned error code: {} {}", code.value(), code.message());
                 }
 
                 co_await m_ssl_socket.async_handshake(boost::asio::ssl::stream_base::client,
@@ -74,7 +74,7 @@ namespace http_client
             }
             catch (const std::exception& e)
             {
-                LogError("Exception thrown: {}", e.what());
+                LogDebug("Exception thrown: {}", e.what());
                 code = boost::asio::error::operation_aborted;
             }
         }
@@ -90,7 +90,7 @@ namespace http_client
             }
             catch (const std::exception& e)
             {
-                LogError("Exception thrown during write: {}", e.what());
+                LogDebug("Exception thrown during write: {}", e.what());
             }
         }
 
@@ -107,7 +107,7 @@ namespace http_client
             }
             catch (const std::exception& e)
             {
-                LogError("Exception thrown during async write: {}", e.what());
+                LogDebug("Exception thrown during async write: {}", e.what());
                 ec = boost::asio::error::operation_aborted;
             }
         }
@@ -124,7 +124,7 @@ namespace http_client
             }
             catch (const std::exception& e)
             {
-                LogError("Exception thrown during read: {}", e.what());
+                LogDebug("Exception thrown during read: {}", e.what());
             }
         }
 
@@ -140,7 +140,7 @@ namespace http_client
             }
             catch (const std::exception& e)
             {
-                LogError("Exception thrown during read to file: {}", e.what());
+                LogDebug("Exception thrown during read to file: {}", e.what());
             }
         }
 
@@ -158,7 +158,7 @@ namespace http_client
             }
             catch (const std::exception& e)
             {
-                LogError("Exception thrown during async read: {}", e.what());
+                LogDebug("Exception thrown during async read: {}", e.what());
                 ec = boost::asio::error::operation_aborted;
             }
         }
@@ -172,7 +172,7 @@ namespace http_client
             }
             catch (const std::exception& e)
             {
-                LogError("Exception thrown on socket closing: {}", e.what());
+                LogDebug("Exception thrown on socket closing: {}", e.what());
             }
         }
 

@@ -33,7 +33,7 @@ namespace http_client
             }
             catch (const std::exception& e)
             {
-                LogError("Exception thrown: {}", e.what());
+                LogDebug("Exception thrown: {}", e.what());
             }
         }
 
@@ -50,7 +50,7 @@ namespace http_client
             }
             catch (const std::exception& e)
             {
-                LogError("Exception thrown during async connect: {}", e.what());
+                LogDebug("Exception thrown during async connect: {}", e.what());
                 code = boost::asio::error::operation_aborted;
             }
         }
@@ -66,7 +66,7 @@ namespace http_client
             }
             catch (const std::exception& e)
             {
-                LogError("Exception thrown during write: {}", e.what());
+                LogDebug("Exception thrown during write: {}", e.what());
             }
         }
 
@@ -83,7 +83,7 @@ namespace http_client
             }
             catch (const std::exception& e)
             {
-                LogError("Exception thrown during async write: {}", e.what());
+                LogDebug("Exception thrown during async write: {}", e.what());
                 ec = boost::asio::error::operation_aborted;
             }
         }
@@ -100,7 +100,7 @@ namespace http_client
             }
             catch (const std::exception& e)
             {
-                LogError("Exception thrown during read: {}", e.what());
+                LogDebug("Exception thrown during read: {}", e.what());
             }
         }
 
@@ -116,7 +116,7 @@ namespace http_client
             }
             catch (const std::exception& e)
             {
-                LogError("Exception thrown during read to file: {}", e.what());
+                LogDebug("Exception thrown during read to file: {}", e.what());
             }
         }
 
@@ -134,7 +134,7 @@ namespace http_client
             }
             catch (const std::exception& e)
             {
-                LogError("Exception thrown during async read: {}", e.what());
+                LogDebug("Exception thrown during async read: {}", e.what());
                 ec = boost::asio::error::operation_aborted;
             }
         }
@@ -148,7 +148,7 @@ namespace http_client
             }
             catch (const std::exception& e)
             {
-                LogError("Exception thrown on socket closing: {}", e.what());
+                LogDebug("Exception thrown on socket closing: {}", e.what());
             }
         }
 

@@ -124,7 +124,7 @@ namespace http_client
 
             if (ec)
             {
-                LogError("Error writing request ({}): {}.", std::to_string(ec.value()), ec.message());
+                LogWarn("Error writing request ({}): {}.", std::to_string(ec.value()), ec.message());
                 socket->Close();
                 continue;
             }
@@ -134,7 +134,7 @@ namespace http_client
 
             if (ec)
             {
-                LogError("Error reading response. Response code: {}.", res.result_int());
+                LogWarn("Error reading response. Response code: {}.", res.result_int());
                 socket->Close();
                 continue;
             }
@@ -219,7 +219,7 @@ namespace http_client
         }
         catch (std::exception const& e)
         {
-            LogDebug("Error: {}.", e.what());
+            LogError("Error: {}.", e.what());
 
             res.result(boost::beast::http::status::internal_server_error);
             boost::beast::ostream(res.body()) << "Internal server error: " << e.what();
@@ -242,7 +242,7 @@ namespace http_client
 
         if (res.result() != boost::beast::http::status::ok)
         {
-            LogDebug("Error: {}.", res.result_int());
+            LogWarn("Error: {}.", res.result_int());
             return std::nullopt;
         }
 
@@ -279,7 +279,7 @@ namespace http_client
 
         if (res.result() != boost::beast::http::status::ok)
         {
-            LogDebug("Error: {}.", res.result_int());
+            LogWarn("Error: {}.", res.result_int());
             return std::nullopt;
         }
 

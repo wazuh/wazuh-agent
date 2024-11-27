@@ -185,7 +185,7 @@ namespace communicator
             std::ostringstream oss;
             oss << threadId;
             std::string threadIdStr = oss.str();
-            LogError("Re-authentication attempt by thread {} failed.", threadIdStr);
+            LogDebug("Re-authentication attempt by thread {} failed.", threadIdStr);
         }
     }
 
