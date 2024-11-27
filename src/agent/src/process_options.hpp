@@ -49,15 +49,16 @@ void RegisterAgent(const std::string& url,
                    const std::string& configFile);
 
 /// @brief Restarts the agent using the specified configuration file.
-/// @param configFile The file path to the configuration file to use for restarting the agent.
+/// @param configFile The file path to the configuration file used for restarting the agent.
 void RestartAgent(const std::string& configFile);
 
 /// @brief Starts the agent using the specified configuration file.
-/// @param configFile The file path to the configuration file to use for starting the agent.
+/// @param configFile The file path to the configuration file used for starting the agent.
 void StartAgent(const std::string& configFile);
 
 /// @brief Displays the current status of the agent.
-void StatusAgent();
+/// @param configFile The file path to the configuration file used to get the status of the agent.
+void StatusAgent(const std::string& configFile);
 
 /// @brief Stops the agent.
 void StopAgent();

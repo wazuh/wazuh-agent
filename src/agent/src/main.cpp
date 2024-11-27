@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
         }
         else if (cmdParser.OptionExists(OPT_STATUS))
         {
-            StatusAgent();
+            StatusAgent(configFile);
         }
         else if (cmdParser.OptionExists(OPT_STOP))
         {

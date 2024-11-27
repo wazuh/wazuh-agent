@@ -73,6 +73,7 @@ target_link_libraries(Agent
     nlohmann_json::nlohmann_json
     fmt::fmt
     Logger
+    Config
 )
 
 include(../cmake/ConfigureTarget.cmake)

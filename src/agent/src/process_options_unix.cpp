@@ -15,7 +15,7 @@ void RestartAgent([[maybe_unused]] const std::string& configFile) {}
 
 void StartAgent(const std::string& configFile)
 {
-    unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile();
+    unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile(configFile);
 
     if (!lockFileHandler.isLockFileCreated())
     {
@@ -30,9 +30,9 @@ void StartAgent(const std::string& configFile)
     lockFileHandler.removeLockFile();
 }
 
-void StatusAgent()
+void StatusAgent(const std::string& configFile)
 {
-    std::cout << fmt::format("wazuh-agent is {}\n", unix_daemon::GetDaemonStatus());
+    std::cout << fmt::format("wazuh-agent is {}\n", unix_daemon::GetDaemonStatus(configFile));
 }
 
 void StopAgent() {}

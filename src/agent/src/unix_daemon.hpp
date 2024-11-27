@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string_view>
+#include <string>
 #include <unistd.h>
 #include <vector>
 
@@ -13,7 +13,8 @@ namespace unix_daemon
     public:
         /// @brief Default constructor
         /// @details Creates a lock file when the instance is created
-        LockFileHandler();
+        /// @param lockFilePath The path where the lock file will be created
+        LockFileHandler(std::string lockFilePath);
 
         /// @brief Checks if the lock file has been successfully created
         /// @return True if the lock file is created, false otherwise
@@ -36,18 +37,17 @@ namespace unix_daemon
         /// @return True if the lock file is created, false otherwise
         bool createLockFile();
 
-        /// @brief Gets the executable path
-        /// @return The executable path
-        static std::string GetExecutablePath();
-
+        std::string m_lockFilePath;
         bool m_lockFileCreated;
     };
 
     /// @brief Gets the status of the daemon
+    /// @param configFile The path to the configuration file
     /// @return A string indicating whether the daemon is "running" or "stopped"
-    std::string GetDaemonStatus();
+    std::string GetDaemonStatus(const std::string& configFile);
 
     /// @brief Generates a lock file for the daemon
+    /// @param configFile The path to the configuration file
     /// @return A LockFileHandler object
-    LockFileHandler GenerateLockFile();
+    LockFileHandler GenerateLockFile(const std::string& configFile);
 } // namespace unix_daemon

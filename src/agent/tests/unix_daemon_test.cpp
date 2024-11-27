@@ -2,17 +2,37 @@
 
 #include <unix_daemon.hpp>
 
+#include <filesystem>
+#include <fstream>
+
 class UnixDaemonTest : public ::testing::Test
 {
 protected:
-    void SetUp() override {}
+    static std::filesystem::path m_tempConfigFilePath;
 
-    void TearDown() override {}
+    static void SetUpTestSuite()
+    {
+        m_tempConfigFilePath = "temp_wazuh-agent.yml";
+
+        std::ofstream outFile(m_tempConfigFilePath);
+        outFile << R"(
+            agent:
+                path.run: "."
+        )";
+        outFile.close();
+    }
+
+    static void TearDownTestSuite()
+    {
+        std::filesystem::remove(m_tempConfigFilePath);
+    }
 };
+
+std::filesystem::path UnixDaemonTest::m_tempConfigFilePath;
 
 TEST_F(UnixDaemonTest, CreateLockFile)
 {
-    unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile();
+    unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile("./temp_wazuh-agent.yml");
     bool res = lockFileHandler.isLockFileCreated();
     ASSERT_TRUE(res);
     lockFileHandler.removeLockFile();
@@ -20,8 +40,8 @@ TEST_F(UnixDaemonTest, CreateLockFile)
 
 TEST_F(UnixDaemonTest, CreateLockFileTwice)
 {
-    unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile();
-    unix_daemon::LockFileHandler lockFileHandler2 = unix_daemon::GenerateLockFile();
+    unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile("./temp_wazuh-agent.yml");
+    unix_daemon::LockFileHandler lockFileHandler2 = unix_daemon::GenerateLockFile("./temp_wazuh-agent.yml");
 
     bool reslockFileHandler = lockFileHandler.isLockFileCreated();
     bool reslockFileHandler2 = lockFileHandler2.isLockFileCreated();
@@ -33,17 +53,17 @@ TEST_F(UnixDaemonTest, CreateLockFileTwice)
 
 TEST_F(UnixDaemonTest, GetDaemonStatusRunning)
 {
-    unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile();
-    std::string res = unix_daemon::GetDaemonStatus();
+    unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile("./temp_wazuh-agent.yml");
+    std::string res = unix_daemon::GetDaemonStatus("./temp_wazuh-agent.yml");
     ASSERT_EQ(res, "running");
     lockFileHandler.removeLockFile();
 }
 
 TEST_F(UnixDaemonTest, GetDaemonStatusStopped)
 {
-    unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile();
+    unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile("./temp_wazuh-agent.yml");
     lockFileHandler.removeLockFile();
-    std::string res = unix_daemon::GetDaemonStatus();
+    std::string res = unix_daemon::GetDaemonStatus("./temp_wazuh-agent.yml");
     ASSERT_EQ(res, "stopped");
 }
 

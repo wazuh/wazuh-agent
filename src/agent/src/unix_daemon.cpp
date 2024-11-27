@@ -1,5 +1,7 @@
 #include <unix_daemon.hpp>
 
+#include <config.h>
+#include <configuration_parser.hpp>
 #include <logger.hpp>
 
 #include <cerrno>
@@ -19,16 +21,15 @@ namespace fs = std::filesystem;
 
 namespace unix_daemon
 {
-    constexpr std::string_view LOCK_PATH = "var/run";
-
-    LockFileHandler::LockFileHandler()
-        : m_lockFileCreated(createLockFile())
+    LockFileHandler::LockFileHandler(std::string lockFilePath)
+        : m_lockFilePath(std::move(lockFilePath))
+        , m_lockFileCreated(createLockFile())
     {
     }
 
     bool LockFileHandler::removeLockFile() const
     {
-        const std::string filePath = fmt::format("{}/{}/wazuh-agent.lock", GetExecutablePath(), LOCK_PATH);
+        const std::string filePath = fmt::format("{}/wazuh-agent.lock", m_lockFilePath);
         try
         {
             std::filesystem::remove(filePath);
@@ -62,14 +63,13 @@ namespace unix_daemon
 
     bool LockFileHandler::createLockFile()
     {
-        const std::string path = fmt::format("{}/{}", GetExecutablePath(), LOCK_PATH);
-        if (!createDirectory(path))
+        if (!createDirectory(m_lockFilePath))
         {
-            LogError("Unable to create lock directory: {}", path);
+            LogError("Unable to create lock directory: {}", m_lockFilePath);
             return false;
         }
 
-        const std::string filename = fmt::format("{}/wazuh-agent.lock", path);
+        const std::string filename = fmt::format("{}/wazuh-agent.lock", m_lockFilePath);
 
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, cppcoreguidelines-avoid-magic-numbers)
         int fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -91,51 +91,21 @@ namespace unix_daemon
         return true;
     }
 
-    std::string LockFileHandler::GetExecutablePath()
+    LockFileHandler GenerateLockFile(const std::string& configFile)
     {
-        std::vector<char> pathBuffer(PATH_MAX);
+        auto configurationParser = configFile.empty()
+                                       ? configuration::ConfigurationParser()
+                                       : configuration::ConfigurationParser(std::filesystem::path(configFile));
 
-#if defined(__linux__)
-        ssize_t len = readlink("/proc/self/exe", pathBuffer.data(), pathBuffer.size() - 1);
-        if (len != -1)
-        {
-            pathBuffer[static_cast<std::size_t>(len)] = '\0';
-            return std::filesystem::path(pathBuffer.data()).parent_path().string();
-        }
-        else
-        {
-            throw std::runtime_error("Failed to retrieve executable path on Linux");
-        }
+        const std::string lockFilePath =
+            configurationParser.GetConfig<std::string>("agent", "path.run").value_or(config::DEFAULT_RUN_PATH);
 
-#elif defined(__APPLE__)
-        uint32_t size = static_cast<uint32_t>(pathBuffer.size());
-        if (_NSGetExecutablePath(pathBuffer.data(), &size) == 0)
-        {
-            return std::filesystem::path(pathBuffer.data()).parent_path().string();
-        }
-        else
-        {
-            pathBuffer.resize(size);
-            if (_NSGetExecutablePath(pathBuffer.data(), &size) == 0)
-            {
-                return std::filesystem::path(pathBuffer.data()).parent_path().string();
-            }
-            else
-            {
-                throw std::runtime_error("Failed to retrieve executable path on macOS");
-            }
-        }
-#endif
+        return {LockFileHandler(lockFilePath)};
     }
 
-    LockFileHandler GenerateLockFile()
+    std::string GetDaemonStatus(const std::string& configFile)
     {
-        return {};
-    }
-
-    std::string GetDaemonStatus()
-    {
-        LockFileHandler lockFileHandler = GenerateLockFile();
+        LockFileHandler lockFileHandler = GenerateLockFile(configFile);
 
         if (!lockFileHandler.isLockFileCreated())
         {
