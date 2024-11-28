@@ -11,9 +11,9 @@
 #include <thread>
 #include <vector>
 
-void StartAgent(const std::string& configFile)
+void StartAgent(const std::string& configFilePath)
 {
-    unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile(configFile);
+    unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile(configFilePath);
 
     if (!lockFileHandler.isLockFileCreated())
     {
@@ -22,13 +22,13 @@ void StartAgent(const std::string& configFile)
     }
 
     LogInfo("Starting wazuh-agent");
-    Agent agent(configFile);
+    Agent agent(configFilePath);
     agent.Run();
 
     lockFileHandler.removeLockFile();
 }
 
-void StatusAgent(const std::string& configFile)
+void StatusAgent(const std::string& configFilePath)
 {
-    std::cout << fmt::format("wazuh-agent is {}\n", unix_daemon::GetDaemonStatus(configFile));
+    std::cout << fmt::format("wazuh-agent is {}\n", unix_daemon::GetDaemonStatus(configFilePath));
 }

@@ -8,12 +8,12 @@
 
 #include <vector>
 
-void StartAgent(const std::string& configFile)
+void StartAgent(const std::string& configFilePath)
 {
-    WindowsService::ServiceStart(configFile);
+    WindowsService::ServiceStart(configFilePath);
 }
 
-void StatusAgent([[maybe_unused]] const std::string& configFile)
+void StatusAgent([[maybe_unused]] const std::string& configFilePath)
 {
     WindowsService::ServiceStatus();
 }

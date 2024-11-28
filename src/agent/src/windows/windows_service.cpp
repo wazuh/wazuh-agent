@@ -227,19 +227,19 @@ namespace WindowsService
 
         LogInfo("Starting Wazuh Agent.");
 
-        std::string configFile;
+        std::string configFilePath;
         if (argc > 1 && argv[1] != nullptr)
         {
-            configFile = argv[1];
-            LogInfo("Config file parameter received: {}", configFile);
+            configFilePath = argv[1];
+            LogInfo("Config file parameter received: {}", configFilePath);
         }
         else
         {
-            configFile = "";
+            configFilePath = "";
             LogDebug("Using default configuration.");
         }
 
-        Agent agent(configFile);
+        Agent agent(configFilePath);
         agent.Run();
 
         WaitForSingleObject(g_ServiceStopEvent, INFINITE);
@@ -265,7 +265,7 @@ namespace WindowsService
         }
     }
 
-    void ServiceStart(const std::string& configFile)
+    void ServiceStart(const std::string& configFilePath)
     {
         ServiceHandle hService;
         ServiceHandle hSCManager;
@@ -274,9 +274,9 @@ namespace WindowsService
             return;
 
         bool res;
-        if (!configFile.empty())
+        if (!configFilePath.empty())
         {
-            const char* args[] = {configFile.c_str()};
+            const char* args[] = {configFilePath.c_str()};
             res = ::StartService(hService.get(), 1, args);
         }
         else

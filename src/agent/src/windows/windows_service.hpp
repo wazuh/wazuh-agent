@@ -30,8 +30,8 @@ namespace WindowsService
     void WINAPI ServiceCtrlHandler(DWORD ctrlCode);
 
     /// @brief Starts the Wazuh Agent Service.
-    /// @param configFile The path to the configuration file.
-    void ServiceStart(const std::string& configFile);
+    /// @param configFilePath The path to the configuration file.
+    void ServiceStart(const std::string& configFilePath);
 
     /// @brief Shows the status of the Wazuh Agent Service.
     void ServiceStatus();

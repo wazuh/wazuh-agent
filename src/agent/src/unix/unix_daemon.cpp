@@ -91,11 +91,11 @@ namespace unix_daemon
         return true;
     }
 
-    LockFileHandler GenerateLockFile(const std::string& configFile)
+    LockFileHandler GenerateLockFile(const std::string& configFilePath)
     {
-        auto configurationParser = configFile.empty()
+        auto configurationParser = configFilePath.empty()
                                        ? configuration::ConfigurationParser()
-                                       : configuration::ConfigurationParser(std::filesystem::path(configFile));
+                                       : configuration::ConfigurationParser(std::filesystem::path(configFilePath));
 
         const std::string lockFilePath =
             configurationParser.GetConfig<std::string>("agent", "path.run").value_or(config::DEFAULT_RUN_PATH);
@@ -103,9 +103,9 @@ namespace unix_daemon
         return {LockFileHandler(lockFilePath)};
     }
 
-    std::string GetDaemonStatus(const std::string& configFile)
+    std::string GetDaemonStatus(const std::string& configFilePath)
     {
-        LockFileHandler lockFileHandler = GenerateLockFile(configFile);
+        LockFileHandler lockFileHandler = GenerateLockFile(configFilePath);
 
         if (!lockFileHandler.isLockFileCreated())
         {

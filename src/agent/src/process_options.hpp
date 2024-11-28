@@ -9,21 +9,21 @@
 /// @param password The password to use for authentication with Server Management API.
 /// @param key The key to use for registration.
 /// @param name The name to use for the agent.
-/// @param configFile The path to the configuration file.
+/// @param configFilePath The path to the configuration file.
 void RegisterAgent(const std::string& url,
                    const std::string& user,
                    const std::string& password,
                    const std::string& key,
                    const std::string& name,
-                   const std::string& configFile);
+                   const std::string& configFilePath);
 
 /// @brief Starts the agent using the specified configuration file.
-/// @param configFile The file path to the configuration file used for starting the agent.
-void StartAgent(const std::string& configFile);
+/// @param configFilePath The file path to the configuration file used for starting the agent.
+void StartAgent(const std::string& configFilePath);
 
 /// @brief Displays the current status of the agent.
-/// @param configFile The file path to the configuration file used to get the status of the agent.
-void StatusAgent(const std::string& configFile);
+/// @param configFilePath The file path to the configuration file used to get the status of the agent.
+void StatusAgent(const std::string& configFilePath);
 
 #ifdef _WIN32
 /// @brief Installs the agent as a service.

@@ -10,9 +10,10 @@
 #include <filesystem>
 #include <memory>
 
-Agent::Agent(const std::string& configFile, std::unique_ptr<ISignalHandler> signalHandler)
-    : m_configurationParser(configFile.empty() ? configuration::ConfigurationParser()
-                                               : configuration::ConfigurationParser(std::filesystem::path(configFile)))
+Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> signalHandler)
+    : m_configurationParser(configFilePath.empty()
+                                ? configuration::ConfigurationParser()
+                                : configuration::ConfigurationParser(std::filesystem::path(configFilePath)))
     , m_dataPath(m_configurationParser.GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH))
     , m_messageQueue(std::make_shared<MultiTypeQueue>(m_dataPath))
     , m_signalHandler(std::move(signalHandler))
