@@ -118,15 +118,6 @@ namespace http_client
                 continue;
             }
 
-            auto socket = m_socketFactory->Create(executor, reqParams.Use_Https);
-
-            if (!socket)
-            {
-                LogWarn("Failed to create socket. Retrying in {} seconds.", connectionRetry / A_SECOND_IN_MILLIS);
-                co_await WaitForTimer(timer, connectionRetry);
-                continue;
-            }
-
             const auto results = co_await resolver->AsyncResolve(reqParams.Host, reqParams.Port);
 
             if (results.empty())
@@ -136,7 +127,17 @@ namespace http_client
                 continue;
             }
 
+            auto socket = m_socketFactory->Create(executor, reqParams.Use_Https);
+
+            if (!socket)
+            {
+                LogWarn("Failed to create socket. Retrying in {} seconds.", connectionRetry / A_SECOND_IN_MILLIS);
+                co_await WaitForTimer(timer, connectionRetry);
+                continue;
+            }
+
             boost::system::error_code ec;
+
             co_await socket->AsyncConnect(results, ec);
 
             if (ec != boost::system::errc::success)
@@ -159,7 +160,8 @@ namespace http_client
             }
 
             reqParams.Token = *token;
-            auto req = CreateHttpRequest(reqParams);
+
+            const auto req = CreateHttpRequest(reqParams);
 
             co_await socket->AsyncWrite(req, ec);
 
