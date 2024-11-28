@@ -57,6 +57,13 @@ namespace http_client
         boost::beast::http::response<boost::beast::http::dynamic_body>
         PerformHttpRequest(const HttpRequestParams& params) override;
 
+        /// @brief Downloads HTTP response to a file
+        /// @param params Parameters for the request
+        /// @param dstFilePath Destination file path for the response
+        /// @return The HTTP response
+        boost::beast::http::response<boost::beast::http::dynamic_body>
+        PerformHttpRequestDownload(const HttpRequestParams& params, const std::string& dstFilePath) override;
+
         /// @brief Authenticates using UUID and key
         /// @param serverUrl Server URL for authentication
         /// @param userAgent User agent header
@@ -78,13 +85,6 @@ namespace http_client
                                                                 const std::string& userAgent,
                                                                 const std::string& user,
                                                                 const std::string& password) override;
-
-        /// @brief Downloads HTTP response to a file
-        /// @param params Parameters for the request
-        /// @param dstFilePath Destination file path for the response
-        /// @return The HTTP response
-        boost::beast::http::response<boost::beast::http::dynamic_body>
-        PerformHttpRequestDownload(const HttpRequestParams& params, const std::string& dstFilePath) override;
 
     private:
         /// @brief Performs an HTTP request with a response handler

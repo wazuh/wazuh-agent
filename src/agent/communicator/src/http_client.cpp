@@ -211,64 +211,20 @@ namespace http_client
     boost::beast::http::response<boost::beast::http::dynamic_body>
     HttpClient::PerformHttpRequest(const HttpRequestParams& params)
     {
-        boost::beast::http::response<boost::beast::http::dynamic_body> res;
+        return PerformHttpRequestInternal(params,
+                                          [](std::unique_ptr<IHttpSocket>& socket,
+                                             boost::beast::http::response<boost::beast::http::dynamic_body>& res,
+                                             boost::beast::error_code& ec) { socket->Read(res, ec); });
+    }
 
-        try
-        {
-            boost::asio::io_context io_context;
-            auto resolver = m_resolverFactory->Create(io_context.get_executor());
-
-            const auto results = resolver->Resolve(params.Host, params.Port);
-
-            if (results.empty())
-            {
-                throw std::runtime_error("Failed to resolve host.");
-            }
-
-            auto socket = m_socketFactory->Create(io_context.get_executor(), params.Use_Https);
-
-            if (!socket)
-            {
-                throw std::runtime_error("Failed to create socket.");
-            }
-
-            boost::beast::error_code ec;
-
-            socket->Connect(results, ec);
-
-            if (ec)
-            {
-                throw std::runtime_error("Error connecting to host: " + ec.message());
-            }
-
-            const auto req = CreateHttpRequest(params);
-
-            socket->Write(req, ec);
-
-            if (ec)
-            {
-                throw std::runtime_error("Error writing request: " + ec.message());
-            }
-
-            socket->Read(res, ec);
-
-            if (ec)
-            {
-                throw std::runtime_error("Error reading response: " + ec.message());
-            }
-
-            LogDebug("{}", ResponseToString(params.Endpoint, res));
-        }
-        catch (std::exception const& e)
-        {
-            LogError("Error: {}.", e.what());
-
-            res.result(boost::beast::http::status::internal_server_error);
-            boost::beast::ostream(res.body()) << "Internal server error: " << e.what();
-            res.prepare_payload();
-        }
-
-        return res;
+    boost::beast::http::response<boost::beast::http::dynamic_body>
+    HttpClient::PerformHttpRequestDownload(const HttpRequestParams& params, const std::string& dstFilePath)
+    {
+        return PerformHttpRequestInternal(
+            params,
+            [&dstFilePath](std::unique_ptr<IHttpSocket>& socket,
+                           boost::beast::http::response<boost::beast::http::dynamic_body>& res,
+                           boost::beast::error_code&) { socket->ReadToFile(res, dstFilePath); });
     }
 
     std::optional<std::string> HttpClient::AuthenticateWithUuidAndKey(const std::string& serverUrl,
@@ -338,64 +294,6 @@ namespace http_client
         }
 
         return std::nullopt;
-    }
-
-    boost::beast::http::response<boost::beast::http::dynamic_body>
-    HttpClient::PerformHttpRequestDownload(const HttpRequestParams& params, const std::string& dstFilePath)
-    {
-        boost::beast::http::response<boost::beast::http::dynamic_body> res;
-
-        try
-        {
-            boost::asio::io_context io_context;
-            auto resolver = m_resolverFactory->Create(io_context.get_executor());
-
-            const auto results = resolver->Resolve(params.Host, params.Port);
-
-            if (results.empty())
-            {
-                throw std::runtime_error("Failed to resolve host.");
-            }
-
-            auto socket = m_socketFactory->Create(io_context.get_executor(), params.Use_Https);
-
-            if (!socket)
-            {
-                throw std::runtime_error("Failed to create socket.");
-            }
-
-            boost::beast::error_code ec;
-
-            socket->Connect(results, ec);
-
-            if (ec)
-            {
-                throw std::runtime_error("Error connecting to host: " + ec.message());
-            }
-
-            const auto req = CreateHttpRequest(params);
-
-            socket->Write(req, ec);
-
-            if (ec)
-            {
-                throw std::runtime_error("Error writing request: " + ec.message());
-            }
-
-            socket->ReadToFile(res, dstFilePath);
-
-            LogDebug("{}", ResponseToString(params.Endpoint, res));
-        }
-        catch (std::exception const& e)
-        {
-            LogError("Error: {}.", e.what());
-
-            res.result(boost::beast::http::status::internal_server_error);
-            boost::beast::ostream(res.body()) << "Internal server error: " << e.what();
-            res.prepare_payload();
-        }
-
-        return res;
     }
 
     boost::beast::http::response<boost::beast::http::dynamic_body> HttpClient::PerformHttpRequestInternal(
