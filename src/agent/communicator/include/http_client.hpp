@@ -95,7 +95,7 @@ namespace http_client
             const HttpRequestParams& params,
             const std::function<void(std::unique_ptr<IHttpSocket>&,
                                      boost::beast::http::response<boost::beast::http::dynamic_body>&,
-                                     boost::beast::error_code&)>& responseHandler);
+                                     boost::system::error_code&)>& responseHandler);
 
         /// @brief HTTP resolver factory
         std::shared_ptr<IHttpResolverFactory> m_resolverFactory;

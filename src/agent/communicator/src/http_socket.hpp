@@ -60,7 +60,7 @@ namespace http_client
         /// @param req The request to write
         /// @param ec The error code, if any occurred
         void Write(const boost::beast::http::request<boost::beast::http::string_body>& req,
-                   boost::beast::error_code& ec) override
+                   boost::system::error_code& ec) override
         {
             try
             {
@@ -76,7 +76,7 @@ namespace http_client
         /// @param req The request to write
         /// @param ec The error code, if any occurred
         boost::asio::awaitable<void> AsyncWrite(const boost::beast::http::request<boost::beast::http::string_body>& req,
-                                                boost::beast::error_code& ec) override
+                                                boost::system::error_code& ec) override
         {
             try
             {
@@ -94,7 +94,7 @@ namespace http_client
         /// @param res The response to read
         /// @param ec The error code, if any occurred
         void Read(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                  boost::beast::error_code& ec) override
+                  boost::system::error_code& ec) override
         {
             try
             {
@@ -127,7 +127,7 @@ namespace http_client
         /// @param res The response to read
         /// @param ec The error code, if any occurred
         boost::asio::awaitable<void> AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                                               boost::beast::error_code& ec) override
+                                               boost::system::error_code& ec) override
         {
             try
             {

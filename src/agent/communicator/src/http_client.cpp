@@ -136,15 +136,15 @@ namespace http_client
                 continue;
             }
 
-            boost::system::error_code code;
-            co_await socket->AsyncConnect(results, code);
+            boost::system::error_code ec;
+            co_await socket->AsyncConnect(results, ec);
 
-            if (code != boost::system::errc::success)
+            if (ec != boost::system::errc::success)
             {
                 LogWarn("Failed to send http request to endpoint: {}. Retrying in {} seconds.",
                         reqParams.Endpoint,
                         connectionRetry / A_SECOND_IN_MILLIS);
-                LogDebug("Http request failed: {} - {}", code.message(), code.what());
+                LogDebug("Http request failed: {} - {}", ec.message(), ec.what());
                 co_await WaitForTimer(timer, connectionRetry);
                 continue;
             }
@@ -161,7 +161,6 @@ namespace http_client
             reqParams.Token = *token;
             auto req = CreateHttpRequest(reqParams);
 
-            boost::beast::error_code ec;
             co_await socket->AsyncWrite(req, ec);
 
             if (ec)
@@ -214,7 +213,7 @@ namespace http_client
         return PerformHttpRequestInternal(params,
                                           [](std::unique_ptr<IHttpSocket>& socket,
                                              boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                                             boost::beast::error_code& ec) { socket->Read(res, ec); });
+                                             boost::system::error_code& ec) { socket->Read(res, ec); });
     }
 
     boost::beast::http::response<boost::beast::http::dynamic_body>
@@ -224,7 +223,7 @@ namespace http_client
             params,
             [&dstFilePath](std::unique_ptr<IHttpSocket>& socket,
                            boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                           boost::beast::error_code&) { socket->ReadToFile(res, dstFilePath); });
+                           boost::system::error_code&) { socket->ReadToFile(res, dstFilePath); });
     }
 
     std::optional<std::string> HttpClient::AuthenticateWithUuidAndKey(const std::string& serverUrl,
@@ -300,7 +299,7 @@ namespace http_client
         const HttpRequestParams& params,
         const std::function<void(std::unique_ptr<IHttpSocket>&,
                                  boost::beast::http::response<boost::beast::http::dynamic_body>&,
-                                 boost::beast::error_code&)>& responseHandler)
+                                 boost::system::error_code&)>& responseHandler)
     {
         boost::beast::http::response<boost::beast::http::dynamic_body> res;
 
@@ -323,7 +322,7 @@ namespace http_client
                 throw std::runtime_error("Failed to create socket.");
             }
 
-            boost::beast::error_code ec;
+            boost::system::error_code ec;
 
             socket->Connect(results, ec);
 

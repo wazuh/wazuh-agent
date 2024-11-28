@@ -83,23 +83,23 @@ protected:
                 }));
     }
 
-    void SetupMockSocketWriteExpectations(boost::beast::error_code writeEc = {})
+    void SetupMockSocketWriteExpectations(boost::system::error_code writeEc = {})
     {
         EXPECT_CALL(*mockSocket, AsyncWrite(_, _))
             .WillOnce(Invoke(
                 [writeEc](const boost::beast::http::request<boost::beast::http::string_body>&,
-                          boost::beast::error_code& ec) -> boost::asio::awaitable<void>
+                          boost::system::error_code& ec) -> boost::asio::awaitable<void>
                 {
                     ec = writeEc;
                     co_return;
                 }));
     }
 
-    void SetupMockSocketReadExpectations(boost::beast::http::status status, boost::beast::error_code readEc = {})
+    void SetupMockSocketReadExpectations(boost::beast::http::status status, boost::system::error_code readEc = {})
     {
         EXPECT_CALL(*mockSocket, AsyncRead(_, _))
             .WillOnce(Invoke(
-                [status, readEc](auto& res, boost::beast::error_code& ec) -> boost::asio::awaitable<void>
+                [status, readEc](auto& res, boost::system::error_code& ec) -> boost::asio::awaitable<void>
                 {
                     res.result(status);
                     ec = readEc;

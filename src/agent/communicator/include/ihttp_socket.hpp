@@ -31,20 +31,20 @@ namespace http_client
         /// @param req The request to write
         /// @param ec The error code, if any occurred
         virtual void Write(const boost::beast::http::request<boost::beast::http::string_body>& req,
-                           boost::beast::error_code& ec) = 0;
+                           boost::system::error_code& ec) = 0;
 
         /// @brief Asynchronous version of Write
         /// @param req The request to write
         /// @param ec The error code, if any occurred
         virtual boost::asio::awaitable<void>
         AsyncWrite(const boost::beast::http::request<boost::beast::http::string_body>& req,
-                   boost::beast::error_code& ec) = 0;
+                   boost::system::error_code& ec) = 0;
 
         /// @brief Reads a response from the socket
         /// @param res The response to read
         /// @param ec The error code, if any occurred
         virtual void Read(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                          boost::beast::error_code& ec) = 0;
+                          boost::system::error_code& ec) = 0;
 
         /// @brief Reads a response from the socket and writes it to a file
         /// @param res The response to read
@@ -57,7 +57,7 @@ namespace http_client
         /// @param ec The error code, if any occurred
         virtual boost::asio::awaitable<void>
         AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                  boost::beast::error_code& ec) = 0;
+                  boost::system::error_code& ec) = 0;
 
         /// @brief Closes the socket
         virtual void Close() = 0;
