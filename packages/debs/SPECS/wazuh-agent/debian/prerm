@@ -4,7 +4,6 @@
 
 set -e
 
-export INSTALLATION_WAZUH_DIR="/opt/wazuh-agent"
 BINARY_DIR="/usr/share/wazuh-agent/bin/"
 
 case "$1" in
@@ -13,8 +12,6 @@ case "$1" in
       # Stop the services before uninstalling the package
       if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1 && systemctl is-active --quiet wazuh-agent > /dev/null 2>&1; then
           systemctl stop wazuh-agent > /dev/null 2>&1
-      elif command -v service > /dev/null 2>&1 && service wazuh-agent status 2>/dev/null | grep "running" > /dev/null 2>&1; then
-          service wazuh-agent stop > /dev/null 2>&1
       elif ${BINARY_DIR}wazuh-agent --status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
           pid=$(ps -ef | grep "${BINARY_DIR}wazuh-agent" | grep -v grep | awk '{print $2}')
           if [ -n "$pid" ]; then
@@ -38,9 +35,6 @@ case "$1" in
       # Check for systemd
       if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1 && systemctl is-active --quiet wazuh-agent > /dev/null 2>&1; then
           systemctl stop wazuh-agent > /dev/null 2>&1
-      # Check for SysV
-      elif command -v service > /dev/null 2>&1 && service wazuh-agent status 2>/dev/null | grep "running" > /dev/null 2>&1; then
-          service wazuh-agent stop > /dev/null 2>&1
       elif ${BINARY_DIR}wazuh-agent --status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
           pid=$(ps -ef | grep "${BINARY_DIR}wazuh-agent" | grep -v grep | awk '{print $2}')
           if [ -n "$pid" ]; then
@@ -55,8 +49,6 @@ case "$1" in
       # Stop the services before uninstalling the package
       if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1 && systemctl is-active --quiet wazuh-agent > /dev/null 2>&1; then
           systemctl stop wazuh-agent > /dev/null 2>&1
-      elif command -v service > /dev/null 2>&1 && service wazuh-agent status 2>/dev/null | grep "running" > /dev/null 2>&1; then
-          service wazuh-agent stop > /dev/null 2>&1
       elif ${BINARY_DIR}wazuh-agent --status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
           pid=$(ps -ef | grep "${BINARY_DIR}wazuh-agent" | grep -v grep | awk '{print $2}')
           if [ -n "$pid" ]; then
