@@ -18,8 +18,8 @@ constexpr auto QUEUE_SIZE
 static const std::map<ReturnTypeCallback, std::string> OPERATION_MAP
 {
     // LCOV_EXCL_START
-    {MODIFIED, "modified"},
-    {DELETED, "deleted"},
+    {MODIFIED, "update"},
+    {DELETED, "delete"},
     {INSERTED, "create"},
     {MAX_ROWS, "max_rows"},
     {DB_ERROR, "db_error"},
