@@ -1,7 +1,10 @@
 #include <ihttp_resolver.hpp>
+#include <logger.hpp>
 
 #include <boost/asio.hpp>
+#include <boost/system/error_code.hpp>
 
+#include <exception>
 #include <string>
 
 namespace http_client
@@ -23,7 +26,24 @@ namespace http_client
         /// @return Resolved endpoints
         boost::asio::ip::tcp::resolver::results_type Resolve(const std::string& host, const std::string& port) override
         {
-            return m_resolver.resolve(host, port);
+            try
+            {
+                boost::system::error_code ec;
+
+                const auto results = m_resolver.resolve(host, port, ec);
+
+                if (ec)
+                {
+                    throw std::runtime_error(ec.message());
+                }
+
+                return results;
+            }
+            catch (const std::exception& e)
+            {
+                LogDebug("Failed to resolve host: {} port: {} with error: {}", host, port, e.what());
+                return {};
+            }
         }
 
         /// @brief Asynchronously resolves a host and port to a list of endpoints
@@ -33,7 +53,15 @@ namespace http_client
         boost::asio::awaitable<boost::asio::ip::tcp::resolver::results_type>
         AsyncResolve(const std::string& host, const std::string& port) override
         {
-            co_return co_await m_resolver.async_resolve(host, port, boost::asio::use_awaitable);
+            try
+            {
+                co_return co_await m_resolver.async_resolve(host, port, boost::asio::use_awaitable);
+            }
+            catch (const std::exception& e)
+            {
+                LogDebug("Failed to asynchronously resolve host: {} port: {} with error: {}", host, port, e.what());
+                co_return boost::asio::ip::tcp::resolver::results_type {};
+            }
         }
 
     private:

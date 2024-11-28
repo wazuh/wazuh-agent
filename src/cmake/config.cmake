@@ -4,6 +4,8 @@ set(PROJECT_NAME "Wazuh Agent")
 # Project version
 set(VERSION "0.1")
 
+set(DEFAULT_THREAD_COUNT 4 CACHE STRING "Default number of threads (4)")
+
 string(REPLACE "\\" "\\\\" DEFAULT_DATA_PATH "${DATA_INSTALL_DIR}")
 
 string(REPLACE "\\" "\\\\" DEFAULT_RUN_PATH "${RUN_INSTALL_DIR}")

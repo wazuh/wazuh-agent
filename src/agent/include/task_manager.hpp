@@ -40,4 +40,7 @@ private:
 
     /// @brief Threads run by the task manager
     std::vector<std::thread> m_threads;
+
+    /// @brief Number of enqueued threads
+    size_t m_numEnqueuedThreads = 0;
 };

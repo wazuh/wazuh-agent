@@ -38,7 +38,7 @@ namespace http_client
         /// @param params Request parameters
         /// @param messageGetter Function to get the message body asynchronously
         /// @param onUnauthorized Callback for unauthorized access
-        /// @param connectionRetry Time to wait before retrying the connection
+        /// @param connectionRetry Time in milliseconds to wait before retrying the connection
         /// @param onSuccess Callback for successful request completion
         /// @param loopRequestCondition Condition to continue looping requests
         /// @return Awaitable task for the HTTP request
@@ -56,6 +56,13 @@ namespace http_client
         /// @return The HTTP response
         boost::beast::http::response<boost::beast::http::dynamic_body>
         PerformHttpRequest(const HttpRequestParams& params) override;
+
+        /// @brief Downloads HTTP response to a file
+        /// @param params Parameters for the request
+        /// @param dstFilePath Destination file path for the response
+        /// @return The HTTP response
+        boost::beast::http::response<boost::beast::http::dynamic_body>
+        PerformHttpRequestDownload(const HttpRequestParams& params, const std::string& dstFilePath) override;
 
         /// @brief Authenticates using UUID and key
         /// @param serverUrl Server URL for authentication
@@ -79,14 +86,17 @@ namespace http_client
                                                                 const std::string& user,
                                                                 const std::string& password) override;
 
-        /// @brief Downloads HTTP response to a file
-        /// @param params Parameters for the request
-        /// @param dstFilePath Destination file path for the response
-        /// @return The HTTP response
-        boost::beast::http::response<boost::beast::http::dynamic_body>
-        PerformHttpRequestDownload(const HttpRequestParams& params, const std::string& dstFilePath) override;
-
     private:
+        /// @brief Performs an HTTP request with a response handler
+        /// @param params Parameters for the request
+        /// @param responseHandler Handler for the response
+        /// @return The HTTP response
+        boost::beast::http::response<boost::beast::http::dynamic_body> PerformHttpRequestInternal(
+            const HttpRequestParams& params,
+            const std::function<void(std::unique_ptr<IHttpSocket>&,
+                                     boost::beast::http::response<boost::beast::http::dynamic_body>&,
+                                     boost::system::error_code&)>& responseHandler);
+
         /// @brief HTTP resolver factory
         std::shared_ptr<IHttpResolverFactory> m_resolverFactory;
 

@@ -96,7 +96,7 @@ namespace communicator
                 const auto result = SendAuthenticationRequest();
                 if (result != boost::beast::http::status::ok)
                 {
-                    return std::chrono::milliseconds(m_retryInterval * A_SECOND_IN_MILLIS);
+                    return std::chrono::milliseconds(m_retryInterval);
                 }
                 else
                 {
@@ -185,7 +185,7 @@ namespace communicator
             std::ostringstream oss;
             oss << threadId;
             std::string threadIdStr = oss.str();
-            LogError("Re-authentication attempt by thread {} failed.", threadIdStr);
+            LogDebug("Re-authentication attempt by thread {} failed.", threadIdStr);
         }
     }
 

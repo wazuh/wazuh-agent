@@ -1,5 +1,7 @@
 #include <task_manager.hpp>
 
+#include <logger.hpp>
+
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/post.hpp>
@@ -36,6 +38,10 @@ void TaskManager::Stop()
 
 void TaskManager::EnqueueTask(std::function<void()> task)
 {
+    if (++m_numEnqueuedThreads > m_threads.size() - 1) // -1 to account for the coroutines
+    {
+        LogError("Enqueued more threaded tasks than available threads");
+    }
     boost::asio::post(m_ioContext, std::move(task));
 }
 

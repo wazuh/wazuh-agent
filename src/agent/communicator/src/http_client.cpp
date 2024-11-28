@@ -10,6 +10,32 @@
 #include <nlohmann/json.hpp>
 
 #include <chrono>
+#include <sstream>
+#include <string>
+
+namespace
+{
+    boost::asio::awaitable<void> WaitForTimer(std::shared_ptr<boost::asio::steady_timer> timer,
+                                              const std::time_t retryInMillis)
+    {
+        if (!timer)
+        {
+            LogError("Timer is null.");
+            co_return;
+        }
+        const auto duration = std::chrono::milliseconds(retryInMillis);
+        (*timer).expires_after(duration);
+        co_await timer->async_wait(boost::asio::use_awaitable);
+    }
+
+    std::string ResponseToString(const std::string& endpoint,
+                                 const boost::beast::http::response<boost::beast::http::dynamic_body>& res)
+    {
+        std::ostringstream stream;
+        stream << "Request endpoint: " << endpoint << "\nResponse: " << res;
+        return stream.str();
+    }
+} // namespace
 
 namespace http_client
 {
@@ -81,30 +107,46 @@ namespace http_client
         using namespace std::chrono_literals;
 
         auto executor = co_await boost::asio::this_coro::executor;
-        boost::asio::steady_timer timer(executor);
+        auto timer = std::make_shared<boost::asio::steady_timer>(executor);
         auto resolver = m_resolverFactory->Create(executor);
 
         do
         {
-            std::time_t timerSleep = A_SECOND_IN_MILLIS;
-
-            auto socket = m_socketFactory->Create(executor, reqParams.Use_Https);
+            if (!token || token->empty())
+            {
+                co_await WaitForTimer(timer, A_SECOND_IN_MILLIS);
+                continue;
+            }
 
             const auto results = co_await resolver->AsyncResolve(reqParams.Host, reqParams.Port);
 
-            boost::system::error_code code;
-            co_await socket->AsyncConnect(results, code);
-
-            if (code != boost::system::errc::success)
+            if (results.empty())
             {
-                LogWarn("Failed to send http request. {}. Retrying in {} seconds.",
+                LogWarn("Failed to resolve host. Retrying in {} seconds.", connectionRetry / A_SECOND_IN_MILLIS);
+                co_await WaitForTimer(timer, connectionRetry);
+                continue;
+            }
+
+            auto socket = m_socketFactory->Create(executor, reqParams.Use_Https);
+
+            if (!socket)
+            {
+                LogWarn("Failed to create socket. Retrying in {} seconds.", connectionRetry / A_SECOND_IN_MILLIS);
+                co_await WaitForTimer(timer, connectionRetry);
+                continue;
+            }
+
+            boost::system::error_code ec;
+
+            co_await socket->AsyncConnect(results, ec);
+
+            if (ec != boost::system::errc::success)
+            {
+                LogWarn("Failed to send http request to endpoint: {}. Retrying in {} seconds.",
                         reqParams.Endpoint,
                         connectionRetry / A_SECOND_IN_MILLIS);
-                LogDebug("Http request failed: {} - {}", code.message(), code.what());
-                socket->Close();
-                const auto duration = std::chrono::milliseconds(connectionRetry * A_SECOND_IN_MILLIS);
-                timer.expires_after(duration);
-                co_await timer.async_wait(boost::asio::use_awaitable);
+                LogDebug("Http request failed: {} - {}", ec.message(), ec.what());
+                co_await WaitForTimer(timer, connectionRetry);
                 continue;
             }
 
@@ -118,15 +160,16 @@ namespace http_client
             }
 
             reqParams.Token = *token;
-            auto req = CreateHttpRequest(reqParams);
 
-            boost::beast::error_code ec;
+            const auto req = CreateHttpRequest(reqParams);
+
             co_await socket->AsyncWrite(req, ec);
 
             if (ec)
             {
-                LogError("Error writing request ({}): {}.", std::to_string(ec.value()), ec.message());
+                LogWarn("Error writing request ({}): {}.", std::to_string(ec.value()), ec.message());
                 socket->Close();
+                co_await WaitForTimer(timer, connectionRetry);
                 continue;
             }
 
@@ -135,10 +178,13 @@ namespace http_client
 
             if (ec)
             {
-                LogError("Error reading response. Response code: {}.", res.result_int());
+                LogWarn("Error reading response. Response code: {}.", res.result_int());
                 socket->Close();
+                co_await WaitForTimer(timer, connectionRetry);
                 continue;
             }
+
+            std::time_t timerSleep = A_SECOND_IN_MILLIS;
 
             if (res.result() == boost::beast::http::status::ok)
             {
@@ -154,50 +200,32 @@ namespace http_client
                 {
                     onUnauthorized();
                 }
-                timerSleep = connectionRetry * A_SECOND_IN_MILLIS;
+                timerSleep = connectionRetry;
             }
 
-            LogDebug("Response code: {}.", res.result_int());
-            LogDebug("Response body: {}.", boost::beast::buffers_to_string(res.body().data()));
+            LogDebug("{}", ResponseToString(reqParams.Endpoint, res));
 
-            const auto duration = std::chrono::milliseconds(timerSleep);
-            timer.expires_after(duration);
-            co_await timer.async_wait(boost::asio::use_awaitable);
+            co_await WaitForTimer(timer, timerSleep);
         } while (loopRequestCondition != nullptr && loopRequestCondition());
     }
 
     boost::beast::http::response<boost::beast::http::dynamic_body>
     HttpClient::PerformHttpRequest(const HttpRequestParams& params)
     {
-        boost::beast::http::response<boost::beast::http::dynamic_body> res;
+        return PerformHttpRequestInternal(params,
+                                          [](std::unique_ptr<IHttpSocket>& socket,
+                                             boost::beast::http::response<boost::beast::http::dynamic_body>& res,
+                                             boost::system::error_code& ec) { socket->Read(res, ec); });
+    }
 
-        try
-        {
-            boost::asio::io_context io_context;
-            auto resolver = m_resolverFactory->Create(io_context.get_executor());
-
-            const auto results = resolver->Resolve(params.Host, params.Port);
-
-            auto socket = m_socketFactory->Create(io_context.get_executor(), params.Use_Https);
-            socket->Connect(results);
-
-            const auto req = CreateHttpRequest(params);
-            socket->Write(req);
-            socket->Read(res);
-
-            LogDebug("Response code: {}.", res.result_int());
-            LogDebug("Response body: {}.", boost::beast::buffers_to_string(res.body().data()));
-        }
-        catch (std::exception const& e)
-        {
-            LogDebug("Error: {}.", e.what());
-
-            res.result(boost::beast::http::status::internal_server_error);
-            boost::beast::ostream(res.body()) << "Internal server error: " << e.what();
-            res.prepare_payload();
-        }
-
-        return res;
+    boost::beast::http::response<boost::beast::http::dynamic_body>
+    HttpClient::PerformHttpRequestDownload(const HttpRequestParams& params, const std::string& dstFilePath)
+    {
+        return PerformHttpRequestInternal(
+            params,
+            [&dstFilePath](std::unique_ptr<IHttpSocket>& socket,
+                           boost::beast::http::response<boost::beast::http::dynamic_body>& res,
+                           boost::system::error_code&) { socket->ReadToFile(res, dstFilePath); });
     }
 
     std::optional<std::string> HttpClient::AuthenticateWithUuidAndKey(const std::string& serverUrl,
@@ -213,7 +241,7 @@ namespace http_client
 
         if (res.result() != boost::beast::http::status::ok)
         {
-            LogDebug("Error: {}.", res.result_int());
+            LogWarn("Error: {}.", res.result_int());
             return std::nullopt;
         }
 
@@ -250,7 +278,7 @@ namespace http_client
 
         if (res.result() != boost::beast::http::status::ok)
         {
-            LogDebug("Error: {}.", res.result_int());
+            LogWarn("Error: {}.", res.result_int());
             return std::nullopt;
         }
 
@@ -269,10 +297,13 @@ namespace http_client
         return std::nullopt;
     }
 
-    boost::beast::http::response<boost::beast::http::dynamic_body>
-    HttpClient::PerformHttpRequestDownload(const HttpRequestParams& params, const std::string& dstFilePath)
+    boost::beast::http::response<boost::beast::http::dynamic_body> HttpClient::PerformHttpRequestInternal(
+        const HttpRequestParams& params,
+        const std::function<void(std::unique_ptr<IHttpSocket>&,
+                                 boost::beast::http::response<boost::beast::http::dynamic_body>&,
+                                 boost::system::error_code&)>& responseHandler)
     {
-        boost::beast::http::response_parser<boost::beast::http::dynamic_body> res_parser;
+        boost::beast::http::response<boost::beast::http::dynamic_body> res;
 
         try
         {
@@ -281,24 +312,54 @@ namespace http_client
 
             const auto results = resolver->Resolve(params.Host, params.Port);
 
+            if (results.empty())
+            {
+                throw std::runtime_error("Failed to resolve host.");
+            }
+
             auto socket = m_socketFactory->Create(io_context.get_executor(), params.Use_Https);
-            socket->Connect(results);
+
+            if (!socket)
+            {
+                throw std::runtime_error("Failed to create socket.");
+            }
+
+            boost::system::error_code ec;
+
+            socket->Connect(results, ec);
+
+            if (ec)
+            {
+                throw std::runtime_error("Error connecting to host: " + ec.message());
+            }
 
             const auto req = CreateHttpRequest(params);
-            socket->Write(req);
-            socket->ReadToFile(res_parser, dstFilePath);
 
-            LogDebug("Response code: {}.", res_parser.get().result_int());
+            socket->Write(req, ec);
+
+            if (ec)
+            {
+                throw std::runtime_error("Error writing request: " + ec.message());
+            }
+
+            responseHandler(socket, res, ec);
+
+            if (ec)
+            {
+                throw std::runtime_error("Error handling response: " + ec.message());
+            }
+
+            LogDebug("{}", ResponseToString(params.Endpoint, res));
         }
         catch (std::exception const& e)
         {
             LogError("Error: {}.", e.what());
 
-            auto& res = res_parser.get();
             res.result(boost::beast::http::status::internal_server_error);
             boost::beast::ostream(res.body()) << "Internal server error: " << e.what();
+            res.prepare_payload();
         }
 
-        return res_parser.release();
+        return res;
     }
 } // namespace http_client
