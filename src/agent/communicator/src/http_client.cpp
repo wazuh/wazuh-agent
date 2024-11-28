@@ -153,7 +153,8 @@ namespace http_client
 
             if (messageGetter != nullptr)
             {
-                reqParams.Body = co_await messageGetter();
+                const auto messages = co_await messageGetter();
+                reqParams.Body = std::get<1>(messages);
             }
             else
             {

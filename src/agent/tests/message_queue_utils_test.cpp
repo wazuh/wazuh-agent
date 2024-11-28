@@ -56,16 +56,18 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
         .WillOnce([&testMessages]() -> boost::asio::awaitable<std::vector<Message>> { co_return testMessages; });
     // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
-    auto result = boost::asio::co_spawn(io_context,
-                                        GetMessagesFromQueue(mockQueue, MessageType::STATELESS, MAX_MESSAGES, nullptr),
-                                        boost::asio::use_future);
+    auto awaitableResult =
+        boost::asio::co_spawn(io_context,
+                              GetMessagesFromQueue(mockQueue, MessageType::STATELESS, MAX_MESSAGES, nullptr),
+                              boost::asio::use_future);
 
     const auto timeout = std::chrono::steady_clock::now() + std::chrono::milliseconds(1);
     io_context.run_until(timeout);
 
-    ASSERT_TRUE(result.wait_for(std::chrono::milliseconds(1)) == std::future_status::ready);
+    ASSERT_TRUE(awaitableResult.wait_for(std::chrono::milliseconds(1)) == std::future_status::ready);
 
-    const auto jsonResult = result.get();
+    const auto result = awaitableResult.get();
+    const auto jsonResult = std::get<1>(result);
 
     std::string expectedString = std::string("\n") + R"({"module":"logcollector","type":"file"})" + std::string("\n") +
                                  R"(["{\"event\":{\"original\":\"Testing message!\"}}"])";
@@ -90,7 +92,7 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueMetadataTest)
 
     io_context.restart();
 
-    auto result = boost::asio::co_spawn(
+    auto awaitableResult = boost::asio::co_spawn(
         io_context,
         GetMessagesFromQueue(
             mockQueue, MessageType::STATELESS, MAX_MESSAGES, [&metadata]() { return metadata.dump(); }),
@@ -99,9 +101,10 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueMetadataTest)
     const auto timeout = std::chrono::steady_clock::now() + std::chrono::milliseconds(1);
     io_context.run_until(timeout);
 
-    ASSERT_TRUE(result.wait_for(std::chrono::milliseconds(1)) == std::future_status::ready);
+    ASSERT_TRUE(awaitableResult.wait_for(std::chrono::milliseconds(1)) == std::future_status::ready);
 
-    const auto jsonResult = result.get();
+    const auto result = awaitableResult.get();
+    const auto jsonResult = std::get<1>(result);
 
     std::string expectedString = R"({"agent":"test"})" + std::string("\n") +
                                  R"({"module":"logcollector","type":"file"})" + std::string("\n") +

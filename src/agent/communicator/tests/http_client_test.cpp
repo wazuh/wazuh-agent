@@ -215,10 +215,10 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_Success)
     SetupMockSocketReadExpectations(boost::beast::http::status::ok);
 
     auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::string>
+    auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::tuple<int, std::string>>
     {
         getMessagesCalled = true;
-        co_return std::string("test message");
+        co_return std::tuple<int, std::string>(1, "test message");
     };
 
     auto onSuccessCalled = false;
@@ -263,10 +263,10 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
     SetupMockSocketConnectExpectations(boost::system::errc::make_error_code(boost::system::errc::bad_address));
 
     auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::string>
+    auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::tuple<int, std::string>>
     {
         getMessagesCalled = true;
-        co_return std::string("test message");
+        co_return std::tuple<int, std::string>(1, "test message");
     };
 
     auto onSuccessCalled = false;
@@ -311,10 +311,10 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails
     SetupMockSocketWriteExpectations(boost::system::errc::make_error_code(boost::system::errc::bad_address));
 
     auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::string>
+    auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::tuple<int, std::string>>
     {
         getMessagesCalled = true;
-        co_return std::string("test message");
+        co_return std::tuple<int, std::string>(1, "test message");
     };
 
     auto onSuccessCalled = false;
@@ -361,10 +361,10 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
                                     boost::system::errc::make_error_code(boost::system::errc::bad_address));
 
     auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::string>
+    auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::tuple<int, std::string>>
     {
         getMessagesCalled = true;
-        co_return std::string("test message");
+        co_return std::tuple<int, std::string>(1, "test message");
     };
 
     auto onSuccessCalled = false;
@@ -410,10 +410,10 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_UnauthorizedCalledWhenAuthorization
     SetupMockSocketReadExpectations(boost::beast::http::status::unauthorized);
 
     auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::string>
+    auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::tuple<int, std::string>>
     {
         getMessagesCalled = true;
-        co_return std::string("test message");
+        co_return std::tuple<int, std::string>(1, "test message");
     };
 
     auto onSuccessCalled = false;

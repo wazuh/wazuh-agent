@@ -51,9 +51,9 @@ TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
 {
     auto mockHttpClient = std::make_unique<MockHttpClient>();
 
-    auto getMessages = []() -> boost::asio::awaitable<std::string>
+    auto getMessages = []() -> boost::asio::awaitable<std::tuple<int, std::string>>
     {
-        co_return std::string("message-content");
+        co_return std::tuple<int, std::string> {1, std::string("message-content")};
     };
 
     std::function<void(const std::string&)> onSuccess = [](const std::string& message)
@@ -65,7 +65,7 @@ TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
         .WillOnce(Invoke(
             [](std::shared_ptr<std::string>,
                http_client::HttpRequestParams,
-               std::function<boost::asio::awaitable<std::string>()> pGetMessages,
+               std::function<boost::asio::awaitable<std::tuple<int, std::string>>()> pGetMessages,
                std::function<void()>,
                [[maybe_unused]] std::time_t connectionRetry,
                [[maybe_unused]] std::time_t batchInterval,
@@ -73,7 +73,7 @@ TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
                [[maybe_unused]] std::function<bool()> loopRequestCondition) -> boost::asio::awaitable<void>
             {
                 const auto message = co_await pGetMessages();
-                pOnSuccess(message);
+                pOnSuccess(std::get<1>(message));
                 co_return;
             }));
 
@@ -113,7 +113,7 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
         .WillOnce(Invoke(
             [](std::shared_ptr<std::string> token,
                http_client::HttpRequestParams,
-               [[maybe_unused]] std::function<boost::asio::awaitable<std::string>()> getMessages,
+               [[maybe_unused]] std::function<boost::asio::awaitable<std::tuple<int, std::string>>()> getMessages,
                [[maybe_unused]] std::function<void()> onUnauthorized,
                [[maybe_unused]] std::time_t connectionRetry,
                [[maybe_unused]] std::time_t batchInterval,
@@ -131,9 +131,10 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
         [communicatorPtr]() mutable -> boost::asio::awaitable<void>
         {
             co_await communicatorPtr->WaitForTokenExpirationAndAuthenticate();
-            co_await communicatorPtr->StatelessMessageProcessingTask([]() -> boost::asio::awaitable<std::string>
-                                                                     { co_return "message"; },
-                                                                     []([[maybe_unused]] const std::string& msg) {});
+            co_await communicatorPtr->StatelessMessageProcessingTask(
+                []() -> boost::asio::awaitable<std::tuple<int, std::string>>
+                { co_return std::tuple<int, std::string>(1, std::string {"message"}); },
+                []([[maybe_unused]] const std::string& msg) {});
         }(),
         boost::asio::detached);
 
@@ -186,9 +187,10 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
         [communicatorPtr]() mutable -> boost::asio::awaitable<void>
         {
             co_await communicatorPtr->WaitForTokenExpirationAndAuthenticate();
-            co_await communicatorPtr->StatelessMessageProcessingTask([]() -> boost::asio::awaitable<std::string>
-                                                                     { co_return "message"; },
-                                                                     []([[maybe_unused]] const std::string& msg) {});
+            co_await communicatorPtr->StatelessMessageProcessingTask(
+                []() -> boost::asio::awaitable<std::tuple<int, std::string>>
+                { co_return std::tuple<int, std::string>(1, std::string {"message"}); },
+                []([[maybe_unused]] const std::string& msg) {});
         }(),
         boost::asio::detached);
 

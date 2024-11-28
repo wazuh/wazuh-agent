@@ -3,10 +3,11 @@
 
 #include <vector>
 
-boost::asio::awaitable<std::string> GetMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue,
-                                                         MessageType messageType,
-                                                         int numMessages,
-                                                         std::function<std::string()> getMetadataInfo)
+boost::asio::awaitable<std::tuple<int, std::string>>
+GetMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue,
+                     MessageType messageType,
+                     int numMessages,
+                     std::function<std::string()> getMetadataInfo)
 {
     const auto messages = co_await multiTypeQueue->getNextNAwaitable(messageType, numMessages, "", "");
 
@@ -22,7 +23,7 @@ boost::asio::awaitable<std::string> GetMessagesFromQueue(std::shared_ptr<IMultiT
         output += "\n" + message.metaData + "\n" + message.data.dump();
     }
 
-    co_return output;
+    co_return std::tuple<int, std::string> {messages.size(), output};
 }
 
 void PopMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue, MessageType messageType, int numMessages)

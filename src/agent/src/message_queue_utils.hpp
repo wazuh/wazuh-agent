@@ -9,6 +9,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <tuple>
 
 class IMultiTypeQueue;
 
@@ -18,10 +19,11 @@ class IMultiTypeQueue;
 /// @param numMessages The number of messages to get
 /// @param getMetadataInfo Function to get the agent metadata
 /// @return A string containing the messages from the queue
-boost::asio::awaitable<std::string> GetMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue,
-                                                         MessageType messageType,
-                                                         int numMessages,
-                                                         std::function<std::string()> getMetadataInfo);
+boost::asio::awaitable<std::tuple<int, std::string>>
+GetMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue,
+                     MessageType messageType,
+                     int numMessages,
+                     std::function<std::string()> getMetadataInfo);
 
 /// @brief Removes a fixed number of messages from the specified queue
 /// @param multiTypeQueue The queue from which to remove messages

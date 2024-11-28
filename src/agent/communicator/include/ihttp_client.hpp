@@ -11,6 +11,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace http_client
 {
@@ -43,7 +44,7 @@ namespace http_client
         virtual boost::asio::awaitable<void>
         Co_PerformHttpRequest(std::shared_ptr<std::string> token,
                               HttpRequestParams params,
-                              std::function<boost::asio::awaitable<std::string>()> messageGetter,
+                              std::function<boost::asio::awaitable<std::tuple<int, std::string>>()> messageGetter,
                               std::function<void()> onUnauthorized,
                               std::time_t connectionRetry,
                               std::time_t batchInterval,
