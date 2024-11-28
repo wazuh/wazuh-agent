@@ -48,11 +48,11 @@ namespace
 
 namespace configuration
 {
-    ConfigurationParser::ConfigurationParser(const std::filesystem::path& configFile)
+    ConfigurationParser::ConfigurationParser(const std::filesystem::path& configFilePath)
     {
         try
         {
-            m_config = YAML::LoadFile(configFile.string());
+            m_config = YAML::LoadFile(configFilePath.string());
         }
         catch (const std::exception& e)
         {

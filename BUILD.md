@@ -58,6 +58,7 @@ The following dependencies are required for this project:
     cmake src -B build -DBUILD_TESTS=1
     cmake --build build
     ```
+
 5. **Run the Agent**
 
     **To run the agent in the foreground from the CLI**
@@ -186,7 +187,6 @@ The following dependencies are required for this project:
     ctest --test-dir build --output-log build
     ```
 
-
 ## Compilation steps for Windows
 
 1. **Installing Dependencies**
@@ -253,8 +253,6 @@ The following dependencies are required for this project:
     Or from the CLI
     ```bash
     .\RelWithDebInfo\wazuh-agent
-    .\RelWithDebInfo\wazuh-agent --stop
-    .\RelWithDebInfo\wazuh-agent --restart
     .\RelWithDebInfo\wazuh-agent --status
     ```
 
@@ -270,7 +268,6 @@ The following dependencies are required for this project:
     ```bash
     ctest -C RelWithDebInfo --test-dir build --output-log build
     ```
-
 
 ### Options
 

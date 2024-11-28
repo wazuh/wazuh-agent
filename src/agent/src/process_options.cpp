@@ -13,11 +13,11 @@ void RegisterAgent(const std::string& url,
                    const std::string& password,
                    const std::string& key,
                    const std::string& name,
-                   const std::string& configFile)
+                   const std::string& configFilePath)
 {
-    auto configurationParser = configFile.empty()
+    auto configurationParser = configFilePath.empty()
                                    ? configuration::ConfigurationParser()
-                                   : configuration::ConfigurationParser(std::filesystem::path(configFile));
+                                   : configuration::ConfigurationParser(std::filesystem::path(configFilePath));
     auto dbFolderPath =
         configurationParser.GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH);
 
@@ -46,6 +46,6 @@ void RegisterAgent(const std::string& url,
     }
     else
     {
-        std::cout << OPT_URL << ", " << OPT_USER << " and " << OPT_PASSWORD << " args are mandatory\n";
+        std::cout << "--url, --user and --password args are mandatory\n";
     }
 }

@@ -125,7 +125,7 @@ namespace WindowsService
 {
     bool InstallService(const windows_api_facade::IWindowsApiFacade& windowsApiFacade)
     {
-        const std::string exePath = GetExecutablePath() + " " + OPT_RUN_SERVICE;
+        const std::string exePath = GetExecutablePath() + " --run-service";
 
         SC_HANDLE schSCManager = static_cast<SC_HANDLE>(windowsApiFacade.OpenSCM(SC_MANAGER_CREATE_SERVICE));
         if (!schSCManager)
@@ -227,19 +227,19 @@ namespace WindowsService
 
         LogInfo("Starting Wazuh Agent.");
 
-        std::string configFile;
+        std::string configFilePath;
         if (argc > 1 && argv[1] != nullptr)
         {
-            configFile = argv[1];
-            LogInfo("Config file parameter received: {}", configFile);
+            configFilePath = argv[1];
+            LogInfo("Config file parameter received: {}", configFilePath);
         }
         else
         {
-            configFile = "";
+            configFilePath = "";
             LogDebug("Using default configuration.");
         }
 
-        Agent agent(configFile);
+        Agent agent(configFilePath);
         agent.Run();
 
         WaitForSingleObject(g_ServiceStopEvent, INFINITE);
@@ -265,7 +265,7 @@ namespace WindowsService
         }
     }
 
-    void ServiceStart(const std::string& configFile)
+    void ServiceStart(const std::string& configFilePath)
     {
         ServiceHandle hService;
         ServiceHandle hSCManager;
@@ -274,9 +274,9 @@ namespace WindowsService
             return;
 
         bool res;
-        if (!configFile.empty())
+        if (!configFilePath.empty())
         {
-            const char* args[] = {configFile.c_str()};
+            const char* args[] = {configFilePath.c_str()};
             res = ::StartService(hService.get(), 1, args);
         }
         else
@@ -292,31 +292,6 @@ namespace WindowsService
         {
             LogInfo("Service {} started successfully.", AGENT_SERVICENAME.c_str());
         }
-    }
-
-    void ServiceStop()
-    {
-        ServiceHandle hService;
-        ServiceHandle hSCManager;
-
-        if (!GetService(hSCManager, hService, SERVICE_STOP))
-            return;
-
-        SERVICE_STATUS serviceStatus = {};
-        if (!ControlService(hService.get(), SERVICE_CONTROL_STOP, &serviceStatus))
-        {
-            LogError("Error: Unable to stop service. Error: {}", GetLastError());
-        }
-        else
-        {
-            LogInfo("Service {} stopped successfully.", AGENT_SERVICENAME.c_str());
-        }
-    }
-
-    void ServiceRestart(const std::string& configFile)
-    {
-        ServiceStop();
-        ServiceStart(configFile);
     }
 
     void ServiceStatus()

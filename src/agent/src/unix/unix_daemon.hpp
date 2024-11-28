@@ -42,12 +42,12 @@ namespace unix_daemon
     };
 
     /// @brief Gets the status of the daemon
-    /// @param configFile The path to the configuration file
+    /// @param configFilePath The path to the configuration file
     /// @return A string indicating whether the daemon is "running" or "stopped"
-    std::string GetDaemonStatus(const std::string& configFile);
+    std::string GetDaemonStatus(const std::string& configFilePath);
 
     /// @brief Generates a lock file for the daemon
-    /// @param configFile The path to the configuration file
+    /// @param configFilePath The path to the configuration file
     /// @return A LockFileHandler object
-    LockFileHandler GenerateLockFile(const std::string& configFile);
+    LockFileHandler GenerateLockFile(const std::string& configFilePath);
 } // namespace unix_daemon

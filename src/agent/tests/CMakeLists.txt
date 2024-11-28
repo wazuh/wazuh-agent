@@ -32,23 +32,20 @@ target_include_directories(message_queue_utils_test PRIVATE ${CMAKE_CURRENT_SOUR
 target_link_libraries(message_queue_utils_test PRIVATE Agent MultiTypeQueue GTest::gtest GTest::gmock)
 add_test(NAME MessageQueueUtilsTest COMMAND message_queue_utils_test)
 
-add_executable(cmd_ln_parser_test cmd_ln_parser_test.cpp)
-configure_target(cmd_ln_parser_test)
-target_link_libraries(cmd_ln_parser_test PRIVATE Agent GTest::gtest)
-add_test(NAME CommandlineParserTest COMMAND cmd_ln_parser_test)
-
 if(UNIX AND NOT APPLE)
-    add_executable(unix_daemon_test unix_daemon_test.cpp)
+    add_executable(unix_daemon_test unix/unix_daemon_test.cpp)
     configure_target(unix_daemon_test)
-    target_include_directories(unix_daemon_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+    target_include_directories(unix_daemon_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src
+                                                        ${CMAKE_CURRENT_SOURCE_DIR}/../src/unix)
     target_link_libraries(unix_daemon_test PRIVATE Agent GTest::gtest)
     add_test(NAME UnixDaemonTest COMMAND unix_daemon_test)
 endif()
 
 if(WIN32)
-    add_executable(windows_service_test windows_service_test.cpp)
+    add_executable(windows_service_test windows/windows_service_test.cpp)
     configure_target(windows_service_test)
-    target_include_directories(windows_service_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+    target_include_directories(windows_service_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src
+                                                            ${CMAKE_CURRENT_SOURCE_DIR}/../src/windows)
     target_link_libraries(windows_service_test PRIVATE Agent GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
     add_test(NAME WindowsServiceTest COMMAND windows_service_test)
 endif()

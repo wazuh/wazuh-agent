@@ -42,10 +42,10 @@ namespace configuration
         ConfigurationParser();
 
         /// @brief Constructs a ConfigurationParser and loads the configuration from a specified YAML file.
-        /// @param configFile The path to the YAML configuration file.
+        /// @param configFilePath The path to the YAML configuration file.
         /// @details This constructor attempts to load configuration data from the specified file path.
         /// If loading fails, it logs an error and falls back to a set of predefined default values.
-        ConfigurationParser(const std::filesystem::path& configFile);
+        ConfigurationParser(const std::filesystem::path& configFilePath);
 
         /// @brief Constructs a ConfigurationParser from a YAML-formatted string.
         /// @param stringToParse A string containing YAML data to parse.
@@ -88,9 +88,14 @@ namespace configuration
                     return current.as<T>();
                 }
             }
+            catch (const std::invalid_argument& e)
+            {
+                LogWarn("Requested setting is invalid, default value used. {}", e.what());
+                return std::nullopt;
+            }
             catch (const std::exception& e)
             {
-                LogDebug("Requested setting not found or invalid, default value used. {}", e.what());
+                LogDebug("Requested setting not found, default value used. {}", e.what());
                 return std::nullopt;
             }
         }

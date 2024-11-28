@@ -24,9 +24,9 @@ class Agent
 {
 public:
     /// @brief Constructor
-    /// @param configFile Path to the configuration file
+    /// @param configFilePath Path to the configuration file
     /// @param signalHandler Pointer to a custom ISignalHandler implementation
-    Agent(const std::string& configFile,
+    Agent(const std::string& configFilePath,
           std::unique_ptr<ISignalHandler> signalHandler = std::make_unique<SignalHandler>());
 
     /// @brief Destructor

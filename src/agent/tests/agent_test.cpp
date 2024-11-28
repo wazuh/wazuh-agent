@@ -28,8 +28,8 @@ protected:
 
     void CreateTempConfigFile()
     {
-        std::ofstream configFile(AGENT_CONFIG_PATH);
-        configFile << R"(
+        std::ofstream configFilePath(AGENT_CONFIG_PATH);
+        configFilePath << R"(
 agent:
   server_url: https://localhost:27000
   path.data: /tmp/
@@ -53,7 +53,7 @@ logcollector:
   reload_interval: 1m
   file_wait: 500ms
 )";
-        configFile.close();
+        configFilePath.close();
     }
 };
 
