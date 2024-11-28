@@ -110,7 +110,7 @@ namespace centralized_configuration
                 }
             }
 
-            // TODO apply configuration
+            m_reloadModulesFunction();
 
             co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS, messageOnSuccess};
         }
@@ -146,5 +146,10 @@ namespace centralized_configuration
     void CentralizedConfiguration::ValidateFileFunction(ValidateFileFunctionType validateFileFunction)
     {
         m_validateFileFunction = std::move(validateFileFunction);
+    }
+
+    void CentralizedConfiguration::ReloadModulesFunction(ReloadModulesFunctionType reloadModulesFunction)
+    {
+        m_reloadModulesFunction = std::move(reloadModulesFunction);
     }
 } // namespace centralized_configuration

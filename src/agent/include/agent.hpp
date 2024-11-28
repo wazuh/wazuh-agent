@@ -37,6 +37,11 @@ public:
     /// This method sets up the agent and starts the task manager.
     void Run();
 
+    /// @brief Reload the modules
+    ///
+    /// This method stops all modules launched by moduleManager, and starts them again.
+    void ReloadModules();
+
 private:
     /// @brief Task manager
     TaskManager m_taskManager;
@@ -45,7 +50,7 @@ private:
     SysInfo m_sysInfo;
 
     /// @brief Configuration parser
-    configuration::ConfigurationParser m_configurationParser;
+    std::shared_ptr<configuration::ConfigurationParser> m_configurationParser;
 
     std::string m_dataPath;
 

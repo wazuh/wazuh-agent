@@ -134,7 +134,7 @@ TEST_F(InventoryImpTest, defaultCtor)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult6)).Times(testing::AtLeast(1));
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult7)).Times(testing::AtLeast(1));
 
-    const configuration::ConfigurationParser configurationParser;
+    auto configurationParser = std::make_shared<configuration::ConfigurationParser>();
     Inventory::Instance().Setup(configurationParser);
     std::thread t
     {
@@ -197,7 +197,8 @@ TEST_F(InventoryImpTest, intervalSeconds)
             processes: true
             hotfixes: true
     )";
-    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
+    auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
+    Inventory::Instance().Setup(configParser);
 
     std::thread t
     {
@@ -247,7 +248,8 @@ TEST_F(InventoryImpTest, noScanOnStart)
             processes: true
             hotfixes: true
     )";
-    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
+    auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
+    Inventory::Instance().Setup(configParser);
 
     std::thread t
     {
@@ -350,7 +352,8 @@ TEST_F(InventoryImpTest, noHardware)
             processes: true
             hotfixes: true
     )";
-    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
+    auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
+    Inventory::Instance().Setup(configParser);
 
     std::thread t
     {
@@ -454,7 +457,8 @@ TEST_F(InventoryImpTest, noOs)
             processes: true
             hotfixes: true
     )";
-    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
+    auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
+    Inventory::Instance().Setup(configParser);
 
     std::thread t
     {
@@ -558,7 +562,8 @@ TEST_F(InventoryImpTest, noNetwork)
             processes: true
             hotfixes: true
     )";
-    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
+    auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
+    Inventory::Instance().Setup(configParser);
 
     std::thread t
     {
@@ -662,7 +667,8 @@ TEST_F(InventoryImpTest, noPackages)
             processes: true
             hotfixes: true
     )";
-    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
+    auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
+    Inventory::Instance().Setup(configParser);
 
     std::thread t
     {
@@ -767,7 +773,8 @@ TEST_F(InventoryImpTest, noPorts)
             processes: true
             hotfixes: true
     )";
-    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
+    auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
+    Inventory::Instance().Setup(configParser);
 
     std::thread t
     {
@@ -883,7 +890,8 @@ TEST_F(InventoryImpTest, noPortsAll)
             processes: true
             hotfixes: true
     )";
-    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
+    auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
+    Inventory::Instance().Setup(configParser);
 
     std::thread t
     {
@@ -987,7 +995,8 @@ TEST_F(InventoryImpTest, noProcesses)
             processes: false
             hotfixes: true
     )";
-    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
+    auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
+    Inventory::Instance().Setup(configParser);
 
     std::thread t
     {
@@ -1093,7 +1102,8 @@ TEST_F(InventoryImpTest, noHotfixes)
             processes: true
             hotfixes: false
     )";
-    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
+    auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
+    Inventory::Instance().Setup(configParser);
 
     std::thread t
     {
@@ -1151,7 +1161,8 @@ TEST_F(InventoryImpTest, scanInvalidData)
             processes: true
             hotfixes: true
     )";
-    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
+    auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
+    Inventory::Instance().Setup(configParser);
 
     std::thread t
     {
@@ -1294,7 +1305,8 @@ TEST_F(InventoryImpTest, portAllEnable)
             processes: false
             hotfixes: false
     )";
-    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
+    auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
+    Inventory::Instance().Setup(configParser);
 
     std::thread t
     {
@@ -1432,7 +1444,8 @@ TEST_F(InventoryImpTest, portAllDisable)
             processes: false
             hotfixes: false
     )";
-    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
+    auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
+    Inventory::Instance().Setup(configParser);
 
     std::thread t
     {
@@ -1501,7 +1514,8 @@ TEST_F(InventoryImpTest, PackagesDuplicated)
             processes: false
             hotfixes: false
     )";
-    Inventory::Instance().Setup(configuration::ConfigurationParser(inventoryConfig));
+    auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
+    Inventory::Instance().Setup(configParser);
 
     std::thread t
     {

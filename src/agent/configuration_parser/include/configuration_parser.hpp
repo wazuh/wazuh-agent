@@ -24,6 +24,9 @@ namespace configuration
         /// @brief Holds the parsed YAML configuration.
         YAML::Node m_config;
 
+        /// @brief Holds the location of the configuration file.
+        std::filesystem::path m_config_file_path;
+
         /// @brief Converts a time unit represented as a string to an time_t value (ms).
         /// @param option A string representing a time unit.
         /// @return The corresponding time_t value.
@@ -49,6 +52,9 @@ namespace configuration
         /// @param base Reference to the base YAML::Node that will be modified.
         /// @param override Const reference to the YAML::Node containing values to merge into the base.
         void MergeYamlNodes(YAML::Node& base, const YAML::Node& override);
+
+        /// @brief Method for loading the configuration from local file
+        void LoadLocalConfig(const std::filesystem::path& configFile);
 
     public:
         /// @brief Default constructor. Loads configuration from a default file path.
@@ -136,5 +142,8 @@ namespace configuration
         /// @brief Sets the function to get group IDs.
         /// @param getGroupIdsFunction A function to get group IDs.
         void SetGetGroupIdsFunction(std::function<std::vector<std::string>()> getGroupIdsFunction);
+
+        /// @brief Method for loading the new available configuration
+        void ReloadConfiguration();
     };
 } // namespace configuration

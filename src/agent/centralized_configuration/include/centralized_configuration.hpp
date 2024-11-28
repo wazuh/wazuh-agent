@@ -22,6 +22,7 @@ namespace centralized_configuration
         using DownloadGroupFilesFunctionType =
             std::function<bool(const std::string& group, const std::string& dstFilePath)>;
         using ValidateFileFunctionType = std::function<bool(const std::filesystem::path& configFile)>;
+        using ReloadModulesFunctionType = std::function<void()>;
 
         /// @brief Executes a command for the centralized configuration system.
         /// @param command A string containing a JSON command to execute.
@@ -57,6 +58,11 @@ namespace centralized_configuration
         /// @param validateFileFunction A function to validate a file.
         void ValidateFileFunction(ValidateFileFunctionType validateFileFunction);
 
+        /// @brief Sets the function to reload modules.
+        /// @details The "set-group" and "update-group" commands requires such function to reload modules
+        /// @param validateFileFunction A function to reload the modules.
+        void ReloadModulesFunction(ReloadModulesFunctionType reloadModulesFunction);
+
     private:
         /// @brief Function to set group IDs.
         SetGroupIdFunctionType m_setGroupIdFunction;
@@ -72,5 +78,8 @@ namespace centralized_configuration
 
         /// @brief Function to validate group configuration files.
         ValidateFileFunctionType m_validateFileFunction;
+
+        /// @brief Function to reload modules.
+        ReloadModulesFunctionType m_reloadModulesFunction;
     };
 } // namespace centralized_configuration

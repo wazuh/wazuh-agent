@@ -23,12 +23,8 @@ namespace configuration
     {
         try
         {
-            m_config = YAML::LoadFile(configFilePath.string());
-
-            if (!m_config.IsMap() && !m_config.IsSequence())
-            {
-                throw std::runtime_error("The file does not contain a valid YAML structure.");
-            }
+            m_config_file_path = configFilePath;
+            LoadLocalConfig(m_config_file_path);
         }
         catch (const std::exception& e)
         {
@@ -52,6 +48,17 @@ namespace configuration
         {
             LogError("Error parsing yaml string: {}.", e.what());
             throw;
+        }
+    }
+
+    void ConfigurationParser::LoadLocalConfig(const std::filesystem::path& configFile)
+    {
+        LogDebug("Loading local config file: {}.", configFile.string());
+        m_config = YAML::LoadFile(configFile.string());
+
+        if (!m_config.IsMap() && !m_config.IsSequence())
+        {
+            throw std::runtime_error("The file does not contain a valid YAML structure.");
         }
     }
 
@@ -199,7 +206,6 @@ namespace configuration
         catch (const YAML::Exception& e)
         {
             LogWarn("Load shared configuration failed: {}", e.what());
-            throw;
         }
     }
 
@@ -207,6 +213,22 @@ namespace configuration
     {
         m_getGroups = std::move(getGroupIdsFunction);
         LoadSharedConfig();
+    }
+
+    void ConfigurationParser::ReloadConfiguration()
+    {
+        LogInfo("Reload configuration.");
+
+        // Reset saved configuration
+        m_config = YAML::Node();
+
+        // Load local configuration
+        LoadLocalConfig(m_config_file_path);
+
+        // Load shared configuration
+        LoadSharedConfig();
+
+        LogInfo("Reload configuration done.");
     }
 
 } // namespace configuration

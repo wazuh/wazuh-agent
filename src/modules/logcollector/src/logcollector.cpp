@@ -28,18 +28,29 @@ void Logcollector::EnqueueTask(boost::asio::awaitable<void> task) {
     boost::asio::co_spawn(m_ioContext, std::move(task), boost::asio::detached);
 }
 
-void Logcollector::Setup(const configuration::ConfigurationParser& configurationParser) {
-    m_enabled = configurationParser.GetConfig<bool>("logcollector", "enabled").value_or(config::logcollector::DEFAULT_ENABLED);
+void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
+    if (!configurationParser) {
+        LogError("Invalid Configuration Parser passed to setup, module set to disabled.");
+        m_enabled = false;
+        return;
+    }
+
+    m_enabled = configurationParser->GetConfig<bool>("logcollector", "enabled").value_or(config::logcollector::DEFAULT_ENABLED);
+
+    if (m_ioContext.stopped())
+    {
+        m_ioContext.restart();
+    }
 
     SetupFileReader(configurationParser);
 }
 
-void Logcollector::SetupFileReader(const configuration::ConfigurationParser& configurationParser) {
-    auto fileWait = configurationParser.GetConfig<std::time_t>("logcollector", "file_wait").value_or(config::logcollector::DEFAULT_FILE_WAIT);
+void Logcollector::SetupFileReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
+    auto fileWait = configurationParser->GetConfig<std::time_t>("logcollector", "file_wait").value_or(config::logcollector::DEFAULT_FILE_WAIT);
 
-    auto reloadInterval = configurationParser.GetConfig<std::time_t>("logcollector", "reload_interval").value_or(config::logcollector::DEFAULT_RELOAD_INTERVAL);
+    auto reloadInterval = configurationParser->GetConfig<std::time_t>("logcollector", "reload_interval").value_or(config::logcollector::DEFAULT_RELOAD_INTERVAL);
 
-    auto localfiles = configurationParser.GetConfig<std::vector<std::string>>("logcollector", "localfiles").value_or(std::vector<std::string>({config::logcollector::DEFAULT_LOCALFILES}));
+    auto localfiles = configurationParser->GetConfig<std::vector<std::string>>("logcollector", "localfiles").value_or(std::vector<std::string>({config::logcollector::DEFAULT_LOCALFILES}));
 
     for (auto& lf : localfiles) {
         AddReader(std::make_shared<FileReader>(*this, lf, fileWait, reloadInterval));
