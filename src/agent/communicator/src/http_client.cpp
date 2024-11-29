@@ -151,9 +151,12 @@ namespace http_client
                 continue;
             }
 
+            auto messagesCount = 0;
+
             if (messageGetter != nullptr)
             {
                 const auto messages = co_await messageGetter();
+                messagesCount = std::get<0>(messages);
                 reqParams.Body = std::get<1>(messages);
             }
             else
@@ -192,7 +195,7 @@ namespace http_client
             {
                 if (onSuccess != nullptr)
                 {
-                    onSuccess(0, boost::beast::buffers_to_string(res.body().data()));
+                    onSuccess(messagesCount, boost::beast::buffers_to_string(res.body().data()));
                 }
             }
             else if (res.result() == boost::beast::http::status::unauthorized ||
