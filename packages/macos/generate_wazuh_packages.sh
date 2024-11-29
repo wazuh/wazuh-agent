@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -exf
 # Program to build and package OSX wazuh-agent
 # Wazuh package generator
 # Copyright (C) 2015, Wazuh Inc.
@@ -11,13 +11,11 @@ set -e
 
 export PATH=/usr/local/bin:/Applications/CMake.app/Contents/bin:/opt/homebrew/bin:/opt/homebrew/sbin:$PATH
 CURRENT_PATH="$( cd $(dirname ${0}) ; pwd -P )"
+PACKAGED_DIRECTORY=$CURRENT_PATH/wazuh-agent/payload
 ARCH="intel64"
 WAZUH_SOURCE_REPOSITORY="https://github.com/wazuh/wazuh-agent"
 SERVICE_PATH="/Library/LaunchDaemons/com.wazuh.agent.plist"
-STARTUP_PATH="/Library/StartupItems/WAZUH/StartupParameters.plist"
-LAUNCHER_SCRIPT_PATH="/Library/StartupItems/WAZUH/Wazuh-launcher"
-STARTUP_SCRIPT_PATH="/Library/StartupItems/WAZUH/WAZUH"
-INSTALLATION_PATH="/Library/Ossec"    # Installation path.
+INSTALLATION_PATH="/usr/share/wazuh-agent"    # Installation path.
 VERSION=""                            # Default VERSION (branch/tag).
 REVISION="1"                          # Package revision.
 BRANCH_TAG=""                         # Branch that will be downloaded to build package.
@@ -46,10 +44,9 @@ function clean_and_exit() {
     exit_code=$1
     rm -rf "${SOURCES_DIRECTORY}"
     if [ -z "$BRANCH_TAG" ]; then
-        make -C $WAZUH_PATH/src clean clean-deps
+        make -C $WAZUH_PATH/src/build clean
     fi
-    ${CURRENT_PATH}/uninstall.sh
-
+    rm -rf $CURRENT_PATH/wazuh-agent
     exit ${exit_code}
 }
 
@@ -89,7 +86,7 @@ function sign_binaries() {
     if [ ! -z "${KEYCHAIN}" ] && [ ! -z "${CERT_APPLICATION_ID}" ] ; then
         security -v unlock-keychain -p "${KC_PASS}" "${KEYCHAIN}" > /dev/null
         # Sign every single binary in Wazuh's installation. This also includes library files.
-        for bin in $(find ${SERVICE_PATH} ${STARTUP_PATH} ${LAUNCHER_SCRIPT_PATH} ${STARTUP_SCRIPT_PATH} ${INSTALLATION_PATH} -exec file {} \; | grep -E 'executable|bit' | cut -d: -f1); do
+        for bin in $(find ${SERVICE_PATH} ${INSTALLATION_PATH} -exec file {} \; | grep -E 'executable|bit' | cut -d: -f1); do
             codesign -f --sign "${CERT_APPLICATION_ID}" --entitlements ${ENTITLEMENTS_PATH} --timestamp  --options=runtime --verbose=4 "${bin}"
         done
         security -v lock-keychain "${KEYCHAIN}" > /dev/null
@@ -116,7 +113,6 @@ function prepare_building_folder() {
     build_info_file="${WAZUH_PACKAGES_PATH}/specs/build-info.json"
     preinstall_script="${WAZUH_PACKAGES_PATH}/package_files/preinstall.sh"
     postinstall_script="${WAZUH_PACKAGES_PATH}/package_files/postinstall.sh"
-    packaged_directory=$CURRENT_PATH/wazuh-agent/payload
 
     if [ -d "$CURRENT_PATH/wazuh-agent" ]; then
 
@@ -138,21 +134,7 @@ function prepare_building_folder() {
 
     sed -i '' "s|PACKAGE_ARCH|$ARCH|g" $CURRENT_PATH/wazuh-agent/scripts/preinstall
 
-    mkdir -p ${packaged_directory}$(dirname ${SERVICE_PATH})
-    cp -p $SERVICE_PATH ${packaged_directory}$(dirname ${SERVICE_PATH})
-
-    mkdir -p ${packaged_directory}$(dirname ${STARTUP_PATH})
-    cp -p $STARTUP_PATH ${packaged_directory}$(dirname ${STARTUP_PATH})
-
-    mkdir -p ${packaged_directory}$(dirname ${LAUNCHER_SCRIPT_PATH})
-    cp -p $LAUNCHER_SCRIPT_PATH ${packaged_directory}$(dirname ${LAUNCHER_SCRIPT_PATH})
-
-    mkdir -p ${packaged_directory}$(dirname ${STARTUP_SCRIPT_PATH})
-    cp -p $STARTUP_SCRIPT_PATH ${packaged_directory}$(dirname ${STARTUP_SCRIPT_PATH})
-
-    mkdir -p ${packaged_directory}${INSTALLATION_PATH}
-    cp -Rp $INSTALLATION_PATH/* ${packaged_directory}${INSTALLATION_PATH}
-
+    mkdir -p ${PACKAGED_DIRECTORY}
     mkdir -p $DESTINATION
 }
 
@@ -171,7 +153,7 @@ function build_package() {
     WAZUH_PACKAGES_PATH="${WAZUH_PATH}/packages/macos"
     ENTITLEMENTS_PATH="${WAZUH_PACKAGES_PATH}/entitlements.plist"
 
-    VERSION=$(cat ${WAZUH_PATH}/src/VERSION | cut -d "-" -f1 | cut -c 2-)
+    VERSION=$(cat ${WAZUH_PATH}/src/VERSION | cut -d 'v' -f 2)
 
     # Define output package name
     if [ $IS_STAGE == "no" ]; then
@@ -180,7 +162,7 @@ function build_package() {
         pkg_name="wazuh-agent-${VERSION}-${REVISION}.${ARCH}"
     fi
 
-    if [ -d "${INSTALLATION_PATH}" ]; then
+    if [ -d "${SERVICE_PATH}" ]; then
 
         echo "\nThe wazuh agent is already installed on this machine."
         echo "Removing it from the system."
@@ -188,25 +170,25 @@ function build_package() {
         ${CURRENT_PATH}/uninstall.sh
     fi
 
-    ${WAZUH_PACKAGES_PATH}/package_files/build.sh "${INSTALLATION_PATH}" "${WAZUH_PATH}" ${JOBS} ${DEBUG} ${MAKE_COMPILATION}
+    prepare_building_folder $VERSION $pkg_name
+
+    ${WAZUH_PACKAGES_PATH}/package_files/build.sh "${PACKAGED_DIRECTORY}" "${WAZUH_PATH}" ${JOBS} ${MAKE_COMPILATION} ${VCPKG_KEY}
 
     # sign the binaries and the libraries
     sign_binaries
 
-    prepare_building_folder $VERSION $pkg_name
-
     # create package
     if munkipkg $CURRENT_PATH/wazuh-agent ; then
         echo "The wazuh agent package for macOS has been successfully built."
-        mv $CURRENT_PATH/wazuh-agent/build/* $DESTINATION/
-        symbols_pkg_name="${pkg_name}_debug_symbols"
-        cp -R "${WAZUH_PATH}/src/symbols"  "${DESTINATION}"
-        zip -r "${DESTINATION}/${symbols_pkg_name}.zip" "${DESTINATION}/symbols"
-        rm -rf "${DESTINATION}/symbols"
+        mv $CURRENT_PATH/wazuh-agent/build/$pkg_name.pkg $DESTINATION/
+        # symbols_pkg_name="${pkg_name}_debug_symbols"
+        # cp -R "${WAZUH_PATH}/src/symbols"  "${DESTINATION}"
+        # zip -r "${DESTINATION}/${symbols_pkg_name}.zip" "${DESTINATION}/symbols"
+        # rm -rf "${DESTINATION}/symbols"
         sign_pkg
         if [[ "${CHECKSUM}" == "yes" ]]; then
             shasum -a512 "${DESTINATION}/${pkg_name}.pkg" > "${DESTINATION}/${pkg_name}.pkg.sha512"
-            shasum -a512 "${DESTINATION}/${symbols_pkg_name}.zip" > "${DESTINATION}/${symbols_pkg_name}.sha512"
+            # shasum -a512 "${DESTINATION}/${symbols_pkg_name}.zip" > "${DESTINATION}/${symbols_pkg_name}.sha512"
         fi
         clean_and_exit 0
     else
@@ -276,18 +258,18 @@ function testdep() {
 function install_deps() {
 
     if [[ $(mono --version 2>/dev/null) =~ [0-9] ]]; then
-        echo "mono already installed installed."
+        echo "mono already installed"
     else
         # Install mono tool
-        curl -sO https://download.mono-project.com/archive/6.12.0/macos-10-universal/MonoFramework-MDK-6.12.0.206.macos10.xamarin.universal.pkg
-        installer -pkg MonoFramework-MDK* -target /
-        rm MonoFramework-MDK*
+        echo "Installing mono"
+        brew install mono
     fi 
 
     if [[ $(munkipkg --version 2>/dev/null) =~ [0-9] ]]; then
-        echo "Munkipkg already installed installed."
+        echo "munkipkg already installed"
     else
         # Install munkipkg tool
+        echo "Installing munkipkg"
         git clone https://github.com/munki/munki-pkg.git ~/Developer/munki-pkg
         mkdir -p /usr/local/bin
         sudo ln -s "$HOME/Developer/munki-pkg/munkipkg" /usr/local/bin/munkipkg
@@ -503,7 +485,6 @@ function main() {
             help 1
         fi
         notarize_pkg "${notarization_path}"
-    fi
     else
         echo "Notarization has not been selected."
     fi
