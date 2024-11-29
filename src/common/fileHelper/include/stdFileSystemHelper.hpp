@@ -20,8 +20,16 @@
 
 namespace Utils
 {
+
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4505)
+#endif
 
     static void expandAbsolutePath(const std::string& path, std::deque<std::string>& output)
     {
@@ -105,7 +113,15 @@ namespace Utils
             output.push_back(path);
         }
     }
+
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
 };
 
 

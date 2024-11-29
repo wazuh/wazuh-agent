@@ -903,6 +903,7 @@ void SQLiteDBEngine::deleteTempTable(const std::string& table)
     // LCOV_EXCL_START
     catch (const std::exception& ex)
     {
+        (void)ex;
     }
 
     // LCOV_EXCL_STOP

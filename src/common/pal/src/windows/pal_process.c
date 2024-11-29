@@ -4,12 +4,7 @@
 #include <fcntl.h>
 #include <io.h>
 
-typedef struct {
-    HANDLE hProcess;
-    FILE* pipeStream;
-} PopenHandle;
-
-PopenHandle* popen(const char* command, const char* mode) {
+FILE* popen(const char* command, const char* mode) {
     HANDLE hReadPipe = NULL, hWritePipe = NULL;
     SECURITY_ATTRIBUTES sa = {sizeof(SECURITY_ATTRIBUTES), NULL, TRUE};
 
@@ -61,34 +56,38 @@ PopenHandle* popen(const char* command, const char* mode) {
         return NULL;
     }
 
-    // Store the process handle and stream in a custom struct
-    PopenHandle* popenHandle = (PopenHandle*)malloc(sizeof(PopenHandle));
-    popenHandle->hProcess = pi.hProcess;
-    popenHandle->pipeStream = pipeStream;
-
-    return popenHandle;
+    // Store the process handle in a global/static variable or a custom structure
+    SetFilePointer(GetStdHandle(STD_OUTPUT_HANDLE), 0, NULL, FILE_END);
+    return pipeStream;
 }
 
-int pclose(PopenHandle* handle) {
-    if (!handle || !handle->pipeStream) {
+int pclose(FILE* stream) {
+    if (!stream) {
+        return -1;
+    }
+
+    // Retrieve the process handle associated with the FILE*
+    intptr_t handleValue = _get_osfhandle(_fileno(stream));
+    HANDLE hProcess = (HANDLE)handleValue;
+
+    if (hProcess == INVALID_HANDLE_VALUE) {
         return -1;
     }
 
     // Close the FILE* stream
-    fclose(handle->pipeStream);
+    fclose(stream);
 
     // Wait for the process to exit
-    WaitForSingleObject(handle->hProcess, INFINITE);
+    WaitForSingleObject(hProcess, INFINITE);
 
     // Get the exit code
     DWORD exitCode = 0;
-    if (!GetExitCodeProcess(handle->hProcess, &exitCode)) {
+    if (!GetExitCodeProcess(hProcess, &exitCode)) {
         exitCode = -1; // Error occurred
     }
 
     // Close the process handle
-    CloseHandle(handle->hProcess);
-    free(handle);
+    CloseHandle(hProcess);
 
     return (int)exitCode;
 }
