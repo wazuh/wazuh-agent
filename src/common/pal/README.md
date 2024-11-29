@@ -39,7 +39,7 @@ pal
      └── windows
           ├── pal_file.c
           ├── pal_thread.c
-          ├── pal_timee.c
+          ├── pal_time.c
           └── pal.c
 ```
 
@@ -48,3 +48,5 @@ pal
 A commom public file named "pal.h" should be included in every file that will be platform dependant. No more includes should be necessary.
 Thos definitions, prototypes, etc, provided by the PAL should be used in Wazuh agent's code, avoiding whenever possible the usage of pre-processor in higher level code.
 If situations not considered in the PAL are found during development, it should be prioritized to extend the PAL than taking shortcuts as ad-hoc solutions, except if this option is no available for implementation reasons.
+
+#### NOTE: Due to time available for this proposal, an emulation of POSIX functions and structures were implemented. It will be left for later to implement a fully abstracted layer to improve code quality.

@@ -18,8 +18,15 @@
 #include "timeHelper.h"
 #include "sharedDefs.h"
 
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4505)
+#endif
 
 #include <sstream>
 
@@ -265,6 +272,12 @@ namespace PackageLinuxHelper
 
 };
 
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #endif // _PACKAGE_LINUX_PARSER_HELPER_H
