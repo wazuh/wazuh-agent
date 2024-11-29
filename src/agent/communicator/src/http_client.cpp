@@ -192,7 +192,7 @@ namespace http_client
             {
                 if (onSuccess != nullptr)
                 {
-                    onSuccess(boost::beast::buffers_to_string(res.body().data()));
+                    onSuccess(0, boost::beast::buffers_to_string(res.body().data()));
                 }
             }
             else if (res.result() == boost::beast::http::status::unauthorized ||

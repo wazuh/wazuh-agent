@@ -65,7 +65,8 @@ namespace communicator
         return std::max(0L, static_cast<long>(m_tokenExpTimeInSeconds - now_seconds));
     }
 
-    boost::asio::awaitable<void> Communicator::GetCommandsFromManager(std::function<void(const std::string&)> onSuccess)
+    boost::asio::awaitable<void>
+    Communicator::GetCommandsFromManager(std::function<void(const int, const std::string&)> onSuccess)
     {
         auto onAuthenticationFailed = [this]()
         {
@@ -126,7 +127,7 @@ namespace communicator
 
     boost::asio::awaitable<void> Communicator::StatefulMessageProcessingTask(
         std::function<boost::asio::awaitable<std::tuple<int, std::string>>()> getMessages,
-        std::function<void(const std::string&)> onSuccess)
+        std::function<void(const int, const std::string&)> onSuccess)
     {
         auto onAuthenticationFailed = [this]()
         {
@@ -154,7 +155,7 @@ namespace communicator
 
     boost::asio::awaitable<void> Communicator::StatelessMessageProcessingTask(
         std::function<boost::asio::awaitable<std::tuple<int, std::string>>()> getMessages,
-        std::function<void(const std::string&)> onSuccess)
+        std::function<void(const int, const std::string&)> onSuccess)
     {
         auto onAuthenticationFailed = [this]()
         {

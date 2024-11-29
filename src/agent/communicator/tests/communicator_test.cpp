@@ -56,7 +56,7 @@ TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
         co_return std::tuple<int, std::string> {1, std::string("message-content")};
     };
 
-    std::function<void(const std::string&)> onSuccess = [](const std::string& message)
+    std::function<void(const int, const std::string&)> onSuccess = [](const int, const std::string& message)
     {
         EXPECT_EQ(message, "message-content");
     };
@@ -73,7 +73,7 @@ TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
                [[maybe_unused]] std::function<bool()> loopRequestCondition) -> boost::asio::awaitable<void>
             {
                 const auto message = co_await pGetMessages();
-                pOnSuccess(std::get<1>(message));
+                pOnSuccess(std::get<0>(message), std::get<1>(message));
                 co_return;
             }));
 
@@ -134,7 +134,7 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
             co_await communicatorPtr->StatelessMessageProcessingTask(
                 []() -> boost::asio::awaitable<std::tuple<int, std::string>>
                 { co_return std::tuple<int, std::string>(1, std::string {"message"}); },
-                []([[maybe_unused]] const std::string& msg) {});
+                []([[maybe_unused]] const int, const std::string&) {});
         }(),
         boost::asio::detached);
 
@@ -190,7 +190,7 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
             co_await communicatorPtr->StatelessMessageProcessingTask(
                 []() -> boost::asio::awaitable<std::tuple<int, std::string>>
                 { co_return std::tuple<int, std::string>(1, std::string {"message"}); },
-                []([[maybe_unused]] const std::string& msg) {});
+                []([[maybe_unused]] const int, const std::string&) {});
         }(),
         boost::asio::detached);
 
