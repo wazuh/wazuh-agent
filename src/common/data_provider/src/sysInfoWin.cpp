@@ -396,6 +396,7 @@ static void getPackagesFromReg(const HKEY key, const std::string& subKey, std::f
                     }
                     catch (const std::exception& e)
                     {
+                        (void)e;
                         install_time = packageReg.keyModificationDate();
                     }
                 }
@@ -846,6 +847,7 @@ void expandFromRegistry(const HKEY key, const std::string& subKey, const std::st
         catch (const std::exception& e)
         {
             // Ignore errors.
+            (void)e;
         }
     }
 }

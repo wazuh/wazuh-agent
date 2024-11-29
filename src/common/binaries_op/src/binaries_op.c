@@ -8,7 +8,7 @@
  */
 
 #include "shared.h"
-
+#include "pal.h"
 
 #ifdef WAZUH_UNIT_TESTING
 #ifdef WIN32

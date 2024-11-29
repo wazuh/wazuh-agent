@@ -33,7 +33,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         iphlpapi
         ws2_32
         crypt32
-        -static-libstdc++
     )
 else()
     target_link_libraries(inventory_test_tool
