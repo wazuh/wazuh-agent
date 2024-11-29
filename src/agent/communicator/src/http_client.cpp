@@ -157,6 +157,7 @@ namespace http_client
             {
                 const auto messages = co_await messageGetter();
                 messagesCount = std::get<0>(messages);
+                LogTrace("Messages count: {}", messagesCount);
                 reqParams.Body = std::get<1>(messages);
             }
             else
