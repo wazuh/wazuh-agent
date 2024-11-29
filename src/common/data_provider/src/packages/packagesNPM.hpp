@@ -104,6 +104,7 @@ class NPM final
                 catch (const std::exception& e)
                 {
                     // Ignore exception, continue with next folder
+                    (void)e;
                 }
             }
         }
@@ -130,6 +131,7 @@ class NPM final
                 catch (const std::exception& e)
                 {
                     // Ignore exception, continue with next folder
+                    (void)e;
                 }
             }
         }

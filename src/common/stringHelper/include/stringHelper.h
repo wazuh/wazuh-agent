@@ -20,8 +20,15 @@
 #include <string>
 #include <vector>
 
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4505)
+#endif
 
 // Time values for conversion
 #define W_WEEK_SECONDS   604800
@@ -103,12 +110,8 @@ namespace Utils
         {
             return str.substr(pos);
         }
-        else
-        {
-            return "";
-        }
 
-        return str;
+        return "";
     }
 
     static std::string rightTrim(const std::string& str, const std::string& args = " ")
@@ -119,12 +122,8 @@ namespace Utils
         {
             return str.substr(0, pos + 1);
         }
-        else
-        {
-            return "";
-        }
-
-        return str;
+        
+        return "";
     }
 
     static std::string trim(const std::string& str, const std::string& args = " ")
@@ -432,6 +431,7 @@ namespace Utils
         }
         catch (const std::invalid_argument& e)
         {
+            (void)e;
             return -1;
         }
     }
@@ -458,6 +458,12 @@ namespace Utils
 
 } // namespace Utils
 
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #endif // _STRING_HELPER_H

@@ -29,7 +29,13 @@
 #include "stringHelper.h"
 #include "encodingWindowsHelper.h"
 #include "timeHelper.h"
+#include "pal.h"
 #include <WTypesbase.h>
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4505)
+#endif
 
 typedef unsigned int UINT;
 typedef ULONG (WINAPI* ConvertLengthToIpv4Mask_t)(ULONG, PULONG);
@@ -54,6 +60,9 @@ constexpr int BASEBOARD_INFORMATION_TYPE
     2
 };
 
+#pragma warning(push)
+#pragma warning(disable: 4200)
+
 typedef struct RawSMBIOSData
 {
     BYTE    Used20CallingMethod;
@@ -63,6 +72,8 @@ typedef struct RawSMBIOSData
     DWORD   Length;
     BYTE    SMBIOSTableData[];
 } RawSMBIOSData, *PRawSMBIOSData;
+
+#pragma warning(pop)
 
 typedef struct SMBIOSStructureHeader
 {
@@ -509,8 +520,11 @@ namespace Utils
                 }
                 else
                 {
+                    #pragma warning(push)
+                    #pragma warning(disable : 4996) //Avoids functino deprecatoin warning since inetNtop is not available
                     // Windows XP
                     plainAddress.reset(inet_ntoa(address));
+                    #pragma warning(pop)
 
                     if (plainAddress)
                     {
@@ -680,4 +694,9 @@ namespace Utils
             }
     };
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
 #endif

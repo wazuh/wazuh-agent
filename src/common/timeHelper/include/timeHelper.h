@@ -18,27 +18,20 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
-
-#ifdef WIN32
-
-static struct tm* gmtime_r(const time_t* timep, struct tm* result)
-{
-    errno = gmtime_s(result, timep);
-    return errno == 0 ? result : nullptr;
-}
-
-static struct tm* localtime_r(const time_t* timep, struct tm* result)
-{
-    errno = localtime_s(result, timep);
-    return errno == 0 ? result : nullptr;
-}
-
-#endif
+#include "pal.h"
 
 namespace Utils
 {
+
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4505)
+#endif
 
     static std::string getTimestamp(const std::time_t& time, const bool utc = true)
     {
@@ -211,7 +204,14 @@ namespace Utils
             .count();
     };
 
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
 } // namespace Utils
 
 #endif // _TIME_HELPER_H
