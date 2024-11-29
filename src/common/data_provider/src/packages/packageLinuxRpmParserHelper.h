@@ -16,9 +16,15 @@
 #include "rpmPackageManager.h"
 #include "sharedDefs.h"
 
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
+#endif
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4505)
+#endif
 
 namespace PackageLinuxHelper
 {
@@ -49,7 +55,7 @@ namespace PackageLinuxHelper
             ret["architecture"] = package.architecture;
             ret["source"]       = UNKNOWN_VALUE;
             ret["format"]       = "rpm";
-            ret["vendor"] = package.vendor.empty() ? UNKNOWN_VALUE : package.vendor;
+            ret["vendor"]       = package.vendor.empty() ? UNKNOWN_VALUE : package.vendor;
             ret["description"]  = package.description;
             // The multiarch field won't have a default value
         }
@@ -59,6 +65,12 @@ namespace PackageLinuxHelper
 
 };
 
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #endif // _PACKAGE_LINUX_RPM_PARSER_HELPER_H

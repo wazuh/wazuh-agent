@@ -1,11 +1,20 @@
 #include <time.h>
 #include <errno.h>
 
-struct tm* localtime_r(const time_t* timep, struct tm* result) {
-    // Llamar a localtime_s que es la versión segura de localtime en MSVC
+struct tm* localtime_r(const time_t* timep, struct tm* result) 
+{
     errno_t err = localtime_s(result, timep);
     if (err != 0) {
-        return NULL; // Error en la conversión
+        return NULL;
     }
-    return result; // Devuelve la estructura tm con el resultado
+    return result;
+}
+
+struct tm* gmtime_r(const time_t* timep, struct tm* result)
+{
+    errno_t err = gmtime_s(result, timep);
+    if(err != 0) {
+        return NULL;
+    }
+    return result;
 }

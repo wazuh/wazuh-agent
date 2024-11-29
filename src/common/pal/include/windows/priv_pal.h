@@ -9,6 +9,8 @@
 #include "priv_pal_file.h"
 #include "priv_pal_thread.h"
 #include "priv_pal_time.h"
+#include "priv_pal_string.h"
+#include "priv_pal_process.h"
 
 #define ATTR_NONNULL
 #define ATTR_NONNULL_ONE
