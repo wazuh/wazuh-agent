@@ -31,6 +31,12 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
                       [this](std::function<void()> task) { m_taskManager.EnqueueTask(std::move(task)); })
     , m_commandHandler(m_dataPath)
 {
+    // Check if agent is registered
+    if (m_agentInfo.GetName().empty() || m_agentInfo.GetKey().empty() || m_agentInfo.GetUUID().empty())
+    {
+        throw std::runtime_error("The agent is not registered");
+    }
+
     m_centralizedConfiguration.SetGroupIdFunction([this](const std::vector<std::string>& groups)
                                                   { return m_agentInfo.SetGroups(groups); });
 
