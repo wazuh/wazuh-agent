@@ -186,7 +186,7 @@ elseif(APPLE)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
 target_link_libraries(sysinfo PUBLIC
-  lib
+  pal
   networkHelper
   nlohmann_json::nlohmann_json
   cjson)
