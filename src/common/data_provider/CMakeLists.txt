@@ -96,6 +96,7 @@ include_directories(${SRC_FOLDER}/common/linuxHelper/include/)
 include_directories(${SRC_FOLDER}/common/stringHelper/include/)
 include_directories(${SRC_FOLDER}/common/timeHelper/include/)
 include_directories(${SRC_FOLDER}/shared_modules/common/)
+include_directories(${SRC_FOLDER}/common/pal/include/)
 
 if(WIN32)
   include_directories(${SRC_FOLDER}/common/time_op/include/)
@@ -113,7 +114,6 @@ if(WIN32)
 endif()
 
 get_filename_component(COMMON_FOLDER  ${CMAKE_CURRENT_SOURCE_DIR}/../ ABSOLUTE)
-include_directories(${COMMON_FOLDER}/pal/include)
 
 link_directories(${SRC_FOLDER})
 
@@ -186,6 +186,7 @@ elseif(APPLE)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
 target_link_libraries(sysinfo PUBLIC
+  lib
   networkHelper
   nlohmann_json::nlohmann_json
   cjson)
