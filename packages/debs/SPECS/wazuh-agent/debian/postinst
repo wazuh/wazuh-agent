@@ -37,9 +37,6 @@ case "$1" in
         rm ${UPGRADE_RESTART_FLAG}
     fi
 
-    touch /etc/ld.so.conf.d/wazuh-agentlibs.conf
-    echo "/usr/share/wazuh-agent/lib" >> /etc/ld.so.conf.d/wazuh-agentlibs.conf
-
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

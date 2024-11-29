@@ -44,7 +44,6 @@ override_dh_install:
 	cmake --build build --parallel $(JOBS)
 
 	make -C build install -j $(JOBS)
-	cp /usr/local/gcc-13.2.0/lib64/libstdc++.so.6 ${TARGET_DIR}$(INSTALLATION_DIR)/usr/share/wazuh-agent/lib
 
 override_dh_auto_clean:
 	make -C src clean
