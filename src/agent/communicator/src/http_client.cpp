@@ -264,6 +264,27 @@ namespace http_client
 
         if (res.result() != boost::beast::http::status::ok)
         {
+            if (res.result() == boost::beast::http::status::unauthorized ||
+                res.result() == boost::beast::http::status::forbidden)
+            {
+                std::string message {};
+
+                try
+                {
+                    message = nlohmann::json::parse(boost::beast::buffers_to_string(res.body().data()))
+                                  .at("message")
+                                  .get_ref<const std::string&>();
+                }
+                catch (const std::exception& e)
+                {
+                    LogError("Error parsing message in response: {}.", e.what());
+                }
+
+                if (message == "Invalid key" || message == "Agent does not exist")
+                {
+                    throw std::runtime_error(message);
+                }
+            }
             LogWarn("Error: {}.", res.result_int());
             return std::nullopt;
         }

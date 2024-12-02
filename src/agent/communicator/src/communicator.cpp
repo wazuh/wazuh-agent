@@ -97,19 +97,33 @@ namespace communicator
         const auto executor = co_await boost::asio::this_coro::executor;
         m_tokenExpTimer = std::make_unique<boost::asio::steady_timer>(executor);
 
+        if (auto remainingSecs = GetTokenRemainingSecs(); remainingSecs > TOKEN_PRE_EXPIRY_SECS)
+        {
+            m_tokenExpTimer->expires_after(
+                std::chrono::milliseconds((remainingSecs - TOKEN_PRE_EXPIRY_SECS) * A_SECOND_IN_MILLIS));
+            co_await m_tokenExpTimer->async_wait(boost::asio::use_awaitable);
+        }
+
         while (m_keepRunning.load())
         {
             const auto duration = [this]()
             {
-                const auto result = SendAuthenticationRequest();
-                if (result != boost::beast::http::status::ok)
+                try
+                {
+                    const auto result = SendAuthenticationRequest();
+                    if (result != boost::beast::http::status::ok)
+                    {
+                        return std::chrono::milliseconds(m_retryInterval);
+                    }
+                    else
+                    {
+                        return std::chrono::milliseconds((GetTokenRemainingSecs() - TOKEN_PRE_EXPIRY_SECS) *
+                                                         A_SECOND_IN_MILLIS);
+                    }
+                }
+                catch (const std::exception&)
                 {
                     return std::chrono::milliseconds(m_retryInterval);
-                }
-                else
-                {
-                    return std::chrono::milliseconds((GetTokenRemainingSecs() - TOKEN_PRE_EXPIRY_SECS) *
-                                                     A_SECOND_IN_MILLIS);
                 }
             }();
 
