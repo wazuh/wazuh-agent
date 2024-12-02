@@ -14,6 +14,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <utility>
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines,cppcoreguidelines-avoid-reference-coroutine-parameters)
 
@@ -233,6 +234,12 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_Success)
         unauthorizedCalled = true;
     };
 
+    auto loopCondition = true;
+    std::function<bool()> loopRequestCondition = [&loopCondition]()
+    {
+        return std::exchange(loopCondition, false);
+    };
+
     const auto reqParams =
         http_client::HttpRequestParams(boost::beast::http::verb::get, "https://localhost:8080", "/", "Wazuh 5.0.0");
 
@@ -242,8 +249,9 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_Success)
                                               onUnauthorized,
                                               5, // NOLINT
                                               1, // NOLINT
+                                              1, // NOLINT
                                               onSuccess,
-                                              nullptr);
+                                              loopRequestCondition);
 
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);
@@ -288,6 +296,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
                                               onUnauthorized,
                                               5, // NOLINT
                                               1, // NOLINT
+                                              1, // NOLINT
                                               onSuccess,
                                               nullptr);
 
@@ -327,6 +336,12 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails
         unauthorizedCalled = true;
     };
 
+    auto loopCondition = true;
+    std::function<bool()> loopRequestCondition = [&loopCondition]()
+    {
+        return std::exchange(loopCondition, false);
+    };
+
     const auto reqParams =
         http_client::HttpRequestParams(boost::beast::http::verb::get, "https://localhost:8080", "/", "Wazuh 5.0.0");
     auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
@@ -335,8 +350,9 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails
                                               onUnauthorized,
                                               5, // NOLINT
                                               1, // NOLINT
+                                              1, // NOLINT
                                               onSuccess,
-                                              nullptr);
+                                              loopRequestCondition);
 
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);
@@ -376,6 +392,12 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
         unauthorizedCalled = true;
     };
 
+    auto loopCondition = true;
+    std::function<bool()> loopRequestCondition = [&loopCondition]()
+    {
+        return std::exchange(loopCondition, false);
+    };
+
     const auto reqParams =
         http_client::HttpRequestParams(boost::beast::http::verb::get, "https://localhost:8080", "/", "Wazuh 5.0.0");
     auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
@@ -384,8 +406,9 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
                                               onUnauthorized,
                                               5, // NOLINT
                                               1, // NOLINT
+                                              1, // NOLINT
                                               onSuccess,
-                                              nullptr);
+                                              loopRequestCondition);
 
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);
@@ -424,6 +447,12 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_UnauthorizedCalledWhenAuthorization
         unauthorizedCalled = true;
     };
 
+    auto loopCondition = true;
+    std::function<bool()> loopRequestCondition = [&loopCondition]()
+    {
+        return std::exchange(loopCondition, false);
+    };
+
     const auto reqParams =
         http_client::HttpRequestParams(boost::beast::http::verb::get, "https://localhost:8080", "/", "Wazuh 5.0.0");
     auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
@@ -432,8 +461,9 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_UnauthorizedCalledWhenAuthorization
                                               onUnauthorized,
                                               5, // NOLINT
                                               1, // NOLINT
+                                              1, // NOLINT
                                               onSuccess,
-                                              nullptr);
+                                              loopRequestCondition);
 
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);

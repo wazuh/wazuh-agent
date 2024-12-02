@@ -66,6 +66,15 @@ namespace communicator
                 LogWarn("batch_interval must be greater than zero. Using default value.");
                 m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
             }
+
+            m_batchSize = getConfigValue.template operator()<int>("agent", "batch_size")
+                              .value_or(config::agent::DEFAULT_BATCH_SIZE);
+
+            if (m_batchSize < 1)
+            {
+                LogWarn("batch_size must be greater than zero. Using default value.");
+                m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
+            }
         }
 
         /// @brief Waits for the authentication token to expire and authenticates again
@@ -128,6 +137,9 @@ namespace communicator
 
         /// @brief Time between batch requests
         std::time_t m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
+
+        /// @brief Maximum number of messages to batch
+        int m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
 
         /// @brief The server URL
         std::string m_serverUrl;

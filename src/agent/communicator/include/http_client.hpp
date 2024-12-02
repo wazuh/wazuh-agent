@@ -40,6 +40,7 @@ namespace http_client
         /// @param onUnauthorized Callback for unauthorized access
         /// @param connectionRetry Time in milliseconds to wait before retrying the connection
         /// @param batchInterval Time to wait between requests
+        /// @param batchSize The maximum number of messages to batch
         /// @param onSuccess Callback for successful request completion
         /// @param loopRequestCondition Condition to continue looping requests
         /// @return Awaitable task for the HTTP request
@@ -50,7 +51,8 @@ namespace http_client
                               std::function<void()> onUnauthorized,
                               std::time_t connectionRetry,
                               std::time_t batchInterval,
-                              std::function<void(const std::string&)> onSuccess = {},
+                              int batchSize,
+                              std::function<void(const int, const std::string&)> onSuccess = {},
                               std::function<bool()> loopRequestCondition = {}) override;
 
         /// @brief Performs a synchronous HTTP request

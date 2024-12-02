@@ -20,7 +20,8 @@ public:
                  std::function<void()> onUnauthorized,
                  std::time_t connectionRetry,
                  std::time_t batchInterval,
-                 std::function<void(const std::string&)> onSuccess,
+                 int batchSize,
+                 std::function<void(const int, const std::string&)> onSuccess,
                  std::function<bool()> loopRequestCondition),
                 (override));
 

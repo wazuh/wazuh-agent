@@ -95,15 +95,16 @@ namespace http_client
         return req;
     }
 
-    boost::asio::awaitable<void>
-    HttpClient::Co_PerformHttpRequest(std::shared_ptr<std::string> token,
-                                      HttpRequestParams reqParams,
-                                      std::function<boost::asio::awaitable<std::string>()> messageGetter,
-                                      std::function<void()> onUnauthorized,
-                                      std::time_t connectionRetry,
-                                      std::time_t batchInterval,
-                                      std::function<void(const std::string&)> onSuccess,
-                                      std::function<bool()> loopRequestCondition)
+    boost::asio::awaitable<void> HttpClient::Co_PerformHttpRequest(
+        std::shared_ptr<std::string> token,
+        HttpRequestParams reqParams,
+        std::function<boost::asio::awaitable<std::tuple<int, std::string>>()> messageGetter,
+        std::function<void()> onUnauthorized,
+        std::time_t connectionRetry,
+        std::time_t batchInterval,
+        int batchSize,
+        std::function<void(const int, const std::string&)> onSuccess,
+        std::function<bool()> loopRequestCondition)
     {
         using namespace std::chrono_literals;
 
@@ -155,10 +156,25 @@ namespace http_client
 
             if (messageGetter != nullptr)
             {
-                const auto messages = co_await messageGetter();
-                messagesCount = std::get<0>(messages);
-                LogTrace("Messages count: {}", messagesCount);
-                reqParams.Body = std::get<1>(messages);
+                boost::asio::steady_timer refreshTimer(co_await boost::asio::this_coro::executor);
+                boost::asio::steady_timer batchTimeoutTimer(co_await boost::asio::this_coro::executor);
+                batchTimeoutTimer.expires_after(std::chrono::milliseconds(batchInterval));
+
+                while (loopRequestCondition != nullptr && loopRequestCondition())
+                {
+                    const auto messages = co_await messageGetter(batchSize);
+                    messagesCount = std::get<0>(messages);
+
+                    if (messagesCount >= batchSize || batchTimeoutTimer.expiry() <= std::chrono::steady_clock::now())
+                    {
+                        LogTrace("Messages count: {}", messagesCount);
+                        reqParams.Body = std::get<1>(messages);
+                        break;
+                    }
+
+                    refreshTimer.expires_after(std::chrono::milliseconds(100));
+                    co_await refreshTimer.async_wait(boost::asio::use_awaitable);
+                }
             }
             else
             {
