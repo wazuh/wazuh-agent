@@ -15,7 +15,7 @@ PACKAGED_DIRECTORY=$CURRENT_PATH/wazuh-agent/payload
 ARCH="intel64"
 WAZUH_SOURCE_REPOSITORY="https://github.com/wazuh/wazuh-agent"
 SERVICE_PATH="/Library/LaunchDaemons/com.wazuh.agent.plist"
-INSTALLATION_PATH="/usr/share/wazuh-agent"    # Installation path.
+INSTALLATION_PATH="/Library/Application Support/Wazuh agent.app"    # Installation path.
 VERSION=""                            # Default VERSION (branch/tag).
 REVISION="1"                          # Package revision.
 BRANCH_TAG=""                         # Branch that will be downloaded to build package.
@@ -86,7 +86,7 @@ function sign_binaries() {
     if [ ! -z "${KEYCHAIN}" ] && [ ! -z "${CERT_APPLICATION_ID}" ] ; then
         security -v unlock-keychain -p "${KC_PASS}" "${KEYCHAIN}" > /dev/null
         # Sign every single binary in Wazuh's installation. This also includes library files.
-        for bin in $(find ${SERVICE_PATH} ${INSTALLATION_PATH} -exec file {} \; | grep -E 'executable|bit' | cut -d: -f1); do
+        for bin in $(find ${PACKAGED_DIRECTORY} -exec file {} \; | grep -E 'executable|bit' | cut -d: -f1); do
             codesign -f --sign "${CERT_APPLICATION_ID}" --entitlements ${ENTITLEMENTS_PATH} --timestamp  --options=runtime --verbose=4 "${bin}"
         done
         security -v lock-keychain "${KEYCHAIN}" > /dev/null
@@ -160,14 +160,6 @@ function build_package() {
         pkg_name="wazuh-agent_${VERSION}-${REVISION}_${ARCH}_${short_commit_hash}"
     else
         pkg_name="wazuh-agent-${VERSION}-${REVISION}.${ARCH}"
-    fi
-
-    if [ -d "${SERVICE_PATH}" ]; then
-
-        echo "\nThe wazuh agent is already installed on this machine."
-        echo "Removing it from the system."
-
-        ${CURRENT_PATH}/uninstall.sh
     fi
 
     prepare_building_folder $VERSION $pkg_name
