@@ -235,6 +235,7 @@ namespace configuration
 
     void ConfigurationParser::LoadSharedConfig()
     {
+        LogDebug("Loading shared configuration.");
         if (m_getGroups == nullptr)
         {
             LogWarn("Load shared configuration failed, no get groups function set");
@@ -250,6 +251,8 @@ namespace configuration
             {
                 const std::filesystem::path groupFile =
                     std::filesystem::path(config::DEFAULT_SHARED_CONFIG_PATH) / (groupId + ".conf");
+
+                LogDebug("Loading group configuration file: {}.", groupFile.string());
 
                 YAML::Node fileToAppend = YAML::LoadFile(groupFile.string());
 
