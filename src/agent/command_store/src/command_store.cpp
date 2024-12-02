@@ -177,6 +177,71 @@ namespace command_store
         }
     }
 
+    std::optional<std::vector<module_command::CommandEntry>>
+    CommandStore::GetCommandByStatus(const module_command::Status& status)
+    {
+        try
+        {
+            auto cmdData = m_dataBase->Select(COMMANDSTORE_TABLE_NAME,
+                                              {},
+                                              {sqlite_manager::Column("status",
+                                                                      sqlite_manager::ColumnType::INTEGER,
+                                                                      std::to_string(static_cast<int>(status)))});
+
+            if (cmdData.empty())
+            {
+                return std::nullopt;
+            }
+
+            std::vector<module_command::CommandEntry> commands;
+
+            for (const auto& row : cmdData)
+            {
+                module_command::CommandEntry cmd;
+
+                for (const sqlite_manager::Column& col : row)
+                {
+                    if (col.Name == "id")
+                    {
+                        cmd.Id = col.Value;
+                    }
+                    else if (col.Name == "module")
+                    {
+                        cmd.Module = col.Value;
+                    }
+                    else if (col.Name == "command")
+                    {
+                        cmd.Command = col.Value;
+                    }
+                    else if (col.Name == "parameters")
+                    {
+                        cmd.Parameters = nlohmann::json::parse(col.Value);
+                    }
+                    else if (col.Name == "result")
+                    {
+                        cmd.ExecutionResult.Message = col.Value;
+                    }
+                    else if (col.Name == "status")
+                    {
+                        cmd.ExecutionResult.ErrorCode = StatusFromInt(std::stoi(col.Value));
+                    }
+                    else if (col.Name == "time")
+                    {
+                        cmd.Time = std::stod(col.Value);
+                    }
+                }
+
+                commands.push_back(cmd);
+            }
+            return commands;
+        }
+        catch (const std::exception& e)
+        {
+            LogError("Select operation failed: {}.", e.what());
+            return std::nullopt;
+        }
+    }
+
     bool CommandStore::UpdateCommand(const module_command::CommandEntry& cmd)
     {
         std::vector<sqlite_manager::Column> fields;
