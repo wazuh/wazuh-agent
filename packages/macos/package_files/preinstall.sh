@@ -9,7 +9,8 @@
 # $1 is the message
 # $2 is the error code
 
-DIR="/Library/Ossec"
+AGENT_DIR="/Library/Application Support/Wazuh agent.app"
+CONF_DIR="$AGENT_DIR/etc"
 ARCH="PACKAGE_ARCH"
 
 function check_errm
@@ -38,39 +39,25 @@ function check_arch
 
 check_arch
 
-if [ -d "${DIR}" ]; then
-    echo "A Wazuh agent installation was found in ${DIR}. Will perform an upgrade."
+if [ -d "${AGENT_DIR}" ]; then
+    echo "A Wazuh agent installation was found in ${AGENT_DIR}. Will perform an upgrade."
     upgrade="true"
-    touch "${DIR}/WAZUH_PKG_UPGRADE"
+    touch "${AGENT_DIR}/WAZUH_PKG_UPGRADE"
 
-    if [ -f "${DIR}/WAZUH_RESTART" ]; then
-        rm -f "${DIR}/WAZUH_RESTART"
+    if [ -f "${AGENT_DIR}/WAZUH_RESTART" ]; then
+        rm -f "${AGENT_DIR}/WAZUH_RESTART"
     fi
 
     # Stops the agent before upgrading it
-    if ${DIR}/bin/wazuh-control status | grep "is running" > /dev/null 2>&1; then
-        touch "${DIR}/WAZUH_RESTART"
-        ${DIR}/bin/wazuh-control stop
-        restart="true"
-    elif ${DIR}/bin/ossec-control status | grep "is running" > /dev/null 2>&1; then
-        touch "${DIR}/WAZUH_RESTART"
-        ${DIR}/bin/ossec-control stop
+    if ${AGENT_DIR}/bin/wazuh-agent --status | grep "is running" > /dev/null 2>&1; then
+        touch "${AGENT_DIR}/WAZUH_RESTART"
+        ${AGENT_DIR}/bin/wazuh-agent --stop
         restart="true"
     fi
 
-    echo "Backing up configuration files to ${DIR}/config_files/"
-    mkdir -p ${DIR}/config_files/
-    cp -r ${DIR}/etc/{ossec.conf,client.keys,local_internal_options.conf,shared} ${DIR}/config_files/
-
-    if [ -d ${DIR}/logs/ossec ]; then
-        echo "Renaming ${DIR}/logs/ossec to ${DIR}/logs/wazuh"
-        mv ${DIR}/logs/ossec ${DIR}/logs/wazuh
-    fi
-
-    if [ -d ${DIR}/queue/ossec ]; then
-        echo "Renaming ${DIR}/queue/ossec to ${DIR}/queue/sockets"
-        mv ${DIR}/queue/ossec ${DIR}/queue/sockets
-    fi
+    echo "Backing up configuration files to ${CONF_DIR}/config_files/"
+    mkdir -p ${CONF_DIR}/config_files/
+    cp -r ${CONF_DIR}/* ${CONF_DIR}/config_files/
 
     if pkgutil --pkgs | grep -i wazuh-agent-etc > /dev/null 2>&1 ; then
         echo "Removing previous package receipt for wazuh-agent-etc"
