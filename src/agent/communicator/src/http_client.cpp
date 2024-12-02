@@ -172,7 +172,8 @@ namespace http_client
                         break;
                     }
 
-                    refreshTimer.expires_after(std::chrono::milliseconds(100));
+                    constexpr int refreshInterval = 100;
+                    refreshTimer.expires_after(std::chrono::milliseconds(refreshInterval));
                     co_await refreshTimer.async_wait(boost::asio::use_awaitable);
                 }
             }
