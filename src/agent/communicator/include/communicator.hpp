@@ -61,18 +61,18 @@ namespace communicator
             m_batchInterval = getConfigValue.template operator()<std::time_t>("agent", "batch_interval")
                                   .value_or(config::agent::DEFAULT_BATCH_INTERVAL);
 
-            if (m_batchInterval < 1)
+            if (m_batchInterval < 1'000 || m_batchInterval > (1'000 * 60 * 60))
             {
-                LogWarn("batch_interval must be greater than zero. Using default value.");
+                LogWarn("batch_interval must be between 1s and 1h. Using default value.");
                 m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
             }
 
             m_batchSize = getConfigValue.template operator()<int>("agent", "batch_size")
                               .value_or(config::agent::DEFAULT_BATCH_SIZE);
 
-            if (m_batchSize < 1)
+            if (m_batchSize < 1'000 || m_batchSize > 1'000'000)
             {
-                LogWarn("batch_size must be greater than zero. Using default value.");
+                LogWarn("batch_size must be between 1000 and 1000000. Using default value.");
                 m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
             }
         }
