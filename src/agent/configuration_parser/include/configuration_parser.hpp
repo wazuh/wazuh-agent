@@ -54,7 +54,15 @@ namespace configuration
         void MergeYamlNodes(YAML::Node& base, const YAML::Node& override);
 
         /// @brief Method for loading the configuration from local file
-        void LoadLocalConfig(const std::filesystem::path& configFile);
+        void LoadLocalConfig();
+
+        /// @brief Loads shared configuration files for specific groups and merges them into the main configuration.
+        ///
+        /// This function attempts to load configuration files for each group from a shared directory.
+        /// The loaded configurations are merged into the main configuration.
+        ///
+        /// @throws YAML::Exception If there is an error while loading or parsing a YAML file.
+        void LoadSharedConfig();
 
     public:
         /// @brief Default constructor. Loads configuration from a default file path.
@@ -130,14 +138,6 @@ namespace configuration
         /// @param configFile The path to the YAML file to be validated.
         /// @return `true` if the file is a valid YAML file; `false` otherwise.
         bool isValidYamlFile(const std::filesystem::path& configFile) const;
-
-        /// @brief Loads shared configuration files for specific groups and merges them into the main configuration.
-        ///
-        /// This function attempts to load configuration files for each group from a shared directory.
-        /// The loaded configurations are merged into the main configuration.
-        ///
-        /// @throws YAML::Exception If there is an error while loading or parsing a YAML file.
-        void LoadSharedConfig();
 
         /// @brief Sets the function to get group IDs.
         /// @param getGroupIdsFunction A function to get group IDs.

@@ -5,6 +5,7 @@
 #include <config.h>
 
 #include <queue>
+#include <unordered_set>
 #include <utility>
 
 namespace
@@ -24,7 +25,7 @@ namespace configuration
         try
         {
             m_config_file_path = configFilePath;
-            LoadLocalConfig(m_config_file_path);
+            LoadLocalConfig();
         }
         catch (const std::exception& e)
         {
@@ -51,10 +52,10 @@ namespace configuration
         }
     }
 
-    void ConfigurationParser::LoadLocalConfig(const std::filesystem::path& configFile)
+    void ConfigurationParser::LoadLocalConfig()
     {
-        LogDebug("Loading local config file: {}.", configFile.string());
-        m_config = YAML::LoadFile(configFile.string());
+        LogDebug("Loading local config file: {}.", m_config_file_path.string());
+        m_config = YAML::LoadFile(m_config_file_path.string());
 
         if (!m_config.IsMap() && !m_config.IsSequence())
         {
@@ -150,11 +151,72 @@ namespace configuration
                     }
                     else if (value.IsSequence() && baseNode[key].IsSequence())
                     {
-                        // Both values are sequences(lists): concatenate the elements.
-                        for (const auto& elem : value)
+                        // Merge sequences while preserving the order.
+                        YAML::Node mergedSequence = YAML::Node(YAML::NodeType::Sequence);
+
+                        // Collect elements from 'override' sequence to preserve insertion order.
+                        std::vector<std::pair<std::string, YAML::Node>> overrideElements;
+                        for (const YAML::Node& elem : value)
                         {
-                            baseNode[key].push_back(elem);
+                            if (elem.IsScalar())
+                            {
+                                overrideElements.emplace_back(elem.as<std::string>(), elem);
+                            }
+                            else if (elem.IsMap() && elem.begin() != elem.end())
+                            {
+                                overrideElements.emplace_back(elem.begin()->first.as<std::string>(), elem);
+                            }
                         }
+
+                        // Track which keys from 'override' sequence are merged.
+                        std::unordered_set<std::string> mergedKeys;
+
+                        for (const YAML::Node& elem : baseNode[key])
+                        {
+                            std::string elemKey;
+
+                            // Extract the key based on the type of element.
+                            if (elem.IsScalar())
+                            {
+                                elemKey = elem.as<std::string>();
+                            }
+                            else if (elem.IsMap() && elem.begin() != elem.end())
+                            {
+                                elemKey = elem.begin()->first.as<std::string>();
+                            }
+                            else
+                            {
+                                // Skip elements that don't fit the expected types.
+                                mergedSequence.push_back(elem);
+                                continue;
+                            }
+
+                            // Common logic for merging elements.
+                            auto overrideItem =
+                                std::find_if(overrideElements.begin(),
+                                             overrideElements.end(),
+                                             [&elemKey](const auto& pair) { return pair.first == elemKey; });
+                            if (overrideItem != overrideElements.end())
+                            {
+                                mergedSequence.push_back(overrideItem->second);
+                                mergedKeys.insert(overrideItem->first);
+                            }
+                            else
+                            {
+                                mergedSequence.push_back(elem);
+                            }
+                        }
+
+                        // Add remaining elements from 'override' sequence in order.
+                        for (const auto& [itemKey, itemNode] : overrideElements)
+                        {
+                            if (mergedKeys.find(itemKey) == mergedKeys.end())
+                            {
+                                mergedSequence.push_back(itemNode);
+                            }
+                        }
+
+                        baseNode[key] = mergedSequence;
                     }
                     else
                     {
@@ -223,7 +285,7 @@ namespace configuration
         m_config = YAML::Node();
 
         // Load local configuration
-        LoadLocalConfig(m_config_file_path);
+        LoadLocalConfig();
 
         // Load shared configuration
         LoadSharedConfig();
