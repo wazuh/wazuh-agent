@@ -44,16 +44,16 @@ namespace http_client
         /// @param onSuccess Callback for successful request completion
         /// @param loopRequestCondition Condition to continue looping requests
         /// @return Awaitable task for the HTTP request
-        boost::asio::awaitable<void>
-        Co_PerformHttpRequest(std::shared_ptr<std::string> token,
-                              HttpRequestParams params,
-                              std::function<boost::asio::awaitable<std::tuple<int, std::string>>()> messageGetter,
-                              std::function<void()> onUnauthorized,
-                              std::time_t connectionRetry,
-                              std::time_t batchInterval,
-                              int batchSize,
-                              std::function<void(const int, const std::string&)> onSuccess = {},
-                              std::function<bool()> loopRequestCondition = {}) override;
+        boost::asio::awaitable<void> Co_PerformHttpRequest(
+            std::shared_ptr<std::string> token,
+            HttpRequestParams params,
+            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const int)> messageGetter,
+            std::function<void()> onUnauthorized,
+            std::time_t connectionRetry,
+            std::time_t batchInterval,
+            int batchSize,
+            std::function<void(const int, const std::string&)> onSuccess = {},
+            std::function<bool()> loopRequestCondition = {}) override;
 
         /// @brief Performs a synchronous HTTP request
         /// @param params Parameters for the request

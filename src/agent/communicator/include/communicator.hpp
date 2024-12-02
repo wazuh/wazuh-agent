@@ -88,15 +88,15 @@ namespace communicator
         /// @brief Processes messages in a stateful manner
         /// @param getMessages A function to retrieve a message from the queue
         /// @param onSuccess A callback function to execute when a message is processed
-        boost::asio::awaitable<void>
-        StatefulMessageProcessingTask(std::function<boost::asio::awaitable<std::tuple<int, std::string>>()> getMessages,
-                                      std::function<void(const int, const std::string&)> onSuccess);
+        boost::asio::awaitable<void> StatefulMessageProcessingTask(
+            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const int)> getMessages,
+            std::function<void(const int, const std::string&)> onSuccess);
 
         /// @brief Processes messages in a stateless manner
         /// @param getMessages A function to retrieve a message from the queue
         /// @param onSuccess A callback function to execute when a message is processed
         boost::asio::awaitable<void> StatelessMessageProcessingTask(
-            std::function<boost::asio::awaitable<std::tuple<int, std::string>>()> getMessages,
+            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const int)> getMessages,
             std::function<void(const int, const std::string&)> onSuccess);
 
         /// @brief Retrieves group configuration from the manager

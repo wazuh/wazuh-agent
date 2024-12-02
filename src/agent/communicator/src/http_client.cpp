@@ -98,7 +98,7 @@ namespace http_client
     boost::asio::awaitable<void> HttpClient::Co_PerformHttpRequest(
         std::shared_ptr<std::string> token,
         HttpRequestParams reqParams,
-        std::function<boost::asio::awaitable<std::tuple<int, std::string>>()> messageGetter,
+        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const int)> messageGetter,
         std::function<void()> onUnauthorized,
         std::time_t connectionRetry,
         std::time_t batchInterval,
