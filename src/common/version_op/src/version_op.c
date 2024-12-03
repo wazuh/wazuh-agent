@@ -28,10 +28,13 @@
 #include "regex_op.h"
 #include "binaries_op.h"
 
+#ifndef WIN32
+#include <sys/utsname.h>
+#endif
+
 #ifdef __linux__
 #include <sched.h>
 #include <regex.h>
-#include <sys/utsname.h>
 #elif defined(__MACH__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <sys/sysctl.h>
 #endif
