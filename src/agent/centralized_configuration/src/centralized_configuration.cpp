@@ -66,10 +66,11 @@ namespace centralized_configuration
                 }
                 else
                 {
-                    LogWarn("Group update failed, no function set");
+                    LogWarn("Group update failed, no getGroupId or downloadGroupFiles function set");
                     co_return module_command::CommandExecutionResult {
                         module_command::Status::FAILURE,
-                        "CentralizedConfiguration group update failed, no function set"};
+                        "CentralizedConfiguration group update failed, no getGroupId or downloadGroupFiles function "
+                        "set."};
                 }
             }
             else
@@ -86,7 +87,9 @@ namespace centralized_configuration
                 m_downloadGroupFilesFunction(groupId, tmpGroupFile.string());
                 if (!m_validateFileFunction(tmpGroupFile))
                 {
-                    LogWarn("Validate file failed, invalid group file received: {}", tmpGroupFile.string());
+                    LogWarn("Failed to validate the file for group '{}', invalid group file received: {}",
+                            groupId,
+                            tmpGroupFile.string());
                     co_return module_command::CommandExecutionResult {
                         module_command::Status::FAILURE,
                         "CentralizedConfiguration validate file failed, invalid file received."};
