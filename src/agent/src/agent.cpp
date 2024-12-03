@@ -40,12 +40,14 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
 
     m_configurationParser->SetGetGroupIdsFunction([this]() { return m_agentInfo.GetGroups(); });
 
-    m_centralizedConfiguration.SetGroupIdFunction([this](const std::vector<std::string>& groups)
-                                                  { return m_agentInfo.SetGroups(groups); });
+    m_centralizedConfiguration.SetGroupIdFunction(
+        [this](const std::vector<std::string>& groups)
+        {
+            m_agentInfo.SetGroups(groups);
+            return m_agentInfo.SaveGroups();
+        });
 
     m_centralizedConfiguration.GetGroupIdFunction([this]() { return m_agentInfo.GetGroups(); });
-
-    m_centralizedConfiguration.SaveGroupIdFunction([this]() { return m_agentInfo.SaveGroups(); });
 
     m_centralizedConfiguration.SetDownloadGroupFilesFunction(
         [this](const std::string& groupId, const std::string& destinationPath)

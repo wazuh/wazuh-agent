@@ -83,7 +83,8 @@ public:
     void Save() const;
 
     /// @brief Saves the agent's group information to the database.
-    void SaveGroups() const;
+    /// @return True if the operation was successful, false otherwise.
+    bool SaveGroups() const;
 
 private:
     /// @brief Creates a random key for the agent.

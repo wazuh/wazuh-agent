@@ -16,8 +16,8 @@ namespace centralized_configuration
 
             if (command == "set-group")
             {
-                if (m_setGroupIdFunction && m_downloadGroupFilesFunction && m_saveGroupIdFunction &&
-                    m_validateFileFunction && m_reloadModulesFunction)
+                if (m_setGroupIdFunction && m_downloadGroupFilesFunction && m_validateFileFunction &&
+                    m_reloadModulesFunction)
                 {
                     if (parameters.empty())
                     {
@@ -29,8 +29,13 @@ namespace centralized_configuration
 
                     groupIds = parameters[0].get<std::vector<std::string>>();
 
-                    m_setGroupIdFunction(groupIds);
-                    m_saveGroupIdFunction();
+                    if (!m_setGroupIdFunction(groupIds))
+                    {
+                        LogWarn("Group set failed, error saving group information");
+                        co_return module_command::CommandExecutionResult {
+                            module_command::Status::FAILURE,
+                            "CentralizedConfiguration group set failed, error saving group information"};
+                    }
 
                     try
                     {
@@ -158,11 +163,6 @@ namespace centralized_configuration
     void CentralizedConfiguration::GetGroupIdFunction(GetGroupIdFunctionType getGroupIdFunction)
     {
         m_getGroupIdFunction = std::move(getGroupIdFunction);
-    }
-
-    void CentralizedConfiguration::SaveGroupIdFunction(SaveGroupIdFunctionType saveGroupIdFunction)
-    {
-        m_saveGroupIdFunction = std::move(saveGroupIdFunction);
     }
 
     void

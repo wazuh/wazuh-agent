@@ -59,7 +59,8 @@ public:
 
     /// @brief Sets the agent's group list in the database, replacing any existing groups.
     /// @param groupList A vector of strings, each representing a group name.
-    void SetGroups(const std::vector<std::string>& groupList);
+    /// @return True if the operation was successful, false otherwise.
+    bool SetGroups(const std::vector<std::string>& groupList);
 
     /// @brief Resets the database tables to default values, clearing all data.
     void ResetToDefault();

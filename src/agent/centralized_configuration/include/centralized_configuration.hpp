@@ -16,9 +16,8 @@ namespace centralized_configuration
     class CentralizedConfiguration
     {
     public:
-        using SetGroupIdFunctionType = std::function<void(const std::vector<std::string>& groupList)>;
+        using SetGroupIdFunctionType = std::function<bool(const std::vector<std::string>& groupList)>;
         using GetGroupIdFunctionType = std::function<std::vector<std::string>()>;
-        using SaveGroupIdFunctionType = std::function<void()>;
         using DownloadGroupFilesFunctionType =
             std::function<bool(const std::string& group, const std::string& dstFilePath)>;
         using ValidateFileFunctionType = std::function<bool(const std::filesystem::path& configFile)>;
@@ -40,11 +39,6 @@ namespace centralized_configuration
         /// @details The "update-group" commands requires such function to be set.
         /// @param getGroupIdFunction A function to get group IDs.
         void GetGroupIdFunction(GetGroupIdFunctionType getGroupIdFunction);
-
-        /// @brief Sets the function to save group IDs.
-        /// @details The "set-group" commands requires such function to be set.
-        /// @param saveGroupIdFunction A function to save group IDs.
-        void SaveGroupIdFunction(SaveGroupIdFunctionType saveGroupIdFunction);
 
         /// @brief Sets the function to download group configuration files.
         /// @details Configures how and where to download group configuration files.
@@ -69,9 +63,6 @@ namespace centralized_configuration
 
         /// @brief Function to get group IDs.
         GetGroupIdFunctionType m_getGroupIdFunction;
-
-        /// @brief Function to save group IDs.
-        SaveGroupIdFunctionType m_saveGroupIdFunction;
 
         /// @brief Function to download group configuration files.
         DownloadGroupFilesFunctionType m_downloadGroupFilesFunction;

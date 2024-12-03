@@ -96,7 +96,7 @@ TEST(CentralizedConfiguration, ExecuteCommandHandlesRecognizedCommands)
         []() -> boost::asio::awaitable<void>
         {
             CentralizedConfiguration centralizedConfiguration;
-            centralizedConfiguration.SetGroupIdFunction([](const std::vector<std::string>&) {});
+            centralizedConfiguration.SetGroupIdFunction([](const std::vector<std::string>&) { return true; });
             centralizedConfiguration.GetGroupIdFunction([]() { return std::vector<std::string> {"group1", "group2"}; });
             centralizedConfiguration.SetDownloadGroupFilesFunction([](const std::string&, const std::string&)
                                                                    { return true; });
@@ -134,8 +134,12 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForS
             bool wasSetGroupIdFunctionCalled = false;
             bool wasDownloadGroupFilesFunctionCalled = false;
 
-            centralizedConfiguration.SetGroupIdFunction([&wasSetGroupIdFunctionCalled](const std::vector<std::string>&)
-                                                        { wasSetGroupIdFunctionCalled = true; });
+            centralizedConfiguration.SetGroupIdFunction(
+                [&wasSetGroupIdFunctionCalled](const std::vector<std::string>&)
+                {
+                    wasSetGroupIdFunctionCalled = true;
+                    return true;
+                });
 
             centralizedConfiguration.SetDownloadGroupFilesFunction(
                 [&wasDownloadGroupFilesFunctionCalled](const std::string&, const std::string&)
