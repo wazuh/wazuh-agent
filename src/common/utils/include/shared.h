@@ -105,18 +105,8 @@
 #include "defs.h"
 #include "os_err.h"
 #include "time_op.h"
-#include "file_op.h"
-#include "regex_op.h"
-#include "mem_op.h"
-#ifndef WIN32
-#include "privsep_op.h"
-#include "pthreads_op.h"
-#endif
-#include "error_messages.h"
-#include "binaries_op.h"
+
 #include "os_ip.h"
-#include "randombytes.h"
-#include "bzip2_op.h"
 
 #ifndef LARGEFILE64_SOURCE
 #define LARGEFILE64_SOURCE
@@ -172,27 +162,9 @@ extern const char *__local_name;
 /*** Global prototypes ***/
 /*** These functions will exit on error. No need to check return code ***/
 
-// TODO: Double check this Critical error handling
-/* for calloc: x = calloc(4,sizeof(char)) -> os_calloc(4,sizeof(char),x) */
-#define os_calloc(x,y,z) ((z = (__typeof__(z)) calloc(x,y)))?(void)1:LogCritical(MEM_ERROR, strerror(errno))
+#include "os_macros.h"
 
-#define os_strdup(x,y) ((y = strdup(x)))?(void)1:LogCritical(MEM_ERROR, strerror(errno))
-
-#define os_malloc(x,y) ((y = (__typeof__(y)) malloc(x)))?(void)1:LogCritical(MEM_ERROR, strerror(errno))
-
-#define os_free(x) if(x){free(x);x=NULL;}
-
-#define os_realloc(x,y,z) ((z = (__typeof__(z))realloc(x,y)))?(void)1:LogCritical(MEM_ERROR, strerror(errno))
-
-#define os_clearnl(x,p) if((p = strrchr(x, '\n')))*p = '\0';
-
-#define w_fclose(x) if (x) { fclose(x); x=NULL; }
-
-#define w_strdup(x,y) ({ int retstr = 0; if (x) { os_strdup(x, y);} else retstr = 1; retstr;})
-
-#define sqlite_strdup(x,y) ({ if (x) { os_strdup(x, y); } else (void)0; })
-
-#define w_strlen(x) ((x)? strlen(x) : 0)
+#include "wrapper_macros.h"
 
 // Calculate the number of elements within an array.
 // Only static arrays allowed.

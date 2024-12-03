@@ -8,8 +8,11 @@
  * Foundation
  */
 
+#include <string.h>
 #include "mem_op.h"
-#include "shared.h"
+#include "error_messages.h"
+#include "logger.hpp"
+#include "os_macros.h"
 
 /* Add pointer to array */
 void **os_AddPtArray(void *pt, void **array)

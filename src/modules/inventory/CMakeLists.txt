@@ -29,7 +29,6 @@ target_include_directories(Inventory PUBLIC
     ${COMMON_FOLDER}/data_provider/include
     ${COMMON_FOLDER}/dbsync/include
     ${COMMON_FOLDER}/error_messages/include
-    ${COMMON_FOLDER}/file_op/include
     ${COMMON_FOLDER}/hashHelper/include
     ${COMMON_FOLDER}/privsep_op/include
     ${COMMON_FOLDER}/pthreads_op/include
