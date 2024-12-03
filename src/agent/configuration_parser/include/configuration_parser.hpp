@@ -75,7 +75,7 @@ namespace configuration
         /// @param configFilePath The path to the YAML configuration file.
         /// @details This constructor attempts to load configuration data from the specified file path.
         /// If loading fails, it logs an error and falls back to a set of predefined default values.
-        ConfigurationParser(const std::filesystem::path& configFilePath);
+        ConfigurationParser(std::filesystem::path configFilePath);
 
         /// @brief Constructs a ConfigurationParser from a YAML-formatted string.
         /// @param stringToParse A string containing YAML data to parse.

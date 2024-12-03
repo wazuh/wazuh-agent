@@ -20,18 +20,10 @@ namespace
 
 namespace configuration
 {
-    ConfigurationParser::ConfigurationParser(const std::filesystem::path& configFilePath)
+    ConfigurationParser::ConfigurationParser(std::filesystem::path configFilePath)
+        : m_config_file_path(std::move(configFilePath))
     {
-        try
-        {
-            m_config_file_path = configFilePath;
-            LoadLocalConfig();
-        }
-        catch (const std::exception& e)
-        {
-            m_config = YAML::Node();
-            LogWarn("Using default values due to error parsing wazuh-agent.yml file: {}", e.what());
-        }
+        LoadLocalConfig();
     }
 
     ConfigurationParser::ConfigurationParser()
@@ -55,11 +47,19 @@ namespace configuration
     void ConfigurationParser::LoadLocalConfig()
     {
         LogDebug("Loading local config file: {}.", m_config_file_path.string());
-        m_config = YAML::LoadFile(m_config_file_path.string());
 
-        if (!m_config.IsMap() && !m_config.IsSequence())
+        try
         {
-            throw std::runtime_error("The file does not contain a valid YAML structure.");
+            if (!isValidYamlFile(m_config_file_path))
+            {
+                throw std::runtime_error("The file does not contain a valid YAML structure.");
+            }
+            m_config = YAML::LoadFile(m_config_file_path.string());
+        }
+        catch (const std::exception& e)
+        {
+            m_config = YAML::Node();
+            LogWarn("Using default values due to error parsing wazuh-agent.yml file: {}", e.what());
         }
     }
 
