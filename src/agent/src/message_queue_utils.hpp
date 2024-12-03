@@ -9,22 +9,27 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <tuple>
 
 class IMultiTypeQueue;
 
 /// @brief Gets messages from a queue and returns them as a JSON string
 /// @param multiTypeQueue The queue to get messages from
 /// @param messageType The type of messages to get from the queue
+/// @param numMessages The number of messages to get
 /// @param getMetadataInfo Function to get the agent metadata
 /// @return A string containing the messages from the queue
-boost::asio::awaitable<std::string> GetMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue,
-                                                         MessageType messageType,
-                                                         std::function<std::string()> getMetadataInfo);
+boost::asio::awaitable<std::tuple<int, std::string>>
+GetMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue,
+                     MessageType messageType,
+                     int numMessages,
+                     std::function<std::string()> getMetadataInfo);
 
 /// @brief Removes a fixed number of messages from the specified queue
 /// @param multiTypeQueue The queue from which to remove messages
 /// @param messageType The type of messages to remove
-void PopMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue, MessageType messageType);
+/// @param numMessages The number of messages to remove from the queue
+void PopMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue, MessageType messageType, int numMessages);
 
 /// @brief Pushes a batch of commands to the specified queue
 /// @param multiTypeQueue The queue to push commands to

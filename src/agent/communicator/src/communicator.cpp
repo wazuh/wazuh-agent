@@ -65,7 +65,8 @@ namespace communicator
         return std::max(0L, static_cast<long>(m_tokenExpTimeInSeconds - now_seconds));
     }
 
-    boost::asio::awaitable<void> Communicator::GetCommandsFromManager(std::function<void(const std::string&)> onSuccess)
+    boost::asio::awaitable<void>
+    Communicator::GetCommandsFromManager(std::function<void(const int, const std::string&)> onSuccess)
     {
         auto onAuthenticationFailed = [this]()
         {
@@ -79,8 +80,15 @@ namespace communicator
 
         const auto reqParams = http_client::HttpRequestParams(
             boost::beast::http::verb::get, m_serverUrl, "/api/v1/commands", m_getHeaderInfo ? m_getHeaderInfo() : "");
-        co_await m_httpClient->Co_PerformHttpRequest(
-            m_token, reqParams, {}, onAuthenticationFailed, m_retryInterval, onSuccess, loopCondition);
+        co_await m_httpClient->Co_PerformHttpRequest(m_token,
+                                                     reqParams,
+                                                     {},
+                                                     onAuthenticationFailed,
+                                                     m_retryInterval,
+                                                     m_batchInterval,
+                                                     m_batchSize,
+                                                     onSuccess,
+                                                     loopCondition);
     }
 
     boost::asio::awaitable<void> Communicator::WaitForTokenExpirationAndAuthenticate()
@@ -124,9 +132,9 @@ namespace communicator
         }
     }
 
-    boost::asio::awaitable<void>
-    Communicator::StatefulMessageProcessingTask(std::function<boost::asio::awaitable<std::string>()> getMessages,
-                                                std::function<void(const std::string&)> onSuccess)
+    boost::asio::awaitable<void> Communicator::StatefulMessageProcessingTask(
+        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const int)> getMessages,
+        std::function<void(const int, const std::string&)> onSuccess)
     {
         auto onAuthenticationFailed = [this]()
         {
@@ -142,13 +150,20 @@ namespace communicator
                                                               m_serverUrl,
                                                               "/api/v1/events/stateful",
                                                               m_getHeaderInfo ? m_getHeaderInfo() : "");
-        co_await m_httpClient->Co_PerformHttpRequest(
-            m_token, reqParams, getMessages, onAuthenticationFailed, m_retryInterval, onSuccess, loopCondition);
+        co_await m_httpClient->Co_PerformHttpRequest(m_token,
+                                                     reqParams,
+                                                     getMessages,
+                                                     onAuthenticationFailed,
+                                                     m_retryInterval,
+                                                     m_batchInterval,
+                                                     m_batchSize,
+                                                     onSuccess,
+                                                     loopCondition);
     }
 
-    boost::asio::awaitable<void>
-    Communicator::StatelessMessageProcessingTask(std::function<boost::asio::awaitable<std::string>()> getMessages,
-                                                 std::function<void(const std::string&)> onSuccess)
+    boost::asio::awaitable<void> Communicator::StatelessMessageProcessingTask(
+        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const int)> getMessages,
+        std::function<void(const int, const std::string&)> onSuccess)
     {
         auto onAuthenticationFailed = [this]()
         {
@@ -164,8 +179,15 @@ namespace communicator
                                                               m_serverUrl,
                                                               "/api/v1/events/stateless",
                                                               m_getHeaderInfo ? m_getHeaderInfo() : "");
-        co_await m_httpClient->Co_PerformHttpRequest(
-            m_token, reqParams, getMessages, onAuthenticationFailed, m_retryInterval, onSuccess, loopCondition);
+        co_await m_httpClient->Co_PerformHttpRequest(m_token,
+                                                     reqParams,
+                                                     getMessages,
+                                                     onAuthenticationFailed,
+                                                     m_retryInterval,
+                                                     m_batchInterval,
+                                                     m_batchSize,
+                                                     onSuccess,
+                                                     loopCondition);
     }
 
     void Communicator::TryReAuthenticate()

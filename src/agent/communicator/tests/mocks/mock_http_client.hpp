@@ -2,6 +2,8 @@
 
 #include <ihttp_client.hpp>
 
+using intStringTuple = std::tuple<int, std::string>;
+
 class MockHttpClient : public http_client::IHttpClient
 {
 public:
@@ -14,10 +16,12 @@ public:
                 Co_PerformHttpRequest,
                 (std::shared_ptr<std::string> token,
                  http_client::HttpRequestParams params,
-                 std::function<boost::asio::awaitable<std::string>()> messageGetter,
+                 std::function<boost::asio::awaitable<intStringTuple>(const int)> messageGetter,
                  std::function<void()> onUnauthorized,
                  std::time_t connectionRetry,
-                 std::function<void(const std::string&)> onSuccess,
+                 std::time_t batchInterval,
+                 int batchSize,
+                 std::function<void(const int, const std::string&)> onSuccess,
                  std::function<bool()> loopRequestCondition),
                 (override));
 

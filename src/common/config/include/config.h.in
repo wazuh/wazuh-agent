@@ -12,6 +12,8 @@ namespace config
     {
         constexpr auto DEFAULT_SERVER_URL = "@DEFAULT_SERVER_URL@";
         constexpr auto DEFAULT_RETRY_INTERVAL = @DEFAULT_RETRY_INTERVAL@;
+        constexpr auto DEFAULT_BATCH_INTERVAL = @DEFAULT_BATCH_INTERVAL@;
+        constexpr auto DEFAULT_BATCH_SIZE = @DEFAULT_BATCH_SIZE@;
     }
 
     namespace logcollector

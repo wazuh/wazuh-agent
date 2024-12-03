@@ -54,25 +54,29 @@ void Agent::Run()
     m_taskManager.EnqueueTask(m_communicator.WaitForTokenExpirationAndAuthenticate());
 
     m_taskManager.EnqueueTask(m_communicator.GetCommandsFromManager(
-        [this](const std::string& response) { PushCommandsToQueue(m_messageQueue, response); }));
+        [this](const int, const std::string& response) { PushCommandsToQueue(m_messageQueue, response); }));
 
     m_taskManager.EnqueueTask(m_communicator.StatefulMessageProcessingTask(
-        [this]()
+        [this](const int numMessages)
         {
-            return GetMessagesFromQueue(
-                m_messageQueue, MessageType::STATEFUL, [this]() { return m_agentInfo.GetMetadataInfo(false); });
+            return GetMessagesFromQueue(m_messageQueue,
+                                        MessageType::STATEFUL,
+                                        numMessages,
+                                        [this]() { return m_agentInfo.GetMetadataInfo(false); });
         },
-        [this]([[maybe_unused]] const std::string& response)
-        { PopMessagesFromQueue(m_messageQueue, MessageType::STATEFUL); }));
+        [this]([[maybe_unused]] const int messageCount, const std::string&)
+        { PopMessagesFromQueue(m_messageQueue, MessageType::STATEFUL, messageCount); }));
 
     m_taskManager.EnqueueTask(m_communicator.StatelessMessageProcessingTask(
-        [this]()
+        [this](const int numMessages)
         {
-            return GetMessagesFromQueue(
-                m_messageQueue, MessageType::STATELESS, [this]() { return m_agentInfo.GetMetadataInfo(false); });
+            return GetMessagesFromQueue(m_messageQueue,
+                                        MessageType::STATELESS,
+                                        numMessages,
+                                        [this]() { return m_agentInfo.GetMetadataInfo(false); });
         },
-        [this]([[maybe_unused]] const std::string& response)
-        { PopMessagesFromQueue(m_messageQueue, MessageType::STATELESS); }));
+        [this]([[maybe_unused]] const int messageCount, const std::string&)
+        { PopMessagesFromQueue(m_messageQueue, MessageType::STATELESS, messageCount); }));
 
     m_moduleManager.AddModules();
     m_taskManager.EnqueueTask([this]() { m_moduleManager.Start(); });

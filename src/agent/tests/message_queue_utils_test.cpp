@@ -40,6 +40,8 @@ protected:
 
     boost::asio::io_context io_context;
     std::shared_ptr<MockMultiTypeQueue> mockQueue;
+
+    const int MAX_MESSAGES = 1;
 };
 
 TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
@@ -50,19 +52,22 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
     testMessages.emplace_back(MessageType::STATELESS, data, "", "", metadata);
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATELESS, 1, "", ""))
+    EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATELESS, MAX_MESSAGES, "", ""))
         .WillOnce([&testMessages]() -> boost::asio::awaitable<std::vector<Message>> { co_return testMessages; });
     // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
-    auto result = boost::asio::co_spawn(
-        io_context, GetMessagesFromQueue(mockQueue, MessageType::STATELESS, nullptr), boost::asio::use_future);
+    auto awaitableResult =
+        boost::asio::co_spawn(io_context,
+                              GetMessagesFromQueue(mockQueue, MessageType::STATELESS, MAX_MESSAGES, nullptr),
+                              boost::asio::use_future);
 
     const auto timeout = std::chrono::steady_clock::now() + std::chrono::milliseconds(1);
     io_context.run_until(timeout);
 
-    ASSERT_TRUE(result.wait_for(std::chrono::milliseconds(1)) == std::future_status::ready);
+    ASSERT_TRUE(awaitableResult.wait_for(std::chrono::milliseconds(1)) == std::future_status::ready);
 
-    const auto jsonResult = result.get();
+    const auto result = awaitableResult.get();
+    const auto jsonResult = std::get<1>(result);
 
     std::string expectedString = std::string("\n") + R"({"module":"logcollector","type":"file"})" + std::string("\n") +
                                  R"(["{\"event\":{\"original\":\"Testing message!\"}}"])";
@@ -81,23 +86,25 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueMetadataTest)
     metadata["agent"] = "test";
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATELESS, 1, "", ""))
+    EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATELESS, MAX_MESSAGES, "", ""))
         .WillOnce([&testMessages]() -> boost::asio::awaitable<std::vector<Message>> { co_return testMessages; });
     // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
     io_context.restart();
 
-    auto result = boost::asio::co_spawn(
+    auto awaitableResult = boost::asio::co_spawn(
         io_context,
-        GetMessagesFromQueue(mockQueue, MessageType::STATELESS, [&metadata]() { return metadata.dump(); }),
+        GetMessagesFromQueue(
+            mockQueue, MessageType::STATELESS, MAX_MESSAGES, [&metadata]() { return metadata.dump(); }),
         boost::asio::use_future);
 
     const auto timeout = std::chrono::steady_clock::now() + std::chrono::milliseconds(1);
     io_context.run_until(timeout);
 
-    ASSERT_TRUE(result.wait_for(std::chrono::milliseconds(1)) == std::future_status::ready);
+    ASSERT_TRUE(awaitableResult.wait_for(std::chrono::milliseconds(1)) == std::future_status::ready);
 
-    const auto jsonResult = result.get();
+    const auto result = awaitableResult.get();
+    const auto jsonResult = std::get<1>(result);
 
     std::string expectedString = R"({"agent":"test"})" + std::string("\n") +
                                  R"({"module":"logcollector","type":"file"})" + std::string("\n") +
@@ -109,7 +116,7 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueMetadataTest)
 TEST_F(MessageQueueUtilsTest, PopMessagesFromQueueTest)
 {
     EXPECT_CALL(*mockQueue, popN(MessageType::STATEFUL, 1, "")).Times(1);
-    PopMessagesFromQueue(mockQueue, MessageType::STATEFUL);
+    PopMessagesFromQueue(mockQueue, MessageType::STATEFUL, 1);
 }
 
 TEST_F(MessageQueueUtilsTest, PushCommandsToQueueTest)

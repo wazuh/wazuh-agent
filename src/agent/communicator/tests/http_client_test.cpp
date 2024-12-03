@@ -14,6 +14,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <utility>
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines,cppcoreguidelines-avoid-reference-coroutine-parameters)
 
@@ -215,15 +216,14 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_Success)
     SetupMockSocketReadExpectations(boost::beast::http::status::ok);
 
     auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::string>
+    auto getMessages = [&getMessagesCalled](const int) -> boost::asio::awaitable<std::tuple<int, std::string>>
     {
         getMessagesCalled = true;
-        co_return std::string("test message");
+        co_return std::tuple<int, std::string>(1, "test message");
     };
 
     auto onSuccessCalled = false;
-    std::function<void(const std::string&)> onSuccess =
-        [&onSuccessCalled]([[maybe_unused]] const std::string& responseBody)
+    std::function<void(const int, const std::string&)> onSuccess = [&onSuccessCalled](const int, const std::string&)
     {
         onSuccessCalled = true;
     };
@@ -234,6 +234,12 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_Success)
         unauthorizedCalled = true;
     };
 
+    auto loopCondition = true;
+    std::function<bool()> loopRequestCondition = [&loopCondition]()
+    {
+        return std::exchange(loopCondition, false);
+    };
+
     const auto reqParams =
         http_client::HttpRequestParams(boost::beast::http::verb::get, "https://localhost:8080", "/", "Wazuh 5.0.0");
 
@@ -242,8 +248,10 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_Success)
                                               getMessages,
                                               onUnauthorized,
                                               5, // NOLINT
+                                              1, // NOLINT
+                                              1, // NOLINT
                                               onSuccess,
-                                              nullptr);
+                                              loopRequestCondition);
 
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);
@@ -262,15 +270,14 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
     SetupMockSocketConnectExpectations(boost::system::errc::make_error_code(boost::system::errc::bad_address));
 
     auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::string>
+    auto getMessages = [&getMessagesCalled](const int) -> boost::asio::awaitable<std::tuple<int, std::string>>
     {
         getMessagesCalled = true;
-        co_return std::string("test message");
+        co_return std::tuple<int, std::string>(1, "test message");
     };
 
     auto onSuccessCalled = false;
-    std::function<void(const std::string&)> onSuccess =
-        [&onSuccessCalled]([[maybe_unused]] const std::string& responseBody)
+    std::function<void(const int, const std::string&)> onSuccess = [&onSuccessCalled](const int, const std::string&)
     {
         onSuccessCalled = true;
     };
@@ -288,6 +295,8 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
                                               getMessages,
                                               onUnauthorized,
                                               5, // NOLINT
+                                              1, // NOLINT
+                                              1, // NOLINT
                                               onSuccess,
                                               nullptr);
 
@@ -309,15 +318,14 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails
     SetupMockSocketWriteExpectations(boost::system::errc::make_error_code(boost::system::errc::bad_address));
 
     auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::string>
+    auto getMessages = [&getMessagesCalled](const int) -> boost::asio::awaitable<std::tuple<int, std::string>>
     {
         getMessagesCalled = true;
-        co_return std::string("test message");
+        co_return std::tuple<int, std::string>(1, "test message");
     };
 
     auto onSuccessCalled = false;
-    std::function<void(const std::string&)> onSuccess =
-        [&onSuccessCalled]([[maybe_unused]] const std::string& responseBody)
+    std::function<void(const int, const std::string&)> onSuccess = [&onSuccessCalled](const int, const std::string&)
     {
         onSuccessCalled = true;
     };
@@ -328,6 +336,12 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails
         unauthorizedCalled = true;
     };
 
+    auto loopCondition = true;
+    std::function<bool()> loopRequestCondition = [&loopCondition]()
+    {
+        return std::exchange(loopCondition, false);
+    };
+
     const auto reqParams =
         http_client::HttpRequestParams(boost::beast::http::verb::get, "https://localhost:8080", "/", "Wazuh 5.0.0");
     auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
@@ -335,8 +349,10 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails
                                               getMessages,
                                               onUnauthorized,
                                               5, // NOLINT
+                                              1, // NOLINT
+                                              1, // NOLINT
                                               onSuccess,
-                                              nullptr);
+                                              loopRequestCondition);
 
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);
@@ -358,15 +374,14 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
                                     boost::system::errc::make_error_code(boost::system::errc::bad_address));
 
     auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::string>
+    auto getMessages = [&getMessagesCalled](const int) -> boost::asio::awaitable<std::tuple<int, std::string>>
     {
         getMessagesCalled = true;
-        co_return std::string("test message");
+        co_return std::tuple<int, std::string>(1, "test message");
     };
 
     auto onSuccessCalled = false;
-    std::function<void(const std::string&)> onSuccess =
-        [&onSuccessCalled]([[maybe_unused]] const std::string& responseBody)
+    std::function<void(const int, const std::string&)> onSuccess = [&onSuccessCalled](const int, const std::string&)
     {
         onSuccessCalled = true;
     };
@@ -377,6 +392,12 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
         unauthorizedCalled = true;
     };
 
+    auto loopCondition = true;
+    std::function<bool()> loopRequestCondition = [&loopCondition]()
+    {
+        return std::exchange(loopCondition, false);
+    };
+
     const auto reqParams =
         http_client::HttpRequestParams(boost::beast::http::verb::get, "https://localhost:8080", "/", "Wazuh 5.0.0");
     auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
@@ -384,8 +405,10 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
                                               getMessages,
                                               onUnauthorized,
                                               5, // NOLINT
+                                              1, // NOLINT
+                                              1, // NOLINT
                                               onSuccess,
-                                              nullptr);
+                                              loopRequestCondition);
 
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);
@@ -406,15 +429,14 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_UnauthorizedCalledWhenAuthorization
     SetupMockSocketReadExpectations(boost::beast::http::status::unauthorized);
 
     auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled]() -> boost::asio::awaitable<std::string>
+    auto getMessages = [&getMessagesCalled](const int) -> boost::asio::awaitable<std::tuple<int, std::string>>
     {
         getMessagesCalled = true;
-        co_return std::string("test message");
+        co_return std::tuple<int, std::string>(1, "test message");
     };
 
     auto onSuccessCalled = false;
-    std::function<void(const std::string&)> onSuccess =
-        [&onSuccessCalled]([[maybe_unused]] const std::string& responseBody)
+    std::function<void(const int, const std::string&)> onSuccess = [&onSuccessCalled](const int, const std::string&)
     {
         onSuccessCalled = true;
     };
@@ -425,6 +447,12 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_UnauthorizedCalledWhenAuthorization
         unauthorizedCalled = true;
     };
 
+    auto loopCondition = true;
+    std::function<bool()> loopRequestCondition = [&loopCondition]()
+    {
+        return std::exchange(loopCondition, false);
+    };
+
     const auto reqParams =
         http_client::HttpRequestParams(boost::beast::http::verb::get, "https://localhost:8080", "/", "Wazuh 5.0.0");
     auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
@@ -432,8 +460,10 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_UnauthorizedCalledWhenAuthorization
                                               getMessages,
                                               onUnauthorized,
                                               5, // NOLINT
+                                              1, // NOLINT
+                                              1, // NOLINT
                                               onSuccess,
-                                              nullptr);
+                                              loopRequestCondition);
 
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);

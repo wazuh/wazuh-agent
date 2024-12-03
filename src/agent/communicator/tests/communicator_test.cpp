@@ -20,6 +20,7 @@
 // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
 using namespace testing;
+using GetMessagesFuncType = std::function<boost::asio::awaitable<intStringTuple>(const int)>;
 
 namespace
 {
@@ -51,30 +52,34 @@ TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
 {
     auto mockHttpClient = std::make_unique<MockHttpClient>();
 
-    auto getMessages = []() -> boost::asio::awaitable<std::string>
+    auto getMessages = [](const int) -> boost::asio::awaitable<intStringTuple>
     {
-        co_return std::string("message-content");
+        co_return intStringTuple {1, std::string("message-content")};
     };
 
-    std::function<void(const std::string&)> onSuccess = [](const std::string& message)
+    std::function<void(const int, const std::string&)> onSuccess = [](const int, const std::string& message)
     {
         EXPECT_EQ(message, "message-content");
     };
 
-    EXPECT_CALL(*mockHttpClient, Co_PerformHttpRequest(_, _, _, _, _, _, _))
-        .WillOnce(Invoke(
-            [](std::shared_ptr<std::string>,
-               http_client::HttpRequestParams,
-               std::function<boost::asio::awaitable<std::string>()> pGetMessages,
-               std::function<void()>,
-               [[maybe_unused]] std::time_t connectionRetry,
-               std::function<void(const std::string&)> pOnSuccess,
-               [[maybe_unused]] std::function<bool()> loopRequestCondition) -> boost::asio::awaitable<void>
-            {
-                const auto message = co_await pGetMessages();
-                pOnSuccess(message);
-                co_return;
-            }));
+    auto MockCo_PerformHttpRequest =
+        [](std::shared_ptr<std::string>,
+           http_client::HttpRequestParams,
+           GetMessagesFuncType pGetMessages,
+           std::function<void()>,
+           [[maybe_unused]] std::time_t connectionRetry,
+           [[maybe_unused]] std::time_t batchInterval,
+           [[maybe_unused]] int batchSize,
+           std::function<void(const int, const std::string&)> pOnSuccess,
+           [[maybe_unused]] std::function<bool()> loopRequestCondition) -> boost::asio::awaitable<void>
+    {
+        const auto message = co_await pGetMessages(1);
+        pOnSuccess(std::get<0>(message), std::get<1>(message));
+        co_return;
+    };
+
+    EXPECT_CALL(*mockHttpClient, Co_PerformHttpRequest(_, _, _, _, _, _, _, _, _))
+        .WillOnce(Invoke(MockCo_PerformHttpRequest));
 
     communicator::Communicator communicator(std::move(mockHttpClient), "uuid", "key", nullptr, FUNC);
 
@@ -107,20 +112,24 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
                 return std::nullopt;
             }));
 
+    auto MockCo_PerformHttpRequest =
+        [](std::shared_ptr<std::string> token,
+           http_client::HttpRequestParams,
+           [[maybe_unused]] GetMessagesFuncType pGetMessages,
+           [[maybe_unused]] std::function<void()> onUnauthorized,
+           [[maybe_unused]] std::time_t connectionRetry,
+           [[maybe_unused]] std::time_t batchInterval,
+           [[maybe_unused]] int batchSize,
+           [[maybe_unused]] std::function<void(const int, const std::string&)> onSuccess,
+           [[maybe_unused]] std::function<bool()> loopCondition) -> boost::asio::awaitable<void>
+    {
+        EXPECT_TRUE(token->empty());
+        co_return;
+    };
+
     // A following call to Co_PerformHttpRequest should not have a token
-    EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(_, _, _, _, _, _, _))
-        .WillOnce(Invoke(
-            [](std::shared_ptr<std::string> token,
-               http_client::HttpRequestParams,
-               [[maybe_unused]] std::function<boost::asio::awaitable<std::string>()> getMessages,
-               [[maybe_unused]] std::function<void()> onUnauthorized,
-               [[maybe_unused]] std::time_t connectionRetry,
-               [[maybe_unused]] std::function<void(const std::string&)> onSuccess,
-               [[maybe_unused]] std::function<bool()> loopCondition) -> boost::asio::awaitable<void>
-            {
-                EXPECT_TRUE(token->empty());
-                co_return;
-            }));
+    EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(_, _, _, _, _, _, _, _, _))
+        .WillOnce(Invoke(MockCo_PerformHttpRequest));
 
     boost::asio::io_context ioContext;
 
@@ -129,9 +138,10 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
         [communicatorPtr]() mutable -> boost::asio::awaitable<void>
         {
             co_await communicatorPtr->WaitForTokenExpirationAndAuthenticate();
-            co_await communicatorPtr->StatelessMessageProcessingTask([]() -> boost::asio::awaitable<std::string>
-                                                                     { co_return "message"; },
-                                                                     []([[maybe_unused]] const std::string& msg) {});
+            co_await communicatorPtr->StatelessMessageProcessingTask(
+                [](const int) -> boost::asio::awaitable<intStringTuple>
+                { co_return intStringTuple(1, std::string {"message"}); },
+                []([[maybe_unused]] const int, const std::string&) {});
         }(),
         boost::asio::detached);
 
@@ -162,19 +172,24 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
             }));
 
     std::string capturedToken;
-    EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(_, _, _, _, _, _, _))
-        .WillOnce(Invoke(
-            [&capturedToken](std::shared_ptr<std::string> token,
-                             http_client::HttpRequestParams,
-                             [[maybe_unused]] std::function<boost::asio::awaitable<std::string>()> getMessages,
-                             [[maybe_unused]] std::function<void()> onUnauthorized,
-                             [[maybe_unused]] std::time_t connectionRetry,
-                             [[maybe_unused]] std::function<void(const std::string&)> onSuccess,
-                             [[maybe_unused]] std::function<bool()> loopCondition) -> boost::asio::awaitable<void>
-            {
-                capturedToken = *token;
-                co_return;
-            }));
+
+    auto MockCo_PerformHttpRequest =
+        [&capturedToken](std::shared_ptr<std::string> token,
+                         http_client::HttpRequestParams,
+                         [[maybe_unused]] GetMessagesFuncType pGetMessages,
+                         [[maybe_unused]] std::function<void()> onUnauthorized,
+                         [[maybe_unused]] std::time_t connectionRetry,
+                         [[maybe_unused]] std::time_t batchInterval,
+                         [[maybe_unused]] int batchSize,
+                         [[maybe_unused]] std::function<void(const int, const std::string&)> onSuccess,
+                         [[maybe_unused]] std::function<bool()> loopCondition) -> boost::asio::awaitable<void>
+    {
+        capturedToken = *token;
+        co_return;
+    };
+
+    EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(_, _, _, _, _, _, _, _, _))
+        .WillOnce(Invoke(MockCo_PerformHttpRequest));
 
     boost::asio::io_context ioContext;
 
@@ -183,9 +198,10 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
         [communicatorPtr]() mutable -> boost::asio::awaitable<void>
         {
             co_await communicatorPtr->WaitForTokenExpirationAndAuthenticate();
-            co_await communicatorPtr->StatelessMessageProcessingTask([]() -> boost::asio::awaitable<std::string>
-                                                                     { co_return "message"; },
-                                                                     []([[maybe_unused]] const std::string& msg) {});
+            co_await communicatorPtr->StatelessMessageProcessingTask(
+                [](const int) -> boost::asio::awaitable<intStringTuple>
+                { co_return intStringTuple(1, std::string {"message"}); },
+                []([[maybe_unused]] const int, const std::string&) {});
         }(),
         boost::asio::detached);
 

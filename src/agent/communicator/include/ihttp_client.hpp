@@ -11,6 +11,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace http_client
 {
@@ -36,17 +37,21 @@ namespace http_client
         /// @param messageGetter Function to retrieve messages
         /// @param onUnauthorized Action to take on unauthorized access
         /// @param connectionRetry Time to wait before retrying the connection
+        /// @param batchInterval Time to wait between requests
+        /// @param batchSize The maximum number of messages to batch
         /// @param onSuccess Action to take on successful request
         /// @param loopRequestCondition Condition to continue the request loop
         /// @return Awaitable task for the HTTP request
-        virtual boost::asio::awaitable<void>
-        Co_PerformHttpRequest(std::shared_ptr<std::string> token,
-                              HttpRequestParams params,
-                              std::function<boost::asio::awaitable<std::string>()> messageGetter,
-                              std::function<void()> onUnauthorized,
-                              std::time_t connectionRetry,
-                              std::function<void(const std::string&)> onSuccess = {},
-                              std::function<bool()> loopRequestCondition = {}) = 0;
+        virtual boost::asio::awaitable<void> Co_PerformHttpRequest(
+            std::shared_ptr<std::string> token,
+            HttpRequestParams params,
+            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const int)> messageGetter,
+            std::function<void()> onUnauthorized,
+            std::time_t connectionRetry,
+            std::time_t batchInterval,
+            int batchSize,
+            std::function<void(const int, const std::string&)> onSuccess = {},
+            std::function<bool()> loopRequestCondition = {}) = 0;
 
         /// @brief Perform an HTTP request and receive the response
         /// @param params The parameters for the request
