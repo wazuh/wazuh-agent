@@ -16,11 +16,11 @@ using namespace logcollector;
 
 void Logcollector::Start() {
     if (!m_enabled) {
-        LogInfo("Logcollector is disabled");
+        LogInfo("Logcollector module is disabled.");
         return;
     }
 
-    LogInfo("Logcollector started");
+    LogInfo("Logcollector module started.");
     m_ioContext.run();
 }
 
@@ -48,7 +48,7 @@ void Logcollector::SetupFileReader(const configuration::ConfigurationParser& con
 
 void Logcollector::Stop() {
     m_ioContext.stop();
-    LogInfo("Logcollector stopped");
+    LogInfo("Logcollector module stopped.");
 }
 
 // NOLINTBEGIN(performance-unnecessary-value-param)
