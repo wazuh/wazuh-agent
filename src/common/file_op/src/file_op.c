@@ -12,7 +12,6 @@
  */
 
 #include "shared.h"
-#include "cust_types.h"
 #include "version_op.h"
 #include "pal.h"
 
@@ -30,24 +29,6 @@
 #include <regex.h>
 #else
 #include <aclapi.h>
-typedef int DIR;
-struct dirent {
-    unsigned short d_reclen;    /* length of this record */
-    unsigned char  d_type;      /* type of file; not supported
-                                   by all file system types */
-    char           d_name[256]; /* filename */
-};
-DIR * opendir(DIR *dir){ return NULL; }
-int closedir(DIR *dir){ return 0; }
-static char *dirname(char *s){ return NULL; }
-static struct dirent *readdir(DIR *dir){ return NULL; }
-static int64_t ftello64(FILE *x){ return 0; }
-static int64_t fseeko64(FILE *x, int64_t pos, int mode){ return 0; }
-static int64_t S_ISREG(int64_t flags){ return 0; }
-static int64_t S_ISDIR(int64_t flags){ return 0; }
-static char * PathFindFileNameA_(char *s){ return NULL; }
-static void PathRemoveFileSpec_(char *path){}
-static int wm_strcat(char **str1, const char *str2, char sep){ return 0;}
 #endif
 
 /* Vista product information */
