@@ -6,9 +6,17 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation
  */
-
-#include "shared.h"
+#include <string.h>
+#include <stdlib.h>
+#include "error_messages.h"
+#include "os_err.h"
 #include "pal.h"
+#include "logger.hpp"
+#include "os_macros.h"
+
+#ifndef WIN32
+#include "file_op.h"
+#endif
 
 #ifdef WAZUH_UNIT_TESTING
 #ifdef WIN32
@@ -23,7 +31,7 @@ int get_binary_path(const char *binary, char **validated_comm) {
     const char sep[2] = ":";
 #endif
     char *path;
-    char *full_path;
+    char *full_path = NULL;
     char *validated = NULL;
     char *env_path = NULL;
     char *env_path_copy = NULL;
@@ -57,9 +65,10 @@ int get_binary_path(const char *binary, char **validated_comm) {
 #ifdef WIN32
             snprintf(full_path, strlen(path) + strlen(binary) + 2, "%s\\%s", path, binary);
 #else
-            snprintf(full_path, strlen(path) + strlen(binary) + 2, "%s/%s", path, binary);
+            if(full_path)
+                snprintf(full_path, strlen(path) + strlen(binary) + 2, "%s/%s", path, binary);
 #endif
-            if (IsFile(full_path) == 0) {
+            if (full_path && IsFile(full_path) == 0) {
                 validated = strdup(full_path);
                 os_free(full_path);
                 break;

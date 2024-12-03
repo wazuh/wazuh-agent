@@ -10,6 +10,7 @@
 #ifndef VERSION_H
 #define VERSION_H
 
+#include <stdbool.h>
 
 #define MAC_SYSVERSION "/System/Library/CoreServices/SystemVersion.plist"
 #define MAC_SERVERVERSION "/System/Library/CoreServices/ServerVersion.plist"
