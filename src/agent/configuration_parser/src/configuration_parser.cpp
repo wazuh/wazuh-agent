@@ -188,4 +188,9 @@ namespace configuration
         LogInfo("Reload configuration done.");
     }
 
+    const std::filesystem::path& ConfigurationParser::GetConfigFilePath() const
+    {
+        return m_configFilePath;
+    }
+
 } // namespace configuration

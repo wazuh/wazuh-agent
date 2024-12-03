@@ -27,6 +27,11 @@ namespace unix_daemon
         /// @return True if the file is removed, false otherwise
         bool removeLockFile() const;
 
+        /// @brief Reads the process ID from the PID file
+        /// @return The process ID from the PID file
+        pid_t ReadPIDFromFile() const;
+
+
     private:
         /// @brief Creates the directory path for the lock file
         /// @param path The path for the lock file

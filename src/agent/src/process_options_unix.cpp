@@ -1,17 +1,22 @@
 #include <process_options.hpp>
-
+#include <unistd.h>
 #include <agent.hpp>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <logger.hpp>
 #include <unix_daemon.hpp>
+#include <sys/types.h>
 
 #include <csignal>
 #include <iostream>
 #include <thread>
 #include <vector>
+#include <chrono>
+#include <string>
 
-void StartAgent(const std::string& configFilePath)
+
+
+void StartAgent(const std::string& configFilePath, const char** argv)
 {
     unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile(configFilePath);
 
@@ -25,7 +30,7 @@ void StartAgent(const std::string& configFilePath)
 
     try
     {
-        Agent agent(configFilePath);
+        Agent agent(configFilePath, argv);
         agent.Run();
     }
     catch (const std::exception& e)

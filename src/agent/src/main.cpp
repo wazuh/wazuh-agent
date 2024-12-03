@@ -1,10 +1,11 @@
 #include "process_options.hpp"
-
 #include <logger.hpp>
 
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <string>
+#include <unistd.h>
+
 
 namespace program_options = boost::program_options;
 
@@ -88,9 +89,8 @@ int main(int argc, char* argv[])
         }
         else
         {
-            StartAgent(validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
+            StartAgent(validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "", const_cast<const char**>(argv));
         }
-
         return 0;
     }
     catch (const std::exception& e)

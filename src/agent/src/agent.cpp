@@ -1,4 +1,5 @@
 #include <agent.hpp>
+#include <unix_daemon.hpp>
 
 #include <command_handler_utils.hpp>
 #include <config.h>
@@ -10,10 +11,13 @@
 #include <filesystem>
 #include <memory>
 
-Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> signalHandler)
-    : m_configurationParser(configFilePath.empty() ? std::make_shared<configuration::ConfigurationParser>()
+#include <unistd.h>
+
+Agent::Agent(const std::string& configFilePath, const char** mainArgv, std::unique_ptr<ISignalHandler> signalHandler)
+    : argv(mainArgv)
+    , m_configurationParser(configFilePath.empty() ? std::make_shared<configuration::ConfigurationParser>()
                                                    : std::make_shared<configuration::ConfigurationParser>(
-                                                         std::filesystem::path(configFilePath)))
+                                                        std::filesystem::path(configFilePath)))
     , m_dataPath(
           m_configurationParser->GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH))
     , m_messageQueue(std::make_shared<MultiTypeQueue>(m_dataPath))
@@ -84,6 +88,89 @@ void Agent::ReloadModules()
     m_moduleManager.Start();
 }
 
+void Agent::StopAgent(){
+
+    LogInfo("Restart: Stopping wazuh-agent.");
+    unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile(m_configurationParser->GetConfigFilePath());
+
+    if (lockFileHandler.isLockFileCreated())
+    {
+        LogInfo("wazuh-agent is not running");
+        return;
+    }
+
+    pid_t pid = lockFileHandler.ReadPIDFromFile();
+
+    if (pid < 0)
+    {
+        LogError("Error reading pid file");
+        return;
+    }
+
+    if (!kill(pid, SIGTERM))
+    {
+        LogInfo("wazuh-agent stopped successfully");
+    }
+
+    lockFileHandler.removeLockFile();
+}
+
+boost::asio::awaitable<module_command::CommandExecutionResult> Agent::RestartExecuteCommand() {
+
+    int timeoutSeconds = 30;
+    auto startTime = std::chrono::steady_clock::now();
+
+    if (0 == std::system("which systemctl > /dev/null 2>&1") &&
+        nullptr != std::getenv("INVOCATION_ID"))
+    {
+        LogInfo("Restart: systemctl restarting wazuh agent service.");
+        std::system("systemctl restart wazuh-agent");
+    }else{
+        StopAgent();
+        pid_t pid = fork();
+        if (pid == 0) {
+            // Child process
+            LogInfo("Restart: starting wazuh agent from the fork child.");
+
+            std::vector<const char*> args;
+            for (int i = 0; argv[i] != nullptr; ++i) {
+                args.push_back(argv[i]);
+            }
+
+            // End the argument list with nullptr (required for execve)
+            args.push_back(nullptr);
+
+            LogInfo("Waiting for wazuh-agent to stop...");
+            while ( "stopped" != unix_daemon::GetDaemonStatus(m_configurationParser->GetConfigFilePath()) ) {
+                auto elapsed = std::chrono::steady_clock::now() - startTime;
+                if (std::chrono::duration_cast<std::chrono::seconds>(elapsed).count() > timeoutSeconds) {
+                    LogError("Timeout reached while stopping wazuh-agent.");
+                    if (!kill(pid, SIGKILL))
+                    {
+                        LogInfo("wazuh-agent stopped successfully");
+                    }
+
+                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            if (execve(argv[0], const_cast<char* const*>(args.data()), nullptr) == -1) {
+                LogError("Failed to spawn new Wazuh agent process.");
+            }
+            exit(1);
+        } else if (pid < 0) {
+            LogError("Fork failed");
+            exit(1);
+        } else {
+            // Parent process
+            setpgid(pid, pid);
+            exit(0);
+        }
+    }
+    co_return module_command::CommandExecutionResult{module_command::Status::IN_PROGRESS, "Pending check of status."};
+}
+
 void Agent::Run()
 {
     // Check if the server recognizes the agent
@@ -139,6 +226,8 @@ void Agent::Run()
                             return m_centralizedConfiguration.ExecuteCommand(std::move(command), std::move(parameters));
                         },
                         m_messageQueue);
+                } else if (cmd.Module == "restart") {
+                    return RestartExecuteCommand();
                 }
                 return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue);
             }),
