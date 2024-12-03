@@ -74,7 +74,7 @@ class Inventory {
         void ScanPorts();
         void ScanProcesses();
         void Scan();
-        void SyncLoop(std::unique_lock<std::mutex>& lock);
+        void SyncLoop();
         void ShowConfig();
         cJSON * Dump() const;
         static void LogErrorInventory(const std::string& log);
