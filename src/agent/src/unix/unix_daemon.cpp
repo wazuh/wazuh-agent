@@ -63,13 +63,21 @@ namespace unix_daemon
 
     bool LockFileHandler::createLockFile()
     {
+
+        const std::string filename = fmt::format("{}/wazuh-agent.lock", m_lockFilePath);
+
+        // Check if the lock file already exists
+        if (access(filename.c_str(), F_OK) != -1)
+        {
+            LogDebug("Lock file already exists: {}", filename);
+            return false;  // The lock file exists, cannot create a new one
+        }
+
         if (!createDirectory(m_lockFilePath))
         {
             LogError("Unable to create lock directory: {}", m_lockFilePath);
             return false;
         }
-
-        const std::string filename = fmt::format("{}/wazuh-agent.lock", m_lockFilePath);
 
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, cppcoreguidelines-avoid-magic-numbers)
         int fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -86,10 +94,43 @@ namespace unix_daemon
             return false;
         }
 
-        LogDebug("Lock file created: {}", filename);
+        // Write the PID to the lock file
+        const std::string pidStr = std::to_string(getpid()) + "\n";
+        if (write(fd, pidStr.c_str(), pidStr.size()) == -1)
+        {
+            LogError("Unable to write PID to lock file: {}. Error: {} ({})", filename.c_str(), errno, std::strerror(errno));
+            close(fd);
+            return false;
+        }
 
+        LogDebug("Lock file created: {}", filename);
         return true;
     }
+
+
+    pid_t LockFileHandler::ReadPIDFromFile() const
+    {
+        const std::string filename = fmt::format("{}/wazuh-agent.lock", m_lockFilePath);
+        std::ifstream file(filename);
+
+        if (!file.is_open())
+        {
+            LogError("Unable to open lock file: {}. Error: {} ({})", filename.c_str(), errno, std::strerror(errno));
+            return 0;
+        }
+
+        pid_t value {};
+        file >> value;
+
+        if (file.fail())
+        {
+            LogError("Error reading PID file: {}({})", filename.c_str(), errno, std::strerror(errno));
+            return -1;
+        }
+
+        return value;
+    }
+
 
     LockFileHandler GenerateLockFile(const std::string& configFilePath)
     {

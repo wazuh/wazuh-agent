@@ -110,3 +110,11 @@ void Agent::Run()
     m_moduleManager.Stop();
     m_communicator.Stop();
 }
+
+void Agent::Stop()
+{
+    m_moduleManager.Stop();
+    m_communicator.Stop();
+    m_taskManager.Stop();
+
+}
