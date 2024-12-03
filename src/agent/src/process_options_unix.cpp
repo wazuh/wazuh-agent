@@ -32,3 +32,22 @@ void StatusAgent(const std::string& configFilePath)
 {
     std::cout << fmt::format("wazuh-agent is {}\n", unix_daemon::GetDaemonStatus(configFilePath));
 }
+
+void StopAgent(const std::string& configFilePath)
+{
+    unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile(configFilePath);
+
+    if (!lockFileHandler.isLockFileCreated())
+    {
+        std::cout << "wazuh-agent is not running\n";
+        return;
+    }
+
+    LogInfo("Stopping wazuh-agent");
+    Agent agent(configFilePath);
+    agent.Stop();
+
+    lockFileHandler.removeLockFile();
+
+    LogInfo("wazuh-agent stopped successfully");
+}

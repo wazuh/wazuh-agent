@@ -37,6 +37,11 @@ public:
     /// This method sets up the agent and starts the task manager.
     void Run();
 
+    /// @brief Stop the agent
+    ///
+    /// This method stops the agent by stopping the task manager, modules, and communicator.
+    void Stop();
+
 private:
     /// @brief Task manager
     TaskManager m_taskManager;
