@@ -93,6 +93,29 @@ namespace centralized_configuration
                     LogWarn("Failed to validate the file for group '{}', invalid group file received: {}",
                             groupId,
                             tmpGroupFile.string());
+
+                    try
+                    {
+                        if (std::filesystem::exists(tmpGroupFile) &&
+                            tmpGroupFile.parent_path() == std::filesystem::temp_directory_path())
+                        {
+                            if (!std::filesystem::remove(tmpGroupFile))
+                            {
+                                LogWarn("Failed to delete invalid group file: {}", tmpGroupFile.string());
+                            }
+                        }
+                        else
+                        {
+                            LogWarn("Skipping deletion of suspicious file path: {}", tmpGroupFile.string());
+                        }
+                    }
+                    catch (const std::filesystem::filesystem_error& e)
+                    {
+                        LogWarn("Error while trying to delete invalid group file: {}. Exception: {}",
+                                tmpGroupFile.string(),
+                                e.what());
+                    }
+
                     co_return module_command::CommandExecutionResult {
                         module_command::Status::FAILURE,
                         "CentralizedConfiguration validate file failed, invalid file received."};
