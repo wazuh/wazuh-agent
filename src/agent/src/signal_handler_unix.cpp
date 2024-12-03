@@ -7,3 +7,8 @@ void SignalHandler::Initialize(const std::vector<int>& signalsToHandle)
         std::signal(signal, SignalHandler::HandleSignal);
     }
 }
+
+void SignalHandler::Restart()
+{
+    kill(getppid(), SIGUSR1);
+}

@@ -12,4 +12,7 @@ public:
 
     /// @brief Waits for a signal to be received
     virtual void WaitForSignal() = 0;
+
+    /// @brief Send restart signal
+    virtual void Restart() = 0;
 };
