@@ -229,7 +229,8 @@ namespace communicator
     {
         const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get,
                                                               m_serverUrl,
-                                                              "/api/v1/files?file_name=" + groupName + ".conf",
+                                                              "/api/v1/files?file_name=" + groupName +
+                                                                  config::DEFAULT_SHARED_FILE_EXTENSION,
                                                               m_getHeaderInfo ? m_getHeaderInfo() : "",
                                                               *m_token);
 

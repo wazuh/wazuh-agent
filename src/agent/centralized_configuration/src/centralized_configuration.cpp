@@ -84,7 +84,8 @@ namespace centralized_configuration
 
             for (const auto& groupId : groupIds)
             {
-                const std::filesystem::path tmpGroupFile = std::filesystem::temp_directory_path() / (groupId + ".conf");
+                const std::filesystem::path tmpGroupFile =
+                    std::filesystem::temp_directory_path() / (groupId + config::DEFAULT_SHARED_FILE_EXTENSION);
                 m_downloadGroupFilesFunction(groupId, tmpGroupFile.string());
                 if (!m_validateFileFunction(tmpGroupFile))
                 {
@@ -94,8 +95,8 @@ namespace centralized_configuration
                         "CentralizedConfiguration validate file failed, invalid file received."};
                 }
 
-                const std::filesystem::path destGroupFile =
-                    std::filesystem::path(config::DEFAULT_SHARED_CONFIG_PATH) / (groupId + ".conf");
+                const std::filesystem::path destGroupFile = std::filesystem::path(config::DEFAULT_SHARED_CONFIG_PATH) /
+                                                            (groupId + config::DEFAULT_SHARED_FILE_EXTENSION);
 
                 try
                 {

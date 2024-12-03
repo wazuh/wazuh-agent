@@ -249,8 +249,8 @@ namespace configuration
 
             for (const auto& groupId : groupIds)
             {
-                const std::filesystem::path groupFile =
-                    std::filesystem::path(config::DEFAULT_SHARED_CONFIG_PATH) / (groupId + ".conf");
+                const std::filesystem::path groupFile = std::filesystem::path(config::DEFAULT_SHARED_CONFIG_PATH) /
+                                                        (groupId + config::DEFAULT_SHARED_FILE_EXTENSION);
 
                 LogDebug("Loading group configuration file: {}.", groupFile.string());
 
