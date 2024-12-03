@@ -12,6 +12,7 @@
 #include "shared.h"
 #include <pthread.h>
 #include <sys/resource.h>
+#include "error_messages.h"
 
 /* Create a new thread and give the argument passed to the function
  * Returns 0 on success or -1 on error
