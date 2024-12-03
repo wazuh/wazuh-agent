@@ -1,8 +1,9 @@
+#pragma once
 // TODO: Double check this Critical error handling
 /* for calloc: x = calloc(4,sizeof(char)) -> os_calloc(4,sizeof(char),x) */
 
 #include <errno.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include "error_messages.h"
 
 
