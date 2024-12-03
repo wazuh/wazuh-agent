@@ -10,11 +10,11 @@
 void Inventory::Start() {
 
     if (!m_enabled) {
-        LogInfo("Module disabled. Exiting...");
+        LogInfo("Inventory module is disabled.");
         return;
     }
 
-    LogInfo("Starting inventory.");
+    LogInfo("Inventory module started.");
 
     ShowConfig();
 
@@ -33,7 +33,7 @@ void Inventory::Start() {
         LogErrorInventory(ex.what());
     }
 
-    LogInfo("Module finished.");
+    LogInfo("Inventory module finished.");
 
 }
 
@@ -54,7 +54,7 @@ void Inventory::Setup(const configuration::ConfigurationParser& configurationPar
 }
 
 void Inventory::Stop() {
-    LogInfo("Module stopped.");
+    LogInfo("Inventory module stopped.");
     Inventory::Instance().Destroy();
 }
 

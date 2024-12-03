@@ -904,8 +904,6 @@ void Inventory::Scan()
 
 void Inventory::SyncLoop(std::unique_lock<std::mutex>& lock)
 {
-    LogInfo("Module started.");
-
     if (m_scanOnStart)
     {
         Scan();
