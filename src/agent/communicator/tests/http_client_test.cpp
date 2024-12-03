@@ -508,12 +508,37 @@ TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_Failure)
     EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_, _))
-        .WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::unauthorized); });
+        .WillOnce(
+            [](auto& res, auto&)
+            {
+                res.result(boost::beast::http::status::unauthorized);
+                boost::beast::ostream(res.body()) << R"({"message":"Try again"})";
+            });
 
     const auto token =
         client->AuthenticateWithUuidAndKey("https://localhost:8080", "Wazuh 5.0.0", "test-uuid", "test-key");
 
     EXPECT_FALSE(token.has_value());
+}
+
+TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_FailureThrowsException)
+{
+    SetupMockResolverFactory();
+    SetupMockSocketFactory();
+
+    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
+    EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
+    EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
+    EXPECT_CALL(*mockSocket, Read(_, _))
+        .WillOnce(
+            [](auto& res, auto&)
+            {
+                res.result(boost::beast::http::status::unauthorized);
+                boost::beast::ostream(res.body()) << R"({"message":"Invalid key"})";
+            });
+
+    EXPECT_THROW(client->AuthenticateWithUuidAndKey("https://localhost:8080", "Wazuh 5.0.0", "test-uuid", "test-key"),
+                 std::runtime_error);
 }
 
 TEST_F(HttpClientTest, AuthenticateWithUserPassword_Success)

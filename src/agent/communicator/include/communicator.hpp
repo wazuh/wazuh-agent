@@ -77,6 +77,10 @@ namespace communicator
             }
         }
 
+        /// @brief Sends an authentication request to the manager
+        /// @return The HTTP status of the authentication request
+        boost::beast::http::status SendAuthenticationRequest();
+
         /// @brief Waits for the authentication token to expire and authenticates again
         boost::asio::awaitable<void> WaitForTokenExpirationAndAuthenticate();
 
@@ -112,10 +116,6 @@ namespace communicator
         /// @brief Calculates the remaining time (in seconds) until the authentication token expires
         /// @return The remaining time in seconds until the authentication token expires
         long GetTokenRemainingSecs() const;
-
-        /// @brief Sends an authentication request to the manager
-        /// @return The HTTP status of the authentication request
-        boost::beast::http::status SendAuthenticationRequest();
 
         /// @brief Checks if the authentication token has expired and authenticates again if necessary
         void TryReAuthenticate();

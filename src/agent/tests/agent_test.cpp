@@ -19,11 +19,20 @@ protected:
     void SetUp() override
     {
         CreateTempConfigFile();
+
+        SysInfo sysInfo;
+        std::unique_ptr<AgentInfo> agent = std::make_unique<AgentInfo>(
+            "/tmp", [&sysInfo]() mutable { return sysInfo.os(); }, [&sysInfo]() mutable { return sysInfo.networks(); });
+
+        agent->SetKey("4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
+        agent->SetName("agent_name");
+        agent->Save();
     }
 
     void TearDown() override
     {
         std::remove(AGENT_CONFIG_PATH);
+        std::remove("/tmp/agent_info.db");
     }
 
     void CreateTempConfigFile()
