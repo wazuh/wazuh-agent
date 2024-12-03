@@ -226,7 +226,8 @@ namespace http_client
                 timerSleep = connectionRetry;
             }
 
-            LogDebug("{}", ResponseToString(reqParams.Endpoint, res));
+            LogDebug("Request {}: Status {}", reqParams.Endpoint, res.result_int());
+            LogTrace("{}", ResponseToString(reqParams.Endpoint, res));
 
             co_await WaitForTimer(timer, timerSleep);
         } while (loopRequestCondition != nullptr && loopRequestCondition());
@@ -393,7 +394,8 @@ namespace http_client
                 throw std::runtime_error("Error handling response: " + ec.message());
             }
 
-            LogDebug("{}", ResponseToString(params.Endpoint, res));
+            LogDebug("Request {}: Status {}", params.Endpoint, res.result_int());
+            LogTrace("{}", ResponseToString(params.Endpoint, res));
         }
         catch (std::exception const& e)
         {
