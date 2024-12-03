@@ -41,6 +41,8 @@ namespace
     }
 
     const std::string CONFIG_FILE_NAME = getConfigFilePath();
+#elif defined(__APPLE__)
+    const std::string CONFIG_FILE_NAME = "/Library/Application Support/Wazuh agent.app/etc/wazuh-agent.yml";
 #else
     const std::string CONFIG_FILE_NAME = "/etc/wazuh-agent/wazuh-agent.yml";
 #endif
@@ -48,11 +50,11 @@ namespace
 
 namespace configuration
 {
-    ConfigurationParser::ConfigurationParser(const std::filesystem::path& configFilePath)
+    ConfigurationParser::ConfigurationParser(const std::filesystem::path& configFile)
     {
         try
         {
-            m_config = YAML::LoadFile(configFilePath.string());
+            m_config = YAML::LoadFile(configFile.string());
         }
         catch (const std::exception& e)
         {

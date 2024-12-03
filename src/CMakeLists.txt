@@ -45,7 +45,6 @@ install(TARGETS wazuh-agent
         DESTINATION ${INSTALL_ROOT}${BIN_INSTALL_DIR})
 
 install(CODE "file(MAKE_DIRECTORY \"${INSTALL_ROOT}${CONFIG_INSTALL_DIR}\")")
-install(CODE "file(MAKE_DIRECTORY \"${INSTALL_ROOT}${LIB_INSTALL_DIR}\")")
 install(FILES ${CONFIG_FOLDER}/wazuh-agent.yml
         DESTINATION ${INSTALL_ROOT}${CONFIG_INSTALL_DIR})
 install(TARGETS wazuh-agent

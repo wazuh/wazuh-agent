@@ -7,7 +7,7 @@
 # and/or modify it under the terms of the GNU General Public
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
-set -exf
+set -e
 DESTINATION_PATH=$1
 WAZUH_PATH=$2
 BUILD_JOBS=$3
