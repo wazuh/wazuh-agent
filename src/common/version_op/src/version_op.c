@@ -6,13 +6,32 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation.
  */
-
-#include "shared.h"
+#ifdef WIN32
+#include <vcruntime.h>
+#include <winsock2.h>
+#include <windows.h>
+#include <ws2tcpip.h>
+#include <shlwapi.h>
+#include <io.h>
+#include <direct.h>
+#endif
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 #include "version_op.h"
+#include "error_messages.h"
+#include "defs.h"
+#include "logger.hpp"
+#include "os_macros.h"
+#include "wrapper_macros.h"
+#include "file_op.h"
+#include "regex_op.h"
+#include "binaries_op.h"
 
 #ifdef __linux__
 #include <sched.h>
 #include <regex.h>
+#include <sys/utsname.h>
 #elif defined(__MACH__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <sys/sysctl.h>
 #endif
