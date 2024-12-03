@@ -1,3 +1,5 @@
+#pragma once
+
 #include "os_macros.h"
 
 #define w_fclose(x) if (x) { fclose(x); x=NULL; }
