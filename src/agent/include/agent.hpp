@@ -46,6 +46,12 @@ public:
     /// This method stops all modules launched by moduleManager, and starts them again.
     void ReloadModules();
 
+    /// @brief Checks if a restart is required
+    ///
+    /// This method returns `true` if the agent needs to be restarted,
+    /// and `false` otherwise.
+    bool IsRestartRequired();
+
 private:
     /// @brief Task manager
     TaskManager m_taskManager;
@@ -87,4 +93,7 @@ private:
 
     /// @brief Agent thread count
     size_t m_agentThreadCount;
+
+    /// @brief Define if the agent needs to be restarted after it ends.
+    bool requires_restart;
 };

@@ -5,12 +5,13 @@ After=network.target network-online.target
 
 [Service]
 Type=simple
-
+PIDFile=/var/run/wazuh-agent.lock
 ExecStart=/usr/bin/env WAZUH_HOME/wazuh-agent
+TimeoutStopSec=30s    # Wait for 30 seconds before killing the service
 
 KillSignal=SIGTERM
 
-KillMode=process
+KillMode=mixed
 
 SendSIGKILL=no
 
