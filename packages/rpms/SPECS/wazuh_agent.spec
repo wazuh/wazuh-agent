@@ -49,7 +49,6 @@ rm -fr %{buildroot}
 pushd src
 pushd build
 make install -j $(nproc)
-cp /usr/local/gcc-13.2.0/lib64/libstdc++.so.6 %{buildroot}%{_localstatedir}usr/share/wazuh-agent/lib
 exit 0
 
 %pre
@@ -87,9 +86,6 @@ if [ $1 = 1 ]; then
     systemctl daemon-reload
     systemctl enable wazuh-agent
   fi
-  touch /etc/ld.so.conf.d/wazuh-agentlibs.conf
-  echo "/usr/share/wazuh-agent/lib" >> /etc/ld.so.conf.d/wazuh-agentlibs.conf
-  ldconfig
 fi
 
 ## SCA RELATED
@@ -245,7 +241,6 @@ if [ $1 = 0 ]; then
     # Remove lingering folders and files
     rm -rf %{_localstatedir}usr/share/wazuh-agent/bin/wazuh-agent
     rm -f %{_localstatedir}usr/lib/systemd/system/wazuh-agent.service
-    rm -f %{_localstatedir}usr/share/wazuh-agent/lib/libstdc++.so.6
     rm -rf %{_localstatedir}etc/wazuh-agent
     rm -rf %{_localstatedir}var/lib/wazuh-agent
   fi
@@ -262,7 +257,6 @@ rm -fr %{buildroot}
 %defattr(-,root,root)
 %attr(750, root, wazuh) %{_localstatedir}usr/share/wazuh-agent/bin/wazuh-agent
 %attr(750, root, wazuh) %{_localstatedir}usr/lib/systemd/system/wazuh-agent.service
-%attr(750, root, wazuh) %{_localstatedir}usr/share/wazuh-agent/lib/libstdc++.so.6
 %dir %attr(770, root, wazuh) %{_localstatedir}etc/wazuh-agent
 %dir %attr(750, root, wazuh) %{_localstatedir}var/lib/wazuh-agent
 %attr(750, root, wazuh) %{_localstatedir}etc/wazuh-agent/wazuh-agent.yml
