@@ -25,6 +25,14 @@ void StartAgent(const std::string& configFilePath);
 /// @param configFilePath The file path to the configuration file used to get the status of the agent.
 void StatusAgent(const std::string& configFilePath);
 
+/// @brief Stop the agent using the specified configuration file.
+/// @param configFilePath The file path to the configuration file used for stop the agent.
+void StopAgent(const std::string& configFilePath);
+
+/// @brief Restarts the agent using the specified configuration file.
+/// @param configFile The file path to the configuration file used to restart the agent.
+void RestartAgent(const std::string& configFile);
+
 #ifdef _WIN32
 /// @brief Installs the agent as a service.
 /// @return True if the installation is successful, false otherwise.
