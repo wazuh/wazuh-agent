@@ -352,6 +352,8 @@ void Inventory::UpdateChanges(const std::string& table,
             NotifyChange(result, data, table);
         }
     };
+
+    std::unique_lock<std::mutex> lock{m_mutex};
     DBSyncTxn txn
     {
         m_spDBSync->handle(),
@@ -373,12 +375,16 @@ void Inventory::TryCatchTask(const std::function<void()>& task) const
     {
         if (!m_stopping)
         {
-            task();  // Ejecuta la tarea
+            task();
+        }
+        else
+        {
+            LogTrace("No Scanning during stopping");
         }
     }
     catch (const std::exception& ex)
     {
-        LogErrorInventory(std::string{ex.what()});
+        LogError("{}",std::string{ex.what()});
     }
 }
 
@@ -422,15 +428,18 @@ void Inventory::Init(const std::shared_ptr<ISysInfo>& spInfo,
     m_spInfo = spInfo;
     m_reportDiffFunction = reportDiffFunction;
 
-    std::unique_lock<std::mutex> lock{m_mutex};
-    m_stopping = false;
-    m_spDBSync = std::make_unique<DBSync>(HostType::AGENT,
-                                            DbEngineType::SQLITE3,
-                                            dbPath,
-                                            GetCreateStatement(),
-                                            DbManagement::PERSISTENT);
-    m_spNormalizer = std::make_unique<InvNormalizer>(normalizerConfigPath, normalizerType);
-    SyncLoop(lock);
+    {
+        std::unique_lock<std::mutex> lock{m_mutex};
+        m_stopping = false;
+        m_spDBSync = std::make_unique<DBSync>(HostType::AGENT,
+                                                DbEngineType::SQLITE3,
+                                                dbPath,
+                                                GetCreateStatement(),
+                                                DbManagement::PERSISTENT);
+        m_spNormalizer = std::make_unique<InvNormalizer>(normalizerConfigPath, normalizerType);
+    }
+
+    SyncLoop();
 }
 
 void Inventory::Destroy()
@@ -438,7 +447,6 @@ void Inventory::Destroy()
     std::unique_lock<std::mutex> lock{m_mutex};
     m_stopping = true;
     m_cv.notify_all();
-    lock.unlock();
 }
 
 
@@ -671,7 +679,6 @@ nlohmann::json Inventory::GetNetworkData()
                         networkTableData["network_item_id"] = GetItemId(networkTableData, NETWORK_ITEM_ID_FIELDS);
 
                         ret[NETWORKS_TABLE].push_back(networkTableData);
-
                     }
                 }
 
@@ -733,6 +740,8 @@ void Inventory::ScanPackages()
                 NotifyChange(result, data, PACKAGES_TABLE);
             }
         };
+
+        std::unique_lock<std::mutex> lock{m_mutex};
         DBSyncTxn txn
         {
             m_spDBSync->handle(),
@@ -862,6 +871,7 @@ void Inventory::ScanProcesses()
                 NotifyChange(result, data, PROCESSES_TABLE);
             }
         };
+        std::unique_lock<std::mutex> lock{m_mutex};
         DBSyncTxn txn
         {
             m_spDBSync->handle(),
@@ -902,19 +912,24 @@ void Inventory::Scan()
     LogInfo("Evaluation finished.");
 }
 
-void Inventory::SyncLoop(std::unique_lock<std::mutex>& lock)
+void Inventory::SyncLoop()
 {
-    if (m_scanOnStart)
+    LogInfo("Module started.");
+
+    if (m_scanOnStart && !m_stopping)
     {
         Scan();
     }
 
-    while (!m_cv.wait_for(lock, std::chrono::milliseconds{m_intervalValue}, [&]()
-{
-    return m_stopping;
-}))
+    while (!m_stopping)
     {
+        {
+            std::unique_lock<std::mutex> lock{m_mutex};
+            m_cv.wait_for(lock,
+                std::chrono::milliseconds{m_intervalValue}, [&]() { return m_stopping; } );
+        }
         Scan();
     }
+    std::unique_lock<std::mutex> lock{m_mutex};
     m_spDBSync.reset(nullptr);
 }
