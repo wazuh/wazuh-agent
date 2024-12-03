@@ -13,7 +13,7 @@
 Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> signalHandler)
     : m_configurationParser(configFilePath.empty() ? std::make_shared<configuration::ConfigurationParser>()
                                                    : std::make_shared<configuration::ConfigurationParser>(
-                                                         std::filesystem::path(configFilePath)))
+                                                        std::filesystem::path(configFilePath)))
     , m_dataPath(
           m_configurationParser->GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH))
     , m_messageQueue(std::make_shared<MultiTypeQueue>(
@@ -33,6 +33,7 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
                       m_configurationParser,
                       m_agentInfo.GetUUID())
     , m_commandHandler(m_dataPath)
+    , requires_restart(false)
 {
     // Check if agent is registered
     if (m_agentInfo.GetName().empty() || m_agentInfo.GetKey().empty() || m_agentInfo.GetUUID().empty())
@@ -101,6 +102,10 @@ void Agent::ReloadModules()
     }
 }
 
+bool Agent::IsRestartRequired(){
+    return requires_restart;
+}
+
 void Agent::Run()
 {
     m_taskManager.Start(m_agentThreadCount);
@@ -158,6 +163,13 @@ void Agent::Run()
                             return m_centralizedConfiguration.ExecuteCommand(std::move(command), std::move(parameters));
                         },
                         m_messageQueue);
+                } else if (cmd.Module == "restart") {
+                    requires_restart = true;
+                    SignalHandler::HandleSignal(SIGTERM);
+                    return boost::asio::awaitable<module_command::CommandExecutionResult> RestartExecuteCommand() {
+                            return co_return module_command::CommandExecutionResult{
+                                module_command::Status::IN_PROGRESS, "Pending restart execution"};
+                           }
                 }
                 return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue);
             }),
