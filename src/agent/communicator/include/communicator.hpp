@@ -58,7 +58,7 @@ namespace communicator
             m_retryInterval = getConfigValue.template operator()<std::time_t>("agent", "retry_interval")
                                   .value_or(config::agent::DEFAULT_RETRY_INTERVAL);
 
-            m_batchInterval = getConfigValue.template operator()<std::time_t>("agent", "batch_interval")
+            m_batchInterval = getConfigValue.template operator()<std::time_t>("events", "batch_interval")
                                   .value_or(config::agent::DEFAULT_BATCH_INTERVAL);
 
             if (m_batchInterval < 1'000 || m_batchInterval > (1'000 * 60 * 60))
@@ -67,7 +67,7 @@ namespace communicator
                 m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
             }
 
-            m_batchSize = getConfigValue.template operator()<int>("agent", "batch_size")
+            m_batchSize = getConfigValue.template operator()<int>("events", "batch_size")
                               .value_or(config::agent::DEFAULT_BATCH_SIZE);
 
             if (m_batchSize < 1'000 || m_batchSize > 1'000'000)
