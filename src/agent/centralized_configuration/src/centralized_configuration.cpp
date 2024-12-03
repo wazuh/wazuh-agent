@@ -13,7 +13,6 @@ namespace centralized_configuration
         try
         {
             std::vector<std::string> groupIds {};
-            std::string messageOnSuccess {};
 
             if (command == "set-group")
             {
@@ -28,7 +27,6 @@ namespace centralized_configuration
                     }
 
                     groupIds = parameters[0].get<std::vector<std::string>>();
-                    messageOnSuccess = "CentralizedConfiguration group set";
 
                     m_setGroupIdFunction(groupIds);
                     m_saveGroupIdFunction();
@@ -65,7 +63,6 @@ namespace centralized_configuration
                 if (m_getGroupIdFunction && m_downloadGroupFilesFunction)
                 {
                     groupIds = m_getGroupIdFunction();
-                    messageOnSuccess = "CentralizedConfiguration group updated";
                 }
                 else
                 {
@@ -113,6 +110,7 @@ namespace centralized_configuration
 
             m_reloadModulesFunction();
 
+            const std::string messageOnSuccess = "CentralizedConfiguration '" + command + "' done.";
             co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS, messageOnSuccess};
         }
         catch (const nlohmann::json::exception&)
