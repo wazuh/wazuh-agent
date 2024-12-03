@@ -207,7 +207,7 @@ namespace http_client
                 continue;
             }
 
-            std::time_t timerSleep = batchInterval;
+            std::time_t timerSleep = A_SECOND_IN_MILLIS;
 
             if (res.result() == boost::beast::http::status::ok)
             {
