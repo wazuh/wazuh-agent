@@ -16,7 +16,8 @@ namespace centralized_configuration
 
             if (command == "set-group")
             {
-                if (m_setGroupIdFunction && m_downloadGroupFilesFunction)
+                if (m_setGroupIdFunction && m_downloadGroupFilesFunction && m_saveGroupIdFunction &&
+                    m_validateFileFunction && m_reloadModulesFunction)
                 {
                     if (parameters.empty())
                     {
@@ -53,23 +54,25 @@ namespace centralized_configuration
                 }
                 else
                 {
-                    LogWarn("Group set failed, no function set");
+                    LogWarn("Group set failed, one of the required functions has not been set.");
                     co_return module_command::CommandExecutionResult {
-                        module_command::Status::FAILURE, "CentralizedConfiguration group set failed, no function set"};
+                        module_command::Status::FAILURE,
+                        "CentralizedConfiguration group set failed, one of the required functions has not been set."};
                 }
             }
             else if (command == "update-group")
             {
-                if (m_getGroupIdFunction && m_downloadGroupFilesFunction)
+                if (m_getGroupIdFunction && m_downloadGroupFilesFunction && m_validateFileFunction &&
+                    m_reloadModulesFunction)
                 {
                     groupIds = m_getGroupIdFunction();
                 }
                 else
                 {
-                    LogWarn("Group update failed, no getGroupId or downloadGroupFiles function set");
+                    LogWarn("Group update failed, one of the required functions has not been set.");
                     co_return module_command::CommandExecutionResult {
                         module_command::Status::FAILURE,
-                        "CentralizedConfiguration group update failed, no getGroupId or downloadGroupFiles function "
+                        "CentralizedConfiguration group update failed, one of the required functions has not been "
                         "set."};
                 }
             }
