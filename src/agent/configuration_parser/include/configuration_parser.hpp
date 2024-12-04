@@ -40,19 +40,6 @@ namespace configuration
         /// @brief The groups information
         std::function<std::vector<std::string>()> m_getGroups;
 
-        /// @brief Merges two YAML nodes, modifying the base node to include or override values from the
-        /// override node.
-        ///
-        /// This function traverses the two YAML nodes. If a key exists in both nodes:
-        /// - If both values are maps, the function recurses to merge their content.
-        /// - If both values are sequences, their elements are concatenated.
-        /// - In all other cases (scalars, aliases, null values), the value from the override node replaces the value in
-        /// the base node. If a key only exists in the override node, it is added to the base node.
-        ///
-        /// @param base Reference to the base YAML::Node that will be modified.
-        /// @param override Const reference to the YAML::Node containing values to merge into the base.
-        void MergeYamlNodes(YAML::Node& base, const YAML::Node& override);
-
         /// @brief Method for loading the configuration from local file
         void LoadLocalConfig();
 

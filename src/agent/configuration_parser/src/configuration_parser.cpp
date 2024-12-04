@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cctype>
 #include <config.h>
+#include <configuration_parser_utils.hpp>
 
 #include <queue>
 #include <unordered_set>
@@ -121,115 +122,6 @@ namespace configuration
         catch (const std::exception&)
         {
             return false;
-        }
-    }
-
-    void ConfigurationParser::MergeYamlNodes(YAML::Node& base, const YAML::Node& override)
-    {
-        // Queue to manage nodes to be merged. Pairs of nodes are handled directly.
-        std::queue<std::pair<YAML::Node, YAML::Node>> nodesToProcess;
-        nodesToProcess.emplace(base, override);
-
-        while (!nodesToProcess.empty())
-        {
-            auto [baseNode, overrideNode] = nodesToProcess.front();
-            nodesToProcess.pop();
-
-            // Traverse each key-value pair in the override node.
-            for (auto it = overrideNode.begin(); it != overrideNode.end(); ++it)
-            {
-                const auto key = it->first.as<std::string>();
-                YAML::Node value = it->second;
-
-                if (baseNode[key])
-                {
-                    // Key exists in the base node.
-                    if (value.IsMap() && baseNode[key].IsMap())
-                    {
-                        // Both values are maps: enqueue for further merging.
-                        nodesToProcess.emplace(baseNode[key], value);
-                    }
-                    else if (value.IsSequence() && baseNode[key].IsSequence())
-                    {
-                        // Merge sequences while preserving the order.
-                        YAML::Node mergedSequence = YAML::Node(YAML::NodeType::Sequence);
-
-                        // Collect elements from 'override' sequence to preserve insertion order.
-                        std::vector<std::pair<std::string, YAML::Node>> overrideElements;
-                        for (const YAML::Node& elem : value)
-                        {
-                            if (elem.IsScalar())
-                            {
-                                overrideElements.emplace_back(elem.as<std::string>(), elem);
-                            }
-                            else if (elem.IsMap() && elem.begin() != elem.end())
-                            {
-                                overrideElements.emplace_back(elem.begin()->first.as<std::string>(), elem);
-                            }
-                        }
-
-                        // Track which keys from 'override' sequence are merged.
-                        std::unordered_set<std::string> mergedKeys;
-
-                        for (const YAML::Node& elem : baseNode[key])
-                        {
-                            std::string elemKey;
-
-                            // Extract the key based on the type of element.
-                            if (elem.IsScalar())
-                            {
-                                elemKey = elem.as<std::string>();
-                            }
-                            else if (elem.IsMap() && elem.begin() != elem.end())
-                            {
-                                elemKey = elem.begin()->first.as<std::string>();
-                            }
-                            else
-                            {
-                                // Skip elements that don't fit the expected types.
-                                mergedSequence.push_back(elem);
-                                continue;
-                            }
-
-                            // Common logic for merging elements.
-                            auto overrideItem =
-                                std::find_if(overrideElements.begin(),
-                                             overrideElements.end(),
-                                             [&elemKey](const auto& pair) { return pair.first == elemKey; });
-                            if (overrideItem != overrideElements.end())
-                            {
-                                mergedSequence.push_back(overrideItem->second);
-                                mergedKeys.insert(overrideItem->first);
-                            }
-                            else
-                            {
-                                mergedSequence.push_back(elem);
-                            }
-                        }
-
-                        // Add remaining elements from 'override' sequence in order.
-                        for (const auto& [itemKey, itemNode] : overrideElements)
-                        {
-                            if (mergedKeys.find(itemKey) == mergedKeys.end())
-                            {
-                                mergedSequence.push_back(itemNode);
-                            }
-                        }
-
-                        baseNode[key] = mergedSequence;
-                    }
-                    else
-                    {
-                        // Other cases (scalar, alias, null): overwrite the value.
-                        baseNode[key] = value;
-                    }
-                }
-                else
-                {
-                    // Key does not exist in the base node: add it directly.
-                    baseNode[key] = value;
-                }
-            }
         }
     }
 
