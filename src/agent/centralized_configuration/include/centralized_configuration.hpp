@@ -6,7 +6,10 @@
 
 #include <nlohmann/json.hpp>
 
+#include <filesystem>
+#include <filesystem_wrapper.hpp>
 #include <functional>
+#include <ifilesystem.hpp>
 #include <string>
 #include <vector>
 
@@ -22,6 +25,14 @@ namespace centralized_configuration
             std::function<bool(const std::string& group, const std::string& dstFilePath)>;
         using ValidateFileFunctionType = std::function<bool(const std::filesystem::path& configFile)>;
         using ReloadModulesFunctionType = std::function<void()>;
+
+        /// @brief Constructor that allows injecting a file system wrapper.
+        /// @param fileSystemWrapper An optional filesystem wrapper. If nullptr, it will use FileSystemWrapper
+        explicit CentralizedConfiguration(std::shared_ptr<IFileSystem> fileSystemWrapper = nullptr)
+            : m_fileSystemWrapper(fileSystemWrapper ? fileSystemWrapper
+                                                    : std::make_shared<filesystem_wrapper::FileSystemWrapper>())
+        {
+        }
 
         /// @brief Executes a command for the centralized configuration system.
         /// @param command A string containing a JSON command to execute.
@@ -58,6 +69,9 @@ namespace centralized_configuration
         void ReloadModulesFunction(ReloadModulesFunctionType reloadModulesFunction);
 
     private:
+        /// @brief Member to interact with the file system.
+        std::shared_ptr<IFileSystem> m_fileSystemWrapper;
+
         /// @brief Function to set group IDs.
         SetGroupIdFunctionType m_setGroupIdFunction;
 

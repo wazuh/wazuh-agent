@@ -41,11 +41,12 @@ namespace centralized_configuration
                     {
                         std::filesystem::path sharedDirPath(config::DEFAULT_SHARED_CONFIG_PATH);
 
-                        if (std::filesystem::exists(sharedDirPath) && std::filesystem::is_directory(sharedDirPath))
+                        if (m_fileSystemWrapper->exists(sharedDirPath) &&
+                            m_fileSystemWrapper->is_directory(sharedDirPath))
                         {
                             for (const auto& entry : std::filesystem::directory_iterator(sharedDirPath))
                             {
-                                std::filesystem::remove_all(entry);
+                                m_fileSystemWrapper->remove_all(entry);
                             }
                         }
                     }
@@ -91,7 +92,7 @@ namespace centralized_configuration
             for (const auto& groupId : groupIds)
             {
                 const std::filesystem::path tmpGroupFile =
-                    std::filesystem::temp_directory_path() / (groupId + config::DEFAULT_SHARED_FILE_EXTENSION);
+                    m_fileSystemWrapper->temp_directory_path() / (groupId + config::DEFAULT_SHARED_FILE_EXTENSION);
                 m_downloadGroupFilesFunction(groupId, tmpGroupFile.string());
                 if (!m_validateFileFunction(tmpGroupFile))
                 {
@@ -101,17 +102,13 @@ namespace centralized_configuration
 
                     try
                     {
-                        if (std::filesystem::exists(tmpGroupFile) &&
-                            tmpGroupFile.parent_path() == std::filesystem::temp_directory_path())
+                        if (m_fileSystemWrapper->exists(tmpGroupFile) &&
+                            tmpGroupFile.parent_path() == m_fileSystemWrapper->temp_directory_path())
                         {
-                            if (!std::filesystem::remove(tmpGroupFile))
+                            if (!m_fileSystemWrapper->remove(tmpGroupFile))
                             {
                                 LogWarn("Failed to delete invalid group file: {}", tmpGroupFile.string());
                             }
-                        }
-                        else
-                        {
-                            LogWarn("Skipping deletion of suspicious file path: {}", tmpGroupFile.string());
                         }
                     }
                     catch (const std::filesystem::filesystem_error& e)
@@ -131,8 +128,8 @@ namespace centralized_configuration
 
                 try
                 {
-                    std::filesystem::create_directories(destGroupFile.parent_path());
-                    std::filesystem::rename(tmpGroupFile, destGroupFile);
+                    m_fileSystemWrapper->create_directories(destGroupFile.parent_path());
+                    m_fileSystemWrapper->rename(tmpGroupFile, destGroupFile);
                 }
                 catch (const std::filesystem::filesystem_error& e)
                 {
