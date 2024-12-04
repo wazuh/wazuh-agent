@@ -10,8 +10,8 @@ extern "C" {
 
 #include <stdio.h>
 
-FILE* popen(const char* command, const char* mode);
-int pclose(FILE* stream);
+#define popen _popen
+#define pclose _pclose
 
 #ifdef __cplusplus
 }

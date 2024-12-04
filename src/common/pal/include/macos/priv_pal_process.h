@@ -5,3 +5,6 @@
 #endif
 
 #include <stdio.h>
+
+#define popen popen
+#define pclose pclose
