@@ -25,7 +25,7 @@ VERBOSE="no"                          # Enables the full log by using `set -exf`
 DEBUG="no"                            # Enables debug symbols while compiling.
 CHECKSUM="no"                         # Enables the checksum generation.
 IS_STAGE="no"                         # Enables release package naming.
-MAKE_COMPILATION="yes"                # Set whether or not to compile the code
+BUILD_TYPE="full_package"             # Set build type
 CERT_APPLICATION_ID=""                # Apple Developer ID certificate to sign Apps and binaries.
 CERT_INSTALLER_ID=""                  # Apple Developer ID certificate to sign pkg.
 KEYCHAIN=""                           # Keychain where the Apple Developer ID certificate is.
@@ -44,7 +44,7 @@ function clean_and_exit() {
     exit_code=$1
     rm -rf "${SOURCES_DIRECTORY}"
     if [ -z "$BRANCH_TAG" ]; then
-        make -C $WAZUH_PATH/src/build clean
+        make -C $CURRENT_PATH/../../src/build clean
     fi
     rm -rf $CURRENT_PATH/wazuh-agent
     exit ${exit_code}
@@ -116,7 +116,7 @@ function prepare_building_folder() {
 
     if [ -d "$CURRENT_PATH/wazuh-agent" ]; then
 
-        echo "\nThe wazuh agent building directory is present on this machine."
+        echo "The wazuh agent building directory is present on this machine."
         echo "Removing it from the system."
 
         rm -rf $CURRENT_PATH/wazuh-agent
@@ -138,7 +138,7 @@ function prepare_building_folder() {
     mkdir -p $DESTINATION
 }
 
-function build_package() {
+function build_package_binaries() {
 
     # Download source code
     if [ -n "$BRANCH_TAG" ]; then
@@ -164,15 +164,18 @@ function build_package() {
 
     prepare_building_folder $VERSION $pkg_name
 
-    ${WAZUH_PACKAGES_PATH}/package_files/build.sh "${PACKAGED_DIRECTORY}" "${WAZUH_PATH}" ${JOBS} ${MAKE_COMPILATION} ${VCPKG_KEY}
+    ${WAZUH_PACKAGES_PATH}/package_files/build.sh "${PACKAGED_DIRECTORY}" "${WAZUH_PATH}" ${JOBS} ${VCPKG_KEY}
 
+}
+
+function build_package() {
     # sign the binaries and the libraries
     sign_binaries
 
     # create package
     if munkipkg $CURRENT_PATH/wazuh-agent ; then
         echo "The wazuh agent package for macOS has been successfully built."
-        mv $CURRENT_PATH/wazuh-agent/build/$pkg_name.pkg $DESTINATION/
+        mv $CURRENT_PATH/wazuh-agent/build/*.pkg $DESTINATION/
         # symbols_pkg_name="${pkg_name}_debug_symbols"
         # cp -R "${WAZUH_PATH}/src/symbols"  "${DESTINATION}"
         # zip -r "${DESTINATION}/${symbols_pkg_name}.zip" "${DESTINATION}/symbols"
@@ -202,7 +205,7 @@ function help() {
     echo "    -d, --debug                   [Optional] Build the binaries with debug symbols. By default: no."
     echo "    -c, --checksum                [Optional] Generate checksum on the store path."
     echo "    --is_stage                    [Optional] Use release name in package"
-    echo "    -nc, --not-compile            [Optional] Set whether or not to compile the code."
+    echo "    -bt, --build-type             [Optional] Set building type, binaries, package, or full_package [binaries,package,full_package]. By Default: full."
     echo "    --vcpkg-binary-caching-key    [Optional] VCPK remote binary caching repository key."
     echo "    -h, --help                    [  Util  ] Show this help."
     echo "    -i, --install-deps            [  Util  ] Install build dependencies."
@@ -367,9 +370,13 @@ function main() {
             IS_STAGE="yes"
             shift 1
             ;;
-        "-nc"|"--not-compile")
-            MAKE_COMPILATION="no"
-            shift 1
+        "-bt"|"--build-type")
+            if [ -n "$2" ]; then
+                BUILD_TYPE="$2"
+                shift 2
+            else
+                help 1
+            fi
             ;;
        "--vcpkg-binary-caching-key")
             if [ -n "$2" ]; then
@@ -463,13 +470,35 @@ function main() {
     fi
 
     testdep
-
     check_root
-    build_package
-    ${CURRENT_PATH}/uninstall.sh
-
-    if [ "${NOTARIZE}" = "yes" ]; then
     
+    case "$BUILD_TYPE" in
+        binaries)
+            echo "Building only the binaries for the package."
+            build_package_binaries
+            ;;
+        package)
+            if [ -d $PACKAGED_DIRECTORY ] ; then
+                echo "Building package with previously generated binaries."
+                build_package
+            else
+                echo "Binaries have not been created, existing."
+                clean_and_exit 1
+            fi
+            ;;
+        full_package)
+            echo "Building binaries and packaging them."
+            build_package_binaries
+            build_package
+            ;;
+        *)
+            echo "Error: BUILD_TYPE mus't be one of: [binaries, package, full_package]"
+            clean_and_exit 1
+            ;;
+    esac
+
+    if [ "${NOTARIZE}" = "yes" ] && { [ "${BUILD_TYPE}" = "package" ] || [ "${BUILD_TYPE}" = "full_package" ]; }; then
+        
         notarization_path="${DESTINATION}/${pkg_name}.pkg"
     
         if [ -z "${notarization_path}" ]; then
@@ -478,7 +507,7 @@ function main() {
         fi
         notarize_pkg "${notarization_path}"
     else
-        echo "Notarization has not been selected."
+        echo "Notarization has not been selected or was not available for the selected building type."
     fi
 
     return 0

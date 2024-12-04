@@ -11,8 +11,7 @@ set -e
 DESTINATION_PATH=$1
 WAZUH_PATH=$2
 BUILD_JOBS=$3
-MAKE_COMPILATION=$4
-VCPKG_KEY=$5
+VCPKG_KEY=$4
 SOURCES_DIR=${WAZUH_PATH}/src
 
 set_vcpkg_remote_binary_cache(){
@@ -38,14 +37,12 @@ set_vcpkg_remote_binary_cache(){
 
 function build() {
 
-    if [ "${MAKE_COMPILATION}" == "yes" ]; then
-        if [ ! -z "${VCPKG_KEY}" ]; then
-            set_vcpkg_remote_binary_cache $VCPKG_KEY
-        fi
-      	git submodule update --init --recursive
-        cmake -S $SOURCES_DIR -B $SOURCES_DIR/build -DINSTALL_ROOT=$DESTINATION_PATH
-        make -C $SOURCES_DIR/build -j $BUILD_JOBS
+    if [ ! -z "${VCPKG_KEY}" ]; then
+        set_vcpkg_remote_binary_cache $VCPKG_KEY
     fi
+    git submodule update --init --recursive
+    cmake -S $SOURCES_DIR -B $SOURCES_DIR/build -DINSTALL_ROOT=$DESTINATION_PATH
+    make -C $SOURCES_DIR/build -j $BUILD_JOBS
 
     EXECUTABLE_FILES=$(find "${SOURCES_DIR}" -maxdepth 1 -type f ! -name "*.py" -exec file {} + | grep 'executable' | cut -d: -f1)
     EXECUTABLE_FILES+=" $(find "${SOURCES_DIR}" -type f ! -name "*.py" ! -path "${SOURCES_DIR}/external/*" ! -path "${SOURCES_DIR}/symbols/*" -name "*.dylib" -print 2>/dev/null)"
