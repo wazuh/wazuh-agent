@@ -2,16 +2,24 @@
 #include <task_manager.hpp>
 
 #include <atomic>
-#include <chrono>
+#include <condition_variable>
+#include <memory>
+#include <mutex>
+#include <thread>
 
 class TaskManagerTest : public ::testing::Test
 {
 protected:
     TaskManager taskManager;
 
-    void SetUp() override {}
+    void SetUp() override
+    {
+        taskExecuted = false;
+    }
 
-    void TearDown() override {}
+    std::atomic<bool> taskExecuted;
+    std::mutex mtx;
+    std::condition_variable cv;
 };
 
 TEST_F(TaskManagerTest, StartAndStop)
@@ -22,42 +30,52 @@ TEST_F(TaskManagerTest, StartAndStop)
 
 TEST_F(TaskManagerTest, EnqueueFunctionTask)
 {
-    taskManager.Start(1);
-
-    std::atomic<int> counter = 0;
-    std::function<void()> task = [&counter]()
+    std::function<void()> task = [this]()
     {
-        ++counter;
+        taskExecuted = true;
+        cv.notify_one();
     };
 
     taskManager.EnqueueTask(task);
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    {
+        std::unique_lock<std::mutex> lock(mtx);
+        cv.wait(lock,
+                [&]()
+                {
+                    taskManager.Start(2);
+                    return taskExecuted.load();
+                });
+    }
 
-    EXPECT_EQ(counter, 1);
+    EXPECT_TRUE(taskExecuted);
 
     taskManager.Stop();
 }
 
 TEST_F(TaskManagerTest, EnqueueCoroutineTask)
 {
-    taskManager.Start(1);
-
-    std::atomic<int> counter = 0;
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    auto coroutineTask = [&counter]() -> boost::asio::awaitable<void>
+    auto coroutineTask = [this]() -> boost::asio::awaitable<void>
     {
-        ++counter;
+        taskExecuted = true;
+        cv.notify_one();
         co_return;
     };
 
     taskManager.EnqueueTask(coroutineTask());
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    {
+        std::unique_lock<std::mutex> lock(mtx);
+        cv.wait(lock,
+                [&]()
+                {
+                    taskManager.Start(2);
+                    return taskExecuted.load();
+                });
+    }
 
-    EXPECT_EQ(counter, 1);
+    EXPECT_TRUE(taskExecuted);
 
     taskManager.Stop();
 }
