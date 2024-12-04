@@ -11,7 +11,6 @@ case "$1" in
         if [ "$1" = "remove" ]; then
             rm -rf ${WAZUH_SHARE_DIR}
             rm -f /usr/lib/systemd/system/wazuh-agent.service
-            rm -rf /var/lib/wazuh-agent
 
             # Remove the shared library configuration file if it exists
             if [ -f /etc/ld.so.conf.d/wazuh-agentlibs.conf ]; then
@@ -33,7 +32,7 @@ case "$1" in
         if getent group wazuh >/dev/null 2>&1; then
             delgroup wazuh > /dev/null 2>&1
         fi
-        rm -rf /etc/wazuh-agent
+        rm -rf /var/lib/wazuh-agent
     ;;
 
     upgrade)
