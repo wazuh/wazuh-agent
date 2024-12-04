@@ -18,9 +18,10 @@ protected:
     std::string AGENT_DB_PATH;
     std::string AGENT_PATH;
     std::string TMP_PATH;
+
     void SetUp() override
     {
-        #ifdef WIN32
+#ifdef WIN32
         char* tmpPath = nullptr;
         size_t len = 0;
 
@@ -30,18 +31,20 @@ protected:
         AGENT_DB_PATH = tempFolder + "agent_info.db";
         AGENT_PATH = tempFolder;
         TMP_PATH = tempFolder;
-        #else
+#else
         AGENT_CONFIG_PATH = "/tmp/wazuh-agent.yml";
         AGENT_DB_PATH = "/tmp/agent_info.db";
         AGENT_PATH = "/tmp/wazuh-agent";
         TMP_PATH = "/tmp";
-        #endif
+#endif
 
         CreateTempConfigFile();
 
         SysInfo sysInfo;
         std::unique_ptr<AgentInfo> agent = std::make_unique<AgentInfo>(
-            TMP_PATH, [&sysInfo]() mutable { return sysInfo.os(); }, [&sysInfo]() mutable { return sysInfo.networks(); });
+            TMP_PATH,
+            [&sysInfo]() mutable { return sysInfo.os(); },
+            [&sysInfo]() mutable { return sysInfo.networks(); });
 
         agent->SetKey("4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
         agent->SetName("agent_name");
@@ -61,7 +64,8 @@ protected:
         configFilePath << R"(
 agent:
   server_url: https://localhost:27000
-  path.data: )" << AGENT_PATH << R"(
+  path.data: )" << AGENT_PATH
+                       << R"(
   retry_interval: 30s
 inventory:
   enabled: false
