@@ -17,7 +17,6 @@ protected:
     std::string AGENT_CONFIG_PATH;
     std::string AGENT_DB_PATH;
     std::string AGENT_PATH;
-    std::string TMP_PATH;
 
     void SetUp() override
     {
@@ -30,19 +29,17 @@ protected:
         AGENT_CONFIG_PATH = tempFolder + "wazuh-agent.yml";
         AGENT_DB_PATH = tempFolder + "agent_info.db";
         AGENT_PATH = tempFolder;
-        TMP_PATH = tempFolder;
 #else
         AGENT_CONFIG_PATH = "/tmp/wazuh-agent.yml";
         AGENT_DB_PATH = "/tmp/agent_info.db";
-        AGENT_PATH = "/tmp/wazuh-agent";
-        TMP_PATH = "/tmp";
+        AGENT_PATH = "/tmp";
 #endif
 
         CreateTempConfigFile();
 
         SysInfo sysInfo;
         std::unique_ptr<AgentInfo> agent = std::make_unique<AgentInfo>(
-            TMP_PATH,
+            AGENT_PATH,
             [&sysInfo]() mutable { return sysInfo.os(); },
             [&sysInfo]() mutable { return sysInfo.networks(); });
 
