@@ -31,6 +31,10 @@ public:
     /// @param task The coroutine task to enqueue
     void EnqueueTask(boost::asio::awaitable<void> task) override;
 
+    /// @brief Returns the number of enqueued threads
+    /// @return The number of enqueued threads
+    size_t GetNumEnqueuedThreads() const;
+
 private:
     /// @brief The IO context for the task manager
     boost::asio::io_context m_ioContext;

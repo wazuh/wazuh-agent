@@ -42,10 +42,22 @@ void TaskManager::EnqueueTask(std::function<void()> task)
     {
         LogError("Enqueued more threaded tasks than available threads");
     }
-    boost::asio::post(m_ioContext, std::move(task));
+
+    auto taskWithThreadCounter = [this, task = std::move(task)]() mutable
+    {
+        task();
+        --m_numEnqueuedThreads;
+    };
+
+    boost::asio::post(m_ioContext, std::move(taskWithThreadCounter));
 }
 
 void TaskManager::EnqueueTask(boost::asio::awaitable<void> task)
 {
     boost::asio::co_spawn(m_ioContext, std::move(task), boost::asio::detached);
+}
+
+size_t TaskManager::GetNumEnqueuedThreads() const
+{
+    return m_numEnqueuedThreads;
 }

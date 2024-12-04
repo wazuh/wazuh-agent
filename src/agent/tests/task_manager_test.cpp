@@ -80,6 +80,35 @@ TEST_F(TaskManagerTest, EnqueueCoroutineTask)
     taskManager.Stop();
 }
 
+TEST_F(TaskManagerTest, EnqueueFunctionTaskIncrementsCounter)
+{
+    taskManager.Start(2);
+
+    EXPECT_EQ(taskManager.GetNumEnqueuedThreads(), 0);
+
+    std::function<void()> task = [this]()
+    {
+        {
+            std::lock_guard<std::mutex> lock(mtx);
+            EXPECT_EQ(taskManager.GetNumEnqueuedThreads(), 1);
+            taskExecuted = true;
+        }
+        cv.notify_one();
+    };
+
+    taskManager.EnqueueTask(task);
+
+    {
+        std::unique_lock<std::mutex> lock(mtx);
+        cv.wait(lock, [&]() { return taskExecuted.load(); });
+    }
+
+    taskManager.Stop();
+
+    EXPECT_TRUE(taskExecuted);
+    EXPECT_EQ(taskManager.GetNumEnqueuedThreads(), 0);
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
