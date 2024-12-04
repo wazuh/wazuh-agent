@@ -22,3 +22,8 @@ if(NOT SOURCE_FILES)
 endif()
 
 add_library(pal STATIC ${SOURCE_FILES})
+
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests/${OS_NAME})
+endif()
