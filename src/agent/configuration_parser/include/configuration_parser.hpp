@@ -51,6 +51,9 @@ namespace configuration
         /// @throws YAML::Exception If there is an error while loading or parsing a YAML file.
         void LoadSharedConfig();
 
+        //TODO: fill doc
+        std::size_t ParseSizeUnit(const std::string& option) const;
+
     public:
         /// @brief Default constructor. Loads configuration from a default file path.
         ///
@@ -99,6 +102,10 @@ namespace configuration
                 if constexpr (std::is_same_v<T, std::time_t>)
                 {
                     return ParseTimeUnit(current.as<std::string>());
+                }
+                else if constexpr (std::is_same_v<T, std::size_t>)
+                {
+                    return ParseSizeUnit(current.as<std::string>());
                 }
                 else
                 {
