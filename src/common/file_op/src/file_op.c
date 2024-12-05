@@ -29,6 +29,7 @@
 #include <regex.h>
 #else
 #include <aclapi.h>
+#include <Shlwapi.h>
 #endif
 
 /* Vista product information */
@@ -1237,7 +1238,7 @@ time_t get_UTC_modification_time(const char *file){
 
 char *basename_ex(char *path)
 {
-    return (PathFindFileNameA_(path));
+    return (PathFindFileNameA(path));
 }
 
 
@@ -2015,7 +2016,7 @@ void w_ch_exec_dir() {
     }
 
     /* Remove file name from path */
-    PathRemoveFileSpec_(path);
+    PathRemoveFileSpec(path);
 
     /* Move to correct directory */
     if (chdir(path)) {

@@ -26,7 +26,7 @@ target_link_libraries(sysInfoNetworkWindows_unit_test
     pthread
     sqlite3
     cjson
-    -static-libgcc -static-libstdc++
+    -static-libgcc
 )
 
 add_test(NAME sysInfoNetworkWindows_unit_test
