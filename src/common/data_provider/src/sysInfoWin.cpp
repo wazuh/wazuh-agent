@@ -168,8 +168,8 @@ class SysInfoProcess final
             // Reference: https://stackoverflow.com/a/1986486
             if (GetProcessMemoryInfo(m_hProcess, &pMemCounters, sizeof(pMemCounters)))
             {
-                m_pageFileUsage = pMemCounters.PagefileUsage;
-                m_virtualSize   = pMemCounters.WorkingSetSize + pMemCounters.PagefileUsage;
+                m_pageFileUsage =  static_cast<DWORD>(pMemCounters.PagefileUsage);
+                m_virtualSize   =  static_cast<int32_t>(pMemCounters.WorkingSetSize + pMemCounters.PagefileUsage);
             }
 
             // else: Unable to retrieve page file usage from current process

@@ -34,6 +34,7 @@ function(configure_target target)
             /w14546 # Function pointer conversion to a different size
             /w14547 # Function pointer conversion to a different calling convention
         )
+        add_definitions(-D_WIN32_WINNT=0x0601)
         target_compile_options(${target} PRIVATE ${msvc_warnings})
     endif()
 

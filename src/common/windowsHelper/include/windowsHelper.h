@@ -307,7 +307,7 @@ namespace Utils
                         if (offset < rawDataSize)
                         {
                             const auto len{ nullptr != tmp ? strlen(tmp) : 0 };
-                            offset += len + sizeof(char);
+                            offset += static_cast<DWORD>(len + sizeof(char));
                         }
                     }
 

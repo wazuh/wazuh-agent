@@ -248,7 +248,7 @@ void Statement::bind(const int32_t index, const std::string& value)
         sqlite3_bind_text(m_stmt.get(),
                           index,
                           value.c_str(),
-                          value.length(),
+                          static_cast<int>(value.length()),
                           SQLITE_TRANSIENT)
     };
     checkSqliteResult(result, sqlite3_errmsg(m_connection->db().get()));
