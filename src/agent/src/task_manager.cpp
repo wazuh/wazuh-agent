@@ -36,14 +36,14 @@ void TaskManager::Stop()
     m_ioContext.reset();
 }
 
-void TaskManager::EnqueueTask(std::function<void()> task)
+void TaskManager::EnqueueTask(std::function<void()> task, const std::string& taskID)
 {
     if (++m_numEnqueuedThreads > m_threads.size() - 1) // -1 to account for the coroutines
     {
         LogError("Enqueued more threaded tasks than available threads");
     }
 
-    auto taskWithThreadCounter = [this, task = std::move(task)]() mutable
+    auto taskWithThreadCounter = [this, taskID, task = std::move(task)]() mutable
     {
         try
         {
@@ -51,7 +51,7 @@ void TaskManager::EnqueueTask(std::function<void()> task)
         }
         catch (const std::exception& e)
         {
-            LogError("Task threw an exception: {}", e.what());
+            LogError("{} task threw an exception: {}", taskID.empty() ? "Anonymous" : taskID, e.what());
         }
         --m_numEnqueuedThreads;
     };
@@ -59,11 +59,11 @@ void TaskManager::EnqueueTask(std::function<void()> task)
     boost::asio::post(m_ioContext, std::move(taskWithThreadCounter));
 }
 
-void TaskManager::EnqueueTask(boost::asio::awaitable<void> task)
+void TaskManager::EnqueueTask(boost::asio::awaitable<void> task, const std::string& taskID)
 {
     boost::asio::co_spawn(
         m_ioContext,
-        [task = std::move(task)]() mutable -> boost::asio::awaitable<void>
+        [taskID, task = std::move(task)]() mutable -> boost::asio::awaitable<void>
         {
             try
             {
@@ -71,7 +71,7 @@ void TaskManager::EnqueueTask(boost::asio::awaitable<void> task)
             }
             catch (const std::exception& e)
             {
-                LogError("Coroutine task threw an exception: {}", e.what());
+                LogError("{} coroutine task threw an exception: {}", taskID.empty() ? "Anonymous" : taskID, e.what());
             }
         },
         boost::asio::detached);
