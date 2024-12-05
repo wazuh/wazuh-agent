@@ -898,7 +898,7 @@ void Inventory::ScanProcesses()
 void Inventory::Scan()
 {
     LogInfo("Starting evaluation.");
-    m_scanTime = Utils::getCurrentTimestamp();
+    m_scanTime = Utils::getCurrentISO8601();
 
     TryCatchTask([&]() { ScanHardware(); });
     TryCatchTask([&]() { ScanOs(); });

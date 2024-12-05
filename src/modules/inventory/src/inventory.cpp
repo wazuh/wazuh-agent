@@ -78,7 +78,7 @@ void Inventory::SendDeltaEvent(const std::string& data) {
     metadata["operation"] = jsonData["operation"];
     metadata["id"] = jsonData["id"];
 
-    const Message statefulMessage{ MessageType::STATEFUL, jsonData["data"], Name(), jsonData["type"], metadata.dump() };
+    const Message statefulMessage{ MessageType::STATEFUL, metadata["operation"] == "delete" ? "{}"_json : jsonData["data"], Name(), jsonData["type"], metadata.dump() };
 
     if(!m_pushMessage(statefulMessage)) {
         LogWarn("Stateful event can't be pushed into the message queue: {}", data);
