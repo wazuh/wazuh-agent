@@ -12,6 +12,7 @@ namespace program_options = boost::program_options;
 static const auto OPT_HELP {"help"};
 static const auto OPT_RUN {"run"};
 static const auto OPT_STATUS {"status"};
+static const auto OPT_STOP {"stop"};
 static const auto OPT_CONFIG_FILE {"config-file"};
 static const auto OPT_REGISTER_AGENT {"register-agent"};
 static const auto OPT_URL {"url"};
@@ -34,6 +35,7 @@ int main(int argc, char* argv[])
         program_options::options_description cmdParser("Allowed options");
         cmdParser.add_options()(OPT_HELP, "Display this help menu")(
             OPT_RUN, "Run agent in foreground (this is the default behavior)")(
+            OPT_STOP, "Stop agent")(
             OPT_STATUS, "Check if the agent is running (running or stopped)")(
             OPT_CONFIG_FILE, program_options::value<std::string>(), "Path to the Wazuh configuration file (optional)")(
             OPT_REGISTER_AGENT, "Use this option to register as a new agent")(
@@ -85,6 +87,10 @@ int main(int argc, char* argv[])
         else if (validOptions.count(OPT_HELP) > 0)
         {
             std::cout << cmdParser << '\n';
+        }
+        else if (validOptions.count(OPT_STOP) > 0)
+        {
+            StopAgent(validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
         }
         else
         {
