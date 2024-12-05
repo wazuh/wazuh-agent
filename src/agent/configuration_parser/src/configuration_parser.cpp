@@ -169,6 +169,7 @@ namespace configuration
     void ConfigurationParser::SetGetGroupIdsFunction(std::function<std::vector<std::string>()> getGroupIdsFunction)
     {
         m_getGroups = std::move(getGroupIdsFunction);
+        LoadSharedConfig();
     }
 
     void ConfigurationParser::ReloadConfiguration()

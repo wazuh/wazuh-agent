@@ -39,8 +39,6 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
     }
 
     m_configurationParser->SetGetGroupIdsFunction([this]() { return m_agentInfo.GetGroups(); });
-    // Loads the group configuration once the function to obtain the groups has been set.
-    m_configurationParser->LoadSharedConfig();
 
     m_centralizedConfiguration.SetGroupIdFunction(
         [this](const std::vector<std::string>& groups)
