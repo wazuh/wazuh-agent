@@ -8,6 +8,7 @@ project(Agent)
 include(../cmake/CommonSettings.cmake)
 set_common_settings()
 
+add_subdirectory(task_manager)
 add_subdirectory(agent_info)
 add_subdirectory(centralized_configuration)
 add_subdirectory(command_handler)
@@ -45,7 +46,6 @@ list(APPEND SOURCES
     src/message_queue_utils.cpp
     src/process_options.cpp
     src/signal_handler.cpp
-    src/task_manager.cpp
 )
 
 add_library(Agent ${SOURCES})
@@ -56,6 +56,7 @@ target_include_directories(Agent
     ${CMAKE_CURRENT_SOURCE_DIR}/src/windows)
 target_link_libraries(Agent
     PUBLIC
+    TaskManager
     CentralizedConfiguration
     ConfigurationParser
     Communicator
