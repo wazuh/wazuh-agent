@@ -79,7 +79,7 @@ protected:
 
     /// @brief Sets up the file reader
     /// @param configurationParser Configuration parser
-    void SetupFileReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
+    void SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
 
 private:
     /// @brief Module name

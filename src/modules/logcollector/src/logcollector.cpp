@@ -45,7 +45,7 @@ void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParse
     SetupFileReader(configurationParser);
 }
 
-void Logcollector::SetupFileReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
+void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
     auto fileWait = configurationParser->GetConfig<std::time_t>("logcollector", "file_wait").value_or(config::logcollector::DEFAULT_FILE_WAIT);
 
     auto reloadInterval = configurationParser->GetConfig<std::time_t>("logcollector", "reload_interval").value_or(config::logcollector::DEFAULT_RELOAD_INTERVAL);
