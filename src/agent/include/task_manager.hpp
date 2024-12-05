@@ -6,6 +6,7 @@
 #include <boost/asio/io_context.hpp>
 
 #include <functional>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -25,11 +26,13 @@ public:
 
     /// @brief Enqueues a task to be executed
     /// @param task The task to enqueue
-    void EnqueueTask(std::function<void()> task) override;
+    /// @param taskID The ID of the task
+    void EnqueueTask(std::function<void()> task, const std::string& taskID = "") override;
 
     /// @brief Enqueues a coroutine task to be executed
     /// @param task The coroutine task to enqueue
-    void EnqueueTask(boost::asio::awaitable<void> task) override;
+    /// @param taskID The ID of the task
+    void EnqueueTask(boost::asio::awaitable<void> task, const std::string& taskID = "") override;
 
     /// @brief Returns the number of enqueued threads
     /// @return The number of enqueued threads
