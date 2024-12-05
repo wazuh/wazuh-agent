@@ -120,6 +120,15 @@ public:
      */
     int GetElementCount(const std::string& tableName, const std::string& moduleName = "") override;
 
+    // TODO: doc
+    int GetElementsStoredSize(const std::string& tableName) override;
+
+    // TODO: doc
+    nlohmann::json RetrieveBySize(size_t n,
+                                  const std::string& tableName,
+                                  const std::string& moduleName = "",
+                                  [[maybe_unused]] const std::string& moduleType = "");
+
 private:
     /**
      * @brief Initialize the table in the SQLite database.
@@ -139,6 +148,9 @@ private:
      *
      */
     void ReleaseDatabaseAccess();
+
+    // TODO: fill doc
+    nlohmann::json ProcessRequest(SQLite::Statement& sqlStatementQuery, size_t maxSize = 0);
 
     /**
      * @brief The name of the SQLite database file.

@@ -89,4 +89,8 @@ public:
      * @return int The quantity of elements stored in the specified queue.
      */
     virtual int GetElementCount(const std::string& queueName, const std::string& moduleName = "") = 0;
+
+
+    //TODO:doc
+    virtual int GetElementsStoredSize(const std::string& tableName) = 0;
 };
