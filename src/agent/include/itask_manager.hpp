@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <string>
 
 /// @brief Interface for task managers
 ///
@@ -24,9 +25,11 @@ public:
 
     /// @brief Enqueues a task to be executed
     /// @param task The task to enqueue
-    virtual void EnqueueTask(std::function<void()> task) = 0;
+    /// @param taskID The ID of the task
+    virtual void EnqueueTask(std::function<void()> task, const std::string& taskID) = 0;
 
     /// @brief Enqueues a coroutine task to be executed
     /// @param task The coroutine task to enqueue
-    virtual void EnqueueTask(CoroutineTaskType task) = 0;
+    /// @param taskID The ID of the task
+    virtual void EnqueueTask(CoroutineTaskType task, const std::string& taskID) = 0;
 };
