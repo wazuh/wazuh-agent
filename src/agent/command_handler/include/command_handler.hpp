@@ -9,6 +9,7 @@
 #include <chrono>
 #include <memory>
 #include <optional>
+#include <string>
 
 namespace command_handler
 {
@@ -35,11 +36,13 @@ namespace command_handler
         /// @tparam T The type of the command to process
         /// @param GetCommandFromQueue Function to retrieve a command from the queue
         /// @param PopCommandFromQueue Function to remove a command from the queue
+        /// @param ReportCommandResult Function to report a command result
         /// @param DispatchCommand Function to dispatch the command for execution
         template<typename T>
         boost::asio::awaitable<void> CommandsProcessingTask(
             const std::function<std::optional<T>()> GetCommandFromQueue,
             const std::function<void()> PopCommandFromQueue,
+            const std::function<void(T&)> ReportCommandResult,
             const std::function<boost::asio::awaitable<module_command::CommandExecutionResult>(T&)> DispatchCommand)
         {
             using namespace std::chrono_literals;
@@ -56,7 +59,19 @@ namespace command_handler
                     continue;
                 }
 
-                m_commandStore.StoreCommand(cmd.value());
+                if (!m_commandStore.StoreCommand(cmd.value()))
+                {
+                    cmd.value().ExecutionResult.ErrorCode = module_command::Status::FAILURE;
+                    cmd.value().ExecutionResult.Message = "Agent's database failure";
+                    LogError("Error storing command: {} {}. Error: {}",
+                             cmd.value().Id,
+                             cmd.value().Command,
+                             cmd.value().ExecutionResult.Message);
+                    ReportCommandResult(cmd.value());
+                    PopCommandFromQueue();
+                    continue;
+                }
+
                 PopCommandFromQueue();
 
                 co_spawn(

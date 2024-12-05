@@ -83,17 +83,10 @@ DispatchCommand(module_command::CommandEntry commandEntry,
     co_await (TimerTask(timer, result, commandCompleted) ||
               ExecuteCommandTask(executeFunction, commandEntry, result, commandCompleted, timer));
 
-    auto metadata = nlohmann::json::object();
-    metadata["module"] = "command";
-    metadata["id"] = commandEntry.Id;
-    metadata["operation"] = "update";
+    commandEntry.ExecutionResult.ErrorCode = result->ErrorCode;
+    commandEntry.ExecutionResult.Message = result->Message;
 
-    nlohmann::json resultJson;
-    resultJson["command"]["result"]["code"] = result->ErrorCode;
-    resultJson["command"]["result"]["message"] = result->Message;
-
-    Message message {MessageType::STATEFUL, {resultJson}, metadata["module"], "", metadata.dump()};
-    messageQueue->push(message);
+    ReportCommandResult(commandEntry, messageQueue);
 
     co_return *result;
 }
@@ -117,4 +110,20 @@ DispatchCommand(module_command::CommandEntry commandEntry,
     };
 
     co_return co_await DispatchCommand(commandEntry, moduleExecuteFunction, messageQueue);
+}
+
+void ReportCommandResult(const module_command::CommandEntry& commandEntry,
+                         std::shared_ptr<IMultiTypeQueue> messageQueue)
+{
+    auto metadata = nlohmann::json::object();
+    metadata["module"] = "command";
+    metadata["id"] = commandEntry.Id;
+    metadata["operation"] = "update";
+
+    nlohmann::json resultJson;
+    resultJson["command"]["result"]["code"] = commandEntry.ExecutionResult.ErrorCode;
+    resultJson["command"]["result"]["message"] = commandEntry.ExecutionResult.Message;
+
+    Message message {MessageType::STATEFUL, {resultJson}, metadata["module"], "", metadata.dump()};
+    messageQueue->push(message);
 }

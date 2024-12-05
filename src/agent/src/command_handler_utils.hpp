@@ -38,3 +38,13 @@ boost::asio::awaitable<module_command::CommandExecutionResult>
 DispatchCommand(module_command::CommandEntry commandEntry,
                 std::shared_ptr<ModuleWrapper> module,
                 std::shared_ptr<IMultiTypeQueue> messageQueue);
+
+/// @brief Reports the result of a command execution to the message queue
+///
+/// This function takes a command entry and a message queue and reports
+/// the result of the command execution.
+///
+/// @param commandEntry The command entry to report
+/// @param messageQueue The message queue to send the result to
+void ReportCommandResult(const module_command::CommandEntry& commandEntry,
+                         std::shared_ptr<IMultiTypeQueue> messageQueue);

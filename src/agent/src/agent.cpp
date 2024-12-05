@@ -68,19 +68,7 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
             {
                 for (auto& cmd : *inProgressCommands)
                 {
-                    auto metadata = nlohmann::json::object();
-                    metadata["module"] = "command";
-                    metadata["id"] = cmd.Id;
-                    metadata["operation"] = "update";
-
-                    nlohmann::json commandJson;
-                    commandJson["command"]["result"]["code"] = cmd.ExecutionResult.ErrorCode;
-                    commandJson["command"]["result"]["message"] = cmd.ExecutionResult.Message;
-
-                    const Message message {
-                        MessageType::STATEFUL, {commandJson}, metadata["module"], "", metadata.dump()};
-                    // controlar resultado del push
-                    m_messageQueue->push(message);
+                    ReportCommandResult(cmd, m_messageQueue);
                 }
             }
         });
@@ -138,6 +126,7 @@ void Agent::Run()
     m_taskManager.EnqueueTask(m_commandHandler.CommandsProcessingTask<module_command::CommandEntry>(
         [this]() { return GetCommandFromQueue(m_messageQueue); },
         [this]() { return PopCommandFromQueue(m_messageQueue); },
+        [this](const module_command::CommandEntry& cmd) { return ReportCommandResult(cmd, m_messageQueue); },
         [this](module_command::CommandEntry& cmd)
         {
             if (cmd.Module == "CentralizedConfiguration")
