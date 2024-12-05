@@ -141,7 +141,7 @@ namespace centralized_configuration
 
             m_reloadModulesFunction();
 
-            const std::string messageOnSuccess = "CentralizedConfiguration '" + command + "' done.";
+            const std::string messageOnSuccess = "CentralizedConfiguration " + command + " done.";
             co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS, messageOnSuccess};
         }
         catch (const nlohmann::json::exception&)

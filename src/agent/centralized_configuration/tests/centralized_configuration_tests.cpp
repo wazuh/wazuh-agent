@@ -159,13 +159,13 @@ TEST(CentralizedConfiguration, ExecuteCommandHandlesRecognizedCommands)
                                         "set-group",
                                         groupsList,
                                         module_command::Status::SUCCESS,
-                                        "CentralizedConfiguration 'set-group' done.");
+                                        "CentralizedConfiguration set-group done.");
 
             co_await TestExecuteCommand(centralizedConfiguration,
                                         "update-group",
                                         {},
                                         module_command::Status::SUCCESS,
-                                        "CentralizedConfiguration 'update-group' done.");
+                                        "CentralizedConfiguration update-group done.");
 
             co_await TestExecuteCommand(centralizedConfiguration,
                                         "unknown-command",
@@ -228,7 +228,7 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForS
                                         "set-group",
                                         groupsList,
                                         module_command::Status::SUCCESS,
-                                        "CentralizedConfiguration 'set-group' done.");
+                                        "CentralizedConfiguration set-group done.");
 
             EXPECT_TRUE(wasSetGroupIdFunctionCalled);
             EXPECT_TRUE(wasDownloadGroupFilesFunctionCalled);
@@ -286,7 +286,7 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForU
                                         "update-group",
                                         {},
                                         module_command::Status::SUCCESS,
-                                        "CentralizedConfiguration 'update-group' done.");
+                                        "CentralizedConfiguration update-group done.");
 
             EXPECT_TRUE(wasGetGroupIdFunctionCalled);
             EXPECT_TRUE(wasDownloadGroupFilesFunctionCalled);
