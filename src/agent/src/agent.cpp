@@ -28,8 +28,7 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
           [this]<typename T>(std::string table, std::string key) -> std::optional<T>
           { return m_configurationParser->GetConfig<T>(std::move(table), std::move(key)); })
     , m_moduleManager([this](Message message) -> int { return m_messageQueue->push(std::move(message)); },
-                      m_configurationParser,
-                      [this](std::function<void()> task) { m_taskManager.EnqueueTask(std::move(task), "Module"); })
+                      m_configurationParser)
     , m_commandHandler(m_dataPath)
 {
     // Check if agent is registered
