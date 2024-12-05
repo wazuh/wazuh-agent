@@ -27,7 +27,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         rsync
         fimdb
         dbsync
-        -static-libstdc++
     )
 elseif (CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
     add_definitions(-DOS_TYPE=OSType::OTHERS)

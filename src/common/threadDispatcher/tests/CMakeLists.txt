@@ -39,7 +39,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         pthread
         crypto
         ssl
-        -static-libgcc -static-libstdc++
+        -static-libgcc
         ws2_32
         crypt32
     )

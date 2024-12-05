@@ -8,6 +8,7 @@ include_directories(${COMMON_FOLDER}/utils/include)
 include_directories(${COMMON_FOLDER}/file_op/include)
 include_directories(${COMMON_FOLDER}/regex_op/include)
 include_directories(${COMMON_FOLDER}/binaries_op/include)
+include_directories(${COMMON_FOLDER}/pal/include)
 
 target_link_libraries(version_op
     utils
