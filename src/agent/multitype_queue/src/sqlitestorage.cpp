@@ -284,7 +284,7 @@ int SQLiteStorage::Remove(int id, const std::string& tableName, const std::strin
     catch (const std::exception& e)
     {
         LogError("Error during Remove operation: {}.", e.what());
-        return {};
+        return 0;
     }
 }
 
@@ -355,6 +355,33 @@ int SQLiteStorage::GetElementCount(const std::string& tableName, const std::stri
     catch (const std::exception& e)
     {
         LogError("Error during GetElementCount operation: {}.", e.what());
-        return {};
+        return 0;
+    }
+}
+
+int SQLiteStorage::GetElementsStoredSize(const std::string& tableName)
+{
+    std::string sizeQuery = fmt::format(
+        R"(SELECT SUM(LENGTH(module_name) + LENGTH(module_type) + LENGTH(metadata) + LENGTH(message)) AS total_bytes FROM {};)",
+        tableName);
+
+    try
+    {
+        SQLite::Statement query(*m_db, sizeQuery);
+        int count = 0;
+        if (query.executeStep())
+        {
+            count = query.getColumn(0).getInt();
+        }
+        else
+        {
+            LogError("Error SQLiteStorage get element count.");
+        }
+        return count;
+    }
+    catch (const std::exception& e)
+    {
+        LogError("Error during GetElementCount operation: {}.", e.what());
+        return 0;
     }
 }

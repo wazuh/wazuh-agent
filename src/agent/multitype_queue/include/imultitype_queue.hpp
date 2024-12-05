@@ -133,4 +133,7 @@ public:
      * @return int The number of items in the queue.
      */
     virtual int storedItems(MessageType type, const std::string moduleName = "") = 0;
+
+    //TODO: doc
+    virtual int sizePerType(MessageType type) = 0;
 };
