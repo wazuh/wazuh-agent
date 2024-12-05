@@ -45,7 +45,14 @@ void TaskManager::EnqueueTask(std::function<void()> task)
 
     auto taskWithThreadCounter = [this, task = std::move(task)]() mutable
     {
-        task();
+        try
+        {
+            task();
+        }
+        catch (const std::exception& e)
+        {
+            LogError("Task threw an exception: {}", e.what());
+        }
         --m_numEnqueuedThreads;
     };
 
@@ -54,7 +61,20 @@ void TaskManager::EnqueueTask(std::function<void()> task)
 
 void TaskManager::EnqueueTask(boost::asio::awaitable<void> task)
 {
-    boost::asio::co_spawn(m_ioContext, std::move(task), boost::asio::detached);
+    boost::asio::co_spawn(
+        m_ioContext,
+        [task = std::move(task)]() mutable -> boost::asio::awaitable<void>
+        {
+            try
+            {
+                co_await std::move(task);
+            }
+            catch (const std::exception& e)
+            {
+                LogError("Coroutine task threw an exception: {}", e.what());
+            }
+        },
+        boost::asio::detached);
 }
 
 size_t TaskManager::GetNumEnqueuedThreads() const
