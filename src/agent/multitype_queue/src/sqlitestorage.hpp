@@ -120,6 +120,10 @@ public:
      */
     int GetElementCount(const std::string& tableName, const std::string& moduleName = "") override;
 
+
+    //TODO: doc
+    int GetElementsStoredSize(const std::string& tableName) override;
+
 private:
     /**
      * @brief Initialize the table in the SQLite database.

@@ -135,4 +135,7 @@ public:
      * @copydoc IMultiTypeQueue::storedItems(MessageType, const std::string)
      */
     int storedItems(MessageType type, const std::string moduleName = "") override;
+
+    //TODO: doc
+    int sizePerType(MessageType type) override;
 };
