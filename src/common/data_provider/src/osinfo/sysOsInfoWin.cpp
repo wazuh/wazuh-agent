@@ -19,6 +19,11 @@
 #include "registryHelper.h"
 #include "sharedDefs.h"
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4996)
+#endif
+
 static std::string getVersion(const bool isMinor = false)
 {
     std::string version;
@@ -54,7 +59,6 @@ static std::string getVersion(const bool isMinor = false)
     {
         OSVERSIONINFOEX osvi{};
         osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-
         if (GetVersionEx (reinterpret_cast<OSVERSIONINFO*>(&osvi)))
         {
             version = std::to_string(isMinor ? osvi.dwMinorVersion : osvi.dwMajorVersion);
@@ -280,6 +284,10 @@ static std::string getName()
 
     return name.empty() ? "Microsoft Windows" : name;
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 static std::string getMachine()
 {
