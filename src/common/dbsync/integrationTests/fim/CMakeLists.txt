@@ -28,7 +28,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         unofficial::sqlite3::sqlite3
         pthread
         utils
-        -static-libgcc -static-libstdc++
+        -static-libgcc
     )
 else()
     target_link_libraries(fim_integration_test

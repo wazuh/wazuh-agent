@@ -27,6 +27,7 @@
 #include "file_op.h"
 #include "regex_op.h"
 #include "binaries_op.h"
+#include "pal.h"
 
 #ifndef WIN32
 #include <sys/utsname.h>
@@ -171,13 +172,13 @@ os_info *get_win_version()
             }
             else {
                 // TODO: Solve when StrBreak is implemented
-                //char ** parts = OS_StrBreak('.', winver, 2);
-                //info->os_major = strdup(parts[0]);
-                //info->os_minor = strdup(parts[1]);
-                //for (i = 0; parts[i]; i++){
-                //    free(parts[i]);
-                //}
-                //free(parts);
+                char ** parts = OS_StrBreak('.', winver, 2);
+                info->os_major = strdup(parts[0]);
+                info->os_minor = strdup(parts[1]);
+                for (i = 0; parts[i]; i++){
+                    free(parts[i]);
+                }
+                free(parts);
                 dwCount = WINVER_SIZE;
                 dwRet = RegQueryValueEx(RegistryKey, TEXT("CurrentBuildNumber"), NULL, NULL, (LPBYTE)wincomp, &dwCount);
                 if (dwRet != ERROR_SUCCESS) {
