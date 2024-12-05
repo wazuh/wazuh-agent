@@ -17,9 +17,9 @@ add_library(Inventory
     src/inventory.cpp
     src/inventoryImp.cpp
     src/inventoryNormalizer.cpp)
-
+    
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    target_compile_options(Inventory PRIVATE /WX- /w)
+    target_compile_options(Inventory PRIVATE /WX-)
 endif()
 
 target_include_directories(Inventory PUBLIC

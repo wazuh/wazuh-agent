@@ -1087,7 +1087,7 @@ bool SQLiteDBEngine::getPKListLeftOnly(const std::string& t1,
                 if (tableFields.end() != it)
                 {
                     getTableData(stmt,
-                                 index,
+                                static_cast<int32_t>(index),
                                  std::get<TableHeader::Type>(*it),
                                  std::get<TableHeader::Name>(*it),
                                  registerFields);
