@@ -72,6 +72,24 @@ namespace command_handler
             }
         }
 
+        void CleanUpInProgressCommands(
+            std::function<void(const std::optional<std::vector<module_command::CommandEntry>>&)> callback)
+        {
+            auto cmds = m_commandStore.GetCommandByStatus(module_command::Status::IN_PROGRESS);
+
+            if (cmds != std::nullopt)
+            {
+                for (auto& cmd : *cmds)
+                {
+                    cmd.ExecutionResult.ErrorCode = module_command::Status::FAILURE;
+                    cmd.ExecutionResult.Message = "Agent stopped during execution";
+                    m_commandStore.UpdateCommand(cmd);
+                }
+            }
+
+            callback(cmds);
+        }
+
         /// @brief Stops the command handler
         void Stop();
 

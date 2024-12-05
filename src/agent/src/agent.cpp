@@ -60,6 +60,30 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
 
     m_taskManager.Start(
         m_configurationParser->GetConfig<size_t>("agent", "thread_count").value_or(config::DEFAULT_THREAD_COUNT));
+
+    m_commandHandler.CleanUpInProgressCommands(
+        [this](const auto& inProgressCommands)
+        {
+            if (inProgressCommands != std::nullopt)
+            {
+                for (auto& cmd : *inProgressCommands)
+                {
+                    auto metadata = nlohmann::json::object();
+                    metadata["module"] = "command";
+                    metadata["id"] = cmd.Id;
+                    metadata["operation"] = "update";
+
+                    nlohmann::json commandJson;
+                    commandJson["command"]["result"]["code"] = cmd.ExecutionResult.ErrorCode;
+                    commandJson["command"]["result"]["message"] = cmd.ExecutionResult.Message;
+
+                    const Message message {
+                        MessageType::STATEFUL, {commandJson}, metadata["module"], "", metadata.dump()};
+                    // controlar resultado del push
+                    m_messageQueue->push(message);
+                }
+            }
+        });
 }
 
 Agent::~Agent()

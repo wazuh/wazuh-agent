@@ -83,12 +83,16 @@ DispatchCommand(module_command::CommandEntry commandEntry,
     co_await (TimerTask(timer, result, commandCompleted) ||
               ExecuteCommandTask(executeFunction, commandEntry, result, commandCompleted, timer));
 
-    nlohmann::json resultJson;
-    resultJson["error"] = result->ErrorCode;
-    resultJson["message"] = result->Message;
-    resultJson["id"] = commandEntry.Id;
+    auto metadata = nlohmann::json::object();
+    metadata["module"] = "command";
+    metadata["id"] = commandEntry.Id;
+    metadata["operation"] = "update";
 
-    Message message {MessageType::STATEFUL, {resultJson}, "CommandHandler"};
+    nlohmann::json resultJson;
+    resultJson["command"]["result"]["code"] = result->ErrorCode;
+    resultJson["command"]["result"]["message"] = result->Message;
+
+    Message message {MessageType::STATEFUL, {resultJson}, metadata["module"], "", metadata.dump()};
     messageQueue->push(message);
 
     co_return *result;
