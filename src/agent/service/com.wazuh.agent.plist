@@ -7,11 +7,11 @@
 
          <key>ProgramArguments</key>
          <array>
-             <string>/path/to/executable/wazuh-agent</string>
+             <string>WAZUH_HOME/wazuh-agent</string>
          </array>
 
         <key>WorkingDirectory</key>
-        <string>/path/to/working/directory</string>
+        <string>WAZUH_HOME/directory</string>
 
         <key>StandardOutPath</key>
         <string>/var/log/wazuh-output.log</string>
