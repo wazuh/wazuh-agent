@@ -45,7 +45,7 @@ namespace Utils
 
         if (file)
         {
-            while (fgets(buffer.data(), bufferSize, file.get()))
+            while (fgets(buffer.data(), static_cast<int>(bufferSize), file.get()))
             {
                 result += buffer.data();
             }
