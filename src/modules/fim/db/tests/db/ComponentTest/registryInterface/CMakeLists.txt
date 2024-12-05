@@ -58,7 +58,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         ws2_32
         ssl
         crypt32
-        -static-libgcc -static-libstdc++
+        -static-libgcc
     )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
