@@ -1,4 +1,4 @@
-#include <iostream>
+#include <moduleManager.hpp>
 
 #ifdef ENABLE_INVENTORY
 #include <inventory.hpp>
@@ -8,8 +8,6 @@
 #include <logcollector.hpp>
 using logcollector::Logcollector;
 #endif
-
-#include <moduleManager.hpp>
 
 void ModuleManager::AddModules() {
 
@@ -35,8 +33,10 @@ std::shared_ptr<ModuleWrapper> ModuleManager::GetModule(const std::string & name
 }
 
 void ModuleManager::Start() {
-    for (const auto &[_, module] : m_modules) {
-        m_createTask([module]() { module->Start(); });
+    m_taskManager.Start(m_modules.size());
+    for (const auto &[_, module] : m_modules)
+    {
+        m_taskManager.EnqueueTask([module]() { module->Start(); }, module->Name());
     }
 }
 
@@ -50,4 +50,5 @@ void ModuleManager::Stop() {
     for (const auto &[_, module] : m_modules) {
         module->Stop();
     }
+    m_taskManager.Stop();
 }

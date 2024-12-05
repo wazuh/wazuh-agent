@@ -29,7 +29,6 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
           { return m_configurationParser->GetConfig<T>(std::move(table), std::move(key)); })
     , m_moduleManager([this](Message message) -> int { return m_messageQueue->push(std::move(message)); },
                       m_configurationParser,
-                      [this](std::function<void()> task) { m_taskManager.EnqueueTask(std::move(task), "Module"); },
                       m_agentInfo.GetUUID())
     , m_commandHandler(m_dataPath)
 {
