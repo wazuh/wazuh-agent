@@ -22,7 +22,7 @@ namespace
 namespace configuration
 {
     ConfigurationParser::ConfigurationParser(std::filesystem::path configFilePath)
-        : m_config_file_path(std::move(configFilePath))
+        : m_configFilePath(std::move(configFilePath))
     {
         LoadLocalConfig();
     }
@@ -47,15 +47,15 @@ namespace configuration
 
     void ConfigurationParser::LoadLocalConfig()
     {
-        LogDebug("Loading local config file: {}.", m_config_file_path.string());
+        LogDebug("Loading local config file: {}.", m_configFilePath.string());
 
         try
         {
-            if (!isValidYamlFile(m_config_file_path))
+            if (!isValidYamlFile(m_configFilePath))
             {
                 throw std::runtime_error("The file does not contain a valid YAML structure.");
             }
-            m_config = YAML::LoadFile(m_config_file_path.string());
+            m_config = YAML::LoadFile(m_configFilePath.string());
         }
         catch (const std::exception& e)
         {
@@ -169,7 +169,6 @@ namespace configuration
     void ConfigurationParser::SetGetGroupIdsFunction(std::function<std::vector<std::string>()> getGroupIdsFunction)
     {
         m_getGroups = std::move(getGroupIdsFunction);
-        LoadSharedConfig();
     }
 
     void ConfigurationParser::ReloadConfiguration()

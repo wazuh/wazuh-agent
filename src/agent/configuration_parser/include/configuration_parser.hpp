@@ -25,7 +25,7 @@ namespace configuration
         YAML::Node m_config;
 
         /// @brief Holds the location of the configuration file.
-        std::filesystem::path m_config_file_path;
+        std::filesystem::path m_configFilePath;
 
         /// @brief Converts a time unit represented as a string to an time_t value (ms).
         /// @param option A string representing a time unit.
@@ -37,19 +37,11 @@ namespace configuration
         /// seconds.
         std::time_t ParseTimeUnit(const std::string& option) const;
 
-        /// @brief The groups information
+        /// @brief Function to get the groups information
         std::function<std::vector<std::string>()> m_getGroups;
 
         /// @brief Method for loading the configuration from local file
         void LoadLocalConfig();
-
-        /// @brief Loads shared configuration files for specific groups and merges them into the main configuration.
-        ///
-        /// This function attempts to load configuration files for each group from a shared directory.
-        /// The loaded configurations are merged into the main configuration.
-        ///
-        /// @throws YAML::Exception If there is an error while loading or parsing a YAML file.
-        void LoadSharedConfig();
 
     public:
         /// @brief Default constructor. Loads configuration from a default file path.
@@ -132,5 +124,13 @@ namespace configuration
 
         /// @brief Method for loading the new available configuration
         void ReloadConfiguration();
+
+        /// @brief Loads shared configuration files for specific groups and merges them into the main configuration.
+        ///
+        /// This function attempts to load configuration files for each group from a shared directory.
+        /// The loaded configurations are merged into the main configuration.
+        ///
+        /// @throws YAML::Exception If there is an error while loading or parsing a YAML file.
+        void LoadSharedConfig();
     };
 } // namespace configuration
