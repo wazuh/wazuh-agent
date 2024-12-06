@@ -114,6 +114,7 @@ void Agent::Run()
     m_taskManager.EnqueueTask(m_commandHandler.CommandsProcessingTask<module_command::CommandEntry>(
         [this]() { return GetCommandFromQueue(m_messageQueue); },
         [this]() { return PopCommandFromQueue(m_messageQueue); },
+        [this](const module_command::CommandEntry& cmd) { return ReportCommandResult(cmd, m_messageQueue); },
         [this](module_command::CommandEntry& cmd)
         {
             if (cmd.Module == "CentralizedConfiguration")

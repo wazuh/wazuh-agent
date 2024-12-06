@@ -60,6 +60,12 @@ namespace command_store
         /// @return An optional containing the command if found, or nullopt if not
         std::optional<module_command::CommandEntry> GetCommand(const std::string& id);
 
+        /// @brief Retrieves a vector of commands from the database by status
+        /// @param status The status of the commands to retrieve
+        /// @return An optional containing the commands if found, or nullopt if not
+        std::optional<std::vector<module_command::CommandEntry>>
+        GetCommandByStatus(const module_command::Status& status);
+
         /// @brief Updates an existing command in the database
         /// @param cmd The updated command data
         /// @return True if successful, false otherwise

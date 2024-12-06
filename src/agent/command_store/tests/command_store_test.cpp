@@ -201,6 +201,43 @@ TEST_F(CommandStoreTest, GetCommandTest)
     }
 }
 
+TEST_F(CommandStoreTest, GetCommandByStatusTest)
+{
+    m_commandStore->Clear();
+
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+    module_command::CommandEntry cmd1(
+        TESTID_5, "Module1", "{CommandTextHERE}", {"Parameter1"}, "Result1", module_command::Status::SUCCESS);
+    m_commandStore->StoreCommand(cmd1);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+    module_command::CommandEntry cmd2(
+        TESTID_9, "Module2", "TestValue9", {"Parameter2"}, "Result2", module_command::Status::IN_PROGRESS);
+    m_commandStore->StoreCommand(cmd2);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+    module_command::CommandEntry cmd3(
+        TESTID_11, "Module3", "{CommandTextHERE}", {"Parameter3"}, "Result3", module_command::Status::SUCCESS);
+    m_commandStore->StoreCommand(cmd3);
+    ASSERT_EQ(m_commandStore->GetCount(), 3);
+
+    auto retValue = m_commandStore->GetCommandByStatus(module_command::Status::IN_PROGRESS);
+    if (retValue != std::nullopt && retValue.has_value())
+    {
+        for (auto& cmd : *retValue)
+        {
+            ASSERT_EQ(cmd.ExecutionResult.ErrorCode, module_command::Status::IN_PROGRESS);
+        }
+    }
+
+    retValue = m_commandStore->GetCommandByStatus(module_command::Status::SUCCESS);
+    if (retValue != std::nullopt && retValue.has_value())
+    {
+        for (auto& cmd : *retValue)
+        {
+            ASSERT_EQ(cmd.ExecutionResult.ErrorCode, module_command::Status::SUCCESS);
+        }
+    }
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
