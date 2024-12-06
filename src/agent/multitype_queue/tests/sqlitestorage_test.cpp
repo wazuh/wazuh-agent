@@ -217,17 +217,22 @@ TEST_F(SQLiteStorageTest, MessagesSizes)
 TEST_F(SQLiteStorageTest, GetMessagesBySize)
 {
     auto messages = nlohmann::json::array();
-    messages.push_back({{"key", "value1"}});
+    auto message1 = R"({{"key","value1"}})";
+    messages.push_back(message1);
     messages.push_back({{"key", "value2"}});
     auto val = storage->Store(messages, tableName);
     EXPECT_EQ(val, 2);
 
-    //Stored: '{"data":{"key":"value1"},"metadata":"","moduleName":"","moduleType":""}' size=72
     auto storedSizes = storage->GetElementsStoredSize(tableName);
-    EXPECT_EQ(storedSizes, 32);
+    EXPECT_EQ(storedSizes, 40);
 
+    // Get all the messages by size
     auto retrievedMessages = storage->RetrieveBySize(static_cast<size_t>(storedSizes), tableName);
     EXPECT_EQ(retrievedMessages.size(), 2);
+
+    // Get 1 message by it size
+    retrievedMessages = storage->RetrieveBySize(std::strlen(message1), tableName);
+    EXPECT_EQ(retrievedMessages.size(), 1);
 }
 
 class SQLiteStorageMultithreadedTest : public ::testing::Test

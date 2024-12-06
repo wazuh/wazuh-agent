@@ -161,7 +161,7 @@ Message MultiTypeQueue::getNext(MessageType type, const std::string moduleName, 
 }
 
 boost::asio::awaitable<std::vector<Message>> MultiTypeQueue::getNextNAwaitable(MessageType type,
-                                                                               int messageQuantity,
+                                                                               std::variant<const int, const size_t> messageQuantity,
                                                                                const std::string moduleName,
                                                                                const std::string moduleType)
 {
@@ -185,15 +185,29 @@ boost::asio::awaitable<std::vector<Message>> MultiTypeQueue::getNextNAwaitable(M
 }
 
 std::vector<Message> MultiTypeQueue::getNextN(MessageType type,
-                                              int messageQuantity,
+                                              std::variant<const int, const size_t> messageQuantity,
                                               const std::string moduleName,
                                               const std::string moduleType)
 {
     std::vector<Message> result;
     if (m_mapMessageTypeName.contains(type))
     {
-        auto arrayData =
-            m_persistenceDest->RetrieveMultiple(messageQuantity, m_mapMessageTypeName.at(type), moduleName, moduleType);
+        nlohmann::json arrayData;
+        if (std::holds_alternative<const int>(messageQuantity))
+        {
+            arrayData = m_persistenceDest->RetrieveMultiple(
+                std::get<const int>(messageQuantity), m_mapMessageTypeName.at(type), moduleName, moduleType);
+        }
+        else if (std::holds_alternative<const size_t>(messageQuantity))
+        {
+            arrayData = m_persistenceDest->RetrieveBySize(
+                std::get<const size_t>(messageQuantity), m_mapMessageTypeName.at(type), moduleName, moduleType);
+        }
+        else
+        {
+            LogError("Unexpected variant type on messageQuantity");
+        }
+
         for (auto singleJson : arrayData)
         {
             result.emplace_back(

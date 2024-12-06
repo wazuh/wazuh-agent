@@ -383,12 +383,13 @@ nlohmann::json SQLiteStorage::ProcessRequest(SQLite::Statement& sqlStatementQuer
                 messages.push_back(outputJson);
                 if (maxSize)
                 {
-                    size_t messageSize = outputJson.dump().size();
+                    size_t messageSize = moduleNameString.size() + moduleTypeString.size() + metadataString.size() + dataString.size();
                     LogError("/*/*/*/*/ Size: {} - '{}'.", messageSize, outputJson.dump());
-                    if (sizeAccum + messageSize > maxSize)
+                    if (sizeAccum + messageSize >= maxSize)
                     {
                         break;
                     }
+                    sizeAccum += messageSize;
                 }
             }
         }

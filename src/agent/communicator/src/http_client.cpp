@@ -98,11 +98,11 @@ namespace http_client
     boost::asio::awaitable<void> HttpClient::Co_PerformHttpRequest(
         std::shared_ptr<std::string> token,
         HttpRequestParams reqParams,
-        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const int)> messageGetter,
+        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> messageGetter,
         std::function<void()> onUnauthorized,
         std::time_t connectionRetry,
         std::time_t batchInterval,
-        int batchSize,
+        size_t batchSize,
         std::function<void(const int, const std::string&)> onSuccess,
         std::function<bool()> loopRequestCondition)
     {
@@ -162,10 +162,27 @@ namespace http_client
 
                 while (loopRequestCondition != nullptr && loopRequestCondition())
                 {
+                    // //get max size
+                    // //difference between max available and pursuited
+                    // auto difference = max size - batchsize;
+                    // //default qtty of item to request
+                    // auto DEFAULT_REQUEST_QTTY = 10
+                    // //If max size on DB is near what we're looking for, then send it
+                    // if(difference < 0 || abs(difference) <= percetage)
+                    // {
+                    //     // pedir max items
+                    // }
+                    // else if(difference > 0)
+                    // {
+                    //     //we're storing qtty above looked for
+                    //     //calcular proporcion
+                    // }
+                    // const auto messages = co_await messageGetter(itemsToFetch);
                     const auto messages = co_await messageGetter(batchSize);
                     messagesCount = std::get<0>(messages);
 
-                    if (messagesCount >= batchSize || batchTimeoutTimer.expiry() <= std::chrono::steady_clock::now())
+                    // TODO: check first condition
+                    if (messagesCount >= 0 || batchTimeoutTimer.expiry() <= std::chrono::steady_clock::now())
                     {
                         LogTrace("Messages count: {}", messagesCount);
                         reqParams.Body = std::get<1>(messages);
