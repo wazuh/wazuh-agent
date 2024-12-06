@@ -60,18 +60,6 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
 
     m_taskManager.Start(
         m_configurationParser->GetConfig<size_t>("agent", "thread_count").value_or(config::DEFAULT_THREAD_COUNT));
-
-    m_commandHandler.CleanUpInProgressCommands(
-        [this](const auto& inProgressCommands)
-        {
-            if (inProgressCommands != std::nullopt)
-            {
-                for (auto& cmd : *inProgressCommands)
-                {
-                    ReportCommandResult(cmd, m_messageQueue);
-                }
-            }
-        });
 }
 
 Agent::~Agent()

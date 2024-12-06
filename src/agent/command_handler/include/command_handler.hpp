@@ -49,6 +49,8 @@ namespace command_handler
             const auto executor = co_await boost::asio::this_coro::executor;
             std::unique_ptr<boost::asio::steady_timer> expTimer = std::make_unique<boost::asio::steady_timer>(executor);
 
+            CleanUpInProgressCommands(ReportCommandResult);
+
             while (m_keepRunning.load())
             {
                 auto cmd = GetCommandFromQueue();
@@ -87,8 +89,20 @@ namespace command_handler
             }
         }
 
-        void CleanUpInProgressCommands(
-            std::function<void(const std::optional<std::vector<module_command::CommandEntry>>&)> callback)
+        /// @brief Stops the command handler
+        void Stop();
+
+    private:
+        /// @brief Clean up commands that are in progress when the agent is stopped
+        ///
+        /// This function will set the status of all commands that are currently in
+        /// progress to FAILED and update the command store. It will also call the
+        /// ReportCommandResult function for each command to report the result.
+        ///
+        /// @tparam T The type of the command
+        /// @param ReportCommandResult The function to report the command result
+        template<typename T>
+        void CleanUpInProgressCommands(std::function<void(T&)> ReportCommandResult)
         {
             auto cmds = m_commandStore.GetCommandByStatus(module_command::Status::IN_PROGRESS);
 
@@ -98,17 +112,12 @@ namespace command_handler
                 {
                     cmd.ExecutionResult.ErrorCode = module_command::Status::FAILURE;
                     cmd.ExecutionResult.Message = "Agent stopped during execution";
+                    ReportCommandResult(cmd);
                     m_commandStore.UpdateCommand(cmd);
                 }
             }
-
-            callback(cmds);
         }
 
-        /// @brief Stops the command handler
-        void Stop();
-
-    private:
         /// @brief Indicates whether the command handler is running or not
         std::atomic<bool> m_keepRunning = true;
 
