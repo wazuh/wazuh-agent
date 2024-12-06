@@ -17,9 +17,9 @@ add_library(Inventory
     src/inventory.cpp
     src/inventoryImp.cpp
     src/inventoryNormalizer.cpp)
-
+    
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    target_compile_options(Inventory PRIVATE /WX- /w)
+    target_compile_options(Inventory PRIVATE /WX-)
 endif()
 
 target_include_directories(Inventory PUBLIC
@@ -29,14 +29,14 @@ target_include_directories(Inventory PUBLIC
     ${COMMON_FOLDER}/data_provider/include
     ${COMMON_FOLDER}/dbsync/include
     ${COMMON_FOLDER}/error_messages/include
-    ${COMMON_FOLDER}/file_op/include
     ${COMMON_FOLDER}/hashHelper/include
     ${COMMON_FOLDER}/privsep_op/include
     ${COMMON_FOLDER}/pthreads_op/include
     ${COMMON_FOLDER}/stringHelper/include
     ${COMMON_FOLDER}/time_op/include
     ${COMMON_FOLDER}/timeHelper/include
-    ${COMMON_FOLDER}/utils)
+    ${COMMON_FOLDER}/utils
+    ${COMMON_FOLDER}/pal/include)
 
 target_link_libraries(Inventory
     PUBLIC

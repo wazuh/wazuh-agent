@@ -903,6 +903,7 @@ void SQLiteDBEngine::deleteTempTable(const std::string& table)
     // LCOV_EXCL_START
     catch (const std::exception& ex)
     {
+        (void)ex;
     }
 
     // LCOV_EXCL_STOP
@@ -1086,7 +1087,7 @@ bool SQLiteDBEngine::getPKListLeftOnly(const std::string& t1,
                 if (tableFields.end() != it)
                 {
                     getTableData(stmt,
-                                 index,
+                                static_cast<int32_t>(index),
                                  std::get<TableHeader::Type>(*it),
                                  std::get<TableHeader::Name>(*it),
                                  registerFields);

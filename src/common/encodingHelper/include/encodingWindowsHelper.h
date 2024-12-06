@@ -20,10 +20,17 @@
 #include <string>
 #include <memory>
 
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
 #pragma GCC diagnostic ignored "-Wreturn-type"
 #pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4505)
+#endif
 
 namespace Utils
 {
@@ -75,7 +82,13 @@ namespace Utils
     };
 }
 
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #endif // _ENCODING_WINDOWS_HELPER_H
 
