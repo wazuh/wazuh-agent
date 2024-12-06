@@ -69,7 +69,7 @@ TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
            std::function<void()>,
            [[maybe_unused]] std::time_t connectionRetry,
            [[maybe_unused]] std::time_t batchInterval,
-           [[maybe_unused]] int batchSize,
+           [[maybe_unused]] size_t batchSize,
            std::function<void(const int, const std::string&)> pOnSuccess,
            [[maybe_unused]] std::function<bool()> loopRequestCondition) -> boost::asio::awaitable<void>
     {
@@ -119,7 +119,7 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
            [[maybe_unused]] std::function<void()> onUnauthorized,
            [[maybe_unused]] std::time_t connectionRetry,
            [[maybe_unused]] std::time_t batchInterval,
-           [[maybe_unused]] int batchSize,
+           [[maybe_unused]] size_t batchSize,
            [[maybe_unused]] std::function<void(const int, const std::string&)> onSuccess,
            [[maybe_unused]] std::function<bool()> loopCondition) -> boost::asio::awaitable<void>
     {
@@ -180,7 +180,7 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
                          [[maybe_unused]] std::function<void()> onUnauthorized,
                          [[maybe_unused]] std::time_t connectionRetry,
                          [[maybe_unused]] std::time_t batchInterval,
-                         [[maybe_unused]] int batchSize,
+                         [[maybe_unused]] size_t batchSize,
                          [[maybe_unused]] std::function<void(const int, const std::string&)> onSuccess,
                          [[maybe_unused]] std::function<bool()> loopCondition) -> boost::asio::awaitable<void>
     {

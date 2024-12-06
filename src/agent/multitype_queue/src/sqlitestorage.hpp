@@ -127,7 +127,7 @@ public:
     nlohmann::json RetrieveBySize(size_t n,
                                   const std::string& tableName,
                                   const std::string& moduleName = "",
-                                  [[maybe_unused]] const std::string& moduleType = "");
+                                  const std::string& moduleType = "") override;
 
 private:
     /**
