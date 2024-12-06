@@ -12,7 +12,7 @@ int main(int argc, const char* argv[])
 {
     auto timedMainLoop { false };
     auto sleepTime { DEFAULT_SLEEP_TIME };
-    const configuration::ConfigurationParser configurationParser;
+    std::shared_ptr<const configuration::ConfigurationParser> configurationParser;
 
     if (2 == argc)
     {
@@ -27,6 +27,7 @@ int main(int argc, const char* argv[])
         return -1;
     }
 
+    configurationParser = std::make_shared<configuration::ConfigurationParser>();
     Inventory::Instance().Setup(configurationParser);
 
     try

@@ -31,7 +31,7 @@ TEST(Logcollector, SetupFileReader) {
     std::shared_ptr<IReader> capturedReader1;
     std::shared_ptr<IReader> capturedReader2;
     auto logcollector = LogcollectorMock();
-    auto config = ConfigurationParser(std::string(CONFIG_RAW));
+    auto config = std::make_shared<configuration::ConfigurationParser>(std::string(CONFIG_RAW));
 
     EXPECT_CALL(logcollector, AddReader(::testing::_)).Times(2)
         .WillOnce(::testing::SaveArg<0>(&capturedReader1))

@@ -198,7 +198,7 @@ void AgentInfoPersistance::SetUUID(const std::string& uuid)
     SetAgentInfoValue("uuid", uuid);
 }
 
-void AgentInfoPersistance::SetGroups(const std::vector<std::string>& groupList)
+bool AgentInfoPersistance::SetGroups(const std::vector<std::string>& groupList)
 {
     auto transaction = m_db->BeginTransaction();
 
@@ -218,7 +218,9 @@ void AgentInfoPersistance::SetGroups(const std::vector<std::string>& groupList)
     {
         LogError("Error inserting group: {}.", e.what());
         m_db->RollbackTransaction(transaction);
+        return false;
     }
+    return true;
 }
 
 void AgentInfoPersistance::ResetToDefault()

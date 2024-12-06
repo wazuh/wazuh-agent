@@ -1,1 +1,7 @@
 {"commands":[{"id":"id","status":"sent","info":"string","args":["module","command",["arg1"]],"agent":{"id":"agentID"}}]}
+
+# CentralizedConfiguration set-group
+{"commands":[{"id":"id1234","status":"sent","info":"string","args":["CentralizedConfiguration","set-group",["validYaml", "invalidYaml"]],"agent":{"id":"agentID"}}]}
+
+# CentralizedConfiguration update-group
+{"commands":[{"id":"id123456","status":"sent","info":"string","args":["CentralizedConfiguration","update-group"],"agent":{"id":"agentID"}}]}

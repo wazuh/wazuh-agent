@@ -11,10 +11,11 @@
 #include <memory>
 
 Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> signalHandler)
-    : m_configurationParser(configFilePath.empty()
-                                ? configuration::ConfigurationParser()
-                                : configuration::ConfigurationParser(std::filesystem::path(configFilePath)))
-    , m_dataPath(m_configurationParser.GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH))
+    : m_configurationParser(configFilePath.empty() ? std::make_shared<configuration::ConfigurationParser>()
+                                                   : std::make_shared<configuration::ConfigurationParser>(
+                                                         std::filesystem::path(configFilePath)))
+    , m_dataPath(
+          m_configurationParser->GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH))
     , m_messageQueue(std::make_shared<MultiTypeQueue>(m_dataPath))
     , m_signalHandler(std::move(signalHandler))
     , m_agentInfo(
@@ -25,7 +26,7 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
           m_agentInfo.GetKey(),
           [this]() { return m_agentInfo.GetHeaderInfo(); },
           [this]<typename T>(std::string table, std::string key) -> std::optional<T>
-          { return m_configurationParser.GetConfig<T>(std::move(table), std::move(key)); })
+          { return m_configurationParser->GetConfig<T>(std::move(table), std::move(key)); })
     , m_moduleManager([this](Message message) -> int { return m_messageQueue->push(std::move(message)); },
                       m_configurationParser,
                       [this](std::function<void()> task) { m_taskManager.EnqueueTask(std::move(task)); })
@@ -37,8 +38,14 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
         throw std::runtime_error("The agent is not registered");
     }
 
-    m_centralizedConfiguration.SetGroupIdFunction([this](const std::vector<std::string>& groups)
-                                                  { return m_agentInfo.SetGroups(groups); });
+    m_configurationParser->SetGetGroupIdsFunction([this]() { return m_agentInfo.GetGroups(); });
+
+    m_centralizedConfiguration.SetGroupIdFunction(
+        [this](const std::vector<std::string>& groups)
+        {
+            m_agentInfo.SetGroups(groups);
+            return m_agentInfo.SaveGroups();
+        });
 
     m_centralizedConfiguration.GetGroupIdFunction([this]() { return m_agentInfo.GetGroups(); });
 
@@ -46,13 +53,27 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
         [this](const std::string& groupId, const std::string& destinationPath)
         { return m_communicator.GetGroupConfigurationFromManager(groupId, destinationPath); });
 
+    m_centralizedConfiguration.ValidateFileFunction([this](const std::filesystem::path& fileToValidate)
+                                                    { return m_configurationParser->isValidYamlFile(fileToValidate); });
+
+    m_centralizedConfiguration.ReloadModulesFunction([this]() { ReloadModules(); });
+
     m_taskManager.Start(
-        m_configurationParser.GetConfig<size_t>("agent", "thread_count").value_or(config::DEFAULT_THREAD_COUNT));
+        m_configurationParser->GetConfig<size_t>("agent", "thread_count").value_or(config::DEFAULT_THREAD_COUNT));
 }
 
 Agent::~Agent()
 {
     m_taskManager.Stop();
+}
+
+void Agent::ReloadModules()
+{
+    LogInfo("Reloading Modules");
+    m_configurationParser->ReloadConfiguration();
+    m_moduleManager.Stop();
+    m_moduleManager.Setup();
+    m_taskManager.EnqueueTask([this]() { m_moduleManager.Start(); });
 }
 
 void Agent::Run()

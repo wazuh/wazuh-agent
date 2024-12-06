@@ -6,7 +6,10 @@
 
 #include <nlohmann/json.hpp>
 
+#include <filesystem>
+#include <filesystem_wrapper.hpp>
 #include <functional>
+#include <ifilesystem.hpp>
 #include <string>
 #include <vector>
 
@@ -16,10 +19,20 @@ namespace centralized_configuration
     class CentralizedConfiguration
     {
     public:
-        using SetGroupIdFunctionType = std::function<void(const std::vector<std::string>& groupList)>;
+        using SetGroupIdFunctionType = std::function<bool(const std::vector<std::string>& groupList)>;
         using GetGroupIdFunctionType = std::function<std::vector<std::string>()>;
         using DownloadGroupFilesFunctionType =
             std::function<bool(const std::string& group, const std::string& dstFilePath)>;
+        using ValidateFileFunctionType = std::function<bool(const std::filesystem::path& configFile)>;
+        using ReloadModulesFunctionType = std::function<void()>;
+
+        /// @brief Constructor that allows injecting a file system wrapper.
+        /// @param fileSystemWrapper An optional filesystem wrapper. If nullptr, it will use FileSystemWrapper
+        explicit CentralizedConfiguration(std::shared_ptr<IFileSystem> fileSystemWrapper = nullptr)
+            : m_fileSystemWrapper(fileSystemWrapper ? fileSystemWrapper
+                                                    : std::make_shared<filesystem_wrapper::FileSystemWrapper>())
+        {
+        }
 
         /// @brief Executes a command for the centralized configuration system.
         /// @param command A string containing a JSON command to execute.
@@ -45,7 +58,20 @@ namespace centralized_configuration
         /// @param downloadGroupFilesFunction A function to download files for a given group ID.
         void SetDownloadGroupFilesFunction(DownloadGroupFilesFunctionType downloadGroupFilesFunction);
 
+        /// @brief Sets the function to validate a file.
+        /// @details The "set-group" and "update-group" commands requires such function to validate files
+        /// @param validateFileFunction A function to validate a file.
+        void ValidateFileFunction(ValidateFileFunctionType validateFileFunction);
+
+        /// @brief Sets the function to reload modules.
+        /// @details The "set-group" and "update-group" commands requires such function to reload modules
+        /// @param validateFileFunction A function to reload the modules.
+        void ReloadModulesFunction(ReloadModulesFunctionType reloadModulesFunction);
+
     private:
+        /// @brief Member to interact with the file system.
+        std::shared_ptr<IFileSystem> m_fileSystemWrapper;
+
         /// @brief Function to set group IDs.
         SetGroupIdFunctionType m_setGroupIdFunction;
 
@@ -54,5 +80,11 @@ namespace centralized_configuration
 
         /// @brief Function to download group configuration files.
         DownloadGroupFilesFunctionType m_downloadGroupFilesFunction;
+
+        /// @brief Function to validate group configuration files.
+        ValidateFileFunctionType m_validateFileFunction;
+
+        /// @brief Function to reload modules.
+        ReloadModulesFunctionType m_reloadModulesFunction;
     };
 } // namespace centralized_configuration

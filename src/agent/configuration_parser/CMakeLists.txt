@@ -10,9 +10,9 @@ set_common_settings()
 
 find_package(yaml-cpp CONFIG REQUIRED)
 
-add_library(ConfigurationParser src/configuration_parser.cpp)
+add_library(ConfigurationParser src/configuration_parser.cpp src/configuration_parser_utils.cpp)
 target_include_directories(ConfigurationParser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(ConfigurationParser PUBLIC yaml-cpp::yaml-cpp Logger)
+target_link_libraries(ConfigurationParser PUBLIC yaml-cpp::yaml-cpp Logger PRIVATE Config)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(ConfigurationParser)

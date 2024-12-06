@@ -12,7 +12,7 @@
 class ModuleManager {
 public:
     ModuleManager(const std::function<int(Message)>& pushMessage,
-                configuration::ConfigurationParser configurationParser,
+                std::shared_ptr<configuration::ConfigurationParser> configurationParser,
                 const std::function<void(std::function<void()>)>& createTask)
         : m_pushMessage(pushMessage)
         , m_configurationParser(std::move(configurationParser))
@@ -31,7 +31,7 @@ public:
 
         auto wrapper = std::make_shared<ModuleWrapper>(ModuleWrapper{
             .Start = [&module]() { module.Start(); },
-            .Setup = [&module](const configuration::ConfigurationParser& configurationParser) { module.Setup(configurationParser); },
+            .Setup = [&module](std::shared_ptr<const configuration::ConfigurationParser> configurationParser) { module.Setup(configurationParser); },
             .Stop = [&module]() { module.Stop(); },
             .ExecuteCommand = [&module](std::string command, nlohmann::json parameters) -> Co_CommandExecutionResult
             {
@@ -52,6 +52,6 @@ public:
 private:
     std::map<std::string, std::shared_ptr<ModuleWrapper>> m_modules;
     std::function<int(Message)> m_pushMessage;
-    configuration::ConfigurationParser m_configurationParser;
+    std::shared_ptr<configuration::ConfigurationParser> m_configurationParser;
     std::function<void(std::function<void()>)> m_createTask;
 };

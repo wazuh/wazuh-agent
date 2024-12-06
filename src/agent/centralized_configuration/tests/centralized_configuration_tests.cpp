@@ -1,3 +1,4 @@
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include <centralized_configuration.hpp>
@@ -13,7 +14,11 @@
 #include <string>
 #include <vector>
 
+#include <filesystem>
+#include <ifilesystem.hpp>
+
 using centralized_configuration::CentralizedConfiguration;
+using namespace testing;
 
 namespace
 {
@@ -21,14 +26,28 @@ namespace
     boost::asio::awaitable<void> TestExecuteCommand(CentralizedConfiguration& centralizedConfiguration,
                                                     const std::string& command,
                                                     const nlohmann::json& parameters,
-                                                    module_command::Status expectedErrorCode)
+                                                    module_command::Status expectedErrorCode,
+                                                    const std::string& expectedMessage)
     {
         const auto commandResult = co_await centralizedConfiguration.ExecuteCommand(command, parameters);
         EXPECT_EQ(commandResult.ErrorCode, expectedErrorCode);
+        EXPECT_EQ(commandResult.Message, expectedMessage);
     }
 
     // NOLINTEND(cppcoreguidelines-avoid-reference-coroutine-parameters)
 } // namespace
+
+class MockFileSystem : public IFileSystem
+{
+public:
+    MOCK_METHOD(bool, exists, (const std::filesystem::path& path), (const, override));
+    MOCK_METHOD(bool, is_directory, (const std::filesystem::path& path), (const, override));
+    MOCK_METHOD(std::uintmax_t, remove_all, (const std::filesystem::path& path), (override));
+    MOCK_METHOD(std::filesystem::path, temp_directory_path, (), (const, override));
+    MOCK_METHOD(bool, create_directories, (const std::filesystem::path& path), (override));
+    MOCK_METHOD(void, rename, (const std::filesystem::path& from, const std::filesystem::path& to), (override));
+    MOCK_METHOD(bool, remove, (const std::filesystem::path& path), (override));
+};
 
 TEST(CentralizedConfiguration, Constructor)
 {
@@ -44,8 +63,11 @@ TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnUnrecognizedCommand
         []() -> boost::asio::awaitable<void>
         {
             CentralizedConfiguration centralizedConfiguration;
-            co_await TestExecuteCommand(
-                centralizedConfiguration, "unknown-command", {}, module_command::Status::FAILURE);
+            co_await TestExecuteCommand(centralizedConfiguration,
+                                        "unknown-command",
+                                        {},
+                                        module_command::Status::FAILURE,
+                                        "CentralizedConfiguration command not recognized");
         }(),
         boost::asio::detached);
 
@@ -61,7 +83,16 @@ TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnEmptyList)
         []() -> boost::asio::awaitable<void>
         {
             CentralizedConfiguration centralizedConfiguration;
-            co_await TestExecuteCommand(centralizedConfiguration, "set-group", {}, module_command::Status::FAILURE);
+            centralizedConfiguration.SetGroupIdFunction([](const std::vector<std::string>&) { return true; });
+            centralizedConfiguration.SetDownloadGroupFilesFunction([](const std::string&, const std::string&)
+                                                                   { return true; });
+            centralizedConfiguration.ValidateFileFunction([](const std::filesystem::path&) { return true; });
+            centralizedConfiguration.ReloadModulesFunction([]() {});
+            co_await TestExecuteCommand(centralizedConfiguration,
+                                        "set-group",
+                                        {},
+                                        module_command::Status::FAILURE,
+                                        "CentralizedConfiguration group set failed, no group list");
         }(),
         boost::asio::detached);
 
@@ -77,10 +108,18 @@ TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnParseParameters)
         []() -> boost::asio::awaitable<void>
         {
             CentralizedConfiguration centralizedConfiguration;
+            centralizedConfiguration.SetGroupIdFunction([](const std::vector<std::string>&) { return true; });
+            centralizedConfiguration.SetDownloadGroupFilesFunction([](const std::string&, const std::string&)
+                                                                   { return true; });
+            centralizedConfiguration.ValidateFileFunction([](const std::filesystem::path&) { return true; });
+            centralizedConfiguration.ReloadModulesFunction([]() {});
 
             const std::vector<std::string> parameterList = {true, "group2"};
-            co_await TestExecuteCommand(
-                centralizedConfiguration, "set-group", parameterList, module_command::Status::FAILURE);
+            co_await TestExecuteCommand(centralizedConfiguration,
+                                        "set-group",
+                                        parameterList,
+                                        module_command::Status::FAILURE,
+                                        "CentralizedConfiguration error while parsing parameters");
         }(),
         boost::asio::detached);
 
@@ -95,21 +134,44 @@ TEST(CentralizedConfiguration, ExecuteCommandHandlesRecognizedCommands)
         io_context,
         []() -> boost::asio::awaitable<void>
         {
-            CentralizedConfiguration centralizedConfiguration;
-            centralizedConfiguration.SetGroupIdFunction([](const std::vector<std::string>&) {});
+            auto mockFileSystem = std::make_shared<MockFileSystem>();
+
+            EXPECT_CALL(*mockFileSystem, exists(_)).WillRepeatedly(Return(false));
+            EXPECT_CALL(*mockFileSystem, is_directory(_)).WillRepeatedly(Return(true));
+            EXPECT_CALL(*mockFileSystem, remove_all(_)).WillRepeatedly(Return(0));
+            EXPECT_CALL(*mockFileSystem, temp_directory_path())
+                .WillRepeatedly(Return(std::filesystem::temp_directory_path()));
+            EXPECT_CALL(*mockFileSystem, create_directories(_)).WillRepeatedly(Return(true));
+            EXPECT_CALL(*mockFileSystem, remove(_)).WillRepeatedly(Return(true));
+            EXPECT_CALL(*mockFileSystem, rename(_, _)).WillRepeatedly(Return());
+
+            CentralizedConfiguration centralizedConfiguration(std::move(mockFileSystem));
+            centralizedConfiguration.SetGroupIdFunction([](const std::vector<std::string>&) { return true; });
             centralizedConfiguration.GetGroupIdFunction([]() { return std::vector<std::string> {"group1", "group2"}; });
             centralizedConfiguration.SetDownloadGroupFilesFunction([](const std::string&, const std::string&)
                                                                    { return true; });
+            centralizedConfiguration.ValidateFileFunction([](const std::filesystem::path&) { return true; });
+            centralizedConfiguration.ReloadModulesFunction([]() {});
 
             const nlohmann::json groupsList = nlohmann::json::parse(R"([["group1", "group2"]])");
 
-            co_await TestExecuteCommand(
-                centralizedConfiguration, "set-group", groupsList, module_command::Status::SUCCESS);
+            co_await TestExecuteCommand(centralizedConfiguration,
+                                        "set-group",
+                                        groupsList,
+                                        module_command::Status::SUCCESS,
+                                        "CentralizedConfiguration set-group done.");
 
-            co_await TestExecuteCommand(centralizedConfiguration, "update-group", {}, module_command::Status::SUCCESS);
+            co_await TestExecuteCommand(centralizedConfiguration,
+                                        "update-group",
+                                        {},
+                                        module_command::Status::SUCCESS,
+                                        "CentralizedConfiguration update-group done.");
 
-            co_await TestExecuteCommand(
-                centralizedConfiguration, "unknown-command", {}, module_command::Status::FAILURE);
+            co_await TestExecuteCommand(centralizedConfiguration,
+                                        "unknown-command",
+                                        {},
+                                        module_command::Status::FAILURE,
+                                        "CentralizedConfiguration command not recognized");
         }(),
         boost::asio::detached);
 
@@ -124,18 +186,30 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForS
         io_context,
         []() -> boost::asio::awaitable<void>
         {
-            CentralizedConfiguration centralizedConfiguration;
+            auto mockFileSystem = std::make_shared<MockFileSystem>();
+
+            EXPECT_CALL(*mockFileSystem, exists(_)).WillRepeatedly(Return(false));
+            EXPECT_CALL(*mockFileSystem, is_directory(_)).WillRepeatedly(Return(true));
+            EXPECT_CALL(*mockFileSystem, remove_all(_)).WillRepeatedly(Return(0));
+            EXPECT_CALL(*mockFileSystem, temp_directory_path())
+                .WillRepeatedly(Return(std::filesystem::temp_directory_path()));
+            EXPECT_CALL(*mockFileSystem, create_directories(_)).WillRepeatedly(Return(true));
+            EXPECT_CALL(*mockFileSystem, remove(_)).WillRepeatedly(Return(true));
+            EXPECT_CALL(*mockFileSystem, rename(_, _)).WillRepeatedly(Return());
+
+            CentralizedConfiguration centralizedConfiguration(std::move(mockFileSystem));
 
             const nlohmann::json groupsList = nlohmann::json::parse(R"([["group1", "group2"]])");
-
-            co_await TestExecuteCommand(
-                centralizedConfiguration, "set-group", groupsList, module_command::Status::FAILURE);
 
             bool wasSetGroupIdFunctionCalled = false;
             bool wasDownloadGroupFilesFunctionCalled = false;
 
-            centralizedConfiguration.SetGroupIdFunction([&wasSetGroupIdFunctionCalled](const std::vector<std::string>&)
-                                                        { wasSetGroupIdFunctionCalled = true; });
+            centralizedConfiguration.SetGroupIdFunction(
+                [&wasSetGroupIdFunctionCalled](const std::vector<std::string>&)
+                {
+                    wasSetGroupIdFunctionCalled = true;
+                    return true;
+                });
 
             centralizedConfiguration.SetDownloadGroupFilesFunction(
                 [&wasDownloadGroupFilesFunctionCalled](const std::string&, const std::string&)
@@ -144,11 +218,17 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForS
                     return wasDownloadGroupFilesFunctionCalled;
                 });
 
+            centralizedConfiguration.ValidateFileFunction([](const std::filesystem::path&) { return true; });
+            centralizedConfiguration.ReloadModulesFunction([]() {});
+
             EXPECT_FALSE(wasSetGroupIdFunctionCalled);
             EXPECT_FALSE(wasDownloadGroupFilesFunctionCalled);
 
-            co_await TestExecuteCommand(
-                centralizedConfiguration, "set-group", groupsList, module_command::Status::SUCCESS);
+            co_await TestExecuteCommand(centralizedConfiguration,
+                                        "set-group",
+                                        groupsList,
+                                        module_command::Status::SUCCESS,
+                                        "CentralizedConfiguration set-group done.");
 
             EXPECT_TRUE(wasSetGroupIdFunctionCalled);
             EXPECT_TRUE(wasDownloadGroupFilesFunctionCalled);
@@ -166,9 +246,18 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForU
         io_context,
         []() -> boost::asio::awaitable<void>
         {
-            CentralizedConfiguration centralizedConfiguration;
+            auto mockFileSystem = std::make_shared<MockFileSystem>();
 
-            co_await TestExecuteCommand(centralizedConfiguration, "update-group", {}, module_command::Status::FAILURE);
+            EXPECT_CALL(*mockFileSystem, exists(_)).WillRepeatedly(Return(false));
+            EXPECT_CALL(*mockFileSystem, is_directory(_)).WillRepeatedly(Return(true));
+            EXPECT_CALL(*mockFileSystem, remove_all(_)).WillRepeatedly(Return(0));
+            EXPECT_CALL(*mockFileSystem, temp_directory_path())
+                .WillRepeatedly(Return(std::filesystem::temp_directory_path()));
+            EXPECT_CALL(*mockFileSystem, create_directories(_)).WillRepeatedly(Return(true));
+            EXPECT_CALL(*mockFileSystem, remove(_)).WillRepeatedly(Return(true));
+            EXPECT_CALL(*mockFileSystem, rename(_, _)).WillRepeatedly(Return());
+
+            CentralizedConfiguration centralizedConfiguration(std::move(mockFileSystem));
 
             bool wasGetGroupIdFunctionCalled = false;
             bool wasDownloadGroupFilesFunctionCalled = false;
@@ -187,10 +276,17 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForU
                     return wasDownloadGroupFilesFunctionCalled;
                 });
 
+            centralizedConfiguration.ValidateFileFunction([](const std::filesystem::path&) { return true; });
+            centralizedConfiguration.ReloadModulesFunction([]() {});
+
             EXPECT_FALSE(wasGetGroupIdFunctionCalled);
             EXPECT_FALSE(wasDownloadGroupFilesFunctionCalled);
 
-            co_await TestExecuteCommand(centralizedConfiguration, "update-group", {}, module_command::Status::SUCCESS);
+            co_await TestExecuteCommand(centralizedConfiguration,
+                                        "update-group",
+                                        {},
+                                        module_command::Status::SUCCESS,
+                                        "CentralizedConfiguration update-group done.");
 
             EXPECT_TRUE(wasGetGroupIdFunctionCalled);
             EXPECT_TRUE(wasDownloadGroupFilesFunctionCalled);

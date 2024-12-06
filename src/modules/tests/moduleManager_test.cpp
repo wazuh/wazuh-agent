@@ -6,7 +6,7 @@
 class MockModule {
 public:
     MOCK_METHOD(void, Start, (), ());
-    MOCK_METHOD(void, Setup, (const configuration::ConfigurationParser&), ());
+    MOCK_METHOD(void, Setup, (std::shared_ptr<const configuration::ConfigurationParser>), ());
     MOCK_METHOD(void, Stop, (), ());
     MOCK_METHOD(boost::asio::awaitable<module_command::CommandExecutionResult>, ExecuteCommand, (const std::string&, const nlohmann::json&), ());
     MOCK_METHOD(std::string, Name, (), (const));
@@ -16,13 +16,14 @@ public:
 class ModuleManagerTest : public ::testing::Test {
 protected:
     std::function<int(Message)> pushMessage;
-    configuration::ConfigurationParser configurationParser;
+    std::shared_ptr<configuration::ConfigurationParser> configurationParser;
     std::function<void(std::function<void()>)> createTask;
     ModuleManager manager;
     MockModule mockModule;
 
     ModuleManagerTest()
         : pushMessage([](const Message&) { return 0; }),
+          configurationParser(std::make_shared<configuration::ConfigurationParser>()),
           createTask([](const std::function<void()>& task) { task(); }),
           manager(pushMessage, configurationParser, createTask)
     {}

@@ -16,7 +16,7 @@ public:
         );
     }
 
-    void SetupFileReader(const configuration::ConfigurationParser& configurationParser) {
+    void SetupFileReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
         Logcollector::SetupFileReader(configurationParser);
     }
 

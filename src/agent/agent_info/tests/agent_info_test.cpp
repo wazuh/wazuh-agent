@@ -114,6 +114,20 @@ TEST_F(AgentInfoTest, TestSetGroups)
     EXPECT_EQ(agentInfoReloaded.GetGroups(), oldGroups);
 }
 
+TEST_F(AgentInfoTest, TestSaveGroups)
+{
+    AgentInfo agentInfo(".");
+    const std::vector<std::string> oldGroups = agentInfo.GetGroups();
+    const std::vector<std::string> newGroups = {"t_group_1", "t_group_2"};
+
+    agentInfo.SetGroups(newGroups);
+    agentInfo.SaveGroups();
+    EXPECT_EQ(agentInfo.GetGroups(), newGroups);
+
+    const AgentInfo agentInfoReloaded(".");
+    EXPECT_EQ(agentInfoReloaded.GetGroups(), newGroups);
+}
+
 TEST_F(AgentInfoTest, TestLoadMetadataInfoNoSysInfo)
 {
     const AgentInfo agentInfo(".");

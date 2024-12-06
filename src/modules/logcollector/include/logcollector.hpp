@@ -23,7 +23,7 @@ public:
 
     /// @brief Configures the module
     /// @param configurationParser Configuration parser
-    void Setup(const configuration::ConfigurationParser& configurationParser);
+    void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
 
     /// @brief Stops the module
     void Stop();
@@ -79,7 +79,7 @@ protected:
 
     /// @brief Sets up the file reader
     /// @param configurationParser Configuration parser
-    void SetupFileReader(const configuration::ConfigurationParser& configurationParser);
+    void SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
 
 private:
     /// @brief Module name
