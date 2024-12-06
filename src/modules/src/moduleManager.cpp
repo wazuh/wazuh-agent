@@ -35,7 +35,7 @@ void ModuleManager::Start() {
     {
         m_taskManager.EnqueueTask([module]() { module->Start(); }, module->Name());
     }
-    m_taskManager.Start(m_modules.size());
+    m_taskManager.Start(m_modules.size() * 2);
 }
 
 void ModuleManager::Setup() {
