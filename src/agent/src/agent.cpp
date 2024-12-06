@@ -57,8 +57,16 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
 
     m_centralizedConfiguration.ReloadModulesFunction([this]() { ReloadModules(); });
 
-    m_taskManager.Start(
-        m_configurationParser->GetConfig<size_t>("agent", "thread_count").value_or(config::DEFAULT_THREAD_COUNT));
+    auto agentThreadCount =
+        m_configurationParser->GetConfig<size_t>("agent", "thread_count").value_or(config::DEFAULT_THREAD_COUNT);
+
+    if (agentThreadCount < config::DEFAULT_THREAD_COUNT)
+    {
+        LogWarn("thread_count must be greater than {}. Using default value.", config::agent::DEFAULT_BATCH_INTERVAL);
+        agentThreadCount = config::agent::DEFAULT_BATCH_INTERVAL;
+    }
+
+    m_taskManager.Start(agentThreadCount);
 }
 
 Agent::~Agent()
