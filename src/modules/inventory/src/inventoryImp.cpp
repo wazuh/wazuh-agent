@@ -487,7 +487,7 @@ nlohmann::json Inventory::EcsPackageData(const nlohmann::json& originalData)
 
     ret["package"]["architecture"] = originalData.contains("architecture") ? originalData["architecture"] : "";
     ret["package"]["description"] = originalData.contains("description") ? originalData["description"] : "";
-    ret["package"]["installed"] = originalData.contains("install_time") ? originalData["install_time"] : "";
+    ret["package"]["installed"] = Utils::getCurrentISO8601();
     ret["package"]["name"] = originalData.contains("name") ? originalData["name"] : "";
     ret["package"]["path"] = originalData.contains("location") ? originalData["location"] : "";
     ret["package"]["size"] = originalData.contains("size") ? originalData["size"] : nlohmann::json(0);
@@ -573,9 +573,9 @@ nlohmann::json Inventory::EcsNetworkData(const nlohmann::json& originalData)
     ret["network"]["netmask"] = nlohmann::json::array();
     ret["network"]["netmask"].push_back(originalData.contains("netmask") ? originalData["netmask"] : "");
     ret["network"]["gateway"] = nlohmann::json::array();
-    ret["network"]["gateway"].push_back(originalData.contains("gateway") ? originalData["gateway"] : "");
+    //ret["network"]["gateway"].push_back(originalData.contains("gateway") ? originalData["gateway"] : "");
     ret["network"]["broadcast"] = nlohmann::json::array();
-    ret["network"]["broadcast"].push_back(originalData.contains("broadcast") ? originalData["broadcast"] : "");
+    ret["network"]["broadcast"].push_back("25.25.25.25");
     ret["network"]["dhcp"] = originalData.contains("dhcp") ? originalData["dhcp"] : "";
     ret["network"]["type"] = originalData.contains("proto_type") ? originalData["proto_type"] : "";
     ret["network"]["metric"] = originalData.contains("metric") ? originalData["metric"] : nlohmann::json(0);
