@@ -111,7 +111,7 @@ TEST_F(InventoryImpTest, defaultCtor)
     };
     const auto expectedResult4
     {
-        R"({"data":{"process":{"args":"","command_line":"","group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":0,"user":{"id":"root"}}},"id":"aW52ZW50b3J5OnByb2Nlc3Nlczo0MzE2MjU=","operation":"create","type":"processes"})"
+        R"({"data":{"process":{"args":"","command_line":"","group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"id":"aW52ZW50b3J5OnByb2Nlc3Nlczo0MzE2MjU=","operation":"create","type":"processes"})"
     };
     const auto expectedResult5
     {
@@ -316,7 +316,7 @@ TEST_F(InventoryImpTest, noHardware)
     };
     const auto expectedResult4
     {
-        R"({"data":{"process":{"args":"","command_line":"","group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":0,"user":{"id":"root"}}},"id":"aW52ZW50b3J5OnByb2Nlc3Nlczo0MzE2MjU=","operation":"create","type":"processes"})"
+        R"({"data":{"process":{"args":"","command_line":"","group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"id":"aW52ZW50b3J5OnByb2Nlc3Nlczo0MzE2MjU=","operation":"create","type":"processes"})"
     };
     const auto expectedResult5
     {
@@ -421,7 +421,7 @@ TEST_F(InventoryImpTest, noOs)
     };
     const auto expectedResult3
     {
-        R"({"data":{"process":{"args":"","command_line":"","group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":0,"user":{"id":"root"}}},"id":"aW52ZW50b3J5OnByb2Nlc3Nlczo0MzE2MjU=","operation":"create","type":"processes"})"
+        R"({"data":{"process":{"args":"","command_line":"","group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"id":"aW52ZW50b3J5OnByb2Nlc3Nlczo0MzE2MjU=","operation":"create","type":"processes"})"
     };
     const auto expectedResult4
     {
@@ -530,7 +530,7 @@ TEST_F(InventoryImpTest, noNetwork)
     };
     const auto expectedResult4
     {
-        R"({"data":{"process":{"args":"","command_line":"","group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":0,"user":{"id":"root"}}},"id":"aW52ZW50b3J5OnByb2Nlc3Nlczo0MzE2MjU=","operation":"create","type":"processes"})"
+        R"({"data":{"process":{"args":"","command_line":"","group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"id":"aW52ZW50b3J5OnByb2Nlc3Nlczo0MzE2MjU=","operation":"create","type":"processes"})"
     };
     const auto expectedResult5
     {
@@ -630,7 +630,7 @@ TEST_F(InventoryImpTest, noPackages)
     };
     const auto expectedResult3
     {
-        R"({"data":{"process":{"args":"","command_line":"","group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":0,"user":{"id":"root"}}},"id":"aW52ZW50b3J5OnByb2Nlc3Nlczo0MzE2MjU=","operation":"create","type":"processes"})"
+        R"({"data":{"process":{"args":"","command_line":"","group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"id":"aW52ZW50b3J5OnByb2Nlc3Nlczo0MzE2MjU=","operation":"create","type":"processes"})"
     };
     const auto expectedResult4
     {
@@ -740,7 +740,7 @@ TEST_F(InventoryImpTest, noPorts)
     };
     const auto expectedResult4
     {
-        R"({"data":{"process":{"args":"","command_line":"","group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":0,"user":{"id":"root"}}},"id":"aW52ZW50b3J5OnByb2Nlc3Nlczo0MzE2MjU=","operation":"create","type":"processes"})"
+        R"({"data":{"process":{"args":"","command_line":"","group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"id":"aW52ZW50b3J5OnByb2Nlc3Nlczo0MzE2MjU=","operation":"create","type":"processes"})"
     };
     const auto expectedResult5
     {
@@ -847,7 +847,7 @@ TEST_F(InventoryImpTest, noPortsAll)
     };
     const auto expectedResult4
     {
-        R"({"data":{"process":{"args":"","command_line":"","group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":0,"user":{"id":"root"}}},"id":"aW52ZW50b3J5OnByb2Nlc3Nlczo0MzE2MjU=","operation":"create","type":"processes"})"
+        R"({"data":{"process":{"args":"","command_line":"","group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"id":"aW52ZW50b3J5OnByb2Nlc3Nlczo0MzE2MjU=","operation":"create","type":"processes"})"
     };
     const auto expectedResult5
     {
@@ -1069,7 +1069,7 @@ TEST_F(InventoryImpTest, noHotfixes)
     };
     const auto expectedResult4
     {
-        R"({"data":{"process":{"args":"","command_line":"","group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":0,"user":{"id":"root"}}},"id":"aW52ZW50b3J5OnByb2Nlc3Nlczo0MzE2MjU=","operation":"create","type":"processes"})"
+        R"({"data":{"process":{"args":"","command_line":"","group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"id":"aW52ZW50b3J5OnByb2Nlc3Nlczo0MzE2MjU=","operation":"create","type":"processes"})"
     };
     const auto expectedResult5
     {

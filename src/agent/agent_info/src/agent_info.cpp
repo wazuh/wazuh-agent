@@ -238,7 +238,7 @@ void AgentInfo::LoadHeaderInfo()
     {
         m_headerInfo = PRODUCT_NAME + "/" + GetVersion() + " (" + GetType() + "; " +
                        m_endpointInfo.value("architecture", "Unknown") + "; " +
-                       m_endpointInfo["os"].value("platform", "Unknown") + ")";
+                       m_endpointInfo["os"].value("type", "Unknown") + ")";
     }
     else
     {
