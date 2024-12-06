@@ -514,7 +514,7 @@ nlohmann::json Inventory::EcsProcessesData(const nlohmann::json& originalData)
     ret["process"]["saved_group"]["id"]= originalData.contains("sgroup") ? originalData["sgroup"] : "";
     ret["process"]["start"]= originalData.contains("start_time") ? originalData["start_time"] : "";
     ret["process"]["thread"]["id"]= originalData.contains("tgid") ? originalData["tgid"] : "";
-    ret["process"]["tty"]= originalData.contains("tty") ? originalData["tty"] : "";
+    ret["process"]["tty"]["char_device"]["major"]= originalData.contains("tty") ? originalData["tty"] : "";
 
     return ret;
 }

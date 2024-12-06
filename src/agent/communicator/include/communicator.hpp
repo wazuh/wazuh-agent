@@ -70,9 +70,9 @@ namespace communicator
             m_batchSize = getConfigValue.template operator()<int>("events", "batch_size")
                               .value_or(config::agent::DEFAULT_BATCH_SIZE);
 
-            if (m_batchSize < 1'000 || m_batchSize > 1'000'000)
+            if (m_batchSize < 1 || m_batchSize > 1'000'000)
             {
-                LogWarn("batch_size must be between 1000 and 1000000. Using default value.");
+                LogWarn("batch_size must be between 1 and 1000000. Using default value.");
                 m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
             }
         }
