@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <variant>
 
 /**
  * @brief Interface for persistence storage.
@@ -93,4 +94,10 @@ public:
 
     //TODO:doc
     virtual int GetElementsStoredSize(const std::string& tableName) = 0;
+
+    //TODO: doc
+    virtual nlohmann::json RetrieveBySize(size_t n,
+                                  const std::string& tableName,
+                                  const std::string& moduleName = "",
+                                  const std::string& moduleType = "") = 0;
 };

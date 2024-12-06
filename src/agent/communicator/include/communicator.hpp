@@ -67,7 +67,7 @@ namespace communicator
                 m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
             }
 
-            m_batchSize = getConfigValue.template operator()<int>("events", "batch_size")
+            m_batchSize = getConfigValue.template operator()<size_t>("events", "batch_size")
                               .value_or(config::agent::DEFAULT_BATCH_SIZE);
 
             if (m_batchSize < 1 || m_batchSize > 1'000'000)
@@ -93,14 +93,14 @@ namespace communicator
         /// @param getMessages A function to retrieve a message from the queue
         /// @param onSuccess A callback function to execute when a message is processed
         boost::asio::awaitable<void> StatefulMessageProcessingTask(
-            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const int)> getMessages,
+            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> getMessages,
             std::function<void(const int, const std::string&)> onSuccess);
 
         /// @brief Processes messages in a stateless manner
         /// @param getMessages A function to retrieve a message from the queue
         /// @param onSuccess A callback function to execute when a message is processed
         boost::asio::awaitable<void> StatelessMessageProcessingTask(
-            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const int)> getMessages,
+            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> getMessages,
             std::function<void(const int, const std::string&)> onSuccess);
 
         /// @brief Retrieves group configuration from the manager
@@ -138,8 +138,8 @@ namespace communicator
         /// @brief Time between batch requests
         std::time_t m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
 
-        /// @brief Maximum number of messages to batch
-        int m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
+        //TODO:
+        size_t m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
 
         /// @brief The server URL
         std::string m_serverUrl;

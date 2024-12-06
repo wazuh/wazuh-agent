@@ -96,10 +96,10 @@ public:
     Message getNext(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
     /**
-     * @copydoc IMultiTypeQueue::getNextNAwaitable(MessageType, int, const std::string, const std::string)
+      * TODO
      */
     boost::asio::awaitable<std::vector<Message>> getNextNAwaitable(MessageType type,
-                                                                   int messageQuantity,
+                                                                   std::variant<const int, const size_t> messageQuantity,
                                                                    const std::string moduleName = "",
                                                                    const std::string moduleType = "") override;
 
@@ -107,7 +107,7 @@ public:
      * @copydoc IMultiTypeQueue::getNextN(MessageType, int, const std::string, const std::string)
      */
     std::vector<Message> getNextN(MessageType type,
-                                  int messageQuantity,
+                                  std::variant<const int, const size_t> messageQuantity,
                                   const std::string moduleName = "",
                                   const std::string moduleType = "") override;
 
