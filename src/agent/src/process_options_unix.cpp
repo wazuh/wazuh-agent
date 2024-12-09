@@ -22,8 +22,16 @@ void StartAgent(const std::string& configFilePath)
     }
 
     LogInfo("Starting wazuh-agent");
-    Agent agent(configFilePath);
-    agent.Run();
+
+    try
+    {
+        Agent agent(configFilePath);
+        agent.Run();
+    }
+    catch (const std::exception& e)
+    {
+        LogError("Exception thrown in wazuh-agent: {}", e.what());
+    }
 
     lockFileHandler.removeLockFile();
 }
