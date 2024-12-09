@@ -77,7 +77,6 @@ target_link_libraries(Agent
     fmt::fmt
     Logger
     Config
-    systemd
 )
 
 include(../cmake/ConfigureTarget.cmake)

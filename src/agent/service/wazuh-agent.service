@@ -4,7 +4,7 @@ Wants=network-online.target
 After=network.target network-online.target
 
 [Service]
-Type=forking
+Type=simple
 PIDFile=/run/wazuh-agent.lock
 ExecStart=/usr/bin/env WAZUH_HOME/wazuh-agent
 ExecStop=/usr/bin/env WAZUH_HOME/wazuh-agent --stop

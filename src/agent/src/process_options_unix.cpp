@@ -1,5 +1,5 @@
 #include <process_options.hpp>
-#include <systemd/sd-daemon.h>
+// #include <systemd/sd-daemon.h>
 #include <unistd.h>
 #include <agent.hpp>
 #include <fmt/format.h>
@@ -11,20 +11,6 @@
 #include <iostream>
 #include <thread>
 #include <vector>
-
-// std::string GetParentProcessName() {
-//     pid_t ppid = getppid();
-//     std::string procPath = "/proc/" + std::to_string(ppid) + "/comm";
-//     std::ifstream procFile(procPath);
-//     if (!procFile.is_open()) {
-//         return "";
-//     }
-
-//     std::string parentName;
-//     std::getline(procFile, parentName);
-//     procFile.close();
-//     return parentName;
-// }
 
 
 void StartAgent(const std::string& configFilePath)
@@ -55,7 +41,7 @@ void StopAgent(const std::string& configFilePath)
 
     if (lockFileHandler.isLockFileCreated())
     {
-        std::cout << "wazuh-agent is not running\n";
+        LogInfo("wazuh-agent is not running");
         return;
     }
 
@@ -77,9 +63,26 @@ void StopAgent(const std::string& configFilePath)
 
 void RestartAgent(const std::string& configFile)
 {
+    LogInfo("Restarting wazuh-agent...");
     StopAgent(configFile);
+    int timeoutSeconds = 20;
+    auto startTime = std::chrono::steady_clock::now();
 
-    std::this_thread::sleep_for(std::chrono::seconds(1)); // NOLINT
+    // Periodically check if the agent has stopped
+    while ( unix_daemon::IsDaemonRunning(configFile) )   {
+        // Check elapsed time
+        std::cout << unix_daemon::GetDaemonStatus(configFile)  << std::endl;
+        auto elapsed = std::chrono::steady_clock::now() - startTime;
+        if (std::chrono::duration_cast<std::chrono::seconds>(elapsed).count() > timeoutSeconds) {
+            LogError("Timeout reached while stopping wazuh-agent.");
+            return ;
+        }
+
+        // Sleep briefly before checking again
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        LogInfo("Waiting wazuh-agent... be stoped.");
+    }
 
     StartAgent(configFile);
+    LogInfo("Restarting wazuh-agent... Done.");
 }

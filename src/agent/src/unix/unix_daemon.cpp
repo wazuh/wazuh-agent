@@ -70,7 +70,7 @@ namespace unix_daemon
         if (access(filename.c_str(), F_OK) != -1)
         {
             LogDebug("Lock file already exists: {}", filename);
-            return false;  // The lock file exists, cannot create a new one
+            return true;
         }
 
         if (!createDirectory(m_lockFilePath))
@@ -146,14 +146,17 @@ namespace unix_daemon
 
     std::string GetDaemonStatus(const std::string& configFilePath)
     {
-        LockFileHandler lockFileHandler = GenerateLockFile(configFilePath);
-
-        if (!lockFileHandler.isLockFileCreated())
-        {
-            return "running";
-        }
-
-        lockFileHandler.removeLockFile();
-        return "stopped";
+        return IsDaemonRunning(configFilePath) ? "running" : "stopped";
     }
+
+
+    bool IsDaemonRunning(const std::string& configFilePath){
+        LockFileHandler lockFileHandler = GenerateLockFile(configFilePath);
+        bool ret = lockFileHandler.isLockFileCreated();
+        lockFileHandler.removeLockFile();
+        return ret;
+    }
+
+
+
 } // namespace unix_daemon

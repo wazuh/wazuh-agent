@@ -51,6 +51,8 @@ namespace unix_daemon
     /// @return A string indicating whether the daemon is "running" or "stopped"
     std::string GetDaemonStatus(const std::string& configFilePath);
 
+    bool IsDaemonRunning(const std::string& configFilePath);
+
     /// @brief Generates a lock file for the daemon
     /// @param configFilePath The path to the configuration file
     /// @return A LockFileHandler object
