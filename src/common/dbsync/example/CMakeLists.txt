@@ -21,7 +21,7 @@ add_executable(dbsync_example
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(dbsync_example
         dbsync
-        -static-libgcc -static-libstdc++
+        -static-libgcc
     )
 else()
     target_link_libraries(dbsync_example

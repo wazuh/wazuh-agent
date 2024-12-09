@@ -11,7 +11,8 @@
 #ifndef WIN32
 
 #include "shared.h"
-
+#include <regex.h>
+#include <sqlite3.h>
 
 int OS_PRegex(const char *str, const char *regex)
 {
