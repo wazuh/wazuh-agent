@@ -20,7 +20,7 @@
 
 using namespace testing;
 
-class HttpClientTest : public Test
+class HttpClientTest : public TestWithParam<boost::beast::http::status>
 {
 protected:
     HttpClientTest()
@@ -206,14 +206,14 @@ TEST_F(HttpClientTest, PerformHttpRequest_ExceptionThrown)
                 std::string::npos);
 }
 
-TEST_F(HttpClientTest, Co_PerformHttpRequest_Success)
+TEST_P(HttpClientTest, Co_PerformHttpRequest_Success)
 {
     SetupMockResolverFactory();
     SetupMockSocketFactory();
     SetupMockResolverExpectations();
     SetupMockSocketConnectExpectations();
     SetupMockSocketWriteExpectations();
-    SetupMockSocketReadExpectations(boost::beast::http::status::ok);
+    SetupMockSocketReadExpectations(GetParam());
 
     auto getMessagesCalled = false;
     auto getMessages = [&getMessagesCalled](const int) -> boost::asio::awaitable<std::tuple<int, std::string>>
@@ -261,6 +261,13 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_Success)
     EXPECT_FALSE(unauthorizedCalled);
     EXPECT_TRUE(onSuccessCalled);
 }
+
+INSTANTIATE_TEST_SUITE_P(HttpClientTest,
+                         HttpClientTest,
+                         testing::ValuesIn({boost::beast::http::status::ok,
+                                            boost::beast::http::status::created,
+                                            boost::beast::http::status::accepted,
+                                            boost::beast::http::status::no_content}));
 
 TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
 {
