@@ -26,6 +26,8 @@ public:
     /// @brief Constructor
     /// @param configFilePath Path to the configuration file
     /// @param signalHandler Pointer to a custom ISignalHandler implementation
+    /// @throws std::runtime_error If the Agent is not registered
+    /// @throws Any exception propagated from dependencies used within the constructor
     Agent(const std::string& configFilePath,
           std::unique_ptr<ISignalHandler> signalHandler = std::make_unique<SignalHandler>());
 
