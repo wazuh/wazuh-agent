@@ -209,7 +209,8 @@ namespace http_client
 
             std::time_t timerSleep = A_SECOND_IN_MILLIS;
 
-            if (res.result() == boost::beast::http::status::ok)
+            if (res.result() >= boost::beast::http::status::ok &&
+                res.result() < boost::beast::http::status::multiple_choices)
             {
                 if (onSuccess != nullptr)
                 {
@@ -263,7 +264,8 @@ namespace http_client
 
         const auto res = PerformHttpRequest(reqParams);
 
-        if (res.result() != boost::beast::http::status::ok)
+        if (res.result() < boost::beast::http::status::ok ||
+            res.result() >= boost::beast::http::status::multiple_choices)
         {
             if (res.result() == boost::beast::http::status::unauthorized ||
                 res.result() == boost::beast::http::status::forbidden)
@@ -321,7 +323,8 @@ namespace http_client
 
         const auto res = PerformHttpRequest(reqParams);
 
-        if (res.result() != boost::beast::http::status::ok)
+        if (res.result() < boost::beast::http::status::ok ||
+            res.result() >= boost::beast::http::status::multiple_choices)
         {
             LogWarn("Error: {}.", res.result_int());
             return std::nullopt;

@@ -9,6 +9,9 @@
 #include <boost/beast/core/detail/base64.hpp>
 
 constexpr std::time_t INVENTORY_DEFAULT_INTERVAL { 3600000 };
+constexpr auto UNKNOWN_VALUE {" "};
+constexpr auto EMPTY_VALUE {""};
+constexpr auto UNKNOWN_DATE = nullptr;
 
 constexpr auto QUEUE_SIZE
 {
@@ -487,7 +490,14 @@ nlohmann::json Inventory::EcsPackageData(const nlohmann::json& originalData)
 
     ret["package"]["architecture"] = originalData.contains("architecture") ? originalData["architecture"] : "";
     ret["package"]["description"] = originalData.contains("description") ? originalData["description"] : "";
-    ret["package"]["installed"] = originalData.contains("install_time") ? originalData["install_time"] : "";
+
+    if (originalData.contains("install_time") && !originalData["install_time"].empty() && originalData["install_time"] != UNKNOWN_VALUE) {
+        ret["package"]["installed"] = originalData["install_time"];
+    }
+    else {
+        ret["package"]["installed"] = UNKNOWN_DATE;
+    }
+
     ret["package"]["name"] = originalData.contains("name") ? originalData["name"] : "";
     ret["package"]["path"] = originalData.contains("location") ? originalData["location"] : "";
     ret["package"]["size"] = originalData.contains("size") ? originalData["size"] : nlohmann::json(0);
@@ -512,7 +522,14 @@ nlohmann::json Inventory::EcsProcessesData(const nlohmann::json& originalData)
     ret["process"]["group"]["id"]= originalData.contains("egroup") ? originalData["egroup"] : "";
     ret["process"]["real_group"]["id"]= originalData.contains("rgroup") ? originalData["rgroup"] : "";
     ret["process"]["saved_group"]["id"]= originalData.contains("sgroup") ? originalData["sgroup"] : "";
-    ret["process"]["start"]= originalData.contains("start_time") ? originalData["start_time"] : "";
+
+    if (originalData.contains("start_time") && !originalData["start_time"].empty() && originalData["start_time"] != UNKNOWN_VALUE) {
+            ret["process"]["start"] = originalData["start_time"];
+    }
+    else {
+        ret["process"]["start"] = UNKNOWN_DATE;
+    }
+
     ret["process"]["thread"]["id"]= originalData.contains("tgid") ? originalData["tgid"] : "";
     ret["process"]["tty"]["char_device"]["major"]= originalData.contains("tty") ? originalData["tty"] : "";
 
@@ -533,11 +550,27 @@ nlohmann::json Inventory::EcsPortData(const nlohmann::json& originalData)
     nlohmann::json ret;
 
     ret["network"]["protocol"] = originalData.contains("protocol") ? originalData["protocol"] : "";
+
     ret["source"]["ip"] = nlohmann::json::array();
-    ret["source"]["ip"].push_back(originalData.contains("local_ip") ? originalData["local_ip"] : "");
+    if (originalData.contains("local_ip") &&
+        !originalData["local_ip"].empty() &&
+        originalData["local_ip"] != UNKNOWN_VALUE &&
+        originalData["local_ip"] != EMPTY_VALUE)
+    {
+        ret["source"]["ip"].push_back(originalData["local_ip"]);
+    }
+
     ret["source"]["port"] = originalData.contains("local_port") ? originalData["local_port"] : nlohmann::json(0);
+
     ret["destination"]["ip"] = nlohmann::json::array();
-    ret["destination"]["ip"].push_back(originalData.contains("remote_ip") ? originalData["remote_ip"] : "");
+    if (originalData.contains("remote_ip") &&
+        !originalData["remote_ip"].empty() &&
+        originalData["remote_ip"] != UNKNOWN_VALUE &&
+        originalData["remote_ip"] != EMPTY_VALUE)
+    {
+        ret["destination"]["ip"].push_back(originalData["remote_ip"]);
+    }
+
     ret["destination"]["port"] = originalData.contains("remote_port") ? originalData["remote_port"] : nlohmann::json(0);
     ret["host"]["network"]["egress"]["queue"] = originalData.contains("tx_queue") ? originalData["tx_queue"] : nlohmann::json(0);
     ret["host"]["network"]["ingress"]["queue"] = originalData.contains("rx_queue") ? originalData["rx_queue"] : nlohmann::json(0);
@@ -555,7 +588,14 @@ nlohmann::json Inventory::EcsNetworkData(const nlohmann::json& originalData)
     nlohmann::json ret;
 
     ret["host"]["ip"] = nlohmann::json::array();
-    ret["host"]["ip"].push_back(originalData.contains("address") ? originalData["address"] : "");
+    if (originalData.contains("address") &&
+        !originalData["address"].empty() &&
+        originalData["address"] != UNKNOWN_VALUE &&
+        originalData["address"] != EMPTY_VALUE)
+    {
+        ret["host"]["ip"].push_back(originalData["address"]);
+    }
+
     ret["host"]["mac"] = originalData.contains("mac") ? originalData["mac"] : "";
     ret["host"]["network"]["egress"]["bytes"] = originalData.contains("tx_bytes") ? originalData["tx_bytes"] : nlohmann::json(0);
     ret["host"]["network"]["egress"]["packets"] = originalData.contains("tx_packets") ? originalData["tx_packets"] : nlohmann::json(0);
@@ -571,14 +611,35 @@ nlohmann::json Inventory::EcsNetworkData(const nlohmann::json& originalData)
     ret["interface"]["type"] = originalData.contains("iface_type") ? originalData["iface_type"] : "";
 
     ret["network"]["netmask"] = nlohmann::json::array();
-    ret["network"]["netmask"].push_back(originalData.contains("netmask") ? originalData["netmask"] : "");
+    if (originalData.contains("netmask") &&
+        !originalData["netmask"].empty() &&
+        originalData["netmask"] != UNKNOWN_VALUE &&
+        originalData["netmask"] != EMPTY_VALUE)
+    {
+        ret["network"]["netmask"].push_back(originalData["netmask"]);
+    }
+
     ret["network"]["gateway"] = nlohmann::json::array();
-    ret["network"]["gateway"].push_back(originalData.contains("gateway") ? originalData["gateway"] : "");
+    if (originalData.contains("gateway") &&
+        !originalData["gateway"].empty() &&
+        originalData["gateway"] != UNKNOWN_VALUE &&
+        originalData["gateway"] != EMPTY_VALUE)
+    {
+        ret["network"]["gateway"].push_back(originalData["gateway"]);
+    }
+
     ret["network"]["broadcast"] = nlohmann::json::array();
-    ret["network"]["broadcast"].push_back(originalData.contains("broadcast") ? originalData["broadcast"] : "");
+    if (originalData.contains("broadcast") &&
+        !originalData["broadcast"].empty() &&
+        originalData["broadcast"] != UNKNOWN_VALUE &&
+        originalData["broadcast"] != EMPTY_VALUE)
+    {
+        ret["network"]["broadcast"].push_back(originalData["broadcast"]);
+    }
+
     ret["network"]["dhcp"] = originalData.contains("dhcp") ? originalData["dhcp"] : "";
     ret["network"]["type"] = originalData.contains("proto_type") ? originalData["proto_type"] : "";
-    ret["network"]["metric"] = originalData.contains("metric") ? originalData["metric"] : nlohmann::json(0);
+    ret["network"]["metric"] = originalData.contains("metric") ? originalData["metric"] : "0";
     /* TODO this field should include http or https, it's related to an application not to a interface */
     ret["network"]["protocol"] = "";
 

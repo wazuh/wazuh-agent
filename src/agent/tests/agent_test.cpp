@@ -50,12 +50,13 @@ protected:
 
     void TearDown() override
     {
-        std::remove(AGENT_CONFIG_PATH.c_str());
-        std::remove(AGENT_DB_PATH.c_str());
+        CleanUpTempFiles();
     }
 
     void CreateTempConfigFile()
     {
+        CleanUpTempFiles();
+
         std::ofstream configFilePath(AGENT_CONFIG_PATH);
         configFilePath << R"(
 agent:
@@ -84,6 +85,12 @@ logcollector:
 )";
         configFilePath.close();
     }
+
+    void CleanUpTempFiles()
+    {
+        std::remove(AGENT_CONFIG_PATH);
+        std::remove("/tmp/agent_info.db");
+    }
 };
 
 TEST_F(AgentTests, AgentDefaultConstruction)
@@ -96,13 +103,16 @@ TEST_F(AgentTests, AgentStopsWhenSignalReceived)
     auto mockSignalHandler = std::make_unique<MockSignalHandler>();
     MockSignalHandler* mockSignalHandlerPtr = mockSignalHandler.get();
 
+    auto WaitForSignalCalled = false;
+
     EXPECT_CALL(*mockSignalHandlerPtr, WaitForSignal())
         .Times(1)
-        .WillOnce([]() { std::this_thread::sleep_for(std::chrono::seconds(1)); });
+        .WillOnce([&WaitForSignalCalled]() { WaitForSignalCalled = true; });
 
     Agent agent(AGENT_CONFIG_PATH, std::move(mockSignalHandler));
 
     EXPECT_NO_THROW(agent.Run());
+    EXPECT_TRUE(WaitForSignalCalled);
 }
 
 int main(int argc, char** argv)
