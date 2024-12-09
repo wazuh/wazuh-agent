@@ -236,7 +236,8 @@ namespace communicator
 
         const auto result = m_httpClient->PerformHttpRequestDownload(reqParams, dstFilePath);
 
-        return result.result() == boost::beast::http::status::ok;
+        return result.result() >= boost::beast::http::status::ok &&
+               result.result() < boost::beast::http::status::multiple_choices;
     }
 
     void Communicator::Stop()
