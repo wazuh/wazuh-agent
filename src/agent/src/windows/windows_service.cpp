@@ -239,13 +239,23 @@ namespace WindowsService
             LogDebug("Using default configuration.");
         }
 
-        Agent agent(configFilePath);
-        agent.Run();
+        auto error = NO_ERROR;
+
+        try
+        {
+            Agent agent(configFilePath);
+            agent.Run();
+        }
+        catch (const std::exception& e)
+        {
+            LogError("Exception thrown in wazuh-agent: {}", e.what());
+            error = ERROR_EXCEPTION_IN_SERVICE;
+        }
 
         WaitForSingleObject(g_ServiceStopEvent, INFINITE);
 
         CloseHandle(g_ServiceStopEvent);
-        ReportServiceStatus(SERVICE_STOPPED, NO_ERROR, 0);
+        ReportServiceStatus(SERVICE_STOPPED, error, 0);
     }
 
     void WINAPI ServiceCtrlHandler(DWORD ctrlCode)
