@@ -107,7 +107,7 @@ TEST_F(InventoryImpTest, defaultCtor)
     };
     const auto expectedResult3
     {
-        R"({"data":{"package":{"architecture":"amd64","description":"","installed":"","name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
+        R"({"data":{"package":{"architecture":"amd64","description":"","installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
     };
     const auto expectedResult4
     {
@@ -123,7 +123,7 @@ TEST_F(InventoryImpTest, defaultCtor)
     };
     const auto expectedResult7
     {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[" "],"metric":"0","netmask":["255.255.0.0"],"protocol":"","type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"id":"aW52ZW50b3J5Om5ldHdvcmtzOmRvY2tlcjA6OmlwdjQ6OjE3Mi4xNy4wLjE=","operation":"create","type":"networks"})"
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":"","type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"id":"aW52ZW50b3J5Om5ldHdvcmtzOmRvY2tlcjA6OmlwdjQ6OjE3Mi4xNy4wLjE=","operation":"create","type":"networks"})"
     };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(testing::AtLeast(1));
@@ -312,7 +312,7 @@ TEST_F(InventoryImpTest, noHardware)
     };
     const auto expectedResult3
     {
-        R"({"data":{"package":{"architecture":"amd64","description":"","installed":"","name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
+        R"({"data":{"package":{"architecture":"amd64","description":"","installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
     };
     const auto expectedResult4
     {
@@ -328,7 +328,7 @@ TEST_F(InventoryImpTest, noHardware)
     };
     const auto expectedResult7
     {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[" "],"metric":"0","netmask":["255.255.0.0"],"protocol":"","type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"id":"aW52ZW50b3J5Om5ldHdvcmtzOmRvY2tlcjA6OmlwdjQ6OjE3Mi4xNy4wLjE=","operation":"create","type":"networks"})"
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":"","type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"id":"aW52ZW50b3J5Om5ldHdvcmtzOmRvY2tlcjA6OmlwdjQ6OjE3Mi4xNy4wLjE=","operation":"create","type":"networks"})"
     };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -417,7 +417,7 @@ TEST_F(InventoryImpTest, noOs)
     };
     const auto expectedResult2
     {
-        R"({"data":{"package":{"architecture":"amd64","description":"","installed":"","name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
+        R"({"data":{"package":{"architecture":"amd64","description":"","installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
     };
     const auto expectedResult3
     {
@@ -433,7 +433,7 @@ TEST_F(InventoryImpTest, noOs)
     };
     const auto expectedResult7
     {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[" "],"metric":"0","netmask":["255.255.0.0"],"protocol":"","type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"id":"aW52ZW50b3J5Om5ldHdvcmtzOmRvY2tlcjA6OmlwdjQ6OjE3Mi4xNy4wLjE=","operation":"create","type":"networks"})"
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":"","type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"id":"aW52ZW50b3J5Om5ldHdvcmtzOmRvY2tlcjA6OmlwdjQ6OjE3Mi4xNy4wLjE=","operation":"create","type":"networks"})"
     };
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
@@ -526,7 +526,7 @@ TEST_F(InventoryImpTest, noNetwork)
     };
     const auto expectedResult3
     {
-        R"({"data":{"package":{"architecture":"amd64","description":"","installed":"","name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
+        R"({"data":{"package":{"architecture":"amd64","description":"","installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
     };
     const auto expectedResult4
     {
@@ -642,7 +642,7 @@ TEST_F(InventoryImpTest, noPackages)
     };
     const auto expectedResult7
     {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[" "],"metric":"0","netmask":["255.255.0.0"],"protocol":"","type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"id":"aW52ZW50b3J5Om5ldHdvcmtzOmRvY2tlcjA6OmlwdjQ6OjE3Mi4xNy4wLjE=","operation":"create","type":"networks"})"
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":"","type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"id":"aW52ZW50b3J5Om5ldHdvcmtzOmRvY2tlcjA6OmlwdjQ6OjE3Mi4xNy4wLjE=","operation":"create","type":"networks"})"
     };
 
 
@@ -736,7 +736,7 @@ TEST_F(InventoryImpTest, noPorts)
     };
     const auto expectedResult3
     {
-        R"({"data":{"package":{"architecture":"amd64","description":"","installed":"","name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
+        R"({"data":{"package":{"architecture":"amd64","description":"","installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
     };
     const auto expectedResult4
     {
@@ -748,7 +748,7 @@ TEST_F(InventoryImpTest, noPorts)
     };
     const auto expectedResult7
     {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[" "],"metric":"0","netmask":["255.255.0.0"],"protocol":"","type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"id":"aW52ZW50b3J5Om5ldHdvcmtzOmRvY2tlcjA6OmlwdjQ6OjE3Mi4xNy4wLjE=","operation":"create","type":"networks"})"
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":"","type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"id":"aW52ZW50b3J5Om5ldHdvcmtzOmRvY2tlcjA6OmlwdjQ6OjE3Mi4xNy4wLjE=","operation":"create","type":"networks"})"
     };
 
 
@@ -843,7 +843,7 @@ TEST_F(InventoryImpTest, noPortsAll)
     };
     const auto expectedResult3
     {
-        R"({"data":{"package":{"architecture":"amd64","description":"","installed":"","name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
+        R"({"data":{"package":{"architecture":"amd64","description":"","installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
     };
     const auto expectedResult4
     {
@@ -863,7 +863,7 @@ TEST_F(InventoryImpTest, noPortsAll)
     };
     const auto expectedResult8
     {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[" "],"metric":"0","netmask":["255.255.0.0"],"protocol":"","type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"id":"aW52ZW50b3J5Om5ldHdvcmtzOmRvY2tlcjA6OmlwdjQ6OjE3Mi4xNy4wLjE=","operation":"create","type":"networks"})"
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":"","type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"id":"aW52ZW50b3J5Om5ldHdvcmtzOmRvY2tlcjA6OmlwdjQ6OjE3Mi4xNy4wLjE=","operation":"create","type":"networks"})"
     };
 
 
@@ -958,7 +958,7 @@ TEST_F(InventoryImpTest, noProcesses)
     };
     const auto expectedResult3
     {
-        R"({"data":{"package":{"architecture":"amd64","description":"","installed":"","name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
+        R"({"data":{"package":{"architecture":"amd64","description":"","installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
     };
     const auto expectedResult4
     {
@@ -970,7 +970,7 @@ TEST_F(InventoryImpTest, noProcesses)
     };
     const auto expectedResult7
     {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[" "],"metric":"0","netmask":["255.255.0.0"],"protocol":"","type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"id":"aW52ZW50b3J5Om5ldHdvcmtzOmRvY2tlcjA6OmlwdjQ6OjE3Mi4xNy4wLjE=","operation":"create","type":"networks"})"
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":"","type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"id":"aW52ZW50b3J5Om5ldHdvcmtzOmRvY2tlcjA6OmlwdjQ6OjE3Mi4xNy4wLjE=","operation":"create","type":"networks"})"
     };
 
 
@@ -1065,7 +1065,7 @@ TEST_F(InventoryImpTest, noHotfixes)
     };
     const auto expectedResult3
     {
-        R"({"data":{"package":{"architecture":"amd64","description":"","installed":"","name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
+        R"({"data":{"package":{"architecture":"amd64","description":"","installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
     };
     const auto expectedResult4
     {
@@ -1077,7 +1077,7 @@ TEST_F(InventoryImpTest, noHotfixes)
     };
     const auto expectedResult7
     {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[" "],"metric":"0","netmask":["255.255.0.0"],"protocol":"","type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"id":"aW52ZW50b3J5Om5ldHdvcmtzOmRvY2tlcjA6OmlwdjQ6OjE3Mi4xNy4wLjE=","operation":"create","type":"networks"})"
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":"","type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"id":"aW52ZW50b3J5Om5ldHdvcmtzOmRvY2tlcjA6OmlwdjQ6OjE3Mi4xNy4wLjE=","operation":"create","type":"networks"})"
     };
 
 
@@ -1495,7 +1495,7 @@ TEST_F(InventoryImpTest, PackagesDuplicated)
 
     const auto expectedResult1
     {
-        R"({"data":{"package":{"architecture":"amd64","description":"","installed":"","name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
+        R"({"data":{"package":{"architecture":"amd64","description":"","installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"id":"aW52ZW50b3J5OnBhY2thZ2VzOnhzZXJ2ZXIteG9yZzoxOjcuNysxOXVidW50dTE0OmFtZDY0OmRlYjog","operation":"create","type":"packages"})"
     };
 
     EXPECT_CALL(wrapper, callbackMock(expectedResult1)).Times(1);
