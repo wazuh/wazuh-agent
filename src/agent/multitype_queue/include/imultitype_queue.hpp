@@ -7,6 +7,7 @@
 #include <string>
 #include <variant>
 #include <vector>
+
 /**
  * @brief Interface for a multi-type message queue.
  *
@@ -66,10 +67,11 @@ public:
      * @param moduleType The type of the module requesting the messages.
      * @return boost::asio::awaitable<std::vector<Message>> Awaitable object representing the next N messages.
      */
-    virtual boost::asio::awaitable<std::vector<Message>> getNextNAwaitable(MessageType type,
-                                                                           std::variant<const int, const size_t> messageQuantity,
-                                                                           const std::string moduleName = "",
-                                                                           const std::string moduleType = "") = 0;
+    virtual boost::asio::awaitable<std::vector<Message>>
+    getNextNAwaitable(MessageType type,
+                      std::variant<const int, const size_t> messageQuantity,
+                      const std::string moduleName = "",
+                      const std::string moduleType = "") = 0;
 
     /**
      * @brief Retrieves the next N messages from the queue.

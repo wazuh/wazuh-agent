@@ -164,7 +164,7 @@ private:
 
     /**
      * @brief Intermediate function for processing Retrieve queries.
-    */
+     */
     nlohmann::json ProcessRequest(SQLite::Statement& sqlStatementQuery, size_t maxSize = 0);
 
     /**

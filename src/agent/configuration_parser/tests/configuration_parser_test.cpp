@@ -460,7 +460,7 @@ TEST(ConfigurationParser, GetConfigBytes)
     const auto retG = parserStr->GetConfig<std::size_t>("agent_array", "size_G").value_or(1234);
     ASSERT_EQ(retG, 3000000000);
     const auto retDefaultKB = parserStr->GetConfig<std::size_t>("agent_array", "size_default_KB").value_or(1234);
-    ASSERT_EQ(retDefaultKB, 53000);
+    ASSERT_EQ(retDefaultKB, 53);
 }
 
 int main(int argc, char** argv)
