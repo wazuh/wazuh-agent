@@ -6,6 +6,7 @@
 #include <boost/asio/io_context.hpp>
 
 #include <functional>
+#include <memory>
 #include <string>
 #include <thread>
 #include <vector>
@@ -15,7 +16,7 @@ class TaskManager : public ITaskManager<boost::asio::awaitable<void>>
 {
 public:
     /// @brief Constructor
-    TaskManager();
+    TaskManager() = default;
 
     /// @brief Starts the task manager
     /// @param numThreads The number of threads to start
@@ -42,8 +43,8 @@ private:
     /// @brief The IO context for the task manager
     boost::asio::io_context m_ioContext;
 
-    /// @brief A work object to keep the IO context running
-    boost::asio::io_context::work m_work;
+    /// @brief A work guard object to keep the IO context running
+    std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> m_work;
 
     /// @brief Threads run by the task manager
     std::vector<std::thread> m_threads;

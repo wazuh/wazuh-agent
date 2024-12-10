@@ -6,17 +6,12 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/post.hpp>
 
-#include <memory>
 #include <utility>
-
-TaskManager::TaskManager()
-    : m_work(m_ioContext)
-{
-}
 
 void TaskManager::Start(size_t numThreads)
 {
-    Stop();
+    m_work = std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
+        boost::asio::make_work_guard(m_ioContext));
 
     for (size_t i = 0; i < numThreads; ++i)
     {
@@ -26,6 +21,11 @@ void TaskManager::Start(size_t numThreads)
 
 void TaskManager::Stop()
 {
+    if (m_work)
+    {
+        m_work->reset();
+    }
+
     m_ioContext.stop();
 
     for (std::thread& thread : m_threads)
