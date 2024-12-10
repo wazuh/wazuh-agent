@@ -145,6 +145,8 @@ void Agent::Run()
         "CommandsProcessing");
 
     m_signalHandler->WaitForSignal();
+
+    m_commandHandler.Stop();
     m_moduleManager.Stop();
     m_communicator.Stop();
 }
