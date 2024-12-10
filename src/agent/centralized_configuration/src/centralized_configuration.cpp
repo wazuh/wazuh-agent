@@ -27,7 +27,7 @@ namespace centralized_configuration
                             "CentralizedConfiguration group set failed, no group list"};
                     }
 
-                    groupIds = parameters[0].get<std::vector<std::string>>();
+                    groupIds = parameters.get<std::vector<std::string>>();
 
                     if (!m_setGroupIdFunction(groupIds))
                     {
