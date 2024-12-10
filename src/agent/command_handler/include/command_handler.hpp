@@ -61,6 +61,19 @@ namespace command_handler
                     continue;
                 }
 
+                if (!CheckCommand(cmd.value()))
+                {
+                    cmd.value().ExecutionResult.ErrorCode = module_command::Status::FAILURE;
+                    cmd.value().ExecutionResult.Message = "Command is not valid";
+                    LogError("Error checking module and args for command: {} {}. Error: {}",
+                             cmd.value().Id,
+                             cmd.value().Command,
+                             cmd.value().ExecutionResult.Message);
+                    ReportCommandResult(cmd.value());
+                    PopCommandFromQueue();
+                    continue;
+                }
+
                 if (!m_commandStore.StoreCommand(cmd.value()))
                 {
                     cmd.value().ExecutionResult.ErrorCode = module_command::Status::FAILURE;
@@ -117,6 +130,18 @@ namespace command_handler
                 }
             }
         }
+
+        /// @brief Check if the command is valid
+        ///
+        /// This function checks if the given command is valid by looking it up in
+        /// the map of valid commands. If the command is valid, it checks if the
+        /// parameters are valid. If the command is not valid, it logs an error and
+        /// returns false. If the command is valid, it sets the module for the
+        /// command and returns true.
+        ///
+        /// @param cmd The command to check
+        /// @return True if the command is valid, false otherwise
+        bool CheckCommand(module_command::CommandEntry& cmd);
 
         /// @brief Indicates whether the command handler is running or not
         std::atomic<bool> m_keepRunning = true;
