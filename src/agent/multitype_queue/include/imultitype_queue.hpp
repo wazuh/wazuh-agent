@@ -135,5 +135,5 @@ public:
     virtual int storedItems(MessageType type, const std::string moduleName = "") = 0;
 
     //TODO: doc
-    virtual int sizePerType(MessageType type) = 0;
+    virtual size_t sizePerType(MessageType type) = 0;
 };

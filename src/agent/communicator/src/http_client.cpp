@@ -162,36 +162,15 @@ namespace http_client
 
                 while (loopRequestCondition != nullptr && loopRequestCondition())
                 {
-                    // //get max size
-                    // //difference between max available and pursuited
-                    // auto difference = max size - batchsize;
-                    // //default qtty of item to request
-                    // auto DEFAULT_REQUEST_QTTY = 10
-                    // //If max size on DB is near what we're looking for, then send it
-                    // if(difference < 0 || abs(difference) <= percetage)
-                    // {
-                    //     // pedir max items
-                    // }
-                    // else if(difference > 0)
-                    // {
-                    //     //we're storing qtty above looked for
-                    //     //calcular proporcion
-                    // }
-                    // const auto messages = co_await messageGetter(itemsToFetch);
                     const auto messages = co_await messageGetter(batchSize);
                     messagesCount = std::get<0>(messages);
 
-                    // TODO: check first condition
-                    if (messagesCount >= 0 || batchTimeoutTimer.expiry() <= std::chrono::steady_clock::now())
+                    if (batchTimeoutTimer.expiry() <= std::chrono::steady_clock::now())
                     {
                         LogTrace("Messages count: {}", messagesCount);
                         reqParams.Body = std::get<1>(messages);
                         break;
                     }
-
-                    constexpr int refreshInterval = 100;
-                    refreshTimer.expires_after(std::chrono::milliseconds(refreshInterval));
-                    co_await refreshTimer.async_wait(boost::asio::use_awaitable);
                 }
             }
             else

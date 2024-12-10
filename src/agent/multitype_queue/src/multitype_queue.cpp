@@ -160,10 +160,11 @@ Message MultiTypeQueue::getNext(MessageType type, const std::string moduleName, 
     return result;
 }
 
-boost::asio::awaitable<std::vector<Message>> MultiTypeQueue::getNextNAwaitable(MessageType type,
-                                                                               std::variant<const int, const size_t> messageQuantity,
-                                                                               const std::string moduleName,
-                                                                               const std::string moduleType)
+boost::asio::awaitable<std::vector<Message>>
+MultiTypeQueue::getNextNAwaitable(MessageType type,
+                                  std::variant<const int, const size_t> messageQuantity,
+                                  const std::string moduleName,
+                                  const std::string moduleType)
 {
     boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
 
@@ -200,8 +201,16 @@ std::vector<Message> MultiTypeQueue::getNextN(MessageType type,
         }
         else if (std::holds_alternative<const size_t>(messageQuantity))
         {
+            size_t sizeRequested = std::get<const size_t>(messageQuantity);
+            auto availableSize = sizePerType(type);
+
+            if (availableSize < sizeRequested)
+            {
+                sizeRequested = availableSize;
+            }
+
             arrayData = m_persistenceDest->RetrieveBySize(
-                std::get<const size_t>(messageQuantity), m_mapMessageTypeName.at(type), moduleName, moduleType);
+                sizeRequested, m_mapMessageTypeName.at(type), moduleName, moduleType);
         }
         else
         {
@@ -289,7 +298,7 @@ int MultiTypeQueue::storedItems(MessageType type, const std::string moduleName)
     return false;
 }
 
-int MultiTypeQueue::sizePerType(MessageType type)
+size_t MultiTypeQueue::sizePerType(MessageType type)
 {
     if (m_mapMessageTypeName.contains(type))
     {

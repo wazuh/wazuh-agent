@@ -121,7 +121,7 @@ public:
     int GetElementCount(const std::string& tableName, const std::string& moduleName = "") override;
 
     // TODO: doc
-    int GetElementsStoredSize(const std::string& tableName) override;
+    size_t GetElementsStoredSize(const std::string& tableName) override;
 
     // TODO: doc
     nlohmann::json RetrieveBySize(size_t n,

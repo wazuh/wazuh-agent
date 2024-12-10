@@ -93,7 +93,7 @@ public:
 
 
     //TODO:doc
-    virtual int GetElementsStoredSize(const std::string& tableName) = 0;
+    virtual size_t GetElementsStoredSize(const std::string& tableName) = 0;
 
     //TODO: doc
     virtual nlohmann::json RetrieveBySize(size_t n,

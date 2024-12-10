@@ -585,3 +585,51 @@ TEST_F(MultiTypeQueueTest, FifoOrderCheck)
         EXPECT_TRUE(multiTypeQueue.pop(messageType));
     }
 }
+
+TEST_F(MultiTypeQueueTest, GetBySizeAboveMax)
+{
+    MultiTypeQueue multiTypeQueue(".", BIG_QUEUE_CAPACITY);
+    const MessageType messageType {MessageType::STATELESS};
+    const std::string moduleName = "testModule";
+    const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT, moduleName};
+
+    EXPECT_EQ(3, multiTypeQueue.push(messageToSend));
+
+    // Size request should contemplate data and module name string size
+    size_t sizeAsked = 0;
+    for (const auto& message : MULTIPLE_DATA_CONTENT)
+    {
+        sizeAsked += message.dump().size();
+        sizeAsked += moduleName.size();
+    }
+    // Duplicate to surpass the maximun
+    sizeAsked *= 2;
+
+    auto messagesReceived = multiTypeQueue.getNextN(MessageType::STATELESS, sizeAsked);
+    int i = 0;
+    for (const auto& singleMessage : messagesReceived)
+    {
+        EXPECT_EQ("content " + std::to_string(++i), singleMessage.data.get<std::string>());
+    }
+
+    EXPECT_EQ(3, multiTypeQueue.storedItems(MessageType::STATELESS, moduleName));
+}
+
+TEST_F(MultiTypeQueueTest, GetByBelowMax)
+{
+    MultiTypeQueue multiTypeQueue(".", BIG_QUEUE_CAPACITY);
+    const MessageType messageType {MessageType::STATELESS};
+    const std::string moduleName = "testModule";
+    const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT, moduleName};
+
+    EXPECT_EQ(3, multiTypeQueue.push(messageToSend));
+
+    size_t sizeAsked = 0;
+    sizeAsked += MULTIPLE_DATA_CONTENT.at(0).dump().size();
+    sizeAsked += moduleName.size();
+    // Fetching less than a single message size
+    sizeAsked -= 1;
+
+    auto messagesReceived = multiTypeQueue.getNextN(MessageType::STATELESS, sizeAsked);
+    EXPECT_EQ(1, messagesReceived.size());
+}

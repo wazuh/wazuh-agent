@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
 
+constexpr size_t MIN_SIZE_OF_MESSAGES = 10;
 const nlohmann::json BASE_DATA_CONTENT =
     R"({"document_id":"112233", "action":{"name":"command_test","args":["parameters_test"]}})"_json;
 
@@ -28,7 +29,6 @@ public:
     MOCK_METHOD(int, push, (std::vector<Message>), (override));
     MOCK_METHOD(bool, isEmpty, (MessageType, const std::string), (override));
     MOCK_METHOD(Message, getNext, (MessageType, const std::string, const std::string), (override));
-
 };
 
 class MessageQueueUtilsTest : public ::testing::Test
@@ -42,9 +42,8 @@ protected:
     boost::asio::io_context io_context;
     std::shared_ptr<MockMultiTypeQueue> mockQueue;
 
-    //TODO: double check
-    const size_t MIN_MESSAGES_SIZE {10};
-
+    std::variant<const int, const size_t> MinMessagesSize = MIN_SIZE_OF_MESSAGES;
+    const size_t MIN_MESSAGES_SIZE = MIN_SIZE_OF_MESSAGES;
 };
 
 TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
@@ -55,7 +54,7 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
     testMessages.emplace_back(MessageType::STATELESS, data, "", "", metadata);
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATELESS, MIN_MESSAGES_SIZE, "", ""))
+    EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATELESS, MinMessagesSize, "", ""))
         .WillOnce([&testMessages]() -> boost::asio::awaitable<std::vector<Message>> { co_return testMessages; });
     // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
@@ -89,7 +88,7 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueMetadataTest)
     metadata["agent"] = "test";
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATELESS, MIN_MESSAGES_SIZE, "", ""))
+    EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATELESS, MinMessagesSize, "", ""))
         .WillOnce([&testMessages]() -> boost::asio::awaitable<std::vector<Message>> { co_return testMessages; });
     // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
