@@ -88,8 +88,8 @@ logcollector:
 
     void CleanUpTempFiles()
     {
-        std::remove(AGENT_CONFIG_PATH);
-        std::remove("/tmp/agent_info.db");
+        std::remove(AGENT_CONFIG_PATH.c_str());
+        std::remove(AGENT_DB_PATH.c_str());
     }
 };
 
