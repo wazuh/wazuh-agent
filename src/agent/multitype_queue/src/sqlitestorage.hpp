@@ -120,10 +120,23 @@ public:
      */
     int GetElementCount(const std::string& tableName, const std::string& moduleName = "") override;
 
-    // TODO: doc
+    /**
+     * @brief Get the bytes occupied by elements stored in the specified queue.
+     *
+     * @param tableName  The name of the table.
+     * @return size_t The bytes occupied by elements stored in the specified queue.
+     */
     size_t GetElementsStoredSize(const std::string& tableName) override;
 
-    // TODO: doc
+    /**
+     * @brief Retrieve multiple JSON messages based on size from the specified queue.
+     *
+     * @param n size occupied by the messages to be retrieved.
+     * @param tableName The name of the table to retrieve the message from.
+     * @param moduleName The name of the module.
+     * @param moduleType The type of the module.
+     * @return nlohmann::json The retrieved JSON messages.
+     */
     nlohmann::json RetrieveBySize(size_t n,
                                   const std::string& tableName,
                                   const std::string& moduleName = "",
@@ -149,7 +162,9 @@ private:
      */
     void ReleaseDatabaseAccess();
 
-    // TODO: fill doc
+    /**
+     * @brief Intermediate function for processing Retrieve queries.
+    */
     nlohmann::json ProcessRequest(SQLite::Statement& sqlStatementQuery, size_t maxSize = 0);
 
     /**

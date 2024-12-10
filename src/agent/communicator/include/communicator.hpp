@@ -70,9 +70,9 @@ namespace communicator
             m_batchSize = getConfigValue.template operator()<size_t>("events", "batch_size")
                               .value_or(config::agent::DEFAULT_BATCH_SIZE);
 
-            if (m_batchSize < 1 || m_batchSize > 1'000'000)
+            if (m_batchSize < 1'000 || m_batchSize > 100'000'000)
             {
-                LogWarn("batch_size must be between 1 and 1000000. Using default value.");
+                LogWarn("batch_size must be between 1000B and 100MB. Using default value.");
                 m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
             }
         }
@@ -138,7 +138,7 @@ namespace communicator
         /// @brief Time between batch requests
         std::time_t m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
 
-        //TODO:
+        /// @brief Size for batch requests
         size_t m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
 
         /// @brief The server URL
