@@ -307,7 +307,7 @@ int SQLiteStorage::GetElementCount(const std::string& tableName, const std::stri
     }
 }
 
-int SQLiteStorage::GetElementsStoredSize(const std::string& tableName)
+size_t SQLiteStorage::GetElementsStoredSize(const std::string& tableName)
 {
     std::string sizeQuery = fmt::format(
         R"(SELECT SUM(LENGTH(module_name) + LENGTH(module_type) + LENGTH(metadata) + LENGTH(message)) AS total_bytes FROM {};)",
@@ -316,10 +316,10 @@ int SQLiteStorage::GetElementsStoredSize(const std::string& tableName)
     try
     {
         SQLite::Statement query(*m_db, sizeQuery);
-        int count = 0;
+        size_t count = 0;
         if (query.executeStep())
         {
-            count = query.getColumn(0).getInt();
+            count = query.getColumn(0).getUInt();
         }
         else
         {
@@ -378,6 +378,7 @@ nlohmann::json SQLiteStorage::ProcessRequest(SQLite::Statement& sqlStatementQuer
                 if (maxSize)
                 {
                     size_t messageSize = moduleNameString.size() + moduleTypeString.size() + metadataString.size() + dataString.size();
+                    //TODO: delete
                     LogError("/*/*/*/*/ Size: {} - '{}'.", messageSize, outputJson.dump());
                     if (sizeAccum + messageSize >= maxSize)
                     {

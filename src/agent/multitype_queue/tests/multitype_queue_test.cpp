@@ -585,3 +585,25 @@ TEST_F(MultiTypeQueueTest, FifoOrderCheck)
         EXPECT_TRUE(multiTypeQueue.pop(messageType));
     }
 }
+
+// Push Multiple, pop multiples
+TEST_F(MultiTypeQueueTest, GetBySizeAboveMax)
+{
+    MultiTypeQueue multiTypeQueue(".", BIG_QUEUE_CAPACITY);
+    const MessageType messageType {MessageType::STATELESS};
+    const std::string moduleName = "testModule";
+    const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT, moduleName};
+
+    EXPECT_EQ(3, multiTypeQueue.push(messageToSend));
+
+    size_t sizeAsked = MULTIPLE_DATA_CONTENT.size() * 2;
+    auto messagesReceived =
+        multiTypeQueue.getNextN(MessageType::STATELESS, sizeAsked);
+    int i = 0;
+    for (const auto& singleMessage : messagesReceived)
+    {
+        EXPECT_EQ("content " + std::to_string(++i), singleMessage.data.get<std::string>());
+    }
+
+    EXPECT_EQ(3, multiTypeQueue.storedItems(MessageType::STATELESS, moduleName));
+}
