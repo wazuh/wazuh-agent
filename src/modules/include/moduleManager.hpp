@@ -51,9 +51,9 @@ public:
     void Stop();
 
 private:
+    TaskManager m_taskManager;
     std::map<std::string, std::shared_ptr<ModuleWrapper>> m_modules;
     std::function<int(Message)> m_pushMessage;
     std::shared_ptr<configuration::ConfigurationParser> m_configurationParser;
     std::string m_agentUUID;
-    TaskManager m_taskManager;
 };
