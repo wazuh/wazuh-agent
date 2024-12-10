@@ -13,6 +13,12 @@
 
 namespace command_handler
 {
+    struct CommandInfo
+    {
+        std::string Module;
+        bool ValidateParams;
+    };
+
     /// @brief CommandHandler class
     ///
     /// This class is responsible for executing commands retrieved from the command
@@ -59,6 +65,16 @@ namespace command_handler
                     expTimer->expires_after(1000ms);
                     co_await expTimer->async_wait(boost::asio::use_awaitable);
                     continue;
+                }
+
+                if (!checkCommand(cmd.value()))
+                {
+                    cmd.value().ExecutionResult.ErrorCode = module_command::Status::FAILURE;
+                    cmd.value().ExecutionResult.Message = "Command is not valid";
+                    LogError("Error checking module and args for command: {} {}. Error: {}",
+                             cmd.value().Id,
+                             cmd.value().Command,
+                             cmd.value().ExecutionResult.Message);
                 }
 
                 if (!m_commandStore.StoreCommand(cmd.value()))
@@ -118,10 +134,54 @@ namespace command_handler
             }
         }
 
+        /// @brief Check if the command is valid
+        ///
+        /// This function checks if the given command is valid by looking it up in
+        /// the map of valid commands. If the command is valid, it checks if the
+        /// parameters are valid. If the command is not valid, it logs an error and
+        /// returns false. If the command is valid, it sets the module for the
+        /// command and returns true.
+        ///
+        /// @param cmd The command to check
+        /// @return True if the command is valid, false otherwise
+        bool checkCommand(module_command::CommandEntry& cmd)
+        {
+            auto it = m_validCommandsMap.find(cmd.Command);
+            if (it != m_validCommandsMap.end())
+            {
+                if (it->second.ValidateParams && !cmd.Parameters.empty())
+                {
+                    for (const auto& param : cmd.Parameters.items())
+                    {
+                        if (!param.value().is_string())
+                        {
+                            LogError("The command {} parameters must be strings.", cmd.Command);
+                            return false;
+                        }
+                    }
+                }
+                else if (!it->second.ValidateParams && !cmd.Parameters.empty())
+                {
+                    LogWarn("The command {} does not accept parameters.", cmd.Command);
+                }
+
+                cmd.Module = it->second.Module;
+                return true;
+            }
+            else
+            {
+                LogError("The command {} is not valid.", cmd.Command);
+                return false;
+            }
+        }
+
         /// @brief Indicates whether the command handler is running or not
         std::atomic<bool> m_keepRunning = true;
 
         /// @brief An instance of the command store
         command_store::CommandStore m_commandStore;
+
+        std::unordered_map<std::string, CommandInfo> m_validCommandsMap = {
+            {"set-group", {"CentralizedConfiguration", true}}, {"update-group", {"CentralizedConfiguration", false}}};
     };
 } // namespace command_handler
