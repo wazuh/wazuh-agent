@@ -23,14 +23,27 @@ namespace http_client
 
         if (!result)
         {
-            LogError("Invalid URL: {}", result.error().message());
+            LogError("Invalid URL: {}. Error: {}", serverUrl, result.error().message());
             return;
         }
 
         const auto& url = *result;
-        Use_Https = url.scheme().empty() || url.scheme() == "https";
+
+        if (url.scheme() != "http" && url.scheme() != "https")
+        {
+            LogError("Invalid URL scheme: {}", serverUrl);
+            return;
+        }
+
+        if (url.host().empty())
+        {
+            LogError("Invalid URL host: {}", serverUrl);
+            return;
+        }
+
+        Use_Https = url.scheme() == "https";
         Host = url.host();
-        Port = url.port();
+        Port = !url.port().empty() ? url.port() : (Use_Https ? "443" : "80");
     }
 
     bool HttpRequestParams::operator==(const HttpRequestParams& other) const
