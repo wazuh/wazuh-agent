@@ -8,8 +8,8 @@
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
 
-const nlohmann::json BASE_DATA_CONTENT = R"({"id":"112233", "args": ["origin_test",
-                                        "command_test", "parameters_test"]})"_json;
+const nlohmann::json BASE_DATA_CONTENT =
+    R"({"document_id":"112233", "action":{"name":"command_test","args":["parameters_test"]}})"_json;
 
 class MockMultiTypeQueue : public MultiTypeQueue
 {
@@ -198,7 +198,6 @@ TEST_F(MessageQueueUtilsTest, GetCommandFromQueueTest)
     auto cmd = GetCommandFromQueue(mockQueue);
 
     ASSERT_EQ(cmd.has_value() ? cmd.value().Id : "", "112233");
-    ASSERT_EQ(cmd.has_value() ? cmd.value().Module : "", "origin_test");
     ASSERT_EQ(cmd.has_value() ? cmd.value().Command : "", "command_test");
     ASSERT_EQ(cmd.has_value() ? cmd.value().Parameters : nlohmann::json::array({""}),
               nlohmann::json::array({"parameters_test"}));
