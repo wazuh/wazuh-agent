@@ -62,37 +62,30 @@ std::optional<module_command::CommandEntry> GetCommandFromQueue(std::shared_ptr<
     nlohmann::json jsonData = m.data;
 
     std::string id;
-    std::string module;
     std::string command;
     nlohmann::json parameters = nlohmann::json::array();
 
-    if (jsonData.contains("id") && jsonData["id"].is_string())
+    if (jsonData.contains("document_id") && jsonData["document_id"].is_string())
     {
-        id = jsonData["id"].get<std::string>();
+        id = jsonData["document_id"].get<std::string>();
     }
 
-    if (jsonData.contains("args") && jsonData["args"].is_array())
+    if (jsonData.contains("action") && jsonData["action"].is_object())
     {
-        int index = 0;
-        for (const auto& arg : jsonData["args"])
+        if (jsonData["action"].contains("name") && jsonData["action"]["name"].is_string())
         {
-            switch (index++)
+            command = jsonData["action"]["name"].get<std::string>();
+        }
+        if (jsonData["action"].contains("args") && jsonData["action"]["args"].is_array())
+        {
+            for (const auto& arg : jsonData["action"]["args"])
             {
-                case 0:
-                    if (arg.is_string())
-                        module = arg.get<std::string>();
-                    break;
-                case 1:
-                    if (arg.is_string())
-                        command = arg.get<std::string>();
-                    break;
-                default: parameters.push_back(arg); break;
+                parameters.push_back(arg);
             }
         }
     }
 
-    module_command::CommandEntry cmd(id, module, command, parameters, "", module_command::Status::IN_PROGRESS);
-
+    module_command::CommandEntry cmd(id, "", command, parameters, "", module_command::Status::IN_PROGRESS);
     return cmd;
 }
 
