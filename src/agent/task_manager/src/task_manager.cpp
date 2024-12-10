@@ -10,7 +10,7 @@
 #include <utility>
 
 TaskManager::TaskManager()
-    : m_work(m_ioContext)
+    : m_work(boost::asio::make_work_guard(m_ioContext))
 {
 }
 
@@ -26,6 +26,7 @@ void TaskManager::Start(size_t numThreads)
 
 void TaskManager::Stop()
 {
+    m_work.reset();
     m_ioContext.stop();
 
     for (std::thread& thread : m_threads)
