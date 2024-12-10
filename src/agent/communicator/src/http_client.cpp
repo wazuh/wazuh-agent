@@ -402,7 +402,7 @@ namespace http_client
         }
         catch (std::exception const& e)
         {
-            LogError("Error: {}.", e.what());
+            LogError("Error: {}", e.what());
 
             res.result(boost::beast::http::status::internal_server_error);
             boost::beast::ostream(res.body()) << "Internal server error: " << e.what();
