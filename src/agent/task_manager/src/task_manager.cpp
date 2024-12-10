@@ -6,6 +6,9 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/post.hpp>
 
+#include <memory>
+#include <utility>
+
 TaskManager::TaskManager()
     : m_work(m_ioContext)
 {
@@ -61,20 +64,25 @@ void TaskManager::EnqueueTask(std::function<void()> task, const std::string& tas
 
 void TaskManager::EnqueueTask(boost::asio::awaitable<void> task, const std::string& taskID)
 {
+    // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
     boost::asio::co_spawn(
         m_ioContext,
-        [taskID, task = std::move(task)]() mutable -> boost::asio::awaitable<void>
+        [sharedData = std::make_shared<std::pair<std::string, boost::asio::awaitable<void>>>(
+             taskID, std::move(task))]() mutable -> boost::asio::awaitable<void>
         {
             try
             {
-                co_await std::move(task);
+                co_await std::move(sharedData->second);
             }
             catch (const std::exception& e)
             {
-                LogError("{} coroutine task threw an exception: {}", taskID.empty() ? "Anonymous" : taskID, e.what());
+                LogError("{} coroutine task threw an exception: {}",
+                         sharedData->first.empty() ? "Anonymous" : sharedData->first,
+                         e.what());
             }
         },
         boost::asio::detached);
+    // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 }
 
 size_t TaskManager::GetNumEnqueuedThreads() const
