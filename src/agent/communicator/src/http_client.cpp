@@ -165,9 +165,9 @@ namespace http_client
                     const auto messages = co_await messageGetter(batchSize);
                     messagesCount = std::get<0>(messages);
 
-                    if (batchTimeoutTimer.expiry() <= std::chrono::steady_clock::now())
+                    if (messagesCount || batchTimeoutTimer.expiry() <= std::chrono::steady_clock::now())
                     {
-                        LogTrace("Messages count: {}", messagesCount);
+                        LogInfo("Messages count: {}", messagesCount);
                         reqParams.Body = std::get<1>(messages);
                         break;
                     }

@@ -16,7 +16,7 @@ class IMultiTypeQueue;
 /// @brief Gets messages from a queue and returns them as a JSON string
 /// @param multiTypeQueue The queue to get messages from
 /// @param messageType The type of messages to get from the queue
-/// @param messagesSize TODO
+/// @param messagesSize Size of messages to get from the queue
 /// @param getMetadataInfo Function to get the agent metadata
 /// @return A string containing the messages from the queue
 boost::asio::awaitable<std::tuple<int, std::string>>

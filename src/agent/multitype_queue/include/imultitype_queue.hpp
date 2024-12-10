@@ -61,7 +61,7 @@ public:
      * @brief Retrieves the next message from the queue asynchronously.
      *
      * @param type The type of the queue to use as the source.
-     * @param messageQuantity The quantity of messages to return.
+     * @param messageQuantity In bytes or in number of messages.
      * @param moduleName The name of the module requesting the message.
      * @param moduleType The type of the module requesting the messages.
      * @return boost::asio::awaitable<std::vector<Message>> Awaitable object representing the next N messages.
@@ -134,6 +134,11 @@ public:
      */
     virtual int storedItems(MessageType type, const std::string moduleName = "") = 0;
 
-    //TODO: doc
+    /**
+     * @brief Returns the number of bytes stored in the queue.
+     *
+     * @param type The type of the queue.
+     * @return size_t The number of bytes in the queue.
+     */
     virtual size_t sizePerType(MessageType type) = 0;
 };
