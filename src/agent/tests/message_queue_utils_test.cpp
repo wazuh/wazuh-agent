@@ -8,6 +8,8 @@
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
 
+constexpr size_t MIN_SIZE_OF_MESSAGES = 10;
+
 const nlohmann::json BASE_DATA_CONTENT = R"({"id":"112233", "args": ["origin_test",
                                         "command_test", "parameters_test"]})"_json;
 
@@ -21,7 +23,7 @@ public:
 
     MOCK_METHOD(boost::asio::awaitable<std::vector<Message>>,
                 getNextNAwaitable,
-                (MessageType, int, const std::string, const std::string),
+                (MessageType, (std::variant<const int, const size_t>), const std::string, const std::string),
                 (override));
     MOCK_METHOD(int, popN, (MessageType, int, const std::string), (override));
     MOCK_METHOD(int, push, (Message, bool), (override));
@@ -41,7 +43,8 @@ protected:
     boost::asio::io_context io_context;
     std::shared_ptr<MockMultiTypeQueue> mockQueue;
 
-    const int MAX_MESSAGES = 1;
+    std::variant<const int, const size_t> MinMessagesSize = MIN_SIZE_OF_MESSAGES;
+    const size_t MIN_MESSAGES_SIZE = MIN_SIZE_OF_MESSAGES;
 };
 
 TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
@@ -52,13 +55,13 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
     testMessages.emplace_back(MessageType::STATELESS, data, "", "", metadata);
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATELESS, MAX_MESSAGES, "", ""))
+    EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATELESS, MinMessagesSize, "", ""))
         .WillOnce([&testMessages]() -> boost::asio::awaitable<std::vector<Message>> { co_return testMessages; });
     // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
     auto awaitableResult =
         boost::asio::co_spawn(io_context,
-                              GetMessagesFromQueue(mockQueue, MessageType::STATELESS, MAX_MESSAGES, nullptr),
+                              GetMessagesFromQueue(mockQueue, MessageType::STATELESS, MIN_MESSAGES_SIZE, nullptr),
                               boost::asio::use_future);
 
     const auto timeout = std::chrono::steady_clock::now() + std::chrono::milliseconds(1);
@@ -86,7 +89,7 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueMetadataTest)
     metadata["agent"] = "test";
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATELESS, MAX_MESSAGES, "", ""))
+    EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATELESS, MinMessagesSize, "", ""))
         .WillOnce([&testMessages]() -> boost::asio::awaitable<std::vector<Message>> { co_return testMessages; });
     // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
@@ -95,7 +98,7 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueMetadataTest)
     auto awaitableResult = boost::asio::co_spawn(
         io_context,
         GetMessagesFromQueue(
-            mockQueue, MessageType::STATELESS, MAX_MESSAGES, [&metadata]() { return metadata.dump(); }),
+            mockQueue, MessageType::STATELESS, MIN_MESSAGES_SIZE, [&metadata]() { return metadata.dump(); }),
         boost::asio::use_future);
 
     const auto timeout = std::chrono::steady_clock::now() + std::chrono::milliseconds(1);

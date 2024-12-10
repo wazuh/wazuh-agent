@@ -96,18 +96,20 @@ public:
     Message getNext(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
     /**
-     * @copydoc IMultiTypeQueue::getNextNAwaitable(MessageType, int, const std::string, const std::string)
+     * @copydoc IMultiTypeQueue::getNextNAwaitable(MessageType type, std::variant<const int, const size_t>
+     * messageQuantity, const std::string moduleName, const std::string moduleType)
      */
-    boost::asio::awaitable<std::vector<Message>> getNextNAwaitable(MessageType type,
-                                                                   int messageQuantity,
-                                                                   const std::string moduleName = "",
-                                                                   const std::string moduleType = "") override;
+    boost::asio::awaitable<std::vector<Message>>
+    getNextNAwaitable(MessageType type,
+                      std::variant<const int, const size_t> messageQuantity,
+                      const std::string moduleName = "",
+                      const std::string moduleType = "") override;
 
     /**
      * @copydoc IMultiTypeQueue::getNextN(MessageType, int, const std::string, const std::string)
      */
     std::vector<Message> getNextN(MessageType type,
-                                  int messageQuantity,
+                                  std::variant<const int, const size_t> messageQuantity,
                                   const std::string moduleName = "",
                                   const std::string moduleType = "") override;
 
@@ -135,4 +137,9 @@ public:
      * @copydoc IMultiTypeQueue::storedItems(MessageType, const std::string)
      */
     int storedItems(MessageType type, const std::string moduleName = "") override;
+
+    /**
+     * @copydoc IMultiTypeQueue::sizePerType(MessageType type)
+     */
+    size_t sizePerType(MessageType type) override;
 };

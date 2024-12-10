@@ -5,6 +5,7 @@
 #include <boost/asio/awaitable.hpp>
 
 #include <string>
+#include <variant>
 #include <vector>
 
 /**
@@ -61,15 +62,16 @@ public:
      * @brief Retrieves the next message from the queue asynchronously.
      *
      * @param type The type of the queue to use as the source.
-     * @param messageQuantity The quantity of messages to return.
+     * @param messageQuantity In bytes or in number of messages.
      * @param moduleName The name of the module requesting the message.
      * @param moduleType The type of the module requesting the messages.
      * @return boost::asio::awaitable<std::vector<Message>> Awaitable object representing the next N messages.
      */
-    virtual boost::asio::awaitable<std::vector<Message>> getNextNAwaitable(MessageType type,
-                                                                           int messageQuantity,
-                                                                           const std::string moduleName = "",
-                                                                           const std::string moduleType = "") = 0;
+    virtual boost::asio::awaitable<std::vector<Message>>
+    getNextNAwaitable(MessageType type,
+                      std::variant<const int, const size_t> messageQuantity,
+                      const std::string moduleName = "",
+                      const std::string moduleType = "") = 0;
 
     /**
      * @brief Retrieves the next N messages from the queue.
@@ -81,7 +83,7 @@ public:
      * @return std::vector<Message> A vector of messages fetched from the queue.
      */
     virtual std::vector<Message> getNextN(MessageType type,
-                                          int messageQuantity,
+                                          std::variant<const int, const size_t> messageQuantity,
                                           const std::string moduleName = "",
                                           const std::string moduleType = "") = 0;
 
@@ -133,4 +135,12 @@ public:
      * @return int The number of items in the queue.
      */
     virtual int storedItems(MessageType type, const std::string moduleName = "") = 0;
+
+    /**
+     * @brief Returns the number of bytes stored in the queue.
+     *
+     * @param type The type of the queue.
+     * @return size_t The number of bytes in the queue.
+     */
+    virtual size_t sizePerType(MessageType type) = 0;
 };
