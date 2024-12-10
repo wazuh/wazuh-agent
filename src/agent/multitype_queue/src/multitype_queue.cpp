@@ -209,8 +209,8 @@ std::vector<Message> MultiTypeQueue::getNextN(MessageType type,
                 sizeRequested = availableSize;
             }
             LogInfo("Requesting {}B of {}B", sizeRequested, availableSize);
-            arrayData = m_persistenceDest->RetrieveBySize(
-                sizeRequested, m_mapMessageTypeName.at(type), moduleName, moduleType);
+            arrayData =
+                m_persistenceDest->RetrieveBySize(sizeRequested, m_mapMessageTypeName.at(type), moduleName, moduleType);
         }
         else
         {

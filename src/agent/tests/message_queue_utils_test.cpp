@@ -88,7 +88,6 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueMetadataTest)
     nlohmann::json metadata;
     metadata["agent"] = "test";
 
-
     // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
     EXPECT_CALL(*mockQueue, getNextNAwaitable(MessageType::STATELESS, MinMessagesSize, "", ""))
         .WillOnce([&testMessages]() -> boost::asio::awaitable<std::vector<Message>> { co_return testMessages; });
