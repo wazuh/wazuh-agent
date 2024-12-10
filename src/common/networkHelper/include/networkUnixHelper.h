@@ -20,8 +20,15 @@
 #include <net/if.h>
 #include "stringHelper.h"
 
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4505)
+#endif
 
 namespace Utils
 {
@@ -69,6 +76,12 @@ namespace Utils
     };
 }
 
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #endif // _NETWORK_UNIX_HELPER_H

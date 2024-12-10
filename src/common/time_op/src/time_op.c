@@ -12,11 +12,27 @@
  * @brief Time operations
  * @date October 4, 2017
  */
-
-#include "shared.h"
+#ifdef WIN32
+#include <vcruntime.h>
+#include <winsock2.h>
+#include <windows.h>
+#include <ws2tcpip.h>
+#include <shlwapi.h>
+#include <io.h>
+#include <direct.h>
+#endif
+#include <string.h>
+#include <stdbool.h>
 #include "time_op.h"
+#include "defs.h"
+#include "os_macros.h"
+#include "error_messages.h"
+#include "logger.hpp"
+#include "pal.h"
+
 
 #ifndef WIN32
+#include <sys/time.h>
 
 #ifdef __MACH__
 #include <mach/clock.h>
@@ -40,10 +56,8 @@ void gettime(struct timespec *ts) {
 }
 
 #else
-
-#include <windows.h>
 #define EPOCH_DIFFERENCE 11644473600LL
-struct tm *localtime_r(const time_t *timer, struct tm *result){}
+
 // Get the epoch time
 
 long long int get_windows_time_epoch() {

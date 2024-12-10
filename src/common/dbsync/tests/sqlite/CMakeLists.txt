@@ -25,7 +25,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         unofficial::sqlite3::sqlite3
         cjson
         utils
-        -static-libgcc -static-libstdc++
+        -static-libgcc
     )
 else()
     target_link_libraries(sqlite_unit_test

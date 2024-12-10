@@ -61,7 +61,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         ws2_32
         ssl
         crypt32
-        -static-libgcc -static-libstdc++
+        -static-libgcc
     )
 else()
     target_link_libraries(fim_db_interface_test
