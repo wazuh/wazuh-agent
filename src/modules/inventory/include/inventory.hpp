@@ -27,7 +27,6 @@ class Inventory {
             static Inventory s_instance;
             return s_instance;
         }
-
         void Start();
         void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
         void Stop();
@@ -41,6 +40,11 @@ class Inventory {
                     const std::string& normalizerConfigPath,
                     const std::string& normalizerType);
         virtual void SendDeltaEvent(const std::string& data);
+
+        const std::string& AgentUUID() const { return m_agentUUID; };
+        void SetAgentUUID(const std::string& agentUUID) {
+            m_agentUUID = agentUUID;
+        }
 
     private:
         Inventory();
@@ -83,6 +87,7 @@ class Inventory {
         std::string CalculateBase64Id(const nlohmann::json& data, const std::string& table);
 
         const std::string                           m_moduleName {"inventory"};
+        std::string                                 m_agentUUID {""};   // Agent UUID
         std::shared_ptr<ISysInfo>                   m_spInfo;
         std::function<void(const std::string&)>     m_reportDiffFunction;
         bool                                        m_enabled;          // Main switch

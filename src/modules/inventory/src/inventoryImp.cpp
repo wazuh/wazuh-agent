@@ -12,6 +12,7 @@ constexpr std::time_t INVENTORY_DEFAULT_INTERVAL { 3600000 };
 constexpr auto UNKNOWN_VALUE {" "};
 constexpr auto EMPTY_VALUE {""};
 constexpr auto UNKNOWN_DATE = nullptr;
+constexpr size_t MAX_ID_SIZE = 512;
 
 constexpr auto QUEUE_SIZE
 {
@@ -299,7 +300,7 @@ std::string Inventory::GetPrimaryKeys([[maybe_unused]] const nlohmann::json& dat
 std::string Inventory::CalculateBase64Id(const nlohmann::json& data, const std::string& table)
 {
     std::string primaryKey = GetPrimaryKeys(data, table);
-    std::string baseId = Name() + ":" + table + ":" + primaryKey;
+    std::string baseId = AgentUUID() + ":" + primaryKey;
     std::string idBase64;
     idBase64.resize(boost::beast::detail::base64::encoded_size(baseId.size()));
     boost::beast::detail::base64::encode(&idBase64[0], baseId.c_str(), baseId.size());
@@ -324,9 +325,18 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
                 msg["operation"] = OPERATION_MAP.at(result);
                 msg["data"] = EcsData(item, table);
                 msg["id"] = CalculateBase64Id(msg["data"], table);
-                msg["data"]["@timestamp"] = m_scanTime;
-                const auto msgToSend{msg.dump()};
-                m_reportDiffFunction(msgToSend);
+
+                if (msg["id"].is_string() && msg["id"].get<std::string>().size() <= MAX_ID_SIZE)
+                {
+                    msg["data"]["@timestamp"] = m_scanTime;
+                    const auto msgToSend{msg.dump()};
+                    m_reportDiffFunction(msgToSend);
+                }
+                else
+                {
+                    LogWarn("Event discarded for exceeding maximum size allowed in id field.");
+                    LogTrace("Event discarded: {}", msg.dump());
+                }
             }
         }
         else
@@ -337,9 +347,19 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
             msg["operation"] = OPERATION_MAP.at(result);
             msg["data"] = EcsData(data, table);
             msg["id"] = CalculateBase64Id(msg["data"], table);
-            msg["data"]["@timestamp"] = m_scanTime;
-            const auto msgToSend{msg.dump()};
-            m_reportDiffFunction(msgToSend);
+
+            if (msg["id"].is_string() && msg["id"].get<std::string>().size() <= MAX_ID_SIZE)
+            {
+                msg["data"]["@timestamp"] = m_scanTime;
+                const auto msgToSend{msg.dump()};
+                m_reportDiffFunction(msgToSend);
+            }
+            else
+            {
+                LogWarn("Event discarded for exceeding maximum size allowed in id field.");
+                LogTrace("Event discarded: {}", msg.dump());
+            }
+
             // LCOV_EXCL_STOP
         }
     }

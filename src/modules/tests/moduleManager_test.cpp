@@ -25,7 +25,7 @@ protected:
         : pushMessage([](const Message&) { return 0; }),
           configurationParser(std::make_shared<configuration::ConfigurationParser>()),
           createTask([](const std::function<void()>& task) { task(); }),
-          manager(pushMessage, configurationParser, createTask)
+          manager(pushMessage, configurationParser, createTask, "uuid1234")
     {}
 
     void SetUp() override {
@@ -35,7 +35,7 @@ protected:
 };
 
 TEST_F(ModuleManagerTest, Constructor) {
-    EXPECT_NO_THROW(ModuleManager(pushMessage, configurationParser, createTask));
+    EXPECT_NO_THROW(ModuleManager(pushMessage, configurationParser, createTask, "uuid1234"));
 }
 
 TEST_F(ModuleManagerTest, AddModule) {

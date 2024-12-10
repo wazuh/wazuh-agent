@@ -14,7 +14,9 @@ using logcollector::Logcollector;
 void ModuleManager::AddModules() {
 
 #ifdef ENABLE_INVENTORY
-    AddModule(Inventory::Instance());
+    Inventory& inventory = Inventory::Instance();
+    inventory.SetAgentUUID(m_agentUUID);
+    AddModule(inventory);
 #endif
 
 #ifdef ENABLE_LOGCOLLECTOR
