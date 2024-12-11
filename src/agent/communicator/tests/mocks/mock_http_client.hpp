@@ -19,7 +19,6 @@ public:
                  std::function<boost::asio::awaitable<intStringTuple>(const size_t)> messageGetter,
                  std::function<void()> onUnauthorized,
                  std::time_t connectionRetry,
-                 std::time_t batchInterval,
                  size_t batchSize,
                  std::function<void(const int, const std::string&)> onSuccess,
                  std::function<bool()> loopRequestCondition),

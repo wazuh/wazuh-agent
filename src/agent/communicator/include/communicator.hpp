@@ -58,15 +58,6 @@ namespace communicator
             m_retryInterval = getConfigValue.template operator()<std::time_t>("agent", "retry_interval")
                                   .value_or(config::agent::DEFAULT_RETRY_INTERVAL);
 
-            m_batchInterval = getConfigValue.template operator()<std::time_t>("events", "batch_interval")
-                                  .value_or(config::agent::DEFAULT_BATCH_INTERVAL);
-
-            if (m_batchInterval < 1'000 || m_batchInterval > (1'000 * 60 * 60))
-            {
-                LogWarn("batch_interval must be between 1s and 1h. Using default value.");
-                m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
-            }
-
             m_batchSize = getConfigValue.template operator()<size_t>("events", "batch_size")
                               .value_or(config::agent::DEFAULT_BATCH_SIZE);
 
@@ -134,9 +125,6 @@ namespace communicator
 
         /// @brief Time in milliseconds between authentication attemps in case of failure
         std::time_t m_retryInterval = config::agent::DEFAULT_RETRY_INTERVAL;
-
-        /// @brief Time between batch requests
-        std::time_t m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
 
         /// @brief Size for batch requests
         size_t m_batchSize = config::agent::DEFAULT_BATCH_SIZE;

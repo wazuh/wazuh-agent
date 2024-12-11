@@ -1,5 +1,6 @@
 #include <multitype_queue.hpp>
 
+#include <config.h>
 #include <logger.hpp>
 #include <persistence_factory.hpp>
 
@@ -13,6 +14,20 @@ MultiTypeQueue::MultiTypeQueue(const std::string& dbFolderPath, size_t size, int
     , m_timeout(timeout)
 {
     const auto dbFilePath = dbFolderPath + "/" + QUEUE_DB_NAME;
+
+    // const ConfigGetter& getConfigValue
+
+    // m_batchInterval = getConfigValue.template operator()<std::time_t>("events", "batch_interval")
+    //                         .value_or(config::agent::DEFAULT_BATCH_INTERVAL);
+
+    // if (m_batchInterval < 1'000 || m_batchInterval > (1'000 * 60 * 60))
+    // {
+    //     LogWarn("batch_interval must be between 1s and 1h. Using default value.");
+    //     m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
+    // }
+
+    //     /// @brief Time between batch requests
+    // std::time_t m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
 
     try
     {

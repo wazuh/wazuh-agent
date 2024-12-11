@@ -249,7 +249,6 @@ TEST_P(HttpClientTest, Co_PerformHttpRequest_Success)
                                               onUnauthorized,
                                               5, // NOLINT
                                               1, // NOLINT
-                                              1, // NOLINT
                                               onSuccess,
                                               loopRequestCondition);
 
@@ -303,7 +302,6 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
                                               onUnauthorized,
                                               5, // NOLINT
                                               1, // NOLINT
-                                              1, // NOLINT
                                               onSuccess,
                                               nullptr);
 
@@ -356,7 +354,6 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails
                                               getMessages,
                                               onUnauthorized,
                                               5, // NOLINT
-                                              1, // NOLINT
                                               1, // NOLINT
                                               onSuccess,
                                               loopRequestCondition);
@@ -413,7 +410,6 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
                                               onUnauthorized,
                                               5, // NOLINT
                                               1, // NOLINT
-                                              1, // NOLINT
                                               onSuccess,
                                               loopRequestCondition);
 
@@ -467,7 +463,6 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_UnauthorizedCalledWhenAuthorization
                                               getMessages,
                                               onUnauthorized,
                                               5, // NOLINT
-                                              1, // NOLINT
                                               1, // NOLINT
                                               onSuccess,
                                               loopRequestCondition);

@@ -85,7 +85,6 @@ namespace communicator
                                                      {},
                                                      onAuthenticationFailed,
                                                      m_retryInterval,
-                                                     m_batchInterval,
                                                      m_batchSize,
                                                      onSuccess,
                                                      loopCondition);
@@ -169,7 +168,6 @@ namespace communicator
                                                      getMessages,
                                                      onAuthenticationFailed,
                                                      m_retryInterval,
-                                                     m_batchInterval,
                                                      m_batchSize,
                                                      onSuccess,
                                                      loopCondition);
@@ -198,7 +196,6 @@ namespace communicator
                                                      getMessages,
                                                      onAuthenticationFailed,
                                                      m_retryInterval,
-                                                     m_batchInterval,
                                                      m_batchSize,
                                                      onSuccess,
                                                      loopCondition);

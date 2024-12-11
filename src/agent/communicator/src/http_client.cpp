@@ -101,7 +101,6 @@ namespace http_client
         std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> messageGetter,
         std::function<void()> onUnauthorized,
         std::time_t connectionRetry,
-        std::time_t batchInterval,
         size_t batchSize,
         std::function<void(const int, const std::string&)> onSuccess,
         std::function<bool()> loopRequestCondition)
@@ -156,10 +155,6 @@ namespace http_client
 
             if (messageGetter != nullptr)
             {
-                //TODO: delete batchInterval
-                boost::asio::steady_timer batchTimeoutTimer(co_await boost::asio::this_coro::executor);
-                batchTimeoutTimer.expires_after(std::chrono::milliseconds(batchInterval));
-
                 while (loopRequestCondition != nullptr && loopRequestCondition())
                 {
                     const auto messages = co_await messageGetter(batchSize);

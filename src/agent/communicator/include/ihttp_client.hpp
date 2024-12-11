@@ -48,7 +48,6 @@ namespace http_client
             std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> messageGetter,
             std::function<void()> onUnauthorized,
             std::time_t connectionRetry,
-            std::time_t batchInterval,
             size_t batchSize,
             std::function<void(const int, const std::string&)> onSuccess = {},
             std::function<bool()> loopRequestCondition = {}) = 0;
