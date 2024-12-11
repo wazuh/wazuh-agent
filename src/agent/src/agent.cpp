@@ -35,7 +35,6 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
     // Check if agent is registered
     if (m_agentInfo.GetName().empty() || m_agentInfo.GetKey().empty() || m_agentInfo.GetUUID().empty())
     {
-        LogCritical("The agent is not registered");
         throw std::runtime_error("The agent is not registered");
     }
 
