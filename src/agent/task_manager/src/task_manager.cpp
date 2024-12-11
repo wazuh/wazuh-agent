@@ -8,6 +8,11 @@
 
 #include <utility>
 
+TaskManager::~TaskManager()
+{
+    Stop();
+}
+
 void TaskManager::Start(size_t numThreads)
 {
     if (m_work || !m_threads.empty())
@@ -32,16 +37,23 @@ void TaskManager::Stop()
         m_work->reset();
     }
 
-    m_ioContext.stop();
-
-    for (std::thread& thread : m_threads)
+    if (!m_ioContext.stopped())
     {
-        if (thread.joinable())
-        {
-            thread.join();
-        }
+        m_ioContext.stop();
     }
-    m_threads.clear();
+
+    if (!m_threads.empty())
+    {
+        for (std::thread& thread : m_threads)
+        {
+            if (thread.joinable())
+            {
+                thread.join();
+            }
+        }
+        m_threads.clear();
+    }
+
     m_ioContext.reset();
 }
 

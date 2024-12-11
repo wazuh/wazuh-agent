@@ -18,6 +18,8 @@ public:
     /// @brief Constructor
     TaskManager() = default;
 
+    ~TaskManager() override;
+
     /// @brief Starts the task manager
     /// @param numThreads The number of threads to start
     void Start(size_t numThreads) override;
