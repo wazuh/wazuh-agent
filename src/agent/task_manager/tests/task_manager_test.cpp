@@ -24,7 +24,7 @@ protected:
 
 TEST_F(TaskManagerTest, StartAndStop)
 {
-    taskManager.Start(2);
+    taskManager.Start(4);
     taskManager.Stop();
 }
 
@@ -38,14 +38,11 @@ TEST_F(TaskManagerTest, EnqueueFunctionTask)
 
     taskManager.EnqueueTask(task);
 
+    EXPECT_FALSE(taskExecuted);
+    taskManager.Start(4);
+
+    while (!taskExecuted.load())
     {
-        std::unique_lock<std::mutex> lock(mtx);
-        cv.wait(lock,
-                [&]()
-                {
-                    taskManager.Start(2);
-                    return taskExecuted.load();
-                });
     }
 
     EXPECT_TRUE(taskExecuted);
@@ -59,24 +56,19 @@ TEST_F(TaskManagerTest, EnqueueCoroutineTask)
     auto coroutineTask = [this]() -> boost::asio::awaitable<void>
     {
         taskExecuted = true;
-        cv.notify_one();
         co_return;
     };
 
     taskManager.EnqueueTask(coroutineTask());
 
+    EXPECT_FALSE(taskExecuted);
+    taskManager.Start(4);
+
+    while (!taskExecuted.load())
     {
-        std::unique_lock<std::mutex> lock(mtx);
-        cv.wait(lock,
-                [&]()
-                {
-                    taskManager.Start(2);
-                    return taskExecuted.load();
-                });
     }
 
     EXPECT_TRUE(taskExecuted);
-
     taskManager.Stop();
 }
 
@@ -93,19 +85,17 @@ TEST_F(TaskManagerTest, EnqueueFunctionTaskIncrementsCounter)
 
     taskManager.EnqueueTask(task);
 
+    EXPECT_FALSE(taskExecuted);
+    taskManager.Start(4);
+
+    while (!taskExecuted.load())
     {
-        std::unique_lock<std::mutex> lock(mtx);
-        cv.wait(lock,
-                [&]()
-                {
-                    taskManager.Start(2);
-                    return taskExecuted.load();
-                });
     }
+
+    EXPECT_TRUE(taskExecuted);
 
     taskManager.Stop();
 
-    EXPECT_TRUE(taskExecuted);
     EXPECT_EQ(taskManager.GetNumEnqueuedThreads(), 0);
 }
 
