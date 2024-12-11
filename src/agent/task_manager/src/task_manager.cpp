@@ -10,6 +10,12 @@
 
 void TaskManager::Start(size_t numThreads)
 {
+    if (m_work || !m_threads.empty())
+    {
+        LogError("Task manager already started");
+        return;
+    }
+
     m_work = std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
         boost::asio::make_work_guard(m_ioContext));
 
