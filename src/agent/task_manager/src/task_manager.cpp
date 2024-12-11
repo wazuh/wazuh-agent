@@ -41,7 +41,7 @@ void TaskManager::Stop()
 
 void TaskManager::EnqueueTask(std::function<void()> task, const std::string& taskID)
 {
-    if (++m_numEnqueuedThreads > m_threads.size() - 1) // -1 to account for the coroutines
+    if (++m_numEnqueuedThreads > m_threads.size())
     {
         LogError("Enqueued more threaded tasks than available threads");
     }
