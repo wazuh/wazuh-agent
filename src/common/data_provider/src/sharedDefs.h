@@ -15,7 +15,7 @@
 #include <set>
 #include <string>
 
-constexpr auto WM_SYS_HW_DIR {"/sys/class/dmi/id/board_serial"};
+constexpr auto WM_SYS_HW_DIR {"/sys/class/dmi/id/product_uuid"};
 constexpr auto WM_SYS_CPU_DIR {"/proc/cpuinfo"};
 constexpr auto WM_SYS_CPU_FREC_DIR {"/sys/devices/system/cpu/"};
 constexpr auto WM_SYS_MEM_DIR {"/proc/meminfo"};
