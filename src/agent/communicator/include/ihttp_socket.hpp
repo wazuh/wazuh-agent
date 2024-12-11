@@ -4,10 +4,13 @@
 #include <boost/beast.hpp>
 #include <boost/system/error_code.hpp>
 
+#include <chrono>
 #include <string>
 
 namespace http_client
 {
+    constexpr int TIMEOUT_DEFAULT = 2;
+
     /// @brief Interface for HTTP sockets
     class IHttpSocket
     {
@@ -18,8 +21,11 @@ namespace http_client
         /// @brief Connects the socket to the given endpoints
         /// @param endpoints The endpoints to connect to
         /// @param ec The error code, if any occurred
-        virtual void Connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
-                             boost::system::error_code& ec) = 0;
+        /// @param timeOut The timeout for the connection
+        virtual void Connect(boost::asio::io_context& io_context,
+                             const boost::asio::ip::tcp::resolver::results_type& endpoints,
+                             boost::system::error_code& ec,
+                             const std::chrono::seconds timeOut = std::chrono::seconds(TIMEOUT_DEFAULT)) = 0;
 
         /// @brief Asynchronous version of Connect
         /// @param endpoints The endpoints to connect to
