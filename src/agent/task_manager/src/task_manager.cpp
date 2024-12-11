@@ -54,7 +54,7 @@ void TaskManager::EnqueueTask(std::function<void()> task, const std::string& tas
         }
         catch (const std::exception& e)
         {
-            LogError("{} task threw an exception: {}", taskID.empty() ? "Anonymous" : taskID, e.what());
+            LogError("{} task exited with an exception: {}", taskID.empty() ? "Anonymous" : taskID, e.what());
         }
         --m_numEnqueuedThreads;
     };
@@ -76,7 +76,7 @@ void TaskManager::EnqueueTask(boost::asio::awaitable<void> task, const std::stri
             }
             catch (const std::exception& e)
             {
-                LogError("{} coroutine task threw an exception: {}",
+                LogError("{} coroutine task exited with an exception: {}",
                          sharedData->first.empty() ? "Anonymous" : sharedData->first,
                          e.what());
             }
