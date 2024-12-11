@@ -6,6 +6,7 @@
 #include <boost/asio/io_context.hpp>
 
 #include <functional>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -25,18 +26,24 @@ public:
 
     /// @brief Enqueues a task to be executed
     /// @param task The task to enqueue
-    void EnqueueTask(std::function<void()> task) override;
+    /// @param taskID The ID of the task
+    void EnqueueTask(std::function<void()> task, const std::string& taskID = "") override;
 
     /// @brief Enqueues a coroutine task to be executed
     /// @param task The coroutine task to enqueue
-    void EnqueueTask(boost::asio::awaitable<void> task) override;
+    /// @param taskID The ID of the task
+    void EnqueueTask(boost::asio::awaitable<void> task, const std::string& taskID = "") override;
+
+    /// @brief Returns the number of enqueued threads
+    /// @return The number of enqueued threads
+    size_t GetNumEnqueuedThreads() const;
 
 private:
     /// @brief The IO context for the task manager
     boost::asio::io_context m_ioContext;
 
-    /// @brief A work object to keep the IO context running
-    boost::asio::io_context::work m_work;
+    /// @brief A work guard object to keep the IO context running
+    boost::asio::executor_work_guard<boost::asio::io_context::executor_type> m_work;
 
     /// @brief Threads run by the task manager
     std::vector<std::thread> m_threads;

@@ -28,8 +28,7 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
           [this]<typename T>(std::string table, std::string key) -> std::optional<T>
           { return m_configurationParser->GetConfig<T>(std::move(table), std::move(key)); })
     , m_moduleManager([this](Message message) -> int { return m_messageQueue->push(std::move(message)); },
-                      m_configurationParser,
-                      [this](std::function<void()> task) { m_taskManager.EnqueueTask(std::move(task)); })
+                      m_configurationParser)
     , m_commandHandler(m_dataPath)
 {
     // Check if agent is registered
@@ -58,8 +57,16 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
 
     m_centralizedConfiguration.ReloadModulesFunction([this]() { ReloadModules(); });
 
-    m_taskManager.Start(
-        m_configurationParser->GetConfig<size_t>("agent", "thread_count").value_or(config::DEFAULT_THREAD_COUNT));
+    auto agentThreadCount =
+        m_configurationParser->GetConfig<size_t>("agent", "thread_count").value_or(config::DEFAULT_THREAD_COUNT);
+
+    if (agentThreadCount < config::DEFAULT_THREAD_COUNT)
+    {
+        LogWarn("thread_count must be greater than {}. Using default value.", config::agent::DEFAULT_BATCH_INTERVAL);
+        agentThreadCount = config::agent::DEFAULT_BATCH_INTERVAL;
+    }
+
+    m_taskManager.Start(agentThreadCount);
 }
 
 Agent::~Agent()
@@ -73,7 +80,7 @@ void Agent::ReloadModules()
     m_configurationParser->ReloadConfiguration();
     m_moduleManager.Stop();
     m_moduleManager.Setup();
-    m_taskManager.EnqueueTask([this]() { m_moduleManager.Start(); });
+    m_taskManager.EnqueueTask([this]() { m_moduleManager.Start(); }, "StartModuleManager");
 }
 
 void Agent::Run()
@@ -81,54 +88,64 @@ void Agent::Run()
     // Check if the server recognizes the agent
     m_communicator.SendAuthenticationRequest();
 
-    m_taskManager.EnqueueTask(m_communicator.WaitForTokenExpirationAndAuthenticate());
+    m_taskManager.EnqueueTask(m_communicator.WaitForTokenExpirationAndAuthenticate(), "Authenticate");
 
-    m_taskManager.EnqueueTask(m_communicator.GetCommandsFromManager(
-        [this](const int, const std::string& response) { PushCommandsToQueue(m_messageQueue, response); }));
+    m_taskManager.EnqueueTask(m_communicator.GetCommandsFromManager([this](const int, const std::string& response)
+                                                                    { PushCommandsToQueue(m_messageQueue, response); }),
+                              "FetchCommands");
 
     m_taskManager.EnqueueTask(m_communicator.StatefulMessageProcessingTask(
-        [this](const int numMessages)
-        {
-            return GetMessagesFromQueue(m_messageQueue,
-                                        MessageType::STATEFUL,
-                                        numMessages,
-                                        [this]() { return m_agentInfo.GetMetadataInfo(false); });
-        },
-        [this]([[maybe_unused]] const int messageCount, const std::string&)
-        { PopMessagesFromQueue(m_messageQueue, MessageType::STATEFUL, messageCount); }));
+                                  [this](const int numMessages)
+                                  {
+                                      return GetMessagesFromQueue(m_messageQueue,
+                                                                  MessageType::STATEFUL,
+                                                                  numMessages,
+                                                                  [this]()
+                                                                  { return m_agentInfo.GetMetadataInfo(false); });
+                                  },
+                                  [this]([[maybe_unused]] const int messageCount, const std::string&)
+                                  { PopMessagesFromQueue(m_messageQueue, MessageType::STATEFUL, messageCount); }),
+                              "Stateful");
 
     m_taskManager.EnqueueTask(m_communicator.StatelessMessageProcessingTask(
-        [this](const int numMessages)
-        {
-            return GetMessagesFromQueue(m_messageQueue,
-                                        MessageType::STATELESS,
-                                        numMessages,
-                                        [this]() { return m_agentInfo.GetMetadataInfo(false); });
-        },
-        [this]([[maybe_unused]] const int messageCount, const std::string&)
-        { PopMessagesFromQueue(m_messageQueue, MessageType::STATELESS, messageCount); }));
+                                  [this](const int numMessages)
+                                  {
+                                      return GetMessagesFromQueue(m_messageQueue,
+                                                                  MessageType::STATELESS,
+                                                                  numMessages,
+                                                                  [this]()
+                                                                  { return m_agentInfo.GetMetadataInfo(false); });
+                                  },
+                                  [this]([[maybe_unused]] const int messageCount, const std::string&)
+                                  { PopMessagesFromQueue(m_messageQueue, MessageType::STATELESS, messageCount); }),
+                              "Stateless");
 
     m_moduleManager.AddModules();
-    m_taskManager.EnqueueTask([this]() { m_moduleManager.Start(); });
+    m_taskManager.EnqueueTask([this]() { m_moduleManager.Start(); }, "StartModuleManager");
 
-    m_taskManager.EnqueueTask(m_commandHandler.CommandsProcessingTask<module_command::CommandEntry>(
-        [this]() { return GetCommandFromQueue(m_messageQueue); },
-        [this]() { return PopCommandFromQueue(m_messageQueue); },
-        [this](const module_command::CommandEntry& cmd) { return ReportCommandResult(cmd, m_messageQueue); },
-        [this](module_command::CommandEntry& cmd)
-        {
-            if (cmd.Module == "CentralizedConfiguration")
+    m_taskManager.EnqueueTask(
+        m_commandHandler.CommandsProcessingTask<module_command::CommandEntry>(
+            [this]() { return GetCommandFromQueue(m_messageQueue); },
+            [this]() { return PopCommandFromQueue(m_messageQueue); },
+            [this](const module_command::CommandEntry& cmd) { return ReportCommandResult(cmd, m_messageQueue); },
+            [this](module_command::CommandEntry& cmd)
             {
-                return DispatchCommand(
-                    cmd,
-                    [this](std::string command, nlohmann::json parameters)
-                    { return m_centralizedConfiguration.ExecuteCommand(std::move(command), std::move(parameters)); },
-                    m_messageQueue);
-            }
-            return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue);
-        }));
+                if (cmd.Module == "CentralizedConfiguration")
+                {
+                    return DispatchCommand(
+                        cmd,
+                        [this](std::string command, nlohmann::json parameters) {
+                            return m_centralizedConfiguration.ExecuteCommand(std::move(command), std::move(parameters));
+                        },
+                        m_messageQueue);
+                }
+                return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue);
+            }),
+        "CommandsProcessing");
 
     m_signalHandler->WaitForSignal();
-    m_moduleManager.Stop();
+
+    m_commandHandler.Stop();
     m_communicator.Stop();
+    m_moduleManager.Stop();
 }
