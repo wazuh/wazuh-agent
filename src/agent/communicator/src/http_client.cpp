@@ -156,7 +156,7 @@ namespace http_client
 
             if (messageGetter != nullptr)
             {
-                boost::asio::steady_timer refreshTimer(co_await boost::asio::this_coro::executor);
+                //TODO: delete batchInterval
                 boost::asio::steady_timer batchTimeoutTimer(co_await boost::asio::this_coro::executor);
                 batchTimeoutTimer.expires_after(std::chrono::milliseconds(batchInterval));
 
@@ -165,7 +165,7 @@ namespace http_client
                     const auto messages = co_await messageGetter(batchSize);
                     messagesCount = std::get<0>(messages);
 
-                    if (messagesCount || batchTimeoutTimer.expiry() <= std::chrono::steady_clock::now())
+                    if (messagesCount)
                     {
                         LogInfo("Messages count: {}", messagesCount);
                         reqParams.Body = std::get<1>(messages);

@@ -171,11 +171,46 @@ MultiTypeQueue::getNextNAwaitable(MessageType type,
     std::vector<Message> result;
     if (m_mapMessageTypeName.contains(type))
     {
-        while (isEmpty(type))
+        if (std::holds_alternative<const int>(messageQuantity))
         {
-            timer.expires_after(std::chrono::milliseconds(DEFAULT_TIMER_IN_MS));
-            co_await timer.async_wait(boost::asio::use_awaitable);
+            // waits for items to be available
+            while (isEmpty(type))
+            {
+                timer.expires_after(std::chrono::milliseconds(DEFAULT_TIMER_IN_MS));
+                co_await timer.async_wait(boost::asio::use_awaitable);
+            }
         }
+        else if (std::holds_alternative<const size_t>(messageQuantity))
+        {
+            // waits for specified size stored
+            size_t sizeRequested = std::get<const size_t>(messageQuantity);
+
+            boost::asio::steady_timer batchTimeoutTimer(co_await boost::asio::this_coro::executor);
+            // TODO: make it variable through configuration
+            constexpr int DELAY_MAX = 10000;
+            batchTimeoutTimer.expires_after(std::chrono::milliseconds(DELAY_MAX));
+
+            while ((sizePerType(type) < sizeRequested) &&
+                   (batchTimeoutTimer.expiry() > std::chrono::steady_clock::now()))
+            {
+                timer.expires_after(std::chrono::milliseconds(DEFAULT_TIMER_IN_MS));
+                co_await timer.async_wait(boost::asio::use_awaitable);
+            }
+
+            if (sizePerType(type) >= sizeRequested)
+            {
+                LogDebug("Required size achieved: {}B", sizeRequested);
+            }
+            else
+            {
+                LogDebug("Timeout reached after {}ms", DELAY_MAX);
+            }
+        }
+        else
+        {
+            LogError("Unexpected variant type on messageQuantity");
+        }
+
         result = getNextN(type, messageQuantity, moduleName, moduleType);
     }
     else
@@ -201,16 +236,9 @@ std::vector<Message> MultiTypeQueue::getNextN(MessageType type,
         }
         else if (std::holds_alternative<const size_t>(messageQuantity))
         {
-            size_t sizeRequested = std::get<const size_t>(messageQuantity);
-            auto availableSize = sizePerType(type);
-
-            if (availableSize < sizeRequested)
-            {
-                sizeRequested = availableSize;
-            }
-            LogInfo("Requesting {}B of {}B", sizeRequested, availableSize);
-            arrayData =
-                m_persistenceDest->RetrieveBySize(sizeRequested, m_mapMessageTypeName.at(type), moduleName, moduleType);
+            LogInfo("Requesting {}B ", std::get<const size_t>(messageQuantity));
+            arrayData = m_persistenceDest->RetrieveBySize(
+                std::get<const size_t>(messageQuantity), m_mapMessageTypeName.at(type), moduleName, moduleType);
         }
         else
         {
