@@ -27,8 +27,10 @@ namespace http_client
         /// @brief Connects the socket to the given endpoints
         /// @param endpoints The endpoints to connect to
         /// @param ec The error code, if any occurred
-        void Connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
-                     boost::system::error_code& ec) override
+        void Connect([[maybe_unused]] boost::asio::io_context& io_context,
+                     const boost::asio::ip::tcp::resolver::results_type& endpoints,
+                     boost::system::error_code& ec,
+                     [[maybe_unused]] const std::chrono::seconds timeout = std::chrono::seconds(2)) override
         {
             try
             {

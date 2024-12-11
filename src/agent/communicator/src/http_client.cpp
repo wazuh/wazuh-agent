@@ -374,7 +374,7 @@ namespace http_client
 
             boost::system::error_code ec;
 
-            socket->Connect(results, ec);
+            socket->Connect(io_context, results, ec, std::chrono::seconds(TIMEOUT_DEFAULT));
 
             if (ec)
             {
