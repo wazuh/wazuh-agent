@@ -133,11 +133,11 @@ int rk_check_file(char *file, char *pattern)
         } else {
             full_negate = pt_check_negate(pattern);
             /* Check for content in the file */
-            mtdebug2(ARGV0, "Checking file: %s", file);
+            LogDebug(ARGV0, "Checking file: %s", file);
             fp = wfopen(file, "r");
             if (fp) {
 
-                mtdebug2(ARGV0, "Starting new file: %s", file);
+                LogDebug(ARGV0, "Starting new file: %s", file);
                 buf[OS_SIZE_2048] = '\0';
                 while (fgets(buf, OS_SIZE_2048, fp) != NULL) {
                     char *nbuf;
@@ -156,11 +156,11 @@ int rk_check_file(char *file, char *pattern)
 #endif
                     /* Matched */
                     pt_result = pt_matches(buf, pattern);
-                    mtdebug2(ARGV0, "Buf == \"%s\"", buf);
-                    mtdebug2(ARGV0, "Pattern == \"%s\"", pattern);
-                    mtdebug2(ARGV0, "pt_result == %d and full_negate == %d", pt_result, full_negate);
+                    LogDebug(ARGV0, "Buf == \"%s\"", buf);
+                    LogDebug(ARGV0, "Pattern == \"%s\"", pattern);
+                    LogDebug(ARGV0, "pt_result == %d and full_negate == %d", pt_result, full_negate);
                     if ((pt_result == 1 && full_negate == 0) ) {
-                        mtdebug1(ARGV0, "Alerting file %s on line %s", file, buf);
+                        LogDebug(ARGV0, "Alerting file %s on line %s", file, buf);
                         int i = 0;
                         char _b_msg[OS_SIZE_1024 + 1];
 
@@ -191,7 +191,7 @@ int rk_check_file(char *file, char *pattern)
                          * break out of loop and make sure the full negate does
                          * not alert.
                          */
-                        mtdebug2(ARGV0, "Found a complete match for full_negate");
+                        LogDebug(ARGV0, "Found a complete match for full_negate");
                         full_negate = 0;
                         break;
                     }
@@ -200,7 +200,7 @@ int rk_check_file(char *file, char *pattern)
                 fclose(fp);
 
                 if (full_negate == 1) {
-                    mtdebug2(ARGV0, "Full_negate alerting - file %s", file);
+                    LogDebug(ARGV0, "Full_negate alerting - file %s", file);
                     int i = 0;
                     char _b_msg[OS_SIZE_1024 + 1];
 
@@ -267,7 +267,7 @@ int pt_check_negate(const char *pattern)
         tmp_pattern = tmp_pt;
     }
 
-    mtdebug2(ARGV0, "Pattern: %s is fill_negate", pattern);
+    LogDebug(ARGV0, "Pattern: %s is fill_negate", pattern);
     free(mypattern);
     return (1);
 }
@@ -323,7 +323,7 @@ int pt_matches(const char *str, char *pattern)
         } else if (strncasecmp(pattern, "r:", 2) == 0) {
             pattern += 2;
             if (OS_Regex(pattern, str)) {
-                mtdebug2(ARGV0, "Pattern: %s matches %s.", pattern, str);
+                LogDebug(ARGV0, "Pattern: %s matches %s.", pattern, str);
                 ret_code = 1;
             }
         } else if (strncasecmp(pattern, "<:", 2) == 0) {
@@ -451,7 +451,7 @@ int is_file(char *file_name)
     DIR     *dp = NULL;
 
     if (!file_name) {
-        mtdebug2(ARGV0, "RK: Invalid file name: NULL!");
+        LogDebug(ARGV0, "RK: Invalid file name: NULL!");
         return ret;
     }
 

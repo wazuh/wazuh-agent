@@ -82,7 +82,7 @@ int audit_get_rule_list(int fd) {
 
     int rc = audit_send(fd, AUDIT_LIST_RULES, NULL, 0);
     if (rc < 0 && rc != -EINVAL) {
-        merror("Error sending rule list data request (%s)",strerror(-rc));
+        LogError("Error sending rule list data request (%s)",strerror(-rc));
         return -1;
     }
 
@@ -128,7 +128,7 @@ int audit_print_reply(struct audit_reply *rep) {
             }
         }
         if (path && key) {
-            mdebug2("Audit rule loaded: -w %s -p %s -k %s",path, perms, key);
+            LogDebug("Audit rule loaded: -w %s -p %s -k %s",path, perms, key);
             if (audit_rules_list) {
                 w_audit_rule *rule;
                 os_calloc(1, sizeof(w_audit_rule), rule);
@@ -218,19 +218,19 @@ int audit_restart(void) {
     char *service_path = NULL;
 
     if (get_binary_path("service", &service_path) < 0) {
-        mdebug1("Binary '%s' not found in default paths, the full path will not be used.", service_path);
+        LogDebug("Binary '%s' not found in default paths, the full path will not be used.", service_path);
     }
     char * command[] = { service_path, "auditd", "restart", NULL };
 
     if (wfd = wpopenv(*command, command, W_BIND_STDERR), !wfd) {
-        merror("Could not launch command to restart Auditd: %s (%d)", strerror(errno), errno);
+        LogError("Could not launch command to restart Auditd: %s (%d)", strerror(errno), errno);
         os_free(service_path);
         return -1;
     }
 
     // Print stderr
     while (fgets(buffer, sizeof(buffer), wfd->file_out)) {
-        mdebug1("auditd: %s", buffer);
+        LogDebug("auditd: %s", buffer);
     }
 
     switch (status = wpclose(wfd), WEXITSTATUS(status)) {
@@ -239,11 +239,11 @@ int audit_restart(void) {
         return 0;
     case 127:
         // exec error
-        merror("Could not launch command to restart Auditd.");
+        LogError("Could not launch command to restart Auditd.");
         os_free(service_path);
         return -1;
     default:
-        merror("Could not restart Auditd service.");
+        LogError("Could not restart Auditd service.");
         os_free(service_path);
         return -1;
     }
@@ -270,7 +270,7 @@ int audit_manage_rules(int action, const char *path, int permissions, const char
     type = AUDIT_DIR;
 
     if (stat(path, &buf) != 0) {
-        mdebug2(FIM_STAT_FAILED, path, errno, strerror(errno));
+        LogDebug(FIM_STAT_FAILED, path, errno, strerror(errno));
         retval = -1;
         goto end;
     }
@@ -278,7 +278,7 @@ int audit_manage_rules(int action, const char *path, int permissions, const char
     // Set watcher
     output = audit_add_watch_dir(type, &myrule, path);
     if (output) {
-        mdebug2("audit_add_watch_dir = (%d) %s", output, audit_errno_to_name(abs(output)));
+        LogDebug("audit_add_watch_dir = (%d) %s", output, audit_errno_to_name(abs(output)));
         retval = -1;
         goto end;
     }
@@ -286,7 +286,7 @@ int audit_manage_rules(int action, const char *path, int permissions, const char
     // Set permissions
     output = audit_update_watch_perms(myrule, permissions);
     if (output) {
-        mdebug2("audit_update_watch_perms = (%d) %s", output, audit_errno_to_name(abs(output)));
+        LogDebug("audit_update_watch_perms = (%d) %s", output, audit_errno_to_name(abs(output)));
         retval = -1;
         goto end;
     }
@@ -311,7 +311,7 @@ int audit_manage_rules(int action, const char *path, int permissions, const char
     } else {
         output = audit_rule_fieldpair_data(&myrule, cmd, flags);
         if (output) {
-            mdebug2("audit_rule_fieldpair_data = (%d) %s", output, audit_errno_to_name(abs(output)));
+            LogDebug("audit_rule_fieldpair_data = (%d) %s", output, audit_errno_to_name(abs(output)));
             free(cmd);
             retval = -1;
             goto end;
@@ -330,7 +330,7 @@ int audit_manage_rules(int action, const char *path, int permissions, const char
     }
 
     if (retval <= 0 && retval != -EEXIST) {
-        mdebug2("Can't add or delete a rule (%d) = %s", retval, audit_errno_to_name(abs(retval)));
+        LogDebug("Can't add or delete a rule (%d) = %s", retval, audit_errno_to_name(abs(retval)));
     }
 
 end:

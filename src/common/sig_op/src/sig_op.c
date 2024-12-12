@@ -20,7 +20,6 @@
 #include "shared.h"
 #include "sig_op.h"
 #include "file_op.h"
-#include "debug_op.h"
 #include "error_messages/error_messages.h"
 #include "error_messages/debug_messages.h"
 
@@ -46,7 +45,7 @@ void HandleExit() {
 
 void HandleSIG(int sig)
 {
-    minfo(SIGNAL_RECV, sig, strsignal(sig));
+    LogInfo(SIGNAL_RECV, sig, strsignal(sig));
 
     exit(1);
 }

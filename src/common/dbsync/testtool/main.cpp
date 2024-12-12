@@ -12,8 +12,7 @@
 #include <fstream>
 #include <stdio.h>
 #include <memory>
-#include <json.hpp>
-#include "makeUnique.h"
+#include <nlohmann/json.hpp>
 #include "dbsync.h"
 #include "cmdArgsHelper.h"
 #include "testContext.h"

@@ -19,7 +19,6 @@
 #include <netioapi.h>
 #include "windowsHelper.h"
 #include "inetworkWrapper.h"
-#include "makeUnique.h"
 #include "sharedDefs.h"
 
 static const std::map<int, std::string> NETWORK_INTERFACE_TYPES =

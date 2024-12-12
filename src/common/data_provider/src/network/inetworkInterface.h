@@ -12,7 +12,7 @@
 #ifndef _NETWORK_INTERFACE_H
 #define _NETWORK_INTERFACE_H
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 class IOSNetwork
 {

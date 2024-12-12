@@ -215,13 +215,13 @@ def test_WazuhGCloudBucket_init_db(mock_client, clean_shared_cache):
         bucket.init_db()
         # Call init again to force an operational error because the table already exists. Execution must continue.
         bucket.init_db()
-    
+
     # Check there is only one table, and it has the expected name
     table_list = get_all_table_names(bucket.db_connector)
     assert len(table_list) == 1
     assert table_list[0] == TEST_TABLE_NAME
 
-    # Check the table has the expected 
+    # Check the table has the expected
     table_columns = bucket.db_connector.execute(f"SELECT * FROM {TEST_TABLE_NAME}").description
     assert set([column[0] for column in table_columns]) == set(TABLE_COLUMNS)
 

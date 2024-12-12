@@ -1,0 +1,57 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+#
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+#
+# Modified to make a template file for a multi-binary package with separated
+# build-arch and build-indep targets  by Bill Allombert 2001
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+# This has to be exported to make some magic below work.
+export DH_OPTIONS
+
+export TARGET_DIR=${CURDIR}/debian/wazuh-agent
+
+# Package build options
+export INSTALLATION_DIR=""
+export JOBS=$(shell nproc)
+export DEBUG_ENABLED="no"
+export PATH="${PATH}"
+export LD_LIBRARY_PATH=""
+export VCPKG_BINARY_SOURCES=""
+export VCPKG_FORCE_SYSTEM_BINARIES=""
+
+%:
+	dh $@
+
+override_dh_shlibdeps:
+
+override_dh_auto_configure:
+
+override_dh_auto_install:
+
+override_dh_install:
+
+	# Build the binaries
+	git submodule update --init --recursive
+	cmake src -B build -DINSTALL_ROOT=${TARGET_DIR}$(INSTALLATION_DIR)
+	cmake --build build --parallel $(JOBS)
+
+	make -C build install -j $(JOBS)
+
+override_dh_auto_clean:
+	make -C src clean
+
+override_dh_usrlocal:
+
+
+override_dh_strip:
+	dh_strip --no-automatic-dbgsym
+
+.PHONY: override_dh_install override_dh_strip override_dh_auto_clean override_dh_auto_build override_dh_auto_configure override_dh_usrlocal

@@ -1,0 +1,47 @@
+#!/bin/sh
+# preinst script for wazuh-agent
+# Wazuh, Inc 2024
+
+set -e
+BINARY_DIR="/usr/share/wazuh-agent/bin/"
+
+# configuration variables
+UPGRADE_RESTART_FLAG="/tmp/wazuh.restart"
+
+case "$1" in
+    install|upgrade)
+
+        if [ "$1" = "upgrade" ]; then
+
+            if [ ! -d "$BINARY_DIR" ]; then
+                echo "Error: Directory $BINARY_DIR does not exist. Cannot perform upgrade" >&2
+                exit 1
+            fi
+
+            if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1 && systemctl is-active --quiet wazuh-agent > /dev/null 2>&1; then
+                systemctl stop wazuh-agent > /dev/null 2>&1
+                touch ${UPGRADE_RESTART_FLAG}
+            elif ${BINARY_DIR}wazuh-agent --status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
+                pid=$(ps -ef | grep "${BINARY_DIR}wazuh-agent" | grep -v grep | awk '{print $2}')
+                if [ -n "$pid" ]; then
+                    kill -SIGTERM "$pid" 2>/dev/null
+                fi
+                touch ${UPGRADE_RESTART_FLAG}
+            fi
+
+        fi
+    ;;
+
+    abort-upgrade)
+
+    ;;
+
+    *)
+        echo "preinst called with unknown argument \`$1'" >&2
+        exit 1
+
+    ;;
+
+esac
+
+exit 0

@@ -2,17 +2,15 @@
 
 #include <gtest/gtest.h>
 #include <spdlog/sinks/ostream_sink.h>
-#ifdef __APPLE__
-#include <spdlog/sinks/syslog_sink.h>
-#endif
-#ifdef __linux__
-#include <spdlog/sinks/syslog_sink.h>
-#include <spdlog/sinks/systemd_sink.h>
-#endif
+
 #ifdef _WIN32
 #include <spdlog/sinks/win_eventlog_sink.h>
+#else   // __linux__ || __APPLE__
+#include <spdlog/sinks/stdout_color_sinks.h>
 #endif
+
 #include <sstream>
+#include <memory>
 
 class LoggerConstructorTest : public ::testing::Test
 {
@@ -51,63 +49,46 @@ protected:
     }
 };
 
-#ifdef __linux__
-TEST_F(LoggerConstructorTest, LinuxLoggerConstructor)
-{
-    auto current_logger = spdlog::default_logger();
-    EXPECT_EQ(current_logger->name(), "wazuh-agent");
-
-    EXPECT_EQ(spdlog::get_level(), spdlog::level::trace);
-
-    auto sinks = current_logger->sinks();
-    ASSERT_FALSE(sinks.empty());
-    auto systemd_sink = std::dynamic_pointer_cast<spdlog::sinks::systemd_sink_st>(sinks[0]);
-    EXPECT_NE(systemd_sink, nullptr);
-}
-
-TEST_F(LoggerConstructorTest, LinuxLoggerConstructorFail)
-{
-    auto current_logger = spdlog::default_logger();
-    EXPECT_EQ(current_logger->name(), "wazuh-agent");
-
-    EXPECT_EQ(spdlog::get_level(), spdlog::level::trace);
-
-    auto sinks = current_logger->sinks();
-    ASSERT_FALSE(sinks.empty());
-    auto systemd_sink = std::dynamic_pointer_cast<spdlog::sinks::syslog_sink_mt>(sinks[0]);
-    EXPECT_EQ(systemd_sink, nullptr);
-}
-#endif // __linux__
-
 #ifdef _WIN32
 TEST_F(LoggerConstructorTest, WindowsLoggerConstructor)
 {
     auto current_logger = spdlog::default_logger();
     EXPECT_EQ(current_logger->name(), "wazuh-agent");
 
-    EXPECT_EQ(spdlog::get_level(), spdlog::level::trace);
+    EXPECT_EQ(spdlog::get_level(), spdlog::level::info);
 
     auto sinks = current_logger->sinks();
     ASSERT_FALSE(sinks.empty());
     auto win_sink = std::dynamic_pointer_cast<spdlog::sinks::win_eventlog_sink_st>(sinks[0]);
     EXPECT_NE(win_sink, nullptr);
 }
-#endif // _WIN32
-
-#ifdef __APPLE__
-TEST_F(LoggerConstructorTest, MacOSLoggerConstructor)
+#else // __linux__ || __APPLE__
+TEST_F(LoggerConstructorTest, UnixLoggerConstructor)
 {
     auto current_logger = spdlog::default_logger();
     EXPECT_EQ(current_logger->name(), "wazuh-agent");
 
-    EXPECT_EQ(spdlog::get_level(), spdlog::level::trace);
+    EXPECT_EQ(spdlog::get_level(), spdlog::level::info);
 
     auto sinks = current_logger->sinks();
     ASSERT_FALSE(sinks.empty());
-    auto syslog_sink = std::dynamic_pointer_cast<spdlog::sinks::syslog_sink_mt>(sinks[0]);
-    EXPECT_NE(syslog_sink, nullptr);
+    auto sink = std::dynamic_pointer_cast<spdlog::sinks::stderr_color_sink_mt>(sinks[0]);
+    EXPECT_NE(sink, nullptr);
 }
-#endif // __APPLE__
+
+TEST_F(LoggerConstructorTest, UnixLoggerConstructorFail)
+{
+    auto current_logger = spdlog::default_logger();
+    EXPECT_EQ(current_logger->name(), "wazuh-agent");
+
+    EXPECT_EQ(spdlog::get_level(), spdlog::level::info);
+
+    auto sinks = current_logger->sinks();
+    ASSERT_FALSE(sinks.empty());
+    auto sink = std::dynamic_pointer_cast<spdlog::sinks::stdout_color_sink_mt>(sinks[0]);
+    EXPECT_EQ(sink, nullptr);
+}
+#endif // __linux__ || __APPLE__
 
 TEST_F(LoggerMessageTest, LogsTraceMessage)
 {

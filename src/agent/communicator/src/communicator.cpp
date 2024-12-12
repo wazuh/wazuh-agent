@@ -1,25 +1,13 @@
 #include <communicator.hpp>
 
-#include <logger.hpp>
-
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
-#include <nlohmann/json.hpp>
-
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
-
 #include <jwt-cpp/jwt.h>
-
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+#include <jwt-cpp/traits/nlohmann-json/traits.h>
 
 #include <algorithm>
 #include <chrono>
-#include <queue>
+#include <sstream>
 #include <thread>
 #include <utility>
 
@@ -28,46 +16,40 @@ namespace communicator
     constexpr int TOKEN_PRE_EXPIRY_SECS = 2;
     constexpr int A_SECOND_IN_MILLIS = 1000;
 
-    Communicator::Communicator(std::unique_ptr<http_client::IHttpClient> httpClient,
-                               std::string uuid,
-                               std::string key,
-                               const std::function<std::string(std::string, std::string)>& getStringConfigValue)
-        : m_httpClient(std::move(httpClient))
-        , m_uuid(std::move(uuid))
-        , m_key(std::move(key))
-        , m_token(std::make_shared<std::string>())
-    {
-        if (getStringConfigValue != nullptr)
-        {
-            m_managerIp = getStringConfigValue("agent", "manager_ip");
-            m_port = getStringConfigValue("agent", "agent_comms_api_port");
-        }
-    }
-
     boost::beast::http::status Communicator::SendAuthenticationRequest()
     {
-        const auto token = m_httpClient->AuthenticateWithUuidAndKey(m_managerIp, m_port, m_uuid, m_key);
+        const auto token = m_httpClient->AuthenticateWithUuidAndKey(
+            m_serverUrl, m_getHeaderInfo ? m_getHeaderInfo() : "", m_uuid, m_key);
 
         if (token.has_value())
         {
             *m_token = token.value();
+            LogInfo("Successfully authenticated with the manager.");
         }
         else
         {
-            LogError("Failed to authenticate with the manager.");
+            LogWarn("Failed to authenticate with the manager. Retrying in {} seconds.",
+                    m_retryInterval / A_SECOND_IN_MILLIS);
             return boost::beast::http::status::unauthorized;
         }
 
-        if (const auto decoded = jwt::decode(*m_token); decoded.has_payload_claim("exp"))
+        try
         {
+            const auto decoded = jwt::decode<jwt::traits::nlohmann_json>(*m_token);
+
+            if (!decoded.has_payload_claim("exp"))
+            {
+                throw std::runtime_error("Token does not contain an 'exp' claim.");
+            }
+
             const auto exp_claim = decoded.get_payload_claim("exp");
             const auto exp_time = exp_claim.as_date();
             m_tokenExpTimeInSeconds =
                 std::chrono::duration_cast<std::chrono::seconds>(exp_time.time_since_epoch()).count();
         }
-        else
+        catch (const std::exception& e)
         {
-            LogError("Token does not contain an 'exp' claim.");
+            LogError("Failed to decode token: {}", e.what());
             m_token->clear();
             m_tokenExpTimeInSeconds = 1;
             return boost::beast::http::status::unauthorized;
@@ -83,7 +65,8 @@ namespace communicator
         return std::max(0L, static_cast<long>(m_tokenExpTimeInSeconds - now_seconds));
     }
 
-    boost::asio::awaitable<void> Communicator::GetCommandsFromManager(std::function<void(const std::string&)> onSuccess)
+    boost::asio::awaitable<void>
+    Communicator::GetCommandsFromManager(std::function<void(const int, const std::string&)> onSuccess)
     {
         auto onAuthenticationFailed = [this]()
         {
@@ -95,10 +78,17 @@ namespace communicator
             return m_keepRunning.load();
         };
 
-        const auto reqParams =
-            http_client::HttpRequestParams(boost::beast::http::verb::get, m_managerIp, m_port, "/api/v1/commands");
-        co_await m_httpClient->Co_PerformHttpRequest(
-            m_token, reqParams, {}, onAuthenticationFailed, onSuccess, loopCondition);
+        const auto reqParams = http_client::HttpRequestParams(
+            boost::beast::http::verb::get, m_serverUrl, "/api/v1/commands", m_getHeaderInfo ? m_getHeaderInfo() : "");
+        co_await m_httpClient->Co_PerformHttpRequest(m_token,
+                                                     reqParams,
+                                                     {},
+                                                     onAuthenticationFailed,
+                                                     m_retryInterval,
+                                                     m_batchInterval,
+                                                     m_batchSize,
+                                                     onSuccess,
+                                                     loopCondition);
     }
 
     boost::asio::awaitable<void> Communicator::WaitForTokenExpirationAndAuthenticate()
@@ -107,19 +97,33 @@ namespace communicator
         const auto executor = co_await boost::asio::this_coro::executor;
         m_tokenExpTimer = std::make_unique<boost::asio::steady_timer>(executor);
 
+        if (auto remainingSecs = GetTokenRemainingSecs(); remainingSecs > TOKEN_PRE_EXPIRY_SECS)
+        {
+            m_tokenExpTimer->expires_after(
+                std::chrono::milliseconds((remainingSecs - TOKEN_PRE_EXPIRY_SECS) * A_SECOND_IN_MILLIS));
+            co_await m_tokenExpTimer->async_wait(boost::asio::use_awaitable);
+        }
+
         while (m_keepRunning.load())
         {
             const auto duration = [this]()
             {
-                const auto result = SendAuthenticationRequest();
-                if (result != boost::beast::http::status::ok)
+                try
                 {
-                    return std::chrono::milliseconds(A_SECOND_IN_MILLIS);
+                    const auto result = SendAuthenticationRequest();
+                    if (result != boost::beast::http::status::ok)
+                    {
+                        return std::chrono::milliseconds(m_retryInterval);
+                    }
+                    else
+                    {
+                        return std::chrono::milliseconds((GetTokenRemainingSecs() - TOKEN_PRE_EXPIRY_SECS) *
+                                                         A_SECOND_IN_MILLIS);
+                    }
                 }
-                else
+                catch (const std::exception&)
                 {
-                    return std::chrono::milliseconds((GetTokenRemainingSecs() - TOKEN_PRE_EXPIRY_SECS) *
-                                                     A_SECOND_IN_MILLIS);
+                    return std::chrono::milliseconds(m_retryInterval);
                 }
             }();
 
@@ -132,19 +136,19 @@ namespace communicator
             {
                 if (ec == boost::asio::error::operation_aborted)
                 {
-                    LogError("Token expiration timer was canceled.");
+                    LogDebug("Token expiration timer was canceled.");
                 }
                 else
                 {
-                    LogError("Timer wait failed: {}.", ec.message());
+                    LogDebug("Timer wait failed: {}.", ec.message());
                 }
             }
         }
     }
 
-    boost::asio::awaitable<void>
-    Communicator::StatefulMessageProcessingTask(std::function<boost::asio::awaitable<std::string>()> getMessages,
-                                                std::function<void(const std::string&)> onSuccess)
+    boost::asio::awaitable<void> Communicator::StatefulMessageProcessingTask(
+        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const int)> getMessages,
+        std::function<void(const int, const std::string&)> onSuccess)
     {
         auto onAuthenticationFailed = [this]()
         {
@@ -156,15 +160,24 @@ namespace communicator
             return m_keepRunning.load();
         };
 
-        const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::post, m_managerIp, m_port, "/api/v1/events/stateful");
-        co_await m_httpClient->Co_PerformHttpRequest(
-            m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess, loopCondition);
+        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
+                                                              m_serverUrl,
+                                                              "/api/v1/events/stateful",
+                                                              m_getHeaderInfo ? m_getHeaderInfo() : "");
+        co_await m_httpClient->Co_PerformHttpRequest(m_token,
+                                                     reqParams,
+                                                     getMessages,
+                                                     onAuthenticationFailed,
+                                                     m_retryInterval,
+                                                     m_batchInterval,
+                                                     m_batchSize,
+                                                     onSuccess,
+                                                     loopCondition);
     }
 
-    boost::asio::awaitable<void>
-    Communicator::StatelessMessageProcessingTask(std::function<boost::asio::awaitable<std::string>()> getMessages,
-                                                 std::function<void(const std::string&)> onSuccess)
+    boost::asio::awaitable<void> Communicator::StatelessMessageProcessingTask(
+        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const int)> getMessages,
+        std::function<void(const int, const std::string&)> onSuccess)
     {
         auto onAuthenticationFailed = [this]()
         {
@@ -176,10 +189,19 @@ namespace communicator
             return m_keepRunning.load();
         };
 
-        const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::post, m_managerIp, m_port, "/api/v1/events/stateless");
-        co_await m_httpClient->Co_PerformHttpRequest(
-            m_token, reqParams, getMessages, onAuthenticationFailed, onSuccess, loopCondition);
+        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
+                                                              m_serverUrl,
+                                                              "/api/v1/events/stateless",
+                                                              m_getHeaderInfo ? m_getHeaderInfo() : "");
+        co_await m_httpClient->Co_PerformHttpRequest(m_token,
+                                                     reqParams,
+                                                     getMessages,
+                                                     onAuthenticationFailed,
+                                                     m_retryInterval,
+                                                     m_batchInterval,
+                                                     m_batchSize,
+                                                     onSuccess,
+                                                     loopCondition);
     }
 
     void Communicator::TryReAuthenticate()
@@ -199,8 +221,23 @@ namespace communicator
             std::ostringstream oss;
             oss << threadId;
             std::string threadIdStr = oss.str();
-            LogError("Re-authentication attempt by thread {} failed.", threadIdStr);
+            LogDebug("Re-authentication attempt by thread {} failed.", threadIdStr);
         }
+    }
+
+    bool Communicator::GetGroupConfigurationFromManager(const std::string& groupName, const std::string& dstFilePath)
+    {
+        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get,
+                                                              m_serverUrl,
+                                                              "/api/v1/files?file_name=" + groupName +
+                                                                  config::DEFAULT_SHARED_FILE_EXTENSION,
+                                                              m_getHeaderInfo ? m_getHeaderInfo() : "",
+                                                              *m_token);
+
+        const auto result = m_httpClient->PerformHttpRequestDownload(reqParams, dstFilePath);
+
+        return result.result() >= boost::beast::http::status::ok &&
+               result.result() < boost::beast::http::status::multiple_choices;
     }
 
     void Communicator::Stop()

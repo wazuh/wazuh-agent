@@ -13,11 +13,11 @@
 #define _SQLITE_WRAPPER_H
 
 #include "isqlite_wrapper.h"
-#include "sqlite3.h"
+#include <sqlite3.h>
 
 #include <string>
 #include <memory>
-namespace SQLite
+namespace SQLiteLegacy
 {
     class Connection : public IConnection
     {

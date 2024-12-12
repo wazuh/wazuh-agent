@@ -4,7 +4,7 @@
 
 TEST(CommandHandlerTest, CommandHandlerConstructor)
 {
-    EXPECT_NO_THROW(command_handler::CommandHandler cm);
+    EXPECT_NO_THROW(command_handler::CommandHandler cm("."));
 }
 
 int main(int argc, char** argv)

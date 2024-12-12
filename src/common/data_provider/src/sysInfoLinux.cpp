@@ -19,7 +19,7 @@
 #include "cmdHelper.h"
 #include "osinfo/sysOsParsers.h"
 #include "sysInfo.hpp"
-#include "readproc.h"
+#include <proc/readproc.h>
 #include "networkUnixHelper.h"
 #include "networkHelper.h"
 #include "network/networkLinuxWrapper.h"
@@ -302,11 +302,9 @@ static bool getOsInfoFromFiles(nlohmann::json& info)
         {"rhel",        "/etc/redhat-release"   },
         {"gentoo",      "/etc/gentoo-release"   },
         {"suse",        "/etc/SuSE-release"     },
-        {"arch",        "/etc/arch-release"     },
         {"debian",      "/etc/debian_version"   },
         {"slackware",   "/etc/slackware-version"},
         {"ubuntu",      "/etc/lsb-release"      },
-        {"alpine",      "/etc/alpine-release"   },
     };
     const auto parseFnc
     {
@@ -437,9 +435,9 @@ ProcessInfo portProcessInfo(const std::string& procPath, const std::deque<int64_
     auto findInode = [](const std::string & filePath) -> int64_t
     {
         constexpr size_t MAX_LENGTH {256};
-        char buffer[MAX_LENGTH];
+        char buffer[MAX_LENGTH] = "";
 
-        if (-1 == readlink(filePath.c_str(), buffer, MAX_LENGTH))
+        if (-1 == readlink(filePath.c_str(), buffer, MAX_LENGTH - 1))
         {
             throw std::system_error(errno, std::system_category(), "readlink");
         }

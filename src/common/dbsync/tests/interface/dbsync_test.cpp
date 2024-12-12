@@ -10,11 +10,10 @@
  */
 
 #include <iostream>
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "dbsync_test.h"
 #include "dbsync.h"
 #include "dbsync.hpp"
-#include "makeUnique.h"
 #include "test_inputs.h"
 #include "cjsonSmartDeleter.hpp"
 

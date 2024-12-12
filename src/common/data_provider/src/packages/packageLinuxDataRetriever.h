@@ -14,16 +14,9 @@
 
 #include <memory>
 #include "filesystemHelper.h"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "sharedDefs.h"
 #include "utilsWrapperLinux.hpp"
-
-/**
- * @brief Fills a JSON object with all available pacman-related information
- * @param libPath  Path to pacman's database directory
- * @param callback Callback to be called for every single element being found
- */
-void getPacmanInfo(const std::string& libPath, std::function<void(nlohmann::json&)> callback);
 
 /**
  * @brief Fills a JSON object with all available rpm-related information
@@ -45,18 +38,10 @@ void getRpmInfoLegacy(std::function<void(nlohmann::json&)> callback);
 void getDpkgInfo(const std::string& libPath, std::function<void(nlohmann::json&)> callback);
 
 /**
- * @brief Fills a JSON object with all available apk-related information
- * @param libPath Path to apk's database directory
- * @param callback Callback to be called for every single element being found
- */
-void getApkInfo(const std::string& libPath, std::function<void(nlohmann::json&)> callback);
-
-
-/**
  * @brief Fills a JSON object with all available snap-related information
  * @param callback Callback to be called for every single element being found
  */
-void getSnapInfo(std::function<void(nlohmann::json&)> callback);
+// void getSnapInfo(std::function<void(nlohmann::json&)> callback);
 
 // Exception template
 template <LinuxType linuxType>
@@ -84,25 +69,16 @@ class FactoryPackagesCreator<LinuxType::STANDARD> final
                 getDpkgInfo(DPKG_STATUS_PATH, callback);
             }
 
-            if (Utils::existsDir(PACMAN_PATH))
-            {
-                getPacmanInfo(PACMAN_PATH, callback);
-            }
-
             if (Utils::existsDir(RPM_PATH))
             {
                 getRpmInfo(callback);
             }
 
-            if (Utils::existsDir(APK_PATH))
-            {
-                getApkInfo(APK_DB_PATH, callback);
-            }
-
-            if (Utils::existsDir(SNAP_PATH))
-            {
-                getSnapInfo(callback);
-            }
+            // TODO: Implment without http_request library
+            // if (Utils::existsDir(SNAP_PATH))
+            // {
+            //     getSnapInfo(callback);
+            // }
         }
 };
 

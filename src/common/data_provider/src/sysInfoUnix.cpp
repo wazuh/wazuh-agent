@@ -18,29 +18,9 @@
 
 static void getOsInfoFromUname(nlohmann::json& info)
 {
-    bool result{false};
-    std::string platform;
-    const auto osPlatform{Utils::exec("uname")};
-
-    if (osPlatform.find("SunOS") != std::string::npos)
-    {
-        constexpr auto SOLARIS_RELEASE_FILE{"/etc/release"};
-        const auto spParser{FactorySysOsParser::create("solaris")};
-        std::fstream file{SOLARIS_RELEASE_FILE, std::ios_base::in};
-        result = spParser && file.is_open() && spParser->parseFile(file, info);
-    }
-    else if (osPlatform.find("HP-UX") != std::string::npos)
-    {
-        const auto spParser{FactorySysOsParser::create("hp-ux")};
-        result = spParser && spParser->parseUname(Utils::exec("uname -r"), info);
-    }
-
-    if (!result)
-    {
-        info["os_name"] = "Unix";
-        info["os_platform"] = "Unix";
-        info["os_version"] = UNKNOWN_VALUE;
-    }
+    info["os_name"] = "Unix";
+    info["os_platform"] = "Unix";
+    info["os_version"] = UNKNOWN_VALUE;
 }
 
 

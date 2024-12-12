@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+ <plist version="1.0">
+     <dict>
+         <key>Label</key>
+         <string>com.wazuh.agent</string>
+
+         <key>ProgramArguments</key>
+         <array>
+             <string>WAZUH_HOME/wazuh-agent</string>
+         </array>
+
+        <key>WorkingDirectory</key>
+        <string>WAZUH_HOME/directory</string>
+
+        <key>StandardOutPath</key>
+        <string>/var/log/wazuh-output.log</string>
+
+        <key>StandardErrorPath</key>
+        <string>/var/log/wazuh-error.log</string>
+
+         <key>RunAtLoad</key>
+         <true/>
+
+         <key>KeepAlive</key>
+         <true/>
+     </dict>
+ </plist>

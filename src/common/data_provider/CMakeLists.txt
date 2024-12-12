@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12.4)
+cmake_minimum_required(VERSION 3.22)
 
 project(sysinfo)
 
@@ -8,7 +8,7 @@ endif()
 
 enable_testing()
 
-get_filename_component(SRC_FOLDER     ${CMAKE_SOURCE_DIR}/../ ABSOLUTE)
+get_filename_component(SRC_FOLDER     ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
 
 if(COVERITY)
   add_definitions(-D__GNUC__=8)
@@ -45,167 +45,124 @@ else()
 endif()
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wshadow -Wnon-virtual-dtor -Woverloaded-virtual -Wunused -Wcast-align -Wformat=2")
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wshadow -Wnon-virtual-dtor -Woverloaded-virtual -Wunused -Wcast-align -Wformat=2")
+  set(CMAKE_CXX_FLAGS_DEBUG "-g")
+  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+  else()
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -s")
+  endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+  if(FSANITIZE)
+    set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address,leak,undefined")
+  endif(FSANITIZE)
 else()
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -s")
-endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-
-if(FSANITIZE)
-  set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address,leak,undefined")
-endif(FSANITIZE)
+  set(CMAKE_CXX_FLAGS "/W4 /permissive- /MT")
+endif()
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+else()
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+endif()
 
-include_directories(${CMAKE_SOURCE_DIR}/src/)
-include_directories(${CMAKE_SOURCE_DIR}/include/)
+find_package(cJSON CONFIG REQUIRED)
+find_package(LibArchive REQUIRED)
+find_package(Lua REQUIRED)
+if(APPLE)
+  find_package(unofficial-libplist CONFIG REQUIRED)
+endif()
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(unofficial-sqlite3 CONFIG REQUIRED)
+
+find_path(POPT_INCLUDE_DIR include/popt.h)
+include_directories(${POPT_INCLUDE_DIR})
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
 include_directories(${SRC_FOLDER}/headers/)
-include_directories(${SRC_FOLDER}/external/sqlite/)
-include_directories(${SRC_FOLDER}/external/nlohmann/)
-include_directories(${SRC_FOLDER}/external/cJSON/)
-include_directories(${SRC_FOLDER}/external/procps/)
-include_directories(${SRC_FOLDER}/external/bzip2/)
-include_directories(${SRC_FOLDER}/external/openssl/include/)
-include_directories(${SRC_FOLDER}/shared_modules/utils)
+include_directories(${LUA_INCLUDE_DIR})
+include_directories(${SRC_FOLDER}/common/)
+include_directories(${SRC_FOLDER}/common/utils/)
+include_directories(${SRC_FOLDER}/common/byteArrayHelper/include/)
+include_directories(${SRC_FOLDER}/common/cmdHelper/include/)
+include_directories(${SRC_FOLDER}/common/globHelper/include/)
+include_directories(${SRC_FOLDER}/common/fileHelper/include/)
+include_directories(${SRC_FOLDER}/common/jsonHelper/include/)
+include_directories(${SRC_FOLDER}/common/linuxHelper/include/)
+include_directories(${SRC_FOLDER}/common/stringHelper/include/)
+include_directories(${SRC_FOLDER}/common/timeHelper/include/)
 include_directories(${SRC_FOLDER}/shared_modules/common/)
-include_directories(${SRC_FOLDER}/external/openssl/include/)
-include_directories(${SRC_FOLDER}/external/libplist/bin/include/)
-include_directories(${SRC_FOLDER}/external/libdb/build_unix/)
-if(NOT CMAKE_CHECK_CENTOS5) # Avoid incompatible libraries in CentOS 5 and Red Hat 5
-  include_directories(${SRC_FOLDER}/external/pacman/lib/libalpm/)
-  include_directories(${SRC_FOLDER}/external/libarchive/libarchive/)
-  include_directories(${SRC_FOLDER}/external/rpm/builddir/output/include/)
-endif(NOT CMAKE_CHECK_CENTOS5)
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  # Avoid download externals from http-request submodule
-  set(EXTERNAL_RES "")
-  set(PRECOMPILED_EXTERNAL_RES "")
-  include_directories(${SRC_FOLDER}/shared_modules/http-request/include/)
-  include_directories(${SRC_FOLDER}/shared_modules/http-request/shared/)
-endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
-if(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
-  link_directories(${INSTALL_PREFIX}/lib)
-endif(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
+if(WIN32)
+  include_directories(${SRC_FOLDER}/common/time_op/include/)
+  include_directories(${SRC_FOLDER}/common/file_op/include/)
+  include_directories(${SRC_FOLDER}/common/regex_op/include/)
+  include_directories(${SRC_FOLDER}/common/bzip2_op/include/)
+  include_directories(${SRC_FOLDER}/common/validate_op/include/)
+  include_directories(${SRC_FOLDER}/common/binaries_op/include/)
+  include_directories(${SRC_FOLDER}/common/randombytes/include/)
+  include_directories(${SRC_FOLDER}/common/error_messages/include/)
+  include_directories(${SRC_FOLDER}/common/registryHelper/include/)
+  include_directories(${SRC_FOLDER}/common/windowsHelper/include/)
+  include_directories(${SRC_FOLDER}/common/encodingHelper/include/)
+  include_directories(${SRC_FOLDER}/common/mem_op/include/)
+endif()
 
 link_directories(${SRC_FOLDER})
-link_directories(${SRC_FOLDER}/external/sqlite/)
-link_directories(${SRC_FOLDER}/external/cJSON/)
-link_directories(${SRC_FOLDER}/external/procps/)
-link_directories(${SRC_FOLDER}/external/bzip2/)
-link_directories(${SRC_FOLDER}/external/libplist/bin/lib/)
-link_directories(${SRC_FOLDER}/external/libdb/build_unix/)
-if(NOT CMAKE_CHECK_CENTOS5) # Avoid incompatible libraries in CentOS 5 and Red Hat 5
-link_directories(${SRC_FOLDER}/external/pacman/lib/libalpm/)
-link_directories(${SRC_FOLDER}/external/libarchive/.libs/)
-link_directories(${SRC_FOLDER}/external/rpm/builddir/)
-endif(NOT CMAKE_CHECK_CENTOS5)
-link_directories(${SRC_FOLDER}/external/openssl/)
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  link_directories(${SRC_FOLDER}/shared_modules/http-request/build)
-endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  link_directories(${SRC_FOLDER}/external/curl/lib/.libs/)
-
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   file(GLOB SYSINFO_SRC
-      "${CMAKE_SOURCE_DIR}/src/*Win.cpp"
-      "${CMAKE_SOURCE_DIR}/src/osinfo/sysOsInfoWin.cpp"
-      "${CMAKE_SOURCE_DIR}/src/network/*Windows.cpp"
-      "${CMAKE_SOURCE_DIR}/src/packages/*Windows.cpp")
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/*Win.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsInfoWin.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*Windows.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/packages/*Windows.cpp")
   add_definitions(-DWIN32=1
-                  -D_WIN32_WINNT=0x600
-                  -DWIN_EXPORT)
-elseif(CMAKE_CHECK_CENTOS5)
-  file(GLOB SYSINFO_SRC
-      "${CMAKE_SOURCE_DIR}/src/*Linux.cpp"
-      "${CMAKE_SOURCE_DIR}/src/network/*Linux.cpp"
-      "${CMAKE_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp"
-      "${CMAKE_SOURCE_DIR}/src/packages/packageLinuxParser.cpp"
-      "${CMAKE_SOURCE_DIR}/src/packages/packageLinuxParserRpmLegacy.cpp")
-  add_definitions(-DLINUX_TYPE=LinuxType::LEGACY) # Partial compilation in legacy systems
+                  -D_WIN32_WINNT=0x600)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   file(GLOB SYSINFO_SRC
-      "${CMAKE_SOURCE_DIR}/src/*Linux.cpp"
-      "${CMAKE_SOURCE_DIR}/src/network/*Linux.cpp"
-      "${CMAKE_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp"
-      "${CMAKE_SOURCE_DIR}/src/packages/packageLinux*.cpp"
-      "${CMAKE_SOURCE_DIR}/src/packages/rpm*.cpp")
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/*Linux.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*Linux.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/packages/packageLinux*.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/packages/rpm*.cpp")
   add_definitions(-DLINUX_TYPE=LinuxType::STANDARD) # Standard compilation in compatible systems
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "arm64.*|ARM64.*")
     file(GLOB SYSINFO_SRC
-        "${CMAKE_SOURCE_DIR}/src/*Mac.cpp"
-        "${CMAKE_SOURCE_DIR}/src/*CommonBSD.cpp"
-        "${CMAKE_SOURCE_DIR}/src/packages/*Mac.cpp"
-        "${CMAKE_SOURCE_DIR}/src/network/*BSD.cpp"
-        "${CMAKE_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp"
-        "${CMAKE_SOURCE_DIR}/src/hardware/*ARMMac.cpp")
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/*Mac.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/*CommonBSD.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/packages/*Mac.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*BSD.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/hardware/*ARMMac.cpp")
   else()
     file(GLOB SYSINFO_SRC
-        "${CMAKE_SOURCE_DIR}/src/*Mac.cpp"
-        "${CMAKE_SOURCE_DIR}/src/*CommonBSD.cpp"
-        "${CMAKE_SOURCE_DIR}/src/packages/*Mac.cpp"
-        "${CMAKE_SOURCE_DIR}/src/network/*BSD.cpp"
-        "${CMAKE_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp"
-        "${CMAKE_SOURCE_DIR}/src/hardware/*X86_64Mac.cpp")
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/*Mac.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/*CommonBSD.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/packages/*Mac.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/network/*BSD.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/hardware/*X86_64Mac.cpp")
   endif()
-elseif(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
-  file(GLOB SYSINFO_SRC
-      "${CMAKE_SOURCE_DIR}/src/*FreeBSD.cpp"
-      "${CMAKE_SOURCE_DIR}/src/*CommonBSD.cpp"
-      "${CMAKE_SOURCE_DIR}/src/network/*BSD.cpp"
-      "${CMAKE_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
-elseif(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-  file(GLOB SYSINFO_SRC
-      "${CMAKE_SOURCE_DIR}/src/*OpenBSD.cpp"
-      "${CMAKE_SOURCE_DIR}/src/*CommonBSD.cpp"
-      "${CMAKE_SOURCE_DIR}/src/network/*BSD.cpp"
-      "${CMAKE_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
-elseif(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
-  file(GLOB SYSINFO_SRC
-      "${CMAKE_SOURCE_DIR}/src/UtilsWrapperUnix.cpp"
-      "${CMAKE_SOURCE_DIR}/src/*Solaris.cpp"
-      "${CMAKE_SOURCE_DIR}/src/packages/*Solaris.cpp"
-      "${CMAKE_SOURCE_DIR}/src/network/networkSolarisHelper.cpp"
-      "${CMAKE_SOURCE_DIR}/src/network/*Solaris.cpp"
-      "${CMAKE_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
 else()
   file(GLOB SYSINFO_SRC
-      "${CMAKE_SOURCE_DIR}/src/*Unix.cpp"
-      "${CMAKE_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/*Unix.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
-
-add_library(sysinfo SHARED
+add_library(sysinfo STATIC
     ${SYSINFO_SRC}
-    ${CMAKE_SOURCE_DIR}/src/sysInfo.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/sysInfo.cpp
     ${SRC_FOLDER}/${RESOURCE_OBJ})
 
+target_include_directories(sysinfo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-  target_link_libraries(sysinfo psapi iphlpapi ws2_32)
-  set_target_properties(sysinfo PROPERTIES
-      PREFIX ""
-      SUFFIX ".dll"
-      LINK_FLAGS "-Wl,--add-stdcall-alias"
-      POSITION_INDEPENDENT_CODE 0 # this is to avoid MinGW warning;
-      # MinGW generates position-independent-code for DLL by default
-  )
-elseif(UNIX AND NOT APPLE)
-  if(CMAKE_SYSTEM_NAME STREQUAL "AIX")
-    string(REPLACE ";" ":" CXX_IMPLICIT_LINK_DIRECTORIES_STR "${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}")
-    string(REPLACE ";" ":" PLATFORM_REQUIRED_RUNTIME_PATH_STR "${CMAKE_PLATFORM_REQUIRED_RUNTIME_PATH}")
-    target_link_libraries(sysinfo -Wl,-blibpath:${INSTALL_PREFIX}/lib:${CXX_IMPLICIT_LINK_DIRECTORIES_STR}:${PLATFORM_REQUIRED_RUNTIME_PATH_STR})
-  elseif(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
-    # Do nothing for HP-UX
-  else()
-    string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,-rpath=$ORIGIN")
-  endif(CMAKE_SYSTEM_NAME STREQUAL "AIX")
+  target_link_libraries(sysinfo PUBLIC psapi iphlpapi ws2_32)
 elseif(APPLE)
   find_library(iokit_lib IOKit)
   if(NOT iokit_lib)
@@ -215,38 +172,54 @@ elseif(APPLE)
   if(NOT corefoundation_lib)
     message(FATAL_ERROR "CoreFoundation library not found! Aborting...")
   endif()
-  target_link_libraries(sysinfo cjson ${SRC_FOLDER}/external/libplist/bin/lib/libplist-2.0.a ${iokit_lib} ${corefoundation_lib})
+
+  target_link_libraries(sysinfo PUBLIC
+    unofficial::libplist::libplist
+    unofficial::libplist::libplist++
+    ${iokit_lib}
+    ${corefoundation_lib}
+    sqliteWrapper
+    LibArchive::LibArchive)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
-target_link_libraries(sysinfo wazuhext)
+target_link_libraries(sysinfo PUBLIC
+  networkHelper
+  nlohmann_json::nlohmann_json
+  cjson)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  set(CURL_DEP "wazuhext")
-  target_link_libraries(sysinfo urlrequest db)
-  if(CMAKE_CHECK_CENTOS5)
-      set(USE_HTTP 1)
-  endif(CMAKE_CHECK_CENTOS5)
-  add_subdirectory(${SRC_FOLDER}/shared_modules/http-request ${SRC_FOLDER}/shared_modules/http-request/build)
+  find_library(POPT_LIBRARY libpopt.a)
+  find_library(PROC_NG_LIBRARY NAMES proc-ng REQUIRED)
+  find_library(LIBDB_LIBRARY NAMES db REQUIRED)
+  find_library(LIBRPM_LIBRARY NAMES rpm REQUIRED)
+  find_library(LIBRPMIO_LIBRARY NAMES rpmio REQUIRED)
+  target_link_libraries(sysinfo PUBLIC
+    ${LIBDB_LIBRARY}
+    ${PROC_NG_LIBRARY}
+    ${LIBRPM_LIBRARY}
+    ${LIBRPMIO_LIBRARY}
+    LibArchive::LibArchive
+    ${POPT_LIBRARY}
+    ${LUA_LIBRARIES}
+  )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
-if(APPLE)
-  add_custom_command(TARGET sysinfo
-    POST_BUILD COMMAND
-    ${CMAKE_INSTALL_NAME_TOOL} -id "@rpath/libsysinfo.dylib"
-    $<TARGET_FILE:sysinfo>)
-endif(APPLE)
+target_link_libraries(sysinfo PUBLIC
+  unofficial::sqlite3::sqlite3)
 
-if(UNIT_TEST)
-  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    target_link_libraries(sysinfo -fprofile-arcs)
-  else()
-    target_link_libraries(sysinfo gcov)
-  endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+if(BUILD_TESTS)
+  if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+      target_link_libraries(sysinfo PRIVATE -fprofile-arcs)
+    else()
+      target_link_libraries(sysinfo PRIVATE gcov)
+    endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
-  add_subdirectory(tests)
+    add_subdirectory(tests)
+  endif(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
 else()
   if(FSANITIZE)
-      target_link_libraries(sysinfo gcov)
+      target_link_libraries(sysinfo PRIVATE gcov)
   endif(FSANITIZE)
   add_subdirectory(testtool)
-endif(UNIT_TEST)
+endif(BUILD_TESTS)

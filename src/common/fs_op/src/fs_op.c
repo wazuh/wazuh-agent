@@ -83,12 +83,12 @@ short IsNFS(const char *dir_name)
         /* If the file exists, throw an error and retreat! If the file does not exist, there
 	 * is no reason to spam the log with these errors. */
 	if(errno != ENOENT) {
-            merror("statfs('%s') produced error: %s", dir_name, strerror(errno));
+            LogError("statfs('%s') produced error: %s", dir_name, strerror(errno));
 	}
         return(-1);
     }
 #else
-    mdebug2("Attempted to check NFS status for '%s', but we don't know how on this OS.", dir_name);
+    LogDebug("Attempted to check NFS status for '%s', but we don't know how on this OS.", dir_name);
 #endif
     return(0);
 }
@@ -103,7 +103,7 @@ short skipFS(const char *dir_name)
         int i;
         for ( i=0; skip_file_systems[i].name != NULL; i++ ) {
             if(skip_file_systems[i].f_type == stfs.f_type ) {
-                mdebug1("Skipping dir (FS %s): %s ", skip_file_systems[i].name, dir_name);
+                LogDebug("Skipping dir (FS %s): %s ", skip_file_systems[i].name, dir_name);
                 return skip_file_systems[i].flag;
             }
         }
@@ -114,12 +114,12 @@ short skipFS(const char *dir_name)
         /* If the file exists, throw an error and retreat! If the file does not exist, there
          * is no reason to spam the log with these errors. */
         if(errno != ENOENT) {
-            merror("statfs('%s') produced error: %s", dir_name, strerror(errno));
+            LogError("statfs('%s') produced error: %s", dir_name, strerror(errno));
         }
         return(-1);
     }
 #else
-    mdebug2("Attempted to check FS status for '%s', but we don't know how on this OS.", dir_name);
+    LogDebug("Attempted to check FS status for '%s', but we don't know how on this OS.", dir_name);
 #endif
     return(0);
 }
@@ -129,7 +129,7 @@ bool HasFilesystem(__attribute__((unused))const char * path, __attribute__((unus
     struct statfs stfs;
 
     if (statfs(path, &stfs) == -1) {
-        mdebug2("statfs(%s): %s", path, strerror(errno));
+        LogDebug("statfs(%s): %s", path, strerror(errno));
         return false;
     }
 

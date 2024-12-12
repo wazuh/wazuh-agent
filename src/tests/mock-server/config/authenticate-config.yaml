@@ -1,0 +1,39 @@
+# authenticate-config.yaml
+---
+plugin: rest
+resources:
+
+# Allow user=wazuh and password=topsecret
+- path: "/security/user/authenticate"
+  method: POST
+  requestHeaders:
+    Authorization: 'Basic d2F6dWg6dG9wc2VjcmV0'
+  response:
+    statusCode: 200
+    content: '{ "data": { "token": "a1b2c3d4e5f6g7h8i9j0" } }'
+
+# Deny other authentications
+- path: "/security/user/authenticate"
+  method: POST
+  response:
+    statusCode: 403
+
+# Valid body: uuid and key
+- path: "/api/v1/authentication"
+  method: POST
+  requestBody:
+    allOf:
+    - jsonPath: $.uuid
+      operator: NotEqualTo
+      value: null
+    - jsonPath: $.key
+      operator: NotEqualTo
+      value: null
+  response:
+    scriptFile: authenticate.groovy
+
+# Deny other requests
+- path: "/api/v1/authentication"
+  method: POST
+  response:
+    statusCode: 403

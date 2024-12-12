@@ -1,0 +1,45 @@
+#pragma once
+
+namespace config
+{
+    constexpr auto PROJECT_NAME = "@PROJECT_NAME@";
+    constexpr auto VERSION = "@VERSION@";
+    constexpr auto DEFAULT_THREAD_COUNT = @DEFAULT_THREAD_COUNT@;
+    constexpr auto DEFAULT_DATA_PATH = "@DEFAULT_DATA_PATH@";
+    constexpr auto DEFAULT_RUN_PATH = "@DEFAULT_RUN_PATH@";
+    constexpr auto DEFAULT_SHARED_CONFIG_PATH = "@DEFAULT_SHARED_CONFIG_PATH@";
+    constexpr auto DEFAULT_CONFIG_PATH = "@DEFAULT_CONFIG_PATH@";
+    constexpr auto DEFAULT_SHARED_FILE_EXTENSION = "@DEFAULT_SHARED_FILE_EXTENSION@";
+
+    namespace agent
+    {
+        constexpr auto DEFAULT_SERVER_URL = "@DEFAULT_SERVER_URL@";
+        constexpr auto DEFAULT_RETRY_INTERVAL = @DEFAULT_RETRY_INTERVAL@;
+        constexpr auto DEFAULT_BATCH_INTERVAL = @DEFAULT_BATCH_INTERVAL@;
+        constexpr auto DEFAULT_BATCH_SIZE = @DEFAULT_BATCH_SIZE@;
+    }
+
+    namespace logcollector
+    {
+        constexpr auto DEFAULT_ENABLED = @DEFAULT_LOGCOLLECTOR_ENABLED@;
+        constexpr auto BUFFER_SIZE = @BUFFER_SIZE@;
+        constexpr auto DEFAULT_FILE_WAIT = @DEFAULT_FILE_WAIT@;
+        constexpr auto DEFAULT_RELOAD_INTERVAL = @DEFAULT_RELOAD_INTERVAL@;
+        constexpr auto DEFAULT_LOCALFILES = "/var/log/auth.log";
+    }
+
+    namespace inventory
+    {
+        constexpr auto DEFAULT_ENABLED = @DEFAULT_INVENTORY_ENABLED@;
+        constexpr auto DEFAULT_INTERVAL = @DEFAULT_INTERVAL@;
+        constexpr auto DEFAULT_SCAN_ON_START = @DEFAULT_SCAN_ON_START@;
+        constexpr auto DEFAULT_HARDWARE = @DEFAULT_HARDWARE@;
+        constexpr auto DEFAULT_OS = @DEFAULT_OS@;
+        constexpr auto DEFAULT_NETWORK = @DEFAULT_NETWORK@;
+        constexpr auto DEFAULT_PACKAGES = @DEFAULT_PACKAGES@;
+        constexpr auto DEFAULT_PORTS = @DEFAULT_PORTS@;
+        constexpr auto DEFAULT_PORTS_ALL = @DEFAULT_PORTS_ALL@;
+        constexpr auto DEFAULT_PROCESSES = @DEFAULT_PROCESSES@;
+        constexpr auto DEFAULT_HOTFIXES = @DEFAULT_HOTFIXES@;
+    }
+}

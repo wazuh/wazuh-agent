@@ -53,6 +53,8 @@ static const std::map<std::string, int> s_mapPackagesDirectories =
     { "/System/Applications", PKG},
     { "/System/Applications/Utilities", PKG},
     { "/System/Library/CoreServices", PKG},
+    { "/private/var/db/receipts", RCP},
+    { "/Library/Apple/System/Library/Receipts", RCP},
     { "/usr/local/Cellar", BREW},
     { "/opt/local/var/macports/registry", MACPORTS}
 };
@@ -109,15 +111,15 @@ static void getPackagesFromPath(const std::string& pkgDirectory, const int pkgTy
         {
             try
             {
-                std::shared_ptr<SQLite::IConnection> sqliteConnection = std::make_shared<SQLite::Connection>(pkgDirectory + "/" + MACPORTS_DB_NAME);
+                std::shared_ptr<SQLiteLegacy::IConnection> sqliteConnection = std::make_shared<SQLiteLegacy::Connection>(pkgDirectory + "/" + MACPORTS_DB_NAME);
 
-                SQLite::Statement stmt
+                SQLiteLegacy::Statement stmt
                 {
                     sqliteConnection,
                     MACPORTS_QUERY
                 };
 
-                std::pair<SQLite::IStatement&, const int&> pkgContext {std::make_pair(std::ref(stmt), std::cref(pkgType))};
+                std::pair<SQLiteLegacy::IStatement&, const int&> pkgContext {std::make_pair(std::ref(stmt), std::cref(pkgType))};
 
                 while (SQLITE_ROW == stmt.step())
                 {
@@ -150,25 +152,23 @@ static void getPackagesFromPath(const std::string& pkgDirectory, const int pkgTy
 
         for (const auto& package : packages)
         {
-            if (PKG == pkgType)
+            if ((PKG == pkgType && Utils::endsWith(package, ".app")) ||
+                    (RCP == pkgType && Utils::endsWith(package, ".plist")))
             {
-                if (Utils::endsWith(package, ".app"))
+                try
                 {
-                    try
-                    {
-                        nlohmann::json jsPackage;
-                        FactoryPackageFamilyCreator<OSPlatformType::BSDBASED>::create(std::make_pair(PackageContext{pkgDirectory, package, ""}, pkgType))->buildPackageData(jsPackage);
+                    nlohmann::json jsPackage;
+                    FactoryPackageFamilyCreator<OSPlatformType::BSDBASED>::create(std::make_pair(PackageContext{pkgDirectory, package, ""}, pkgType))->buildPackageData(jsPackage);
 
-                        if (!jsPackage.at("name").get_ref<const std::string&>().empty())
-                        {
-                            // Only return valid content packages
-                            callback(jsPackage);
-                        }
-                    }
-                    catch (const std::exception& e)
+                    if (!jsPackage.at("name").get_ref<const std::string&>().empty())
                     {
-                        std::cerr << e.what() << std::endl;
+                        // Only return valid content packages
+                        callback(jsPackage);
                     }
+                }
+                catch (const std::exception& e)
+                {
+                    std::cerr << e.what() << std::endl;
                 }
             }
             else if (BREW == pkgType)
@@ -440,10 +440,13 @@ void SysInfo::getPackages(std::function<void(nlohmann::json&)> callback) const
 
     // Add macOS specific paths
     pypyMacOSPaths.emplace("/Library/Python/*/*-packages");
-    pypyMacOSPaths.emplace("/Library/Frameworks/Python.framework/Versions/*/lib/python*/*-packages");
+    pypyMacOSPaths.emplace("/Users/*/Library/Python/*/lib/python/*-packages");
+    pypyMacOSPaths.emplace("/Users/*/.pyenv/versions/*/lib/python*/*-packages");
+    pypyMacOSPaths.emplace("/private/var/root/.pyenv/versions/*/lib/python*/*-packages");
     pypyMacOSPaths.emplace(
         "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/*/lib/python*/*-packages");
     pypyMacOSPaths.emplace("/System/Library/Frameworks/Python.framework/*-packages");
+    pypyMacOSPaths.emplace("/opt/homebrew/lib/python*/*-packages");
 
     static const std::map<std::string, std::set<std::string>> searchPaths =
     {

@@ -1,0 +1,80 @@
+#! /bin/bash
+
+set -e
+
+VERSION=4.2.1
+HTTPS=1
+COMMS_PORT=27000
+MGMT_PORT=55000
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --comms-port)
+            COMMS_PORT=$2
+            shift
+            ;;
+        --http)
+            HTTPS=''
+            ;;
+        --https)
+            HTTPS=1
+            ;;
+        --log-stateful)
+            LOG_STATEFUL=1
+            ;;
+        --log-stateless)
+            LOG_STATELESS=1
+            ;;
+        --mgmt-port)
+            MGMT_PORT=$2
+            shift
+            ;;
+        *)
+            echo "Usage: $0 [--comms-port <PORT>] [--http] [--https] [--mgmt-port <PORT>]"
+            echo "  --comms-port <PORT>     Comms API port (default: 27000)"
+            echo "  --http                  Use HTTP"
+            echo "  --https                 Use HTTPS (default)"
+            echo "  --log-stateful          Log stateful requests"
+            echo "  --log-stateless         Log stateless requests"
+            echo "  --mgmt-port <PORT>      Management API port (default: 55000)"
+            exit 0
+            ;;
+    esac
+
+    shift
+done
+
+args=("--configDir=/opt/imposter/config")
+
+if [ -n "$HTTPS" ]; then
+    port=8443
+    args+=("--tlsEnabled")
+    args+=("--keystorePath=/opt/imposter/config/ssl.jks")
+    args+=("--keystorePassword=password")
+else
+    port=8080
+fi
+
+env=(-e "IMPOSTER_LOG_LEVEL=INFO")
+
+if [ -n "$LOG_STATEFUL" ]; then
+    env+=(-e "LOG_STATEFUL=1")
+fi
+
+if [ -n "$LOG_STATELESS" ]; then
+    env+=(-e "LOG_STATELESS=1")
+fi
+
+if [ ! -f config/ssl.jks ]; then
+    docker run --rm -v ./config:/mnt openjdk:11-jdk keytool -genkeypair \
+        -alias imposter \
+        -keyalg RSA \
+        -keysize 2048 \
+        -keystore /mnt/ssl.jks \
+        -validity 365 \
+        -storepass password \
+        -keypass password \
+        -dname "CN=localhost, OU=Imposter, O=Imposter, L=City, ST=State, C=US"
+fi
+
+docker run --rm -v ./config:/opt/imposter/config -p $COMMS_PORT:$port -p $MGMT_PORT:$port ${env[@]} outofcoffee/imposter:${VERSION} ${args[@]}

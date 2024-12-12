@@ -11,14 +11,9 @@
 
 #include "sysInfoPackagesLinuxHelper_test.h"
 #include "packages/packageLinuxParserHelper.h"
-#include "packages/packageLinuxParserHelperExtra.h"
 #include "packages/packageLinuxRpmParserHelper.h"
 #include "packages/packageLinuxRpmParserHelperLegacy.h"
-#include "packages/packageLinuxApkParserHelper.h"
 #include "packages/rpmPackageManager.h"
-#include <alpm.h>
-#include <package.h>
-#include <handle.h>
 #include "sharedDefs.h"
 
 using ::testing::_;
@@ -318,7 +313,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseDpkgInformation)
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("zlib1g-dev", jsPackageInfo["name"]);
     EXPECT_EQ("optional", jsPackageInfo["priority"]);
-    EXPECT_EQ(591, jsPackageInfo["size"]);
+    EXPECT_EQ(605184, jsPackageInfo["size"]);
     EXPECT_EQ("libdevel", jsPackageInfo["groups"]);
     EXPECT_EQ("same", jsPackageInfo["multiarch"]);
     EXPECT_EQ("1:1.2.11.dfsg-2ubuntu1.2", jsPackageInfo["version"]);
@@ -327,218 +322,6 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseDpkgInformation)
     EXPECT_EQ("Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>", jsPackageInfo["vendor"]);
     EXPECT_EQ("compression library - development", jsPackageInfo["description"]);
     EXPECT_EQ("zlib", jsPackageInfo["source"]);
-}
-
-TEST_F(SysInfoPackagesLinuxHelperTest, parsePacmanInformation)
-{
-    __alpm_list_t   mock        {};
-    __alpm_pkg_t    data        {};
-    __alpm_handle_t dataHandle  {};
-    __alpm_list_t   dataGroups  {};
-
-    constexpr auto PKG_GROUP    {"wazuh"};
-    constexpr auto PKG_ARCH     {"x86_64"};
-    constexpr auto PKG_NAME     {"firefox"};
-    constexpr auto PKG_DESC     {"Standalone web browser from mozilla.org"};
-    constexpr auto PKG_VERSION  {"86.0-2"};
-
-    data.handle        = &dataHandle;
-    data.groups        = &dataGroups;
-    data.isize         = 1;
-    data.installdate   = 0;
-    data.groups->next  = nullptr;
-    data.name          = const_cast<char*>(PKG_NAME);
-    data.groups->data  = const_cast<char*>(PKG_GROUP);
-    data.version       = const_cast<char*>(PKG_VERSION);
-    data.arch          = const_cast<char*>(PKG_ARCH);
-    data.desc          = const_cast<char*>(PKG_DESC);
-    mock.data          = &data;
-    data.ops           = &default_pkg_ops;
-
-    const auto& jsPackageInfo { PackageLinuxHelper::parsePacman(&mock) };
-    EXPECT_FALSE(jsPackageInfo.empty());
-    EXPECT_EQ(PKG_NAME, jsPackageInfo["name"]);
-    EXPECT_EQ(1, jsPackageInfo["size"]);
-    EXPECT_EQ("1970/01/01 00:00:00", jsPackageInfo["install_time"]);
-    EXPECT_EQ(PKG_GROUP, jsPackageInfo["groups"]);
-    EXPECT_EQ(PKG_VERSION, jsPackageInfo["version"]);
-    EXPECT_EQ(PKG_ARCH, jsPackageInfo["architecture"]);
-    EXPECT_EQ("pacman", jsPackageInfo["format"]);
-    EXPECT_EQ("Arch Linux", jsPackageInfo["vendor"]);
-    EXPECT_EQ(PKG_DESC, jsPackageInfo["description"]);
-}
-
-TEST_F(SysInfoPackagesLinuxHelperTest, parsePacmanMultipleGroups)
-{
-    __alpm_list_t   mock            {};
-    __alpm_pkg_t    data            {};
-    __alpm_handle_t dataHandle      {};
-    __alpm_list_t   dataFirstGroup  {};
-    __alpm_list_t   dataSecondGroup {};
-    __alpm_list_t   dataThirdGroup  {};
-    __alpm_list_t   dataFourthGroup {};
-
-    dataFirstGroup.data    = const_cast<char*>("Wazuh");
-    dataFirstGroup.next    = &dataSecondGroup;
-    dataSecondGroup.data   = const_cast<char*>("test");
-    dataSecondGroup.next   = &dataThirdGroup;
-    dataThirdGroup.data    = const_cast<char*>("Arch");
-    dataThirdGroup.next    = &dataFourthGroup;
-    dataFourthGroup.data   = const_cast<char*>("lorem");
-    dataFourthGroup.next   = nullptr;
-
-    data.isize             = 0;
-    data.installdate       = 0;
-    data.name              = nullptr;
-    data.version           = nullptr;
-    data.arch              = nullptr;
-    data.desc              = nullptr;
-    data.handle            = &dataHandle;
-    data.groups            = &dataFirstGroup;
-    mock.data              = &data;
-    data.ops               = &default_pkg_ops;
-
-    const auto& jsPackageInfo { PackageLinuxHelper::parsePacman(&mock) };
-    EXPECT_FALSE(jsPackageInfo.empty());
-    EXPECT_EQ("Wazuh-test-Arch-lorem", jsPackageInfo["groups"]);
-}
-
-TEST_F(SysInfoPackagesLinuxHelperTest, parsePacmanInformationNull)
-{
-    __alpm_list_t   mock        {};
-    __alpm_pkg_t    data        {};
-    __alpm_handle_t dataHandle  {};
-    __alpm_list_t   dataGroups  {};
-
-    data.handle        = &dataHandle;
-    data.groups        = &dataGroups;
-    data.isize         = 0;
-    data.installdate   = 0;
-    data.groups->next  = nullptr;
-    data.name          = nullptr;
-    data.groups->data  = nullptr;
-    data.version       = nullptr;
-    data.arch          = nullptr;
-    data.desc          = nullptr;
-    mock.data          = &data;
-    data.ops           = &default_pkg_ops;
-
-    const auto& jsPackageInfo { PackageLinuxHelper::parsePacman(&mock) };
-    EXPECT_FALSE(jsPackageInfo.empty());
-    EXPECT_EQ("", jsPackageInfo["name"]);
-    EXPECT_EQ(0, jsPackageInfo["size"]);
-    EXPECT_EQ("1970/01/01 00:00:00", jsPackageInfo["install_time"]);
-    EXPECT_EQ(UNKNOWN_VALUE, jsPackageInfo["groups"]);
-    EXPECT_EQ(UNKNOWN_VALUE, jsPackageInfo["version"]);
-    EXPECT_EQ(UNKNOWN_VALUE, jsPackageInfo["architecture"]);
-    EXPECT_EQ("pacman", jsPackageInfo["format"]);
-    EXPECT_EQ("Arch Linux", jsPackageInfo["vendor"]);
-    EXPECT_EQ(UNKNOWN_VALUE, jsPackageInfo["description"]);
-}
-
-TEST_F(SysInfoPackagesLinuxHelperTest, parseApkNameKeyNotFound)
-{
-    std::vector<std::pair<char, std::string>> input;
-    input.push_back(std::pair<char, std::string>('V', "1.2.3-r4"));
-    input.push_back(std::pair<char, std::string>('A', "x86_64"));
-    input.push_back(std::pair<char, std::string>('I', "634880"));
-    input.push_back(std::pair<char, std::string>('T', "the musl c library (libc) implementation"));
-
-    const auto& jsPackageInfo { PackageLinuxHelper::parseApk(input) };
-    EXPECT_EQ(true, jsPackageInfo.empty());
-}
-
-TEST_F(SysInfoPackagesLinuxHelperTest, parseApkVersionKeyNotFound)
-{
-    std::vector<std::pair<char, std::string>> input;
-    input.push_back(std::pair<char, std::string>('P', "musl"));
-    input.push_back(std::pair<char, std::string>('A', "x86_64"));
-    input.push_back(std::pair<char, std::string>('I', "634880"));
-    input.push_back(std::pair<char, std::string>('T', "the musl c library (libc) implementation"));
-
-    const auto& jsPackageInfo { PackageLinuxHelper::parseApk(input) };
-    EXPECT_EQ(true, jsPackageInfo.empty());
-}
-
-TEST_F(SysInfoPackagesLinuxHelperTest, parseApkArchitectureKeyNotFound)
-{
-    std::vector<std::pair<char, std::string>> input;
-    input.push_back(std::pair<char, std::string>('P', "musl"));
-    input.push_back(std::pair<char, std::string>('V', "1.2.3-r4"));
-    input.push_back(std::pair<char, std::string>('I', "634880"));
-    input.push_back(std::pair<char, std::string>('T', "the musl c library (libc) implementation"));
-
-    const auto& jsPackageInfo { PackageLinuxHelper::parseApk(input) };
-    EXPECT_EQ("musl", jsPackageInfo.at("name"));
-    EXPECT_EQ("1.2.3-r4", jsPackageInfo.at("version"));
-    EXPECT_EQ(UNKNOWN_VALUE, jsPackageInfo.at("architecture"));
-    EXPECT_EQ(634880, jsPackageInfo.at("size"));
-    EXPECT_EQ("the musl c library (libc) implementation", jsPackageInfo.at("description"));
-    EXPECT_EQ("apk", jsPackageInfo.at("format"));
-    EXPECT_EQ("Alpine Linux", jsPackageInfo.at("vendor"));
-}
-
-TEST_F(SysInfoPackagesLinuxHelperTest, parseApkNameValueEmpty)
-{
-    std::vector<std::pair<char, std::string>> input;
-    input.push_back(std::pair<char, std::string>('P', ""));
-    input.push_back(std::pair<char, std::string>('V', "1.2.3-r4"));
-    input.push_back(std::pair<char, std::string>('A', "x86_64"));
-    input.push_back(std::pair<char, std::string>('I', "634880"));
-    input.push_back(std::pair<char, std::string>('T', "the musl c library (libc) implementation"));
-
-    const auto& jsPackageInfo { PackageLinuxHelper::parseApk(input) };
-    EXPECT_EQ(true, jsPackageInfo.empty());
-}
-
-TEST_F(SysInfoPackagesLinuxHelperTest, parseApkVersionValueEmpty)
-{
-    std::vector<std::pair<char, std::string>> input;
-    input.push_back(std::pair<char, std::string>('P', "musl"));
-    input.push_back(std::pair<char, std::string>('V', ""));
-    input.push_back(std::pair<char, std::string>('A', "x86_64"));
-    input.push_back(std::pair<char, std::string>('I', "634880"));
-    input.push_back(std::pair<char, std::string>('T', "the musl c library (libc) implementation"));
-
-    const auto& jsPackageInfo { PackageLinuxHelper::parseApk(input) };
-    EXPECT_EQ(true, jsPackageInfo.empty());
-}
-
-TEST_F(SysInfoPackagesLinuxHelperTest, parseApkSizeValueEmpty)
-{
-    std::vector<std::pair<char, std::string>> input;
-    input.push_back(std::pair<char, std::string>('P', "musl"));
-    input.push_back(std::pair<char, std::string>('V', "1.2.3-r4"));
-    input.push_back(std::pair<char, std::string>('A', "x86_64"));
-    input.push_back(std::pair<char, std::string>('I', ""));
-    input.push_back(std::pair<char, std::string>('T', "the musl c library (libc) implementation"));
-
-    const auto& jsPackageInfo { PackageLinuxHelper::parseApk(input) };
-    EXPECT_EQ("musl", jsPackageInfo.at("name"));
-    EXPECT_EQ("1.2.3-r4", jsPackageInfo.at("version"));
-    EXPECT_EQ("x86_64", jsPackageInfo.at("architecture"));
-    EXPECT_EQ(0, jsPackageInfo.at("size"));
-    EXPECT_EQ("the musl c library (libc) implementation", jsPackageInfo.at("description"));
-    EXPECT_EQ("apk", jsPackageInfo.at("format"));
-    EXPECT_EQ("Alpine Linux", jsPackageInfo.at("vendor"));
-}
-
-TEST_F(SysInfoPackagesLinuxHelperTest, parseApkSuccess)
-{
-    std::vector<std::pair<char, std::string>> input;
-    input.push_back(std::pair<char, std::string>('P', "musl"));
-    input.push_back(std::pair<char, std::string>('V', "1.2.3-r4"));
-    input.push_back(std::pair<char, std::string>('A', "x86_64"));
-    input.push_back(std::pair<char, std::string>('I', "634880"));
-    input.push_back(std::pair<char, std::string>('T', "the musl c library (libc) implementation"));
-
-    const auto& jsPackageInfo { PackageLinuxHelper::parseApk(input) };
-    EXPECT_EQ("musl", jsPackageInfo.at("name"));
-    EXPECT_EQ("1.2.3-r4", jsPackageInfo.at("version"));
-    EXPECT_EQ(634880, jsPackageInfo.at("size"));
-    EXPECT_EQ("the musl c library (libc) implementation", jsPackageInfo.at("description"));
-    EXPECT_EQ("apk", jsPackageInfo.at("format"));
-    EXPECT_EQ("Alpine Linux", jsPackageInfo.at("vendor"));
 }
 
 TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapCorrectMapping)

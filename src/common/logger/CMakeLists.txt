@@ -8,31 +8,26 @@ project(Logger)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
-find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)
 
 set(LIBRARIES
     spdlog::spdlog
-    fmt::fmt
 )
 
 if(UNIX AND NOT APPLE)
     find_package(PkgConfig REQUIRED)
-    pkg_check_modules(SYSTEMD REQUIRED libsystemd)
-    list(APPEND LIBRARIES ${SYSTEMD_LIBRARIES})
+    list(APPEND LIBRARIES)
 endif()
 
 if(WIN32)
     set(SOURCES src/logger_win.cpp)
-elseif(APPLE)
-    set(SOURCES src/logger_macos.cpp)
-elseif(UNIX)
-    set(SOURCES src/logger_linux.cpp)
+else()
+    set(SOURCES src/logger_unix.cpp)
 endif()
 
 add_library(Logger ${SOURCES})
-target_include_directories(Logger PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(Logger PUBLIC ${LIBRARIES})
+target_include_directories(Logger PUBLIC include)
+target_link_libraries(Logger PUBLIC ${LIBRARIES} utils)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(Logger)

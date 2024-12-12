@@ -709,7 +709,7 @@ void test_get_file_content(void **state)
 void test_get_file_pointer_NULL(void **state)
 {
     const char * path = NULL;
-    
+
     expect_string(__wrap__mdebug1, formatted_msg, "Cannot open NULL path");
 
     FILE * fp = w_get_file_pointer(path);

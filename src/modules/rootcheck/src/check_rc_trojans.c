@@ -29,7 +29,7 @@ void check_rc_trojans(const char *basedir, FILE *fp)
     const char *(all_paths[]) = {"Windows\\", NULL};
 #endif
 
-    mtdebug1(ARGV0, "Starting on check_rc_trojans");
+    LogDebug(ARGV0, "Starting on check_rc_trojans");
 
     while (fgets(buf, OS_SIZE_1024, fp) != NULL) {
         char *nbuf;

@@ -134,7 +134,7 @@ static void registry_key_transaction_callback(ReturnTypeCallback resultType,
             break;
 
         case MAX_ROWS:
-            mdebug1("Couldn't insert '%s' entry into DB. The DB is full, please check your configuration.", path);
+            LogDebug("Couldn't insert '%s' entry into DB. The DB is full, please check your configuration.", path);
 
         // Fallthrough
         default:
@@ -178,7 +178,7 @@ static void registry_key_transaction_callback(ReturnTypeCallback resultType,
                                             old_attributes);
 
         if (cJSON_GetArraySize(changed_attributes) == 0) {
-            mdebug2(FIM_EMPTY_CHANGED_ATTRIBUTES, path);
+            LogDebug(FIM_EMPTY_CHANGED_ATTRIBUTES, path);
             goto end;
         }
     }
@@ -275,7 +275,7 @@ static void registry_value_transaction_callback(ReturnTypeCallback resultType,
             break;
 
         case MAX_ROWS:
-            mdebug1("Couldn't insert '%s' entry into DB. The DB is full, please check your configuration.", path);
+            LogDebug("Couldn't insert '%s' entry into DB. The DB is full, please check your configuration.", path);
 
         // Fallthrough
         default:
@@ -322,7 +322,7 @@ static void registry_value_transaction_callback(ReturnTypeCallback resultType,
                                               old_attributes);
 
         if (cJSON_GetArraySize(changed_attributes) == 0) {
-            mdebug2(FIM_EMPTY_CHANGED_ATTRIBUTES, path);
+            LogDebug(FIM_EMPTY_CHANGED_ATTRIBUTES, path);
             goto end;
         }
     }
@@ -408,7 +408,7 @@ registry_t *fim_registry_configuration(const char *key, int arch) {
     }
 
     if (ret == NULL) {
-        mdebug2(FIM_CONFIGURATION_NOTFOUND, "registry", key);
+        LogDebug(FIM_CONFIGURATION_NOTFOUND, "registry", key);
     }
 
     return ret;
@@ -444,7 +444,7 @@ int fim_registry_validate_recursion_level(const char *key_path, const registry_t
     }
 
     if (depth > configuration->recursion_level) {
-        mdebug2(FIM_MAX_RECURSION_LEVEL, depth, configuration->recursion_level, key_path);
+        LogDebug(FIM_MAX_RECURSION_LEVEL, depth, configuration->recursion_level, key_path);
         return -1;
     }
 
@@ -482,7 +482,7 @@ int fim_registry_validate_ignore(const char *entry, const registry_t *configurat
                 continue;
             }
             if (strncasecmp((*ignore_list)[ign_it].entry, entry, strlen((*ignore_list)[ign_it].entry)) == 0) {
-                mdebug2(FIM_REG_IGNORE_ENTRY, key ? "registry" : "value",
+                LogDebug(FIM_REG_IGNORE_ENTRY, key ? "registry" : "value",
                         (*ignore_list)[ign_it].arch == ARCH_32BIT ? "[x32]" : "[x64]", entry,
                         (*ignore_list)[ign_it].entry);
                 return -1;
@@ -496,7 +496,7 @@ int fim_registry_validate_ignore(const char *entry, const registry_t *configurat
 
             }
             if (OSMatch_Execute(entry, strlen(entry), (*ignore_list_regex)[ign_it].regex)) {
-                mdebug2(FIM_REG_IGNORE_SREGEX, key ? "registry" : "value",
+                LogDebug(FIM_REG_IGNORE_SREGEX, key ? "registry" : "value",
                         (*ignore_list_regex)[ign_it].arch == ARCH_32BIT ? "[x32]" : "[x64]", entry,
                         (*ignore_list_regex)[ign_it].regex->raw);
                 return -1;
@@ -516,7 +516,7 @@ void fim_registry_get_checksum_key(fim_registry_key *data) {
 
     size = snprintf(0,
             0,
-            "%s:%s:%s:%s:%s:%u",
+            "%s:%s:%s:%s:%s:%lu",
             data->perm ? data->perm : "",
             data->uid ? data->uid : "",
             data->user_name ? data->user_name : "",
@@ -527,7 +527,7 @@ void fim_registry_get_checksum_key(fim_registry_key *data) {
     os_calloc(size + 1, sizeof(char), checksum);
     snprintf(checksum,
             size + 1,
-            "%s:%s:%s:%s:%s:%u:%d",
+            "%s:%s:%s:%s:%s:%lu:%d",
             data->perm ? data->perm : "",
             data->uid ? data->uid : "",
             data->gid ? data->gid : "",
@@ -551,7 +551,7 @@ void fim_registry_get_checksum_value(fim_registry_value_data *data) {
 
     size = snprintf(0,
             0,
-            "%u:%u:%s:%s:%s",
+            "%u:%llu:%s:%s:%s",
             data->type,
             data->size,
             data->hash_md5 ,
@@ -561,7 +561,7 @@ void fim_registry_get_checksum_value(fim_registry_value_data *data) {
     os_calloc(size + 1, sizeof(char), checksum);
     snprintf(checksum,
             size + 1,
-            "%u:%u:%s:%s:%s",
+            "%u:%llu:%s:%s:%s",
             data->type,
             data->size,
             data->hash_md5 ,
@@ -781,7 +781,7 @@ fim_registry_key *fim_registry_get_key_data(HKEY key_handle, const char *path, c
         key->perm_json = NULL;
         error = get_registry_permissions(key_handle, &(key->perm_json));
         if (error) {
-            mdebug1(FIM_EXTRACT_PERM_FAIL, path, error);
+            LogDebug(FIM_EXTRACT_PERM_FAIL, path, error);
             fim_registry_free_key(key);
             return NULL;
         }
@@ -921,7 +921,7 @@ void fim_read_values(HKEY key_handle,
         int result_transaction = fim_db_transaction_sync_row(regval_txn_handler, &new);
 
         if (result_transaction < 0) {
-            mdebug2("dbsync transaction failed due to %d", result_transaction);
+            LogDebug("dbsync transaction failed due to %d", result_transaction);
         }
     }
 
@@ -992,7 +992,7 @@ void fim_open_key(HKEY root_key_handle,
     access_rights = KEY_READ | (arch == ARCH_32BIT ? KEY_WOW64_32KEY : KEY_WOW64_64KEY);
 
     if (RegOpenKeyEx(root_key_handle, sub_key, 0, access_rights, &current_key_handle) != ERROR_SUCCESS) {
-        mdebug1(FIM_REG_OPEN, sub_key, arch == ARCH_32BIT ? "[x32]" : "[x64]");
+        LogDebug(FIM_REG_OPEN, sub_key, arch == ARCH_32BIT ? "[x32]" : "[x64]");
         return;
     }
 
@@ -1059,7 +1059,7 @@ void fim_open_key(HKEY root_key_handle,
     result_transaction = fim_db_transaction_sync_row(regkey_txn_handler, &new);
 
     if(result_transaction < 0){
-        merror("Dbsync registry transaction failed due to %d", result_transaction);
+        LogError("Dbsync registry transaction failed due to %d", result_transaction);
     }
 
     if (value_count) {
@@ -1084,7 +1084,7 @@ void fim_registry_scan() {
                                                              registry_value_transaction_callback, &txn_ctx_regval);
 
     /* Debug entries */
-    mdebug1(FIM_WINREGISTRY_START);
+    LogDebug(FIM_WINREGISTRY_START);
     /* Get sub class and a valid registry entry */
     for (i = 0; syscheck.registry[i].entry; i++) {
         /* Ignored entries are zeroed */
@@ -1093,11 +1093,11 @@ void fim_registry_scan() {
         }
 
         /* Read syscheck registry entry */
-        mdebug2(FIM_READING_REGISTRY, syscheck.registry[i].arch == ARCH_64BIT ? "[x64] " : "[x32] ",
+        LogDebug(FIM_READING_REGISTRY, syscheck.registry[i].arch == ARCH_64BIT ? "[x64] " : "[x32] ",
                 syscheck.registry[i].entry);
 
         if (fim_set_root_key(&root_key_handle, syscheck.registry[i].entry, &sub_key) != 0) {
-            mdebug1(FIM_INV_REG, syscheck.registry[i].entry,
+            LogDebug(FIM_INV_REG, syscheck.registry[i].entry,
                     syscheck.registry[i].arch == ARCH_64BIT ? "[x64] " : "[x32]");
             *syscheck.registry[i].entry = '\0';
             continue;
@@ -1112,7 +1112,7 @@ void fim_registry_scan() {
     regkey_txn_handler = NULL;
     regval_txn_handler = NULL;
 
-    mdebug1(FIM_WINREGISTRY_ENDED);
+    LogDebug(FIM_WINREGISTRY_ENDED);
 
     if (_base_line == 0) {
         _base_line = 1;

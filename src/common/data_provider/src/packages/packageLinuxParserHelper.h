@@ -14,7 +14,7 @@
 
 #include "sharedDefs.h"
 #include "stringHelper.h"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "timeHelper.h"
 #include "sharedDefs.h"
 
@@ -91,7 +91,7 @@ namespace PackageLinuxHelper
 
             if (it != info.end())
             {
-                size = stol(it->second);
+                size = stol(it->second) * 1024;
             }
 
             it = info.find("Multi-Arch");

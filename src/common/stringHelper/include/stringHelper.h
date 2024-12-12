@@ -46,21 +46,21 @@ namespace Utils
 
         for (auto it = data.begin(); it != data.end(); ++it)
         {
-            const uint8_t ch = *it;
+            const uint8_t ch = static_cast<uint8_t>(static_cast<unsigned char>(*it));
 
             // ASCII character
             if (ch < UTF8_2BYTE_FIRST_CODE_VALUE)
             {
-                strOut.push_back(ch);
+                strOut.push_back(static_cast<char>(ch));
             }
             // Extended ASCII
             else
             {
                 // 2-byte sequence
                 // 110xxxxx
-                strOut.push_back(UTF8_2BYTE_SEQ | ch >> UTF8_2BYTE_SEQ_VALUE_LEN);
+                strOut.push_back(static_cast<char>(UTF8_2BYTE_SEQ | (ch >> UTF8_2BYTE_SEQ_VALUE_LEN)));
                 // 10xxxxxx
-                strOut.push_back(UTF8_2BYTE_FIRST_CODE_VALUE | (ch & UTF8_2BYTE_MASK));
+                strOut.push_back(static_cast<char>(UTF8_2BYTE_FIRST_CODE_VALUE | (ch & UTF8_2BYTE_MASK)));
             }
         }
 

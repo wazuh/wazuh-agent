@@ -1,0 +1,8 @@
+# stateful-config.yaml
+---
+plugin: rest
+resources:
+- path: "/api/v1/events/stateful"
+  method: POST
+  response:
+    scriptFile: stateful.groovy

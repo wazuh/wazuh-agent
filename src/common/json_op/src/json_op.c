@@ -17,17 +17,17 @@ cJSON * json_fread(const char * path, char retry) {
     const char *jsonErrPtr;
 
     if (buffer = w_get_file_content(path, JSON_MAX_FSIZE), !buffer) {
-        mdebug1("Cannot get the content of the file: %s", path);
+        LogDebug("Cannot get the content of the file: %s", path);
         return NULL;
     }
 
     if (item = cJSON_ParseWithOpts(buffer, &jsonErrPtr, 0), !item) {
         if (retry) {
-            mdebug1("Couldn't parse JSON file '%s'. Trying to clear comments.", path);
+            LogDebug("Couldn't parse JSON file '%s'. Trying to clear comments.", path);
             json_strip(buffer);
 
             if (item = cJSON_ParseWithOpts(buffer, &jsonErrPtr, 0), !item) {
-                mdebug1("Couldn't parse JSON file '%s'.", path);
+                LogDebug("Couldn't parse JSON file '%s'.", path);
             }
         }
     }
@@ -43,19 +43,19 @@ int json_fwrite(const char * path, const cJSON * item) {
     int retval = -1;
 
     if (buffer = cJSON_PrintUnformatted(item), !buffer) {
-        mdebug1("Internal error dumping JSON into file '%s'", path);
+        LogDebug("Internal error dumping JSON into file '%s'", path);
         return -1;
     }
 
     size = strlen(buffer);
 
     if (fp = wfopen(path, "w"), !fp) {
-        mdebug1(FOPEN_ERROR, path, errno, strerror(errno));
+        LogDebug(FOPEN_ERROR, path, errno, strerror(errno));
         goto end;
     }
 
     if (fwrite(buffer, 1, size, fp) != size) {
-        mdebug1("Couldn't write JSON into '%s': %s (%d)", path, strerror(errno), errno);
+        LogDebug("Couldn't write JSON into '%s': %s (%d)", path, strerror(errno), errno);
         goto end;
     }
 

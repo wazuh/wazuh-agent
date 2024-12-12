@@ -4,13 +4,14 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 class AgentInfoPersistanceTest : public ::testing::Test
 {
 protected:
     void SetUp() override
     {
-        persistance = std::make_unique<AgentInfoPersistance>("agent_info_test.db");
+        persistance = std::make_unique<AgentInfoPersistance>(".");
         persistance->ResetToDefault();
     }
 
@@ -48,6 +49,23 @@ TEST_F(AgentInfoPersistanceTest, TestSetUUID)
     const std::string newUUID = "new_uuid";
     persistance->SetUUID(newUUID);
     EXPECT_EQ(persistance->GetUUID(), newUUID);
+}
+
+TEST_F(AgentInfoPersistanceTest, TestSetGroups)
+{
+    const std::vector<std::string> newGroups = {"group_1", "group_2"};
+    persistance->SetGroups(newGroups);
+    EXPECT_EQ(persistance->GetGroups(), newGroups);
+}
+
+TEST_F(AgentInfoPersistanceTest, TestSetGroupsDelete)
+{
+    const std::vector<std::string> oldGroups = {"group_1", "group_2"};
+    const std::vector<std::string> newGroups = {"group_3", "group_4"};
+    persistance->SetGroups(oldGroups);
+    EXPECT_EQ(persistance->GetGroups(), oldGroups);
+    persistance->SetGroups(newGroups);
+    EXPECT_EQ(persistance->GetGroups(), newGroups);
 }
 
 TEST_F(AgentInfoPersistanceTest, TestResetToDefault)

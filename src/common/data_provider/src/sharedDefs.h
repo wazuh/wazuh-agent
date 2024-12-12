@@ -31,10 +31,6 @@ constexpr auto DPKG_STATUS_PATH {"/var/lib/dpkg/status"};
 
 constexpr auto RPM_PATH {"/var/lib/rpm/"};
 
-constexpr auto PACMAN_PATH {"/var/lib/pacman"};
-
-constexpr auto APK_PATH {"/lib/apk/db"};
-constexpr auto APK_DB_PATH {"/lib/apk/db/installed"};
 constexpr auto SNAP_PATH {"/var/lib/snapd"};
 
 constexpr auto UNKNOWN_VALUE {" "};
@@ -50,7 +46,6 @@ enum OSPlatformType
     LINUX,
     BSDBASED,
     WINDOWS,
-    SOLARIS
 };
 
 enum LinuxType
@@ -86,7 +81,8 @@ enum MacOsPackageTypes
 {
     PKG,
     BREW,
-    MACPORTS
+    MACPORTS,
+    RCP
 };
 
 enum RPMFields
@@ -120,6 +116,8 @@ static const std::set<std::string> UNIX_PYPI_DEFAULT_BASE_DIRS
     "/opt/homebrew/lib",
     "/Library/Python",
     "/Library/Frameworks/Python.framework/Versions/*/lib/python*/*-packages",
+    "/root/.pyenv/versions/*/lib/python*/*-packages",
+    "/home/*/.pyenv/versions/*/lib/python*/*-packages"
 };
 
 static const std::set<std::string> UNIX_NPM_DEFAULT_BASE_DIRS
@@ -132,6 +130,8 @@ static const std::set<std::string> UNIX_NPM_DEFAULT_BASE_DIRS
     "/home/*/.nvm/versions/node/v*/lib",
     "/root/.nvm/versions/node/v*/lib",
     "/opt/local/lib",
+    "/Users/*/.nvm/versions/node/v*/lib",
+    "/private/var/root/.nvm/versions/node/v*/lib"
 };
 
 #endif //_SHARED_DEFS_H

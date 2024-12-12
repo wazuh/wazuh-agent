@@ -12,28 +12,15 @@
 #ifndef _DBSYNC_HPP_
 #define _DBSYNC_HPP_
 
-// Define EXPORTED for any platform
-#ifdef _WIN32
-#ifdef WIN_EXPORT
-#define EXPORTED __declspec(dllexport)
-#else
-#define EXPORTED __declspec(dllimport)
-#endif
-#elif __GNUC__ >= 4
-#define EXPORTED __attribute__((visibility("default")))
-#else
-#define EXPORTED
-#endif
-
 #include <functional>
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "db_exception.h"
 #include "commonDefs.h"
 #include "builder.hpp"
 
 using ResultCallbackData = const std::function<void(ReturnTypeCallback, const nlohmann::json&) >;
 
-class EXPORTED DBSync
+class DBSync
 {
     public:
         /**
@@ -168,7 +155,7 @@ class EXPORTED DBSync
         bool m_shouldBeRemoved;
 };
 
-class EXPORTED DBSyncTxn
+class DBSyncTxn
 {
     public:
         /**
@@ -236,7 +223,7 @@ class EXPORTED DBSyncTxn
 };
 
 template <typename T>
-class EXPORTED Query : public Utils::Builder<T>
+class Query : public Utils::Builder<T>
 {
     protected:
         nlohmann::json m_jsQuery;
@@ -264,7 +251,7 @@ class EXPORTED Query : public Utils::Builder<T>
 
 };
 
-class EXPORTED SelectQuery final : public Query<SelectQuery>
+class SelectQuery final : public Query<SelectQuery>
 {
     public:
         SelectQuery() = default;
@@ -314,7 +301,7 @@ class EXPORTED SelectQuery final : public Query<SelectQuery>
 
 };
 
-class EXPORTED DeleteQuery final : public Query<DeleteQuery>
+class DeleteQuery final : public Query<DeleteQuery>
 {
     public:
         DeleteQuery() = default;
@@ -344,7 +331,7 @@ class EXPORTED DeleteQuery final : public Query<DeleteQuery>
         DeleteQuery& reset();
 };
 
-class EXPORTED InsertQuery final : public Query<InsertQuery>
+class InsertQuery final : public Query<InsertQuery>
 {
     public:
         InsertQuery() = default;
@@ -366,7 +353,7 @@ class EXPORTED InsertQuery final : public Query<InsertQuery>
         InsertQuery& reset();
 };
 
-class EXPORTED SyncRowQuery final : public Query<SyncRowQuery>
+class SyncRowQuery final : public Query<SyncRowQuery>
 {
     public:
         SyncRowQuery() = default;

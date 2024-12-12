@@ -4,10 +4,12 @@
 #include <message.hpp>
 #include <persistence.hpp>
 
+#include <chrono>
 #include <condition_variable>
 #include <map>
 #include <memory>
 #include <mutex>
+#include <string>
 #include <vector>
 
 #include <boost/asio.hpp>
@@ -15,7 +17,7 @@
 // TODO: move to a configuration setting
 constexpr int DEFAULT_MAX = 10000;
 constexpr int DEFAULT_TIMEOUT_S = 3;
-const std::string QUEUE_DEFAULT_DB_PATH = "queue.db";
+const std::string QUEUE_DB_NAME = "queue.db";
 
 /**
  * @brief MultiTypeQueue implementation that handles multiple types of messages.
@@ -42,10 +44,11 @@ public:
     /**
      * @brief Constructor.
      *
+     * @param dbFolderPath The path to the database folder.
      * @param size The maximum number of items in the queue.
      * @param timeout The timeout period in seconds.
      */
-    MultiTypeQueue(size_t size = DEFAULT_MAX, int timeout = DEFAULT_TIMEOUT_S);
+    MultiTypeQueue(const std::string& dbFolderPath, size_t size = DEFAULT_MAX, int timeout = DEFAULT_TIMEOUT_S);
 
     /**
      * @brief Delete copy constructor
@@ -88,20 +91,25 @@ public:
     int push(std::vector<Message> messages) override;
 
     /**
-     * @copydoc IMultiTypeQueue::getNext(MessageType, const std::string)
+     * @copydoc IMultiTypeQueue::getNext(MessageType, const std::string, const std::string)
      */
-    Message getNext(MessageType type, const std::string module = "") override;
+    Message getNext(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
     /**
-     * @copydoc IMultiTypeQueue::getNextNAwaitable(MessageType, int, const std::string)
+     * @copydoc IMultiTypeQueue::getNextNAwaitable(MessageType, int, const std::string, const std::string)
      */
-    boost::asio::awaitable<Message>
-    getNextNAwaitable(MessageType type, int messageQuantity, const std::string moduleName = "") override;
+    boost::asio::awaitable<std::vector<Message>> getNextNAwaitable(MessageType type,
+                                                                   int messageQuantity,
+                                                                   const std::string moduleName = "",
+                                                                   const std::string moduleType = "") override;
 
     /**
-     * @copydoc IMultiTypeQueue::getNextN(MessageType, int, const std::string)
+     * @copydoc IMultiTypeQueue::getNextN(MessageType, int, const std::string, const std::string)
      */
-    std::vector<Message> getNextN(MessageType type, int messageQuantity, const std::string moduleName = "") override;
+    std::vector<Message> getNextN(MessageType type,
+                                  int messageQuantity,
+                                  const std::string moduleName = "",
+                                  const std::string moduleType = "") override;
 
     /**
      * @copydoc IMultiTypeQueue::pop(MessageType, const std::string)

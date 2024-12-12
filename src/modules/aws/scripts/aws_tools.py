@@ -90,7 +90,7 @@ def set_profile_dict_config(boto_config: dict, profile: str, profile_config: dic
             )
         }
         boto_config['config'].proxies_config = proxies_config
-    
+
     # Checks for retries config in profile config and sets it if not found to avoid throttling exception
     if RETRY_ATTEMPTS_KEY in profile_config or RETRY_MODE_CONFIG_KEY in profile_config:
         retries = {

@@ -1,29 +1,34 @@
 #include <imultitype_queue.hpp>
 #include <message_queue_utils.hpp>
-#include <nlohmann/json.hpp>
 
 #include <vector>
 
-namespace
+boost::asio::awaitable<std::tuple<int, std::string>>
+GetMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue,
+                     MessageType messageType,
+                     int numMessages,
+                     std::function<std::string()> getMetadataInfo)
 {
-    // This should eventually be replaced with a configuration parameter.
-    constexpr int NUM_EVENTS = 1;
-} // namespace
+    const auto messages = co_await multiTypeQueue->getNextNAwaitable(messageType, numMessages, "", "");
 
-boost::asio::awaitable<std::string> GetMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue,
-                                                         MessageType messageType)
-{
-    const auto message = co_await multiTypeQueue->getNextNAwaitable(messageType, NUM_EVENTS);
+    std::string output;
 
-    nlohmann::json jsonObj;
-    jsonObj["events"] = message.data;
+    if (getMetadataInfo != nullptr)
+    {
+        output = getMetadataInfo();
+    }
 
-    co_return jsonObj.dump();
+    for (const auto& message : messages)
+    {
+        output += "\n" + message.metaData + (message.data.dump() == "{}" ? "" : "\n" + message.data.dump());
+    }
+
+    co_return std::tuple<int, std::string> {static_cast<int>(messages.size()), output};
 }
 
-void PopMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue, MessageType messageType)
+void PopMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue, MessageType messageType, int numMessages)
 {
-    multiTypeQueue->popN(messageType, NUM_EVENTS);
+    multiTypeQueue->popN(messageType, numMessages);
 }
 
 void PushCommandsToQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue, const std::string& commands)
@@ -46,7 +51,7 @@ void PushCommandsToQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue, const 
     }
 }
 
-std::optional<command_store::Command> GetCommandFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue)
+std::optional<module_command::CommandEntry> GetCommandFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue)
 {
     if (multiTypeQueue->isEmpty(MessageType::COMMAND))
     {
@@ -54,12 +59,12 @@ std::optional<command_store::Command> GetCommandFromQueue(std::shared_ptr<IMulti
     }
 
     Message m = multiTypeQueue->getNext(MessageType::COMMAND);
-    nlohmann::json jsonData = m.data.at(0).at("data");
+    nlohmann::json jsonData = m.data;
 
     std::string id;
     std::string module;
     std::string command;
-    std::string parameters;
+    nlohmann::json parameters = nlohmann::json::array();
 
     if (jsonData.contains("id") && jsonData["id"].is_string())
     {
@@ -81,18 +86,12 @@ std::optional<command_store::Command> GetCommandFromQueue(std::shared_ptr<IMulti
                     if (arg.is_string())
                         command = arg.get<std::string>();
                     break;
-                default:
-                    if (!parameters.empty())
-                        parameters += " ";
-                    parameters += arg.is_string() ? arg.get<std::string>() : arg.dump();
-                    break;
+                default: parameters.push_back(arg); break;
             }
         }
     }
 
-    command_store::Status status = command_store::Status::IN_PROGRESS;
-
-    command_store::Command cmd(id, module, command, parameters, "", status);
+    module_command::CommandEntry cmd(id, module, command, parameters, "", module_command::Status::IN_PROGRESS);
 
     return cmd;
 }

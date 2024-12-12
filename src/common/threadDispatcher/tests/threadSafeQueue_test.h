@@ -23,4 +23,5 @@ class ThreadSafeQueueTest : public ::testing::Test
         void SetUp() override;
         void TearDown() override;
 };
+
 #endif //THREAD_SAFE_QUEUE_TESTS_H

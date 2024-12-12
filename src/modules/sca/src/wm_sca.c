@@ -13,7 +13,6 @@
 #include <os_net/os_net.h>
 #include <sys/stat.h>
 #include "os_crypto/sha256/sha256_op.h"
-#include "expression.h"
 #include "shared.h"
 
 #undef minfo
@@ -22,11 +21,11 @@
 #undef mdebug1
 #undef mdebug2
 
-#define minfo(msg, ...) _mtinfo(WM_SCA_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
-#define mwarn(msg, ...) _mtwarn(WM_SCA_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
-#define merror(msg, ...) _mterror(WM_SCA_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
-#define mdebug1(msg, ...) _mtdebug1(WM_SCA_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
-#define mdebug2(msg, ...) _mtdebug2(WM_SCA_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
+#define minfo(msg, ...) LogInfo(WM_SCA_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
+#define mwarn(msg, ...) LogWarn(WM_SCA_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
+#define merror(msg, ...) LogError(WM_SCA_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
+#define mdebug1(msg, ...) LogDebug(WM_SCA_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
+#define mdebug2(msg, ...) LogDebug(WM_SCA_LOGTAG, __FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
 
 #ifdef WAZUH_UNIT_TESTING
 /* Remove static qualifier when testing */
@@ -149,14 +148,14 @@ void * wm_sca_main(wm_sca_t * data) {
 #endif
     // If module is disabled, exit
     if (data->enabled) {
-        minfo("Module started.");
+        LogInfo("Module started.");
     } else {
-        minfo("Module disabled. Exiting.");
+        LogInfo("Module disabled. Exiting.");
         pthread_exit(NULL);
     }
 
     if (!data->policies || data->policies[0] == NULL) {
-        minfo("No policies defined. Exiting.");
+        LogInfo("No policies defined. Exiting.");
         pthread_exit(NULL);
     }
 
@@ -178,15 +177,15 @@ void * wm_sca_main(wm_sca_t * data) {
     /* Maximum request interval is the scan interval */
     if(data->request_db_interval > data->scan_config.interval) {
        data->request_db_interval = data->scan_config.interval;
-       minfo("The request_db_interval option cannot be higher than the scan interval. It will be redefined to that value.");
+       LogInfo("The request_db_interval option cannot be higher than the scan interval. It will be redefined to that value.");
     }
 
     int i;
     for(i = 0; data->policies[i]; i++) {
         if(data->policies[i]->enabled){
-            minfo("Loaded policy '%s'", data->policies[i]->policy_path);
+            LogInfo("Loaded policy '%s'", data->policies[i]->policy_path);
         } else {
-            minfo("Policy '%s' disabled by configuration.", data->policies[i]->policy_path);
+            LogInfo("Policy '%s' disabled by configuration.", data->policies[i]->policy_path);
         }
     }
 
@@ -195,7 +194,7 @@ void * wm_sca_main(wm_sca_t * data) {
         os_realloc(cis_db, (i + 2) * sizeof(OSHash *), cis_db);
         cis_db[i] = OSHash_Create();
         if (!cis_db[i]) {
-            merror(LIST_ERROR);
+            LogError(LIST_ERROR);
             pthread_exit(NULL);
         }
         OSHash_SetFreeDataPointer(cis_db[i], (void (*)(void *))wm_sca_free_hash_data);
@@ -224,7 +223,7 @@ void * wm_sca_main(wm_sca_t * data) {
     data->queue = StartMQ(DEFAULTQUEUE, WRITE, INFINITE_OPENQ_ATTEMPTS);
 
     if (data->queue < 0) {
-        merror("Can't connect to queue.");
+        LogError("Can't connect to queue.");
     }
 
 #endif
@@ -264,16 +263,16 @@ static int wm_sca_send_alert(wm_sca_t * data,cJSON *json_alert)
 #endif
 
     char *msg = cJSON_PrintUnformatted(json_alert);
-    mdebug2("Sending event: %s",msg);
+    LogDebug("Sending event: %s",msg);
 
     if (wm_sendmsg(data->msg_delay, queue_fd, msg,WM_SCA_STAMP, SCA_MQ) < 0) {
-        merror(QUEUE_ERROR, DEFAULTQUEUE, strerror(errno));
+        LogError(QUEUE_ERROR, DEFAULTQUEUE, strerror(errno));
 
         if ((data->queue = StartMQ(DEFAULTQUEUE, WRITE, INFINITE_OPENQ_ATTEMPTS)) < 0) {
-            mwarn("Can't connect to queue.");
+            LogWarn("Can't connect to queue.");
         } else {
             if(wm_sendmsg(data->msg_delay, data->queue, msg,WM_SCA_STAMP, SCA_MQ) < 0) {
-                merror(QUEUE_ERROR, DEFAULTQUEUE, strerror(errno));
+                LogError(QUEUE_ERROR, DEFAULTQUEUE, strerror(errno));
             }
         }
     }
@@ -302,7 +301,7 @@ static void wm_sca_send_policies_scanned(wm_sca_t * data) {
     cJSON_AddStringToObject(policies_obj, "type", "policies");
     cJSON_AddItemToObject(policies_obj,"policies",policies);
 
-    mdebug2("Sending scanned policies.");
+    LogDebug("Sending scanned policies.");
     wm_sca_send_alert(data,policies_obj);
     cJSON_Delete(policies_obj);
 }
@@ -318,11 +317,11 @@ static int wm_sca_start(wm_sca_t * data) {
         if (time_sleep) {
             const int next_scan_time = sched_get_next_scan_time(data->scan_config);
             timestamp = w_get_timestamp(next_scan_time);
-            mtdebug2(WM_SCA_LOGTAG, "Sleeping until: %s", timestamp);
+            LogDebug(WM_SCA_LOGTAG, "Sleeping until: %s", timestamp);
             os_free(timestamp);
             w_sleep_until(next_scan_time);
         }
-        mtinfo(WM_SCA_LOGTAG,"Starting Security Configuration Assessment scan.");
+        LogInfo(WM_SCA_LOGTAG,"Starting Security Configuration Assessment scan.");
         time_start = time(NULL);
 
         /* Do scan for every policy file */
@@ -332,7 +331,7 @@ static int wm_sca_start(wm_sca_t * data) {
         wm_sca_send_policies_scanned(data);
 
         duration = time(NULL) - time_start;
-        mtinfo(WM_SCA_LOGTAG, "Security Configuration Assessment scan finished. Duration: %d seconds.", (int)duration);
+        LogInfo(WM_SCA_LOGTAG, "Security Configuration Assessment scan finished. Duration: %d seconds.", (int)duration);
 
     } while(FOREVER());
 
@@ -361,7 +360,7 @@ static void wm_sca_read_files(wm_sca_t * data) {
             FILE *fp = wfopen(data->policies[i]->policy_path, "r");
 
             if(!fp) {
-                mwarn("Policy file not found: '%s'. Skipping it.", data->policies[i]->policy_path);
+                LogWarn("Policy file not found: '%s'. Skipping it.", data->policies[i]->policy_path);
                 goto next;
             }
             w_file_cloexec(fp);
@@ -370,12 +369,12 @@ static void wm_sca_read_files(wm_sca_t * data) {
             yaml_document_t document;
 
             if (yaml_parse_file(data->policies[i]->policy_path, &document)) {
-                mwarn("Error found while parsing file: '%s'. Skipping it.", data->policies[i]->policy_path);
+                LogWarn("Error found while parsing file: '%s'. Skipping it.", data->policies[i]->policy_path);
                 goto next;
             }
 
             if (object = yaml2json(&document,1), !object) {
-                mwarn("Error found while transforming yaml to json: '%s'. Skipping it.", data->policies[i]->policy_path);
+                LogWarn("Error found while transforming yaml to json: '%s'. Skipping it.", data->policies[i]->policy_path);
                 yaml_document_delete(&document);
                 goto next;
             }
@@ -390,7 +389,7 @@ static void wm_sca_read_files(wm_sca_t * data) {
             cJSON_AddItemReferenceToArray(requirements_array, requirements);
 
             if (wm_sca_check_policy(policy, checks, check_list)) {
-                mwarn("Error found while validating policy file: '%s'. Skipping it.", data->policies[i]->policy_path);
+                LogWarn("Error found while validating policy file: '%s'. Skipping it.", data->policies[i]->policy_path);
                 goto next;
             }
 
@@ -403,7 +402,7 @@ static void wm_sca_read_files(wm_sca_t * data) {
             }
 
             if (requirements && wm_sca_check_requirements(requirements)) {
-                mwarn("Error found while reading 'requirements' section of file: '%s'. Skipping it.", data->policies[i]->policy_path);
+                LogWarn("Error found while reading 'requirements' section of file: '%s'. Skipping it.", data->policies[i]->policy_path);
                 goto next;
             }
 
@@ -413,14 +412,14 @@ static void wm_sca_read_files(wm_sca_t * data) {
             }
 
             if (!checks) {
-                mwarn("Error found while reading 'checks' section of file: '%s'. Skipping it.", data->policies[i]->policy_path);
+                LogWarn("Error found while reading 'checks' section of file: '%s'. Skipping it.", data->policies[i]->policy_path);
                 goto next;
             }
 
             vars = OSStore_Create();
             sorted_variables = wm_sort_variables(variables_policy);
             if (wm_sca_get_vars(variables_policy,vars) != 0) {
-                mwarn("Error found while reading the 'variables' section of file: '%s'. Skipping it.", data->policies[i]->policy_path);
+                LogWarn("Error found while reading the 'variables' section of file: '%s'. Skipping it.", data->policies[i]->policy_path);
                 goto next;
             }
 
@@ -445,7 +444,7 @@ static void wm_sca_read_files(wm_sca_t * data) {
                 requirements_satisfied = 1;
             }
 
-            mdebug1("Calculating hash for policy file '%s'", data->policies[i]->policy_path);
+            LogDebug("Calculating hash for policy file '%s'", data->policies[i]->policy_path);
             char * integrity_hash_file = wm_sca_hash_integrity_file(data->policies[i]->policy_path);
 
             /* Check if the file integrity has changed */
@@ -459,7 +458,7 @@ static void wm_sca_read_files(wm_sca_t * data) {
                         cis_db[cis_db_index] = OSHash_Create();
 
                         if (!cis_db[cis_db_index]) {
-                            merror(LIST_ERROR);
+                            LogError(LIST_ERROR);
                             w_rwlock_unlock(&dump_rwlock);
                             pthread_exit(NULL);
                         }
@@ -490,12 +489,12 @@ static void wm_sca_read_files(wm_sca_t * data) {
                 time_t time_end = 0;
                 time_start = time(NULL);
 
-                minfo("Starting evaluation of policy: '%s'", data->policies[i]->policy_path);
+                LogInfo("Starting evaluation of policy: '%s'", data->policies[i]->policy_path);
 
                 if (wm_sca_do_scan(checks, vars, data, id, policy, 0, cis_db_index, data->policies[i]->remote, first_scan, &checks_number, sorted_variables, data->policies[i]->policy_regex_type) != 0) {
-                    merror("Error while evaluating the policy '%s'", data->policies[i]->policy_path);
+                    LogError("Error while evaluating the policy '%s'", data->policies[i]->policy_path);
                 }
-                mdebug1("Calculating hash for scanned results.");
+                LogDebug("Calculating hash for scanned results.");
                 char * integrity_hash = wm_sca_hash_integrity(cis_db_index);
 
                 time_end = time(NULL);
@@ -509,13 +508,13 @@ static void wm_sca_read_files(wm_sca_t * data) {
 
                 os_free(integrity_hash);
 
-                minfo("Evaluation finished for policy '%s'", data->policies[i]->policy_path);
+                LogInfo("Evaluation finished for policy '%s'", data->policies[i]->policy_path);
                 wm_sca_reset_summary();
 
                 w_rwlock_unlock(&dump_rwlock);
             } else {
                 cJSON *title = cJSON_GetObjectItem(requirements,"title");
-                minfo("Skipping policy '%s': '%s'", data->policies[i]->policy_path, title->valuestring);
+                LogInfo("Skipping policy '%s': '%s'", data->policies[i]->policy_path, title->valuestring);
             }
 
             os_free(integrity_hash_file);
@@ -552,62 +551,62 @@ static int wm_sca_check_policy(const cJSON * const policy, const cJSON * const c
 
     const cJSON * const id = cJSON_GetObjectItem(policy, "id");
     if(!id) {
-        mwarn("Field 'id' not found in policy header.");
+        LogWarn("Field 'id' not found in policy header.");
         return 1;
     }
 
     if(!id->valuestring){
-        mwarn("Invalid format for field 'id'");
+        LogWarn("Invalid format for field 'id'");
         return 1;
     }
 
     char *coincident_policy_file;
     if((coincident_policy_file = OSHash_Get(global_check_list,id->valuestring)), coincident_policy_file) {
-        mwarn("Found duplicated policy ID: %s. File '%s' contains the same ID.", id->valuestring, coincident_policy_file);
+        LogWarn("Found duplicated policy ID: %s. File '%s' contains the same ID.", id->valuestring, coincident_policy_file);
         return 1;
     }
 
     const cJSON * const name = cJSON_GetObjectItem(policy, "name");
     if(!name) {
-        mwarn("Field 'name' not found in policy header.");
+        LogWarn("Field 'name' not found in policy header.");
         return 1;
     }
 
     if(!name->valuestring){
-        mwarn("Invalid format for field 'name'");
+        LogWarn("Invalid format for field 'name'");
         return 1;
     }
 
     const cJSON * const file = cJSON_GetObjectItem(policy, "file");
     if(!file) {
-        mwarn("Field 'file' not found in policy header.");
+        LogWarn("Field 'file' not found in policy header.");
         return 1;
     }
 
     if(!file->valuestring){
-        mwarn("Invalid format for field 'file'");
+        LogWarn("Invalid format for field 'file'");
         return 1;
     }
 
     const cJSON * const description = cJSON_GetObjectItem(policy, "description");
     if(!description) {
-        mwarn("Field 'description' not found in policy header.");
+        LogWarn("Field 'description' not found in policy header.");
         return 1;
     }
 
     const cJSON * const regex_type = cJSON_GetObjectItem(policy, "regex_type");
     if(!regex_type) {
-        mdebug1("Field 'regex_type' not found in policy header. The OS_REGEX engine shall be used.");
+        LogDebug("Field 'regex_type' not found in policy header. The OS_REGEX engine shall be used.");
     }
 
     if(!description->valuestring) {
-        mwarn("Invalid format for field 'description'");
+        LogWarn("Invalid format for field 'description'");
         return 1;
     }
 
     // Check for policy rules with duplicated IDs */
     if (!checks) {
-        mwarn("Section 'checks' not found.");
+        LogWarn("Section 'checks' not found.");
         return 1;
     }
 
@@ -619,14 +618,14 @@ static int wm_sca_check_policy(const cJSON * const policy, const cJSON * const c
     cJSON_ArrayForEach(check, checks) {
         const cJSON * const check_id = cJSON_GetObjectItem(check, "id");
         if (check_id == NULL) {
-            mwarn("Check ID not found.");
+            LogWarn("Check ID not found.");
             free(read_id);
             return 1;
         }
 
         if (check_id->valueint <= 0) {
             // Invalid ID
-            mwarn("Invalid check ID: %d", check_id->valueint);
+            LogWarn("Invalid check ID: %d", check_id->valueint);
             free(read_id);
             return 1;
         }
@@ -639,7 +638,7 @@ static int wm_sca_check_policy(const cJSON * const policy, const cJSON * const c
 
         if((coincident_policy = (char *)OSHash_Get(global_check_list, key_id)), coincident_policy){
             // Invalid ID
-            mwarn("Found duplicated check ID: %d. First appearance at policy '%s'", check_id->valueint, coincident_policy);
+            LogWarn("Found duplicated check ID: %d. First appearance at policy '%s'", check_id->valueint, coincident_policy);
             os_free(key_id);
             os_free(read_id);
             return 1;
@@ -650,7 +649,7 @@ static int wm_sca_check_policy(const cJSON * const policy, const cJSON * const c
         for (i = 0; read_id[i] != 0; i++) {
             if (check_id->valueint == read_id[i]) {
                 // Duplicated ID
-                mwarn("Found duplicated check ID: %d", check_id->valueint);
+                LogWarn("Found duplicated check ID: %d", check_id->valueint);
                 free(read_id);
                 return 1;
             }
@@ -663,7 +662,7 @@ static int wm_sca_check_policy(const cJSON * const policy, const cJSON * const c
         const cJSON * const rules = cJSON_GetObjectItem(check, "rules");
 
         if (rules == NULL) {
-            mwarn("Invalid check %d: no rules found.", check_id->valueint);
+            LogWarn("Invalid check %d: no rules found.", check_id->valueint);
             free(read_id);
             return 1;
         }
@@ -672,7 +671,7 @@ static int wm_sca_check_policy(const cJSON * const policy, const cJSON * const c
         const cJSON *rule;
         cJSON_ArrayForEach(rule, rules) {
             if (!rule->valuestring) {
-                mwarn("Invalid check %d: Empty rule.", check_id->valueint);
+                LogWarn("Invalid check %d: Empty rule.", check_id->valueint);
                 free(read_id);
                 return 1;
             }
@@ -690,11 +689,11 @@ static int wm_sca_check_policy(const cJSON * const policy, const cJSON * const c
                 case 'c':
                     break;
                 case '\0':
-                    mwarn("Invalid check %d: Empty rule.", check_id->valueint);
+                    LogWarn("Invalid check %d: Empty rule.", check_id->valueint);
                     free(read_id);
                     return 1;
                 default:
-                    mwarn("Invalid check %d: Invalid rule format.", check_id->valueint);
+                    LogWarn("Invalid check %d: Invalid rule format.", check_id->valueint);
                     free(read_id);
                     return 1;
             }
@@ -702,13 +701,13 @@ static int wm_sca_check_policy(const cJSON * const policy, const cJSON * const c
             rules_n++;
             if (rules_n > 255) {
                 free(read_id);
-                mwarn("Invalid check %d: Maximum number of rules is 255.", check_id->valueint);
+                LogWarn("Invalid check %d: Maximum number of rules is 255.", check_id->valueint);
                 return 1;
             }
         }
 
         if (rules_n == 0) {
-            mwarn("Invalid check %d: no rules found.", check_id->valueint);
+            LogWarn("Invalid check %d: no rules found.", check_id->valueint);
             free(read_id);
             return 1;
         }
@@ -721,11 +720,11 @@ static int wm_sca_check_policy(const cJSON * const policy, const cJSON * const c
     if (id_add_retval == 0){
         os_free(policy_file);
         os_free(read_id);
-        merror_exit("(1102): Could not acquire memory");
+        LogCritical("(1102): Could not acquire memory");
     }
 
     if (id_add_retval == 1){
-        merror("Error validating duplicated ID. Policy %s in file %s is duplicated", id->valuestring, policy_file);
+        LogError("Error validating duplicated ID. Policy %s in file %s is duplicated", id->valuestring, policy_file);
         os_free(policy_file);
         os_free(read_id);
         return 1;
@@ -739,11 +738,11 @@ static int wm_sca_check_policy(const cJSON * const policy, const cJSON * const c
         if (check_add_retval == 0){
             os_free(policy_id);
             os_free(read_id);
-            merror_exit("(1102): Could not acquire memory");
+            LogCritical("(1102): Could not acquire memory");
         }
 
         if (check_add_retval == 1){
-            merror("Error validating duplicated ID. Check %s in policy %s is duplicated", id->valuestring, policy_id);
+            LogError("Error validating duplicated ID. Check %s in policy %s is duplicated", id->valuestring, policy_id);
             os_free(policy_id);
             os_free(read_id);
             return 1;
@@ -762,45 +761,45 @@ static int wm_sca_check_requirements(const cJSON * const requirements)
 
     const cJSON * const title = cJSON_GetObjectItem(requirements, "title");
     if(!title) {
-        merror("Field 'title' not found on requirements.");
+        LogError("Field 'title' not found on requirements.");
         return 1;
     }
 
     if(!title->valuestring){
-        merror("Field 'title' must be a string.");
+        LogError("Field 'title' must be a string.");
         return 1;
     }
 
     const cJSON * const description = cJSON_GetObjectItem(requirements, "description");
     if(!description) {
-        merror("Field 'description' not found on policy.");
+        LogError("Field 'description' not found on policy.");
         return 1;
     }
 
     if(!description->valuestring){
-        merror("Field 'description' must be a string.");
+        LogError("Field 'description' must be a string.");
         return 1;
     }
 
     const cJSON * const condition = cJSON_GetObjectItem(requirements, "condition");
     if(!condition) {
-        merror("Field 'condition' not found on policy.");
+        LogError("Field 'condition' not found on policy.");
         return 1;
     }
 
     if(!condition->valuestring){
-        merror("Field 'condition' must be a string.");
+        LogError("Field 'condition' must be a string.");
         return 1;
     }
 
     const cJSON * const rules = cJSON_GetObjectItem(requirements, "rules");
     if (!rules) {
-        merror("Field 'rules' must be present.");
+        LogError("Field 'rules' must be present.");
         return 1;
     }
 
     if (!cJSON_IsArray(rules)) {
-        merror("Field 'rules' must be an array.");
+        LogError("Field 'rules' must be an array.");
         return 1;
     }
 
@@ -810,18 +809,18 @@ static int wm_sca_check_requirements(const cJSON * const requirements)
 #ifndef WIN32
 static int wm_sca_resolve_symlink(const char * const file, char * realpath_buffer, char **reason)
 {
-    mdebug2("Resolving real path of '%s'", file);
+    LogDebug("Resolving real path of '%s'", file);
     const char * const realpath_buffer_ref = realpath(file, realpath_buffer);
 
     if (realpath_buffer_ref == NULL) {
         const int realpath_errno = errno;
 
         if (realpath_errno == ENOENT) {
-            mdebug2("Path '%s' does not exists, or points to an unexistent path -> RETURN_NOT_FOUND: %s", file, strerror(realpath_errno));
+            LogDebug("Path '%s' does not exists, or points to an unexistent path -> RETURN_NOT_FOUND: %s", file, strerror(realpath_errno));
             return RETURN_NOT_FOUND;
         }
 
-        mdebug2("Could not resolve the real path of '%s': %s", file, strerror(realpath_errno));
+        LogDebug("Could not resolve the real path of '%s': %s", file, strerror(realpath_errno));
         if (*reason == NULL) {
             os_malloc(snprintf(NULL, 0, "Could not resolve the real path of '%s': %s", file, strerror(realpath_errno)) + 1, *reason);
             sprintf(*reason, "Could not resolve the real path of '%s': %s", file, strerror(realpath_errno));
@@ -830,7 +829,7 @@ static int wm_sca_resolve_symlink(const char * const file, char * realpath_buffe
         return RETURN_INVALID;
     }
 
-    mdebug2("Real path of '%s' is '%s'", file, realpath_buffer);
+    LogDebug("Real path of '%s' is '%s'", file, realpath_buffer);
     return RETURN_FOUND;
 }
 #endif
@@ -847,12 +846,12 @@ static int wm_sca_check_dir_list(wm_sca_t * const data,
     char *f_value_copy_ref = f_value_copy;
     int found = RETURN_NOT_FOUND;
     char *dir = NULL;
-    mdebug2("Exploring directories [%s]", f_value_copy);
+    LogDebug("Exploring directories [%s]", f_value_copy);
     while ((dir = w_strtok_r_str_delim(",", &f_value_copy_ref))) {
         short is_nfs = IsNFS(dir);
-        mdebug2("Checking directory '%s' => is_nfs=%d, skip_nfs=%d", dir, is_nfs, data->skip_nfs);
+        LogDebug("Checking directory '%s' => is_nfs=%d, skip_nfs=%d", dir, is_nfs, data->skip_nfs);
         if(data->skip_nfs && is_nfs == 1) {
-            mdebug2("Directory '%s' flagged as NFS and skip_nfs is enabled.", dir);
+            LogDebug("Directory '%s' flagged as NFS and skip_nfs is enabled.", dir);
             if (*reason == NULL) {
                 os_malloc(snprintf(NULL, 0, "Directory '%s' flagged as NFS and skip_nfs is enabled", dir) + 1, *reason);
                 sprintf(*reason, "Directory '%s' flagged as NFS and skip_nfs is enabled", dir);
@@ -868,10 +867,10 @@ static int wm_sca_check_dir_list(wm_sca_t * const data,
 
             if (check_result == RETURN_FOUND) {
                 found = RETURN_FOUND;
-                mdebug2("Found match in directory '%s'", dir);
+                LogDebug("Found match in directory '%s'", dir);
             } else if (check_result == RETURN_INVALID) {
                 found = RETURN_INVALID;
-                mdebug2("Check returned not applicable for directory '%s'", dir);
+                LogDebug("Check returned not applicable for directory '%s'", dir);
             }
         }
 
@@ -973,7 +972,7 @@ static int wm_sca_do_scan(cJSON * checks,
         } else {
             const cJSON * const c_id = cJSON_GetObjectItem(check, "id");
             if (!c_id || !c_id->valueint) {
-                merror("Skipping check. Check ID is invalid. Offending check number: %d", check_count);
+                LogError("Skipping check. Check ID is invalid. Offending check number: %d", check_count);
                 ret_val = 1;
                 continue;
             }
@@ -982,7 +981,7 @@ static int wm_sca_do_scan(cJSON * checks,
 
         const cJSON * const c_title = cJSON_GetObjectItem(check, "title");
         if (!c_title || !c_title->valuestring) {
-            merror("Skipping check with %s: Check name is invalid.", _check_id_str);
+            LogError("Skipping check with %s: Check name is invalid.", _check_id_str);
             if (requirements_scan) {
                 ret_val = 1;
                 goto clean_return;
@@ -992,7 +991,7 @@ static int wm_sca_do_scan(cJSON * checks,
 
         const cJSON * const c_condition = cJSON_GetObjectItem(check, "condition");
         if (!c_condition || !c_condition->valuestring) {
-            merror("Skipping check '%s: %s': Check condition not found.", _check_id_str, c_title->valuestring);
+            LogError("Skipping check '%s: %s': Check condition not found.", _check_id_str, c_title->valuestring);
             if (requirements_scan) {
                 ret_val = 1;
                 goto clean_return;
@@ -1004,7 +1003,7 @@ static int wm_sca_do_scan(cJSON * checks,
         wm_sca_set_condition(c_condition->valuestring, &condition);
 
         if (condition == WM_SCA_COND_INV) {
-            merror("Skipping check '%s: %s': Check condition (%s) is invalid.",_check_id_str, c_title->valuestring, c_condition->valuestring);
+            LogError("Skipping check '%s: %s': Check condition (%s) is invalid.",_check_id_str, c_title->valuestring, c_condition->valuestring);
             if (requirements_scan) {
                 ret_val = 1;
                 goto clean_return;
@@ -1021,14 +1020,14 @@ static int wm_sca_do_scan(cJSON * checks,
             g_found = RETURN_FOUND;
         }
 
-        mdebug1("Beginning evaluation of check %s '%s'", _check_id_str, c_title->valuestring);
-        mdebug1("Rule aggregation strategy for this check is '%s'", c_condition->valuestring);
-        mdebug2("Initial rule-aggregator value por this type of rule is '%d'",  g_found);
-        mdebug1("Beginning rules evaluation.");
+        LogDebug("Beginning evaluation of check %s '%s'", _check_id_str, c_title->valuestring);
+        LogDebug("Rule aggregation strategy for this check is '%s'", c_condition->valuestring);
+        LogDebug("Initial rule-aggregator value por this type of rule is '%d'",  g_found);
+        LogDebug("Beginning rules evaluation.");
 
         const cJSON *const rules = cJSON_GetObjectItem(check, "rules");
         if (!rules) {
-            merror("Skipping check %s '%s': No rules found.", _check_id_str, c_title->valuestring);
+            LogError("Skipping check %s '%s': No rules found.", _check_id_str, c_title->valuestring);
             if (requirements_scan) {
                 ret_val = 1;
                 goto clean_return;
@@ -1051,7 +1050,7 @@ static int wm_sca_do_scan(cJSON * checks,
                 w_calloc_expression_t(&regex_engine, EXP_TYPE_OSREGEX);
             }
         }
-        mdebug1("SCA will use '%s' engine to check the rules.", w_expression_get_regex_type(regex_engine));
+        LogDebug("SCA will use '%s' engine to check the rules.", w_expression_get_regex_type(regex_engine));
 
         char *rule_cp = NULL;
         const cJSON *rule_ref;
@@ -1061,13 +1060,13 @@ static int wm_sca_do_scan(cJSON * checks,
             os_free(rule_cp);
 
             if(!rule_ref->valuestring) {
-                mdebug1("Field 'rule' must be a string.");
+                LogDebug("Field 'rule' must be a string.");
                 ret_val = 1;
                 os_free(regex_engine);
                 goto clean_return;
             }
 
-            mdebug1("Considering rule: '%s'", rule_ref->valuestring);
+            LogDebug("Considering rule: '%s'", rule_ref->valuestring);
 
             os_strdup(rule_ref->valuestring, rule_cp);
             char *rule_cp_ref = NULL;
@@ -1076,7 +1075,7 @@ static int wm_sca_do_scan(cJSON * checks,
             char expanded_rule[2048] = {0};
             ExpandEnvironmentStrings(rule_cp, expanded_rule, 2048);
             rule_cp_ref = expanded_rule;
-            mdebug2("Rule after variable expansion: '%s'", rule_cp_ref);
+            LogDebug("Rule after variable expansion: '%s'", rule_cp_ref);
         #else
             rule_cp_ref = rule_cp;
         #endif
@@ -1086,7 +1085,7 @@ static int wm_sca_do_scan(cJSON * checks,
                     (strncmp(rule_cp_ref, "NOT ", 4) == 0 ||
                      strncmp(rule_cp_ref, "not ", 4) == 0))
             {
-                mdebug2("Rule is negated.");
+                LogDebug("Rule is negated.");
                 rule_is_negated = 1;
                 rule_cp_ref += 4;
             }
@@ -1096,7 +1095,7 @@ static int wm_sca_do_scan(cJSON * checks,
             char *value = wm_sca_get_value(rule_cp_ref, &type);
 
             if (value == NULL) {
-                merror("Invalid rule: '%s'. Skipping policy.", rule_ref->valuestring);
+                LogError("Invalid rule: '%s'. Skipping policy.", rule_ref->valuestring);
                 os_free(rule_cp);
                 ret_val = 1;
                 os_free(regex_engine);
@@ -1116,15 +1115,15 @@ static int wm_sca_do_scan(cJSON * checks,
                 if (sorted_variables) {
                     for (int i = 0; sorted_variables[i]; i++) {
                         if (strstr(rule_location, sorted_variables[i])) {
-                            mdebug2("Variable '%s' found at rule '%s'. Replacing it.", sorted_variables[i], rule_location);
+                            LogDebug("Variable '%s' found at rule '%s'. Replacing it.", sorted_variables[i], rule_location);
                             aux = wstr_replace(rule_location, sorted_variables[i], OSStore_Get(vars, sorted_variables[i]));
                             os_free(rule_location);
                             rule_location = aux;
                             if (!rule_location) {
-                                merror("Invalid variable replacement: '%s'. Skipping check.", sorted_variables[i]);
+                                LogError("Invalid variable replacement: '%s'. Skipping check.", sorted_variables[i]);
                                 break;
                             }
-                            mdebug2("Variable replaced: '%s'", rule_location);
+                            LogDebug("Variable replaced: '%s'", rule_location);
                         }
                     }
                 }
@@ -1152,7 +1151,7 @@ static int wm_sca_do_scan(cJSON * checks,
                 os_strdup(value, rule_location);
 
                 if (!data->remote_commands && remote_policy) {
-                    mwarn("Ignoring check for policy '%s'. The internal option 'sca.remote_commands' is disabled.", cJSON_GetObjectItem(policy, "name")->valuestring);
+                    LogWarn("Ignoring check for policy '%s'. The internal option 'sca.remote_commands' is disabled.", cJSON_GetObjectItem(policy, "name")->valuestring);
                     if (reason == NULL) {
                         os_malloc(snprintf(NULL, 0, "Ignoring check for running command '%s'. The internal option 'sca.remote_commands' is disabled", rule_location) + 1, reason);
                         sprintf(reason, "Ignoring check for running command '%s'. The internal option 'sca.remote_commands' is disabled", rule_location);
@@ -1164,15 +1163,15 @@ static int wm_sca_do_scan(cJSON * checks,
                     if (sorted_variables) {
                         for (int i = 0; sorted_variables[i]; i++) {
                             if (strstr(rule_location, sorted_variables[i])) {
-                                mdebug2("Variable '%s' found at rule '%s'. Replacing it.", sorted_variables[i], rule_location);
+                                LogDebug("Variable '%s' found at rule '%s'. Replacing it.", sorted_variables[i], rule_location);
                                 aux = wstr_replace(rule_location, sorted_variables[i], OSStore_Get(vars, sorted_variables[i]));
                                 os_free(rule_location);
                                 rule_location = aux;
                                 if (!rule_location) {
-                                    merror("Invalid variable: '%s'. Skipping check.", sorted_variables[i]);
+                                    LogError("Invalid variable: '%s'. Skipping check.", sorted_variables[i]);
                                     break;
                                 }
-                                mdebug2("Variable replaced: '%s'", rule_location);
+                                LogDebug("Variable replaced: '%s'", rule_location);
                             }
                         }
                     }
@@ -1181,13 +1180,13 @@ static int wm_sca_do_scan(cJSON * checks,
                         continue;
                     }
 
-                    mdebug2("Running command: '%s'", rule_location);
+                    LogDebug("Running command: '%s'", rule_location);
                     const int val = wm_sca_read_command(rule_location, pattern, data, &reason, regex_engine);
                     if (val == RETURN_FOUND) {
-                        mdebug2("Command output matched.");
+                        LogDebug("Command output matched.");
                         found = RETURN_FOUND;
                     } else if (val == RETURN_INVALID){
-                        mdebug2("Command output did not match.");
+                        LogDebug("Command output did not match.");
                         found = RETURN_INVALID;
                     }
                 }
@@ -1200,7 +1199,7 @@ static int wm_sca_do_scan(cJSON * checks,
 
             } else if (type == WM_SCA_TYPE_DIR) {
                 /* Check directory */
-                mdebug2("Processing directory rule '%s'", value);
+                LogDebug("Processing directory rule '%s'", value);
                 char * const file = wm_sca_get_pattern(value);
                 char *rule_location = NULL;
                 char *aux = NULL;
@@ -1211,15 +1210,15 @@ static int wm_sca_do_scan(cJSON * checks,
                 if (sorted_variables) {
                     for (int i = 0; sorted_variables[i]; i++) {
                         if (strstr(rule_location, sorted_variables[i])) {
-                            mdebug2("Variable '%s' found at rule '%s'. Replacing it.", sorted_variables[i], rule_location);
+                            LogDebug("Variable '%s' found at rule '%s'. Replacing it.", sorted_variables[i], rule_location);
                             aux = wstr_replace(rule_location, sorted_variables[i], OSStore_Get(vars, sorted_variables[i]));
                             os_free(rule_location);
                             rule_location = aux;
                             if (!rule_location) {
-                                merror("Invalid variable: '%s'. Skipping check.", sorted_variables[i]);
+                                LogError("Invalid variable: '%s'. Skipping check.", sorted_variables[i]);
                                 break;
                             }
-                            mdebug2("Variable replaced: '%s'", rule_location);
+                            LogDebug("Variable replaced: '%s'", rule_location);
                         }
                     }
                 }
@@ -1230,7 +1229,7 @@ static int wm_sca_do_scan(cJSON * checks,
 
                 char * const pattern = wm_sca_get_pattern(file);
                 found = wm_sca_check_dir_list(data, rule_location, file, pattern, &reason, regex_engine);
-                mdebug2("Check directory rule result: %d", found);
+                LogDebug("Check directory rule result: %d", found);
                 os_free(rule_location);
 
             } else if (type == WM_SCA_TYPE_PROCESS) {
@@ -1240,12 +1239,12 @@ static int wm_sca_do_scan(cJSON * checks,
                     p_list = w_os_get_process_list();
                 }
 
-                mdebug2("Checking process: '%s'", value);
+                LogDebug("Checking process: '%s'", value);
                 if (wm_sca_check_process_is_running(p_list, value, &reason, regex_engine)) {
-                    mdebug2("Process found.");
+                    LogDebug("Process found.");
                     found = RETURN_FOUND;
                 } else {
-                    mdebug2("Process not found.");
+                    LogDebug("Process not found.");
                 }
 
                 char _b_msg[OS_SIZE_1024 + 1];
@@ -1273,14 +1272,14 @@ static int wm_sca_do_scan(cJSON * checks,
                 found = rule_is_negated ^ found;
             }
 
-            mdebug1("Result for rule '%s': %d", rule_ref->valuestring, found);
+            LogDebug("Result for rule '%s': %d", rule_ref->valuestring, found);
 
             if (((condition & WM_SCA_COND_ALL) && found == RETURN_NOT_FOUND) ||
                 ((condition & WM_SCA_COND_ANY) && found == RETURN_FOUND) ||
                 ((condition & WM_SCA_COND_NON) && found == RETURN_FOUND))
             {
                 g_found = found;
-                mdebug1("Breaking from rule aggregator '%s' with found = %d", c_condition->valuestring, g_found);
+                LogDebug("Breaking from rule aggregator '%s' with found = %d", c_condition->valuestring, g_found);
                 break;
             }
 
@@ -1288,7 +1287,7 @@ static int wm_sca_do_scan(cJSON * checks,
                 /* Rules that agreggate by ANY are the only that can success after an INVALID
                 On the other hand ALL and NONE agregators can fail after an INVALID. */
                 g_found = found;
-                mdebug1("Rule evaluation returned INVALID. Continuing.");
+                LogDebug("Rule evaluation returned INVALID. Continuing.");
             }
         }
 
@@ -1296,7 +1295,7 @@ static int wm_sca_do_scan(cJSON * checks,
             g_found = !g_found;
         }
 
-        mdebug1("Result for check %s '%s' -> %d", _check_id_str, c_title->valuestring, g_found);
+        LogDebug("Result for check %s '%s' -> %d", _check_id_str, c_title->valuestring, g_found);
 
         if (g_found != RETURN_INVALID) {
             os_free(reason);
@@ -1339,7 +1338,7 @@ static int wm_sca_do_scan(cJSON * checks,
             if (reason == NULL) {
                 os_malloc(snprintf(NULL, 0, "Unknown reason") + 1, reason);
                 sprintf(reason, "Unknown reason");
-                mdebug1("A check returned INVALID for an unknown reason.");
+                LogDebug("A check returned INVALID for an unknown reason.");
             }
         }
 
@@ -1360,7 +1359,7 @@ static int wm_sca_do_scan(cJSON * checks,
 
             cJSON_Delete(event);
         } else {
-            merror("Error constructing event for check: %s. Set debug mode for more information.", c_title->valuestring);
+            LogError("Error constructing event for check: %s. Set debug mode for more information.", c_title->valuestring);
             ret_val = 1;
         }
 
@@ -1394,10 +1393,10 @@ static void wm_sca_set_condition(const char * const c_cond, int *condition)
         *condition |= WM_SCA_COND_NON;
     } else if (strcmp(c_cond, "any required") == 0) {
         *condition |= WM_SCA_COND_ANY;
-        minfo("Modifier 'required' is deprecated. Defaults to 'any'");
+        LogInfo("Modifier 'required' is deprecated. Defaults to 'any'");
     } else if (strcmp(c_cond, "all required") == 0) {
         *condition |= WM_SCA_COND_ALL;
-        minfo("Modifier 'required' is deprecated. Defaults to 'all'");
+        LogInfo("Modifier 'required' is deprecated. Defaults to 'all'");
     } else {
         *condition = WM_SCA_COND_INV;
     }
@@ -1408,7 +1407,7 @@ static int wm_sca_get_vars(const cJSON * const variables, OSStore * const vars)
     const cJSON *variable;
     cJSON_ArrayForEach (variable, variables) {
         if (*variable->string != '$') {
-            merror("Invalid variable: '%s'", variable->string);
+            LogError("Invalid variable: '%s'", variable->string);
             return -1;
         }
 
@@ -1496,19 +1495,19 @@ static int wm_sca_check_file_existence(const char * const file, char **reason)
 
     if (lstat_ret == -1) {
         if (lstat_errno == ENOENT) {
-            mdebug2("FILE_EXISTS(%s) -> RETURN_NOT_FOUND: %s", file, strerror(lstat_errno));
+            LogDebug("FILE_EXISTS(%s) -> RETURN_NOT_FOUND: %s", file, strerror(lstat_errno));
             return RETURN_NOT_FOUND;
         }
         if (*reason == NULL) {
             os_malloc(snprintf(NULL, 0, "Could not open '%s': %s", file, strerror(lstat_errno)) + 1, *reason);
             sprintf(*reason, "Could not open '%s': %s", file, strerror(lstat_errno));
         }
-        mdebug2("FILE_EXISTS(%s) -> RETURN_INVALID: %s", file, strerror(lstat_errno));
+        LogDebug("FILE_EXISTS(%s) -> RETURN_INVALID: %s", file, strerror(lstat_errno));
         return RETURN_INVALID;
     }
 
     if (S_ISREG(statbuf.st_mode)) {
-        mdebug2("FILE_EXISTS(%s) -> RETURN_FOUND", file);
+        LogDebug("FILE_EXISTS(%s) -> RETURN_FOUND", file);
         return RETURN_FOUND;
     }
 
@@ -1517,7 +1516,7 @@ static int wm_sca_check_file_existence(const char * const file, char **reason)
         sprintf(*reason, "FILE_EXISTS(%s) -> RETURN_INVALID: Not a regular file.", file);
     }
 
-    mdebug2("FILE_EXISTS(%s) -> RETURN_INVALID: Not a regular file.", file);
+    LogDebug("FILE_EXISTS(%s) -> RETURN_INVALID: Not a regular file.", file);
     return RETURN_INVALID;
 }
 
@@ -1526,7 +1525,7 @@ static int wm_sca_check_file_contents(const char * const file,
                                       char ** reason,
                                       w_expression_t * regex_engine)
 {
-    mdebug2("Checking contents of file '%s' against pattern '%s'", file, pattern);
+    LogDebug("Checking contents of file '%s' against pattern '%s'", file, pattern);
 
     #ifdef WIN32
     const char *realpath_buffer = file;
@@ -1539,7 +1538,7 @@ static int wm_sca_check_file_contents(const char * const file,
             sprintf(*reason, "Could not open file '%s'", file);
         }
 
-        mdebug2("Could not open file '%s'", file);
+        LogDebug("Could not open file '%s'", file);
 
         return RETURN_INVALID;
     }
@@ -1552,7 +1551,7 @@ static int wm_sca_check_file_contents(const char * const file,
             os_malloc(snprintf(NULL, 0, "Could not open file '%s': %s", file, strerror(fopen_errno)) + 1, *reason);
             sprintf(*reason, "Could not open file '%s': %s", file, strerror(fopen_errno));
         }
-        mdebug2("Could not open file '%s': %s", file, strerror(fopen_errno));
+        LogDebug("Could not open file '%s': %s", file, strerror(fopen_errno));
         return RETURN_INVALID;
     }
 
@@ -1561,16 +1560,16 @@ static int wm_sca_check_file_contents(const char * const file,
     while (fgets(buf, OS_SIZE_2048, fp) != NULL) {
         os_trimcrlf(buf);
         result = wm_sca_pattern_matches(buf, pattern, reason, regex_engine);
-        mdebug2("(%s)(%s) -> %d", pattern, *buf != '\0' ? buf : "EMPTY_LINE" , result);
+        LogDebug("(%s)(%s) -> %d", pattern, *buf != '\0' ? buf : "EMPTY_LINE" , result);
 
         if (result) {
-            mdebug2("Match found. Skipping the rest.");
+            LogDebug("Match found. Skipping the rest.");
             break;
         }
     }
 
     fclose(fp);
-    mdebug2("Result for (%s)(%s) -> %d", pattern, file, result);
+    LogDebug("Result for (%s)(%s) -> %d", pattern, file, result);
     return result;
 }
 
@@ -1588,7 +1587,7 @@ static int wm_sca_check_file_list(const char * const file_list,
 
 static int wm_sca_check_file_list_for_existence(const char * const file_list, char **reason)
 {
-    mdebug1("Checking file list '%s' for existence.", file_list);
+    LogDebug("Checking file list '%s' for existence.", file_list);
 
     if (!file_list) {
         return RETURN_NOT_FOUND;
@@ -1606,19 +1605,19 @@ static int wm_sca_check_file_list_for_existence(const char * const file_list, ch
         const int file_check_result = wm_sca_check_file_existence(file, reason);
         if (file_check_result == RETURN_FOUND) {
             result_accumulator = RETURN_FOUND;
-            mdebug2("File '%s' found. Skipping the rest.", file);
+            LogDebug("File '%s' found. Skipping the rest.", file);
             break;
         }
 
         if (file_check_result == RETURN_INVALID) {
             result_accumulator = RETURN_INVALID;
-            mdebug2("Could not open file '%s'. Continuing.", file);
+            LogDebug("Could not open file '%s'. Continuing.", file);
         } else {
-            mdebug2("File '%s' does not exists. Continuing.", file);
+            LogDebug("File '%s' does not exists. Continuing.", file);
         }
     }
 
-    mdebug1("Result for FILES_EXIST(%s) -> %d", file_list, result_accumulator);
+    LogDebug("Result for FILES_EXIST(%s) -> %d", file_list, result_accumulator);
 
     os_free(file_list_copy);
     return result_accumulator;
@@ -1629,7 +1628,7 @@ static int wm_sca_check_file_list_for_contents(const char * const file_list,
                                                char ** reason,
                                                w_expression_t * regex_engine)
 {
-    mdebug1("Checking file list '%s' with '%s'", file_list, pattern);
+    LogDebug("Checking file list '%s' with '%s'", file_list, pattern);
 
     if (!file_list) {
         return RETURN_NOT_FOUND;
@@ -1652,26 +1651,26 @@ static int wm_sca_check_file_list_for_contents(const char * const file_list,
                 os_malloc(snprintf(NULL, 0, "Could not open file '%s'",  file) + 1, *reason);
                 sprintf(*reason, "Could not open file '%s'",  file);
             }
-            mdebug2("Could not open file '%s'. Skipping.", file);
+            LogDebug("Could not open file '%s'. Skipping.", file);
             continue;
         }
 
         const int contents_check_result = wm_sca_check_file_contents(file, pattern, reason, regex_engine);
         if (contents_check_result == RETURN_FOUND) {
             result_accumulator = RETURN_FOUND;
-            mdebug2("Match found in '%s'. Skipping the rest.", file);
+            LogDebug("Match found in '%s'. Skipping the rest.", file);
             break;
         }
 
         if (contents_check_result == RETURN_INVALID) {
-            mdebug2("Check was invalid in file '%s'. Continuing.", file);
+            LogDebug("Check was invalid in file '%s'. Continuing.", file);
             result_accumulator = RETURN_INVALID;
         } else {
-            mdebug2("Match not found in file '%s'. Continuing.", file);
+            LogDebug("Match not found in file '%s'. Continuing.", file);
         }
     }
 
-    mdebug1("Result for (%s)(%s) -> %d", pattern, file_list, result_accumulator);
+    LogDebug("Result for (%s)(%s) -> %d", pattern, file_list, result_accumulator);
 
     os_free(file_list_copy);
     return result_accumulator;
@@ -1684,26 +1683,26 @@ static int wm_sca_read_command(char * command,
                                w_expression_t * regex_engine)
 {
     if (command == NULL) {
-        mdebug1("No Command specified Returning.");
+        LogDebug("No Command specified Returning.");
         return RETURN_NOT_FOUND;
     }
 
     if (!pattern) {
-        mdebug1("No pattern given. Returning FOUND.");
+        LogDebug("No pattern given. Returning FOUND.");
         return RETURN_FOUND;
     }
 
-    mdebug1("Executing command '%s', and testing output with pattern '%s'", command, pattern);
+    LogDebug("Executing command '%s', and testing output with pattern '%s'", command, pattern);
     char *cmd_output = NULL;
     int result_code;
 
     switch (wm_exec(command, &cmd_output, &result_code, data->commands_timeout, NULL)) {
     case 0:
-        mdebug1("Command '%s' returned code %d", command, result_code);
+        LogDebug("Command '%s' returned code %d", command, result_code);
         break;
     case WM_ERROR_TIMEOUT:
         os_free(cmd_output);
-        mdebug1("Timeout overtaken running command '%s'", command);
+        LogDebug("Timeout overtaken running command '%s'", command);
         if (*reason == NULL) {
             os_malloc(snprintf(NULL, 0, "Timeout overtaken running command '%s'", command) + 1, *reason);
             sprintf(*reason, "Timeout overtaken running command '%s'", command);
@@ -1712,13 +1711,13 @@ static int wm_sca_read_command(char * command,
         return RETURN_INVALID;
     default:
         if (result_code == EXECVE_ERROR) {
-            mdebug1("Invalid path or wrong permissions to run command '%s'", command);
+            LogDebug("Invalid path or wrong permissions to run command '%s'", command);
             if (*reason == NULL) {
                 os_malloc(snprintf(NULL, 0, "Invalid path or wrong permissions to run command '%s'", command) + 1, *reason);
                 sprintf(*reason, "Invalid path or wrong permissions to run command '%s'", command);
             }
         } else {
-            mdebug1("Failed to run command '%s'. Returned code %d", command, result_code);
+            LogDebug("Failed to run command '%s'. Returned code %d", command, result_code);
             if (*reason == NULL) {
                 os_malloc(snprintf(NULL, 0, "Failed to run command '%s'. Returned code %d", command, result_code) + 1, *reason);
                 sprintf(*reason, "Failed to run command '%s'. Returned code %d", command, result_code);
@@ -1728,7 +1727,7 @@ static int wm_sca_read_command(char * command,
     }
 
     if(!cmd_output) {
-        mdebug2("Command yielded no output. Returning.");
+        LogDebug("Command yielded no output. Returning.");
         return RETURN_NOT_FOUND;
     }
 
@@ -1736,7 +1735,7 @@ static int wm_sca_read_command(char * command,
     output_line = OS_StrBreak('\n', cmd_output, 256);
 
     if(!output_line) {
-        mdebug1("Command output could not be processed. Output dump:\n%s", cmd_output);
+        LogDebug("Command output could not be processed. Output dump:\n%s", cmd_output);
         os_free(cmd_output);
         return RETURN_NOT_FOUND;
     }
@@ -1755,7 +1754,7 @@ static int wm_sca_read_command(char * command,
     }
 
     free_strarray(output_line);
-    mdebug2("Result for (%s)(%s) -> %d", pattern, command, result);
+    LogDebug("Result for (%s)(%s) -> %d", pattern, command, result);
     return result;
 }
 
@@ -1769,11 +1768,11 @@ static int wm_sca_apply_numeric_partial_comparison(const char * const partial_co
             os_malloc(snprintf(NULL, 0, "No comparison provided.") + 1, *reason);
             sprintf(*reason, "No comparison provided.");
         }
-        mwarn("No comparison provided.");
+        LogWarn("No comparison provided.");
         return RETURN_INVALID;
     }
 
-    mdebug2("Partial comparison '%s'", partial_comparison);
+    LogDebug("Partial comparison '%s'", partial_comparison);
 
     w_expression_t * regex = NULL;
     if (strcmp(w_expression_get_regex_type(regex_engine), OSREGEX_STR) == 0) {
@@ -1795,7 +1794,7 @@ static int wm_sca_apply_numeric_partial_comparison(const char * const partial_co
             os_malloc(snprintf(NULL, 0, "Cannot compile regex.") + 1, *reason);
             sprintf(*reason, "Cannot compile regex.");
         }
-        mwarn("Cannot compile regex");
+        LogWarn("Cannot compile regex");
         w_free_expression_t(&regex);
         return RETURN_INVALID;
     }
@@ -1807,7 +1806,7 @@ static int wm_sca_apply_numeric_partial_comparison(const char * const partial_co
             os_malloc(snprintf(NULL, 0, "No integer was found within the comparison '%s' ", partial_comparison) + 1, *reason);
             sprintf(*reason, "No integer was found within the comparison '%s' ", partial_comparison);
         }
-        mwarn("No integer was found within the comparison '%s' ", partial_comparison);
+        LogWarn("No integer was found within the comparison '%s' ", partial_comparison);
         w_free_expression_match(regex, &regex_match);
         w_free_expression_t(&regex);
         return RETURN_INVALID;
@@ -1818,13 +1817,13 @@ static int wm_sca_apply_numeric_partial_comparison(const char * const partial_co
             os_malloc(snprintf(NULL, 0, "No number was captured.") + 1, *reason);
             sprintf(*reason, "No number was captured.");
         }
-        mwarn("No number was captured.");
+        LogWarn("No number was captured.");
         w_free_expression_match(regex, &regex_match);
         w_free_expression_t(&regex);
         return RETURN_INVALID;
     }
 
-    mdebug2("Value given for comparison: '%s'", regex_match->sub_strings[0]);
+    LogDebug("Value given for comparison: '%s'", regex_match->sub_strings[0]);
 
     errno = 0;
     char *strtol_end_ptr = NULL;
@@ -1835,7 +1834,7 @@ static int wm_sca_apply_numeric_partial_comparison(const char * const partial_co
             os_malloc(snprintf(NULL, 0, "Conversion error. Cannot convert '%s' to integer.", regex_match->sub_strings[0]) + 1, *reason);
             sprintf(*reason, "Conversion error. Cannot convert '%s' to integer.", regex_match->sub_strings[0]);
         }
-        mwarn("Conversion error. Cannot convert '%s' to integer.", regex_match->sub_strings[0]);
+        LogWarn("Conversion error. Cannot convert '%s' to integer.", regex_match->sub_strings[0]);
         w_free_expression_match(regex, &regex_match);
         w_free_expression_t(&regex);
         return RETURN_INVALID;
@@ -1854,32 +1853,32 @@ static int wm_sca_apply_numeric_partial_comparison(const char * const partial_co
     w_free_expression_t(&regex);
 
 
-    mdebug2("Value converted: '%ld'", value_given);
+    LogDebug("Value converted: '%ld'", value_given);
 
     if ('=' == *partial_comparison) {
-        mdebug2("Operation is '%ld == %ld'", number, value_given);
+        LogDebug("Operation is '%ld == %ld'", number, value_given);
         return number == value_given ? RETURN_FOUND : RETURN_NOT_FOUND;
     } else if (strstr(partial_comparison, "!=")) {
-        mdebug2("Operation is '%ld != %ld'", number, value_given);
+        LogDebug("Operation is '%ld != %ld'", number, value_given);
         return number != value_given ? RETURN_FOUND : RETURN_NOT_FOUND;
     } else if (strstr(partial_comparison, "<=")) {
-        mdebug2("Operation is '%ld <= %ld'", number, value_given);
+        LogDebug("Operation is '%ld <= %ld'", number, value_given);
         return number <= value_given ? RETURN_FOUND : RETURN_NOT_FOUND;
     } else if (strstr(partial_comparison, ">=")) {
-        mdebug2("Operation is '%ld >= %ld'", number, value_given);
+        LogDebug("Operation is '%ld >= %ld'", number, value_given);
         return number >= value_given ? RETURN_FOUND : RETURN_NOT_FOUND;
     } else if (strstr(partial_comparison, "<")) {
-        mdebug2("Operation is '%ld < %ld'", number, value_given);
+        LogDebug("Operation is '%ld < %ld'", number, value_given);
         return number < value_given ? RETURN_FOUND : RETURN_NOT_FOUND;
     } else if (strstr(partial_comparison, ">")) {
-        mdebug2("Operation is '%ld > %ld'", number, value_given);
+        LogDebug("Operation is '%ld > %ld'", number, value_given);
         return number > value_given ? RETURN_FOUND : RETURN_NOT_FOUND;
     }
     if (*reason == NULL) {
         os_malloc(snprintf(NULL, 0, "Unrecognized operation: '%s'", partial_comparison) + 1, *reason);
         sprintf(*reason, "Unrecognized operation: '%s'", partial_comparison);
     }
-    mdebug2("Unrecognized operation: '%s'", partial_comparison);
+    LogDebug("Unrecognized operation: '%s'", partial_comparison);
     return RETURN_INVALID;
 }
 
@@ -1894,7 +1893,7 @@ static int wm_sca_regex_numeric_comparison (const char * const pattern,
     char *partial_comparison_ref = strstr(pattern_copy_ref, " compare ");
 
     if (!partial_comparison_ref) {
-        mdebug2("Keyword 'compare' not found. Did you forget adding 'compare COMPARATOR VALUE' to your rule?' %s'", pattern_copy_ref);
+        LogDebug("Keyword 'compare' not found. Did you forget adding 'compare COMPARATOR VALUE' to your rule?' %s'", pattern_copy_ref);
         if (*reason == NULL) {
             os_malloc(snprintf(NULL, 0, "Keyword 'compare' not found. Did you forget adding 'compare COMPARATOR VALUE' to your rule?' %s'", pattern_copy_ref) + 1, *reason);
             sprintf(*reason, "Keyword 'compare' not found. Did you forget adding 'compare COMPARATOR VALUE' to your rule?' %s'", pattern_copy_ref);
@@ -1905,10 +1904,10 @@ static int wm_sca_regex_numeric_comparison (const char * const pattern,
 
     *partial_comparison_ref = '\0';
     partial_comparison_ref += 9;
-    mdebug2("REGEX: '%s'. Partial comparison: '%s'", pattern_copy_ref, partial_comparison_ref);
+    LogDebug("REGEX: '%s'. Partial comparison: '%s'", pattern_copy_ref, partial_comparison_ref);
 
     if (!w_expression_compile(regex_engine, pattern_copy_ref, OS_RETURN_SUBSTRING)) {
-        mdebug2("Cannot compile regex '%s'", pattern_copy_ref);
+        LogDebug("Cannot compile regex '%s'", pattern_copy_ref);
         if (!*reason) {
             os_malloc(snprintf(NULL, 0, "Cannot compile regex '%s'", pattern_copy_ref) + 1, *reason);
             sprintf(*reason, "Cannot compile regex '%s'", pattern_copy_ref);
@@ -1920,14 +1919,14 @@ static int wm_sca_regex_numeric_comparison (const char * const pattern,
     os_calloc(1, sizeof(regex_matching), regex_match);
 
     if (!w_expression_match(regex_engine, str, NULL, regex_match)) {
-        mdebug2("No match found for regex '%s'", pattern_copy_ref);
+        LogDebug("No match found for regex '%s'", pattern_copy_ref);
         os_free(pattern_copy);
         w_free_expression_match(regex_engine, &regex_match);
         return RETURN_NOT_FOUND;
     }
 
     if (!regex_match->sub_strings || !regex_match->sub_strings[0]) {
-        mdebug2("Regex '%s' matched, but no string was captured by it. Did you forget specifying a capture group?", pattern_copy_ref);
+        LogDebug("Regex '%s' matched, but no string was captured by it. Did you forget specifying a capture group?", pattern_copy_ref);
         if (*reason == NULL) {
             os_malloc(snprintf(NULL, 0, "Regex '%s' matched, but no string was captured by it. Did you forget specifying a capture group?", pattern_copy_ref) + 1, *reason);
             sprintf(*reason, "Regex '%s' matched, but no string was captured by it. Did you forget specifying a capture group?", pattern_copy_ref);
@@ -1937,14 +1936,14 @@ static int wm_sca_regex_numeric_comparison (const char * const pattern,
         return RETURN_INVALID;
     }
 
-    mdebug2("Captured value: '%s'", regex_match->sub_strings[0]);
+    LogDebug("Captured value: '%s'", regex_match->sub_strings[0]);
 
     errno = 0;
     char *strtol_end_ptr = NULL;
     const long int value_captured = strtol(regex_match->sub_strings[0], &strtol_end_ptr, 10);
 
     if (errno != 0 || strtol_end_ptr == regex_match->sub_strings[0]) {
-        mdebug2("Conversion error. Cannot convert '%s' to integer.", regex_match->sub_strings[0]);
+        LogDebug("Conversion error. Cannot convert '%s' to integer.", regex_match->sub_strings[0]);
         if (*reason == NULL) {
             os_malloc(snprintf(NULL, 0, "Conversion error. Cannot convert '%s' to integer.", regex_match->sub_strings[0]) + 1, *reason);
             sprintf(*reason, "Conversion error. Cannot convert '%s' to integer.", regex_match->sub_strings[0]);
@@ -1954,10 +1953,10 @@ static int wm_sca_regex_numeric_comparison (const char * const pattern,
         return RETURN_INVALID;
     }
 
-    mdebug2("Converted value: '%ld'", value_captured);
+    LogDebug("Converted value: '%ld'", value_captured);
 
     const int result = wm_sca_apply_numeric_partial_comparison(partial_comparison_ref, value_captured, reason, regex_engine);
-    mdebug2("Comparison result '%ld %s' -> %d", value_captured, partial_comparison_ref, result);
+    LogDebug("Comparison result '%ld %s' -> %d", value_captured, partial_comparison_ref, result);
 
     os_free(pattern_copy);
     if (regex_match) {
@@ -1982,7 +1981,7 @@ int wm_sca_test_positive_minterm(char * const minterm,
     if (strncasecmp(pattern_ref, "r:", 2) == 0) {
         pattern_ref += 2;
         if (!w_expression_compile(regex_engine, pattern_ref, OS_RETURN_SUBSTRING)) {
-            mdebug2("Failed to compile regex '%s'", pattern_ref);
+            LogDebug("Failed to compile regex '%s'", pattern_ref);
             return RETURN_NOT_FOUND;
         }
         if (w_expression_match(regex_engine, str, NULL, NULL)) {
@@ -2034,10 +2033,10 @@ int wm_sca_pattern_matches(const char * const str,
         w_free_expression_t(&regex);
 
         test_result *= minterm_result;
-        mdebug2("Testing minterm (%s%s)(%s) -> %d", negated ? "!" : "", minterm, *str != '\0' ? str : "EMPTY_LINE", minterm_result);
+        LogDebug("Testing minterm (%s%s)(%s) -> %d", negated ? "!" : "", minterm, *str != '\0' ? str : "EMPTY_LINE", minterm_result);
     }
 
-    mdebug2("Pattern test result: (%s)(%s) -> %d", pattern, *str != '\0' ? str : "EMPTY_LINE", test_result);
+    LogDebug("Pattern test result: (%s)(%s) -> %d", pattern, *str != '\0' ? str : "EMPTY_LINE", test_result);
     os_free(pattern_copy);
 
     return test_result;
@@ -2058,13 +2057,13 @@ static int wm_sca_check_dir_existence(const char * const dir, char **reason)
     DIR *dp = opendir(realpath_buffer);
     const int open_dir_errno = errno;
     if (dp) {
-        mdebug2("DIR_EXISTS(%s) -> RETURN_FOUND", dir);
+        LogDebug("DIR_EXISTS(%s) -> RETURN_FOUND", dir);
         closedir(dp);
         return RETURN_FOUND;
     }
 
     if (open_dir_errno == ENOENT) {
-        mdebug2("DIR_EXISTS(%s) -> RETURN_NOT_FOUND. Reason: %s", dir, strerror(open_dir_errno));
+        LogDebug("DIR_EXISTS(%s) -> RETURN_NOT_FOUND. Reason: %s", dir, strerror(open_dir_errno));
         return RETURN_NOT_FOUND;
     }
 
@@ -2073,7 +2072,7 @@ static int wm_sca_check_dir_existence(const char * const dir, char **reason)
         sprintf(*reason, "Could not check directory existence for '%s': %s", dir, strerror(open_dir_errno));
     }
 
-    mdebug2("Could not check directory existence for '%s': %s", dir, strerror(open_dir_errno));
+    LogDebug("Could not check directory existence for '%s': %s", dir, strerror(open_dir_errno));
     return RETURN_INVALID;
 }
 
@@ -2083,7 +2082,7 @@ static int wm_sca_check_dir(const char * const dir,
                             char **reason,
                             w_expression_t * regex_engine)
 {
-    mdebug2("Checking directory '%s'%s%s%s%s", dir,
+    LogDebug("Checking directory '%s'%s%s%s%s", dir,
             file ? " -> "  : "", file ? file : "",
             pattern ? " -> " : "", pattern ? pattern: "");
 
@@ -2098,7 +2097,7 @@ static int wm_sca_check_dir(const char * const dir,
             sprintf(*reason, "Could not open dir '%s'", dir);
         }
 
-        mdebug2("Could not open dir '%s'", dir);
+        LogDebug("Could not open dir '%s'", dir);
 
         return RETURN_INVALID;
     }
@@ -2111,7 +2110,7 @@ static int wm_sca_check_dir(const char * const dir,
             os_malloc(snprintf(NULL, 0, "Could not open '%s': %s", dir, strerror(open_dir_errno)) + 1, *reason);
             sprintf(*reason, "Could not open '%s': %s", dir, strerror(open_dir_errno));
         }
-        mdebug2("Could not open '%s': %s", dir, strerror(open_dir_errno));
+        LogDebug("Could not open '%s': %s", dir, strerror(open_dir_errno));
         return RETURN_INVALID;
     }
 
@@ -2129,12 +2128,12 @@ static int wm_sca_check_dir(const char * const dir,
         f_name[PATH_MAX + 1] = '\0';
         snprintf(f_name, PATH_MAX + 1, "%s/%s", dir, entry->d_name);
 
-        mdebug2("Considering directory entry '%s'", f_name);
+        LogDebug("Considering directory entry '%s'", f_name);
 
         int result;
         struct stat statbuf_local;
         if (lstat(f_name, &statbuf_local) != 0) {
-            mdebug2("Cannot check directory entry '%s'", f_name);
+            LogDebug("Cannot check directory entry '%s'", f_name);
             if (*reason == NULL){
                 os_malloc(snprintf(NULL, 0, "Cannot check directory entry '%s", f_name) + 1, *reason);
                 sprintf(*reason, "Cannot check directory entry '%s", f_name);
@@ -2150,14 +2149,14 @@ static int wm_sca_check_dir(const char * const dir,
         {
             result = wm_sca_check_file_list(f_name, pattern, reason, regex_engine);
         } else {
-            mdebug2("Skipping directory entry '%s'", f_name);
+            LogDebug("Skipping directory entry '%s'", f_name);
             continue;
         }
 
-        mdebug2("Result for entry '%s': %d", f_name, result);
+        LogDebug("Result for entry '%s': %d", f_name, result);
 
         if (result == RETURN_FOUND) {
-            mdebug2("Match found in '%s', skipping the rest.", f_name);
+            LogDebug("Match found in '%s', skipping the rest.", f_name);
             result_accumulator = RETURN_FOUND;
             break;
         } else if (result == RETURN_INVALID) {
@@ -2166,7 +2165,7 @@ static int wm_sca_check_dir(const char * const dir,
     }
 
     closedir(dp);
-    mdebug2("Check result for dir '%s': %d", dir, result_accumulator);
+    LogDebug("Check result for dir '%s': %d", dir, result_accumulator);
     return result_accumulator;
 }
 
@@ -2222,7 +2221,7 @@ static int wm_sca_is_registry(char * entry_name,
             sprintf(*reason, "Invalid registry entry: '%s'", entry_name);
         }
 
-        merror("Invalid registry entry: '%s'", entry_name);
+        LogError("Invalid registry entry: '%s'", entry_name);
         return RETURN_INVALID;
     }
 
@@ -2300,7 +2299,7 @@ static int wm_sca_test_key(char * subkey,
                            char ** reason,
                            w_expression_t * regex_engine)
 {
-    mdebug2("Checking '%s' in the %dBIT subsystem.", full_key_name, arch == KEY_WOW64_64KEY ? 64 : 32);
+    LogDebug("Checking '%s' in the %dBIT subsystem.", full_key_name, arch == KEY_WOW64_64KEY ? 64 : 32);
 
     HKEY oshkey;
     LSTATUS err = RegOpenKeyEx(wm_sca_sub_tree, subkey, 0, KEY_READ | arch, &oshkey);
@@ -2309,7 +2308,7 @@ static int wm_sca_test_key(char * subkey,
             os_malloc(snprintf(NULL, 0, "Access denied for registry '%s'", full_key_name) + 1, *reason);
             sprintf(*reason, "Access denied for registry '%s'", full_key_name);
         }
-        merror("Access denied for registry '%s'", full_key_name);
+        LogError("Access denied for registry '%s'", full_key_name);
         return RETURN_INVALID;
     } else if (err != ERROR_SUCCESS) {
         char error_msg[OS_SIZE_1024 + 1];
@@ -2319,11 +2318,11 @@ static int wm_sca_test_key(char * subkey,
                     NULL, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                     (LPTSTR) &error_msg, OS_SIZE_1024, NULL);
 
-        mdebug2("Unable to read registry '%s': %s", full_key_name, error_msg);
+        LogDebug("Unable to read registry '%s': %s", full_key_name, error_msg);
 
         /* If registry not found and no key is requested -> return RETURN_NOT_FOUND */
         if (!reg_option) {
-            mdebug2("Registry '%s' not found.", full_key_name);
+            LogDebug("Registry '%s' not found.", full_key_name);
             return RETURN_NOT_FOUND;
         }
 
@@ -2401,7 +2400,7 @@ static int wm_sca_winreg_querykey(HKEY hKey,
             sprintf(*reason, "Unable to read registry '%s' (%s)", full_key_name, error_msg);
         }
 
-        mdebug2("Unable to read registry '%s': %s", full_key_name, error_msg);
+        LogDebug("Unable to read registry '%s': %s", full_key_name, error_msg);
         return RETURN_INVALID;
     }
 
@@ -2440,7 +2439,7 @@ static int wm_sca_winreg_querykey(HKEY hKey,
                     sprintf(*reason, "Unable to enumerate values of registry '%s' (%s)", full_key_name, error_msg);
                 }
 
-                mdebug2("Unable to enumerate values of registry '%s' -> RETURN_INVALID", full_key_name);
+                LogDebug("Unable to enumerate values of registry '%s' -> RETURN_INVALID", full_key_name);
                 return RETURN_INVALID;
             }
 
@@ -2452,15 +2451,15 @@ static int wm_sca_winreg_querykey(HKEY hKey,
 
             /* Check if the entry name matches the reg_option */
             if (strcasecmp(value_buffer, reg_option) != 0) {
-                mdebug2("Considering value '%s' -> '%s' != '%s': Skipping value.", full_key_name, value_buffer, reg_option);
+                LogDebug("Considering value '%s' -> '%s' != '%s': Skipping value.", full_key_name, value_buffer, reg_option);
                 continue;
             }
 
-            mdebug2("Considering value '%s' -> '%s' == '%s': Value found.", full_key_name, value_buffer, reg_option);
+            LogDebug("Considering value '%s' -> '%s' == '%s': Value found.", full_key_name, value_buffer, reg_option);
 
             /* If a value is not present and the option matches return found */
             if (!reg_value) {
-                mdebug2("No value data especified. Existence check for '%s': 1", full_key_name);
+                LogDebug("No value data especified. Existence check for '%s': 1", full_key_name);
                 return RETURN_FOUND;
             }
 
@@ -2510,7 +2509,7 @@ static int wm_sca_winreg_querykey(HKEY hKey,
                     break;
             }
 
-            mdebug2("Checking value data '%s' with rule '%s'", var_storage, reg_value);
+            LogDebug("Checking value data '%s' with rule '%s'", var_storage, reg_value);
 
             int result = wm_sca_pattern_matches(var_storage, reg_value, reason, regex_engine);
             return result;
@@ -2591,7 +2590,7 @@ static int wm_sca_send_summary(wm_sca_t * data, int scan_id,unsigned int passed,
         cJSON_AddNumberToObject(json_summary, "first_scan", first_scan);
     }
 
-    mdebug1("Sending summary event for file: '%s'", file->valuestring);
+    LogDebug("Sending summary event for file: '%s'", file->valuestring);
 
     if (last_summary_json[id]) {
         cJSON_Delete(last_summary_json[id]);
@@ -2630,12 +2629,12 @@ static cJSON *wm_sca_build_event(const cJSON * const check, const cJSON * const 
     cJSON *rules = cJSON_GetObjectItem(check, "rules");
 
     if(!pm_id) {
-        mdebug1("No 'id' field found on check.");
+        LogDebug("No 'id' field found on check.");
         goto error;
     }
 
     if(!pm_id->valueint) {
-        mdebug1("Field 'id' must be a number.");
+        LogDebug("Field 'id' must be a number.");
         goto error;
     }
 
@@ -2643,23 +2642,23 @@ static cJSON *wm_sca_build_event(const cJSON * const check, const cJSON * const 
 
     if(title){
         if(!title->valuestring) {
-            mdebug1("Field 'title' must be a string.");
+            LogDebug("Field 'title' must be a string.");
             goto error;
         }
         cJSON_AddStringToObject(check_information, "title", title->valuestring);
     } else {
-        mdebug1("No 'title' field found on check '%d'", pm_id->valueint);
+        LogDebug("No 'title' field found on check '%d'", pm_id->valueint);
         goto error;
     }
 
     if(!policy_id){
-        mdebug1("No 'id' field found on policy.");
+        LogDebug("No 'id' field found on policy.");
         goto error;
     }
 
     if(description){
         if(!description->valuestring) {
-            mdebug1("Field 'description' must be a string.");
+            LogDebug("Field 'description' must be a string.");
             goto error;
         }
         cJSON_AddStringToObject(check_information, "description", description->valuestring);
@@ -2667,7 +2666,7 @@ static cJSON *wm_sca_build_event(const cJSON * const check, const cJSON * const 
 
     if(rationale){
         if(!rationale->valuestring) {
-            mdebug1("Field 'rationale' must be a string.");
+            LogDebug("Field 'rationale' must be a string.");
             goto error;
         }
         cJSON_AddStringToObject(check_information, "rationale", rationale->valuestring);
@@ -2675,7 +2674,7 @@ static cJSON *wm_sca_build_event(const cJSON * const check, const cJSON * const 
 
     if(remediation){
         if(!remediation->valuestring) {
-            mdebug1("Field 'remediation' must be a string.");
+            LogDebug("Field 'remediation' must be a string.");
             goto error;
         }
         cJSON_AddStringToObject(check_information, "remediation", remediation->valuestring);
@@ -2698,7 +2697,7 @@ static cJSON *wm_sca_build_event(const cJSON * const check, const cJSON * const 
             char *compliance_value = NULL;
             cJSON_ArrayForEach(version, policy){
                 if(!version->valuestring){
-                    mwarn("Invalid compliance format in policy: %s (check %d)", policy_id->valuestring, pm_id->valueint);
+                    LogWarn("Invalid compliance format in policy: %s (check %d)", policy_id->valuestring, pm_id->valueint);
                     continue;
                 }
                 wm_strcat(&compliance_value, version->valuestring, ',');
@@ -2714,12 +2713,12 @@ static cJSON *wm_sca_build_event(const cJSON * const check, const cJSON * const 
     cJSON_AddItemToObject(check_information, "rules", cJSON_Duplicate(rules, 1));
 
     if(!condition) {
-        mdebug1("No 'condition' field found on check.");
+        LogDebug("No 'condition' field found on check.");
         goto error;
     }
 
     if(!condition->valuestring) {
-        mdebug1("Field 'condition' must be a string.");
+        LogDebug("Field 'condition' must be a string.");
         goto error;
     }
 
@@ -2834,7 +2833,7 @@ static cJSON *wm_sca_build_event(const cJSON * const check, const cJSON * const 
     }
 
     if(!policy_id->valuestring) {
-        mdebug1("Field 'id' must be a string.");
+        LogDebug("Field 'id' must be a string.");
         goto error;
     }
 
@@ -2892,7 +2891,7 @@ static int wm_sca_check_hash(OSHash * const cis_db_hash, const char * const resu
 
         if (!hashed_result) {
             if (ret_add = OSHash_Add(cis_db_hash,id_hashed,elem), ret_add != 2) {
-                merror("Unable to update hash table for check: %d", pm_id->valueint);
+                LogError("Unable to update hash table for check: %d", pm_id->valueint);
                 os_free(elem->result);
                 cJSON_Delete(elem->event);
                 os_free(elem);
@@ -2904,7 +2903,7 @@ static int wm_sca_check_hash(OSHash * const cis_db_hash, const char * const resu
             }
 
             if (ret_add = OSHash_Update(cis_db_hash,id_hashed,elem), ret_add != 1) {
-                merror("Unable to update hash table for check: %d", pm_id->valueint);
+                LogError("Unable to update hash table for check: %d", pm_id->valueint);
                 os_free(elem->result);
                 cJSON_Delete(elem->event);
                 os_free(elem);
@@ -2958,10 +2957,10 @@ static char *wm_sca_hash_integrity(int policy_index) {
         qsort(cis_db_for_hash[policy_index].elem, check_count, sizeof(struct cis_db_info_t *), compare_cis_db_info_t_entry);
     }
 
-    mdebug2("Concatenating check results:");
+    LogDebug("Concatenating check results:");
     for(i = 0; cis_db_for_hash[policy_index].elem[i]; i++) {
         const cis_db_info_t * const event = cis_db_for_hash[policy_index].elem[i];
-        mdebug2("ID: %d; Result: '%s'", event->id, event->result);
+        LogDebug("ID: %d; Result: '%s'", event->id, event->result);
         if(event->result){
             wm_strcat(&str,event->result,':');
         }
@@ -2983,7 +2982,7 @@ char *wm_sca_hash_integrity_file(const char *file) {
     os_malloc(65*sizeof(char), hash_file);
 
     if(OS_SHA256_File(file, hash_file, OS_TEXT) != 0){
-        merror("Unable to calculate SHA256 for file '%s'", file);
+        LogError("Unable to calculate SHA256 for file '%s'", file);
         os_free(hash_file);
         return NULL;
     }
@@ -3030,14 +3029,14 @@ static void *wm_sca_dump_db_thread(wm_sca_t * data) {
 
             if (request->first_scan) {
                 w_time_delay(2000);
-                mdebug1("Sending first scan results for policy '%s'", data->policies[request->policy_index]->policy_path);
+                LogDebug("Sending first scan results for policy '%s'", data->policies[request->policy_index]->policy_path);
             } else {
-                minfo("Integration checksum failed for policy '%s'. Resending scan results in %d seconds.",
+                LogInfo("Integration checksum failed for policy '%s'. Resending scan results in %d seconds.",
                     data->policies[request->policy_index]->policy_path, random);
                 w_time_delay(1000 * time);
             }
 
-            mdebug1("Dumping results to SCA DB for policy '%s' (Policy index: %u)",
+            LogDebug("Dumping results to SCA DB for policy '%s' (Policy index: %u)",
                     data->policies[request->policy_index]->policy_path, request->policy_index);
 
             int scan_id = -1;
@@ -3067,7 +3066,7 @@ static void *wm_sca_dump_db_thread(wm_sca_t * data) {
             w_time_delay(5000);
 
             int elements_sent = i;
-            mdebug1("Sending end of dump control event.");
+            LogDebug("Sending end of dump control event.");
 
             wm_sca_send_dump_end(data,elements_sent,data->policies[request->policy_index]->policy_id,scan_id);
 
@@ -3083,7 +3082,7 @@ static void *wm_sca_dump_db_thread(wm_sca_t * data) {
                 wm_sca_send_alert(data,last_summary_json[request->policy_index]);
             }
 
-            mdebug1("Finished dumping scan results to SCA DB for policy '%s' (%u) (%d)",
+            LogDebug("Finished dumping scan results to SCA DB for policy '%s' (%u) (%d)",
                 data->policies[request->policy_index]->policy_id,
                 request->policy_index,
                 request->first_scan);
@@ -3126,7 +3125,7 @@ void wm_sca_push_request_win(char * msg){
         char *first_scan = strchr(db,':');
 
         if (!first_scan) {
-            mdebug1("First scan flag missing.");
+            LogDebug("First scan flag missing.");
             return;
         }
 
@@ -3159,7 +3158,7 @@ void wm_sca_push_request_win(char * msg){
 
                         if(queue_push_ex(request_queue,request) < 0) {
                             os_free(request);
-                            mdebug1("Could not push policy index to queue.");
+                            LogDebug("Could not push policy index to queue.");
                         }
                         break;
                     }
@@ -3177,7 +3176,7 @@ static void * wm_sca_request_thread(wm_sca_t * data) {
     /* Create request socket */
     int cfga_queue;
     if ((cfga_queue = StartMQWithSpecificOwnerAndPerms(CFGAQUEUE, READ, 0, getuid(), wm_getGroupID(), 0660)) < 0) {
-        merror(QUEUE_ERROR, CFGAQUEUE, strerror(errno));
+        LogError(QUEUE_ERROR, CFGAQUEUE, strerror(errno));
         pthread_exit(NULL);
     }
 
@@ -3207,7 +3206,7 @@ static void * wm_sca_request_thread(wm_sca_t * data) {
                 char *first_scan = strchr(db,':');
 
                 if (!first_scan) {
-                    mdebug1("First scan flag missing.");
+                    LogDebug("First scan flag missing.");
                     continue;
                 }
 
@@ -3238,7 +3237,7 @@ static void * wm_sca_request_thread(wm_sca_t * data) {
 
                             if(queue_push_ex(request_queue,request) < 0) {
                                 os_free(request);
-                                mdebug1("Could not push policy index to queue.");
+                                LogDebug("Could not push policy index to queue.");
                             }
                             break;
                         }

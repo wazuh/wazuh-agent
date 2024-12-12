@@ -12,27 +12,14 @@
 #ifndef _SYS_INFO_HPP
 #define _SYS_INFO_HPP
 
-// Define EXPORTED for any platform
-#ifdef _WIN32
-#ifdef WIN_EXPORT
-#define EXPORTED __declspec(dllexport)
-#else
-#define EXPORTED __declspec(dllimport)
-#endif
-#elif __GNUC__ >= 4
-#define EXPORTED __attribute__((visibility("default")))
-#else
-#define EXPORTED
-#endif
-
-#include "sysInfoInterface.h"
+#include "sysInfoInterface.hpp"
 
 constexpr auto KByte
 {
     1024
 };
 
-class EXPORTED SysInfo: public ISysInfo
+class SysInfo: public ISysInfo
 {
     public:
         SysInfo() = default;

@@ -1,0 +1,51 @@
+#!/bin/sh
+# postrm script for wazuh-agent
+# Wazuh, Inc 2024
+
+set -e
+WAZUH_SHARE_DIR="/usr/share/wazuh-agent"
+
+case "$1" in
+    remove|failed-upgrade|abort-install|abort-upgrade|disappear)
+
+        if [ "$1" = "remove" ]; then
+            rm -rf ${WAZUH_SHARE_DIR}
+            rm -f /usr/lib/systemd/system/wazuh-agent.service
+
+            # Remove the shared library configuration file if it exists
+            if [ -f /etc/ld.so.conf.d/wazuh-agentlibs.conf ]; then
+              rm -f /etc/ld.so.conf.d/wazuh-agentlibs.conf
+              ldconfig  # Update the linker cache
+            fi
+        fi
+
+        if getent passwd wazuh >/dev/null 2>&1; then
+            deluser wazuh > /dev/null 2>&1
+        fi
+        ;;
+
+    purge)
+
+        if getent passwd wazuh >/dev/null 2>&1; then
+            deluser wazuh > /dev/null 2>&1
+        fi
+        if getent group wazuh >/dev/null 2>&1; then
+            delgroup wazuh > /dev/null 2>&1
+        fi
+        rm -rf /var/lib/wazuh-agent
+    ;;
+
+    upgrade)
+        # If the upgrade downgrades to earlier versions, restore ownership
+        echo "Upgrade step"
+
+    ;;
+
+    *)
+        echo "postrm called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+
+esac
+
+exit 0

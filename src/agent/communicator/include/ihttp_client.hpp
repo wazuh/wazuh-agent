@@ -1,78 +1,91 @@
 #pragma once
 
+#include <http_request_params.hpp>
 #include <ihttp_socket.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 
+#include <ctime>
 #include <functional>
 #include <memory>
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace http_client
 {
-    struct HttpRequestParams
-    {
-        boost::beast::http::verb Method;
-        std::string Host;
-        std::string Port;
-        std::string Endpoint;
-        std::string Token;
-        std::string User_pass;
-        std::string Body;
-
-        HttpRequestParams(boost::beast::http::verb method,
-                          const std::string& host,
-                          const std::string& port,
-                          const std::string& endpoint,
-                          const std::string& token = "",
-                          const std::string& user_pass = "",
-                          const std::string& body = "")
-            : Method(method)
-            , Host(host)
-            , Port(port)
-            , Endpoint(endpoint)
-            , Token(token)
-            , User_pass(user_pass)
-            , Body(body)
-        {
-        }
-
-        bool operator==(const HttpRequestParams& other) const
-        {
-            return Method == other.Method && Host == other.Host && Port == other.Port && Endpoint == other.Endpoint &&
-                   Token == other.Token && User_pass == other.User_pass && Body == other.Body;
-        }
-    };
-
+    /// @brief Interface for HTTP client implementations
+    ///
+    /// This interface provides a standard way of performing HTTP requests and
+    /// retrieving the response.
     class IHttpClient
     {
     public:
+        /// @brief Destroys the IHttpClient
         virtual ~IHttpClient() = default;
 
+        /// @brief Create an HTTP request
+        /// @param params The parameters for the request
+        /// @return The created request
         virtual boost::beast::http::request<boost::beast::http::string_body>
         CreateHttpRequest(const HttpRequestParams& params) = 0;
 
-        virtual boost::asio::awaitable<void>
-        Co_PerformHttpRequest(std::shared_ptr<std::string> token,
-                              HttpRequestParams params,
-                              std::function<boost::asio::awaitable<std::string>()> messageGetter,
-                              std::function<void()> onUnauthorized,
-                              std::function<void(const std::string&)> onSuccess = {},
-                              std::function<bool()> loopRequestCondition = {}) = 0;
+        /// @brief Coroutine to perform an HTTP request
+        /// @param token A shared pointer to the authentication token
+        /// @param params The parameters for the request
+        /// @param messageGetter Function to retrieve messages
+        /// @param onUnauthorized Action to take on unauthorized access
+        /// @param connectionRetry Time to wait before retrying the connection
+        /// @param batchInterval Time to wait between requests
+        /// @param batchSize The maximum number of messages to batch
+        /// @param onSuccess Action to take on successful request
+        /// @param loopRequestCondition Condition to continue the request loop
+        /// @return Awaitable task for the HTTP request
+        virtual boost::asio::awaitable<void> Co_PerformHttpRequest(
+            std::shared_ptr<std::string> token,
+            HttpRequestParams params,
+            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const int)> messageGetter,
+            std::function<void()> onUnauthorized,
+            std::time_t connectionRetry,
+            std::time_t batchInterval,
+            int batchSize,
+            std::function<void(const int, const std::string&)> onSuccess = {},
+            std::function<bool()> loopRequestCondition = {}) = 0;
 
+        /// @brief Perform an HTTP request and receive the response
+        /// @param params The parameters for the request
+        /// @return The response
         virtual boost::beast::http::response<boost::beast::http::dynamic_body>
         PerformHttpRequest(const HttpRequestParams& params) = 0;
 
-        virtual std::optional<std::string> AuthenticateWithUuidAndKey(const std::string& host,
-                                                                      const std::string& port,
+        /// @brief Authenticate with a UUID and key
+        /// @param serverUrl The URL of the server
+        /// @param userAgent The user agent header
+        /// @param uuid The UUID
+        /// @param key The key
+        /// @return The authentication token
+        virtual std::optional<std::string> AuthenticateWithUuidAndKey(const std::string& serverUrl,
+                                                                      const std::string& userAgent,
                                                                       const std::string& uuid,
                                                                       const std::string& key) = 0;
 
-        virtual std::optional<std::string> AuthenticateWithUserPassword(const std::string& host,
-                                                                        const std::string& port,
+        /// @brief Authenticate with a user and password
+        /// @param serverUrl The URL of the server
+        /// @param userAgent The user agent header
+        /// @param user The user
+        /// @param password The password
+        /// @return The authentication token
+        virtual std::optional<std::string> AuthenticateWithUserPassword(const std::string& serverUrl,
+                                                                        const std::string& userAgent,
                                                                         const std::string& user,
                                                                         const std::string& password) = 0;
+
+        /// @brief Perform an HTTP request, receive the response and write it to a file
+        /// @param params The parameters for the request
+        /// @param dstFilePath The path to the file where the response should be written
+        /// @return The response
+        virtual boost::beast::http::response<boost::beast::http::dynamic_body>
+        PerformHttpRequestDownload(const HttpRequestParams& params, const std::string& dstFilePath) = 0;
     };
 } // namespace http_client

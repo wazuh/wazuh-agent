@@ -147,7 +147,7 @@ int OS_SHA1_File_Nbytes_with_fp_check(const char * fname, EVP_MD_CTX ** c, os_sh
     unsigned char md[SHA_DIGEST_LENGTH];
 
     if (c == NULL || *c == NULL) {
-        mdebug1("Context for file '%s' can not be NULL.", fname);
+        LogDebug("Context for file '%s' can not be NULL.", fname);
         return -3;
     }
 
@@ -178,16 +178,16 @@ int OS_SHA1_File_Nbytes_with_fp_check(const char * fname, EVP_MD_CTX ** c, os_sh
         struct stat tmp_stat;
 
         if ((fstat(fileno(fp), &tmp_stat)) == -1) {
-            merror(FSTAT_ERROR, fname, errno, strerror(errno));
+            LogError(FSTAT_ERROR, fname, errno, strerror(errno));
         } else if (fd_check != tmp_stat.st_ino) {
-            mdebug1("The inode does not belong to file '%s'. The hash of the file will be ignored.", fname);
+            LogDebug("The inode does not belong to file '%s'. The hash of the file will be ignored.", fname);
             fclose(fp);
             return -2;
         }
 
 #else
         if (open_fd != 0 && fd_check != open_fd) {
-            mdebug1("The inode does not belong to file '%s'. The hash of the file will be ignored.", fname);
+            LogDebug("The inode does not belong to file '%s'. The hash of the file will be ignored.", fname);
             fclose(fp);
             return -2;
         }

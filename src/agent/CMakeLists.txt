@@ -8,33 +8,76 @@ project(Agent)
 include(../cmake/CommonSettings.cmake)
 set_common_settings()
 
-include_directories(${CMAKE_SOURCE_DIR}/common/logger/include)
-
 add_subdirectory(agent_info)
+add_subdirectory(centralized_configuration)
 add_subdirectory(command_handler)
 add_subdirectory(communicator)
 add_subdirectory(configuration_parser)
+add_subdirectory(module_command)
 add_subdirectory(multitype_queue)
 add_subdirectory(sqlite_manager)
 add_subdirectory(command_store)
 
 find_package(OpenSSL REQUIRED)
-find_package(Boost REQUIRED COMPONENTS asio beast)
+find_package(Boost REQUIRED COMPONENTS asio beast system program_options)
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(fmt REQUIRED)
 
-set(SOURCES
+if(WIN32)
+    set(SOURCES
+        src/windows/windows_api_facade.cpp
+        src/windows/windows_service.cpp
+        src/process_options_win.cpp
+        src/signal_handler_win.cpp
+    )
+elseif(UNIX)
+    set(SOURCES
+        src/unix/unix_daemon.cpp
+        src/process_options_unix.cpp
+        src/signal_handler_unix.cpp
+    )
+endif()
+
+list(APPEND SOURCES
     src/agent.cpp
+    src/agent_registration.cpp
     src/command_handler_utils.cpp
     src/message_queue_utils.cpp
-    src/register.cpp
+    src/process_options.cpp
     src/signal_handler.cpp
-    $<$<BOOL:$<PLATFORM_ID:Windows>>:src/signal_handler_win.cpp>
-    $<$<NOT:$<PLATFORM_ID:Windows>>:src/signal_handler_unix.cpp>
     src/task_manager.cpp
 )
 
 add_library(Agent ${SOURCES})
-target_include_directories(Agent PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_link_libraries(Agent PUBLIC ConfigurationParser Communicator AgentInfo CommandHandler MultiTypeQueue PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::asio Boost::beast Logger)
+target_include_directories(Agent
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/unix
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/windows)
+target_link_libraries(Agent
+    PUBLIC
+    CentralizedConfiguration
+    ConfigurationParser
+    Communicator
+    AgentInfo
+    CommandHandler
+    MultiTypeQueue
+    ModuleManager
+    ModuleCommand
+    CentralizedConfiguration
+    Boost::asio
+    sysinfo
+    PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    Boost::beast
+    Boost::system
+    Boost::program_options
+    nlohmann_json::nlohmann_json
+    fmt::fmt
+    Logger
+    Config
+)
 
 include(../cmake/ConfigureTarget.cmake)
 configure_target(Agent)

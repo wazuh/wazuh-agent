@@ -1,5 +1,5 @@
 #!/bin/bash
-set -ex
+set -e
 # Program to build and package OSX wazuh-agent
 # Wazuh package generator
 # Copyright (C) 2015, Wazuh Inc.
@@ -11,19 +11,21 @@ set -ex
 
 export PATH=/usr/local/bin:/Applications/CMake.app/Contents/bin:/opt/homebrew/bin:/opt/homebrew/sbin:$PATH
 CURRENT_PATH="$( cd $(dirname ${0}) ; pwd -P )"
+PACKAGED_DIRECTORY=$CURRENT_PATH/wazuh-agent/payload
 ARCH="intel64"
-WAZUH_SOURCE_REPOSITORY="https://github.com/wazuh/wazuh"
-INSTALLATION_PATH="/Library/Ossec"    # Installation path.
+WAZUH_SOURCE_REPOSITORY="https://github.com/wazuh/wazuh-agent"
+SERVICE_PATH="/Library/LaunchDaemons/com.wazuh.agent.plist"
+INSTALLATION_PATH="/Library/Application Support/Wazuh agent.app"    # Installation path.
 VERSION=""                            # Default VERSION (branch/tag).
 REVISION="1"                          # Package revision.
 BRANCH_TAG=""                         # Branch that will be downloaded to build package.
-DESTINATION="${CURRENT_PATH}/output" # Where package will be stored.
+DESTINATION="${CURRENT_PATH}/output"  # Where package will be stored.
 JOBS="2"                              # Compilation jobs.
 VERBOSE="no"                          # Enables the full log by using `set -exf`.
 DEBUG="no"                            # Enables debug symbols while compiling.
 CHECKSUM="no"                         # Enables the checksum generation.
 IS_STAGE="no"                         # Enables release package naming.
-MAKE_COMPILATION="yes"                # Set whether or not to compile the code
+BUILD_TYPE="full_package"             # Set build type
 CERT_APPLICATION_ID=""                # Apple Developer ID certificate to sign Apps and binaries.
 CERT_INSTALLER_ID=""                  # Apple Developer ID certificate to sign pkg.
 KEYCHAIN=""                           # Keychain where the Apple Developer ID certificate is.
@@ -34,6 +36,7 @@ ALTOOL_PASS=""                        # Temporary Application password for altoo
 TEAM_ID=""                            # Team ID of the Apple Developer ID.
 pkg_name=""
 notarization_path=""
+VCPKG_KEY=""
 
 trap ctrl_c INT
 
@@ -41,10 +44,9 @@ function clean_and_exit() {
     exit_code=$1
     rm -rf "${SOURCES_DIRECTORY}"
     if [ -z "$BRANCH_TAG" ]; then
-        make -C $WAZUH_PATH/src clean clean-deps
+        make -C $CURRENT_PATH/../../src/build clean
     fi
-    ${CURRENT_PATH}/uninstall.sh
-
+    rm -rf $CURRENT_PATH/wazuh-agent
     exit ${exit_code}
 }
 
@@ -84,8 +86,8 @@ function sign_binaries() {
     if [ ! -z "${KEYCHAIN}" ] && [ ! -z "${CERT_APPLICATION_ID}" ] ; then
         security -v unlock-keychain -p "${KC_PASS}" "${KEYCHAIN}" > /dev/null
         # Sign every single binary in Wazuh's installation. This also includes library files.
-        for bin in $(find ${INSTALLATION_PATH} -exec file {} \; | grep bit | cut -d: -f1); do
-            codesign -f --sign "${CERT_APPLICATION_ID}" --entitlements ${ENTITLEMENTS_PATH} --deep --timestamp  --options=runtime --verbose=4 "${bin}"
+        for bin in $(find ${PACKAGED_DIRECTORY} -exec file {} \; | grep -E 'executable|bit' | cut -d: -f1); do
+            codesign -f --sign "${CERT_APPLICATION_ID}" --entitlements ${ENTITLEMENTS_PATH} --timestamp  --options=runtime --verbose=4 "${bin}"
         done
         security -v lock-keychain "${KEYCHAIN}" > /dev/null
     fi
@@ -97,50 +99,61 @@ function sign_pkg() {
         security -v unlock-keychain -p "${KC_PASS}" "${KEYCHAIN}"  > /dev/null
 
         # Sign the package
-        productsign --sign "${CERT_INSTALLER_ID}" --timestamp ${DESTINATION}/${pkg_name} ${DESTINATION}/${pkg_name}.signed
-        mv ${DESTINATION}/${pkg_name}.signed ${DESTINATION}/${pkg_name}
+        productsign --sign "${CERT_INSTALLER_ID}" --timestamp ${DESTINATION}/${pkg_name}.pkg ${DESTINATION}/${pkg_name}.pkg.signed
+        mv ${DESTINATION}/${pkg_name}.pkg.signed ${DESTINATION}/${pkg_name}.pkg
 
         security -v lock-keychain "${KEYCHAIN}" > /dev/null
     fi
 }
 
-function get_pkgproj_specs() {
+function prepare_building_folder() {
 
-    VERSION="$1"
+    version="$1"
     pkg_final_name="$2"
+    build_info_file="${WAZUH_PACKAGES_PATH}/specs/build-info.json"
+    preinstall_script="${WAZUH_PACKAGES_PATH}/package_files/preinstall.sh"
+    postinstall_script="${WAZUH_PACKAGES_PATH}/package_files/postinstall.sh"
 
-    pkg_file="${WAZUH_PACKAGES_PATH}/specs/wazuh_agent_${ARCH}.pkgproj"
+    if [ -d "$CURRENT_PATH/wazuh-agent" ]; then
 
-    if [ ! -f "${pkg_file}" ]; then
-        echo "Warning: the file ${pkg_file} does not exists. Check the version selected."
-        exit 1
-    else
-        echo "Modifiying ${pkg_file} to match revision."
-        sed -i -e "s:>.*${VERSION}-.*<:>${pkg_final_name}<:g" "${pkg_file}"
-        cp "${pkg_file}" "${AGENT_PKG_FILE}"
+        echo "The wazuh agent building directory is present on this machine."
+        echo "Removing it from the system."
+
+        rm -rf $CURRENT_PATH/wazuh-agent
     fi
 
-    return 0
+    munkipkg --create --json $CURRENT_PATH/wazuh-agent
+
+    cp -f $build_info_file $CURRENT_PATH/wazuh-agent/
+
+    sed -i '' "s|VERSION|$version|g" $CURRENT_PATH/wazuh-agent/$(basename $build_info_file)
+    sed -i '' "s|PACKAGE_NAME|$pkg_final_name|g" $CURRENT_PATH/wazuh-agent/$(basename $build_info_file)
+
+    cp $preinstall_script $CURRENT_PATH/wazuh-agent/scripts/preinstall
+    cp $postinstall_script $CURRENT_PATH/wazuh-agent/scripts/postinstall
+
+    sed -i '' "s|PACKAGE_ARCH|$ARCH|g" $CURRENT_PATH/wazuh-agent/scripts/preinstall
+
+    mkdir -p ${PACKAGED_DIRECTORY}
+    mkdir -p $DESTINATION
 }
 
-function build_package() {
+function build_package_binaries() {
 
     # Download source code
     if [ -n "$BRANCH_TAG" ]; then
         SOURCES_DIRECTORY="${CURRENT_PATH}/repository"
         WAZUH_PATH="${SOURCES_DIRECTORY}/wazuh"
-        git clone --depth=1 -b ${BRANCH_TAG} ${WAZUH_SOURCE_REPOSITORY} "${WAZUH_PATH}"
+        git clone -b ${BRANCH_TAG} --single-branch --recurse-submodules ${WAZUH_SOURCE_REPOSITORY} "${WAZUH_PATH}"
     else
         WAZUH_PATH="${CURRENT_PATH}/../.."
     fi
     short_commit_hash="$(cd "${WAZUH_PATH}" && git rev-parse --short HEAD)"
 
-    export CONFIG="${WAZUH_PATH}/etc/preloaded-vars.conf"
     WAZUH_PACKAGES_PATH="${WAZUH_PATH}/packages/macos"
-    AGENT_PKG_FILE="${WAZUH_PACKAGES_PATH}/package_files/wazuh_agent_${ARCH}.pkgproj"
     ENTITLEMENTS_PATH="${WAZUH_PACKAGES_PATH}/entitlements.plist"
 
-    VERSION=$(cat ${WAZUH_PATH}/src/VERSION | cut -d "-" -f1 | cut -c 2-)
+    VERSION=$(cat ${WAZUH_PATH}/src/VERSION | cut -d 'v' -f 2)
 
     # Define output package name
     if [ $IS_STAGE == "no" ]; then
@@ -149,28 +162,28 @@ function build_package() {
         pkg_name="wazuh-agent-${VERSION}-${REVISION}.${ARCH}"
     fi
 
-    get_pkgproj_specs $VERSION $pkg_name
+    prepare_building_folder $VERSION $pkg_name
 
-    if [ -d "${INSTALLATION_PATH}" ]; then
+    ${WAZUH_PACKAGES_PATH}/package_files/build.sh "${PACKAGED_DIRECTORY}" "${WAZUH_PATH}" ${JOBS} ${VCPKG_KEY}
 
-        echo "\nThe wazuh agent is already installed on this machine."
-        echo "Removing it from the system."
+}
 
-        ${CURRENT_PATH}/uninstall.sh
-    fi
-
-    ${WAZUH_PACKAGES_PATH}/package_files/build.sh "${INSTALLATION_PATH}" "${WAZUH_PATH}" ${JOBS} ${DEBUG} ${MAKE_COMPILATION}
-
+function build_package() {
     # sign the binaries and the libraries
     sign_binaries
 
     # create package
-    if packagesbuild ${AGENT_PKG_FILE} --build-folder "${DESTINATION}/" ; then
+    if munkipkg $CURRENT_PATH/wazuh-agent ; then
         echo "The wazuh agent package for macOS has been successfully built."
-        pkg_name+=".pkg"
+        mv $CURRENT_PATH/wazuh-agent/build/*.pkg $DESTINATION/
+        # symbols_pkg_name="${pkg_name}_debug_symbols"
+        # cp -R "${WAZUH_PATH}/src/symbols"  "${DESTINATION}"
+        # zip -r "${DESTINATION}/${symbols_pkg_name}.zip" "${DESTINATION}/symbols"
+        # rm -rf "${DESTINATION}/symbols"
         sign_pkg
         if [[ "${CHECKSUM}" == "yes" ]]; then
-            shasum -a512 "${DESTINATION}/${pkg_name}" > "${DESTINATION}/${pkg_name}.sha512"
+            shasum -a512 "${DESTINATION}/${pkg_name}.pkg" > "${DESTINATION}/${pkg_name}.pkg.sha512"
+            # shasum -a512 "${DESTINATION}/${symbols_pkg_name}.zip" > "${DESTINATION}/${symbols_pkg_name}.sha512"
         fi
         clean_and_exit 0
     else
@@ -190,11 +203,12 @@ function help() {
     echo "    -j, --jobs <number>           [Optional] Number of parallel jobs when compiling."
     echo "    -r, --revision <rev>          [Optional] Package revision that append to version e.g. x.x.x-rev"
     echo "    -d, --debug                   [Optional] Build the binaries with debug symbols. By default: no."
-    echo "    -c, --checksum <path>         [Optional] Generate checksum on the desired path (by default, if no path is specified it will be generated on the same directory than the package)."
+    echo "    -c, --checksum                [Optional] Generate checksum on the store path."
     echo "    --is_stage                    [Optional] Use release name in package"
-    echo "    -nc, --not-compile            [Optional] Set whether or not to compile the code."
+    echo "    -bt, --build-type             [Optional] Set building type, binaries, package, or full_package [binaries,package,full_package]. By Default: full."
+    echo "    --vcpkg-binary-caching-key    [Optional] VCPK remote binary caching repository key."
     echo "    -h, --help                    [  Util  ] Show this help."
-    echo "    -i, --install-deps            [  Util  ] Install build dependencies (Packages)."
+    echo "    -i, --install-deps            [  Util  ] Install build dependencies."
     echo "    -x, --install-xcode           [  Util  ] Install X-Code and brew. Can't be executed as root."
     echo "    -v, --verbose                 [  Util  ] Show additional information during the package generation."
     echo "  Signing options:"
@@ -215,35 +229,58 @@ function help() {
 
 function testdep() {
 
-    if command -v packagesbuild ; then
-        return 0
-    else
-        echo "Error: packagesbuild not found. Download and install dependencies."
+    if [[ ! $(brew --version 2>/dev/null) =~ [0-9] ]]; then
+        echo "Error: brew not found. Download and install it."
+        echo "Use $0 -x for install it."
+        exit 1
+    fi  
+
+    if [[ ! $(munkipkg --version 2>/dev/null) =~ [0-9] ]]; then
+        echo "Error: munkipkg not found. Download and install dependencies."
         echo "Use $0 -i for install it."
         exit 1
+    fi
+
+    if [ -n "${VCPKG_KEY}" ]; then
+        if [[ ! $(mono --version 2>/dev/null) =~ [0-9] ]]; then
+            echo "Error: mono not found. Download and install dependencies."
+            echo "Use $0 -i for install it."
+            exit 1
+        fi    
     fi
 }
 
 function install_deps() {
 
-    # Install packagesbuild tool
-    curl -O http://s.sudre.free.fr/Software/files/Packages.dmg
-
-    hdiutil attach Packages.dmg
-
-    cd /Volumes/Packages*
-
-    if sudo installer -package *Packages.pkg -target / ; then
-        echo "Packagesbuild was correctly installed."
+    if [[ $(mono --version 2>/dev/null) =~ [0-9] ]]; then
+        echo "mono already installed"
     else
-        echo "Something went wrong installing packagesbuild."
+        # Install mono tool
+        echo "Installing mono"
+        brew install mono
+    fi 
+
+    if [[ $(munkipkg --version 2>/dev/null) =~ [0-9] ]]; then
+        echo "munkipkg already installed"
+    else
+        # Install munkipkg tool
+        echo "Installing munkipkg"
+        git clone https://github.com/munki/munki-pkg.git ~/Developer/munki-pkg
+        mkdir -p /usr/local/bin
+        sudo ln -s "$HOME/Developer/munki-pkg/munkipkg" /usr/local/bin/munkipkg
+
+        if [[ $(munkipkg --version 2>/dev/null) =~ [0-9] ]]; then
+            echo "Munkipkg was correctly installed."
+        else
+            echo "Something went wrong installing Munkipkg."
+        fi
     fi
 
     echo "Installing build dependencies for $(uname -m) architecture."
     if [ "$(uname -m)" = "arm64" ]; then
-        brew install gcc binutils autoconf automake libtool cmake
+        brew install gcc binutils autoconf automake libtool cmake git pkg-config openssl
     else
-        brew install cmake
+        brew install cmake git pkg-config openssl
     fi
     exit 0
 }
@@ -252,22 +289,19 @@ function install_xcode() {
 
     # Install brew tool. Brew will install X-Code if it is not already installed in the host.
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-
     exit 0
 }
 
 function check_root() {
 
     if [[ $EUID -ne 0 ]]; then
-        echo "This script must be run as root"
-        echo
+        echo "This script must be run as root\n"
         exit 1
     fi
 }
 
 function main() {
 
-    BUILD="yes"
     while [ -n "$1" ]
     do
         case "$1" in
@@ -289,7 +323,7 @@ function main() {
             ;;
         "-s"|"--store-path")
             if [ -n "$2" ]; then
-                DESTINATION="$2"
+                DESTINATION=$(echo "$2" | sed 's:/*$::')
                 shift 2
             else
                 help 1
@@ -336,9 +370,21 @@ function main() {
             IS_STAGE="yes"
             shift 1
             ;;
-        "-nc"|"--not-compile")
-            MAKE_COMPILATION="no"
-            shift 1
+        "-bt"|"--build-type")
+            if [ -n "$2" ]; then
+                BUILD_TYPE="$2"
+                shift 2
+            else
+                help 1
+            fi
+            ;;
+       "--vcpkg-binary-caching-key")
+            if [ -n "$2" ]; then
+                VCPKG_KEY="$2"
+                shift 2
+            else
+                help 1
+            fi
             ;;
         "--keychain")
             if [ -n "$2" ]; then
@@ -414,10 +460,8 @@ function main() {
     done
 
     if [ ${VERBOSE} = "yes" ]; then
-        set -exf
+        set -ex
     fi
-
-    testdep
 
     if [ "${ARCH}" != "intel64" ] && [ "${ARCH}" != "arm64" ]; then
         echo "Error: architecture not supported."
@@ -425,26 +469,45 @@ function main() {
         exit 1
     fi
 
-    if [[ "${BUILD}" != "no" ]]; then
-        check_root
-        build_package
-        "${CURRENT_PATH}/uninstall.sh"
-    fi
+    testdep
+    check_root
+    
+    case "$BUILD_TYPE" in
+        binaries)
+            echo "Building only the binaries for the package."
+            build_package_binaries
+            ;;
+        package)
+            if [ -d $PACKAGED_DIRECTORY ] ; then
+                echo "Building package with previously generated binaries."
+                build_package
+            else
+                echo "Binaries have not been created, existing."
+                clean_and_exit 1
+            fi
+            ;;
+        full_package)
+            echo "Building binaries and packaging them."
+            build_package_binaries
+            build_package
+            ;;
+        *)
+            echo "Error: BUILD_TYPE mus't be one of: [binaries, package, full_package]"
+            clean_and_exit 1
+            ;;
+    esac
 
-    if [ "${NOTARIZE}" = "yes" ]; then
-        if [ "${BUILD}" = "yes" ]; then
-            notarization_path="${DESTINATION}/${pkg_name}"
-        fi
+    if [ "${NOTARIZE}" = "yes" ] && { [ "${BUILD_TYPE}" = "package" ] || [ "${BUILD_TYPE}" = "full_package" ]; }; then
+        
+        notarization_path="${DESTINATION}/${pkg_name}.pkg"
+    
         if [ -z "${notarization_path}" ]; then
             echo "The path of the package to be notarized has not been specified."
             help 1
         fi
         notarize_pkg "${notarization_path}"
-    fi
-
-    if [ "${BUILD}" = "no" ] && [ "${NOTARIZE}" = "no" ]; then
-        echo "The branch has not been specified and notarization has not been selected."
-        help 1
+    else
+        echo "Notarization has not been selected or was not available for the selected building type."
     fi
 
     return 0

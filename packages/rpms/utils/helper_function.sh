@@ -23,7 +23,7 @@ setup_build(){
 
     mkdir -p ${rpm_build_dir}/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
 
-    cp ${specs_path}/wazuh-${BUILD_TARGET}.spec ${rpm_build_dir}/SPECS/${package_name}.spec
+    cp ${specs_path}/wazuh_${BUILD_TARGET}.spec ${rpm_build_dir}/SPECS/${package_name}.spec
 
     # Generating source tar.gz
     cd ${build_dir}/${BUILD_TARGET} && tar czf "${rpm_build_dir}/SOURCES/${package_name}.tar.gz" "${package_name}"
@@ -37,19 +37,16 @@ set_debug(){
 }
 
 build_deps(){
-    local legacy="$1"
-    if [ "${legacy}" = "no" ]; then
-        echo "%_source_filedigest_algorithm 8" >> /root/.rpmmacros
-        echo "%_binary_filedigest_algorithm 8" >> /root/.rpmmacros
-        if [ "${BUILD_TARGET}" = "agent" ]; then
-            echo " %rhel 6" >> /root/.rpmmacros
-            echo " %centos 6" >> /root/.rpmmacros
-            echo " %centos_ver 6" >> /root/.rpmmacros
-            echo " %dist .el6" >> /root/.rpmmacros
-            echo " %el6 1" >> /root/.rpmmacros
-        fi
-        rpmbuild="/usr/local/bin/rpmbuild"
+    echo "%_source_filedigest_algorithm 8" >> /root/.rpmmacros
+    echo "%_binary_filedigest_algorithm 8" >> /root/.rpmmacros
+    if [ "${BUILD_TARGET}" = "agent" ]; then
+        echo " %rhel 7" >> /root/.rpmmacros
+        echo " %centos 7" >> /root/.rpmmacros
+        echo " %centos_ver 7" >> /root/.rpmmacros
+        echo " %dist .el7" >> /root/.rpmmacros
+        echo " %el7 1" >> /root/.rpmmacros
     fi
+    rpmbuild="/usr/local/bin/rpmbuild"
 }
 
 build_package(){

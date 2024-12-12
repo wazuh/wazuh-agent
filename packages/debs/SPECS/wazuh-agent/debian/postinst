@@ -1,0 +1,54 @@
+#!/bin/sh
+# postinst script for wazuh-agent
+# Wazuh, Inc 2024
+
+set -e
+UPGRADE_RESTART_FLAG="/tmp/wazuh.restart"
+
+case "$1" in
+    configure)
+
+    OS=$(lsb_release -si)
+    VER=$(lsb_release -sr)
+    USER="wazuh"
+    GROUP="wazuh"
+
+    OSMYSHELL="/sbin/nologin"
+
+    if [ ! -f ${OSMYSHELL} ]; then
+        if [ -f "/bin/false" ]; then
+            OSMYSHELL="/bin/false"
+        fi
+    fi
+
+    if ! getent group ${GROUP} > /dev/null 2>&1; then
+        addgroup --system ${GROUP} > /dev/null 2>&1
+    fi
+
+    if ! getent passwd ${USER} > /dev/null 2>&1; then
+        adduser --system --shell ${OSMYSHELL} --ingroup ${GROUP} ${USER} > /dev/null 2>&1
+    fi
+
+    if [ -f ${UPGRADE_RESTART_FLAG} ] ; then
+        if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1; then
+            systemctl daemon-reload > /dev/null 2>&1
+            systemctl restart wazuh-agent > /dev/null 2>&1
+        fi
+        rm ${UPGRADE_RESTART_FLAG}
+    fi
+
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+
+    ;;
+
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >2
+        exit 1
+    ;;
+
+esac
+
+exit 0

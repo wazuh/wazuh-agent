@@ -8,15 +8,13 @@ project(CommandStore)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
-include_directories(${CMAKE_SOURCE_DIR}/common/logger/include)
-
 add_library(CommandStore src/command_store.cpp)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(CommandStore)
 
 target_include_directories(CommandStore PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(CommandStore PUBLIC SQLiteManager PRIVATE Logger)
+target_link_libraries(CommandStore PUBLIC SQLiteManager ModuleCommand PRIVATE Logger)
 
 if(BUILD_TESTS)
     enable_testing()

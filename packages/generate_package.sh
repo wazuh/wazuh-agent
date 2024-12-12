@@ -15,6 +15,7 @@ ARCHITECTURE="amd64"
 SYSTEM="deb"
 OUTDIR="${CURRENT_PATH}/output/"
 BRANCH=""
+VCPKG_KEY=""
 REVISION="0"
 TARGET="agent"
 JOBS="2"
@@ -22,11 +23,11 @@ DEBUG="no"
 SRC="no"
 BUILD_DOCKER="yes"
 DOCKER_TAG="latest"
-INSTALLATION_PATH="/var/ossec"
+INSTALLATION_PATH="/"
 CHECKSUM="no"
 FUTURE="no"
-LEGACY="no"
 IS_STAGE="no"
+ENTRYPOINT="/home/build.sh"
 
 
 trap ctrl_c INT
@@ -36,7 +37,6 @@ clean() {
 
     # Clean the files
     find "${DOCKERFILE_PATH}" \( -name '*.sh' -o -name '*.tar.gz' -o -name 'wazuh-*' \) ! -name 'docker_builder.sh' -exec rm -rf {} +
-
     exit ${exit_code}
 }
 
@@ -55,27 +55,8 @@ download_file() {
 }
 
 build_pkg() {
-    if [ "$LEGACY" = "yes" ]; then
-        REVISION="${REVISION}.el5"
-        TAR_URL="https://packages-dev.wazuh.com/utils/centos-5-i386-build/centos-5-i386.tar.gz"
-        TAR_FILE="${CURRENT_PATH}/${SYSTEM}s/${ARCHITECTURE}/legacy/centos-5-i386.tar.gz"
-        if [ ! -f "$TAR_FILE" ]; then
-            download_file ${TAR_URL} "${CURRENT_PATH}/${SYSTEM}s/${ARCHITECTURE}/legacy"
-        fi
-        DOCKERFILE_PATH="${CURRENT_PATH}/${SYSTEM}s/${ARCHITECTURE}/legacy"
-        CONTAINER_NAME="pkg_${SYSTEM}_legacy_builder_${ARCHITECTURE}"
-        if [ "$SYSTEM" != "rpm" ]; then
-            echo "Legacy mode is only available for RPM packages."
-            clean 1
-        fi
-    else
-        CONTAINER_NAME="pkg_${SYSTEM}_${TARGET}_builder_${ARCHITECTURE}"
-        if [ "${ARCHITECTURE}" = "arm64" ] || [ "${ARCHITECTURE}" = "ppc64le" ]; then
-            DOCKERFILE_PATH="${CURRENT_PATH}/${SYSTEM}s/${ARCHITECTURE}"
-        else
-            DOCKERFILE_PATH="${CURRENT_PATH}/${SYSTEM}s/${ARCHITECTURE}/${TARGET}"
-        fi
-    fi
+    CONTAINER_NAME="pkg_${SYSTEM}_${TARGET}_builder_${ARCHITECTURE}"
+    DOCKERFILE_PATH="${CURRENT_PATH}/${SYSTEM}s/${ARCHITECTURE}/${TARGET}"
 
     # Copy the necessary files
     cp ${CURRENT_PATH}/build.sh ${DOCKERFILE_PATH}
@@ -94,10 +75,14 @@ build_pkg() {
         -e INSTALLATION_PATH="${INSTALLATION_PATH}" \
         -e IS_STAGE="${IS_STAGE}" \
         -e WAZUH_BRANCH="${BRANCH}" \
+        -e WAZUH_VERBOSE="${VERBOSE}" \
+        -e VCPKG_KEY="${VCPKG_KEY}" \
         ${CUSTOM_CODE_VOL} \
+        -v ${DOCKERFILE_PATH}:/home:Z \
         ${CONTAINER_NAME}:${DOCKER_TAG} \
+        ${ENTRYPOINT} \
         ${REVISION} ${JOBS} ${DEBUG} \
-        ${CHECKSUM} ${FUTURE} ${LEGACY} ${SRC}|| return 1
+        ${CHECKSUM} ${FUTURE} ${SRC}|| return 1
 
     echo "Package $(ls -Art ${OUTDIR} | tail -n 1) added to ${OUTDIR}."
 
@@ -115,7 +100,6 @@ help() {
     echo "Usage: $0 [OPTIONS]"
     echo
     echo "    -b, --branch <branch>      [Optional] Select Git branch."
-    echo "    -t, --target <target>      [Required] Target package to build: manager or agent."
     echo "    -a, --architecture <arch>  [Optional] Target architecture of the package [amd64/i386/ppc64le/arm64/armhf]."
     echo "    -j, --jobs <number>        [Optional] Change number of parallel jobs when compiling the manager or agent. By default: 2."
     echo "    -r, --revision <rev>       [Optional] Package revision. By default: 0."
@@ -123,14 +107,16 @@ help() {
     echo "    -p, --path <path>          [Optional] Installation path for the package. By default: /var/ossec."
     echo "    -d, --debug                [Optional] Build the binaries with debug symbols. By default: no."
     echo "    -c, --checksum             [Optional] Generate checksum on the same directory than the package. By default: no."
-    echo "    -l, --legacy               [Optional only for RPM] Build package for CentOS 5."
+    echo "    -e, --entrypoint <path>    [Optional] Script to execute as entrypoint."
     echo "    --dont-build-docker        [Optional] Locally built docker image will be used instead of generating a new one."
+    echo "    --vcpkg-binary-caching-key [Optional] VCPK remote binary caching repository key."
     echo "    --tag                      [Optional] Tag to use with the docker image."
     echo "    --sources <path>           [Optional] Absolute path containing wazuh source code. This option will use local source code instead of downloading it from GitHub. By default use the script path."
     echo "    --is_stage                 [Optional] Use release name in package."
     echo "    --system                   [Optional] Select Package OS [rpm, deb]. By default is 'deb'."
     echo "    --src                      [Optional] Generate the source package in the destination directory."
     echo "    --future                   [Optional] Build test future package x.30.0 Used for development purposes."
+    echo "    --verbose                  [Optional] Print commands and their arguments as they are executed."
     echo "    -h, --help                 Show this help."
     echo
     exit $1
@@ -152,14 +138,6 @@ main() {
         "-h"|"--help")
             help 0
             ;;
-        "-t"|"--target")
-            if [ -n "$2" ]; then
-                TARGET="$2"
-                shift 2
-            else
-                help 1
-            fi
-            ;;
         "-a"|"--architecture")
             if [ -n "$2" ]; then
                 ARCHITECTURE="$2"
@@ -167,10 +145,6 @@ main() {
             else
                 help 1
             fi
-            ;;
-        "-l"|"--legacy")
-            LEGACY="yes"
-            shift 1
             ;;
         "-j"|"--jobs")
             if [ -n "$2" ]; then
@@ -191,6 +165,14 @@ main() {
         "-p"|"--path")
             if [ -n "$2" ]; then
                 INSTALLATION_PATH="$2"
+                shift 2
+            else
+                help 1
+            fi
+            ;;
+        "-e"|"--entrypoint")
+            if [ -n "$2" ]; then
+                ENTRYPOINT="$2"
                 shift 2
             else
                 help 1
@@ -245,15 +227,35 @@ main() {
             shift 1
             ;;
         "--system")
-            SYSTEM="$2"
-            shift 2
+            if [ -n "$2" ]; then
+                SYSTEM="$2"
+                shift 2
+            else
+                help 1
+            fi
+            ;;
+        "--vcpkg-binary-caching-key")
+            if [ -n "$2" ]; then
+                VCPKG_KEY="$2"
+                shift 2
+            else
+                help 1
+            fi
+            ;;
+        "--verbose")
+            VERBOSE="yes"
+            shift 1
             ;;
         *)
             help 1
         esac
     done
 
-    if [ -z "${CUSTOM_CODE_VOL}" ]; then
+    if [ -n "${VERBOSE}" ]; then
+        set -x
+    fi
+
+    if [ -z "${CUSTOM_CODE_VOL}" ] && [ -z "${BRANCH}" ]; then
         CUSTOM_CODE_VOL="-v $WAZUH_PATH:/wazuh-local-src:Z"
     fi
 

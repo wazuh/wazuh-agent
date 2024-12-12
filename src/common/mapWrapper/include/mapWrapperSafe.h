@@ -46,5 +46,4 @@ namespace Utils
     };
 };
 
-
 #endif //_MAP_WRAPPER_SAFE_H_

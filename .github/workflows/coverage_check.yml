@@ -7,9 +7,12 @@ on:
       - synchronize
       - reopened
 
+env:
+  VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
+
 jobs:
   coverage:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout code
@@ -18,27 +21,15 @@ jobs:
         submodules: true
         fetch-depth: 0
 
-    - name: Install Clang 16 and LLVM 16
-      run: |
-        sudo apt-get update
-        wget https://apt.llvm.org/llvm.sh
-        chmod +x llvm.sh
-        sudo ./llvm.sh 16
-
     - name: Set up dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake gcovr libsystemd-dev
-        sudo apt-get install -y autopoint libtool zlib1g-dev \
-          libgcrypt20-dev libmagic-dev libpopt-dev libmagic-dev \
-          libsqlite3-dev liblua5.4-dev gettext libarchive-dev
+        sudo apt-get install -y cmake llvm gcovr autopoint \
+          libtool zlib1g-dev libgcrypt20-dev libmagic-dev libpopt-dev \
+          libmagic-dev libsqlite3-dev liblua5.4-dev gettext libarchive-dev
       shell: bash
 
-    - name: Update PATH for LLVM
-      run: echo "/usr/lib/llvm-16/bin" >> $GITHUB_PATH
-      shell: bash
-
-    - name: Set up Binary caching 
+    - name: Set up Binary caching
       uses: ./.github/actions/vcpkg_related/cover_vcpkg_dependencies
       with:
         gh_token: ${{ secrets.GITHUB_TOKEN }}
@@ -46,19 +37,19 @@ jobs:
     - name: Generate CMake project
       run: |
         mkdir -p build && cd build
-        cmake -DCMAKE_CXX_COMPILER=clang++-16 ../src -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=1 -DCOVERAGE=1 -G "Unix Makefiles"
+        cmake -DCMAKE_CXX_COMPILER=clang++-16 -DCMAKE_C_COMPILER=clang-16 ../src -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=1 -DCOVERAGE=1 -DENABLE_CLANG_TIDY=OFF -G "Unix Makefiles"
       shell: bash
 
     - name: Compile
       run: |
         cd build
-        cmake --build . --config Debug
+        cmake --build . --config Debug -j $(nproc)
       shell: bash
 
     - name: Generate and Check Coverage
       run: |
         cd build
-        cmake --build . --target coverage
+        cmake --build . --target coverage -j $(nproc)
       shell: bash
 
     - name: Zip Coverage Files

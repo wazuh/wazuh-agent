@@ -24,4 +24,5 @@ class ThreadDispatcherTest : public ::testing::Test
         void SetUp() override;
         void TearDown() override;
 };
+
 #endif //THREAD_DISPATCHER_TESTS_H

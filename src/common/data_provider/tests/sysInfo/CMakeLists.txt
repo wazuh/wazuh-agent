@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12.4)
+cmake_minimum_required(VERSION 3.22)
 
 project(sysinfo_unit_test)
 
@@ -8,40 +8,34 @@ file(GLOB sysinfo_UNIT_TEST_SRC
     "*.cpp")
 
 file(GLOB SYSINFO_SRC
-    "${CMAKE_SOURCE_DIR}/src/sysInfo.cpp"
-    "${CMAKE_SOURCE_DIR}/src/osinfo/sysOsParsers.cpp")
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../src/sysInfo.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../src/osinfo/sysOsParsers.cpp")
 
 add_executable(sysinfo_unit_test
     ${sysinfo_UNIT_TEST_SRC}
     ${SYSINFO_SRC})
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    target_link_libraries(sysinfo_unit_test
-        debug gtestd
-        debug gmockd
-        debug gtest_maind
-        debug gmock_maind
-        optimized gtest
-        optimized gmock
-        optimized gtest_main
-        optimized gmock_main
+    target_link_libraries(sysinfo_unit_test PRIVATE
+        GTest::gtest
+        GTest::gmock
+        GTest::gtest_main
+        GTest::gmock_main
         pthread
-        sqlite3
+        unofficial::sqlite3::sqlite3
         cjson
+        utils
         -static-libgcc -static-libstdc++
     )
 else()
-    target_link_libraries(sysinfo_unit_test
-        debug gtestd
-        debug gmockd
-        debug gtest_maind
-        debug gmock_maind
-        optimized gtest
-        optimized gmock
-        optimized gtest_main
-        optimized gmock_main
+    target_link_libraries(sysinfo_unit_test PRIVATE
+        GTest::gtest
+        GTest::gmock
+        GTest::gtest_main
+        GTest::gmock_main
         pthread
-        sqlite3
+        unofficial::sqlite3::sqlite3
         cjson
+        utils
         dl
     )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")

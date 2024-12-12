@@ -34,7 +34,7 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
   struct MemoryStruct *mem = (struct MemoryStruct *)userp;
 
   if ((mem->size + realsize) > mem->max_response_size) {
-    mwarn("Response buffer size limit reached.");
+    LogWarn("Response buffer size limit reached.");
     mem->max_size_error = true;
     return 0;
   }
@@ -97,7 +97,7 @@ int wurl_get(const char * url, const char * dest, const char * header, const cha
         fp = wfopen(dest, "wb");
         umask(old_mask);
         if (!fp) {
-            mdebug1(FOPEN_ERROR, dest, errno, strerror(errno));
+            LogDebug(FOPEN_ERROR, dest, errno, strerror(errno));
             curl_easy_cleanup(curl);
             return OS_FILERR;
         }
@@ -130,7 +130,7 @@ int wurl_get(const char * url, const char * dest, const char * header, const cha
         res += curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1);
 
         if (res != 0) {
-            mdebug1("Parameter setup error at CURL");
+            LogDebug("Parameter setup error at CURL");
             curl_easy_cleanup(curl);
             fclose(fp);
             unlink(dest);
@@ -143,13 +143,13 @@ int wurl_get(const char * url, const char * dest, const char * header, const cha
         case CURLE_OK:
             break;
         case CURLE_OPERATION_TIMEDOUT:
-            mdebug1("CURL ERROR: %s", errbuf);
+            LogDebug("CURL ERROR: %s", errbuf);
             curl_easy_cleanup(curl);
             fclose(fp);
             unlink(dest);
             return OS_TIMEOUT;
         default:
-            mdebug1("CURL ERROR: %s",errbuf);
+            LogDebug("CURL ERROR: %s",errbuf);
             curl_easy_cleanup(curl);
             fclose(fp);
             unlink(dest);
@@ -167,10 +167,10 @@ int w_download_status(int status,const char *url,const char *dest) {
 
     switch(status) {
         case OS_FILERR:
-            mwarn(WURL_WRITE_FILE_ERROR,dest);
+            LogWarn(WURL_WRITE_FILE_ERROR,dest);
             break;
         case OS_CONNERR:
-            mwarn(WURL_DOWNLOAD_FILE_ERROR, dest, url);
+            LogWarn(WURL_DOWNLOAD_FILE_ERROR, dest, url);
             break;
     }
 
@@ -223,14 +223,14 @@ int wurl_request(const char * url, const char * dest, const char *header, const 
     // Connect to downlod module
 
     if (sock = OS_ConnectUnixDomain(WM_DOWNLOAD_SOCK, SOCK_STREAM, OS_MAXSTR), sock < 0) {
-        mwarn("Couldn't connect to download module socket '%s'", WM_DOWNLOAD_SOCK);
+        LogWarn("Couldn't connect to download module socket '%s'", WM_DOWNLOAD_SOCK);
         goto end;
     }
 
     // Send request
 
     if (send(sock, srequest, zrequest - 1, 0) != (ssize_t)(zrequest - 1)) {
-        merror("Couldn't send request to download module.");
+        LogError("Couldn't send request to download module.");
         goto end;
     }
 
@@ -238,11 +238,11 @@ int wurl_request(const char * url, const char * dest, const char *header, const 
 
     switch (zrecv = recv(sock, response, sizeof(response) - 1, 0), zrecv) {
     case -1:
-        merror("Couldn't receive URL response from download module.");
+        LogError("Couldn't receive URL response from download module.");
         goto end;
 
     case 0:
-        merror("Couldn't receive URL response from download module (closed unexpectedly).");
+        LogError("Couldn't receive URL response from download module (closed unexpectedly).");
         goto end;
 
     default:
@@ -259,7 +259,7 @@ int wurl_request(const char * url, const char * dest, const char *header, const 
         } else if (!strcmp(response, "err timeout")) {
             retval = OS_TIMEOUT;
         } else {
-            mdebug1("Couldn't download from '%s': %s", _url, response);
+            LogDebug("Couldn't download from '%s': %s", _url, response);
         }
     }
 
@@ -287,10 +287,10 @@ int wurl_request_gz(const char * url, const char * dest, const char * header, co
     } else {
         os_sha256 filehash = {0};
         if (sha256 && !OS_SHA256_File(compressed_file, filehash, 'r') && strcmp(sha256, filehash)) {
-            merror("Invalid file integrity for '%s'", compressed_file);
+            LogError("Invalid file integrity for '%s'", compressed_file);
 
         } else if (w_uncompress_gzfile(compressed_file, dest)) {
-            merror("Could not uncompress the file downloaded from '%s'", url);
+            LogError("Could not uncompress the file downloaded from '%s'", url);
 
         } else {
             retval = 0;
@@ -298,7 +298,7 @@ int wurl_request_gz(const char * url, const char * dest, const char * header, co
     }
 
     if (remove(compressed_file) < 0) {
-        mdebug1("Could not remove '%s'. Error: %d.", compressed_file, errno);
+        LogDebug("Could not remove '%s'. Error: %d.", compressed_file, errno);
     }
 
     return retval;
@@ -352,7 +352,7 @@ char * wurl_http_get(const char * url, size_t max_size, const long timeout) {
         }
 
         if (res != 0) {
-            mdebug1("Parameter setup error at CURL");
+            LogDebug("Parameter setup error at CURL");
             curl_easy_cleanup(curl);
             free(chunk.memory);
             return NULL;
@@ -361,7 +361,7 @@ char * wurl_http_get(const char * url, size_t max_size, const long timeout) {
         res = curl_easy_perform(curl);
 
         if (res) {
-            mdebug1("CURL ERROR %s",errbuf);
+            LogDebug("CURL ERROR %s",errbuf);
             curl_easy_cleanup(curl);
             free(chunk.memory);
             return NULL;
@@ -383,7 +383,7 @@ curl_response* wurl_http_request(char *method, char **headers, const char* url, 
     struct MemoryStruct req_header;
 
     if (!url) {
-        mdebug1("url not defined");
+        LogDebug("url not defined");
         return NULL;
     }
 
@@ -391,7 +391,7 @@ curl_response* wurl_http_request(char *method, char **headers, const char* url, 
     CURL* curl = curl_easy_init();
 
     if (!curl) {
-        mdebug1("curl initialization failure");
+        LogDebug("curl initialization failure");
         return NULL;
     }
 
@@ -412,7 +412,7 @@ curl_response* wurl_http_request(char *method, char **headers, const char* url, 
 
     if (headers_list == NULL) {
         curl_easy_cleanup(curl);
-        mdebug1("curl append header failure");
+        LogDebug("curl append header failure");
         return NULL;
     }
 
@@ -424,7 +424,7 @@ curl_response* wurl_http_request(char *method, char **headers, const char* url, 
         if (headers_tmp == NULL) {
             curl_slist_free_all(headers_list);
             curl_easy_cleanup(curl);
-            mdebug1("curl append custom header failure");
+            LogDebug("curl append custom header failure");
             return NULL;
         }
 
@@ -457,7 +457,7 @@ curl_response* wurl_http_request(char *method, char **headers, const char* url, 
     }
 
     if (res != CURLE_OK) {
-        mdebug1("Parameter setup error at CURL");
+        LogDebug("Parameter setup error at CURL");
         curl_slist_free_all(headers_list);
         curl_easy_cleanup(curl);
         os_free(req.memory);
@@ -468,7 +468,7 @@ curl_response* wurl_http_request(char *method, char **headers, const char* url, 
     res = curl_easy_perform(curl);
 
     if (res != CURLE_OK && !(req.max_size_error || req_header.max_size_error)) {
-        mdebug1("curl_easy_perform() failed: %s", curl_easy_strerror(res));
+        LogDebug("curl_easy_perform() failed: %s", curl_easy_strerror(res));
         curl_slist_free_all(headers_list);
         curl_easy_cleanup(curl);
         os_free(req.memory);

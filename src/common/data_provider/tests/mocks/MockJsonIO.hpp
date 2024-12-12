@@ -11,7 +11,7 @@
 #ifndef _MOCKJSONIO_HPP
 #define _MOCKJSONIO_HPP
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "gtest/gtest.h"
 #include <filesystem>
 #include "gmock/gmock.h"

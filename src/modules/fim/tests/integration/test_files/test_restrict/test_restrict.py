@@ -148,7 +148,7 @@ def test_restrict(test_configuration, test_metadata, set_wazuh_configuration, co
     path = os.path.join(test_metadata['folder_to_monitor'], test_metadata['data'][0])
 
     monitor = FileMonitor(WAZUH_LOG_PATH)
-    
+
     if test_metadata['data'][1] == True:
         monitor.start(generate_callback(EVENT_TYPE_ADDED))
         print(monitor.callback_result)

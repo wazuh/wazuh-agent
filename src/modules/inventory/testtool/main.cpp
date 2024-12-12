@@ -1,24 +1,10 @@
-/*
- * Wazuh SysCollector Test tool
- * Copyright (C) 2015, Wazuh Inc.
- * October 7, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
 #include <fstream>
 #include <iostream>
 #include <stdio.h>
 #include <memory>
 #include <chrono>
-#include "defs.h"
-#include "dbsync.hpp"
-#include "rsync.hpp"
-#include "sysInfo.hpp"
-#include "syscollector.hpp"
+#include <defs.h>
+#include <inventory.hpp>
 
 constexpr int DEFAULT_SLEEP_TIME { 60 };
 
@@ -26,6 +12,7 @@ int main(int argc, const char* argv[])
 {
     auto timedMainLoop { false };
     auto sleepTime { DEFAULT_SLEEP_TIME };
+    std::shared_ptr<const configuration::ConfigurationParser> configurationParser;
 
     if (2 == argc)
     {
@@ -40,49 +27,8 @@ int main(int argc, const char* argv[])
         return -1;
     }
 
-    const auto reportDiffFunction
-    {
-        [](const std::string & payload)
-        {
-            std::cout << "diff output payload:" << std::endl;
-            std::cout << payload << std::endl;
-        }
-    };
-    const auto reportSyncFunction
-    {
-        [](const std::string & payload)
-        {
-            std::cout << "sync output payload:" << std::endl;
-            std::cout << payload << std::endl;
-        }
-    };
-
-    const auto logFunction
-    {
-        [](const modules_log_level_t level, const std::string & log)
-        {
-            static const std::map<modules_log_level_t, std::string> s_logStringMap
-            {
-                {LOG_ERROR, "ERROR"},
-                {LOG_INFO, "INFO"},
-                {LOG_DEBUG, "DEBUG"},
-                {LOG_DEBUG_VERBOSE, "DEBUG2"}
-            };
-            std::cout << s_logStringMap.at(level) << ": " << log << std::endl;
-        }
-    };
-
-    const auto logErrorFunction
-    {
-        [](const std::string & log)
-        {
-            std::cout << "ERROR: " << log << std::endl;
-        }
-    };
-
-    const auto spInfo{ std::make_shared<SysInfo>() };
-    RemoteSync::initialize(logErrorFunction);
-    DBSync::initialize(logErrorFunction);
+    configurationParser = std::make_shared<configuration::ConfigurationParser>();
+    Inventory::Instance().Setup(configurationParser);
 
     try
     {
@@ -99,27 +45,11 @@ int main(int argc, const char* argv[])
                     std::this_thread::sleep_for(std::chrono::seconds(sleepTime));
                 }
 
-                Syscollector::instance().destroy();
+                Inventory::Instance().Stop();
             }
         };
 
-        Syscollector::instance().init(spInfo,
-                                      reportDiffFunction,
-                                      reportSyncFunction,
-                                      logFunction,
-                                      SYSCOLLECTOR_DB_DISK_PATH,
-                                      SYSCOLLECTOR_NORM_CONFIG_DISK_PATH,
-                                      SYSCOLLECTOR_NORM_TYPE,
-                                      15ul,
-                                      true,
-                                      true,
-                                      true,
-                                      true,
-                                      true,
-                                      true,
-                                      true,
-                                      true,
-                                      true);
+        Inventory::Instance().Start();
 
         if (thread.joinable())
         {
@@ -131,7 +61,5 @@ int main(int argc, const char* argv[])
         std::cout << ex.what() << std::endl;
     }
 
-    RemoteSync::teardown();
-    DBSync::teardown();
     return 0;
 }

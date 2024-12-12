@@ -12,16 +12,21 @@
 #ifndef _SQLITE_WRAPPER_TEMP_H
 #define _SQLITE_WRAPPER_TEMP_H
 
-#include "sqlite3.h"
+#include <sqlite3.h>
 #include <string>
 #include <memory>
-#include "makeUnique.h"
 #include "customDeleter.hpp"
 #include <iostream>
 #include <chrono>
 #include <sys/stat.h>
 #include <math.h>
 #include <stdexcept>
+
+#if defined(__GNUC__) || defined(__clang__)
+#define ATTR_RET_NONNULL __attribute__((__returns_nonnull__))
+#else
+#define ATTR_RET_NONNULL
+#endif
 
 using DBSyncExceptionType = const std::pair<int, std::string>;
 
@@ -56,7 +61,7 @@ namespace DbSync
     class dbsync_error : public std::exception
     {
         public:
-            __attribute__((__returns_nonnull__))
+            ATTR_RET_NONNULL
             const char* what() const noexcept override
             {
                 return m_error.what();
@@ -90,7 +95,7 @@ namespace DbSync
     class max_rows_error : public std::exception
     {
         public:
-            __attribute__((__returns_nonnull__))
+            ATTR_RET_NONNULL
             const char* what() const noexcept override
             {
                 return m_error.what();
@@ -114,7 +119,7 @@ constexpr auto DB_PERMISSIONS
 };
 
 
-namespace SQLite
+namespace SQLiteLegacy
 {
     const constexpr auto MAX_ROWS_ERROR_STRING {"Too Many Rows."};
 
@@ -188,9 +193,9 @@ namespace SQLite
 
     };
 
-}//namespace SQLite
+}//namespace SQLiteLegacy
 
-using namespace SQLite;
+using namespace SQLiteLegacy;
 using ExpandedSQLPtr = std::unique_ptr<char, CustomDeleter<decltype(&sqlite3_free), sqlite3_free>>;
 
 static void checkSqliteResult(const int result,
@@ -228,7 +233,7 @@ static sqlite3_stmt* prepareSQLiteStatement(std::shared_ptr<IConnection>& connec
     return pStatement;
 }
 
-namespace SQLite
+namespace SQLiteLegacy
 {
     class Connection : public IConnection
     {
@@ -506,7 +511,7 @@ namespace SQLite
 
             std::unique_ptr<IColumn> column(const int32_t index)
             {
-                return std::make_unique<SQLite::Column>(m_stmt, index);
+                return std::make_unique<SQLiteLegacy::Column>(m_stmt, index);
             }
 
             int columnsCount() const

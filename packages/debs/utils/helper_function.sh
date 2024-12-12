@@ -19,19 +19,27 @@ setup_build(){
     debug="$5"
 
     cp -pr ${specs_path}/wazuh-${BUILD_TARGET}/debian ${sources_dir}/debian
-    cp -p /tmp/gen_permissions.sh ${sources_dir}
+    cp -p /home/gen_permissions.sh ${sources_dir}
 
     # Generating directory structure to build the .deb package
     cd ${build_dir}/${BUILD_TARGET} && tar -czf ${package_name}.orig.tar.gz "${package_name}"
 
+
     # Configure the package with the different parameters
+    if [ "${ARCHITECTURE_TARGET}" != "amd64" ]; then
+        sed -i "s:export VCPKG_FORCE_SYSTEM_BINARIES=.*:export VCPKG_FORCE_SYSTEM_BINARIES=1:g" ${sources_dir}/debian/rules
+    fi
     sed -i "s:RELEASE:${REVISION}:g" ${sources_dir}/debian/changelog
     sed -i "s:export JOBS=.*:export JOBS=${JOBS}:g" ${sources_dir}/debian/rules
+    sed -i "s:export VCPKG_BINARY_SOURCES=.*:export VCPKG_BINARY_SOURCES=clear;nuget,GitHub,readwrite:g" ${sources_dir}/debian/rules
     sed -i "s:export DEBUG_ENABLED=.*:export DEBUG_ENABLED=${debug}:g" ${sources_dir}/debian/rules
-    sed -i "s#export PATH=.*#export PATH=/usr/local/gcc-5.5.0/bin:${PATH}#g" ${sources_dir}/debian/rules
-    sed -i "s#export LD_LIBRARY_PATH=.*#export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}#g" ${sources_dir}/debian/rules
-    sed -i "s:export INSTALLATION_DIR=.*:export INSTALLATION_DIR=${INSTALLATION_PATH}:g" ${sources_dir}/debian/rules
-    sed -i "s:DIR=\"/var/ossec\":DIR=\"${INSTALLATION_PATH}\":g" ${sources_dir}/debian/{preinst,postinst,prerm,postrm}
+    sed -i "s#export PATH=.*#export PATH=/usr/local/gcc-13.2.0/bin:${PATH}#g" ${sources_dir}/debian/rules
+    sed -i "s#export LD_LIBRARY_PATH=.*#export LD_LIBRARY_PATH=/usr/local/gcc-13.2.0/lib64/:${LD_LIBRARY_PATH}#g" ${sources_dir}/debian/rules
+    if [ "${INSTALLATION_PATH}" == "/" ]; then
+        sed -i "s:export INSTALLATION_DIR=.*:export INSTALLATION_DIR="":g" ${sources_dir}/debian/rules
+    else
+        sed -i "s:export INSTALLATION_DIR=.*:export INSTALLATION_DIR=${INSTALLATION_PATH}:g" ${sources_dir}/debian/rules
+    fi
 }
 
 set_debug(){
@@ -47,7 +55,6 @@ build_deps(){
 }
 
 build_package(){
-
     if [[ "${ARCHITECTURE_TARGET}" == "amd64" ]] ||  [[ "${ARCHITECTURE_TARGET}" == "ppc64le" ]] || \
         [[ "${ARCHITECTURE_TARGET}" == "arm64" ]]; then
         debuild --rootcmd=sudo -b -uc -us -nc

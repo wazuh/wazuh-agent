@@ -8,12 +8,10 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation.
  */
-#ifndef _ACTION_H
-#define _ACTION_H
-#include <json.hpp>
+#pragma once
+#include <nlohmann/json.hpp>
 #include <mutex>
 #include "dbsync.h"
-#include "makeUnique.h"
 #include "cjsonSmartDeleter.hpp"
 
 namespace TestDeleters
@@ -828,5 +826,3 @@ struct SelectRowsActionCPP final : public IAction
     }
 };
 
-
-#endif //_ACTION_H

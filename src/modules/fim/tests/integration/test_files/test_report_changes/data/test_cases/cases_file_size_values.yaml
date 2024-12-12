@@ -13,6 +13,8 @@
   metadata:
     folder_to_monitor: !!python/object/apply:os.path.join
               args: [!!python/object/apply:os.getcwd [], test_dir]
+    file_to_monitor: !!python/object/apply:os.path.join
+              args: [!!python/object/apply:os.getcwd [], test_dir, testfile]
     filename: 'testfile'
     fim_mode: 'scheduled'
     report_changes: 'yes'
@@ -36,6 +38,8 @@
   metadata:
     folder_to_monitor: !!python/object/apply:os.path.join
               args: [!!python/object/apply:os.getcwd [], test_dir]
+    file_to_monitor: !!python/object/apply:os.path.join
+              args: [!!python/object/apply:os.getcwd [], test_dir, testfile]
     filename: 'testfile'
     fim_mode: 'scheduled'
     report_changes: 'yes'
@@ -59,6 +63,8 @@
   metadata:
     folder_to_monitor: !!python/object/apply:os.path.join
               args: [!!python/object/apply:os.getcwd [], test_dir]
+    file_to_monitor: !!python/object/apply:os.path.join
+              args: [!!python/object/apply:os.getcwd [], test_dir, testfile]
     filename: 'testfile'
     fim_mode: 'scheduled'
     report_changes: 'yes'
@@ -82,6 +88,8 @@
   metadata:
     folder_to_monitor: !!python/object/apply:os.path.join
               args: [!!python/object/apply:os.getcwd [], test_dir]
+    file_to_monitor: !!python/object/apply:os.path.join
+              args: [!!python/object/apply:os.getcwd [], test_dir, testfile]
     filename: 'testfile'
     fim_mode: 'scheduled'
     report_changes: 'yes'
@@ -106,6 +114,8 @@
   metadata:
     folder_to_monitor: !!python/object/apply:os.path.join
               args: [!!python/object/apply:os.getcwd [], test_dir]
+    file_to_monitor: !!python/object/apply:os.path.join
+              args: [!!python/object/apply:os.getcwd [], test_dir, testfile]
     filename: 'testfile'
     fim_mode: 'realtime'
     report_changes: 'yes'
@@ -130,6 +140,8 @@
   metadata:
     folder_to_monitor: !!python/object/apply:os.path.join
               args: [!!python/object/apply:os.getcwd [], test_dir]
+    file_to_monitor: !!python/object/apply:os.path.join
+              args: [!!python/object/apply:os.getcwd [], test_dir, testfile]
     filename: 'testfile'
     fim_mode: 'realtime'
     report_changes: 'yes'
@@ -154,6 +166,8 @@
   metadata:
     folder_to_monitor: !!python/object/apply:os.path.join
               args: [!!python/object/apply:os.getcwd [], test_dir]
+    file_to_monitor: !!python/object/apply:os.path.join
+              args: [!!python/object/apply:os.getcwd [], test_dir, testfile]
     filename: 'testfile'
     fim_mode: 'realtime'
     report_changes: 'yes'
@@ -178,6 +192,8 @@
   metadata:
     folder_to_monitor: !!python/object/apply:os.path.join
               args: [!!python/object/apply:os.getcwd [], test_dir]
+    file_to_monitor: !!python/object/apply:os.path.join
+              args: [!!python/object/apply:os.getcwd [], test_dir, testfile]
     filename: 'testfile'
     fim_mode: 'realtime'
     report_changes: 'yes'
@@ -202,6 +218,8 @@
   metadata:
     folder_to_monitor: !!python/object/apply:os.path.join
               args: [!!python/object/apply:os.getcwd [], test_dir]
+    file_to_monitor: !!python/object/apply:os.path.join
+              args: [!!python/object/apply:os.getcwd [], test_dir, testfile]
     filename: 'testfile'
     fim_mode: 'whodata'
     report_changes: 'yes'
@@ -226,6 +244,8 @@
   metadata:
     folder_to_monitor: !!python/object/apply:os.path.join
               args: [!!python/object/apply:os.getcwd [], test_dir]
+    file_to_monitor: !!python/object/apply:os.path.join
+              args: [!!python/object/apply:os.getcwd [], test_dir, testfile]
     filename: 'testfile'
     fim_mode: 'whodata'
     report_changes: 'yes'
@@ -250,6 +270,8 @@
   metadata:
     folder_to_monitor: !!python/object/apply:os.path.join
               args: [!!python/object/apply:os.getcwd [], test_dir]
+    file_to_monitor: !!python/object/apply:os.path.join
+              args: [!!python/object/apply:os.getcwd [], test_dir, testfile]
     filename: 'testfile'
     fim_mode: 'whodata'
     report_changes: 'yes'
@@ -274,6 +296,8 @@
   metadata:
     folder_to_monitor: !!python/object/apply:os.path.join
               args: [!!python/object/apply:os.getcwd [], test_dir]
+    file_to_monitor: !!python/object/apply:os.path.join
+              args: [!!python/object/apply:os.getcwd [], test_dir, testfile]
     filename: 'testfile'
     fim_mode: 'whodata'
     report_changes: 'yes'

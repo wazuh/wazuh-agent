@@ -273,5 +273,4 @@ class LinuxPortWrapper final : public IPortWrapper
         }
 };
 
-
 #endif //_PORT_LINUX_WRAPPER_H

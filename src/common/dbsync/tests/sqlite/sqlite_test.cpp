@@ -24,7 +24,7 @@ void SQLiteTest::TearDown()
 };
 using ::testing::_;
 using ::testing::Return;
-using namespace SQLite;
+using namespace SQLiteLegacy;
 using namespace DbSync;
 
 class ConnectionWrapper: public IConnection

@@ -1276,7 +1276,7 @@ void test_fim_registry_value_diff_wrong_too_big_file(void **state) {
     char *diff_str = fim_registry_value_diff(key_name, value_name, value_data, data_type, configuration);
 
     assert_string_equal(diff_str, "Unable to calculate diff due to 'file_size' limit has been reached.");
-    
+
     free(diff_str);
 }
 
@@ -1301,7 +1301,7 @@ void test_fim_registry_value_diff_wrong_quota_reached(void **state) {
     char *diff_str = fim_registry_value_diff(key_name, value_name, value_data, data_type, configuration);
 
     assert_string_equal(diff_str, "Unable to calculate diff due to 'disk_quota' limit has been reached.");
-    
+
     free(diff_str);
 }
 
@@ -1330,7 +1330,7 @@ void test_fim_registry_value_diff_uncompress_fail(void **state) {
     char *diff_str = fim_registry_value_diff(key_name, value_name, value_data, data_type, configuration);
 
     assert_string_equal(diff_str, "Unable to calculate diff due to no previous data stored for this registry value.");
-    
+
     free(diff_str);
 }
 
@@ -1390,7 +1390,7 @@ void test_fim_registry_value_diff_compare_fail(void **state) {
     char *diff_str = fim_registry_value_diff(key_name, value_name, value_data, data_type, configuration);
 
     assert_string_equal(diff_str, "No content changes were found for this registry value.");
-    
+
     free(diff_str);
 }
 
@@ -1535,7 +1535,7 @@ void test_fim_file_diff_wrong_too_big_file(void **state) {
     char *diff_str = fim_file_diff(filename, &configuration);
 
     assert_string_equal(diff_str, "Unable to calculate diff due to 'file_size' limit has been reached.");
-    
+
     free(diff_str);
 }
 
@@ -1562,7 +1562,7 @@ void test_fim_file_diff_wrong_quota_reached(void **state) {
     char *diff_str = fim_file_diff(filename, &configuration);
 
     assert_string_equal(diff_str, "Unable to calculate diff due to 'disk_quota' limit has been reached.");
-    
+
     free(diff_str);
 }
 
@@ -1592,7 +1592,7 @@ void test_fim_file_diff_uncompress_fail(void **state) {
     char *diff_str = fim_file_diff(filename, &configuration);
 
     assert_string_equal(diff_str, "Unable to calculate diff due to no previous data stored for this file.");
-    
+
     free(diff_str);
 }
 
@@ -1659,7 +1659,7 @@ void test_fim_file_diff_compare_fail(void **state) {
     char *diff_str = fim_file_diff(filename, &configuration);
 
     assert_string_equal(diff_str, "No content changes were found for this file.");
-    
+
     free(diff_str);
 }
 
@@ -1693,7 +1693,7 @@ void test_fim_file_diff_nodiff(void **state) {
     char *diff_str = fim_file_diff(filename, &configuration);
 
     assert_string_equal(diff_str, "Diff truncated due to 'nodiff' configuration detected for this file.");
-    
+
     free(diff_str);
 }
 #else

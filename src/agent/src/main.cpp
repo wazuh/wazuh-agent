@@ -1,70 +1,101 @@
-#include <agent.hpp>
-#include <agent_info.hpp>
-#include <cmd_ln_parser.hpp>
-#include <http_client.hpp>
-#include <logger.hpp>
-#include <register.hpp>
+#include "process_options.hpp"
 
-#include <optional>
+#include <logger.hpp>
+
+#include <boost/program_options.hpp>
+#include <iostream>
+#include <string>
+
+namespace program_options = boost::program_options;
+
+/// Command-line options
+static const auto OPT_HELP {"help"};
+static const auto OPT_RUN {"run"};
+static const auto OPT_STATUS {"status"};
+static const auto OPT_CONFIG_FILE {"config-file"};
+static const auto OPT_REGISTER_AGENT {"register-agent"};
+static const auto OPT_URL {"url"};
+static const auto OPT_USER {"user"};
+static const auto OPT_PASS {"password"};
+static const auto OPT_KEY {"key"};
+static const auto OPT_NAME {"name"};
+#ifdef _WIN32
+static const auto OPT_INSTALL_SERVICE {"install-service"};
+static const auto OPT_REMOVE_SERVICE {"remove-service"};
+static const auto OPT_RUN_SERVICE {"run-service"};
+#endif
 
 int main(int argc, char* argv[])
 {
     Logger logger;
-    LogInfo("Starting Wazuh Agent.");
 
     try
     {
-        CommandlineParser cmdParser(argc, argv);
+        program_options::options_description cmdParser("Allowed options");
+        cmdParser.add_options()(OPT_HELP, "Display this help menu")(
+            OPT_RUN, "Run agent in foreground (this is the default behavior)")(
+            OPT_STATUS, "Check if the agent is running (running or stopped)")(
+            OPT_CONFIG_FILE, program_options::value<std::string>(), "Path to the Wazuh configuration file (optional)")(
+            OPT_REGISTER_AGENT, "Use this option to register as a new agent")(
+            OPT_URL, program_options::value<std::string>(), "URL of the server management API")(
+            OPT_USER, program_options::value<std::string>(), "User to authenticate with the server management API")(
+            OPT_PASS, program_options::value<std::string>(), "Password to authenticate with the server management API")(
+            OPT_KEY, program_options::value<std::string>(), "Key to register the agent (optional)")(
+            OPT_NAME, program_options::value<std::string>(), "Name to register the agent (optional)");
 
-        if (cmdParser.OptionExists("--register"))
+#ifdef _WIN32
+        cmdParser.add_options()(OPT_INSTALL_SERVICE, "Use this option to install Wazuh as a Windows service")(
+            OPT_REMOVE_SERVICE, "Use this option to remove Wazuh Windows service")(
+            OPT_RUN_SERVICE, "Use this option to run Wazuh as a Windows service");
+#endif
+
+        program_options::variables_map validOptions;
+        program_options::store(program_options::parse_command_line(argc, argv, cmdParser), validOptions);
+        program_options::notify(validOptions);
+
+        if (validOptions.count(OPT_REGISTER_AGENT) > 0)
         {
-            LogInfo("Starting registration process");
-
-            if (cmdParser.OptionExists("--user") && cmdParser.OptionExists("--password") &&
-                cmdParser.OptionExists("--key"))
-            {
-                const auto user = cmdParser.GetOptionValue("--user");
-                const auto password = cmdParser.GetOptionValue("--password");
-
-                AgentInfo agentInfo;
-                agentInfo.SetKey(cmdParser.GetOptionValue("--key"));
-
-                if (cmdParser.OptionExists("--name"))
-                {
-                    agentInfo.SetName(cmdParser.GetOptionValue("--name"));
-                }
-                else
-                {
-                    agentInfo.SetName(boost::asio::ip::host_name());
-                }
-
-                http_client::HttpClient httpClient;
-                const registration::UserCredentials userCredentials {user, password};
-
-                if (registration::RegisterAgent(userCredentials, httpClient))
-                {
-                    LogInfo("Agent registered.");
-                }
-                else
-                {
-                    LogError("Registration fail.");
-                }
-            }
-            else
-            {
-                LogError("--user, --password and --key args are mandatory");
-            }
-
-            LogInfo("Exiting ...");
-            return 0;
+            RegisterAgent(validOptions.count(OPT_URL) ? validOptions[OPT_URL].as<std::string>() : "",
+                          validOptions.count(OPT_USER) ? validOptions[OPT_USER].as<std::string>() : "",
+                          validOptions.count(OPT_PASS) ? validOptions[OPT_PASS].as<std::string>() : "",
+                          validOptions.count(OPT_KEY) ? validOptions[OPT_KEY].as<std::string>() : "",
+                          validOptions.count(OPT_NAME) ? validOptions[OPT_NAME].as<std::string>() : "",
+                          validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
         }
+        else if (validOptions.count(OPT_STATUS) > 0)
+        {
+            StatusAgent(validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
+        }
+#ifdef _WIN32
+        else if (validOptions.count(OPT_INSTALL_SERVICE) > 0)
+        {
+            if (!InstallService())
+                return 1;
+        }
+        else if (validOptions.count(OPT_REMOVE_SERVICE) > 0)
+        {
+            if (!RemoveService())
+                return 1;
+        }
+        else if (validOptions.count(OPT_RUN_SERVICE) > 0)
+        {
+            SetDispatcherThread();
+        }
+#endif
+        else if (validOptions.count(OPT_HELP) > 0)
+        {
+            std::cout << cmdParser << '\n';
+        }
+        else
+        {
+            StartAgent(validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
+        }
+
+        return 0;
     }
     catch (const std::exception& e)
     {
-        LogError("An error occurred: {}.", e.what());
+        LogCritical("An error occurred: {}.", e.what());
         return 1;
     }
-
-    Agent agent;
-    agent.Run();
 }

@@ -11,13 +11,13 @@ vcpkg_configure_make(
   OPTIONS
     ${OPTIONS}
     --with-cryptography=no
-    --disable-queue 
-    --disable-heap 
-    --disable-partition 
-    --disable-mutexsupport 
-    --disable-replication 
-    --disable-verify 
-    --disable-statistics 
+    --disable-queue
+    --disable-heap
+    --disable-partition
+    --disable-mutexsupport
+    --disable-replication
+    --disable-verify
+    --disable-statistics
     ac_cv_func_pthread_yield=no
 )
 

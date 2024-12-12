@@ -12,21 +12,6 @@
 #ifndef _DBSYNC_H_
 #define _DBSYNC_H_
 
-// Define EXPORTED for any platform
-#ifndef EXPORTED
-#ifdef _WIN32
-#ifdef WIN_EXPORT
-#define EXPORTED __declspec(dllexport)
-#else
-#define EXPORTED __declspec(dllimport)
-#endif
-#elif __GNUC__ >= 4
-#define EXPORTED __attribute__((visibility("default")))
-#else
-#define EXPORTED
-#endif
-#endif
-
 #include "commonDefs.h"
 
 #ifdef __cplusplus
@@ -38,7 +23,7 @@ extern "C" {
  *
  * @param log_function pointer to log function to be used by the dbsync.
  */
-EXPORTED void dbsync_initialize(log_fnc_t log_function);
+void dbsync_initialize(log_fnc_t log_function);
 
 /**
  * @brief Creates a new DBSync instance (wrapper)
@@ -52,7 +37,7 @@ EXPORTED void dbsync_initialize(log_fnc_t log_function);
  *
  * @return Handle instance to be used for common sql operations (cannot be used by more than 1 thread).
  */
-EXPORTED DBSYNC_HANDLE dbsync_create(const HostType      host_type,
+DBSYNC_HANDLE dbsync_create(const HostType      host_type,
                                      const DbEngineType  db_type,
                                      const char*         path,
                                      const char*         sql_statement);
@@ -70,7 +55,7 @@ EXPORTED DBSYNC_HANDLE dbsync_create(const HostType      host_type,
  *
  * @return Handle instance to be used for common sql operations (cannot be used by more than 1 thread).
  */
-EXPORTED DBSYNC_HANDLE dbsync_create_persistent(const HostType      host_type,
+DBSYNC_HANDLE dbsync_create_persistent(const HostType      host_type,
                                                 const DbEngineType  db_type,
                                                 const char*         path,
                                                 const char*         sql_statement,
@@ -79,7 +64,7 @@ EXPORTED DBSYNC_HANDLE dbsync_create_persistent(const HostType      host_type,
 /**
  * @brief Turns off the services provided by the shared library.
  */
-EXPORTED void dbsync_teardown(void);
+void dbsync_teardown(void);
 
 /**
  * @brief Creates a database transaction based on the supplied information.
@@ -94,7 +79,7 @@ EXPORTED void dbsync_teardown(void);
  *
  * @return Handle instance to be used in transacted operations.
  */
-EXPORTED TXN_HANDLE dbsync_create_txn(const DBSYNC_HANDLE handle,
+TXN_HANDLE dbsync_create_txn(const DBSYNC_HANDLE handle,
                                       const cJSON*        tables,
                                       const unsigned int  thread_number,
                                       const unsigned int  max_queue_size,
@@ -108,7 +93,7 @@ EXPORTED TXN_HANDLE dbsync_create_txn(const DBSYNC_HANDLE handle,
  * @return 0 if succeeded,
  *         specific error code (OS dependent) otherwise.
  */
-EXPORTED int dbsync_close_txn(const TXN_HANDLE txn);
+int dbsync_close_txn(const TXN_HANDLE txn);
 
 /**
  * @brief Synchronizes the \p js_input data using the \p txn current
@@ -120,7 +105,7 @@ EXPORTED int dbsync_close_txn(const TXN_HANDLE txn);
  * @return 0 if succeeded,
  *         specific error code (OS dependent) otherwise.
  */
-EXPORTED int dbsync_sync_txn_row(const TXN_HANDLE txn,
+int dbsync_sync_txn_row(const TXN_HANDLE txn,
                                  const cJSON*     js_input);
 
 /**
@@ -132,7 +117,7 @@ EXPORTED int dbsync_sync_txn_row(const TXN_HANDLE txn,
  * @return 0 if succeeded,
  *         specific error code (OS dependent) otherwise.
  */
-EXPORTED int dbsync_add_table_relationship(const DBSYNC_HANDLE handle,
+int dbsync_add_table_relationship(const DBSYNC_HANDLE handle,
                                            const cJSON*        js_input);
 
 /**
@@ -144,7 +129,7 @@ EXPORTED int dbsync_add_table_relationship(const DBSYNC_HANDLE handle,
  * @return 0 if succeeded,
  *         specific error code (OS dependent) otherwise.
  */
-EXPORTED int dbsync_insert_data(const DBSYNC_HANDLE handle,
+int dbsync_insert_data(const DBSYNC_HANDLE handle,
                                 const cJSON*        js_insert);
 
 /**
@@ -157,7 +142,7 @@ EXPORTED int dbsync_insert_data(const DBSYNC_HANDLE handle,
  * @return 0 if succeeded,
  *         specific error code (OS dependent) otherwise.
  */
-EXPORTED int dbsync_set_table_max_rows(const DBSYNC_HANDLE handle,
+int dbsync_set_table_max_rows(const DBSYNC_HANDLE handle,
                                        const char*         table,
                                        const long long     max_rows);
 
@@ -172,7 +157,7 @@ EXPORTED int dbsync_set_table_max_rows(const DBSYNC_HANDLE handle,
  * @return 0 if succeeded,
  *         specific error code (OS dependent) otherwise.
  */
-EXPORTED int dbsync_sync_row(const DBSYNC_HANDLE handle,
+int dbsync_sync_row(const DBSYNC_HANDLE handle,
                              const cJSON*        js_input,
                              callback_data_t     callback_data);
 
@@ -187,7 +172,7 @@ EXPORTED int dbsync_sync_row(const DBSYNC_HANDLE handle,
  * @return 0 if succeeded,
  *         specific error code (OS dependent) otherwise.
  */
-EXPORTED int dbsync_select_rows(const DBSYNC_HANDLE handle,
+int dbsync_select_rows(const DBSYNC_HANDLE handle,
                                 const cJSON*        js_data_input,
                                 callback_data_t     callback_data);
 
@@ -200,7 +185,7 @@ EXPORTED int dbsync_select_rows(const DBSYNC_HANDLE handle,
  * @return 0 if succeeded,
  *         specific error code (OS dependent) otherwise.
  */
-EXPORTED int dbsync_delete_rows(const DBSYNC_HANDLE handle,
+int dbsync_delete_rows(const DBSYNC_HANDLE handle,
                                 const cJSON*        js_key_values);
 
 /**
@@ -213,7 +198,7 @@ EXPORTED int dbsync_delete_rows(const DBSYNC_HANDLE handle,
  * @return 0 if succeeded,
  *         specific error code (OS dependent) otherwise.
  */
-EXPORTED int dbsync_get_deleted_rows(const TXN_HANDLE  txn,
+int dbsync_get_deleted_rows(const TXN_HANDLE  txn,
                                      callback_data_t   callback_data);
 
 /**
@@ -229,7 +214,7 @@ EXPORTED int dbsync_get_deleted_rows(const TXN_HANDLE  txn,
  *
  * @details The \p js_result resulting data should be freed using the \ref dbsync_free_result function.
  */
-EXPORTED int dbsync_update_with_snapshot(const DBSYNC_HANDLE handle,
+int dbsync_update_with_snapshot(const DBSYNC_HANDLE handle,
                                          const cJSON*        js_snapshot,
                                          cJSON**             js_result);
 
@@ -244,7 +229,7 @@ EXPORTED int dbsync_update_with_snapshot(const DBSYNC_HANDLE handle,
  * @return 0 if succeeded,
  *         specific error code (OS dependent) otherwise.
  */
-EXPORTED int dbsync_update_with_snapshot_cb(const DBSYNC_HANDLE handle,
+int dbsync_update_with_snapshot_cb(const DBSYNC_HANDLE handle,
                                             const cJSON*        js_snapshot,
                                             callback_data_t     callback_data);
 
@@ -256,7 +241,7 @@ EXPORTED int dbsync_update_with_snapshot_cb(const DBSYNC_HANDLE handle,
  * @details This function should only be used to free result objects obtained
  *  from the interface.
  */
-EXPORTED void dbsync_free_result(cJSON** js_data);
+void dbsync_free_result(cJSON** js_data);
 
 #ifdef __cplusplus
 }

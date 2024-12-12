@@ -1,17 +1,16 @@
 #pragma once
 
+#include <persistence.hpp>
+
+#include <SQLiteCpp/SQLiteCpp.h>
+#include <SQLiteCpp/VariadicBind.h>
+#include <nlohmann/json.hpp>
+
 #include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <string>
-#include <string_view>
-#include <sys/stat.h>
-
-#include <SQLiteCpp/SQLiteCpp.h>
-#include <SQLiteCpp/VariadicBind.h>
-#include <stdexcept>
-
-#include "persistence.hpp"
+#include <vector>
 
 /**
  * @brief SQLite implementation of the Persistence interface.
@@ -55,9 +54,15 @@ public:
      * @param message The JSON message to store.
      * @param tableName The name of the table to store the message in.
      * @param moduleName The name of the module that created the message.
+     * @param moduleType The type of the module that created the message.
+     * @param metadata The metadata message to store.
      * @return The number of stored elements.
      */
-    int Store(const json& message, const std::string& tableName, const std::string& moduleName = "") override;
+    int Store(const nlohmann::json& message,
+              const std::string& tableName,
+              const std::string& moduleName = "",
+              const std::string& moduleType = "",
+              const std::string& metadata = "") override;
 
     /**
      * @brief Retrieve a JSON message by its ID.
@@ -65,9 +70,13 @@ public:
      * @param id The ID of the message to retrieve.
      * @param tableName The name of the table to retrieve the message from.
      * @param moduleName The name of the module that created the message.
+     * @param moduleType The module type that created the message.
      * @return The retrieved JSON message.
      */
-    json Retrieve(int id, const std::string& tableName, const std::string& moduleName = "") override;
+    nlohmann::json Retrieve(int id,
+                            const std::string& tableName,
+                            const std::string& moduleName = "",
+                            const std::string& moduleType = "") override;
 
     /**
      * @brief Retrieve multiple JSON messages.
@@ -75,9 +84,13 @@ public:
      * @param n The number of messages to retrieve.
      * @param tableName The name of the table to retrieve the message from.
      * @param moduleName The name of the module that created the message.
+     * @param moduleType The module type that created the message.
      * @return A vector of retrieved JSON messages.
      */
-    json RetrieveMultiple(int n, const std::string& tableName, const std::string& moduleName = "") override;
+    nlohmann::json RetrieveMultiple(int n,
+                                    const std::string& tableName,
+                                    const std::string& moduleName = "",
+                                    const std::string& moduleType = "") override;
 
     /**
      * @brief Remove a JSON message by its ID.

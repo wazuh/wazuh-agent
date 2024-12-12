@@ -10,34 +10,36 @@
 
 #include "sharedDefs.h"
 #include "packageLinuxParserHelper.h"
-#include "UNIXSocketRequest.hpp"
 
-void getSnapInfo(std::function<void(nlohmann::json&)> callback)
-{
-    UNIXSocketRequest::instance().get(
-        HttpUnixSocketURL("/run/snapd.socket", "http://localhost/v2/snaps"),
-        [&](const std::string & result)
-    {
-        auto feed = nlohmann::json::parse(result, nullptr, false).at("result");
+// TO DO: Replace UNIXSocketRequest and HttpUnixSocketURL
+// #include "UNIXSocketRequest.hpp"
 
-        if (feed.is_discarded())
-        {
-            std::cerr << "Error parsing JSON feed\n";
-        }
+// void getSnapInfo(std::function<void(nlohmann::json&)> callback)
+// {
+//     UNIXSocketRequest::instance().get(
+//         HttpUnixSocketURL("/run/snapd.socket", "http://localhost/v2/snaps"),
+//         [&](const std::string & result)
+//     {
+//         auto feed = nlohmann::json::parse(result, nullptr, false).at("result");
 
-        for (const auto& entry : feed)
-        {
-            nlohmann::json mapping = PackageLinuxHelper::parseSnap(entry);
+//         if (feed.is_discarded())
+//         {
+//             std::cerr << "Error parsing JSON feed\n";
+//         }
 
-            if (!mapping.empty())
-            {
-                callback(mapping);
-            }
-        }
-    },
-    [&](const std::string & result, const long responseCode)
-    {
-        std::cerr << "Error retrieving packages using snap unix-socket (" << responseCode << ") " << result << "\n";
-    });
-}
+//         for (const auto& entry : feed)
+//         {
+//             nlohmann::json mapping = PackageLinuxHelper::parseSnap(entry);
+
+//             if (!mapping.empty())
+//             {
+//                 callback(mapping);
+//             }
+//         }
+//     },
+//     [&](const std::string & result, const long responseCode)
+//     {
+//         std::cerr << "Error retrieving packages using snap unix-socket (" << responseCode << ") " << result << "\n";
+//     });
+// }
 

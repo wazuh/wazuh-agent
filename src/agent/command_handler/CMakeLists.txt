@@ -8,13 +8,15 @@ project(CommandHandler)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
+find_package(Boost REQUIRED COMPONENTS asio)
+
 add_library(CommandHandler src/command_handler.cpp)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(CommandHandler)
 
-target_include_directories(CommandHandler PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/../command_store/include)
-target_link_libraries(CommandHandler PUBLIC CommandStore)
+target_include_directories(CommandHandler PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(CommandHandler PUBLIC CommandStore Boost::asio Logger)
 
 if(BUILD_TESTS)
     enable_testing()
