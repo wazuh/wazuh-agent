@@ -392,17 +392,17 @@ static void getPackagesFromReg(const HKEY key, const std::string& subKey, std::f
                 {
                     try
                     {
-                        install_time = Utils::normalizeTimestamp(value, packageReg.keyModificationDate());
+                        install_time = Utils::timestampToISO8601(Utils::normalizeTimestamp(value, packageReg.keyModificationDate()));
                     }
                     catch (const std::exception& e)
                     {
                         (void)e;
-                        install_time = packageReg.keyModificationDate();
+                        install_time = Utils::timestampToISO8601(packageReg.keyModificationDate());
                     }
                 }
                 else
                 {
-                    install_time = packageReg.keyModificationDate();
+                    install_time = Utils::timestampToISO8601(packageReg.keyModificationDate());
                 }
 
                 if (packageReg.string("InstallLocation", value))
