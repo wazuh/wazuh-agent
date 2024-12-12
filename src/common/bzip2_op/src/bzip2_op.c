@@ -11,6 +11,7 @@
 #include <errno.h>
 #include "bzip2_op.h"
 #include "error_messages.h"
+#include "logger.hpp"
 #include "os_err.h"
 
 

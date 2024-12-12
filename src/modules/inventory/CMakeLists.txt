@@ -30,13 +30,10 @@ target_include_directories(Inventory PUBLIC
     ${COMMON_FOLDER}/dbsync/include
     ${COMMON_FOLDER}/error_messages/include
     ${COMMON_FOLDER}/hashHelper/include
-    ${COMMON_FOLDER}/pal/include
     ${COMMON_FOLDER}/privsep_op/include
-    ${COMMON_FOLDER}/pthreads_op/include
     ${COMMON_FOLDER}/stringHelper/include
     ${COMMON_FOLDER}/time_op/include
-    ${COMMON_FOLDER}/timeHelper/include
-    ${COMMON_FOLDER}/utils)
+    ${COMMON_FOLDER}/timeHelper/include)
 
 target_link_libraries(Inventory
     PUBLIC
@@ -56,6 +53,7 @@ target_link_libraries(Inventory
     PRIVATE
     Logger
     cjson
+    pal
 )
 
 include(../../cmake/ConfigureTarget.cmake)
