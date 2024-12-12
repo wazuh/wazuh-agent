@@ -81,7 +81,7 @@ void Agent::ReloadModules()
     m_configurationParser->ReloadConfiguration();
     m_moduleManager.Stop();
     m_moduleManager.Setup();
-    m_taskManager.EnqueueTask([this]() { m_moduleManager.Start(); }, "StartModuleManager");
+    m_moduleManager.Start();
 }
 
 void Agent::Run()
@@ -122,7 +122,7 @@ void Agent::Run()
                               "Stateless");
 
     m_moduleManager.AddModules();
-    m_taskManager.EnqueueTask([this]() { m_moduleManager.Start(); }, "StartModuleManager");
+    m_moduleManager.Start();
 
     m_taskManager.EnqueueTask(
         m_commandHandler.CommandsProcessingTask<module_command::CommandEntry>(

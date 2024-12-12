@@ -19,15 +19,7 @@ namespace centralized_configuration
                 if (m_setGroupIdFunction && m_downloadGroupFilesFunction && m_validateFileFunction &&
                     m_reloadModulesFunction)
                 {
-                    if (parameters.empty())
-                    {
-                        LogWarn("Group set failed, no group list");
-                        co_return module_command::CommandExecutionResult {
-                            module_command::Status::FAILURE,
-                            "CentralizedConfiguration group set failed, no group list"};
-                    }
-
-                    groupIds = parameters[0].get<std::vector<std::string>>();
+                    groupIds = parameters.get<std::vector<std::string>>();
 
                     if (!m_setGroupIdFunction(groupIds))
                     {

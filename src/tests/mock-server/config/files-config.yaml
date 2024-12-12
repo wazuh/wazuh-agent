@@ -3,7 +3,7 @@
 plugin: rest
 resources:
 
-- path: "/api/v1/commands"
+- path: "/api/v1/files"
   method: GET
   response:
-    scriptFile: commands.groovy
+    scriptFile: files.groovy

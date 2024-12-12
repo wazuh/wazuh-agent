@@ -13,32 +13,32 @@ namespace
     template<typename ExecuteFunction>
     boost::asio::awaitable<void> ExecuteCommandTask(ExecuteFunction executeFunction,
                                                     module_command::CommandEntry commandEntry,
-                                                    std::shared_ptr<module_command::CommandExecutionResult> result,
-                                                    std::shared_ptr<bool> commandCompleted,
-                                                    std::shared_ptr<boost::asio::steady_timer> timer)
+                                                    std::shared_ptr<module_command::CommandExecutionResult> result)
     {
         try
         {
             *result = co_await executeFunction(commandEntry.Command, commandEntry.Parameters);
-            *commandCompleted = true;
-            timer->cancel();
         }
         catch (const std::exception& e)
         {
-            result->ErrorCode = module_command::Status::FAILURE;
-            result->Message = "Error during command execution: " + std::string(e.what());
+            if (result->ErrorCode == module_command::Status::UNKNOWN)
+            {
+                result->ErrorCode = module_command::Status::FAILURE;
+                result->Message = "Error during command execution: " + std::string(e.what());
+            }
         }
     }
 
-    boost::asio::awaitable<void> TimerTask(std::shared_ptr<boost::asio::steady_timer> timer,
-                                           std::shared_ptr<module_command::CommandExecutionResult> result,
-                                           std::shared_ptr<bool> commandCompleted)
+    boost::asio::awaitable<void> TimerTask(std::shared_ptr<module_command::CommandExecutionResult> result)
     {
         try
         {
+            constexpr auto timeout = std::chrono::minutes {60};
+            auto timer = std::make_shared<boost::asio::steady_timer>(co_await boost::asio::this_coro::executor);
+            timer->expires_after(timeout);
             co_await timer->async_wait(boost::asio::use_awaitable);
 
-            if (!(*commandCompleted))
+            if (result->ErrorCode == module_command::Status::UNKNOWN)
             {
                 result->ErrorCode = module_command::Status::TIMEOUT;
                 result->Message = "Command timed out";
@@ -46,15 +46,18 @@ namespace
         }
         catch (const boost::system::system_error& e)
         {
-            if (!(*commandCompleted) && e.code() != boost::asio::error::operation_aborted)
+            if (e.code() != boost::asio::error::operation_aborted)
             {
-                result->ErrorCode = module_command::Status::FAILURE;
-                result->Message = "System error: " + std::string(e.what());
+                if (result->ErrorCode == module_command::Status::UNKNOWN)
+                {
+                    result->ErrorCode = module_command::Status::FAILURE;
+                    result->Message = "System error: " + std::string(e.what());
+                }
             }
         }
         catch (const std::exception& e)
         {
-            if (!(*commandCompleted))
+            if (result->ErrorCode == module_command::Status::UNKNOWN)
             {
                 result->ErrorCode = module_command::Status::FAILURE;
                 result->Message = "Unexpected error: " + std::string(e.what());
@@ -73,15 +76,9 @@ DispatchCommand(module_command::CommandEntry commandEntry,
 
     LogInfo("Dispatching command {}({})", commandEntry.Command, commandEntry.Module);
 
-    const auto timeout = std::chrono::minutes(60);
-    auto timer = std::make_shared<boost::asio::steady_timer>(co_await boost::asio::this_coro::executor);
-    timer->expires_after(timeout);
-
     auto result = std::make_shared<module_command::CommandExecutionResult>();
-    auto commandCompleted = std::make_shared<bool>(false);
 
-    co_await (TimerTask(timer, result, commandCompleted) ||
-              ExecuteCommandTask(executeFunction, commandEntry, result, commandCompleted, timer));
+    co_await (TimerTask(result) || ExecuteCommandTask(executeFunction, commandEntry, result));
 
     commandEntry.ExecutionResult.ErrorCode = result->ErrorCode;
     commandEntry.ExecutionResult.Message = result->Message;
