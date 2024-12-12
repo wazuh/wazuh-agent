@@ -35,11 +35,11 @@ private:
 
     // TODO: doc
     /// @brief
-    const size_t m_maxItems;
+    size_t m_maxItems;
 
     // TODO: doc
     /// @brief
-    const std::chrono::seconds m_timeout;
+    const std::chrono::milliseconds m_timeout;
 
     // TODO: doc
     /// @brief
@@ -64,8 +64,7 @@ public:
      */
     template<typename ConfigGetter>
     MultiTypeQueue(const ConfigGetter& getConfigValue)
-        : m_maxItems(config::agent::QUEUE_DEFAULT_SIZE)
-        , m_timeout(config::agent::QUEUE_STATUS_REFRESH_TIMER)
+        : m_timeout(config::agent::QUEUE_STATUS_REFRESH_TIMER)
     {
         auto dbFolderPath =
             getConfigValue.template operator()<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH);
@@ -78,6 +77,9 @@ public:
             LogWarn("batch_interval must be between 1s and 1h. Using default value.");
             m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
         }
+
+        m_maxItems =
+            getConfigValue.template operator()<size_t>("agent", "queue_size").value_or(config::agent::QUEUE_DEFAULT_SIZE);
 
         const auto dbFilePath = dbFolderPath + "/" + config::agent::QUEUE_DB_NAME;
 
