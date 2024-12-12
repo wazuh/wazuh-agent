@@ -20,7 +20,7 @@
 // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
 using namespace testing;
-using GetMessagesFuncType = std::function<boost::asio::awaitable<intStringTuple>(const int)>;
+using GetMessagesFuncType = std::function<boost::asio::awaitable<intStringTuple>(const size_t)>;
 
 namespace
 {
@@ -52,7 +52,7 @@ TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
 {
     auto mockHttpClient = std::make_unique<MockHttpClient>();
 
-    auto getMessages = [](const int) -> boost::asio::awaitable<intStringTuple>
+    auto getMessages = [](const size_t) -> boost::asio::awaitable<intStringTuple>
     {
         co_return intStringTuple {1, std::string("message-content")};
     };
@@ -137,7 +137,7 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
         {
             co_await communicatorPtr->WaitForTokenExpirationAndAuthenticate();
             co_await communicatorPtr->StatelessMessageProcessingTask(
-                [](const int) -> boost::asio::awaitable<intStringTuple>
+                [](const size_t) -> boost::asio::awaitable<intStringTuple>
                 { co_return intStringTuple(1, std::string {"message"}); },
                 []([[maybe_unused]] const int, const std::string&) {});
         }(),
@@ -196,7 +196,7 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
         {
             co_await communicatorPtr->WaitForTokenExpirationAndAuthenticate();
             co_await communicatorPtr->StatelessMessageProcessingTask(
-                [](const int) -> boost::asio::awaitable<intStringTuple>
+                [](const size_t) -> boost::asio::awaitable<intStringTuple>
                 { co_return intStringTuple(1, std::string {"message"}); },
                 []([[maybe_unused]] const int, const std::string&) {});
         }(),

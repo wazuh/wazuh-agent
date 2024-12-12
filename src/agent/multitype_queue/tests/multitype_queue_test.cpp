@@ -78,7 +78,8 @@ namespace
         return std::nullopt;
     };
 
-    const auto MOCK_GET_CONFIG_SMALL_SIZE = []<typename T>(const std::string& table, const std::string& key) -> std::optional<T>
+    const auto MOCK_GET_CONFIG_SMALL_SIZE = []<typename T>(const std::string& table,
+                                                           const std::string& key) -> std::optional<T>
     {
         if (table == "agent" && key == "path.data")
         {

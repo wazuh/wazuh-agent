@@ -63,7 +63,7 @@ namespace communicator
 
             if (m_batchSize < 1'000 || m_batchSize > 100'000'000)
             {
-                LogWarn("batch_size must be between 1000B and 100MB. Using default value.");
+                LogWarn("batch_size must be between 1KB and 100MB. Using default value.");
                 m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
             }
         }

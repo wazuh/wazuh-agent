@@ -162,7 +162,7 @@ namespace http_client
 
                     if (messagesCount)
                     {
-                        LogInfo("Messages count: {}", messagesCount);
+                        LogTrace("Messages count: {}", messagesCount);
                         reqParams.Body = std::get<1>(messages);
                         break;
                     }

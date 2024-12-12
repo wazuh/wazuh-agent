@@ -33,24 +33,19 @@ private:
         {MessageType::COMMAND, "COMMAND"},
     };
 
-    // TODO: doc
-    /// @brief
+    /// @brief maximun quantity of message to stored on the queue
     size_t m_maxItems;
 
-    // TODO: doc
-    /// @brief
+    /// @brief timeout in milliseconds for refreshing the queue status
     const std::chrono::milliseconds m_timeout;
 
-    // TODO: doc
-    /// @brief
+    /// @brief class for persistence implementation
     std::unique_ptr<Persistence> m_persistenceDest;
 
-    // TODO: doc
-    /// @brief
+    /// @brief mutex for protecting the queue access
     std::mutex m_mtx;
 
-    // TODO: doc
-    /// @brief
+    /// @brief condition variable related to the mutex
     std::condition_variable m_cv;
 
     /// @brief Time between batch requests
@@ -78,8 +73,8 @@ public:
             m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
         }
 
-        m_maxItems =
-            getConfigValue.template operator()<size_t>("agent", "queue_size").value_or(config::agent::QUEUE_DEFAULT_SIZE);
+        m_maxItems = getConfigValue.template operator()<size_t>("agent", "queue_size")
+                         .value_or(config::agent::QUEUE_DEFAULT_SIZE);
 
         const auto dbFilePath = dbFolderPath + "/" + config::agent::QUEUE_DB_NAME;
 

@@ -80,14 +80,8 @@ namespace communicator
 
         const auto reqParams = http_client::HttpRequestParams(
             boost::beast::http::verb::get, m_serverUrl, "/api/v1/commands", m_getHeaderInfo ? m_getHeaderInfo() : "");
-        co_await m_httpClient->Co_PerformHttpRequest(m_token,
-                                                     reqParams,
-                                                     {},
-                                                     onAuthenticationFailed,
-                                                     m_retryInterval,
-                                                     m_batchSize,
-                                                     onSuccess,
-                                                     loopCondition);
+        co_await m_httpClient->Co_PerformHttpRequest(
+            m_token, reqParams, {}, onAuthenticationFailed, m_retryInterval, m_batchSize, onSuccess, loopCondition);
     }
 
     boost::asio::awaitable<void> Communicator::WaitForTokenExpirationAndAuthenticate()
