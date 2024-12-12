@@ -8,10 +8,7 @@
  */
 #include <string.h>
 #include <stdlib.h>
-#include "error_messages.h"
 #include "os_err.h"
-#include "pal.h"
-#include "logger.hpp"
 #include "os_macros.h"
 
 #ifndef WIN32
