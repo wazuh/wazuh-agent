@@ -12,8 +12,6 @@
 #include "bzip2_op.h"
 #include "error_messages.h"
 #include "logger.hpp"
-#include "os_err.h"
-
 
 int bzip2_compress(const char *file, const char *filebz2) {
     FILE* input;
