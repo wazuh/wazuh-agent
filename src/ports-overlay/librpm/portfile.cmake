@@ -6,6 +6,11 @@ vcpkg_from_github(
   HEAD_REF rpm-4.18.2-release
 )
 
+vcpkg_replace_string("${SOURCE_PATH}/configure.ac"
+  "RPMCONFIGDIR=\"`echo \${usrprefix}/lib/rpm`\""
+  "RPMCONFIGDIR=\"/usr/lib/rpm\""
+)
+
 vcpkg_configure_make(
   SOURCE_PATH "${SOURCE_PATH}"
   OPTIONS
