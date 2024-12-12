@@ -6,20 +6,19 @@
 #include <thread>
 #include <multitype_queue.hpp>
 #include <moduleWrapper.hpp>
+#include <task_manager.hpp>
 
 #include <boost/asio/awaitable.hpp>
 
 class ModuleManager {
 public:
-    ModuleManager(const std::function<int(Message)>& pushMessage,
-                std::shared_ptr<configuration::ConfigurationParser> configurationParser,
-                const std::function<void(std::function<void()>)>& createTask,
-                std::string uuid)
+    ModuleManager(const std::function<int(Message)>& pushMessage, std::shared_ptr<configuration::ConfigurationParser> configurationParser, std::string uuid)
         : m_pushMessage(pushMessage)
         , m_configurationParser(std::move(configurationParser))
-        , m_createTask(createTask)
         , m_agentUUID(std::move(uuid))
-    {}
+    {
+    }
+
     ~ModuleManager() = default;
 
     template <typename T>
@@ -52,9 +51,9 @@ public:
     void Stop();
 
 private:
+    TaskManager m_taskManager;
     std::map<std::string, std::shared_ptr<ModuleWrapper>> m_modules;
     std::function<int(Message)> m_pushMessage;
     std::shared_ptr<configuration::ConfigurationParser> m_configurationParser;
-    std::function<void(std::function<void()>)> m_createTask;
     std::string m_agentUUID;
 };

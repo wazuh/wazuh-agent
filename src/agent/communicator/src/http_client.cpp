@@ -201,7 +201,7 @@ namespace http_client
 
             if (ec)
             {
-                LogWarn("Error reading response. Response code: {}.", res.result_int());
+                LogWarn("Error reading response ({}): {}.", std::to_string(ec.value()), ec.message());
                 socket->Close();
                 co_await WaitForTimer(timer, connectionRetry);
                 continue;
