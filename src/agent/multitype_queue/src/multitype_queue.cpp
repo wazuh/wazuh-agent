@@ -1,44 +1,9 @@
 #include <multitype_queue.hpp>
 
-#include <config.h>
-#include <logger.hpp>
-#include <persistence_factory.hpp>
+#include <boost/asio.hpp>
 
 #include <stop_token>
 #include <utility>
-
-constexpr int DEFAULT_TIMER_IN_MS = 100;
-
-MultiTypeQueue::MultiTypeQueue(const std::string& dbFolderPath, size_t size, int timeout)
-    : m_maxItems(size)
-    , m_timeout(timeout)
-{
-    const auto dbFilePath = dbFolderPath + "/" + QUEUE_DB_NAME;
-
-    // const ConfigGetter& getConfigValue
-
-    // m_batchInterval = getConfigValue.template operator()<std::time_t>("events", "batch_interval")
-    //                         .value_or(config::agent::DEFAULT_BATCH_INTERVAL);
-
-    // if (m_batchInterval < 1'000 || m_batchInterval > (1'000 * 60 * 60))
-    // {
-    //     LogWarn("batch_interval must be between 1s and 1h. Using default value.");
-    //     m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
-    // }
-
-    //     /// @brief Time between batch requests
-    // std::time_t m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
-
-    try
-    {
-        m_persistenceDest = PersistenceFactory::createPersistence(PersistenceFactory::PersistenceType::SQLITE3,
-                                                                  {dbFilePath, m_vMessageTypeStrings});
-    }
-    catch (const std::exception& e)
-    {
-        LogError("Error creating persistence: {}.", e.what());
-    }
-}
 
 int MultiTypeQueue::push(Message message, bool shouldWait)
 {
@@ -105,7 +70,7 @@ boost::asio::awaitable<int> MultiTypeQueue::pushAwaitable(Message message)
 
         while (static_cast<size_t>(m_persistenceDest->GetElementCount(sMessageType)) >= m_maxItems)
         {
-            timer.expires_after(std::chrono::milliseconds(DEFAULT_TIMER_IN_MS));
+            timer.expires_after(std::chrono::milliseconds(m_timeout));
             co_await timer.async_wait(boost::asio::use_awaitable);
         }
 
@@ -191,7 +156,7 @@ MultiTypeQueue::getNextNAwaitable(MessageType type,
             // waits for items to be available
             while (isEmpty(type))
             {
-                timer.expires_after(std::chrono::milliseconds(DEFAULT_TIMER_IN_MS));
+                timer.expires_after(std::chrono::milliseconds(m_timeout));
                 co_await timer.async_wait(boost::asio::use_awaitable);
             }
         }
@@ -201,14 +166,12 @@ MultiTypeQueue::getNextNAwaitable(MessageType type,
             size_t sizeRequested = std::get<const size_t>(messageQuantity);
 
             boost::asio::steady_timer batchTimeoutTimer(co_await boost::asio::this_coro::executor);
-            // TODO: make it variable through configuration
-            constexpr int DELAY_MAX = 10000;
-            batchTimeoutTimer.expires_after(std::chrono::milliseconds(DELAY_MAX));
+            batchTimeoutTimer.expires_after(std::chrono::milliseconds(m_batchInterval));
 
             while ((sizePerType(type) < sizeRequested) &&
                    (batchTimeoutTimer.expiry() > std::chrono::steady_clock::now()))
             {
-                timer.expires_after(std::chrono::milliseconds(DEFAULT_TIMER_IN_MS));
+                timer.expires_after(std::chrono::milliseconds(m_timeout));
                 co_await timer.async_wait(boost::asio::use_awaitable);
             }
 
@@ -218,7 +181,7 @@ MultiTypeQueue::getNextNAwaitable(MessageType type,
             }
             else
             {
-                LogDebug("Timeout reached after {}ms", DELAY_MAX);
+                LogDebug("Timeout reached after {}ms", m_batchInterval);
             }
         }
         else

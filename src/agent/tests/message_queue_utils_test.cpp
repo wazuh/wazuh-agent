@@ -12,11 +12,17 @@ constexpr size_t MIN_SIZE_OF_MESSAGES = 10;
 const nlohmann::json BASE_DATA_CONTENT =
     R"({"document_id":"112233", "action":{"name":"command_test","args":["parameters_test"]}})"_json;
 
+const auto FUNC = []<typename T>([[maybe_unused]] const std::string&,
+                                 [[maybe_unused]] const std::string&) -> std::optional<T>
+{
+    return T {};
+};
+
 class MockMultiTypeQueue : public MultiTypeQueue
 {
 public:
     MockMultiTypeQueue()
-        : MultiTypeQueue(".")
+        : MultiTypeQueue(FUNC)
     {
     }
 

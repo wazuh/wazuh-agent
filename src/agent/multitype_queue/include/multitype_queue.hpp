@@ -1,8 +1,13 @@
 #pragma once
 
 #include <imultitype_queue.hpp>
-#include <message.hpp>
 #include <persistence.hpp>
+#include <persistence_factory.hpp>
+
+#include <config.h>
+#include <logger.hpp>
+
+#include <boost/asio/awaitable.hpp>
 
 #include <chrono>
 #include <condition_variable>
@@ -11,13 +16,6 @@
 #include <mutex>
 #include <string>
 #include <vector>
-
-#include <boost/asio.hpp>
-
-// TODO: move to a configuration setting
-constexpr int DEFAULT_MAX = 10000;
-constexpr int DEFAULT_TIMEOUT_S = 3;
-const std::string QUEUE_DB_NAME = "queue.db";
 
 /**
  * @brief MultiTypeQueue implementation that handles multiple types of messages.
@@ -34,21 +32,65 @@ private:
         {MessageType::STATEFUL, "STATEFUL"},
         {MessageType::COMMAND, "COMMAND"},
     };
+
+    // TODO: doc
+    /// @brief
     const size_t m_maxItems;
+
+    // TODO: doc
+    /// @brief
     const std::chrono::seconds m_timeout;
+
+    // TODO: doc
+    /// @brief
     std::unique_ptr<Persistence> m_persistenceDest;
+
+    // TODO: doc
+    /// @brief
     std::mutex m_mtx;
+
+    // TODO: doc
+    /// @brief
     std::condition_variable m_cv;
+
+    /// @brief Time between batch requests
+    std::time_t m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
 
 public:
     /**
      * @brief Constructor.
-     *
-     * @param dbFolderPath The path to the database folder.
-     * @param size The maximum number of items in the queue.
-     * @param timeout The timeout period in seconds.
+     * TODO:
+     * @param
      */
-    MultiTypeQueue(const std::string& dbFolderPath, size_t size = DEFAULT_MAX, int timeout = DEFAULT_TIMEOUT_S);
+    template<typename ConfigGetter>
+    MultiTypeQueue(const ConfigGetter& getConfigValue)
+        : m_maxItems(config::agent::QUEUE_DEFAULT_SIZE)
+        , m_timeout(config::agent::QUEUE_STATUS_REFRESH_TIMER)
+    {
+        auto dbFolderPath =
+            getConfigValue.template operator()<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH);
+
+        m_batchInterval = getConfigValue.template operator()<std::time_t>("events", "batch_interval")
+                              .value_or(config::agent::DEFAULT_BATCH_INTERVAL);
+
+        if (m_batchInterval < 1'000 || m_batchInterval > (1'000 * 60 * 60))
+        {
+            LogWarn("batch_interval must be between 1s and 1h. Using default value.");
+            m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
+        }
+
+        const auto dbFilePath = dbFolderPath + "/" + config::agent::QUEUE_DB_NAME;
+
+        try
+        {
+            m_persistenceDest = PersistenceFactory::createPersistence(PersistenceFactory::PersistenceType::SQLITE3,
+                                                                      {dbFilePath, m_vMessageTypeStrings});
+        }
+        catch (const std::exception& e)
+        {
+            LogError("Error creating persistence: {}.", e.what());
+        }
+    }
 
     /**
      * @brief Delete copy constructor

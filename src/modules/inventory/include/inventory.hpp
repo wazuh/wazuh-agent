@@ -6,7 +6,6 @@
 #include <mutex>
 #include <memory>
 #include <string>
-#include <memory>
 #include <ctime>
 
 #include <sysInfoInterface.hpp>
