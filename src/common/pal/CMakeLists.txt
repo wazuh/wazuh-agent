@@ -11,8 +11,6 @@ else()
     message(FATAL_ERROR "Unsupported OS")
 endif()
 
-include_directories(include/${OS_NAME})
-
 file(GLOB_RECURSE SOURCE_FILES src/${OS_NAME}/*.c)
 
 message(STATUS "Source files: ${SOURCE_FILES}")
@@ -22,6 +20,7 @@ if(NOT SOURCE_FILES)
 endif()
 
 add_library(pal STATIC ${SOURCE_FILES})
+target_include_directories(pal PUBLIC include/${OS_NAME})
 
 if(BUILD_TESTS)
     enable_testing()
