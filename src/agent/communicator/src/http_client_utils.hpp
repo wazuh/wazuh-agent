@@ -1,11 +1,14 @@
+#pragma once
 #include <ihttp_socket.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 #include <boost/system.hpp>
+#include <logger.hpp>
 
 #include <fstream>
 #include <ios>
+#include <memory>
 #include <string>
 
 namespace http_client_utils
@@ -70,5 +73,43 @@ namespace http_client_utils
 
         res = res_parser.release();
         file.close();
+    }
+
+    /// @brief Starts a timer and updates the error code and task completion status accordingly
+    /// @param timer The timer to start
+    /// @param result The error code to update
+    /// @param taskCompleted In/Out Indicates whether the socket task is completed and, if not, serves as a flag
+    /// that indicates TimeOut
+    boost::asio::awaitable<void> TimerTask(std::shared_ptr<boost::asio::steady_timer> timer,
+                                           std::shared_ptr<boost::system::error_code> result,
+                                           std::shared_ptr<bool> taskCompleted);
+
+    /// @brief Performs the socket connection
+    /// @param socket The socket to connect
+    /// @param endpoints The endpoints to connect to
+    /// @param result The error code, if any occurred
+    /// @param taskCompleted In/Out Indicates whether the timer task is completed and, if not, serves as a flag that
+    /// indicates the socket is connected
+    template<typename SocketType>
+    boost::asio::awaitable<void> SocketConnectTask(SocketType& socket,
+                                                   const boost::asio::ip::tcp::resolver::results_type& endpoints,
+                                                   std::shared_ptr<boost::system::error_code> result,
+                                                   std::shared_ptr<bool> taskCompleted)
+    {
+        boost::system::error_code socketErrorCode;
+
+        co_await boost::asio::async_connect(
+            socket, endpoints, boost::asio::redirect_error(boost::asio::use_awaitable, socketErrorCode));
+
+        if (!(*taskCompleted) && !socketErrorCode)
+        {
+            LogDebug("Connected successfully");
+            result->clear();
+            *taskCompleted = true;
+        }
+        else
+        {
+            *result = socketErrorCode;
+        }
     }
 } // namespace http_client_utils

@@ -3,6 +3,7 @@
 #include <logger.hpp>
 
 #include <boost/asio.hpp>
+#include <boost/asio/experimental/awaitable_operators.hpp>
 #include <boost/beast.hpp>
 #include <boost/system/error_code.hpp>
 
@@ -65,10 +66,22 @@ namespace http_client
         boost::asio::awaitable<void> AsyncConnect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
                                                   boost::system::error_code& ec) override
         {
+            using namespace boost::asio::experimental::awaitable_operators;
+
+            auto timer = std::make_shared<boost::asio::steady_timer>(co_await boost::asio::this_coro::executor);
+            timer->expires_after(std::chrono::seconds(http_client_utils::TIMEOUT_SECONDS));
+
+            auto result = std::make_shared<boost::system::error_code>();
+            auto taskCompleted = std::make_shared<bool>(false);
+
             try
             {
-                co_await boost::asio::async_connect(
-                    m_socket, endpoints, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+                co_await (http_client_utils::TimerTask(timer, result, taskCompleted) ||
+                          http_client_utils::SocketConnectTask(m_socket, endpoints, result, taskCompleted));
+                if (!result)
+                {
+                    LogDebug("Connection error:  {}", result->value());
+                }
             }
             catch (const std::exception& e)
             {
