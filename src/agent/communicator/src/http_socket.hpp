@@ -3,6 +3,7 @@
 #include <logger.hpp>
 
 #include <boost/asio.hpp>
+#include <boost/asio/experimental/awaitable_operators.hpp>
 #include <boost/beast.hpp>
 #include <boost/system/error_code.hpp>
 
@@ -44,10 +45,24 @@ namespace http_client
         boost::asio::awaitable<void> AsyncConnect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
                                                   boost::system::error_code& ec) override
         {
+            using namespace boost::asio::experimental::awaitable_operators;
+
+            auto timer = std::make_shared<boost::asio::steady_timer>(co_await boost::asio::this_coro::executor);
+            timer->expires_after(std::chrono::seconds(http_client_utils::TIMEOUT_SECONDS));
+
+            auto result = std::make_shared<boost::system::error_code>();
+            auto taskCompleted = std::make_shared<bool>(false);
+
             try
             {
-                co_await boost::asio::async_connect(
-                    m_socket, endpoints, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+                co_await (http_client_utils::TimerTask(timer, result, taskCompleted) ||
+                          http_client_utils::SocketConnectTask(m_socket, endpoints, result, taskCompleted));
+                if (!result)
+                {
+                    m_socket.cancel();
+                    ec = *result;
+                    LogDebug("Connection error:  {}", result->value());
+                }
             }
             catch (const std::exception& e)
             {
@@ -78,10 +93,24 @@ namespace http_client
         boost::asio::awaitable<void> AsyncWrite(const boost::beast::http::request<boost::beast::http::string_body>& req,
                                                 boost::system::error_code& ec) override
         {
+            using namespace boost::asio::experimental::awaitable_operators;
+
+            auto timer = std::make_shared<boost::asio::steady_timer>(co_await boost::asio::this_coro::executor);
+            timer->expires_after(std::chrono::seconds(http_client_utils::TIMEOUT_SECONDS));
+
+            auto result = std::make_shared<boost::system::error_code>();
+            auto taskCompleted = std::make_shared<bool>(false);
+
             try
             {
-                co_await boost::beast::http::async_write(
-                    m_socket, req, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+                co_await (http_client_utils::TimerTask(timer, result, taskCompleted) ||
+                          http_client_utils::SocketWriteTask(m_socket, req, result, taskCompleted));
+                if (!result)
+                {
+                    m_socket.cancel();
+                    ec = *result;
+                    LogDebug("Write error:  {}", result->value());
+                }
             }
             catch (const std::exception& e)
             {
@@ -129,11 +158,25 @@ namespace http_client
         boost::asio::awaitable<void> AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
                                                boost::system::error_code& ec) override
         {
+            using namespace boost::asio::experimental::awaitable_operators;
+
+            auto timer = std::make_shared<boost::asio::steady_timer>(co_await boost::asio::this_coro::executor);
+            timer->expires_after(std::chrono::seconds(http_client_utils::TIMEOUT_SECONDS));
+
+            auto result = std::make_shared<boost::system::error_code>();
+            auto taskCompleted = std::make_shared<bool>(false);
+
             try
             {
                 boost::beast::flat_buffer buffer;
-                co_await boost::beast::http::async_read(
-                    m_socket, buffer, res, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+                co_await (http_client_utils::TimerTask(timer, result, taskCompleted) ||
+                          http_client_utils::SocketReadTask(m_socket, buffer, res, result, taskCompleted));
+                if (!result)
+                {
+                    m_socket.cancel();
+                    ec = *result;
+                    LogDebug("Write error:  {}", result->value());
+                }
             }
             catch (const std::exception& e)
             {
