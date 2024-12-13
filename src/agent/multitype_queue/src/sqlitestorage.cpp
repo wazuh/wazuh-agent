@@ -69,7 +69,6 @@ int SQLiteStorage::Store(const nlohmann::json& message,
                          const std::string& moduleType,
                          const std::string& metadata)
 {
-
     std::string insertQuery;
 
     constexpr std::string_view INSERT_QUERY {
@@ -103,10 +102,17 @@ int SQLiteStorage::Store(const nlohmann::json& message,
     }
     else
     {
-        SQLite::Transaction transaction(*m_db);
-        query.bind(1, message.dump());
-        result = query.exec();
-        transaction.commit();
+        try
+        {
+            SQLite::Transaction transaction(*m_db);
+            query.bind(1, message.dump());
+            result = query.exec();
+            transaction.commit();
+        }
+        catch (const std::exception& e)
+        {
+            LogError("Error during Store operation: {}.", e.what());
+        }
     }
     ReleaseDatabaseAccess();
 
