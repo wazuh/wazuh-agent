@@ -27,25 +27,39 @@ namespace http_client
         /// @brief Connects the socket to the given endpoints
         /// @param endpoints The endpoints to connect to
         /// @param ec The error code, if any occurred
-        void Connect([[maybe_unused]] boost::asio::io_context& io_context,
+        /// @param timeOut The timeout for the connection
+        void Connect(boost::asio::io_context& io_context,
                      const boost::asio::ip::tcp::resolver::results_type& endpoints,
                      boost::system::error_code& ec,
-                     [[maybe_unused]] const std::chrono::seconds timeout = std::chrono::seconds(2)) override
+                     const std::chrono::seconds timeOut = std::chrono::seconds(TIMEOUT_DEFAULT)) override
         {
             try
             {
-                boost::asio::connect(m_ssl_socket.next_layer(), endpoints.begin(), endpoints.end(), ec);
-                if (ec)
-                {
-                    LogDebug("Connect failed: {}", ec.message());
-                    return;
-                }
+                bool connectionSuccess = false;
 
-                m_ssl_socket.handshake(boost::asio::ssl::stream_base::client, ec);
-                if (ec)
+                // Start the asynchronous connect operation
+                boost::asio::async_connect(m_ssl_socket.lowest_layer(),
+                                           endpoints,
+                                           [&](const boost::system::error_code& errorCode, const auto&)
+                                           {
+                                               if (!errorCode)
+                                               {
+                                                   connectionSuccess = true;
+                                                   ec = errorCode;
+                                                   LogDebug("Connected successfully");
+                                               }
+                                           });
+
+                io_context.run_for(timeOut); // Run for 2 seconds();
+
+                if (connectionSuccess)
                 {
-                    LogDebug("Handshake failed: {}", ec.message());
-                    return;
+                    m_ssl_socket.handshake(boost::asio::ssl::stream_base::client, ec);
+                    if (ec)
+                    {
+                        LogDebug("Handshake failed: {}", ec.message());
+                        return;
+                    }
                 }
             }
             catch (const std::exception& e)
