@@ -58,7 +58,7 @@ namespace
         for (const auto& entry : std::filesystem::directory_iterator("."))
         {
             const auto fileFullPath = entry.path().string();
-            if (fileFullPath.find(config::agent::QUEUE_DB_NAME) != std::string::npos)
+            if (fileFullPath.find(QUEUE_DB_NAME) != std::string::npos)
             {
                 std::error_code ec;
                 std::filesystem::remove(fileFullPath, ec);

@@ -54,8 +54,6 @@ set(DEFAULT_PROCESSES true CACHE BOOL "Default inventory processes")
 
 set(DEFAULT_HOTFIXES true CACHE BOOL "Default inventory hotfixes")
 
-set(QUEUE_DB_NAME "queue.db" CACHE STRING "Default Agent's queue DB Name")
-
 set(QUEUE_STATUS_REFRESH_TIMER 100 CACHE STRING "Default Agent's queue refresh timer (100ms)")
 
 set(QUEUE_DEFAULT_SIZE 10000 CACHE STRING "Default Agent's queue size (10000)")

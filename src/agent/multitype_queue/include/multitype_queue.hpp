@@ -17,6 +17,8 @@
 #include <string>
 #include <vector>
 
+constexpr auto QUEUE_DB_NAME = "queue.db";
+
 /**
  * @brief MultiTypeQueue implementation that handles multiple types of messages.
  *
@@ -54,8 +56,7 @@ private:
 public:
     /**
      * @brief Constructor.
-     * TODO:
-     * @param
+     * @param getConfigValue Function to retrieve configuration values
      */
     template<typename ConfigGetter>
     MultiTypeQueue(const ConfigGetter& getConfigValue)
@@ -76,7 +77,7 @@ public:
         m_maxItems = getConfigValue.template operator()<size_t>("agent", "queue_size")
                          .value_or(config::agent::QUEUE_DEFAULT_SIZE);
 
-        const auto dbFilePath = dbFolderPath + "/" + config::agent::QUEUE_DB_NAME;
+        const auto dbFilePath = dbFolderPath + "/" + QUEUE_DB_NAME;
 
         try
         {

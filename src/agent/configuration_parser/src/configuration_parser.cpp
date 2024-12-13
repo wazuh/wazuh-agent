@@ -239,7 +239,7 @@ namespace configuration
 
         if (!std::all_of(number.begin(), number.end(), static_cast<int (*)(int)>(std::isdigit)))
         {
-            throw std::invalid_argument("Invalid time unit: " + option);
+            throw std::invalid_argument("Invalid size unit: " + option);
         }
 
         return static_cast<std::size_t>(std::stoul(number) * multiplier);

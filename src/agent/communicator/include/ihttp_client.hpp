@@ -37,7 +37,6 @@ namespace http_client
         /// @param messageGetter Function to retrieve messages
         /// @param onUnauthorized Action to take on unauthorized access
         /// @param connectionRetry Time to wait before retrying the connection
-        /// @param batchInterval Time to wait between requests
         /// @param batchSize The minimum number of bytes of messages to batch
         /// @param onSuccess Action to take on successful request
         /// @param loopRequestCondition Condition to continue the request loop
