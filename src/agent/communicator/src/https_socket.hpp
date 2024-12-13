@@ -72,8 +72,11 @@ namespace http_client
         /// @brief Asynchronous version of Connect
         /// @param endpoints The endpoints to connect to
         /// @param ec The error code, if any occurred
-        boost::asio::awaitable<void> AsyncConnect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
-                                                  boost::system::error_code& ec) override
+        /// @param timeOut The timeout for the connection
+        boost::asio::awaitable<void> AsyncConnect(
+            const boost::asio::ip::tcp::resolver::results_type& endpoints,
+            boost::system::error_code& ec,
+            [[maybe_unused]] const std::chrono::seconds timeOut = std::chrono::seconds(TIMEOUT_DEFAULT)) override
         {
             try
             {

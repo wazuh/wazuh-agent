@@ -30,8 +30,11 @@ namespace http_client
         /// @brief Asynchronous version of Connect
         /// @param endpoints The endpoints to connect to
         /// @param ec The error code, if any occurred
-        virtual boost::asio::awaitable<void> AsyncConnect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
-                                                          boost::system::error_code& ec) = 0;
+        /// @param timeOut The timeout for the connection
+        virtual boost::asio::awaitable<void>
+        AsyncConnect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
+                     boost::system::error_code& ec,
+                     const std::chrono::seconds timeOut = std::chrono::seconds(TIMEOUT_DEFAULT)) = 0;
 
         /// @brief Writes the given request to the socket
         /// @param req The request to write

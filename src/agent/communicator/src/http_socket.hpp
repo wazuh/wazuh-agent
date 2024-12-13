@@ -3,6 +3,7 @@
 #include <logger.hpp>
 
 #include <boost/asio.hpp>
+#include <boost/asio/experimental/awaitable_operators.hpp>
 #include <boost/beast.hpp>
 #include <boost/system/error_code.hpp>
 
@@ -61,16 +62,84 @@ namespace http_client
             }
         }
 
-        /// @brief Asynchronous version of Connect
-        /// @param endpoints The endpoints to connect to
-        /// @param ec The error code, if any occurred
-        boost::asio::awaitable<void> AsyncConnect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
-                                                  boost::system::error_code& ec) override
+        /// @brief Starts a timer and updates the error code and task completion status accordingly
+        /// @param timer The timer to start
+        /// @param result The error code to update
+        /// @param taskCompleted In/Out Indicates whether the socket task is completed and, if not, serves as a flag
+        /// that indicates TimeOut
+
+        boost::asio::awaitable<void> TimerTask(std::shared_ptr<boost::asio::steady_timer> timer,
+                                               std::shared_ptr<boost::system::error_code> result,
+                                               std::shared_ptr<bool> taskCompleted)
         {
             try
             {
-                co_await boost::asio::async_connect(
-                    m_socket, endpoints, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+                co_await timer->async_wait(boost::asio::use_awaitable);
+
+                if (!(*taskCompleted))
+                {
+                    LogDebug("Connection timed out");
+                    *result = boost::asio::error::timed_out;
+                    *taskCompleted = true;
+                }
+            }
+            catch (const boost::system::system_error& e)
+            {
+                if (!(*taskCompleted) && e.code() != boost::asio::error::operation_aborted)
+                {
+                    *result = boost::asio::error::fault;
+                }
+            }
+        }
+
+        /// @brief Performs the socket connection
+        /// @param endpoints The endpoints to connect to
+        /// @param result The error code, if any occurred
+        /// @param taskCompleted In/Out Indicates whether the timer task is completed and, if not, serves as a flag that
+        /// indicates the socket is connected
+        boost::asio::awaitable<void> SocketTask(const boost::asio::ip::tcp::resolver::results_type& endpoints,
+                                                std::shared_ptr<boost::system::error_code> result,
+                                                std::shared_ptr<bool> taskCompleted)
+        {
+            boost::system::error_code socketErrorCode;
+            co_await boost::asio::async_connect(
+                m_socket, endpoints, boost::asio::redirect_error(boost::asio::use_awaitable, socketErrorCode));
+            if (!(*taskCompleted) && !socketErrorCode)
+            {
+                LogDebug("Connected successfully");
+                result->clear();
+                *taskCompleted = true;
+            }
+            else
+            {
+                *result = socketErrorCode;
+            }
+        }
+
+        /// @brief Asynchronous version of Connect
+        /// @param endpoints The endpoints to connect to
+        /// @param ec The error code, if any occurred
+        /// @param timeOut The timeout for the connection
+        boost::asio::awaitable<void>
+        AsyncConnect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
+                     boost::system::error_code& ec,
+                     const std::chrono::seconds timeOut = std::chrono::seconds(TIMEOUT_DEFAULT)) override
+        {
+            using namespace boost::asio::experimental::awaitable_operators;
+
+            auto timer = std::make_shared<boost::asio::steady_timer>(co_await boost::asio::this_coro::executor);
+            timer->expires_after(timeOut);
+
+            auto result = std::make_shared<boost::system::error_code>();
+            auto taskCompleted = std::make_shared<bool>(false);
+
+            try
+            {
+                co_await (TimerTask(timer, result, taskCompleted) || SocketTask(endpoints, result, taskCompleted));
+                if (!result)
+                {
+                    LogDebug("Connection error:  {}", result->value());
+                }
             }
             catch (const std::exception& e)
             {
