@@ -1,6 +1,6 @@
 # Platform Abstraction Layer (PAL)
 
-The aim of this module is to provide a the tools necessary to independize wazuh agent's code from the platform it will be compile for.
+The aim of this module is to provide the tools necessary to independize wazuh agent's code from the platform it will be compile for.
 Since we are currently using GNU C for Linux. AppleClang for MacOS and MSVC for Windows, this will be used to identify the correspoding platform during compile time.
 
 ### Hierarchy
