@@ -117,8 +117,10 @@ namespace http_client
         /// @brief Writes the given request to the socket
         /// @param req The request to write
         /// @param ec The error code, if any occurred
-        void Write(const boost::beast::http::request<boost::beast::http::string_body>& req,
-                   boost::system::error_code& ec) override
+        void Write([[maybe_unused]] boost::asio::io_context& io_context,
+                   const boost::beast::http::request<boost::beast::http::string_body>& req,
+                   boost::system::error_code& ec,
+                   [[maybe_unused]] const std::chrono::seconds timeOut = std::chrono::seconds(TIMEOUT_DEFAULT)) override
         {
             try
             {

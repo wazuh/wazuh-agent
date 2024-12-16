@@ -383,7 +383,7 @@ namespace http_client
 
             const auto req = CreateHttpRequest(params);
 
-            socket->Write(req, ec);
+            socket->Write(io_context, req, ec, std::chrono::seconds(TIMEOUT_DEFAULT));
 
             if (ec)
             {

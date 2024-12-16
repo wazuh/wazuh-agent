@@ -96,14 +96,40 @@ namespace http_client
         }
 
         /// @brief Writes the given request to the socket
+        /// @param io_context The io context associated to the socket
         /// @param req The request to write
         /// @param ec The error code, if any occurred
-        void Write(const boost::beast::http::request<boost::beast::http::string_body>& req,
-                   boost::system::error_code& ec) override
+        /// @param timeOut The timeout for the write
+        void Write(boost::asio::io_context& io_context,
+                   const boost::beast::http::request<boost::beast::http::string_body>& req,
+                   boost::system::error_code& ec,
+                   const std::chrono::seconds timeOut = std::chrono::seconds(TIMEOUT_DEFAULT)) override
         {
+            io_context.reset();
             try
             {
-                boost::beast::http::write(m_socket, req, ec);
+                bool writeSuccess = false;
+                boost::beast::http::async_write(m_socket,
+                                                req,
+                                                [&](const boost::system::error_code& errorCode, std::size_t)
+                                                {
+                                                    if (!errorCode)
+                                                    {
+                                                        writeSuccess = true;
+                                                        ec = errorCode;
+                                                    }
+                                                    else
+                                                    {
+                                                        LogDebug("Write error: {}", errorCode.message());
+                                                    }
+                                                });
+
+                io_context.run_for(timeOut);
+                if (!writeSuccess)
+                {
+                    ec = boost::asio::error::timed_out;
+                    LogDebug("Write operation timed out");
+                }
             }
             catch (const std::exception& e)
             {
