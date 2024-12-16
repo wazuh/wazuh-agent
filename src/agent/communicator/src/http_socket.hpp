@@ -140,13 +140,28 @@ namespace http_client
         /// @brief Asynchronous version of Write
         /// @param req The request to write
         /// @param ec The error code, if any occurred
-        boost::asio::awaitable<void> AsyncWrite(const boost::beast::http::request<boost::beast::http::string_body>& req,
-                                                boost::system::error_code& ec) override
+        /// @param timeOut The timeout for the write
+        boost::asio::awaitable<void>
+        AsyncWrite(const boost::beast::http::request<boost::beast::http::string_body>& req,
+                   boost::system::error_code& ec,
+                   const std::chrono::seconds timeOut = std::chrono::seconds(TIMEOUT_DEFAULT)) override
         {
+            using namespace boost::asio::experimental::awaitable_operators;
+
+            auto timer = std::make_shared<boost::asio::steady_timer>(co_await boost::asio::this_coro::executor);
+            timer->expires_after(timeOut);
+
+            auto result = std::make_shared<boost::system::error_code>();
+            auto taskCompleted = std::make_shared<bool>(false);
+
             try
             {
-                co_await boost::beast::http::async_write(
-                    m_socket, req, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+                co_await (http_client_utils::TimerTask(timer, result, taskCompleted) ||
+                          http_client_utils::SocketWriteTask(m_socket, req, result, taskCompleted));
+                if (!result)
+                {
+                    LogDebug("Write error:  {}", result->value());
+                }
             }
             catch (const std::exception& e)
             {

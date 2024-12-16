@@ -49,9 +49,11 @@ namespace http_client
         /// @brief Asynchronous version of Write
         /// @param req The request to write
         /// @param ec The error code, if any occurred
+        /// @param timeOut The timeout for the write
         virtual boost::asio::awaitable<void>
         AsyncWrite(const boost::beast::http::request<boost::beast::http::string_body>& req,
-                   boost::system::error_code& ec) = 0;
+                   boost::system::error_code& ec,
+                   const std::chrono::seconds timeOut = std::chrono::seconds(TIMEOUT_DEFAULT)) = 0;
 
         /// @brief Reads a response from the socket
         /// @param res The response to read

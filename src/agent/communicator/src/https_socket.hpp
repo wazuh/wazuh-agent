@@ -159,8 +159,11 @@ namespace http_client
         /// @brief Asynchronous version of Write
         /// @param req The request to write
         /// @param ec The error code, if any occurred
-        boost::asio::awaitable<void> AsyncWrite(const boost::beast::http::request<boost::beast::http::string_body>& req,
-                                                boost::system::error_code& ec) override
+        /// @param timeOut The timeout for the write
+        boost::asio::awaitable<void>
+        AsyncWrite(const boost::beast::http::request<boost::beast::http::string_body>& req,
+                   boost::system::error_code& ec,
+                   [[maybe_unused]] const std::chrono::seconds timeOut = std::chrono::seconds(TIMEOUT_DEFAULT)) override
         {
             try
             {
