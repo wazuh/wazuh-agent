@@ -1,6 +1,7 @@
 #pragma once
 
 #include <logger.hpp>
+#include <message.hpp>
 
 #include <yaml-cpp/yaml.h>
 
@@ -58,7 +59,7 @@ namespace configuration
         /// @details This function parses a string representing a size unit and returns the equivalent size_t
         /// value. The size unit can be expressed in Bytes (e.g. "1B"), Mega bytes (e.g. "1M" or "1MB"), kilo bytes
         /// (e.g. "1K" or "1KB"). If no unit is specified, the value is assumed to be in Bytes
-        std::size_t ParseSizeUnit(const std::string& option) const;
+        MessageSize ParseSizeUnit(const std::string& option) const;
 
     public:
         /// @brief Default constructor. Loads configuration from a default file path.
@@ -109,7 +110,7 @@ namespace configuration
                 {
                     return ParseTimeUnit(current.as<std::string>());
                 }
-                else if constexpr (std::is_same_v<T, std::size_t>)
+                else if constexpr (std::is_same_v<T, MessageSize>)
                 {
                     return ParseSizeUnit(current.as<std::string>());
                 }

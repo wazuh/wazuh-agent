@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <chrono>
 #include <filesystem>
 #include <future>
@@ -15,7 +16,7 @@
 #include "multitype_queue.hpp"
 #include "multitype_queue_test.hpp"
 
-constexpr size_t SMALL_QUEUE_CAPACITY = 2;
+constexpr size_t SMALL_QUEUE_CAPACITY = 1000;
 const nlohmann::json BASE_DATA_CONTENT = R"({{"data": "for STATELESS_0"}})";
 const nlohmann::json MULTIPLE_DATA_CONTENT = {"content 1", "content 2", "content 3"};
 
@@ -250,7 +251,8 @@ TEST_F(MultiTypeQueueTest, SinglePushPopFullWithTimeout)
 
     // complete the queue with messages
     const MessageType messageType {MessageType::COMMAND};
-    for (int i : {1, 2})
+    int upperLimit = SMALL_QUEUE_CAPACITY + 1;
+    for (int i : std::views::iota(1, upperLimit))
     {
         const nlohmann::json dataContent = R"({"Data" : "for COMMAND)" + std::to_string(i) + R"("})";
         EXPECT_EQ(multiTypeQueue.push({messageType, dataContent}), 1);
@@ -559,14 +561,15 @@ TEST_F(MultiTypeQueueTest, PushAwaitable)
     MultiTypeQueue multiTypeQueue(MOCK_GET_CONFIG_SMALL_SIZE);
     boost::asio::io_context io_context;
 
-    for (int i : {1, 2})
+    int upperLimit = SMALL_QUEUE_CAPACITY + 1;
+    for (int i : std::views::iota(1, upperLimit))
     {
         const nlohmann::json dataContent = R"({"Data" : "for STATEFUL)" + std::to_string(i) + R"("})";
         EXPECT_EQ(multiTypeQueue.push({MessageType::STATEFUL, dataContent}), 1);
     }
 
     EXPECT_TRUE(multiTypeQueue.isFull(MessageType::STATEFUL));
-    EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATEFUL), 2);
+    EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATEFUL), SMALL_QUEUE_CAPACITY);
 
     // Coroutine that waits till there's space to push a new message
     boost::asio::co_spawn(
@@ -576,10 +579,10 @@ TEST_F(MultiTypeQueueTest, PushAwaitable)
         {
             const nlohmann::json dataContent = {"content-1"};
             const Message messageToSend {MessageType::STATEFUL, dataContent};
-            EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATEFUL), 2);
+            EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATEFUL), SMALL_QUEUE_CAPACITY);
             auto messagesPushed = co_await multiTypeQueue.pushAwaitable(messageToSend);
             EXPECT_EQ(messagesPushed, 1);
-            EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATEFUL), 2);
+            EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATEFUL), SMALL_QUEUE_CAPACITY);
         },
         boost::asio::detached);
 
@@ -647,8 +650,9 @@ TEST_F(MultiTypeQueueTest, GetBySizeAboveMax)
     }
     // Duplicate to surpass the maximun
     sizeAsked *= 2;
+    const MessageSize messagesSize {sizeAsked};
 
-    auto messagesReceived = multiTypeQueue.getNextN(MessageType::STATELESS, sizeAsked);
+    auto messagesReceived = multiTypeQueue.getNextN(MessageType::STATELESS, messagesSize);
     int i = 0;
     for (const auto& singleMessage : messagesReceived)
     {
@@ -672,7 +676,8 @@ TEST_F(MultiTypeQueueTest, GetByBelowMax)
     sizeAsked += moduleName.size();
     // Fetching less than a single message size
     sizeAsked -= 1;
+    const MessageSize messagesSize {sizeAsked};
 
-    auto messagesReceived = multiTypeQueue.getNextN(MessageType::STATELESS, sizeAsked);
+    auto messagesReceived = multiTypeQueue.getNextN(MessageType::STATELESS, messagesSize);
     EXPECT_EQ(1, messagesReceived.size());
 }

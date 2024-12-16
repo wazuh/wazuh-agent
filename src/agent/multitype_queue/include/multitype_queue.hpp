@@ -76,7 +76,12 @@ public:
 
         m_maxItems = getConfigValue.template operator()<size_t>("agent", "queue_size")
                          .value_or(config::agent::QUEUE_DEFAULT_SIZE);
-
+        if (m_maxItems < 1'000 || m_maxItems > (1'000 * 60 * 60))
+        {
+            LogWarn("queue_size must be between 1'000 and 100'000'000. Using default value {}.",
+                    config::agent::QUEUE_DEFAULT_SIZE);
+            m_maxItems = config::agent::QUEUE_DEFAULT_SIZE;
+        }
         const auto dbFilePath = dbFolderPath + "/" + QUEUE_DB_NAME;
 
         try
@@ -136,12 +141,12 @@ public:
     Message getNext(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
     /**
-     * @copydoc IMultiTypeQueue::getNextNAwaitable(MessageType type, std::variant<const int, const size_t>
+     * @copydoc IMultiTypeQueue::getNextNAwaitable(MessageType type, std::variant<const int, const MessageSize>
      * messageQuantity, const std::string moduleName, const std::string moduleType)
      */
     boost::asio::awaitable<std::vector<Message>>
     getNextNAwaitable(MessageType type,
-                      std::variant<const int, const size_t> messageQuantity,
+                      std::variant<const int, const MessageSize> messageQuantity,
                       const std::string moduleName = "",
                       const std::string moduleType = "") override;
 
@@ -149,7 +154,7 @@ public:
      * @copydoc IMultiTypeQueue::getNextN(MessageType, int, const std::string, const std::string)
      */
     std::vector<Message> getNextN(MessageType type,
-                                  std::variant<const int, const size_t> messageQuantity,
+                                  std::variant<const int, const MessageSize> messageQuantity,
                                   const std::string moduleName = "",
                                   const std::string moduleType = "") override;
 

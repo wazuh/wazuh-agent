@@ -235,6 +235,41 @@ TEST_F(SQLiteStorageTest, GetMessagesBySize)
     EXPECT_EQ(retrievedMessages.size(), 1);
 }
 
+TEST_F(SQLiteStorageTest, GetMessagesBySizeLower)
+{
+    auto messages = nlohmann::json::array();
+    auto message1 = R"({{"key","value1"}})";
+    messages.push_back(message1);
+    messages.push_back({{"key", "value2"}});
+    auto val = storage->Store(messages, tableName);
+    EXPECT_EQ(val, 2);
+
+    auto storedSizes = storage->GetElementsStoredSize(tableName);
+    EXPECT_EQ(storedSizes, 40);
+
+    // Get messages by size requesting half of size
+    auto retrievedMessages = storage->RetrieveBySize(static_cast<size_t>(storedSizes / 2), tableName);
+    EXPECT_EQ(retrievedMessages.size(), 1);
+}
+
+TEST_F(SQLiteStorageTest, GetMessagesByMoreSize)
+{
+    auto messages = nlohmann::json::array();
+    auto message1 = R"({{"key","value1"}})";
+    messages.push_back(message1);
+    messages.push_back({{"key", "value2"}});
+    auto val = storage->Store(messages, tableName);
+    EXPECT_EQ(val, 2);
+
+    auto storedSizes = storage->GetElementsStoredSize(tableName);
+    EXPECT_EQ(storedSizes, 40);
+
+    // Get all the messages requesting more than available
+    auto retrievedMessages = storage->RetrieveBySize(static_cast<size_t>(storedSizes * 2), tableName);
+    // If the process doesn't breaks by size it returns the full query result
+    EXPECT_EQ(retrievedMessages.size(), 2);
+}
+
 class SQLiteStorageMultithreadedTest : public ::testing::Test
 {
 protected:

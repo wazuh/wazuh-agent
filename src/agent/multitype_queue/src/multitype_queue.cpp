@@ -142,7 +142,7 @@ Message MultiTypeQueue::getNext(MessageType type, const std::string moduleName, 
 
 boost::asio::awaitable<std::vector<Message>>
 MultiTypeQueue::getNextNAwaitable(MessageType type,
-                                  std::variant<const int, const size_t> messageQuantity,
+                                  std::variant<const int, const MessageSize> messageQuantity,
                                   const std::string moduleName,
                                   const std::string moduleType)
 {
@@ -160,10 +160,11 @@ MultiTypeQueue::getNextNAwaitable(MessageType type,
                 co_await timer.async_wait(boost::asio::use_awaitable);
             }
         }
-        else if (std::holds_alternative<const size_t>(messageQuantity))
+        else if (std::holds_alternative<const MessageSize>(messageQuantity))
         {
             // waits for specified size stored
-            size_t sizeRequested = std::get<const size_t>(messageQuantity);
+            auto sizeRequestedAux = std::get<const MessageSize>(messageQuantity);
+            auto sizeRequested = sizeRequestedAux.size;
 
             boost::asio::steady_timer batchTimeoutTimer(co_await boost::asio::this_coro::executor);
             batchTimeoutTimer.expires_after(std::chrono::milliseconds(m_batchInterval));
@@ -199,7 +200,7 @@ MultiTypeQueue::getNextNAwaitable(MessageType type,
 }
 
 std::vector<Message> MultiTypeQueue::getNextN(MessageType type,
-                                              std::variant<const int, const size_t> messageQuantity,
+                                              std::variant<const int, const MessageSize> messageQuantity,
                                               const std::string moduleName,
                                               const std::string moduleType)
 {
@@ -212,10 +213,12 @@ std::vector<Message> MultiTypeQueue::getNextN(MessageType type,
             arrayData = m_persistenceDest->RetrieveMultiple(
                 std::get<const int>(messageQuantity), m_mapMessageTypeName.at(type), moduleName, moduleType);
         }
-        else if (std::holds_alternative<const size_t>(messageQuantity))
+        else if (std::holds_alternative<const MessageSize>(messageQuantity))
         {
-            arrayData = m_persistenceDest->RetrieveBySize(
-                std::get<const size_t>(messageQuantity), m_mapMessageTypeName.at(type), moduleName, moduleType);
+            arrayData = m_persistenceDest->RetrieveBySize(std::get<const MessageSize>(messageQuantity).size,
+                                                          m_mapMessageTypeName.at(type),
+                                                          moduleName,
+                                                          moduleType);
         }
         else
         {

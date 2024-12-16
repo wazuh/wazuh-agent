@@ -69,7 +69,7 @@ public:
      */
     virtual boost::asio::awaitable<std::vector<Message>>
     getNextNAwaitable(MessageType type,
-                      std::variant<const int, const size_t> messageQuantity,
+                      std::variant<const int, const MessageSize> messageQuantity,
                       const std::string moduleName = "",
                       const std::string moduleType = "") = 0;
 
@@ -83,7 +83,7 @@ public:
      * @return std::vector<Message> A vector of messages fetched from the queue.
      */
     virtual std::vector<Message> getNextN(MessageType type,
-                                          std::variant<const int, const size_t> messageQuantity,
+                                          std::variant<const int, const MessageSize> messageQuantity,
                                           const std::string moduleName = "",
                                           const std::string moduleType = "") = 0;
 

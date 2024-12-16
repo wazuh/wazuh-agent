@@ -8,7 +8,6 @@
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
 
-constexpr size_t MIN_SIZE_OF_MESSAGES = 10;
 const nlohmann::json BASE_DATA_CONTENT =
     R"({"document_id":"112233", "action":{"name":"command_test","args":["parameters_test"]}})"_json;
 
@@ -28,7 +27,7 @@ public:
 
     MOCK_METHOD(boost::asio::awaitable<std::vector<Message>>,
                 getNextNAwaitable,
-                (MessageType, (std::variant<const int, const size_t>), const std::string, const std::string),
+                (MessageType, (std::variant<const int, const MessageSize>), const std::string, const std::string),
                 (override));
     MOCK_METHOD(int, popN, (MessageType, int, const std::string), (override));
     MOCK_METHOD(int, push, (Message, bool), (override));
@@ -48,8 +47,9 @@ protected:
     boost::asio::io_context io_context;
     std::shared_ptr<MockMultiTypeQueue> mockQueue;
 
-    std::variant<const int, const size_t> MinMessagesSize = MIN_SIZE_OF_MESSAGES;
-    const size_t MIN_MESSAGES_SIZE = MIN_SIZE_OF_MESSAGES;
+    const size_t MIN_SIZE_OF_MESSAGES = 10;
+    const MessageSize MIN_MESSAGES_SIZE {MIN_SIZE_OF_MESSAGES};
+    std::variant<const int, const MessageSize> MinMessagesSize {MIN_MESSAGES_SIZE};
 };
 
 TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
@@ -66,7 +66,7 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTest)
 
     auto awaitableResult =
         boost::asio::co_spawn(io_context,
-                              GetMessagesFromQueue(mockQueue, MessageType::STATELESS, MIN_MESSAGES_SIZE, nullptr),
+                              GetMessagesFromQueue(mockQueue, MessageType::STATELESS, MIN_SIZE_OF_MESSAGES, nullptr),
                               boost::asio::use_future);
 
     const auto timeout = std::chrono::steady_clock::now() + std::chrono::milliseconds(1);
@@ -103,7 +103,7 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueMetadataTest)
     auto awaitableResult = boost::asio::co_spawn(
         io_context,
         GetMessagesFromQueue(
-            mockQueue, MessageType::STATELESS, MIN_MESSAGES_SIZE, [&metadata]() { return metadata.dump(); }),
+            mockQueue, MessageType::STATELESS, MIN_SIZE_OF_MESSAGES, [&metadata]() { return metadata.dump(); }),
         boost::asio::use_future);
 
     const auto timeout = std::chrono::steady_clock::now() + std::chrono::milliseconds(1);

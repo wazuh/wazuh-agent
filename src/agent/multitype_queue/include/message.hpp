@@ -45,3 +45,30 @@ public:
                moduleType == other.moduleType && metaData == other.metaData;
     }
 };
+
+struct MessageSize
+{
+    size_t size;
+
+    MessageSize()
+        : size(0)
+    {
+    }
+
+    explicit MessageSize(size_t value)
+        : size(value)
+    {
+    }
+
+    operator size_t() const
+    {
+        return size;
+    }
+
+    bool operator==(const MessageSize& other) const
+    {
+        return size == other.size;
+    }
+
+    auto operator<=>(const MessageSize&) const = default;
+};
