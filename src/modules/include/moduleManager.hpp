@@ -1,14 +1,17 @@
 #pragma once
 
-#include <map>
-#include <memory>
-#include <string>
-#include <thread>
 #include <multitype_queue.hpp>
 #include <moduleWrapper.hpp>
 #include <task_manager.hpp>
 
 #include <boost/asio/awaitable.hpp>
+
+#include <map>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <thread>
+
 
 class ModuleManager {
 public:
@@ -46,6 +49,15 @@ public:
 
     void AddModules();
     std::shared_ptr<ModuleWrapper> GetModule(const std::string & name);
+
+    /// @brief Start the modules
+    ///
+    /// This function begins the procedure to start the modules and blocks until the Start function
+    /// for each module has been called. However, it does not guarantee that the modules are fully
+    /// operational upon return; they may still be in the process of initializing.
+    ///
+    /// @note Call this function before interacting with the modules to ensure the startup process is initiated.
+    /// @warning Ensure the modules have fully started before performing any operations that depend on them.
     void Start();
     void Setup();
     void Stop();
@@ -56,4 +68,6 @@ private:
     std::function<int(Message)> m_pushMessage;
     std::shared_ptr<configuration::ConfigurationParser> m_configurationParser;
     std::string m_agentUUID;
+    std::mutex m_mutex;
+    std::atomic<int> m_started {0};
 };
