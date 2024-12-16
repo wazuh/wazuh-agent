@@ -136,10 +136,22 @@ namespace http_client
         boost::asio::awaitable<void> AsyncWrite(const boost::beast::http::request<boost::beast::http::string_body>& req,
                                                 boost::system::error_code& ec) override
         {
+            using namespace boost::asio::experimental::awaitable_operators;
+
+            auto timer = std::make_shared<boost::asio::steady_timer>(co_await boost::asio::this_coro::executor);
+            timer->expires_after(std::chrono::seconds(http_client_utils::TIMEOUT_SECONDS));
+
+            auto result = std::make_shared<boost::system::error_code>();
+            auto taskCompleted = std::make_shared<bool>(false);
+
             try
             {
-                co_await boost::beast::http::async_write(
-                    m_socket, req, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+                co_await (http_client_utils::TimerTask(timer, result, taskCompleted) ||
+                          http_client_utils::SocketWriteTask(m_socket, req, result, taskCompleted));
+                if (!result)
+                {
+                    LogDebug("Write error:  {}", result->value());
+                }
             }
             catch (const std::exception& e)
             {

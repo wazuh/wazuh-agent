@@ -112,4 +112,34 @@ namespace http_client_utils
             *result = socketErrorCode;
         }
     }
+
+    /// @brief Performs the socket connection
+    /// @param socket The socket to connect
+    /// @param req The request to write
+    /// @param result The error code, if any occurred
+    /// @param taskCompleted In/Out Indicates whether the timer task is completed and, if not, serves as a flag that
+    /// indicates the socket is connected
+    template<typename SocketType>
+    boost::asio::awaitable<void>
+    SocketWriteTask(SocketType& socket,
+                    const boost::beast::http::request<boost::beast::http::string_body>& req,
+                    std::shared_ptr<boost::system::error_code> result,
+                    std::shared_ptr<bool> taskCompleted)
+    {
+        boost::system::error_code socketErrorCode;
+
+        co_await boost::beast::http::async_write(
+            socket, req, boost::asio::redirect_error(boost::asio::use_awaitable, socketErrorCode));
+
+        if (!(*taskCompleted) && !socketErrorCode)
+        {
+            LogDebug("Async Write successful");
+            result->clear();
+            *taskCompleted = true;
+        }
+        else
+        {
+            *result = socketErrorCode;
+        }
+    }
 } // namespace http_client_utils
