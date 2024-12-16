@@ -62,60 +62,6 @@ namespace http_client
             }
         }
 
-        /// @brief Starts a timer and updates the error code and task completion status accordingly
-        /// @param timer The timer to start
-        /// @param result The error code to update
-        /// @param taskCompleted In/Out Indicates whether the socket task is completed and, if not, serves as a flag
-        /// that indicates TimeOut
-
-        boost::asio::awaitable<void> TimerTask(std::shared_ptr<boost::asio::steady_timer> timer,
-                                               std::shared_ptr<boost::system::error_code> result,
-                                               std::shared_ptr<bool> taskCompleted)
-        {
-            try
-            {
-                co_await timer->async_wait(boost::asio::use_awaitable);
-
-                if (!(*taskCompleted))
-                {
-                    LogDebug("Connection timed out");
-                    *result = boost::asio::error::timed_out;
-                    *taskCompleted = true;
-                }
-            }
-            catch (const boost::system::system_error& e)
-            {
-                if (!(*taskCompleted) && e.code() != boost::asio::error::operation_aborted)
-                {
-                    *result = boost::asio::error::fault;
-                }
-            }
-        }
-
-        /// @brief Performs the socket connection
-        /// @param endpoints The endpoints to connect to
-        /// @param result The error code, if any occurred
-        /// @param taskCompleted In/Out Indicates whether the timer task is completed and, if not, serves as a flag that
-        /// indicates the socket is connected
-        boost::asio::awaitable<void> SocketTask(const boost::asio::ip::tcp::resolver::results_type& endpoints,
-                                                std::shared_ptr<boost::system::error_code> result,
-                                                std::shared_ptr<bool> taskCompleted)
-        {
-            boost::system::error_code socketErrorCode;
-            co_await boost::asio::async_connect(
-                m_socket, endpoints, boost::asio::redirect_error(boost::asio::use_awaitable, socketErrorCode));
-            if (!(*taskCompleted) && !socketErrorCode)
-            {
-                LogDebug("Connected successfully");
-                result->clear();
-                *taskCompleted = true;
-            }
-            else
-            {
-                *result = socketErrorCode;
-            }
-        }
-
         /// @brief Asynchronous version of Connect
         /// @param endpoints The endpoints to connect to
         /// @param ec The error code, if any occurred
@@ -135,7 +81,8 @@ namespace http_client
 
             try
             {
-                co_await (TimerTask(timer, result, taskCompleted) || SocketTask(endpoints, result, taskCompleted));
+                co_await (http_client_utils::TimerTask(timer, result, taskCompleted) ||
+                          http_client_utils::SocketTask(m_socket, endpoints, result, taskCompleted));
                 if (!result)
                 {
                     LogDebug("Connection error:  {}", result->value());
