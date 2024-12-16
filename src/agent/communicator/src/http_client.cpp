@@ -137,6 +137,11 @@ namespace http_client
                 continue;
             }
 
+            if (reqParams.Use_Https)
+            {
+                socket->SetVerificationMode(reqParams.Host, reqParams.Verification_Mode);
+            }
+
             boost::system::error_code ec;
 
             co_await socket->AsyncConnect(results, ec);
@@ -247,11 +252,18 @@ namespace http_client
     std::optional<std::string> HttpClient::AuthenticateWithUuidAndKey(const std::string& serverUrl,
                                                                       const std::string& userAgent,
                                                                       const std::string& uuid,
-                                                                      const std::string& key)
+                                                                      const std::string& key,
+                                                                      const std::string& verificationMode)
     {
         const std::string body = R"({"uuid":")" + uuid + R"(", "key":")" + key + "\"}";
-        const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::post, serverUrl, "/api/v1/authentication", userAgent, "", "", body);
+        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
+                                                              serverUrl,
+                                                              "/api/v1/authentication",
+                                                              userAgent,
+                                                              verificationMode,
+                                                              "",
+                                                              "",
+                                                              body);
 
         const auto res = PerformHttpRequest(reqParams);
 
@@ -300,7 +312,8 @@ namespace http_client
     std::optional<std::string> HttpClient::AuthenticateWithUserPassword(const std::string& serverUrl,
                                                                         const std::string& userAgent,
                                                                         const std::string& user,
-                                                                        const std::string& password)
+                                                                        const std::string& password,
+                                                                        const std::string& verificationMode)
     {
         std::string basicAuth {};
         std::string userPass {user + ":" + password};
@@ -309,8 +322,13 @@ namespace http_client
 
         boost::beast::detail::base64::encode(&basicAuth[0], userPass.c_str(), userPass.size());
 
-        const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::post, serverUrl, "/security/user/authenticate", userAgent, "", basicAuth);
+        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
+                                                              serverUrl,
+                                                              "/security/user/authenticate",
+                                                              userAgent,
+                                                              verificationMode,
+                                                              "",
+                                                              basicAuth);
 
         const auto res = PerformHttpRequest(reqParams);
 
@@ -361,6 +379,11 @@ namespace http_client
             if (!socket)
             {
                 throw std::runtime_error("Failed to create socket.");
+            }
+
+            if (params.Use_Https)
+            {
+                socket->SetVerificationMode(params.Host, params.Verification_Mode);
             }
 
             boost::system::error_code ec;

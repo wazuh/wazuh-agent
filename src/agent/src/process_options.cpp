@@ -43,7 +43,7 @@ void RegisterAgent(const std::string& url,
             agent_registration::AgentRegistration reg(url, user, password, key, name, dbFolderPath);
 
             http_client::HttpClient httpClient;
-            if (reg.Register(httpClient))
+            if (reg.Register(httpClient, verificationMode))
             {
                 std::cout << "wazuh-agent registered\n";
             }

@@ -33,10 +33,10 @@ namespace agent_registration
         }
     }
 
-    bool AgentRegistration::Register(http_client::IHttpClient& httpClient)
+    bool AgentRegistration::Register(http_client::IHttpClient& httpClient, const std::string& verificationMode)
     {
         const auto token =
-            httpClient.AuthenticateWithUserPassword(m_serverUrl, m_agentInfo.GetHeaderInfo(), m_user, m_password);
+            httpClient.AuthenticateWithUserPassword(m_serverUrl, m_agentInfo.GetHeaderInfo(), m_user, m_password, verificationMode);
 
         if (!token.has_value())
         {
@@ -48,6 +48,7 @@ namespace agent_registration
                                                               m_serverUrl,
                                                               "/agents",
                                                               m_agentInfo.GetHeaderInfo(),
+                                                              verificationMode,
                                                               token.value(),
                                                               "",
                                                               m_agentInfo.GetMetadataInfo(true));

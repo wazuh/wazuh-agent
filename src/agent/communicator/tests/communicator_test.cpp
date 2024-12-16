@@ -100,12 +100,13 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
         std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr, FUNC);
 
     // A failed authentication won't return a token
-    EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _, _))
+    EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _, _, _))
         .WillOnce(Invoke(
             [communicatorPtr]([[maybe_unused]] const std::string& host,
                               [[maybe_unused]] const std::string& userAgent,
                               [[maybe_unused]] const std::string& uuid,
-                              [[maybe_unused]] const std::string& key) -> std::optional<std::string>
+                              [[maybe_unused]] const std::string& key,
+                              [[maybe_unused]] const std::string& verificationMode) -> std::optional<std::string>
             {
                 communicatorPtr->Stop();
                 return std::nullopt;
@@ -158,12 +159,14 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
         std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr, FUNC);
 
     const auto mockedToken = CreateToken();
-    EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _, _))
+    EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _, _, _))
         .WillOnce(Invoke(
-            [communicatorPtr, mockedToken]([[maybe_unused]] const std::string& host,
-                                           [[maybe_unused]] const std::string& userAgent,
-                                           [[maybe_unused]] const std::string& uuid,
-                                           [[maybe_unused]] const std::string& key) -> std::optional<std::string>
+            [communicatorPtr,
+             mockedToken]([[maybe_unused]] const std::string& host,
+                          [[maybe_unused]] const std::string& userAgent,
+                          [[maybe_unused]] const std::string& uuid,
+                          [[maybe_unused]] const std::string& key,
+                          [[maybe_unused]] const std::string& verificationMode) -> std::optional<std::string>
             {
                 communicatorPtr->Stop();
                 return mockedToken;
