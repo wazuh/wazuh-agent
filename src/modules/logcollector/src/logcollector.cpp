@@ -106,7 +106,7 @@ void Logcollector::SendMessage(const std::string& location, const std::string& l
     data["log"]["file"]["path"] = location;
     data["tags"] = nlohmann::json::array({"mvp"});
     data["event"]["original"] = log;
-    data["event"]["ingested"] = getCurrentTimestamp();
+    data["event"]["created"] = getCurrentTimestamp();
     data["event"]["module"] = m_moduleName;
     data["event"]["provider"] = "syslog";
 
