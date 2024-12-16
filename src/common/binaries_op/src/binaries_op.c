@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include "os_err.h"
 #include "os_macros.h"
+#include "pal.h"
 
 #ifndef WIN32
 #include "file_op.h"

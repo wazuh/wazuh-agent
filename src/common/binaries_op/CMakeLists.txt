@@ -11,4 +11,5 @@ target_include_directories(binaries_op PUBLIC
 target_link_libraries(binaries_op
     utils
     Logger
+    pal
     time_op)

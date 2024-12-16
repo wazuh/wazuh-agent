@@ -24,12 +24,12 @@
 #include "logger.hpp"
 #include "os_macros.h"
 #include "wrapper_macros.h"
-#include "file_op.h"
 #include "regex_op.h"
 #include "binaries_op.h"
 #include "pal.h"
 
 #ifndef WIN32
+#include "file_op.h"
 #include <sys/utsname.h>
 #endif
 
