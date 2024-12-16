@@ -5,6 +5,7 @@ target_include_directories(bzip2_op PUBLIC include)
 
 target_link_libraries(bzip2_op
     error_messages
+    file_op
     Logger
     pal
     time_op

@@ -14,6 +14,7 @@
 #include "shared.h"
 #include "version_op.h"
 #include "pal.h"
+#include "file_op.h"
 
 #include <zlib.h>
 

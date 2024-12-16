@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include "bzip2_op.h"
+#include "file_op.h"
 #include "error_messages.h"
 #include "logger.hpp"
 

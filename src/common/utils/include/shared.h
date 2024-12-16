@@ -104,7 +104,6 @@
 
 #include "defs.h"
 #include "os_err.h"
-#include "time_op.h"
 
 #include "os_ip.h"
 

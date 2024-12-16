@@ -28,7 +28,10 @@
 #include <libproc.h>
 #endif
 
+#ifndef WIN32
 #define OS_PIDFILE  "var/run"
+#endif
+
 #define UCS2_LE 1
 #define UCS2_BE 2
 
