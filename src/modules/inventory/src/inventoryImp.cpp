@@ -6,7 +6,6 @@
 #include <stringHelper.h>
 #include <hashHelper.h>
 #include <timeHelper.h>
-#include <boost/beast/core/detail/base64.hpp>
 
 constexpr std::time_t INVENTORY_DEFAULT_INTERVAL { 3600000 };
 constexpr auto UNKNOWN_VALUE {" "};
@@ -297,14 +296,15 @@ std::string Inventory::GetPrimaryKeys([[maybe_unused]] const nlohmann::json& dat
     return ret;
 }
 
-std::string Inventory::CalculateBase64Id(const nlohmann::json& data, const std::string& table)
+std::string Inventory::CalculateHashId(const nlohmann::json& data, const std::string& table)
 {
     std::string primaryKey = GetPrimaryKeys(data, table);
     std::string baseId = AgentUUID() + ":" + primaryKey;
-    std::string idBase64;
-    idBase64.resize(boost::beast::detail::base64::encoded_size(baseId.size()));
-    boost::beast::detail::base64::encode(&idBase64[0], baseId.c_str(), baseId.size());
-    return idBase64;
+
+    Utils::HashData hash(Utils::HashType::Sha1);
+    hash.update(baseId.c_str(), baseId.size());
+
+    return Utils::asciiToHex(hash.hash());
 }
 
 void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& data, const std::string& table)
@@ -324,7 +324,7 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
                 msg["type"] = table;
                 msg["operation"] = OPERATION_MAP.at(result);
                 msg["data"] = EcsData(item, table);
-                msg["id"] = CalculateBase64Id(msg["data"], table);
+                msg["id"] = CalculateHashId(msg["data"], table);
 
                 if (msg["id"].is_string() && msg["id"].get<std::string>().size() <= MAX_ID_SIZE)
                 {
@@ -346,7 +346,7 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
             msg["type"] = table;
             msg["operation"] = OPERATION_MAP.at(result);
             msg["data"] = EcsData(data, table);
-            msg["id"] = CalculateBase64Id(msg["data"], table);
+            msg["id"] = CalculateHashId(msg["data"], table);
 
             if (msg["id"].is_string() && msg["id"].get<std::string>().size() <= MAX_ID_SIZE)
             {
