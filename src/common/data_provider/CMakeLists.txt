@@ -58,7 +58,7 @@ if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address,leak,undefined")
   endif(FSANITIZE)
 else()
-  set(CMAKE_CXX_FLAGS "/W4 /permissive- /MT")
+  set(CMAKE_CXX_FLAGS "/W4 /permissive- /MT /EHsc")
 endif()
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -96,10 +96,10 @@ include_directories(${SRC_FOLDER}/common/linuxHelper/include/)
 include_directories(${SRC_FOLDER}/common/stringHelper/include/)
 include_directories(${SRC_FOLDER}/common/timeHelper/include/)
 include_directories(${SRC_FOLDER}/shared_modules/common/)
+include_directories(${SRC_FOLDER}/common/pal/include/)
 
 if(WIN32)
   include_directories(${SRC_FOLDER}/common/time_op/include/)
-  include_directories(${SRC_FOLDER}/common/file_op/include/)
   include_directories(${SRC_FOLDER}/common/regex_op/include/)
   include_directories(${SRC_FOLDER}/common/bzip2_op/include/)
   include_directories(${SRC_FOLDER}/common/validate_op/include/)
@@ -111,6 +111,8 @@ if(WIN32)
   include_directories(${SRC_FOLDER}/common/encodingHelper/include/)
   include_directories(${SRC_FOLDER}/common/mem_op/include/)
 endif()
+
+get_filename_component(COMMON_FOLDER  ${CMAKE_CURRENT_SOURCE_DIR}/../ ABSOLUTE)
 
 link_directories(${SRC_FOLDER})
 
@@ -183,6 +185,7 @@ elseif(APPLE)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
 target_link_libraries(sysinfo PUBLIC
+  pal
   networkHelper
   nlohmann_json::nlohmann_json
   cjson)

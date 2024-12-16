@@ -6,9 +6,32 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation.
  */
-
-#include "shared.h"
+#ifdef WIN32
+#include <vcruntime.h>
+#include <winsock2.h>
+#include <windows.h>
+#include <ws2tcpip.h>
+#include <shlwapi.h>
+#include <io.h>
+#include <direct.h>
+#endif
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 #include "version_op.h"
+#include "error_messages.h"
+#include "defs.h"
+#include "logger.hpp"
+#include "os_macros.h"
+#include "wrapper_macros.h"
+#include "regex_op.h"
+#include "binaries_op.h"
+#include "pal.h"
+
+#ifndef WIN32
+#include "file_op.h"
+#include <sys/utsname.h>
+#endif
 
 #ifdef __linux__
 #include <sched.h>
@@ -148,14 +171,13 @@ os_info *get_win_version()
                 LogError("Error reading 'Current Version' from Windows registry. (Error %u)",(unsigned int)dwRet);
             }
             else {
-                // TODO: Solve when StrBreak is implemented
-                //char ** parts = OS_StrBreak('.', winver, 2);
-                //info->os_major = strdup(parts[0]);
-                //info->os_minor = strdup(parts[1]);
-                //for (i = 0; parts[i]; i++){
-                //    free(parts[i]);
-                //}
-                //free(parts);
+                char ** parts = OS_StrBreak('.', winver, 2);
+                info->os_major = strdup(parts[0]);
+                info->os_minor = strdup(parts[1]);
+                for (i = 0; parts[i]; i++){
+                    free(parts[i]);
+                }
+                free(parts);
                 dwCount = WINVER_SIZE;
                 dwRet = RegQueryValueEx(RegistryKey, TEXT("CurrentBuildNumber"), NULL, NULL, (LPBYTE)wincomp, &dwCount);
                 if (dwRet != ERROR_SUCCESS) {

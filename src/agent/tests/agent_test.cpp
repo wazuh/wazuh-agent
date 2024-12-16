@@ -5,8 +5,6 @@
 #include <gtest/gtest.h>
 #include <isignal_handler.hpp>
 
-constexpr auto AGENT_CONFIG_PATH {"/tmp/wazuh-agent.yml"};
-
 class MockSignalHandler : public ISignalHandler
 {
 public:
@@ -16,13 +14,34 @@ public:
 class AgentTests : public ::testing::Test
 {
 protected:
+    std::string AGENT_CONFIG_PATH;
+    std::string AGENT_DB_PATH;
+    std::string AGENT_PATH;
+
     void SetUp() override
     {
+#ifdef WIN32
+        char* tmpPath = nullptr;
+        size_t len = 0;
+
+        _dupenv_s(&tmpPath, &len, "TMP");
+        std::string tempFolder = std::string(tmpPath);
+        AGENT_CONFIG_PATH = tempFolder + "wazuh-agent.yml";
+        AGENT_DB_PATH = tempFolder + "agent_info.db";
+        AGENT_PATH = tempFolder;
+#else
+        AGENT_CONFIG_PATH = "/tmp/wazuh-agent.yml";
+        AGENT_DB_PATH = "/tmp/agent_info.db";
+        AGENT_PATH = "/tmp";
+#endif
+
         CreateTempConfigFile();
 
         SysInfo sysInfo;
         std::unique_ptr<AgentInfo> agent = std::make_unique<AgentInfo>(
-            "/tmp", [&sysInfo]() mutable { return sysInfo.os(); }, [&sysInfo]() mutable { return sysInfo.networks(); });
+            AGENT_PATH,
+            [&sysInfo]() mutable { return sysInfo.os(); },
+            [&sysInfo]() mutable { return sysInfo.networks(); });
 
         agent->SetKey("4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
         agent->SetName("agent_name");
@@ -42,7 +61,8 @@ protected:
         configFilePath << R"(
 agent:
   server_url: https://localhost:27000
-  path.data: /tmp/
+  path.data: )" << AGENT_PATH
+                       << R"(
   retry_interval: 30s
 inventory:
   enabled: false
@@ -68,8 +88,8 @@ logcollector:
 
     void CleanUpTempFiles()
     {
-        std::remove(AGENT_CONFIG_PATH);
-        std::remove("/tmp/agent_info.db");
+        std::remove(AGENT_CONFIG_PATH.c_str());
+        std::remove(AGENT_DB_PATH.c_str());
     }
 };
 

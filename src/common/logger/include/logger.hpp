@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdarg.h>
+#include <string.h>
 
 // Extract file name from path (inline function for C++ and macro for C)
 #ifdef __cplusplus

@@ -7,9 +7,12 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation.
  */
-
-#include "shared.h"
-
+#include <stdio.h>
+#include <errno.h>
+#include "bzip2_op.h"
+#include "file_op.h"
+#include "error_messages.h"
+#include "logger.hpp"
 
 int bzip2_compress(const char *file, const char *filebz2) {
     FILE* input;

@@ -168,8 +168,8 @@ class SysInfoProcess final
             // Reference: https://stackoverflow.com/a/1986486
             if (GetProcessMemoryInfo(m_hProcess, &pMemCounters, sizeof(pMemCounters)))
             {
-                m_pageFileUsage = pMemCounters.PagefileUsage;
-                m_virtualSize   = pMemCounters.WorkingSetSize + pMemCounters.PagefileUsage;
+                m_pageFileUsage =  static_cast<DWORD>(pMemCounters.PagefileUsage);
+                m_virtualSize   =  static_cast<int32_t>(pMemCounters.WorkingSetSize + pMemCounters.PagefileUsage);
             }
 
             // else: Unable to retrieve page file usage from current process
@@ -392,16 +392,17 @@ static void getPackagesFromReg(const HKEY key, const std::string& subKey, std::f
                 {
                     try
                     {
-                        install_time = Utils::normalizeTimestamp(value, packageReg.keyModificationDate());
+                        install_time = Utils::timestampToISO8601(Utils::normalizeTimestamp(value, packageReg.keyModificationDate()));
                     }
                     catch (const std::exception& e)
                     {
-                        install_time = packageReg.keyModificationDate();
+                        (void)e;
+                        install_time = Utils::timestampToISO8601(packageReg.keyModificationDate());
                     }
                 }
                 else
                 {
-                    install_time = packageReg.keyModificationDate();
+                    install_time = Utils::timestampToISO8601(packageReg.keyModificationDate());
                 }
 
                 if (packageReg.string("InstallLocation", value))
@@ -846,6 +847,7 @@ void expandFromRegistry(const HKEY key, const std::string& subKey, const std::st
         catch (const std::exception& e)
         {
             // Ignore errors.
+            (void)e;
         }
     }
 }

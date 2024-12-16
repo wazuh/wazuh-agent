@@ -50,7 +50,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         crypto
         ws2_32
         crypt32
-        -static-libgcc -static-libstdc++
+        -static-libgcc
     )
 else()
     target_link_libraries(fileitem_unit_test

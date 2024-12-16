@@ -17,7 +17,7 @@
 #include "stringHelper.h"
 #include "windowsHelper.h"
 #include "shared.h"
-#include "cust_types.h"
+#include "pal.h"
 
 static const std::map<int32_t, std::string> STATE_TYPE =
 {
@@ -93,9 +93,9 @@ class WindowsPortWrapper final : public IPortWrapper
     public:
         WindowsPortWrapper(const _MIB_TCPROW_OWNER_PID& data, const std::map<pid_t, std::string>& processDataList)
             : m_protocol { "tcp" }
-            , m_localPort { ntohs(data.dwLocalPort) }
+            , m_localPort { static_cast<int32_t>(ntohs(static_cast<u_short>(data.dwLocalPort))) }
             , m_localIpAddress { getIpV4Address(data.dwLocalAddr) }
-            , m_remotePort { ntohs(data.dwRemotePort) }
+            , m_remotePort {  static_cast<int32_t>(ntohs(static_cast<u_short>(data.dwRemotePort))) }
             , m_remoteIpAddress { getIpV4Address(data.dwRemoteAddr) }
             , m_state { data.dwState }
             , m_pid { data.dwOwningPid }
@@ -104,9 +104,9 @@ class WindowsPortWrapper final : public IPortWrapper
 
         WindowsPortWrapper(const _MIB_TCP6ROW_OWNER_PID& data, const std::map<pid_t, std::string>& processDataList)
             : m_protocol { "tcp6" }
-            , m_localPort { ntohs(data.dwLocalPort) }
+            , m_localPort {  static_cast<int32_t>(ntohs(static_cast<u_short>(data.dwLocalPort))) }
             , m_localIpAddress { Utils::NetworkWindowsHelper::getIpV6Address(data.ucLocalAddr) }
-            , m_remotePort { ntohs(data.dwRemotePort) }
+            , m_remotePort {  static_cast<int32_t>(ntohs(static_cast<u_short>(data.dwRemotePort))) }
             , m_remoteIpAddress { Utils::NetworkWindowsHelper::getIpV6Address(data.ucRemoteAddr) }
             , m_state { data.dwState }
             , m_pid { data.dwOwningPid }
@@ -115,7 +115,7 @@ class WindowsPortWrapper final : public IPortWrapper
 
         WindowsPortWrapper(const _MIB_UDPROW_OWNER_PID& data, const std::map<pid_t, std::string>& processDataList)
             : m_protocol { "udp" }
-            , m_localPort { ntohs(data.dwLocalPort) }
+            , m_localPort {  static_cast<int32_t>(ntohs(static_cast<u_short>(data.dwLocalPort))) }
             , m_localIpAddress { getIpV4Address(data.dwLocalAddr) }
             , m_remotePort { 0 }
             , m_state { 0 }
@@ -125,7 +125,7 @@ class WindowsPortWrapper final : public IPortWrapper
 
         WindowsPortWrapper(const _MIB_UDP6ROW_OWNER_PID& data, const std::map<pid_t, std::string>& processDataList)
             : m_protocol("udp6")
-            , m_localPort { ntohs(data.dwLocalPort) }
+            , m_localPort {  static_cast<int32_t>(ntohs(static_cast<u_short>(data.dwLocalPort))) }
             , m_localIpAddress { Utils::NetworkWindowsHelper::getIpV6Address(data.ucLocalAddr) }
             , m_remotePort { 0 }
             , m_state { 0 }

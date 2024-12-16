@@ -448,14 +448,14 @@ class NetworkWindowsInterface final : public INetworkInterfaceWrapper
                     {
                         const auto txPackets { ifRow->OutUcastPkts + ifRow->OutNUcastPkts };
                         const auto rxPackets { ifRow->InUcastPkts  + ifRow->InNUcastPkts  };
-                        retVal.txPackets = txPackets;
-                        retVal.rxPackets = rxPackets;
+                        retVal.txPackets = static_cast<unsigned int>(txPackets);
+                        retVal.rxPackets = static_cast<unsigned int>(rxPackets);
                         retVal.txBytes   = ifRow->OutOctets;
                         retVal.rxBytes   = ifRow->InOctets;
-                        retVal.txErrors  = ifRow->OutErrors;
-                        retVal.rxErrors  = ifRow->InErrors;
-                        retVal.txDropped = ifRow->OutDiscards;
-                        retVal.rxDropped = ifRow->InDiscards;
+                        retVal.txErrors  = static_cast<unsigned int>(ifRow->OutErrors);
+                        retVal.rxErrors  = static_cast<unsigned int>(ifRow->InErrors);
+                        retVal.txDropped = static_cast<unsigned int>(ifRow->OutDiscards);
+                        retVal.rxDropped = static_cast<unsigned int>(ifRow->InDiscards);
                     }
                 }
             }

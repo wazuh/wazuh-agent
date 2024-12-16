@@ -13,12 +13,7 @@
 #define _DBSYNC_EXCEPTION_H
 #include <stdexcept>
 #include <string>
-
-#if defined(__GNUC__) || defined(__clang__)
-#define ATTR_RET_NONNULL __attribute__((__returns_nonnull__))
-#else
-#define ATTR_RET_NONNULL
-#endif
+#include "pal.h"
 
 using DBSyncExceptionType = const std::pair<int, std::string>;
 

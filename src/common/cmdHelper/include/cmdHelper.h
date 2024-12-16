@@ -16,13 +16,16 @@
 #include <cstdio>
 #include <memory>
 #include <vector>
+#include "pal.h"
 
-#ifndef WIN32
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
-#else
-FILE *popen(const char *command, const char *mode) { return NULL; }
-int pclose(FILE *stream){ return 0; }
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4505)
 #endif
 
 namespace Utils
@@ -42,7 +45,7 @@ namespace Utils
 
         if (file)
         {
-            while (fgets(buffer.data(), bufferSize, file.get()))
+            while (fgets(buffer.data(), static_cast<int>(bufferSize), file.get()))
             {
                 result += buffer.data();
             }
@@ -52,5 +55,10 @@ namespace Utils
     }
 }
 
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
 
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
