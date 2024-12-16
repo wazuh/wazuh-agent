@@ -90,7 +90,8 @@ namespace http_client
             try
             {
                 co_await (http_client_utils::TimerTask(timer, result, taskCompleted) ||
-                          http_client_utils::SocketTask(m_ssl_socket.lowest_layer(), endpoints, result, taskCompleted));
+                          http_client_utils::SocketConnectTask(
+                              m_ssl_socket.lowest_layer(), endpoints, result, taskCompleted));
 
                 if (!result)
                 {

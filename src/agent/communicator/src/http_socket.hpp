@@ -82,7 +82,7 @@ namespace http_client
             try
             {
                 co_await (http_client_utils::TimerTask(timer, result, taskCompleted) ||
-                          http_client_utils::SocketTask(m_socket, endpoints, result, taskCompleted));
+                          http_client_utils::SocketConnectTask(m_socket, endpoints, result, taskCompleted));
                 if (!result)
                 {
                     LogDebug("Connection error:  {}", result->value());

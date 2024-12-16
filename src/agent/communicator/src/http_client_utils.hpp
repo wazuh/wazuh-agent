@@ -88,10 +88,10 @@ namespace http_client_utils
     /// @param taskCompleted In/Out Indicates whether the timer task is completed and, if not, serves as a flag that
     /// indicates the socket is connected
     template<typename SocketType>
-    boost::asio::awaitable<void> SocketTask(SocketType& socket,
-                                            const boost::asio::ip::tcp::resolver::results_type& endpoints,
-                                            std::shared_ptr<boost::system::error_code> result,
-                                            std::shared_ptr<bool> taskCompleted)
+    boost::asio::awaitable<void> SocketConnectTask(SocketType& socket,
+                                                   const boost::asio::ip::tcp::resolver::results_type& endpoints,
+                                                   std::shared_ptr<boost::system::error_code> result,
+                                                   std::shared_ptr<bool> taskCompleted)
     {
         boost::system::error_code socketErrorCode;
 
