@@ -61,7 +61,7 @@ jobs:
 
     - name: Upload Coverage Artifact
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-report
         path: build/coverage.zip
