@@ -30,9 +30,11 @@ namespace http_client
                                                           boost::system::error_code& ec) = 0;
 
         /// @brief Writes the given request to the socket
+        /// @param io_context The io context associated to the socket
         /// @param req The request to write
         /// @param ec The error code, if any occurred
-        virtual void Write(const boost::beast::http::request<boost::beast::http::string_body>& req,
+        virtual void Write(boost::asio::io_context& io_context,
+                           const boost::beast::http::request<boost::beast::http::string_body>& req,
                            boost::system::error_code& ec) = 0;
 
         /// @brief Asynchronous version of Write

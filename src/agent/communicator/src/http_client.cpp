@@ -365,7 +365,7 @@ namespace http_client
 
             boost::system::error_code ec;
 
-            socket->Connect(results, ec);
+            socket->Connect(io_context, results, ec);
 
             if (ec)
             {
@@ -374,7 +374,7 @@ namespace http_client
 
             const auto req = CreateHttpRequest(params);
 
-            socket->Write(req, ec);
+            socket->Write(io_context, req, ec);
 
             if (ec)
             {
