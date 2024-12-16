@@ -13,7 +13,9 @@
 
 #include <sysInfo.hpp>
 
+#include <atomic>
 #include <memory>
+#include <mutex>
 #include <string>
 
 /// @brief Agent class
@@ -76,4 +78,13 @@ private:
 
     /// @brief Centralized configuration
     centralized_configuration::CentralizedConfiguration m_centralizedConfiguration;
+
+    /// @brief Mutex to coordinate agent reload
+    std::mutex m_reloadMutex;
+
+    /// @brief Indicates if the agent is running
+    std::atomic<bool> m_running = true;
+
+    /// @brief Agent thread count
+    size_t m_agentThreadCount;
 };
