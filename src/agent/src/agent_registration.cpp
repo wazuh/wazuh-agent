@@ -35,8 +35,8 @@ namespace agent_registration
 
     bool AgentRegistration::Register(http_client::IHttpClient& httpClient, const std::string& verificationMode)
     {
-        const auto token =
-            httpClient.AuthenticateWithUserPassword(m_serverUrl, m_agentInfo.GetHeaderInfo(), m_user, m_password, verificationMode);
+        const auto token = httpClient.AuthenticateWithUserPassword(
+            m_serverUrl, m_agentInfo.GetHeaderInfo(), m_user, m_password, verificationMode);
 
         if (!token.has_value())
         {
