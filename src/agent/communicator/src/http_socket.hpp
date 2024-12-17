@@ -43,7 +43,6 @@ namespace http_client
                                                {
                                                    connectionSuccess = true;
                                                    ec = errorCode;
-                                                   LogDebug("Connected successfully");
                                                }
                                            });
 
@@ -183,7 +182,6 @@ namespace http_client
                                                    {
                                                        readSuccess = true;
                                                        ec = errorCode;
-                                                       LogDebug("Read successfully");
                                                    }
                                                    else
                                                    {
@@ -226,11 +224,23 @@ namespace http_client
         boost::asio::awaitable<void> AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
                                                boost::system::error_code& ec) override
         {
+            using namespace boost::asio::experimental::awaitable_operators;
+
+            auto timer = std::make_shared<boost::asio::steady_timer>(co_await boost::asio::this_coro::executor);
+            timer->expires_after(std::chrono::seconds(http_client_utils::TIMEOUT_SECONDS));
+
+            auto result = std::make_shared<boost::system::error_code>();
+            auto taskCompleted = std::make_shared<bool>(false);
+
             try
             {
                 boost::beast::flat_buffer buffer;
-                co_await boost::beast::http::async_read(
-                    m_socket, buffer, res, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+                co_await (http_client_utils::TimerTask(timer, result, taskCompleted) ||
+                          http_client_utils::SocketReadTask(m_socket, buffer, res, result, taskCompleted));
+                if (!result)
+                {
+                    LogDebug("Write error:  {}", result->value());
+                }
             }
             catch (const std::exception& e)
             {
