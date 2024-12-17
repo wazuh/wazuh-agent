@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <regex>
 #include "logcollector_mock.hpp"
 #include <configuration_parser.hpp>
 #include <file_reader.hpp>
@@ -6,6 +7,13 @@
 
 using namespace configuration;
 using namespace logcollector;
+
+static bool IsISO8601(const std::string& datetime) {
+    const std::regex iso8601Regex(
+        R"(^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$)"
+    );
+    return std::regex_match(datetime, iso8601Regex);
+}
 
 TEST(Logcollector, AddReader) {
     auto logcollector = LogcollectorMock();
@@ -66,7 +74,7 @@ TEST(Logcollector, SendMessage) {
     ASSERT_EQ(capturedMessage.type, MessageType::STATELESS);
     ASSERT_EQ(capturedMessage.data["log"]["file"]["path"], LOCATION);
     ASSERT_EQ(capturedMessage.data["event"]["original"], LOG);
-    ASSERT_NE(capturedMessage.data["event"]["created"], nullptr);
+    ASSERT_TRUE(IsISO8601(capturedMessage.data["event"]["created"]));
     ASSERT_EQ(capturedMessage.data["event"]["module"], MODULE);
     ASSERT_EQ(capturedMessage.data["event"]["provider"], PROVIDER);
     ASSERT_EQ(capturedMessage.metaData, METADATA);
