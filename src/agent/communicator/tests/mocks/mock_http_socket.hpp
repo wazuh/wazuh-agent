@@ -7,29 +7,40 @@ class MockHttpSocket : public http_client::IHttpSocket
 public:
     MOCK_METHOD(void,
                 Connect,
-                (const boost::asio::ip::tcp::resolver::results_type& endpoints, boost::system::error_code& code),
+                (boost::asio::io_context & io_context,
+                 const boost::asio::ip::tcp::resolver::results_type& endpoints,
+                 boost::system::error_code& code,
+                 const std::chrono::seconds timeOut),
                 (override));
 
     MOCK_METHOD(boost::asio::awaitable<void>,
                 AsyncConnect,
-                (const boost::asio::ip::tcp::resolver::results_type& endpoints, boost::system::error_code& code),
+                (const boost::asio::ip::tcp::resolver::results_type& endpoints,
+                 boost::system::error_code& code,
+                 const std::chrono::seconds timeOut),
                 (override));
 
     MOCK_METHOD(void,
                 Write,
-                (const boost::beast::http::request<boost::beast::http::string_body>& req,
-                 boost::system::error_code& ec),
+                (boost::asio::io_context & io_context,
+                 const boost::beast::http::request<boost::beast::http::string_body>& req,
+                 boost::system::error_code& ec,
+                 const std::chrono::seconds timeOut),
                 (override));
 
     MOCK_METHOD(boost::asio::awaitable<void>,
                 AsyncWrite,
                 (const boost::beast::http::request<boost::beast::http::string_body>& req,
-                 boost::system::error_code& ec),
+                 boost::system::error_code& ec,
+                 const std::chrono::seconds timeOut),
                 (override));
 
     MOCK_METHOD(void,
                 Read,
-                (boost::beast::http::response<boost::beast::http::dynamic_body> & res, boost::system::error_code& ec),
+                (boost::asio::io_context & io_context,
+                 boost::beast::http::response<boost::beast::http::dynamic_body>& res,
+                 boost::system::error_code& ec,
+                 const std::chrono::seconds timeOut),
                 (override));
 
     MOCK_METHOD(void,
@@ -39,7 +50,9 @@ public:
 
     MOCK_METHOD(boost::asio::awaitable<void>,
                 AsyncRead,
-                (boost::beast::http::response<boost::beast::http::dynamic_body> & res, boost::system::error_code& ec),
+                (boost::beast::http::response<boost::beast::http::dynamic_body> & res,
+                 boost::system::error_code& ec,
+                 const std::chrono::seconds timeOut),
                 (override));
 
     MOCK_METHOD(void, Close, (), (override));

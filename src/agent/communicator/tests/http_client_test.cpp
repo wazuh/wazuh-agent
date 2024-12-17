@@ -74,10 +74,11 @@ protected:
 
     void SetupMockSocketConnectExpectations(boost::system::error_code connectEc = {})
     {
-        EXPECT_CALL(*mockSocket, AsyncConnect(_, _))
+        EXPECT_CALL(*mockSocket, AsyncConnect(_, _, _))
             .WillOnce(Invoke(
                 [connectEc](const boost::asio::ip::tcp::resolver::results_type&,
-                            boost::system::error_code& ec) -> boost::asio::awaitable<void>
+                            boost::system::error_code& ec,
+                            std::chrono::seconds) -> boost::asio::awaitable<void>
                 {
                     ec = connectEc;
                     co_return;
@@ -86,10 +87,11 @@ protected:
 
     void SetupMockSocketWriteExpectations(boost::system::error_code writeEc = {})
     {
-        EXPECT_CALL(*mockSocket, AsyncWrite(_, _))
+        EXPECT_CALL(*mockSocket, AsyncWrite(_, _, _))
             .WillOnce(Invoke(
                 [writeEc](const boost::beast::http::request<boost::beast::http::string_body>&,
-                          boost::system::error_code& ec) -> boost::asio::awaitable<void>
+                          boost::system::error_code& ec,
+                          std::chrono::seconds) -> boost::asio::awaitable<void>
                 {
                     ec = writeEc;
                     co_return;
@@ -98,9 +100,10 @@ protected:
 
     void SetupMockSocketReadExpectations(boost::beast::http::status status, boost::system::error_code readEc = {})
     {
-        EXPECT_CALL(*mockSocket, AsyncRead(_, _))
+        EXPECT_CALL(*mockSocket, AsyncRead(_, _, _))
             .WillOnce(Invoke(
-                [status, readEc](auto& res, boost::system::error_code& ec) -> boost::asio::awaitable<void>
+                [status,
+                 readEc](auto& res, boost::system::error_code& ec, std::chrono::seconds) -> boost::asio::awaitable<void>
                 {
                     res.result(status);
                     ec = readEc;
@@ -180,9 +183,10 @@ TEST_F(HttpClientTest, PerformHttpRequest_Success)
     SetupMockSocketFactory();
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
-    EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, Read(_, _)).WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::ok); });
+    EXPECT_CALL(*mockSocket, Connect(_, _, _, _)).Times(1);
+    EXPECT_CALL(*mockSocket, Write(_, _, _, _)).Times(1);
+    EXPECT_CALL(*mockSocket, Read(_, _, _, _))
+        .WillOnce([](auto&, auto& res, auto&, const auto) { res.result(boost::beast::http::status::ok); });
 
     const http_client::HttpRequestParams params(
         boost::beast::http::verb::get, "https://localhost:80", "/", "Wazuh 5.0.0");
@@ -487,11 +491,11 @@ TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_Success)
     SetupMockSocketFactory();
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
-    EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, Read(_, _))
+    EXPECT_CALL(*mockSocket, Connect(_, _, _, _)).Times(1);
+    EXPECT_CALL(*mockSocket, Write(_, _, _, _)).Times(1);
+    EXPECT_CALL(*mockSocket, Read(_, _, _, _))
         .WillOnce(
-            [](auto& res, auto&)
+            [](auto&, auto& res, auto&, const auto)
             {
                 res.result(boost::beast::http::status::ok);
                 boost::beast::ostream(res.body()) << R"({"token":"valid_token"})";
@@ -512,11 +516,11 @@ TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_Failure)
     SetupMockSocketFactory();
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
-    EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, Read(_, _))
+    EXPECT_CALL(*mockSocket, Connect(_, _, _, _)).Times(1);
+    EXPECT_CALL(*mockSocket, Write(_, _, _, _)).Times(1);
+    EXPECT_CALL(*mockSocket, Read(_, _, _, _))
         .WillOnce(
-            [](auto& res, auto&)
+            [](auto&, auto& res, auto&, const auto)
             {
                 res.result(boost::beast::http::status::unauthorized);
                 boost::beast::ostream(res.body()) << R"({"message":"Try again"})";
@@ -534,11 +538,11 @@ TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_FailureThrowsException)
     SetupMockSocketFactory();
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
-    EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, Read(_, _))
+    EXPECT_CALL(*mockSocket, Connect(_, _, _, _)).Times(1);
+    EXPECT_CALL(*mockSocket, Write(_, _, _, _)).Times(1);
+    EXPECT_CALL(*mockSocket, Read(_, _, _, _))
         .WillOnce(
-            [](auto& res, auto&)
+            [](auto&, auto& res, auto&, const auto)
             {
                 res.result(boost::beast::http::status::unauthorized);
                 boost::beast::ostream(res.body()) << R"({"message":"Invalid key"})";
@@ -554,11 +558,11 @@ TEST_F(HttpClientTest, AuthenticateWithUserPassword_Success)
     SetupMockSocketFactory();
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
-    EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, Read(_, _))
+    EXPECT_CALL(*mockSocket, Connect(_, _, _, _)).Times(1);
+    EXPECT_CALL(*mockSocket, Write(_, _, _, _)).Times(1);
+    EXPECT_CALL(*mockSocket, Read(_, _, _, _))
         .WillOnce(
-            [](auto& res, auto&)
+            [](auto&, auto& res, auto&, const auto)
             {
                 res.result(boost::beast::http::status::ok);
                 boost::beast::ostream(res.body()) << R"({"data":{"token":"valid_token"}})";
@@ -579,10 +583,10 @@ TEST_F(HttpClientTest, AuthenticateWithUserPassword_Failure)
     SetupMockSocketFactory();
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
-    EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, Read(_, _))
-        .WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::unauthorized); });
+    EXPECT_CALL(*mockSocket, Connect(_, _, _, _)).Times(1);
+    EXPECT_CALL(*mockSocket, Write(_, _, _, _)).Times(1);
+    EXPECT_CALL(*mockSocket, Read(_, _, _, _))
+        .WillOnce([](auto&, auto& res, auto&, const auto) { res.result(boost::beast::http::status::unauthorized); });
 
     const auto token =
         client->AuthenticateWithUserPassword("https://localhost:8080", "Wazuh 5.0.0", "user", "password");
@@ -596,8 +600,8 @@ TEST_F(HttpClientTest, PerformHttpRequestDownload_Success)
     SetupMockSocketFactory();
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
-    EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
+    EXPECT_CALL(*mockSocket, Connect(_, _, _, _)).Times(1);
+    EXPECT_CALL(*mockSocket, Write(_, _, _, _)).Times(1);
     EXPECT_CALL(*mockSocket, ReadToFile(_, _))
         .WillOnce([](boost::beast::http::response<boost::beast::http::dynamic_body>& res,
                      [[maybe_unused]] auto& dstFilePath) { res.result(boost::beast::http::status::ok); });
