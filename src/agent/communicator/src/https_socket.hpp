@@ -194,15 +194,40 @@ namespace http_client
         /// @param res The response to read
         /// @param ec The error code, if any occurred
         /// @param timeOut The timeout for the read
-        void Read([[maybe_unused]] boost::asio::io_context& io_context,
+        void Read(boost::asio::io_context& io_context,
                   boost::beast::http::response<boost::beast::http::dynamic_body>& res,
                   boost::system::error_code& ec,
-                  [[maybe_unused]] const std::chrono::seconds timeOut = std::chrono::seconds(TIMEOUT_DEFAULT)) override
+                  const std::chrono::seconds timeOut = std::chrono::seconds(TIMEOUT_DEFAULT)) override
         {
+            io_context.reset();
             try
             {
+                bool readSuccess = false;
+
                 boost::beast::flat_buffer buffer;
-                boost::beast::http::read(m_ssl_socket, buffer, res, ec);
+                boost::beast::http::async_read(m_ssl_socket,
+                                               buffer,
+                                               res,
+                                               [&](const boost::system::error_code& errorCode, std::size_t)
+                                               {
+                                                   if (!errorCode)
+                                                   {
+                                                       readSuccess = true;
+                                                       ec = errorCode;
+                                                       LogDebug("Read successfully");
+                                                   }
+                                                   else
+                                                   {
+                                                       LogDebug("Read error: {}", errorCode.message());
+                                                   }
+                                               });
+
+                io_context.run_for(timeOut);
+                if (!readSuccess)
+                {
+                    ec = boost::asio::error::timed_out;
+                    LogDebug("Read operation timed out");
+                }
             }
             catch (const std::exception& e)
             {
