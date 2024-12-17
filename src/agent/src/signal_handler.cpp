@@ -17,6 +17,7 @@ void SignalHandler::HandleSignal([[maybe_unused]] int signal)
 
 void SignalHandler::WaitForSignal()
 {
+    KeepRunning.store(true);
     std::unique_lock<std::mutex> lock(m_cvMutex);
     m_cv.wait(lock, [] { return !KeepRunning.load(); });
 }

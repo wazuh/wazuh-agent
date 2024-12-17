@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
@@ -53,4 +54,7 @@ private:
 
     /// @brief Number of enqueued threads
     size_t m_numEnqueuedThreads = 0;
+
+    /// @brief Mutex to control Start and Stop operations
+    mutable std::mutex m_mutex;
 };

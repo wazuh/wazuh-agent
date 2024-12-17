@@ -15,6 +15,8 @@ TaskManager::~TaskManager()
 
 void TaskManager::Start(size_t numThreads)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     if (m_work || !m_threads.empty())
     {
         LogError("Task manager already started");
@@ -32,9 +34,11 @@ void TaskManager::Start(size_t numThreads)
 
 void TaskManager::Stop()
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     if (m_work)
     {
-        m_work->reset();
+        m_work.reset();
     }
 
     if (!m_ioContext.stopped())
@@ -59,6 +63,8 @@ void TaskManager::Stop()
 
 void TaskManager::EnqueueTask(std::function<void()> task, const std::string& taskID)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     if (++m_numEnqueuedThreads > m_threads.size())
     {
         LogError("Enqueued more threaded tasks than available threads");
@@ -82,6 +88,8 @@ void TaskManager::EnqueueTask(std::function<void()> task, const std::string& tas
 
 void TaskManager::EnqueueTask(boost::asio::awaitable<void> task, const std::string& taskID)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
     boost::asio::co_spawn(
         m_ioContext,
@@ -105,5 +113,6 @@ void TaskManager::EnqueueTask(boost::asio::awaitable<void> task, const std::stri
 
 size_t TaskManager::GetNumEnqueuedThreads() const
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
     return m_numEnqueuedThreads;
 }

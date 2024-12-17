@@ -58,16 +58,14 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
 
     m_centralizedConfiguration.ReloadModulesFunction([this]() { ReloadModules(); });
 
-    auto agentThreadCount =
+    m_agentThreadCount =
         m_configurationParser->GetConfig<size_t>("agent", "thread_count").value_or(config::DEFAULT_THREAD_COUNT);
 
-    if (agentThreadCount < config::DEFAULT_THREAD_COUNT)
+    if (m_agentThreadCount < config::DEFAULT_THREAD_COUNT)
     {
         LogWarn("thread_count must be greater than {}. Using default value.", config::DEFAULT_THREAD_COUNT);
-        agentThreadCount = config::DEFAULT_THREAD_COUNT;
+        m_agentThreadCount = config::DEFAULT_THREAD_COUNT;
     }
-
-    m_taskManager.Start(agentThreadCount);
 }
 
 Agent::~Agent()
@@ -77,15 +75,34 @@ Agent::~Agent()
 
 void Agent::ReloadModules()
 {
-    LogInfo("Reloading Modules");
-    m_configurationParser->ReloadConfiguration();
-    m_moduleManager.Stop();
-    m_moduleManager.Setup();
-    m_moduleManager.Start();
+    std::lock_guard<std::mutex> lock(m_reloadMutex);
+
+    if (m_running.load())
+    {
+        try
+        {
+            LogInfo("Reloading Modules");
+            m_configurationParser->ReloadConfiguration();
+            m_moduleManager.Stop();
+            m_moduleManager.Setup();
+            m_moduleManager.Start();
+            LogInfo("Modules reloaded");
+        }
+        catch (const std::exception& e)
+        {
+            LogError("Error reloading modules: {}", e.what());
+        }
+    }
+    else
+    {
+        LogWarn("Agent cannot reload modules while start up or shutdown is in progress.");
+    }
 }
 
 void Agent::Run()
 {
+    m_taskManager.Start(m_agentThreadCount);
+
     // Check if the server recognizes the agent
     m_communicator.SendAuthenticationRequest();
 
@@ -144,7 +161,17 @@ void Agent::Run()
             }),
         "CommandsProcessing");
 
+    {
+        std::unique_lock<std::mutex> lock(m_reloadMutex);
+        m_running.store(true);
+    }
+
     m_signalHandler->WaitForSignal();
+
+    {
+        std::unique_lock<std::mutex> lock(m_reloadMutex);
+        m_running.store(false);
+    }
 
     m_commandHandler.Stop();
     m_communicator.Stop();
