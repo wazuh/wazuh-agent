@@ -140,7 +140,7 @@ namespace http_client
 
             boost::system::error_code ec;
 
-            co_await socket->AsyncConnect(results, ec);
+            co_await socket->AsyncConnect(results, ec, std::chrono::seconds(TIMEOUT_DEFAULT)); // NOLINT
 
             if (ec != boost::system::errc::success)
             {
@@ -186,7 +186,7 @@ namespace http_client
 
             const auto req = CreateHttpRequest(reqParams);
 
-            co_await socket->AsyncWrite(req, ec);
+            co_await socket->AsyncWrite(req, ec, std::chrono::seconds(TIMEOUT_DEFAULT));
 
             if (ec)
             {
@@ -197,7 +197,7 @@ namespace http_client
             }
 
             boost::beast::http::response<boost::beast::http::dynamic_body> res;
-            co_await socket->AsyncRead(res, ec);
+            co_await socket->AsyncRead(res, ec, std::chrono::seconds(TIMEOUT_DEFAULT));
 
             if (ec)
             {

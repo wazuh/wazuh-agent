@@ -76,7 +76,8 @@ namespace http_client
         /// @param ec The error code, if any occurred
         virtual boost::asio::awaitable<void>
         AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                  boost::system::error_code& ec) = 0;
+                  boost::system::error_code& ec,
+                  const std::chrono::seconds timeOut = std::chrono::seconds(TIMEOUT_DEFAULT)) = 0;
 
         /// @brief Closes the socket
         virtual void Close() = 0;
