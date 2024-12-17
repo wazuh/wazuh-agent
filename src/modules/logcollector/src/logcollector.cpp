@@ -4,6 +4,7 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <config.h>
+#include <timeHelper.h>
 
 #include <chrono>
 #include <iomanip>
@@ -78,35 +79,13 @@ void Logcollector::SendMessage(const std::string& location, const std::string& l
     auto metadata = nlohmann::json::object();
     auto data = nlohmann::json::object();
 
-
-    auto getCurrentTimestamp = []() {
-        constexpr int MILLISECS_IN_A_SEC = 1000;
-        auto now = std::chrono::system_clock::now();
-        auto time_t_now = std::chrono::system_clock::to_time_t(now);
-        auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() % MILLISECS_IN_A_SEC;
-
-        std::tm tm_now{};
-#ifdef _WIN32
-        gmtime_s(&tm_now, &time_t_now);  // MSVC (Windows)
-#else
-        gmtime_r(&time_t_now, &tm_now);  // Linux/macOS (POSIX)
-#endif
-
-        // Formatear el timestamp
-        std::ostringstream oss;
-        oss << std::put_time(&tm_now, "%Y-%m-%dT%H:%M:%S") << '.'
-            << std::setw(3) << std::setfill('0') << milliseconds << "Z"; // Usar 'milliseconds' como entero
-
-        return oss.str();
-    };
-
     metadata["module"] = m_moduleName;
     metadata["type"] = collectorType;
 
     data["log"]["file"]["path"] = location;
     data["tags"] = nlohmann::json::array({"mvp"});
     data["event"]["original"] = log;
-    data["event"]["created"] = getCurrentTimestamp();
+    data["event"]["created"] = Utils::getCurrentISO8601();
     data["event"]["module"] = m_moduleName;
     data["event"]["provider"] = "syslog";
 

@@ -32,7 +32,9 @@ add_library(Logcollector ${LOGCOLLECTOR_SOURCES})
 target_include_directories(Logcollector PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
-    ${COMMON_FOLDER})
+    ${COMMON_FOLDER}
+    ${COMMON_FOLDER}/stringHelper/include
+    ${COMMON_FOLDER}/timeHelper/include)
 
 target_link_libraries(Logcollector
     PUBLIC
@@ -45,6 +47,7 @@ target_link_libraries(Logcollector
     nlohmann_json::nlohmann_json
     PRIVATE
     Logger
+    pal
 )
 
 include(../../cmake/ConfigureTarget.cmake)
