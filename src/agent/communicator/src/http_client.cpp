@@ -229,9 +229,10 @@ namespace http_client
     HttpClient::PerformHttpRequest(const HttpRequestParams& params)
     {
         return PerformHttpRequestInternal(params,
-                                          [](std::unique_ptr<IHttpSocket>& socket,
+                                          [](boost::asio::io_context& ioContext,
+                                             std::unique_ptr<IHttpSocket>& socket,
                                              boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                                             boost::system::error_code& ec) { socket->Read(res, ec); });
+                                             boost::system::error_code& ec) { socket->Read(ioContext, res, ec); });
     }
 
     boost::beast::http::response<boost::beast::http::dynamic_body>
@@ -239,7 +240,8 @@ namespace http_client
     {
         return PerformHttpRequestInternal(
             params,
-            [&dstFilePath](std::unique_ptr<IHttpSocket>& socket,
+            [&dstFilePath](boost::asio::io_context&,
+                           std::unique_ptr<IHttpSocket>& socket,
                            boost::beast::http::response<boost::beast::http::dynamic_body>& res,
                            boost::system::error_code&) { socket->ReadToFile(res, dstFilePath); });
     }
@@ -338,7 +340,8 @@ namespace http_client
 
     boost::beast::http::response<boost::beast::http::dynamic_body> HttpClient::PerformHttpRequestInternal(
         const HttpRequestParams& params,
-        const std::function<void(std::unique_ptr<IHttpSocket>&,
+        const std::function<void(boost::asio::io_context& ioContext,
+                                 std::unique_ptr<IHttpSocket>&,
                                  boost::beast::http::response<boost::beast::http::dynamic_body>&,
                                  boost::system::error_code&)>& responseHandler)
     {
@@ -381,7 +384,7 @@ namespace http_client
                 throw std::runtime_error("Error writing request: " + ec.message());
             }
 
-            responseHandler(socket, res, ec);
+            responseHandler(io_context, socket, res, ec);
 
             if (ec)
             {

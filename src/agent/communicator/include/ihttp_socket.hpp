@@ -45,9 +45,11 @@ namespace http_client
                    boost::system::error_code& ec) = 0;
 
         /// @brief Reads a response from the socket
+        /// @param io_context The io context associated to the socket
         /// @param res The response to read
         /// @param ec The error code, if any occurred
-        virtual void Read(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
+        virtual void Read(boost::asio::io_context& io_context,
+                          boost::beast::http::response<boost::beast::http::dynamic_body>& res,
                           boost::system::error_code& ec) = 0;
 
         /// @brief Reads a response from the socket and writes it to a file
