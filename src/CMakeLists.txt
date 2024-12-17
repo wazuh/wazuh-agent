@@ -4,7 +4,9 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.c
 
 get_filename_component(SRC_FOLDER ${CMAKE_SOURCE_DIR}/../ ABSOLUTE)
 get_filename_component(CONFIG_FOLDER ${CMAKE_SOURCE_DIR}/../etc/config/ ABSOLUTE)
-project(wazuh-agent)
+get_filename_component(WINDOWS_FOLDER ${CMAKE_SOURCE_DIR}/../packages/windows/ ABSOLUTE)
+
+project(wazuh-agent VERSION 5.0.0)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
@@ -13,12 +15,17 @@ endif()
 include(cmake/CommonSettings.cmake)
 set_common_settings()
 
+string(REPLACE "\\" "\\\\" DEFAULT_BIN_PATH "${BIN_INSTALL_DIR}")
+string(REPLACE "\\" "\\\\" DEFAULT_DATA_PATH "${DATA_INSTALL_DIR}")
+string(REPLACE "\\" "\\\\" DEFAULT_RUN_PATH "${RUN_INSTALL_DIR}")
+string(REPLACE "\\" "\\\\" DEFAULT_SHARED_CONFIG_PATH "${SHARED_CONFIG_INSTALL_DIR}")
+string(REPLACE "\\" "\\\\" DEFAULT_CONFIG_PATH "${CONFIG_INSTALL_DIR}")
+
 if(ENABLE_LOGCOLLECTOR OR ENABLE_INVENTORY)
     add_subdirectory(common)
 else()
     add_subdirectory(common/config)
     add_subdirectory(common/logger)
-    add_subdirectory(common/pal)
     add_subdirectory(common/utils)
     add_subdirectory(common/data_provider)
     add_subdirectory(common/networkHelper)
@@ -39,24 +46,13 @@ include(cmake/ConfigureTarget.cmake)
 configure_target(wazuh-agent)
 
 ## Installation
-set(INSTALL_ROOT "" CACHE PATH "Root directory for installation")
 
-if("${INSTALL_ROOT}" STREQUAL "/")
-    set(INSTALL_ROOT "")
-endif()
-
-install(CODE "file(MAKE_DIRECTORY \"${INSTALL_ROOT}${DATA_INSTALL_DIR}\")")
-
-install(TARGETS wazuh-agent
-        DESTINATION ${INSTALL_ROOT}${BIN_INSTALL_DIR})
-
-install(CODE "file(MAKE_DIRECTORY \"${INSTALL_ROOT}${CONFIG_INSTALL_DIR}\")")
-install(FILES ${CONFIG_FOLDER}/wazuh-agent.yml
-        DESTINATION ${INSTALL_ROOT}${CONFIG_INSTALL_DIR})
-install(TARGETS wazuh-agent
-         DESTINATION ${INSTALL_ROOT}${BIN_INSTALL_DIR})
-
-message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
+install(TARGETS wazuh-agent DESTINATION .)
+file(GLOB DLLS "${CMAKE_BINARY_DIR}/Debug/*.dll")
+install(FILES ${DLLS} DESTINATION .)
+install(FILES ${CONFIG_FOLDER}/wazuh-agent.yml DESTINATION .)
+install(FILES ${WINDOWS_FOLDER}/postinstall.ps1 DESTINATION .)
+install(FILES ${WINDOWS_FOLDER}/cleanup.ps1 DESTINATION .)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     get_filename_component(SERVICE_FILENAME "${SERVICE_FILE}" NAME)
@@ -75,3 +71,24 @@ endif()
 if(BUILD_TESTS)
     enable_testing()
 endif()
+
+set(CPACK_GENERATOR "WIX")
+set(CPACK_PACKAGE_NAME "Wazuh Agent")
+set(CPACK_PACKAGE_VENDOR "Wazuh, Inc.")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
+"Wazuh helps you to gain security visibility into your infrastructure "
+"by monitoring hosts at an operating system and application level. "
+"It provides capabilities like log analysis, file integrity monitoring, "
+"intrusion detection, and compliance monitoring.")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "wazuh-agent")
+set(CPACK_RESOURCE_FILE_LICENSE "${WINDOWS_FOLDER}/license.rtf")
+set(CPACK_WIX_PRODUCT_GUID "F495AC58-7BDE-4C4B-92D8-DBE40A9AA5A0")
+set(CPACK_WIX_UPGRADE_GUID "F495AC57-7BDE-4C4B-92D8-DBE40A9AA5A0")
+set(CPACK_WIX_UI_BANNER "${WINDOWS_FOLDER}/ui/bannrbmp.jpg")
+set(CPACK_WIX_UI_DIALOG "${WINDOWS_FOLDER}/ui/dlgbmp.jpg")
+set(CPACK_WIX_PRODUCT_ICON "${WINDOWS_FOLDER}/ui/favicon.ico")
+set(CPACK_WIX_PROPERTY_ARPNOREPAIR "yes")
+set(CPACK_WIX_PROPERTY_ALLUSERS "1")
+set(CPACK_WIX_PATCH_FILE "${WINDOWS_FOLDER}/wix-patch.xml")
+set(CPACK_WIX_EXTENSIONS "WixUtilExtension")
+include(CPack)
