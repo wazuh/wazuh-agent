@@ -1,0 +1,34 @@
+<CPackWiXPatch>
+  <CPackWiXFragment Id="#PRODUCT">
+    <Property
+        Id="WixQuietExecCmdLine"
+        Value="&quot;powershell.exe&quot; -ExecutionPolicy Bypass -File &quot;[INSTALL_ROOT]postinstall.ps1&quot;"
+    />
+    <CustomAction
+        Id="PostInstall"
+        BinaryKey="WixCA"
+        DllEntry="WixQuietExec"
+        Return="check"
+        Execute="immediate"
+        Impersonate="no"
+    />
+    <CustomAction
+        Id="SetCleanupCmdLine"
+        Property="WixQuietExecCmdLine"
+        Value="&quot;powershell.exe&quot; -ExecutionPolicy Bypass -File &quot;[INSTALL_ROOT]cleanup.ps1&quot;"
+    />
+    <CustomAction
+        Id="CleanupScript"
+        BinaryKey="WixCA"
+        DllEntry="WixQuietExec"
+        Return="check"
+        Execute="immediate"
+        Impersonate="no"
+    />
+    <InstallExecuteSequence>
+      <Custom Action="PostInstall" After="InstallFinalize">NOT Installed</Custom>
+      <Custom Action="SetCleanupCmdLine" Before="CleanupScript">REMOVE="ALL"</Custom>
+      <Custom Action="CleanupScript" Before="InstallFinalize">REMOVE="ALL"</Custom>
+    </InstallExecuteSequence>
+  </CPackWiXFragment>
+</CPackWiXPatch>
