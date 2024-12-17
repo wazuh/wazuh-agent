@@ -190,10 +190,14 @@ namespace http_client
         }
 
         /// @brief Reads a response from the socket
+        /// @param io_context The io context associated to the socket
         /// @param res The response to read
         /// @param ec The error code, if any occurred
-        void Read(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                  boost::system::error_code& ec) override
+        /// @param timeOut The timeout for the read
+        void Read([[maybe_unused]] boost::asio::io_context& io_context,
+                  boost::beast::http::response<boost::beast::http::dynamic_body>& res,
+                  boost::system::error_code& ec,
+                  [[maybe_unused]] const std::chrono::seconds timeOut = std::chrono::seconds(TIMEOUT_DEFAULT)) override
         {
             try
             {
