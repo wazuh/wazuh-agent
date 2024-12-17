@@ -254,16 +254,29 @@ namespace http_client
         /// @brief Asynchronous version of Read
         /// @param res The response to read
         /// @param ec The error code, if any occurred
+        /// @param timeOut The timeout for the read
         boost::asio::awaitable<void>
         AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
                   boost::system::error_code& ec,
                   [[maybe_unused]] const std::chrono::seconds timeOut = std::chrono::seconds(TIMEOUT_DEFAULT)) override
         {
+            using namespace boost::asio::experimental::awaitable_operators;
+
+            auto timer = std::make_shared<boost::asio::steady_timer>(co_await boost::asio::this_coro::executor);
+            timer->expires_after(timeOut);
+
+            auto result = std::make_shared<boost::system::error_code>();
+            auto taskCompleted = std::make_shared<bool>(false);
+
             try
             {
                 boost::beast::flat_buffer buffer;
-                co_await boost::beast::http::async_read(
-                    m_ssl_socket, buffer, res, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+                co_await (http_client_utils::TimerTask(timer, result, taskCompleted) ||
+                          http_client_utils::SocketReadTask(m_ssl_socket, buffer, res, result, taskCompleted));
+                if (!result)
+                {
+                    LogDebug("Write error:  {}", result->value());
+                }
             }
             catch (const std::exception& e)
             {
