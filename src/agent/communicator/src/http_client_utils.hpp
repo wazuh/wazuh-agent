@@ -100,7 +100,6 @@ namespace http_client_utils
 
         if (!(*taskCompleted) && !socketErrorCode)
         {
-            LogDebug("Connected successfully");
             result->clear();
             *taskCompleted = true;
         }
@@ -130,7 +129,6 @@ namespace http_client_utils
 
         if (!(*taskCompleted) && !socketErrorCode)
         {
-            LogDebug("Async Write successful");
             result->clear();
             *taskCompleted = true;
         }
@@ -161,7 +159,6 @@ namespace http_client_utils
 
         if (!(*taskCompleted) && !socketErrorCode)
         {
-            LogDebug("Async Read successful");
             result->clear();
             *taskCompleted = true;
         }

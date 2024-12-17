@@ -47,7 +47,6 @@ namespace http_client
                                                {
                                                    connectionSuccess = true;
                                                    ec = errorCode;
-                                                   LogDebug("Connected successfully");
                                                }
                                            });
 
@@ -214,7 +213,6 @@ namespace http_client
                                                    {
                                                        readSuccess = true;
                                                        ec = errorCode;
-                                                       LogDebug("Read successfully");
                                                    }
                                                    else
                                                    {
