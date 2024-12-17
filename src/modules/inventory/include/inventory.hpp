@@ -84,7 +84,7 @@ class Inventory {
         static void LogErrorInventory(const std::string& log);
         nlohmann::json EcsData(const nlohmann::json& data, const std::string& table);
         std::string GetPrimaryKeys(const nlohmann::json& data, const std::string& table);
-        std::string CalculateBase64Id(const nlohmann::json& data, const std::string& table);
+        std::string CalculateHashId(const nlohmann::json& data, const std::string& table);
 
         const std::string                           m_moduleName {"inventory"};
         std::string                                 m_agentUUID {""};   // Agent UUID
