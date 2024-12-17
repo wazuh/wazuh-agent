@@ -20,6 +20,7 @@ if(NOT SOURCE_FILES)
 endif()
 
 add_library(pal STATIC ${SOURCE_FILES})
+target_include_directories(pal PUBLIC include)
 target_include_directories(pal PUBLIC include/${OS_NAME})
 
 if(BUILD_TESTS)

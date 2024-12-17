@@ -21,7 +21,10 @@ public:
     }
 
     MOCK_METHOD(void, AddReader, (std::shared_ptr<IReader> reader), (override));
-    MOCK_METHOD(void, SendMessage, (const std::string& location, const std::string& log,
-                                    const std::string& collectorType), (override));
     MOCK_METHOD(void, EnqueueTask, (Awaitable task), (override));
+};
+
+class PushMessageMock {
+public:
+    MOCK_METHOD(int, Call, (Message), ());
 };

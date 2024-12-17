@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <regex>
 #include "logcollector_mock.hpp"
 #include <configuration_parser.hpp>
 #include <file_reader.hpp>
@@ -6,6 +7,13 @@
 
 using namespace configuration;
 using namespace logcollector;
+
+static bool IsISO8601(const std::string& datetime) {
+    const std::regex iso8601Regex(
+        R"(^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$)"
+    );
+    return std::regex_match(datetime, iso8601Regex);
+}
 
 TEST(Logcollector, AddReader) {
     auto logcollector = LogcollectorMock();
@@ -41,4 +49,33 @@ TEST(Logcollector, SetupFileReader) {
 
     ASSERT_NE(capturedReader1, nullptr);
     ASSERT_NE(capturedReader2, nullptr);
+}
+
+TEST(Logcollector, SendMessage) {
+    PushMessageMock mock;
+    LogcollectorMock logcollector;
+
+    logcollector.SetPushMessageFunction([&mock](Message message) {
+        return mock.Call(std::move(message));
+    });
+
+    Message capturedMessage(MessageType::STATELESS, nlohmann::json::object(), "", "", "");
+
+    EXPECT_CALL(mock, Call(::testing::_)).WillOnce(::testing::DoAll(::testing::SaveArg<0>(&capturedMessage), ::testing::Return(0)));
+
+    const auto MODULE = "logcollector";
+    const auto LOCATION = "/test/location";
+    const auto LOG = "test log";
+    const auto PROVIDER = "syslog";
+    const auto METADATA = R"({"module":"logcollector","type":"reader"})";
+
+    logcollector.SendMessage(LOCATION, LOG, "reader");
+
+    ASSERT_EQ(capturedMessage.type, MessageType::STATELESS);
+    ASSERT_EQ(capturedMessage.data["log"]["file"]["path"], LOCATION);
+    ASSERT_EQ(capturedMessage.data["event"]["original"], LOG);
+    ASSERT_TRUE(IsISO8601(capturedMessage.data["event"]["created"]));
+    ASSERT_EQ(capturedMessage.data["event"]["module"], MODULE);
+    ASSERT_EQ(capturedMessage.data["event"]["provider"], PROVIDER);
+    ASSERT_EQ(capturedMessage.metaData, METADATA);
 }
