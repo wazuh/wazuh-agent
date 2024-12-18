@@ -17,7 +17,7 @@ GetMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue,
     }
 
     const MessageSize messagesSizeToFetch {messagesSize};
-    const auto messages = co_await multiTypeQueue->getNextNAwaitable(messageType, messagesSizeToFetch, "", "");
+    const auto messages = co_await multiTypeQueue->getNextBytesAwaitable(messageType, messagesSizeToFetch, "", "");
     for (const auto& message : messages)
     {
         output += "\n" + message.metaData + (message.data.dump() == "{}" ? "" : "\n" + message.data.dump());

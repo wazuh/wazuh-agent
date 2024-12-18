@@ -652,7 +652,7 @@ TEST_F(MultiTypeQueueTest, GetBySizeAboveMax)
     sizeAsked *= 2;
     const MessageSize messagesSize {sizeAsked};
 
-    auto messagesReceived = multiTypeQueue.getNextN(MessageType::STATELESS, messagesSize);
+    auto messagesReceived = multiTypeQueue.getNextBytes(MessageType::STATELESS, messagesSize);
     int i = 0;
     for (const auto& singleMessage : messagesReceived)
     {
@@ -678,6 +678,6 @@ TEST_F(MultiTypeQueueTest, GetByBelowMax)
     sizeAsked -= 1;
     const MessageSize messagesSize {sizeAsked};
 
-    auto messagesReceived = multiTypeQueue.getNextN(MessageType::STATELESS, messagesSize);
+    auto messagesReceived = multiTypeQueue.getNextBytes(MessageType::STATELESS, messagesSize);
     EXPECT_EQ(1, messagesReceived.size());
 }

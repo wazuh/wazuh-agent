@@ -5,7 +5,6 @@
 #include <boost/asio/awaitable.hpp>
 
 #include <string>
-#include <variant>
 #include <vector>
 
 /**
@@ -59,19 +58,45 @@ public:
     virtual Message getNext(MessageType type, const std::string moduleName = "", const std::string moduleType = "") = 0;
 
     /**
-     * @brief Retrieves the next message from the queue asynchronously.
+     * @brief Retrieves the next Bytes of messages from the queue asynchronously.
      *
      * @param type The type of the queue to use as the source.
-     * @param messageQuantity In bytes or in number of messages.
+     * @param messageQuantity In bytes of messages.
      * @param moduleName The name of the module requesting the message.
      * @param moduleType The type of the module requesting the messages.
      * @return boost::asio::awaitable<std::vector<Message>> Awaitable object representing the next N messages.
      */
-    virtual boost::asio::awaitable<std::vector<Message>>
-    getNextNAwaitable(MessageType type,
-                      std::variant<const int, const MessageSize> messageQuantity,
-                      const std::string moduleName = "",
-                      const std::string moduleType = "") = 0;
+    virtual boost::asio::awaitable<std::vector<Message>> getNextBytesAwaitable(MessageType type,
+                                                                               const MessageSize messageQuantity,
+                                                                               const std::string moduleName = "",
+                                                                               const std::string moduleType = "") = 0;
+    /**
+     * @brief Retrieves the next message from the queue asynchronously.
+     *
+     * @param type The type of the queue to use as the source.
+     * @param messageQuantity In number of messages.
+     * @param moduleName The name of the module requesting the message.
+     * @param moduleType The type of the module requesting the messages.
+     * @return boost::asio::awaitable<std::vector<Message>> Awaitable object representing the next N messages.
+     */
+    virtual boost::asio::awaitable<std::vector<Message>> getNextNAwaitable(MessageType type,
+                                                                           const int messageQuantity,
+                                                                           const std::string moduleName = "",
+                                                                           const std::string moduleType = "") = 0;
+
+    /**
+     * @brief Retrieves the next N messages from the queue.
+     *
+     * @param type The type of the queue to use as the source.
+     * @param messageQuantity The quantity of bytes of messages to return.
+     * @param moduleName The name of the module requesting the messages.
+     * @param moduleType The type of the module requesting the messages.
+     * @return std::vector<Message> A vector of messages fetched from the queue.
+     */
+    virtual std::vector<Message> getNextBytes(MessageType type,
+                                              const MessageSize messageQuantity,
+                                              const std::string moduleName = "",
+                                              const std::string moduleType = "") = 0;
 
     /**
      * @brief Retrieves the next N messages from the queue.
@@ -83,7 +108,7 @@ public:
      * @return std::vector<Message> A vector of messages fetched from the queue.
      */
     virtual std::vector<Message> getNextN(MessageType type,
-                                          std::variant<const int, const MessageSize> messageQuantity,
+                                          const int messageQuantity,
                                           const std::string moduleName = "",
                                           const std::string moduleType = "") = 0;
 

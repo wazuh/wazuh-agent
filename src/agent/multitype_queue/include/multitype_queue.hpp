@@ -141,20 +141,35 @@ public:
     Message getNext(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
     /**
+     * @copydoc IMultiTypeQueue::getNextBytesAwaitable(MessageType type, std::variant<const int, const MessageSize>
+     * messageQuantity, const std::string moduleName, const std::string moduleType)
+     */
+    boost::asio::awaitable<std::vector<Message>> getNextBytesAwaitable(MessageType type,
+                                                                       const MessageSize messageQuantity,
+                                                                       const std::string moduleName = "",
+                                                                       const std::string moduleType = "") override;
+    /**
      * @copydoc IMultiTypeQueue::getNextNAwaitable(MessageType type, std::variant<const int, const MessageSize>
      * messageQuantity, const std::string moduleName, const std::string moduleType)
      */
-    boost::asio::awaitable<std::vector<Message>>
-    getNextNAwaitable(MessageType type,
-                      std::variant<const int, const MessageSize> messageQuantity,
-                      const std::string moduleName = "",
-                      const std::string moduleType = "") override;
+    boost::asio::awaitable<std::vector<Message>> getNextNAwaitable(MessageType type,
+                                                                   const int messageQuantity,
+                                                                   const std::string moduleName = "",
+                                                                   const std::string moduleType = "") override;
+
+    /**
+     * @copydoc IMultiTypeQueue::getNextBytes(MessageType, int, const std::string, const std::string)
+     */
+    std::vector<Message> getNextBytes(MessageType type,
+                                      const MessageSize messageQuantity,
+                                      const std::string moduleName = "",
+                                      const std::string moduleType = "") override;
 
     /**
      * @copydoc IMultiTypeQueue::getNextN(MessageType, int, const std::string, const std::string)
      */
     std::vector<Message> getNextN(MessageType type,
-                                  std::variant<const int, const MessageSize> messageQuantity,
+                                  const int messageQuantity,
                                   const std::string moduleName = "",
                                   const std::string moduleType = "") override;
 

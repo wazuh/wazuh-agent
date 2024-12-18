@@ -140,54 +140,62 @@ Message MultiTypeQueue::getNext(MessageType type, const std::string moduleName, 
     return result;
 }
 
-boost::asio::awaitable<std::vector<Message>>
-MultiTypeQueue::getNextNAwaitable(MessageType type,
-                                  std::variant<const int, const MessageSize> messageQuantity,
-                                  const std::string moduleName,
-                                  const std::string moduleType)
+boost::asio::awaitable<std::vector<Message>> MultiTypeQueue::getNextBytesAwaitable(MessageType type,
+                                                                                   const MessageSize messageQuantity,
+                                                                                   const std::string moduleName,
+                                                                                   const std::string moduleType)
 {
     boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
 
     std::vector<Message> result;
     if (m_mapMessageTypeName.contains(type))
     {
-        if (std::holds_alternative<const int>(messageQuantity))
+        //  waits for specified size stored
+        auto sizeRequestedAux = messageQuantity;
+        auto sizeRequested = sizeRequestedAux.size;
+
+        boost::asio::steady_timer batchTimeoutTimer(co_await boost::asio::this_coro::executor);
+        batchTimeoutTimer.expires_after(std::chrono::milliseconds(m_batchInterval));
+
+        while ((sizePerType(type) < sizeRequested) && (batchTimeoutTimer.expiry() > std::chrono::steady_clock::now()))
         {
-            // waits for items to be available
-            while (isEmpty(type))
-            {
-                timer.expires_after(std::chrono::milliseconds(m_timeout));
-                co_await timer.async_wait(boost::asio::use_awaitable);
-            }
+            timer.expires_after(std::chrono::milliseconds(m_timeout));
+            co_await timer.async_wait(boost::asio::use_awaitable);
         }
-        else if (std::holds_alternative<const MessageSize>(messageQuantity))
+
+        if (sizePerType(type) >= sizeRequested)
         {
-            // waits for specified size stored
-            auto sizeRequestedAux = std::get<const MessageSize>(messageQuantity);
-            auto sizeRequested = sizeRequestedAux.size;
-
-            boost::asio::steady_timer batchTimeoutTimer(co_await boost::asio::this_coro::executor);
-            batchTimeoutTimer.expires_after(std::chrono::milliseconds(m_batchInterval));
-
-            while ((sizePerType(type) < sizeRequested) &&
-                   (batchTimeoutTimer.expiry() > std::chrono::steady_clock::now()))
-            {
-                timer.expires_after(std::chrono::milliseconds(m_timeout));
-                co_await timer.async_wait(boost::asio::use_awaitable);
-            }
-
-            if (sizePerType(type) >= sizeRequested)
-            {
-                LogDebug("Required size achieved: {}B", sizeRequested);
-            }
-            else
-            {
-                LogDebug("Timeout reached after {}ms", m_batchInterval);
-            }
+            LogDebug("Required size achieved: {}B", sizeRequested);
         }
         else
         {
-            LogError("Unexpected variant type on messageQuantity");
+            LogDebug("Timeout reached after {}ms", m_batchInterval);
+        }
+
+        result = getNextBytes(type, messageQuantity, moduleName, moduleType);
+    }
+    else
+    {
+        LogError("Error didn't find the queue.");
+    }
+    co_return result;
+}
+
+boost::asio::awaitable<std::vector<Message>> MultiTypeQueue::getNextNAwaitable(MessageType type,
+                                                                               const int messageQuantity,
+                                                                               const std::string moduleName,
+                                                                               const std::string moduleType)
+{
+    boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
+
+    std::vector<Message> result;
+    if (m_mapMessageTypeName.contains(type))
+    {
+        // waits for items to be available
+        while (isEmpty(type))
+        {
+            timer.expires_after(std::chrono::milliseconds(m_timeout));
+            co_await timer.async_wait(boost::asio::use_awaitable);
         }
 
         result = getNextN(type, messageQuantity, moduleName, moduleType);
@@ -199,8 +207,33 @@ MultiTypeQueue::getNextNAwaitable(MessageType type,
     co_return result;
 }
 
+std::vector<Message> MultiTypeQueue::getNextBytes(MessageType type,
+                                                  const MessageSize messageQuantity,
+                                                  const std::string moduleName,
+                                                  const std::string moduleType)
+{
+    std::vector<Message> result;
+    if (m_mapMessageTypeName.contains(type))
+    {
+        nlohmann::json arrayData;
+        arrayData = m_persistenceDest->RetrieveBySize(
+            messageQuantity.size, m_mapMessageTypeName.at(type), moduleName, moduleType);
+
+        for (auto singleJson : arrayData)
+        {
+            result.emplace_back(
+                type, singleJson["data"], singleJson["moduleName"], singleJson["moduleType"], singleJson["metadata"]);
+        }
+    }
+    else
+    {
+        LogError("Error didn't find the queue.");
+    }
+    return result;
+}
+
 std::vector<Message> MultiTypeQueue::getNextN(MessageType type,
-                                              std::variant<const int, const MessageSize> messageQuantity,
+                                              const int messageQuantity,
                                               const std::string moduleName,
                                               const std::string moduleType)
 {
@@ -208,22 +241,8 @@ std::vector<Message> MultiTypeQueue::getNextN(MessageType type,
     if (m_mapMessageTypeName.contains(type))
     {
         nlohmann::json arrayData;
-        if (std::holds_alternative<const int>(messageQuantity))
-        {
-            arrayData = m_persistenceDest->RetrieveMultiple(
-                std::get<const int>(messageQuantity), m_mapMessageTypeName.at(type), moduleName, moduleType);
-        }
-        else if (std::holds_alternative<const MessageSize>(messageQuantity))
-        {
-            arrayData = m_persistenceDest->RetrieveBySize(std::get<const MessageSize>(messageQuantity).size,
-                                                          m_mapMessageTypeName.at(type),
-                                                          moduleName,
-                                                          moduleType);
-        }
-        else
-        {
-            LogError("Unexpected variant type on messageQuantity");
-        }
+        arrayData =
+            m_persistenceDest->RetrieveMultiple(messageQuantity, m_mapMessageTypeName.at(type), moduleName, moduleType);
 
         for (auto singleJson : arrayData)
         {
