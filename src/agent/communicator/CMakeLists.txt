@@ -29,6 +29,11 @@ target_include_directories(Communicator PUBLIC
 target_compile_definitions(Communicator PRIVATE -DJWT_DISABLE_PICOJSON=ON)
 target_link_libraries(Communicator PUBLIC Config Boost::asio Boost::beast Boost::system Boost::url Logger PRIVATE OpenSSL::SSL OpenSSL::Crypto nlohmann_json::nlohmann_json)
 
+# There's a false positive for mismatched new delete using coroutines on GCC 13.3.0
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0.0")
+    target_compile_options(Communicator PRIVATE -Wno-mismatched-new-delete)
+endif()
+
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(Communicator)
 
