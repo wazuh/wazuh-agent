@@ -55,10 +55,6 @@ public:
     /// Stops the agent's core components and initiates a restart in a new process.
     boost::asio::awaitable<module_command::CommandExecutionResult> RestartExecuteCommand();
 
-    /// @brief Array of command-line arguments passed to the agent. Used by
-    /// self-restart command to restart the service with the same arguments.
-    const char** argv;
-
 
 private:
     /// @brief Task manager

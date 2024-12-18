@@ -12,9 +12,12 @@
 #include <memory>
 
 #include <unistd.h>
+#include <fstream>
+#include <vector>
+#include <cstring>
 
-Agent::Agent(const std::string& configFilePath, const char** mainArgv, std::unique_ptr<ISignalHandler> signalHandler)
-    : argv(mainArgv)
+
+Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> signalHandler)
     , m_configurationParser(configFilePath.empty() ? std::make_shared<configuration::ConfigurationParser>()
                                                    : std::make_shared<configuration::ConfigurationParser>(
                                                         std::filesystem::path(configFilePath)))
@@ -115,6 +118,28 @@ void Agent::StopAgent(){
     lockFileHandler.removeLockFile();
 }
 
+std::vector<const char*> get_command_line_args();
+
+std::vector<const char*> get_command_line_args() {
+    std::vector<const char*> args;
+    std::ifstream cmdline_file("/proc/self/cmdline");
+
+    if (!cmdline_file) {
+        LogError("Failed to open /proc/self/cmdline");
+        return args;
+    }
+
+    std::string arg;
+    while (getline(cmdline_file, arg, '\0')) {
+        args.push_back(strdup(arg.c_str()));
+    }
+
+    args.push_back(nullptr);
+
+    return std::move(args);
+}
+
+
 boost::asio::awaitable<module_command::CommandExecutionResult> Agent::RestartExecuteCommand() {
 
     int timeoutSeconds = 30;
@@ -127,18 +152,12 @@ boost::asio::awaitable<module_command::CommandExecutionResult> Agent::RestartExe
         std::system("systemctl restart wazuh-agent");
     }else{
         StopAgent();
+        std::vector<const char*> args = get_command_line_args();
+
         pid_t pid = fork();
         if (pid == 0) {
             // Child process
             LogInfo("Restart: starting wazuh agent from the fork child.");
-
-            std::vector<const char*> args;
-            for (int i = 0; argv[i] != nullptr; ++i) {
-                args.push_back(argv[i]);
-            }
-
-            // End the argument list with nullptr (required for execve)
-            args.push_back(nullptr);
 
             LogInfo("Waiting for wazuh-agent to stop...");
             while ( "stopped" != unix_daemon::GetDaemonStatus(m_configurationParser->GetConfigFilePath()) ) {
@@ -153,7 +172,7 @@ boost::asio::awaitable<module_command::CommandExecutionResult> Agent::RestartExe
                 }
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
-
+            LogInfo("Waiting for wazuh-agent to stop...Done.");
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
             if (execve(argv[0], const_cast<char* const*>(args.data()), nullptr) == -1) {
                 LogError("Failed to spawn new Wazuh agent process.");

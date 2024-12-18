@@ -89,7 +89,7 @@ int main(int argc, char* argv[])
         }
         else
         {
-            StartAgent(validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "", const_cast<const char**>(argv));
+            StartAgent(validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
         }
         return 0;
     }

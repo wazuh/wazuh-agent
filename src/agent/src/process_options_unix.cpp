@@ -16,7 +16,7 @@
 
 
 
-void StartAgent(const std::string& configFilePath, const char** argv)
+void StartAgent(const std::string& configFilePath)
 {
     unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile(configFilePath);
 
@@ -30,7 +30,7 @@ void StartAgent(const std::string& configFilePath, const char** argv)
 
     try
     {
-        Agent agent(configFilePath, argv);
+        Agent agent(configFilePath);
         agent.Run();
     }
     catch (const std::exception& e)
