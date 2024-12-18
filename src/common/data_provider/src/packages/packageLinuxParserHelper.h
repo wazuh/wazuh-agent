@@ -69,15 +69,15 @@ namespace PackageLinuxHelper
         {
             ret["name"] = info.at("Package");
 
-            std::string priority {UNKNOWN_VALUE};
-            std::string groups {UNKNOWN_VALUE};
+            nlohmann::json priority {UNKNOWN_VALUE};
+            nlohmann::json groups {UNKNOWN_VALUE};
             // The multiarch field won't have a default value
-            std::string multiarch;
-            std::string architecture {UNKNOWN_VALUE};
-            std::string source {UNKNOWN_VALUE};
-            std::string version {UNKNOWN_VALUE};
-            std::string vendor {UNKNOWN_VALUE};
-            std::string description {UNKNOWN_VALUE};
+            nlohmann::json multiarch;
+            nlohmann::json architecture {UNKNOWN_VALUE};
+            nlohmann::json source {UNKNOWN_VALUE};
+            nlohmann::json version {UNKNOWN_VALUE};
+            nlohmann::json vendor {UNKNOWN_VALUE};
+            nlohmann::json description {UNKNOWN_VALUE};
             int size                 { 0 };
 
             auto it{info.find("Priority")};
@@ -167,9 +167,9 @@ namespace PackageLinuxHelper
 
         std::string name;
         std::string version;
-        std::string vendor       { UNKNOWN_VALUE };
-        std::string install_time { UNKNOWN_VALUE };
-        std::string description  { UNKNOWN_VALUE };
+        nlohmann::json vendor       { UNKNOWN_VALUE };
+        nlohmann::json install_time { UNKNOWN_VALUE };
+        nlohmann::json description  { UNKNOWN_VALUE };
         int         size         { 0 };
         bool        hasName      { false };
         bool        hasVersion   { false };

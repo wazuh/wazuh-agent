@@ -12,6 +12,7 @@
 #ifndef _NETWORK_INTERFACE_WRAPPER_H
 #define _NETWORK_INTERFACE_WRAPPER_H
 #include "inetworkInterface.h"
+#include <optional>
 
 class INetworkInterfaceWrapper
 {
@@ -24,7 +25,7 @@ class INetworkInterfaceWrapper
         virtual std::string adapter() const = 0;
         virtual std::string address() const = 0;
         virtual std::string netmask() const = 0;
-        virtual std::string broadcast() const = 0;
+        virtual std::optional<std::string> broadcast() const = 0;
         virtual std::string addressV6() const = 0;
         virtual std::string netmaskV6() const = 0;
         virtual std::string broadcastV6() const = 0;
@@ -34,8 +35,8 @@ class INetworkInterfaceWrapper
         virtual std::string dhcp() const = 0;
         virtual uint32_t mtu() const = 0;
         virtual LinkStats stats() const = 0;
-        virtual std::string type() const = 0;
-        virtual std::string state() const = 0;
-        virtual std::string MAC() const = 0;
+        virtual std::optional<std::string> type() const = 0;
+        virtual std::optional<std::string> state() const = 0;
+        virtual std::optional<std::string> MAC() const = 0;
 };
 #endif // _NETWORK_INTERFACE_WRAPPER_H

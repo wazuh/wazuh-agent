@@ -137,36 +137,36 @@ static nlohmann::json getProcessInfo(const SysInfoProcess& process)
     return jsProcessInfo;
 }
 
-static std::string getSerialNumber()
+static std::optional<std::string> getSerialNumber()
 {
-    std::string serial;
     std::fstream file{WM_SYS_HW_DIR, std::ios_base::in};
 
     if (file.is_open())
     {
+        std::string serial;
         file >> serial;
-    }
-    else
-    {
-        serial = UNKNOWN_VALUE;
+
+        if (!serial.empty())
+        {
+            return serial;
+        }
     }
 
-    return serial;
+    return std::nullopt;
 }
 
-static std::string getCpuName()
+static std::optional<std::string> getCpuName()
 {
-    std::string retVal { UNKNOWN_VALUE };
     std::map<std::string, std::string> systemInfo;
     getSystemInfo(WM_SYS_CPU_DIR, ":", systemInfo);
     const auto& it { systemInfo.find("model name") };
 
     if (it != systemInfo.end())
     {
-        retVal = it->second;
+        return it->second;
     }
 
-    return retVal;
+    return std::nullopt;
 }
 
 static int getCpuCores()
@@ -272,8 +272,8 @@ static void getMemory(nlohmann::json& info)
 nlohmann::json SysInfo::getHardware() const
 {
     nlohmann::json hardware;
-    hardware["board_serial"] = getSerialNumber();
-    hardware["cpu_name"] = getCpuName();
+    hardware["board_serial"] = getSerialNumber().value_or(UNKNOWN_VALUE);
+    hardware["cpu_name"] = getCpuName().value_or(UNKNOWN_VALUE);
     hardware["cpu_cores"] = getCpuCores();
     hardware["cpu_mhz"] = double(getCpuMHz());
     getMemory(hardware);

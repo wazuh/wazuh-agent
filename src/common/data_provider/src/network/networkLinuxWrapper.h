@@ -255,7 +255,7 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
     public:
         explicit NetworkLinuxInterface(ifaddrs* addrs)
             : m_interfaceAddress{ addrs }
-            , m_gateway{UNKNOWN_VALUE}
+            , m_gateway{}
         {
             if (!addrs)
             {
@@ -319,13 +319,11 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
             return m_interfaceAddress->ifa_netmask ? getNameInfo(m_interfaceAddress->ifa_netmask, sizeof(struct sockaddr_in)) : "";
         }
 
-        std::string broadcast() const override
+        std::optional<std::string> broadcast() const override
         {
-            std::string retVal { UNKNOWN_VALUE };
-
             if (m_interfaceAddress->ifa_ifu.ifu_broadaddr)
             {
-                retVal = getNameInfo(m_interfaceAddress->ifa_ifu.ifu_broadaddr, sizeof(struct sockaddr_in));
+                return getNameInfo(m_interfaceAddress->ifa_ifu.ifu_broadaddr, sizeof(struct sockaddr_in));
             }
             else
             {
@@ -335,11 +333,14 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
                 if (address.size() && netmask.size())
                 {
                     const auto broadcast { Utils::NetworkHelper::getBroadcast(address, netmask) };
-                    retVal =  broadcast.empty() ? UNKNOWN_VALUE : broadcast;
+                    if(!broadcast.empty())
+                    {
+                        return broadcast;
+                    }
                 }
             }
 
-            return retVal;
+            return std::nullopt;
         }
 
         std::string addressV6() const override
@@ -506,45 +507,40 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
             return retVal;
         }
 
-        std::string type() const override
+        std::optional<std::string> type() const override
         {
             const auto networkTypeCode { Utils::getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/type") };
-            std::string type { UNKNOWN_VALUE };
 
             if (!networkTypeCode.empty())
             {
-                type = Utils::NetworkHelper::getNetworkTypeStringCode(std::stoi(networkTypeCode), NETWORK_INTERFACE_TYPE);
+                return Utils::NetworkHelper::getNetworkTypeStringCode(std::stoi(networkTypeCode), NETWORK_INTERFACE_TYPE);
             }
 
-            return type;
+            return std::nullopt;
         }
 
-        std::string state() const override
+        std::optional<std::string> state() const override
         {
             const std::string operationalState { Utils::getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/operstate") };
 
-            std::string state { UNKNOWN_VALUE };
-
             if (!operationalState.empty())
             {
-                state = Utils::splitIndex(operationalState, '\n', 0);
+                return Utils::splitIndex(operationalState, '\n', 0);
             }
 
-            return state;
+            return std::nullopt;
         }
 
-        std::string MAC() const override
+        std::optional<std::string> MAC() const override
         {
             const std::string macContent { Utils::getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/address")};
 
-            std::string mac { UNKNOWN_VALUE };
-
             if (!macContent.empty())
             {
-                mac = Utils::splitIndex(macContent, '\n', 0);
+                return Utils::splitIndex(macContent, '\n', 0);
             }
 
-            return mac;
+            return std::nullopt;
         }
 };
 
