@@ -8,7 +8,7 @@
 #include <timeHelper.h>
 
 constexpr std::time_t INVENTORY_DEFAULT_INTERVAL { 3600000 };
-constexpr auto UNKNOWN_VALUE {" "};
+constexpr auto UNKNOWN_VALUE {nullptr};
 constexpr auto EMPTY_VALUE {""};
 constexpr auto UNKNOWN_DATE = nullptr;
 constexpr size_t MAX_ID_SIZE = 512;
@@ -48,7 +48,6 @@ constexpr auto OS_SQL_STATEMENT
     version TEXT,
     os_release TEXT,
     os_display_version TEXT,
-    checksum TEXT,
     PRIMARY KEY (os_name)) WITHOUT ROWID;)"
 };
 
@@ -62,7 +61,6 @@ constexpr auto HW_SQL_STATEMENT
     ram_total INTEGER,
     ram_free INTEGER,
     ram_usage INTEGER,
-    checksum TEXT,
     PRIMARY KEY (board_serial)) WITHOUT ROWID;)"
 };
 
@@ -70,7 +68,6 @@ constexpr auto HOTFIXES_SQL_STATEMENT
 {
     R"(CREATE TABLE hotfixes(
     hotfix TEXT,
-    checksum TEXT,
     PRIMARY KEY (hotfix)) WITHOUT ROWID;)"
 };
 
@@ -90,7 +87,6 @@ constexpr auto PACKAGES_SQL_STATEMENT
     multiarch TEXT,
     source TEXT,
     format TEXT,
-    checksum TEXT,
     item_id TEXT,
     PRIMARY KEY (name,version,architecture,format,location)) WITHOUT ROWID;)"
 };
@@ -127,7 +123,6 @@ constexpr auto PROCESSES_SQL_STATEMENT
     tgid BIGINT,
     tty BIGINT,
     processor BIGINT,
-    checksum TEXT,
     PRIMARY KEY (pid)) WITHOUT ROWID;)"
 };
 
@@ -145,7 +140,6 @@ constexpr auto PORTS_SQL_STATEMENT
        state TEXT,
        pid BIGINT,
        process TEXT,
-       checksum TEXT,
        item_id TEXT,
        PRIMARY KEY (inode,protocol,local_ip,local_port)) WITHOUT ROWID;)"
 };
@@ -176,7 +170,6 @@ constexpr auto NETWORK_SQL_STATEMENT
         netmask TEXT,
         broadcast TEXT,
         network_item_id TEXT,
-        network_checksum TEXT,
         PRIMARY KEY (iface, adapter, iface_type, proto_type, address)
         ) WITHOUT ROWID;)"
 };
@@ -478,12 +471,12 @@ nlohmann::json Inventory::EcsHardwareData(const nlohmann::json& originalData)
     nlohmann::json ret;
 
     ret["observer"]["serial_number"] = originalData.contains("board_serial") ? originalData["board_serial"] : "";
-    ret["host"]["cpu"]["name"] = originalData.contains("cpu_name") ? originalData["cpu_name"] : "";
-    ret["host"]["cpu"]["cores"] = originalData.contains("cpu_cores") ? originalData["cpu_cores"] : nlohmann::json(0);
-    ret["host"]["cpu"]["speed"] = originalData.contains("cpu_mhz") ? originalData["cpu_mhz"] : nlohmann::json(0);
-    ret["host"]["memory"]["total"] = originalData.contains("ram_total") ? originalData["ram_total"] : nlohmann::json(0);
-    ret["host"]["memory"]["free"] = originalData.contains("ram_free") ? originalData["ram_free"] : nlohmann::json(0);
-    ret["host"]["memory"]["used"]["percentage"] = originalData.contains("ram_usage") ? originalData["ram_usage"] : nlohmann::json(0);
+    ret["host"]["cpu"]["name"] = originalData.contains("cpu_name") ? originalData["cpu_name"] : UNKNOWN_VALUE;
+    ret["host"]["cpu"]["cores"] = originalData.contains("cpu_cores") ? originalData["cpu_cores"] : UNKNOWN_VALUE;
+    ret["host"]["cpu"]["speed"] = originalData.contains("cpu_mhz") ? originalData["cpu_mhz"] : UNKNOWN_VALUE;
+    ret["host"]["memory"]["total"] = originalData.contains("ram_total") ? originalData["ram_total"] : UNKNOWN_VALUE;
+    ret["host"]["memory"]["free"] = originalData.contains("ram_free") ? originalData["ram_free"] : UNKNOWN_VALUE;
+    ret["host"]["memory"]["used"]["percentage"] = originalData.contains("ram_usage") ? originalData["ram_usage"] : UNKNOWN_VALUE;
 
     return ret;
 }
