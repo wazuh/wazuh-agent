@@ -4,7 +4,6 @@
 
 #include <config.h>
 #include <logger.hpp>
-#include <message.hpp>
 
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -59,8 +58,8 @@ namespace communicator
             m_retryInterval = getConfigValue.template operator()<std::time_t>("agent", "retry_interval")
                                   .value_or(config::agent::DEFAULT_RETRY_INTERVAL);
 
-            m_batchSize = getConfigValue.template operator()<MessageSize>("events", "batch_size")
-                              .value_or(MessageSize(config::agent::DEFAULT_BATCH_SIZE));
+            m_batchSize = getConfigValue.template operator()<size_t>("events", "batch_size")
+                              .value_or(config::agent::DEFAULT_BATCH_SIZE);
 
             if (m_batchSize < 1000ULL || m_batchSize > 100000000ULL)
             {
@@ -85,14 +84,14 @@ namespace communicator
         /// @param getMessages A function to retrieve a message from the queue
         /// @param onSuccess A callback function to execute when a message is processed
         boost::asio::awaitable<void> StatefulMessageProcessingTask(
-            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const MessageSize)> getMessages,
+            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> getMessages,
             std::function<void(const int, const std::string&)> onSuccess);
 
         /// @brief Processes messages in a stateless manner
         /// @param getMessages A function to retrieve a message from the queue
         /// @param onSuccess A callback function to execute when a message is processed
         boost::asio::awaitable<void> StatelessMessageProcessingTask(
-            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const MessageSize)> getMessages,
+            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> getMessages,
             std::function<void(const int, const std::string&)> onSuccess);
 
         /// @brief Retrieves group configuration from the manager
@@ -128,7 +127,7 @@ namespace communicator
         std::time_t m_retryInterval = config::agent::DEFAULT_RETRY_INTERVAL;
 
         /// @brief Size for batch requests
-        MessageSize m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
+        size_t m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
 
         /// @brief The server URL
         std::string m_serverUrl;

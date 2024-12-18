@@ -192,7 +192,7 @@ namespace configuration
         LogInfo("Reload configuration done.");
     }
 
-    MessageSize ConfigurationParser::ParseSizeUnit(const std::string& option) const
+    size_t ConfigurationParser::ParseSizeUnit(const std::string& option) const
     {
         std::string number;
         unsigned int multiplier = 1;
@@ -242,6 +242,6 @@ namespace configuration
             throw std::invalid_argument("Invalid size unit: " + option);
         }
 
-        return static_cast<MessageSize>(std::stoul(number) * multiplier);
+        return static_cast<size_t>(std::stoul(number) * multiplier);
     }
 } // namespace configuration

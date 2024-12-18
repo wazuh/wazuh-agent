@@ -140,7 +140,7 @@ namespace communicator
     }
 
     boost::asio::awaitable<void> Communicator::StatefulMessageProcessingTask(
-        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const MessageSize)> getMessages,
+        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> getMessages,
         std::function<void(const int, const std::string&)> onSuccess)
     {
         auto onAuthenticationFailed = [this]()
@@ -168,7 +168,7 @@ namespace communicator
     }
 
     boost::asio::awaitable<void> Communicator::StatelessMessageProcessingTask(
-        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const MessageSize)> getMessages,
+        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> getMessages,
         std::function<void(const int, const std::string&)> onSuccess)
     {
         auto onAuthenticationFailed = [this]()

@@ -27,7 +27,7 @@ public:
 
     MOCK_METHOD(boost::asio::awaitable<std::vector<Message>>,
                 getNextBytesAwaitable,
-                (MessageType, const MessageSize, const std::string, const std::string),
+                (MessageType, const size_t, const std::string, const std::string),
                 (override));
     MOCK_METHOD(int, popN, (MessageType, int, const std::string), (override));
     MOCK_METHOD(int, push, (Message, bool), (override));
@@ -48,7 +48,6 @@ protected:
     std::shared_ptr<MockMultiTypeQueue> mockQueue;
 
     const size_t MIN_SIZE_OF_MESSAGES = 10;
-    const MessageSize MIN_MESSAGES_SIZE {MIN_SIZE_OF_MESSAGES};
 };
 
 TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTestBySize)
@@ -59,7 +58,7 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTestBySize)
     testMessages.emplace_back(MessageType::STATELESS, data, "", "", metadata);
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    EXPECT_CALL(*mockQueue, getNextBytesAwaitable(MessageType::STATELESS, MIN_MESSAGES_SIZE, "", ""))
+    EXPECT_CALL(*mockQueue, getNextBytesAwaitable(MessageType::STATELESS, MIN_SIZE_OF_MESSAGES, "", ""))
         .WillOnce([&testMessages]() -> boost::asio::awaitable<std::vector<Message>> { co_return testMessages; });
     // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
@@ -93,7 +92,7 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueMetadataTest)
     metadata["agent"] = "test";
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    EXPECT_CALL(*mockQueue, getNextBytesAwaitable(MessageType::STATELESS, MIN_MESSAGES_SIZE, "", ""))
+    EXPECT_CALL(*mockQueue, getNextBytesAwaitable(MessageType::STATELESS, MIN_SIZE_OF_MESSAGES, "", ""))
         .WillOnce([&testMessages]() -> boost::asio::awaitable<std::vector<Message>> { co_return testMessages; });
     // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
@@ -131,7 +130,7 @@ TEST_F(MessageQueueUtilsTest, GetEmptyMessagesFromQueueTest)
     metadata["agent"] = "test";
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    EXPECT_CALL(*mockQueue, getNextBytesAwaitable(MessageType::STATEFUL, MIN_MESSAGES_SIZE, "", ""))
+    EXPECT_CALL(*mockQueue, getNextBytesAwaitable(MessageType::STATEFUL, MIN_SIZE_OF_MESSAGES, "", ""))
         .WillOnce([&testMessages]() -> boost::asio::awaitable<std::vector<Message>> { co_return testMessages; });
     // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 

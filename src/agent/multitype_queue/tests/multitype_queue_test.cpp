@@ -650,9 +650,8 @@ TEST_F(MultiTypeQueueTest, GetBySizeAboveMax)
     }
     // Duplicate to surpass the maximun
     sizeAsked *= 2;
-    const MessageSize messagesSize {sizeAsked};
 
-    auto messagesReceived = multiTypeQueue.getNextBytes(MessageType::STATELESS, messagesSize);
+    auto messagesReceived = multiTypeQueue.getNextBytes(MessageType::STATELESS, sizeAsked);
     int i = 0;
     for (const auto& singleMessage : messagesReceived)
     {
@@ -676,8 +675,7 @@ TEST_F(MultiTypeQueueTest, GetByBelowMax)
     sizeAsked += moduleName.size();
     // Fetching less than a single message size
     sizeAsked -= 1;
-    const MessageSize messagesSize {sizeAsked};
 
-    auto messagesReceived = multiTypeQueue.getNextBytes(MessageType::STATELESS, messagesSize);
+    auto messagesReceived = multiTypeQueue.getNextBytes(MessageType::STATELESS, sizeAsked);
     EXPECT_EQ(1, messagesReceived.size());
 }

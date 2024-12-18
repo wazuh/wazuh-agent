@@ -67,7 +67,7 @@ public:
      * @return boost::asio::awaitable<std::vector<Message>> Awaitable object representing the next N messages.
      */
     virtual boost::asio::awaitable<std::vector<Message>> getNextBytesAwaitable(MessageType type,
-                                                                               const MessageSize messageQuantity,
+                                                                               const size_t messageQuantity,
                                                                                const std::string moduleName = "",
                                                                                const std::string moduleType = "") = 0;
     /**
@@ -94,7 +94,7 @@ public:
      * @return std::vector<Message> A vector of messages fetched from the queue.
      */
     virtual std::vector<Message> getNextBytes(MessageType type,
-                                              const MessageSize messageQuantity,
+                                              const size_t messageQuantity,
                                               const std::string moduleName = "",
                                               const std::string moduleType = "") = 0;
 

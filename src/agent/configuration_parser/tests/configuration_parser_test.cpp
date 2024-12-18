@@ -436,8 +436,9 @@ TEST_F(ConfigurationParserFileTest, isValidYamlFileValid)
 
 TEST(ConfigurationParser, GetConfigBytes)
 {
+    //Config should contain batch_size string in order to apply parsing
     std::string strConfig = R"(
-        agent_array:
+        batch_size:
           size_bytes: 500B
           size_KB: 45KB
           size_MB: 1MB
@@ -447,21 +448,21 @@ TEST(ConfigurationParser, GetConfigBytes)
           size_default_KB: 53
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<MessageSize>("agent_array", "size_bytes").value_or(MessageSize(1234));
-    ASSERT_EQ(ret.size, 500);
-    const auto retKB = parserStr->GetConfig<MessageSize>("agent_array", "size_KB").value_or(MessageSize(1234));
-    ASSERT_EQ(retKB.size, 45000);
-    const auto retMB = parserStr->GetConfig<MessageSize>("agent_array", "size_MB").value_or(MessageSize(1234));
-    ASSERT_EQ(retMB.size, 1000000);
-    const auto retM = parserStr->GetConfig<MessageSize>("agent_array", "size_M").value_or(MessageSize(1234));
-    ASSERT_EQ(retM.size, 4000000);
-    const auto retGB = parserStr->GetConfig<MessageSize>("agent_array", "size_GB").value_or(MessageSize(1234));
-    ASSERT_EQ(retGB.size, 2000000000);
-    const auto retG = parserStr->GetConfig<MessageSize>("agent_array", "size_G").value_or(MessageSize(1234));
-    ASSERT_EQ(retG.size, 3000000000);
+    const auto ret = parserStr->GetConfig<size_t>("batch_size", "size_bytes").value_or(1234);
+    ASSERT_EQ(ret, 500);
+    const auto retKB = parserStr->GetConfig<size_t>("batch_size", "size_KB").value_or(1234);
+    ASSERT_EQ(retKB, 45000);
+    const auto retMB = parserStr->GetConfig<size_t>("batch_size", "size_MB").value_or(1234);
+    ASSERT_EQ(retMB, 1000000);
+    const auto retM = parserStr->GetConfig<size_t>("batch_size", "size_M").value_or(1234);
+    ASSERT_EQ(retM, 4000000);
+    const auto retGB = parserStr->GetConfig<size_t>("batch_size", "size_GB").value_or(1234);
+    ASSERT_EQ(retGB, 2000000000);
+    const auto retG = parserStr->GetConfig<size_t>("batch_size", "size_G").value_or(1234);
+    ASSERT_EQ(retG, 3000000000);
     const auto retDefaultKB =
-        parserStr->GetConfig<MessageSize>("agent_array", "size_default_KB").value_or(MessageSize(1234));
-    ASSERT_EQ(retDefaultKB.size, 53);
+        parserStr->GetConfig<size_t>("batch_size", "size_default_KB").value_or(1234);
+    ASSERT_EQ(retDefaultKB, 53);
 }
 
 int main(int argc, char** argv)

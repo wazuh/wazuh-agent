@@ -98,10 +98,10 @@ namespace http_client
     boost::asio::awaitable<void> HttpClient::Co_PerformHttpRequest(
         std::shared_ptr<std::string> token,
         HttpRequestParams reqParams,
-        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const MessageSize)> messageGetter,
+        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> messageGetter,
         std::function<void()> onUnauthorized,
         std::time_t connectionRetry,
-        MessageSize batchSize,
+        size_t batchSize,
         std::function<void(const int, const std::string&)> onSuccess,
         std::function<bool()> loopRequestCondition)
     {

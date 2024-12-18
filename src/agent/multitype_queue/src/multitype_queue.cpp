@@ -141,7 +141,7 @@ Message MultiTypeQueue::getNext(MessageType type, const std::string moduleName, 
 }
 
 boost::asio::awaitable<std::vector<Message>> MultiTypeQueue::getNextBytesAwaitable(MessageType type,
-                                                                                   const MessageSize messageQuantity,
+                                                                                   const size_t messageQuantity,
                                                                                    const std::string moduleName,
                                                                                    const std::string moduleType)
 {
@@ -151,21 +151,18 @@ boost::asio::awaitable<std::vector<Message>> MultiTypeQueue::getNextBytesAwaitab
     if (m_mapMessageTypeName.contains(type))
     {
         //  waits for specified size stored
-        auto sizeRequestedAux = messageQuantity;
-        auto sizeRequested = sizeRequestedAux.size;
-
         boost::asio::steady_timer batchTimeoutTimer(co_await boost::asio::this_coro::executor);
         batchTimeoutTimer.expires_after(std::chrono::milliseconds(m_batchInterval));
 
-        while ((sizePerType(type) < sizeRequested) && (batchTimeoutTimer.expiry() > std::chrono::steady_clock::now()))
+        while ((sizePerType(type) < messageQuantity) && (batchTimeoutTimer.expiry() > std::chrono::steady_clock::now()))
         {
             timer.expires_after(std::chrono::milliseconds(m_timeout));
             co_await timer.async_wait(boost::asio::use_awaitable);
         }
 
-        if (sizePerType(type) >= sizeRequested)
+        if (sizePerType(type) >= messageQuantity)
         {
-            LogDebug("Required size achieved: {}B", sizeRequested);
+            LogDebug("Required size achieved: {}B", messageQuantity);
         }
         else
         {
@@ -208,16 +205,15 @@ boost::asio::awaitable<std::vector<Message>> MultiTypeQueue::getNextNAwaitable(M
 }
 
 std::vector<Message> MultiTypeQueue::getNextBytes(MessageType type,
-                                                  const MessageSize messageQuantity,
+                                                  const size_t messageQuantity,
                                                   const std::string moduleName,
                                                   const std::string moduleType)
 {
     std::vector<Message> result;
     if (m_mapMessageTypeName.contains(type))
     {
-        nlohmann::json arrayData;
-        arrayData = m_persistenceDest->RetrieveBySize(
-            messageQuantity.size, m_mapMessageTypeName.at(type), moduleName, moduleType);
+        auto arrayData = m_persistenceDest->RetrieveBySize(
+            messageQuantity, m_mapMessageTypeName.at(type), moduleName, moduleType);
 
         for (auto singleJson : arrayData)
         {

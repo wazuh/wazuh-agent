@@ -22,7 +22,7 @@ class IMultiTypeQueue;
 boost::asio::awaitable<std::tuple<int, std::string>>
 GetMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue,
                      MessageType messageType,
-                     const MessageSize messagesSize,
+                     const size_t messagesSize,
                      std::function<std::string()> getMetadataInfo);
 
 /// @brief Removes a fixed number of messages from the specified queue

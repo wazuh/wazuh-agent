@@ -141,15 +141,15 @@ public:
     Message getNext(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
     /**
-     * @copydoc IMultiTypeQueue::getNextBytesAwaitable(MessageType type, std::variant<const int, const MessageSize>
+     * @copydoc IMultiTypeQueue::getNextBytesAwaitable(MessageType type, const size_t
      * messageQuantity, const std::string moduleName, const std::string moduleType)
      */
     boost::asio::awaitable<std::vector<Message>> getNextBytesAwaitable(MessageType type,
-                                                                       const MessageSize messageQuantity,
+                                                                       const size_t messageQuantity,
                                                                        const std::string moduleName = "",
                                                                        const std::string moduleType = "") override;
     /**
-     * @copydoc IMultiTypeQueue::getNextNAwaitable(MessageType type, std::variant<const int, const MessageSize>
+     * @copydoc IMultiTypeQueue::getNextNAwaitable(MessageType type, const size_t
      * messageQuantity, const std::string moduleName, const std::string moduleType)
      */
     boost::asio::awaitable<std::vector<Message>> getNextNAwaitable(MessageType type,
@@ -158,10 +158,10 @@ public:
                                                                    const std::string moduleType = "") override;
 
     /**
-     * @copydoc IMultiTypeQueue::getNextBytes(MessageType, int, const std::string, const std::string)
+     * @copydoc IMultiTypeQueue::getNextBytes(MessageType, size_t, const std::string, const std::string)
      */
     std::vector<Message> getNextBytes(MessageType type,
-                                      const MessageSize messageQuantity,
+                                      const size_t messageQuantity,
                                       const std::string moduleName = "",
                                       const std::string moduleType = "") override;
 
