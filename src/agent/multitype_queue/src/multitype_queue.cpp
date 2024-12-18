@@ -1,29 +1,9 @@
 #include <multitype_queue.hpp>
 
-#include <logger.hpp>
-#include <persistence_factory.hpp>
+#include <boost/asio.hpp>
 
 #include <stop_token>
 #include <utility>
-
-constexpr int DEFAULT_TIMER_IN_MS = 100;
-
-MultiTypeQueue::MultiTypeQueue(const std::string& dbFolderPath, size_t size, int timeout)
-    : m_maxItems(size)
-    , m_timeout(timeout)
-{
-    const auto dbFilePath = dbFolderPath + "/" + QUEUE_DB_NAME;
-
-    try
-    {
-        m_persistenceDest = PersistenceFactory::createPersistence(PersistenceFactory::PersistenceType::SQLITE3,
-                                                                  {dbFilePath, m_vMessageTypeStrings});
-    }
-    catch (const std::exception& e)
-    {
-        LogError("Error creating persistence: {}.", e.what());
-    }
-}
 
 int MultiTypeQueue::push(Message message, bool shouldWait)
 {
@@ -90,18 +70,18 @@ boost::asio::awaitable<int> MultiTypeQueue::pushAwaitable(Message message)
 
         while (static_cast<size_t>(m_persistenceDest->GetElementCount(sMessageType)) >= m_maxItems)
         {
-            timer.expires_after(std::chrono::milliseconds(DEFAULT_TIMER_IN_MS));
+            timer.expires_after(std::chrono::milliseconds(m_timeout));
             co_await timer.async_wait(boost::asio::use_awaitable);
         }
 
-        const auto storedMessages = static_cast<size_t>(m_persistenceDest->GetElementCount(sMessageType));
-        const auto spaceAvailable = (m_maxItems > storedMessages) ? m_maxItems - storedMessages : 0;
-        if (spaceAvailable)
+        const auto storedItems = static_cast<size_t>(m_persistenceDest->GetElementCount(sMessageType));
+        const auto availableItems = (m_maxItems > storedItems) ? m_maxItems - storedItems : 0;
+        if (availableItems)
         {
             auto messageData = message.data;
             if (messageData.is_array())
             {
-                if (messageData.size() <= spaceAvailable)
+                if (messageData.size() <= availableItems)
                 {
                     for (const auto& singleMessageData : messageData)
                     {
@@ -155,47 +135,60 @@ Message MultiTypeQueue::getNext(MessageType type, const std::string moduleName, 
     }
     else
     {
-        // TODO: error handling
         LogError("Error didn't find the queue.");
     }
     return result;
 }
 
-boost::asio::awaitable<std::vector<Message>> MultiTypeQueue::getNextNAwaitable(MessageType type,
-                                                                               int messageQuantity,
-                                                                               const std::string moduleName,
-                                                                               const std::string moduleType)
+boost::asio::awaitable<std::vector<Message>> MultiTypeQueue::getNextBytesAwaitable(MessageType type,
+                                                                                   const size_t messageQuantity,
+                                                                                   const std::string moduleName,
+                                                                                   const std::string moduleType)
 {
     boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
 
     std::vector<Message> result;
     if (m_mapMessageTypeName.contains(type))
     {
-        while (isEmpty(type))
+        //  waits for specified size stored
+        boost::asio::steady_timer batchTimeoutTimer(co_await boost::asio::this_coro::executor);
+        batchTimeoutTimer.expires_after(std::chrono::milliseconds(m_batchInterval));
+
+        while ((sizePerType(type) < messageQuantity) && (batchTimeoutTimer.expiry() > std::chrono::steady_clock::now()))
         {
-            timer.expires_after(std::chrono::milliseconds(DEFAULT_TIMER_IN_MS));
+            timer.expires_after(std::chrono::milliseconds(m_timeout));
             co_await timer.async_wait(boost::asio::use_awaitable);
         }
-        result = getNextN(type, messageQuantity, moduleName, moduleType);
+
+        if (sizePerType(type) >= messageQuantity)
+        {
+            LogDebug("Required size achieved: {}B", messageQuantity);
+        }
+        else
+        {
+            LogDebug("Timeout reached after {}ms", m_batchInterval);
+        }
+
+        result = getNextBytes(type, messageQuantity, moduleName, moduleType);
     }
     else
     {
-        // TODO: error handling
         LogError("Error didn't find the queue.");
     }
     co_return result;
 }
 
-std::vector<Message> MultiTypeQueue::getNextN(MessageType type,
-                                              int messageQuantity,
-                                              const std::string moduleName,
-                                              const std::string moduleType)
+std::vector<Message> MultiTypeQueue::getNextBytes(MessageType type,
+                                                  const size_t messageQuantity,
+                                                  const std::string moduleName,
+                                                  const std::string moduleType)
 {
     std::vector<Message> result;
     if (m_mapMessageTypeName.contains(type))
     {
         auto arrayData =
-            m_persistenceDest->RetrieveMultiple(messageQuantity, m_mapMessageTypeName.at(type), moduleName, moduleType);
+            m_persistenceDest->RetrieveBySize(messageQuantity, m_mapMessageTypeName.at(type), moduleName, moduleType);
+
         for (auto singleJson : arrayData)
         {
             result.emplace_back(
@@ -204,7 +197,6 @@ std::vector<Message> MultiTypeQueue::getNextN(MessageType type,
     }
     else
     {
-        // TODO: error handling
         LogError("Error didn't find the queue.");
     }
     return result;
@@ -219,7 +211,6 @@ bool MultiTypeQueue::pop(MessageType type, const std::string moduleName)
     }
     else
     {
-        // TODO: error handling
         LogError("Error didn't find the queue.");
     }
     return result;
@@ -234,7 +225,6 @@ int MultiTypeQueue::popN(MessageType type, int messageQuantity, const std::strin
     }
     else
     {
-        // TODO: error handling
         LogError("Error didn't find the queue.");
     }
     return result;
@@ -248,7 +238,6 @@ bool MultiTypeQueue::isEmpty(MessageType type, const std::string moduleName)
     }
     else
     {
-        // TODO: error handling
         LogError("Error didn't find the queue.");
     }
     return false;
@@ -263,7 +252,6 @@ bool MultiTypeQueue::isFull(MessageType type, const std::string moduleName)
     }
     else
     {
-        // TODO: error handling
         LogError("Error didn't find the queue.");
     }
     return false;
@@ -277,7 +265,19 @@ int MultiTypeQueue::storedItems(MessageType type, const std::string moduleName)
     }
     else
     {
-        // TODO: error handling
+        LogError("Error didn't find the queue.");
+    }
+    return false;
+}
+
+size_t MultiTypeQueue::sizePerType(MessageType type)
+{
+    if (m_mapMessageTypeName.contains(type))
+    {
+        return m_persistenceDest->GetElementsStoredSize(m_mapMessageTypeName.at(type));
+    }
+    else
+    {
         LogError("Error didn't find the queue.");
     }
     return false;

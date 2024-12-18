@@ -5,7 +5,6 @@
 
 #include <logcollector.hpp>
 #include <file_reader.hpp>
-#include "queue_mock.hpp"
 #include "tempfile.hpp"
 #include "logcollector_mock.hpp"
 

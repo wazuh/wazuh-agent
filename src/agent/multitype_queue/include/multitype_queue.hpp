@@ -1,8 +1,13 @@
 #pragma once
 
 #include <imultitype_queue.hpp>
-#include <message.hpp>
 #include <persistence.hpp>
+#include <persistence_factory.hpp>
+
+#include <config.h>
+#include <logger.hpp>
+
+#include <boost/asio/awaitable.hpp>
 
 #include <chrono>
 #include <condition_variable>
@@ -12,12 +17,7 @@
 #include <string>
 #include <vector>
 
-#include <boost/asio.hpp>
-
-// TODO: move to a configuration setting
-constexpr int DEFAULT_MAX = 10000;
-constexpr int DEFAULT_TIMEOUT_S = 3;
-const std::string QUEUE_DB_NAME = "queue.db";
+constexpr auto QUEUE_DB_NAME = "queue.db";
 
 /**
  * @brief MultiTypeQueue implementation that handles multiple types of messages.
@@ -34,21 +34,66 @@ private:
         {MessageType::STATEFUL, "STATEFUL"},
         {MessageType::COMMAND, "COMMAND"},
     };
-    const size_t m_maxItems;
-    const std::chrono::seconds m_timeout;
+
+    /// @brief maximun quantity of message to stored on the queue
+    size_t m_maxItems;
+
+    /// @brief timeout in milliseconds for refreshing the queue status
+    const std::chrono::milliseconds m_timeout;
+
+    /// @brief class for persistence implementation
     std::unique_ptr<Persistence> m_persistenceDest;
+
+    /// @brief mutex for protecting the queue access
     std::mutex m_mtx;
+
+    /// @brief condition variable related to the mutex
     std::condition_variable m_cv;
+
+    /// @brief Time between batch requests
+    std::time_t m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
 
 public:
     /**
      * @brief Constructor.
-     *
-     * @param dbFolderPath The path to the database folder.
-     * @param size The maximum number of items in the queue.
-     * @param timeout The timeout period in seconds.
+     * @param getConfigValue Function to retrieve configuration values
      */
-    MultiTypeQueue(const std::string& dbFolderPath, size_t size = DEFAULT_MAX, int timeout = DEFAULT_TIMEOUT_S);
+    template<typename ConfigGetter>
+    MultiTypeQueue(const ConfigGetter& getConfigValue)
+        : m_timeout(config::agent::QUEUE_STATUS_REFRESH_TIMER)
+    {
+        auto dbFolderPath =
+            getConfigValue.template operator()<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH);
+
+        m_batchInterval = getConfigValue.template operator()<std::time_t>("events", "batch_interval")
+                              .value_or(config::agent::DEFAULT_BATCH_INTERVAL);
+
+        if (m_batchInterval < 1'000 || m_batchInterval > (1'000 * 60 * 60))
+        {
+            LogWarn("batch_interval must be between 1s and 1h. Using default value.");
+            m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
+        }
+
+        m_maxItems = getConfigValue.template operator()<size_t>("agent", "queue_size")
+                         .value_or(config::agent::QUEUE_DEFAULT_SIZE);
+        if (m_maxItems < 1'000 || m_maxItems > (1'000 * 60 * 60))
+        {
+            LogWarn("queue_size must be between 1'000 and 100'000'000. Using default value {}.",
+                    config::agent::QUEUE_DEFAULT_SIZE);
+            m_maxItems = config::agent::QUEUE_DEFAULT_SIZE;
+        }
+        const auto dbFilePath = dbFolderPath + "/" + QUEUE_DB_NAME;
+
+        try
+        {
+            m_persistenceDest = PersistenceFactory::createPersistence(PersistenceFactory::PersistenceType::SQLITE3,
+                                                                      {dbFilePath, m_vMessageTypeStrings});
+        }
+        catch (const std::exception& e)
+        {
+            LogError("Error creating persistence: {}.", e.what());
+        }
+    }
 
     /**
      * @brief Delete copy constructor
@@ -96,20 +141,21 @@ public:
     Message getNext(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
     /**
-     * @copydoc IMultiTypeQueue::getNextNAwaitable(MessageType, int, const std::string, const std::string)
+     * @copydoc IMultiTypeQueue::getNextBytesAwaitable(MessageType type, const size_t
+     * messageQuantity, const std::string moduleName, const std::string moduleType)
      */
-    boost::asio::awaitable<std::vector<Message>> getNextNAwaitable(MessageType type,
-                                                                   int messageQuantity,
-                                                                   const std::string moduleName = "",
-                                                                   const std::string moduleType = "") override;
+    boost::asio::awaitable<std::vector<Message>> getNextBytesAwaitable(MessageType type,
+                                                                       const size_t messageQuantity,
+                                                                       const std::string moduleName = "",
+                                                                       const std::string moduleType = "") override;
 
     /**
-     * @copydoc IMultiTypeQueue::getNextN(MessageType, int, const std::string, const std::string)
+     * @copydoc IMultiTypeQueue::getNextBytes(MessageType, size_t, const std::string, const std::string)
      */
-    std::vector<Message> getNextN(MessageType type,
-                                  int messageQuantity,
-                                  const std::string moduleName = "",
-                                  const std::string moduleType = "") override;
+    std::vector<Message> getNextBytes(MessageType type,
+                                      const size_t messageQuantity,
+                                      const std::string moduleName = "",
+                                      const std::string moduleType = "") override;
 
     /**
      * @copydoc IMultiTypeQueue::pop(MessageType, const std::string)
@@ -135,4 +181,9 @@ public:
      * @copydoc IMultiTypeQueue::storedItems(MessageType, const std::string)
      */
     int storedItems(MessageType type, const std::string moduleName = "") override;
+
+    /**
+     * @copydoc IMultiTypeQueue::sizePerType(MessageType type)
+     */
+    size_t sizePerType(MessageType type) override;
 };

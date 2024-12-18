@@ -16,7 +16,9 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
                                                          std::filesystem::path(configFilePath)))
     , m_dataPath(
           m_configurationParser->GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH))
-    , m_messageQueue(std::make_shared<MultiTypeQueue>(m_dataPath))
+    , m_messageQueue(std::make_shared<MultiTypeQueue>(
+          [this]<typename T>(std::string table, std::string key) -> std::optional<T>
+          { return m_configurationParser->GetConfig<T>(std::move(table), std::move(key)); }))
     , m_signalHandler(std::move(signalHandler))
     , m_agentInfo(
           m_dataPath, [this]() { return m_sysInfo.os(); }, [this]() { return m_sysInfo.networks(); })
@@ -113,7 +115,7 @@ void Agent::Run()
                               "FetchCommands");
 
     m_taskManager.EnqueueTask(m_communicator.StatefulMessageProcessingTask(
-                                  [this](const int numMessages)
+                                  [this](const size_t numMessages)
                                   {
                                       return GetMessagesFromQueue(m_messageQueue,
                                                                   MessageType::STATEFUL,
@@ -126,7 +128,7 @@ void Agent::Run()
                               "Stateful");
 
     m_taskManager.EnqueueTask(m_communicator.StatelessMessageProcessingTask(
-                                  [this](const int numMessages)
+                                  [this](const size_t numMessages)
                                   {
                                       return GetMessagesFromQueue(m_messageQueue,
                                                                   MessageType::STATELESS,

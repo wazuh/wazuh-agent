@@ -16,11 +16,10 @@ public:
                 Co_PerformHttpRequest,
                 (std::shared_ptr<std::string> token,
                  http_client::HttpRequestParams params,
-                 std::function<boost::asio::awaitable<intStringTuple>(const int)> messageGetter,
+                 std::function<boost::asio::awaitable<intStringTuple>(const size_t)> messageGetter,
                  std::function<void()> onUnauthorized,
                  std::time_t connectionRetry,
-                 std::time_t batchInterval,
-                 int batchSize,
+                 size_t batchSize,
                  std::function<void(const int, const std::string&)> onSuccess,
                  std::function<bool()> loopRequestCondition),
                 (override));

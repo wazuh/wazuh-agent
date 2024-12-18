@@ -90,24 +90,6 @@ TEST_F(SQLiteStorageTest, StoreMultipleMessagesWithModule)
     EXPECT_EQ(storage->GetElementCount(tableName, "unavailableModuleName"), 0);
 }
 
-TEST_F(SQLiteStorageTest, RetrieveMessage)
-{
-    const nlohmann::json message = {{"key", "value"}};
-    EXPECT_EQ(storage->Store(message, tableName), 1);
-    const auto retrievedMessage = storage->Retrieve(1, tableName);
-    EXPECT_EQ(retrievedMessage.at("data").at("key"), "value");
-}
-
-TEST_F(SQLiteStorageTest, RetrieveMessageWithModule)
-{
-    nlohmann::json message = {{"key", "value"}};
-    storage->Store(message, tableName, moduleName);
-    auto retrievedMessage = storage->Retrieve(1, tableName, "unavailableModuleName");
-    EXPECT_EQ(retrievedMessage.at("data"), nullptr);
-    retrievedMessage = storage->Retrieve(1, tableName, moduleName);
-    EXPECT_EQ(retrievedMessage.at("data").at("key"), "value");
-}
-
 TEST_F(SQLiteStorageTest, RetrieveMultipleMessages)
 {
     auto messages = nlohmann::json::array();
@@ -194,6 +176,80 @@ TEST_F(SQLiteStorageTest, GetElementCountWithModule)
     EXPECT_EQ(storage->GetElementCount(tableName), 1);
     EXPECT_EQ(storage->GetElementCount(tableName, moduleName), 1);
     EXPECT_EQ(storage->GetElementCount(tableName, "unavailableModuleName"), 0);
+}
+
+TEST_F(SQLiteStorageTest, MessagesSizes)
+{
+    auto messages = nlohmann::json::array();
+    messages.push_back({{"key", "value1"}});
+    messages.push_back({{"key", "value2"}});
+    auto val = storage->Store(messages, tableName);
+    EXPECT_EQ(val, 2);
+
+    auto storedSizes = storage->GetElementsStoredSize(tableName);
+    EXPECT_EQ(storedSizes, 32);
+
+    val = storage->Store(messages, tableName);
+    EXPECT_EQ(val, 2);
+
+    storedSizes = storage->GetElementsStoredSize(tableName);
+    EXPECT_EQ(storedSizes, 64);
+}
+
+TEST_F(SQLiteStorageTest, GetMessagesBySize)
+{
+    auto messages = nlohmann::json::array();
+    auto message1 = R"({{"key","value1"}})";
+    messages.push_back(message1);
+    messages.push_back({{"key", "value2"}});
+    auto val = storage->Store(messages, tableName);
+    EXPECT_EQ(val, 2);
+
+    auto storedSizes = storage->GetElementsStoredSize(tableName);
+    EXPECT_EQ(storedSizes, 40);
+
+    // Get all the messages by size
+    auto retrievedMessages = storage->RetrieveBySize(static_cast<size_t>(storedSizes), tableName);
+    EXPECT_EQ(retrievedMessages.size(), 2);
+
+    // Get 1 message by it size
+    retrievedMessages = storage->RetrieveBySize(std::strlen(message1), tableName);
+    EXPECT_EQ(retrievedMessages.size(), 1);
+}
+
+TEST_F(SQLiteStorageTest, GetMessagesBySizeLower)
+{
+    auto messages = nlohmann::json::array();
+    auto message1 = R"({{"key","value1"}})";
+    messages.push_back(message1);
+    messages.push_back({{"key", "value2"}});
+    auto val = storage->Store(messages, tableName);
+    EXPECT_EQ(val, 2);
+
+    auto storedSizes = storage->GetElementsStoredSize(tableName);
+    EXPECT_EQ(storedSizes, 40);
+
+    // Get messages by size requesting half of size
+    auto retrievedMessages = storage->RetrieveBySize(static_cast<size_t>(storedSizes / 2), tableName);
+    EXPECT_EQ(retrievedMessages.size(), 1);
+}
+
+TEST_F(SQLiteStorageTest, GetMessagesByMoreSize)
+{
+    auto messages = nlohmann::json::array();
+    auto message1 = R"({{"key","value1"}})";
+    messages.push_back(message1);
+    messages.push_back({{"key", "value2"}});
+    auto val = storage->Store(messages, tableName);
+    EXPECT_EQ(val, 2);
+
+    auto storedSizes = storage->GetElementsStoredSize(tableName);
+    EXPECT_EQ(storedSizes, 40);
+
+    // Get all the messages requesting more than available
+    auto retrievedMessages = storage->RetrieveBySize(static_cast<size_t>(storedSizes * 2), tableName);
+    // If the process doesn't breaks by size it returns the full query result
+    EXPECT_EQ(retrievedMessages.size(), 2);
 }
 
 class SQLiteStorageMultithreadedTest : public ::testing::Test

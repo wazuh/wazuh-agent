@@ -216,7 +216,7 @@ TEST_P(HttpClientTest, Co_PerformHttpRequest_Success)
     SetupMockSocketReadExpectations(GetParam());
 
     auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled](const int) -> boost::asio::awaitable<std::tuple<int, std::string>>
+    auto getMessages = [&getMessagesCalled](const size_t) -> boost::asio::awaitable<std::tuple<int, std::string>>
     {
         getMessagesCalled = true;
         co_return std::tuple<int, std::string>(1, "test message");
@@ -248,7 +248,6 @@ TEST_P(HttpClientTest, Co_PerformHttpRequest_Success)
                                               getMessages,
                                               onUnauthorized,
                                               5, // NOLINT
-                                              1, // NOLINT
                                               1, // NOLINT
                                               onSuccess,
                                               loopRequestCondition);
@@ -277,7 +276,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
     SetupMockSocketConnectExpectations(boost::system::errc::make_error_code(boost::system::errc::bad_address));
 
     auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled](const int) -> boost::asio::awaitable<std::tuple<int, std::string>>
+    auto getMessages = [&getMessagesCalled](const size_t) -> boost::asio::awaitable<std::tuple<int, std::string>>
     {
         getMessagesCalled = true;
         co_return std::tuple<int, std::string>(1, "test message");
@@ -303,7 +302,6 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
                                               onUnauthorized,
                                               5, // NOLINT
                                               1, // NOLINT
-                                              1, // NOLINT
                                               onSuccess,
                                               nullptr);
 
@@ -325,7 +323,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails
     SetupMockSocketWriteExpectations(boost::system::errc::make_error_code(boost::system::errc::bad_address));
 
     auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled](const int) -> boost::asio::awaitable<std::tuple<int, std::string>>
+    auto getMessages = [&getMessagesCalled](const size_t) -> boost::asio::awaitable<std::tuple<int, std::string>>
     {
         getMessagesCalled = true;
         co_return std::tuple<int, std::string>(1, "test message");
@@ -356,7 +354,6 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails
                                               getMessages,
                                               onUnauthorized,
                                               5, // NOLINT
-                                              1, // NOLINT
                                               1, // NOLINT
                                               onSuccess,
                                               loopRequestCondition);
@@ -381,7 +378,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
                                     boost::system::errc::make_error_code(boost::system::errc::bad_address));
 
     auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled](const int) -> boost::asio::awaitable<std::tuple<int, std::string>>
+    auto getMessages = [&getMessagesCalled](const size_t) -> boost::asio::awaitable<std::tuple<int, std::string>>
     {
         getMessagesCalled = true;
         co_return std::tuple<int, std::string>(1, "test message");
@@ -412,7 +409,6 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
                                               getMessages,
                                               onUnauthorized,
                                               5, // NOLINT
-                                              1, // NOLINT
                                               1, // NOLINT
                                               onSuccess,
                                               loopRequestCondition);
@@ -436,7 +432,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_UnauthorizedCalledWhenAuthorization
     SetupMockSocketReadExpectations(boost::beast::http::status::unauthorized);
 
     auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled](const int) -> boost::asio::awaitable<std::tuple<int, std::string>>
+    auto getMessages = [&getMessagesCalled](const size_t) -> boost::asio::awaitable<std::tuple<int, std::string>>
     {
         getMessagesCalled = true;
         co_return std::tuple<int, std::string>(1, "test message");
@@ -467,7 +463,6 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_UnauthorizedCalledWhenAuthorization
                                               getMessages,
                                               onUnauthorized,
                                               5, // NOLINT
-                                              1, // NOLINT
                                               1, // NOLINT
                                               onSuccess,
                                               loopRequestCondition);

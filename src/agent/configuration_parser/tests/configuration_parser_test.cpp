@@ -434,6 +434,36 @@ TEST_F(ConfigurationParserFileTest, isValidYamlFileValid)
     }
 }
 
+TEST(ConfigurationParser, GetConfigBytes)
+{
+    // Config should contain batch_size string in order to apply parsing
+    std::string strConfig = R"(
+        batch_size:
+          size_bytes: 500B
+          size_KB: 45KB
+          size_MB: 1MB
+          size_M: 4M
+          size_GB: 2GB
+          size_G: 3G
+          size_default_KB: 53
+    )";
+    const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
+    const auto ret = parserStr->GetConfig<size_t>("batch_size", "size_bytes").value_or(1234);
+    ASSERT_EQ(ret, 500);
+    const auto retKB = parserStr->GetConfig<size_t>("batch_size", "size_KB").value_or(1234);
+    ASSERT_EQ(retKB, 45000);
+    const auto retMB = parserStr->GetConfig<size_t>("batch_size", "size_MB").value_or(1234);
+    ASSERT_EQ(retMB, 1000000);
+    const auto retM = parserStr->GetConfig<size_t>("batch_size", "size_M").value_or(1234);
+    ASSERT_EQ(retM, 4000000);
+    const auto retGB = parserStr->GetConfig<size_t>("batch_size", "size_GB").value_or(1234);
+    ASSERT_EQ(retGB, 2000000000);
+    const auto retG = parserStr->GetConfig<size_t>("batch_size", "size_G").value_or(1234);
+    ASSERT_EQ(retG, 3000000000);
+    const auto retDefaultKB = parserStr->GetConfig<size_t>("batch_size", "size_default_KB").value_or(1234);
+    ASSERT_EQ(retDefaultKB, 53);
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
