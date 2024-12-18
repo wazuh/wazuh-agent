@@ -27,10 +27,11 @@ class Agent
 public:
     /// @brief Constructor
     /// @param configFilePath Path to the configuration file
+    /// @param mainArgv Argument values from the main function, used by the self-restart command.
     /// @param signalHandler Pointer to a custom ISignalHandler implementation
     /// @throws std::runtime_error If the Agent is not registered
     /// @throws Any exception propagated from dependencies used within the constructor
-    Agent(const std::string& configFilePath,
+    Agent(const std::string& configFilePath, const char** mainArgv,
           std::unique_ptr<ISignalHandler> signalHandler = std::make_unique<SignalHandler>());
 
     /// @brief Destructor
@@ -45,6 +46,21 @@ public:
     ///
     /// This method stops all modules launched by moduleManager, and starts them again.
     void ReloadModules();
+
+    /// @brief Stop the agent.
+    ///
+    /// Gracefully terminates the agent by sending a SIGTERM signal.
+    void StopAgent();
+
+    /// @brief Restart the agent
+    ///
+    /// Stops the agent's core components and initiates a restart in a new process.
+    boost::asio::awaitable<module_command::CommandExecutionResult> RestartExecuteCommand();
+
+    /// @brief Array of command-line arguments passed to the agent. Used by
+    /// self-restart command to restart the service with the same arguments.
+    const char** argv;
+
 
 private:
     /// @brief Task manager

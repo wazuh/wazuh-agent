@@ -19,7 +19,8 @@ void RegisterAgent(const std::string& url,
 
 /// @brief Starts the agent using the specified configuration file.
 /// @param configFilePath The file path to the configuration file used for starting the agent.
-void StartAgent(const std::string& configFilePath);
+/// @param argv Argument values from the main function, used by the self-restart command.
+void StartAgent(const std::string& configFilePath, const char** argv);
 
 /// @brief Displays the current status of the agent.
 /// @param configFilePath The file path to the configuration file used to get the status of the agent.

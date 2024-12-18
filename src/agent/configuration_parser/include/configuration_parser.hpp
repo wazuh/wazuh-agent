@@ -136,5 +136,8 @@ namespace configuration
 
         /// @brief Method for loading the new available configuration
         void ReloadConfiguration();
+
+        /// @brief Getter function to allow access to m_configFilePath
+        const std::filesystem::path& GetConfigFilePath() const;
     };
 } // namespace configuration
