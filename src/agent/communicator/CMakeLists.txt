@@ -13,7 +13,13 @@ find_package(Boost REQUIRED COMPONENTS asio beast system url)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
 
-add_library(Communicator src/communicator.cpp src/http_client.cpp src/http_client_utils.cpp src/http_request_params.cpp src/http_socket.cpp)
+add_library(Communicator
+    src/communicator.cpp
+    src/http_client.cpp
+    src/http_client_utils.cpp
+    src/http_request_params.cpp
+    src/http_socket.cpp
+    src/https_socket.cpp)
 
 target_include_directories(Communicator PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
