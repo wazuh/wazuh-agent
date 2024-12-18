@@ -2,6 +2,7 @@
 
 #include <http_request_params.hpp>
 #include <ihttp_socket.hpp>
+#include <message.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
@@ -44,10 +45,10 @@ namespace http_client
         virtual boost::asio::awaitable<void> Co_PerformHttpRequest(
             std::shared_ptr<std::string> token,
             HttpRequestParams params,
-            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> messageGetter,
+            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const MessageSize)> messageGetter,
             std::function<void()> onUnauthorized,
             std::time_t connectionRetry,
-            size_t batchSize,
+            MessageSize batchSize,
             std::function<void(const int, const std::string&)> onSuccess = {},
             std::function<bool()> loopRequestCondition = {}) = 0;
 

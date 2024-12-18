@@ -55,7 +55,7 @@ struct MessageSize
     {
     }
 
-    explicit MessageSize(size_t value)
+    MessageSize(size_t value)
         : size(value)
     {
     }
@@ -71,4 +71,14 @@ struct MessageSize
     }
 
     auto operator<=>(const MessageSize&) const = default;
+
+    auto operator<=>(const unsigned long long& other) const
+    {
+        return size <=> other;
+    }
+
+    bool operator==(const unsigned long long& other) const
+    {
+        return size == other;
+    }
 };

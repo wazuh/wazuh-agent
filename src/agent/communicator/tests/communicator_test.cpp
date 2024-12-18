@@ -52,7 +52,7 @@ TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
 {
     auto mockHttpClient = std::make_unique<MockHttpClient>();
 
-    auto getMessages = [](const size_t) -> boost::asio::awaitable<intStringTuple>
+    auto getMessages = [](const MessageSize) -> boost::asio::awaitable<intStringTuple>
     {
         co_return intStringTuple {1, std::string("message-content")};
     };
@@ -68,7 +68,7 @@ TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
            GetMessagesFuncType pGetMessages,
            std::function<void()>,
            [[maybe_unused]] std::time_t connectionRetry,
-           [[maybe_unused]] size_t batchSize,
+           [[maybe_unused]] MessageSize batchSize,
            std::function<void(const int, const std::string&)> pOnSuccess,
            [[maybe_unused]] std::function<bool()> loopRequestCondition) -> boost::asio::awaitable<void>
     {
@@ -117,7 +117,7 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
            [[maybe_unused]] GetMessagesFuncType pGetMessages,
            [[maybe_unused]] std::function<void()> onUnauthorized,
            [[maybe_unused]] std::time_t connectionRetry,
-           [[maybe_unused]] size_t batchSize,
+           [[maybe_unused]] MessageSize batchSize,
            [[maybe_unused]] std::function<void(const int, const std::string&)> onSuccess,
            [[maybe_unused]] std::function<bool()> loopCondition) -> boost::asio::awaitable<void>
     {
@@ -137,7 +137,7 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
         {
             co_await communicatorPtr->WaitForTokenExpirationAndAuthenticate();
             co_await communicatorPtr->StatelessMessageProcessingTask(
-                [](const size_t) -> boost::asio::awaitable<intStringTuple>
+                [](const MessageSize) -> boost::asio::awaitable<intStringTuple>
                 { co_return intStringTuple(1, std::string {"message"}); },
                 []([[maybe_unused]] const int, const std::string&) {});
         }(),
@@ -177,7 +177,7 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
                          [[maybe_unused]] GetMessagesFuncType pGetMessages,
                          [[maybe_unused]] std::function<void()> onUnauthorized,
                          [[maybe_unused]] std::time_t connectionRetry,
-                         [[maybe_unused]] size_t batchSize,
+                         [[maybe_unused]] MessageSize batchSize,
                          [[maybe_unused]] std::function<void(const int, const std::string&)> onSuccess,
                          [[maybe_unused]] std::function<bool()> loopCondition) -> boost::asio::awaitable<void>
     {
@@ -196,7 +196,7 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
         {
             co_await communicatorPtr->WaitForTokenExpirationAndAuthenticate();
             co_await communicatorPtr->StatelessMessageProcessingTask(
-                [](const size_t) -> boost::asio::awaitable<intStringTuple>
+                [](const MessageSize) -> boost::asio::awaitable<intStringTuple>
                 { co_return intStringTuple(1, std::string {"message"}); },
                 []([[maybe_unused]] const int, const std::string&) {});
         }(),

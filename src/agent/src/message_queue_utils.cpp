@@ -6,7 +6,7 @@
 boost::asio::awaitable<std::tuple<int, std::string>>
 GetMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue,
                      MessageType messageType,
-                     const size_t messagesSize,
+                     const MessageSize messagesSize,
                      std::function<std::string()> getMetadataInfo)
 {
     std::string output;
@@ -16,8 +16,7 @@ GetMessagesFromQueue(std::shared_ptr<IMultiTypeQueue> multiTypeQueue,
         output = getMetadataInfo();
     }
 
-    const MessageSize messagesSizeToFetch {messagesSize};
-    const auto messages = co_await multiTypeQueue->getNextBytesAwaitable(messageType, messagesSizeToFetch, "", "");
+    const auto messages = co_await multiTypeQueue->getNextBytesAwaitable(messageType, messagesSize, "", "");
     for (const auto& message : messages)
     {
         output += "\n" + message.metaData + (message.data.dump() == "{}" ? "" : "\n" + message.data.dump());

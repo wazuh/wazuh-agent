@@ -59,11 +59,10 @@ namespace communicator
             m_retryInterval = getConfigValue.template operator()<std::time_t>("agent", "retry_interval")
                                   .value_or(config::agent::DEFAULT_RETRY_INTERVAL);
 
-            auto auxBatchSize = getConfigValue.template operator()<MessageSize>("events", "batch_size")
-                                    .value_or(MessageSize(config::agent::DEFAULT_BATCH_SIZE));
-            m_batchSize = auxBatchSize.size;
+            m_batchSize = getConfigValue.template operator()<MessageSize>("events", "batch_size")
+                              .value_or(MessageSize(config::agent::DEFAULT_BATCH_SIZE));
 
-            if (auxBatchSize < 1'000 || auxBatchSize > 100'000'000)
+            if (m_batchSize < 1000ULL || m_batchSize > 100000000ULL)
             {
                 LogWarn("batch_size must be between 1KB and 100MB. Using default value.");
                 m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
@@ -86,14 +85,14 @@ namespace communicator
         /// @param getMessages A function to retrieve a message from the queue
         /// @param onSuccess A callback function to execute when a message is processed
         boost::asio::awaitable<void> StatefulMessageProcessingTask(
-            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> getMessages,
+            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const MessageSize)> getMessages,
             std::function<void(const int, const std::string&)> onSuccess);
 
         /// @brief Processes messages in a stateless manner
         /// @param getMessages A function to retrieve a message from the queue
         /// @param onSuccess A callback function to execute when a message is processed
         boost::asio::awaitable<void> StatelessMessageProcessingTask(
-            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> getMessages,
+            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const MessageSize)> getMessages,
             std::function<void(const int, const std::string&)> onSuccess);
 
         /// @brief Retrieves group configuration from the manager
@@ -129,7 +128,7 @@ namespace communicator
         std::time_t m_retryInterval = config::agent::DEFAULT_RETRY_INTERVAL;
 
         /// @brief Size for batch requests
-        size_t m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
+        MessageSize m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
 
         /// @brief The server URL
         std::string m_serverUrl;

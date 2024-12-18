@@ -115,7 +115,7 @@ void Agent::Run()
                               "FetchCommands");
 
     m_taskManager.EnqueueTask(m_communicator.StatefulMessageProcessingTask(
-                                  [this](const size_t numMessages)
+                                  [this](const MessageSize numMessages)
                                   {
                                       return GetMessagesFromQueue(m_messageQueue,
                                                                   MessageType::STATEFUL,
@@ -128,7 +128,7 @@ void Agent::Run()
                               "Stateful");
 
     m_taskManager.EnqueueTask(m_communicator.StatelessMessageProcessingTask(
-                                  [this](const size_t numMessages)
+                                  [this](const MessageSize numMessages)
                                   {
                                       return GetMessagesFromQueue(m_messageQueue,
                                                                   MessageType::STATELESS,
