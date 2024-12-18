@@ -65,20 +65,6 @@ public:
               const std::string& metadata = "") override;
 
     /**
-     * @brief Retrieve a JSON message by its ID.
-     *
-     * @param id The ID of the message to retrieve.
-     * @param tableName The name of the table to retrieve the message from.
-     * @param moduleName The name of the module that created the message.
-     * @param moduleType The module type that created the message.
-     * @return The retrieved JSON message.
-     */
-    nlohmann::json Retrieve(int id,
-                            const std::string& tableName,
-                            const std::string& moduleName = "",
-                            const std::string& moduleType = "") override;
-
-    /**
      * @brief Retrieve multiple JSON messages.
      *
      * @param n The number of messages to retrieve.

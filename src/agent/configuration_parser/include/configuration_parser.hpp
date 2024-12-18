@@ -100,8 +100,8 @@ namespace configuration
                     {
                         if constexpr (std::is_convertible_v<decltype(key), std::string_view>)
                         {
-                            //This is a workaround for parsing size units
-                            if (key == "batch_size")
+                            // This is a workaround for parsing size units
+                            if (std::string_view(key) == "batch_size")
                             {
                                 should_parse_size = true;
                             }

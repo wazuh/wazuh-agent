@@ -90,24 +90,6 @@ TEST_F(SQLiteStorageTest, StoreMultipleMessagesWithModule)
     EXPECT_EQ(storage->GetElementCount(tableName, "unavailableModuleName"), 0);
 }
 
-TEST_F(SQLiteStorageTest, RetrieveMessage)
-{
-    const nlohmann::json message = {{"key", "value"}};
-    EXPECT_EQ(storage->Store(message, tableName), 1);
-    const auto retrievedMessage = storage->Retrieve(1, tableName);
-    EXPECT_EQ(retrievedMessage.at("data").at("key"), "value");
-}
-
-TEST_F(SQLiteStorageTest, RetrieveMessageWithModule)
-{
-    nlohmann::json message = {{"key", "value"}};
-    storage->Store(message, tableName, moduleName);
-    auto retrievedMessage = storage->Retrieve(1, tableName, "unavailableModuleName");
-    EXPECT_EQ(retrievedMessage.at("data"), nullptr);
-    retrievedMessage = storage->Retrieve(1, tableName, moduleName);
-    EXPECT_EQ(retrievedMessage.at("data").at("key"), "value");
-}
-
 TEST_F(SQLiteStorageTest, RetrieveMultipleMessages)
 {
     auto messages = nlohmann::json::array();

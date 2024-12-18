@@ -471,91 +471,6 @@ TEST_F(MultiTypeQueueTest, PushMultipleGetMultiple)
     EXPECT_EQ(0, multiTypeQueue.storedItems(MessageType::STATELESS));
 }
 
-// Push Multiple, pop multiples
-TEST_F(MultiTypeQueueTest, PushMultipleGetMultipleWithModule)
-{
-    MultiTypeQueue multiTypeQueue(MOCK_GET_CONFIG);
-    const MessageType messageType {MessageType::STATELESS};
-    const std::string moduleName = "testModule";
-    const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT, moduleName};
-
-    EXPECT_EQ(3, multiTypeQueue.push(messageToSend));
-
-    // Altough we're asking for 10 messages only the availables are returned.
-    auto messagesReceived =
-        multiTypeQueue.getNextN(MessageType::STATELESS, 10); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    int i = 0;
-    for (const auto& singleMessage : messagesReceived)
-    {
-        EXPECT_EQ("content " + std::to_string(++i), singleMessage.data.get<std::string>());
-    }
-
-    EXPECT_EQ(0, multiTypeQueue.storedItems(MessageType::STATELESS, "fakemodule"));
-    EXPECT_EQ(3, multiTypeQueue.storedItems(MessageType::STATELESS));
-    EXPECT_EQ(3, multiTypeQueue.storedItems(MessageType::STATELESS, moduleName));
-}
-
-TEST_F(MultiTypeQueueTest, PushSinglesleGetMultipleWithModule)
-{
-    MultiTypeQueue multiTypeQueue(MOCK_GET_CONFIG);
-
-    for (std::string i : {"1", "2", "3", "4", "5"})
-    {
-        const MessageType messageType {MessageType::STATELESS};
-        const nlohmann::json multipleDataContent = {"content-" + i};
-        const std::string moduleName = "module-" + i;
-        const Message messageToSend {messageType, multipleDataContent, moduleName, "", ""};
-        EXPECT_EQ(1, multiTypeQueue.push(messageToSend));
-    }
-
-    auto messagesReceived =
-        multiTypeQueue.getNextN(MessageType::STATELESS, 10); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    EXPECT_EQ(5, messagesReceived.size());
-    int i = 0;
-    for (const auto& singleMessage : messagesReceived)
-    {
-        auto val = ++i;
-        EXPECT_EQ("content-" + std::to_string(val), singleMessage.data.get<std::string>());
-        EXPECT_EQ("module-" + std::to_string(val), singleMessage.moduleName);
-    }
-
-    auto messageReceivedContent1 = multiTypeQueue.getNextN(
-        MessageType::STATELESS, 10, "module-1"); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-    EXPECT_EQ(1, messageReceivedContent1.size());
-}
-
-TEST_F(MultiTypeQueueTest, GetNextAwaitableBase)
-{
-    MultiTypeQueue multiTypeQueue(MOCK_GET_CONFIG);
-    boost::asio::io_context io_context;
-
-    // Coroutine that waits till there's a message of the needed type on the queue
-    boost::asio::co_spawn(
-        io_context,
-        // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-        [&multiTypeQueue]() -> boost::asio::awaitable<void>
-        {
-            auto messageReceived = co_await multiTypeQueue.getNextNAwaitable(MessageType::STATELESS, 2);
-            EXPECT_EQ(messageReceived[0].data.at("data"), "content-1");
-            EXPECT_EQ(messageReceived[1].data.at("data"), "content-2");
-        },
-        boost::asio::detached);
-
-    // Simulate the addition of needed message to the queue after some time
-    std::thread producer(
-        [&multiTypeQueue]()
-        {
-            std::this_thread::sleep_for(std::chrono::seconds(2));
-            const MessageType messageType {MessageType::STATELESS};
-            const nlohmann::json multipleDataContent = {"content-1", "content-2", "content-3"};
-            const Message messageToSend {messageType, multipleDataContent};
-            EXPECT_EQ(multiTypeQueue.push(messageToSend), 3);
-        });
-
-    io_context.run();
-    producer.join();
-}
-
 TEST_F(MultiTypeQueueTest, PushAwaitable)
 {
     MultiTypeQueue multiTypeQueue(MOCK_GET_CONFIG_SMALL_SIZE);
@@ -607,14 +522,16 @@ TEST_F(MultiTypeQueueTest, FifoOrderCheck)
 
     // complete the queue with messages
     const MessageType messageType {MessageType::STATEFUL};
+    size_t contentSize = 0;
     for (int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
     {
         const nlohmann::json dataContent = {{"Data", "for STATEFUL" + std::to_string(i)}};
         EXPECT_EQ(multiTypeQueue.push({messageType, dataContent}), 1);
+        contentSize += dataContent.dump().size();
     }
 
     auto messageReceivedVector =
-        multiTypeQueue.getNextN(messageType, 10); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+        multiTypeQueue.getNextBytes(messageType, contentSize); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     EXPECT_EQ(messageReceivedVector.size(), 10);
 
     std::for_each(messageReceivedVector.begin(),
@@ -626,7 +543,7 @@ TEST_F(MultiTypeQueueTest, FifoOrderCheck)
     // Keep the order of the message: FIFO
     for (int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
     {
-        auto messageReceived = multiTypeQueue.getNextN(messageType, 1);
+        auto messageReceived = multiTypeQueue.getNextBytes(messageType, 1);
         EXPECT_EQ(messageReceived[0].data, (nlohmann::json {{"Data", "for STATEFUL" + std::to_string(i)}}));
         EXPECT_TRUE(multiTypeQueue.pop(messageType));
     }

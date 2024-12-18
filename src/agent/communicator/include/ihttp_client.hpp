@@ -2,7 +2,6 @@
 
 #include <http_request_params.hpp>
 #include <ihttp_socket.hpp>
-#include <message.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>

@@ -33,19 +33,6 @@ public:
                       const std::string& moduleName = "",
                       const std::string& moduleType = "",
                       const std::string& metadata = "") = 0;
-    /**
-     * @brief Retrieve a JSON message from the specified queue.
-     *
-     * @param id rowid of the message to be retrieved.
-     * @param queueName The name of the queue.
-     * @param moduleName The name of the module.
-     * @param moduleType The type of the module.
-     * @return nlohmann::json The retrieved JSON message.
-     */
-    virtual nlohmann::json Retrieve(int id,
-                                    const std::string& queueName,
-                                    const std::string& moduleName = "",
-                                    const std::string& moduleType = "") = 0;
 
     /**
      * @brief Retrieve multiple JSON messages from the specified queue.

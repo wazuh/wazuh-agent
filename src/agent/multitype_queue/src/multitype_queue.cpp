@@ -178,32 +178,6 @@ boost::asio::awaitable<std::vector<Message>> MultiTypeQueue::getNextBytesAwaitab
     co_return result;
 }
 
-boost::asio::awaitable<std::vector<Message>> MultiTypeQueue::getNextNAwaitable(MessageType type,
-                                                                               const int messageQuantity,
-                                                                               const std::string moduleName,
-                                                                               const std::string moduleType)
-{
-    boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
-
-    std::vector<Message> result;
-    if (m_mapMessageTypeName.contains(type))
-    {
-        // waits for items to be available
-        while (isEmpty(type))
-        {
-            timer.expires_after(std::chrono::milliseconds(m_timeout));
-            co_await timer.async_wait(boost::asio::use_awaitable);
-        }
-
-        result = getNextN(type, messageQuantity, moduleName, moduleType);
-    }
-    else
-    {
-        LogError("Error didn't find the queue.");
-    }
-    co_return result;
-}
-
 std::vector<Message> MultiTypeQueue::getNextBytes(MessageType type,
                                                   const size_t messageQuantity,
                                                   const std::string moduleName,
@@ -212,33 +186,8 @@ std::vector<Message> MultiTypeQueue::getNextBytes(MessageType type,
     std::vector<Message> result;
     if (m_mapMessageTypeName.contains(type))
     {
-        auto arrayData = m_persistenceDest->RetrieveBySize(
-            messageQuantity, m_mapMessageTypeName.at(type), moduleName, moduleType);
-
-        for (auto singleJson : arrayData)
-        {
-            result.emplace_back(
-                type, singleJson["data"], singleJson["moduleName"], singleJson["moduleType"], singleJson["metadata"]);
-        }
-    }
-    else
-    {
-        LogError("Error didn't find the queue.");
-    }
-    return result;
-}
-
-std::vector<Message> MultiTypeQueue::getNextN(MessageType type,
-                                              const int messageQuantity,
-                                              const std::string moduleName,
-                                              const std::string moduleType)
-{
-    std::vector<Message> result;
-    if (m_mapMessageTypeName.contains(type))
-    {
-        nlohmann::json arrayData;
-        arrayData =
-            m_persistenceDest->RetrieveMultiple(messageQuantity, m_mapMessageTypeName.at(type), moduleName, moduleType);
+        auto arrayData =
+            m_persistenceDest->RetrieveBySize(messageQuantity, m_mapMessageTypeName.at(type), moduleName, moduleType);
 
         for (auto singleJson : arrayData)
         {

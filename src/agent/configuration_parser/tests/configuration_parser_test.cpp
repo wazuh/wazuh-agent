@@ -436,7 +436,7 @@ TEST_F(ConfigurationParserFileTest, isValidYamlFileValid)
 
 TEST(ConfigurationParser, GetConfigBytes)
 {
-    //Config should contain batch_size string in order to apply parsing
+    // Config should contain batch_size string in order to apply parsing
     std::string strConfig = R"(
         batch_size:
           size_bytes: 500B
@@ -460,8 +460,7 @@ TEST(ConfigurationParser, GetConfigBytes)
     ASSERT_EQ(retGB, 2000000000);
     const auto retG = parserStr->GetConfig<size_t>("batch_size", "size_G").value_or(1234);
     ASSERT_EQ(retG, 3000000000);
-    const auto retDefaultKB =
-        parserStr->GetConfig<size_t>("batch_size", "size_default_KB").value_or(1234);
+    const auto retDefaultKB = parserStr->GetConfig<size_t>("batch_size", "size_default_KB").value_or(1234);
     ASSERT_EQ(retDefaultKB, 53);
 }
 

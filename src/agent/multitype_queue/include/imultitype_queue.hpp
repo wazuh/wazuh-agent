@@ -70,19 +70,6 @@ public:
                                                                                const size_t messageQuantity,
                                                                                const std::string moduleName = "",
                                                                                const std::string moduleType = "") = 0;
-    /**
-     * @brief Retrieves the next message from the queue asynchronously.
-     *
-     * @param type The type of the queue to use as the source.
-     * @param messageQuantity In number of messages.
-     * @param moduleName The name of the module requesting the message.
-     * @param moduleType The type of the module requesting the messages.
-     * @return boost::asio::awaitable<std::vector<Message>> Awaitable object representing the next N messages.
-     */
-    virtual boost::asio::awaitable<std::vector<Message>> getNextNAwaitable(MessageType type,
-                                                                           const int messageQuantity,
-                                                                           const std::string moduleName = "",
-                                                                           const std::string moduleType = "") = 0;
 
     /**
      * @brief Retrieves the next N messages from the queue.
@@ -97,20 +84,6 @@ public:
                                               const size_t messageQuantity,
                                               const std::string moduleName = "",
                                               const std::string moduleType = "") = 0;
-
-    /**
-     * @brief Retrieves the next N messages from the queue.
-     *
-     * @param type The type of the queue to use as the source.
-     * @param messageQuantity The quantity of messages to return.
-     * @param moduleName The name of the module requesting the messages.
-     * @param moduleType The type of the module requesting the messages.
-     * @return std::vector<Message> A vector of messages fetched from the queue.
-     */
-    virtual std::vector<Message> getNextN(MessageType type,
-                                          const int messageQuantity,
-                                          const std::string moduleName = "",
-                                          const std::string moduleType = "") = 0;
 
     /**
      * @brief Deletes a message from the queue.
