@@ -139,7 +139,7 @@ namespace http_client
 
             boost::system::error_code ec;
 
-            co_await socket->AsyncConnect(results, ec);
+            co_await socket->AsyncConnect(results, ec, std::chrono::seconds(TIMEOUT_DEFAULT)); // NOLINT
 
             if (ec != boost::system::errc::success)
             {
@@ -177,7 +177,7 @@ namespace http_client
 
             const auto req = CreateHttpRequest(reqParams);
 
-            co_await socket->AsyncWrite(req, ec);
+            co_await socket->AsyncWrite(req, ec, std::chrono::seconds(TIMEOUT_DEFAULT));
 
             if (ec)
             {
@@ -188,7 +188,7 @@ namespace http_client
             }
 
             boost::beast::http::response<boost::beast::http::dynamic_body> res;
-            co_await socket->AsyncRead(res, ec);
+            co_await socket->AsyncRead(res, ec, std::chrono::seconds(TIMEOUT_DEFAULT));
 
             if (ec)
             {
@@ -229,9 +229,12 @@ namespace http_client
     HttpClient::PerformHttpRequest(const HttpRequestParams& params)
     {
         return PerformHttpRequestInternal(params,
-                                          [](std::unique_ptr<IHttpSocket>& socket,
+                                          [](boost::asio::io_context& ioContext,
+                                             std::unique_ptr<IHttpSocket>& socket,
                                              boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                                             boost::system::error_code& ec) { socket->Read(res, ec); });
+                                             boost::system::error_code& ec,
+                                             const std::chrono::seconds timeout)
+                                          { socket->Read(ioContext, res, ec, timeout); });
     }
 
     boost::beast::http::response<boost::beast::http::dynamic_body>
@@ -239,9 +242,11 @@ namespace http_client
     {
         return PerformHttpRequestInternal(
             params,
-            [&dstFilePath](std::unique_ptr<IHttpSocket>& socket,
+            [&dstFilePath](boost::asio::io_context&,
+                           std::unique_ptr<IHttpSocket>& socket,
                            boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                           boost::system::error_code&) { socket->ReadToFile(res, dstFilePath); });
+                           boost::system::error_code&,
+                           const std::chrono::seconds) { socket->ReadToFile(res, dstFilePath); });
     }
 
     std::optional<std::string> HttpClient::AuthenticateWithUuidAndKey(const std::string& serverUrl,
@@ -338,9 +343,11 @@ namespace http_client
 
     boost::beast::http::response<boost::beast::http::dynamic_body> HttpClient::PerformHttpRequestInternal(
         const HttpRequestParams& params,
-        const std::function<void(std::unique_ptr<IHttpSocket>&,
+        const std::function<void(boost::asio::io_context& ioContext,
+                                 std::unique_ptr<IHttpSocket>&,
                                  boost::beast::http::response<boost::beast::http::dynamic_body>&,
-                                 boost::system::error_code&)>& responseHandler)
+                                 boost::system::error_code&,
+                                 const std::chrono::seconds timeOut)>& responseHandler)
     {
         boost::beast::http::response<boost::beast::http::dynamic_body> res;
 
@@ -365,7 +372,7 @@ namespace http_client
 
             boost::system::error_code ec;
 
-            socket->Connect(results, ec);
+            socket->Connect(io_context, results, ec, std::chrono::seconds(TIMEOUT_DEFAULT));
 
             if (ec)
             {
@@ -374,14 +381,14 @@ namespace http_client
 
             const auto req = CreateHttpRequest(params);
 
-            socket->Write(req, ec);
+            socket->Write(io_context, req, ec, std::chrono::seconds(TIMEOUT_DEFAULT));
 
             if (ec)
             {
                 throw std::runtime_error("Error writing request: " + ec.message());
             }
 
-            responseHandler(socket, res, ec);
+            responseHandler(io_context, socket, res, ec, std::chrono::seconds(TIMEOUT_DEFAULT));
 
             if (ec)
             {

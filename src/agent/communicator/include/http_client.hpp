@@ -95,9 +95,11 @@ namespace http_client
         /// @return The HTTP response
         boost::beast::http::response<boost::beast::http::dynamic_body> PerformHttpRequestInternal(
             const HttpRequestParams& params,
-            const std::function<void(std::unique_ptr<IHttpSocket>&,
+            const std::function<void(boost::asio::io_context& io_context,
+                                     std::unique_ptr<IHttpSocket>&,
                                      boost::beast::http::response<boost::beast::http::dynamic_body>&,
-                                     boost::system::error_code&)>& responseHandler);
+                                     boost::system::error_code&,
+                                     const std::chrono::seconds timeOut)>& responseHandler);
 
         /// @brief HTTP resolver factory
         std::shared_ptr<IHttpResolverFactory> m_resolverFactory;
