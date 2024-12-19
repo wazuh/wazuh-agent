@@ -44,7 +44,8 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
 
     MockHttpClient mockHttpClient;
 
-    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, testing::_, testing::_))
+    EXPECT_CALL(mockHttpClient,
+                AuthenticateWithUserPassword(testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return("token"));
 
     const auto bodyJson = agent->GetMetadataInfo(true);
@@ -53,6 +54,7 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
                                              "https://localhost:55000",
                                              "/agents",
                                              agent->GetHeaderInfo(),
+                                             "full",
                                              "token",
                                              "",
                                              bodyJson);
@@ -63,7 +65,7 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
     EXPECT_CALL(mockHttpClient, PerformHttpRequest(testing::Eq(reqParams))).WillOnce(testing::Return(expectedResponse));
 
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
-    const bool res = registration->Register(mockHttpClient);
+    const bool res = registration->Register(mockHttpClient, "full");
     ASSERT_TRUE(res);
 }
 
@@ -78,11 +80,11 @@ TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
 
     MockHttpClient mockHttpClient;
 
-    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, "user", "password"))
+    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, "user", "password", testing::_))
         .WillOnce(testing::Return(std::nullopt));
 
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
-    const bool res = registration->Register(mockHttpClient);
+    const bool res = registration->Register(mockHttpClient, "full");
     ASSERT_FALSE(res);
 }
 
@@ -97,7 +99,7 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
 
     MockHttpClient mockHttpClient;
 
-    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, "user", "password"))
+    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, "user", "password", testing::_))
         .WillOnce(testing::Return("token"));
 
     boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
@@ -106,7 +108,7 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
     EXPECT_CALL(mockHttpClient, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
-    const bool res = registration->Register(mockHttpClient);
+    const bool res = registration->Register(mockHttpClient, "full");
     ASSERT_FALSE(res);
 }
 
@@ -123,7 +125,8 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
 
     MockHttpClient mockHttpClient;
 
-    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, testing::_, testing::_))
+    EXPECT_CALL(mockHttpClient,
+                AuthenticateWithUserPassword(testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return("token"));
 
     boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
@@ -132,7 +135,7 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
     EXPECT_CALL(mockHttpClient, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
-    const bool res = registration->Register(mockHttpClient);
+    const bool res = registration->Register(mockHttpClient, "full");
     ASSERT_TRUE(res);
 
     agent = std::make_unique<AgentInfo>(".");

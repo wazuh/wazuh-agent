@@ -15,6 +15,7 @@ namespace http_client
         std::string Port;
         std::string Endpoint;
         std::string User_agent;
+        std::string Verification_Mode;
         std::string Token;
         std::string User_pass;
         std::string Body;
@@ -32,6 +33,7 @@ namespace http_client
                           const std::string& serverUrl,
                           std::string endpoint,
                           std::string userAgent,
+                          std::string verificationMode,
                           std::string token = "",
                           std::string userPass = "",
                           std::string body = "");
