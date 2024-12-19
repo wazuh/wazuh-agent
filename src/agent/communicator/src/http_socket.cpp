@@ -19,6 +19,22 @@ namespace http_client
     {
     }
 
+    void HttpSocket::CallAsyncConnect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
+                                      boost::system::error_code& ec,
+                                      bool& connectionSuccess)
+    {
+        boost::asio::async_connect(m_socket,
+                                   endpoints,
+                                   [&](const boost::system::error_code& errorCode, const auto&)
+                                   {
+                                       if (!errorCode)
+                                       {
+                                           connectionSuccess = true;
+                                           ec = errorCode;
+                                       }
+                                   });
+    }
+
     void HttpSocket::Connect(boost::asio::io_context& ioContext,
                              const boost::asio::ip::tcp::resolver::results_type& endpoints,
                              boost::system::error_code& ec)
@@ -27,16 +43,7 @@ namespace http_client
         {
             bool connectionSuccess = false;
 
-            boost::asio::async_connect(m_socket,
-                                       endpoints,
-                                       [&](const boost::system::error_code& errorCode, const auto&)
-                                       {
-                                           if (!errorCode)
-                                           {
-                                               connectionSuccess = true;
-                                               ec = errorCode;
-                                           }
-                                       });
+            CallAsyncConnect(endpoints, ec, connectionSuccess);
 
             ioContext.run_for(std::chrono::seconds(http_client_utils::TIMEOUT_SECONDS));
             if (!connectionSuccess)
