@@ -41,7 +41,7 @@ TEST_F(InventoryTest, SendUpdateEvent) {
         "data": {"key": "value"}
     })";
 
-    inventory.SendDeltaEvent(inputData);
+    inventory.SendDeltaEvent(inputData, false);
 }
 
 TEST_F(InventoryTest, SendDeleteEvent) {
@@ -67,7 +67,7 @@ TEST_F(InventoryTest, SendDeleteEvent) {
         "data": {"key": "value"}
     })";
 
-    inventory.SendDeltaEvent(inputData);
+    inventory.SendDeltaEvent(inputData, false);
 }
 
 int main(int argc, char** argv)

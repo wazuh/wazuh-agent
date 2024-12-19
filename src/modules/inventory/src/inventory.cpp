@@ -5,7 +5,7 @@
 #include <defs.h>
 #include <logger.hpp>
 #include <sysInfo.hpp>
-
+#include <timeHelper.h>
 
 void Inventory::Start() {
 
@@ -23,7 +23,7 @@ void Inventory::Start() {
     try
     {
         Inventory::Instance().Init(std::make_shared<SysInfo>(),
-                                    [this](const std::string& diff) { this->SendDeltaEvent(diff); },
+                                    [this](const std::string& diff) { this->SendDeltaEvent(diff, false); },
                                     m_dbFilePath,
                                     INVENTORY_NORM_CONFIG_DISK_PATH,
                                     INVENTORY_NORM_TYPE);
@@ -73,7 +73,7 @@ void Inventory::SetPushMessageFunction(const std::function<int(Message)>& pushMe
     m_pushMessage = pushMessage;
 }
 
-void Inventory::SendDeltaEvent(const std::string& data) {
+void Inventory::SendDeltaEvent(const std::string& data, bool isFirstScan) {
 
     const auto jsonData = nlohmann::json::parse(data);
     auto metadata = nlohmann::json::object();
@@ -90,6 +90,34 @@ void Inventory::SendDeltaEvent(const std::string& data) {
     }
     else {
         LogTrace("Stateful event queued: {}, metadata {}", data, metadata.dump());
+    }
+
+    if(!isFirstScan) {
+        auto statelessMetadata = nlohmann::json::object();
+
+        statelessMetadata["module"] = Name();
+        statelessMetadata["type"] = jsonData["type"];
+        statelessMetadata["operation"] = jsonData["operation"];
+        statelessMetadata["id"] = jsonData["id"];
+
+        auto statelessJsonData = nlohmann::json::object();
+
+        statelessJsonData["log"]["file"]["path"] = "log->file->path";
+        statelessJsonData["tags"] = "tags"; //nlohmann::json::array({"mvp"});
+        statelessJsonData["event"]["original"] = "data"; //jsonData["data"];
+        statelessJsonData["event"]["module"] = m_moduleName;
+        statelessJsonData["event"]["provider"] = "syslog";
+
+        statelessJsonData["event"]["created"] = "111"; //Utils::getCurrentISO8601();
+
+        const Message statelessMessage{ MessageType::STATELESS, statelessMetadata["operation"] == "delete" ? "{}"_json : statelessJsonData, Name(), statelessJsonData["type"], statelessMetadata.dump() };
+
+        if(!m_pushMessage(statelessMessage)) {
+            LogWarn("Stateless event can't be pushed into the message queue: {}", statelessMetadata.dump());
+        }
+        else {
+            LogTrace("Stateless event queued: {}, metadata {}", statelessMetadata.dump(), statelessMetadata.dump());
+        }
     }
 }
 
