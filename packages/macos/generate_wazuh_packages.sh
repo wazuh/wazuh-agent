@@ -43,9 +43,6 @@ trap ctrl_c INT
 function clean_and_exit() {
     exit_code=$1
     rm -rf "${SOURCES_DIRECTORY}"
-    if [ -z "$BRANCH_TAG" ]; then
-        make -C $CURRENT_PATH/../../src/build clean
-    fi
     rm -rf $CURRENT_PATH/wazuh-agent
     exit ${exit_code}
 }
@@ -86,8 +83,8 @@ function sign_binaries() {
     if [ ! -z "${KEYCHAIN}" ] && [ ! -z "${CERT_APPLICATION_ID}" ] ; then
         security -v unlock-keychain -p "${KC_PASS}" "${KEYCHAIN}" > /dev/null
         # Sign every single binary in Wazuh's installation. This also includes library files.
-        for bin in $(find ${PACKAGED_DIRECTORY} -exec file {} \; | grep -E 'executable|bit' | cut -d: -f1); do
-            codesign -f --sign "${CERT_APPLICATION_ID}" --entitlements ${ENTITLEMENTS_PATH} --timestamp  --options=runtime --verbose=4 "${bin}"
+        find "${PACKAGED_DIRECTORY}" -type f -print0 | xargs -0 file | grep -E 'executable|bit|XML' | cut -d: -f1 | while IFS= read -r bin; do
+            codesign -f --sign "${CERT_APPLICATION_ID}" --entitlements $(find . -name "entitlements.plist") --timestamp  --options=runtime --verbose=4 "${bin}"
         done
         security -v lock-keychain "${KEYCHAIN}" > /dev/null
     fi
@@ -99,8 +96,8 @@ function sign_pkg() {
         security -v unlock-keychain -p "${KC_PASS}" "${KEYCHAIN}"  > /dev/null
 
         # Sign the package
-        productsign --sign "${CERT_INSTALLER_ID}" --timestamp ${DESTINATION}/${pkg_name}.pkg ${DESTINATION}/${pkg_name}.pkg.signed
-        mv ${DESTINATION}/${pkg_name}.pkg.signed ${DESTINATION}/${pkg_name}.pkg
+        productsign --sign "${CERT_INSTALLER_ID}" --timestamp ${DESTINATION}/${pkg_name} ${DESTINATION}/${pkg_name}.signed
+        mv ${DESTINATION}/${pkg_name}.signed ${DESTINATION}/${pkg_name}
 
         security -v lock-keychain "${KEYCHAIN}" > /dev/null
     fi
@@ -147,12 +144,11 @@ function build_package_binaries() {
         git clone -b ${BRANCH_TAG} --single-branch --recurse-submodules ${WAZUH_SOURCE_REPOSITORY} "${WAZUH_PATH}"
     else
         WAZUH_PATH="${CURRENT_PATH}/../.."
+        cd $WAZUH_PATH && git submodule update --init --recursive 
     fi
+
     short_commit_hash="$(cd "${WAZUH_PATH}" && git rev-parse --short HEAD)"
-
     WAZUH_PACKAGES_PATH="${WAZUH_PATH}/packages/macos"
-    ENTITLEMENTS_PATH="${WAZUH_PACKAGES_PATH}/entitlements.plist"
-
     VERSION=$(cat ${WAZUH_PATH}/src/VERSION | cut -d 'v' -f 2)
 
     # Define output package name
@@ -164,7 +160,7 @@ function build_package_binaries() {
 
     prepare_building_folder $VERSION $pkg_name
 
-    ${WAZUH_PACKAGES_PATH}/package_files/build.sh "${PACKAGED_DIRECTORY}" "${WAZUH_PATH}" ${JOBS} ${VCPKG_KEY}
+    ${WAZUH_PACKAGES_PATH}/package_files/build.sh "${VERBOSE}" "${PACKAGED_DIRECTORY}" "${WAZUH_PATH}" ${JOBS} ${VCPKG_KEY}
 
 }
 
@@ -180,9 +176,10 @@ function build_package() {
         # cp -R "${WAZUH_PATH}/src/symbols"  "${DESTINATION}"
         # zip -r "${DESTINATION}/${symbols_pkg_name}.zip" "${DESTINATION}/symbols"
         # rm -rf "${DESTINATION}/symbols"
+        pkg_name=$(ls "$DESTINATION" | grep '.pkg')
         sign_pkg
         if [[ "${CHECKSUM}" == "yes" ]]; then
-            shasum -a512 "${DESTINATION}/${pkg_name}.pkg" > "${DESTINATION}/${pkg_name}.pkg.sha512"
+            shasum -a512 "${DESTINATION}/$pkg_name" > "${DESTINATION}/$pkg_name.sha512"
             # shasum -a512 "${DESTINATION}/${symbols_pkg_name}.zip" > "${DESTINATION}/${symbols_pkg_name}.sha512"
         fi
         clean_and_exit 0
