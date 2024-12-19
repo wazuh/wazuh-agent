@@ -1629,6 +1629,8 @@ TEST_F(InventoryImpTest, hashId)
 
 }
 
+
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);

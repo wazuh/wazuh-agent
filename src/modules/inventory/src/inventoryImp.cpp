@@ -7,6 +7,7 @@
 #include <stringHelper.h>
 #include <hashHelper.h>
 #include <timeHelper.h>
+#include "commonDefs.h"
 
 constexpr std::time_t INVENTORY_DEFAULT_INTERVAL { 3600000 };
 constexpr size_t MAX_ID_SIZE = 512;
@@ -140,7 +141,7 @@ constexpr auto PORTS_SQL_STATEMENT
 };
 static const std::vector<std::string> PORTS_ITEM_ID_FIELDS{"inode", "protocol", "local_ip", "local_port"};
 
-constexpr auto NETWORK_SQL_STATEMENT
+constexpr auto NETWORKS_SQL_STATEMENT
 {
     R"(CREATE TABLE networks (
         iface TEXT,
@@ -168,14 +169,15 @@ constexpr auto NETWORK_SQL_STATEMENT
         ) WITHOUT ROWID;)"
 };
 
-constexpr auto NETWORKS_TABLE     { "networks"  };
-constexpr auto PACKAGES_TABLE     { "packages"  };
-constexpr auto HOTFIXES_TABLE     { "hotfixes"  };
-constexpr auto PORTS_TABLE        { "ports"     };
-constexpr auto PROCESSES_TABLE    { "processes" };
-constexpr auto OS_TABLE           { "system"    };
-constexpr auto HW_TABLE           { "hardware"  };
+constexpr auto METADATA_SQL_STATEMENT
+{
+    R"(CREATE TABLE metadata(
+    key TEXT,
+    value TEXT,
+    PRIMARY KEY (key)) WITHOUT ROWID;)"
+};
 
+static const std::vector<std::string> NETWORK_ITEM_ID_FIELDS{"iface", "adapter", "iface_type", "proto_type", "address"};
 
 static std::string GetItemId(const nlohmann::json& item, const std::vector<std::string>& idFields)
 {
@@ -414,6 +416,14 @@ Inventory::Inventory()
     , m_hotfixes { true }
     , m_stopping { true }
     , m_notify { true }
+    , m_hardwareFirstScan { true }
+    , m_systemFirstScan { true } 
+    , m_networksFirstScan { true }
+    , m_packagesFirstScan { true }
+    , m_portsFirstScan { true }
+    , m_portsAllFirstScan { true }
+    , m_processesFirstScan { true }
+    , m_hotfixesFirstScan { true }
 {}
 
 std::string Inventory::GetCreateStatement() const
@@ -426,7 +436,8 @@ std::string Inventory::GetCreateStatement() const
     ret += HOTFIXES_SQL_STATEMENT;
     ret += PROCESSES_SQL_STATEMENT;
     ret += PORTS_SQL_STATEMENT;
-    ret += NETWORK_SQL_STATEMENT;
+    ret += NETWORKS_SQL_STATEMENT;
+    ret += METADATA_SQL_STATEMENT;
     return ret;
 }
 
@@ -449,6 +460,56 @@ void Inventory::Init(const std::shared_ptr<ISysInfo>& spInfo,
                                                 DbManagement::PERSISTENT);
         m_spNormalizer = std::make_unique<InvNormalizer>(normalizerConfigPath, normalizerType);
     }
+
+   m_hardwareFirstScan  = ReadMetadata(hardwareFirstScanKey ).empty()? false:true;
+   m_systemFirstScan    = ReadMetadata(systemFirstScanKey   ).empty()? false:true;
+   m_networksFirstScan  = ReadMetadata(networksFirstScanKey ).empty()? false:true;
+   m_packagesFirstScan  = ReadMetadata(packagesFirstScanKey ).empty()? false:true;
+   m_portsFirstScan     = ReadMetadata(portsFirstScanKey    ).empty()? false:true;
+   m_portsAllFirstScan  = ReadMetadata(portsAllFirstScanKey ).empty()? false:true;
+   m_processesFirstScan = ReadMetadata(processesFirstScanKey).empty()? false:true;
+   m_hotfixesFirstScan  = ReadMetadata(hotfixesFirstScanKey ).empty()? false:true;
+
+   if(hardwareFirstScanKey && !m_hardware)
+   {
+       DeleteMetadata(hardwareFirstScanKey);
+       m_hardwareFirstScan = false;
+   }
+
+   if(systemFirstScanKey && !m_system)
+   {
+       DeleteMetadata(systemFirstScanKey);
+       m_systemFirstScan = false;
+   }
+
+   if(networksFirstScanKey && !m_networks){
+       DeleteMetadata(networksFirstScanKey);
+       m_networksFirstScan = false;
+
+   }
+
+   if(packagesFirstScanKey && !m_packages){
+       DeleteMetadata(packagesFirstScanKey);
+       m_packagesFirstScan = false;
+   }
+
+   if(portsFirstScanKey && !m_ports){
+       DeleteMetadata(portsFirstScanKey);
+       m_portsFirstScan = false;
+   }
+
+   if(portsAllFirstScanKey && !m_portsAll){
+       DeleteMetadata(portsAllFirstScanKey);
+       m_portsAllFirstScan = false;
+   }
+   if(processesFirstScanKey && !m_processes){
+       DeleteMetadata(processesFirstScanKey);
+       m_processesFirstScan = false;
+   }
+   if(hotfixesFirstScanKey && !m_hotfixes){
+       DeleteMetadata(hotfixesFirstScanKey);
+       m_hotfixesFirstScan = false;
+   }
 
     SyncLoop();
 }
@@ -687,6 +748,10 @@ void Inventory::ScanHardware()
         const auto& hwData{GetHardwareData()};
         UpdateChanges(HW_TABLE, hwData);
         LogTrace( "Ending hardware scan");
+
+        if(!m_hardwareFirstScan){
+            WriteMetadata(hardwareFirstScanKey, Utils::getCurrentISO8601());
+        }
     }
 }
 
@@ -705,6 +770,10 @@ void Inventory::ScanOs()
         const auto& osData{GetOSData()};
         UpdateChanges(OS_TABLE, osData);
         LogTrace( "Ending os scan");
+
+        if(!m_systemFirstScan){
+            WriteMetadata(systemFirstScanKey, Utils::getCurrentISO8601());
+        }
     }
 }
 
@@ -804,6 +873,10 @@ void Inventory::ScanNetwork()
             }
         }
 
+        if(!m_networksFirstScan){
+            WriteMetadata(networksFirstScanKey, Utils::getCurrentISO8601());
+        }
+
         LogTrace( "Ending network scan");
     }
 }
@@ -846,6 +919,10 @@ void Inventory::ScanPackages()
         });
         txn.getDeletedRows(callback);
 
+        if(!m_packagesFirstScan){
+            WriteMetadata(packagesFirstScanKey, Utils::getCurrentISO8601());
+        }
+
         LogTrace( "Ending packages scan");
     }
 }
@@ -860,6 +937,10 @@ void Inventory::ScanHotfixes()
         if (!hotfixes.is_null())
         {
             UpdateChanges(HOTFIXES_TABLE, hotfixes);
+        }
+
+        if(!m_hotfixesFirstScan){
+           WriteMetadata(hotfixesFirstScanKey, Utils::getCurrentISO8601());
         }
 
         LogTrace( "Ending hotfixes scan");
@@ -934,6 +1015,10 @@ void Inventory::ScanPorts()
         const auto& portsData { GetPortsData() };
         UpdateChanges(PORTS_TABLE, portsData);
         LogTrace( "Ending ports scan");
+
+        if(!m_portsFirstScan){
+           WriteMetadata(portsFirstScanKey, Utils::getCurrentISO8601());
+        }
     }
 }
 
@@ -968,6 +1053,10 @@ void Inventory::ScanProcesses()
             txn.syncTxnRow(input);
         });
         txn.getDeletedRows(callback);
+
+        if(!m_processesFirstScan){
+           WriteMetadata(processesFirstScanKey, Utils::getCurrentISO8601());
+        }
 
         LogTrace( "Ending processes scan");
     }

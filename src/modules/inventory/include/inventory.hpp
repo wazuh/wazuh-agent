@@ -19,6 +19,24 @@
 
 #include <boost/asio/awaitable.hpp>
 
+constexpr auto hardwareFirstScanKey  { "hardware-first-scan"  };
+constexpr auto systemFirstScanKey    { "system-first-scan"    };
+constexpr auto networksFirstScanKey  { "networks-first-scan"  };
+constexpr auto packagesFirstScanKey  { "packages-first-scan"  };
+constexpr auto portsFirstScanKey     { "ports-first-scan"     };
+constexpr auto portsAllFirstScanKey  { "portsAll-first-scan"  };
+constexpr auto processesFirstScanKey { "processes-first-scan" };
+constexpr auto hotfixesFirstScanKey  { "hotfixes-first-scan"  };
+
+constexpr auto NETWORKS_TABLE     { "networks"  };
+constexpr auto PACKAGES_TABLE     { "packages"  };
+constexpr auto HOTFIXES_TABLE     { "hotfixes"  };
+constexpr auto PORTS_TABLE        { "ports"     };
+constexpr auto PROCESSES_TABLE    { "processes" };
+constexpr auto OS_TABLE           { "system"    };
+constexpr auto HW_TABLE           { "hardware"  };
+constexpr auto MD_TABLE           { "metadata"  };
+
 class Inventory {
     public:
         static Inventory& Instance()
@@ -38,7 +56,7 @@ class Inventory {
                     const std::string& dbPath,
                     const std::string& normalizerConfigPath,
                     const std::string& normalizerType);
-        virtual void SendDeltaEvent(const std::string& data);
+        virtual void SendDeltaEvent(const std::string& data, bool isFirstScan);
 
         const std::string& AgentUUID() const { return m_agentUUID; };
         void SetAgentUUID(const std::string& agentUUID) {
@@ -67,6 +85,9 @@ class Inventory {
         nlohmann::json GetPortsData();
 
         void UpdateChanges(const std::string& table, const nlohmann::json& values);
+        void WriteMetadata(const std::string &key, const std::string &value);
+        std::string ReadMetadata(const std::string &key);
+        void DeleteMetadata(const std::string &key);
         void NotifyChange(ReturnTypeCallback result, const nlohmann::json& data, const std::string& table);
         void TryCatchTask(const std::function<void()>& task) const;
         void ScanHardware();
@@ -86,21 +107,21 @@ class Inventory {
         std::string CalculateHashId(const nlohmann::json& data, const std::string& table);
 
         const std::string                           m_moduleName {"inventory"};
-        std::string                                 m_agentUUID {""};   // Agent UUID
+        std::string                                 m_agentUUID {""};     // Agent UUID
         std::shared_ptr<ISysInfo>                   m_spInfo;
         std::function<void(const std::string&)>     m_reportDiffFunction;
-        bool                                        m_enabled;          // Main switch
-        std::string                                 m_dbFilePath;       // Database path
-        std::time_t                                 m_intervalValue;    // Scan interval
-        bool                                        m_scanOnStart;      // Scan always on start
-        bool                                        m_hardware;         // Hardware inventory
-        bool                                        m_system;           // System inventory
-        bool                                        m_networks;         // Networks inventory
-        bool                                        m_packages;         // Installed packages inventory
-        bool                                        m_ports;            // Opened ports inventory
-        bool                                        m_portsAll;         // Scan only listening ports or all
-        bool                                        m_processes;        // Running processes inventory
-        bool                                        m_hotfixes;         // Windows hotfixes installed
+        bool                                        m_enabled;            // Main switch
+        std::string                                 m_dbFilePath;         // Database path
+        std::time_t                                 m_intervalValue;      // Scan interval
+        bool                                        m_scanOnStart;        // Scan always on start
+        bool                                        m_hardware;           // Hardware inventory
+        bool                                        m_system;             // System inventory
+        bool                                        m_networks;           // Networks inventory
+        bool                                        m_packages;           // Installed packages inventory
+        bool                                        m_ports;              // Opened ports inventory
+        bool                                        m_portsAll;           // Scan only listening ports or all
+        bool                                        m_processes;          // Running processes inventory
+        bool                                        m_hotfixes;           // Windows hotfixes installed
         bool                                        m_stopping;
         bool                                        m_notify;
         std::unique_ptr<DBSync>                     m_spDBSync;
@@ -109,4 +130,12 @@ class Inventory {
         std::unique_ptr<InvNormalizer>              m_spNormalizer;
         std::string                                 m_scanTime;
         std::function<int(Message)>                 m_pushMessage;
+        bool                                        m_hardwareFirstScan;  // Hardware first scan flag
+        bool                                        m_systemFirstScan;    // System first scan flag
+        bool                                        m_networksFirstScan;  // Networks first scan flag
+        bool                                        m_packagesFirstScan;  // Installed packages first scan flag
+        bool                                        m_portsFirstScan;     // Opened ports first scan flag
+        bool                                        m_portsAllFirstScan;  // Scan only listening ports or all first scan flag
+        bool                                        m_processesFirstScan; // Running processes first scan flag
+        bool                                        m_hotfixesFirstScan;  // Windows hotfixes installed first scan flag
 };
