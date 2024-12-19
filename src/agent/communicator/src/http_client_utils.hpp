@@ -10,6 +10,9 @@
 
 namespace http_client_utils
 {
+    /// @brief The default timeout for HTTP requests
+    constexpr int TIMEOUT_SECONDS = 30;
+
     /// @brief Reads a response from a socket and writes it to a file
     /// @param socket The socket to read from
     /// @param res The response to use

@@ -23,14 +23,35 @@ namespace http_client
         }
 
         /// @brief Connects the socket to the given endpoints
+        /// @param io_context The io_context associated to the socket
         /// @param endpoints The endpoints to connect to
         /// @param ec The error code, if any occurred
-        void Connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
+        void Connect(boost::asio::io_context& io_context,
+                     const boost::asio::ip::tcp::resolver::results_type& endpoints,
                      boost::system::error_code& ec) override
         {
             try
             {
-                boost::asio::connect(m_socket, endpoints, ec);
+                bool connectionSuccess = false;
+
+                boost::asio::async_connect(m_socket,
+                                           endpoints,
+                                           [&](const boost::system::error_code& errorCode, const auto&)
+                                           {
+                                               if (!errorCode)
+                                               {
+                                                   connectionSuccess = true;
+                                                   ec = errorCode;
+                                                   LogDebug("Connected successfully");
+                                               }
+                                           });
+
+                io_context.run_for(std::chrono::seconds(http_client_utils::TIMEOUT_SECONDS)); // Run for 2 seconds();
+                if (!connectionSuccess)
+                {
+                    ec = boost::asio::error::timed_out;
+                    LogDebug("Connection timed out");
+                }
             }
             catch (const std::exception& e)
             {
