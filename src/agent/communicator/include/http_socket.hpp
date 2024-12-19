@@ -88,7 +88,15 @@ namespace http_client
         /// @brief Closes the socket
         void Close() override;
 
-    private:
+    protected:
+        /// @brief Wrapper around boost::asio::async_connect to be overridden in unit tests
+        /// param endpoints The endpoints to connect to
+        /// param ec The error code, if any occurred
+        /// param connectionSuccess True if the connection was successful
+        virtual void CallAsyncConnect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
+                                      boost::system::error_code& ec,
+                                      bool& connectionSuccess);
+
         /// @brief The socket to use for the HTTP connection
         boost::asio::ip::tcp::socket m_socket;
     };
