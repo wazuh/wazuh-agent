@@ -31,7 +31,7 @@ class SysInfoNetworkLinuxWrapperMock: public INetworkInterfaceWrapper
         MOCK_METHOD(std::string, name, (), (const override));
         MOCK_METHOD(std::string, address, (), (const override));
         MOCK_METHOD(std::string, netmask, (), (const override));
-        MOCK_METHOD(std::string, broadcast, (), (const override));
+        MOCK_METHOD(std::optional<std::string>, broadcast, (), (const override));
         MOCK_METHOD(std::string, addressV6, (), (const override));
         MOCK_METHOD(std::string, netmaskV6, (), (const override));
         MOCK_METHOD(std::string, broadcastV6, (), (const override));
@@ -41,9 +41,9 @@ class SysInfoNetworkLinuxWrapperMock: public INetworkInterfaceWrapper
         MOCK_METHOD(std::string, dhcp, (), (const override));
         MOCK_METHOD(uint32_t, mtu, (), (const override));
         MOCK_METHOD(LinkStats, stats, (), (const override));
-        MOCK_METHOD(std::string, type, (), (const override));
-        MOCK_METHOD(std::string, state, (), (const override));
-        MOCK_METHOD(std::string, MAC, (), (const override));
+        MOCK_METHOD(std::optional<std::string>, type, (), (const override));
+        MOCK_METHOD(std::optional<std::string>, state, (), (const override));
+        MOCK_METHOD(std::optional<std::string>, MAC, (), (const override));
         MOCK_METHOD(std::string, adapter, (), (const override));
 };
 
