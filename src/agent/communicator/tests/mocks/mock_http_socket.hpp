@@ -32,11 +32,6 @@ public:
                 (boost::beast::http::response<boost::beast::http::dynamic_body> & res, boost::system::error_code& ec),
                 (override));
 
-    MOCK_METHOD(void,
-                ReadToFile,
-                (boost::beast::http::response<boost::beast::http::dynamic_body> & res, const std::string& dstFilePath),
-                (override));
-
     MOCK_METHOD(boost::asio::awaitable<void>,
                 AsyncRead,
                 (boost::beast::http::response<boost::beast::http::dynamic_body> & res, boost::system::error_code& ec),

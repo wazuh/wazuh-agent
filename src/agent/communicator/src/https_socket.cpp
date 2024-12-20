@@ -27,14 +27,14 @@ namespace http_client
         try
         {
             boost::asio::connect(m_ssl_socket.next_layer(), endpoints.begin(), endpoints.end(), ec);
-            if (ec)
+            if (ec != boost::system::errc::success)
             {
                 LogDebug("Connect failed: {}", ec.message());
                 return;
             }
 
             m_ssl_socket.handshake(boost::asio::ssl::stream_base::client, ec); // NOLINT(bugprone-unused-return-value)
-            if (ec)
+            if (ec != boost::system::errc::success)
             {
                 LogDebug("Handshake failed: {}", ec.message());
                 return;
@@ -66,7 +66,7 @@ namespace http_client
                 http_client_utils::TimerTask(timer, result, taskCompleted) ||
                 http_client_utils::SocketConnectTask(m_ssl_socket.lowest_layer(), endpoints, result, taskCompleted));
 
-            if (!result)
+            if (result->value() != boost::system::errc::success)
             {
                 m_ssl_socket.lowest_layer().cancel();
                 ec = *result;
@@ -119,7 +119,7 @@ namespace http_client
         {
             co_await (http_client_utils::TimerTask(timer, result, taskCompleted) ||
                       http_client_utils::SocketWriteTask(m_ssl_socket, req, result, taskCompleted));
-            if (!result)
+            if (result->value() != boost::system::errc::success)
             {
                 m_ssl_socket.lowest_layer().cancel();
                 ec = *result;
@@ -147,19 +147,6 @@ namespace http_client
         }
     }
 
-    void HttpsSocket::ReadToFile(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                                 const std::string& dstFilePath)
-    {
-        try
-        {
-            http_client_utils::ReadToFile(m_ssl_socket, res, dstFilePath);
-        }
-        catch (const std::exception& e)
-        {
-            LogDebug("Exception thrown during read to file: {}", e.what());
-        }
-    }
-
     boost::asio::awaitable<void> HttpsSocket::AsyncRead(
         boost::beast::http::response< // NOLINT(cppcoreguidelines-avoid-reference-coroutine-parameters)
             boost::beast::http::dynamic_body>& res,
@@ -178,7 +165,7 @@ namespace http_client
             boost::beast::flat_buffer buffer;
             co_await (http_client_utils::TimerTask(timer, result, taskCompleted) ||
                       http_client_utils::SocketReadTask(m_ssl_socket, buffer, res, result, taskCompleted));
-            if (!result)
+            if (result->value() != boost::system::errc::success)
             {
                 m_ssl_socket.lowest_layer().cancel();
                 ec = *result;

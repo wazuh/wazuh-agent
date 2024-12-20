@@ -23,7 +23,7 @@ namespace http_client_utils
         {
             if (!(*taskCompleted) && e.code() != boost::asio::error::operation_aborted)
             {
-                *result = boost::asio::error::fault;
+                *result = e.code();
             }
         }
     }
