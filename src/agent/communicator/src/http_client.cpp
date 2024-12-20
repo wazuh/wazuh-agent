@@ -234,16 +234,6 @@ namespace http_client
                                              boost::system::error_code& ec) { socket->Read(res, ec); });
     }
 
-    boost::beast::http::response<boost::beast::http::dynamic_body>
-    HttpClient::PerformHttpRequestDownload(const HttpRequestParams& params, const std::string& dstFilePath)
-    {
-        return PerformHttpRequestInternal(
-            params,
-            [&dstFilePath](std::unique_ptr<IHttpSocket>& socket,
-                           boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                           boost::system::error_code&) { socket->ReadToFile(res, dstFilePath); });
-    }
-
     std::optional<std::string> HttpClient::AuthenticateWithUuidAndKey(const std::string& serverUrl,
                                                                       const std::string& userAgent,
                                                                       const std::string& uuid,

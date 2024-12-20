@@ -40,9 +40,4 @@ public:
         AuthenticateWithUserPassword,
         (const std::string& host, const std::string& userAgent, const std::string& user, const std::string& password),
         (override));
-
-    MOCK_METHOD(boost::beast::http::response<boost::beast::http::dynamic_body>,
-                PerformHttpRequestDownload,
-                (const http_client::HttpRequestParams& params, const std::string& dstFilePath),
-                (override));
 };
