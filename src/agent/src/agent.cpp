@@ -51,9 +51,14 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
 
     m_centralizedConfiguration.GetGroupIdFunction([this]() { return m_agentInfo.GetGroups(); });
 
+    // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
     m_centralizedConfiguration.SetDownloadGroupFilesFunction(
-        [this](const std::string& groupId, const std::string& destinationPath)
-        { return m_communicator.GetGroupConfigurationFromManager(groupId, destinationPath); });
+        [this](std::string groupId, std::string destinationPath) -> boost::asio::awaitable<bool>
+        {
+            co_return co_await m_communicator.GetGroupConfigurationFromManager(std::move(groupId),
+                                                                               std::move(destinationPath));
+        });
+    // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
     m_centralizedConfiguration.ValidateFileFunction([this](const std::filesystem::path& fileToValidate)
                                                     { return m_configurationParser->isValidYamlFile(fileToValidate); });
