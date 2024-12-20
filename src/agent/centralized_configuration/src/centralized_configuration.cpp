@@ -87,7 +87,16 @@ namespace centralized_configuration
             {
                 const std::filesystem::path tmpGroupFile =
                     m_fileSystemWrapper->temp_directory_path() / (groupId + config::DEFAULT_SHARED_FILE_EXTENSION);
-                m_downloadGroupFilesFunction(groupId, tmpGroupFile.string());
+
+                const auto dlResult = co_await m_downloadGroupFilesFunction(groupId, tmpGroupFile.string());
+                if (!dlResult)
+                {
+                    LogWarn("Failed to download the file for group '{}'", groupId);
+                    co_return module_command::CommandExecutionResult {
+                        module_command::Status::FAILURE,
+                        "CentralizedConfiguration failed to download the file for group '" + groupId + "'"};
+                }
+
                 if (!m_validateFileFunction(tmpGroupFile))
                 {
                     LogWarn("Failed to validate the file for group '{}', invalid group file received: {}",
