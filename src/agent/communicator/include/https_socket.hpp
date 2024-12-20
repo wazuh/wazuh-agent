@@ -50,12 +50,6 @@ namespace http_client
         void Read(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
                   boost::system::error_code& ec) override;
 
-        /// @brief Reads a response from the socket and writes it to a file
-        /// @param res The response to read
-        /// @param dstFilePath The path to the file to write to
-        void ReadToFile(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                        const std::string& dstFilePath) override;
-
         /// @brief Asynchronous version of Read
         /// @param res The response to read
         /// @param ec The error code, if any occurred
