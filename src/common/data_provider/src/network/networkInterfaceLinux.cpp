@@ -56,7 +56,7 @@ void LinuxNetworkImpl<AF_INET>::buildNetworkData(nlohmann::json& network)
         nlohmann::json ipv4JS { };
         ipv4JS["address"] = address;
         ipv4JS["netmask"] = m_interfaceAddress->netmask();
-        ipv4JS["broadcast"] = m_interfaceAddress->broadcast();
+        ipv4JS["broadcast"] = m_interfaceAddress->broadcast().value_or(UNKNOWN_VALUE);
         ipv4JS["metric"] = m_interfaceAddress->metrics();
         ipv4JS["dhcp"]   = m_interfaceAddress->dhcp();
 
@@ -94,9 +94,9 @@ void LinuxNetworkImpl<AF_PACKET>::buildNetworkData(nlohmann::json& network)
     /* Get stats of interface */
     network["name"]    = m_interfaceAddress->name();
     network["adapter"] = m_interfaceAddress->adapter();
-    network["type"]    = m_interfaceAddress->type();
-    network["state"]   = m_interfaceAddress->state();
-    network["mac"]     = m_interfaceAddress->MAC();
+    network["type"]    = m_interfaceAddress->type().value_or(UNKNOWN_VALUE);
+    network["state"]   = m_interfaceAddress->state().value_or(UNKNOWN_VALUE);
+    network["mac"]     = m_interfaceAddress->MAC().value_or(UNKNOWN_VALUE);
 
     const auto stats { m_interfaceAddress->stats() };
 
