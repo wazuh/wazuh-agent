@@ -155,7 +155,6 @@ namespace PackageLinuxHelper
             ret["vendor"]       = vendor;
             ret["install_time"] = UNKNOWN_VALUE;
             ret["description"]  = description;
-            ret["location"]     = UNKNOWN_VALUE;
         }
 
         return ret;

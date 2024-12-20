@@ -353,8 +353,8 @@ nlohmann::json SysInfo::getOsInfo() const
 
     if (!getOsInfoFromFiles(ret))
     {
-        ret["os_name"] = "Linux";
-        ret["os_platform"] = "linux";
+        ret["os_name"] = UNKNOWN_VALUE;
+        ret["os_platform"] = UNKNOWN_VALUE;
         ret["os_version"] = UNKNOWN_VALUE;
     }
 
