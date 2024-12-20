@@ -1,4 +1,4 @@
-# What to Collect
+# Diagnostic Guide
 
 1. **Agent version and service status**
 2. **Configuration files**
