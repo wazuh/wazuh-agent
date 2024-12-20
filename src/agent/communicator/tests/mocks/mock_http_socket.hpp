@@ -7,7 +7,9 @@ class MockHttpSocket : public http_client::IHttpSocket
 public:
     MOCK_METHOD(void,
                 Connect,
-                (const boost::asio::ip::tcp::resolver::results_type& endpoints, boost::system::error_code& code),
+                (boost::asio::io_context & io_context,
+                 const boost::asio::ip::tcp::resolver::results_type& endpoints,
+                 boost::system::error_code& code),
                 (override));
 
     MOCK_METHOD(boost::asio::awaitable<void>,
@@ -17,7 +19,8 @@ public:
 
     MOCK_METHOD(void,
                 Write,
-                (const boost::beast::http::request<boost::beast::http::string_body>& req,
+                (boost::asio::io_context & io_context,
+                 const boost::beast::http::request<boost::beast::http::string_body>& req,
                  boost::system::error_code& ec),
                 (override));
 
@@ -29,7 +32,9 @@ public:
 
     MOCK_METHOD(void,
                 Read,
-                (boost::beast::http::response<boost::beast::http::dynamic_body> & res, boost::system::error_code& ec),
+                (boost::asio::io_context & io_context,
+                 boost::beast::http::response<boost::beast::http::dynamic_body>& res,
+                 boost::system::error_code& ec),
                 (override));
 
     MOCK_METHOD(void,

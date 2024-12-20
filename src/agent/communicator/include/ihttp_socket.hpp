@@ -4,6 +4,7 @@
 #include <boost/beast.hpp>
 #include <boost/system/error_code.hpp>
 
+#include <chrono>
 #include <string>
 
 namespace http_client
@@ -18,7 +19,8 @@ namespace http_client
         /// @brief Connects the socket to the given endpoints
         /// @param endpoints The endpoints to connect to
         /// @param ec The error code, if any occurred
-        virtual void Connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
+        virtual void Connect(boost::asio::io_context& io_context,
+                             const boost::asio::ip::tcp::resolver::results_type& endpoints,
                              boost::system::error_code& ec) = 0;
 
         /// @brief Asynchronous version of Connect
@@ -28,9 +30,11 @@ namespace http_client
                                                           boost::system::error_code& ec) = 0;
 
         /// @brief Writes the given request to the socket
+        /// @param io_context The io context associated to the socket
         /// @param req The request to write
         /// @param ec The error code, if any occurred
-        virtual void Write(const boost::beast::http::request<boost::beast::http::string_body>& req,
+        virtual void Write(boost::asio::io_context& io_context,
+                           const boost::beast::http::request<boost::beast::http::string_body>& req,
                            boost::system::error_code& ec) = 0;
 
         /// @brief Asynchronous version of Write
@@ -41,9 +45,11 @@ namespace http_client
                    boost::system::error_code& ec) = 0;
 
         /// @brief Reads a response from the socket
+        /// @param io_context The io context associated to the socket
         /// @param res The response to read
         /// @param ec The error code, if any occurred
-        virtual void Read(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
+        virtual void Read(boost::asio::io_context& io_context,
+                          boost::beast::http::response<boost::beast::http::dynamic_body>& res,
                           boost::system::error_code& ec) = 0;
 
         /// @brief Reads a response from the socket and writes it to a file
