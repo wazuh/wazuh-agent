@@ -49,7 +49,7 @@ namespace http_client
         {
             co_await (http_client_utils::TimerTask(timer, result, taskCompleted) ||
                       http_client_utils::SocketConnectTask(m_socket, endpoints, result, taskCompleted));
-            if (!result)
+            if (result->value() != boost::system::errc::success)
             {
                 m_socket.cancel();
                 ec = *result;
@@ -93,7 +93,7 @@ namespace http_client
         {
             co_await (http_client_utils::TimerTask(timer, result, taskCompleted) ||
                       http_client_utils::SocketWriteTask(m_socket, req, result, taskCompleted));
-            if (!result)
+            if (result->value() != boost::system::errc::success)
             {
                 m_socket.cancel();
                 ec = *result;
@@ -121,19 +121,6 @@ namespace http_client
         }
     }
 
-    void HttpSocket::ReadToFile(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                                const std::string& dstFilePath)
-    {
-        try
-        {
-            http_client_utils::ReadToFile(m_socket, res, dstFilePath);
-        }
-        catch (const std::exception& e)
-        {
-            LogDebug("Exception thrown during read to file: {}", e.what());
-        }
-    }
-
     boost::asio::awaitable<void> HttpSocket::AsyncRead(
         boost::beast::http::response< // NOLINT(cppcoreguidelines-avoid-reference-coroutine-parameters)
             boost::beast::http::dynamic_body>& res,
@@ -152,7 +139,7 @@ namespace http_client
             boost::beast::flat_buffer buffer;
             co_await (http_client_utils::TimerTask(timer, result, taskCompleted) ||
                       http_client_utils::SocketReadTask(m_socket, buffer, res, result, taskCompleted));
-            if (!result)
+            if (result->value() != boost::system::errc::success)
             {
                 m_socket.cancel();
                 ec = *result;
