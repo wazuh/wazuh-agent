@@ -22,6 +22,15 @@ namespace http_client
         {
         }
 
+        /// @brief Sets the verification mode for the host
+        /// @param host The host name
+        /// @param verificationMode The verification mode to set
+        void SetVerificationMode([[maybe_unused]] const std::string& host,
+                                 [[maybe_unused]] const std::string& verificationMode) override
+        {
+            // No functionality for HTTP sockets
+        }
+
         /// @brief Connects the socket to the given endpoints
         /// @param endpoints The endpoints to connect to
         /// @param ec The error code, if any occurred

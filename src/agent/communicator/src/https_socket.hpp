@@ -21,7 +21,38 @@ namespace http_client
             : m_ctx(boost::asio::ssl::context::sslv23)
             , m_ssl_socket(io_context, m_ctx)
         {
-            m_ctx.set_verify_mode(boost::asio::ssl::verify_peer);
+        }
+
+        /// @brief Set the verification mode of the HTTPS connection
+        /// @param host The host name to be verified
+        /// @param verificationMode The verification mode to use
+        /// @details The verification modes supported are:
+        /// - "full": verifies the identity of the server, including the hostname
+        /// - "certificate": only verifies the identity of the server, without checking the hostname
+        /// - "none": no verification is performed
+        void SetVerificationMode(const std::string& host, const std::string& verificationMode) override
+        {
+            if (verificationMode == "certificate")
+            {
+                m_ctx.set_default_verify_paths();
+                m_ssl_socket.set_verify_mode(boost::asio::ssl::verify_peer);
+                m_ssl_socket.set_verify_callback([](bool preverified, boost::asio::ssl::verify_context&)
+                                                 { return preverified; });
+            }
+            else if (verificationMode == "none")
+            {
+                m_ssl_socket.set_verify_mode(boost::asio::ssl::verify_none);
+            }
+            else
+            {
+                if (verificationMode != "full")
+                {
+                    LogWarn("Verification mode unknown, full mode is used.");
+                }
+                m_ctx.set_default_verify_paths();
+                m_ssl_socket.set_verify_mode(boost::asio::ssl::verify_peer);
+                m_ssl_socket.set_verify_callback(boost::asio::ssl::rfc2818_verification(host));
+            }
         }
 
         /// @brief Connects the socket to the given endpoints

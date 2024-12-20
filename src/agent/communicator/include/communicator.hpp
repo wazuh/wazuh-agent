@@ -66,6 +66,19 @@ namespace communicator
                 LogWarn("batch_size must be between 1KB and 100MB. Using default value.");
                 m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
             }
+
+            m_verificationMode = getConfigValue.template operator()<std::string>("agent", "verification_mode")
+                                     .value_or(config::agent::DEFAULT_VERIFICATION_MODE);
+
+            if (std::find(std::begin(config::agent::VALID_VERIFICATION_MODES),
+                          std::end(config::agent::VALID_VERIFICATION_MODES),
+                          m_verificationMode) == std::end(config::agent::VALID_VERIFICATION_MODES))
+            {
+                LogWarn("Incorrect value for 'verification_mode', in case of HTTPS connections the default value '{}' "
+                        "is used.",
+                        config::agent::DEFAULT_VERIFICATION_MODE);
+                m_verificationMode = config::agent::DEFAULT_VERIFICATION_MODE;
+            }
         }
 
         /// @brief Sends an authentication request to the manager
@@ -149,5 +162,8 @@ namespace communicator
 
         /// @brief Timer to wait for token expiration
         std::unique_ptr<boost::asio::steady_timer> m_tokenExpTimer;
+
+        /// @brief The verification mode
+        std::string m_verificationMode;
     };
 } // namespace communicator

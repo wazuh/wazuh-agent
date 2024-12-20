@@ -13,7 +13,8 @@ void RegisterAgent(const std::string& url,
                    const std::string& password,
                    const std::string& key,
                    const std::string& name,
-                   const std::string& configFilePath)
+                   const std::string& configFilePath,
+                   const std::string& verificationMode)
 {
     auto configurationParser = configFilePath.empty()
                                    ? configuration::ConfigurationParser()
@@ -30,7 +31,7 @@ void RegisterAgent(const std::string& url,
             agent_registration::AgentRegistration reg(url, user, password, key, name, dbFolderPath);
 
             http_client::HttpClient httpClient;
-            if (reg.Register(httpClient))
+            if (reg.Register(httpClient, verificationMode))
             {
                 std::cout << "wazuh-agent registered\n";
             }

@@ -19,7 +19,7 @@ namespace communicator
     boost::beast::http::status Communicator::SendAuthenticationRequest()
     {
         const auto token = m_httpClient->AuthenticateWithUuidAndKey(
-            m_serverUrl, m_getHeaderInfo ? m_getHeaderInfo() : "", m_uuid, m_key);
+            m_serverUrl, m_getHeaderInfo ? m_getHeaderInfo() : "", m_uuid, m_key, m_verificationMode);
 
         if (token.has_value())
         {
@@ -78,8 +78,11 @@ namespace communicator
             return m_keepRunning.load();
         };
 
-        const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::get, m_serverUrl, "/api/v1/commands", m_getHeaderInfo ? m_getHeaderInfo() : "");
+        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get,
+                                                              m_serverUrl,
+                                                              "/api/v1/commands",
+                                                              m_getHeaderInfo ? m_getHeaderInfo() : "",
+                                                              m_verificationMode);
         co_await m_httpClient->Co_PerformHttpRequest(
             m_token, reqParams, {}, onAuthenticationFailed, m_retryInterval, m_batchSize, onSuccess, loopCondition);
     }
@@ -156,7 +159,8 @@ namespace communicator
         const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
                                                               m_serverUrl,
                                                               "/api/v1/events/stateful",
-                                                              m_getHeaderInfo ? m_getHeaderInfo() : "");
+                                                              m_getHeaderInfo ? m_getHeaderInfo() : "",
+                                                              m_verificationMode);
         co_await m_httpClient->Co_PerformHttpRequest(m_token,
                                                      reqParams,
                                                      getMessages,
@@ -184,7 +188,8 @@ namespace communicator
         const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
                                                               m_serverUrl,
                                                               "/api/v1/events/stateless",
-                                                              m_getHeaderInfo ? m_getHeaderInfo() : "");
+                                                              m_getHeaderInfo ? m_getHeaderInfo() : "",
+                                                              m_verificationMode);
         co_await m_httpClient->Co_PerformHttpRequest(m_token,
                                                      reqParams,
                                                      getMessages,
@@ -223,6 +228,7 @@ namespace communicator
                                                               "/api/v1/files?file_name=" + groupName +
                                                                   config::DEFAULT_SHARED_FILE_EXTENSION,
                                                               m_getHeaderInfo ? m_getHeaderInfo() : "",
+                                                              m_verificationMode,
                                                               *m_token);
 
         const auto result = m_httpClient->PerformHttpRequestDownload(reqParams, dstFilePath);
