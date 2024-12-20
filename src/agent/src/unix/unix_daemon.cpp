@@ -63,6 +63,8 @@ namespace unix_daemon
 
     bool LockFileHandler::createLockFile()
     {
+
+
         if (!createDirectory(m_lockFilePath))
         {
             LogError("Unable to create lock directory: {}", m_lockFilePath);
@@ -86,8 +88,16 @@ namespace unix_daemon
             return false;
         }
 
-        LogDebug("Lock file created: {}", filename);
+        // Write the PID to the lock file
+        const std::string pidStr = std::to_string(getpid()) + "\n";
+        if (write(fd, pidStr.c_str(), pidStr.size()) == -1)
+        {
+            LogError("Unable to write PID to lock file: {}. Error: {} ({})", filename.c_str(), errno, std::strerror(errno));
+            close(fd);
+            return false;
+        }
 
+        LogDebug("Lock file created: {}", filename);
         return true;
     }
 

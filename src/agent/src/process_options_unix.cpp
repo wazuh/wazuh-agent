@@ -13,6 +13,7 @@
 
 void StartAgent(const std::string& configFilePath)
 {
+    bool is_restart_required = false;
     unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile(configFilePath);
 
     if (!lockFileHandler.isLockFileCreated())
@@ -27,6 +28,7 @@ void StartAgent(const std::string& configFilePath)
     {
         Agent agent(configFilePath);
         agent.Run();
+        requires_restart = agent.IsRestartRequired();
     }
     catch (const std::exception& e)
     {
@@ -34,6 +36,10 @@ void StartAgent(const std::string& configFilePath)
     }
 
     lockFileHandler.removeLockFile();
+
+    if ( is_restart_required ){
+        LogInfo("## RESTARTING STARTED");
+    }
 }
 
 void StatusAgent(const std::string& configFilePath)
