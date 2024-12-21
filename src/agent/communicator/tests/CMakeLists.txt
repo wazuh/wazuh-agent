@@ -11,3 +11,8 @@ add_executable(http_client_test http_client_test.cpp)
 configure_target(http_client_test)
 target_link_libraries(http_client_test PUBLIC Communicator GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 add_test(NAME HttpClientTest COMMAND http_client_test)
+
+add_executable(socket_test http_socket_test.cpp)
+configure_target(socket_test)
+target_link_libraries(socket_test PUBLIC Communicator GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
+add_test(NAME SocketTest COMMAND socket_test)
