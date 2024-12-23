@@ -1,3 +1,4 @@
+#include <https_socket_verify_utils.hpp>
 #include <ihttp_socket.hpp>
 #include <logger.hpp>
 
@@ -32,16 +33,19 @@ namespace http_client
         /// - "none": no verification is performed
         void SetVerificationMode(const std::string& host, const std::string& verificationMode) override
         {
-            if (verificationMode == "certificate")
-            {
-                m_ctx.set_default_verify_paths();
-                m_ssl_socket.set_verify_mode(boost::asio::ssl::verify_peer);
-                m_ssl_socket.set_verify_callback([](bool preverified, boost::asio::ssl::verify_context&)
-                                                 { return preverified; });
-            }
-            else if (verificationMode == "none")
+            if (verificationMode == "none")
             {
                 m_ssl_socket.set_verify_mode(boost::asio::ssl::verify_none);
+                return;
+            }
+
+            m_ctx.set_default_verify_paths();
+            m_ssl_socket.set_verify_mode(boost::asio::ssl::verify_peer);
+            if (verificationMode == "certificate")
+            {
+                m_ssl_socket.set_verify_callback(
+                    [verificationMode, host](bool preverified, boost::asio::ssl::verify_context& ctx)
+                    { return https_socket_verify_utils::VerifyCertificate(preverified, ctx, verificationMode, host); });
             }
             else
             {
@@ -49,9 +53,9 @@ namespace http_client
                 {
                     LogWarn("Verification mode unknown, full mode is used.");
                 }
-                m_ctx.set_default_verify_paths();
-                m_ssl_socket.set_verify_mode(boost::asio::ssl::verify_peer);
-                m_ssl_socket.set_verify_callback(boost::asio::ssl::rfc2818_verification(host));
+                m_ssl_socket.set_verify_callback(
+                    [verificationMode, host](bool preverified, boost::asio::ssl::verify_context& ctx)
+                    { return https_socket_verify_utils::VerifyCertificate(preverified, ctx, "full", host); });
             }
         }
 
