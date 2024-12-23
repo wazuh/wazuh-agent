@@ -72,7 +72,7 @@ namespace unix_daemon
         const std::string filename = fmt::format("{}/wazuh-agent.lock", m_lockFilePath);
 
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, cppcoreguidelines-avoid-magic-numbers)
-        int fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        int fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0644);
         if (fd == -1)
         {
             LogError("Unable to open lock file: {}. Error: {} ({})", filename.c_str(), errno, std::strerror(errno));
@@ -90,7 +90,8 @@ namespace unix_daemon
         const std::string pidStr = std::to_string(getpid()) + "\n";
         if (write(fd, pidStr.c_str(), pidStr.size()) == -1)
         {
-            LogError("Unable to write PID to lock file: {}. Error: {} ({})", filename.c_str(), errno, std::strerror(errno));
+            LogError(
+                "Unable to write PID to lock file: {}. Error: {} ({})", filename.c_str(), errno, std::strerror(errno));
             close(fd);
             return false;
         }

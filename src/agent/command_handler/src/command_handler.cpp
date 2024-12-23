@@ -3,7 +3,9 @@
 namespace command_handler
 {
     const std::unordered_map<std::string, std::string> VALID_COMMANDS_MAP = {
-        {"set-group", "CentralizedConfiguration"}, {"update-group", "CentralizedConfiguration"}, {"restart", "restart"}};
+        {"set-group", "CentralizedConfiguration"},
+        {"update-group", "CentralizedConfiguration"},
+        {"restart", "restart"}};
 
     void CommandHandler::Stop()
     {
