@@ -370,9 +370,9 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapCorrectMapping)
     EXPECT_EQ("gnome-3-38-2004", jsPackageInfo["name"]);
     EXPECT_EQ(363151360, jsPackageInfo["size"]);
     EXPECT_EQ("2022/11/23 20:33:59", jsPackageInfo["install_time"]);
-    EXPECT_EQ(" ", jsPackageInfo["groups"]);
+    EXPECT_TRUE(jsPackageInfo["groups"].is_null());
     EXPECT_EQ("0+git.6f39565", jsPackageInfo["version"]);
-    EXPECT_EQ(" ", jsPackageInfo["architecture"]);
+    EXPECT_TRUE(jsPackageInfo["groups"].is_null());
     EXPECT_EQ("snap", jsPackageInfo["format"]);
     EXPECT_EQ("Canonical", jsPackageInfo["vendor"]);
     EXPECT_EQ("Shared GNOME 3.38 Ubuntu stack", jsPackageInfo["description"]);
