@@ -283,7 +283,7 @@ std::string Inventory::GetPrimaryKeys([[maybe_unused]] const nlohmann::json& dat
     }
     else if (table == NETWORKS_TABLE)
     {
-        ret = data["observer"]["ingress"]["interface"]["name"].get<std::string>() + ":" + data["observer"]["ingress"]["interface"]["alias"].get<std::string>() + ":" + data["network"]["type"].get<std::string>() + ":" + data["network"]["protocol"].get<std::string>() + ":" + data["host"]["ip"][0].get<std::string>();
+        ret = data["observer"]["ingress"]["interface"]["name"].get<std::string>() + ":" + data["observer"]["ingress"]["interface"]["alias"].get<std::string>() + ":" + data["interface"]["type"].get<std::string>() + ":" + data["network"]["type"].get<std::string>() + ":" + data["host"]["ip"][0].get<std::string>();
     }
     return ret;
 }
