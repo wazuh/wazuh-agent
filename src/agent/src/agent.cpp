@@ -164,8 +164,7 @@ void Agent::Run()
                         },
                         m_messageQueue);
                 } else if (cmd.Module == "restart") {
-                    requires_restart = true;
-                    SignalHandler::HandleSignal(SIGTERM);
+                    kill(getppid(), SIGUSR1);
                     auto RestartExecuteCommand = []() -> boost::asio::awaitable<module_command::CommandExecutionResult> {
                         co_return module_command::CommandExecutionResult{
                             module_command::Status::IN_PROGRESS,

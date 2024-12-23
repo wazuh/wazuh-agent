@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unix_daemon.hpp>
+
 /// @brief Retrieves command-line arguments for `execve()`.
 ///
 /// Parses `/proc/self/cmdline` to extract arguments.
@@ -15,3 +17,27 @@ static bool using_systemctl();
 ///
 /// After the agent stops, initiates a start but in a new process.
 void RestartAgent();
+
+/// @brief Stops the agent by terminating the child process.
+///
+/// This function sends a SIGTERM signal to the agent process to stop it. If the agent process
+/// does not stop within a specified timeout period (30 seconds), it forces termination with a SIGKILL signal.
+///
+/// @param pid The process ID of the agent to stop.
+/// @param lockFileHandler Pointer to the lock file handler used to remove the lock file if necessary.
+void StopAgent(pid_t pid, unix_daemon::LockFileHandler* lockFileHandler);
+
+
+/// @brief Handles SIGUSR1 signal
+///
+/// This function is called when the SIGUSR1 signal is received.
+/// It handles the self-restart actions triggered by this signal.
+void sigusr1_handler(int signal);
+
+/// @brief Handles SIGCHLD signal
+///
+/// This function is invoked when a child process terminates.
+/// It manages the termination of child processes by handling the SIGCHLD signal.
+void sigchld_handler(int signal);
+
+void sigterm_handler(int signal);
