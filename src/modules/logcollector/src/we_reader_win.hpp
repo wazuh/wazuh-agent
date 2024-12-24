@@ -2,10 +2,20 @@
 #pragma once
 
 #include <ctime>
-#include <list>
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <sstream>
 #include <string>
+#include <vector>
+
+#include <WinSock2.h>
+#include <Windows.h>
+#include <winevt.h>
 
 #include "reader.hpp"
+
+#pragma comment(lib, "wevtapi.lib")
 
 namespace logcollector {
 
@@ -21,8 +31,8 @@ public:
     /// @param reloadInterval
     /// @param bookmarkEnabled
     WindowsEventTracerReader(Logcollector &logcollector,
-                            const std::list<std::string> channels,
-                            const std::list<std::string> queries,
+                            const std::vector<std::string> channels,
+                            const std::vector<std::string> queries,
                             const std::time_t reloadInterval,
                             bool bookmarkEnabled);
 
@@ -33,13 +43,30 @@ public:
     // TODO: doc
     Awaitable ReadEventChannel();
 
+    // Main function to execute the event query with bookmarks and filters
+    void QueryEvents(const std::string channel, const std::string query);
+
 private:
+    // Process an individual event and print its XML representation
+    void ProcessEvent(EVT_HANDLE event, const std::string channel);
+
+    // Create a bookmark for the current event
+    EVT_HANDLE CreateBookmark(EVT_HANDLE event, EVT_HANDLE existingBookmark = NULL);
+
+    // Save bookmark to file
+    void SaveBookmark(EVT_HANDLE bookmarkHandle);
+
+    // Load bookmark from file (if it exists)
+    EVT_HANDLE LoadBookmark();
+
+    std::wstring bookmarkFile_;
+
     /// @brief
     std::time_t m_ReaderReloadInterval;
 
-    std::list<std::string> m_channelsList;
+    std::vector<std::string> m_channelsList;
     
-    std::list<std::string> m_queriesList;
+    std::vector<std::string> m_queriesList;
 
     bool m_bookmarkEnabled;
 
