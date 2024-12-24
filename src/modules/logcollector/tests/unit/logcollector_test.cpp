@@ -83,8 +83,7 @@ TEST(Logcollector, SendMessage)
     ASSERT_EQ(capturedMessage.metaData, METADATA);
 }
 
-TEST(Logcollector, SetupWECReader)
-{
+TEST(Logcollector, SetupWECReader) {
     auto constexpr CONFIG_RAW = R"(
     logcollector:
       windows:

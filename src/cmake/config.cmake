@@ -34,9 +34,9 @@ set(DEFAULT_FILE_WAIT 500 CACHE STRING "Default Logcollector file reading interv
 
 set(DEFAULT_RELOAD_INTERVAL 60000 CACHE STRING "Default Logcollector reload interval (1m)")
 
-set(CHANNEL_REFRESH_INTERVAL 5000 CACHE STRING "Default Logcollector reconnect time (5000ms)")
+set(DEFAULT_RECONNECT_TIME 5000 CACHE STRING "Default Logcollector reconnect time (5000ms)")
 
-set(DEFAULT_USE_BOOKMARK true CACHE BOOL "Default Logcollector windows bookmark enabled (false)")
+set(DEFAULT_USE_BOOKMARK false CACHE BOOL "Default Logcollector windows bookmark enabled (false)")
 
 set(DEFAULT_INVENTORY_ENABLED true CACHE BOOL "Default inventory enabled")
 
