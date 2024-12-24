@@ -24,3 +24,12 @@ logcollector:
     - /var/log/auth.log
   reload_interval: 1m
   file_wait: 500ms
+  windows:
+    - channel: Application
+      query: Event[System/EventID = 4624]
+      use-bookmark: true
+      reconnect-time: 5s
+    - channel: System
+      query: Event[System/EventID = 7040]
+      use-bookmark: false
+      reconnect-time: 5s
