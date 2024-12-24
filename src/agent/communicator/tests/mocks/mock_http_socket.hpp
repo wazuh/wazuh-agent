@@ -5,6 +5,7 @@
 class MockHttpSocket : public http_client::IHttpSocket
 {
 public:
+    MOCK_METHOD(void, SetVerificationMode, (const std::string& host, const std::string& verificationMode), (override));
     MOCK_METHOD(void,
                 Connect,
                 (const boost::asio::ip::tcp::resolver::results_type& endpoints, boost::system::error_code& code),

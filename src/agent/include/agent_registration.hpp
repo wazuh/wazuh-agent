@@ -43,8 +43,9 @@ namespace agent_registration
         /// @brief Registers the agent with the manager.
         ///
         /// @param httpClient The HTTP client to use for registration.
+        /// @param verificationMode The verification mode to use for registration.
         /// @return True if the registration was successful, false otherwise.
-        bool Register(http_client::IHttpClient& httpClient);
+        bool Register(http_client::IHttpClient& httpClient, const std::string& verificationMode);
 
     private:
         /// @brief The system's information.
