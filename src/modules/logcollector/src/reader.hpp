@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/asio/awaitable.hpp>
+#include <logcollector.hpp>
 
 namespace logcollector {
 
