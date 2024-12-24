@@ -79,3 +79,31 @@ TEST(Logcollector, SendMessage) {
     ASSERT_EQ(capturedMessage.data["event"]["provider"], PROVIDER);
     ASSERT_EQ(capturedMessage.metaData, METADATA);
 }
+
+TEST(Logcollector, SetupWECReader) {
+    auto constexpr CONFIG_RAW = R"(
+    logcollector:
+      windows:
+        - channel: Application
+          query: Event[System/EventID = 4624]
+        - channel: System
+          query: Event[System/EventID = 7040]
+    )";
+
+    std::shared_ptr<IReader> capturedReader1;
+    auto logcollector = LogcollectorMock();
+    auto config = std::make_shared<configuration::ConfigurationParser>(std::string(CONFIG_RAW));
+
+    EXPECT_CALL(logcollector, AddReader(::testing::_)).Times(1)
+        .WillOnce(::testing::SaveArg<0>(&capturedReader1));
+
+    logcollector.SetupWEReader(config);
+
+    ASSERT_NE(capturedReader1, nullptr);
+}
+
+int main(int argc, char** argv)
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
