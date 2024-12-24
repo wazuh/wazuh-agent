@@ -10,6 +10,18 @@
 
 using namespace logcollector;
 
+#ifdef _WIN32
+static constexpr auto TMP_FILE_DIR = "C:\\Temp\\";
+#else
+static constexpr auto TMP_FILE_DIR = "/tmp/"
+#endif
+
+inline std::string getFullFileName(const std::string& filename) {
+    //TODO: move to setup stage of test only for windows
+    std::filesystem::create_directories(TMP_FILE_DIR);
+    return TMP_FILE_DIR + filename;
+}
+
 class MockCallback {
 public:
     MOCK_METHOD(void, Call, (const std::string &), ());
@@ -51,8 +63,8 @@ TEST(Localfile, OpenError)
 
 TEST(Localfile, Rotated)
 {
-    auto fileA = TempFile("/tmp/A.log", "Hello World");
-    auto lf = Localfile("/tmp/A.log");
+    auto fileA = TempFile(getFullFileName("A.log"), "Hello World");
+    auto lf = Localfile(getFullFileName("A.log"));
 
     lf.SeekEnd();
     ASSERT_FALSE(lf.Rotated());
@@ -63,6 +75,10 @@ TEST(Localfile, Rotated)
 
 TEST(Localfile, Deleted)
 {
+#ifdef _WIN32
+    //FIXME: The process cannot access the file because it is being used by another process.
+    GTEST_SKIP();
+#endif
     auto fileA = std::make_unique<TempFile>("/tmp/A.log", "Hello World");
     auto lf = Localfile("/tmp/A.log");
 
@@ -80,18 +96,19 @@ TEST(FileReader, Reload) {
     spdlog::default_logger()->sinks().clear();
     MockCallback mockCallback;
 
-    EXPECT_CALL(mockCallback, Call("/tmp/A.log")).Times(1);
-    EXPECT_CALL(mockCallback, Call("/tmp/B.log")).Times(1);
-    EXPECT_CALL(mockCallback, Call("/tmp/C.log")).Times(1);
-    EXPECT_CALL(mockCallback, Call("/tmp/D.log")).Times(1);
+    EXPECT_CALL(mockCallback, Call(getFullFileName("A.log"))).Times(1);
+    EXPECT_CALL(mockCallback, Call(getFullFileName("B.log"))).Times(1);
+    EXPECT_CALL(mockCallback, Call(getFullFileName("C.log"))).Times(1);
+    EXPECT_CALL(mockCallback, Call(getFullFileName("D.log"))).Times(1);
 
-    auto a = TempFile("/tmp/A.log");
-    auto b = TempFile("/tmp/B.log");
-    auto c = TempFile("/tmp/C.log");
+    auto a = TempFile(getFullFileName("A.log"));
+    auto b = TempFile(getFullFileName("B.log"));
+    auto c = TempFile(getFullFileName("C.log"));
 
-    FileReader reader(Logcollector::Instance(), "/tmp/*.log", 500, 60000); //NOLINT
+    auto regex = TMP_FILE_DIR + std::string("*.log");
+    FileReader reader(Logcollector::Instance(), regex, 500, 60000); //NOLINT
     reader.Reload([&](Localfile& lf) { mockCallback.Call(lf.Filename()); });
 
-    auto d = TempFile("/tmp/D.log");
+    auto d = TempFile(getFullFileName("D.log"));
     reader.Reload([&](Localfile& lf) { mockCallback.Call(lf.Filename()); });
 }
