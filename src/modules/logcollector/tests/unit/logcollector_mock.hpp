@@ -21,8 +21,7 @@ public:
         Logcollector::SetupFileReader(configurationParser);
     }
 
-    void SetupWEReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
-    {
+    void SetupWEReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
         Logcollector::SetupWEReader(configurationParser);
     }
 

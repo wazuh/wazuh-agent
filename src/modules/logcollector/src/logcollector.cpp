@@ -90,25 +90,24 @@ void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::Co
 }
 
 #ifdef _WIN32
-void Logcollector::SetupWEReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
-{
-    const auto refreshInterval = configurationParser->GetConfig<time_t>("logcollector", "channel_refresh").value_or(config::logcollector::CHANNEL_REFRESH_INTERVAL);
+void Logcollector::SetupWEReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
+    const auto reconnectTime = configurationParser->GetConfig<time_t>("logcollector", "reconnect-time").value_or(config::logcollector::DEFAULT_RECONNECT_TIME);
 
-    const auto bookmarkEnabled = configurationParser->GetConfig<bool>("logcollector", "use_bookmark").value_or(config::logcollector::DEFAULT_USE_BOOKMARK);
+    const auto bookmarkEnabled = configurationParser->GetConfig<bool>("logcollector", "use-bookmark").value_or(config::logcollector::DEFAULT_USE_BOOKMARK);
 
     const auto windowsConfig = configurationParser->GetConfig<std::vector<std::map<std::string, std::string>>>("logcollector", "windows").value_or(
         std::vector<std::map<std::string, std::string>> {});
 
-    std::vector<std::string> channelsList;
-    std::vector<std::string> queriesList;
+    std::list<std::string> channelsList;
+    std::list<std::string> queriesList;
     for (auto& entry : windowsConfig)
     {
         auto channel = entry.at("channel");
-        auto query = entry.at("query");
         channelsList.emplace_back(channel);
+        auto query = entry.at("query");
         queriesList.emplace_back(query);
     }
-    AddReader(std::make_shared<WindowsEventTracerReader>(*this, channelsList, queriesList, refreshInterval, bookmarkEnabled));
+    AddReader(std::make_shared<WindowsEventTracerReader>(*this, channelsList, queriesList, reconnectTime, bookmarkEnabled));
 }
 #endif
 
