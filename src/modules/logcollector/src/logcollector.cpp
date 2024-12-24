@@ -92,8 +92,8 @@ void Logcollector::SetupWEReader(const std::shared_ptr<const configuration::Conf
     const auto windowsConfig = configurationParser->GetConfig<std::vector<std::map<std::string, std::string>>>("logcollector", "windows").value_or(
         std::vector<std::map<std::string, std::string>> {});
 
-    std::list<std::string> channelsList;
-    std::list<std::string> queriesList;
+    std::vector<std::string> channelsList;
+    std::vector<std::string> queriesList;
     for (auto& entry : windowsConfig)
     {
         auto channel = entry.at("channel");
