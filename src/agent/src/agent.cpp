@@ -159,6 +159,17 @@ void Agent::Run()
                         },
                         m_messageQueue);
                 }
+                else if (cmd.Module == "restart")
+                {
+                    LogInfo("Restart: Initiating self-restart");
+                    kill(getppid(), SIGUSR1);
+                    auto RestartExecuteCommand = []() -> boost::asio::awaitable<module_command::CommandExecutionResult>
+                    {
+                        co_return module_command::CommandExecutionResult {module_command::Status::IN_PROGRESS,
+                                                                          "Pending restart execution"};
+                    };
+                    return RestartExecuteCommand();
+                }
                 return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue);
             }),
         "CommandsProcessing");
