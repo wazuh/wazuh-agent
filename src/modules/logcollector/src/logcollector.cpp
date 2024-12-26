@@ -15,6 +15,9 @@
 
 using namespace logcollector;
 
+namespace logcollector {
+    constexpr int ACTIVE_READERS_WAIT_MS = 10;
+}
 
 void Logcollector::Start() {
     if (!m_enabled) {
@@ -27,7 +30,24 @@ void Logcollector::Start() {
 }
 
 void Logcollector::EnqueueTask(boost::asio::awaitable<void> task) {
-    boost::asio::co_spawn(m_ioContext, std::move(task), boost::asio::detached);
+    // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+    boost::asio::co_spawn(
+        m_ioContext,
+        [task = std::move(task), this]() mutable -> boost::asio::awaitable<void>
+        {
+            try
+            {
+                m_activeReaders++;
+                co_await std::move(task);
+            }
+            catch (const std::exception& e)
+            {
+                LogError("Logcollector coroutine task exited with an exception: {}", e.what());
+            }
+            m_activeReaders--;
+        },
+        boost::asio::detached);
+    // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 }
 
 void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
@@ -60,6 +80,7 @@ void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::Co
 }
 
 void Logcollector::Stop() {
+    CleanAllReaders();
     m_ioContext.stop();
     LogInfo("Logcollector module stopped.");
 }
@@ -101,6 +122,19 @@ void Logcollector::AddReader(std::shared_ptr<IReader> reader) {
     EnqueueTask(reader->Run());
 }
 
+void Logcollector::CleanAllReaders() {
+    for (const auto &reader : m_readers) {
+        reader->Stop();
+    }
+
+    while (m_activeReaders) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(ACTIVE_READERS_WAIT_MS));
+    }
+    m_readers.clear();
+}
+
 Awaitable Logcollector::Wait(std::chrono::milliseconds ms) {
-    co_await boost::asio::steady_timer(m_ioContext, ms).async_wait(boost::asio::use_awaitable);
+    if (!m_ioContext.stopped()) {
+        co_await boost::asio::steady_timer(m_ioContext, ms).async_wait(boost::asio::use_awaitable);
+    }
 }

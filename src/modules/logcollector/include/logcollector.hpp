@@ -81,6 +81,9 @@ protected:
     /// @param configurationParser Configuration parser
     void SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
 
+    /// @brief Clean all readers
+    void CleanAllReaders();
+
 private:
     /// @brief Module name
     const std::string m_moduleName = "logcollector";
@@ -96,6 +99,9 @@ private:
 
     /// @brief List of readers
     std::list<std::shared_ptr<IReader>> m_readers;
+
+    /// @brief Indicates if number of logs being monitorized
+    std::atomic<int> m_activeReaders = 0;
 };
 
 }
