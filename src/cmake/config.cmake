@@ -22,7 +22,7 @@ set(DEFAULT_RETRY_INTERVAL 30000 CACHE STRING "Default Agent retry interval (30s
 
 set(DEFAULT_BATCH_INTERVAL 10000 CACHE STRING "Default Agent batch interval (10s)")
 
-set(DEFAULT_BATCH_SIZE 1000ULL CACHE STRING "Default Agent batch size limit (1000)")
+set(DEFAULT_BATCH_SIZE 1000000ULL CACHE STRING "Default Agent batch size limit (1MB)")
 
 set(DEFAULT_LOGCOLLECTOR_ENABLED true CACHE BOOL "Default Logcollector enabled")
 
