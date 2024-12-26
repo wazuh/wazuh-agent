@@ -148,9 +148,9 @@ namespace http_client
 
             if (ec != boost::system::errc::success)
             {
-                LogWarn("Failed to send http request to endpoint: {}. Retrying in {} seconds.",
-                        reqParams.Endpoint,
-                        connectionRetry / A_SECOND_IN_MILLIS);
+                LogDebug("Failed to send http request to endpoint: {}. Retrying in {} seconds.",
+                         reqParams.Endpoint,
+                         connectionRetry / A_SECOND_IN_MILLIS);
                 LogDebug("Http request failed: {} - {}", ec.message(), ec.what());
                 co_await WaitForTimer(timer, connectionRetry);
                 continue;
@@ -186,7 +186,10 @@ namespace http_client
 
             if (ec)
             {
-                LogWarn("Error writing request ({}): {}.", std::to_string(ec.value()), ec.message());
+                LogDebug("Error writing request ({}): {}. Endpoint: {}.",
+                         std::to_string(ec.value()),
+                         ec.message(),
+                         reqParams.Endpoint);
                 socket->Close();
                 co_await WaitForTimer(timer, connectionRetry);
                 continue;
@@ -197,7 +200,10 @@ namespace http_client
 
             if (ec)
             {
-                LogWarn("Error reading response ({}): {}.", std::to_string(ec.value()), ec.message());
+                LogDebug("Error reading response ({}): {}. Endpoint: {}.",
+                         std::to_string(ec.value()),
+                         ec.message(),
+                         reqParams.Endpoint);
                 socket->Close();
                 co_await WaitForTimer(timer, connectionRetry);
                 continue;
