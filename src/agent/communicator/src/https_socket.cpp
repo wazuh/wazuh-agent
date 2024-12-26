@@ -183,7 +183,8 @@ namespace http_client
     {
         try
         {
-            m_ssl_socket.shutdown();
+            m_ssl_socket.lowest_layer().shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+            m_ssl_socket.lowest_layer().close();
         }
         catch (const std::exception& e)
         {

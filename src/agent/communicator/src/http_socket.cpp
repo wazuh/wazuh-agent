@@ -157,6 +157,7 @@ namespace http_client
     {
         try
         {
+            m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
             m_socket.close();
         }
         catch (const std::exception& e)
