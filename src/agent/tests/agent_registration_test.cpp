@@ -40,7 +40,7 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
     agent->Save();
 
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "https://localhost:55000", "user", "password", agent->GetKey(), agent->GetName(), ".");
+        "https://localhost:55000", "user", "password", agent->GetKey(), agent->GetName(), ".", "full");
 
     MockHttpClient mockHttpClient;
 
@@ -65,7 +65,7 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
     EXPECT_CALL(mockHttpClient, PerformHttpRequest(testing::Eq(reqParams))).WillOnce(testing::Return(expectedResponse));
 
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
-    const bool res = registration->Register(mockHttpClient, "full");
+    const bool res = registration->Register(mockHttpClient);
     ASSERT_TRUE(res);
 }
 
@@ -74,8 +74,13 @@ TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
     AgentInfoPersistance agentInfoPersistance(".");
     agentInfoPersistance.ResetToDefault();
 
-    registration = std::make_unique<agent_registration::AgentRegistration>(
-        "https://localhost:55000", "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", ".");
+    registration = std::make_unique<agent_registration::AgentRegistration>("https://localhost:55000",
+                                                                           "user",
+                                                                           "password",
+                                                                           "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj",
+                                                                           "agent_name",
+                                                                           ".",
+                                                                           "certificate");
     agent = std::make_unique<AgentInfo>(".");
 
     MockHttpClient mockHttpClient;
@@ -84,7 +89,7 @@ TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
         .WillOnce(testing::Return(std::nullopt));
 
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
-    const bool res = registration->Register(mockHttpClient, "full");
+    const bool res = registration->Register(mockHttpClient);
     ASSERT_FALSE(res);
 }
 
@@ -94,7 +99,7 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
     agentInfoPersistance.ResetToDefault();
 
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "https://localhost:55000", "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", ".");
+        "https://localhost:55000", "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", ".", "none");
     agent = std::make_unique<AgentInfo>(".");
 
     MockHttpClient mockHttpClient;
@@ -108,7 +113,7 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
     EXPECT_CALL(mockHttpClient, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
-    const bool res = registration->Register(mockHttpClient, "full");
+    const bool res = registration->Register(mockHttpClient);
     ASSERT_FALSE(res);
 }
 
@@ -121,7 +126,7 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
     EXPECT_TRUE(agent->GetKey().empty());
 
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "https://localhost:55000", "user", "password", "", "agent_name", ".");
+        "https://localhost:55000", "user", "password", "", "agent_name", ".", "full");
 
     MockHttpClient mockHttpClient;
 
@@ -135,7 +140,7 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
     EXPECT_CALL(mockHttpClient, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
-    const bool res = registration->Register(mockHttpClient, "full");
+    const bool res = registration->Register(mockHttpClient);
     ASSERT_TRUE(res);
 
     agent = std::make_unique<AgentInfo>(".");
@@ -145,7 +150,7 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
 TEST_F(RegisterTest, RegistrationTestFailWithBadKey)
 {
     ASSERT_THROW(agent_registration::AgentRegistration(
-                     "https://localhost:55000", "user", "password", "badKey", "agent_name", "."),
+                     "https://localhost:55000", "user", "password", "badKey", "agent_name", ".", "full"),
                  std::invalid_argument);
 }
 

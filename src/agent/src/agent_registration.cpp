@@ -15,12 +15,14 @@ namespace agent_registration
                                          std::string password,
                                          const std::string& key,
                                          const std::string& name,
-                                         const std::string& dbFolderPath)
+                                         const std::string& dbFolderPath,
+                                         std::string verificationMode)
         : m_agentInfo(
               dbFolderPath, [this]() { return m_sysInfo.os(); }, [this]() { return m_sysInfo.networks(); })
         , m_serverUrl(std::move(url))
         , m_user(std::move(user))
         , m_password(std::move(password))
+        , m_verificationMode(std::move(verificationMode))
     {
         if (!m_agentInfo.SetKey(key))
         {
@@ -33,10 +35,10 @@ namespace agent_registration
         }
     }
 
-    bool AgentRegistration::Register(http_client::IHttpClient& httpClient, const std::string& verificationMode)
+    bool AgentRegistration::Register(http_client::IHttpClient& httpClient)
     {
         const auto token = httpClient.AuthenticateWithUserPassword(
-            m_serverUrl, m_agentInfo.GetHeaderInfo(), m_user, m_password, verificationMode);
+            m_serverUrl, m_agentInfo.GetHeaderInfo(), m_user, m_password, m_verificationMode);
 
         if (!token.has_value())
         {
@@ -48,7 +50,7 @@ namespace agent_registration
                                                               m_serverUrl,
                                                               "/agents",
                                                               m_agentInfo.GetHeaderInfo(),
-                                                              verificationMode,
+                                                              m_verificationMode,
                                                               token.value(),
                                                               "",
                                                               m_agentInfo.GetMetadataInfo(true));
