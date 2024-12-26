@@ -1,5 +1,6 @@
 #include <config.h>
 #include <defs.h>
+#include <sharedDefs.h>
 #include <inventory.hpp>
 #include <nlohmann/json.hpp>
 #include <iostream>
@@ -8,8 +9,6 @@
 #include <timeHelper.h>
 
 constexpr std::time_t INVENTORY_DEFAULT_INTERVAL { 3600000 };
-constexpr auto UNKNOWN_VALUE {nullptr};
-constexpr auto EMPTY_VALUE {""};
 constexpr size_t MAX_ID_SIZE = 512;
 
 constexpr auto QUEUE_SIZE
@@ -469,7 +468,8 @@ nlohmann::json Inventory::EcsHardwareData(const nlohmann::json& originalData)
 {
     nlohmann::json ret;
 
-    ret["observer"]["serial_number"] = originalData.contains("board_serial") ? originalData["board_serial"] : UNKNOWN_VALUE;
+    ret["observer"]["serial_number"] = (originalData.contains("board_serial") && !originalData["board_serial"].is_null()) ?
+        originalData["board_serial"] : EMPTY_VALUE;
     ret["host"]["cpu"]["name"] = originalData.contains("cpu_name") ? originalData["cpu_name"] : UNKNOWN_VALUE;
     ret["host"]["cpu"]["cores"] = originalData.contains("cpu_cores") ? originalData["cpu_cores"] : UNKNOWN_VALUE;
     ret["host"]["cpu"]["speed"] = originalData.contains("cpu_mhz") ? originalData["cpu_mhz"] : UNKNOWN_VALUE;
@@ -488,7 +488,8 @@ nlohmann::json Inventory::EcsSystemData(const nlohmann::json& originalData)
     ret["host"]["hostname"] = originalData.contains("hostname") ? originalData["hostname"] : UNKNOWN_VALUE;
     ret["host"]["os"]["kernel"] = originalData.contains("os_build") ? originalData["os_build"] : UNKNOWN_VALUE;
     ret["host"]["os"]["full"] = originalData.contains("os_codename") ? originalData["os_codename"] : UNKNOWN_VALUE;
-    ret["host"]["os"]["name"] = originalData.contains("os_name") ? originalData["os_name"] : UNKNOWN_VALUE;
+    ret["host"]["os"]["name"] = (originalData.contains("os_name") && !originalData["os_name"].is_null()) ?
+        originalData["os_name"] : EMPTY_VALUE;
     ret["host"]["os"]["platform"] = originalData.contains("os_platform") ? originalData["os_platform"] : UNKNOWN_VALUE;
     ret["host"]["os"]["version"]= originalData.contains("os_version") ? originalData["os_version"] : UNKNOWN_VALUE;
     ret["host"]["os"]["type"]= originalData.contains("sysname") ? originalData["sysname"] : UNKNOWN_VALUE;
@@ -500,21 +501,26 @@ nlohmann::json Inventory::EcsPackageData(const nlohmann::json& originalData)
 {
     nlohmann::json ret;
 
-    ret["package"]["architecture"] = originalData.contains("architecture") ? originalData["architecture"] : UNKNOWN_VALUE;
+    ret["package"]["architecture"] = (originalData.contains("architecture") && !originalData["architecture"].is_null()) ?
+        originalData["architecture"] : EMPTY_VALUE;
     ret["package"]["description"] = originalData.contains("description") ? originalData["description"] : UNKNOWN_VALUE;
 
-    if (originalData.contains("install_time") && !originalData["install_time"].empty() && originalData["install_time"] != UNKNOWN_VALUE) {
+    if (originalData.contains("install_time") && !originalData["install_time"].empty() && !originalData["install_time"].is_null()) {
         ret["package"]["installed"] = originalData["install_time"];
     }
     else {
         ret["package"]["installed"] = UNKNOWN_VALUE;
     }
 
-    ret["package"]["name"] = originalData.contains("name") ? originalData["name"] : UNKNOWN_VALUE;
-    ret["package"]["path"] = originalData.contains("location") ? originalData["location"] : UNKNOWN_VALUE;
+    ret["package"]["name"] = (originalData.contains("name") && !originalData["name"].is_null()) ?
+        originalData["name"] : EMPTY_VALUE;
+    ret["package"]["path"] = (originalData.contains("location") && !originalData["location"].is_null()) ?
+        originalData["location"] : EMPTY_VALUE;
     ret["package"]["size"] = originalData.contains("size") ? originalData["size"] : UNKNOWN_VALUE;
-    ret["package"]["type"] = originalData.contains("format") ? originalData["format"] : UNKNOWN_VALUE;
-    ret["package"]["version"] = originalData.contains("version") ? originalData["version"] : UNKNOWN_VALUE;
+    ret["package"]["type"] = (originalData.contains("format") && !originalData["format"].is_null()) ?
+        originalData["format"] : EMPTY_VALUE;
+    ret["package"]["version"] = (originalData.contains("version") && !originalData["version"].is_null()) ?
+        originalData["version"] : EMPTY_VALUE;
 
     return ret;
 }
@@ -523,7 +529,8 @@ nlohmann::json Inventory::EcsProcessesData(const nlohmann::json& originalData)
 {
     nlohmann::json ret;
 
-    ret["process"]["pid"] = originalData.contains("pid") ? originalData["pid"] : UNKNOWN_VALUE;
+    ret["process"]["pid"] = (originalData.contains("pid") && !originalData["pid"].is_null()) ?
+        originalData["pid"] : EMPTY_VALUE;
     ret["process"]["name"] = originalData.contains("name") ? originalData["name"] : UNKNOWN_VALUE;
     ret["process"]["parent"]["pid"] = originalData.contains("ppid") ? originalData["ppid"] : UNKNOWN_VALUE;
     ret["process"]["command_line"] = originalData.contains("cmd") ? originalData["cmd"] : UNKNOWN_VALUE;
@@ -535,7 +542,7 @@ nlohmann::json Inventory::EcsProcessesData(const nlohmann::json& originalData)
     ret["process"]["real_group"]["id"]= originalData.contains("rgroup") ? originalData["rgroup"] : UNKNOWN_VALUE;
     ret["process"]["saved_group"]["id"]= originalData.contains("sgroup") ? originalData["sgroup"] : UNKNOWN_VALUE;
 
-    if (originalData.contains("start_time") && !originalData["start_time"].empty() && originalData["start_time"] != UNKNOWN_VALUE) {
+    if (originalData.contains("start_time") && !originalData["start_time"].empty() && !originalData["start_time"].is_null()) {
             ret["process"]["start"] = originalData["start_time"];
     }
     else {
@@ -552,7 +559,8 @@ nlohmann::json Inventory::EcsHotfixesData(const nlohmann::json& originalData){
 
     nlohmann::json ret;
 
-    ret["package"]["hotfix"]["name"] = originalData.contains("hotfix") ? originalData["hotfix"] : UNKNOWN_VALUE;
+    ret["package"]["hotfix"]["name"] = (originalData.contains("hotfix") && !originalData["hotfix"].is_null()) ?
+        originalData["hotfix"] : EMPTY_VALUE;
 
     return ret;
 }
@@ -561,23 +569,25 @@ nlohmann::json Inventory::EcsPortData(const nlohmann::json& originalData)
 {
     nlohmann::json ret;
 
-    ret["network"]["protocol"] = originalData.contains("protocol") ? originalData["protocol"] : UNKNOWN_VALUE;
+    ret["network"]["protocol"] = (originalData.contains("protocol") && !originalData["protocol"].is_null()) ?
+        originalData["protocol"] : EMPTY_VALUE;
 
     ret["source"]["ip"] = nlohmann::json::array();
     if (originalData.contains("local_ip") &&
         !originalData["local_ip"].empty() &&
-        originalData["local_ip"] != UNKNOWN_VALUE &&
+        !originalData["local_ip"].is_null() &&
         originalData["local_ip"] != EMPTY_VALUE)
     {
         ret["source"]["ip"].push_back(originalData["local_ip"]);
     }
 
-    ret["source"]["port"] = originalData.contains("local_port") ? originalData["local_port"] : UNKNOWN_VALUE;
+    ret["source"]["port"] = (originalData.contains("local_port") && !originalData["local_port"].is_null()) ?
+        originalData["local_port"] : EMPTY_VALUE;
 
     ret["destination"]["ip"] = nlohmann::json::array();
     if (originalData.contains("remote_ip") &&
         !originalData["remote_ip"].empty() &&
-        originalData["remote_ip"] != UNKNOWN_VALUE &&
+        !originalData["remote_ip"].is_null() &&
         originalData["remote_ip"] != EMPTY_VALUE)
     {
         ret["destination"]["ip"].push_back(originalData["remote_ip"]);
@@ -586,7 +596,8 @@ nlohmann::json Inventory::EcsPortData(const nlohmann::json& originalData)
     ret["destination"]["port"] = originalData.contains("remote_port") ? originalData["remote_port"] : UNKNOWN_VALUE;
     ret["host"]["network"]["egress"]["queue"] = originalData.contains("tx_queue") ? originalData["tx_queue"] : UNKNOWN_VALUE;
     ret["host"]["network"]["ingress"]["queue"] = originalData.contains("rx_queue") ? originalData["rx_queue"] : UNKNOWN_VALUE;
-    ret["file"]["inode"] = originalData.contains("inode") ? originalData["inode"] : UNKNOWN_VALUE;
+    ret["file"]["inode"] = (originalData.contains("inode") && !originalData["inode"].is_null()) ?
+        originalData["inode"] : EMPTY_VALUE;
     ret["interface"]["state"] = originalData.contains("state") ? originalData["state"] : UNKNOWN_VALUE;
     ret["process"]["pid"] = originalData.contains("pid") ? originalData["pid"] : UNKNOWN_VALUE;
     ret["process"]["name"] = originalData.contains("process") ? originalData["process"] : UNKNOWN_VALUE;
@@ -602,7 +613,7 @@ nlohmann::json Inventory::EcsNetworkData(const nlohmann::json& originalData)
     ret["host"]["ip"] = nlohmann::json::array();
     if (originalData.contains("address") &&
         !originalData["address"].empty() &&
-        originalData["address"] != UNKNOWN_VALUE &&
+        !originalData["address"].is_null() &&
         originalData["address"] != EMPTY_VALUE)
     {
         ret["host"]["ip"].push_back(originalData["address"]);
@@ -620,12 +631,13 @@ nlohmann::json Inventory::EcsNetworkData(const nlohmann::json& originalData)
 
     ret["interface"]["mtu"] = originalData.contains("mtu") ? originalData["mtu"] : UNKNOWN_VALUE;
     ret["interface"]["state"] = originalData.contains("state") ? originalData["state"] : UNKNOWN_VALUE;
-    ret["interface"]["type"] = originalData.contains("iface_type") ? originalData["iface_type"] : UNKNOWN_VALUE;
+    ret["interface"]["type"] = (originalData.contains("iface_type") && !originalData["iface_type"].is_null()) ?
+        originalData["iface_type"] : EMPTY_VALUE;
 
     ret["network"]["netmask"] = nlohmann::json::array();
     if (originalData.contains("netmask") &&
         !originalData["netmask"].empty() &&
-        originalData["netmask"] != UNKNOWN_VALUE &&
+        !originalData["netmask"].is_null() &&
         originalData["netmask"] != EMPTY_VALUE)
     {
         ret["network"]["netmask"].push_back(originalData["netmask"]);
@@ -634,7 +646,7 @@ nlohmann::json Inventory::EcsNetworkData(const nlohmann::json& originalData)
     ret["network"]["gateway"] = nlohmann::json::array();
     if (originalData.contains("gateway") &&
         !originalData["gateway"].empty() &&
-        originalData["gateway"] != UNKNOWN_VALUE &&
+        !originalData["gateway"].is_null() &&
         originalData["gateway"] != EMPTY_VALUE)
     {
         ret["network"]["gateway"].push_back(originalData["gateway"]);
@@ -643,20 +655,23 @@ nlohmann::json Inventory::EcsNetworkData(const nlohmann::json& originalData)
     ret["network"]["broadcast"] = nlohmann::json::array();
     if (originalData.contains("broadcast") &&
         !originalData["broadcast"].empty() &&
-        originalData["broadcast"] != UNKNOWN_VALUE &&
+        !originalData["broadcast"].is_null() &&
         originalData["broadcast"] != EMPTY_VALUE)
     {
         ret["network"]["broadcast"].push_back(originalData["broadcast"]);
     }
 
     ret["network"]["dhcp"] = originalData.contains("dhcp") ? originalData["dhcp"] : UNKNOWN_VALUE;
-    ret["network"]["type"] = originalData.contains("proto_type") ? originalData["proto_type"] : UNKNOWN_VALUE;
+    ret["network"]["type"] = (originalData.contains("proto_type") && !originalData["proto_type"].is_null()) ?
+        originalData["proto_type"] : EMPTY_VALUE;
     ret["network"]["metric"] = originalData.contains("metric") ? originalData["metric"] : UNKNOWN_VALUE;
     /* TODO this field should include http or https, it's related to an application not to a interface */
     ret["network"]["protocol"] = UNKNOWN_VALUE;
 
-    ret["observer"]["ingress"]["interface"]["alias"] = originalData.contains("adapter") ? originalData["adapter"] : UNKNOWN_VALUE;
-    ret["observer"]["ingress"]["interface"]["name"] = originalData.contains("iface") ? originalData["iface"] : UNKNOWN_VALUE;
+    ret["observer"]["ingress"]["interface"]["alias"] = (originalData.contains("adapter") && !originalData["adapter"].is_null()) ?
+        originalData["adapter"] : EMPTY_VALUE;
+    ret["observer"]["ingress"]["interface"]["name"] = (originalData.contains("iface") && !originalData["iface"].is_null()) ?
+        originalData["iface"] : EMPTY_VALUE;
     ret["device"]["id"] = originalData.contains("network_item_id") ? originalData["network_item_id"] : UNKNOWN_VALUE;
 
     return ret;
