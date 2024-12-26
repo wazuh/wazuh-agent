@@ -4,6 +4,7 @@
 #include <list>
 
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/steady_timer.hpp>
 
 #include <moduleWrapper.hpp>
 #include <multitype_queue.hpp>
@@ -102,6 +103,12 @@ private:
 
     /// @brief Indicates if number of logs being monitorized
     std::atomic<int> m_activeReaders = 0;
+
+    /// @brief Mutex to access steady timers list
+    std::mutex m_timersMutex;
+
+    /// @brief List of steady timers
+    std::list<boost::asio::steady_timer*> m_timers;
 };
 
 }

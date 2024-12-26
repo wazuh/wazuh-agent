@@ -3,7 +3,7 @@
 #include <logger.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
-#include <boost/asio/steady_timer.hpp>
+#include <boost/asio/redirect_error.hpp>
 #include <config.h>
 #include <timeHelper.h>
 
@@ -127,6 +127,13 @@ void Logcollector::CleanAllReaders() {
         reader->Stop();
     }
 
+    {
+        std::lock_guard<std::mutex> lock(m_timersMutex);
+        for (const auto &timer : m_timers) {
+            timer->cancel();
+        }
+    }
+
     while (m_activeReaders) {
         std::this_thread::sleep_for(std::chrono::milliseconds(ACTIVE_READERS_WAIT_MS));
     }
@@ -135,6 +142,30 @@ void Logcollector::CleanAllReaders() {
 
 Awaitable Logcollector::Wait(std::chrono::milliseconds ms) {
     if (!m_ioContext.stopped()) {
-        co_await boost::asio::steady_timer(m_ioContext, ms).async_wait(boost::asio::use_awaitable);
+        auto timer = boost::asio::steady_timer(m_ioContext, ms);
+        {
+            std::lock_guard<std::mutex> lock(m_timersMutex);
+            m_timers.push_back(&timer);
+        }
+
+        boost::system::error_code ec;
+        co_await timer.async_wait(boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+
+        if (ec)
+        {
+            if (ec == boost::asio::error::operation_aborted)
+            {
+                LogDebug("Logcollector coroutine timer was canceled.");
+            }
+            else
+            {
+                LogDebug("Logcollector coroutine timer wait failed: {}.", ec.message());
+            }
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(m_timersMutex);
+            m_timers.remove(&timer);
+        }
     }
 }
