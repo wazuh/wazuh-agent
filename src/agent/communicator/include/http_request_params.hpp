@@ -26,6 +26,7 @@ namespace http_client
         /// @param serverUrl The server URL for the request
         /// @param endpoint The endpoint for the request
         /// @param userAgent The user agent property for the request header
+        /// @param verificationMode The verification mode for the request
         /// @param token Optional token for authorization
         /// @param userPass Optional user credentials for basic authentication
         /// @param body Optional body for the request

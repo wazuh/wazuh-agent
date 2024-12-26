@@ -174,18 +174,55 @@ TEST(CreateHttpRequestTest, AuthorizationBasic)
     EXPECT_EQ(req[boost::beast::http::field::authorization], "Basic username:password");
 }
 
-TEST_F(HttpClientTest, PerformHttpRequest_Success)
+TEST_F(HttpClientTest, PerformHttpRequest_Success_verification_full)
 {
     SetupMockResolverFactory();
     SetupMockSocketFactory();
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
     EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
+    EXPECT_CALL(*mockSocket, SetVerificationMode("localhost", "full")).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_, _)).WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::ok); });
 
     const http_client::HttpRequestParams params(
         boost::beast::http::verb::get, "https://localhost:80", "/", "Wazuh 5.0.0", "full");
+    const auto response = client->PerformHttpRequest(params);
+
+    EXPECT_EQ(response.result(), boost::beast::http::status::ok);
+}
+
+TEST_F(HttpClientTest, PerformHttpRequest_Success_verification_certificate)
+{
+    SetupMockResolverFactory();
+    SetupMockSocketFactory();
+
+    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
+    EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
+    EXPECT_CALL(*mockSocket, SetVerificationMode("localhost", "certificate")).Times(1);
+    EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
+    EXPECT_CALL(*mockSocket, Read(_, _)).WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::ok); });
+
+    const http_client::HttpRequestParams params(
+        boost::beast::http::verb::get, "https://localhost:80", "/", "Wazuh 5.0.0", "certificate");
+    const auto response = client->PerformHttpRequest(params);
+
+    EXPECT_EQ(response.result(), boost::beast::http::status::ok);
+}
+
+TEST_F(HttpClientTest, PerformHttpRequest_Success_verification_none)
+{
+    SetupMockResolverFactory();
+    SetupMockSocketFactory();
+
+    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
+    EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
+    EXPECT_CALL(*mockSocket, SetVerificationMode("localhost", "none")).Times(1);
+    EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
+    EXPECT_CALL(*mockSocket, Read(_, _)).WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::ok); });
+
+    const http_client::HttpRequestParams params(
+        boost::beast::http::verb::get, "https://localhost:80", "/", "Wazuh 5.0.0", "none");
     const auto response = client->PerformHttpRequest(params);
 
     EXPECT_EQ(response.result(), boost::beast::http::status::ok);
@@ -212,6 +249,7 @@ TEST_P(HttpClientTest, Co_PerformHttpRequest_Success)
     SetupMockSocketFactory();
     SetupMockResolverExpectations();
     SetupMockSocketConnectExpectations();
+    EXPECT_CALL(*mockSocket, SetVerificationMode("localhost", "full")).Times(1);
     SetupMockSocketWriteExpectations();
     SetupMockSocketReadExpectations(GetParam());
 
@@ -274,6 +312,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
     SetupMockSocketFactory();
     SetupMockResolverExpectations();
     SetupMockSocketConnectExpectations(boost::system::errc::make_error_code(boost::system::errc::bad_address));
+    EXPECT_CALL(*mockSocket, SetVerificationMode("localhost", "full")).Times(1);
 
     auto getMessagesCalled = false;
     auto getMessages = [&getMessagesCalled](const size_t) -> boost::asio::awaitable<std::tuple<int, std::string>>
@@ -320,6 +359,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails
     SetupMockSocketFactory();
     SetupMockResolverExpectations();
     SetupMockSocketConnectExpectations(boost::system::errc::make_error_code(boost::system::errc::success));
+    EXPECT_CALL(*mockSocket, SetVerificationMode("localhost", "full")).Times(1);
     SetupMockSocketWriteExpectations(boost::system::errc::make_error_code(boost::system::errc::bad_address));
 
     auto getMessagesCalled = false;
@@ -373,6 +413,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
     SetupMockSocketFactory();
     SetupMockResolverExpectations();
     SetupMockSocketConnectExpectations(boost::system::errc::make_error_code(boost::system::errc::success));
+    EXPECT_CALL(*mockSocket, SetVerificationMode("localhost", "full")).Times(1);
     SetupMockSocketWriteExpectations();
     SetupMockSocketReadExpectations(boost::beast::http::status::not_found,
                                     boost::system::errc::make_error_code(boost::system::errc::bad_address));
@@ -428,6 +469,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_UnauthorizedCalledWhenAuthorization
     SetupMockSocketFactory();
     SetupMockResolverExpectations();
     SetupMockSocketConnectExpectations(boost::system::errc::make_error_code(boost::system::errc::success));
+    EXPECT_CALL(*mockSocket, SetVerificationMode("localhost", "full")).Times(1);
     SetupMockSocketWriteExpectations();
     SetupMockSocketReadExpectations(boost::beast::http::status::unauthorized);
 
@@ -483,6 +525,7 @@ TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_Success)
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
     EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
+    EXPECT_CALL(*mockSocket, SetVerificationMode("localhost", "full")).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_, _))
         .WillOnce(
@@ -508,6 +551,7 @@ TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_Failure)
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
     EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
+    EXPECT_CALL(*mockSocket, SetVerificationMode("localhost", "full")).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_, _))
         .WillOnce(
@@ -530,6 +574,7 @@ TEST_F(HttpClientTest, AuthenticateWithUuidAndKey_FailureThrowsException)
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
     EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
+    EXPECT_CALL(*mockSocket, SetVerificationMode("localhost", "full")).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_, _))
         .WillOnce(
@@ -551,6 +596,7 @@ TEST_F(HttpClientTest, AuthenticateWithUserPassword_Success)
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
     EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
+    EXPECT_CALL(*mockSocket, SetVerificationMode("localhost", "full")).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_, _))
         .WillOnce(
@@ -576,6 +622,7 @@ TEST_F(HttpClientTest, AuthenticateWithUserPassword_Failure)
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
     EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
+    EXPECT_CALL(*mockSocket, SetVerificationMode("localhost", "full")).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, Read(_, _))
         .WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::unauthorized); });
@@ -593,6 +640,7 @@ TEST_F(HttpClientTest, PerformHttpRequestDownload_Success)
 
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
     EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
+    EXPECT_CALL(*mockSocket, SetVerificationMode("localhost", "full")).Times(1);
     EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
     EXPECT_CALL(*mockSocket, ReadToFile(_, _))
         .WillOnce([](boost::beast::http::response<boost::beast::http::dynamic_body>& res,
