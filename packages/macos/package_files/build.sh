@@ -8,10 +8,11 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 set -e
-DESTINATION_PATH=$1
-WAZUH_PATH=$2
-BUILD_JOBS=$3
-VCPKG_KEY=$4
+VERBOSE=$1
+DESTINATION_PATH=$2
+WAZUH_PATH=$3
+BUILD_JOBS=$4
+VCPKG_KEY=$5
 SOURCES_DIR=${WAZUH_PATH}/src
 
 set_vcpkg_remote_binary_cache(){
@@ -31,16 +32,20 @@ set_vcpkg_remote_binary_cache(){
         setapikey "$vcpkg_token" \
         -source "https://nuget.pkg.github.com/wazuh/index.json"  
   else
-    echo "mono in not installed, remote binary caching not being enabled"
+    echo "mono is not installed, remote binary caching not being enabled"
   fi
 }
 
 function build() {
 
+    if [ "${VERBOSE}" = "yes" ]; then
+        set -ex
+    fi
+
     if [ ! -z "${VCPKG_KEY}" ]; then
         set_vcpkg_remote_binary_cache $VCPKG_KEY
     fi
-    git submodule update --init --recursive
+
     cmake -S $SOURCES_DIR -B $SOURCES_DIR/build -DINSTALL_ROOT=$DESTINATION_PATH
     make -C $SOURCES_DIR/build -j $BUILD_JOBS
 
