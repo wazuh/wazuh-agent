@@ -90,7 +90,8 @@ void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::Co
 }
 
 #ifdef _WIN32
-void Logcollector::SetupWEReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
+void Logcollector::SetupWEReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
+{
     const auto reconnectTime = configurationParser->GetConfig<time_t>("logcollector", "reconnect-time").value_or(config::logcollector::DEFAULT_RECONNECT_TIME);
 
     const auto bookmarkEnabled = configurationParser->GetConfig<bool>("logcollector", "use-bookmark").value_or(config::logcollector::DEFAULT_USE_BOOKMARK);
