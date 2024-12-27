@@ -9,6 +9,10 @@
 using logcollector::Logcollector;
 #endif
 
+namespace {
+    constexpr int MODULES_START_WAIT_SECS = 60;
+}
+
 void ModuleManager::AddModules() {
 
 #ifdef ENABLE_INVENTORY
@@ -53,13 +57,19 @@ void ModuleManager::Start()
         );
     }
 
-    cv.wait(
+    cv.wait_for(
         lock,
+        std::chrono::seconds(MODULES_START_WAIT_SECS),
         [this]
         {
             return m_started.load() == static_cast<int>(m_modules.size());
         }
     );
+
+    if (m_started.load() != static_cast<int>(m_modules.size()))
+    {
+        LogError("Error when starting some modules. Modules started: {}", m_started.load());
+    }
 }
 
 void ModuleManager::Setup()

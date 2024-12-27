@@ -33,8 +33,7 @@ void Inventory::Start() {
         LogErrorInventory(ex.what());
     }
 
-    LogInfo("Inventory module finished.");
-
+    LogInfo("Inventory module stopped.");
 }
 
 void Inventory::Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
@@ -59,7 +58,7 @@ void Inventory::Setup(std::shared_ptr<const configuration::ConfigurationParser> 
 }
 
 void Inventory::Stop() {
-    LogInfo("Inventory module stopped.");
+    LogInfo("Inventory module stopping...");
     Inventory::Instance().Destroy();
 }
 
