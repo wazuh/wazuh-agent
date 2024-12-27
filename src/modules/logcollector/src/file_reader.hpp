@@ -78,6 +78,9 @@ public:
     /// @return Awaitable result
     Awaitable Run();
 
+    /// @brief Stops the file reader
+    void Stop();
+
     /// @brief Reloads the file list
     ///
     /// Expands wildcards in the file pattern. Adds the new files to the list,

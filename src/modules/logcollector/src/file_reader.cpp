@@ -15,7 +15,7 @@ FileReader::FileReader(Logcollector& logcollector, std::string pattern, std::tim
     m_reloadInterval(reloadInterval) { }
 
 Awaitable FileReader::Run() {
-    while (true) {
+    while (m_keepRunning.load()) {
         Reload([&](Localfile & lf) {
             lf.SeekEnd();
             m_logcollector.EnqueueTask(ReadLocalfile(&lf));
@@ -25,8 +25,12 @@ Awaitable FileReader::Run() {
     }
 }
 
+void FileReader::Stop() {
+    m_keepRunning.store(false);
+}
+
 Awaitable FileReader::ReadLocalfile(Localfile* lf) {
-    while (true) {
+    while (m_keepRunning.load()) {
         auto log = lf->NextLog();
 
         while (!log.empty()) {
