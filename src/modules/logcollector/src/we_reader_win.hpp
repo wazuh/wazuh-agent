@@ -21,7 +21,7 @@ namespace logcollector {
 
 /// @brief Windows Event Tracer Reader class
 /// TODO: doc
-class WindowsEventTracerReader : public IReader 
+class WindowsEventTracerReader : public IReader
 {
 public:
     /// @brief Constructor for the Windows Event Tracer Reader
@@ -40,11 +40,8 @@ public:
     /// @return Awaitable result
     Awaitable Run() override;
 
-    // TODO: doc
-    Awaitable ReadEventChannel();
-
     // Main function to execute the event query with bookmarks and filters
-    void QueryEvents(const std::string channel, const std::string query);
+    Awaitable QueryEvents(const std::string channel, const std::string query);
 
 private:
     // Process an individual event and print its XML representation
@@ -59,14 +56,21 @@ private:
     // Load bookmark from file (if it exists)
     EVT_HANDLE LoadBookmark();
 
+    std::vector<std::string> m_channelsList;
+
+    std::vector<std::string> m_queriesList;
+
     std::wstring bookmarkFile_;
 
-    /// @brief
-    std::time_t m_ReaderReloadInterval;
+    std::string m_channel;
 
-    std::vector<std::string> m_channelsList;
-    
-    std::vector<std::string> m_queriesList;
+    std::string m_query;
+
+    /// @brief
+    std::time_t m_ChannelsRefreshInterval;
+
+    /// @brief
+    std::time_t m_eventsProcessingInterval;
 
     bool m_bookmarkEnabled;
 
@@ -74,6 +78,5 @@ private:
 
     const std::string m_collectorType = "eventchannel";
 };
-
 } // namespace logcollector
 #endif
