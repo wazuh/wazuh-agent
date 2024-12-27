@@ -13,7 +13,7 @@ using namespace logcollector;
 #ifdef _WIN32
 static constexpr auto TMP_FILE_DIR = "C:\\Temp\\";
 #else
-static constexpr auto TMP_FILE_DIR = "/tmp/"
+static constexpr auto TMP_FILE_DIR = "/tmp/";
 #endif
 
 inline std::string getFullFileName(const std::string& filename) {
