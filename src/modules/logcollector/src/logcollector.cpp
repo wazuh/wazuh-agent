@@ -9,14 +9,19 @@
 
 #include <chrono>
 #include <iomanip>
+#include <map>
 #include <sstream>
 
 #include "file_reader.hpp"
 
+#ifdef _WIN32
+#include "we_reader_win.hpp"
+#endif
 using namespace logcollector;
 
 
-void Logcollector::Start() {
+void Logcollector::Start()
+{
     if (!m_enabled) {
         LogInfo("Logcollector module is disabled.");
         return;
@@ -26,11 +31,13 @@ void Logcollector::Start() {
     m_ioContext.run();
 }
 
-void Logcollector::EnqueueTask(boost::asio::awaitable<void> task) {
+void Logcollector::EnqueueTask(boost::asio::awaitable<void> task)
+{
     boost::asio::co_spawn(m_ioContext, std::move(task), boost::asio::detached);
 }
 
-void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
+void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
+{
     if (!configurationParser) {
         LogError("Invalid Configuration Parser passed to setup, module set to disabled.");
         m_enabled = false;
@@ -47,7 +54,8 @@ void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParse
     SetupFileReader(configurationParser);
 }
 
-void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
+void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
+{
     auto fileWait = configurationParser->GetConfig<std::time_t>("logcollector", "file_wait").value_or(config::logcollector::DEFAULT_FILE_WAIT);
 
     auto reloadInterval = configurationParser->GetConfig<std::time_t>("logcollector", "reload_interval").value_or(config::logcollector::DEFAULT_RELOAD_INTERVAL);
@@ -59,14 +67,39 @@ void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::Co
     }
 }
 
-void Logcollector::Stop() {
+#ifdef _WIN32
+void Logcollector::SetupWEReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
+{
+    const auto reconnectTime = configurationParser->GetConfig<time_t>("logcollector", "reconnect-time").value_or(config::logcollector::DEFAULT_RECONNECT_TIME);
+
+    const auto bookmarkEnabled = configurationParser->GetConfig<bool>("logcollector", "use-bookmark").value_or(config::logcollector::DEFAULT_USE_BOOKMARK);
+
+    const auto windowsConfig = configurationParser->GetConfig<std::vector<std::map<std::string, std::string>>>("logcollector", "windows").value_or(
+        std::vector<std::map<std::string, std::string>> {});
+
+    std::vector<std::string> channelsList;
+    std::vector<std::string> queriesList;
+    for (auto& entry : windowsConfig)
+    {
+        auto channel = entry.at("channel");
+        channelsList.emplace_back(channel);
+        auto query = entry.at("query");
+        queriesList.emplace_back(query);
+    }
+    AddReader(std::make_shared<WindowsEventTracerReader>(*this, channelsList, queriesList, reconnectTime, bookmarkEnabled));
+}
+#endif
+
+void Logcollector::Stop()
+{
     m_ioContext.stop();
     LogInfo("Logcollector module stopped.");
 }
 
 // NOLINTBEGIN(performance-unnecessary-value-param)
 Co_CommandExecutionResult Logcollector::ExecuteCommand(const std::string command,
-                                                    [[maybe_unused]] const nlohmann::json parameters) {
+                                                    [[maybe_unused]] const nlohmann::json parameters)
+                                                    {
   LogInfo("Logcollector command: ", command);
   co_return module_command::CommandExecutionResult{module_command::Status::SUCCESS, "OK"};
 }
@@ -76,7 +109,8 @@ void Logcollector::SetPushMessageFunction(const std::function<int(Message)>& pus
     m_pushMessage = pushMessage;
 }
 
-void Logcollector::SendMessage(const std::string& location, const std::string& log, const std::string& collectorType) {
+void Logcollector::SendMessage(const std::string& location, const std::string& log, const std::string& collectorType)
+{
     auto metadata = nlohmann::json::object();
     auto data = nlohmann::json::object();
 
@@ -96,11 +130,14 @@ void Logcollector::SendMessage(const std::string& location, const std::string& l
     LogTrace("Message pushed: '{}':'{}'", location, log);
 }
 
-void Logcollector::AddReader(std::shared_ptr<IReader> reader) {
+void Logcollector::AddReader(std::shared_ptr<IReader> reader)
+{
+    //TODO: do we need m_readers ?
     m_readers.push_back(reader);
     EnqueueTask(reader->Run());
 }
 
-Awaitable Logcollector::Wait(std::chrono::milliseconds ms) {
+Awaitable Logcollector::Wait(std::chrono::milliseconds ms)
+{
     co_await boost::asio::steady_timer(m_ioContext, ms).async_wait(boost::asio::use_awaitable);
 }

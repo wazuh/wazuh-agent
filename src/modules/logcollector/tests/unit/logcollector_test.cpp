@@ -15,7 +15,8 @@ static bool IsISO8601(const std::string& datetime) {
     return std::regex_match(datetime, iso8601Regex);
 }
 
-TEST(Logcollector, AddReader) {
+TEST(Logcollector, AddReader)
+{
     auto logcollector = LogcollectorMock();
     auto a = TempFile("/tmp/A.log");
     auto fileReader = std::make_shared<FileReader>(logcollector, "/tmp/*.log", 500, 60000); //NOLINT
@@ -26,7 +27,8 @@ TEST(Logcollector, AddReader) {
     logcollector.AddReader(fileReader);
 }
 
-TEST(Logcollector, SetupFileReader) {
+TEST(Logcollector, SetupFileReader)
+{
     auto constexpr CONFIG_RAW = R"(
     logcollector:
       localfiles:
@@ -51,7 +53,8 @@ TEST(Logcollector, SetupFileReader) {
     ASSERT_NE(capturedReader2, nullptr);
 }
 
-TEST(Logcollector, SendMessage) {
+TEST(Logcollector, SendMessage)
+{
     PushMessageMock mock;
     LogcollectorMock logcollector;
 
@@ -78,4 +81,33 @@ TEST(Logcollector, SendMessage) {
     ASSERT_EQ(capturedMessage.data["event"]["module"], MODULE);
     ASSERT_EQ(capturedMessage.data["event"]["provider"], PROVIDER);
     ASSERT_EQ(capturedMessage.metaData, METADATA);
+}
+
+TEST(Logcollector, SetupWECReader)
+{
+    auto constexpr CONFIG_RAW = R"(
+    logcollector:
+      windows:
+        - channel: Application
+          query: Event[System/EventID = 4624]
+        - channel: System
+          query: Event[System/EventID = 7040]
+    )";
+
+    std::shared_ptr<IReader> capturedReader1;
+    auto logcollector = LogcollectorMock();
+    auto config = std::make_shared<configuration::ConfigurationParser>(std::string(CONFIG_RAW));
+
+    EXPECT_CALL(logcollector, AddReader(::testing::_)).Times(1)
+        .WillOnce(::testing::SaveArg<0>(&capturedReader1));
+
+    logcollector.SetupWEReader(config);
+
+    ASSERT_NE(capturedReader1, nullptr);
+}
+
+int main(int argc, char** argv)
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

@@ -47,7 +47,7 @@ public:
     /// @param log Message to send
     /// @param collectorType type of logcollector
     /// @pre The message queue must be set with SetMessageQueue
-    virtual void SendMessage(const std::string& location, const std::string& log, const std::string& collectorType);
+    void SendMessage(const std::string& location, const std::string& log, const std::string& collectorType);
 
     /// @brief Enqueues an ASIO task (coroutine)
     /// @param task Task to enqueue
@@ -80,6 +80,12 @@ protected:
     /// @brief Sets up the file reader
     /// @param configurationParser Configuration parser
     void SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
+
+#ifdef _WIN32
+    /// @brief Sets up the Windows Event Channel reader
+    /// @param configurationParser Configuration parser
+    void SetupWEReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
+#endif
 
 private:
     /// @brief Module name
