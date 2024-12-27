@@ -48,7 +48,7 @@ public:
     /// @param log Message to send
     /// @param collectorType type of logcollector
     /// @pre The message queue must be set with SetMessageQueue
-    virtual void SendMessage(const std::string& location, const std::string& log, const std::string& collectorType);
+    void SendMessage(const std::string& location, const std::string& log, const std::string& collectorType);
 
     /// @brief Enqueues an ASIO task (coroutine)
     /// @param task Task to enqueue
