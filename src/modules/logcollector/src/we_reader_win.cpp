@@ -7,35 +7,29 @@ using namespace logcollector;
 WindowsEventTracerReader::WindowsEventTracerReader(Logcollector &logcollector,
                            const std::vector<std::string> channels,
                            const std::vector<std::string> queries,
-                           const std::time_t reloadInterval,
+                           const std::time_t channelRefreshInterval,
                            bool bookmarkEnabled) :
     IReader(logcollector),
     m_channelsList(channels),
     m_queriesList(queries),
-    m_ReaderReloadInterval(reloadInterval),
+    m_ChannelsRefreshInterval(channelRefreshInterval),
     m_bookmarkEnabled(bookmarkEnabled) { }
 
 Awaitable WindowsEventTracerReader::Run()
 {
     // TODO: add lambda for loop break
-    while (true) {
-        m_logcollector.EnqueueTask(ReadEventChannel());
-
-        co_await m_logcollector.Wait(
-            std::chrono::milliseconds(m_ReaderReloadInterval));
-    }
-}
-
-Awaitable WindowsEventTracerReader::ReadEventChannel()
-{
-    for (size_t i = 0; i < m_channelsList.size(); i++)   
+    while (true)
     {
-        QueryEvents(m_channelsList.at(i), m_queriesList.at(i));
-        co_await m_logcollector.Wait(std::chrono::milliseconds(m_ReaderReloadInterval));
+        for (size_t i = 0; i < m_channelsList.size(); i++)
+        {
+            QueryEvents(m_channelsList.at(i), m_queriesList.at(i));
+        }
+
+        co_await m_logcollector.Wait(std::chrono::milliseconds(m_ChannelsRefreshInterval));
     }
 }
 
-void WindowsEventTracerReader::QueryEvents(const std::string channel, const std::string query) 
+Awaitable WindowsEventTracerReader::QueryEvents(const std::string channel, const std::string query)
 {
     // Load bookmark if exists
     EVT_HANDLE bookmarkHandle = LoadBookmark();
@@ -43,10 +37,7 @@ void WindowsEventTracerReader::QueryEvents(const std::string channel, const std:
     //TODO: rework this casting
     std::wstring wide_string_channel = std::wstring(channel.begin(), channel.end());
     std::wstring wide_string_query = std::wstring(query.begin(), query.end());
-    EVT_HANDLE eventQueryHandle = EvtQuery(
-        NULL,// Local machine
-        wide_string_channel.c_str(),
-        wide_string_query.c_str(),
+    EVT_HANDLE eventQueryHandle = EvtQuery( NULL, wide_string_channel.c_str(), wide_string_query.c_str(),
         EvtQueryChannelPath | EvtQueryReverseDirection);
 
     if (eventQueryHandle == NULL)
@@ -54,7 +45,7 @@ void WindowsEventTracerReader::QueryEvents(const std::string channel, const std:
         // TODO: Logging fix
         // LogError("Failed to query event log: {}", GetLastError());
         std::cerr << "Failed to query event log: " << GetLastError() << std::endl;
-        return;
+        co_return;
     }
 
     EVT_HANDLE events[10];
@@ -74,6 +65,8 @@ void WindowsEventTracerReader::QueryEvents(const std::string channel, const std:
             }
             EvtClose(events[i]);
         }
+        //TODO: check using logcollec
+        co_await m_logcollector.Wait(std::chrono::milliseconds(m_eventsProcessingInterval));
     }
 
     EvtClose(eventQueryHandle);
@@ -88,14 +81,7 @@ void WindowsEventTracerReader::ProcessEvent(EVT_HANDLE event, const std::string 
     DWORD bufferUsed = 0;
     DWORD propertyCount = 0;
 
-    EvtRender(
-        NULL,
-        event,
-        EvtRenderEventXml,
-        0,
-        NULL,
-        &bufferUsed,
-        &propertyCount);
+    EvtRender(NULL, event, EvtRenderEventXml, 0, NULL, &bufferUsed, &propertyCount);
 
     if (bufferUsed > 0)
     {
@@ -105,7 +91,7 @@ void WindowsEventTracerReader::ProcessEvent(EVT_HANDLE event, const std::string 
             // TODO: Logging fix
             // LogTrace("Event: {}",buffer.data());
             std::wcout << L"Event: " << buffer.data() << std::endl;
-            // const std::string log {};
+            const std::string log {};
             // m_logcollector.SendMessage(channel, log, m_collectorType);
         }
     }
@@ -141,7 +127,7 @@ void WindowsEventTracerReader::SaveBookmark(EVT_HANDLE bookmarkHandle)
 }
 
 EVT_HANDLE WindowsEventTracerReader::LoadBookmark()
-{    
+{
     if(m_bookmarkEnabled)
     {
         std::wifstream file(bookmarkFile_);
