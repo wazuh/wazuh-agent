@@ -12,7 +12,14 @@ namespace https_socket_verify_utils
                            const std::string& mode,
                            const std::string& host)
     {
-        X509* cert = X509_STORE_CTX_get_current_cert(ctx.native_handle());
+        STACK_OF(X509)* certChain = X509_STORE_CTX_get_chain(ctx.native_handle());
+        if (!certChain || sk_X509_num(certChain) == 0)
+        {
+            LogError("No certificates in the chain.");
+            return false;
+        }
+
+        X509* cert = sk_X509_value(certChain, 0);
         if (!cert)
         {
             LogError("The server certificate could not be obtained.");
