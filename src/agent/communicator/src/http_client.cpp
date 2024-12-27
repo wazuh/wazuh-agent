@@ -95,6 +95,13 @@ namespace http_client
         return req;
     }
 
+#ifndef __clang__
+#ifndef _MSC_VER
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmismatched-new-delete"
+#endif
+#endif
+
     boost::asio::awaitable<void> HttpClient::Co_PerformHttpRequest(
         std::shared_ptr<std::string> token,
         HttpRequestParams reqParams,
@@ -230,6 +237,12 @@ namespace http_client
             co_await WaitForTimer(timer, timerSleep);
         } while (loopRequestCondition != nullptr && loopRequestCondition());
     }
+
+#ifndef __clang__
+#ifndef _MSC_VER
+#pragma GCC diagnostic pop
+#endif
+#endif
 
     boost::beast::http::response<boost::beast::http::dynamic_body>
     HttpClient::PerformHttpRequest(const HttpRequestParams& params)
