@@ -55,7 +55,7 @@ constexpr auto HW_SQL_STATEMENT
     board_serial TEXT,
     cpu_name TEXT,
     cpu_cores INTEGER,
-    cpu_mhz DOUBLE,
+    cpu_mhz INTEGER,
     ram_total INTEGER,
     ram_free INTEGER,
     ram_usage INTEGER,
@@ -191,16 +191,19 @@ static std::string GetItemId(const nlohmann::json& item, const std::vector<std::
     {
         const auto& value{item.at(field)};
 
-        if (value.is_string())
+        if(!value.is_null())
         {
-            const auto& valueString{value.get<std::string>()};
-            hash.update(valueString.c_str(), valueString.size());
-        }
-        else
-        {
-            const auto& valueNumber{value.get<unsigned long>()};
-            const auto valueString{std::to_string(valueNumber)};
-            hash.update(valueString.c_str(), valueString.size());
+            if (value.is_string())
+            {
+                const auto& valueString{value.get<std::string>()};
+                hash.update(valueString.c_str(), valueString.size());
+            }
+            else
+            {
+                const auto& valueNumber{value.get<unsigned long>()};
+                const auto valueString{std::to_string(valueNumber)};
+                hash.update(valueString.c_str(), valueString.size());
+            }
         }
     }
 

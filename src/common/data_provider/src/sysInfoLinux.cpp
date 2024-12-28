@@ -137,55 +137,48 @@ static nlohmann::json getProcessInfo(const SysInfoProcess& process)
     return jsProcessInfo;
 }
 
-static std::optional<std::string> getSerialNumber()
+static void getSerialNumber(nlohmann::json& info)
 {
+    info["board_serial"] = UNKNOWN_VALUE;
     std::fstream file{WM_SYS_HW_DIR, std::ios_base::in};
 
     if (file.is_open())
     {
         std::string serial;
         file >> serial;
-
-        if (!serial.empty())
-        {
-            return serial;
-        }
+        info["board_serial"] = serial;
     }
-
-    return std::nullopt;
 }
 
-static std::optional<std::string> getCpuName()
+static void getCpuName(nlohmann::json& info)
 {
+    info["cpu_name"] = UNKNOWN_VALUE;
     std::map<std::string, std::string> systemInfo;
     getSystemInfo(WM_SYS_CPU_DIR, ":", systemInfo);
     const auto& it { systemInfo.find("model name") };
 
     if (it != systemInfo.end())
     {
-        return it->second;
+        info["cpu_name"] = it->second;
     }
-
-    return std::nullopt;
 }
 
-static int getCpuCores()
+static void getCpuCores(nlohmann::json& info)
 {
-    int retVal { 0 };
+    info["cpu_cores"] = UNKNOWN_VALUE;
     std::map<std::string, std::string> systemInfo;
     getSystemInfo(WM_SYS_CPU_DIR, ":", systemInfo);
     const auto& it { systemInfo.find("processor") };
 
     if (it != systemInfo.end())
     {
-        retVal = std::stoi(it->second) + 1;
+        info["cpu_cores"] = std::stoi(it->second) + 1;
     }
-
-    return retVal;
 }
 
-static int getCpuMHz()
+static void getCpuMHz(nlohmann::json& info)
 {
+    info["cpu_mhz"] = UNKNOWN_VALUE;
     int retVal { 0 };
     std::map<std::string, std::string> systemInfo;
     getSystemInfo(WM_SYS_CPU_DIR, ":", systemInfo);
@@ -194,7 +187,7 @@ static int getCpuMHz()
 
     if (it != systemInfo.end())
     {
-        retVal = std::stoi(it->second) + 1;
+        info["cpu_mhz"] = std::stoi(it->second) + 1;
     }
     else
     {
@@ -230,10 +223,8 @@ static int getCpuMHz()
             }
         }
 
-        retVal /= 1000;  // Convert frequency from KHz to MHz
+        info["cpu_mhz"] = retVal / 1000;  // Convert frequency from KHz to MHz
     }
-
-    return retVal;
 }
 
 static void getMemory(nlohmann::json& info)
@@ -272,10 +263,11 @@ static void getMemory(nlohmann::json& info)
 nlohmann::json SysInfo::getHardware() const
 {
     nlohmann::json hardware;
-    hardware["board_serial"] = getSerialNumber().value_or(UNKNOWN_VALUE);
-    hardware["cpu_name"] = getCpuName().value_or(UNKNOWN_VALUE);
-    hardware["cpu_cores"] = getCpuCores();
-    hardware["cpu_mhz"] = double(getCpuMHz());
+
+    getSerialNumber(hardware);
+    getCpuName(hardware);
+    getCpuCores(hardware);
+    getCpuMHz(hardware);
     getMemory(hardware);
     return hardware;
 }
@@ -353,8 +345,8 @@ nlohmann::json SysInfo::getOsInfo() const
 
     if (!getOsInfoFromFiles(ret))
     {
-        ret["os_name"] = UNKNOWN_VALUE;
-        ret["os_platform"] = UNKNOWN_VALUE;
+        ret["os_name"] = "Linux";
+        ret["os_platform"] = "linux";
         ret["os_version"] = UNKNOWN_VALUE;
     }
 
@@ -418,7 +410,7 @@ ProcessInfo portProcessInfo(const std::string& procPath, const std::deque<int64_
     auto getProcessName = [](const std::string & filePath) -> std::string
     {
         // Get stat file content.
-        std::string processInfo { UNKNOWN_VALUE };
+        std::string processInfo { EMPTY_VALUE };
         const std::string statContent {Utils::getFileContent(filePath)};
 
         const auto openParenthesisPos {statContent.find("(")};

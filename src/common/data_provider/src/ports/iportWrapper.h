@@ -35,16 +35,16 @@ class IPortWrapper
         // LCOV_EXCL_START
         virtual ~IPortWrapper() = default;
         // LCOV_EXCL_STOP
-        virtual std::string protocol() const = 0;
-        virtual std::string localIp() const = 0;
-        virtual int32_t localPort() const = 0;
-        virtual std::string remoteIP() const = 0;
-        virtual int32_t remotePort() const = 0;
-        virtual int32_t txQueue() const = 0;
-        virtual int32_t rxQueue() const = 0;
-        virtual int64_t inode() const = 0;
-        virtual std::string state() const = 0;
-        virtual int32_t pid() const = 0;
-        virtual std::string processName() const = 0;
+        virtual void protocol(nlohmann::json&) const = 0;
+        virtual void localIp(nlohmann::json&) const = 0;
+        virtual void localPort(nlohmann::json&) const = 0;
+        virtual void remoteIP(nlohmann::json&) const = 0;
+        virtual void remotePort(nlohmann::json&) const = 0;
+        virtual void txQueue(nlohmann::json&) const = 0;
+        virtual void rxQueue(nlohmann::json&) const = 0;
+        virtual void inode(nlohmann::json&) const = 0;
+        virtual void state(nlohmann::json&) const = 0;
+        virtual void pid(nlohmann::json&) const = 0;
+        virtual void processName(nlohmann::json&) const = 0;
 };
 #endif // _PORT_WRAPPER_H

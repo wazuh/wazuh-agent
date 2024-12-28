@@ -55,7 +55,7 @@ nlohmann::json SysInfo::getHardware() const
     hardware["board_serial"] = getSerialNumber();
     hardware["cpu_name"] = getCpuName();
     hardware["cpu_cores"] = getCpuCores();
-    hardware["cpu_mhz"] = double(getCpuMHz());
+    hardware["cpu_mhz"] = getCpuMHz();
     getMemory(hardware);
     return hardware;
 }
