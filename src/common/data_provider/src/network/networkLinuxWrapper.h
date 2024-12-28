@@ -296,12 +296,12 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
 
         std::string name() const override
         {
-            return m_interfaceAddress->ifa_name ? Utils::substrOnFirstOccurrence(m_interfaceAddress->ifa_name, ":") : "";
+            return m_interfaceAddress->ifa_name ? Utils::substrOnFirstOccurrence(m_interfaceAddress->ifa_name, ":") : EMPTY_VALUE;
         }
 
-        std::string adapter() const override
+        void adapter(nlohmann::json& network) const override
         {
-            return "";
+            network["adapter"] = UNKNOWN_VALUE;
         }
 
         int family() const override
@@ -311,19 +311,21 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
 
         std::string address() const override
         {
-            return m_interfaceAddress->ifa_addr ? getNameInfo(m_interfaceAddress->ifa_addr, sizeof(struct sockaddr_in)) : "";
+            return m_interfaceAddress->ifa_addr ? getNameInfo(m_interfaceAddress->ifa_addr, sizeof(struct sockaddr_in)) : EMPTY_VALUE;
         }
 
         std::string netmask() const override
         {
-            return m_interfaceAddress->ifa_netmask ? getNameInfo(m_interfaceAddress->ifa_netmask, sizeof(struct sockaddr_in)) : "";
+            return m_interfaceAddress->ifa_netmask ? getNameInfo(m_interfaceAddress->ifa_netmask, sizeof(struct sockaddr_in)) : EMPTY_VALUE;
         }
 
-        std::optional<std::string> broadcast() const override
+        void broadcast(nlohmann::json& network) const override
         {
+            network["broadcast"] = UNKNOWN_VALUE;
+
             if (m_interfaceAddress->ifa_ifu.ifu_broadaddr)
             {
-                return getNameInfo(m_interfaceAddress->ifa_ifu.ifu_broadaddr, sizeof(struct sockaddr_in));
+                network["broadcast"] = getNameInfo(m_interfaceAddress->ifa_ifu.ifu_broadaddr, sizeof(struct sockaddr_in));
             }
             else
             {
@@ -335,48 +337,48 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
                     const auto broadcast { Utils::NetworkHelper::getBroadcast(address, netmask) };
                     if(!broadcast.empty())
                     {
-                        return broadcast;
+                        network["broadcast"] = broadcast;
                     }
                 }
             }
-
-            return std::nullopt;
         }
 
         std::string addressV6() const override
         {
-            return m_interfaceAddress->ifa_addr ? Utils::splitIndex(getNameInfo(m_interfaceAddress->ifa_addr, sizeof(struct sockaddr_in6)), '%', 0) : "";
+            return m_interfaceAddress->ifa_addr ? Utils::splitIndex(getNameInfo(m_interfaceAddress->ifa_addr, sizeof(struct sockaddr_in6)), '%', 0) : EMPTY_VALUE;
         }
 
         std::string netmaskV6() const override
         {
-            return m_interfaceAddress->ifa_netmask ? getNameInfo(m_interfaceAddress->ifa_netmask, sizeof(struct sockaddr_in6)) : "";
+            return m_interfaceAddress->ifa_netmask ? getNameInfo(m_interfaceAddress->ifa_netmask, sizeof(struct sockaddr_in6)) : EMPTY_VALUE;
         }
 
-        std::string broadcastV6() const override
+        void broadcastV6(nlohmann::json& network) const override
         {
-            return m_interfaceAddress->ifa_ifu.ifu_broadaddr ? getNameInfo(m_interfaceAddress->ifa_ifu.ifu_broadaddr, sizeof(struct sockaddr_in6)) : "";
+            m_interfaceAddress->ifa_ifu.ifu_broadaddr ?
+                network["broadcast"] = getNameInfo(m_interfaceAddress->ifa_ifu.ifu_broadaddr, sizeof(struct sockaddr_in6)) :
+                network["broadcast"] = UNKNOWN_VALUE;
         }
 
-        std::string gateway() const override
+        void gateway(nlohmann::json& network) const override
         {
-            return m_gateway;
+            network["gateway"] = m_gateway;
         }
 
-        std::string metrics() const override
+        void metrics(nlohmann::json& network) const override
         {
-            return m_metrics;
+            network["metric"] = m_metrics;
         }
 
-        std::string metricsV6() const override
+        void metricsV6(nlohmann::json& network) const override
         {
-            return "";
+            network["metric"] = UNKNOWN_VALUE;
         }
 
-        std::string dhcp() const override
+        void dhcp(nlohmann::json& network) const override
         {
             auto fileData { Utils::getFileContent(WM_SYS_IF_FILE) };
-            std::string retVal { "unknown" };
+            network["dhcp"] = "unknown";
             const auto family { this->family() };
             const auto ifName { this->name() };
 
@@ -395,12 +397,12 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
                         {
                             if (AF_INET == family)
                             {
-                                retVal = getDebianDHCPStatus("inet", fields);
+                                network["dhcp"] = getDebianDHCPStatus("inet", fields);
                                 break;
                             }
                             else if (AF_INET6 == family)
                             {
-                                retVal = getDebianDHCPStatus("inet6", fields);
+                                network["dhcp"] = getDebianDHCPStatus("inet6", fields);
                                 break;
                             }
                         }
@@ -427,7 +429,7 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
                             {
                                 if (fields.at(RHInterfaceConfig::Key).compare("BOOTPROTO") == 0)
                                 {
-                                    retVal = getRedHatDHCPStatus(fields);
+                                    network["dhcp"] = getRedHatDHCPStatus(fields);
                                     break;
                                 }
                             }
@@ -435,7 +437,7 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
                             {
                                 if (fields.at(RHInterfaceConfig::Key).compare("DHCPV6C") == 0)
                                 {
-                                    retVal = getRedHatDHCPStatus(fields);
+                                    network["dhcp"] = getRedHatDHCPStatus(fields);
                                     break;
                                 }
                             }
@@ -443,21 +445,17 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
                     }
                 }
             }
-
-            return retVal;
         }
 
-        uint32_t mtu() const override
+        void mtu(nlohmann::json& network) const override
         {
-            uint32_t retVal { 0 };
+            network["mtu"] = UNKNOWN_VALUE;
             const auto mtuFileContent { Utils::getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/mtu") };
 
             if (!mtuFileContent.empty())
             {
-                retVal =  std::stol(Utils::splitIndex(mtuFileContent, '\n', 0));
+                network["mtu"] = std::stol(Utils::splitIndex(mtuFileContent, '\n', 0));
             }
-
-            return retVal;
         }
 
         LinkStats stats() const override
@@ -507,40 +505,37 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
             return retVal;
         }
 
-        std::optional<std::string> type() const override
+        void type(nlohmann::json& network) const override
         {
+            network["type"] = UNKNOWN_VALUE;
             const auto networkTypeCode { Utils::getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/type") };
 
             if (!networkTypeCode.empty())
             {
-                return Utils::NetworkHelper::getNetworkTypeStringCode(std::stoi(networkTypeCode), NETWORK_INTERFACE_TYPE);
+                network["type"] = Utils::NetworkHelper::getNetworkTypeStringCode(std::stoi(networkTypeCode), NETWORK_INTERFACE_TYPE);
             }
-
-            return std::nullopt;
         }
 
-        std::optional<std::string> state() const override
+        void state(nlohmann::json& network) const override
         {
+            network["state"] = UNKNOWN_VALUE;
             const std::string operationalState { Utils::getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/operstate") };
 
             if (!operationalState.empty())
             {
-                return Utils::splitIndex(operationalState, '\n', 0);
+                network["state"] = Utils::splitIndex(operationalState, '\n', 0);
             }
-
-            return std::nullopt;
         }
 
-        std::optional<std::string> MAC() const override
+        void MAC(nlohmann::json& network) const override
         {
+            network["mac"] = UNKNOWN_VALUE;
             const std::string macContent { Utils::getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/address")};
 
             if (!macContent.empty())
             {
-                return Utils::splitIndex(macContent, '\n', 0);
+                network["mac"] = Utils::splitIndex(macContent, '\n', 0);
             }
-
-            return std::nullopt;
         }
 };
 
