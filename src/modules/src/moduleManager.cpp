@@ -42,29 +42,35 @@ void ModuleManager::Start()
     std::unique_lock<std::mutex> lock(m_mutex);
 
     m_taskManager.Start(m_modules.size());
-    std::condition_variable cv;
+
+    m_started.store(0);
 
     for (const auto &[_, module] : m_modules)
     {
         m_taskManager.EnqueueTask(
-            [module, this, &cv]
+            [this, module]
             {
                 ++m_started;
-                cv.notify_one();
                 module->Start();
             }
             , module->Name()
         );
     }
 
-    cv.wait_for(
-        lock,
-        std::chrono::seconds(MODULES_START_WAIT_SECS),
-        [this]
+    const auto start = std::chrono::steady_clock::now();
+
+    while (m_started.load() != static_cast<int>(m_modules.size()))
+    {
+        const auto end = std::chrono::steady_clock::now();
+        const auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start);
+
+        if (elapsed_seconds.count() > MODULES_START_WAIT_SECS)
         {
-            return m_started.load() == static_cast<int>(m_modules.size());
+            break;
         }
-    );
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(10)); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    }
 
     if (m_started.load() != static_cast<int>(m_modules.size()))
     {
@@ -89,7 +95,6 @@ void ModuleManager::Stop()
     for (const auto &[_, module] : m_modules)
     {
         module->Stop();
-        m_started--;
     }
     m_taskManager.Stop();
 }
