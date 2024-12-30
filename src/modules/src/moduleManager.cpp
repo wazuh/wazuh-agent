@@ -13,23 +13,28 @@ namespace {
     constexpr int MODULES_START_WAIT_SECS = 60;
 }
 
-void ModuleManager::AddModules() {
+void ModuleManager::AddModules()
+{
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
 
 #ifdef ENABLE_INVENTORY
-    Inventory& inventory = Inventory::Instance();
-    inventory.SetAgentUUID(m_agentUUID);
-    AddModule(inventory);
+        Inventory& inventory = Inventory::Instance();
+        inventory.SetAgentUUID(m_agentUUID);
+        AddModule(inventory);
 #endif
 
 #ifdef ENABLE_LOGCOLLECTOR
-    AddModule(Logcollector::Instance());
+        AddModule(Logcollector::Instance());
 #endif
+    }
 
     Setup();
 }
 
 std::shared_ptr<ModuleWrapper> ModuleManager::GetModule(const std::string & name)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
     if (auto it = m_modules.find(name); it != m_modules.end())
     {
         return it->second;
@@ -39,7 +44,7 @@ std::shared_ptr<ModuleWrapper> ModuleManager::GetModule(const std::string & name
 
 void ModuleManager::Start()
 {
-    std::unique_lock<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_mutex);
 
     m_taskManager.Start(m_modules.size());
 
