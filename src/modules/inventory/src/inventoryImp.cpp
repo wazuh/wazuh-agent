@@ -162,7 +162,7 @@ constexpr auto NETWORK_SQL_STATEMENT
         rx_dropped INTEGER,
         proto_type TEXT,
         gateway TEXT,
-        dhcp TEXT NOT NULL CHECK (dhcp IN ('enabled', 'disabled', 'unknown', 'BOOTP')) DEFAULT 'unknown',
+        dhcp TEXT,
         metric TEXT,
         address TEXT,
         netmask TEXT,
