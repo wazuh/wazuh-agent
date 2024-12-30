@@ -378,7 +378,7 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
         void dhcp(nlohmann::json& network) const override
         {
             auto fileData { Utils::getFileContent(WM_SYS_IF_FILE) };
-            network["dhcp"] = "unknown";
+            network["dhcp"] = UNKNOWN_VALUE;
             const auto family { this->family() };
             const auto ifName { this->name() };
 
