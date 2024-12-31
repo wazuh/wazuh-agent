@@ -19,19 +19,19 @@ class IPackageWrapper
         // LCOV_EXCL_START
         virtual ~IPackageWrapper() = default;
         // LCOV_EXCL_STOP
-        virtual std::string name() const = 0;
-        virtual std::string version() const = 0;
-        virtual std::string groups() const = 0;
-        virtual std::string description() const = 0;
-        virtual std::string architecture() const = 0;
-        virtual std::string format() const = 0;
-        virtual std::string osPatch() const = 0;
-        virtual std::string source() const = 0;
-        virtual std::string location() const = 0;
-        virtual std::string priority() const = 0;
-        virtual int size() const = 0;
-        virtual std::string vendor() const = 0;
-        virtual std::string install_time() const = 0;
-        virtual std::string multiarch() const = 0;
+        virtual void name(nlohmann::json&) const = 0;
+        virtual void version(nlohmann::json&) const = 0;
+        virtual void groups(nlohmann::json&) const = 0;
+        virtual void description(nlohmann::json&) const = 0;
+        virtual void architecture(nlohmann::json&) const = 0;
+        virtual void format(nlohmann::json&) const = 0;
+        virtual void osPatch(nlohmann::json&) const = 0;
+        virtual void source(nlohmann::json&) const = 0;
+        virtual void location(nlohmann::json&) const = 0;
+        virtual void priority(nlohmann::json&) const = 0;
+        virtual void size(nlohmann::json&) const = 0;
+        virtual void vendor(nlohmann::json&) const = 0;
+        virtual void install_time(nlohmann::json&) const = 0;
+        virtual void multiarch(nlohmann::json&) const = 0;
 };
 #endif // _PACKAGE_INTERFACE_WRAPPER_H

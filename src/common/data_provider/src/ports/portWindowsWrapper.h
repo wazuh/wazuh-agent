@@ -69,7 +69,7 @@ class WindowsPortWrapper final : public IPortWrapper
 
         static std::string getProcessName(const std::map<pid_t, std::string> processDataList, const pid_t pid)
         {
-            std::string retVal { UNKNOWN_VALUE };
+            std::string retVal { EMPTY_VALUE };
             const auto itSystemProcess { SYSTEM_PROCESSES.find(pid) } ;
 
             if (SYSTEM_PROCESSES.end() != itSystemProcess)
@@ -171,7 +171,7 @@ class WindowsPortWrapper final : public IPortWrapper
 
         void inode(nlohmann::json& port) const override
         {
-            port["inode"] = UNKNOWN_VALUE;
+            port["inode"] = 0;
         }
 
         void state(nlohmann::json& port) const override
