@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <fstream>
 #include <sstream>
 #include <thread>
 #include <utility>
@@ -221,8 +222,27 @@ namespace communicator
         }
     }
 
-    bool Communicator::GetGroupConfigurationFromManager(const std::string& groupName, const std::string& dstFilePath)
+    boost::asio::awaitable<bool> Communicator::GetGroupConfigurationFromManager(std::string groupName,
+                                                                                std::string dstFilePath)
     {
+        auto onAuthenticationFailed = [this]()
+        {
+            TryReAuthenticate();
+        };
+
+        bool downloaded = false;
+
+        auto onSuccess = [path = std::move(dstFilePath), &downloaded](const int, const std::string& res)
+        {
+            std::ofstream file(path, std::ios::binary);
+            if (file)
+            {
+                file << res;
+                file.close();
+                downloaded = true;
+            }
+        };
+
         const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get,
                                                               m_serverUrl,
                                                               "/api/v1/files?file_name=" + groupName +
@@ -231,10 +251,10 @@ namespace communicator
                                                               m_verificationMode,
                                                               *m_token);
 
-        const auto result = m_httpClient->PerformHttpRequestDownload(reqParams, dstFilePath);
+        co_await m_httpClient->Co_PerformHttpRequest(
+            m_token, reqParams, {}, onAuthenticationFailed, m_retryInterval, m_batchSize, onSuccess, {});
 
-        return result.result() >= boost::beast::http::status::ok &&
-               result.result() < boost::beast::http::status::multiple_choices;
+        co_return downloaded;
     }
 
     void Communicator::Stop()

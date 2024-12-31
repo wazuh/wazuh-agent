@@ -82,12 +82,5 @@ namespace http_client
                                                                         const std::string& user,
                                                                         const std::string& password,
                                                                         const std::string& verificationMode) = 0;
-
-        /// @brief Perform an HTTP request, receive the response and write it to a file
-        /// @param params The parameters for the request
-        /// @param dstFilePath The path to the file where the response should be written
-        /// @return The response
-        virtual boost::beast::http::response<boost::beast::http::dynamic_body>
-        PerformHttpRequestDownload(const HttpRequestParams& params, const std::string& dstFilePath) = 0;
     };
 } // namespace http_client

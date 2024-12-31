@@ -168,22 +168,6 @@ namespace http_client
             }
         }
 
-        /// @brief Reads a response from the socket and writes it to a file
-        /// @param res The response to read
-        /// @param dstFilePath The path to the file to write to
-        void ReadToFile(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                        const std::string& dstFilePath) override
-        {
-            try
-            {
-                http_client_utils::ReadToFile(m_ssl_socket, res, dstFilePath);
-            }
-            catch (const std::exception& e)
-            {
-                LogDebug("Exception thrown during read to file: {}", e.what());
-            }
-        }
-
         /// @brief Asynchronous version of Read
         /// @param res The response to read
         /// @param ec The error code, if any occurred

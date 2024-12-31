@@ -22,7 +22,7 @@ namespace centralized_configuration
         using SetGroupIdFunctionType = std::function<bool(const std::vector<std::string>& groupList)>;
         using GetGroupIdFunctionType = std::function<std::vector<std::string>()>;
         using DownloadGroupFilesFunctionType =
-            std::function<bool(const std::string& group, const std::string& dstFilePath)>;
+            std::function<boost::asio::awaitable<bool>(std::string group, std::string dstFilePath)>;
         using ValidateFileFunctionType = std::function<bool(const std::filesystem::path& configFile)>;
         using ReloadModulesFunctionType = std::function<void()>;
 

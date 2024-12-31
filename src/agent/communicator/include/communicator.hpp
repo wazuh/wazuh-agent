@@ -111,7 +111,7 @@ namespace communicator
         /// @param groupName The name of the group to retrieve the configuration for
         /// @param dstFilePath The path to the file to store the configuration in
         /// @return true if the configuration was successfully retrieved, false otherwise
-        bool GetGroupConfigurationFromManager(const std::string& groupName, const std::string& dstFilePath);
+        boost::asio::awaitable<bool> GetGroupConfigurationFromManager(std::string groupName, std::string dstFilePath);
 
         /// @brief Stops the communication process
         void Stop();

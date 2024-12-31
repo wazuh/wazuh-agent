@@ -633,43 +633,6 @@ TEST_F(HttpClientTest, AuthenticateWithUserPassword_Failure)
     EXPECT_FALSE(token.has_value());
 }
 
-TEST_F(HttpClientTest, PerformHttpRequestDownload_Success)
-{
-    SetupMockResolverFactory();
-    SetupMockSocketFactory();
-
-    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Return(dummyResults));
-    EXPECT_CALL(*mockSocket, Connect(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, SetVerificationMode("localhost", "full")).Times(1);
-    EXPECT_CALL(*mockSocket, Write(_, _)).Times(1);
-    EXPECT_CALL(*mockSocket, ReadToFile(_, _))
-        .WillOnce([](boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                     [[maybe_unused]] auto& dstFilePath) { res.result(boost::beast::http::status::ok); });
-
-    const http_client::HttpRequestParams params(
-        boost::beast::http::verb::get, "https://localhost:80", "/", "Wazuh 5.0.0", "full");
-    const std::string dstFilePath = "dstFilePath";
-    const auto response = client->PerformHttpRequestDownload(params, dstFilePath);
-
-    EXPECT_EQ(response.result(), boost::beast::http::status::ok);
-}
-
-TEST_F(HttpClientTest, PerformHttpRequestDownload_ExceptionThrown)
-{
-    SetupMockResolverFactory();
-
-    EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Throw(std::runtime_error("Simulated resolution failure")));
-
-    const http_client::HttpRequestParams params(
-        boost::beast::http::verb::get, "https://localhost:80", "/", "Wazuh 5.0.0", "full");
-    const std::string dstFilePath = "dstFilePath";
-    const auto response = client->PerformHttpRequestDownload(params, dstFilePath);
-
-    EXPECT_EQ(response.result(), boost::beast::http::status::internal_server_error);
-    EXPECT_TRUE(boost::beast::buffers_to_string(response.body().data()).find("Simulated resolution failure") !=
-                std::string::npos);
-}
-
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
