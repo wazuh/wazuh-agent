@@ -1,3 +1,5 @@
+#pragma once
+
 #include "http_client_utils.hpp"
 #include <ihttp_socket.hpp>
 #include <logger.hpp>

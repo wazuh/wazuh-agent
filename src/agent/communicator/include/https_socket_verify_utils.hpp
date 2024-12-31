@@ -1,3 +1,5 @@
+#pragma once
+
 #include <boost/asio/ssl.hpp>
 
 #include <string>
