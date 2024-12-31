@@ -1,3 +1,5 @@
+#pragma once
+
 #include <ihttp_socket.hpp>
 
 #include <boost/asio.hpp>

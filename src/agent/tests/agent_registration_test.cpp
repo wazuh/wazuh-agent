@@ -40,11 +40,12 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
     agent->Save();
 
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "https://localhost:55000", "user", "password", agent->GetKey(), agent->GetName(), ".");
+        "https://localhost:55000", "user", "password", agent->GetKey(), agent->GetName(), ".", "full");
 
     MockHttpClient mockHttpClient;
 
-    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, testing::_, testing::_))
+    EXPECT_CALL(mockHttpClient,
+                AuthenticateWithUserPassword(testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return("token"));
 
     const auto bodyJson = agent->GetMetadataInfo(true);
@@ -53,6 +54,7 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
                                              "https://localhost:55000",
                                              "/agents",
                                              agent->GetHeaderInfo(),
+                                             "full",
                                              "token",
                                              "",
                                              bodyJson);
@@ -72,13 +74,18 @@ TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
     AgentInfoPersistance agentInfoPersistance(".");
     agentInfoPersistance.ResetToDefault();
 
-    registration = std::make_unique<agent_registration::AgentRegistration>(
-        "https://localhost:55000", "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", ".");
+    registration = std::make_unique<agent_registration::AgentRegistration>("https://localhost:55000",
+                                                                           "user",
+                                                                           "password",
+                                                                           "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj",
+                                                                           "agent_name",
+                                                                           ".",
+                                                                           "certificate");
     agent = std::make_unique<AgentInfo>(".");
 
     MockHttpClient mockHttpClient;
 
-    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, "user", "password"))
+    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, "user", "password", testing::_))
         .WillOnce(testing::Return(std::nullopt));
 
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
@@ -92,12 +99,12 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
     agentInfoPersistance.ResetToDefault();
 
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "https://localhost:55000", "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", ".");
+        "https://localhost:55000", "user", "password", "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj", "agent_name", ".", "none");
     agent = std::make_unique<AgentInfo>(".");
 
     MockHttpClient mockHttpClient;
 
-    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, "user", "password"))
+    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, "user", "password", testing::_))
         .WillOnce(testing::Return("token"));
 
     boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
@@ -119,11 +126,12 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
     EXPECT_TRUE(agent->GetKey().empty());
 
     registration = std::make_unique<agent_registration::AgentRegistration>(
-        "https://localhost:55000", "user", "password", "", "agent_name", ".");
+        "https://localhost:55000", "user", "password", "", "agent_name", ".", "full");
 
     MockHttpClient mockHttpClient;
 
-    EXPECT_CALL(mockHttpClient, AuthenticateWithUserPassword(testing::_, testing::_, testing::_, testing::_))
+    EXPECT_CALL(mockHttpClient,
+                AuthenticateWithUserPassword(testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return("token"));
 
     boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
@@ -142,7 +150,7 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
 TEST_F(RegisterTest, RegistrationTestFailWithBadKey)
 {
     ASSERT_THROW(agent_registration::AgentRegistration(
-                     "https://localhost:55000", "user", "password", "badKey", "agent_name", "."),
+                     "https://localhost:55000", "user", "password", "badKey", "agent_name", ".", "full"),
                  std::invalid_argument);
 }
 

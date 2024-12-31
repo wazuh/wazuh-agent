@@ -24,6 +24,8 @@ set(DEFAULT_BATCH_INTERVAL 10000 CACHE STRING "Default Agent batch interval (10s
 
 set(DEFAULT_BATCH_SIZE 1000000ULL CACHE STRING "Default Agent batch size limit (1MB)")
 
+set(DEFAULT_VERIFICATION_MODE "full" CACHE STRING "Default Agent verification mode")
+
 set(DEFAULT_LOGCOLLECTOR_ENABLED true CACHE BOOL "Default Logcollector enabled")
 
 set(BUFFER_SIZE 4096 CACHE STRING "Default Logcollector reading buffer size")

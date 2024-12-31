@@ -15,6 +15,11 @@ namespace http_client
         /// @brief Virtual destructor
         virtual ~IHttpSocket() = default;
 
+        /// @brief Sets the verification mode for the host
+        /// @param host The host name
+        /// @param verificationMode The verification mode to set
+        virtual void SetVerificationMode(const std::string& host, const std::string& verificationMode) = 0;
+
         /// @brief Connects the socket to the given endpoints
         /// @param endpoints The endpoints to connect to
         /// @param ec The error code, if any occurred

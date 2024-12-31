@@ -33,12 +33,14 @@ namespace agent_registration
         /// @param key The agent's key.
         /// @param name The agent's name.
         /// @param dbFolderPath The path to the database folder.
+        /// @param verificationMode The connection verification mode.
         AgentRegistration(std::string url,
                           std::string user,
                           std::string password,
                           const std::string& key,
                           const std::string& name,
-                          const std::string& dbFolderPath);
+                          const std::string& dbFolderPath,
+                          std::string verificationMode);
 
         /// @brief Registers the agent with the manager.
         ///
@@ -61,5 +63,8 @@ namespace agent_registration
 
         /// @brief The user's password.
         std::string m_password;
+
+        /// @brief The connection verification mode.
+        std::string m_verificationMode;
     };
 } // namespace agent_registration

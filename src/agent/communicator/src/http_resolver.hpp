@@ -1,3 +1,5 @@
+#pragma once
+
 #include <ihttp_resolver.hpp>
 #include <logger.hpp>
 

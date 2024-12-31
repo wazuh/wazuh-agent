@@ -1,3 +1,5 @@
+#pragma once
+
 #include "http_client_utils.hpp"
 #include <ihttp_socket.hpp>
 #include <logger.hpp>
@@ -20,6 +22,15 @@ namespace http_client
         HttpSocket(const boost::asio::any_io_executor& io_context)
             : m_socket(io_context)
         {
+        }
+
+        /// @brief Sets the verification mode for the host
+        /// @param host The host name
+        /// @param verificationMode The verification mode to set
+        void SetVerificationMode([[maybe_unused]] const std::string& host,
+                                 [[maybe_unused]] const std::string& verificationMode) override
+        {
+            // No functionality for HTTP sockets
         }
 
         /// @brief Connects the socket to the given endpoints
