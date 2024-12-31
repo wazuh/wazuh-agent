@@ -366,12 +366,12 @@ static void getPackagesFromReg(const HKEY key, const std::string& subKey, std::f
                 nlohmann::json packageJson;
                 Utils::Registry packageReg{key, subKey + "\\" + package, access | KEY_READ};
 
-                std::string name;
-                std::string version;
-                std::string vendor;
-                std::string install_time;
-                std::string location;
-                std::string architecture;
+                nlohmann::json name {UNKNOWN_VALUE};
+                nlohmann::json version {UNKNOWN_VALUE};
+                nlohmann::json vendor {UNKNOWN_VALUE};
+                nlohmann::json install_time {UNKNOWN_VALUE};
+                nlohmann::json location {UNKNOWN_VALUE};
+                nlohmann::json architecture {UNKNOWN_VALUE};
 
                 if (packageReg.string("DisplayName", value))
                 {
@@ -409,10 +409,6 @@ static void getPackagesFromReg(const HKEY key, const std::string& subKey, std::f
                 {
                     location = value;
                 }
-                else
-                {
-                    location = UNKNOWN_VALUE;
-                }
 
                 if (!name.empty())
                 {
@@ -424,21 +420,17 @@ static void getPackagesFromReg(const HKEY key, const std::string& subKey, std::f
                     {
                         architecture = "x86_64";
                     }
-                    else
-                    {
-                        architecture = UNKNOWN_VALUE;
-                    }
 
                     packageJson["name"]         = std::move(name);
                     packageJson["description"]  = UNKNOWN_VALUE;
-                    packageJson["version"]      = version.empty() ? UNKNOWN_VALUE : std::move(version);
+                    packageJson["version"]      = std::move(version);
                     packageJson["groups"]       = UNKNOWN_VALUE;
-                    packageJson["priority"]       = UNKNOWN_VALUE;
-                    packageJson["size"]           = 0;
-                    packageJson["vendor"]       = vendor.empty() ? UNKNOWN_VALUE : std::move(vendor);
+                    packageJson["priority"]     = UNKNOWN_VALUE;
+                    packageJson["size"]         = UNKNOWN_VALUE;
+                    packageJson["vendor"]       = std::move(vendor);
                     packageJson["source"]       = UNKNOWN_VALUE;
-                    packageJson["install_time"] = install_time.empty() ? UNKNOWN_VALUE : std::move(install_time);
-                    packageJson["location"]     = location.empty() ? UNKNOWN_VALUE : std::move(location);
+                    packageJson["install_time"] = std::move(install_time);
+                    packageJson["location"]     = std::move(location);
                     packageJson["architecture"] = std::move(architecture);
                     packageJson["format"]       = "win";
 
