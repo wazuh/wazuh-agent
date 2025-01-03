@@ -71,6 +71,9 @@ void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParse
     }
 
     SetupFileReader(configurationParser);
+#ifdef _WIN32
+    SetupWEReader(configurationParser);
+#endif
 }
 
 void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
@@ -89,9 +92,9 @@ void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::Co
 #ifdef _WIN32
 void Logcollector::SetupWEReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
 {
-    const auto reconnectTime = configurationParser->GetConfig<time_t>("logcollector", "reconnect-time").value_or(config::logcollector::DEFAULT_RECONNECT_TIME);
+    const auto refreshInterval = configurationParser->GetConfig<time_t>("logcollector", "channel_refresh").value_or(config::logcollector::CHANNEL_REFRESH_INTERVAL);
 
-    const auto bookmarkEnabled = configurationParser->GetConfig<bool>("logcollector", "use-bookmark").value_or(config::logcollector::DEFAULT_USE_BOOKMARK);
+    const auto bookmarkEnabled = configurationParser->GetConfig<bool>("logcollector", "use_bookmark").value_or(config::logcollector::DEFAULT_USE_BOOKMARK);
 
     const auto windowsConfig = configurationParser->GetConfig<std::vector<std::map<std::string, std::string>>>("logcollector", "windows").value_or(
         std::vector<std::map<std::string, std::string>> {});
@@ -101,11 +104,11 @@ void Logcollector::SetupWEReader(const std::shared_ptr<const configuration::Conf
     for (auto& entry : windowsConfig)
     {
         auto channel = entry.at("channel");
-        channelsList.emplace_back(channel);
         auto query = entry.at("query");
+        channelsList.emplace_back(channel);
         queriesList.emplace_back(query);
     }
-    AddReader(std::make_shared<WindowsEventTracerReader>(*this, channelsList, queriesList, reconnectTime, bookmarkEnabled));
+    AddReader(std::make_shared<WindowsEventTracerReader>(*this, channelsList, queriesList, refreshInterval, bookmarkEnabled));
 }
 #endif
 
@@ -146,7 +149,8 @@ void Logcollector::SendMessage(const std::string& location, const std::string& l
     auto message = Message(MessageType::STATELESS, data, m_moduleName, collectorType, metadata.dump());
     m_pushMessage(message);
 
-    LogTrace("Message pushed: '{}':'{}'", location, log);
+    //TODO: undo
+    LogInfo("Message pushed: '{}':'{}'", location, log);
 }
 
 void Logcollector::AddReader(std::shared_ptr<IReader> reader)
