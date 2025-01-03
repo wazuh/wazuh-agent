@@ -2,6 +2,7 @@
 #pragma once
 
 #include <ctime>
+#include <codecvt>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -33,7 +34,7 @@ public:
     WindowsEventTracerReader(Logcollector &logcollector,
                             const std::vector<std::string> channels,
                             const std::vector<std::string> queries,
-                            const std::time_t reloadInterval,
+                            const std::time_t channelRefreshInterval,
                             bool bookmarkEnabled);
 
     /// @brief Runs the file reader
@@ -41,7 +42,7 @@ public:
     Awaitable Run() override;
 
     // Main function to execute the event query with bookmarks and filters
-    Awaitable QueryEvents(const std::string channel, const std::string query);
+    Awaitable QueryEvents(const std::string channel, const std::string query, std::function<bool()> shouldContinue);
 
 private:
     // Process an individual event and print its XML representation
@@ -56,25 +57,20 @@ private:
     // Load bookmark from file (if it exists)
     EVT_HANDLE LoadBookmark();
 
+    //TODO: doc
+    std::string WcharVecToString(std::vector<wchar_t>& buffer);
+
     std::vector<std::string> m_channelsList;
 
     std::vector<std::string> m_queriesList;
 
-    std::wstring bookmarkFile_;
-
-    std::string m_channel;
-
-    std::string m_query;
+    //TODO: change to configurable
+    std::string m_bookmarkFile = "bookmark.xml";
 
     /// @brief
     std::time_t m_ChannelsRefreshInterval;
 
-    /// @brief
-    std::time_t m_eventsProcessingInterval;
-
     bool m_bookmarkEnabled;
-
-    int m_availableEvents = 0;
 
     const std::string m_collectorType = "eventchannel";
 };
