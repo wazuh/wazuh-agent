@@ -5,6 +5,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
+#include <boost/beast/core/tcp_stream.hpp>
 #include <boost/system/error_code.hpp>
 
 #include <exception>
@@ -20,6 +21,7 @@ namespace http_client
         /// @param io_context The io context to use for the socket
         HttpSocket(const boost::asio::any_io_executor& io_context)
             : m_socket(io_context)
+            , m_beast_socket(io_context)
         {
         }
 
@@ -40,7 +42,10 @@ namespace http_client
         {
             try
             {
-                boost::asio::connect(m_socket, endpoints, ec);
+                LogDebug("Attempting connection");
+                m_beast_socket.expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+                m_beast_socket.async_connect(endpoints,
+                                             [&ec](boost::beast::error_code const& code, auto const&) { ec = code; });
             }
             catch (const std::exception& e)
             {
@@ -74,7 +79,8 @@ namespace http_client
         {
             try
             {
-                boost::beast::http::write(m_socket, req, ec);
+                m_beast_socket.expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+                boost::beast::http::write(m_beast_socket, req, ec);
             }
             catch (const std::exception& e)
             {
@@ -108,8 +114,9 @@ namespace http_client
         {
             try
             {
+                m_beast_socket.expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
                 boost::beast::flat_buffer buffer;
-                boost::beast::http::read(m_socket, buffer, res, ec);
+                boost::beast::http::read(m_beast_socket, buffer, res, ec);
             }
             catch (const std::exception& e)
             {
@@ -141,7 +148,7 @@ namespace http_client
         {
             try
             {
-                m_socket.close();
+                m_beast_socket.close();
             }
             catch (const std::exception& e)
             {
@@ -152,5 +159,6 @@ namespace http_client
     private:
         /// @brief The socket to use for the HTTP connection
         boost::asio::ip::tcp::socket m_socket;
+        boost::beast::tcp_stream m_beast_socket;
     };
 } // namespace http_client
