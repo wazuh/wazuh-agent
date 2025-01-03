@@ -15,7 +15,7 @@
 #define kIOMainPortDefault kIOMasterPortDefault
 #endif
 
-double getMhz(IOsPrimitivesMac* osPrimitives)
+int getMhz(IOsPrimitivesMac* osPrimitives)
 {
     constexpr auto MHz{1000000};
     uint64_t cpuHz = 0;
@@ -134,5 +134,5 @@ double getMhz(IOsPrimitivesMac* osPrimitives)
         }
     }
 
-    return static_cast<double>(cpuHz) / MHz;
+    return cpuHz / MHz;
 }

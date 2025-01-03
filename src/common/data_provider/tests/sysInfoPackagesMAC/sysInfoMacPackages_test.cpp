@@ -29,39 +29,39 @@ class SysInfoMacPackagesWrapperMock: public IPackageWrapper
     public:
         SysInfoMacPackagesWrapperMock() = default;
         virtual ~SysInfoMacPackagesWrapperMock() = default;
-        MOCK_METHOD(std::string, name, (), (const override));
-        MOCK_METHOD(std::string, version, (), (const override));
-        MOCK_METHOD(std::string, groups, (), (const override));
-        MOCK_METHOD(std::string, description, (), (const override));
-        MOCK_METHOD(std::string, architecture, (), (const override));
-        MOCK_METHOD(std::string, format, (), (const override));
-        MOCK_METHOD(std::string, osPatch, (), (const override));
-        MOCK_METHOD(std::string, source, (), (const override));
-        MOCK_METHOD(std::string, location, (), (const override));
-        MOCK_METHOD(std::string, priority, (), (const override));
-        MOCK_METHOD(int, size, (), (const override));
-        MOCK_METHOD(std::string, vendor, (), (const override));
-        MOCK_METHOD(std::string, install_time, (), (const override));
-        MOCK_METHOD(std::string, multiarch, (), (const override));
+        MOCK_METHOD(void, name, (nlohmann::json& package), (const override));
+        MOCK_METHOD(void, version, (nlohmann::json& package), (const override));
+        MOCK_METHOD(void, groups, (nlohmann::json& package), (const override));
+        MOCK_METHOD(void, description, (nlohmann::json& package), (const override));
+        MOCK_METHOD(void, architecture, (nlohmann::json& package), (const override));
+        MOCK_METHOD(void, format, (nlohmann::json& package), (const override));
+        MOCK_METHOD(void, osPatch, (nlohmann::json& package), (const override));
+        MOCK_METHOD(void, source, (nlohmann::json& package), (const override));
+        MOCK_METHOD(void, location, (nlohmann::json& package), (const override));
+        MOCK_METHOD(void, priority, (nlohmann::json& package), (const override));
+        MOCK_METHOD(void, size, (nlohmann::json& package), (const override));
+        MOCK_METHOD(void, vendor, (nlohmann::json& package), (const override));
+        MOCK_METHOD(void, install_time, (nlohmann::json& package), (const override));
+        MOCK_METHOD(void, multiarch, (nlohmann::json& package), (const override));
 };
 
 TEST_F(SysInfoMacPackagesTest, Test_SPEC_Data)
 {
     auto mock { std::make_shared<SysInfoMacPackagesWrapperMock>() };
     nlohmann::json packages {};
-    EXPECT_CALL(*mock, name()).Times(1).WillOnce(Return("1"));
-    EXPECT_CALL(*mock, version()).Times(1).WillOnce(Return("2"));
-    EXPECT_CALL(*mock, groups()).Times(1).WillOnce(Return("3"));
-    EXPECT_CALL(*mock, description()).Times(1).WillOnce(Return("4"));
-    EXPECT_CALL(*mock, architecture()).Times(1).WillOnce(Return("5"));
-    EXPECT_CALL(*mock, format()).Times(1).WillOnce(Return("6"));
-    EXPECT_CALL(*mock, source()).Times(1).WillOnce(Return("7"));
-    EXPECT_CALL(*mock, location()).Times(1).WillOnce(Return("8"));
-    EXPECT_CALL(*mock, priority()).Times(1).WillOnce(Return("9"));
-    EXPECT_CALL(*mock, size()).Times(1).WillOnce(Return(10));
-    EXPECT_CALL(*mock, vendor()).Times(1).WillOnce(Return("11"));
-    EXPECT_CALL(*mock, install_time()).Times(1).WillOnce(Return("12"));
-    EXPECT_CALL(*mock, multiarch()).Times(1).WillOnce(Return("13"));
+    EXPECT_CALL(*mock, name(_)).WillOnce([](nlohmann::json& package) { package["name"] = "1"; });
+    EXPECT_CALL(*mock, version(_)).WillOnce([](nlohmann::json& package) { package["version"] = "2"; });
+    EXPECT_CALL(*mock, groups(_)).WillOnce([](nlohmann::json& package) { package["groups"] = "3"; });
+    EXPECT_CALL(*mock, description(_)).WillOnce([](nlohmann::json& package) { package["description"] = "4"; });
+    EXPECT_CALL(*mock, architecture(_)).WillOnce([](nlohmann::json& package) { package["architecture"] = "5"; });
+    EXPECT_CALL(*mock, format(_)).WillOnce([](nlohmann::json& package) { package["format"] = "6"; });
+    EXPECT_CALL(*mock, source(_)).WillOnce([](nlohmann::json& package) { package["source"] = "7"; });
+    EXPECT_CALL(*mock, location(_)).WillOnce([](nlohmann::json& package) { package["location"] = "8"; });
+    EXPECT_CALL(*mock, priority(_)).WillOnce([](nlohmann::json& package) { package["priority"] = "9"; });
+    EXPECT_CALL(*mock, size(_)).WillOnce([](nlohmann::json& package) { package["size"] = 10; });
+    EXPECT_CALL(*mock, vendor(_)).WillOnce([](nlohmann::json& package) { package["vendor"] = "11"; });
+    EXPECT_CALL(*mock, install_time(_)).WillOnce([](nlohmann::json& package) { package["install_time"] = "12"; });
+    EXPECT_CALL(*mock, multiarch(_)).WillOnce([](nlohmann::json& package) { package["multiarch"] = "13"; });
 
     EXPECT_NO_THROW(std::make_unique<BSDPackageImpl>(mock)->buildPackageData(packages));
     EXPECT_EQ("1", packages.at("name").get_ref<const std::string&>());
@@ -114,11 +114,18 @@ TEST_F(SysInfoMacPackagesTest, macPortsValidData)
 
     MacportsWrapper macportsMock(*mockStatement);
 
-    EXPECT_EQ(macportsMock.name(), "neovim");
-    EXPECT_EQ(macportsMock.version(), "0.8.1");
-    EXPECT_FALSE(macportsMock.install_time().empty());
-    EXPECT_EQ(macportsMock.location(), "/opt/local/var/macports/software/neovim/neovim-0.8.1.tgz");
-    EXPECT_EQ(macportsMock.architecture(), "x86_64");
+    nlohmann::json package;
+    macportsMock.name(package);
+    macportsMock.version(package);
+    macportsMock.install_time(package);
+    macportsMock.location(package);
+    macportsMock.architecture(package);
+
+    EXPECT_EQ(package["name"], "neovim");
+    EXPECT_EQ(package["version"], "0.8.1");
+    EXPECT_FALSE(package["install_time"].empty());
+    EXPECT_EQ(package["location"], "/opt/local/var/macports/software/neovim/neovim-0.8.1.tgz");
+    EXPECT_EQ(package["architecture"], "x86_64");
 }
 
 TEST_F(SysInfoMacPackagesTest, macPortsValidDataEmptyFields)
@@ -156,12 +163,19 @@ TEST_F(SysInfoMacPackagesTest, macPortsValidDataEmptyFields)
 
     MacportsWrapper macportsMock(*mockStatement);
 
-    EXPECT_EQ(macportsMock.name(), "neovim");
+    nlohmann::json package;
+    macportsMock.name(package);
+    macportsMock.version(package);
+    macportsMock.install_time(package);
+    macportsMock.location(package);
+    macportsMock.architecture(package);
+
+    EXPECT_EQ(package["name"], "neovim");
     // Empty string fields are replaced with space.
-    EXPECT_EQ(macportsMock.version(), " ");
-    EXPECT_FALSE(macportsMock.install_time().empty());
-    EXPECT_EQ(macportsMock.location(), " ");
-    EXPECT_EQ(macportsMock.architecture(), " ");
+    EXPECT_EQ(package["version"], EMPTY_VALUE);
+    EXPECT_FALSE(package["install_time"].empty());
+    EXPECT_EQ(package["location"], EMPTY_VALUE);
+    EXPECT_EQ(package["architecture"], EMPTY_VALUE);
 }
 
 TEST_F(SysInfoMacPackagesTest, macPortsValidDataEmptyName)
@@ -199,6 +213,9 @@ TEST_F(SysInfoMacPackagesTest, macPortsValidDataEmptyName)
 
     MacportsWrapper macportsMock(*mockStatement);
 
+    nlohmann::json package;
+    macportsMock.name(package);
+
     // Packages with empty string names are discarded.
-    EXPECT_EQ(macportsMock.name(), "");
+    EXPECT_EQ(package["name"], "");
 }

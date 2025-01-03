@@ -26,12 +26,12 @@ static void getOsInfoFromUname(nlohmann::json& info)
 
 static std::string getSerialNumber()
 {
-    return UNKNOWN_VALUE;
+    return EMPTY_VALUE;
 }
 
 static std::string getCpuName()
 {
-    return UNKNOWN_VALUE;
+    return EMPTY_VALUE;
 }
 
 static int getCpuMHz()

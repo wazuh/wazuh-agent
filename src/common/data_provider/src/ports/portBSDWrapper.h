@@ -67,19 +67,18 @@ class BSDPortWrapper final : public IPortWrapper
         };
         ~BSDPortWrapper() = default;
 
-        std::string protocol() const override
+        void protocol(nlohmann::json& port) const override
         {
-            std::string retVal;
+            port["protocol"] = UNKNOWN_VALUE;
             const auto it { PORTS_TYPE.find(m_spSocketInfo->psi.soi_kind) };
 
             if (it != PORTS_TYPE.end())
             {
-                retVal = AF_INET6 == m_spSocketInfo->psi.soi_family ? it->second + "6" : it->second;
+                port["protocol"] = AF_INET6 == m_spSocketInfo->psi.soi_family ? it->second + "6" : it->second;
             }
-
-            return  retVal;
         }
-        std::string localIp() const override
+
+        void localIp(nlohmann::json& port) const override
         {
             char ipAddress[NI_MAXHOST] { 0 };
 
@@ -98,13 +97,15 @@ class BSDPortWrapper final : public IPortWrapper
                 getnameinfo(reinterpret_cast<sockaddr*>(&socketAddressIn), sizeof(socketAddressIn), ipAddress, sizeof(ipAddress), nullptr, 0, NI_NUMERICHOST);
             }
 
-            return Utils::substrOnFirstOccurrence(ipAddress, "%");
+            port["local_ip"] = Utils::substrOnFirstOccurrence(ipAddress, "%");
         }
-        int32_t localPort() const override
+
+        void localPort(nlohmann::json& port) const override
         {
-            return ntohs(m_spSocketInfo->psi.soi_proto.pri_in.insi_lport);
+            port["local_port"] = ntohs(m_spSocketInfo->psi.soi_proto.pri_in.insi_lport);
         }
-        std::string remoteIP() const override
+
+        void remoteIP(nlohmann::json& port) const override
         {
             char ipAddress[NI_MAXHOST] { 0 };
 
@@ -124,27 +125,32 @@ class BSDPortWrapper final : public IPortWrapper
                 getnameinfo(reinterpret_cast<sockaddr*>(&socketAddressIn), sizeof(socketAddressIn), ipAddress, sizeof(ipAddress), nullptr, 0, NI_NUMERICHOST);
             }
 
-            return Utils::substrOnFirstOccurrence(ipAddress, "%");
+            port["remote_ip"] = Utils::substrOnFirstOccurrence(ipAddress, "%");
         }
-        int32_t remotePort() const override
+
+        void remotePort(nlohmann::json& port) const override
         {
-            return ntohs(m_spSocketInfo->psi.soi_proto.pri_in.insi_fport);
+            port["remote_port"] = ntohs(m_spSocketInfo->psi.soi_proto.pri_in.insi_fport);
         }
-        int32_t txQueue() const override
+
+        void txQueue(nlohmann::json& port) const override
         {
-            return 0;
+            port["tx_queue"] = UNKNOWN_VALUE;
         }
-        int32_t rxQueue() const override
+
+        void rxQueue(nlohmann::json& port) const override
         {
-            return 0;
+            port["rx_queue"] = UNKNOWN_VALUE;
         }
-        int64_t inode() const override
+
+        void inode(nlohmann::json& port) const override
         {
-            return 0;
+            port["inode"] = 0;
         }
-        std::string state() const override
+
+        void state(nlohmann::json& port) const override
         {
-            std::string retVal;
+            port["state"] = UNKNOWN_VALUE;
 
             const auto itProtocol { PORTS_TYPE.find(m_spSocketInfo->psi.soi_kind) };
 
@@ -154,21 +160,19 @@ class BSDPortWrapper final : public IPortWrapper
 
                 if (itState != STATE_TYPE.end())
                 {
-                    retVal = itState->second;
+                    port["state"] = itState->second;
                 }
             }
-
-            return retVal;
         }
 
-        int32_t pid() const override
+        void pid(nlohmann::json& port) const override
         {
-            return m_processInformation.pid;
+            port["pid"] = m_processInformation.pid;
         }
 
-        std::string processName() const override
+        void processName(nlohmann::json& port) const override
         {
-            return m_processInformation.processName;
+            port["process"] = m_processInformation.processName;
         }
 
 };

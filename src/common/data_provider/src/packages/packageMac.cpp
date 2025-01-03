@@ -57,17 +57,17 @@ BSDPackageImpl::BSDPackageImpl(const std::shared_ptr<IPackageWrapper>& packageWr
 
 void BSDPackageImpl::buildPackageData(nlohmann::json& package)
 {
-    package["name"] = m_packageWrapper->name();
-    package["version"] = m_packageWrapper->version();
-    package["groups"] = m_packageWrapper->groups();
-    package["description"] = m_packageWrapper->description();
-    package["architecture"] = m_packageWrapper->architecture();
-    package["format"] = m_packageWrapper->format();
-    package["source"] = m_packageWrapper->source();
-    package["location"] = m_packageWrapper->location();
-    package["priority"] = m_packageWrapper->priority();
-    package["size"] = m_packageWrapper->size();
-    package["vendor"] = m_packageWrapper->vendor();
-    package["install_time"] = m_packageWrapper->install_time();
-    package["multiarch"] = m_packageWrapper->multiarch();
+    m_packageWrapper->name(package);
+    m_packageWrapper->version(package);
+    m_packageWrapper->groups(package);
+    m_packageWrapper->description(package);
+    m_packageWrapper->architecture(package);
+    m_packageWrapper->format(package);
+    m_packageWrapper->source(package);
+    m_packageWrapper->location(package);
+    m_packageWrapper->priority(package);
+    m_packageWrapper->size(package);
+    m_packageWrapper->vendor(package);
+    m_packageWrapper->install_time(package);
+    m_packageWrapper->multiarch(package);
 }
