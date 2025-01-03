@@ -7,6 +7,7 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/beast.hpp>
+#include <boost/beast/ssl/ssl_stream.hpp>
 #include <boost/system/error_code.hpp>
 
 #include <exception>
@@ -206,5 +207,6 @@ namespace http_client
 
         /// @brief The SSL socket to use for the connection
         boost::asio::ssl::stream<boost::asio::ip::tcp::socket> m_ssl_socket;
+        // boost::beast::ssl_stream<boost::beast::tcp_stream> m_sslsocket;
     };
 } // namespace http_client
