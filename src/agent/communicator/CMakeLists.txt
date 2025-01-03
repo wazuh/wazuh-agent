@@ -17,6 +17,8 @@ add_library(Communicator src/communicator.cpp src/http_client.cpp src/http_reque
 
 if(WIN32)
     set(VERIFY_UTILS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/https_socket_verify_utils_win.cpp")
+elseif(APPLE)
+    set(VERIFY_UTILS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/https_socket_verify_utils_mac.cpp")
 else()
     set(VERIFY_UTILS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/https_socket_verify_utils_lin.cpp")
 endif()
@@ -33,6 +35,8 @@ target_link_libraries(Communicator PUBLIC Config Boost::asio Boost::beast Boost:
 
 if(WIN32)
     target_link_libraries(Communicator PRIVATE Crypt32)
+elseif(APPLE)
+    target_link_libraries(Communicator PRIVATE "-framework Security" "-framework CoreFoundation")
 endif()
 
 include(../../cmake/ConfigureTarget.cmake)
