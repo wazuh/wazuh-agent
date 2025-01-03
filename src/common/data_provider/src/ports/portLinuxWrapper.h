@@ -252,7 +252,7 @@ class LinuxPortWrapper final : public IPortWrapper
             }
             catch (...)
             {
-                port["inode"] = UNKNOWN_VALUE;
+                port["inode"] = 0;
             }
         }
 

@@ -23,16 +23,15 @@ class BrewWrapper final : public IPackageWrapper
         explicit BrewWrapper(const PackageContext& ctx)
             : m_name{ctx.package}
             , m_version{Utils::splitIndex(ctx.version, '_', 0)}
-            , m_groups{UNKNOWN_VALUE}
-            , m_description {UNKNOWN_VALUE}
-            , m_architecture{UNKNOWN_VALUE}
+            , m_groups{EMPTY_VALUE}
+            , m_description {EMPTY_VALUE}
+            , m_architecture{EMPTY_VALUE}
             , m_format{"pkg"}
             , m_source{"homebrew"}
             , m_location{ctx.filePath}
-            , m_priority{UNKNOWN_VALUE}
-            , m_size{0}
-            , m_vendor{UNKNOWN_VALUE}
-            , m_installTime{UNKNOWN_VALUE}
+            , m_priority{EMPTY_VALUE}
+            , m_vendor{EMPTY_VALUE}
+            , m_installTime{EMPTY_VALUE}
         {
             const auto rows { Utils::split(Utils::getFileContent(ctx.filePath + "/" + ctx.package + "/" + ctx.version + "/.brew/" + ctx.package + ".rb"), '\n')};
 
@@ -65,66 +64,76 @@ class BrewWrapper final : public IPackageWrapper
 
         ~BrewWrapper() = default;
 
-        std::string name() const override
+        void name(nlohmann::json& package) const override
         {
-            return m_name;
-        }
-        std::string version() const override
-        {
-            return m_version;
-        }
-        std::string groups() const override
-        {
-            return m_groups;
-        }
-        std::string description() const override
-        {
-            return m_description;
-        }
-        std::string architecture() const override
-        {
-            return m_architecture;
-        }
-        std::string format() const override
-        {
-            return m_format;
-        }
-        std::string osPatch() const override
-        {
-            return m_osPatch;
-        }
-        std::string source() const override
-        {
-            return m_source;
-        }
-        std::string location() const override
-        {
-            return m_location;
-        }
-        std::string vendor() const override
-        {
-            return m_vendor;
+            package["name"] = m_name;
         }
 
-        std::string priority() const override
+        void version(nlohmann::json& package) const override
         {
-            return m_priority;
+            package["version"] = m_version;
         }
 
-        int size() const override
+        void groups(nlohmann::json& package) const override
         {
-            return m_size;
+            package["groups"] = UNKNOWN_VALUE;
         }
 
-        std::string install_time() const override
+        void description(nlohmann::json& package) const override
         {
-            return m_installTime;
+            package["description"] = m_description;
         }
 
-        std::string multiarch() const override
+        void architecture(nlohmann::json& package) const override
         {
-            return m_multiarch;
+            package["architecture"] = UNKNOWN_VALUE;
         }
+
+        void format(nlohmann::json& package) const override
+        {
+            package["format"] = m_format;
+        }
+
+        void osPatch(nlohmann::json& package) const override
+        {
+            package["os_patch"] = UNKNOWN_VALUE;
+        }
+
+        void source(nlohmann::json& package) const override
+        {
+            package["source"] = m_source;
+        }
+
+        void location(nlohmann::json& package) const override
+        {
+            package["location"] = m_location;
+        }
+
+        void vendor(nlohmann::json& package) const override
+        {
+            package["vendor"] = UNKNOWN_VALUE;
+        }
+
+        void priority(nlohmann::json& package) const override
+        {
+            package["priority"] = UNKNOWN_VALUE;
+        }
+
+        void size(nlohmann::json& package) const override
+        {
+            package["size"] = UNKNOWN_VALUE;
+        }
+
+        void install_time(nlohmann::json& package) const override
+        {
+            package["install_time"] = UNKNOWN_VALUE;
+        }
+
+        void multiarch(nlohmann::json& package) const override
+        {
+            package["multiarch"] = UNKNOWN_VALUE;
+        }
+
     private:
         std::string m_name;
         std::string m_version;
@@ -136,7 +145,6 @@ class BrewWrapper final : public IPackageWrapper
         const std::string m_source;
         const std::string m_location;
         std::string m_priority;
-        int m_size;
         std::string m_vendor;
         std::string m_installTime;
         std::string m_multiarch;

@@ -30,17 +30,17 @@ class PKGWrapper final : public IPackageWrapper
 {
     public:
         explicit PKGWrapper(const PackageContext& ctx)
-            : m_version{UNKNOWN_VALUE}
-            , m_groups{UNKNOWN_VALUE}
-            , m_description {UNKNOWN_VALUE}
-            , m_architecture{UNKNOWN_VALUE}
+            : m_version{EMPTY_VALUE}
+            , m_groups{EMPTY_VALUE}
+            , m_description {EMPTY_VALUE}
+            , m_architecture{EMPTY_VALUE}
             , m_format{"pkg"}
-            , m_source {UNKNOWN_VALUE}
-            , m_location {UNKNOWN_VALUE}
-            , m_priority {UNKNOWN_VALUE}
+            , m_source {EMPTY_VALUE}
+            , m_location {EMPTY_VALUE}
+            , m_priority {EMPTY_VALUE}
             , m_size {0}
-            , m_vendor{UNKNOWN_VALUE}
-            , m_installTime {UNKNOWN_VALUE}
+            , m_vendor{EMPTY_VALUE}
+            , m_installTime {EMPTY_VALUE}
         {
             if (Utils::endsWith(ctx.package, ".app"))
             {
@@ -54,65 +54,65 @@ class PKGWrapper final : public IPackageWrapper
 
         ~PKGWrapper() = default;
 
-        std::string name() const override
+        void name(nlohmann::json& package) const override
         {
-            return m_name;
+            package["name"] = m_name;
         }
-        std::string version() const override
+        void version(nlohmann::json& package) const override
         {
-            return m_version;
+            package["version"] = m_version;
         }
-        std::string groups() const override
+        void groups(nlohmann::json& package) const override
         {
-            return m_groups;
+            package["groups"] = m_groups;
         }
-        std::string description() const override
+        void description(nlohmann::json& package) const override
         {
-            return m_description;
+            package["description"] = m_description;
         }
-        std::string architecture() const override
+        void architecture(nlohmann::json& package) const override
         {
-            return m_architecture;
+            package["architecture"] = UNKNOWN_VALUE;
         }
-        std::string format() const override
+        void format(nlohmann::json& package) const override
         {
-            return m_format;
+            package["format"] = m_format;
         }
-        std::string osPatch() const override
+        void osPatch(nlohmann::json& package) const override
         {
-            return m_osPatch;
+            package["os_patch"] = UNKNOWN_VALUE;
         }
-        std::string source() const override
+        void source(nlohmann::json& package) const override
         {
-            return m_source;
+            package["source"] = m_source;
         }
-        std::string location() const override
+        void location(nlohmann::json& package) const override
         {
-            return m_location;
+            package["location"] = m_location;
         }
-        std::string vendor() const override
+        void vendor(nlohmann::json& package) const override
         {
-            return m_vendor;
-        }
-
-        std::string priority() const override
-        {
-            return m_priority;
+            package["vendor"] = m_vendor;
         }
 
-        int size() const override
+        void priority(nlohmann::json& package) const override
         {
-            return m_size;
+            package["priority"] = UNKNOWN_VALUE;
         }
 
-        std::string install_time() const override
+        void size(nlohmann::json& package) const override
         {
-            return m_installTime;
+            package["size"] = UNKNOWN_VALUE;
         }
 
-        std::string multiarch() const override
+        void install_time(nlohmann::json& package) const override
         {
-            return m_multiarch;
+            package["install_time"] = m_installTime;
+        }
+
+        void multiarch(nlohmann::json& package) const override
+        {
+            package["multiarch"] = UNKNOWN_VALUE;
         }
 
     private:
@@ -209,11 +209,11 @@ class PKGWrapper final : public IPackageWrapper
                         }
                     }
 
-                    m_architecture = UNKNOWN_VALUE;
-                    m_multiarch = UNKNOWN_VALUE;
-                    m_priority = UNKNOWN_VALUE;
+                    m_architecture = EMPTY_VALUE;
+                    m_multiarch = EMPTY_VALUE;
+                    m_priority = EMPTY_VALUE;
                     m_size = 0;
-                    m_installTime = UNKNOWN_VALUE;
+                    m_installTime = EMPTY_VALUE;
                     m_source = filePath.find(UTILITIES_FOLDER) ? "utilities" : "applications";
                     m_location = filePath;
                 }
@@ -309,7 +309,7 @@ class PKGWrapper final : public IPackageWrapper
                         }
                     }
 
-                    m_multiarch = UNKNOWN_VALUE;
+                    m_multiarch = EMPTY_VALUE;
                     m_source = "receipts";
                     m_location = filePath;
                 }

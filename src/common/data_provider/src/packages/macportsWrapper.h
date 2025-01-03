@@ -31,83 +31,82 @@ class MacportsWrapper final : public IPackageWrapper
 {
     public:
         explicit MacportsWrapper(SQLiteLegacy::IStatement& stmt)
-            : m_version{UNKNOWN_VALUE}
-            , m_groups {UNKNOWN_VALUE}
-            , m_description {UNKNOWN_VALUE}
-            , m_architecture{UNKNOWN_VALUE}
+            : m_version{EMPTY_VALUE}
+            , m_groups {EMPTY_VALUE}
+            , m_description {EMPTY_VALUE}
+            , m_architecture{EMPTY_VALUE}
             , m_format{"macports"}
-            , m_osPatch {UNKNOWN_VALUE}
-            , m_source{UNKNOWN_VALUE}
-            , m_location{UNKNOWN_VALUE}
-            , m_priority{UNKNOWN_VALUE}
-            , m_size{0}
-            , m_vendor{UNKNOWN_VALUE}
-            , m_installTime{UNKNOWN_VALUE}
+            , m_osPatch {EMPTY_VALUE}
+            , m_source{EMPTY_VALUE}
+            , m_location{EMPTY_VALUE}
+            , m_priority{EMPTY_VALUE}
+            , m_vendor{EMPTY_VALUE}
+            , m_installTime{EMPTY_VALUE}
         {
             getPkgData(stmt);
         }
 
         ~MacportsWrapper() = default;
 
-        std::string name() const override
+        void name(nlohmann::json& package) const override
         {
-            return m_name;
+            package["name"] = m_name;
         }
-        std::string version() const override
+        void version(nlohmann::json& package) const override
         {
-            return m_version;
+            package["version"] = m_version;
         }
-        std::string groups() const override
+        void groups(nlohmann::json& package) const override
         {
-            return m_groups;
+            package["groups"] = UNKNOWN_VALUE;
         }
-        std::string description() const override
+        void description(nlohmann::json& package) const override
         {
-            return m_description;
+            package["description"] = UNKNOWN_VALUE;
         }
-        std::string architecture() const override
+        void architecture(nlohmann::json& package) const override
         {
-            return m_architecture;
+            package["architecture"] = m_architecture;
         }
-        std::string format() const override
+        void format(nlohmann::json& package) const override
         {
-            return m_format;
+            package["format"] = m_format;
         }
-        std::string osPatch() const override
+        void osPatch(nlohmann::json& package) const override
         {
-            return m_osPatch;
+            package["os_patch"] = UNKNOWN_VALUE;
         }
-        std::string source() const override
+        void source(nlohmann::json& package) const override
         {
-            return m_source;
+            package["source"] = UNKNOWN_VALUE;
         }
-        std::string location() const override
+        void location(nlohmann::json& package) const override
         {
-            return m_location;
+            package["location"] = m_location;
         }
-        std::string vendor() const override
+        void vendor(nlohmann::json& package) const override
         {
-            return m_vendor;
-        }
-
-        std::string priority() const override
-        {
-            return m_priority;
+            package["vendor"] = UNKNOWN_VALUE;
         }
 
-        int size() const override
+        void priority(nlohmann::json& package) const override
         {
-            return m_size;
+            package["priority"] = UNKNOWN_VALUE;
         }
 
-        std::string install_time() const override
+        void size(nlohmann::json& package) const override
         {
-            return m_installTime;
+            package["size"] = UNKNOWN_VALUE;
         }
 
-        std::string multiarch() const override
+        void install_time(nlohmann::json& package) const override
         {
-            return m_multiarch;
+            package["install_time"] = m_installTime;
+        }
+
+        void multiarch(nlohmann::json& package) const override
+        {
+            package["multiarch"] = UNKNOWN_VALUE;
         }
     private:
         void getPkgData(SQLiteLegacy::IStatement& stmt)
@@ -178,7 +177,6 @@ class MacportsWrapper final : public IPackageWrapper
         std::string m_location;
         std::string m_multiarch;
         std::string m_priority;
-        int m_size;
         std::string m_vendor;
         std::string m_installTime;
 };
