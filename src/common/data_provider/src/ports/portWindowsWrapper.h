@@ -69,7 +69,7 @@ class WindowsPortWrapper final : public IPortWrapper
 
         static std::string getProcessName(const std::map<pid_t, std::string> processDataList, const pid_t pid)
         {
-            std::string retVal { UNKNOWN_VALUE };
+            std::string retVal { EMPTY_VALUE };
             const auto itSystemProcess { SYSTEM_PROCESSES.find(pid) } ;
 
             if (SYSTEM_PROCESSES.end() != itSystemProcess)
@@ -134,57 +134,65 @@ class WindowsPortWrapper final : public IPortWrapper
         { }
 
         ~WindowsPortWrapper() = default;
-        std::string protocol() const override
+        void protocol(nlohmann::json& port) const override
         {
-            return m_protocol;
+            port["protocol"] = m_protocol;
         }
-        std::string localIp() const override
+
+        void localIp(nlohmann::json& port) const override
         {
-            return m_localIpAddress;
+            port["local_ip"] = m_localIpAddress;
         }
-        int32_t localPort() const override
+
+        void localPort(nlohmann::json& port) const override
         {
-            return m_localPort;
+            port["local_port"] = m_localPort;
         }
-        std::string remoteIP() const override
+
+        void remoteIP(nlohmann::json& port) const override
         {
-            return m_remoteIpAddress;
+            port["remote_ip"] = m_remoteIpAddress;
         }
-        int32_t remotePort() const override
+
+        void remotePort(nlohmann::json& port) const override
         {
-            return m_remotePort;
+            port["remote_port"] = m_remotePort;
         }
-        int32_t txQueue() const override
+
+        void txQueue(nlohmann::json& port) const override
         {
-            return {};
+            port["tx_queue"] = UNKNOWN_VALUE;
         }
-        int32_t rxQueue() const override
+
+        void rxQueue(nlohmann::json& port) const override
         {
-            return {};
+            port["rx_queue"] = UNKNOWN_VALUE;
         }
-        int64_t inode() const override
+
+        void inode(nlohmann::json& port) const override
         {
-            return {};
+            port["inode"] = 0;
         }
-        std::string state() const override
+
+        void state(nlohmann::json& port) const override
         {
-            std::string retVal { UNKNOWN_VALUE };
+            port["state"] = UNKNOWN_VALUE;
             const auto itState { STATE_TYPE.find(m_state) };
 
             if (STATE_TYPE.end() != itState)
             {
-                retVal = itState->second;
+                port["state"] = itState->second;
             }
+        }
 
-            return retVal;
-        }
-        int32_t pid() const override
+        void pid(nlohmann::json& port) const override
         {
-            return m_pid;
+            port["pid"] = m_pid;
         }
-        std::string processName() const override
+
+        void processName(nlohmann::json& port) const override
         {
-            return Utils::EncodingWindowsHelper::stringAnsiToStringUTF8(m_processName);
+            port["process"] = Utils::EncodingWindowsHelper::stringAnsiToStringUTF8(m_processName);
         }
 };
 

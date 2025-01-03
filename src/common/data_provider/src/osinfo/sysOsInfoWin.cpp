@@ -193,7 +193,7 @@ static std::string getDisplayVersion()
 
     if (!currentVersion.string("DisplayVersion", display_version))
     {
-        display_version = UNKNOWN_VALUE;
+        display_version = EMPTY_VALUE;
     }
 
     return display_version;
@@ -298,7 +298,7 @@ static std::string getMachine()
         {"ARM64",   "x86_64"},
         {"x86",     "i686"},
     };
-    std::string machine { UNKNOWN_VALUE };
+    std::string machine { EMPTY_VALUE };
     Utils::Registry environment{HKEY_LOCAL_MACHINE, R"(System\CurrentControlSet\Control\Session Manager\Environment)"};
     const auto arch{environment.string("PROCESSOR_ARCHITECTURE")};
     const auto it{ARCH_MAP.find(arch)};
@@ -318,7 +318,7 @@ static std::string getNodeName()
 
     if (!activeComputerName.string("ComputerName", nodeName))
     {
-        nodeName = UNKNOWN_VALUE;
+        nodeName = EMPTY_VALUE;
     }
 
     return nodeName;

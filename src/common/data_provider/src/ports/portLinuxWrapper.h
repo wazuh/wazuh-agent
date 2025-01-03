@@ -124,124 +124,141 @@ class LinuxPortWrapper final : public IPortWrapper
         { }
 
         ~LinuxPortWrapper() = default;
-        std::string protocol() const override
-        {
-            std::string retVal;
 
+        void protocol(nlohmann::json& port) const override
+        {
             const auto it { PORTS_TYPE.find(m_type) };
 
             if (PORTS_TYPE.end() != it)
             {
-                retVal = it->second;
+                port["protocol"] = it->second;
             }
-
-            return retVal;
+            else
+            {
+                port["protocol"] = UNKNOWN_VALUE;
+            }
         }
 
-        std::string localIp() const override
+        void localIp(nlohmann::json& port) const override
         {
-            std::string retVal;
+            port["local_ip"] = UNKNOWN_VALUE;
 
             if (m_localAddresses.size() == AddressField::ADDRESS_FIELD_SIZE)
             {
                 if (IPVERSION_TYPE.at(m_type) == IPV4)
                 {
-                    retVal = IPv4Address(m_localAddresses.at(AddressField::IP));
+                    port["local_ip"] = IPv4Address(m_localAddresses.at(AddressField::IP));
                 }
                 else if (IPVERSION_TYPE.at(m_type) == IPV6)
                 {
-                    retVal = IPv6Address(m_localAddresses.at(AddressField::IP));
+                    port["local_ip"] = IPv6Address(m_localAddresses.at(AddressField::IP));
                 }
             }
-
-            return retVal;
         }
-        int32_t localPort() const override
+
+        void localPort(nlohmann::json& port) const override
         {
-            int32_t retVal { -1 };
+            int32_t retVal;
 
             if (m_localAddresses.size() == AddressField::ADDRESS_FIELD_SIZE)
             {
                 std::stringstream ss;
                 ss << std::hex << m_localAddresses.at(AddressField::PORT);
                 ss >> retVal;
+                port["local_port"] = retVal;
             }
-
-            return retVal;
+            else
+            {
+                port["local_port"] = UNKNOWN_VALUE;
+            }
         }
-        std::string remoteIP() const override
+
+        void remoteIP(nlohmann::json& port) const override
         {
-            std::string retVal;
+            port["remote_ip"] = UNKNOWN_VALUE;
 
             if (m_remoteAddresses.size() == AddressField::ADDRESS_FIELD_SIZE)
             {
                 if (IPVERSION_TYPE.at(m_type) == IPV4)
                 {
-                    retVal = IPv4Address(m_remoteAddresses.at(AddressField::IP));
+                    port["remote_ip"] = IPv4Address(m_remoteAddresses.at(AddressField::IP));
                 }
                 else if (IPVERSION_TYPE.at(m_type) == IPV6)
                 {
-                    retVal = IPv6Address(m_remoteAddresses.at(AddressField::IP));
+                    port["remote_ip"] = IPv6Address(m_remoteAddresses.at(AddressField::IP));
                 }
             }
-
-            return retVal;
         }
-        int32_t remotePort() const override
+
+        void remotePort(nlohmann::json& port) const override
         {
-            int32_t retVal { -1 };
+            int32_t retVal;
 
             if (m_remoteAddresses.size() == AddressField::ADDRESS_FIELD_SIZE)
             {
                 std::stringstream ss;
                 ss << std::hex << m_remoteAddresses.at(AddressField::PORT);
                 ss >> retVal;
+                port["remote_port"] = retVal;
             }
-
-            return retVal;
+            else
+            {
+                port["remote_port"] = UNKNOWN_VALUE;
+            }
         }
-        int32_t txQueue() const override
+
+        void txQueue(nlohmann::json& port) const override
         {
-            int32_t retVal { -1 };
+            int32_t retVal;
 
             if (m_queue.size() == QueueField::QUEUE_FIELD_SIZE)
             {
                 std::stringstream ss;
                 ss << std::hex << m_queue.at(QueueField::TX);
                 ss >> retVal;
+                port["tx_queue"] = retVal;
             }
-
-            return retVal;
+            else
+            {
+                port["tx_queue"] = UNKNOWN_VALUE;
+            }
         }
-        int32_t rxQueue() const override
+
+        void rxQueue(nlohmann::json& port) const override
         {
-            int32_t retVal { -1 };
+            int32_t retVal;
 
             if (m_queue.size() == QueueField::QUEUE_FIELD_SIZE)
             {
                 std::stringstream ss;
                 ss << std::hex << m_queue.at(QueueField::RX);
                 ss >> retVal;
+                port["rx_queue"] = retVal;
             }
-
-            return retVal;
+            else
+            {
+                port["rx_queue"] = UNKNOWN_VALUE;
+            }
         }
-        int64_t inode() const override
+
+        void inode(nlohmann::json& port) const override
         {
-            int64_t retVal { -1 };
+            int64_t retVal;
 
             try
             {
                 retVal = static_cast<int64_t>(std::stoll(m_fields.at(INODE)));
+                port["inode"] = retVal;
             }
             catch (...)
-            {}
-
-            return retVal;
+            {
+                port["inode"] = 0;
+            }
         }
-        std::string state() const override
+
+        void state(nlohmann::json& port) const override
         {
-            std::string retVal;
+            port["state"] = UNKNOWN_VALUE;
             const auto it { PROTOCOL_TYPE.find(m_type) };
 
             if (PROTOCOL_TYPE.end() != it && TCP == it->second)
@@ -255,21 +272,19 @@ class LinuxPortWrapper final : public IPortWrapper
 
                 if (STATE_TYPE.end() != itState)
                 {
-                    retVal = itState->second;
+                    port["state"] = itState->second;
                 }
             }
-
-            return retVal;
         }
 
-        std::string processName() const override
+        void processName(nlohmann::json& port) const override
         {
-            return UNKNOWN_VALUE;
+            port["process"] = UNKNOWN_VALUE;
         }
 
-        int32_t pid() const override
+        void pid(nlohmann::json& port) const override
         {
-            return {};
+            port["pid"] = UNKNOWN_VALUE;
         }
 };
 

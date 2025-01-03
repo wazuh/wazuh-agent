@@ -56,9 +56,9 @@ void LinuxNetworkImpl<AF_INET>::buildNetworkData(nlohmann::json& network)
         nlohmann::json ipv4JS { };
         ipv4JS["address"] = address;
         ipv4JS["netmask"] = m_interfaceAddress->netmask();
-        ipv4JS["broadcast"] = m_interfaceAddress->broadcast();
-        ipv4JS["metric"] = m_interfaceAddress->metrics();
-        ipv4JS["dhcp"]   = m_interfaceAddress->dhcp();
+        m_interfaceAddress->broadcast(ipv4JS);
+        m_interfaceAddress->metrics(ipv4JS);
+        m_interfaceAddress->dhcp(ipv4JS);
 
         network["IPv4"].push_back(ipv4JS);
     }
@@ -77,9 +77,9 @@ void LinuxNetworkImpl<AF_INET6>::buildNetworkData(nlohmann::json& network)
         nlohmann::json ipv6JS {};
         ipv6JS["address"] = address;
         ipv6JS["netmask"] = m_interfaceAddress->netmaskV6();
-        ipv6JS["broadcast"] = m_interfaceAddress->broadcastV6();
-        ipv6JS["metric"] = m_interfaceAddress->metricsV6();
-        ipv6JS["dhcp"]   = m_interfaceAddress->dhcp();
+        m_interfaceAddress->broadcastV6(ipv6JS);
+        m_interfaceAddress->metricsV6(ipv6JS);
+        m_interfaceAddress->dhcp(ipv6JS);
 
         network["IPv6"].push_back(ipv6JS);
     }
@@ -93,10 +93,10 @@ void LinuxNetworkImpl<AF_PACKET>::buildNetworkData(nlohmann::json& network)
 {
     /* Get stats of interface */
     network["name"]    = m_interfaceAddress->name();
-    network["adapter"] = m_interfaceAddress->adapter();
-    network["type"]    = m_interfaceAddress->type();
-    network["state"]   = m_interfaceAddress->state();
-    network["mac"]     = m_interfaceAddress->MAC();
+    m_interfaceAddress->adapter(network);
+    m_interfaceAddress->type(network);
+    m_interfaceAddress->state(network);
+    m_interfaceAddress->MAC(network);
 
     const auto stats { m_interfaceAddress->stats() };
 
@@ -109,6 +109,6 @@ void LinuxNetworkImpl<AF_PACKET>::buildNetworkData(nlohmann::json& network)
     network["tx_dropped"] = stats.txDropped;
     network["rx_dropped"] = stats.rxDropped;
 
-    network["mtu"] = m_interfaceAddress->mtu();
-    network["gateway"] = m_interfaceAddress->gateway();
+    m_interfaceAddress->mtu(network);
+    m_interfaceAddress->gateway(network);
 }

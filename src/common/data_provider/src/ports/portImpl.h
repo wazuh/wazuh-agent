@@ -29,17 +29,17 @@ class PortImpl final : public IOSPort
         // LCOV_EXCL_STOP
         void buildPortData(nlohmann::json& port) override
         {
-            port["protocol"] = m_spPortRawData->protocol();
-            port["local_ip"] = m_spPortRawData->localIp();
-            port["local_port"] = m_spPortRawData->localPort();
-            port["remote_ip"] = m_spPortRawData->remoteIP();
-            port["remote_port"] = m_spPortRawData->remotePort();
-            port["tx_queue"] = m_spPortRawData->txQueue();
-            port["rx_queue"] = m_spPortRawData->rxQueue();
-            port["inode"] = m_spPortRawData->inode();
-            port["state"] = m_spPortRawData->state();
-            port["pid"] = m_spPortRawData->pid();
-            port["process"] = m_spPortRawData->processName();
+            m_spPortRawData->protocol(port);
+            m_spPortRawData->localIp(port);
+            m_spPortRawData->localPort(port);
+            m_spPortRawData->remoteIP(port);
+            m_spPortRawData->remotePort(port);
+            m_spPortRawData->txQueue(port);
+            m_spPortRawData->rxQueue(port);
+            m_spPortRawData->inode(port);
+            m_spPortRawData->state(port);
+            m_spPortRawData->pid(port);
+            m_spPortRawData->processName(port);
         }
 };
 #endif // _PORT_IMPL_H

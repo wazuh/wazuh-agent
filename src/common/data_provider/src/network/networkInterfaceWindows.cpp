@@ -62,9 +62,9 @@ void WindowsNetworkImpl<Utils::NetworkWindowsHelper::IPV4>::buildNetworkData(nlo
         nlohmann::json ipv4JS;
         ipv4JS["address"] = address;
         ipv4JS["netmask"] =  m_interfaceAddress->netmask();
-        ipv4JS["broadcast"] = m_interfaceAddress->broadcast();
-        ipv4JS["metric"] = m_interfaceAddress->metrics();
-        ipv4JS["dhcp"] = m_interfaceAddress->dhcp();
+        m_interfaceAddress->broadcast(ipv4JS);
+        m_interfaceAddress->metrics(ipv4JS);
+        m_interfaceAddress->dhcp(ipv4JS);
 
         networkV4["IPv4"].push_back(ipv4JS);
     }
@@ -84,9 +84,9 @@ void WindowsNetworkImpl<Utils::NetworkWindowsHelper::IPV6>::buildNetworkData(nlo
         nlohmann::json ipv6JS { };
         ipv6JS["address"] = address;
         ipv6JS["netmask"] = m_interfaceAddress->netmaskV6();
-        ipv6JS["broadcast"] = m_interfaceAddress->broadcastV6();
-        ipv6JS["metric"] = m_interfaceAddress->metricsV6();
-        ipv6JS["dhcp"] = m_interfaceAddress->dhcp();
+        m_interfaceAddress->broadcastV6(ipv6JS);
+        m_interfaceAddress->metricsV6(ipv6JS);
+        m_interfaceAddress->dhcp(ipv6JS);
 
         networkV6["IPv6"].push_back(ipv6JS);
     }
@@ -101,10 +101,10 @@ void WindowsNetworkImpl<Utils::NetworkWindowsHelper::COMMON_DATA>::buildNetworkD
 {
     // Extraction of common adapter data
     networkCommon["name"]       = m_interfaceAddress->name();
-    networkCommon["adapter"]    = m_interfaceAddress->adapter();
-    networkCommon["state"]      = m_interfaceAddress->state();
-    networkCommon["type"]       = m_interfaceAddress->type();
-    networkCommon["mac"]        = m_interfaceAddress->MAC();
+    m_interfaceAddress->adapter(networkCommon);
+    m_interfaceAddress->type(networkCommon);
+    m_interfaceAddress->MAC(networkCommon);
+    m_interfaceAddress->state(networkCommon);
 
     const auto stats { m_interfaceAddress->stats() };
     networkCommon["tx_packets"] = stats.txPackets;
@@ -116,6 +116,6 @@ void WindowsNetworkImpl<Utils::NetworkWindowsHelper::COMMON_DATA>::buildNetworkD
     networkCommon["tx_dropped"] = stats.txDropped;
     networkCommon["rx_dropped"] = stats.rxDropped;
 
-    networkCommon["mtu"]        = m_interfaceAddress->mtu();
-    networkCommon["gateway"]    = m_interfaceAddress->gateway();
+    m_interfaceAddress->mtu(networkCommon);
+    m_interfaceAddress->gateway(networkCommon);
 }

@@ -58,9 +58,9 @@ class NetworkBSDInterface final : public INetworkInterfaceWrapper
             return m_interfaceAddress->ifa_name ? Utils::substrOnFirstOccurrence(m_interfaceAddress->ifa_name, ":") : "";
         }
 
-        std::string adapter() const override
+        void adapter(nlohmann::json& network) const override
         {
-            return "";
+            network["adapter"] = UNKNOWN_VALUE;
         }
 
         int family() const override
@@ -84,12 +84,12 @@ class NetworkBSDInterface final : public INetworkInterfaceWrapper
                        &(reinterpret_cast<sockaddr_in*>(m_interfaceAddress->ifa_netmask))->sin_addr) : "";
         }
 
-        std::string broadcast() const override
+        void broadcast(nlohmann::json& network) const override
         {
-            return m_interfaceAddress->ifa_dstaddr ?
+            network["broadcast"] = m_interfaceAddress->ifa_dstaddr ?
                    Utils::NetworkHelper::IAddressToBinary(
                        m_interfaceAddress->ifa_dstaddr->sa_family,
-                       &(reinterpret_cast<sockaddr_in*>(m_interfaceAddress->ifa_dstaddr))->sin_addr) : "";
+                       &(reinterpret_cast<sockaddr_in*>(m_interfaceAddress->ifa_dstaddr))->sin_addr) : EMPTY_VALUE;
         }
 
         std::string addressV6() const override
@@ -108,17 +108,17 @@ class NetworkBSDInterface final : public INetworkInterfaceWrapper
                        &(reinterpret_cast<sockaddr_in6*>(m_interfaceAddress->ifa_netmask))->sin6_addr) : "";
         }
 
-        std::string broadcastV6() const override
+        void broadcastV6(nlohmann::json& network) const override
         {
-            return m_interfaceAddress->ifa_dstaddr ?
+            network["broadcast"] = m_interfaceAddress->ifa_dstaddr ?
                    Utils::NetworkHelper::IAddressToBinary(
                        m_interfaceAddress->ifa_dstaddr->sa_family,
-                       &(reinterpret_cast<sockaddr_in6*>(m_interfaceAddress->ifa_dstaddr))->sin6_addr) : "";
+                       &(reinterpret_cast<sockaddr_in6*>(m_interfaceAddress->ifa_dstaddr))->sin6_addr) : EMPTY_VALUE;
         }
 
-        std::string gateway() const override
+        void gateway(nlohmann::json& network) const override
         {
-            std::string retVal;
+            network["gateway"] = UNKNOWN_VALUE;
             size_t tableSize { 0 };
             int mib[] = { CTL_NET, AF_ROUTE, 0, AF_UNSPEC, NET_RT_FLAGS, RTF_UP | RTF_GATEWAY };
 
@@ -144,7 +144,7 @@ class NetworkBSDInterface final : public INetworkInterfaceWrapper
 
                             if (sock && AF_INET == sock->sa_family)
                             {
-                                retVal = Utils::NetworkHelper::IAddressToBinary(AF_INET, &reinterpret_cast<sockaddr_in*>(sock)->sin_addr);
+                                network["gateway"] = Utils::NetworkHelper::IAddressToBinary(AF_INET, &reinterpret_cast<sockaddr_in*>(sock)->sin_addr);
                             }
 
                             break;
@@ -154,28 +154,30 @@ class NetworkBSDInterface final : public INetworkInterfaceWrapper
                     }
                 }
             }
-
-            return retVal;
         }
 
-        std::string metrics() const override
+        void metrics(nlohmann::json& network) const override
         {
-            return "";
+            network["metric"] = UNKNOWN_VALUE;
         }
 
-        std::string metricsV6() const override
+        void metricsV6(nlohmann::json& network) const override
         {
-            return "";
+            network["metric"] = UNKNOWN_VALUE;
         }
 
-        std::string dhcp() const override
+        void dhcp(nlohmann::json& network) const override
         {
-            return "unknown";
+            network["dhcp"] = UNKNOWN_VALUE;
         }
 
-        uint32_t mtu() const override
+        void mtu(nlohmann::json& network) const override
         {
-            return m_interfaceAddress->ifa_data ? reinterpret_cast<if_data*>(m_interfaceAddress->ifa_data)->ifi_mtu : 0;
+            network["mtu"] = UNKNOWN_VALUE;
+            if(m_interfaceAddress->ifa_data)
+            {
+                network["mtu"] = reinterpret_cast<if_data*>(m_interfaceAddress->ifa_data)->ifi_mtu;
+            }
         }
 
         LinkStats stats() const override
@@ -197,28 +199,29 @@ class NetworkBSDInterface final : public INetworkInterfaceWrapper
             return retVal;
         }
 
-        std::string type() const override
+        void type(nlohmann::json& network) const override
         {
-            std::string retVal { UNKNOWN_VALUE };
+            network["type"] = UNKNOWN_VALUE;
 
             if (m_interfaceAddress->ifa_addr)
             {
                 auto sdl { reinterpret_cast<struct sockaddr_dl*>(m_interfaceAddress->ifa_addr) };
                 const auto type { Utils::NetworkHelper::getNetworkTypeStringCode(sdl->sdl_type, NETWORK_INTERFACE_TYPE) };
-                retVal = type.empty() ? UNKNOWN_VALUE : type;
+                if(!type.empty())
+                {
+                    network["type"] = type;
+                }
             }
-
-            return retVal;
         }
 
-        std::string state() const override
+        void state(nlohmann::json& network) const override
         {
-            return m_interfaceAddress->ifa_flags & IFF_UP ? "up" : "down";
+            network["state"] = m_interfaceAddress->ifa_flags & IFF_UP ? "up" : "down";
         }
 
-        std::string MAC() const override
+        void MAC(nlohmann::json& network) const override
         {
-            std::string retVal { "00:00:00:00:00:00" };
+            network["mac"] = UNKNOWN_VALUE;
             auto sdl { reinterpret_cast<struct sockaddr_dl*>(m_interfaceAddress->ifa_addr) };
             std::stringstream ss;
 
@@ -239,11 +242,9 @@ class NetworkBSDInterface final : public INetworkInterfaceWrapper
                         }
                     }
 
-                    retVal = ss.str();
+                    network["mac"] = ss.str();
                 }
             }
-
-            return retVal;
         }
 };
 

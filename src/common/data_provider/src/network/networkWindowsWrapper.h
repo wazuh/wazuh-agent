@@ -71,9 +71,9 @@ class NetworkWindowsInterface final : public INetworkInterfaceWrapper
             return getAdapterEncodedUTF8(m_interfaceAddress->FriendlyName);
         }
 
-        std::string adapter() const override
+        void adapter(nlohmann::json& network) const override
         {
-            return getAdapterEncodedUTF8(m_interfaceAddress->Description);
+            network["adapter"] = getAdapterEncodedUTF8(m_interfaceAddress->Description);
         }
 
         int family() const override
@@ -162,27 +162,28 @@ class NetworkWindowsInterface final : public INetworkInterfaceWrapper
             return retVal;
         }
 
-        std::string broadcast() const override
+        void broadcast(nlohmann::json& network) const override
         {
-            std::string retVal { UNKNOWN_VALUE };
+            network["broadcast"] = UNKNOWN_VALUE;
             const auto address { this->address() };
             const auto netmask { this->netmask() };
 
             if (address.size() && netmask.size())
             {
                 const auto broadcast { Utils::NetworkWindowsHelper::broadcastAddress(address, netmask) };
-                retVal = broadcast.empty() ? UNKNOWN_VALUE : broadcast;
+                if(!broadcast.empty())
+                {
+                    network["broadcast"] = broadcast;
+                }
             }
-
-            return retVal;
         }
 
-        std::string broadcastV6() const override
+        void broadcastV6(nlohmann::json& network) const override
         {
-            return UNKNOWN_VALUE;
+            network["broadcast"] = UNKNOWN_VALUE;
         }
 
-        std::string gateway() const override
+        void gateway(nlohmann::json& network) const override
         {
             std::string retVal;
             constexpr auto GATEWAY_SEPARATOR { "," };
@@ -245,46 +246,39 @@ class NetworkWindowsInterface final : public INetworkInterfaceWrapper
 
             if (retVal.empty())
             {
-                retVal = UNKNOWN_VALUE;
+                network["gateway"] = UNKNOWN_VALUE;
             }
             else
             {
                 // Remove last GATEWAY_SEPARATOR (,)
                 retVal = retVal.substr(0, retVal.size() - 1);
+                network["gateway"] = retVal;
             }
-
-            return retVal;
         }
 
-        std::string metrics() const override
+        void metrics(nlohmann::json& network) const override
         {
-            std::string retVal;
+            network["metric"] = UNKNOWN_VALUE;
 
             if (Utils::isVistaOrLater())
             {
-                retVal = std::to_string(m_interfaceAddress->Ipv4Metric);
+                 network["metric"] = std::to_string(m_interfaceAddress->Ipv4Metric);
             }
-
-            // XP structure does not support Ipv4Metric information
-            return retVal;
         }
 
-        std::string metricsV6() const override
+        void metricsV6(nlohmann::json& network) const override
         {
-            std::string retVal;
+            network["metric"] = UNKNOWN_VALUE;
 
             if (Utils::isVistaOrLater())
             {
-                retVal = std::to_string(m_interfaceAddress->Ipv6Metric);
+                 network["metric"] = std::to_string(m_interfaceAddress->Ipv6Metric);
             }
-
-            // XP structure does not support Ipv6Metric information
-            return retVal;
         }
 
-        std::string dhcp() const override
+        void dhcp(nlohmann::json& network) const override
         {
-            std::string retVal { UNKNOWN_VALUE };
+            network["dhcp"] = UNKNOWN_VALUE;
             const auto family { this->adapterFamily() };
 
             if (AF_INET == family)
@@ -293,7 +287,7 @@ class NetworkWindowsInterface final : public INetworkInterfaceWrapper
                 {
                     (m_interfaceAddress->Flags & IP_ADAPTER_DHCP_ENABLED)&& (m_interfaceAddress->Flags & IP_ADAPTER_IPV4_ENABLED)
                 };
-                retVal = ipv4DHCPEnabled ? "enabled" : "disabled";
+                network["dhcp"] = ipv4DHCPEnabled ? "enabled" : "disabled";
             }
             else if (AF_INET6 == family)
             {
@@ -301,15 +295,13 @@ class NetworkWindowsInterface final : public INetworkInterfaceWrapper
                 {
                     (m_interfaceAddress->Flags & IP_ADAPTER_DHCP_ENABLED)&& (m_interfaceAddress->Flags & IP_ADAPTER_IPV6_ENABLED)
                 };
-                retVal = ipv6DHCPEnabled ? "enabled" : "disabled";
+                network["dhcp"] = ipv6DHCPEnabled ? "enabled" : "disabled";
             }
-
-            return retVal;
         }
 
-        uint32_t mtu() const override
+        void mtu(nlohmann::json& network) const override
         {
-            return m_interfaceAddress->Mtu;
+            network["mtu"] = m_interfaceAddress->Mtu;
         }
 
         LinkStats stats() const override
@@ -318,35 +310,31 @@ class NetworkWindowsInterface final : public INetworkInterfaceWrapper
                    : statsXP();
         }
 
-        std::string type() const override
+        void type(nlohmann::json& network) const override
         {
-            std::string retVal { UNKNOWN_VALUE };
+            network["type"] = UNKNOWN_VALUE;
             const auto interfaceType { NETWORK_INTERFACE_TYPES.find(m_interfaceAddress->IfType) };
 
             if (NETWORK_INTERFACE_TYPES.end() != interfaceType)
             {
-                retVal = interfaceType->second;
+                network["type"] = interfaceType->second;
             }
-
-            return retVal;
         }
 
-        std::string state() const override
+        void state(nlohmann::json& network) const override
         {
-            std::string retVal { UNKNOWN_VALUE };
+            network["state"] = UNKNOWN_VALUE;
             const auto opStatus { NETWORK_OPERATIONAL_STATUS.find(m_interfaceAddress->OperStatus) };
 
             if (NETWORK_OPERATIONAL_STATUS.end() != opStatus)
             {
-                retVal = opStatus->second;
+                network["state"] = opStatus->second;
             }
-
-            return retVal;
         }
 
-        std::string MAC() const override
+        void MAC(nlohmann::json& network) const override
         {
-            std::string retVal { "00:00:00:00:00:00" };
+            network["mac"] = UNKNOWN_VALUE;
             constexpr auto MAC_ADDRESS_LENGTH { 6 };
 
             if (MAC_ADDRESS_LENGTH == m_interfaceAddress->PhysicalAddressLength)
@@ -364,18 +352,15 @@ class NetworkWindowsInterface final : public INetworkInterfaceWrapper
                     }
                 }
 
-                retVal = ss.str();
+                network["mac"] = ss.str();
             }
-
-            return retVal;
         }
 
     private:
 
         std::string getAdapterEncodedUTF8(const std::wstring& name) const
         {
-            const std::string utf8AdapterName { Utils::NetworkWindowsHelper::getAdapterNameStr(name) };
-            return utf8AdapterName.empty() ? " " : utf8AdapterName;
+            return Utils::NetworkWindowsHelper::getAdapterNameStr(name);
         }
 
         int adapterFamily() const

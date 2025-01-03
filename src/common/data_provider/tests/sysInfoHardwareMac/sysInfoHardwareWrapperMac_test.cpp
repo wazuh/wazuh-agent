@@ -141,9 +141,9 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_CpuMhz_WithCpuFrequency_Succeed)
         *static_cast<uint64_t*>(oldp) = 3280896;
         return 0;
     });
-    double ret = 0.0;
+    int ret = 0;
     EXPECT_NO_THROW(ret = wrapper->cpuMhz());
-    EXPECT_DOUBLE_EQ(ret, (double)3280896 / 1000000);
+    EXPECT_EQ(ret, 3280896 / 1000000);
 }
 
 
@@ -426,5 +426,5 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_BoardSerial_Failed_UnknowValue)
 
     std::string ret;
     EXPECT_NO_THROW(ret = wrapper->boardSerial());
-    EXPECT_STREQ(ret.c_str(), UNKNOWN_VALUE);
+    EXPECT_STREQ(ret.c_str(), EMPTY_VALUE);
 }
