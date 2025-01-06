@@ -13,8 +13,6 @@ find_package(Boost REQUIRED COMPONENTS asio beast system url)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
 
-add_library(Communicator src/communicator.cpp src/http_client.cpp src/http_request_params.cpp)
-
 if(WIN32)
     set(VERIFY_UTILS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/https_socket_verify_utils_win.cpp")
 elseif(APPLE)
@@ -23,7 +21,7 @@ else()
     set(VERIFY_UTILS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/https_socket_verify_utils_lin.cpp")
 endif()
 
-target_sources(Communicator PRIVATE ${VERIFY_UTILS_FILE})
+add_library(Communicator src/communicator.cpp src/http_client.cpp src/http_request_params.cpp ${VERIFY_UTILS_FILE})
 
 target_include_directories(Communicator PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include

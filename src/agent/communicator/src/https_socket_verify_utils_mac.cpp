@@ -27,17 +27,15 @@ namespace https_socket_verify_utils
             return false;
         }
 
-        CFDataRef cfCertData = nullptr;
-
         unsigned char* certData = nullptr;
-        int certLen = i2d_X509(cert, &certData);
+        const int certLen = i2d_X509(cert, &certData);
         if (certLen <= 0)
         {
             LogError("Failed to encode certificate to DER.");
             return false;
         }
 
-        cfCertData = CFDataCreate(kCFAllocatorDefault, certData, certLen);
+        CFDataRef cfCertData = CFDataCreate(kCFAllocatorDefault, certData, certLen);
         OPENSSL_free(certData);
         if (!cfCertData)
         {
@@ -72,7 +70,8 @@ namespace https_socket_verify_utils
 
         // Evaluate certificate trust using SecTrustEvaluateWithError
         CFErrorRef error = nullptr;
-        bool trustResult = SecTrustEvaluateWithError(trust, &error);
+
+        const bool trustResult = SecTrustEvaluateWithError(trust, &error);
         if (!trustResult)
         {
             if (error)
