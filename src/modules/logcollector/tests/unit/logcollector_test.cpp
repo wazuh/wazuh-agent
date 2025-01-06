@@ -83,6 +83,7 @@ TEST(Logcollector, SendMessage)
     ASSERT_EQ(capturedMessage.metaData, METADATA);
 }
 
+#ifdef _WIN32
 TEST(Logcollector, SetupWECReader)
 {
     auto constexpr CONFIG_RAW = R"(
@@ -105,6 +106,7 @@ TEST(Logcollector, SetupWECReader)
 
     ASSERT_NE(capturedReader1, nullptr);
 }
+#endif
 
 int main(int argc, char** argv)
 {

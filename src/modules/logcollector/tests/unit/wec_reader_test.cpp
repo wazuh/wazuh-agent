@@ -4,7 +4,6 @@
 
 #include <logcollector.hpp>
 #include <we_reader_win.hpp>
-#include "queue_mock.hpp"
 #include "logcollector_mock.hpp"
 
 using namespace logcollector;
