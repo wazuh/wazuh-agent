@@ -119,74 +119,6 @@ int SQLiteStorage::Store(const nlohmann::json& message,
     return result;
 }
 
-// TODO: we shouldn't use rowid outside the table itself
-nlohmann::json SQLiteStorage::Retrieve(int id,
-                                       const std::string& tableName,
-                                       const std::string& moduleName,
-                                       [[maybe_unused]] const std::string& moduleType)
-{
-    std::string selectQuery;
-    if (moduleName.empty())
-    {
-        constexpr std::string_view SELECT_QUERY {"SELECT module_name, module_type, metadata, message FROM {} WHERE "
-                                                 "rowid = ?;"};
-        selectQuery = fmt::format(SELECT_QUERY, tableName);
-    }
-    else
-    {
-        constexpr std::string_view SELECT_QUERY {
-            "SELECT module_name, module_type, metadata, message FROM {} WHERE module_name LIKE \"{}\" AND rowid = ?;"};
-        selectQuery = fmt::format(SELECT_QUERY, tableName, moduleName);
-    }
-
-    try
-    {
-        SQLite::Statement query(*m_db, selectQuery);
-        query.bind(1, id);
-        nlohmann::json outputJson = {{"moduleName", ""}, {"moduleType", ""}, {"metadata", ""}, {"data", {}}};
-        if (query.executeStep())
-        {
-            if (query.getColumnCount() == 4 && query.getColumn(3).getType() == SQLite::TEXT &&
-                query.getColumn(2).getType() == SQLite::TEXT && query.getColumn(1).getType() == SQLite::TEXT &&
-                query.getColumn(0).getType() == SQLite::TEXT)
-            {
-                std::string moduleNameString = query.getColumn(0).getString();
-                std::string moduleTypeString = query.getColumn(1).getString();
-                std::string metadataString = query.getColumn(2).getString();
-                std::string dataString = query.getColumn(3).getString();
-
-                if (!dataString.empty())
-                {
-                    outputJson["data"] = nlohmann::json::parse(dataString);
-                }
-
-                if (!metadataString.empty())
-                {
-                    outputJson["metadata"] = metadataString;
-                }
-
-                if (!moduleNameString.empty())
-                {
-                    outputJson["moduleName"] = moduleNameString;
-                }
-
-                if (!moduleTypeString.empty())
-                {
-                    outputJson["moduleType"] = moduleTypeString;
-                }
-            }
-        }
-
-        return outputJson;
-    }
-
-    catch (const std::exception& e)
-    {
-        LogError("Error during Retrieve operation: {}.", e.what());
-        return {};
-    }
-}
-
 nlohmann::json SQLiteStorage::RetrieveMultiple(int n,
                                                const std::string& tableName,
                                                const std::string& moduleName,
@@ -207,55 +139,9 @@ nlohmann::json SQLiteStorage::RetrieveMultiple(int n,
         selectQuery = fmt::format(SELECT_MULTIPLE_QUERY, tableName, moduleName);
     }
 
-    try
-    {
-        SQLite::Statement query(*m_db, selectQuery);
-        query.bind(1, n);
-        nlohmann::json messages = nlohmann::json::array();
-        while (query.executeStep())
-        {
-            if (query.getColumnCount() == 4 && query.getColumn(3).getType() == SQLite::TEXT &&
-                query.getColumn(2).getType() == SQLite::TEXT && query.getColumn(1).getType() == SQLite::TEXT &&
-                query.getColumn(0).getType() == SQLite::TEXT)
-            {
-                std::string moduleNameString = query.getColumn(0).getString();
-                std::string moduleTypeString = query.getColumn(1).getString();
-                std::string metadataString = query.getColumn(2).getString();
-                std::string dataString = query.getColumn(3).getString();
-
-                nlohmann::json outputJson = {{"moduleName", ""}, {"moduleType", ""}, {"metadata", ""}, {"data", {}}};
-
-                if (!dataString.empty())
-                {
-                    outputJson["data"] = nlohmann::json::parse(dataString);
-                }
-
-                if (!metadataString.empty())
-                {
-                    outputJson["metadata"] = metadataString;
-                }
-
-                if (!moduleNameString.empty())
-                {
-                    outputJson["moduleName"] = moduleNameString;
-                }
-
-                if (!moduleTypeString.empty())
-                {
-                    outputJson["moduleType"] = moduleTypeString;
-                }
-
-                messages.push_back(outputJson);
-            }
-        }
-
-        return messages;
-    }
-    catch (const std::exception& e)
-    {
-        LogError("Error during RetrieveMultiple operation: {}.", e.what());
-        return {};
-    }
+    SQLite::Statement query(*m_db, selectQuery);
+    query.bind(1, n);
+    return ProcessRequest(query);
 }
 
 int SQLiteStorage::Remove(int id, const std::string& tableName, const std::string& moduleName)
@@ -284,7 +170,7 @@ int SQLiteStorage::Remove(int id, const std::string& tableName, const std::strin
     catch (const std::exception& e)
     {
         LogError("Error during Remove operation: {}.", e.what());
-        return {};
+        return 0;
     }
 }
 
@@ -355,6 +241,120 @@ int SQLiteStorage::GetElementCount(const std::string& tableName, const std::stri
     catch (const std::exception& e)
     {
         LogError("Error during GetElementCount operation: {}.", e.what());
+        return 0;
+    }
+}
+
+size_t SQLiteStorage::GetElementsStoredSize(const std::string& tableName)
+{
+    std::string sizeQuery = fmt::format(
+        R"(SELECT SUM(LENGTH(module_name) + LENGTH(module_type) + LENGTH(metadata) + LENGTH(message)) AS total_bytes FROM {};)",
+        tableName);
+
+    try
+    {
+        SQLite::Statement query(*m_db, sizeQuery);
+        size_t count = 0;
+        if (query.executeStep())
+        {
+            count = query.getColumn(0).getUInt();
+        }
+        else
+        {
+            LogError("Error SQLiteStorage get element count.");
+        }
+        return count;
+    }
+    catch (const std::exception& e)
+    {
+        LogError("Error during GetElementCount operation: {}.", e.what());
+        return 0;
+    }
+}
+
+nlohmann::json SQLiteStorage::ProcessRequest(SQLite::Statement& sqlStatementQuery, size_t maxSize)
+{
+    try
+    {
+        nlohmann::json messages = nlohmann::json::array();
+        size_t sizeAccum = 0;
+        while (sqlStatementQuery.executeStep())
+        {
+            if (sqlStatementQuery.getColumnCount() == 4 && sqlStatementQuery.getColumn(3).getType() == SQLite::TEXT &&
+                sqlStatementQuery.getColumn(2).getType() == SQLite::TEXT &&
+                sqlStatementQuery.getColumn(1).getType() == SQLite::TEXT &&
+                sqlStatementQuery.getColumn(0).getType() == SQLite::TEXT)
+            {
+                std::string moduleNameString = sqlStatementQuery.getColumn(0).getString();
+                std::string moduleTypeString = sqlStatementQuery.getColumn(1).getString();
+                std::string metadataString = sqlStatementQuery.getColumn(2).getString();
+                std::string dataString = sqlStatementQuery.getColumn(3).getString();
+
+                nlohmann::json outputJson = {{"moduleName", ""}, {"moduleType", ""}, {"metadata", ""}, {"data", {}}};
+
+                if (!dataString.empty())
+                {
+                    outputJson["data"] = nlohmann::json::parse(dataString);
+                }
+
+                if (!metadataString.empty())
+                {
+                    outputJson["metadata"] = metadataString;
+                }
+
+                if (!moduleNameString.empty())
+                {
+                    outputJson["moduleName"] = moduleNameString;
+                }
+
+                if (!moduleTypeString.empty())
+                {
+                    outputJson["moduleType"] = moduleTypeString;
+                }
+
+                messages.push_back(outputJson);
+                if (maxSize)
+                {
+                    size_t messageSize = moduleNameString.size() + moduleTypeString.size() + metadataString.size() +
+                                         outputJson["data"].dump().size();
+                    if (sizeAccum + messageSize >= maxSize)
+                    {
+                        break;
+                    }
+                    sizeAccum += messageSize;
+                }
+            }
+        }
+
+        return messages;
+    }
+    catch (const std::exception& e)
+    {
+        LogError("Error during RetrieveMultiple operation: {}.", e.what());
         return {};
     }
+}
+
+nlohmann::json SQLiteStorage::RetrieveBySize(size_t n,
+                                             const std::string& tableName,
+                                             const std::string& moduleName,
+                                             [[maybe_unused]] const std::string& moduleType)
+{
+    std::string selectQuery;
+    if (moduleName.empty())
+    {
+        constexpr std::string_view SELECT_MULTIPLE_QUERY {
+            "SELECT module_name, module_type, metadata, message FROM {} ORDER BY rowid ASC;"};
+        selectQuery = fmt::format(SELECT_MULTIPLE_QUERY, tableName);
+    }
+    else
+    {
+        constexpr std::string_view SELECT_MULTIPLE_QUERY {
+            "SELECT module_name, module_type, metadata, message FROM {} WHERE "
+            "module_name LIKE \"{}\" ORDER BY rowid ASC;"};
+        selectQuery = fmt::format(SELECT_MULTIPLE_QUERY, tableName, moduleName);
+    }
+
+    SQLite::Statement query(*m_db, selectQuery);
+    return ProcessRequest(query, n);
 }

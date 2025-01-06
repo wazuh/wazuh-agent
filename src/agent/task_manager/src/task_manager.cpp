@@ -56,6 +56,7 @@ void TaskManager::Stop()
             }
         }
         m_threads.clear();
+        m_numEnqueuedThreads = 0;
     }
 
     m_ioContext.reset();
@@ -113,6 +114,5 @@ void TaskManager::EnqueueTask(boost::asio::awaitable<void> task, const std::stri
 
 size_t TaskManager::GetNumEnqueuedThreads() const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
     return m_numEnqueuedThreads;
 }

@@ -15,6 +15,14 @@ find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
 
 add_library(Communicator src/communicator.cpp src/http_client.cpp src/http_request_params.cpp)
 
+if(WIN32)
+    set(VERIFY_UTILS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/https_socket_verify_utils_win.cpp")
+else()
+    set(VERIFY_UTILS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/https_socket_verify_utils_lin.cpp")
+endif()
+
+target_sources(Communicator PRIVATE ${VERIFY_UTILS_FILE})
+
 target_include_directories(Communicator PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         SYSTEM PRIVATE
@@ -22,6 +30,10 @@ target_include_directories(Communicator PUBLIC
 
 target_compile_definitions(Communicator PRIVATE -DJWT_DISABLE_PICOJSON=ON)
 target_link_libraries(Communicator PUBLIC Config Boost::asio Boost::beast Boost::system Boost::url Logger PRIVATE OpenSSL::SSL OpenSSL::Crypto nlohmann_json::nlohmann_json)
+
+if(WIN32)
+    target_link_libraries(Communicator PRIVATE Crypt32)
+endif()
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(Communicator)

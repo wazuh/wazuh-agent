@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 namespace config
 {
     constexpr auto PROJECT_NAME = "@PROJECT_NAME@";
@@ -17,6 +19,10 @@ namespace config
         constexpr auto DEFAULT_RETRY_INTERVAL = @DEFAULT_RETRY_INTERVAL@;
         constexpr auto DEFAULT_BATCH_INTERVAL = @DEFAULT_BATCH_INTERVAL@;
         constexpr auto DEFAULT_BATCH_SIZE = @DEFAULT_BATCH_SIZE@;
+        constexpr auto QUEUE_STATUS_REFRESH_TIMER = @QUEUE_STATUS_REFRESH_TIMER@;
+        constexpr auto QUEUE_DEFAULT_SIZE = @QUEUE_DEFAULT_SIZE@;
+        constexpr auto DEFAULT_VERIFICATION_MODE = "@DEFAULT_VERIFICATION_MODE@";
+        constexpr std::array<const char*, 3> VALID_VERIFICATION_MODES = {"full", "certificate", "none"};
     }
 
     namespace logcollector

@@ -65,20 +65,6 @@ public:
               const std::string& metadata = "") override;
 
     /**
-     * @brief Retrieve a JSON message by its ID.
-     *
-     * @param id The ID of the message to retrieve.
-     * @param tableName The name of the table to retrieve the message from.
-     * @param moduleName The name of the module that created the message.
-     * @param moduleType The module type that created the message.
-     * @return The retrieved JSON message.
-     */
-    nlohmann::json Retrieve(int id,
-                            const std::string& tableName,
-                            const std::string& moduleName = "",
-                            const std::string& moduleType = "") override;
-
-    /**
      * @brief Retrieve multiple JSON messages.
      *
      * @param n The number of messages to retrieve.
@@ -120,6 +106,28 @@ public:
      */
     int GetElementCount(const std::string& tableName, const std::string& moduleName = "") override;
 
+    /**
+     * @brief Get the bytes occupied by elements stored in the specified queue.
+     *
+     * @param tableName  The name of the table.
+     * @return size_t The bytes occupied by elements stored in the specified queue.
+     */
+    size_t GetElementsStoredSize(const std::string& tableName) override;
+
+    /**
+     * @brief Retrieve multiple JSON messages based on size from the specified queue.
+     *
+     * @param n size occupied by the messages to be retrieved.
+     * @param tableName The name of the table to retrieve the message from.
+     * @param moduleName The name of the module.
+     * @param moduleType The type of the module.
+     * @return nlohmann::json The retrieved JSON messages.
+     */
+    nlohmann::json RetrieveBySize(size_t n,
+                                  const std::string& tableName,
+                                  const std::string& moduleName = "",
+                                  const std::string& moduleType = "") override;
+
 private:
     /**
      * @brief Initialize the table in the SQLite database.
@@ -139,6 +147,11 @@ private:
      *
      */
     void ReleaseDatabaseAccess();
+
+    /**
+     * @brief Intermediate function for processing Retrieve queries.
+     */
+    nlohmann::json ProcessRequest(SQLite::Statement& sqlStatementQuery, size_t maxSize = 0);
 
     /**
      * @brief The name of the SQLite database file.

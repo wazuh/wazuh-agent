@@ -58,22 +58,26 @@ namespace communicator
             m_retryInterval = getConfigValue.template operator()<std::time_t>("agent", "retry_interval")
                                   .value_or(config::agent::DEFAULT_RETRY_INTERVAL);
 
-            m_batchInterval = getConfigValue.template operator()<std::time_t>("events", "batch_interval")
-                                  .value_or(config::agent::DEFAULT_BATCH_INTERVAL);
-
-            if (m_batchInterval < 1'000 || m_batchInterval > (1'000 * 60 * 60))
-            {
-                LogWarn("batch_interval must be between 1s and 1h. Using default value.");
-                m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
-            }
-
-            m_batchSize = getConfigValue.template operator()<int>("events", "batch_size")
+            m_batchSize = getConfigValue.template operator()<size_t>("events", "batch_size")
                               .value_or(config::agent::DEFAULT_BATCH_SIZE);
 
-            if (m_batchSize < 1 || m_batchSize > 1'000'000)
+            if (m_batchSize < 1000ULL || m_batchSize > 100000000ULL)
             {
-                LogWarn("batch_size must be between 1 and 1000000. Using default value.");
+                LogWarn("batch_size must be between 1KB and 100MB. Using default value.");
                 m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
+            }
+
+            m_verificationMode = getConfigValue.template operator()<std::string>("agent", "verification_mode")
+                                     .value_or(config::agent::DEFAULT_VERIFICATION_MODE);
+
+            if (std::find(std::begin(config::agent::VALID_VERIFICATION_MODES),
+                          std::end(config::agent::VALID_VERIFICATION_MODES),
+                          m_verificationMode) == std::end(config::agent::VALID_VERIFICATION_MODES))
+            {
+                LogWarn("Incorrect value for 'verification_mode', in case of HTTPS connections the default value '{}' "
+                        "is used.",
+                        config::agent::DEFAULT_VERIFICATION_MODE);
+                m_verificationMode = config::agent::DEFAULT_VERIFICATION_MODE;
             }
         }
 
@@ -93,21 +97,21 @@ namespace communicator
         /// @param getMessages A function to retrieve a message from the queue
         /// @param onSuccess A callback function to execute when a message is processed
         boost::asio::awaitable<void> StatefulMessageProcessingTask(
-            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const int)> getMessages,
+            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> getMessages,
             std::function<void(const int, const std::string&)> onSuccess);
 
         /// @brief Processes messages in a stateless manner
         /// @param getMessages A function to retrieve a message from the queue
         /// @param onSuccess A callback function to execute when a message is processed
         boost::asio::awaitable<void> StatelessMessageProcessingTask(
-            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const int)> getMessages,
+            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> getMessages,
             std::function<void(const int, const std::string&)> onSuccess);
 
         /// @brief Retrieves group configuration from the manager
         /// @param groupName The name of the group to retrieve the configuration for
         /// @param dstFilePath The path to the file to store the configuration in
         /// @return true if the configuration was successfully retrieved, false otherwise
-        bool GetGroupConfigurationFromManager(const std::string& groupName, const std::string& dstFilePath);
+        boost::asio::awaitable<bool> GetGroupConfigurationFromManager(std::string groupName, std::string dstFilePath);
 
         /// @brief Stops the communication process
         void Stop();
@@ -135,11 +139,8 @@ namespace communicator
         /// @brief Time in milliseconds between authentication attemps in case of failure
         std::time_t m_retryInterval = config::agent::DEFAULT_RETRY_INTERVAL;
 
-        /// @brief Time between batch requests
-        std::time_t m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
-
-        /// @brief Maximum number of messages to batch
-        int m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
+        /// @brief Size for batch requests
+        size_t m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
 
         /// @brief The server URL
         std::string m_serverUrl;
@@ -161,5 +162,8 @@ namespace communicator
 
         /// @brief Timer to wait for token expiration
         std::unique_ptr<boost::asio::steady_timer> m_tokenExpTimer;
+
+        /// @brief The verification mode
+        std::string m_verificationMode;
     };
 } // namespace communicator

@@ -15,6 +15,11 @@ namespace http_client
         /// @brief Virtual destructor
         virtual ~IHttpSocket() = default;
 
+        /// @brief Sets the verification mode for the host
+        /// @param host The host name
+        /// @param verificationMode The verification mode to set
+        virtual void SetVerificationMode(const std::string& host, const std::string& verificationMode) = 0;
+
         /// @brief Connects the socket to the given endpoints
         /// @param endpoints The endpoints to connect to
         /// @param ec The error code, if any occurred
@@ -45,12 +50,6 @@ namespace http_client
         /// @param ec The error code, if any occurred
         virtual void Read(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
                           boost::system::error_code& ec) = 0;
-
-        /// @brief Reads a response from the socket and writes it to a file
-        /// @param res The response to read
-        /// @param dstFilePath The path to the file to write to
-        virtual void ReadToFile(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                                const std::string& dstFilePath) = 0;
 
         /// @brief Asynchronous version of Read
         /// @param res The response to read

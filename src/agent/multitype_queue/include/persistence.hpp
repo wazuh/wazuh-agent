@@ -33,19 +33,6 @@ public:
                       const std::string& moduleName = "",
                       const std::string& moduleType = "",
                       const std::string& metadata = "") = 0;
-    /**
-     * @brief Retrieve a JSON message from the specified queue.
-     *
-     * @param id rowid of the message to be retrieved.
-     * @param queueName The name of the queue.
-     * @param moduleName The name of the module.
-     * @param moduleType The type of the module.
-     * @return nlohmann::json The retrieved JSON message.
-     */
-    virtual nlohmann::json Retrieve(int id,
-                                    const std::string& queueName,
-                                    const std::string& moduleName = "",
-                                    const std::string& moduleType = "") = 0;
 
     /**
      * @brief Retrieve multiple JSON messages from the specified queue.
@@ -89,4 +76,26 @@ public:
      * @return int The quantity of elements stored in the specified queue.
      */
     virtual int GetElementCount(const std::string& queueName, const std::string& moduleName = "") = 0;
+
+    /**
+     * @brief Get the bytes occupied by elements stored in the specified queue.
+     *
+     * @param queueName The name of the queue.
+     * @return size_t The bytes occupied by elements stored in the specified queue.
+     */
+    virtual size_t GetElementsStoredSize(const std::string& queueName) = 0;
+
+    /**
+     * @brief Retrieve multiple JSON messages based on size from the specified queue.
+     *
+     * @param n size occupied by the messages to be retrieved.
+     * @param queueName The name of the queue.
+     * @param moduleName The name of the module.
+     * @param moduleType The type of the module.
+     * @return nlohmann::json The retrieved JSON messages.
+     */
+    virtual nlohmann::json RetrieveBySize(size_t n,
+                                          const std::string& queueName,
+                                          const std::string& moduleName = "",
+                                          const std::string& moduleType = "") = 0;
 };

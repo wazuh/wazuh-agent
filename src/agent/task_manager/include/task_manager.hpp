@@ -53,7 +53,7 @@ private:
     std::vector<std::thread> m_threads;
 
     /// @brief Number of enqueued threads
-    size_t m_numEnqueuedThreads = 0;
+    std::atomic<size_t> m_numEnqueuedThreads = 0;
 
     /// @brief Mutex to control Start and Stop operations
     mutable std::mutex m_mutex;

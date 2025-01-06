@@ -19,6 +19,7 @@ static const auto OPT_USER {"user"};
 static const auto OPT_PASS {"password"};
 static const auto OPT_KEY {"key"};
 static const auto OPT_NAME {"name"};
+static const auto OPT_VERIFICATION_MODE {"verification-mode"};
 #ifdef _WIN32
 static const auto OPT_INSTALL_SERVICE {"install-service"};
 static const auto OPT_REMOVE_SERVICE {"remove-service"};
@@ -41,7 +42,10 @@ int main(int argc, char* argv[])
             OPT_USER, program_options::value<std::string>(), "User to authenticate with the server management API")(
             OPT_PASS, program_options::value<std::string>(), "Password to authenticate with the server management API")(
             OPT_KEY, program_options::value<std::string>(), "Key to register the agent (optional)")(
-            OPT_NAME, program_options::value<std::string>(), "Name to register the agent (optional)");
+            OPT_NAME, program_options::value<std::string>(), "Name to register the agent (optional)")(
+            OPT_VERIFICATION_MODE,
+            program_options::value<std::string>(),
+            "Verification mode to be applied on HTTPS connection to the server (optional)");
 
 #ifdef _WIN32
         cmdParser.add_options()(OPT_INSTALL_SERVICE, "Use this option to install Wazuh as a Windows service")(
@@ -55,12 +59,14 @@ int main(int argc, char* argv[])
 
         if (validOptions.count(OPT_REGISTER_AGENT) > 0)
         {
-            RegisterAgent(validOptions.count(OPT_URL) ? validOptions[OPT_URL].as<std::string>() : "",
-                          validOptions.count(OPT_USER) ? validOptions[OPT_USER].as<std::string>() : "",
-                          validOptions.count(OPT_PASS) ? validOptions[OPT_PASS].as<std::string>() : "",
-                          validOptions.count(OPT_KEY) ? validOptions[OPT_KEY].as<std::string>() : "",
-                          validOptions.count(OPT_NAME) ? validOptions[OPT_NAME].as<std::string>() : "",
-                          validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
+            RegisterAgent(
+                validOptions.count(OPT_URL) ? validOptions[OPT_URL].as<std::string>() : "",
+                validOptions.count(OPT_USER) ? validOptions[OPT_USER].as<std::string>() : "",
+                validOptions.count(OPT_PASS) ? validOptions[OPT_PASS].as<std::string>() : "",
+                validOptions.count(OPT_KEY) ? validOptions[OPT_KEY].as<std::string>() : "",
+                validOptions.count(OPT_NAME) ? validOptions[OPT_NAME].as<std::string>() : "",
+                validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "",
+                validOptions.count(OPT_VERIFICATION_MODE) ? validOptions[OPT_VERIFICATION_MODE].as<std::string>() : "");
         }
         else if (validOptions.count(OPT_STATUS) > 0)
         {

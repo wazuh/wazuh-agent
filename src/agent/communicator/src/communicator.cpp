@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <fstream>
 #include <sstream>
 #include <thread>
 #include <utility>
@@ -19,7 +20,7 @@ namespace communicator
     boost::beast::http::status Communicator::SendAuthenticationRequest()
     {
         const auto token = m_httpClient->AuthenticateWithUuidAndKey(
-            m_serverUrl, m_getHeaderInfo ? m_getHeaderInfo() : "", m_uuid, m_key);
+            m_serverUrl, m_getHeaderInfo ? m_getHeaderInfo() : "", m_uuid, m_key, m_verificationMode);
 
         if (token.has_value())
         {
@@ -78,17 +79,13 @@ namespace communicator
             return m_keepRunning.load();
         };
 
-        const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::get, m_serverUrl, "/api/v1/commands", m_getHeaderInfo ? m_getHeaderInfo() : "");
-        co_await m_httpClient->Co_PerformHttpRequest(m_token,
-                                                     reqParams,
-                                                     {},
-                                                     onAuthenticationFailed,
-                                                     m_retryInterval,
-                                                     m_batchInterval,
-                                                     m_batchSize,
-                                                     onSuccess,
-                                                     loopCondition);
+        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get,
+                                                              m_serverUrl,
+                                                              "/api/v1/commands",
+                                                              m_getHeaderInfo ? m_getHeaderInfo() : "",
+                                                              m_verificationMode);
+        co_await m_httpClient->Co_PerformHttpRequest(
+            m_token, reqParams, {}, onAuthenticationFailed, m_retryInterval, m_batchSize, onSuccess, loopCondition);
     }
 
     boost::asio::awaitable<void> Communicator::WaitForTokenExpirationAndAuthenticate()
@@ -147,7 +144,7 @@ namespace communicator
     }
 
     boost::asio::awaitable<void> Communicator::StatefulMessageProcessingTask(
-        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const int)> getMessages,
+        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> getMessages,
         std::function<void(const int, const std::string&)> onSuccess)
     {
         auto onAuthenticationFailed = [this]()
@@ -163,20 +160,20 @@ namespace communicator
         const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
                                                               m_serverUrl,
                                                               "/api/v1/events/stateful",
-                                                              m_getHeaderInfo ? m_getHeaderInfo() : "");
+                                                              m_getHeaderInfo ? m_getHeaderInfo() : "",
+                                                              m_verificationMode);
         co_await m_httpClient->Co_PerformHttpRequest(m_token,
                                                      reqParams,
                                                      getMessages,
                                                      onAuthenticationFailed,
                                                      m_retryInterval,
-                                                     m_batchInterval,
                                                      m_batchSize,
                                                      onSuccess,
                                                      loopCondition);
     }
 
     boost::asio::awaitable<void> Communicator::StatelessMessageProcessingTask(
-        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const int)> getMessages,
+        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> getMessages,
         std::function<void(const int, const std::string&)> onSuccess)
     {
         auto onAuthenticationFailed = [this]()
@@ -192,13 +189,13 @@ namespace communicator
         const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
                                                               m_serverUrl,
                                                               "/api/v1/events/stateless",
-                                                              m_getHeaderInfo ? m_getHeaderInfo() : "");
+                                                              m_getHeaderInfo ? m_getHeaderInfo() : "",
+                                                              m_verificationMode);
         co_await m_httpClient->Co_PerformHttpRequest(m_token,
                                                      reqParams,
                                                      getMessages,
                                                      onAuthenticationFailed,
                                                      m_retryInterval,
-                                                     m_batchInterval,
                                                      m_batchSize,
                                                      onSuccess,
                                                      loopCondition);
@@ -225,19 +222,39 @@ namespace communicator
         }
     }
 
-    bool Communicator::GetGroupConfigurationFromManager(const std::string& groupName, const std::string& dstFilePath)
+    boost::asio::awaitable<bool> Communicator::GetGroupConfigurationFromManager(std::string groupName,
+                                                                                std::string dstFilePath)
     {
+        auto onAuthenticationFailed = [this]()
+        {
+            TryReAuthenticate();
+        };
+
+        bool downloaded = false;
+
+        auto onSuccess = [path = std::move(dstFilePath), &downloaded](const int, const std::string& res)
+        {
+            std::ofstream file(path, std::ios::binary);
+            if (file)
+            {
+                file << res;
+                file.close();
+                downloaded = true;
+            }
+        };
+
         const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get,
                                                               m_serverUrl,
                                                               "/api/v1/files?file_name=" + groupName +
                                                                   config::DEFAULT_SHARED_FILE_EXTENSION,
                                                               m_getHeaderInfo ? m_getHeaderInfo() : "",
+                                                              m_verificationMode,
                                                               *m_token);
 
-        const auto result = m_httpClient->PerformHttpRequestDownload(reqParams, dstFilePath);
+        co_await m_httpClient->Co_PerformHttpRequest(
+            m_token, reqParams, {}, onAuthenticationFailed, m_retryInterval, m_batchSize, onSuccess, {});
 
-        return result.result() >= boost::beast::http::status::ok &&
-               result.result() < boost::beast::http::status::multiple_choices;
+        co_return downloaded;
     }
 
     void Communicator::Stop()

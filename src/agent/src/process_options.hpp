@@ -10,12 +10,14 @@
 /// @param key The key to use for registration.
 /// @param name The name to use for the agent.
 /// @param configFilePath The path to the configuration file.
+/// @param verificationMode The verification mode to use.
 void RegisterAgent(const std::string& url,
                    const std::string& user,
                    const std::string& password,
                    const std::string& key,
                    const std::string& name,
-                   const std::string& configFilePath);
+                   const std::string& configFilePath,
+                   const std::string& verificationMode);
 
 /// @brief Starts the agent using the specified configuration file.
 /// @param configFilePath The file path to the configuration file used for starting the agent.

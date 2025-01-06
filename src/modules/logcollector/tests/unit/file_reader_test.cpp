@@ -5,7 +5,6 @@
 
 #include <logcollector.hpp>
 #include <file_reader.hpp>
-#include "queue_mock.hpp"
 #include "tempfile.hpp"
 #include "logcollector_mock.hpp"
 
@@ -17,7 +16,7 @@ static constexpr auto TMP_FILE_DIR = "C:\\Temp\\";
 static constexpr auto TMP_FILE_DIR = "/tmp/";
 #endif
 
-inline std::string getFullFileName(const std::string& filename) {
+inline std::string GetFullFileName(const std::string& filename) {
     //TODO: move to setup stage of test only for windows
     std::filesystem::create_directories(TMP_FILE_DIR);
     return TMP_FILE_DIR + filename;
@@ -64,8 +63,8 @@ TEST(Localfile, OpenError)
 
 TEST(Localfile, Rotated)
 {
-    auto fileA = TempFile(getFullFileName("A.log"), "Hello World");
-    auto lf = Localfile(getFullFileName("A.log"));
+    auto fileA = TempFile(GetFullFileName("A.log"), "Hello World");
+    auto lf = Localfile(GetFullFileName("A.log"));
 
     lf.SeekEnd();
     ASSERT_FALSE(lf.Rotated());
@@ -97,19 +96,19 @@ TEST(FileReader, Reload) {
     spdlog::default_logger()->sinks().clear();
     MockCallback mockCallback;
 
-    EXPECT_CALL(mockCallback, Call(getFullFileName("A.log"))).Times(1);
-    EXPECT_CALL(mockCallback, Call(getFullFileName("B.log"))).Times(1);
-    EXPECT_CALL(mockCallback, Call(getFullFileName("C.log"))).Times(1);
-    EXPECT_CALL(mockCallback, Call(getFullFileName("D.log"))).Times(1);
+    EXPECT_CALL(mockCallback, Call(GetFullFileName("A.log"))).Times(1);
+    EXPECT_CALL(mockCallback, Call(GetFullFileName("B.log"))).Times(1);
+    EXPECT_CALL(mockCallback, Call(GetFullFileName("C.log"))).Times(1);
+    EXPECT_CALL(mockCallback, Call(GetFullFileName("D.log"))).Times(1);
 
-    auto a = TempFile(getFullFileName("A.log"));
-    auto b = TempFile(getFullFileName("B.log"));
-    auto c = TempFile(getFullFileName("C.log"));
+    auto a = TempFile(GetFullFileName("A.log"));
+    auto b = TempFile(GetFullFileName("B.log"));
+    auto c = TempFile(GetFullFileName("C.log"));
 
     auto regex = TMP_FILE_DIR + std::string("*.log");
     FileReader reader(Logcollector::Instance(), regex, 500, 60000); //NOLINT
     reader.Reload([&](Localfile& lf) { mockCallback.Call(lf.Filename()); });
 
-    auto d = TempFile(getFullFileName("D.log"));
+    auto d = TempFile(GetFullFileName("D.log"));
     reader.Reload([&](Localfile& lf) { mockCallback.Call(lf.Filename()); });
 }

@@ -10,6 +10,8 @@ namespace centralized_configuration
         const std::string command,       // NOLINT(performance-unnecessary-value-param)
         const nlohmann::json parameters) // NOLINT(performance-unnecessary-value-param)
     {
+        std::lock_guard<std::mutex> lock(m_mutex);
+
         try
         {
             std::vector<std::string> groupIds {};
@@ -85,7 +87,19 @@ namespace centralized_configuration
             {
                 const std::filesystem::path tmpGroupFile =
                     m_fileSystemWrapper->temp_directory_path() / (groupId + config::DEFAULT_SHARED_FILE_EXTENSION);
-                m_downloadGroupFilesFunction(groupId, tmpGroupFile.string());
+
+                // NOLINTBEGIN(cppcoreguidelines-no-suspend-with-lock)
+                const auto dlResult = co_await m_downloadGroupFilesFunction(groupId, tmpGroupFile.string());
+                // NOLINTEND(cppcoreguidelines-no-suspend-with-lock)
+
+                if (!dlResult)
+                {
+                    LogWarn("Failed to download the file for group '{}'", groupId);
+                    co_return module_command::CommandExecutionResult {
+                        module_command::Status::FAILURE,
+                        "CentralizedConfiguration failed to download the file for group '" + groupId + "'"};
+                }
+
                 if (!m_validateFileFunction(tmpGroupFile))
                 {
                     LogWarn("Failed to validate the file for group '{}', invalid group file received: {}",

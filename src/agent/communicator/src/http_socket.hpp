@@ -1,4 +1,5 @@
-#include "http_client_utils.hpp"
+#pragma once
+
 #include <ihttp_socket.hpp>
 #include <logger.hpp>
 
@@ -20,6 +21,15 @@ namespace http_client
         HttpSocket(const boost::asio::any_io_executor& io_context)
             : m_socket(io_context)
         {
+        }
+
+        /// @brief Sets the verification mode for the host
+        /// @param host The host name
+        /// @param verificationMode The verification mode to set
+        void SetVerificationMode([[maybe_unused]] const std::string& host,
+                                 [[maybe_unused]] const std::string& verificationMode) override
+        {
+            // No functionality for HTTP sockets
         }
 
         /// @brief Connects the socket to the given endpoints
@@ -104,22 +114,6 @@ namespace http_client
             catch (const std::exception& e)
             {
                 LogDebug("Exception thrown during read: {}", e.what());
-            }
-        }
-
-        /// @brief Reads a response from the socket and writes it to a file
-        /// @param res The response to read
-        /// @param dstFilePath The path to the file to write to
-        void ReadToFile(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                        const std::string& dstFilePath) override
-        {
-            try
-            {
-                http_client_utils::ReadToFile(m_socket, res, dstFilePath);
-            }
-            catch (const std::exception& e)
-            {
-                LogDebug("Exception thrown during read to file: {}", e.what());
             }
         }
 

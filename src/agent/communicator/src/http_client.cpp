@@ -98,11 +98,10 @@ namespace http_client
     boost::asio::awaitable<void> HttpClient::Co_PerformHttpRequest(
         std::shared_ptr<std::string> token,
         HttpRequestParams reqParams,
-        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const int)> messageGetter,
+        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> messageGetter,
         std::function<void()> onUnauthorized,
         std::time_t connectionRetry,
-        std::time_t batchInterval,
-        int batchSize,
+        size_t batchSize,
         std::function<void(const int, const std::string&)> onSuccess,
         std::function<bool()> loopRequestCondition)
     {
@@ -138,15 +137,20 @@ namespace http_client
                 continue;
             }
 
+            if (reqParams.Use_Https)
+            {
+                socket->SetVerificationMode(reqParams.Host, reqParams.Verification_Mode);
+            }
+
             boost::system::error_code ec;
 
             co_await socket->AsyncConnect(results, ec);
 
             if (ec != boost::system::errc::success)
             {
-                LogWarn("Failed to send http request to endpoint: {}. Retrying in {} seconds.",
-                        reqParams.Endpoint,
-                        connectionRetry / A_SECOND_IN_MILLIS);
+                LogDebug("Failed to send http request to endpoint: {}. Retrying in {} seconds.",
+                         reqParams.Endpoint,
+                         connectionRetry / A_SECOND_IN_MILLIS);
                 LogDebug("Http request failed: {} - {}", ec.message(), ec.what());
                 co_await WaitForTimer(timer, connectionRetry);
                 continue;
@@ -156,25 +160,17 @@ namespace http_client
 
             if (messageGetter != nullptr)
             {
-                boost::asio::steady_timer refreshTimer(co_await boost::asio::this_coro::executor);
-                boost::asio::steady_timer batchTimeoutTimer(co_await boost::asio::this_coro::executor);
-                batchTimeoutTimer.expires_after(std::chrono::milliseconds(batchInterval));
-
                 while (loopRequestCondition != nullptr && loopRequestCondition())
                 {
                     const auto messages = co_await messageGetter(batchSize);
                     messagesCount = std::get<0>(messages);
 
-                    if (messagesCount >= batchSize || batchTimeoutTimer.expiry() <= std::chrono::steady_clock::now())
+                    if (messagesCount)
                     {
                         LogTrace("Messages count: {}", messagesCount);
                         reqParams.Body = std::get<1>(messages);
                         break;
                     }
-
-                    constexpr int refreshInterval = 100;
-                    refreshTimer.expires_after(std::chrono::milliseconds(refreshInterval));
-                    co_await refreshTimer.async_wait(boost::asio::use_awaitable);
                 }
             }
             else
@@ -190,7 +186,10 @@ namespace http_client
 
             if (ec)
             {
-                LogWarn("Error writing request ({}): {}.", std::to_string(ec.value()), ec.message());
+                LogDebug("Error writing request ({}): {}. Endpoint: {}.",
+                         std::to_string(ec.value()),
+                         ec.message(),
+                         reqParams.Endpoint);
                 socket->Close();
                 co_await WaitForTimer(timer, connectionRetry);
                 continue;
@@ -201,7 +200,10 @@ namespace http_client
 
             if (ec)
             {
-                LogWarn("Error reading response ({}): {}.", std::to_string(ec.value()), ec.message());
+                LogDebug("Error reading response ({}): {}. Endpoint: {}.",
+                         std::to_string(ec.value()),
+                         ec.message(),
+                         reqParams.Endpoint);
                 socket->Close();
                 co_await WaitForTimer(timer, connectionRetry);
                 continue;
@@ -243,24 +245,21 @@ namespace http_client
                                              boost::system::error_code& ec) { socket->Read(res, ec); });
     }
 
-    boost::beast::http::response<boost::beast::http::dynamic_body>
-    HttpClient::PerformHttpRequestDownload(const HttpRequestParams& params, const std::string& dstFilePath)
-    {
-        return PerformHttpRequestInternal(
-            params,
-            [&dstFilePath](std::unique_ptr<IHttpSocket>& socket,
-                           boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                           boost::system::error_code&) { socket->ReadToFile(res, dstFilePath); });
-    }
-
     std::optional<std::string> HttpClient::AuthenticateWithUuidAndKey(const std::string& serverUrl,
                                                                       const std::string& userAgent,
                                                                       const std::string& uuid,
-                                                                      const std::string& key)
+                                                                      const std::string& key,
+                                                                      const std::string& verificationMode)
     {
         const std::string body = R"({"uuid":")" + uuid + R"(", "key":")" + key + "\"}";
-        const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::post, serverUrl, "/api/v1/authentication", userAgent, "", "", body);
+        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
+                                                              serverUrl,
+                                                              "/api/v1/authentication",
+                                                              userAgent,
+                                                              verificationMode,
+                                                              "",
+                                                              "",
+                                                              body);
 
         const auto res = PerformHttpRequest(reqParams);
 
@@ -309,7 +308,8 @@ namespace http_client
     std::optional<std::string> HttpClient::AuthenticateWithUserPassword(const std::string& serverUrl,
                                                                         const std::string& userAgent,
                                                                         const std::string& user,
-                                                                        const std::string& password)
+                                                                        const std::string& password,
+                                                                        const std::string& verificationMode)
     {
         std::string basicAuth {};
         std::string userPass {user + ":" + password};
@@ -318,8 +318,13 @@ namespace http_client
 
         boost::beast::detail::base64::encode(&basicAuth[0], userPass.c_str(), userPass.size());
 
-        const auto reqParams = http_client::HttpRequestParams(
-            boost::beast::http::verb::post, serverUrl, "/security/user/authenticate", userAgent, "", basicAuth);
+        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
+                                                              serverUrl,
+                                                              "/security/user/authenticate",
+                                                              userAgent,
+                                                              verificationMode,
+                                                              "",
+                                                              basicAuth);
 
         const auto res = PerformHttpRequest(reqParams);
 
@@ -370,6 +375,11 @@ namespace http_client
             if (!socket)
             {
                 throw std::runtime_error("Failed to create socket.");
+            }
+
+            if (params.Use_Https)
+            {
+                socket->SetVerificationMode(params.Host, params.Verification_Mode);
             }
 
             boost::system::error_code ec;

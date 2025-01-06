@@ -1,15 +1,15 @@
 #pragma once
 
+#include <filesystem_wrapper.hpp>
+#include <ifilesystem.hpp>
 #include <module_command/command_entry.hpp>
 
 #include <boost/asio/awaitable.hpp>
-
 #include <nlohmann/json.hpp>
 
 #include <filesystem>
-#include <filesystem_wrapper.hpp>
 #include <functional>
-#include <ifilesystem.hpp>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -22,7 +22,7 @@ namespace centralized_configuration
         using SetGroupIdFunctionType = std::function<bool(const std::vector<std::string>& groupList)>;
         using GetGroupIdFunctionType = std::function<std::vector<std::string>()>;
         using DownloadGroupFilesFunctionType =
-            std::function<bool(const std::string& group, const std::string& dstFilePath)>;
+            std::function<boost::asio::awaitable<bool>(std::string group, std::string dstFilePath)>;
         using ValidateFileFunctionType = std::function<bool(const std::filesystem::path& configFile)>;
         using ReloadModulesFunctionType = std::function<void()>;
 
@@ -86,5 +86,8 @@ namespace centralized_configuration
 
         /// @brief Function to reload modules.
         ReloadModulesFunctionType m_reloadModulesFunction;
+
+        /// @brief Mutex to avoid concurrent execution of centralized configuration commands.
+        std::mutex m_mutex;
     };
 } // namespace centralized_configuration

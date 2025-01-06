@@ -39,19 +39,17 @@ namespace http_client
         /// @param messageGetter Function to get the message body asynchronously
         /// @param onUnauthorized Callback for unauthorized access
         /// @param connectionRetry Time in milliseconds to wait before retrying the connection
-        /// @param batchInterval Time to wait between requests
-        /// @param batchSize The maximum number of messages to batch
+        /// @param batchSize The minimum number of bytes of messages to batch
         /// @param onSuccess Callback for successful request completion
         /// @param loopRequestCondition Condition to continue looping requests
         /// @return Awaitable task for the HTTP request
         boost::asio::awaitable<void> Co_PerformHttpRequest(
             std::shared_ptr<std::string> token,
             HttpRequestParams params,
-            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const int)> messageGetter,
+            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> messageGetter,
             std::function<void()> onUnauthorized,
             std::time_t connectionRetry,
-            std::time_t batchInterval,
-            int batchSize,
+            size_t batchSize,
             std::function<void(const int, const std::string&)> onSuccess = {},
             std::function<bool()> loopRequestCondition = {}) override;
 
@@ -61,34 +59,31 @@ namespace http_client
         boost::beast::http::response<boost::beast::http::dynamic_body>
         PerformHttpRequest(const HttpRequestParams& params) override;
 
-        /// @brief Downloads HTTP response to a file
-        /// @param params Parameters for the request
-        /// @param dstFilePath Destination file path for the response
-        /// @return The HTTP response
-        boost::beast::http::response<boost::beast::http::dynamic_body>
-        PerformHttpRequestDownload(const HttpRequestParams& params, const std::string& dstFilePath) override;
-
         /// @brief Authenticates using UUID and key
         /// @param serverUrl Server URL for authentication
         /// @param userAgent User agent header
         /// @param uuid Unique user identifier
         /// @param key Authentication key
+        /// @param verificationMode Verification mode
         /// @return Authentication token if successful, otherwise nullopt
         std::optional<std::string> AuthenticateWithUuidAndKey(const std::string& serverUrl,
                                                               const std::string& userAgent,
                                                               const std::string& uuid,
-                                                              const std::string& key) override;
+                                                              const std::string& key,
+                                                              const std::string& verificationMode) override;
 
         /// @brief Authenticates using username and password
         /// @param serverUrl Server URL for authentication
         /// @param userAgent User agent header
         /// @param user Username for authentication
         /// @param password User password
+        /// @param verificationMode Verification mode
         /// @return Authentication token if successful, otherwise nullopt
         std::optional<std::string> AuthenticateWithUserPassword(const std::string& serverUrl,
                                                                 const std::string& userAgent,
                                                                 const std::string& user,
-                                                                const std::string& password) override;
+                                                                const std::string& password,
+                                                                const std::string& verificationMode) override;
 
     private:
         /// @brief Performs an HTTP request with a response handler
