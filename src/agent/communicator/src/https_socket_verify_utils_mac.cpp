@@ -77,7 +77,9 @@ namespace https_socket_verify_utils
             if (error)
             {
                 CFStringRef errorDesc = CFErrorCopyDescription(error);
-                LogError("Trust evaluation failed: {}", CFStringGetCStringPtr(errorDesc, kCFStringEncodingUTF8));
+                char bufferError[256] = {0};
+                CFStringGetCString(errorDesc, bufferError, sizeof(bufferError), kCFStringEncodingUTF8);
+                LogError("Trust evaluation failed: {}", bufferError);
                 CFRelease(errorDesc);
                 CFRelease(error);
             }
@@ -99,7 +101,7 @@ namespace https_socket_verify_utils
             }
 
             bool hostnameMatches = false;
-            char buffer[256];
+            char buffer[256] = {0};
             if (CFStringGetCString(sanString, buffer, sizeof(buffer), kCFStringEncodingUTF8))
             {
                 hostnameMatches = (host == buffer);
