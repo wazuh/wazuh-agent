@@ -32,8 +32,8 @@ public:
     /// @param reloadInterval
     /// @param bookmarkEnabled
     WindowsEventTracerReader(Logcollector &logcollector,
-                            const std::vector<std::string> channels,
-                            const std::vector<std::string> queries,
+                            const std::string channel,
+                            const std::string query,
                             const std::time_t channelRefreshInterval,
                             bool bookmarkEnabled);
 
@@ -41,8 +41,17 @@ public:
     /// @return Awaitable result
     Awaitable Run() override;
 
+    //TODO: doc
+    void Stop();
+
     // Main function to execute the event query with bookmarks and filters
-    Awaitable QueryEvents(const std::string channel, const std::string query, std::function<bool()> shouldContinue);
+    Awaitable QueryEvents(const std::string channel, const std::string query);
+
+    // TODO: doc
+    bool IsBookmarkEnabled() { return m_bookmarkEnabled; };
+
+    //TODO: doc
+    std::string GetChannel() { return m_channel; };
 
 private:
     // Process an individual event and print its XML representation
@@ -60,17 +69,19 @@ private:
     //TODO: doc
     std::string WcharVecToString(std::vector<wchar_t>& buffer);
 
-    std::vector<std::string> m_channelsList;
+    std::string m_channel;
 
-    std::vector<std::string> m_queriesList;
+    std::string m_query;
 
     //TODO: change to configurable
-    std::string m_bookmarkFile = "bookmark.xml";
+    std::string m_bookmarkFile;
 
     /// @brief
     std::time_t m_ChannelsRefreshInterval;
 
     bool m_bookmarkEnabled;
+
+    bool m_keepRunning {true};
 
     const std::string m_collectorType = "eventchannel";
 };

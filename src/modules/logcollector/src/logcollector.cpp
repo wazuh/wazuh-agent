@@ -99,16 +99,12 @@ void Logcollector::SetupWEReader(const std::shared_ptr<const configuration::Conf
     const auto windowsConfig = configurationParser->GetConfig<std::vector<std::map<std::string, std::string>>>("logcollector", "windows").value_or(
         std::vector<std::map<std::string, std::string>> {});
 
-    std::vector<std::string> channelsList;
-    std::vector<std::string> queriesList;
     for (auto& entry : windowsConfig)
     {
         auto channel = entry.at("channel");
         auto query = entry.at("query");
-        channelsList.emplace_back(channel);
-        queriesList.emplace_back(query);
+        AddReader(std::make_shared<WindowsEventTracerReader>(*this, channel, query, refreshInterval, bookmarkEnabled));
     }
-    AddReader(std::make_shared<WindowsEventTracerReader>(*this, channelsList, queriesList, refreshInterval, bookmarkEnabled));
 }
 #endif
 
@@ -155,7 +151,6 @@ void Logcollector::SendMessage(const std::string& location, const std::string& l
 
 void Logcollector::AddReader(std::shared_ptr<IReader> reader)
 {
-    //TODO: do we need m_readers ?
     m_readers.push_back(reader);
     EnqueueTask(reader->Run());
 }
