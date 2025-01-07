@@ -26,24 +26,38 @@ namespace command_store
     }
 
     CommandStore::CommandStore(const std::string& dbFolderPath)
-        : m_dataBase(std::make_unique<SQLiteManager>(dbFolderPath + "/" + COMMANDSTORE_DB_NAME))
     {
-        Column colId {"id", ColumnType::TEXT, true, false, true};
-        Column colModule {"module", ColumnType::TEXT, true, false, false};
-        Column colCommand {"command", ColumnType::TEXT, true, false, false};
-        Column colParameter {"parameters", ColumnType::TEXT, true, false, false};
-        Column colResult {"result", ColumnType::TEXT, true, false, false};
-        Column colStatus {"status", ColumnType::INTEGER, true, false, false};
-        Column colTime {"time", ColumnType::REAL, true, false, false};
+        const auto dbFilePath = dbFolderPath + "/" + COMMANDSTORE_DB_NAME;
 
         try
         {
-            m_dataBase->CreateTable(COMMANDSTORE_TABLE_NAME,
-                                    {colId, colModule, colCommand, colParameter, colResult, colStatus, colTime});
+            m_dataBase = std::make_unique<SQLiteManager>(dbFilePath);
+
+            if (!m_dataBase->TableExists(COMMANDSTORE_TABLE_NAME))
+            {
+                std::vector<Column> columns;
+                columns.emplace_back("id", ColumnType::TEXT, true, false, true);
+                columns.emplace_back("module", ColumnType::TEXT, true, false, false);
+                columns.emplace_back("command", ColumnType::TEXT, true, false, false);
+                columns.emplace_back("parameters", ColumnType::TEXT, true, false, false);
+                columns.emplace_back("result", ColumnType::TEXT, true, false, false);
+                columns.emplace_back("status", ColumnType::INTEGER, true, false, false);
+                columns.emplace_back("time", ColumnType::REAL, true, false, false);
+
+                try
+                {
+                    m_dataBase->CreateTable(COMMANDSTORE_TABLE_NAME, columns);
+                }
+                catch (std::exception& e)
+                {
+                    LogError("CreateTable operation failed: {}.", e.what());
+                }
+            }
         }
-        catch (std::exception& e)
+
+        catch (const std::exception&)
         {
-            LogError("CreateTable operation failed: {}.", e.what());
+            throw std::runtime_error(std::string("Cannot open database: " + dbFilePath));
         }
     }
 
@@ -111,11 +125,9 @@ namespace command_store
 
     bool CommandStore::DeleteCommand(const std::string& id)
     {
-        std::vector<Column> fields;
-        fields.emplace_back("id", ColumnType::TEXT, id);
         try
         {
-            m_dataBase->Remove(COMMANDSTORE_TABLE_NAME, fields);
+            m_dataBase->Remove(COMMANDSTORE_TABLE_NAME, {Column("id", ColumnType::TEXT, id)});
         }
         catch (const std::exception& e)
         {
@@ -256,10 +268,9 @@ namespace command_store
             fields.emplace_back(
                 "status", ColumnType::INTEGER, std::to_string(static_cast<int>(cmd.ExecutionResult.ErrorCode)));
 
-        Column condition("id", ColumnType::TEXT, cmd.Id);
         try
         {
-            m_dataBase->Update(COMMANDSTORE_TABLE_NAME, fields, {condition});
+            m_dataBase->Update(COMMANDSTORE_TABLE_NAME, fields, {Column("id", ColumnType::TEXT, cmd.Id)});
         }
         catch (const std::exception& e)
         {
