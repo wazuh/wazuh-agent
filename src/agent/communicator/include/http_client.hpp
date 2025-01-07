@@ -86,17 +86,6 @@ namespace http_client
                                                                 const std::string& verificationMode) override;
 
     private:
-        /// @brief Performs an HTTP request with a response handler
-        /// @param params Parameters for the request
-        /// @param responseHandler Handler for the response
-        /// @return The HTTP response
-        boost::beast::http::response<boost::beast::http::dynamic_body> PerformHttpRequestInternal(
-            const HttpRequestParams& params,
-            const std::function<void(std::unique_ptr<IHttpSocket>&,
-                                     boost::beast::http::response<boost::beast::http::dynamic_body>&,
-                                     boost::system::error_code&,
-                                     boost::asio::io_context&)>& responseHandler);
-
         /// @brief HTTP resolver factory
         std::shared_ptr<IHttpResolverFactory> m_resolverFactory;
 
