@@ -5,91 +5,108 @@
 using namespace logcollector;
 
 WindowsEventTracerReader::WindowsEventTracerReader(Logcollector &logcollector,
-                           const std::vector<std::string> channels,
-                           const std::vector<std::string> queries,
+                           const std::string channel,
+                           const std::string query,
                            const std::time_t channelRefreshInterval,
                            bool bookmarkEnabled) :
     IReader(logcollector),
-    m_channelsList(channels),
-    m_queriesList(queries),
+    m_channel(channel),
+    m_query(query),
     m_ChannelsRefreshInterval(channelRefreshInterval),
-    m_bookmarkEnabled(bookmarkEnabled) { }
+    m_bookmarkEnabled(bookmarkEnabled)
+    {
+        if(m_bookmarkEnabled)
+        {
+            std::string fileName {"\\bookmark.xml"};
+            std::string filePath = config::DEFAULT_DATA_PATH;
+            m_bookmarkFile = filePath + fileName;
+        }
+    }
 
 Awaitable WindowsEventTracerReader::Run()
 {
-    //TODO: find a clearer way of connecting this with outside modules
-    bool keepRunning = true;
-    std::function<bool()> shouldContinue = [&keepRunning]() { return keepRunning; };
-
-    for (size_t i = 0; i < m_channelsList.size(); i++)
-    {
-        m_logcollector.EnqueueTask(QueryEvents(m_channelsList.at(i), m_queriesList.at(i), shouldContinue));
-    }
+    m_logcollector.EnqueueTask(QueryEvents(m_channel, m_query));
     co_return;
 }
 
-Awaitable WindowsEventTracerReader::QueryEvents(const std::string channel, const std::string query, std::function<bool()> shouldContinue)
+void WindowsEventTracerReader::Stop()
+{
+    //TODO
+    m_keepRunning = false;
+}
+
+Awaitable WindowsEventTracerReader::QueryEvents(const std::string channel, const std::string query)
 {
     EVT_HANDLE bookmarkHandle = LoadBookmark();
 
-    //TODO: rework this casting
     std::wstring wideStringChannel = std::wstring(channel.begin(), channel.end());
     std::wstring wideStringQuery = std::wstring(query.begin(), query.end());
 
-    EVT_HANDLE eventQueryHandle = EvtQuery( NULL, wideStringChannel.c_str(), wideStringQuery.c_str(),
-        EvtQueryChannelPath | EvtQueryForwardDirection);
-
-    if (eventQueryHandle == NULL)
+    auto subscriptionCallback = [](EVT_SUBSCRIBE_NOTIFY_ACTION action, PVOID userContext,
+        EVT_HANDLE event) -> DWORD
     {
-        LogError("Failed to query event log: {}", std::to_string(GetLastError()));
+        auto* reader = static_cast<WindowsEventTracerReader*>(userContext);
+
+        switch (action)
+        {
+        case EvtSubscribeActionDeliver:
+            reader->ProcessEvent(event, reader->GetChannel());
+            if (reader->IsBookmarkEnabled())
+            {
+                EVT_HANDLE bookmarkHandle = reader->CreateBookmark(event, nullptr);
+                reader->SaveBookmark(bookmarkHandle);
+                EvtClose(bookmarkHandle);
+            }
+            break;
+
+        case EvtSubscribeActionError:
+            //TODO: Handle this error
+            break;
+
+        default:
+            break;
+        }
+
+        return ERROR_SUCCESS;
+    };
+
+    EVT_HANDLE subscriptionHandle = EvtSubscribe(
+        nullptr,
+        nullptr,
+        wideStringChannel.c_str(),
+        wideStringQuery.empty() ? nullptr : wideStringQuery.c_str(),
+        bookmarkHandle,
+        this,
+        subscriptionCallback,
+        m_bookmarkEnabled && bookmarkHandle? EvtSubscribeStartAfterBookmark : EvtSubscribeStartAtOldestRecord);
+
+    if (!subscriptionHandle)
+    {
+        LogError("Failed to subscribe to event log: {}", std::to_string(GetLastError()));
         co_return;
     }
 
-    LogInfo("Querying events for {} channel with query: '{}'", channel, query);
+    LogInfo("Subscribed to events for {} channel with query: '{}'", channel, query);
 
-    EVT_HANDLE events[10];
-    DWORD eventCount = 0;
-
-    while (shouldContinue())
+    while (true)
     {
-        if (EvtNext(eventQueryHandle, 10, events, 1000, 0, &eventCount))
+        if (!m_keepRunning)
         {
-            for (DWORD i = 0; i < eventCount; ++i)
-            {
-                ProcessEvent(events[i], channel);
-                if(m_bookmarkEnabled)
-                {
-                    bookmarkHandle = CreateBookmark(events[i], bookmarkHandle);
-                    SaveBookmark(bookmarkHandle);
-                }
-                EvtClose(events[i]);
-            }
+            LogInfo("Stopping subscription based on external signal...");
+            break;
         }
-        else
-        {
-            DWORD error = GetLastError();
-            if (error == ERROR_NO_MORE_ITEMS)
-            {
-                //TODO: delete or make it trace
-                LogInfo("No more events. Waiting for new events...");
-                co_await m_logcollector.Wait(std::chrono::milliseconds(m_ChannelsRefreshInterval));
-            }
-            else
-            {
-                LogError("EvtNext failed with error: {}" , std::to_string(error));
-                break;
-            }
-        }
+
+        co_await m_logcollector.Wait(std::chrono::milliseconds(m_ChannelsRefreshInterval));
     }
 
+    LogInfo("Unsubscribing to channel '{}'.", channel);
     if (bookmarkHandle)
     {
         EvtClose(bookmarkHandle);
     }
-
-    if (eventQueryHandle)
+    if (subscriptionHandle)
     {
-        EvtClose(eventQueryHandle);
+        EvtClose(subscriptionHandle);
     }
 }
 
@@ -158,13 +175,19 @@ EVT_HANDLE WindowsEventTracerReader::LoadBookmark()
             buffer << file.rdbuf();
             std::wstring bookmarkXML = buffer.str();
             file.close();
-            //TODO: delete later
-            LogInfo("Creating bookark");
-            return EvtCreateBookmark(bookmarkXML.c_str());
+            if(bookmarkXML.empty())
+            {
+                LogTrace("Empty bookark file, exiting");
+            }
+            else
+            {
+                LogInfo("Creating bookark");
+                return EvtCreateBookmark(bookmarkXML.c_str());
+            }
         }
         else
         {
-            LogError("Couldn't open bookmark file: {}", m_bookmarkFile);
+            LogWarn("Couldn't open bookmark file.");
         }
     }
 
