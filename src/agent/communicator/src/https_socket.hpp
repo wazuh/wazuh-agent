@@ -7,6 +7,7 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/beast.hpp>
+#include <boost/beast/ssl/ssl_stream.hpp>
 #include <boost/system/error_code.hpp>
 
 #include <exception>
@@ -69,7 +70,9 @@ namespace http_client
         {
             try
             {
-                boost::asio::connect(m_ssl_socket.next_layer(), endpoints.begin(), endpoints.end(), ec);
+                m_ssl_socket.next_layer().expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+                m_ssl_socket.next_layer().async_connect(
+                    endpoints, [&ec](boost::beast::error_code const& code, auto const&) { ec = code; });
                 if (ec)
                 {
                     LogDebug("Connect failed: {}", ec.message());
@@ -98,17 +101,19 @@ namespace http_client
         {
             try
             {
-                co_await boost::asio::async_connect(m_ssl_socket.lowest_layer(),
-                                                    endpoints,
-                                                    boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+                m_ssl_socket.next_layer().expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+                co_await m_ssl_socket.next_layer().async_connect(
+                    endpoints, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
 
                 if (ec)
                 {
                     LogDebug("boost::asio::async_connect returned error code: {} {}", ec.value(), ec.message());
                 }
-
-                co_await m_ssl_socket.async_handshake(boost::asio::ssl::stream_base::client,
-                                                      boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+                else
+                {
+                    co_await m_ssl_socket.async_handshake(boost::asio::ssl::stream_base::client,
+                                                          boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+                }
             }
             catch (const std::exception& e)
             {
@@ -125,6 +130,7 @@ namespace http_client
         {
             try
             {
+                m_ssl_socket.next_layer().expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
                 boost::beast::http::write(m_ssl_socket, req, ec);
             }
             catch (const std::exception& e)
@@ -141,6 +147,7 @@ namespace http_client
         {
             try
             {
+                m_ssl_socket.next_layer().expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
                 co_await boost::beast::http::async_write(
                     m_ssl_socket, req, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
             }
@@ -160,6 +167,7 @@ namespace http_client
             try
             {
                 boost::beast::flat_buffer buffer;
+                m_ssl_socket.next_layer().expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
                 boost::beast::http::read(m_ssl_socket, buffer, res, ec);
             }
             catch (const std::exception& e)
@@ -177,6 +185,7 @@ namespace http_client
             try
             {
                 boost::beast::flat_buffer buffer;
+                m_ssl_socket.next_layer().expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
                 co_await boost::beast::http::async_read(
                     m_ssl_socket, buffer, res, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
             }
@@ -205,6 +214,6 @@ namespace http_client
         boost::asio::ssl::context m_ctx;
 
         /// @brief The SSL socket to use for the connection
-        boost::asio::ssl::stream<boost::asio::ip::tcp::socket> m_ssl_socket;
+        boost::beast::ssl_stream<boost::beast::tcp_stream> m_ssl_socket;
     };
 } // namespace http_client
