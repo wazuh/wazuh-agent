@@ -8,6 +8,9 @@
 
 namespace http_client
 {
+    /// @brief The socket timeout in seconds
+    constexpr int SOCKET_TIMEOUT_SECS = 60;
+
     /// @brief Interface for HTTP sockets
     class IHttpSocket
     {

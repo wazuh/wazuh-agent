@@ -242,7 +242,12 @@ namespace http_client
         return PerformHttpRequestInternal(params,
                                           [](std::unique_ptr<IHttpSocket>& socket,
                                              boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                                             boost::system::error_code& ec) { socket->Read(res, ec); });
+                                             boost::system::error_code& ec,
+                                             boost::asio::io_context& ioContext)
+                                          {
+                                              socket->Read(res, ec);
+                                              ioContext.run();
+                                          });
     }
 
     std::optional<std::string> HttpClient::AuthenticateWithUuidAndKey(const std::string& serverUrl,
@@ -354,7 +359,8 @@ namespace http_client
         const HttpRequestParams& params,
         const std::function<void(std::unique_ptr<IHttpSocket>&,
                                  boost::beast::http::response<boost::beast::http::dynamic_body>&,
-                                 boost::system::error_code&)>& responseHandler)
+                                 boost::system::error_code&,
+                                 boost::asio::io_context&)>& responseHandler)
     {
         boost::beast::http::response<boost::beast::http::dynamic_body> res;
 
@@ -385,6 +391,7 @@ namespace http_client
             boost::system::error_code ec;
 
             socket->Connect(results, ec);
+            io_context.run();
 
             if (ec)
             {
@@ -394,13 +401,14 @@ namespace http_client
             const auto req = CreateHttpRequest(params);
 
             socket->Write(req, ec);
+            io_context.run();
 
             if (ec)
             {
                 throw std::runtime_error("Error writing request: " + ec.message());
             }
 
-            responseHandler(socket, res, ec);
+            responseHandler(socket, res, ec, io_context);
 
             if (ec)
             {

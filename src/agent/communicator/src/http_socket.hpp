@@ -5,6 +5,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
+#include <boost/beast/core/tcp_stream.hpp>
 #include <boost/system/error_code.hpp>
 
 #include <exception>
@@ -40,7 +41,9 @@ namespace http_client
         {
             try
             {
-                boost::asio::connect(m_socket, endpoints, ec);
+                m_socket.expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+                m_socket.async_connect(endpoints,
+                                       [&ec](boost::beast::error_code const& code, auto const&) { ec = code; });
             }
             catch (const std::exception& e)
             {
@@ -56,8 +59,8 @@ namespace http_client
         {
             try
             {
-                co_await boost::asio::async_connect(
-                    m_socket, endpoints, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+                m_socket.expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+                co_await m_socket.async_connect(endpoints, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
             }
             catch (const std::exception& e)
             {
@@ -74,6 +77,7 @@ namespace http_client
         {
             try
             {
+                m_socket.expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
                 boost::beast::http::write(m_socket, req, ec);
             }
             catch (const std::exception& e)
@@ -90,6 +94,7 @@ namespace http_client
         {
             try
             {
+                m_socket.expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
                 co_await boost::beast::http::async_write(
                     m_socket, req, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
             }
@@ -108,6 +113,7 @@ namespace http_client
         {
             try
             {
+                m_socket.expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
                 boost::beast::flat_buffer buffer;
                 boost::beast::http::read(m_socket, buffer, res, ec);
             }
@@ -125,6 +131,7 @@ namespace http_client
         {
             try
             {
+                m_socket.expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
                 boost::beast::flat_buffer buffer;
                 co_await boost::beast::http::async_read(
                     m_socket, buffer, res, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
@@ -151,6 +158,6 @@ namespace http_client
 
     private:
         /// @brief The socket to use for the HTTP connection
-        boost::asio::ip::tcp::socket m_socket;
+        boost::beast::tcp_stream m_socket;
     };
 } // namespace http_client
