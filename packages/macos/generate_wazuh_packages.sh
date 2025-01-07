@@ -176,7 +176,7 @@ function build_package() {
         # cp -R "${WAZUH_PATH}/src/symbols"  "${DESTINATION}"
         # zip -r "${DESTINATION}/${symbols_pkg_name}.zip" "${DESTINATION}/symbols"
         # rm -rf "${DESTINATION}/symbols"
-        pkg_name=$(ls "$DESTINATION" | grep '.pkg')
+        pkg_name=$(awk -F'"' '/"name":/ {print $4}' $CURRENT_PATH/wazuh-agent/build-info.json)
         sign_pkg
         if [[ "${CHECKSUM}" == "yes" ]]; then
             shasum -a512 "${DESTINATION}/$pkg_name" > "${DESTINATION}/$pkg_name.sha512"

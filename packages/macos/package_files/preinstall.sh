@@ -41,23 +41,22 @@ check_arch
 
 if [ -d "${AGENT_DIR}" ]; then
     echo "A Wazuh agent installation was found in ${AGENT_DIR}. Will perform an upgrade."
-    upgrade="true"
-    touch "${AGENT_DIR}/WAZUH_PKG_UPGRADE"
+    touch "${AGENT_DIR}"/WAZUH_PKG_UPGRADE
 
-    if [ -f "${AGENT_DIR}/WAZUH_RESTART" ]; then
-        rm -f "${AGENT_DIR}/WAZUH_RESTART"
+    if [ -f "${AGENT_DIR}"/WAZUH_RESTART ]; then
+        rm -f "${AGENT_DIR}"/WAZUH_RESTART
     fi
 
     # Stops the agent before upgrading it
     if ${AGENT_DIR}/bin/wazuh-agent --status | grep "is running" > /dev/null 2>&1; then
-        touch "${AGENT_DIR}/WAZUH_RESTART"
-        ${AGENT_DIR}/bin/wazuh-agent --stop
+        touch "${AGENT_DIR}"/WAZUH_RESTART
+        launchctl bootout system $SERVICE_FILE
         restart="true"
     fi
 
     echo "Backing up configuration files to ${CONF_DIR}/config_files/"
-    mkdir -p ${CONF_DIR}/config_files/
-    cp -r ${CONF_DIR}/* ${CONF_DIR}/config_files/
+    mkdir -p "${CONF_DIR}"/config_files/
+    cp -r "${CONF_DIR}"/* "${CONF_DIR}"/config_files/
 
     if pkgutil --pkgs | grep -i wazuh-agent-etc > /dev/null 2>&1 ; then
         echo "Removing previous package receipt for wazuh-agent-etc"
