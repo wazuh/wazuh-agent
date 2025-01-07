@@ -84,7 +84,7 @@ TEST(Logcollector, SendMessage)
 }
 
 #ifdef _WIN32
-TEST(Logcollector, SetupWECReader)
+TEST(Logcollector, SetupWEReader)
 {
     auto constexpr CONFIG_RAW = R"(
     logcollector:
@@ -96,15 +96,18 @@ TEST(Logcollector, SetupWECReader)
     )";
 
     std::shared_ptr<IReader> capturedReader1;
+    std::shared_ptr<IReader> capturedReader2;
     auto logcollector = LogcollectorMock();
     auto config = std::make_shared<configuration::ConfigurationParser>(std::string(CONFIG_RAW));
 
-    EXPECT_CALL(logcollector, AddReader(::testing::_)).Times(1)
-        .WillOnce(::testing::SaveArg<0>(&capturedReader1));
+    EXPECT_CALL(logcollector, AddReader(::testing::_)).Times(2)
+        .WillOnce(::testing::SaveArg<0>(&capturedReader1))
+        .WillOnce(::testing::SaveArg<0>(&capturedReader2));
 
     logcollector.SetupWEReader(config);
 
     ASSERT_NE(capturedReader1, nullptr);
+    ASSERT_NE(capturedReader2, nullptr);
 }
 #endif
 

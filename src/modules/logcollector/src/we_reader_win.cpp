@@ -1,5 +1,8 @@
 #include "we_reader_win.hpp"
 
+#include <sstream>
+#include <iomanip>
+
 #include <logger.hpp>
 
 using namespace logcollector;
@@ -17,9 +20,11 @@ WindowsEventTracerReader::WindowsEventTracerReader(Logcollector &logcollector,
     {
         if(m_bookmarkEnabled)
         {
-            std::string fileName {"\\bookmark.xml"};
+            // Creates a single file per instance
             std::string filePath = config::DEFAULT_DATA_PATH;
-            m_bookmarkFile = filePath + fileName;
+            std::string sanitizedChannel = channel;
+            std::replace(sanitizedChannel.begin(), sanitizedChannel.end(), '\\', '_');
+            m_bookmarkFile = filePath + "\\" + sanitizedChannel + Base64Encode(query) + ".bmk";;
         }
     }
 
@@ -31,8 +36,7 @@ Awaitable WindowsEventTracerReader::Run()
 
 void WindowsEventTracerReader::Stop()
 {
-    //TODO
-    m_keepRunning = false;
+    m_keepRunning.store(false);
 }
 
 Awaitable WindowsEventTracerReader::QueryEvents(const std::string channel, const std::string query)
@@ -83,19 +87,17 @@ Awaitable WindowsEventTracerReader::QueryEvents(const std::string channel, const
     if (!subscriptionHandle)
     {
         LogError("Failed to subscribe to event log: {}", std::to_string(GetLastError()));
+        if (bookmarkHandle)
+        {
+            EvtClose(bookmarkHandle);
+        }
         co_return;
     }
 
     LogInfo("Subscribed to events for {} channel with query: '{}'", channel, query);
 
-    while (true)
+    while (m_keepRunning.load())
     {
-        if (!m_keepRunning)
-        {
-            LogInfo("Stopping subscription based on external signal...");
-            break;
-        }
-
         co_await m_logcollector.Wait(std::chrono::milliseconds(m_ChannelsRefreshInterval));
     }
 
@@ -177,7 +179,7 @@ EVT_HANDLE WindowsEventTracerReader::LoadBookmark()
             file.close();
             if(bookmarkXML.empty())
             {
-                LogTrace("Empty bookark file, exiting");
+                LogTrace("Empty bookmark file");
             }
             else
             {
@@ -187,7 +189,7 @@ EVT_HANDLE WindowsEventTracerReader::LoadBookmark()
         }
         else
         {
-            LogWarn("Couldn't open bookmark file.");
+            LogWarn("Couldn't open bookmark file '{}'.",m_bookmarkFile);
         }
     }
 
@@ -204,5 +206,35 @@ std::string WindowsEventTracerReader::WcharVecToString(std::vector<wchar_t>& buf
                 [](wchar_t wc) -> char {
                     return static_cast<char>(wc);
                 });
+    return result;
+}
+
+std::string WindowsEventTracerReader::Base64Encode(const std::string& input)
+{
+    static const char* chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    std::string result;
+    unsigned int val = 0;
+    int valb = -6;
+    for (unsigned char c : input)
+    {
+        val = (val << 8) + c;
+        valb += 8;
+        while (valb >= 0)
+        {
+            result.push_back(chars[(val >> valb) & 0x3F]);
+            valb -= 6;
+        }
+    }
+
+    if (valb > -6)
+    {
+        result.push_back(chars[((val << 8) >> (valb + 8)) & 0x3F]);
+    }
+
+    while (result.size() % 4)
+    {
+        result.push_back('=');
+    }
+
     return result;
 }
