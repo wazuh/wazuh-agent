@@ -7,6 +7,8 @@
 
 #include <nlohmann/json.hpp>
 
+using namespace sqlite_manager;
+
 namespace command_store
 {
     constexpr double MILLISECS_IN_A_SEC = 1000.0;
@@ -24,15 +26,15 @@ namespace command_store
     }
 
     CommandStore::CommandStore(const std::string& dbFolderPath)
-        : m_dataBase(std::make_unique<sqlite_manager::SQLiteManager>(dbFolderPath + "/" + COMMANDSTORE_DB_NAME))
+        : m_dataBase(std::make_unique<SQLiteManager>(dbFolderPath + "/" + COMMANDSTORE_DB_NAME))
     {
-        sqlite_manager::Column colId {"id", sqlite_manager::ColumnType::TEXT, true, false, true};
-        sqlite_manager::Column colModule {"module", sqlite_manager::ColumnType::TEXT, true, false, false};
-        sqlite_manager::Column colCommand {"command", sqlite_manager::ColumnType::TEXT, true, false, false};
-        sqlite_manager::Column colParameter {"parameters", sqlite_manager::ColumnType::TEXT, true, false, false};
-        sqlite_manager::Column colResult {"result", sqlite_manager::ColumnType::TEXT, true, false, false};
-        sqlite_manager::Column colStatus {"status", sqlite_manager::ColumnType::INTEGER, true, false, false};
-        sqlite_manager::Column colTime {"time", sqlite_manager::ColumnType::REAL, true, false, false};
+        Column colId {"id", ColumnType::TEXT, true, false, true};
+        Column colModule {"module", ColumnType::TEXT, true, false, false};
+        Column colCommand {"command", ColumnType::TEXT, true, false, false};
+        Column colParameter {"parameters", ColumnType::TEXT, true, false, false};
+        Column colResult {"result", ColumnType::TEXT, true, false, false};
+        Column colStatus {"status", ColumnType::INTEGER, true, false, false};
+        Column colTime {"time", ColumnType::REAL, true, false, false};
 
         try
         {
@@ -86,16 +88,15 @@ namespace command_store
 
     bool CommandStore::StoreCommand(const module_command::CommandEntry& cmd)
     {
-        std::vector<sqlite_manager::Column> fields;
-        fields.emplace_back("id", sqlite_manager::ColumnType::TEXT, cmd.Id);
-        fields.emplace_back("module", sqlite_manager::ColumnType::TEXT, cmd.Module);
-        fields.emplace_back("command", sqlite_manager::ColumnType::TEXT, cmd.Command);
-        fields.emplace_back("time", sqlite_manager::ColumnType::REAL, std::to_string(GetCurrentTimestampAsReal()));
-        fields.emplace_back("parameters", sqlite_manager::ColumnType::TEXT, cmd.Parameters.dump());
-        fields.emplace_back("result", sqlite_manager::ColumnType::TEXT, cmd.ExecutionResult.Message);
-        fields.emplace_back("status",
-                            sqlite_manager::ColumnType::INTEGER,
-                            std::to_string(static_cast<int>(cmd.ExecutionResult.ErrorCode)));
+        std::vector<Column> fields;
+        fields.emplace_back("id", ColumnType::TEXT, cmd.Id);
+        fields.emplace_back("module", ColumnType::TEXT, cmd.Module);
+        fields.emplace_back("command", ColumnType::TEXT, cmd.Command);
+        fields.emplace_back("time", ColumnType::REAL, std::to_string(GetCurrentTimestampAsReal()));
+        fields.emplace_back("parameters", ColumnType::TEXT, cmd.Parameters.dump());
+        fields.emplace_back("result", ColumnType::TEXT, cmd.ExecutionResult.Message);
+        fields.emplace_back(
+            "status", ColumnType::INTEGER, std::to_string(static_cast<int>(cmd.ExecutionResult.ErrorCode)));
         try
         {
             m_dataBase->Insert(COMMANDSTORE_TABLE_NAME, fields);
@@ -110,8 +111,8 @@ namespace command_store
 
     bool CommandStore::DeleteCommand(const std::string& id)
     {
-        std::vector<sqlite_manager::Column> fields;
-        fields.emplace_back("id", sqlite_manager::ColumnType::TEXT, id);
+        std::vector<Column> fields;
+        fields.emplace_back("id", ColumnType::TEXT, id);
         try
         {
             m_dataBase->Remove(COMMANDSTORE_TABLE_NAME, fields);
@@ -128,8 +129,7 @@ namespace command_store
     {
         try
         {
-            auto cmdData = m_dataBase->Select(
-                COMMANDSTORE_TABLE_NAME, {}, {sqlite_manager::Column("id", sqlite_manager::ColumnType::TEXT, id)});
+            auto cmdData = m_dataBase->Select(COMMANDSTORE_TABLE_NAME, {}, {Column("id", ColumnType::TEXT, id)});
 
             if (cmdData.empty())
             {
@@ -137,7 +137,7 @@ namespace command_store
             }
 
             module_command::CommandEntry cmd;
-            for (const sqlite_manager::Column& col : cmdData[0])
+            for (const Column& col : cmdData[0])
             {
                 if (col.Name == "id")
                 {
@@ -182,11 +182,10 @@ namespace command_store
     {
         try
         {
-            auto cmdData = m_dataBase->Select(COMMANDSTORE_TABLE_NAME,
-                                              {},
-                                              {sqlite_manager::Column("status",
-                                                                      sqlite_manager::ColumnType::INTEGER,
-                                                                      std::to_string(static_cast<int>(status)))});
+            auto cmdData =
+                m_dataBase->Select(COMMANDSTORE_TABLE_NAME,
+                                   {},
+                                   {Column("status", ColumnType::INTEGER, std::to_string(static_cast<int>(status)))});
 
             if (cmdData.empty())
             {
@@ -199,7 +198,7 @@ namespace command_store
             {
                 module_command::CommandEntry cmd;
 
-                for (const sqlite_manager::Column& col : row)
+                for (const Column& col : row)
                 {
                     if (col.Name == "id")
                     {
@@ -244,21 +243,20 @@ namespace command_store
 
     bool CommandStore::UpdateCommand(const module_command::CommandEntry& cmd)
     {
-        std::vector<sqlite_manager::Column> fields;
+        std::vector<Column> fields;
         if (!cmd.Module.empty())
-            fields.emplace_back("module", sqlite_manager::ColumnType::TEXT, cmd.Module);
+            fields.emplace_back("module", ColumnType::TEXT, cmd.Module);
         if (!cmd.Command.empty())
-            fields.emplace_back("command", sqlite_manager::ColumnType::TEXT, cmd.Command);
+            fields.emplace_back("command", ColumnType::TEXT, cmd.Command);
         if (!cmd.Parameters.empty())
-            fields.emplace_back("parameters", sqlite_manager::ColumnType::TEXT, cmd.Parameters.dump());
+            fields.emplace_back("parameters", ColumnType::TEXT, cmd.Parameters.dump());
         if (!cmd.ExecutionResult.Message.empty())
-            fields.emplace_back("result", sqlite_manager::ColumnType::TEXT, cmd.ExecutionResult.Message);
+            fields.emplace_back("result", ColumnType::TEXT, cmd.ExecutionResult.Message);
         if (cmd.ExecutionResult.ErrorCode != module_command::Status::UNKNOWN)
-            fields.emplace_back("status",
-                                sqlite_manager::ColumnType::INTEGER,
-                                std::to_string(static_cast<int>(cmd.ExecutionResult.ErrorCode)));
+            fields.emplace_back(
+                "status", ColumnType::INTEGER, std::to_string(static_cast<int>(cmd.ExecutionResult.ErrorCode)));
 
-        sqlite_manager::Column condition("id", sqlite_manager::ColumnType::TEXT, cmd.Id);
+        Column condition("id", ColumnType::TEXT, cmd.Id);
         try
         {
             m_dataBase->Update(COMMANDSTORE_TABLE_NAME, fields, {condition});

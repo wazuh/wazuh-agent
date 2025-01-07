@@ -167,9 +167,9 @@ namespace sqlite_manager
                 queryFields.reserve(static_cast<size_t>(nColumns));
                 for (int i = 0; i < nColumns; i++)
                 {
-                    sqlite_manager::Column field(query.getColumn(i).getName(),
-                                                 ColumnTypeFromSQLiteType(query.getColumn(i).getType()),
-                                                 query.getColumn(i).getString());
+                    Column field(query.getColumn(i).getName(),
+                                 ColumnTypeFromSQLiteType(query.getColumn(i).getType()),
+                                 query.getColumn(i).getString());
                     queryFields.push_back(field);
                 }
                 results.push_back(queryFields);
