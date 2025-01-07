@@ -42,7 +42,7 @@ public:
     Awaitable Run() override;
 
     //TODO: doc
-    void Stop();
+    void Stop() override;
 
     // Main function to execute the event query with bookmarks and filters
     Awaitable QueryEvents(const std::string channel, const std::string query);
@@ -63,26 +63,31 @@ private:
     // Save bookmark to file
     void SaveBookmark(EVT_HANDLE bookmarkHandle);
 
-    // Load bookmark from file (if it exists)
+    // Load bookmark from file
     EVT_HANDLE LoadBookmark();
 
     //TODO: doc
     std::string WcharVecToString(std::vector<wchar_t>& buffer);
 
+    /// @brief
+    std::string Base64Encode(const std::string& input);
+
+    /// @brief
     std::string m_channel;
 
+    /// @brief
     std::string m_query;
 
-    //TODO: change to configurable
+    /// @brief
     std::string m_bookmarkFile;
 
     /// @brief
     std::time_t m_ChannelsRefreshInterval;
 
+    /// @brief true if bookmark is used
     bool m_bookmarkEnabled;
 
-    bool m_keepRunning {true};
-
+    /// @brief collector type
     const std::string m_collectorType = "eventchannel";
 };
 } // namespace logcollector

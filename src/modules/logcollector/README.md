@@ -13,14 +13,14 @@ system API.
 ```yaml
 logcollector:
   enabled: true
+  use_bookmark: true
+  channel_refresh: 5s
   file:
     - location: /var/log/*.log
       age: 1d
       delim-regex: "\n"
       use-bookmark: true
   windows:
-    reconnect-time: 5s
-    use-bookmark: true
     - channel: Application
       query: Event[System/EventID = 4624]
     - channel: System
