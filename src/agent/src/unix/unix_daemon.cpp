@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <fstream>
 #include <sys/file.h>
+#include <unistd.h>
 
 #if defined(__linux__)
 #include <unistd.h>
@@ -27,18 +28,19 @@ namespace unix_daemon
     {
     }
 
-    bool LockFileHandler::removeLockFile() const
+    void LockFileHandler::removeLockFile() const
     {
+        if (!m_lockFileCreated)
+            return;
+
         const std::string filePath = fmt::format("{}/wazuh-agent.lock", m_lockFilePath);
         try
         {
             std::filesystem::remove(filePath);
-            return true;
         }
         catch (const std::filesystem::filesystem_error& e)
         {
             LogError("Error removing file: {}", e.what());
-            return false;
         }
     }
 
@@ -112,7 +114,6 @@ namespace unix_daemon
             return "running";
         }
 
-        lockFileHandler.removeLockFile();
         return "stopped";
     }
 } // namespace unix_daemon

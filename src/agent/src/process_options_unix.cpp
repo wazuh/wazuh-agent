@@ -32,8 +32,6 @@ void StartAgent(const std::string& configFilePath)
     {
         LogError("Exception thrown in wazuh-agent: {}", e.what());
     }
-
-    lockFileHandler.removeLockFile();
 }
 
 void StatusAgent(const std::string& configFilePath)

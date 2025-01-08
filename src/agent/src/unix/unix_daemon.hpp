@@ -14,16 +14,19 @@ namespace unix_daemon
         /// @param lockFilePath The path where the lock file will be created
         LockFileHandler(std::string lockFilePath);
 
+        /// @brief Destructor
+        /// @details Removes lock file if it was created on construction
+        ~LockFileHandler()
+        {
+            removeLockFile();
+        }
+
         /// @brief Checks if the lock file has been successfully created
         /// @return True if the lock file is created, false otherwise
         bool isLockFileCreated() const
         {
             return m_lockFileCreated;
         }
-
-        /// @brief Removes the lock file
-        /// @return True if the file is removed, false otherwise
-        bool removeLockFile() const;
 
     private:
         /// @brief Creates the directory path for the lock file
@@ -35,7 +38,12 @@ namespace unix_daemon
         /// @return True if the lock file is created, false otherwise
         bool createLockFile();
 
+        /// @brief Removes the lock file
+        void removeLockFile() const;
+
         std::string m_lockFilePath;
+
+        /// @brief Indicates the lock file was created by this instance of the LockFileHandler
         bool m_lockFileCreated;
     };
 
