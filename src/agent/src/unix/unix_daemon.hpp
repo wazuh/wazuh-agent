@@ -1,8 +1,6 @@
 #pragma once
 
 #include <string>
-#include <unistd.h>
-#include <vector>
 
 namespace unix_daemon
 {
