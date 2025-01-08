@@ -85,12 +85,6 @@ protected:
     /// @brief Clean all readers
     void CleanAllReaders();
 
-#ifdef _WIN32
-    /// @brief Sets up the Windows Event Channel reader
-    /// @param configurationParser Configuration parser
-    void SetupWEReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
-#endif
-
 private:
     /// @brief Module name
     const std::string m_moduleName = "logcollector";
@@ -116,5 +110,8 @@ private:
     /// @brief List of steady timers
     std::list<boost::asio::steady_timer*> m_timers;
 };
+
+//TODO:check
+void AddPlatformSpecificReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser, Logcollector &logcollector);
 
 }

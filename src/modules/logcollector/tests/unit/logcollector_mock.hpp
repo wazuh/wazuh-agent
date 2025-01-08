@@ -20,12 +20,6 @@ public:
     {
         Logcollector::SetupFileReader(configurationParser);
     }
-#ifdef _WIN32
-    void SetupWEReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
-    {
-        Logcollector::SetupWEReader(configurationParser);
-    }
-#endif
     MOCK_METHOD(void, AddReader, (std::shared_ptr<IReader> reader), (override));
     MOCK_METHOD(void, EnqueueTask, (Awaitable task), (override));
 };
