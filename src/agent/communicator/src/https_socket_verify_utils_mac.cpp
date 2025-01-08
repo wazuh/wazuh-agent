@@ -1,54 +1,121 @@
+#include "certificate_utils.hpp"
 #include <https_socket_verify_utils.hpp>
+#include <icertificate_utils.hpp>
 #include <logger.hpp>
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <Security/Security.h>
 #include <boost/asio/ssl.hpp>
 
-namespace
-{
-    constexpr int BUFFER_SIZE = 256;
-} // namespace
+#include <string>
 
 namespace https_socket_verify_utils
 {
+    class HttpsVerifier
+    {
+    public:
+        HttpsVerifier(const std::string& mode, const std::string& host, std::unique_ptr<ICertificateUtils>& utils)
+            : m_mode(mode)
+            , m_host(host)
+            , m_utils(utils)
+        {
+        }
+
+        bool Verify(boost::asio::ssl::verify_context& ctx);
+
+    private:
+        bool ExtractCertificate(boost::asio::ssl::verify_context& ctx, CFDataRef& certData);
+        bool CreateTrustObject(CFDataRef certData, SecTrustRef& trust);
+        bool EvaluateTrust(SecTrustRef trust);
+        bool ValidateHostname(SecCertificateRef cert);
+
+        std::string m_mode;
+        std::string m_host;
+        std::unique_ptr<ICertificateUtils>& m_utils;
+    };
+
     bool VerifyCertificate([[maybe_unused]] bool preverified,
                            boost::asio::ssl::verify_context& ctx,
                            const std::string& mode,
                            const std::string& host)
     {
-        STACK_OF(X509)* certChain = X509_STORE_CTX_get_chain(ctx.native_handle());
-        if (!certChain || sk_X509_num(certChain) == 0)
+        std::unique_ptr<ICertificateUtils> certUtils = std::make_unique<CertificateUtilsWrapper>();
+
+        HttpsVerifier verifier(mode, host, certUtils);
+
+        return verifier.Verify(ctx);
+    }
+
+    bool HttpsVerifier::Verify(boost::asio::ssl::verify_context& ctx)
+    {
+        CFDataRef certData = nullptr;
+        if (!ExtractCertificate(ctx, certData))
+        {
+            return false;
+        }
+
+        SecTrustRef trust = nullptr;
+        if (!CreateTrustObject(certData, trust))
+        {
+            return false;
+        }
+
+        if (!EvaluateTrust(trust))
+        {
+            m_utils->ReleaseCFObject(certData);
+            m_utils->ReleaseCFObject(trust);
+            return false;
+        }
+
+        SecCertificateRef serverCert = m_utils->CreateCertificate(certData);
+        if (m_mode == "full" && !ValidateHostname(serverCert))
+        {
+            m_utils->ReleaseCFObject(certData);
+            m_utils->ReleaseCFObject(serverCert);
+            m_utils->ReleaseCFObject(trust);
+            return false;
+        }
+
+        m_utils->ReleaseCFObject(certData);
+        m_utils->ReleaseCFObject(serverCert);
+        m_utils->ReleaseCFObject(trust);
+        return true;
+    }
+
+    bool HttpsVerifier::ExtractCertificate(boost::asio::ssl::verify_context& ctx, CFDataRef& certData)
+    {
+        STACK_OF(X509)* certChain = m_utils->GetCertChain(ctx.native_handle());
+        if (!certChain || m_utils->GetCertificateCount(certChain) == 0)
         {
             LogError("No certificates in the chain.");
             return false;
         }
 
-        X509* cert = sk_X509_value(certChain, 0);
+        X509* cert = m_utils->GetCertificateFromChain(certChain, 0);
         if (!cert)
         {
             LogError("The server certificate could not be obtained.");
             return false;
         }
 
-        unsigned char* certData = nullptr;
-        const int certLen = i2d_X509(cert, &certData);
+        unsigned char* certRawData = nullptr;
+        const int certLen = m_utils->EncodeCertificateToDER(cert, &certRawData);
         if (certLen <= 0)
         {
             LogError("Failed to encode certificate to DER.");
             return false;
         }
 
-        CFDataRef cfCertData = CFDataCreate(kCFAllocatorDefault, certData, certLen);
-        OPENSSL_free(certData);
-        if (!cfCertData)
-        {
-            LogError("Failed to create CFData for certificate.");
-            return false;
-        }
+        certData = m_utils->CreateCFData(certRawData, certLen);
+        OPENSSL_free(certRawData);
 
-        SecCertificateRef serverCert = SecCertificateCreateWithData(nullptr, cfCertData);
-        CFRelease(cfCertData);
+        return certData != nullptr;
+    }
+
+    bool HttpsVerifier::CreateTrustObject(CFDataRef certData, SecTrustRef& trust)
+    {
+        SecCertificateRef serverCert = m_utils->CreateCertificate(certData);
+
         if (!serverCert)
         {
             LogError("Failed to create SecCertificateRef.");
@@ -57,74 +124,54 @@ namespace https_socket_verify_utils
 
         const void* certArrayValues[] = {serverCert};
 
-        CFArrayRef certArray = CFArrayCreate(kCFAllocatorDefault, certArrayValues, 1, &kCFTypeArrayCallBacks);
-        SecPolicyRef policy = SecPolicyCreateSSL(true, nullptr);
-        SecTrustRef trust = nullptr;
+        CFArrayRef certArray = m_utils->CreateCertArray(certArrayValues, 1);
+        SecPolicyRef policy = m_utils->CreateSSLPolicy(true, "");
 
-        OSStatus status = SecTrustCreateWithCertificates(certArray, policy, &trust);
-        CFRelease(certArray);
-        CFRelease(policy);
+        OSStatus status = m_utils->CreateTrustObject(certArray, policy, &trust);
+        m_utils->ReleaseCFObject(certArray);
+        m_utils->ReleaseCFObject(policy);
+        m_utils->ReleaseCFObject(serverCert);
 
-        if (status != errSecSuccess || !trust)
-        {
-            LogError("Failed to create SecTrust object.");
-            CFRelease(serverCert);
-            return false;
-        }
+        return (status == errSecSuccess && trust != nullptr);
+    }
 
-        // Evaluate certificate trust using SecTrustEvaluateWithError
+    bool HttpsVerifier::EvaluateTrust(SecTrustRef trust)
+    {
         CFErrorRef error = nullptr;
-
-        const bool trustResult = SecTrustEvaluateWithError(trust, &error);
-        if (!trustResult)
+        const bool trustResult = m_utils->EvaluateTrust(trust, &error);
+        if (!trustResult && error)
         {
-            if (error)
-            {
-                CFStringRef errorDesc = CFErrorCopyDescription(error);
-                char bufferError[BUFFER_SIZE] = {0};
-                CFStringGetCString(errorDesc, bufferError, sizeof(bufferError), kCFStringEncodingUTF8);
-                LogError("Trust evaluation failed: {}", bufferError);
-                CFRelease(errorDesc);
-                CFRelease(error);
-            }
-            CFRelease(trust);
-            CFRelease(serverCert);
+            CFStringRef errorDesc = m_utils->CopyErrorDescription(error);
+            std::string errorString = m_utils->GetStringCFString(errorDesc);
+            LogError("Trust evaluation failed: {}", errorString);
+            m_utils->ReleaseCFObject(errorDesc);
+            m_utils->ReleaseCFObject(error);
+        }
+        return trustResult;
+    }
+
+    bool HttpsVerifier::ValidateHostname(SecCertificateRef serverCert)
+    {
+        CFStringRef sanString = SecCertificateCopySubjectSummary(serverCert);
+        if (!sanString)
+        {
+            LogError("Failed to retrieve SAN or CN for hostname validation.");
             return false;
         }
 
-        // Validate the hostname if the mode is 'full'.
-        if (mode == "full")
+        bool hostnameMatches = false;
+        std::string sanStringStr = m_utils->GetStringCFString(sanString);
+        if (!sanStringStr.empty())
         {
-            CFStringRef sanString = SecCertificateCopySubjectSummary(serverCert);
-            if (!sanString)
-            {
-                LogError("Failed to retrieve SAN or CN for hostname validation.");
-                CFRelease(trust);
-                CFRelease(serverCert);
-                return false;
-            }
-
-            bool hostnameMatches = false;
-            char buffer[BUFFER_SIZE] = {0};
-            if (CFStringGetCString(sanString, buffer, sizeof(buffer), kCFStringEncodingUTF8))
-            {
-                hostnameMatches = (host == buffer);
-            }
-
-            CFRelease(sanString);
-            if (!hostnameMatches)
-            {
-                LogError("The hostname does not match the certificate's SAN or CN.");
-                CFRelease(trust);
-                CFRelease(serverCert);
-                return false;
-            }
+            hostnameMatches = (m_host == sanStringStr);
         }
 
-        // Free resources
-        CFRelease(trust);
-        CFRelease(serverCert);
+        m_utils->ReleaseCFObject(sanString);
+        if (!hostnameMatches)
+        {
+            LogError("The hostname '{}' does not match the certificate's SAN or CN '{}'.", m_host, sanStringStr);
+        }
 
-        return true;
+        return hostnameMatches;
     }
 } // namespace https_socket_verify_utils
