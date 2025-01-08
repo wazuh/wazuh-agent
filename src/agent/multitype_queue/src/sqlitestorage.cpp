@@ -144,36 +144,6 @@ nlohmann::json SQLiteStorage::RetrieveMultiple(int n,
     return ProcessRequest(query);
 }
 
-int SQLiteStorage::Remove(int id, const std::string& tableName, const std::string& moduleName)
-{
-    std::string deleteQuery;
-    if (moduleName.empty())
-    {
-        constexpr std::string_view DELETE_QUERY {"DELETE FROM {} WHERE rowid = ?;"};
-        deleteQuery = fmt::format(DELETE_QUERY, tableName);
-    }
-    else
-    {
-        constexpr std::string_view DELETE_QUERY {"DELETE FROM {} WHERE module_name LIKE \"{}\" AND rowid = ?;"};
-        deleteQuery = fmt::format(DELETE_QUERY, tableName, moduleName);
-    }
-
-    try
-    {
-        SQLite::Statement query(*m_db, deleteQuery);
-        query.bind(1, id);
-        SQLite::Transaction transaction(*m_db);
-        query.exec();
-        transaction.commit();
-        return 1;
-    }
-    catch (const std::exception& e)
-    {
-        LogError("Error during Remove operation: {}.", e.what());
-        return 0;
-    }
-}
-
 int SQLiteStorage::RemoveMultiple(int n, const std::string& tableName, const std::string& moduleName)
 {
     std::string deleteQuery;

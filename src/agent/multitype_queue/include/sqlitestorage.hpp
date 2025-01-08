@@ -79,16 +79,6 @@ public:
                                     const std::string& moduleType = "") override;
 
     /**
-     * @brief Remove a JSON message by its ID.
-     *
-     * @param id The number the message to remove.
-     * @param tableName The name of the table to remove the message from.
-     * @param moduleName The name of the module that created the message.
-     * @return The number of removed elements.
-     */
-    int Remove(int id, const std::string& tableName, const std::string& moduleName = "") override;
-
-    /**
      * @brief Remove multiple JSON messages.
      *
      * @param n The number of messages to remove.

@@ -120,26 +120,6 @@ TEST_F(SQLiteStorageTest, RetrieveMultipleMessagesWithModule)
     }
 }
 
-TEST_F(SQLiteStorageTest, RemoveMessage)
-{
-    nlohmann::json message = {{"key", "value"}};
-    EXPECT_EQ(storage->Store(message, tableName), 1);
-    EXPECT_EQ(storage->Remove(1, tableName), 1);
-    EXPECT_EQ(storage->GetElementCount(tableName), 0);
-}
-
-TEST_F(SQLiteStorageTest, RemoveMessageWithModule)
-{
-    nlohmann::json message = {{"key", "value"}};
-    EXPECT_EQ(storage->Store(message, tableName, moduleName), 1);
-    EXPECT_EQ(storage->Remove(1, tableName), 1);
-    EXPECT_EQ(storage->Store(message, tableName, moduleName), 1);
-    EXPECT_EQ(storage->Remove(1, tableName, "unavailableModuleName"), 1);
-    EXPECT_EQ(storage->GetElementCount(tableName), 1);
-    EXPECT_EQ(storage->Remove(1, tableName, moduleName), 1);
-    EXPECT_EQ(storage->GetElementCount(tableName), 0);
-}
-
 TEST_F(SQLiteStorageTest, RemoveMultipleMessages)
 {
     auto messages = nlohmann::json::array();
