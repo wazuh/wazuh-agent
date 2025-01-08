@@ -85,10 +85,8 @@ constexpr auto PACKAGES_SQL_STATEMENT
     multiarch TEXT,
     source TEXT,
     format TEXT,
-    item_id TEXT,
     PRIMARY KEY (name,version,architecture,format,location)) WITHOUT ROWID;)"
 };
-static const std::vector<std::string> PACKAGES_ITEM_ID_FIELDS{"name", "version", "architecture", "format", "location"};
 
 constexpr auto PROCESSES_SQL_STATEMENT
 {
@@ -138,7 +136,6 @@ constexpr auto PORTS_SQL_STATEMENT
        state TEXT,
        pid BIGINT,
        process TEXT,
-       item_id TEXT,
        PRIMARY KEY (inode,protocol,local_ip,local_port)) WITHOUT ROWID;)"
 };
 static const std::vector<std::string> PORTS_ITEM_ID_FIELDS{"inode", "protocol", "local_ip", "local_port"};
@@ -167,12 +164,9 @@ constexpr auto NETWORK_SQL_STATEMENT
         address TEXT,
         netmask TEXT,
         broadcast TEXT,
-        network_item_id TEXT,
         PRIMARY KEY (iface, adapter, iface_type, proto_type, address)
         ) WITHOUT ROWID;)"
 };
-
-static const std::vector<std::string> NETWORK_ITEM_ID_FIELDS{"iface", "adapter", "iface_type", "proto_type", "address"};
 
 constexpr auto NETWORKS_TABLE     { "networks"  };
 constexpr auto PACKAGES_TABLE     { "packages"  };
@@ -604,7 +598,6 @@ nlohmann::json Inventory::EcsPortData(const nlohmann::json& originalData)
     ret["interface"]["state"] = originalData.contains("state") ? originalData["state"] : UNKNOWN_VALUE;
     ret["process"]["pid"] = originalData.contains("pid") ? originalData["pid"] : UNKNOWN_VALUE;
     ret["process"]["name"] = originalData.contains("process") ? originalData["process"] : UNKNOWN_VALUE;
-    ret["device"]["id"] = originalData.contains("item_id") ? originalData["item_id"] : UNKNOWN_VALUE;
 
     return ret;
 }
@@ -675,7 +668,6 @@ nlohmann::json Inventory::EcsNetworkData(const nlohmann::json& originalData)
         originalData["adapter"] : EMPTY_VALUE;
     ret["observer"]["ingress"]["interface"]["name"] = (originalData.contains("iface") && !originalData["iface"].is_null()) ?
         originalData["iface"] : EMPTY_VALUE;
-    ret["device"]["id"] = originalData.contains("network_item_id") ? originalData["network_item_id"] : UNKNOWN_VALUE;
 
     return ret;
 }
@@ -768,8 +760,6 @@ nlohmann::json Inventory::GetNetworkData()
                         networkAddressData["netmask"] = addressTableData.at("netmask");
                         networkTableData.update(networkAddressData);
 
-                        networkTableData["network_item_id"] = GetItemId(networkTableData, NETWORK_ITEM_ID_FIELDS);
-
                         ret[NETWORKS_TABLE].push_back(networkTableData);
                     }
                 }
@@ -786,8 +776,6 @@ nlohmann::json Inventory::GetNetworkData()
                         networkAddressData["metric"]  = addressTableData.at("metric");
                         networkAddressData["netmask"] = addressTableData.at("netmask");
                         networkTableData.update(networkAddressData);
-
-                        networkTableData["network_item_id"] = GetItemId(networkTableData, NETWORK_ITEM_ID_FIELDS);
 
                         ret[NETWORKS_TABLE].push_back(networkTableData);
                     }
@@ -845,8 +833,6 @@ void Inventory::ScanPackages()
         m_spInfo->packages([this, &txn](nlohmann::json & rawData)
         {
             nlohmann::json input;
-
-            rawData["item_id"] = GetItemId(rawData, PACKAGES_ITEM_ID_FIELDS);
 
             input["table"] = PACKAGES_TABLE;
             m_spNormalizer->Normalize("packages", rawData);
