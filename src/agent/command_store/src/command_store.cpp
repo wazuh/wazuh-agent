@@ -9,6 +9,22 @@
 
 using namespace sqlite_manager;
 
+namespace
+{
+    // database
+    const std::string COMMANDSTORE_DB_NAME = "command_store.db";
+
+    // command_store table
+    const std::string COMMAND_STORE_TABLE_NAME = "command_store";
+    const std::string COMMAND_STORE_ID_COLUMN_NAME = "id";
+    const std::string COMMAND_STORE_MODULE_COLUMN_NAME = "module";
+    const std::string COMMAND_STORE_COMMAND_COLUMN_NAME = "command";
+    const std::string COMMAND_STORE_PARAMETERS_COLUMN_NAME = "parameters";
+    const std::string COMMAND_STORE_RESULT_COLUMN_NAME = "result";
+    const std::string COMMAND_STORE_STATUS_COLUMN_NAME = "status";
+    const std::string COMMAND_STORE_TIME_COLUMN_NAME = "time";
+} // namespace
+
 namespace command_store
 {
     constexpr double MILLISECS_IN_A_SEC = 1000.0;
@@ -33,20 +49,20 @@ namespace command_store
         {
             m_dataBase = std::make_unique<SQLiteManager>(dbFilePath);
 
-            if (!m_dataBase->TableExists(COMMANDSTORE_TABLE_NAME))
+            if (!m_dataBase->TableExists(COMMAND_STORE_TABLE_NAME))
             {
                 std::vector<ColumnKey> columns;
-                columns.emplace_back("id", ColumnType::TEXT, true, false, true);
-                columns.emplace_back("module", ColumnType::TEXT, true, false, false);
-                columns.emplace_back("command", ColumnType::TEXT, true, false, false);
-                columns.emplace_back("parameters", ColumnType::TEXT, true, false, false);
-                columns.emplace_back("result", ColumnType::TEXT, true, false, false);
-                columns.emplace_back("status", ColumnType::INTEGER, true, false, false);
-                columns.emplace_back("time", ColumnType::REAL, true, false, false);
+                columns.emplace_back(COMMAND_STORE_ID_COLUMN_NAME, ColumnType::TEXT, true, false, true);
+                columns.emplace_back(COMMAND_STORE_MODULE_COLUMN_NAME, ColumnType::TEXT, true, false, false);
+                columns.emplace_back(COMMAND_STORE_COMMAND_COLUMN_NAME, ColumnType::TEXT, true, false, false);
+                columns.emplace_back(COMMAND_STORE_PARAMETERS_COLUMN_NAME, ColumnType::TEXT, true, false, false);
+                columns.emplace_back(COMMAND_STORE_RESULT_COLUMN_NAME, ColumnType::TEXT, true, false, false);
+                columns.emplace_back(COMMAND_STORE_STATUS_COLUMN_NAME, ColumnType::INTEGER, true, false, false);
+                columns.emplace_back(COMMAND_STORE_TIME_COLUMN_NAME, ColumnType::REAL, true, false, false);
 
                 try
                 {
-                    m_dataBase->CreateTable(COMMANDSTORE_TABLE_NAME, columns);
+                    m_dataBase->CreateTable(COMMAND_STORE_TABLE_NAME, columns);
                 }
                 catch (std::exception& e)
                 {
@@ -65,7 +81,7 @@ namespace command_store
     {
         try
         {
-            m_dataBase->Remove(COMMANDSTORE_TABLE_NAME, {});
+            m_dataBase->Remove(COMMAND_STORE_TABLE_NAME, {});
         }
         catch (const std::exception& e)
         {
@@ -81,7 +97,7 @@ namespace command_store
 
         try
         {
-            count = m_dataBase->GetCount(COMMANDSTORE_TABLE_NAME);
+            count = m_dataBase->GetCount(COMMAND_STORE_TABLE_NAME);
         }
         catch (const std::exception& e)
         {
@@ -103,18 +119,20 @@ namespace command_store
     bool CommandStore::StoreCommand(const module_command::CommandEntry& cmd)
     {
         Row fields;
-        fields.emplace_back("id", ColumnType::TEXT, cmd.Id);
-        fields.emplace_back("module", ColumnType::TEXT, cmd.Module);
-        fields.emplace_back("command", ColumnType::TEXT, cmd.Command);
-        fields.emplace_back("time", ColumnType::REAL, std::to_string(GetCurrentTimestampAsReal()));
-        fields.emplace_back("parameters", ColumnType::TEXT, cmd.Parameters.dump());
-        fields.emplace_back("result", ColumnType::TEXT, cmd.ExecutionResult.Message);
+        fields.emplace_back(COMMAND_STORE_ID_COLUMN_NAME, ColumnType::TEXT, cmd.Id);
+        fields.emplace_back(COMMAND_STORE_MODULE_COLUMN_NAME, ColumnType::TEXT, cmd.Module);
+        fields.emplace_back(COMMAND_STORE_COMMAND_COLUMN_NAME, ColumnType::TEXT, cmd.Command);
         fields.emplace_back(
-            "status", ColumnType::INTEGER, std::to_string(static_cast<int>(cmd.ExecutionResult.ErrorCode)));
+            COMMAND_STORE_TIME_COLUMN_NAME, ColumnType::REAL, std::to_string(GetCurrentTimestampAsReal()));
+        fields.emplace_back(COMMAND_STORE_PARAMETERS_COLUMN_NAME, ColumnType::TEXT, cmd.Parameters.dump());
+        fields.emplace_back(COMMAND_STORE_RESULT_COLUMN_NAME, ColumnType::TEXT, cmd.ExecutionResult.Message);
+        fields.emplace_back(COMMAND_STORE_STATUS_COLUMN_NAME,
+                            ColumnType::INTEGER,
+                            std::to_string(static_cast<int>(cmd.ExecutionResult.ErrorCode)));
 
         try
         {
-            m_dataBase->Insert(COMMANDSTORE_TABLE_NAME, fields);
+            m_dataBase->Insert(COMMAND_STORE_TABLE_NAME, fields);
         }
         catch (const std::exception& e)
         {
@@ -127,11 +145,11 @@ namespace command_store
     bool CommandStore::DeleteCommand(const std::string& id)
     {
         Criteria filters;
-        filters.emplace_back("id", ColumnType::TEXT, id);
+        filters.emplace_back(COMMAND_STORE_ID_COLUMN_NAME, ColumnType::TEXT, id);
 
         try
         {
-            m_dataBase->Remove(COMMANDSTORE_TABLE_NAME, filters);
+            m_dataBase->Remove(COMMAND_STORE_TABLE_NAME, filters);
         }
         catch (const std::exception& e)
         {
@@ -144,11 +162,11 @@ namespace command_store
     std::optional<module_command::CommandEntry> CommandStore::GetCommand(const std::string& id)
     {
         Criteria filters;
-        filters.emplace_back("id", ColumnType::TEXT, id);
+        filters.emplace_back(COMMAND_STORE_ID_COLUMN_NAME, ColumnType::TEXT, id);
 
         try
         {
-            auto cmdData = m_dataBase->Select(COMMANDSTORE_TABLE_NAME, {}, filters);
+            auto cmdData = m_dataBase->Select(COMMAND_STORE_TABLE_NAME, {}, filters);
 
             if (cmdData.empty())
             {
@@ -158,31 +176,31 @@ namespace command_store
             module_command::CommandEntry cmd;
             for (const auto& col : cmdData[0])
             {
-                if (col.Name == "id")
+                if (col.Name == COMMAND_STORE_ID_COLUMN_NAME)
                 {
                     cmd.Id = col.Value;
                 }
-                else if (col.Name == "module")
+                else if (col.Name == COMMAND_STORE_MODULE_COLUMN_NAME)
                 {
                     cmd.Module = col.Value;
                 }
-                else if (col.Name == "command")
+                else if (col.Name == COMMAND_STORE_COMMAND_COLUMN_NAME)
                 {
                     cmd.Command = col.Value;
                 }
-                else if (col.Name == "parameters")
+                else if (col.Name == COMMAND_STORE_PARAMETERS_COLUMN_NAME)
                 {
                     cmd.Parameters = nlohmann::json::parse(col.Value);
                 }
-                else if (col.Name == "result")
+                else if (col.Name == COMMAND_STORE_RESULT_COLUMN_NAME)
                 {
                     cmd.ExecutionResult.Message = col.Value;
                 }
-                else if (col.Name == "status")
+                else if (col.Name == COMMAND_STORE_STATUS_COLUMN_NAME)
                 {
                     cmd.ExecutionResult.ErrorCode = StatusFromInt(std::stoi(col.Value));
                 }
-                else if (col.Name == "time")
+                else if (col.Name == COMMAND_STORE_TIME_COLUMN_NAME)
                 {
                     cmd.Time = std::stod(col.Value);
                 }
@@ -200,11 +218,12 @@ namespace command_store
     CommandStore::GetCommandByStatus(const module_command::Status& status)
     {
         Criteria filters;
-        filters.emplace_back("status", ColumnType::INTEGER, std::to_string(static_cast<int>(status)));
+        filters.emplace_back(
+            COMMAND_STORE_STATUS_COLUMN_NAME, ColumnType::INTEGER, std::to_string(static_cast<int>(status)));
 
         try
         {
-            auto cmdData = m_dataBase->Select(COMMANDSTORE_TABLE_NAME, {}, filters);
+            auto cmdData = m_dataBase->Select(COMMAND_STORE_TABLE_NAME, {}, filters);
 
             if (cmdData.empty())
             {
@@ -219,31 +238,31 @@ namespace command_store
 
                 for (const auto& col : row)
                 {
-                    if (col.Name == "id")
+                    if (col.Name == COMMAND_STORE_ID_COLUMN_NAME)
                     {
                         cmd.Id = col.Value;
                     }
-                    else if (col.Name == "module")
+                    else if (col.Name == COMMAND_STORE_MODULE_COLUMN_NAME)
                     {
                         cmd.Module = col.Value;
                     }
-                    else if (col.Name == "command")
+                    else if (col.Name == COMMAND_STORE_COMMAND_COLUMN_NAME)
                     {
                         cmd.Command = col.Value;
                     }
-                    else if (col.Name == "parameters")
+                    else if (col.Name == COMMAND_STORE_PARAMETERS_COLUMN_NAME)
                     {
                         cmd.Parameters = nlohmann::json::parse(col.Value);
                     }
-                    else if (col.Name == "result")
+                    else if (col.Name == COMMAND_STORE_RESULT_COLUMN_NAME)
                     {
                         cmd.ExecutionResult.Message = col.Value;
                     }
-                    else if (col.Name == "status")
+                    else if (col.Name == COMMAND_STORE_STATUS_COLUMN_NAME)
                     {
                         cmd.ExecutionResult.ErrorCode = StatusFromInt(std::stoi(col.Value));
                     }
-                    else if (col.Name == "time")
+                    else if (col.Name == COMMAND_STORE_TIME_COLUMN_NAME)
                     {
                         cmd.Time = std::stod(col.Value);
                     }
@@ -264,23 +283,24 @@ namespace command_store
     {
         Row fields;
         if (!cmd.Module.empty())
-            fields.emplace_back("module", ColumnType::TEXT, cmd.Module);
+            fields.emplace_back(COMMAND_STORE_MODULE_COLUMN_NAME, ColumnType::TEXT, cmd.Module);
         if (!cmd.Command.empty())
-            fields.emplace_back("command", ColumnType::TEXT, cmd.Command);
+            fields.emplace_back(COMMAND_STORE_COMMAND_COLUMN_NAME, ColumnType::TEXT, cmd.Command);
         if (!cmd.Parameters.empty())
-            fields.emplace_back("parameters", ColumnType::TEXT, cmd.Parameters.dump());
+            fields.emplace_back(COMMAND_STORE_PARAMETERS_COLUMN_NAME, ColumnType::TEXT, cmd.Parameters.dump());
         if (!cmd.ExecutionResult.Message.empty())
-            fields.emplace_back("result", ColumnType::TEXT, cmd.ExecutionResult.Message);
+            fields.emplace_back(COMMAND_STORE_RESULT_COLUMN_NAME, ColumnType::TEXT, cmd.ExecutionResult.Message);
         if (cmd.ExecutionResult.ErrorCode != module_command::Status::UNKNOWN)
-            fields.emplace_back(
-                "status", ColumnType::INTEGER, std::to_string(static_cast<int>(cmd.ExecutionResult.ErrorCode)));
+            fields.emplace_back(COMMAND_STORE_STATUS_COLUMN_NAME,
+                                ColumnType::INTEGER,
+                                std::to_string(static_cast<int>(cmd.ExecutionResult.ErrorCode)));
 
         Criteria filters;
-        filters.emplace_back("id", ColumnType::TEXT, cmd.Id);
+        filters.emplace_back(COMMAND_STORE_ID_COLUMN_NAME, ColumnType::TEXT, cmd.Id);
 
         try
         {
-            m_dataBase->Update(COMMANDSTORE_TABLE_NAME, fields, filters);
+            m_dataBase->Update(COMMAND_STORE_TABLE_NAME, fields, filters);
         }
         catch (const std::exception& e)
         {

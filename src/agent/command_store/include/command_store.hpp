@@ -9,9 +9,6 @@
 
 namespace command_store
 {
-    const std::string COMMANDSTORE_DB_NAME = "command_store.db";
-    const std::string COMMANDSTORE_TABLE_NAME = "COMMAND";
-
     /// @brief CommandStore class
     ///
     /// This class provides methods for storing, retrieving, and deleting commands

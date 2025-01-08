@@ -6,9 +6,19 @@ using namespace sqlite_manager;
 
 namespace
 {
-    const std::string AGENT_INFO_TABLE_NAME = "agent_info";
-    const std::string AGENT_GROUP_TABLE_NAME = "agent_group";
+    // database
     const std::string AGENT_INFO_DB_NAME = "agent_info.db";
+
+    // agent_info table
+    const std::string AGENT_INFO_TABLE_NAME = "agent_info";
+    const std::string AGENT_INFO_NAME_COLUMN_NAME = "name";
+    const std::string AGENT_INFO_KEY_COLUMN_NAME = "key";
+    const std::string AGENT_INFO_UUID_COLUMN_NAME = "uuid";
+
+    // agent_group table
+    const std::string AGENT_GROUP_TABLE_NAME = "agent_group";
+    const std::string AGENT_GROUP_ID_COLUMN_NAME = "id";
+    const std::string AGENT_GROUP_NAME_COLUMN_NAME = "name";
 } // namespace
 
 AgentInfoPersistance::AgentInfoPersistance(const std::string& dbFolderPath)
@@ -60,9 +70,10 @@ void AgentInfoPersistance::CreateAgentInfoTable()
 {
     try
     {
-        const std::vector<ColumnKey> columns = {ColumnKey("name", ColumnType::TEXT, true, false),
-                                                ColumnKey("key", ColumnType::TEXT, true, false),
-                                                ColumnKey("uuid", ColumnType::TEXT, true, false, true)};
+        const std::vector<ColumnKey> columns = {
+            ColumnKey(AGENT_INFO_NAME_COLUMN_NAME, ColumnType::TEXT, true, false),
+            ColumnKey(AGENT_INFO_KEY_COLUMN_NAME, ColumnType::TEXT, true, false),
+            ColumnKey(AGENT_INFO_UUID_COLUMN_NAME, ColumnType::TEXT, true, false, true)};
 
         m_db->CreateTable(AGENT_INFO_TABLE_NAME, columns);
     }
@@ -76,8 +87,9 @@ void AgentInfoPersistance::CreateAgentGroupTable()
 {
     try
     {
-        const std::vector<ColumnKey> columns = {ColumnKey("id", ColumnType::INTEGER, true, true, true),
-                                                ColumnKey("name", ColumnType::TEXT, true, false)};
+        const std::vector<ColumnKey> columns = {
+            ColumnKey(AGENT_GROUP_ID_COLUMN_NAME, ColumnType::INTEGER, true, true, true),
+            ColumnKey(AGENT_GROUP_NAME_COLUMN_NAME, ColumnType::TEXT, true, false)};
 
         m_db->CreateTable(AGENT_GROUP_TABLE_NAME, columns);
     }
@@ -95,9 +107,9 @@ void AgentInfoPersistance::InsertDefaultAgentInfo()
 
         if (count == 0)
         {
-            const Row columns = {ColumnValue("name", ColumnType::TEXT, ""),
-                                 ColumnValue("key", ColumnType::TEXT, ""),
-                                 ColumnValue("uuid", ColumnType::TEXT, "")};
+            const Row columns = {ColumnValue(AGENT_INFO_NAME_COLUMN_NAME, ColumnType::TEXT, ""),
+                                 ColumnValue(AGENT_INFO_KEY_COLUMN_NAME, ColumnType::TEXT, ""),
+                                 ColumnValue(AGENT_INFO_UUID_COLUMN_NAME, ColumnType::TEXT, "")};
 
             m_db->Insert(AGENT_INFO_TABLE_NAME, columns);
         }
@@ -145,17 +157,17 @@ std::string AgentInfoPersistance::GetAgentInfoValue(const std::string& column) c
 
 std::string AgentInfoPersistance::GetName() const
 {
-    return GetAgentInfoValue("name");
+    return GetAgentInfoValue(AGENT_INFO_NAME_COLUMN_NAME);
 }
 
 std::string AgentInfoPersistance::GetKey() const
 {
-    return GetAgentInfoValue("key");
+    return GetAgentInfoValue(AGENT_INFO_KEY_COLUMN_NAME);
 }
 
 std::string AgentInfoPersistance::GetUUID() const
 {
-    return GetAgentInfoValue("uuid");
+    return GetAgentInfoValue(AGENT_INFO_UUID_COLUMN_NAME);
 }
 
 std::vector<std::string> AgentInfoPersistance::GetGroups() const
@@ -164,7 +176,7 @@ std::vector<std::string> AgentInfoPersistance::GetGroups() const
 
     try
     {
-        const std::vector<ColumnName> columns = {ColumnName("name", ColumnType::TEXT)};
+        const std::vector<ColumnName> columns = {ColumnName(AGENT_GROUP_NAME_COLUMN_NAME, ColumnType::TEXT)};
         const std::vector<Row> results = m_db->Select(AGENT_GROUP_TABLE_NAME, columns);
 
         for (const auto& row : results)
@@ -185,17 +197,17 @@ std::vector<std::string> AgentInfoPersistance::GetGroups() const
 
 void AgentInfoPersistance::SetName(const std::string& name)
 {
-    SetAgentInfoValue("name", name);
+    SetAgentInfoValue(AGENT_INFO_NAME_COLUMN_NAME, name);
 }
 
 void AgentInfoPersistance::SetKey(const std::string& key)
 {
-    SetAgentInfoValue("key", key);
+    SetAgentInfoValue(AGENT_INFO_KEY_COLUMN_NAME, key);
 }
 
 void AgentInfoPersistance::SetUUID(const std::string& uuid)
 {
-    SetAgentInfoValue("uuid", uuid);
+    SetAgentInfoValue(AGENT_INFO_UUID_COLUMN_NAME, uuid);
 }
 
 bool AgentInfoPersistance::SetGroups(const std::vector<std::string>& groupList)
@@ -208,7 +220,7 @@ bool AgentInfoPersistance::SetGroups(const std::vector<std::string>& groupList)
 
         for (const auto& group : groupList)
         {
-            const Row columns = {ColumnValue("name", ColumnType::TEXT, group)};
+            const Row columns = {ColumnValue(AGENT_GROUP_NAME_COLUMN_NAME, ColumnType::TEXT, group)};
             m_db->Insert(AGENT_GROUP_TABLE_NAME, columns);
         }
 
