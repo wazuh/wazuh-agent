@@ -12,6 +12,7 @@
 #include <sstream>
 
 #include "file_reader.hpp"
+#include "journald_reader.hpp"
 
 using namespace logcollector;
 
@@ -65,6 +66,7 @@ void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParse
     }
 
     SetupFileReader(configurationParser);
+    SetupJournaldReader(configurationParser);
 }
 
 void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
@@ -76,6 +78,24 @@ void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::Co
 
     for (auto& lf : localfiles) {
         AddReader(std::make_shared<FileReader>(*this, lf, fileWait, reloadInterval));
+    }
+}
+
+void Logcollector::SetupJournaldReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
+    try {
+        auto journaldConfigs = configurationParser->GetConfig<YAML::Node>("logcollector", "journald")
+            .value_or(YAML::Node(YAML::NodeType::Sequence));
+
+        for (const auto& config : journaldConfigs) {
+            if (!config.IsMap()) continue;
+
+            AddReader(std::make_shared<JournaldReader>(*this,
+                config["field"].as<std::string>(),
+                config["regex"].as<std::string>(),
+                config["ignore_if_missing"].as<bool>(false)));
+        }
+    } catch (const std::exception& e) {
+        LogTrace("No journald configuration defined: {}", e.what());
     }
 }
 

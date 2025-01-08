@@ -24,3 +24,16 @@ logcollector:
     - /var/log/auth.log
   reload_interval: 1m
   file_wait: 500ms
+
+  journald:
+    - field: "_SYSTEMD_UNIT"
+      regex: ".*"
+      ignore_if_missing: true
+
+    - field: "SYSLOG_IDENTIFIER"
+      regex: ".*"
+      ignore_if_missing: true
+
+    - field: "_SYSTEMD_UNIT"
+      regex: "^cron\\.service$"
+      ignore_if_missing: true
