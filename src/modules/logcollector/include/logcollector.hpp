@@ -85,6 +85,8 @@ protected:
     /// @brief Clean all readers
     void CleanAllReaders();
 
+    void SetupJournaldReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
+
 private:
     /// @brief Module name
     const std::string m_moduleName = "logcollector";
