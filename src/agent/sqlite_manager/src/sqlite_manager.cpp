@@ -30,11 +30,27 @@ namespace sqlite_manager
         m_db->exec("PRAGMA journal_mode=WAL;");
     }
 
-    void SQLiteManager::CreateTable(const std::string& tableName, const std::vector<Column>& cols)
+    bool SQLiteManager::TableExists(const std::string& table)
+    {
+        try
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            SQLite::Statement query(*m_db,
+                                    "SELECT name FROM sqlite_master WHERE type='table' AND name='" + table + "';");
+            return query.executeStep();
+        }
+        catch (const std::exception& e)
+        {
+            LogError("Failed to check if table exists: {}.", e.what());
+            return false;
+        }
+    }
+
+    void SQLiteManager::CreateTable(const std::string& tableName, const std::vector<ColumnKey>& cols)
     {
         std::vector<std::string> pk;
         std::vector<std::string> fields;
-        for (const Column& col : cols)
+        for (const auto& col : cols)
         {
             std::string field =
                 fmt::format("{} {}{}", col.Name, MAP_COL_TYPE_STRING.at(col.Type), (col.NotNull) ? " NOT NULL" : "");
@@ -52,27 +68,12 @@ namespace sqlite_manager
         Execute(queryString);
     }
 
-    bool SQLiteManager::TableExists(const std::string& table) const
-    {
-        try
-        {
-            SQLite::Statement query(*m_db,
-                                    "SELECT name FROM sqlite_master WHERE type='table' AND name='" + table + "';");
-            return query.executeStep();
-        }
-        catch (const std::exception& e)
-        {
-            LogError("Failed to check if table exists: {}.", e.what());
-            return false;
-        }
-    }
-
-    void SQLiteManager::Insert(const std::string& tableName, const std::vector<Column>& cols)
+    void SQLiteManager::Insert(const std::string& tableName, const Row& cols)
     {
         std::vector<std::string> names;
         std::vector<std::string> values;
 
-        for (const Column& col : cols)
+        for (const auto& col : cols)
         {
             names.push_back(col.Name);
             if (col.Type == ColumnType::TEXT)
@@ -89,130 +90,9 @@ namespace sqlite_manager
         Execute(queryString);
     }
 
-    int SQLiteManager::GetCount(const std::string& tableName)
-    {
-        std::string queryString = fmt::format("SELECT COUNT(*) FROM {}", tableName);
-
-        try
-        {
-            std::lock_guard<std::mutex> lock(m_mutex);
-            SQLite::Statement query(*m_db, queryString);
-            int count = 0;
-
-            if (query.executeStep())
-            {
-                count = query.getColumn(0).getInt();
-            }
-            else
-            {
-                LogError("Error getting element count.");
-            }
-            return count;
-        }
-        catch (const std::exception& e)
-        {
-            LogError("Error during GetCount operation: {}.", e.what());
-            throw;
-        }
-    }
-
-    std::vector<Row> SQLiteManager::Select(const std::string& tableName,
-                                           const std::vector<Column>& fields,
-                                           const std::vector<Column>& selCriteria,
-                                           LogicalOperator logOp)
-    {
-        std::string selectedFields;
-        if (fields.empty())
-        {
-            selectedFields = "*";
-        }
-        else
-        {
-            std::vector<std::string> fieldNames;
-            fieldNames.reserve(fields.size());
-
-            for (auto& col : fields)
-            {
-                fieldNames.push_back(col.Name);
-            }
-            selectedFields = fmt::format("{}", fmt::join(fieldNames, ", "));
-        }
-
-        std::string condition;
-        if (!selCriteria.empty())
-        {
-            std::vector<std::string> conditions;
-            for (auto& col : selCriteria)
-            {
-                if (col.Type == ColumnType::TEXT)
-                    conditions.push_back(fmt::format("{} = '{}'", col.Name, col.Value));
-                else
-                    conditions.push_back(fmt::format("{} = {}", col.Name, col.Value));
-            }
-            condition = fmt::format("WHERE {}", fmt::join(conditions, fmt::format(" {} ", MAP_LOGOP_STRING.at(logOp))));
-        }
-
-        std::string queryString = fmt::format("SELECT {} FROM {} {}", selectedFields, tableName, condition);
-
-        std::vector<Row> results;
-        try
-        {
-            std::lock_guard<std::mutex> lock(m_mutex);
-
-            SQLite::Statement query(*m_db, queryString);
-            while (query.executeStep())
-            {
-                int nColumns = query.getColumnCount();
-                std::vector<Column> queryFields;
-                queryFields.reserve(static_cast<size_t>(nColumns));
-                for (int i = 0; i < nColumns; i++)
-                {
-                    Column field(query.getColumn(i).getName(),
-                                 ColumnTypeFromSQLiteType(query.getColumn(i).getType()),
-                                 query.getColumn(i).getString());
-                    queryFields.push_back(field);
-                }
-                results.push_back(queryFields);
-            }
-        }
-        catch (const std::exception& e)
-        {
-            LogError("Error during Retrieve operation: {}.", e.what());
-            throw;
-        }
-        return results;
-    }
-
-    void
-    SQLiteManager::Remove(const std::string& tableName, const std::vector<Column>& selCriteria, LogicalOperator logOp)
-    {
-        std::string whereClause;
-        if (!selCriteria.empty())
-        {
-            std::vector<std::string> critFields;
-            for (auto& col : selCriteria)
-            {
-                if (col.Type == ColumnType::TEXT)
-                {
-                    critFields.push_back(fmt::format("{}='{}'", col.Name, col.Value));
-                }
-                else
-                {
-                    critFields.push_back(fmt::format("{}={}", col.Name, col.Value));
-                }
-            }
-            whereClause =
-                fmt::format(" WHERE {}", fmt::join(critFields, fmt::format(" {} ", MAP_LOGOP_STRING.at(logOp))));
-        }
-
-        std::string queryString = fmt::format("DELETE FROM {}{}", tableName, whereClause);
-
-        Execute(queryString);
-    }
-
     void SQLiteManager::Update(const std::string& tableName,
-                               const std::vector<Column>& fields,
-                               const std::vector<Column>& selCriteria,
+                               const Row& fields,
+                               const Criteria& selCriteria,
                                LogicalOperator logOp)
     {
         if (fields.empty())
@@ -255,6 +135,40 @@ namespace sqlite_manager
         }
 
         std::string queryString = fmt::format("UPDATE {} SET {}{}", tableName, updateValues, whereClause);
+
+        Execute(queryString);
+    }
+
+    void SQLiteManager::Remove(const std::string& tableName, const Criteria& selCriteria, LogicalOperator logOp)
+    {
+        std::string whereClause;
+        if (!selCriteria.empty())
+        {
+            std::vector<std::string> critFields;
+            for (auto& col : selCriteria)
+            {
+                if (col.Type == ColumnType::TEXT)
+                {
+                    critFields.push_back(fmt::format("{}='{}'", col.Name, col.Value));
+                }
+                else
+                {
+                    critFields.push_back(fmt::format("{}={}", col.Name, col.Value));
+                }
+            }
+            whereClause =
+                fmt::format(" WHERE {}", fmt::join(critFields, fmt::format(" {} ", MAP_LOGOP_STRING.at(logOp))));
+        }
+
+        std::string queryString = fmt::format("DELETE FROM {}{}", tableName, whereClause);
+
+        Execute(queryString);
+    }
+
+    void SQLiteManager::DropTable(const std::string& tableName)
+    {
+        std::string queryString = fmt::format("DROP TABLE {}", tableName);
+
         Execute(queryString);
     }
 
@@ -272,11 +186,111 @@ namespace sqlite_manager
         }
     }
 
-    void SQLiteManager::DropTable(const std::string& tableName)
+    std::vector<Row> SQLiteManager::Select(const std::string& tableName,
+                                           const std::vector<ColumnName>& fields,
+                                           const Criteria& selCriteria,
+                                           LogicalOperator logOp)
     {
-        std::string queryString = fmt::format("DROP TABLE {}", tableName);
+        std::string selectedFields;
+        if (fields.empty())
+        {
+            selectedFields = "*";
+        }
+        else
+        {
+            std::vector<std::string> fieldNames;
+            fieldNames.reserve(fields.size());
 
-        Execute(queryString);
+            for (auto& col : fields)
+            {
+                fieldNames.push_back(col.Name);
+            }
+            selectedFields = fmt::format("{}", fmt::join(fieldNames, ", "));
+        }
+
+        std::string condition;
+        if (!selCriteria.empty())
+        {
+            std::vector<std::string> conditions;
+            for (auto& col : selCriteria)
+            {
+                if (col.Type == ColumnType::TEXT)
+                    conditions.push_back(fmt::format("{}='{}'", col.Name, col.Value));
+                else
+                    conditions.push_back(fmt::format("{}={}", col.Name, col.Value));
+            }
+            condition = fmt::format("WHERE {}", fmt::join(conditions, fmt::format(" {} ", MAP_LOGOP_STRING.at(logOp))));
+        }
+
+        std::string queryString = fmt::format("SELECT {} FROM {} {}", selectedFields, tableName, condition);
+
+        std::vector<Row> results;
+        try
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            SQLite::Statement query(*m_db, queryString);
+
+            while (query.executeStep())
+            {
+                int nColumns = query.getColumnCount();
+                Row queryFields;
+                queryFields.reserve(static_cast<size_t>(nColumns));
+                for (int i = 0; i < nColumns; i++)
+                {
+                    queryFields.emplace_back(query.getColumn(i).getName(),
+                                             ColumnTypeFromSQLiteType(query.getColumn(i).getType()),
+                                             query.getColumn(i).getString());
+                }
+                results.push_back(queryFields);
+            }
+        }
+        catch (const std::exception& e)
+        {
+            LogError("Error during Select operation: {}.", e.what());
+            throw;
+        }
+        return results;
+    }
+
+    int SQLiteManager::GetCount(const std::string& tableName, const Criteria& selCriteria, LogicalOperator logOp)
+    {
+        std::string condition;
+        if (!selCriteria.empty())
+        {
+            std::vector<std::string> conditions;
+            for (auto& col : selCriteria)
+            {
+                if (col.Type == ColumnType::TEXT)
+                    conditions.push_back(fmt::format("{}='{}'", col.Name, col.Value));
+                else
+                    conditions.push_back(fmt::format("{}={}", col.Name, col.Value));
+            }
+            condition = fmt::format("WHERE {}", fmt::join(conditions, fmt::format(" {} ", MAP_LOGOP_STRING.at(logOp))));
+        }
+
+        std::string queryString = fmt::format("SELECT COUNT(*) FROM {} {}", tableName, condition);
+
+        int count = 0;
+        try
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            SQLite::Statement query(*m_db, queryString);
+
+            if (query.executeStep())
+            {
+                count = query.getColumn(0).getInt();
+            }
+            else
+            {
+                LogError("Error getting element count.");
+            }
+        }
+        catch (const std::exception& e)
+        {
+            LogError("Error during GetCount operation: {}.", e.what());
+            throw;
+        }
+        return count;
     }
 
     SQLite::Transaction SQLiteManager::BeginTransaction()

@@ -35,7 +35,7 @@ namespace command_store
 
             if (!m_dataBase->TableExists(COMMANDSTORE_TABLE_NAME))
             {
-                std::vector<Column> columns;
+                std::vector<ColumnKey> columns;
                 columns.emplace_back("id", ColumnType::TEXT, true, false, true);
                 columns.emplace_back("module", ColumnType::TEXT, true, false, false);
                 columns.emplace_back("command", ColumnType::TEXT, true, false, false);
@@ -78,6 +78,7 @@ namespace command_store
     int CommandStore::GetCount()
     {
         int count = 0;
+
         try
         {
             count = m_dataBase->GetCount(COMMANDSTORE_TABLE_NAME);
@@ -86,7 +87,6 @@ namespace command_store
         {
             LogError("GetCount operation failed: {}.", e.what());
         }
-
         return count;
     }
 
@@ -102,7 +102,7 @@ namespace command_store
 
     bool CommandStore::StoreCommand(const module_command::CommandEntry& cmd)
     {
-        std::vector<Column> fields;
+        Row fields;
         fields.emplace_back("id", ColumnType::TEXT, cmd.Id);
         fields.emplace_back("module", ColumnType::TEXT, cmd.Module);
         fields.emplace_back("command", ColumnType::TEXT, cmd.Command);
@@ -111,6 +111,7 @@ namespace command_store
         fields.emplace_back("result", ColumnType::TEXT, cmd.ExecutionResult.Message);
         fields.emplace_back(
             "status", ColumnType::INTEGER, std::to_string(static_cast<int>(cmd.ExecutionResult.ErrorCode)));
+
         try
         {
             m_dataBase->Insert(COMMANDSTORE_TABLE_NAME, fields);
@@ -125,9 +126,12 @@ namespace command_store
 
     bool CommandStore::DeleteCommand(const std::string& id)
     {
+        Criteria filters;
+        filters.emplace_back("id", ColumnType::TEXT, id);
+
         try
         {
-            m_dataBase->Remove(COMMANDSTORE_TABLE_NAME, {Column("id", ColumnType::TEXT, id)});
+            m_dataBase->Remove(COMMANDSTORE_TABLE_NAME, filters);
         }
         catch (const std::exception& e)
         {
@@ -139,9 +143,12 @@ namespace command_store
 
     std::optional<module_command::CommandEntry> CommandStore::GetCommand(const std::string& id)
     {
+        Criteria filters;
+        filters.emplace_back("id", ColumnType::TEXT, id);
+
         try
         {
-            auto cmdData = m_dataBase->Select(COMMANDSTORE_TABLE_NAME, {}, {Column("id", ColumnType::TEXT, id)});
+            auto cmdData = m_dataBase->Select(COMMANDSTORE_TABLE_NAME, {}, filters);
 
             if (cmdData.empty())
             {
@@ -149,7 +156,7 @@ namespace command_store
             }
 
             module_command::CommandEntry cmd;
-            for (const Column& col : cmdData[0])
+            for (const auto& col : cmdData[0])
             {
                 if (col.Name == "id")
                 {
@@ -192,12 +199,12 @@ namespace command_store
     std::optional<std::vector<module_command::CommandEntry>>
     CommandStore::GetCommandByStatus(const module_command::Status& status)
     {
+        Criteria filters;
+        filters.emplace_back("status", ColumnType::INTEGER, std::to_string(static_cast<int>(status)));
+
         try
         {
-            auto cmdData =
-                m_dataBase->Select(COMMANDSTORE_TABLE_NAME,
-                                   {},
-                                   {Column("status", ColumnType::INTEGER, std::to_string(static_cast<int>(status)))});
+            auto cmdData = m_dataBase->Select(COMMANDSTORE_TABLE_NAME, {}, filters);
 
             if (cmdData.empty())
             {
@@ -210,7 +217,7 @@ namespace command_store
             {
                 module_command::CommandEntry cmd;
 
-                for (const Column& col : row)
+                for (const auto& col : row)
                 {
                     if (col.Name == "id")
                     {
@@ -255,7 +262,7 @@ namespace command_store
 
     bool CommandStore::UpdateCommand(const module_command::CommandEntry& cmd)
     {
-        std::vector<Column> fields;
+        Row fields;
         if (!cmd.Module.empty())
             fields.emplace_back("module", ColumnType::TEXT, cmd.Module);
         if (!cmd.Command.empty())
@@ -268,9 +275,12 @@ namespace command_store
             fields.emplace_back(
                 "status", ColumnType::INTEGER, std::to_string(static_cast<int>(cmd.ExecutionResult.ErrorCode)));
 
+        Criteria filters;
+        filters.emplace_back("id", ColumnType::TEXT, cmd.Id);
+
         try
         {
-            m_dataBase->Update(COMMANDSTORE_TABLE_NAME, fields, {Column("id", ColumnType::TEXT, cmd.Id)});
+            m_dataBase->Update(COMMANDSTORE_TABLE_NAME, fields, filters);
         }
         catch (const std::exception& e)
         {
