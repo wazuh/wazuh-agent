@@ -61,11 +61,17 @@ namespace sqlite_manager
         /// @param fields A vector of columns to retrieve.
         /// @param selCriteria Optional selection criteria to filter rows.
         /// @param logOp Logical operator to combine selection criteria (AND/OR).
+        /// @param orderBy A vector of columns to order the results by.
+        /// @param orderType The order type (ASC or DESC).
+        /// @param limit The maximum number of rows to retrieve.
         /// @return A vector of rows matching the criteria.
         std::vector<Row> Select(const std::string& tableName,
                                 const std::vector<ColumnName>& fields,
                                 const Criteria& selCriteria = {},
-                                LogicalOperator logOp = LogicalOperator::AND);
+                                LogicalOperator logOp = LogicalOperator::AND,
+                                const std::vector<ColumnName>& orderBy = {},
+                                OrderType orderType = OrderType::ASC,
+                                unsigned int limit = 0);
 
         /// @brief Retrieves the number of rows in a specified table.
         /// @param tableName The name of the table to count rows in.

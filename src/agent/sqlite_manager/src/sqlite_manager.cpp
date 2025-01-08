@@ -11,6 +11,7 @@ namespace sqlite_manager
         {ColumnType::INTEGER, "INTEGER"}, {ColumnType::TEXT, "TEXT"}, {ColumnType::REAL, "REAL"}};
     const std::map<LogicalOperator, std::string> MAP_LOGOP_STRING {{LogicalOperator::AND, "AND"},
                                                                    {LogicalOperator::OR, "OR"}};
+    const std::map<OrderType, std::string> MAP_ORDER_STRING {{OrderType::ASC, "ASC"}, {OrderType::DESC, "DESC"}};
 
     ColumnType SQLiteManager::ColumnTypeFromSQLiteType(const int type) const
     {
@@ -102,7 +103,7 @@ namespace sqlite_manager
         }
 
         std::vector<std::string> setFields;
-        for (auto& col : fields)
+        for (const auto& col : fields)
         {
             if (col.Type == ColumnType::TEXT)
             {
@@ -119,7 +120,7 @@ namespace sqlite_manager
         if (!selCriteria.empty())
         {
             std::vector<std::string> conditions;
-            for (auto& col : selCriteria)
+            for (const auto& col : selCriteria)
             {
                 if (col.Type == ColumnType::TEXT)
                 {
@@ -145,7 +146,7 @@ namespace sqlite_manager
         if (!selCriteria.empty())
         {
             std::vector<std::string> critFields;
-            for (auto& col : selCriteria)
+            for (const auto& col : selCriteria)
             {
                 if (col.Type == ColumnType::TEXT)
                 {
@@ -189,7 +190,10 @@ namespace sqlite_manager
     std::vector<Row> SQLiteManager::Select(const std::string& tableName,
                                            const std::vector<ColumnName>& fields,
                                            const Criteria& selCriteria,
-                                           LogicalOperator logOp)
+                                           LogicalOperator logOp,
+                                           const std::vector<ColumnName>& orderBy,
+                                           OrderType orderType,
+                                           unsigned int limit)
     {
         std::string selectedFields;
         if (fields.empty())
@@ -201,7 +205,7 @@ namespace sqlite_manager
             std::vector<std::string> fieldNames;
             fieldNames.reserve(fields.size());
 
-            for (auto& col : fields)
+            for (const auto& col : fields)
             {
                 fieldNames.push_back(col.Name);
             }
@@ -212,7 +216,7 @@ namespace sqlite_manager
         if (!selCriteria.empty())
         {
             std::vector<std::string> conditions;
-            for (auto& col : selCriteria)
+            for (const auto& col : selCriteria)
             {
                 if (col.Type == ColumnType::TEXT)
                     conditions.push_back(fmt::format("{}='{}'", col.Name, col.Value));
@@ -220,6 +224,23 @@ namespace sqlite_manager
                     conditions.push_back(fmt::format("{}={}", col.Name, col.Value));
             }
             condition = fmt::format("WHERE {}", fmt::join(conditions, fmt::format(" {} ", MAP_LOGOP_STRING.at(logOp))));
+        }
+
+        if (!orderBy.empty())
+        {
+            std::vector<std::string> orderFields;
+            orderFields.reserve(orderBy.size());
+            for (const auto& col : orderBy)
+            {
+                orderFields.push_back(col.Name);
+            }
+            condition += fmt::format(" ORDER BY {}", fmt::join(orderFields, ", "));
+            condition += fmt::format(" {}", MAP_ORDER_STRING.at(orderType));
+        }
+
+        if (limit > 0)
+        {
+            condition += fmt::format(" LIMIT {}", limit);
         }
 
         std::string queryString = fmt::format("SELECT {} FROM {} {}", selectedFields, tableName, condition);
@@ -258,7 +279,7 @@ namespace sqlite_manager
         if (!selCriteria.empty())
         {
             std::vector<std::string> conditions;
-            for (auto& col : selCriteria)
+            for (const auto& col : selCriteria)
             {
                 if (col.Type == ColumnType::TEXT)
                     conditions.push_back(fmt::format("{}='{}'", col.Name, col.Value));

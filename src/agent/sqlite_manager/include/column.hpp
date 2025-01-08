@@ -10,6 +10,13 @@ enum class LogicalOperator
     OR
 };
 
+/// @brief Supported order types for sorting results.
+enum class OrderType
+{
+    ASC,
+    DESC
+};
+
 /// @brief Supported column data types for SQLite tables.
 enum class ColumnType
 {

@@ -206,6 +206,83 @@ TEST_F(SQLiteManagerTest, SelectTest)
 
     DumpResults(ret);
     EXPECT_EQ(ret.size(), 1);
+
+    // only Name field with ordered criteria
+    cols.clear();
+    cols.emplace_back("Name", ColumnType::TEXT);
+    ret.clear();
+    ret = m_db->Select(
+        m_tableName, cols, {}, LogicalOperator::AND, {ColumnName("Name", ColumnType::TEXT)}, OrderType::DESC);
+
+    DumpResults(ret);
+    EXPECT_EQ(ret.size(), 6);
+    EXPECT_EQ(ret[0][0].Value, "MyTestName");
+    EXPECT_EQ(ret[1][0].Value, "ItemName5");
+    EXPECT_EQ(ret[2][0].Value, "ItemName4");
+    EXPECT_EQ(ret[3][0].Value, "ItemName3");
+    EXPECT_EQ(ret[4][0].Value, "ItemName2");
+    EXPECT_EQ(ret[5][0].Value, "ItemName");
+
+    // only Name ans Amount fields with selection criteria and ordered criteria
+    cols.clear();
+    cols.emplace_back("Name", ColumnType::TEXT);
+    cols.emplace_back("Amount", ColumnType::REAL);
+    ret.clear();
+    ret = m_db->Select(m_tableName,
+                       cols,
+                       {ColumnValue("Amount", ColumnType::REAL, "2.8"), ColumnValue("Amount", ColumnType::REAL, "3.5")},
+                       LogicalOperator::OR,
+                       {ColumnName("Amount", ColumnType::REAL)},
+                       OrderType::DESC);
+
+    DumpResults(ret);
+    EXPECT_EQ(ret.size(), 2);
+    EXPECT_EQ(ret[0][0].Value, "ItemName5");
+    EXPECT_EQ(ret[0][1].Value, "3.5");
+    EXPECT_EQ(ret[1][0].Value, "ItemName4");
+    EXPECT_EQ(ret[1][1].Value, "2.8");
+
+    // only Name field with limit criteria
+    cols.clear();
+    cols.emplace_back("Name", ColumnType::TEXT);
+    ret.clear();
+    ret = m_db->Select(m_tableName, cols, {}, LogicalOperator::AND, {}, OrderType::ASC, 3);
+
+    DumpResults(ret);
+    EXPECT_EQ(ret.size(), 3);
+
+    // only Name ans Amount fields with selection criteria and limit criteria
+    cols.clear();
+    cols.emplace_back("Name", ColumnType::TEXT);
+    ret.clear();
+    ret = m_db->Select(m_tableName,
+                       cols,
+                       {ColumnValue("Amount", ColumnType::REAL, "2.8"), ColumnValue("Amount", ColumnType::REAL, "3.5")},
+                       LogicalOperator::OR,
+                       {},
+                       OrderType::ASC,
+                       1);
+
+    DumpResults(ret);
+    EXPECT_EQ(ret.size(), 1);
+
+    // only Name ans Amount fields with selection criteria, ordered criteria and limit criteria
+    cols.clear();
+    cols.emplace_back("Name", ColumnType::TEXT);
+    cols.emplace_back("Amount", ColumnType::REAL);
+    ret.clear();
+    ret = m_db->Select(m_tableName,
+                       cols,
+                       {ColumnValue("Amount", ColumnType::REAL, "2.8"), ColumnValue("Amount", ColumnType::REAL, "3.5")},
+                       LogicalOperator::OR,
+                       {ColumnName("Amount", ColumnType::REAL)},
+                       OrderType::DESC,
+                       1);
+
+    DumpResults(ret);
+    EXPECT_EQ(ret.size(), 1);
+    EXPECT_EQ(ret[0][0].Value, "ItemName5");
+    EXPECT_EQ(ret[0][1].Value, "3.5");
 }
 
 TEST_F(SQLiteManagerTest, RemoveTest)
