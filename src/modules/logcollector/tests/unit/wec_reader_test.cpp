@@ -3,7 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include <logcollector.hpp>
-#include <we_reader_win.hpp>
+#include "event_reader_win.hpp"
 #include "logcollector_mock.hpp"
 
 using namespace logcollector;

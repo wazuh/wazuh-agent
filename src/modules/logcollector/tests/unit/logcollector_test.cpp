@@ -83,34 +83,6 @@ TEST(Logcollector, SendMessage)
     ASSERT_EQ(capturedMessage.metaData, METADATA);
 }
 
-#ifdef _WIN32
-TEST(Logcollector, SetupWEReader)
-{
-    auto constexpr CONFIG_RAW = R"(
-    logcollector:
-      windows:
-        - channel: Application
-          query: Event[System/EventID = 4624]
-        - channel: System
-          query: Event[System/EventID = 7040]
-    )";
-
-    std::shared_ptr<IReader> capturedReader1;
-    std::shared_ptr<IReader> capturedReader2;
-    auto logcollector = LogcollectorMock();
-    auto config = std::make_shared<configuration::ConfigurationParser>(std::string(CONFIG_RAW));
-
-    EXPECT_CALL(logcollector, AddReader(::testing::_)).Times(2)
-        .WillOnce(::testing::SaveArg<0>(&capturedReader1))
-        .WillOnce(::testing::SaveArg<0>(&capturedReader2));
-
-    logcollector.SetupWEReader(config);
-
-    ASSERT_NE(capturedReader1, nullptr);
-    ASSERT_NE(capturedReader2, nullptr);
-}
-#endif
-
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);

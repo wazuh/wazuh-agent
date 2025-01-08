@@ -1,11 +1,30 @@
-#include "we_reader_win.hpp"
+#include "event_reader_win.hpp"
 
 #include <sstream>
 #include <iomanip>
 
 #include <logger.hpp>
+#include <logcollector.hpp>
 
-using namespace logcollector;
+namespace logcollector
+{
+
+void AddPlatformSpecificReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser, Logcollector &logcollector)
+{
+    const auto refreshInterval = configurationParser->GetConfig<time_t>("logcollector", "channel_refresh").value_or(config::logcollector::CHANNEL_REFRESH_INTERVAL);
+
+    const auto bookmarkEnabled = configurationParser->GetConfig<bool>("logcollector", "use_bookmark").value_or(config::logcollector::DEFAULT_USE_BOOKMARK);
+
+    const auto windowsConfig = configurationParser->GetConfig<std::vector<std::map<std::string, std::string>>>("logcollector", "windows").value_or(
+        std::vector<std::map<std::string, std::string>> {});
+
+    for (auto& entry : windowsConfig)
+    {
+        auto channel = entry.at("channel");
+        auto query = entry.at("query");
+        logcollector.AddReader(std::make_shared<WindowsEventTracerReader>(logcollector, channel, query, refreshInterval, bookmarkEnabled));
+    }
+}
 
 WindowsEventTracerReader::WindowsEventTracerReader(Logcollector &logcollector,
                            const std::string channel,
@@ -237,4 +256,6 @@ std::string WindowsEventTracerReader::Base64Encode(const std::string& input)
     }
 
     return result;
+}
+
 }
