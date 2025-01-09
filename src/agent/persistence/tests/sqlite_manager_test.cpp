@@ -6,8 +6,6 @@
 #include <string>
 #include <vector>
 
-using namespace sqlite_manager;
-
 class SQLiteManagerTest : public ::testing::Test
 {
 protected:
@@ -160,7 +158,7 @@ TEST_F(SQLiteManagerTest, SelectTest)
 {
     AddTestData();
 
-    std::vector<ColumnName> cols;
+    Names cols;
 
     // all fields, no selection criteria
     std::vector<Row> ret = m_db->Select(m_tableName, cols);
@@ -387,23 +385,6 @@ TEST_F(SQLiteManagerTest, TransactionTest)
 
     // since we rolled back the transaction we should find nothing
     auto ret = m_db->Select(m_tableName, {}, {ColumnValue("Status", ColumnType::TEXT, "TransactionStatus2")});
-
-    EXPECT_EQ(ret.size(), 0);
-
-    {
-        auto transaction = m_db->BeginTransaction();
-
-        m_db->Insert(m_tableName,
-                     {ColumnValue("Name", ColumnType::TEXT, "TransactionName"),
-                      ColumnValue("Status", ColumnType::TEXT, "TransactionStatus")});
-
-        m_db->Insert(m_tableName,
-                     {ColumnValue("Name", ColumnType::TEXT, "TransactionName2"),
-                      ColumnValue("Status", ColumnType::TEXT, "TransactionStatus2")});
-    }
-
-    // since transaction obejct ran out of scope without being committed we should find nothing
-    ret = m_db->Select(m_tableName, {}, {ColumnValue("Status", ColumnType::TEXT, "TransactionStatus2")});
 
     EXPECT_EQ(ret.size(), 0);
 

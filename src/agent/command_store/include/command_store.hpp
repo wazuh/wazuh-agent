@@ -1,11 +1,12 @@
 #pragma once
 
 #include <module_command/command_entry.hpp>
-#include <sqlite_manager.hpp>
 
 #include <memory>
 #include <optional>
 #include <string>
+
+class Persistence;
 
 namespace command_store
 {
@@ -17,8 +18,8 @@ namespace command_store
     class CommandStore
     {
     private:
-        /// @brief The SQLite database object
-        std::unique_ptr<sqlite_manager::SQLiteManager> m_dataBase;
+        /// @brief Unique pointer to the persistence instance.
+        std::unique_ptr<Persistence> m_dataBase;
 
         /// @brief Gets the current timestamp in seconds
         /// @return The current timestamp in seconds
@@ -33,6 +34,9 @@ namespace command_store
         /// @brief CommandStore constructor
         /// @param dbFolderPath The path to the database folder
         CommandStore(const std::string& dbFolderPath);
+
+        /// @brief CommandStore destructor
+        ~CommandStore();
 
         /// @brief Clears all commands from the database
         /// @return True if successful, false otherwise

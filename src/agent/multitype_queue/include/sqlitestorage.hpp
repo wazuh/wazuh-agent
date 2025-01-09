@@ -1,7 +1,5 @@
 #pragma once
 
-#include <persistence.hpp>
-
 #include <SQLiteCpp/SQLiteCpp.h>
 #include <SQLiteCpp/VariadicBind.h>
 #include <nlohmann/json.hpp>
@@ -18,7 +16,7 @@
  * This class provides methods to store, retrieve, and remove JSON messages
  * in a SQLite database.
  */
-class SQLiteStorage : public Persistence
+class SQLiteStorage
 {
 public:
     SQLiteStorage(const std::string& dbName, const std::vector<std::string>& tableName);
@@ -46,7 +44,7 @@ public:
     /**
      * @brief Destructor.
      */
-    ~SQLiteStorage() override;
+    ~SQLiteStorage() = default;
 
     /**
      * @brief Store a JSON message in the storage.
@@ -62,7 +60,7 @@ public:
               const std::string& tableName,
               const std::string& moduleName = "",
               const std::string& moduleType = "",
-              const std::string& metadata = "") override;
+              const std::string& metadata = "");
 
     /**
      * @brief Retrieve multiple JSON messages.
@@ -76,7 +74,7 @@ public:
     nlohmann::json RetrieveMultiple(int n,
                                     const std::string& tableName,
                                     const std::string& moduleName = "",
-                                    const std::string& moduleType = "") override;
+                                    const std::string& moduleType = "");
 
     /**
      * @brief Remove multiple JSON messages.
@@ -86,7 +84,7 @@ public:
      * @param moduleName The name of the module that created the message.
      * @return The number of removed elements.
      */
-    int RemoveMultiple(int n, const std::string& tableName, const std::string& moduleName = "") override;
+    int RemoveMultiple(int n, const std::string& tableName, const std::string& moduleName = "");
 
     /**
      * @brief Get the number of elements in the table.
@@ -94,7 +92,7 @@ public:
      * @param moduleName The name of the module that created the message.
      * @return The number of elements in the table.
      */
-    int GetElementCount(const std::string& tableName, const std::string& moduleName = "") override;
+    int GetElementCount(const std::string& tableName, const std::string& moduleName = "");
 
     /**
      * @brief Get the bytes occupied by elements stored in the specified queue.
@@ -102,7 +100,7 @@ public:
      * @param tableName  The name of the table.
      * @return size_t The bytes occupied by elements stored in the specified queue.
      */
-    size_t GetElementsStoredSize(const std::string& tableName) override;
+    size_t GetElementsStoredSize(const std::string& tableName);
 
     /**
      * @brief Retrieve multiple JSON messages based on size from the specified queue.
@@ -116,7 +114,7 @@ public:
     nlohmann::json RetrieveBySize(size_t n,
                                   const std::string& tableName,
                                   const std::string& moduleName = "",
-                                  const std::string& moduleType = "") override;
+                                  const std::string& moduleType = "");
 
 private:
     /**

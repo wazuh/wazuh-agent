@@ -7,7 +7,9 @@
 
 #include <nlohmann/json.hpp>
 
-using namespace sqlite_manager;
+#include <column.hpp>
+#include <persistence.hpp>
+#include <persistence_factory.hpp>
 
 namespace
 {
@@ -47,11 +49,12 @@ namespace command_store
 
         try
         {
-            m_dataBase = std::make_unique<SQLiteManager>(dbFilePath);
+            m_dataBase =
+                PersistenceFactory::CreatePersistence(PersistenceFactory::PersistenceType::SQLITE3, dbFilePath);
 
             if (!m_dataBase->TableExists(COMMAND_STORE_TABLE_NAME))
             {
-                std::vector<ColumnKey> columns;
+                Keys columns;
                 columns.emplace_back(COMMAND_STORE_ID_COLUMN_NAME, ColumnType::TEXT, true, false, true);
                 columns.emplace_back(COMMAND_STORE_MODULE_COLUMN_NAME, ColumnType::TEXT, true, false, false);
                 columns.emplace_back(COMMAND_STORE_COMMAND_COLUMN_NAME, ColumnType::TEXT, true, false, false);
@@ -76,6 +79,8 @@ namespace command_store
             throw std::runtime_error(std::string("Cannot open database: " + dbFilePath));
         }
     }
+
+    CommandStore::~CommandStore() = default;
 
     bool CommandStore::Clear()
     {

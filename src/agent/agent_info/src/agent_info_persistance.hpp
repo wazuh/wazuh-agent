@@ -1,10 +1,10 @@
 #pragma once
 
-#include <sqlite_manager.hpp>
-
 #include <memory>
 #include <string>
 #include <vector>
+
+class Persistence;
 
 /// @brief Manages persistence of agent information and groups in a SQLite database.
 class AgentInfoPersistance
@@ -89,6 +89,6 @@ private:
     /// @return The value from the specified column as a string.
     std::string GetAgentInfoValue(const std::string& column) const;
 
-    /// @brief Unique pointer to the SQLite database manager instance.
-    std::unique_ptr<sqlite_manager::SQLiteManager> m_db;
+    /// @brief Unique pointer to the persistence instance.
+    std::unique_ptr<Persistence> m_db;
 };

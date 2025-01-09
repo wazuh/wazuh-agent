@@ -92,5 +92,7 @@ public:
     std::string Value;
 };
 
+using Names = std::vector<ColumnName>;
+using Keys = std::vector<ColumnKey>;
 using Row = std::vector<ColumnValue>;
 using Criteria = std::vector<ColumnValue>;

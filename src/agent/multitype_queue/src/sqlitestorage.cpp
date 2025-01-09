@@ -29,8 +29,6 @@ SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::vector<std::s
     }
 }
 
-SQLiteStorage::~SQLiteStorage() = default;
-
 void SQLiteStorage::InitializeTable(const std::string& tableName)
 {
     // TODO: all queries should be in the same place.

@@ -3,7 +3,7 @@ find_package(GTest REQUIRED)
 add_executable(test_SQLiteManager sqlite_manager_test.cpp)
 configure_target(test_SQLiteManager)
 target_link_libraries(test_SQLiteManager PRIVATE
-    SQLiteManager
+    Persistence
     GTest::gtest
     GTest::gtest_main
     GTest::gmock

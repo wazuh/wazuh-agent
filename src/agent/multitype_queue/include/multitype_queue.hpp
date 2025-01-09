@@ -1,8 +1,7 @@
 #pragma once
 
 #include <imultitype_queue.hpp>
-#include <persistence.hpp>
-#include <persistence_factory.hpp>
+#include <sqlitestorage.hpp>
 
 #include <config.h>
 #include <logger.hpp>
@@ -42,7 +41,7 @@ private:
     const std::chrono::milliseconds m_timeout;
 
     /// @brief class for persistence implementation
-    std::unique_ptr<Persistence> m_persistenceDest;
+    std::unique_ptr<SQLiteStorage> m_persistenceDest;
 
     /// @brief mutex for protecting the queue access
     std::mutex m_mtx;
@@ -86,8 +85,7 @@ public:
 
         try
         {
-            m_persistenceDest = PersistenceFactory::createPersistence(PersistenceFactory::PersistenceType::SQLITE3,
-                                                                      {dbFilePath, m_vMessageTypeStrings});
+            m_persistenceDest = std::make_unique<SQLiteStorage>(dbFilePath, m_vMessageTypeStrings);
         }
         catch (const std::exception& e)
         {

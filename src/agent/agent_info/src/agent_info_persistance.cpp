@@ -2,7 +2,9 @@
 
 #include <logger.hpp>
 
-using namespace sqlite_manager;
+#include <column.hpp>
+#include <persistence.hpp>
+#include <persistence_factory.hpp>
 
 namespace
 {
@@ -27,7 +29,7 @@ AgentInfoPersistance::AgentInfoPersistance(const std::string& dbFolderPath)
 
     try
     {
-        m_db = std::make_unique<SQLiteManager>(dbFilePath);
+        m_db = PersistenceFactory::CreatePersistence(PersistenceFactory::PersistenceType::SQLITE3, dbFilePath);
 
         if (!m_db->TableExists(AGENT_INFO_TABLE_NAME))
         {
@@ -70,10 +72,9 @@ void AgentInfoPersistance::CreateAgentInfoTable()
 {
     try
     {
-        const std::vector<ColumnKey> columns = {
-            ColumnKey(AGENT_INFO_NAME_COLUMN_NAME, ColumnType::TEXT, true, false),
-            ColumnKey(AGENT_INFO_KEY_COLUMN_NAME, ColumnType::TEXT, true, false),
-            ColumnKey(AGENT_INFO_UUID_COLUMN_NAME, ColumnType::TEXT, true, false, true)};
+        const Keys columns = {ColumnKey(AGENT_INFO_NAME_COLUMN_NAME, ColumnType::TEXT, true, false),
+                              ColumnKey(AGENT_INFO_KEY_COLUMN_NAME, ColumnType::TEXT, true, false),
+                              ColumnKey(AGENT_INFO_UUID_COLUMN_NAME, ColumnType::TEXT, true, false, true)};
 
         m_db->CreateTable(AGENT_INFO_TABLE_NAME, columns);
     }
@@ -87,9 +88,8 @@ void AgentInfoPersistance::CreateAgentGroupTable()
 {
     try
     {
-        const std::vector<ColumnKey> columns = {
-            ColumnKey(AGENT_GROUP_ID_COLUMN_NAME, ColumnType::INTEGER, true, true, true),
-            ColumnKey(AGENT_GROUP_NAME_COLUMN_NAME, ColumnType::TEXT, true, false)};
+        const Keys columns = {ColumnKey(AGENT_GROUP_ID_COLUMN_NAME, ColumnType::INTEGER, true, true, true),
+                              ColumnKey(AGENT_GROUP_NAME_COLUMN_NAME, ColumnType::TEXT, true, false)};
 
         m_db->CreateTable(AGENT_GROUP_TABLE_NAME, columns);
     }
@@ -139,7 +139,7 @@ std::string AgentInfoPersistance::GetAgentInfoValue(const std::string& column) c
 
     try
     {
-        const std::vector<ColumnName> columns = {ColumnName(column, ColumnType::TEXT)};
+        const Names columns = {ColumnName(column, ColumnType::TEXT)};
         const std::vector<Row> results = m_db->Select(AGENT_INFO_TABLE_NAME, columns);
 
         if (!results.empty() && !results[0].empty())
@@ -176,7 +176,7 @@ std::vector<std::string> AgentInfoPersistance::GetGroups() const
 
     try
     {
-        const std::vector<ColumnName> columns = {ColumnName(AGENT_GROUP_NAME_COLUMN_NAME, ColumnType::TEXT)};
+        const Names columns = {ColumnName(AGENT_GROUP_NAME_COLUMN_NAME, ColumnType::TEXT)};
         const std::vector<Row> results = m_db->Select(AGENT_GROUP_TABLE_NAME, columns);
 
         for (const auto& row : results)
