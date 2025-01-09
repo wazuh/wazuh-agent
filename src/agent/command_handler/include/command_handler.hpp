@@ -93,6 +93,13 @@ namespace command_handler
                     executor,
                     [cmd, DispatchCommand, this]() mutable -> boost::asio::awaitable<void>
                     {
+                        if (cmd.value().Module == "restart"){
+                            // This block is necessary to avoid potential race conditions between the restart and reporting the command status.
+                            // It allows detecting when the restart completes by setting the command to IN_PROGRESS.
+                            cmd.value().ExecutionResult.ErrorCode = module_command::Status::IN_PROGRESS;
+                            cmd.value().ExecutionResult.Message = "Init Self-Restart.";
+                            m_commandStore.UpdateCommand(cmd.value());
+                        }
                         cmd.value().ExecutionResult = co_await DispatchCommand(cmd.value());
                         m_commandStore.UpdateCommand(cmd.value());
                         LogInfo("Done processing command: {}({})", cmd.value().Command, cmd.value().Module);
@@ -123,8 +130,17 @@ namespace command_handler
             {
                 for (auto& cmd : *cmds)
                 {
-                    cmd.ExecutionResult.ErrorCode = module_command::Status::FAILURE;
-                    cmd.ExecutionResult.Message = "Agent stopped during execution";
+                    if (cmd.Command == "restart")
+                    {
+                        LogInfo("Agent restarted successfully");
+                        cmd.ExecutionResult.ErrorCode = module_command::Status::SUCCESS;
+                        cmd.ExecutionResult.Message = "Agent restarted successfully";
+                    }
+                    else
+                    {
+                        cmd.ExecutionResult.ErrorCode = module_command::Status::FAILURE;
+                        cmd.ExecutionResult.Message = "Agent stopped during execution";
+                    }
                     ReportCommandResult(cmd);
                     m_commandStore.UpdateCommand(cmd);
                 }

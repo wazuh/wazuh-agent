@@ -76,7 +76,7 @@ namespace unix_daemon
         const std::string filename = fmt::format("{}/wazuh-agent.lock", m_lockFilePath);
 
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, cppcoreguidelines-avoid-magic-numbers)
-        int fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        int fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0644);
         if (fd == -1)
         {
             m_errno = errno;
