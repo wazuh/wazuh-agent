@@ -82,6 +82,12 @@ namespace sqlite_manager
                      const Criteria& selCriteria = {},
                      LogicalOperator logOp = LogicalOperator::AND);
 
+        /// @brief Retrieves the size in bytes of rows in a specified table.
+        /// @param tableName The name of the table to count rows in.
+        /// @param fields A vector of columns to retrieve.
+        /// @return The size in bytes of the rows in the table.
+        size_t GetSize(const std::string& tableName, const std::vector<ColumnName>& fields);
+
         /// @brief Begins a transaction in the SQLite database.
         /// @return A SQLite transaction object.
         SQLite::Transaction BeginTransaction();

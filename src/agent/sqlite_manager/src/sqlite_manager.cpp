@@ -314,6 +314,49 @@ namespace sqlite_manager
         return count;
     }
 
+    size_t SQLiteManager::GetSize(const std::string& tableName, const std::vector<ColumnName>& fields)
+    {
+        if (fields.empty())
+        {
+            LogError("Error: Missing size fields.");
+            throw;
+        }
+
+        std::string selectedFields;
+        std::vector<std::string> fieldNames;
+        fieldNames.reserve(fields.size());
+
+        for (const auto& col : fields)
+        {
+            fieldNames.push_back("LENGTH(" + col.Name + ")");
+        }
+        selectedFields = fmt::format("{}", fmt::join(fieldNames, " + "));
+
+        std::string queryString = fmt::format("SELECT SUM({}) AS total_bytes FROM {}", selectedFields, tableName);
+
+        size_t count = 0;
+        try
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            SQLite::Statement query(*m_db, queryString);
+
+            if (query.executeStep())
+            {
+                count = query.getColumn(0).getUInt();
+            }
+            else
+            {
+                LogError("Error getting element count.");
+            }
+        }
+        catch (const std::exception& e)
+        {
+            LogError("Error during GetSize operation: {}.", e.what());
+            throw;
+        }
+        return count;
+    }
+
     SQLite::Transaction SQLiteManager::BeginTransaction()
     {
         return SQLite::Transaction(*m_db);

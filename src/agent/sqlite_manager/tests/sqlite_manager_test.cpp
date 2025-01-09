@@ -123,6 +123,26 @@ TEST_F(SQLiteManagerTest, GetCountTest)
     EXPECT_EQ(count, 2);
 }
 
+TEST_F(SQLiteManagerTest, GetSizeTest)
+{
+    EXPECT_NO_THROW(m_db->Remove(m_tableName));
+    int count = m_db->GetCount(m_tableName);
+    EXPECT_EQ(count, 0);
+
+    ColumnValue col1 {"Name", ColumnType::TEXT, "ItemName1"};
+    ColumnValue col2 {"Status", ColumnType::TEXT, "ItemStatus1"};
+    EXPECT_NO_THROW(m_db->Insert(m_tableName, {col1, col2}));
+
+    size_t size = m_db->GetSize(m_tableName, {ColumnName("Name", ColumnType::TEXT)});
+    EXPECT_EQ(size, 9);
+
+    size = m_db->GetSize(m_tableName, {ColumnName("Status", ColumnType::TEXT)});
+    EXPECT_EQ(size, 11);
+
+    size = m_db->GetSize(m_tableName, {ColumnName("Name", ColumnType::TEXT), ColumnName("Status", ColumnType::TEXT)});
+    EXPECT_EQ(size, 20);
+}
+
 static void DumpResults(std::vector<Row>& ret)
 {
     std::cout << "---------- " << ret.size() << " rows returned. ----------" << '\n';
