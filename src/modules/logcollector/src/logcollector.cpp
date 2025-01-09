@@ -86,13 +86,16 @@ void Logcollector::SetupJournaldReader(const std::shared_ptr<const configuration
         auto journaldConfigs = configurationParser->GetConfig<YAML::Node>("logcollector", "journald")
             .value_or(YAML::Node(YAML::NodeType::Sequence));
 
+        auto fileWait = configurationParser->GetConfig<std::time_t>("logcollector", "file_wait").value_or(config::logcollector::DEFAULT_FILE_WAIT);
+
         for (const auto& config : journaldConfigs) {
             if (!config.IsMap()) continue;
 
             AddReader(std::make_shared<JournaldReader>(*this,
                 config["field"].as<std::string>(),
                 config["regex"].as<std::string>(),
-                config["ignore_if_missing"].as<bool>(false)));
+                config["ignore_if_missing"].as<bool>(false),
+                fileWait));
         }
     } catch (const std::exception& e) {
         LogTrace("No journald configuration defined: {}", e.what());

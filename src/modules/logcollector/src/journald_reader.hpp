@@ -11,8 +11,9 @@ class JournaldReader : public IReader {
 public:
     JournaldReader(Logcollector& logcollector,
                   std::string field,
-                  const std::string& regex,  // Changed to const reference
-                  bool ignoreIfMissing);
+                  const std::string& regex,
+                  bool ignoreIfMissing,
+                  std::time_t fileWait);
     Awaitable Run() override;
     void Stop() override;
 
@@ -21,7 +22,7 @@ private:
     std::regex m_pattern;
     bool m_ignoreIfMissing;
     std::unique_ptr<JournalLog> m_journal;
-    static constexpr std::chrono::milliseconds POLL_INTERVAL{500};
+    std::chrono::milliseconds m_waitTime;
     static constexpr size_t MAX_LINE_LENGTH = 16384; // OS_MAXSTR - OS_LOG_HEADER
 };
 
