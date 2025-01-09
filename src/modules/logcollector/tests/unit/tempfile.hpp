@@ -35,25 +35,6 @@ public:
         if (!std::filesystem::remove(m_path, ec))
         {
             auto error_msg = std::system_category().message(ec.value());
-
-            // Alternative approach using Windows API directly
-            #ifdef _WIN32
-                std::wstring wpath(m_path.begin(), m_path.end());
-                if (DeleteFileW(wpath.c_str()) == 0) {
-                    DWORD win_error = GetLastError();
-                    char win_error_msg[256];
-                    FormatMessageA(
-                        FORMAT_MESSAGE_FROM_SYSTEM,
-                        NULL,
-                        win_error,
-                        0,
-                        win_error_msg,
-                        sizeof(win_error_msg),
-                        NULL
-                    );
-                    // win_error_msg (from Windows API)
-                }
-            #endif
         }
     }
 

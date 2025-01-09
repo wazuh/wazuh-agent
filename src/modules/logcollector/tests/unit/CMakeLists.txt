@@ -2,6 +2,14 @@ find_package(GTest CONFIG REQUIRED)
 
 FILE(GLOB LOGCOLLECTOR_TEST_SOURCES *_test.cpp)
 
+if(WIN32)
+    FILE(GLOB EXCLUDED_SOURCES *_unix_test.cpp)
+else()
+    FILE(GLOB EXCLUDED_SOURCES *_win_test.cpp)
+endif()
+
+list(REMOVE_ITEM LOGCOLLECTOR_TEST_SOURCES ${EXCLUDED_SOURCES})
+
 add_executable(logcollector_unit_tests ${LOGCOLLECTOR_TEST_SOURCES})
 configure_target(logcollector_unit_tests)
 
