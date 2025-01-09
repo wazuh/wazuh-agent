@@ -1,4 +1,3 @@
-#ifdef _WIN32
 #pragma once
 
 #include <ctime>
@@ -91,4 +90,3 @@ private:
     const std::string m_collectorType = "eventchannel";
 };
 } // namespace logcollector
-#endif
