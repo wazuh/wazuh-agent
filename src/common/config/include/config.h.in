@@ -33,7 +33,6 @@ namespace config
         constexpr auto DEFAULT_RELOAD_INTERVAL = @DEFAULT_RELOAD_INTERVAL@;
         constexpr auto DEFAULT_LOCALFILES = "/var/log/auth.log";
         constexpr auto CHANNEL_REFRESH_INTERVAL = @CHANNEL_REFRESH_INTERVAL@;
-        constexpr auto DEFAULT_USE_BOOKMARK = @DEFAULT_USE_BOOKMARK@;
     }
 
     namespace inventory

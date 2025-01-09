@@ -36,8 +36,6 @@ set(DEFAULT_RELOAD_INTERVAL 60000 CACHE STRING "Default Logcollector reload inte
 
 set(CHANNEL_REFRESH_INTERVAL 5000 CACHE STRING "Default Logcollector reconnect time (5000ms)")
 
-set(DEFAULT_USE_BOOKMARK true CACHE BOOL "Default Logcollector windows bookmark enabled (false)")
-
 set(DEFAULT_INVENTORY_ENABLED true CACHE BOOL "Default inventory enabled")
 
 set(DEFAULT_INTERVAL 3600000 CACHE STRING "Default inventory interval (1h)")

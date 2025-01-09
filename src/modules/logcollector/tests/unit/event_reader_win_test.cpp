@@ -28,8 +28,3 @@ TEST(WindowsEventChannel, Several)
 {
     GTEST_SKIP();
 }
-
-TEST(WindowsEventChannel, BookmarkUsage)
-{
-    GTEST_SKIP();
-}
