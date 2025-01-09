@@ -123,8 +123,17 @@ namespace command_handler
             {
                 for (auto& cmd : *cmds)
                 {
-                    cmd.ExecutionResult.ErrorCode = module_command::Status::FAILURE;
-                    cmd.ExecutionResult.Message = "Agent stopped during execution";
+                    if (cmd.Command == "restart")
+                    {
+                        LogInfo("Agent restarted successfully");
+                        cmd.ExecutionResult.ErrorCode = module_command::Status::SUCCESS;
+                        cmd.ExecutionResult.Message = "Agent restarted successfully";
+                    }
+                    else
+                    {
+                        cmd.ExecutionResult.ErrorCode = module_command::Status::FAILURE;
+                        cmd.ExecutionResult.Message = "Agent stopped during execution";
+                    }
                     ReportCommandResult(cmd);
                     m_commandStore.UpdateCommand(cmd);
                 }
