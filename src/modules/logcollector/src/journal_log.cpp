@@ -42,7 +42,6 @@ bool JournalLog::SeekTail() {
     int ret = sd_journal_seek_tail(m_journal);
     ThrowIfError(ret, "seek tail");
 
-    // Después de seek_tail necesitamos movernos al último registro
     ret = sd_journal_previous(m_journal);
     if (ret <= 0) {
         LogWarn("No entries found in journal after seeking to tail");
@@ -202,4 +201,92 @@ std::optional<JournalLog::FilteredMessage> JournalLog::GetNextFilteredMessage(
 uint64_t JournalLog::GetEpochTime() {
     return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(
         std::chrono::system_clock::now().time_since_epoch()).count());
+}
+
+std::string JournalLog::GetCursor() const {
+    char* rawCursor = nullptr;
+    int ret = sd_journal_get_cursor(m_journal, &rawCursor);
+    ThrowIfError(ret, "get cursor");
+
+    if (!rawCursor) {
+        return {};
+    }
+
+    auto cursorGuard = std::unique_ptr<char, decltype(&std::free)>(rawCursor, std::free);
+    return cursorGuard.get();
+}
+
+bool JournalLog::SeekCursor(const std::string& cursor) {
+    int ret = sd_journal_seek_cursor(m_journal, cursor.c_str());
+    if (ret < 0) {
+        LogWarn("Failed to seek to cursor: {}", strerror(-ret));
+        return false;
+    }
+    return Next();
+}
+
+bool JournalLog::CursorValid(const std::string& cursor) const {
+    int ret = sd_journal_test_cursor(m_journal, cursor.c_str());
+    return ret > 0;
+}
+
+void JournalLog::AddMatch(const std::string& field, const std::string& value) {
+    std::string match = field + "=" + value;
+    int ret = sd_journal_add_match(m_journal, match.c_str(), 0);
+    ThrowIfError(ret, "add match filter");
+    m_hasActiveFilters = true;
+    m_pendingMatches.emplace_back(field, value);
+}
+
+void JournalLog::AddMatch(const std::string& field) {
+    int ret = sd_journal_add_match(m_journal, field.c_str(), 0);
+    ThrowIfError(ret, "add match filter");
+    m_hasActiveFilters = true;
+    m_pendingMatches.emplace_back(field, "=");
+}
+
+void JournalLog::FlushMatches() {
+    if (m_hasActiveFilters) {
+        sd_journal_flush_matches(m_journal);
+        m_pendingMatches.clear();
+        m_hasActiveFilters = false;
+    }
+}
+
+bool JournalLog::ApplyJournalFilters() {
+    if (!m_hasActiveFilters) {
+        return true;
+    }
+
+    return Next();
+}
+
+std::optional<JournalLog::FilteredMessage> JournalLog::GetNextMatchingMessage(
+    const std::string& field,
+    const std::regex& pattern,
+    bool ignoreIfMissing) {
+
+    while (ApplyJournalFilters()) {
+        try {
+            LogTrace("Processing filtered journal entry with timestamp {}", m_currentTimestamp);
+
+            std::string value = GetData(field);
+            if (std::regex_match(value, pattern)) {
+                try {
+                    std::string message = GetData("MESSAGE");
+                    LogDebug("Found matching message for field '{}' with value '{}'", field, value);
+                    return FilteredMessage{value, message};
+                } catch (const JournalLogException& e) {
+                    LogWarn("Message field missing in matching entry");
+                    continue;
+                }
+            }
+        } catch (const JournalLogException& e) {
+            if (!ignoreIfMissing) {
+                LogError("Failed to process journal entry: {}", e.what());
+            }
+        }
+        UpdateTimestamp();
+    }
+    return std::nullopt;
 }

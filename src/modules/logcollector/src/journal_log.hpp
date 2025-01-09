@@ -50,11 +50,28 @@ public:
         const std::regex& pattern,
         bool ignoreIfMissing);
 
+    std::string GetCursor() const;
+    bool SeekCursor(const std::string& cursor);
+    bool CursorValid(const std::string& cursor) const;
+
+    void AddMatch(const std::string& field, const std::string& value);
+    void AddMatch(const std::string& field);
+    void FlushMatches();
+
+    std::optional<FilteredMessage> GetNextMatchingMessage(
+        const std::string& field,
+        const std::regex& pattern,
+        bool ignoreIfMissing);
+
 private:
     sd_journal* m_journal;
     uint64_t m_currentTimestamp;
     static uint64_t GetEpochTime();
     void ThrowIfError(int result, const std::string& operation) const;
+
+    bool ApplyJournalFilters();
+    std::vector<std::pair<std::string, std::string>> m_pendingMatches;
+    bool m_hasActiveFilters{false};
 };
 
 }

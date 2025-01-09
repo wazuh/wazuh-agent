@@ -6,12 +6,14 @@ using namespace logcollector;
 JournaldReader::JournaldReader(Logcollector& logcollector,
                              std::string field,
                              const std::string& regex,
-                             bool ignoreIfMissing)
+                             bool ignoreIfMissing,
+                             std::time_t fileWait)
     : IReader(logcollector)
     , m_field(std::move(field))
     , m_pattern(regex)
     , m_ignoreIfMissing(ignoreIfMissing)
-    , m_journal(std::make_unique<JournalLog>()) {}
+    , m_journal(std::make_unique<JournalLog>())
+    , m_waitTime(std::chrono::milliseconds(fileWait)) {}
 
 Awaitable JournaldReader::Run() {
     try {
@@ -56,7 +58,7 @@ Awaitable JournaldReader::Run() {
             }
 
             if (shouldWait) {
-                co_await m_logcollector.Wait(POLL_INTERVAL);
+                co_await m_logcollector.Wait(m_waitTime);
             }
         }
     } catch (const JournalLogException& e) {
