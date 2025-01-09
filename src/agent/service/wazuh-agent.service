@@ -7,12 +7,9 @@ After=network.target network-online.target
 Type=simple
 
 ExecStart=/usr/bin/env WAZUH_HOME/wazuh-agent
+TimeoutStopSec=30s
 
 KillSignal=SIGTERM
-
-KillMode=process
-
-SendSIGKILL=no
 
 RemainAfterExit=yes
 

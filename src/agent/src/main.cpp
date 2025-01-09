@@ -4,6 +4,7 @@
 
 #include <boost/program_options.hpp>
 #include <iostream>
+#include <restart_handler.hpp>
 #include <string>
 
 namespace program_options = boost::program_options;
@@ -94,6 +95,7 @@ int main(int argc, char* argv[])
         }
         else
         {
+            restart_handler::RestartHandler::SetCommandLineArguments(argc, argv);
             StartAgent(validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
         }
 

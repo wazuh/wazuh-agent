@@ -16,6 +16,7 @@ add_subdirectory(configuration_parser)
 add_subdirectory(multitype_queue)
 add_subdirectory(persistence)
 add_subdirectory(task_manager)
+add_subdirectory(restart_handler)
 
 find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio beast system program_options)
@@ -65,6 +66,7 @@ target_link_libraries(Agent
     MultiTypeQueue
     ModuleManager
     Boost::asio
+    RestartHandler
     sysinfo
     PRIVATE
     OpenSSL::SSL

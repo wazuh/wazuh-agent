@@ -63,3 +63,32 @@ Executing this command triggers a reload of the configuration and modules to ens
     }
 }
 ```
+
+## Restart Handler
+
+The restart handler is responsible for restarting the agent. This command does not require any arguments.
+
+Executing this command triggers a restart, which can be processed in two ways:
+
+- If the service was started by systemd, it will use the same command to restart the agent.
+- If it was called manually, it will use the same command with the same arguments that were used to call it.
+
+```json
+{
+    "action":
+    {
+        "args":
+        {},
+        "name": "restart",
+        "version": "5.0.0"
+    },
+    "source": "Users/Services",
+    "document_id": "A8-62pMBBmC6Jrvqj9kW",
+    "user": "Management API",
+    "target":
+    {
+        "id": "d5b250c4-dfa1-4d94-827f-9f99210dbe6c",
+        "type": "agent"
+    }
+}
+```
