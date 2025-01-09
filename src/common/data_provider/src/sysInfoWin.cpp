@@ -366,72 +366,60 @@ static void getPackagesFromReg(const HKEY key, const std::string& subKey, std::f
                 nlohmann::json packageJson;
                 Utils::Registry packageReg{key, subKey + "\\" + package, access | KEY_READ};
 
-                nlohmann::json name {UNKNOWN_VALUE};
-                nlohmann::json version {UNKNOWN_VALUE};
-                nlohmann::json vendor {UNKNOWN_VALUE};
-                nlohmann::json install_time {UNKNOWN_VALUE};
-                nlohmann::json location {UNKNOWN_VALUE};
-                nlohmann::json architecture {UNKNOWN_VALUE};
-
-                if (packageReg.string("DisplayName", value))
+                if (packageReg.string("DisplayName", value) && !value.empty())
                 {
-                    name = value;
-                }
+                    packageJson["name"] = value;
 
-                if (packageReg.string("DisplayVersion", value))
-                {
-                    version = value;
-                }
-
-                if (packageReg.string("Publisher", value))
-                {
-                    vendor = value;
-                }
-
-                if (packageReg.string("InstallDate", value))
-                {
-                    try
+                    packageJson["version"] = UNKNOWN_VALUE;
+                    if (packageReg.string("DisplayVersion", value))
                     {
-                        install_time = Utils::timestampToISO8601(Utils::normalizeTimestamp(value, packageReg.keyModificationDate()));
+                        packageJson["version"] = value;
                     }
-                    catch (const std::exception& e)
+
+                    packageJson["vendor"] = UNKNOWN_VALUE;
+                    if (packageReg.string("Publisher", value))
                     {
-                        (void)e;
-                        install_time = Utils::timestampToISO8601(packageReg.keyModificationDate());
+                        packageJson["vendor"] = value;
                     }
-                }
-                else
-                {
-                    install_time = Utils::timestampToISO8601(packageReg.keyModificationDate());
-                }
 
-                if (packageReg.string("InstallLocation", value))
-                {
-                    location = value;
-                }
+                    if (packageReg.string("InstallDate", value))
+                    {
+                        try
+                        {
+                            packageJson["install_time"] = Utils::timestampToISO8601(Utils::normalizeTimestamp(value, packageReg.keyModificationDate()));
+                        }
+                        catch (const std::exception& e)
+                        {
+                            (void)e;
+                            packageJson["install_time"] = Utils::timestampToISO8601(packageReg.keyModificationDate());
+                        }
+                    }
+                    else
+                    {
+                        packageJson["install_time"] = Utils::timestampToISO8601(packageReg.keyModificationDate());
+                    }
 
-                if (!name.empty())
-                {
+                    packageJson["location"] = UNKNOWN_VALUE;
+                    if (packageReg.string("InstallLocation", value))
+                    {
+                        packageJson["location"] = value;
+                    }
+
+                    packageJson["architecture"] = UNKNOWN_VALUE;
                     if (access & KEY_WOW64_32KEY)
                     {
-                        architecture = "i686";
+                        packageJson["architecture"] = "i686";
                     }
                     else if (access & KEY_WOW64_64KEY)
                     {
-                        architecture = "x86_64";
+                        packageJson["architecture"] = "x86_64";
                     }
 
-                    packageJson["name"]         = std::move(name);
                     packageJson["description"]  = UNKNOWN_VALUE;
-                    packageJson["version"]      = std::move(version);
                     packageJson["groups"]       = UNKNOWN_VALUE;
                     packageJson["priority"]     = UNKNOWN_VALUE;
                     packageJson["size"]         = UNKNOWN_VALUE;
-                    packageJson["vendor"]       = std::move(vendor);
                     packageJson["source"]       = UNKNOWN_VALUE;
-                    packageJson["install_time"] = std::move(install_time);
-                    packageJson["location"]     = std::move(location);
-                    packageJson["architecture"] = std::move(architecture);
                     packageJson["format"]       = "win";
 
                     returnCallback(packageJson);
