@@ -24,7 +24,6 @@ logcollector:
     - /var/log/auth.log
   reload_interval: 1m
   file_wait: 500ms
-  use_bookmark: true
   channel_refresh: 5s
   windows:
     - channel: Application
