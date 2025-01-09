@@ -36,5 +36,5 @@ void StartAgent(const std::string& configFilePath)
 
 void StatusAgent(const std::string& configFilePath)
 {
-    std::cout << fmt::format("wazuh-agent is {}\n", unix_daemon::GetDaemonStatus(configFilePath));
+    std::cout << fmt::format("wazuh-agent status: {}\n", unix_daemon::GetDaemonStatus(configFilePath));
 }

@@ -6,6 +6,7 @@
 
 #include <cerrno>
 #include <filesystem>
+#include <fmt/format.h>
 #include <fstream>
 #include <sys/file.h>
 #include <unistd.h>
@@ -24,6 +25,7 @@ namespace unix_daemon
 {
     LockFileHandler::LockFileHandler(std::string lockFilePath)
         : m_lockFilePath(std::move(lockFilePath))
+        , m_errno(0)
         , m_lockFileCreated(createLockFile())
     {
     }
@@ -77,13 +79,15 @@ namespace unix_daemon
         int fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
         if (fd == -1)
         {
-            LogError("Unable to open lock file: {}. Error: {} ({})", filename.c_str(), errno, std::strerror(errno));
+            m_errno = errno;
+            LogError("Unable to open lock file: {}. Error: {} ({})", filename.c_str(), m_errno, std::strerror(m_errno));
             return false;
         }
 
         if (flock(fd, LOCK_EX | LOCK_NB) == -1)
         {
-            LogDebug("Unable to lock lock file: {}. Error: {} ({})", filename.c_str(), errno, std::strerror(errno));
+            m_errno = errno;
+            LogDebug("Unable to lock lock file: {}. Error: {} ({})", filename.c_str(), m_errno, std::strerror(m_errno));
             close(fd);
             return false;
         }
@@ -111,7 +115,15 @@ namespace unix_daemon
 
         if (!lockFileHandler.isLockFileCreated())
         {
-            return "running";
+            if (lockFileHandler.getErrno() == EAGAIN)
+            {
+                return "running";
+            }
+            else
+            {
+                return fmt::format(
+                    "Error: {} ({})", lockFileHandler.getErrno(), std::strerror(lockFileHandler.getErrno()));
+            }
         }
 
         return "stopped";

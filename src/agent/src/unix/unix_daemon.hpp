@@ -28,6 +28,13 @@ namespace unix_daemon
             return m_lockFileCreated;
         }
 
+        /// @brief Returns the errno from the latest attempt to create/lock the lock-file
+        /// @return The errno
+        int getErrno() const
+        {
+            return m_errno;
+        }
+
     private:
         /// @brief Creates the directory path for the lock file
         /// @param path The path for the lock file
@@ -42,6 +49,9 @@ namespace unix_daemon
         void removeLockFile() const;
 
         std::string m_lockFilePath;
+
+        /// @brief Holds the errno from the lock-file create/lock attempt
+        int m_errno;
 
         /// @brief Indicates the lock file was created by this instance of the LockFileHandler
         bool m_lockFileCreated;
