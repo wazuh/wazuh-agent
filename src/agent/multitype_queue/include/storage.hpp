@@ -11,40 +11,40 @@
 #include <vector>
 
 /**
- * @brief SQLite implementation of the Persistence interface.
+ * @brief Implementation of the Persistence interface.
  *
  * This class provides methods to store, retrieve, and remove JSON messages
- * in a SQLite database.
+ * in a database.
  */
-class SQLiteStorage
+class Storage
 {
 public:
-    SQLiteStorage(const std::string& dbName, const std::vector<std::string>& tableName);
+    Storage(const std::string& dbName, const std::vector<std::string>& tableName);
 
     /**
      * @brief Delete copy constructor
      */
-    SQLiteStorage(const SQLiteStorage&) = delete;
+    Storage(const Storage&) = delete;
 
     /**
      * @brief Delete copy assignment operator
      */
-    SQLiteStorage& operator=(const SQLiteStorage&) = delete;
+    Storage& operator=(const Storage&) = delete;
 
     /**
      * @brief Delete move constructor
      */
-    SQLiteStorage(SQLiteStorage&&) = delete;
+    Storage(Storage&&) = delete;
 
     /**
      * @brief Delete move assignment operator
      */
-    SQLiteStorage& operator=(SQLiteStorage&&) = delete;
+    Storage& operator=(Storage&&) = delete;
 
     /**
      * @brief Destructor.
      */
-    ~SQLiteStorage() = default;
+    ~Storage() = default;
 
     /**
      * @brief Store a JSON message in the storage.
@@ -118,7 +118,7 @@ public:
 
 private:
     /**
-     * @brief Initialize the table in the SQLite database.
+     * @brief Initialize the table in the database.
      * This method creates the table if it does not already exist.
      * @param tableName The name of the table to initialize.
      */
@@ -142,7 +142,7 @@ private:
     nlohmann::json ProcessRequest(SQLite::Statement& sqlStatementQuery, size_t maxSize = 0);
 
     /**
-     * @brief The name of the SQLite database file.
+     * @brief The name of the database file.
      */
     const std::string m_dbName;
 
@@ -152,7 +152,7 @@ private:
     const std::string m_tableName;
 
     /**
-     * @brief Pointer to the SQLite database connection.
+     * @brief Pointer to the database connection.
      */
     std::unique_ptr<SQLite::Database> m_db;
 

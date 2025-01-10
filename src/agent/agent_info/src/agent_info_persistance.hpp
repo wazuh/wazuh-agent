@@ -6,12 +6,12 @@
 
 class Persistence;
 
-/// @brief Manages persistence of agent information and groups in a SQLite database.
+/// @brief Manages persistence of agent information and groups in a database.
 class AgentInfoPersistance
 {
 public:
     /// @brief Constructs the persistence manager for agent info, initializing the database and tables if necessary.
-    /// @param dbFolderPath Path to the SQLite database folder.
+    /// @param dbFolderPath Path to the database folder.
     explicit AgentInfoPersistance(const std::string& dbFolderPath);
 
     /// @brief Destructor for AgentInfoPersistance.

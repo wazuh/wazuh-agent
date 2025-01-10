@@ -17,7 +17,7 @@ enum class OrderType
     DESC
 };
 
-/// @brief Supported column data types for SQLite tables.
+/// @brief Supported column data types for tables.
 enum class ColumnType
 {
     INTEGER,

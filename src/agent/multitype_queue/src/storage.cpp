@@ -1,4 +1,4 @@
-#include <sqlitestorage.hpp>
+#include <storage.hpp>
 
 #include <logger.hpp>
 
@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <string_view>
 
-SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::vector<std::string>& tableNames)
+Storage::Storage(const std::string& dbName, const std::vector<std::string>& tableNames)
     : m_dbName(dbName)
     , m_db(make_unique<SQLite::Database>(dbName, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE))
 {
@@ -29,7 +29,7 @@ SQLiteStorage::SQLiteStorage(const std::string& dbName, const std::vector<std::s
     }
 }
 
-void SQLiteStorage::InitializeTable(const std::string& tableName)
+void Storage::InitializeTable(const std::string& tableName)
 {
     // TODO: all queries should be in the same place.
     constexpr std::string_view CREATE_TABLE_QUERY {
@@ -47,25 +47,25 @@ void SQLiteStorage::InitializeTable(const std::string& tableName)
     }
 }
 
-void SQLiteStorage::WaitForDatabaseAccess()
+void Storage::WaitForDatabaseAccess()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
     m_cv.wait(lock, [this] { return !m_dbInUse; });
     m_dbInUse = true;
 }
 
-void SQLiteStorage::ReleaseDatabaseAccess()
+void Storage::ReleaseDatabaseAccess()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_dbInUse = false;
     m_cv.notify_one();
 }
 
-int SQLiteStorage::Store(const nlohmann::json& message,
-                         const std::string& tableName,
-                         const std::string& moduleName,
-                         const std::string& moduleType,
-                         const std::string& metadata)
+int Storage::Store(const nlohmann::json& message,
+                   const std::string& tableName,
+                   const std::string& moduleName,
+                   const std::string& moduleType,
+                   const std::string& metadata)
 {
     std::string insertQuery;
 
@@ -117,10 +117,10 @@ int SQLiteStorage::Store(const nlohmann::json& message,
     return result;
 }
 
-nlohmann::json SQLiteStorage::RetrieveMultiple(int n,
-                                               const std::string& tableName,
-                                               const std::string& moduleName,
-                                               [[maybe_unused]] const std::string& moduleType)
+nlohmann::json Storage::RetrieveMultiple(int n,
+                                         const std::string& tableName,
+                                         const std::string& moduleName,
+                                         [[maybe_unused]] const std::string& moduleType)
 {
     std::string selectQuery;
     if (moduleName.empty())
@@ -142,7 +142,7 @@ nlohmann::json SQLiteStorage::RetrieveMultiple(int n,
     return ProcessRequest(query);
 }
 
-int SQLiteStorage::RemoveMultiple(int n, const std::string& tableName, const std::string& moduleName)
+int Storage::RemoveMultiple(int n, const std::string& tableName, const std::string& moduleName)
 {
     std::string deleteQuery;
     int rowsModified = 0;
@@ -178,7 +178,7 @@ int SQLiteStorage::RemoveMultiple(int n, const std::string& tableName, const std
     }
 }
 
-int SQLiteStorage::GetElementCount(const std::string& tableName, const std::string& moduleName)
+int Storage::GetElementCount(const std::string& tableName, const std::string& moduleName)
 {
     std::string countQuery;
     if (moduleName.empty())
@@ -202,7 +202,7 @@ int SQLiteStorage::GetElementCount(const std::string& tableName, const std::stri
         }
         else
         {
-            LogError("Error SQLiteStorage get element count.");
+            LogError("Error Storage get element count.");
         }
         return count;
     }
@@ -213,7 +213,7 @@ int SQLiteStorage::GetElementCount(const std::string& tableName, const std::stri
     }
 }
 
-size_t SQLiteStorage::GetElementsStoredSize(const std::string& tableName)
+size_t Storage::GetElementsStoredSize(const std::string& tableName)
 {
     std::string sizeQuery = fmt::format(
         R"(SELECT SUM(LENGTH(module_name) + LENGTH(module_type) + LENGTH(metadata) + LENGTH(message)) AS total_bytes FROM {};)",
@@ -229,7 +229,7 @@ size_t SQLiteStorage::GetElementsStoredSize(const std::string& tableName)
         }
         else
         {
-            LogError("Error SQLiteStorage get element count.");
+            LogError("Error Storage get element count.");
         }
         return count;
     }
@@ -240,7 +240,7 @@ size_t SQLiteStorage::GetElementsStoredSize(const std::string& tableName)
     }
 }
 
-nlohmann::json SQLiteStorage::ProcessRequest(SQLite::Statement& sqlStatementQuery, size_t maxSize)
+nlohmann::json Storage::ProcessRequest(SQLite::Statement& sqlStatementQuery, size_t maxSize)
 {
     try
     {
@@ -303,10 +303,10 @@ nlohmann::json SQLiteStorage::ProcessRequest(SQLite::Statement& sqlStatementQuer
     }
 }
 
-nlohmann::json SQLiteStorage::RetrieveBySize(size_t n,
-                                             const std::string& tableName,
-                                             const std::string& moduleName,
-                                             [[maybe_unused]] const std::string& moduleType)
+nlohmann::json Storage::RetrieveBySize(size_t n,
+                                       const std::string& tableName,
+                                       const std::string& moduleName,
+                                       [[maybe_unused]] const std::string& moduleType)
 {
     std::string selectQuery;
     if (moduleName.empty())

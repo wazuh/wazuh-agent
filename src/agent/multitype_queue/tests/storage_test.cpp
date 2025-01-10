@@ -8,16 +8,16 @@
 #include "gtest/gtest.h"
 #include <nlohmann/json.hpp>
 
-#include "sqlitestorage.hpp"
+#include "storage.hpp"
 
-class SQLiteStorageTest : public ::testing::Test
+class StorageTest : public ::testing::Test
 {
 protected:
     const std::string dbName = "testdb.db";
     const std::string tableName = "test_table";
     const std::string moduleName = "moduleX";
     const std::vector<std::string> m_vMessageTypeStrings {"test_table", "test_table2"};
-    std::unique_ptr<SQLiteStorage> storage;
+    std::unique_ptr<Storage> storage;
 
     void SetUp() override
     {
@@ -32,7 +32,7 @@ protected:
             }
         }
 
-        storage = std::make_unique<SQLiteStorage>(dbName, m_vMessageTypeStrings);
+        storage = std::make_unique<Storage>(dbName, m_vMessageTypeStrings);
     }
 
     void TearDown() override
@@ -50,7 +50,7 @@ protected:
     }
 };
 
-TEST_F(SQLiteStorageTest, StoreSingleMessage)
+TEST_F(StorageTest, StoreSingleMessage)
 {
     const nlohmann::json message = {{"key", "value"}};
     EXPECT_EQ(storage->Store(message, tableName), 1);
@@ -59,7 +59,7 @@ TEST_F(SQLiteStorageTest, StoreSingleMessage)
     EXPECT_EQ(storage->GetElementCount(tableName), 2);
 }
 
-TEST_F(SQLiteStorageTest, StoreSingleMessageWithModule)
+TEST_F(StorageTest, StoreSingleMessageWithModule)
 {
     const nlohmann::json message = {{"key", "value"}};
     EXPECT_EQ(storage->Store(message, tableName, moduleName), 1);
@@ -70,7 +70,7 @@ TEST_F(SQLiteStorageTest, StoreSingleMessageWithModule)
     EXPECT_EQ(storage->GetElementCount(tableName, moduleName), 1);
 }
 
-TEST_F(SQLiteStorageTest, StoreMultipleMessages)
+TEST_F(StorageTest, StoreMultipleMessages)
 {
     auto messages = nlohmann::json::array();
     messages.push_back({{"key", "value1"}});
@@ -79,7 +79,7 @@ TEST_F(SQLiteStorageTest, StoreMultipleMessages)
     EXPECT_EQ(storage->GetElementCount(tableName), 2);
 }
 
-TEST_F(SQLiteStorageTest, StoreMultipleMessagesWithModule)
+TEST_F(StorageTest, StoreMultipleMessagesWithModule)
 {
     auto messages = nlohmann::json::array();
     messages.push_back({{"key", "value1"}});
@@ -90,7 +90,7 @@ TEST_F(SQLiteStorageTest, StoreMultipleMessagesWithModule)
     EXPECT_EQ(storage->GetElementCount(tableName, "unavailableModuleName"), 0);
 }
 
-TEST_F(SQLiteStorageTest, RetrieveMultipleMessages)
+TEST_F(StorageTest, RetrieveMultipleMessages)
 {
     auto messages = nlohmann::json::array();
     messages.push_back({{"key", "value1"}});
@@ -101,7 +101,7 @@ TEST_F(SQLiteStorageTest, RetrieveMultipleMessages)
     EXPECT_EQ(retrievedMessages.size(), 2);
 }
 
-TEST_F(SQLiteStorageTest, RetrieveMultipleMessagesWithModule)
+TEST_F(StorageTest, RetrieveMultipleMessagesWithModule)
 {
     auto messages = nlohmann::json::array();
     messages.push_back({{"key", "value1"}});
@@ -120,7 +120,7 @@ TEST_F(SQLiteStorageTest, RetrieveMultipleMessagesWithModule)
     }
 }
 
-TEST_F(SQLiteStorageTest, RemoveMultipleMessages)
+TEST_F(StorageTest, RemoveMultipleMessages)
 {
     auto messages = nlohmann::json::array();
     messages.push_back({{"key", "value1"}});
@@ -130,7 +130,7 @@ TEST_F(SQLiteStorageTest, RemoveMultipleMessages)
     EXPECT_EQ(storage->GetElementCount(tableName), 0);
 }
 
-TEST_F(SQLiteStorageTest, RemoveMultipleMessagesWithModule)
+TEST_F(StorageTest, RemoveMultipleMessagesWithModule)
 {
     auto messages = nlohmann::json::array();
     messages.push_back({{"key", "value1"}});
@@ -142,14 +142,14 @@ TEST_F(SQLiteStorageTest, RemoveMultipleMessagesWithModule)
     EXPECT_EQ(storage->GetElementCount(tableName), 0);
 }
 
-TEST_F(SQLiteStorageTest, GetElementCount)
+TEST_F(StorageTest, GetElementCount)
 {
     nlohmann::json message = {{"key", "value"}};
     EXPECT_EQ(storage->Store(message, tableName), 1);
     EXPECT_EQ(storage->GetElementCount(tableName), 1);
 }
 
-TEST_F(SQLiteStorageTest, GetElementCountWithModule)
+TEST_F(StorageTest, GetElementCountWithModule)
 {
     nlohmann::json message = {{"key", "value"}};
     EXPECT_EQ(storage->Store(message, tableName, moduleName), 1);
@@ -158,7 +158,7 @@ TEST_F(SQLiteStorageTest, GetElementCountWithModule)
     EXPECT_EQ(storage->GetElementCount(tableName, "unavailableModuleName"), 0);
 }
 
-TEST_F(SQLiteStorageTest, MessagesSizes)
+TEST_F(StorageTest, MessagesSizes)
 {
     auto messages = nlohmann::json::array();
     messages.push_back({{"key", "value1"}});
@@ -176,7 +176,7 @@ TEST_F(SQLiteStorageTest, MessagesSizes)
     EXPECT_EQ(storedSizes, 64);
 }
 
-TEST_F(SQLiteStorageTest, GetMessagesBySize)
+TEST_F(StorageTest, GetMessagesBySize)
 {
     auto messages = nlohmann::json::array();
     auto message1 = R"({{"key","value1"}})";
@@ -197,7 +197,7 @@ TEST_F(SQLiteStorageTest, GetMessagesBySize)
     EXPECT_EQ(retrievedMessages.size(), 1);
 }
 
-TEST_F(SQLiteStorageTest, GetMessagesBySizeLower)
+TEST_F(StorageTest, GetMessagesBySizeLower)
 {
     auto messages = nlohmann::json::array();
     auto message1 = R"({{"key","value1"}})";
@@ -214,7 +214,7 @@ TEST_F(SQLiteStorageTest, GetMessagesBySizeLower)
     EXPECT_EQ(retrievedMessages.size(), 1);
 }
 
-TEST_F(SQLiteStorageTest, GetMessagesByMoreSize)
+TEST_F(StorageTest, GetMessagesByMoreSize)
 {
     auto messages = nlohmann::json::array();
     auto message1 = R"({{"key","value1"}})";
@@ -232,7 +232,7 @@ TEST_F(SQLiteStorageTest, GetMessagesByMoreSize)
     EXPECT_EQ(retrievedMessages.size(), 2);
 }
 
-class SQLiteStorageMultithreadedTest : public ::testing::Test
+class StorageMultithreadedTest : public ::testing::Test
 {
 protected:
     const std::string dbName = "testdb";
@@ -240,7 +240,7 @@ protected:
 
     void SetUp() override
     {
-        // Clean up: Delete the SQLiteStorage instances and remove the database file
+        // Clean up: Delete the Storage instances and remove the database file
         std::error_code ec;
         if (std::filesystem::exists(dbName.c_str()))
         {
@@ -257,7 +257,7 @@ protected:
 
 namespace
 {
-    void StoreMessages(SQLiteStorage& storage, const nlohmann::json& messages, const std::string& tableName)
+    void StoreMessages(Storage& storage, const nlohmann::json& messages, const std::string& tableName)
     {
         for (const auto& message : messages)
         {
@@ -265,17 +265,17 @@ namespace
         }
     }
 
-    void RemoveMessages(SQLiteStorage& storage, size_t count, const std::string& tableName)
+    void RemoveMessages(Storage& storage, size_t count, const std::string& tableName)
     {
         storage.RemoveMultiple(static_cast<int>(count), tableName);
     }
 } // namespace
 
-TEST_F(SQLiteStorageMultithreadedTest, MultithreadedStoreAndRetrieve)
+TEST_F(StorageMultithreadedTest, MultithreadedStoreAndRetrieve)
 {
     constexpr size_t messagesToStore = 100;
 
-    SQLiteStorage storage1(dbName, m_vMessageTypeStrings);
+    Storage storage1(dbName, m_vMessageTypeStrings);
 
     auto messages1 = nlohmann::json::array();
     auto messages2 = nlohmann::json::array();

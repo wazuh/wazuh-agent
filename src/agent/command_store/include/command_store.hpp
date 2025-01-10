@@ -13,7 +13,7 @@ namespace command_store
     /// @brief CommandStore class
     ///
     /// This class provides methods for storing, retrieving, and deleting commands
-    /// in the command store database. It uses a SQLite database to store the
+    /// in the command store database. It uses a database to store the
     /// commands.
     class CommandStore
     {

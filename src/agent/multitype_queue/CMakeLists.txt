@@ -13,7 +13,7 @@ find_package(nlohmann_json REQUIRED)
 find_package(fmt REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio)
 
-add_library(MultiTypeQueue src/sqlitestorage.cpp src/multitype_queue.cpp)
+add_library(MultiTypeQueue src/storage.cpp src/multitype_queue.cpp)
 
 target_include_directories(MultiTypeQueue PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include)
