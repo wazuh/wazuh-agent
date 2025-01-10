@@ -17,7 +17,7 @@ include(../../cmake/ConfigureTarget.cmake)
 configure_target(Persistence)
 
 target_include_directories(Persistence PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_link_libraries(Persistence PUBLIC SQLiteCpp PRIVATE fmt::fmt Logger)
+target_link_libraries(Persistence PRIVATE SQLiteCpp fmt::fmt Logger)
 
 if(BUILD_TESTS)
     enable_testing()

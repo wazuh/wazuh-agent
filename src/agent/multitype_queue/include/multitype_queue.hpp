@@ -16,7 +16,16 @@
 #include <string>
 #include <vector>
 
-constexpr auto QUEUE_DB_NAME = "queue.db";
+namespace
+{
+    // database
+    const std::string QUEUE_DB_NAME = "queue.db";
+
+    // table names
+    const std::string STATELESS_TABLE_NAME = "STATELESS";
+    const std::string STATEFUL_TABLE_NAME = "STATEFUL";
+    const std::string COMMAND_TABLE_NAME = "COMMAND";
+} // namespace
 
 /**
  * @brief MultiTypeQueue implementation that handles multiple types of messages.
@@ -27,11 +36,12 @@ constexpr auto QUEUE_DB_NAME = "queue.db";
 class MultiTypeQueue : public IMultiTypeQueue
 {
 private:
-    const std::vector<std::string> m_vMessageTypeStrings {"STATELESS", "STATEFUL", "COMMAND"};
+    const std::vector<std::string> m_vMessageTypeStrings {
+        STATELESS_TABLE_NAME, STATEFUL_TABLE_NAME, COMMAND_TABLE_NAME};
     const std::map<MessageType, std::string> m_mapMessageTypeName {
-        {MessageType::STATELESS, "STATELESS"},
-        {MessageType::STATEFUL, "STATEFUL"},
-        {MessageType::COMMAND, "COMMAND"},
+        {MessageType::STATELESS, STATELESS_TABLE_NAME},
+        {MessageType::STATEFUL, STATEFUL_TABLE_NAME},
+        {MessageType::COMMAND, COMMAND_TABLE_NAME},
     };
 
     /// @brief maximun quantity of message to stored on the queue
@@ -81,6 +91,7 @@ public:
                     config::agent::QUEUE_DEFAULT_SIZE);
             m_maxItems = config::agent::QUEUE_DEFAULT_SIZE;
         }
+
         const auto dbFilePath = dbFolderPath + "/" + QUEUE_DB_NAME;
 
         try

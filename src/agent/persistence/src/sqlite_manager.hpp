@@ -1,15 +1,20 @@
 #pragma once
 
-#include <SQLiteCpp/SQLiteCpp.h>
-
 #include "column.hpp"
 #include "persistence.hpp"
 
+#include <atomic>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
+
+namespace SQLite
+{
+    class Database;
+    class Transaction;
+} // namespace SQLite
 
 /// @brief Manages SQLite database operations, including table creation, data insertion, updating, and selection.
 class SQLiteManager : public Persistence
@@ -30,6 +35,9 @@ public:
 
     /// @brief Delete move assignment operator.
     SQLiteManager& operator=(SQLiteManager&&) = delete;
+
+    /// @brief Destructor.
+    ~SQLiteManager() override;
 
     /// @brief Checks if a specified table exists in the database.
     /// @param tableName The name of the table to check.
@@ -83,7 +91,7 @@ public:
                             LogicalOperator logOp = LogicalOperator::AND,
                             const Names& orderBy = {},
                             OrderType orderType = OrderType::ASC,
-                            unsigned int limit = 0) override;
+                            int limit = 0) override;
 
     /// @brief Retrieves the number of rows in a specified table.
     /// @param tableName The name of the table to count rows in.
@@ -97,8 +105,13 @@ public:
     /// @brief Retrieves the size in bytes of rows in a specified table.
     /// @param tableName The name of the table to count rows in.
     /// @param fields Names to retrieve.
+    /// @param selCriteria Optional selection criteria to filter rows.
+    /// @param logOp Logical operator to combine selection criteria (AND/OR).
     /// @return The size in bytes of the rows in the table.
-    size_t GetSize(const std::string& tableName, const Names& fields) override;
+    size_t GetSize(const std::string& tableName,
+                   const Names& fields,
+                   const Criteria& selCriteria = {},
+                   LogicalOperator logOp = LogicalOperator::AND) override;
 
     /// @brief Begins a transaction in the SQLite database.
     /// @return The transaction ID.
@@ -135,5 +148,5 @@ private:
     std::map<TransactionId, std::unique_ptr<SQLite::Transaction>> m_transactions;
 
     /// @brief The next available transaction ID.
-    TransactionId m_nextTransactionId = 0;
+    std::atomic<TransactionId> m_nextTransactionId = 0;
 };

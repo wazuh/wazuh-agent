@@ -2,6 +2,7 @@
 
 #include <logger.hpp>
 
+#include <SQLiteCpp/SQLiteCpp.h>
 #include <fmt/format.h>
 #include <map>
 
@@ -10,6 +11,8 @@ const std::map<ColumnType, std::string> MAP_COL_TYPE_STRING {
 const std::map<LogicalOperator, std::string> MAP_LOGOP_STRING {{LogicalOperator::AND, "AND"},
                                                                {LogicalOperator::OR, "OR"}};
 const std::map<OrderType, std::string> MAP_ORDER_STRING {{OrderType::ASC, "ASC"}, {OrderType::DESC, "DESC"}};
+
+SQLiteManager::~SQLiteManager() = default;
 
 ColumnType SQLiteManager::ColumnTypeFromSQLiteType(const int type) const
 {
@@ -188,7 +191,7 @@ std::vector<Row> SQLiteManager::Select(const std::string& tableName,
                                        LogicalOperator logOp,
                                        const Names& orderBy,
                                        OrderType orderType,
-                                       unsigned int limit)
+                                       int limit)
 {
     std::string selectedFields;
     if (fields.empty())
@@ -309,7 +312,10 @@ int SQLiteManager::GetCount(const std::string& tableName, const Criteria& selCri
     return count;
 }
 
-size_t SQLiteManager::GetSize(const std::string& tableName, const Names& fields)
+size_t SQLiteManager::GetSize(const std::string& tableName,
+                              const Names& fields,
+                              const Criteria& selCriteria,
+                              LogicalOperator logOp)
 {
     if (fields.empty())
     {
@@ -327,7 +333,22 @@ size_t SQLiteManager::GetSize(const std::string& tableName, const Names& fields)
     }
     selectedFields = fmt::format("{}", fmt::join(fieldNames, " + "));
 
-    std::string queryString = fmt::format("SELECT SUM({}) AS total_bytes FROM {}", selectedFields, tableName);
+    std::string condition;
+    if (!selCriteria.empty())
+    {
+        std::vector<std::string> conditions;
+        for (const auto& col : selCriteria)
+        {
+            if (col.Type == ColumnType::TEXT)
+                conditions.push_back(fmt::format("{}='{}'", col.Name, col.Value));
+            else
+                conditions.push_back(fmt::format("{}={}", col.Name, col.Value));
+        }
+        condition = fmt::format("WHERE {}", fmt::join(conditions, fmt::format(" {} ", MAP_LOGOP_STRING.at(logOp))));
+    }
+
+    std::string queryString =
+        fmt::format("SELECT SUM({}) AS total_bytes FROM {} {}", selectedFields, tableName, condition);
 
     size_t count = 0;
     try

@@ -8,7 +8,6 @@ project(MultiTypeQueue)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
-find_package(SQLiteCpp REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(fmt REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio)
@@ -16,17 +15,16 @@ find_package(Boost REQUIRED COMPONENTS asio)
 add_library(MultiTypeQueue src/storage.cpp src/multitype_queue.cpp)
 
 target_include_directories(MultiTypeQueue PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include)
+        ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 target_link_libraries(MultiTypeQueue
         PUBLIC
-        Persistence
         Config
         nlohmann_json::nlohmann_json
         Boost::asio
         Logger
         PRIVATE
-        SQLiteCpp
+        Persistence
         fmt::fmt)
 
 include(../../cmake/ConfigureTarget.cmake)

@@ -16,7 +16,6 @@ configure_target(test_storage)
 target_include_directories(test_storage PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 target_link_libraries(test_storage
     MultiTypeQueue
-    SQLiteCpp
     GTest::gtest
     GTest::gtest_main
     GTest::gmock

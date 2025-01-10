@@ -66,7 +66,7 @@ public:
                                     LogicalOperator logOp = LogicalOperator::AND,
                                     const Names& orderBy = {},
                                     OrderType orderType = OrderType::ASC,
-                                    unsigned int limit = 0) = 0;
+                                    int limit = 0) = 0;
 
     /// @brief Retrieves the number of rows in a specified table.
     /// @param tableName The name of the table to count rows in.
@@ -80,8 +80,13 @@ public:
     /// @brief Retrieves the size in bytes of rows in a specified table.
     /// @param tableName The name of the table to count rows in.
     /// @param fields Names to retrieve.
+    /// @param selCriteria Optional selection criteria to filter rows.
+    /// @param logOp Logical operator to combine selection criteria (AND/OR).
     /// @return The size in bytes of the rows in the table.
-    virtual size_t GetSize(const std::string& tableName, const Names& fields) = 0;
+    virtual size_t GetSize(const std::string& tableName,
+                           const Names& fields,
+                           const Criteria& selCriteria = {},
+                           LogicalOperator logOp = LogicalOperator::AND) = 0;
 
     /// @brief Begins a transaction in the database.
     /// @return The transaction ID.
