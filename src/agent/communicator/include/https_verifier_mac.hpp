@@ -9,6 +9,25 @@
 
 namespace https_socket_verify_utils
 {
+    struct CFDeleter
+    {
+        void operator()(CFTypeRef obj) const
+        {
+            if (obj)
+            {
+                CFRelease(obj);
+            }
+        }
+    };
+
+    using CFDataPtr = std::unique_ptr<const __CFData, CFDeleter>;
+    using CFArrayPtr = std::unique_ptr<const __CFArray, CFDeleter>;
+    using CFStringPtr = std::unique_ptr<const __CFString, CFDeleter>;
+    using SecTrustPtr = std::unique_ptr<__SecTrust, CFDeleter>;
+    using CFErrorPtr = std::unique_ptr<__CFError, CFDeleter>;
+    using SecCertificatePtr = std::unique_ptr<__SecCertificate, CFDeleter>;
+    using SecPolicyPtr = std::unique_ptr<__SecPolicy, CFDeleter>;
+
     class HttpsVerifier
     {
     public:
@@ -33,23 +52,23 @@ namespace https_socket_verify_utils
         /// @param ctx The verification context
         /// @param certData The extracted certificate
         /// @return True if the certificate was extracted successfully, false otherwise
-        bool ExtractCertificate(boost::asio::ssl::verify_context& ctx, CFDataRef& certData);
+        bool ExtractCertificate(boost::asio::ssl::verify_context& ctx, CFDataPtr& certData);
 
         /// @brief Creates a trust object from the certificate
         /// @param certData The certificate data
         /// @param trust The created trust object
         /// @return True if the trust object was created successfully, false otherwise
-        bool CreateTrustObject(CFDataRef certData, SecTrustRef& trust);
+        bool CreateTrustObject(const CFDataPtr& certData, SecTrustPtr& trust);
 
         /// @brief Evaluates the trust status of the trust object
         /// @param trust The trust object to evaluate
         /// @return True if the trust evaluation succeeded, false otherwise
-        bool EvaluateTrust(SecTrustRef trust);
+        bool EvaluateTrust(const SecTrustPtr& trust);
 
         /// @brief Validates the hostname of the server certificate
         /// @param cert The server certificate
         /// @return True if the hostname is valid, false otherwise
-        bool ValidateHostname(SecCertificateRef cert);
+        bool ValidateHostname(const SecCertificatePtr& cert);
 
         /// @brief The verification mode to use
         std::string m_mode;
