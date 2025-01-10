@@ -470,48 +470,61 @@ void Inventory::Init(const std::shared_ptr<ISysInfo>& spInfo,
    m_processesFirstScan = ReadMetadata(processesFirstScanKey).empty()? false:true;
    m_hotfixesFirstScan  = ReadMetadata(hotfixesFirstScanKey ).empty()? false:true;
 
-   if(hardwareFirstScanKey && !m_hardware)
+   if(hardwareFirstScanKey && (!m_hardware || !m_enabled))
    {
        DeleteMetadata(hardwareFirstScanKey);
        m_hardwareFirstScan = false;
    }
 
-   if(systemFirstScanKey && !m_system)
+   if(systemFirstScanKey && (!m_system || !m_enabled))
    {
        DeleteMetadata(systemFirstScanKey);
        m_systemFirstScan = false;
    }
 
-   if(networksFirstScanKey && !m_networks){
+   if(networksFirstScanKey && (!m_networks || !m_enabled))
+   {
        DeleteMetadata(networksFirstScanKey);
        m_networksFirstScan = false;
 
    }
 
-   if(packagesFirstScanKey && !m_packages){
+   if(packagesFirstScanKey && (!m_packages || !m_enabled))
+   {
        DeleteMetadata(packagesFirstScanKey);
        m_packagesFirstScan = false;
    }
 
-   if(portsFirstScanKey && !m_ports){
+   if(portsFirstScanKey && (!m_ports || !m_enabled))
+   {
        DeleteMetadata(portsFirstScanKey);
        m_portsFirstScan = false;
    }
 
-   if(portsAllFirstScanKey && !m_portsAll){
+   if(portsAllFirstScanKey && (!m_portsAll || !m_enabled))
+   {
        DeleteMetadata(portsAllFirstScanKey);
        m_portsAllFirstScan = false;
    }
-   if(processesFirstScanKey && !m_processes){
+   if(processesFirstScanKey && (!m_processes || !m_enabled))
+   {
        DeleteMetadata(processesFirstScanKey);
        m_processesFirstScan = false;
    }
-   if(hotfixesFirstScanKey && !m_hotfixes){
+
+   if(hotfixesFirstScanKey && (!m_hotfixes || !m_enabled))
+   {
        DeleteMetadata(hotfixesFirstScanKey);
        m_hotfixesFirstScan = false;
    }
 
-    SyncLoop();
+    if(m_enabled)
+        SyncLoop();
+    else{
+        Destroy();
+        std::unique_lock<std::mutex> lock{m_mutex};
+        m_spDBSync.reset(nullptr);
+    }
 }
 
 void Inventory::Destroy()

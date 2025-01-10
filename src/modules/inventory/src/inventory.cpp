@@ -14,10 +14,10 @@ void Inventory::Start() {
         return;
     }
 
-    LogInfo("Inventory module started.");
-
-    ShowConfig();
-
+    if(m_enabled){
+        LogInfo("Inventory module started.");
+        ShowConfig();
+    }
     DBSync::initialize(LogErrorInventory);
 
     try
@@ -33,7 +33,9 @@ void Inventory::Start() {
         LogErrorInventory(ex.what());
     }
 
-    LogInfo("Inventory module stopped.");
+    if(m_enabled){
+        LogInfo("Inventory module stopped.");
+    }
 }
 
 void Inventory::Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
