@@ -18,13 +18,9 @@ JournaldReader::JournaldReader(Logcollector& logcollector,
 Awaitable JournaldReader::Run() {
     try {
         m_journal->Open();
-        LogInfo("Journald opened successfully");
 
         try {
-            m_journal->SeekHead();
-            LogInfo("Successfully seeked to head of journal");
             m_journal->SeekTail();
-            LogInfo("Successfully seeked to tail of journal");
         } catch (const JournalLogException& e) {
             LogError("Failed to seek journal: {}", e.what());
             co_return;

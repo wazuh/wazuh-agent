@@ -17,7 +17,7 @@ JournalLog::~JournalLog() {
 void JournalLog::Open() {
     int ret = sd_journal_open(&m_journal, SD_JOURNAL_LOCAL_ONLY);
     ThrowIfError(ret, "open journal");
-    LogDebug("Journal opened successfully");
+    LogInfo("Journal opened successfully");
 }
 
 bool JournalLog::Next() {
@@ -48,7 +48,7 @@ bool JournalLog::SeekTail() {
         return false;
     }
 
-    LogDebug("Successfully seeked to tail of journal");
+    LogTrace("Successfully seeked to tail of journal");
     return true;
 }
 
@@ -159,14 +159,12 @@ std::optional<JournalLog::FilteredMessage> JournalLog::GetNextFilteredMessage(
     const std::regex& pattern,
     bool ignoreIfMissing) {
 
-    while (NextNewest()) {
+    while (Next()) {
         try {
-            LogTrace("Processing journal entry with timestamp {}", m_currentTimestamp);
-
             std::string value;
             try {
                 value = GetData(field);
-                LogDebug("Reading field '{}' with value '{}'", field, value);
+                LogTrace("Reading field '{}' with value '{}'", field, value);
             } catch (const JournalLogException& e) {
                 if (ignoreIfMissing) {
                     LogTrace("Field {} not present in entry, skipping...", field);
@@ -176,18 +174,15 @@ std::optional<JournalLog::FilteredMessage> JournalLog::GetNextFilteredMessage(
             }
 
             if (std::regex_match(value, pattern)) {
-                LogDebug("Field '{}' matched pattern", field);
                 try {
                     std::string message = GetData("MESSAGE");
-                    LogDebug("Found matching message: {}", message);
+                    LogTrace("Found matching message: {}", message);
                     return FilteredMessage{value, message};
                 } catch (const JournalLogException& e) {
                     LogWarn("Message field missing in matching entry for field '{}' with value '{}'",
                            field, value);
                     continue;
                 }
-            } else {
-                LogTrace("Field '{}' with value '{}' did not match pattern", field, value);
             }
         } catch (const JournalLogException& e) {
             if (!ignoreIfMissing) {
