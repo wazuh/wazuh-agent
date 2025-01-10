@@ -17,13 +17,15 @@ find_package(cJSON CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio system)
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(SYSTEMD REQUIRED systemd)
 
 if(WIN32)
     FILE(GLOB EXCLUDED_SOURCES src/*_unix.cpp)
 else()
     FILE(GLOB EXCLUDED_SOURCES src/*_win.cpp)
+endif()
+
+if (NOT UNIX OR APPLE)
+    FILE(GLOB EXCLUDED_SOURCES src/journal*.cpp)
 endif()
 
 FILE(GLOB LOGCOLLECTOR_SOURCES src/*.cpp)
@@ -36,8 +38,7 @@ target_include_directories(Logcollector PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
     ${COMMON_FOLDER}
     ${COMMON_FOLDER}/stringHelper/include
-    ${COMMON_FOLDER}/timeHelper/include
-    ${SYSTEMD_INCLUDE_DIRS})
+    ${COMMON_FOLDER}/timeHelper/include)
 
 target_link_libraries(Logcollector
     PUBLIC
@@ -48,8 +49,7 @@ target_link_libraries(Logcollector
     Boost::asio
     Boost::system
     nlohmann_json::nlohmann_json
-    ${SYSTEMD_LIBRARIES}
-    systemd
+    $<$<PLATFORM_ID:Linux>:systemd>
     PRIVATE
     Logger
     pal
