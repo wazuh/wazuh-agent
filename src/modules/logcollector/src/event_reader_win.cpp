@@ -35,7 +35,7 @@ WindowsEventTracerReader::WindowsEventTracerReader(Logcollector &logcollector,
 
 Awaitable WindowsEventTracerReader::Run()
 {
-    m_logcollector.EnqueueTask(QueryEvents(m_channel, m_query));
+    m_logcollector.EnqueueTask(QueryEvents());
     co_return;
 }
 
@@ -44,10 +44,10 @@ void WindowsEventTracerReader::Stop()
     m_keepRunning.store(false);
 }
 
-Awaitable WindowsEventTracerReader::QueryEvents(const std::string channel, const std::string query)
+Awaitable WindowsEventTracerReader::QueryEvents()
 {
-    std::wstring wideStringChannel = std::wstring(channel.begin(), channel.end());
-    std::wstring wideStringQuery = std::wstring(query.begin(), query.end());
+    std::wstring wideStringChannel = std::wstring(m_channel.begin(), m_channel.end());
+    std::wstring wideStringQuery = std::wstring(m_query.begin(), m_query.end());
 
     auto subscriptionCallback = [](EVT_SUBSCRIBE_NOTIFY_ACTION action, PVOID userContext,
         EVT_HANDLE event) -> DWORD
@@ -87,14 +87,14 @@ Awaitable WindowsEventTracerReader::QueryEvents(const std::string channel, const
         co_return;
     }
 
-    LogInfo("Subscribed to events for {} channel with query: '{}'", channel, query);
+    LogInfo("Subscribed to events for {} channel with query: '{}'", m_channel, m_query);
 
     while (m_keepRunning.load())
     {
         co_await m_logcollector.Wait(std::chrono::milliseconds(m_ChannelsRefreshInterval));
     }
 
-    LogInfo("Unsubscribing to channel '{}'.", channel);
+    LogInfo("Unsubscribing to channel '{}'.", m_channel);
     if (subscriptionHandle)
     {
         EvtClose(subscriptionHandle);

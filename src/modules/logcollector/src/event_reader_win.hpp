@@ -42,7 +42,7 @@ public:
     void Stop() override;
 
     // Main function to execute the event query
-    Awaitable QueryEvents(const std::string channel, const std::string query);
+    Awaitable QueryEvents();
 
     //TODO: doc
     std::string GetChannel() { return m_channel; };

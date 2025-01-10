@@ -13,7 +13,6 @@ system API.
 ```yaml
 logcollector:
   enabled: true
-  use_bookmark: true
   channel_refresh: 5s
   file:
     - location: /var/log/*.log
