@@ -140,20 +140,23 @@ public:
                                       const std::string moduleName = "",
                                       const std::string moduleType = "") override;
 
-    /// @copydoc IMultiTypeQueue::pop(MessageType, const std::string)
-    bool pop(MessageType type, const std::string moduleName = "") override;
+    /// @copydoc IMultiTypeQueue::pop(MessageType, const std::string, const std::string)
+    bool pop(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
-    /// @copydoc IMultiTypeQueue::popN(MessageType, int, const std::string)
-    int popN(MessageType type, int messageQuantity, const std::string moduleName = "") override;
+    /// @copydoc IMultiTypeQueue::popN(MessageType, int, const std::string, const std::string)
+    int popN(MessageType type,
+             int messageQuantity,
+             const std::string moduleName = "",
+             const std::string moduleType = "") override;
 
-    /// @copydoc IMultiTypeQueue::isEmpty(MessageType, const std::string)
-    bool isEmpty(MessageType type, const std::string moduleName = "") override;
+    /// @copydoc IMultiTypeQueue::isEmpty(MessageType, const std::string, const std::string)
+    bool isEmpty(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
-    /// @copydoc IMultiTypeQueue::isFull(MessageType, const std::string)
-    bool isFull(MessageType type, const std::string moduleName = "") override;
+    /// @copydoc IMultiTypeQueue::isFull(MessageType, const std::string, const std::string)
+    bool isFull(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
-    /// @copydoc IMultiTypeQueue::storedItems(MessageType, const std::string)
-    int storedItems(MessageType type, const std::string moduleName = "") override;
+    /// @copydoc IMultiTypeQueue::storedItems(MessageType, const std::string, const std::string)
+    int storedItems(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
     /// @copydoc IMultiTypeQueue::sizePerType(MessageType type)
     size_t sizePerType(MessageType type) override;

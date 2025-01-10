@@ -66,36 +66,44 @@ public:
     /// @brief Deletes a message from the queue.
     /// @param type The type of the queue from which to pop the message.
     /// @param moduleName The name of the module requesting the pop.
+    /// @param moduleType The type of the module requesting the pop.
     /// @return true If the message was popped successfully.
     /// @return false If the message could not be popped.
-    virtual bool pop(MessageType type, const std::string moduleName = "") = 0;
+    virtual bool pop(MessageType type, const std::string moduleName = "", const std::string moduleType = "") = 0;
 
     /// @brief Deletes N messages from the queue.
     /// @param type The type of the queue from which to pop the messages.
     /// @param messageQuantity The quantity of messages to pop.
     /// @param moduleName The name of the module requesting the pop.
+    /// @param moduleType The type of the module requesting the pop.
     /// @return int The number of messages deleted.
-    virtual int popN(MessageType type, int messageQuantity, const std::string moduleName = "") = 0;
+    virtual int popN(MessageType type,
+                     int messageQuantity,
+                     const std::string moduleName = "",
+                     const std::string moduleType = "") = 0;
 
     /// @brief Checks if a queue is empty.
     /// @param type The type of the queue.
     /// @param moduleName The name of the module requesting the check.
+    /// @param moduleType The type of the module requesting the check.
     /// @return true If the queue is empty.
     /// @return false If the queue is not empty.
-    virtual bool isEmpty(MessageType type, const std::string moduleName = "") = 0;
+    virtual bool isEmpty(MessageType type, const std::string moduleName = "", const std::string moduleType = "") = 0;
 
     /// @brief Checks if a queue is full
     /// @param type The type of the queue.
     /// @param moduleName The name of the module requesting the check.
+    /// @param moduleType The type of the module requesting the check.
     /// @return true If the queue is full.
     /// @return false If the queue is not full.
-    virtual bool isFull(MessageType type, const std::string moduleName = "") = 0;
+    virtual bool isFull(MessageType type, const std::string moduleName = "", const std::string moduleType = "") = 0;
 
     /// @brief Returns the number of items stored in the queue.
     /// @param type The type of the queue.
     /// @param moduleName The name of the module requesting the count.
+    /// @param moduleType The type of the module requesting the count.
     /// @return int The number of items in the queue.
-    virtual int storedItems(MessageType type, const std::string moduleName = "") = 0;
+    virtual int storedItems(MessageType type, const std::string moduleName = "", const std::string moduleType = "") = 0;
 
     /// @brief Returns the size of the queue per type
     /// @param type The type of the queue.
