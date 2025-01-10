@@ -366,80 +366,60 @@ static void getPackagesFromReg(const HKEY key, const std::string& subKey, std::f
                 nlohmann::json packageJson;
                 Utils::Registry packageReg{key, subKey + "\\" + package, access | KEY_READ};
 
-                std::string name;
-                std::string version;
-                std::string vendor;
-                std::string install_time;
-                std::string location;
-                std::string architecture;
-
-                if (packageReg.string("DisplayName", value))
+                if (packageReg.string("DisplayName", value) && !value.empty())
                 {
-                    name = value;
-                }
+                    packageJson["name"] = value;
 
-                if (packageReg.string("DisplayVersion", value))
-                {
-                    version = value;
-                }
-
-                if (packageReg.string("Publisher", value))
-                {
-                    vendor = value;
-                }
-
-                if (packageReg.string("InstallDate", value))
-                {
-                    try
+                    packageJson["version"] = UNKNOWN_VALUE;
+                    if (packageReg.string("DisplayVersion", value))
                     {
-                        install_time = Utils::timestampToISO8601(Utils::normalizeTimestamp(value, packageReg.keyModificationDate()));
+                        packageJson["version"] = value;
                     }
-                    catch (const std::exception& e)
-                    {
-                        (void)e;
-                        install_time = Utils::timestampToISO8601(packageReg.keyModificationDate());
-                    }
-                }
-                else
-                {
-                    install_time = Utils::timestampToISO8601(packageReg.keyModificationDate());
-                }
 
-                if (packageReg.string("InstallLocation", value))
-                {
-                    location = value;
-                }
-                else
-                {
-                    location = UNKNOWN_VALUE;
-                }
-
-                if (!name.empty())
-                {
-                    if (access & KEY_WOW64_32KEY)
+                    packageJson["vendor"] = UNKNOWN_VALUE;
+                    if (packageReg.string("Publisher", value))
                     {
-                        architecture = "i686";
+                        packageJson["vendor"] = value;
                     }
-                    else if (access & KEY_WOW64_64KEY)
+
+                    if (packageReg.string("InstallDate", value))
                     {
-                        architecture = "x86_64";
+                        try
+                        {
+                            packageJson["install_time"] = Utils::timestampToISO8601(Utils::normalizeTimestamp(value, packageReg.keyModificationDate()));
+                        }
+                        catch (const std::exception& e)
+                        {
+                            (void)e;
+                            packageJson["install_time"] = Utils::timestampToISO8601(packageReg.keyModificationDate());
+                        }
                     }
                     else
                     {
-                        architecture = UNKNOWN_VALUE;
+                        packageJson["install_time"] = Utils::timestampToISO8601(packageReg.keyModificationDate());
                     }
 
-                    packageJson["name"]         = std::move(name);
+                    packageJson["location"] = UNKNOWN_VALUE;
+                    if (packageReg.string("InstallLocation", value))
+                    {
+                        packageJson["location"] = value;
+                    }
+
+                    packageJson["architecture"] = UNKNOWN_VALUE;
+                    if (access & KEY_WOW64_32KEY)
+                    {
+                        packageJson["architecture"] = "i686";
+                    }
+                    else if (access & KEY_WOW64_64KEY)
+                    {
+                        packageJson["architecture"] = "x86_64";
+                    }
+
                     packageJson["description"]  = UNKNOWN_VALUE;
-                    packageJson["version"]      = version.empty() ? UNKNOWN_VALUE : std::move(version);
                     packageJson["groups"]       = UNKNOWN_VALUE;
-                    packageJson["priority"]       = UNKNOWN_VALUE;
-                    packageJson["size"]           = 0;
-                    packageJson["vendor"]       = vendor.empty() ? UNKNOWN_VALUE : std::move(vendor);
+                    packageJson["priority"]     = UNKNOWN_VALUE;
+                    packageJson["size"]         = UNKNOWN_VALUE;
                     packageJson["source"]       = UNKNOWN_VALUE;
-                    packageJson["install_time"] = install_time.empty() ? UNKNOWN_VALUE : std::move(install_time);
-                    packageJson["location"]     = location.empty() ? UNKNOWN_VALUE : std::move(location);
-                    packageJson["architecture"] = std::move(architecture);
                     packageJson["format"]       = "win";
 
                     returnCallback(packageJson);
@@ -583,7 +563,7 @@ nlohmann::json SysInfo::getHardware() const
     hardware["board_serial"] = getSerialNumber();
     hardware["cpu_name"] = getCpuName();
     hardware["cpu_cores"] = getCpuCores();
-    hardware["cpu_mhz"] = double(getCpuMHz());
+    hardware["cpu_mhz"] = getCpuMHz();
     getMemory(hardware);
     return hardware;
 }

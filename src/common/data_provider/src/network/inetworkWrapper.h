@@ -12,6 +12,7 @@
 #ifndef _NETWORK_INTERFACE_WRAPPER_H
 #define _NETWORK_INTERFACE_WRAPPER_H
 #include "inetworkInterface.h"
+#include <optional>
 
 class INetworkInterfaceWrapper
 {
@@ -21,21 +22,21 @@ class INetworkInterfaceWrapper
         // LCOV_EXCL_STOP
         virtual int family() const = 0;
         virtual std::string name() const = 0;
-        virtual std::string adapter() const = 0;
+        virtual void adapter(nlohmann::json&) const = 0;
         virtual std::string address() const = 0;
         virtual std::string netmask() const = 0;
-        virtual std::string broadcast() const = 0;
+        virtual void broadcast(nlohmann::json&) const = 0;
         virtual std::string addressV6() const = 0;
         virtual std::string netmaskV6() const = 0;
-        virtual std::string broadcastV6() const = 0;
-        virtual std::string gateway() const = 0;
-        virtual std::string metrics() const = 0;
-        virtual std::string metricsV6() const = 0;
-        virtual std::string dhcp() const = 0;
-        virtual uint32_t mtu() const = 0;
+        virtual void broadcastV6(nlohmann::json&) const = 0;
+        virtual void gateway(nlohmann::json&) const = 0;
+        virtual void metrics(nlohmann::json&) const = 0;
+        virtual void metricsV6(nlohmann::json&) const = 0;
+        virtual void dhcp(nlohmann::json&) const = 0;
+        virtual void mtu(nlohmann::json&) const = 0;
         virtual LinkStats stats() const = 0;
-        virtual std::string type() const = 0;
-        virtual std::string state() const = 0;
-        virtual std::string MAC() const = 0;
+        virtual void type(nlohmann::json&) const = 0;
+        virtual void state(nlohmann::json&) const = 0;
+        virtual void MAC(nlohmann::json&) const = 0;
 };
 #endif // _NETWORK_INTERFACE_WRAPPER_H

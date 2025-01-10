@@ -45,74 +45,74 @@ class AppxWindowsWrapper final : public IPackageWrapper
 
         ~AppxWindowsWrapper() = default;
 
-        std::string name() const override
+        void name(nlohmann::json& package) const override
         {
-            return m_name;
+            package["name"] = m_name;
         }
 
-        std::string version() const override
+        void version(nlohmann::json& package) const override
         {
-            return m_version;
+            package["version"] = m_version;
         }
 
-        std::string groups() const override
+        void groups(nlohmann::json& package) const override
         {
-            return UNKNOWN_VALUE;
+            package["groups"] = UNKNOWN_VALUE;
         }
 
-        std::string description() const override
+        void description(nlohmann::json& package) const override
         {
-            return UNKNOWN_VALUE;
+            package["description"] = UNKNOWN_VALUE;
         }
 
-        std::string architecture() const override
+        void architecture(nlohmann::json& package) const override
         {
-            return m_architecture;
+            package["architecture"] = m_architecture;
         }
 
-        std::string format() const override
+        void format(nlohmann::json& package) const override
         {
-            return m_format;
+            package["format"] = m_format;
         }
 
-        std::string osPatch() const override
+        void osPatch(nlohmann::json& package) const override
         {
-            return UNKNOWN_VALUE;
+            package["os_patch"] = UNKNOWN_VALUE;
         }
 
-        std::string source() const override
+        void source(nlohmann::json& package) const override
         {
-            return UNKNOWN_VALUE;
+            package["source"] = UNKNOWN_VALUE;
         }
 
-        std::string location() const override
+        void location(nlohmann::json& package) const override
         {
-            return m_location;
+            package["location"] = m_location;
         }
 
-        std::string priority() const override
+        void priority(nlohmann::json& package) const override
         {
-            return UNKNOWN_VALUE;
+            package["priority"] = UNKNOWN_VALUE;
         }
 
-        int size() const override
+        void size(nlohmann::json& package) const override
         {
-            return 0;
+            package["size"] = 0;
         }
 
-        std::string vendor() const override
+        void vendor(nlohmann::json& package) const override
         {
-            return m_vendor;
+            package["vendor"] = m_vendor;
         }
 
-        std::string install_time() const override
+        void install_time(nlohmann::json& package) const override
         {
-            return m_installTime;
+            package["install_time"] = m_installTime;
         }
 
-        std::string multiarch() const override
+        void multiarch(nlohmann::json& package) const override
         {
-            return std::string();
+            package["multiarch"] = std::string();
         }
 
     private:
@@ -191,7 +191,7 @@ class AppxWindowsWrapper final : public IPackageWrapper
          */
         const std::string getArchitecture(const std::string& field)
         {
-            std::string architecture { UNKNOWN_VALUE };
+            std::string architecture { EMPTY_VALUE };
 
             if (!field.compare("x64"))
             {
@@ -216,13 +216,13 @@ class AppxWindowsWrapper final : public IPackageWrapper
         {
             std::string location;
 
-            return registry.string("PackageRootFolder", location) ? location : UNKNOWN_VALUE;
+            return registry.string("PackageRootFolder", location) ? location : EMPTY_VALUE;
         }
 
 
         const std::string getInstallTime(const std::string& name, const std::string& uuid)
         {
-            std::string installTime { UNKNOWN_VALUE };
+            std::string installTime { EMPTY_VALUE };
             unsigned long long int value;
 
             // Name of main registry is: app_Name + _ + app_UUID

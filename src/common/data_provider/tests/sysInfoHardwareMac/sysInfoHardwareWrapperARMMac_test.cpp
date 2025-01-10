@@ -71,9 +71,9 @@ TEST_F(SysInfoHardwareWrapperARMMacTest, Test_CpuMhz_Succeed)
     .WillRepeatedly(Return(KERN_SUCCESS));
     EXPECT_CALL(*wrapper, CFRelease(_)).Times(2);
 
-    double ret = 0.0;
+    int ret = 0;
     EXPECT_NO_THROW(ret = wrapper->cpuMhz());
-    EXPECT_DOUBLE_EQ(ret, (double)3280896 / 1000000);
+    EXPECT_EQ(ret, 3280896 / 1000000);
 }
 
 TEST_F(SysInfoHardwareWrapperARMMacTest, Test_CpuMhz_Failed_IOServiceMatching)

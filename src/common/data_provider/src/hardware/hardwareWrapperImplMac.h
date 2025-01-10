@@ -23,7 +23,7 @@
 #include "sharedDefs.h"
 
 
-double getMhz(IOsPrimitivesMac* osPrimitives = nullptr);
+int getMhz(IOsPrimitivesMac* osPrimitives = nullptr);
 
 template <class TOsPrimitivesMac>
 class OSHardwareWrapperMac final : public IOSHardwareWrapper, public TOsPrimitivesMac
@@ -35,7 +35,7 @@ class OSHardwareWrapperMac final : public IOSHardwareWrapper, public TOsPrimitiv
 
         std::string boardSerial() const
         {
-            std::string ret{UNKNOWN_VALUE};
+            std::string ret{EMPTY_VALUE};
             const auto rawData{UtilsWrapperMac::exec("system_profiler SPHardwareDataType | grep Serial")};
 
             if (!rawData.empty())
@@ -105,7 +105,7 @@ class OSHardwareWrapperMac final : public IOSHardwareWrapper, public TOsPrimitiv
             return cores;
         }
 
-        double cpuMhz()
+        int cpuMhz()
         {
             return getMhz(static_cast<IOsPrimitivesMac*>(this));
         }

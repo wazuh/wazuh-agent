@@ -45,7 +45,7 @@ class PYPI final : public TFileSystem, public TFileIO
             packageInfo["source"] = UNKNOWN_VALUE;
             packageInfo["location"] = path.string();
             packageInfo["priority"] = UNKNOWN_VALUE;
-            packageInfo["size"] = 0;
+            packageInfo["size"] = UNKNOWN_VALUE;
             packageInfo["vendor"] = UNKNOWN_VALUE;
             packageInfo["install_time"] = UNKNOWN_VALUE;
             // The multiarch field won't have a default value

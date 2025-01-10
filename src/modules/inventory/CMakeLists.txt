@@ -26,6 +26,7 @@ target_include_directories(Inventory PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
     ${COMMON_FOLDER}
+    ${COMMON_FOLDER}/data_provider/src
     ${COMMON_FOLDER}/data_provider/include
     ${COMMON_FOLDER}/dbsync/include
     ${COMMON_FOLDER}/error_messages/include
