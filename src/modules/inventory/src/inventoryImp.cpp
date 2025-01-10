@@ -140,7 +140,7 @@ constexpr auto PORTS_SQL_STATEMENT
 };
 static const std::vector<std::string> PORTS_ITEM_ID_FIELDS{"inode", "protocol", "local_ip", "local_port"};
 
-constexpr auto NETWORK_SQL_STATEMENT
+constexpr auto NETWORKS_SQL_STATEMENT
 {
     R"(CREATE TABLE networks (
         iface TEXT,
@@ -166,6 +166,14 @@ constexpr auto NETWORK_SQL_STATEMENT
         broadcast TEXT,
         PRIMARY KEY (iface, adapter, iface_type, proto_type, address)
         ) WITHOUT ROWID;)"
+};
+
+constexpr auto METADATA_SQL_STATEMENT
+{
+    R"(CREATE TABLE metadata(
+    key TEXT,
+    value TEXT,
+    PRIMARY KEY (key)) WITHOUT ROWID;)"
 };
 
 constexpr auto NETWORKS_TABLE     { "networks"  };
@@ -426,7 +434,8 @@ std::string Inventory::GetCreateStatement() const
     ret += HOTFIXES_SQL_STATEMENT;
     ret += PROCESSES_SQL_STATEMENT;
     ret += PORTS_SQL_STATEMENT;
-    ret += NETWORK_SQL_STATEMENT;
+    ret += NETWORKS_SQL_STATEMENT;
+    ret += METADATA_SQL_STATEMENT;
     return ret;
 }
 
