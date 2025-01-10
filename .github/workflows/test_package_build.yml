@@ -1,0 +1,33 @@
+run-name: Test package
+
+on:
+  workflow_dispatch:    
+
+jobs:
+  build-binaries-agent-macos-packages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    name: Test package
+
+    steps:
+      - name: Checkout the wazuh-agent repository
+        uses: actions/checkout@v4
+        with:
+          repository: wazuh/wazuh-agent
+          ref: enhancement/137-pkg-build-trigger
+        
+      - name: Call package build workflow and wait
+        id: workflow_call
+        uses: ./.github/actions/call_workflow_and_wait
+        with:
+          ref: change/137-setup-pkg-build-workflow-for-macos
+          repository: wazuh-agent-packages
+          workflow: packages-build-macos-agent.yml
+          token: ${{ github.token }}
+    
+      - uses: actions/download-artifact@v4
+        with:
+          repository: wazuh-agent-packages
+          name: tested-wazuh-agent-package
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.workflow_call.outputs.dispatched_workflow_id }}

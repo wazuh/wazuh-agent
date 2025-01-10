@@ -1,0 +1,44 @@
+name: 'Call workflow and wait result'
+
+inputs:
+  ref:
+    description: 'Branch name'
+    required: true
+  repository:
+    description: 'Repository name'
+    required: true
+  workflow:
+    description: 'Workflow to trigger'
+    required: true
+  token:
+    description: 'Wazuh token'
+    required: true
+
+outputs:
+  dispatched_workflow_id:
+    value: ${{ steps.wait-workflow-compleption.outputs.dispatched_workflow_id }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Dispatch an action and get the run ID
+      env:
+        TOKEN: ${{ inputs.token }}
+      uses: Codex-/return-dispatch@v2.0.3
+      id: return_dispatch
+      with:
+        token: ${{ env.TOKEN }}
+        ref: ${{ inputs.ref }}
+        repo: ${{ inputs.repository }}
+        owner: wazuh
+        workflow: ${{ inputs.workflow }}
+        workflow_timeout_seconds: 900
+        workflow_inputs: '{ "architecture": "intel64", "source_reference": "${{ github.ref_name }}" }'
+
+    - name: Wait for the workflow to complete
+      id: wait-workflow-compleption
+      run: | 
+        gh run watch ${{steps.return_dispatch.outputs.run_id}} --repo wazuh/${{ inputs.repository }} --exit-status > /dev/null
+        echo 'Workflow ${{steps.return_dispatch.outputs.run_id}} finished.'
+        echo "dispatched_workflow_id=$${{steps.return_dispatch.outputs.run_id}}" >> $GITHUB_OUTPUT
+      shell: bash
