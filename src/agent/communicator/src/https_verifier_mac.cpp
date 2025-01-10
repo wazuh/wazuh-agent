@@ -15,13 +15,13 @@ namespace https_socket_verify_utils
 {
     bool HttpsVerifier::Verify(boost::asio::ssl::verify_context& ctx)
     {
-        CFDataRef certData = nullptr;
+        CFDataPtr certData;
         if (!ExtractCertificate(ctx, certData))
         {
             return false;
         }
 
-        SecTrustRef trust = nullptr;
+        SecTrustPtr trust;
         if (!CreateTrustObject(certData, trust))
         {
             return false;
@@ -29,27 +29,19 @@ namespace https_socket_verify_utils
 
         if (!EvaluateTrust(trust))
         {
-            m_utils->ReleaseCFObject(certData);
-            m_utils->ReleaseCFObject(trust);
             return false;
         }
 
-        SecCertificateRef serverCert = m_utils->CreateCertificate(certData);
+        SecCertificatePtr serverCert(m_utils->CreateCertificate(certData.get()));
         if (m_mode == "full" && !ValidateHostname(serverCert))
         {
-            m_utils->ReleaseCFObject(certData);
-            m_utils->ReleaseCFObject(serverCert);
-            m_utils->ReleaseCFObject(trust);
             return false;
         }
 
-        m_utils->ReleaseCFObject(certData);
-        m_utils->ReleaseCFObject(serverCert);
-        m_utils->ReleaseCFObject(trust);
         return true;
     }
 
-    bool HttpsVerifier::ExtractCertificate(boost::asio::ssl::verify_context& ctx, CFDataRef& certData)
+    bool HttpsVerifier::ExtractCertificate(boost::asio::ssl::verify_context& ctx, CFDataPtr& certData)
     {
         STACK_OF(X509)* certChain = m_utils->GetCertChain(ctx.native_handle());
         if (!certChain || m_utils->GetCertificateCount(certChain) == 0)
@@ -73,15 +65,15 @@ namespace https_socket_verify_utils
             return false;
         }
 
-        certData = m_utils->CreateCFData(certRawData, certLen);
+        certData = CFDataPtr(m_utils->CreateCFData(certRawData, certLen));
         OPENSSL_free(certRawData);
 
         return certData != nullptr;
     }
 
-    bool HttpsVerifier::CreateTrustObject(CFDataRef certData, SecTrustRef& trust)
+    bool HttpsVerifier::CreateTrustObject(const CFDataPtr& certData, SecTrustPtr& trust)
     {
-        SecCertificateRef serverCert = m_utils->CreateCertificate(certData);
+        SecCertificatePtr serverCert(m_utils->CreateCertificate(certData.get()));
 
         if (!serverCert)
         {
@@ -89,37 +81,48 @@ namespace https_socket_verify_utils
             return false;
         }
 
-        const void* certArrayValues[] = {serverCert};
+        const void* certArrayValues[] = {serverCert.get()};
 
-        CFArrayRef certArray = m_utils->CreateCertArray(certArrayValues, 1);
-        SecPolicyRef policy = m_utils->CreateSSLPolicy(true, "");
+        CFArrayPtr certArray(m_utils->CreateCertArray(certArrayValues, 1));
+        SecPolicyPtr policy(m_utils->CreateSSLPolicy(true, ""));
 
-        OSStatus status = m_utils->CreateTrustObject(certArray, policy, &trust);
-        m_utils->ReleaseCFObject(certArray);
-        m_utils->ReleaseCFObject(policy);
-        m_utils->ReleaseCFObject(serverCert);
+        SecTrustRef rawTrust = nullptr;
+        OSStatus status = m_utils->CreateTrustObject(certArray.get(), policy.get(), &rawTrust);
 
-        return (status == errSecSuccess && trust != nullptr);
+        if (status != errSecSuccess || !rawTrust)
+        {
+            LogError("Failed to create trust object.");
+            return false;
+        }
+
+        trust.reset(rawTrust);
+        return true;
     }
 
-    bool HttpsVerifier::EvaluateTrust(SecTrustRef trust)
+    bool HttpsVerifier::EvaluateTrust(const SecTrustPtr& trust)
     {
-        CFErrorRef error = nullptr;
-        const bool trustResult = m_utils->EvaluateTrust(trust, &error);
-        if (!trustResult && error)
+        CFErrorRef errorRef = nullptr;
+        const bool trustResult = m_utils->EvaluateTrust(trust.get(), &errorRef);
+
+        if (!trustResult && errorRef)
         {
-            CFStringRef errorDesc = m_utils->CopyErrorDescription(error);
-            std::string errorString = m_utils->GetStringCFString(errorDesc);
+            CFErrorPtr error(const_cast<__CFError*>(errorRef));
+
+            CFStringPtr errorDesc(m_utils->CopyErrorDescription(errorRef));
+            std::string errorString = m_utils->GetStringCFString(errorDesc.get());
             LogError("Trust evaluation failed: {}", errorString);
-            m_utils->ReleaseCFObject(errorDesc);
-            m_utils->ReleaseCFObject(error);
         }
+        else if (errorRef)
+        {
+            m_utils->ReleaseCFObject(errorRef);
+        }
+
         return trustResult;
     }
 
-    bool HttpsVerifier::ValidateHostname(SecCertificateRef serverCert)
+    bool HttpsVerifier::ValidateHostname(const SecCertificatePtr& serverCert)
     {
-        CFStringRef sanString = SecCertificateCopySubjectSummary(serverCert);
+        CFStringPtr sanString(SecCertificateCopySubjectSummary(serverCert.get()));
         if (!sanString)
         {
             LogError("Failed to retrieve SAN or CN for hostname validation.");
@@ -127,13 +130,12 @@ namespace https_socket_verify_utils
         }
 
         bool hostnameMatches = false;
-        std::string sanStringStr = m_utils->GetStringCFString(sanString);
+        std::string sanStringStr = m_utils->GetStringCFString(sanString.get());
         if (!sanStringStr.empty())
         {
             hostnameMatches = (m_host == sanStringStr);
         }
 
-        m_utils->ReleaseCFObject(sanString);
         if (!hostnameMatches)
         {
             LogError("The hostname '{}' does not match the certificate's SAN or CN '{}'.", m_host, sanStringStr);
