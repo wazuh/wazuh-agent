@@ -11,55 +11,6 @@ void Inventory::Start() {
 
     if (!m_enabled) {
         LogInfo("Inventory module is disabled.");
-        DBSync::initialize(LogErrorInventory);
-        m_spDBSync = std::make_unique<DBSync>(HostType::AGENT,
-                                                DbEngineType::SQLITE3,
-                                                m_dbFilePath,
-                                                GetCreateStatement(),
-                                                DbManagement::PERSISTENT);
-
-        m_hardwareFirstScan  = ReadMetadata(hardwareFirstScanKey ).empty()? false:true;
-        m_systemFirstScan    = ReadMetadata(systemFirstScanKey   ).empty()? false:true;
-        m_networksFirstScan  = ReadMetadata(networksFirstScanKey ).empty()? false:true;
-        m_packagesFirstScan  = ReadMetadata(packagesFirstScanKey ).empty()? false:true;
-        m_portsFirstScan     = ReadMetadata(portsFirstScanKey    ).empty()? false:true;
-        m_portsAllFirstScan  = ReadMetadata(portsAllFirstScanKey ).empty()? false:true;
-        m_processesFirstScan = ReadMetadata(processesFirstScanKey).empty()? false:true;
-        m_hotfixesFirstScan  = ReadMetadata(hotfixesFirstScanKey ).empty()? false:true;
-
-        if(hardwareFirstScanKey)
-        {
-            DeleteMetadata(hardwareFirstScanKey);
-        }
-
-        if(systemFirstScanKey)
-        {
-            DeleteMetadata(systemFirstScanKey);
-        }
-
-        if(networksFirstScanKey){
-            DeleteMetadata(networksFirstScanKey);
-        }
-
-        if(packagesFirstScanKey){
-            DeleteMetadata(packagesFirstScanKey);
-        }
-
-        if(portsFirstScanKey){
-            DeleteMetadata(portsFirstScanKey);
-        }
-
-        if(portsAllFirstScanKey){
-            DeleteMetadata(portsAllFirstScanKey);
-        }
-
-        if(processesFirstScanKey){
-            DeleteMetadata(processesFirstScanKey);
-        }
-
-        if(hotfixesFirstScanKey){
-            DeleteMetadata(hotfixesFirstScanKey);
-        }
         return;
     }
 
