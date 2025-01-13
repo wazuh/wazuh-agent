@@ -1,6 +1,9 @@
 #include "journal_log.hpp"
+#include <systemd/sd-journal.h>
 #include <logger.hpp>
 #include <cstring>
+#include <algorithm>
+#include <ranges>
 
 using namespace logcollector;
 
@@ -119,6 +122,14 @@ bool JournalLog::SeekMostRecent() {
     return false;
 }
 
+bool JournalLog::NextNewest() {
+    if (Next()) {
+        UpdateTimestamp();
+        return true;
+    }
+    return false;
+}
+
 bool JournalLog::SeekToTimestamp(uint64_t timestamp) {
     if (timestamp == 0 || timestamp > GetEpochTime()) {
         LogWarn("Invalid timestamp {} (in future), seeking most recent entry", timestamp);
@@ -139,58 +150,7 @@ bool JournalLog::SeekToTimestamp(uint64_t timestamp) {
         return false;
     }
 
-    if (Next()) {
-        UpdateTimestamp();
-        return true;
-    }
-    return false;
-}
-
-bool JournalLog::NextNewest() {
-    if (Next()) {
-        UpdateTimestamp();
-        return true;
-    }
-    return false;
-}
-
-std::optional<JournalLog::FilteredMessage> JournalLog::GetNextFilteredMessage(
-    const std::string& field,
-    const std::regex& pattern,
-    bool ignoreIfMissing) {
-
-    while (Next()) {
-        try {
-            std::string value;
-            try {
-                value = GetData(field);
-                LogTrace("Reading field '{}' with value '{}'", field, value);
-            } catch (const JournalLogException& e) {
-                if (ignoreIfMissing) {
-                    LogTrace("Field {} not present in entry, skipping...", field);
-                    continue;
-                }
-                throw;
-            }
-
-            if (std::regex_match(value, pattern)) {
-                try {
-                    std::string message = GetData("MESSAGE");
-                    LogTrace("Found matching message: {}", message);
-                    return FilteredMessage{value, message};
-                } catch (const JournalLogException& e) {
-                    LogWarn("Message field missing in matching entry for field '{}' with value '{}'",
-                           field, value);
-                    continue;
-                }
-            }
-        } catch (const JournalLogException& e) {
-            if (!ignoreIfMissing) {
-                LogError("Failed to process journal entry: {}", e.what());
-            }
-        }
-    }
-    return std::nullopt;
+    return NextNewest();
 }
 
 uint64_t JournalLog::GetEpochTime() {
@@ -225,61 +185,106 @@ bool JournalLog::CursorValid(const std::string& cursor) const {
     return ret > 0;
 }
 
-void JournalLog::AddMatch(const std::string& field, const std::string& value) {
-    std::string match = field + "=" + value;
-    int ret = sd_journal_add_match(m_journal, match.c_str(), 0);
-    ThrowIfError(ret, "add match filter");
+void JournalLog::AddFilterGroup(const FilterGroup& group, bool ignoreIfMissing) {
+    if (group.empty()) {
+        LogWarn("Attempted to add empty filter group");
+        return;
+    }
+
+    LogInfo("Adding filter group with {} conditions", group.size());
+    if (!std::ranges::all_of(group, ValidateFilter)) {
+        throw JournalLogException("Invalid filter configuration");
+    }
+
+    for (const auto& filter : group) {
+        for (const auto& value : filter.GetValueViews()) {
+            std::string match = filter.field + (filter.exact_match ? "=" : "~") +
+                               std::string(value);
+            LogDebug("Adding journal match: {}", match);
+
+            int ret = sd_journal_add_match(m_journal, match.c_str(), 0);
+            if (ret < 0) {
+                if (!ignoreIfMissing) {
+                    ThrowIfError(ret, "add filter match");
+                }
+                LogWarn("Failed to add journal match {}: {}", match, strerror(-ret));
+                continue;
+            }
+        }
+
+        // Add OR condition between values of the same field
+        if (filter.GetValueViews().size() > 1) {
+            ThrowIfError(sd_journal_add_disjunction(m_journal),
+                        "add filter disjunction for field values");
+        }
+    }
+
+    ThrowIfError(sd_journal_add_conjunction(m_journal), "add filter conjunction");
     m_hasActiveFilters = true;
-    m_pendingMatches.emplace_back(field, value);
+    LogInfo("Filter group added successfully");
 }
 
-void JournalLog::AddMatch(const std::string& field) {
-    int ret = sd_journal_add_match(m_journal, field.c_str(), 0);
-    ThrowIfError(ret, "add match filter");
-    m_hasActiveFilters = true;
-    m_pendingMatches.emplace_back(field, "=");
-}
-
-void JournalLog::FlushMatches() {
+void JournalLog::FlushFilters() {
     if (m_hasActiveFilters) {
         sd_journal_flush_matches(m_journal);
-        m_pendingMatches.clear();
         m_hasActiveFilters = false;
     }
 }
 
-bool JournalLog::ApplyJournalFilters() {
-    if (!m_hasActiveFilters) {
-        return true;
-    }
-
-    return Next();
+bool JournalLog::ApplyFilterGroup(const FilterGroup& group, bool ignoreIfMissing) const {
+    return std::all_of(group.begin(), group.end(),
+        [this, ignoreIfMissing](const auto& filter) {
+            try {
+                std::string fieldValue = GetData(filter.field);
+                return filter.Matches(fieldValue);
+            } catch (const JournalLogException&) {
+                if (!ignoreIfMissing) {
+                    LogTrace("Field {} not present in entry, skipping...", filter.field);
+                }
+                return false;
+            }
+    });
 }
 
-std::optional<JournalLog::FilteredMessage> JournalLog::GetNextMatchingMessage(
-    const std::string& field,
-    const std::regex& pattern,
-    bool ignoreIfMissing) {
+bool JournalLog::ApplyFilterSet(const FilterSet& filters, bool ignoreIfMissing) {
+    return std::any_of(filters.begin(), filters.end(),
+        [this, ignoreIfMissing](const auto& group) {
+            return ApplyFilterGroup(group, ignoreIfMissing);
+        });
+}
 
-    while (ApplyJournalFilters()) {
+bool JournalLog::ProcessJournalEntry(const FilterSet&,
+                                   bool ignoreIfMissing,
+                                   FilteredMessage& message) const {
+    try {
+        message.message = GetData("MESSAGE");
         try {
-            LogTrace("Processing filtered journal entry with timestamp {}", m_currentTimestamp);
+            message.fieldValue = GetData("_SYSTEMD_UNIT");
+        } catch (const JournalLogException&) {
+            message.fieldValue = "unknown";
+        }
+        return true;
+    } catch (const JournalLogException& e) {
+        if (!ignoreIfMissing) {
+            LogError("Failed to process journal entry: {}", e.what());
+        }
+        return false;
+    }
+}
 
-            std::string value = GetData(field);
-            if (std::regex_match(value, pattern)) {
-                try {
-                    std::string message = GetData("MESSAGE");
-                    LogDebug("Found matching message for field '{}' with value '{}'", field, value);
-                    return FilteredMessage{value, message};
-                } catch (const JournalLogException& e) {
-                    LogWarn("Message field missing in matching entry");
-                    continue;
-                }
-            }
-        } catch (const JournalLogException& e) {
-            if (!ignoreIfMissing) {
-                LogError("Failed to process journal entry: {}", e.what());
-            }
+std::optional<JournalLog::FilteredMessage> JournalLog::GetNextFilteredMessage(
+    const FilterSet& filters, bool ignoreIfMissing) {
+
+    if (!m_hasActiveFilters) {
+        LogWarn("No active filters when trying to get filtered message");
+        return std::nullopt;
+    }
+
+    while (Next()) {
+        FilteredMessage message;
+        if (ApplyFilterSet(filters, ignoreIfMissing) &&
+            ProcessJournalEntry(filters, ignoreIfMissing, message)) {
+            return message;
         }
         UpdateTimestamp();
     }
