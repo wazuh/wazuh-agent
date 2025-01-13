@@ -54,13 +54,13 @@ class Inventory {
         void Destroy();
 
         std::string GetCreateStatement() const;
-        nlohmann::json EcsProcessesData(const nlohmann::json& originalData);
-        nlohmann::json EcsSystemData(const nlohmann::json& originalData);
-        nlohmann::json EcsHotfixesData(const nlohmann::json& originalData);
-        nlohmann::json EcsHardwareData(const nlohmann::json& originalData);
-        nlohmann::json EcsPackageData(const nlohmann::json& originalData);
-        nlohmann::json EcsPortData(const nlohmann::json& originalData);
-        nlohmann::json EcsNetworkData(const nlohmann::json& originalData);
+        nlohmann::json EcsProcessesData(const nlohmann::json& originalData, bool createFields = true);
+        nlohmann::json EcsSystemData(const nlohmann::json& originalData, bool createFields = true);
+        nlohmann::json EcsHotfixesData(const nlohmann::json& originalData, bool createFields = true);
+        nlohmann::json EcsHardwareData(const nlohmann::json& originalData, bool createFields = true);
+        nlohmann::json EcsPackageData(const nlohmann::json& originalData, bool createFields = true);
+        nlohmann::json EcsPortData(const nlohmann::json& originalData, bool createFields = true);
+        nlohmann::json EcsNetworkData(const nlohmann::json& originalData, bool createFields = true);
         nlohmann::json GetOSData();
         nlohmann::json GetHardwareData();
         nlohmann::json GetNetworkData();
@@ -81,7 +81,7 @@ class Inventory {
         void ShowConfig();
         cJSON * Dump() const;
         static void LogErrorInventory(const std::string& log);
-        nlohmann::json EcsData(const nlohmann::json& data, const std::string& table);
+        nlohmann::json EcsData(const nlohmann::json& data, const std::string& table, bool createFields = true);
         std::string GetPrimaryKeys(const nlohmann::json& data, const std::string& table);
         std::string CalculateHashId(const nlohmann::json& data, const std::string& table);
 
