@@ -27,13 +27,20 @@ logcollector:
 
   journald:
     - field: "_SYSTEMD_UNIT"
-      regex: ".*"
+      value: "cron.service"
+      exact_match: true
       ignore_if_missing: true
 
     - field: "SYSLOG_IDENTIFIER"
-      regex: ".*"
+      value: "systemd"
+      exact_match: false
       ignore_if_missing: true
 
-    - field: "_SYSTEMD_UNIT"
-      regex: "^cron\\.service$"
+    - conditions:
+        - field: "_COMM"
+          value: "cat"
+          exact_match: true
+        - field: "PRIORITY"
+          value: "3|4"
+          exact_match: true
       ignore_if_missing: true

@@ -10,16 +10,16 @@ namespace logcollector {
 class JournaldReader : public IReader {
 public:
     JournaldReader(Logcollector& logcollector,
-                  std::string field,
-                  const std::string& regex,
+                  FilterGroup filters,
                   bool ignoreIfMissing,
                   std::time_t fileWait);
     Awaitable Run() override;
     void Stop() override;
 
 private:
-    std::string m_field;
-    std::regex m_pattern;
+    std::string GetFilterDescription() const;
+
+    FilterGroup m_filters;
     bool m_ignoreIfMissing;
     std::unique_ptr<JournalLog> m_journal;
     std::chrono::milliseconds m_waitTime;
