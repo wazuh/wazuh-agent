@@ -103,6 +103,7 @@ void Storage::CreateTable(const std::string& tableName)
     catch (const std::exception& e)
     {
         LogError("Error creating table: {}.", e.what());
+        throw;
     }
 }
 

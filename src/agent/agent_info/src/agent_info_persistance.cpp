@@ -81,6 +81,7 @@ void AgentInfoPersistance::CreateAgentInfoTable()
     catch (const std::exception& e)
     {
         LogError("Error creating table: {}.", e.what());
+        throw;
     }
 }
 
@@ -96,6 +97,7 @@ void AgentInfoPersistance::CreateAgentGroupTable()
     catch (const std::exception& e)
     {
         LogError("Error creating table: {}.", e.what());
+        throw;
     }
 }
 
@@ -117,6 +119,7 @@ void AgentInfoPersistance::InsertDefaultAgentInfo()
     catch (const std::exception& e)
     {
         LogError("Error inserting default agent info: {}.", e.what());
+        throw;
     }
 }
 

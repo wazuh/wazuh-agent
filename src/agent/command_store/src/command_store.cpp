@@ -70,6 +70,7 @@ namespace command_store
                 catch (std::exception& e)
                 {
                     LogError("CreateTable operation failed: {}.", e.what());
+                    throw;
                 }
             }
         }
