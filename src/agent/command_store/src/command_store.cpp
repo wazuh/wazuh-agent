@@ -55,13 +55,13 @@ namespace command_store
             if (!m_dataBase->TableExists(COMMAND_STORE_TABLE_NAME))
             {
                 Keys columns;
-                columns.emplace_back(COMMAND_STORE_ID_COLUMN_NAME, ColumnType::TEXT, true, false, true);
-                columns.emplace_back(COMMAND_STORE_MODULE_COLUMN_NAME, ColumnType::TEXT, true, false, false);
-                columns.emplace_back(COMMAND_STORE_COMMAND_COLUMN_NAME, ColumnType::TEXT, true, false, false);
-                columns.emplace_back(COMMAND_STORE_PARAMETERS_COLUMN_NAME, ColumnType::TEXT, true, false, false);
-                columns.emplace_back(COMMAND_STORE_RESULT_COLUMN_NAME, ColumnType::TEXT, true, false, false);
-                columns.emplace_back(COMMAND_STORE_STATUS_COLUMN_NAME, ColumnType::INTEGER, true, false, false);
-                columns.emplace_back(COMMAND_STORE_TIME_COLUMN_NAME, ColumnType::REAL, true, false, false);
+                columns.emplace_back(COMMAND_STORE_ID_COLUMN_NAME, ColumnType::TEXT, NOT_NULL | PRIMARY_KEY);
+                columns.emplace_back(COMMAND_STORE_MODULE_COLUMN_NAME, ColumnType::TEXT, NOT_NULL);
+                columns.emplace_back(COMMAND_STORE_COMMAND_COLUMN_NAME, ColumnType::TEXT, NOT_NULL);
+                columns.emplace_back(COMMAND_STORE_PARAMETERS_COLUMN_NAME, ColumnType::TEXT, NOT_NULL);
+                columns.emplace_back(COMMAND_STORE_RESULT_COLUMN_NAME, ColumnType::TEXT, NOT_NULL);
+                columns.emplace_back(COMMAND_STORE_STATUS_COLUMN_NAME, ColumnType::INTEGER, NOT_NULL);
+                columns.emplace_back(COMMAND_STORE_TIME_COLUMN_NAME, ColumnType::REAL, NOT_NULL);
 
                 try
                 {

@@ -25,6 +25,15 @@ enum class ColumnType
     REAL
 };
 
+/// @brief Supported column attributes for tables.
+enum
+{
+    NONE = 0,
+    NOT_NULL = 1 << 0,
+    PRIMARY_KEY = 1 << 1,
+    AUTO_INCREMENT = 1 << 2
+};
+
 /// @brief Represents a database column.
 class ColumnName
 {
@@ -52,26 +61,15 @@ public:
     /// @brief Constructor for defining a table column with attributes.
     /// @param name The name of the column.
     /// @param type The data type of the column (INTEGER, TEXT, or REAL).
-    /// @param notNull Whether the column has a NOT NULL constraint.
-    /// @param autoIncr Whether the column is AUTOINCREMENT (relevant for primary keys).
-    /// @param primary Whether the column is part of the primary key.
-    ColumnKey(
-        std::string name, const ColumnType type, const bool notNull, const bool autoIncr, const bool primary = false)
+    /// @param attributes The attributes of the column (NOT_NULL, PRIMARY_KEY, AUTO_INCREMENT).
+    ColumnKey(std::string name, const ColumnType type, const int attributes = NONE)
         : ColumnName(std::move(name), type)
-        , NotNull(notNull)
-        , AutoIncrement(autoIncr)
-        , PrimaryKey(primary)
+        , Attributes(attributes)
     {
     }
 
-    /// @brief Whether the column can contain NULL values
-    bool NotNull;
-
-    /// @brief Whether the column is an auto-incrementing primary key
-    bool AutoIncrement;
-
-    /// @brief Whether the column is a primary key
-    bool PrimaryKey;
+    /// @brief The attributes of the column
+    int Attributes;
 };
 
 /// @brief Represents a database column with data.

@@ -53,11 +53,11 @@ void SQLiteManager::CreateTable(const std::string& tableName, const Keys& cols)
     std::vector<std::string> fields;
     for (const auto& col : cols)
     {
-        std::string field =
-            fmt::format("{} {}{}", col.Name, MAP_COL_TYPE_STRING.at(col.Type), (col.NotNull) ? " NOT NULL" : "");
-        if (col.PrimaryKey)
+        std::string field = fmt::format(
+            "{} {}{}", col.Name, MAP_COL_TYPE_STRING.at(col.Type), (col.Attributes & NOT_NULL) ? " NOT NULL" : "");
+        if (col.Attributes & PRIMARY_KEY)
         {
-            pk.push_back(col.AutoIncrement ? fmt::format("{} AUTOINCREMENT", col.Name) : col.Name);
+            pk.push_back((col.Attributes & AUTO_INCREMENT) ? fmt::format("{} AUTOINCREMENT", col.Name) : col.Name);
         }
         fields.push_back(field);
     }

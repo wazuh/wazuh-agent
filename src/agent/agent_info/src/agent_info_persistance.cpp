@@ -72,9 +72,9 @@ void AgentInfoPersistance::CreateAgentInfoTable()
 {
     try
     {
-        const Keys columns = {ColumnKey(AGENT_INFO_NAME_COLUMN_NAME, ColumnType::TEXT, true, false),
-                              ColumnKey(AGENT_INFO_KEY_COLUMN_NAME, ColumnType::TEXT, true, false),
-                              ColumnKey(AGENT_INFO_UUID_COLUMN_NAME, ColumnType::TEXT, true, false, true)};
+        const Keys columns = {ColumnKey(AGENT_INFO_NAME_COLUMN_NAME, ColumnType::TEXT, NOT_NULL),
+                              ColumnKey(AGENT_INFO_KEY_COLUMN_NAME, ColumnType::TEXT, NOT_NULL),
+                              ColumnKey(AGENT_INFO_UUID_COLUMN_NAME, ColumnType::TEXT, NOT_NULL | PRIMARY_KEY)};
 
         m_db->CreateTable(AGENT_INFO_TABLE_NAME, columns);
     }
@@ -89,8 +89,9 @@ void AgentInfoPersistance::CreateAgentGroupTable()
 {
     try
     {
-        const Keys columns = {ColumnKey(AGENT_GROUP_ID_COLUMN_NAME, ColumnType::INTEGER, true, true, true),
-                              ColumnKey(AGENT_GROUP_NAME_COLUMN_NAME, ColumnType::TEXT, true, false)};
+        const Keys columns = {
+            ColumnKey(AGENT_GROUP_ID_COLUMN_NAME, ColumnType::INTEGER, NOT_NULL | PRIMARY_KEY | AUTO_INCREMENT),
+            ColumnKey(AGENT_GROUP_NAME_COLUMN_NAME, ColumnType::TEXT, NOT_NULL)};
 
         m_db->CreateTable(AGENT_GROUP_TABLE_NAME, columns);
     }

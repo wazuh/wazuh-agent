@@ -93,10 +93,10 @@ void Storage::CreateTable(const std::string& tableName)
     try
     {
         Keys columns;
-        columns.emplace_back(MODULE_NAME_COLUMN_NAME, ColumnType::TEXT, false, false);
-        columns.emplace_back(MODULE_TYPE_COLUMN_NAME, ColumnType::TEXT, false, false);
-        columns.emplace_back(METADATA_COLUMN_NAME, ColumnType::TEXT, false, false);
-        columns.emplace_back(MESSAGE_COLUMN_NAME, ColumnType::TEXT, true, false);
+        columns.emplace_back(MODULE_NAME_COLUMN_NAME, ColumnType::TEXT);
+        columns.emplace_back(MODULE_TYPE_COLUMN_NAME, ColumnType::TEXT);
+        columns.emplace_back(METADATA_COLUMN_NAME, ColumnType::TEXT);
+        columns.emplace_back(MESSAGE_COLUMN_NAME, ColumnType::TEXT, NOT_NULL);
 
         m_db->CreateTable(tableName, columns);
     }

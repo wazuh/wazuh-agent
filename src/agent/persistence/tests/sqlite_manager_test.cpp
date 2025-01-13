@@ -54,22 +54,22 @@ protected:
 
 TEST_F(SQLiteManagerTest, CreateTableTest)
 {
-    ColumnKey col1 {"Id", ColumnType::INTEGER, true, true, true};
-    ColumnKey col2 {"Name", ColumnType::TEXT, true, false, false};
-    ColumnKey col3 {"Status", ColumnType::TEXT, true, false};
-    ColumnKey col4 {"Module", ColumnType::TEXT, false, false};
-    ColumnKey col5 {"Orden", ColumnType::INTEGER, false, false, false};
-    ColumnKey col6 {"Amount", ColumnType::REAL, false, false, false};
+    ColumnKey col1 {"Id", ColumnType::INTEGER, NOT_NULL | PRIMARY_KEY | AUTO_INCREMENT};
+    ColumnKey col2 {"Name", ColumnType::TEXT, NOT_NULL};
+    ColumnKey col3 {"Status", ColumnType::TEXT, NOT_NULL};
+    ColumnKey col4 {"Module", ColumnType::TEXT};
+    ColumnKey col5 {"Orden", ColumnType::INTEGER};
+    ColumnKey col6 {"Amount", ColumnType::REAL};
     EXPECT_NO_THROW(m_db->CreateTable(m_tableName, {col1, col2, col3, col4, col5, col6}));
     EXPECT_TRUE(m_db->TableExists(m_tableName));
 
-    ColumnKey col21 {"Id", ColumnType::INTEGER, true, false, true};
-    ColumnKey col212 {"Id2", ColumnType::INTEGER, true, false, true};
-    ColumnKey col22 {"Name", ColumnType::TEXT, true, false, true};
-    ColumnKey col23 {"Status", ColumnType::TEXT, true, false};
-    ColumnKey col24 {"Module", ColumnType::TEXT, false, false};
-    ColumnKey col25 {"Orden", ColumnType::INTEGER, false, false, false};
-    ColumnKey col26 {"Amount", ColumnType::REAL, false, false, false};
+    ColumnKey col21 {"Id", ColumnType::INTEGER, NOT_NULL | PRIMARY_KEY};
+    ColumnKey col212 {"Id2", ColumnType::INTEGER, NOT_NULL | PRIMARY_KEY};
+    ColumnKey col22 {"Name", ColumnType::TEXT, NOT_NULL | PRIMARY_KEY};
+    ColumnKey col23 {"Status", ColumnType::TEXT, NOT_NULL};
+    ColumnKey col24 {"Module", ColumnType::TEXT};
+    ColumnKey col25 {"Orden", ColumnType::INTEGER};
+    ColumnKey col26 {"Amount", ColumnType::REAL};
     EXPECT_NO_THROW(m_db->CreateTable("TableTest2", {col21, col212, col22, col23, col24, col25, col26}));
     EXPECT_TRUE(m_db->TableExists("TableTest2"));
 }
@@ -409,11 +409,11 @@ TEST_F(SQLiteManagerTest, TransactionTest)
 
 TEST_F(SQLiteManagerTest, DropTableTest)
 {
-    ColumnKey col1 {"Id", ColumnType::INTEGER, true, true, true};
-    ColumnKey col2 {"Name", ColumnType::TEXT, true, false};
-    ColumnKey col3 {"Status", ColumnType::TEXT, true, false};
-    ColumnKey col4 {"Module", ColumnType::TEXT, false, false};
-    ColumnKey col5 {"Orden", ColumnType::INTEGER, false, false, false};
+    ColumnKey col1 {"Id", ColumnType::INTEGER, NOT_NULL | PRIMARY_KEY | AUTO_INCREMENT};
+    ColumnKey col2 {"Name", ColumnType::TEXT, NOT_NULL};
+    ColumnKey col3 {"Status", ColumnType::TEXT, NOT_NULL};
+    ColumnKey col4 {"Module", ColumnType::TEXT};
+    ColumnKey col5 {"Orden", ColumnType::INTEGER};
 
     EXPECT_NO_THROW(m_db->CreateTable("DropMe", {col1, col2, col3, col4, col5}));
     EXPECT_TRUE(m_db->TableExists("DropMe"));
