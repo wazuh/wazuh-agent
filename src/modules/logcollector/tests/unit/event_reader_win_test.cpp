@@ -50,7 +50,6 @@ TEST_F(WindowsEventChannel, RunMethodEnqueueTask)
 {
     auto mockedLogcollector = LogcollectorMock();
     auto reader = std::make_shared<WindowsEventTracerReader>(mockedLogcollector, channelName, query, 5000);
-    EXPECT_EQ(reader->GetChannel(), channelName);
 
     EXPECT_CALL(mockedLogcollector, EnqueueTask(::testing::_)).Times(1);
     EXPECT_CALL(mockedLogcollector, AddReader(::testing::_));

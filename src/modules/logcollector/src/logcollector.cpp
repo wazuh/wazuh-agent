@@ -129,8 +129,7 @@ void Logcollector::SendMessage(const std::string& location, const std::string& l
     auto message = Message(MessageType::STATELESS, data, m_moduleName, collectorType, metadata.dump());
     m_pushMessage(message);
 
-    //TODO: undo
-    LogInfo("Message pushed: '{}':'{}'", location, log);
+    LogTrace("Message pushed: '{}':'{}'", location, log);
 }
 
 void Logcollector::AddReader(std::shared_ptr<IReader> reader)

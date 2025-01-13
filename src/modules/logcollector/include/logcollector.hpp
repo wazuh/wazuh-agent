@@ -84,11 +84,6 @@ protected:
 
     /// @brief Clean all readers
     void CleanAllReaders();
-#ifdef _WIN32
-    /// @brief Sets up the Windows Event Channel reader
-    /// @param configurationParser Configuration parser
-    void SetupWEReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
-#endif
 
 private:
     /// @brief Module name
@@ -116,7 +111,9 @@ private:
     std::list<boost::asio::steady_timer*> m_timers;
 };
 
-//TODO:check
+/// @brief Add platform specific implementation of IReader to logcollector.
+/// @param ConfgurationParser where to get parameters.
+/// @param logcollector instance.
 void AddPlatformSpecificReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser, Logcollector &logcollector);
 
 }

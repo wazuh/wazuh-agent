@@ -12,8 +12,8 @@ using namespace logcollector;
 
 static constexpr auto TMP_FILE_DIR = "C:\\Temp\\";
 
-inline std::string GetFullFileName(const std::string& filename) {
-    //TODO: move to setup stage of test only for windows
+inline std::string GetFullFileName(const std::string& filename)
+{
     std::filesystem::create_directories(TMP_FILE_DIR);
     return TMP_FILE_DIR + filename;
 }
