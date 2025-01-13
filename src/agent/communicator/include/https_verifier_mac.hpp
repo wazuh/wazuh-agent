@@ -38,7 +38,7 @@ namespace https_socket_verify_utils
         HttpsVerifier(const std::string& mode, const std::string& host, std::unique_ptr<ICertificateUtils>& utils)
             : m_mode(mode)
             , m_host(host)
-            , m_utils(utils)
+            , m_utils(std::move(utils))
         {
         }
 
@@ -77,6 +77,6 @@ namespace https_socket_verify_utils
         std::string m_host;
 
         /// @brief The certificate utilities object to use
-        std::unique_ptr<ICertificateUtils>& m_utils;
+        std::unique_ptr<ICertificateUtils> m_utils;
     };
 } // namespace https_socket_verify_utils
