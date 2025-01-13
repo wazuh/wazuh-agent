@@ -57,7 +57,7 @@ Awaitable WindowsEventTracerReader::QueryEvents()
         switch (action)
         {
         case EvtSubscribeActionDeliver:
-            reader->ProcessEvent(event, reader->GetChannel());
+            reader->ProcessEvent(event);
             break;
 
         case EvtSubscribeActionError:
@@ -79,7 +79,7 @@ Awaitable WindowsEventTracerReader::QueryEvents()
         NULL,
         this,
         subscriptionCallback,
-        EvtSubscribeToFutureEvents); // EvtSubscribeStartAtOldestRecord
+        EvtSubscribeToFutureEvents);
 
     if (!subscriptionHandle)
     {
@@ -101,7 +101,7 @@ Awaitable WindowsEventTracerReader::QueryEvents()
     }
 }
 
-void WindowsEventTracerReader::ProcessEvent(EVT_HANDLE event, const std::string channel)
+void WindowsEventTracerReader::ProcessEvent(EVT_HANDLE event)
 {
     DWORD bufferUsed = 0;
     DWORD propertyCount = 0;
@@ -123,7 +123,7 @@ void WindowsEventTracerReader::ProcessEvent(EVT_HANDLE event, const std::string 
                 LogError("Cannot convert utf16 string: {}", e.what());
                 return;
             }
-            m_logcollector.SendMessage(channel, logString, m_collectorType);
+            m_logcollector.SendMessage(m_channel, logString, m_collectorType);
         }
     }
 }

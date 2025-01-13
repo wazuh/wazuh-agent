@@ -20,50 +20,49 @@
 namespace logcollector {
 
 /// @brief Windows Event Tracer Reader class
-/// TODO: doc
 class WindowsEventTracerReader : public IReader
 {
 public:
     /// @brief Constructor for the Windows Event Tracer Reader
-    /// @param logcollector Log collector instance
-    /// @param channels List of channel names
-    /// @param queries List of queries
-    /// @param reloadInterval
+    /// @param logcollector Log collector instance.
+    /// @param channel Channel name.
+    /// @param query Query.
+    /// @param channelRefreshInterval channel query refresh interval in millisecconds.
     WindowsEventTracerReader(Logcollector &logcollector,
                             const std::string channel,
                             const std::string query,
                             const std::time_t channelRefreshInterval);
 
-    /// @brief Runs the file reader
-    /// @return Awaitable result
+    /// @brief Runs the event reader.
+    /// @return Awaitable result.
     Awaitable Run() override;
 
-    //TODO: doc
+    //@brief Stops the event reader.
     void Stop() override;
 
-    // Main function to execute the event query
+    ///@brief Main function to query events from event channel.
     Awaitable QueryEvents();
 
-    //TODO: doc
-    std::string GetChannel() { return m_channel; };
-
 private:
-    // Process an individual event and print its XML representation
-    void ProcessEvent(EVT_HANDLE event, const std::string channel);
+    ///@brief Process an individual event and print its XML representation.
+    /// @param event subscription handle event.
+    void ProcessEvent(EVT_HANDLE event);
 
-    //TODO: doc
+    /// @brief Function for wchar to string convertion.
+    /// @param buffer wchar vector as input.
+    /// @return buffer converted to std::string.
     std::string WcharVecToString(std::vector<wchar_t>& buffer);
 
-    /// @brief
+    /// @brief channel name.
     std::string m_channel;
 
-    /// @brief
+    /// @brief query string.
     std::string m_query;
 
-    /// @brief
+    /// @brief channel query refresh interval in millisecconds.
     std::time_t m_ChannelsRefreshInterval;
 
-    /// @brief collector type
+    /// @brief collector type.
     const std::string m_collectorType = "eventchannel";
 };
 } // namespace logcollector
