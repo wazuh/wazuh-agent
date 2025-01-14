@@ -560,7 +560,7 @@ nlohmann::json Inventory::EcsHardwareData(const nlohmann::json& originalData, bo
     auto setField = [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue) {
         if (createFields || originalData.contains(jsonKey)) {
             nlohmann::json::json_pointer pointer(keyPath);
-            if (originalData.contains(jsonKey) && !originalData[jsonKey].is_null()) {
+            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE) {
                 ret[pointer] = originalData[jsonKey];
             } else if (defaultValue.has_value()) {
                 ret[pointer] = *defaultValue;
@@ -588,7 +588,7 @@ nlohmann::json Inventory::EcsSystemData(const nlohmann::json& originalData, bool
     auto setField = [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue) {
         if (createFields || originalData.contains(jsonKey)) {
             nlohmann::json::json_pointer pointer(keyPath);
-            if (originalData.contains(jsonKey) && !originalData[jsonKey].is_null()) {
+            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE) {
                 ret[pointer] = originalData[jsonKey];
             } else if (defaultValue.has_value()) {
                 ret[pointer] = *defaultValue;
@@ -617,7 +617,7 @@ nlohmann::json Inventory::EcsPackageData(const nlohmann::json& originalData, boo
     auto setField = [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue) {
         if (createFields || originalData.contains(jsonKey)) {
             nlohmann::json::json_pointer pointer(keyPath);
-            if (originalData.contains(jsonKey) && !originalData[jsonKey].is_null()) {
+            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE) {
                 ret[pointer] = originalData[jsonKey];
             } else if (defaultValue.has_value()) {
                 ret[pointer] = *defaultValue;
@@ -646,7 +646,7 @@ nlohmann::json Inventory::EcsProcessesData(const nlohmann::json& originalData, b
     auto setField = [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue) {
         if (createFields || originalData.contains(jsonKey)) {
             nlohmann::json::json_pointer pointer(keyPath);
-            if (originalData.contains(jsonKey) && !originalData[jsonKey].is_null()) {
+            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE) {
                 ret[pointer] = originalData[jsonKey];
             } else if (defaultValue.has_value()) {
                 ret[pointer] = *defaultValue;
@@ -680,8 +680,14 @@ nlohmann::json Inventory::EcsHotfixesData(const nlohmann::json& originalData, bo
 
     if(createFields || originalData.contains("hotfix"))
     {
-        ret["package"]["hotfix"]["name"] = (originalData.contains("hotfix") && !originalData["hotfix"].is_null()) ?
-            originalData["hotfix"] : EMPTY_VALUE;
+        if(originalData.contains("hotfix") && originalData["hotfix"] != EMPTY_VALUE)
+        {
+            ret["package"]["hotfix"]["name"] = originalData["hotfix"];
+        }
+        else
+        {
+            ret["package"]["hotfix"]["name"] = EMPTY_VALUE;
+        }
     }
 
     return ret;
@@ -694,7 +700,7 @@ nlohmann::json Inventory::EcsPortData(const nlohmann::json& originalData, bool c
     auto setField = [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue) {
         if (createFields || originalData.contains(jsonKey)) {
             nlohmann::json::json_pointer pointer(keyPath);
-            if (originalData.contains(jsonKey) && !originalData[jsonKey].is_null()) {
+            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE) {
                 ret[pointer] = originalData[jsonKey];
             } else if (defaultValue.has_value()) {
                 ret[pointer] = *defaultValue;
@@ -742,7 +748,7 @@ nlohmann::json Inventory::EcsNetworkData(const nlohmann::json& originalData, boo
     auto setField = [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue) {
         if (createFields || originalData.contains(jsonKey)) {
             nlohmann::json::json_pointer pointer(keyPath);
-            if (originalData.contains(jsonKey) && !originalData[jsonKey].is_null()) {
+            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE) {
                 ret[pointer] = originalData[jsonKey];
             } else if (defaultValue.has_value()) {
                 ret[pointer] = *defaultValue;
@@ -788,7 +794,10 @@ nlohmann::json Inventory::EcsNetworkData(const nlohmann::json& originalData, boo
     setField("/network/type", "proto_type", EMPTY_VALUE);
     setField("/network/metric", "metric", std::nullopt);
     /* TODO this field should include http or https, it's related to an application not to a interface */
-    ret["network"]["protocol"] = UNKNOWN_VALUE;
+    if (createFields)
+    {
+        ret["network"]["protocol"] = nullptr;
+    }
     setField("/observer/ingress/interface/alias", "adapter", EMPTY_VALUE);
     setField("/observer/ingress/interface/name", "iface", EMPTY_VALUE);
 

@@ -370,13 +370,13 @@ static void getPackagesFromReg(const HKEY key, const std::string& subKey, std::f
                 {
                     packageJson["name"] = value;
 
-                    packageJson["version"] = UNKNOWN_VALUE;
+                    packageJson["version"] = EMPTY_VALUE;
                     if (packageReg.string("DisplayVersion", value))
                     {
                         packageJson["version"] = value;
                     }
 
-                    packageJson["vendor"] = UNKNOWN_VALUE;
+                    packageJson["vendor"] = EMPTY_VALUE;
                     if (packageReg.string("Publisher", value))
                     {
                         packageJson["vendor"] = value;
@@ -399,13 +399,13 @@ static void getPackagesFromReg(const HKEY key, const std::string& subKey, std::f
                         packageJson["install_time"] = Utils::timestampToISO8601(packageReg.keyModificationDate());
                     }
 
-                    packageJson["location"] = UNKNOWN_VALUE;
+                    packageJson["location"] = EMPTY_VALUE;
                     if (packageReg.string("InstallLocation", value))
                     {
                         packageJson["location"] = value;
                     }
 
-                    packageJson["architecture"] = UNKNOWN_VALUE;
+                    packageJson["architecture"] = EMPTY_VALUE;
                     if (access & KEY_WOW64_32KEY)
                     {
                         packageJson["architecture"] = "i686";
@@ -415,11 +415,11 @@ static void getPackagesFromReg(const HKEY key, const std::string& subKey, std::f
                         packageJson["architecture"] = "x86_64";
                     }
 
-                    packageJson["description"]  = UNKNOWN_VALUE;
-                    packageJson["groups"]       = UNKNOWN_VALUE;
-                    packageJson["priority"]     = UNKNOWN_VALUE;
-                    packageJson["size"]         = UNKNOWN_VALUE;
-                    packageJson["source"]       = UNKNOWN_VALUE;
+                    packageJson["description"]  = EMPTY_VALUE;
+                    packageJson["groups"]       = EMPTY_VALUE;
+                    packageJson["priority"]     = EMPTY_VALUE;
+                    packageJson["size"]         = EMPTY_VALUE;
+                    packageJson["source"]       = EMPTY_VALUE;
                     packageJson["format"]       = "win";
 
                     returnCallback(packageJson);
@@ -509,7 +509,7 @@ static std::string getSerialNumber()
         }
         else
         {
-            ret = UNKNOWN_VALUE;
+            ret = EMPTY_VALUE;
         }
     }
 

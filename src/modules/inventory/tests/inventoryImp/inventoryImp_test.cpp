@@ -870,7 +870,7 @@ TEST_F(InventoryImpTest, noPortsAll)
     };
     const auto expectedResult6
     {
-        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":""},"network":{"protocol":"udp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"operation":"create","type":"ports"})"
+        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":null},"network":{"protocol":"udp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"operation":"create","type":"ports"})"
     };
     const auto expectedResult7
     {
@@ -1287,12 +1287,12 @@ TEST_F(InventoryImpTest, portAllEnable)
     };
     const auto expectedResult1
     {
-        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":43481},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":""},"network":{"protocol":"udp"},"process":{"name":null,"pid":0},"source":{"ip":["0.0.0.0"],"port":47748}},"operation":"create","type":"ports"})"
+        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":43481},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":null},"network":{"protocol":"udp"},"process":{"name":null,"pid":0},"source":{"ip":["0.0.0.0"],"port":47748}},"operation":"create","type":"ports"})"
     };
 
     const auto expectedResult2
     {
-        R"({"data":{"destination":{"ip":["::"],"port":0},"file":{"inode":43482},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":""},"network":{"protocol":"udp6"},"process":{"name":null,"pid":0},"source":{"ip":["::"],"port":51087}},"operation":"create","type":"ports"})"
+        R"({"data":{"destination":{"ip":["::"],"port":0},"file":{"inode":43482},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":null},"network":{"protocol":"udp6"},"process":{"name":null,"pid":0},"source":{"ip":["::"],"port":51087}},"operation":"create","type":"ports"})"
     };
 
     const auto expectedResult3
@@ -1435,12 +1435,12 @@ TEST_F(InventoryImpTest, portAllDisable)
     };
     const auto expectedResult1
     {
-        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":43481},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":""},"network":{"protocol":"udp"},"process":{"name":null,"pid":0},"source":{"ip":["0.0.0.0"],"port":47748}},"operation":"create","type":"ports"})"
+        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":43481},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":null},"network":{"protocol":"udp"},"process":{"name":null,"pid":0},"source":{"ip":["0.0.0.0"],"port":47748}},"operation":"create","type":"ports"})"
     };
 
     const auto expectedResult2
     {
-        R"({"data":{"destination":{"ip":["::"],"port":0},"file":{"inode":43482},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":""},"network":{"protocol":"udp6"},"process":{"name":null,"pid":0},"source":{"ip":["::"],"port":51087}},"operation":"create","type":"ports"})"
+        R"({"data":{"destination":{"ip":["::"],"port":0},"file":{"inode":43482},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":null},"network":{"protocol":"udp6"},"process":{"name":null,"pid":0},"source":{"ip":["::"],"port":51087}},"operation":"create","type":"ports"})"
     };
 
     const auto expectedResult3

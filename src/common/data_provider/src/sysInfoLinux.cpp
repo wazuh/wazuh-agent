@@ -139,7 +139,7 @@ static nlohmann::json getProcessInfo(const SysInfoProcess& process)
 
 static void getSerialNumber(nlohmann::json& info)
 {
-    info["board_serial"] = UNKNOWN_VALUE;
+    info["board_serial"] = EMPTY_VALUE;
     std::fstream file{WM_SYS_HW_DIR, std::ios_base::in};
 
     if (file.is_open())
@@ -152,7 +152,7 @@ static void getSerialNumber(nlohmann::json& info)
 
 static void getCpuName(nlohmann::json& info)
 {
-    info["cpu_name"] = UNKNOWN_VALUE;
+    info["cpu_name"] = EMPTY_VALUE;
     std::map<std::string, std::string> systemInfo;
     getSystemInfo(WM_SYS_CPU_DIR, ":", systemInfo);
     const auto& it { systemInfo.find("model name") };
@@ -165,7 +165,7 @@ static void getCpuName(nlohmann::json& info)
 
 static void getCpuCores(nlohmann::json& info)
 {
-    info["cpu_cores"] = UNKNOWN_VALUE;
+    info["cpu_cores"] = EMPTY_VALUE;
     std::map<std::string, std::string> systemInfo;
     getSystemInfo(WM_SYS_CPU_DIR, ":", systemInfo);
     const auto& it { systemInfo.find("processor") };
@@ -178,7 +178,7 @@ static void getCpuCores(nlohmann::json& info)
 
 static void getCpuMHz(nlohmann::json& info)
 {
-    info["cpu_mhz"] = UNKNOWN_VALUE;
+    info["cpu_mhz"] = EMPTY_VALUE;
     int retVal { 0 };
     std::map<std::string, std::string> systemInfo;
     getSystemInfo(WM_SYS_CPU_DIR, ":", systemInfo);
@@ -347,7 +347,7 @@ nlohmann::json SysInfo::getOsInfo() const
     {
         ret["os_name"] = "Linux";
         ret["os_platform"] = "linux";
-        ret["os_version"] = UNKNOWN_VALUE;
+        ret["os_version"] = EMPTY_VALUE;
     }
 
     if (uname(&uts) >= 0)
