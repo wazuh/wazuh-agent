@@ -57,12 +57,12 @@ class AppxWindowsWrapper final : public IPackageWrapper
 
         void groups(nlohmann::json& package) const override
         {
-            package["groups"] = UNKNOWN_VALUE;
+            package["groups"] = EMPTY_VALUE;
         }
 
         void description(nlohmann::json& package) const override
         {
-            package["description"] = UNKNOWN_VALUE;
+            package["description"] = EMPTY_VALUE;
         }
 
         void architecture(nlohmann::json& package) const override
@@ -77,12 +77,12 @@ class AppxWindowsWrapper final : public IPackageWrapper
 
         void osPatch(nlohmann::json& package) const override
         {
-            package["os_patch"] = UNKNOWN_VALUE;
+            package["os_patch"] = EMPTY_VALUE;
         }
 
         void source(nlohmann::json& package) const override
         {
-            package["source"] = UNKNOWN_VALUE;
+            package["source"] = EMPTY_VALUE;
         }
 
         void location(nlohmann::json& package) const override
@@ -92,7 +92,7 @@ class AppxWindowsWrapper final : public IPackageWrapper
 
         void priority(nlohmann::json& package) const override
         {
-            package["priority"] = UNKNOWN_VALUE;
+            package["priority"] = EMPTY_VALUE;
         }
 
         void size(nlohmann::json& package) const override

@@ -76,7 +76,7 @@ class BrewWrapper final : public IPackageWrapper
 
         void groups(nlohmann::json& package) const override
         {
-            package["groups"] = UNKNOWN_VALUE;
+            package["groups"] = EMPTY_VALUE;
         }
 
         void description(nlohmann::json& package) const override
@@ -86,7 +86,7 @@ class BrewWrapper final : public IPackageWrapper
 
         void architecture(nlohmann::json& package) const override
         {
-            package["architecture"] = UNKNOWN_VALUE;
+            package["architecture"] = EMPTY_VALUE;
         }
 
         void format(nlohmann::json& package) const override
@@ -96,7 +96,7 @@ class BrewWrapper final : public IPackageWrapper
 
         void osPatch(nlohmann::json& package) const override
         {
-            package["os_patch"] = UNKNOWN_VALUE;
+            package["os_patch"] = EMPTY_VALUE;
         }
 
         void source(nlohmann::json& package) const override
@@ -111,27 +111,27 @@ class BrewWrapper final : public IPackageWrapper
 
         void vendor(nlohmann::json& package) const override
         {
-            package["vendor"] = UNKNOWN_VALUE;
+            package["vendor"] = EMPTY_VALUE;
         }
 
         void priority(nlohmann::json& package) const override
         {
-            package["priority"] = UNKNOWN_VALUE;
+            package["priority"] = EMPTY_VALUE;
         }
 
         void size(nlohmann::json& package) const override
         {
-            package["size"] = UNKNOWN_VALUE;
+            package["size"] = EMPTY_VALUE;
         }
 
         void install_time(nlohmann::json& package) const override
         {
-            package["install_time"] = UNKNOWN_VALUE;
+            package["install_time"] = EMPTY_VALUE;
         }
 
         void multiarch(nlohmann::json& package) const override
         {
-            package["multiarch"] = UNKNOWN_VALUE;
+            package["multiarch"] = EMPTY_VALUE;
         }
 
     private:

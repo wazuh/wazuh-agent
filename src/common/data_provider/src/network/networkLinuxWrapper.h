@@ -301,7 +301,7 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
 
         void adapter(nlohmann::json& network) const override
         {
-            network["adapter"] = UNKNOWN_VALUE;
+            network["adapter"] = EMPTY_VALUE;
         }
 
         int family() const override
@@ -321,7 +321,7 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
 
         void broadcast(nlohmann::json& network) const override
         {
-            network["broadcast"] = UNKNOWN_VALUE;
+            network["broadcast"] = EMPTY_VALUE;
 
             if (m_interfaceAddress->ifa_ifu.ifu_broadaddr)
             {
@@ -357,7 +357,7 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
         {
             m_interfaceAddress->ifa_ifu.ifu_broadaddr ?
                 network["broadcast"] = getNameInfo(m_interfaceAddress->ifa_ifu.ifu_broadaddr, sizeof(struct sockaddr_in6)) :
-                network["broadcast"] = UNKNOWN_VALUE;
+                network["broadcast"] = EMPTY_VALUE;
         }
 
         void gateway(nlohmann::json& network) const override
@@ -372,13 +372,13 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
 
         void metricsV6(nlohmann::json& network) const override
         {
-            network["metric"] = UNKNOWN_VALUE;
+            network["metric"] = EMPTY_VALUE;
         }
 
         void dhcp(nlohmann::json& network) const override
         {
             auto fileData { Utils::getFileContent(WM_SYS_IF_FILE) };
-            network["dhcp"] = UNKNOWN_VALUE;
+            network["dhcp"] = EMPTY_VALUE;
             const auto family { this->family() };
             const auto ifName { this->name() };
 
@@ -449,7 +449,7 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
 
         void mtu(nlohmann::json& network) const override
         {
-            network["mtu"] = UNKNOWN_VALUE;
+            network["mtu"] = EMPTY_VALUE;
             const auto mtuFileContent { Utils::getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/mtu") };
 
             if (!mtuFileContent.empty())
@@ -507,7 +507,7 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
 
         void type(nlohmann::json& network) const override
         {
-            network["type"] = UNKNOWN_VALUE;
+            network["type"] = EMPTY_VALUE;
             const auto networkTypeCode { Utils::getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/type") };
 
             if (!networkTypeCode.empty())
@@ -518,7 +518,7 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
 
         void state(nlohmann::json& network) const override
         {
-            network["state"] = UNKNOWN_VALUE;
+            network["state"] = EMPTY_VALUE;
             const std::string operationalState { Utils::getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/operstate") };
 
             if (!operationalState.empty())
@@ -529,7 +529,7 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
 
         void MAC(nlohmann::json& network) const override
         {
-            network["mac"] = UNKNOWN_VALUE;
+            network["mac"] = EMPTY_VALUE;
             const std::string macContent { Utils::getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/address")};
 
             if (!macContent.empty())
