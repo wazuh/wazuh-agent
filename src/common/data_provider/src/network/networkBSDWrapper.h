@@ -60,7 +60,7 @@ class NetworkBSDInterface final : public INetworkInterfaceWrapper
 
         void adapter(nlohmann::json& network) const override
         {
-            network["adapter"] = UNKNOWN_VALUE;
+            network["adapter"] = EMPTY_VALUE;
         }
 
         int family() const override
@@ -118,7 +118,7 @@ class NetworkBSDInterface final : public INetworkInterfaceWrapper
 
         void gateway(nlohmann::json& network) const override
         {
-            network["gateway"] = UNKNOWN_VALUE;
+            network["gateway"] = EMPTY_VALUE;
             size_t tableSize { 0 };
             int mib[] = { CTL_NET, AF_ROUTE, 0, AF_UNSPEC, NET_RT_FLAGS, RTF_UP | RTF_GATEWAY };
 
@@ -158,22 +158,22 @@ class NetworkBSDInterface final : public INetworkInterfaceWrapper
 
         void metrics(nlohmann::json& network) const override
         {
-            network["metric"] = UNKNOWN_VALUE;
+            network["metric"] = EMPTY_VALUE;
         }
 
         void metricsV6(nlohmann::json& network) const override
         {
-            network["metric"] = UNKNOWN_VALUE;
+            network["metric"] = EMPTY_VALUE;
         }
 
         void dhcp(nlohmann::json& network) const override
         {
-            network["dhcp"] = UNKNOWN_VALUE;
+            network["dhcp"] = EMPTY_VALUE;
         }
 
         void mtu(nlohmann::json& network) const override
         {
-            network["mtu"] = UNKNOWN_VALUE;
+            network["mtu"] = EMPTY_VALUE;
             if(m_interfaceAddress->ifa_data)
             {
                 network["mtu"] = reinterpret_cast<if_data*>(m_interfaceAddress->ifa_data)->ifi_mtu;
@@ -201,7 +201,7 @@ class NetworkBSDInterface final : public INetworkInterfaceWrapper
 
         void type(nlohmann::json& network) const override
         {
-            network["type"] = UNKNOWN_VALUE;
+            network["type"] = EMPTY_VALUE;
 
             if (m_interfaceAddress->ifa_addr)
             {
@@ -221,7 +221,7 @@ class NetworkBSDInterface final : public INetworkInterfaceWrapper
 
         void MAC(nlohmann::json& network) const override
         {
-            network["mac"] = UNKNOWN_VALUE;
+            network["mac"] = EMPTY_VALUE;
             auto sdl { reinterpret_cast<struct sockaddr_dl*>(m_interfaceAddress->ifa_addr) };
             std::stringstream ss;
 

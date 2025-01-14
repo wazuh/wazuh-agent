@@ -48,14 +48,14 @@ namespace PackageLinuxHelper
             ret["name"]         = package.name;
             ret["size"]         = package.size;
             ret["install_time"] = package.installTime;
-            ret["location"]     = UNKNOWN_VALUE;
+            ret["location"]     = EMPTY_VALUE;
             ret["groups"]       = package.group;
             ret["version"]      = version;
-            ret["priority"]     = UNKNOWN_VALUE;
+            ret["priority"]     = EMPTY_VALUE;
             ret["architecture"] = package.architecture;
-            ret["source"]       = UNKNOWN_VALUE;
+            ret["source"]       = EMPTY_VALUE;
             ret["format"]       = "rpm";
-            ret["vendor"]       = package.vendor.empty() ? UNKNOWN_VALUE : package.vendor;
+            ret["vendor"]       = package.vendor.empty() ? EMPTY_VALUE : package.vendor;
             ret["description"]  = package.description;
             // The multiarch field won't have a default value
         }

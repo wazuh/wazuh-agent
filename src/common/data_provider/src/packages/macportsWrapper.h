@@ -58,11 +58,11 @@ class MacportsWrapper final : public IPackageWrapper
         }
         void groups(nlohmann::json& package) const override
         {
-            package["groups"] = UNKNOWN_VALUE;
+            package["groups"] = EMPTY_VALUE;
         }
         void description(nlohmann::json& package) const override
         {
-            package["description"] = UNKNOWN_VALUE;
+            package["description"] = EMPTY_VALUE;
         }
         void architecture(nlohmann::json& package) const override
         {
@@ -74,11 +74,11 @@ class MacportsWrapper final : public IPackageWrapper
         }
         void osPatch(nlohmann::json& package) const override
         {
-            package["os_patch"] = UNKNOWN_VALUE;
+            package["os_patch"] = EMPTY_VALUE;
         }
         void source(nlohmann::json& package) const override
         {
-            package["source"] = UNKNOWN_VALUE;
+            package["source"] = EMPTY_VALUE;
         }
         void location(nlohmann::json& package) const override
         {
@@ -86,17 +86,17 @@ class MacportsWrapper final : public IPackageWrapper
         }
         void vendor(nlohmann::json& package) const override
         {
-            package["vendor"] = UNKNOWN_VALUE;
+            package["vendor"] = EMPTY_VALUE;
         }
 
         void priority(nlohmann::json& package) const override
         {
-            package["priority"] = UNKNOWN_VALUE;
+            package["priority"] = EMPTY_VALUE;
         }
 
         void size(nlohmann::json& package) const override
         {
-            package["size"] = UNKNOWN_VALUE;
+            package["size"] = EMPTY_VALUE;
         }
 
         void install_time(nlohmann::json& package) const override
@@ -106,7 +106,7 @@ class MacportsWrapper final : public IPackageWrapper
 
         void multiarch(nlohmann::json& package) const override
         {
-            package["multiarch"] = UNKNOWN_VALUE;
+            package["multiarch"] = EMPTY_VALUE;
         }
     private:
         void getPkgData(SQLiteLegacy::IStatement& stmt)

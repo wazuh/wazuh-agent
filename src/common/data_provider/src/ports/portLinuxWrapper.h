@@ -135,13 +135,13 @@ class LinuxPortWrapper final : public IPortWrapper
             }
             else
             {
-                port["protocol"] = UNKNOWN_VALUE;
+                port["protocol"] = EMPTY_VALUE;
             }
         }
 
         void localIp(nlohmann::json& port) const override
         {
-            port["local_ip"] = UNKNOWN_VALUE;
+            port["local_ip"] = EMPTY_VALUE;
 
             if (m_localAddresses.size() == AddressField::ADDRESS_FIELD_SIZE)
             {
@@ -169,13 +169,13 @@ class LinuxPortWrapper final : public IPortWrapper
             }
             else
             {
-                port["local_port"] = UNKNOWN_VALUE;
+                port["local_port"] = EMPTY_VALUE;
             }
         }
 
         void remoteIP(nlohmann::json& port) const override
         {
-            port["remote_ip"] = UNKNOWN_VALUE;
+            port["remote_ip"] = EMPTY_VALUE;
 
             if (m_remoteAddresses.size() == AddressField::ADDRESS_FIELD_SIZE)
             {
@@ -203,7 +203,7 @@ class LinuxPortWrapper final : public IPortWrapper
             }
             else
             {
-                port["remote_port"] = UNKNOWN_VALUE;
+                port["remote_port"] = EMPTY_VALUE;
             }
         }
 
@@ -220,7 +220,7 @@ class LinuxPortWrapper final : public IPortWrapper
             }
             else
             {
-                port["tx_queue"] = UNKNOWN_VALUE;
+                port["tx_queue"] = EMPTY_VALUE;
             }
         }
 
@@ -237,7 +237,7 @@ class LinuxPortWrapper final : public IPortWrapper
             }
             else
             {
-                port["rx_queue"] = UNKNOWN_VALUE;
+                port["rx_queue"] = EMPTY_VALUE;
             }
         }
 
@@ -258,7 +258,7 @@ class LinuxPortWrapper final : public IPortWrapper
 
         void state(nlohmann::json& port) const override
         {
-            port["state"] = UNKNOWN_VALUE;
+            port["state"] = EMPTY_VALUE;
             const auto it { PROTOCOL_TYPE.find(m_type) };
 
             if (PROTOCOL_TYPE.end() != it && TCP == it->second)
@@ -279,12 +279,12 @@ class LinuxPortWrapper final : public IPortWrapper
 
         void processName(nlohmann::json& port) const override
         {
-            port["process"] = UNKNOWN_VALUE;
+            port["process"] = EMPTY_VALUE;
         }
 
         void pid(nlohmann::json& port) const override
         {
-            port["pid"] = UNKNOWN_VALUE;
+            port["pid"] = EMPTY_VALUE;
         }
 };
 
