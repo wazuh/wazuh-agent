@@ -5,6 +5,7 @@
 #include <SQLiteCpp/SQLiteCpp.h>
 #include <fmt/format.h>
 #include <map>
+#include <regex>
 
 const std::map<ColumnType, std::string> MAP_COL_TYPE_STRING {
     {ColumnType::INTEGER, "INTEGER"}, {ColumnType::TEXT, "TEXT"}, {ColumnType::REAL, "REAL"}};
@@ -13,6 +14,18 @@ const std::map<LogicalOperator, std::string> MAP_LOGOP_STRING {{LogicalOperator:
 const std::map<OrderType, std::string> MAP_ORDER_STRING {{OrderType::ASC, "ASC"}, {OrderType::DESC, "DESC"}};
 
 SQLiteManager::~SQLiteManager() = default;
+
+namespace
+{
+    const std::string& TO_SEARCH = "'";
+    const std::string& TO_REPLACE = "''";
+
+    /// @brief Escapes single quotes in a string.
+    std::string EscapeSingleQuotes(const std::string& str)
+    {
+        return std::regex_replace(str, std::regex(TO_SEARCH), TO_REPLACE);
+    }
+} // namespace
 
 ColumnType SQLiteManager::ColumnTypeFromSQLiteType(const int type) const
 {
@@ -79,10 +92,13 @@ void SQLiteManager::Insert(const std::string& tableName, const Row& cols)
         names.push_back(col.Name);
         if (col.Type == ColumnType::TEXT)
         {
-            values.push_back(fmt::format("'{}'", col.Value));
+            auto escapedValue = EscapeSingleQuotes(col.Value);
+            values.push_back(fmt::format("'{}'", escapedValue));
         }
         else
+        {
             values.push_back(col.Value);
+        }
     }
 
     std::string queryString =
@@ -107,7 +123,8 @@ void SQLiteManager::Update(const std::string& tableName,
     {
         if (col.Type == ColumnType::TEXT)
         {
-            setFields.push_back(fmt::format("{}='{}'", col.Name, col.Value));
+            auto escapedValue = EscapeSingleQuotes(col.Value);
+            setFields.push_back(fmt::format("{}='{}'", col.Name, escapedValue));
         }
         else
         {
@@ -124,7 +141,8 @@ void SQLiteManager::Update(const std::string& tableName,
         {
             if (col.Type == ColumnType::TEXT)
             {
-                conditions.push_back(fmt::format("{}='{}'", col.Name, col.Value));
+                auto escapedValue = EscapeSingleQuotes(col.Value);
+                conditions.push_back(fmt::format("{}='{}'", col.Name, escapedValue));
             }
             else
             {
@@ -149,7 +167,8 @@ void SQLiteManager::Remove(const std::string& tableName, const Criteria& selCrit
         {
             if (col.Type == ColumnType::TEXT)
             {
-                critFields.push_back(fmt::format("{}='{}'", col.Name, col.Value));
+                auto escapedValue = EscapeSingleQuotes(col.Value);
+                critFields.push_back(fmt::format("{}='{}'", col.Name, escapedValue));
             }
             else
             {
@@ -217,9 +236,14 @@ std::vector<Row> SQLiteManager::Select(const std::string& tableName,
         for (const auto& col : selCriteria)
         {
             if (col.Type == ColumnType::TEXT)
-                conditions.push_back(fmt::format("{}='{}'", col.Name, col.Value));
+            {
+                auto escapedValue = EscapeSingleQuotes(col.Value);
+                conditions.push_back(fmt::format("{}='{}'", col.Name, escapedValue));
+            }
             else
+            {
                 conditions.push_back(fmt::format("{}={}", col.Name, col.Value));
+            }
         }
         condition = fmt::format("WHERE {}", fmt::join(conditions, fmt::format(" {} ", MAP_LOGOP_STRING.at(logOp))));
     }
@@ -280,9 +304,14 @@ int SQLiteManager::GetCount(const std::string& tableName, const Criteria& selCri
         for (const auto& col : selCriteria)
         {
             if (col.Type == ColumnType::TEXT)
-                conditions.push_back(fmt::format("{}='{}'", col.Name, col.Value));
+            {
+                auto escapedValue = EscapeSingleQuotes(col.Value);
+                conditions.push_back(fmt::format("{}='{}'", col.Name, escapedValue));
+            }
             else
+            {
                 conditions.push_back(fmt::format("{}={}", col.Name, col.Value));
+            }
         }
         condition = fmt::format("WHERE {}", fmt::join(conditions, fmt::format(" {} ", MAP_LOGOP_STRING.at(logOp))));
     }
@@ -340,9 +369,14 @@ size_t SQLiteManager::GetSize(const std::string& tableName,
         for (const auto& col : selCriteria)
         {
             if (col.Type == ColumnType::TEXT)
-                conditions.push_back(fmt::format("{}='{}'", col.Name, col.Value));
+            {
+                auto escapedValue = EscapeSingleQuotes(col.Value);
+                conditions.push_back(fmt::format("{}='{}'", col.Name, escapedValue));
+            }
             else
+            {
                 conditions.push_back(fmt::format("{}={}", col.Name, col.Value));
+            }
         }
         condition = fmt::format("WHERE {}", fmt::join(conditions, fmt::format(" {} ", MAP_LOGOP_STRING.at(logOp))));
     }
