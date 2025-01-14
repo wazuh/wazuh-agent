@@ -61,7 +61,7 @@ public:
     /// @brief Waits for a specified amount of time
     ///
     /// @param ms Time to wait in milliseconds
-    boost::asio::awaitable<void> Wait(std::chrono::milliseconds ms);
+    virtual boost::asio::awaitable<void> Wait(std::chrono::milliseconds ms);
 
     /// @brief Gets the instance of the Logcollector module
     /// @return Instance of the Logcollector module
@@ -84,6 +84,8 @@ protected:
 
     /// @brief Clean all readers
     void CleanAllReaders();
+
+    void SetupJournaldReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
 
 private:
     /// @brief Module name

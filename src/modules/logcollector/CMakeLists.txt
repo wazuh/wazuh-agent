@@ -24,6 +24,10 @@ else()
     FILE(GLOB EXCLUDED_SOURCES src/*_win.cpp)
 endif()
 
+if (NOT UNIX OR APPLE)
+    FILE(GLOB EXCLUDED_SOURCES src/journal*.cpp)
+endif()
+
 FILE(GLOB LOGCOLLECTOR_SOURCES src/*.cpp)
 list(REMOVE_ITEM LOGCOLLECTOR_SOURCES ${EXCLUDED_SOURCES})
 
@@ -45,6 +49,7 @@ target_link_libraries(Logcollector
     Boost::asio
     Boost::system
     nlohmann_json::nlohmann_json
+    $<$<PLATFORM_ID:Linux>:systemd>
     PRIVATE
     Logger
     pal
