@@ -34,7 +34,7 @@ namespace https_socket_verify_utils
 
         if (m_mode == "full")
         {
-            SecCertificatePtr serverCert(m_utils->CreateCertificate(certData.get()));
+            SecCertificatePtr serverCert(m_utils->CreateCertificate(certData.get()), m_deleter);
             if (!serverCert || !ValidateHostname(serverCert))
             {
                 return false;
@@ -68,7 +68,7 @@ namespace https_socket_verify_utils
             return false;
         }
 
-        certData = CFDataPtr(m_utils->CreateCFData(certRawData, certLen));
+        certData = CFDataPtr(m_utils->CreateCFData(certRawData, certLen), m_deleter);
         OPENSSL_free(certRawData);
 
         return certData != nullptr;
@@ -76,8 +76,7 @@ namespace https_socket_verify_utils
 
     bool HttpsVerifier::CreateTrustObject(const CFDataPtr& certData, SecTrustPtr& trust)
     {
-        SecCertificatePtr serverCert(m_utils->CreateCertificate(certData.get()));
-
+        SecCertificatePtr serverCert(m_utils->CreateCertificate(certData.get()), m_deleter);
         if (!serverCert)
         {
             LogError("Failed to create SecCertificateRef.");
@@ -86,8 +85,8 @@ namespace https_socket_verify_utils
 
         const void* certArrayValues[] = {serverCert.get()};
 
-        CFArrayPtr certArray(m_utils->CreateCertArray(certArrayValues, 1));
-        SecPolicyPtr policy(m_utils->CreateSSLPolicy(true, ""));
+        CFArrayPtr certArray(m_utils->CreateCertArray(certArrayValues, 1), m_deleter);
+        SecPolicyPtr policy(m_utils->CreateSSLPolicy(true, ""), m_deleter);
 
         SecTrustRef rawTrust = nullptr;
         OSStatus status = m_utils->CreateTrustObject(certArray.get(), policy.get(), &rawTrust);
@@ -99,7 +98,7 @@ namespace https_socket_verify_utils
             return false;
         }
 
-        trust.reset(rawTrust);
+        trust = SecTrustPtr(rawTrust, m_deleter);
         return true;
     }
 
@@ -110,20 +109,19 @@ namespace https_socket_verify_utils
 
         if (!trustResult && errorRef)
         {
-            CFErrorPtr error(const_cast<__CFError*>(errorRef));
+            CFErrorPtr error(const_cast<__CFError*>(errorRef), m_deleter);
 
-            CFStringPtr errorDesc(m_utils->CopyErrorDescription(errorRef));
+            CFStringPtr errorDesc(m_utils->CopyErrorDescription(errorRef), m_deleter);
             std::string errorString = m_utils->GetStringCFString(errorDesc.get());
             LogError("Trust evaluation failed: {}", errorString);
         }
 
-        m_utils->ReleaseCFObject(errorRef);
         return trustResult;
     }
 
     bool HttpsVerifier::ValidateHostname(const SecCertificatePtr& serverCert)
     {
-        CFStringPtr sanString(m_utils->CopySubjectSummary(serverCert.get()));
+        CFStringPtr sanString(m_utils->CopySubjectSummary(serverCert.get()), m_deleter);
         if (!sanString)
         {
             LogError("Failed to retrieve SAN or CN for hostname validation.");

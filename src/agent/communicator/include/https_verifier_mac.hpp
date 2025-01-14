@@ -9,24 +9,13 @@
 
 namespace https_socket_verify_utils
 {
-    struct CFDeleter
-    {
-        void operator()(CFTypeRef obj) const
-        {
-            if (obj)
-            {
-                CFRelease(obj);
-            }
-        }
-    };
-
-    using CFDataPtr = std::unique_ptr<const __CFData, CFDeleter>;
-    using CFArrayPtr = std::unique_ptr<const __CFArray, CFDeleter>;
-    using CFStringPtr = std::unique_ptr<const __CFString, CFDeleter>;
-    using SecTrustPtr = std::unique_ptr<__SecTrust, CFDeleter>;
-    using CFErrorPtr = std::unique_ptr<__CFError, CFDeleter>;
-    using SecCertificatePtr = std::unique_ptr<__SecCertificate, CFDeleter>;
-    using SecPolicyPtr = std::unique_ptr<__SecPolicy, CFDeleter>;
+    using CFDataPtr = std::unique_ptr<const __CFData, std::function<void(CFTypeRef)>>;
+    using CFArrayPtr = std::unique_ptr<const __CFArray, std::function<void(CFTypeRef)>>;
+    using CFStringPtr = std::unique_ptr<const __CFString, std::function<void(CFTypeRef)>>;
+    using SecTrustPtr = std::unique_ptr<__SecTrust, std::function<void(CFTypeRef)>>;
+    using CFErrorPtr = std::unique_ptr<__CFError, std::function<void(CFTypeRef)>>;
+    using SecCertificatePtr = std::unique_ptr<__SecCertificate, std::function<void(CFTypeRef)>>;
+    using SecPolicyPtr = std::unique_ptr<__SecPolicy, std::function<void(CFTypeRef)>>;
 
     class HttpsVerifier
     {
@@ -40,6 +29,13 @@ namespace https_socket_verify_utils
             , m_host(host)
             , m_utils(std::move(utils))
         {
+            m_deleter = [this](CFTypeRef obj)
+            {
+                if (obj)
+                {
+                    m_utils->ReleaseCFObject(obj);
+                }
+            };
         }
 
         /// @brief Verifies the certificate of the HTTPS connection
@@ -78,5 +74,8 @@ namespace https_socket_verify_utils
 
         /// @brief The certificate utilities object to use
         std::unique_ptr<ICertificateUtils> m_utils;
+
+        /// @brief The deleter function to release CFTypeRef objects
+        std::function<void(CFTypeRef)> m_deleter;
     };
 } // namespace https_socket_verify_utils
