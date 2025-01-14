@@ -140,6 +140,7 @@ TEST_F(HttpsVerifierTest, VerifyCreateTrustObjectCreateCertificateFails)
     EXPECT_CALL(*mockPtr, EncodeCertificateToDER(_, _)).WillOnce(Return(1));
     EXPECT_CALL(*mockPtr, CreateCFData(_, _)).WillOnce(Return(reinterpret_cast<CFDataRef>(0x1)));
     EXPECT_CALL(*mockPtr, CreateCertificate(_)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*mockPtr, ReleaseCFObject(_));
 
     EXPECT_FALSE(verifier->Verify(ctx));
 }
@@ -155,7 +156,7 @@ TEST_F(HttpsVerifierTest, VerifyCreateTrustObjectCreateTrustObjectFails)
     EXPECT_CALL(*mockPtr, CreateCertArray(_, _)).WillOnce(Return(reinterpret_cast<CFArrayRef>(0x1)));
     EXPECT_CALL(*mockPtr, CreateSSLPolicy(_, _)).WillOnce(Return(reinterpret_cast<SecPolicyRef>(0x1)));
     EXPECT_CALL(*mockPtr, CreateTrustObject(_, _, _)).WillOnce(Return(errSecInternalError));
-    EXPECT_CALL(*mockPtr, ReleaseCFObject(_));
+    EXPECT_CALL(*mockPtr, ReleaseCFObject(_)).Times(5);
 
     EXPECT_FALSE(verifier->Verify(ctx));
 }
@@ -164,15 +165,16 @@ TEST_F(HttpsVerifierTest, VerifyEvaluateTrustFailsNoErrorRef)
 {
     EXPECT_CALL(*mockPtr, GetCertChain(_)).WillOnce(Return(reinterpret_cast<STACK_OF(X509)*>(0x1)));
     EXPECT_CALL(*mockPtr, GetCertificateCount(_)).WillOnce(Return(1));
-    EXPECT_CALL(*mockPtr, GetCertificateFromChain(_, _)).WillOnce(Return(reinterpret_cast<X509*>(0x1)));
+    EXPECT_CALL(*mockPtr, GetCertificateFromChain(_, _)).WillOnce(Return(reinterpret_cast<X509*>(0x2)));
     EXPECT_CALL(*mockPtr, EncodeCertificateToDER(_, _)).WillOnce(Return(1));
-    EXPECT_CALL(*mockPtr, CreateCFData(_, _)).WillOnce(Return(reinterpret_cast<CFDataRef>(0x1)));
-    EXPECT_CALL(*mockPtr, CreateCertificate(_)).WillOnce(Return(reinterpret_cast<SecCertificateRef>(0x1)));
-    EXPECT_CALL(*mockPtr, CreateCertArray(_, _)).WillOnce(Return(reinterpret_cast<CFArrayRef>(0x1)));
-    EXPECT_CALL(*mockPtr, CreateSSLPolicy(_, _)).WillOnce(Return(reinterpret_cast<SecPolicyRef>(0x1)));
-    EXPECT_CALL(*mockPtr, CreateTrustObject(_, _, _)).WillOnce(Return(errSecSuccess));
+    EXPECT_CALL(*mockPtr, CreateCFData(_, _)).WillOnce(Return(reinterpret_cast<CFDataRef>(0x3)));
+    EXPECT_CALL(*mockPtr, CreateCertificate(_)).WillOnce(Return(reinterpret_cast<SecCertificateRef>(0x4)));
+    EXPECT_CALL(*mockPtr, CreateCertArray(_, _)).WillOnce(Return(reinterpret_cast<CFArrayRef>(0x5)));
+    EXPECT_CALL(*mockPtr, CreateSSLPolicy(_, _)).WillOnce(Return(reinterpret_cast<SecPolicyRef>(0x6)));
+    EXPECT_CALL(*mockPtr, CreateTrustObject(_, _, _))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<2>(reinterpret_cast<SecTrustRef>(0x7)), Return(errSecSuccess)));
     EXPECT_CALL(*mockPtr, EvaluateTrust(_, _)).WillOnce(Return(false));
-    EXPECT_CALL(*mockPtr, ReleaseCFObject(_));
+    EXPECT_CALL(*mockPtr, ReleaseCFObject(_)).Times(5);
 
     EXPECT_FALSE(verifier->Verify(ctx));
 }
@@ -183,23 +185,20 @@ TEST_F(HttpsVerifierTest, VerifyEvaluateTrustFailsWithErrorRef)
     EXPECT_CALL(*mockPtr, GetCertificateCount(_)).WillOnce(Return(1));
     EXPECT_CALL(*mockPtr, GetCertificateFromChain(_, _)).WillOnce(Return(reinterpret_cast<X509*>(0x1)));
     EXPECT_CALL(*mockPtr, EncodeCertificateToDER(_, _)).WillOnce(Return(1));
-    EXPECT_CALL(*mockPtr, CreateCFData(_, _)).WillOnce(Return(reinterpret_cast<CFDataRef>(0x1)));
-    EXPECT_CALL(*mockPtr, CreateCertificate(_)).WillOnce(Return(reinterpret_cast<SecCertificateRef>(0x1)));
-    EXPECT_CALL(*mockPtr, CreateCertArray(_, _)).WillOnce(Return(reinterpret_cast<CFArrayRef>(0x1)));
-    EXPECT_CALL(*mockPtr, CreateSSLPolicy(_, _)).WillOnce(Return(reinterpret_cast<SecPolicyRef>(0x1)));
-    EXPECT_CALL(*mockPtr, CreateTrustObject(_, _, _)).WillOnce(Return(errSecSuccess));
-
-    CFErrorRef mockErrorRef = reinterpret_cast<CFErrorRef>(0x1);
+    EXPECT_CALL(*mockPtr, CreateCFData(_, _)).WillOnce(Return(reinterpret_cast<CFDataRef>(0x11)));
+    EXPECT_CALL(*mockPtr, CreateCertificate(_)).WillOnce(Return(reinterpret_cast<SecCertificateRef>(0x12)));
+    EXPECT_CALL(*mockPtr, CreateCertArray(_, _)).WillOnce(Return(reinterpret_cast<CFArrayRef>(0x13)));
+    EXPECT_CALL(*mockPtr, CreateSSLPolicy(_, _)).WillOnce(Return(reinterpret_cast<SecPolicyRef>(0x14)));
+    EXPECT_CALL(*mockPtr, CreateTrustObject(_, _, _))
+        .WillOnce(
+            testing::DoAll(testing::SetArgPointee<2>(reinterpret_cast<SecTrustRef>(0x15)), Return(errSecSuccess)));
     EXPECT_CALL(*mockPtr, EvaluateTrust(_, _))
-        .WillOnce(testing::DoAll(testing::SetArgPointee<1>(mockErrorRef), Return(false)));
+        .WillOnce(testing::DoAll(testing::SetArgPointee<1>(reinterpret_cast<CFErrorRef>(0x16)), Return(false)));
 
-    CFStringRef mockErrorDesc =
-        CFStringCreateWithCString(nullptr, "Simulated error description", kCFStringEncodingUTF8);
-    ASSERT_NE(mockErrorDesc, nullptr);
-    EXPECT_CALL(*mockPtr, CopyErrorDescription(_)).WillOnce(Return(mockErrorDesc));
+    EXPECT_CALL(*mockPtr, CopyErrorDescription(_)).WillOnce(Return(reinterpret_cast<CFStringRef>(0x17)));
 
     EXPECT_CALL(*mockPtr, GetStringCFString(_)).WillOnce(Return("Simulated error description"));
-    EXPECT_CALL(*mockPtr, ReleaseCFObject(_));
+    EXPECT_CALL(*mockPtr, ReleaseCFObject(_)).Times(7);
 
     EXPECT_FALSE(verifier->Verify(ctx));
 }
@@ -216,9 +215,10 @@ TEST_F(HttpsVerifierTest, VerifyCreateCertificateFails)
         .WillOnce(Return(nullptr));
     EXPECT_CALL(*mockPtr, CreateCertArray(_, _)).WillOnce(Return(reinterpret_cast<CFArrayRef>(0x1)));
     EXPECT_CALL(*mockPtr, CreateSSLPolicy(_, _)).WillOnce(Return(reinterpret_cast<SecPolicyRef>(0x1)));
-    EXPECT_CALL(*mockPtr, CreateTrustObject(_, _, _)).WillOnce(Return(errSecSuccess));
+    EXPECT_CALL(*mockPtr, CreateTrustObject(_, _, _))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<2>(reinterpret_cast<SecTrustRef>(0x7)), Return(errSecSuccess)));
     EXPECT_CALL(*mockPtr, EvaluateTrust(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*mockPtr, ReleaseCFObject(_));
+    EXPECT_CALL(*mockPtr, ReleaseCFObject(_)).Times(5);
 
     EXPECT_FALSE(verifier->Verify(ctx));
 }
@@ -233,9 +233,10 @@ TEST_F(HttpsVerifierTest, VerifyValidateHostnameCopySubjectSummaryFails)
     EXPECT_CALL(*mockPtr, CreateCertificate(_)).WillRepeatedly(Return(reinterpret_cast<SecCertificateRef>(0x1)));
     EXPECT_CALL(*mockPtr, CreateCertArray(_, _)).WillOnce(Return(reinterpret_cast<CFArrayRef>(0x1)));
     EXPECT_CALL(*mockPtr, CreateSSLPolicy(_, _)).WillOnce(Return(reinterpret_cast<SecPolicyRef>(0x1)));
-    EXPECT_CALL(*mockPtr, CreateTrustObject(_, _, _)).WillOnce(Return(errSecSuccess));
+    EXPECT_CALL(*mockPtr, CreateTrustObject(_, _, _))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<2>(reinterpret_cast<SecTrustRef>(0x7)), Return(errSecSuccess)));
     EXPECT_CALL(*mockPtr, EvaluateTrust(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*mockPtr, ReleaseCFObject(_));
+    EXPECT_CALL(*mockPtr, ReleaseCFObject(_)).Times(6);
     EXPECT_CALL(*mockPtr, CopySubjectSummary(_)).WillOnce(Return(nullptr));
 
     EXPECT_FALSE(verifier->Verify(ctx));
@@ -251,9 +252,10 @@ TEST_F(HttpsVerifierTest, VerifyValidateHostnameCNEmpty)
     EXPECT_CALL(*mockPtr, CreateCertificate(_)).WillRepeatedly(Return(reinterpret_cast<SecCertificateRef>(0x1)));
     EXPECT_CALL(*mockPtr, CreateCertArray(_, _)).WillOnce(Return(reinterpret_cast<CFArrayRef>(0x1)));
     EXPECT_CALL(*mockPtr, CreateSSLPolicy(_, _)).WillOnce(Return(reinterpret_cast<SecPolicyRef>(0x1)));
-    EXPECT_CALL(*mockPtr, CreateTrustObject(_, _, _)).WillOnce(Return(errSecSuccess));
+    EXPECT_CALL(*mockPtr, CreateTrustObject(_, _, _))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<2>(reinterpret_cast<SecTrustRef>(0x7)), Return(errSecSuccess)));
     EXPECT_CALL(*mockPtr, EvaluateTrust(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*mockPtr, ReleaseCFObject(_));
+    EXPECT_CALL(*mockPtr, ReleaseCFObject(_)).Times(7);
     EXPECT_CALL(*mockPtr, CopySubjectSummary(_)).WillOnce(Return(reinterpret_cast<CFStringRef>(0x1)));
     EXPECT_CALL(*mockPtr, GetStringCFString(_)).WillOnce(Return(""));
 
@@ -270,9 +272,10 @@ TEST_F(HttpsVerifierTest, VerifyValidateHostnameCNNotMatch)
     EXPECT_CALL(*mockPtr, CreateCertificate(_)).WillRepeatedly(Return(reinterpret_cast<SecCertificateRef>(0x1)));
     EXPECT_CALL(*mockPtr, CreateCertArray(_, _)).WillOnce(Return(reinterpret_cast<CFArrayRef>(0x1)));
     EXPECT_CALL(*mockPtr, CreateSSLPolicy(_, _)).WillOnce(Return(reinterpret_cast<SecPolicyRef>(0x1)));
-    EXPECT_CALL(*mockPtr, CreateTrustObject(_, _, _)).WillOnce(Return(errSecSuccess));
+    EXPECT_CALL(*mockPtr, CreateTrustObject(_, _, _))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<2>(reinterpret_cast<SecTrustRef>(0x7)), Return(errSecSuccess)));
     EXPECT_CALL(*mockPtr, EvaluateTrust(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*mockPtr, ReleaseCFObject(_));
+    EXPECT_CALL(*mockPtr, ReleaseCFObject(_)).Times(7);
     EXPECT_CALL(*mockPtr, CopySubjectSummary(_)).WillOnce(Return(reinterpret_cast<CFStringRef>(0x1)));
     EXPECT_CALL(*mockPtr, GetStringCFString(_)).WillOnce(Return("noexample.com"));
 
@@ -289,9 +292,10 @@ TEST_F(HttpsVerifierTest, VerifyValidateHostnameSuccess)
     EXPECT_CALL(*mockPtr, CreateCertificate(_)).WillRepeatedly(Return(reinterpret_cast<SecCertificateRef>(0x1)));
     EXPECT_CALL(*mockPtr, CreateCertArray(_, _)).WillOnce(Return(reinterpret_cast<CFArrayRef>(0x1)));
     EXPECT_CALL(*mockPtr, CreateSSLPolicy(_, _)).WillOnce(Return(reinterpret_cast<SecPolicyRef>(0x1)));
-    EXPECT_CALL(*mockPtr, CreateTrustObject(_, _, _)).WillOnce(Return(errSecSuccess));
+    EXPECT_CALL(*mockPtr, CreateTrustObject(_, _, _))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<2>(reinterpret_cast<SecTrustRef>(0x7)), Return(errSecSuccess)));
     EXPECT_CALL(*mockPtr, EvaluateTrust(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*mockPtr, ReleaseCFObject(_));
+    EXPECT_CALL(*mockPtr, ReleaseCFObject(_)).Times(7);
     EXPECT_CALL(*mockPtr, CopySubjectSummary(_)).WillOnce(Return(reinterpret_cast<CFStringRef>(0x1)));
     EXPECT_CALL(*mockPtr, GetStringCFString(_)).WillOnce(Return("example.com"));
 
@@ -308,9 +312,10 @@ TEST_F(HttpsVerifierTestModeCertificate, VerifyCreateCertificateFails)
     EXPECT_CALL(*mockPtr, CreateCertificate(_)).WillOnce(Return(reinterpret_cast<SecCertificateRef>(0x1)));
     EXPECT_CALL(*mockPtr, CreateCertArray(_, _)).WillOnce(Return(reinterpret_cast<CFArrayRef>(0x1)));
     EXPECT_CALL(*mockPtr, CreateSSLPolicy(_, _)).WillOnce(Return(reinterpret_cast<SecPolicyRef>(0x1)));
-    EXPECT_CALL(*mockPtr, CreateTrustObject(_, _, _)).WillOnce(Return(errSecSuccess));
+    EXPECT_CALL(*mockPtr, CreateTrustObject(_, _, _))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<2>(reinterpret_cast<SecTrustRef>(0x7)), Return(errSecSuccess)));
     EXPECT_CALL(*mockPtr, EvaluateTrust(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*mockPtr, ReleaseCFObject(_));
+    EXPECT_CALL(*mockPtr, ReleaseCFObject(_)).Times(5);
 
     EXPECT_TRUE(verifier->Verify(ctx));
 }
