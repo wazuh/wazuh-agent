@@ -15,10 +15,9 @@ public:
                   std::time_t fileWait);
     Awaitable Run() override;
     void Stop() override;
-
-private:
     std::string GetFilterDescription() const;
 
+private:
     FilterGroup m_filters;
     bool m_ignoreIfMissing;
     std::unique_ptr<JournalLog> m_journal;
