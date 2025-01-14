@@ -7,6 +7,8 @@
 #include <map>
 #include <regex>
 
+using namespace column;
+
 const std::map<ColumnType, std::string> MAP_COL_TYPE_STRING {
     {ColumnType::INTEGER, "INTEGER"}, {ColumnType::TEXT, "TEXT"}, {ColumnType::REAL, "REAL"}};
 const std::map<LogicalOperator, std::string> MAP_LOGOP_STRING {{LogicalOperator::AND, "AND"},

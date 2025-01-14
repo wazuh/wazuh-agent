@@ -47,12 +47,12 @@ public:
     /// @brief Creates a new table with specified keys if it doesn't already exist.
     /// @param tableName The name of the table to create.
     /// @param cols Keys specifying the table schema.
-    void CreateTable(const std::string& tableName, const Keys& cols) override;
+    void CreateTable(const std::string& tableName, const column::Keys& cols) override;
 
     /// @brief Inserts data into a specified table.
     /// @param tableName The name of the table where data is inserted.
     /// @param cols Row with values to insert.
-    void Insert(const std::string& tableName, const Row& cols) override;
+    void Insert(const std::string& tableName, const column::Row& cols) override;
 
     /// @brief Updates rows in a specified table with optional criteria.
     /// @param tableName The name of the table to update.
@@ -60,17 +60,17 @@ public:
     /// @param selCriteria Optional criteria to filter rows to update.
     /// @param logOp Logical operator to combine selection criteria.
     void Update(const std::string& tableName,
-                const Row& fields,
-                const Criteria& selCriteria = {},
-                LogicalOperator logOp = LogicalOperator::AND) override;
+                const column::Row& fields,
+                const column::Criteria& selCriteria = {},
+                column::LogicalOperator logOp = column::LogicalOperator::AND) override;
 
     /// @brief Removes rows from a specified table with optional criteria.
     /// @param tableName The name of the table to delete from.
     /// @param selCriteria Optional criteria to filter rows to delete.
     /// @param logOp Logical operator to combine selection criteria.
     void Remove(const std::string& tableName,
-                const Criteria& selCriteria = {},
-                LogicalOperator logOp = LogicalOperator::AND) override;
+                const column::Criteria& selCriteria = {},
+                column::LogicalOperator logOp = column::LogicalOperator::AND) override;
 
     /// @brief Drops a specified table from the database.
     /// @param tableName The name of the table to drop.
@@ -85,13 +85,13 @@ public:
     /// @param orderType The order type (ASC or DESC).
     /// @param limit The maximum number of rows to retrieve.
     /// @return A vector of rows matching the criteria.
-    std::vector<Row> Select(const std::string& tableName,
-                            const Names& fields,
-                            const Criteria& selCriteria = {},
-                            LogicalOperator logOp = LogicalOperator::AND,
-                            const Names& orderBy = {},
-                            OrderType orderType = OrderType::ASC,
-                            int limit = 0) override;
+    std::vector<column::Row> Select(const std::string& tableName,
+                                    const column::Names& fields,
+                                    const column::Criteria& selCriteria = {},
+                                    column::LogicalOperator logOp = column::LogicalOperator::AND,
+                                    const column::Names& orderBy = {},
+                                    column::OrderType orderType = column::OrderType::ASC,
+                                    int limit = 0) override;
 
     /// @brief Retrieves the number of rows in a specified table.
     /// @param tableName The name of the table to count rows in.
@@ -99,8 +99,8 @@ public:
     /// @param logOp Logical operator to combine selection criteria (AND/OR).
     /// @return The number of rows in the table.
     int GetCount(const std::string& tableName,
-                 const Criteria& selCriteria = {},
-                 LogicalOperator logOp = LogicalOperator::AND) override;
+                 const column::Criteria& selCriteria = {},
+                 column::LogicalOperator logOp = column::LogicalOperator::AND) override;
 
     /// @brief Retrieves the size in bytes of rows in a specified table.
     /// @param tableName The name of the table to count rows in.
@@ -109,9 +109,9 @@ public:
     /// @param logOp Logical operator to combine selection criteria (AND/OR).
     /// @return The size in bytes of the rows in the table.
     size_t GetSize(const std::string& tableName,
-                   const Names& fields,
-                   const Criteria& selCriteria = {},
-                   LogicalOperator logOp = LogicalOperator::AND) override;
+                   const column::Names& fields,
+                   const column::Criteria& selCriteria = {},
+                   column::LogicalOperator logOp = column::LogicalOperator::AND) override;
 
     /// @brief Begins a transaction in the SQLite database.
     /// @return The transaction ID.
@@ -129,7 +129,7 @@ private:
     /// @brief Converts SQLite data types to ColumnType enums.
     /// @param type SQLite data type integer code.
     /// @return Corresponding ColumnType enum.
-    ColumnType ColumnTypeFromSQLiteType(const int type) const;
+    column::ColumnType ColumnTypeFromSQLiteType(const int type) const;
 
     /// @brief Executes a raw SQL query on the database.
     /// @param query The SQL query string to execute.

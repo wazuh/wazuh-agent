@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+using namespace column;
+
 class SQLiteManagerTest : public ::testing::Test
 {
 protected:

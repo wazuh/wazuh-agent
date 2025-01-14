@@ -22,12 +22,12 @@ public:
     /// @brief Creates a new table with specified keys if it doesn't already exist.
     /// @param tableName The name of the table to create.
     /// @param cols Keys specifying the table schema.
-    virtual void CreateTable(const std::string& tableName, const Keys& cols) = 0;
+    virtual void CreateTable(const std::string& tableName, const column::Keys& cols) = 0;
 
     /// @brief Inserts data into a specified table.
     /// @param tableName The name of the table where data is inserted.
     /// @param cols Row with values to insert.
-    virtual void Insert(const std::string& tableName, const Row& cols) = 0;
+    virtual void Insert(const std::string& tableName, const column::Row& cols) = 0;
 
     /// @brief Updates rows in a specified table with optional criteria.
     /// @param tableName The name of the table to update.
@@ -35,17 +35,17 @@ public:
     /// @param selCriteria Optional criteria to filter rows to update.
     /// @param logOp Logical operator to combine selection criteria.
     virtual void Update(const std::string& tableName,
-                        const Row& fields,
-                        const Criteria& selCriteria = {},
-                        LogicalOperator logOp = LogicalOperator::AND) = 0;
+                        const column::Row& fields,
+                        const column::Criteria& selCriteria = {},
+                        column::LogicalOperator logOp = column::LogicalOperator::AND) = 0;
 
     /// @brief Removes rows from a specified table with optional criteria.
     /// @param tableName The name of the table to delete from.
     /// @param selCriteria Optional criteria to filter rows to delete.
     /// @param logOp Logical operator to combine selection criteria.
     virtual void Remove(const std::string& tableName,
-                        const Criteria& selCriteria = {},
-                        LogicalOperator logOp = LogicalOperator::AND) = 0;
+                        const column::Criteria& selCriteria = {},
+                        column::LogicalOperator logOp = column::LogicalOperator::AND) = 0;
 
     /// @brief Drops a specified table from the database.
     /// @param tableName The name of the table to drop.
@@ -60,13 +60,13 @@ public:
     /// @param orderType The order type (ASC or DESC).
     /// @param limit The maximum number of rows to retrieve.
     /// @return A vector of rows matching the criteria.
-    virtual std::vector<Row> Select(const std::string& tableName,
-                                    const Names& fields,
-                                    const Criteria& selCriteria = {},
-                                    LogicalOperator logOp = LogicalOperator::AND,
-                                    const Names& orderBy = {},
-                                    OrderType orderType = OrderType::ASC,
-                                    int limit = 0) = 0;
+    virtual std::vector<column::Row> Select(const std::string& tableName,
+                                            const column::Names& fields,
+                                            const column::Criteria& selCriteria = {},
+                                            column::LogicalOperator logOp = column::LogicalOperator::AND,
+                                            const column::Names& orderBy = {},
+                                            column::OrderType orderType = column::OrderType::ASC,
+                                            int limit = 0) = 0;
 
     /// @brief Retrieves the number of rows in a specified table.
     /// @param tableName The name of the table to count rows in.
@@ -74,8 +74,8 @@ public:
     /// @param logOp Logical operator to combine selection criteria (AND/OR).
     /// @return The number of rows in the table.
     virtual int GetCount(const std::string& tableName,
-                         const Criteria& selCriteria = {},
-                         LogicalOperator logOp = LogicalOperator::AND) = 0;
+                         const column::Criteria& selCriteria = {},
+                         column::LogicalOperator logOp = column::LogicalOperator::AND) = 0;
 
     /// @brief Retrieves the size in bytes of rows in a specified table.
     /// @param tableName The name of the table to count rows in.
@@ -84,9 +84,9 @@ public:
     /// @param logOp Logical operator to combine selection criteria (AND/OR).
     /// @return The size in bytes of the rows in the table.
     virtual size_t GetSize(const std::string& tableName,
-                           const Names& fields,
-                           const Criteria& selCriteria = {},
-                           LogicalOperator logOp = LogicalOperator::AND) = 0;
+                           const column::Names& fields,
+                           const column::Criteria& selCriteria = {},
+                           column::LogicalOperator logOp = column::LogicalOperator::AND) = 0;
 
     /// @brief Begins a transaction in the database.
     /// @return The transaction ID.
