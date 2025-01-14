@@ -22,6 +22,12 @@ public:
 
     MOCK_METHOD(void, AddReader, (std::shared_ptr<IReader> reader), (override));
     MOCK_METHOD(void, EnqueueTask, (Awaitable task), (override));
+    MOCK_METHOD(void, MockWait, (std::chrono::milliseconds));
+
+    boost::asio::awaitable<void> Wait(std::chrono::milliseconds duration) override {
+        MockWait(duration);
+        co_return;
+    }
 };
 
 class PushMessageMock {

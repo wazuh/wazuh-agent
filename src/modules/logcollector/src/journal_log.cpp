@@ -8,8 +8,7 @@
 using namespace logcollector;
 
 JournalLog::JournalLog()
-    : m_journal(nullptr)
-    , m_currentTimestamp(0) {}
+    : m_journal(nullptr) {}
 
 JournalLog::~JournalLog() {
     if (m_journal) {
@@ -137,7 +136,8 @@ bool JournalLog::SeekToTimestamp(uint64_t timestamp) {
     }
 
     try {
-        uint64_t oldest = GetOldestTimestamp();
+        uint64_t oldest{0};
+        oldest = GetOldestTimestamp();
         if (timestamp < oldest) {
             LogWarn("Timestamp {} is older than oldest available {}, adjusting", timestamp, oldest);
             timestamp = oldest;

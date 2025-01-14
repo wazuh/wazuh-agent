@@ -58,35 +58,28 @@ public:
 class JournalLog {
 public:
     JournalLog();
-    ~JournalLog();
+    virtual ~JournalLog();
 
-    void Open();
-    bool Next();
-    bool Previous();
-    bool SeekHead();
-    bool SeekTail();
-    bool SeekTimestamp(uint64_t timestamp);
+    virtual void Open();
+    virtual bool Next();
+    virtual bool Previous();
+    virtual bool SeekHead();
+    virtual bool SeekTail();
+    virtual bool SeekTimestamp(uint64_t timestamp);
 
-    void UpdateTimestamp();
-    bool SeekMostRecent();
-    bool SeekToTimestamp(uint64_t timestamp);
-    bool NextNewest();
+    virtual std::string GetData(const std::string& field) const;
+    virtual uint64_t GetTimestamp() const;
 
-    std::string GetData(const std::string& field) const;
-    uint64_t GetTimestamp() const;
-    uint64_t GetOldestTimestamp() const;
-
-    std::string GetCursor() const;
-    bool SeekCursor(const std::string& cursor);
-    bool CursorValid(const std::string& cursor) const;
+    virtual std::string GetCursor() const;
+    virtual bool SeekCursor(const std::string& cursor);
 
     struct FilteredMessage {
         std::string fieldValue;
         std::string message;
     };
 
-    void AddFilterGroup(const FilterGroup& group, bool ignoreIfMissing);
-    std::optional<FilteredMessage> GetNextFilteredMessage(const FilterSet& filters, bool ignoreIfMissing);
+    virtual void AddFilterGroup(const FilterGroup& group, bool ignoreIfMissing);
+    virtual std::optional<FilteredMessage> GetNextFilteredMessage(const FilterSet& filters, bool ignoreIfMissing);
 
     void FlushFilters();
 
@@ -94,9 +87,16 @@ public:
         return !filter.field.empty() && !filter.value.empty();
     }
 
+    virtual uint64_t GetOldestTimestamp() const;
+    virtual void UpdateTimestamp();
+    virtual bool SeekMostRecent();
+    virtual bool NextNewest();
+    virtual bool SeekToTimestamp(uint64_t timestamp);
+    virtual bool CursorValid(const std::string& cursor) const;
+
 private:
     struct sd_journal* m_journal;
-    uint64_t m_currentTimestamp;
+    uint64_t m_currentTimestamp{0};
     static uint64_t GetEpochTime();
     void ThrowIfError(int result, const std::string& operation) const;
 
