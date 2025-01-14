@@ -19,7 +19,7 @@ GROUPS_FILES_DIR = 'group_files'
 SECRET_KEY = "my_secret_key"
 
 # Default expiration time
-EXPIRATION_TIME = 60
+EXPIRATION_TIME = 10
 
 log_file_path = None
 
