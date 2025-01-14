@@ -21,7 +21,7 @@ public:
     /// information retrieval functions. It also generates a UUID for the agent if one
     /// does not already exist, and loads endpoint, metadata, and header information.
     ///
-    /// @param dbFolderPath Path to the SQLite database folder.
+    /// @param dbFolderPath Path to the database folder.
     /// @param getOSInfo Function to retrieve OS information in JSON format.
     /// @param getNetworksInfo Function to retrieve network information in JSON format.
     AgentInfo(std::string dbFolderPath = config::DEFAULT_DATA_PATH,

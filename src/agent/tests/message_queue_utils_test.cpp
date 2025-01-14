@@ -29,10 +29,10 @@ public:
                 getNextBytesAwaitable,
                 (MessageType, const size_t, const std::string, const std::string),
                 (override));
-    MOCK_METHOD(int, popN, (MessageType, int, const std::string), (override));
+    MOCK_METHOD(int, popN, (MessageType, int, const std::string, const std::string), (override));
     MOCK_METHOD(int, push, (Message, bool), (override));
     MOCK_METHOD(int, push, (std::vector<Message>), (override));
-    MOCK_METHOD(bool, isEmpty, (MessageType, const std::string), (override));
+    MOCK_METHOD(bool, isEmpty, (MessageType, const std::string, const std::string), (override));
     MOCK_METHOD(Message, getNext, (MessageType, const std::string, const std::string), (override));
 };
 
@@ -157,7 +157,7 @@ TEST_F(MessageQueueUtilsTest, GetEmptyMessagesFromQueueTest)
 
 TEST_F(MessageQueueUtilsTest, PopMessagesFromQueueTest)
 {
-    EXPECT_CALL(*mockQueue, popN(MessageType::STATEFUL, 1, "")).Times(1);
+    EXPECT_CALL(*mockQueue, popN(MessageType::STATEFUL, 1, "", "")).Times(1);
     PopMessagesFromQueue(mockQueue, MessageType::STATEFUL, 1);
 }
 
@@ -189,7 +189,7 @@ TEST_F(MessageQueueUtilsTest, NoCommandsToPushTest)
 
 TEST_F(MessageQueueUtilsTest, GetCommandFromQueueEmptyTest)
 {
-    EXPECT_CALL(*mockQueue, isEmpty(MessageType::COMMAND, "")).WillOnce(testing::Return(true));
+    EXPECT_CALL(*mockQueue, isEmpty(MessageType::COMMAND, "", "")).WillOnce(testing::Return(true));
 
     ASSERT_EQ(std::nullopt, GetCommandFromQueue(mockQueue));
 }
@@ -198,7 +198,7 @@ TEST_F(MessageQueueUtilsTest, GetCommandFromQueueTest)
 {
     Message testMessage {MessageType::COMMAND, BASE_DATA_CONTENT};
 
-    EXPECT_CALL(*mockQueue, isEmpty(MessageType::COMMAND, "")).WillOnce(testing::Return(false));
+    EXPECT_CALL(*mockQueue, isEmpty(MessageType::COMMAND, "", "")).WillOnce(testing::Return(false));
 
     EXPECT_CALL(*mockQueue, getNext(MessageType::COMMAND, "", "")).WillOnce(testing::Return(testMessage));
 

@@ -202,12 +202,12 @@ std::vector<Message> MultiTypeQueue::getNextBytes(MessageType type,
     return result;
 }
 
-bool MultiTypeQueue::pop(MessageType type, const std::string moduleName)
+bool MultiTypeQueue::pop(MessageType type, const std::string moduleName, const std::string moduleType)
 {
     bool result = false;
     if (m_mapMessageTypeName.contains(type))
     {
-        result = m_persistenceDest->RemoveMultiple(1, m_mapMessageTypeName.at(type), moduleName);
+        result = m_persistenceDest->RemoveMultiple(1, m_mapMessageTypeName.at(type), moduleName, moduleType);
     }
     else
     {
@@ -216,12 +216,16 @@ bool MultiTypeQueue::pop(MessageType type, const std::string moduleName)
     return result;
 }
 
-int MultiTypeQueue::popN(MessageType type, int messageQuantity, const std::string moduleName)
+int MultiTypeQueue::popN(MessageType type,
+                         int messageQuantity,
+                         const std::string moduleName,
+                         const std::string moduleType)
 {
     int result = 0;
     if (m_mapMessageTypeName.contains(type))
     {
-        result = m_persistenceDest->RemoveMultiple(messageQuantity, m_mapMessageTypeName.at(type), moduleName);
+        result =
+            m_persistenceDest->RemoveMultiple(messageQuantity, m_mapMessageTypeName.at(type), moduleName, moduleType);
     }
     else
     {
@@ -230,11 +234,11 @@ int MultiTypeQueue::popN(MessageType type, int messageQuantity, const std::strin
     return result;
 }
 
-bool MultiTypeQueue::isEmpty(MessageType type, const std::string moduleName)
+bool MultiTypeQueue::isEmpty(MessageType type, const std::string moduleName, const std::string moduleType)
 {
     if (m_mapMessageTypeName.contains(type))
     {
-        return m_persistenceDest->GetElementCount(m_mapMessageTypeName.at(type), moduleName) == 0;
+        return m_persistenceDest->GetElementCount(m_mapMessageTypeName.at(type), moduleName, moduleType) == 0;
     }
     else
     {
@@ -243,12 +247,12 @@ bool MultiTypeQueue::isEmpty(MessageType type, const std::string moduleName)
     return false;
 }
 
-bool MultiTypeQueue::isFull(MessageType type, const std::string moduleName)
+bool MultiTypeQueue::isFull(MessageType type, const std::string moduleName, const std::string moduleType)
 {
     if (m_mapMessageTypeName.contains(type))
     {
-        return static_cast<size_t>(m_persistenceDest->GetElementCount(m_mapMessageTypeName.at(type), moduleName)) ==
-               m_maxItems;
+        return static_cast<size_t>(m_persistenceDest->GetElementCount(
+                   m_mapMessageTypeName.at(type), moduleName, moduleType)) == m_maxItems;
     }
     else
     {
@@ -257,11 +261,11 @@ bool MultiTypeQueue::isFull(MessageType type, const std::string moduleName)
     return false;
 }
 
-int MultiTypeQueue::storedItems(MessageType type, const std::string moduleName)
+int MultiTypeQueue::storedItems(MessageType type, const std::string moduleName, const std::string moduleType)
 {
     if (m_mapMessageTypeName.contains(type))
     {
-        return m_persistenceDest->GetElementCount(m_mapMessageTypeName.at(type), moduleName);
+        return m_persistenceDest->GetElementCount(m_mapMessageTypeName.at(type), moduleName, moduleType);
     }
     else
     {
