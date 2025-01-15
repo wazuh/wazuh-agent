@@ -6,7 +6,8 @@
 #include "winevt_wrapper_win.hpp"
 #include "logcollector.hpp"
 
-using namespace logcollector;
+namespace logcollector::winevt
+{
 
 class MockWinAPIWrapper : public IWinAPIWrapper
 {
@@ -60,3 +61,5 @@ public:
         Logcollector::Stop();
     }
 };
+
+}

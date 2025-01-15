@@ -13,17 +13,11 @@ system API.
 ```yaml
 logcollector:
   enabled: true
-  channel_refresh: 5s
   file:
     - location: /var/log/*.log
-      age: 1d
-      delim-regex: "\n"
-      use-bookmark: true
   windows:
     - channel: Application
       query: Event[System/EventID = 4624]
-    - channel: System
-      query: Event[System/EventID = 7040]
   journald:
     - filter:
       - field: "_SYSTEMD_UNIT"

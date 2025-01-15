@@ -13,7 +13,7 @@ namespace logcollector
 
 void Logcollector::AddPlatformSpecificReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
 {
-    const auto refreshInterval = configurationParser->GetConfig<time_t>("logcollector", "channel_refresh").value_or(config::logcollector::CHANNEL_REFRESH_INTERVAL);
+    const auto refreshInterval = configurationParser->GetConfig<time_t>("logcollector", "channel_refresh").value_or(config::logcollector::DEFAULT_CHANNEL_REFRESH_INTERVAL);
 
     const auto windowsConfig = configurationParser->GetConfig<std::vector<std::map<std::string, std::string>>>("logcollector", "windows").value_or(
         std::vector<std::map<std::string, std::string>> {});
@@ -22,7 +22,7 @@ void Logcollector::AddPlatformSpecificReader(std::shared_ptr<const configuration
     {
         const auto channel = entry.at("channel");
         const auto query = entry.at("query");
-        AddReader(std::make_shared<WindowsEventTracerReader>(*this, channel, query, refreshInterval));
+        AddReader(std::make_shared<winevt::WindowsEventTracerReader>(*this, channel, query, refreshInterval));
     }
 }
 

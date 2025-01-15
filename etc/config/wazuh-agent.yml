@@ -24,9 +24,3 @@ logcollector:
     - /var/log/auth.log
   reload_interval: 1m
   file_wait: 500ms
-  channel_refresh: 5s
-  windows:
-    - channel: Application
-      query: Event[System/EventID = 4624]
-    - channel: System
-      query: Event[System/EventID = 7040]

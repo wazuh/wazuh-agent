@@ -6,7 +6,7 @@
 #include <logger.hpp>
 #include <logcollector.hpp>
 
-namespace logcollector
+namespace logcollector::winevt
 {
 
 WindowsEventTracerReader::WindowsEventTracerReader(Logcollector &logcollector,
@@ -18,7 +18,7 @@ WindowsEventTracerReader::WindowsEventTracerReader(Logcollector &logcollector,
     m_channel(channel),
     m_query(query),
     m_ChannelsRefreshInterval(channelRefreshInterval),
-    m_winAPI(winAPI ? winAPI : std::make_shared<DefaultWinAPIWrapper>()) { }
+    m_winAPI(winAPI ? winAPI : std::make_shared<DefaultWinAPIWrapper>()){ }
 
 Awaitable WindowsEventTracerReader::Run()
 {

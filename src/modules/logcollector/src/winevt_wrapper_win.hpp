@@ -6,7 +6,8 @@
 #include <winevt.h>
 
 
-namespace logcollector {
+namespace logcollector::winevt
+{
 
 class IWinAPIWrapper
 {

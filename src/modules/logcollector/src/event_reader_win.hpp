@@ -14,7 +14,8 @@
 
 #pragma comment(lib, "wevtapi.lib")
 
-namespace logcollector {
+namespace logcollector::winevt
+{
 
 /// @brief Windows Event Tracer Reader class
 class WindowsEventTracerReader : public IReader
@@ -61,10 +62,11 @@ private:
     /// @brief channel query refresh interval in millisecconds.
     std::time_t m_ChannelsRefreshInterval;
 
-    /// @brief TODO
+    /// @brief winevt wrapper for overriding while testing.
     std::shared_ptr<IWinAPIWrapper> m_winAPI;
 
     /// @brief collector type.
     const std::string m_collectorType = "eventchannel";
 };
-} // namespace logcollector
+
+} // namespace logcollector::winevt

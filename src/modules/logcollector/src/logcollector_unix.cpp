@@ -1,8 +1,4 @@
 #include <config.h>
-#include <timeHelper.h>
-
-#include <chrono>
-#include <map>
 
 #include <logcollector.hpp>
 

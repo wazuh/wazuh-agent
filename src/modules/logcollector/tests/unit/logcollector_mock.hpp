@@ -4,7 +4,8 @@
 #include <logcollector.hpp>
 #include <reader.hpp>
 
-using namespace logcollector;
+namespace logcollector
+{
 
 class LogcollectorMock : public Logcollector {
 public:
@@ -28,3 +29,5 @@ class PushMessageMock {
 public:
     MOCK_METHOD(int, Call, (Message), ());
 };
+
+}

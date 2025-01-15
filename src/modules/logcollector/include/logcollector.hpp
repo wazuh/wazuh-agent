@@ -73,7 +73,6 @@ public:
 
     /// @brief Add platform specific implementation of IReader to logcollector.
     /// @param ConfgurationParser where to get parameters.
-    /// @param logcollector instance.
     void AddPlatformSpecificReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
 
 protected:

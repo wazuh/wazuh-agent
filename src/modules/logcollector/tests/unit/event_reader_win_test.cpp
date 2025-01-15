@@ -12,6 +12,7 @@
 #include <boost/asio/detached.hpp>
 
 using namespace testing;
+using namespace logcollector::winevt;
 
 class WindowsEventChannel : public ::testing::Test
 {
@@ -52,8 +53,8 @@ TEST_F(WindowsEventChannel, AddReader)
           query: Event[System/EventID = 7040]
     )";
 
-    std::shared_ptr<IReader> capturedReader1;
-    std::shared_ptr<IReader> capturedReader2;
+    std::shared_ptr<logcollector::IReader> capturedReader1;
+    std::shared_ptr<logcollector::IReader> capturedReader2;
     auto mockedLogcollector = LogcollectorMock();
     auto config = std::make_shared<configuration::ConfigurationParser>(std::string(CONFIG_RAW));
 
