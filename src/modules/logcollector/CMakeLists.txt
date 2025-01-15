@@ -13,15 +13,23 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 get_filename_component(SRC_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
 get_filename_component(COMMON_FOLDER ${SRC_FOLDER}/common/ ABSOLUTE)
 
+if(APPLE)
+    find_package(fmt REQUIRED)
+    add_subdirectory(oslogstore_wrapper)
+endif()
 find_package(cJSON CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio system)
 
 if(WIN32)
-    FILE(GLOB EXCLUDED_SOURCES src/*_unix.cpp)
-else()
+    FILE(GLOB EXCLUDED_SOURCES src/*_unix.cpp src/*_osx.cpp)
+    list(APPEND EXCLUDED_SOURCES src/uls_reader.cpp)
+elseif(APPLE)
     FILE(GLOB EXCLUDED_SOURCES src/*_win.cpp)
+else()
+    FILE(GLOB EXCLUDED_SOURCES src/*_win.cpp src/*_osx.cpp)
+    list(APPEND EXCLUDED_SOURCES src/uls_reader.cpp)
 endif()
 
 FILE(GLOB LOGCOLLECTOR_SOURCES src/*.cpp)
@@ -46,6 +54,8 @@ target_link_libraries(Logcollector
     Boost::system
     nlohmann_json::nlohmann_json
     PRIVATE
+    $<$<STREQUAL:$<PLATFORM_ID>,Darwin>:OSLogStoreWrapper>
+    $<$<STREQUAL:$<PLATFORM_ID>,Darwin>:fmt::fmt>
     Logger
     pal
 )
