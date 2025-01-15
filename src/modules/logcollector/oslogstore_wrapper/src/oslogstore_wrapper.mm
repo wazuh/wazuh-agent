@@ -59,7 +59,8 @@ OSLogStoreWrapper::AllEntries(const double startTimeSeconds, const std::string& 
                         NSString* baseDate = [logEntry.date description];
                         const char* rawDate = [baseDate UTF8String];
                         const char* rawMsg = logEntry.composedMessage ? [logEntry.composedMessage UTF8String] : "";
-                        entries.emplace_back(timeInterval, rawDate, rawMsg);
+                        entries.push_back(
+                            LogEntry {static_cast<double>(timeInterval), std::string(rawDate), std::string(rawMsg)});
                     }
                 }
             }
