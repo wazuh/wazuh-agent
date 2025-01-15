@@ -13,6 +13,7 @@ system API.
 ```yaml
 logcollector:
   enabled: true
+  channel_refresh: 5s
   file:
     - location: /var/log/*.log
       age: 1d
@@ -21,8 +22,8 @@ logcollector:
   windows:
     - channel: Application
       query: Event[System/EventID = 4624]
-      use-bookmark: true
-      reconnect-time: 5s
+    - channel: System
+      query: Event[System/EventID = 7040]
   journald:
     - filter:
       - field: "_SYSTEMD_UNIT"
