@@ -48,7 +48,7 @@ public:
     /// @param log Message to send
     /// @param collectorType type of logcollector
     /// @pre The message queue must be set with SetMessageQueue
-    void SendMessage(const std::string& location, const std::string& log, const std::string& collectorType);
+    virtual void SendMessage(const std::string& location, const std::string& log, const std::string& collectorType);
 
     /// @brief Enqueues an ASIO task (coroutine)
     /// @param task Task to enqueue
@@ -70,6 +70,11 @@ public:
         static Logcollector s_instance;
         return s_instance;
     }
+
+    /// @brief Add platform specific implementation of IReader to logcollector.
+    /// @param ConfgurationParser where to get parameters.
+    /// @param logcollector instance.
+    void AddPlatformSpecificReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
 
 protected:
     /// @brief Constructor
@@ -110,10 +115,5 @@ private:
     /// @brief List of steady timers
     std::list<boost::asio::steady_timer*> m_timers;
 };
-
-/// @brief Add platform specific implementation of IReader to logcollector.
-/// @param ConfgurationParser where to get parameters.
-/// @param logcollector instance.
-void AddPlatformSpecificReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser, Logcollector &logcollector);
 
 }

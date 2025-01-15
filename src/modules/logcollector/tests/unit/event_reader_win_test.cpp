@@ -4,7 +4,6 @@
 #include <event_reader_win.hpp>
 #include <logcollector.hpp>
 #include "event_reader_mocks.hpp"
-#include "logcollector_mock.hpp"
 
 #include <sstream>
 #include <spdlog/spdlog.h>
@@ -62,7 +61,7 @@ TEST_F(WindowsEventChannel, AddReader)
         .WillOnce(SaveArg<0>(&capturedReader1))
         .WillOnce(SaveArg<0>(&capturedReader2));
 
-    AddPlatformSpecificReader(config, mockedLogcollector);
+    mockedLogcollector.AddPlatformSpecificReader(config);
 
     ASSERT_NE(capturedReader1, nullptr);
     ASSERT_NE(capturedReader2, nullptr);
@@ -119,20 +118,16 @@ TEST_F(WindowsEventChannel, RunMethodSuccessfulSubscription)
     EXPECT_NO_THROW(ioContext.run());
 }
 
-TEST_F(WindowsEventChannel, ProcessEvent_SendsMessage)
+TEST_F(WindowsEventChannel, ProcessEventSendsMessage)
 {
-    //TODO:
-    GTEST_SKIP();
-    // Arrange: Create mocks
     auto mockedWinAPI = std::make_shared<MockWinAPIWrapper>();
     auto mockedLogcollector = LogcollectorMock();
 
     auto reader = std::make_shared<WindowsEventTracerReader>(
         mockedLogcollector, channelName, query, defaultChannelRefresh, mockedWinAPI);
 
-    // Mock EvtRender to return a fake event XML string
     std::wstring fakeEventXml = L"<Event><Message>Test Log</Message></Event>";
-    DWORD fakeBufferUsed = static_cast<DWORD>((fakeEventXml.size() + 1) * sizeof(wchar_t)); // Include null terminator
+    DWORD fakeBufferUsed = static_cast<DWORD>((fakeEventXml.size() + 1) * sizeof(wchar_t));
 
     EXPECT_CALL(*mockedWinAPI, EvtRender(_, _, EvtRenderEventXml, 0, nullptr, _, _))
         .WillOnce(DoAll(SetArgPointee<5>(fakeBufferUsed), Return(TRUE)));
@@ -143,11 +138,9 @@ TEST_F(WindowsEventChannel, ProcessEvent_SendsMessage)
                       }),
                       Return(TRUE)));
 
-    // Expect the SendMessage method to be called with the processed log
-    // EXPECT_CALL(*mockedLogcollector, SendMessage(channelName, "Test Log", _))
-    //     .Times(1);
+    EXPECT_CALL(mockedLogcollector, SendMessage(channelName, "<Event><Message>Test Log</Message></Event>", collectorType))
+        .Times(1);
 
-    // Act: Simulate an event
     EVT_HANDLE mockEventHandle = reinterpret_cast<EVT_HANDLE>(2);
     reader->ProcessEvent(mockEventHandle);
 }
