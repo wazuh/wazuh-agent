@@ -97,7 +97,13 @@ void Logcollector::SetPushMessageFunction(const std::function<int(Message)>& pus
     m_pushMessage = pushMessage;
 }
 
-void Logcollector::SendMessage(const std::string& location, const std::string& log, const std::string& collectorType) {
+void Logcollector::SendMessage(const std::string& location, const std::string& log, const std::string& collectorType)
+{
+    if (!m_pushMessage)
+    {
+        throw std::runtime_error("Message queue not set, cannot send message.");
+    }
+
     auto metadata = nlohmann::json::object();
     auto data = nlohmann::json::object();
 
