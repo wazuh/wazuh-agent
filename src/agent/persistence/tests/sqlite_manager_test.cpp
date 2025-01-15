@@ -143,19 +143,6 @@ TEST_F(SQLiteManagerTest, GetSizeTest)
     EXPECT_EQ(size, 20);
 }
 
-static void DumpResults(std::vector<Row>& ret)
-{
-    std::cout << "---------- " << ret.size() << " rows returned. ----------" << '\n';
-    for (const auto& row : ret)
-    {
-        for (const auto& field : row)
-        {
-            std::cout << "[" << field.Name << ": " << field.Value << "]";
-        }
-        std::cout << '\n';
-    }
-}
-
 TEST_F(SQLiteManagerTest, SelectTest)
 {
     AddTestData();
@@ -165,7 +152,6 @@ TEST_F(SQLiteManagerTest, SelectTest)
     // all fields, no selection criteria
     std::vector<Row> ret = m_db->Select(m_tableName, cols);
 
-    DumpResults(ret);
     EXPECT_NE(ret.size(), 0);
 
     // all fields with default selection criteria
@@ -174,7 +160,6 @@ TEST_F(SQLiteManagerTest, SelectTest)
         cols,
         {ColumnValue("Name", ColumnType::TEXT, "MyTestName"), ColumnValue("Status", ColumnType::TEXT, "MyTestValue")});
 
-    DumpResults(ret);
     EXPECT_NE(ret.size(), 0);
 
     // all fields with 'OR' selection criteria
@@ -184,7 +169,6 @@ TEST_F(SQLiteManagerTest, SelectTest)
         {ColumnValue("Name", ColumnType::TEXT, "MyTestName"), ColumnValue("Module", ColumnType::TEXT, "ItemModule5")},
         LogicalOperator::OR);
 
-    DumpResults(ret);
     EXPECT_EQ(ret.size(), 2);
 
     // only Name field no selection criteria
@@ -193,7 +177,6 @@ TEST_F(SQLiteManagerTest, SelectTest)
     ret.clear();
     ret = m_db->Select(m_tableName, cols);
 
-    DumpResults(ret);
     EXPECT_NE(ret.size(), 0);
 
     // only Name field with default selection criteria
@@ -205,7 +188,6 @@ TEST_F(SQLiteManagerTest, SelectTest)
         cols,
         {ColumnValue("Name", ColumnType::TEXT, "MyTestName"), ColumnValue("Status", ColumnType::TEXT, "MyTestValue")});
 
-    DumpResults(ret);
     EXPECT_NE(ret.size(), 0);
 
     // only Name field with single selection criteria
@@ -214,7 +196,6 @@ TEST_F(SQLiteManagerTest, SelectTest)
     ret.clear();
     ret = m_db->Select(m_tableName, cols, {ColumnValue("Amount", ColumnType::REAL, "3.5")});
 
-    DumpResults(ret);
     EXPECT_EQ(ret.size(), 1);
 
     // only Name and Amount fields with single selection criteria
@@ -224,7 +205,6 @@ TEST_F(SQLiteManagerTest, SelectTest)
     ret.clear();
     ret = m_db->Select(m_tableName, cols, {ColumnValue("Amount", ColumnType::REAL, "2.8")});
 
-    DumpResults(ret);
     EXPECT_EQ(ret.size(), 1);
 
     // only Name field with ordered criteria
@@ -234,7 +214,6 @@ TEST_F(SQLiteManagerTest, SelectTest)
     ret = m_db->Select(
         m_tableName, cols, {}, LogicalOperator::AND, {ColumnName("Name", ColumnType::TEXT)}, OrderType::DESC);
 
-    DumpResults(ret);
     EXPECT_EQ(ret.size(), 6);
     EXPECT_EQ(ret[0][0].Value, "MyTestName");
     EXPECT_EQ(ret[1][0].Value, "ItemName5");
@@ -255,7 +234,6 @@ TEST_F(SQLiteManagerTest, SelectTest)
                        {ColumnName("Amount", ColumnType::REAL)},
                        OrderType::DESC);
 
-    DumpResults(ret);
     EXPECT_EQ(ret.size(), 2);
     EXPECT_EQ(ret[0][0].Value, "ItemName5");
     EXPECT_EQ(ret[0][1].Value, "3.5");
@@ -268,7 +246,6 @@ TEST_F(SQLiteManagerTest, SelectTest)
     ret.clear();
     ret = m_db->Select(m_tableName, cols, {}, LogicalOperator::AND, {}, OrderType::ASC, 3);
 
-    DumpResults(ret);
     EXPECT_EQ(ret.size(), 3);
 
     // only Name ans Amount fields with selection criteria and limit criteria
@@ -283,7 +260,6 @@ TEST_F(SQLiteManagerTest, SelectTest)
                        OrderType::ASC,
                        1);
 
-    DumpResults(ret);
     EXPECT_EQ(ret.size(), 1);
 
     // only Name ans Amount fields with selection criteria, ordered criteria and limit criteria
@@ -299,7 +275,6 @@ TEST_F(SQLiteManagerTest, SelectTest)
                        OrderType::DESC,
                        1);
 
-    DumpResults(ret);
     EXPECT_EQ(ret.size(), 1);
     EXPECT_EQ(ret[0][0].Value, "ItemName5");
     EXPECT_EQ(ret[0][1].Value, "3.5");
@@ -333,7 +308,6 @@ TEST_F(SQLiteManagerTest, UpdateTest)
                                  {ColumnValue("Name", ColumnType::TEXT, "MyTestName")}));
 
     auto ret = m_db->Select(m_tableName, {}, {ColumnValue("Name", ColumnType::TEXT, "Updated name")});
-    DumpResults(ret);
     EXPECT_EQ(ret.size(), 1);
 
     EXPECT_NO_THROW(m_db->Update(m_tableName,
@@ -343,7 +317,6 @@ TEST_F(SQLiteManagerTest, UpdateTest)
                                   ColumnValue("Status", ColumnType::TEXT, "Updated status")}));
 
     ret = m_db->Select(m_tableName, {}, {ColumnValue("Name", ColumnType::TEXT, "Updated name2")});
-    DumpResults(ret);
     EXPECT_EQ(ret.size(), 1);
 
     EXPECT_NO_THROW(m_db->Update(m_tableName,
@@ -354,7 +327,6 @@ TEST_F(SQLiteManagerTest, UpdateTest)
                                  LogicalOperator::OR));
 
     ret = m_db->Select(m_tableName, {}, {});
-    DumpResults(ret);
 
     EXPECT_NO_THROW(m_db->Update(m_tableName,
                                  {ColumnValue("Amount", ColumnType::REAL, "2.0")},
@@ -362,12 +334,10 @@ TEST_F(SQLiteManagerTest, UpdateTest)
                                  LogicalOperator::OR));
 
     ret = m_db->Select(m_tableName, {}, {});
-    DumpResults(ret);
 
     EXPECT_NO_THROW(m_db->Update(m_tableName, {ColumnValue("Amount", ColumnType::REAL, "2.0")}, {}));
 
     ret = m_db->Select(m_tableName, {}, {});
-    DumpResults(ret);
 }
 
 TEST_F(SQLiteManagerTest, TransactionTest)
