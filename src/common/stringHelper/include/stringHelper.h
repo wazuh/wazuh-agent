@@ -122,7 +122,7 @@ namespace Utils
         {
             return str.substr(0, pos + 1);
         }
-        
+
         return "";
     }
 
@@ -246,7 +246,7 @@ namespace Utils
         std::transform(std::begin(temp),
                        std::end(temp),
                        std::begin(temp),
-                       [](std::string::value_type character) { return std::toupper(character); });
+                       [](std::string::value_type character) { return static_cast<char>(std::toupper(character)); });
         return temp;
     }
 
@@ -256,7 +256,7 @@ namespace Utils
         std::transform(std::begin(temp),
                        std::end(temp),
                        std::begin(temp),
-                       [](std::string::value_type character) { return std::tolower(character); });
+                       [](std::string::value_type character) { return static_cast<char>(std::tolower(character)); });
         return temp;
     }
 
