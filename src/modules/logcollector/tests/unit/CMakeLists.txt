@@ -2,6 +2,12 @@ find_package(GTest CONFIG REQUIRED)
 
 FILE(GLOB LOGCOLLECTOR_TEST_SOURCES *_test.cpp)
 
+if(WIN32 OR APPLE)
+    FILE(GLOB EXCLUDED_SOURCES journal*.cpp)
+endif()
+
+list(REMOVE_ITEM LOGCOLLECTOR_TEST_SOURCES ${EXCLUDED_SOURCES})
+
 add_executable(logcollector_unit_tests ${LOGCOLLECTOR_TEST_SOURCES})
 configure_target(logcollector_unit_tests)
 
@@ -14,6 +20,7 @@ target_link_libraries(logcollector_unit_tests PRIVATE
 	MultiTypeQueue
 	ConfigurationParser
 	Logger
+	$<$<PLATFORM_ID:Linux>:systemd>
 	GTest::gtest
 	GTest::gtest_main
 	GTest::gmock

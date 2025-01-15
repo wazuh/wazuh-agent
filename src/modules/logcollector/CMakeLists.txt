@@ -19,13 +19,11 @@ find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio system)
 
 if(WIN32)
-    FILE(GLOB EXCLUDED_SOURCES src/*_unix.cpp)
+    FILE(GLOB EXCLUDED_SOURCES src/*_unix.cpp src/*_osx.cpp src/journal*.cpp)
+elseif(APPLE)
+    FILE(GLOB EXCLUDED_SOURCES src/*_win.cpp src/journal*.cpp)
 else()
-    FILE(GLOB EXCLUDED_SOURCES src/*_win.cpp)
-endif()
-
-if (NOT UNIX OR APPLE)
-    FILE(GLOB EXCLUDED_SOURCES src/journal*.cpp)
+    FILE(GLOB EXCLUDED_SOURCES src/*_win.cpp src/*_osx.cpp)
 endif()
 
 FILE(GLOB LOGCOLLECTOR_SOURCES src/*.cpp)
