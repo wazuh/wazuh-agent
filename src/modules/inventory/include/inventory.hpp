@@ -85,6 +85,11 @@ class Inventory {
         std::string GetPrimaryKeys(const nlohmann::json& data, const std::string& table);
         std::string CalculateHashId(const nlohmann::json& data, const std::string& table);
 
+        void WriteMetadata(const std::string &key, const std::string &value);
+        std::string ReadMetadata(const std::string &key);
+        void DeleteMetadata(const std::string &key);
+        void CleanMetadata();
+
         const std::string                           m_moduleName {"inventory"};
         std::string                                 m_agentUUID {""};   // Agent UUID
         std::shared_ptr<ISysInfo>                   m_spInfo;
@@ -109,4 +114,11 @@ class Inventory {
         std::unique_ptr<InvNormalizer>              m_spNormalizer;
         std::string                                 m_scanTime;
         std::function<int(Message)>                 m_pushMessage;
+        bool                                        m_hardwareFirstScan;  // Hardware first scan flag
+        bool                                        m_systemFirstScan;    // System first scan flag
+        bool                                        m_networksFirstScan;  // Networks first scan flag
+        bool                                        m_packagesFirstScan;  // Installed packages first scan flag
+        bool                                        m_portsFirstScan;     // Opened ports first scan flag
+        bool                                        m_processesFirstScan; // Running processes first scan flag
+        bool                                        m_hotfixesFirstScan;  // Windows hotfixes installed first scan flag
 };

@@ -11,13 +11,14 @@ void Inventory::Start() {
 
     if (!m_enabled) {
         LogInfo("Inventory module is disabled.");
+        CleanMetadata();
         return;
     }
 
-    if(m_enabled){
-        LogInfo("Inventory module started.");
-        ShowConfig();
-    }
+    LogInfo("Inventory module started.");
+
+    ShowConfig();
+
     DBSync::initialize(LogErrorInventory);
 
     try
@@ -33,9 +34,7 @@ void Inventory::Start() {
         LogErrorInventory(ex.what());
     }
 
-    if(m_enabled){
-        LogInfo("Inventory module stopped.");
-    }
+    LogInfo("Inventory module stopped.");
 }
 
 void Inventory::Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {

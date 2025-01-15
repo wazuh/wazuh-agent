@@ -183,7 +183,17 @@ constexpr auto PORTS_TABLE        { "ports"     };
 constexpr auto PROCESSES_TABLE    { "processes" };
 constexpr auto OS_TABLE           { "system"    };
 constexpr auto HW_TABLE           { "hardware"  };
+constexpr auto MD_TABLE           { "metadata"  };
 
+const std::unordered_map<std::string, std::string> TABLE_TO_KEY_MAP = {
+    {NETWORKS_TABLE,    "networks-first-scan"},
+    {PACKAGES_TABLE,    "packages-first-scan"},
+    {HOTFIXES_TABLE,    "hotfixes-first-scan"},
+    {PORTS_TABLE,       "ports-first-scan"},
+    {PROCESSES_TABLE,   "processes-first-scan"},
+    {OS_TABLE,          "system-first-scan"},
+    {HW_TABLE,          "hardware-first-scan"}
+};
 
 static std::string GetItemId(const nlohmann::json& item, const std::vector<std::string>& idFields)
 {
@@ -443,6 +453,13 @@ Inventory::Inventory()
     , m_hotfixes { true }
     , m_stopping { true }
     , m_notify { true }
+    , m_hardwareFirstScan { true }
+    , m_systemFirstScan { true }
+    , m_networksFirstScan { true }
+    , m_packagesFirstScan { true }
+    , m_portsFirstScan { true }
+    , m_processesFirstScan { true }
+    , m_hotfixesFirstScan { true }
 {}
 
 std::string Inventory::GetCreateStatement() const
@@ -480,70 +497,57 @@ void Inventory::Init(const std::shared_ptr<ISysInfo>& spInfo,
         m_spNormalizer = std::make_unique<InvNormalizer>(normalizerConfigPath, normalizerType);
     }
 
-   m_hardwareFirstScan  = ReadMetadata(hardwareFirstScanKey ).empty()? false:true;
-   m_systemFirstScan    = ReadMetadata(systemFirstScanKey   ).empty()? false:true;
-   m_networksFirstScan  = ReadMetadata(networksFirstScanKey ).empty()? false:true;
-   m_packagesFirstScan  = ReadMetadata(packagesFirstScanKey ).empty()? false:true;
-   m_portsFirstScan     = ReadMetadata(portsFirstScanKey    ).empty()? false:true;
-   m_portsAllFirstScan  = ReadMetadata(portsAllFirstScanKey ).empty()? false:true;
-   m_processesFirstScan = ReadMetadata(processesFirstScanKey).empty()? false:true;
-   m_hotfixesFirstScan  = ReadMetadata(hotfixesFirstScanKey ).empty()? false:true;
+   m_hardwareFirstScan  = ReadMetadata(TABLE_TO_KEY_MAP.at(HW_TABLE)).empty() ? false:true;
+   m_systemFirstScan    = ReadMetadata(TABLE_TO_KEY_MAP.at(OS_TABLE)).empty() ? false:true;
+   m_networksFirstScan  = ReadMetadata(TABLE_TO_KEY_MAP.at(NETWORKS_TABLE)).empty() ? false:true;
+   m_packagesFirstScan  = ReadMetadata(TABLE_TO_KEY_MAP.at(PACKAGES_TABLE)).empty() ? false:true;
+   m_portsFirstScan     = ReadMetadata(TABLE_TO_KEY_MAP.at(PORTS_TABLE)).empty() ? false:true;
+   m_processesFirstScan = ReadMetadata(TABLE_TO_KEY_MAP.at(PROCESSES_TABLE)).empty() ? false:true;
+   m_hotfixesFirstScan  = ReadMetadata(TABLE_TO_KEY_MAP.at(HOTFIXES_TABLE)).empty() ? false:true;
 
-   if(m_hardwareFirstScan && (!m_hardware || !m_enabled))
+   if(m_hardwareFirstScan && !m_hardware)
    {
-       DeleteMetadata(hardwareFirstScanKey);
+       DeleteMetadata(TABLE_TO_KEY_MAP.at(HW_TABLE));
        m_hardwareFirstScan = false;
    }
 
-   if(m_systemFirstScan && (!m_system || !m_enabled))
+   if(m_systemFirstScan && !m_system)
    {
-       DeleteMetadata(systemFirstScanKey);
+       DeleteMetadata(TABLE_TO_KEY_MAP.at(OS_TABLE));
        m_systemFirstScan = false;
    }
 
-   if(m_networksFirstScan && (!m_networks || !m_enabled))
+   if(m_networksFirstScan && !m_networks)
    {
-       DeleteMetadata(networksFirstScanKey);
+       DeleteMetadata(TABLE_TO_KEY_MAP.at(NETWORKS_TABLE));
        m_networksFirstScan = false;
-
    }
 
-   if(m_packagesFirstScan && (!m_packages || !m_enabled))
+   if(m_packagesFirstScan && !m_packages)
    {
-       DeleteMetadata(packagesFirstScanKey);
+       DeleteMetadata(TABLE_TO_KEY_MAP.at(PACKAGES_TABLE));
        m_packagesFirstScan = false;
    }
 
-   if(m_portsFirstScan && (!m_ports || !m_enabled))
+   if(m_portsFirstScan && !m_ports)
    {
-       DeleteMetadata(portsFirstScanKey);
+       DeleteMetadata(TABLE_TO_KEY_MAP.at(PORTS_TABLE));
        m_portsFirstScan = false;
    }
 
-   if(m_portsAllFirstScan && (!m_portsAll || !m_enabled))
+   if(m_processesFirstScan && !m_processes)
    {
-       DeleteMetadata(portsAllFirstScanKey);
-       m_portsAllFirstScan = false;
-   }
-   if(m_processesFirstScan && (!m_processes || !m_enabled))
-   {
-       DeleteMetadata(processesFirstScanKey);
+       DeleteMetadata(TABLE_TO_KEY_MAP.at(PROCESSES_TABLE));
        m_processesFirstScan = false;
    }
 
-   if(m_hotfixesFirstScan && (!m_hotfixes || !m_enabled))
+   if(m_hotfixesFirstScan && !m_hotfixes)
    {
-       DeleteMetadata(hotfixesFirstScanKey);
+       DeleteMetadata(TABLE_TO_KEY_MAP.at(HOTFIXES_TABLE));
        m_hotfixesFirstScan = false;
    }
 
-    if(m_enabled)
-        SyncLoop();
-    else{
-        Destroy();
-        std::unique_lock<std::mutex> lock{m_mutex};
-        m_spDBSync.reset(nullptr);
-    }
+    SyncLoop();
 }
 
 void Inventory::Destroy()
@@ -821,7 +825,7 @@ void Inventory::ScanHardware()
         LogTrace( "Ending hardware scan");
 
         if(!m_hardwareFirstScan){
-            WriteMetadata(hardwareFirstScanKey, Utils::getCurrentISO8601());
+            WriteMetadata(TABLE_TO_KEY_MAP.at(HW_TABLE), Utils::getCurrentISO8601());
             m_hardwareFirstScan = true;
         }
     }
@@ -844,7 +848,7 @@ void Inventory::ScanOs()
         LogTrace( "Ending os scan");
 
         if(!m_systemFirstScan){
-            WriteMetadata(systemFirstScanKey, Utils::getCurrentISO8601());
+            WriteMetadata(TABLE_TO_KEY_MAP.at(OS_TABLE), Utils::getCurrentISO8601());
             m_systemFirstScan = true;
         }
     }
@@ -947,7 +951,7 @@ void Inventory::ScanNetwork()
         }
 
         if(!m_networksFirstScan){
-            WriteMetadata(networksFirstScanKey, Utils::getCurrentISO8601());
+            WriteMetadata(TABLE_TO_KEY_MAP.at(NETWORKS_TABLE), Utils::getCurrentISO8601());
             m_networksFirstScan = true;
         }
 
@@ -995,7 +999,7 @@ void Inventory::ScanPackages()
         txn.getDeletedRows(callback);
 
         if(!m_packagesFirstScan){
-            WriteMetadata(packagesFirstScanKey, Utils::getCurrentISO8601());
+            WriteMetadata(TABLE_TO_KEY_MAP.at(PACKAGES_TABLE), Utils::getCurrentISO8601());
             m_packagesFirstScan = true;
         }
 
@@ -1016,7 +1020,7 @@ void Inventory::ScanHotfixes()
         }
 
         if(!m_hotfixesFirstScan){
-           WriteMetadata(hotfixesFirstScanKey, Utils::getCurrentISO8601());
+           WriteMetadata(TABLE_TO_KEY_MAP.at(HOTFIXES_TABLE), Utils::getCurrentISO8601());
            m_hotfixesFirstScan = true;
         }
 
@@ -1094,7 +1098,7 @@ void Inventory::ScanPorts()
         LogTrace( "Ending ports scan");
 
         if(!m_portsFirstScan){
-           WriteMetadata(portsFirstScanKey, Utils::getCurrentISO8601());
+           WriteMetadata(TABLE_TO_KEY_MAP.at(PORTS_TABLE), Utils::getCurrentISO8601());
            m_portsFirstScan = true;
         }
     }
@@ -1134,7 +1138,7 @@ void Inventory::ScanProcesses()
         txn.getDeletedRows(callback);
 
         if(!m_processesFirstScan){
-           WriteMetadata(processesFirstScanKey, Utils::getCurrentISO8601());
+           WriteMetadata(TABLE_TO_KEY_MAP.at(PROCESSES_TABLE), Utils::getCurrentISO8601());
            m_processesFirstScan = true;
         }
 
@@ -1179,4 +1183,75 @@ void Inventory::SyncLoop()
     }
     std::unique_lock<std::mutex> lock{m_mutex};
     m_spDBSync.reset(nullptr);
+}
+
+void Inventory::WriteMetadata(const std::string &key, const std::string &value){
+    auto insertQuery
+    {
+        InsertQuery::builder()
+        .table(MD_TABLE)
+        .data({{"key", key}, {"value", value}})
+        .build()
+    };
+    m_spDBSync->insertData(insertQuery.query());
+}
+
+std::string Inventory::ReadMetadata(const std::string &key) {
+    std::string result;
+    std::string filter = "WHERE key = '" + key + "'";
+    auto selectQuery = SelectQuery::builder()
+        .table("metadata")
+        .columnList({"key", "value"})
+        .rowFilter(filter)
+        .build();
+
+    auto callback = [&result](ReturnTypeCallback returnTypeCallback, const nlohmann::json& resultData) {
+        (void)returnTypeCallback;
+        if (resultData.is_object() && resultData.contains("key") && resultData.contains("value")) {
+            result = resultData["value"];
+        }
+    };
+
+    m_spDBSync->selectRows(selectQuery.query(), callback);
+
+    return result;
+}
+
+void Inventory::DeleteMetadata(const std::string &key){
+    auto deleteQuery
+    {
+        DeleteQuery::builder()
+        .table("metadata")
+        .data({{"key", key}})
+        .rowFilter("")
+        .build()
+    };
+    m_spDBSync->deleteRows(deleteQuery.query());
+}
+
+void Inventory::CleanMetadata()
+{
+    DBSync::initialize(LogErrorInventory);
+
+    try
+    {
+        {
+            std::unique_lock<std::mutex> lock{m_mutex};
+            m_spDBSync = std::make_unique<DBSync>(HostType::AGENT,
+                                                    DbEngineType::SQLITE3,
+                                                    m_dbFilePath,
+                                                    METADATA_SQL_STATEMENT,
+                                                    DbManagement::PERSISTENT);
+            for (const auto& key : TABLE_TO_KEY_MAP) {
+                if(!ReadMetadata(key.second).empty()){
+                    DeleteMetadata(key.second);
+                }
+            }
+            m_spDBSync.reset();
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        LogErrorInventory(ex.what());
+    }
 }
