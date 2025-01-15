@@ -11,7 +11,7 @@
          </array>
 
         <key>WorkingDirectory</key>
-        <string>WAZUH_HOME/directory</string>
+        <string>WAZUH_HOME</string>
 
         <key>StandardOutPath</key>
         <string>/var/log/wazuh-output.log</string>
