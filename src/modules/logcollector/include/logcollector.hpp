@@ -82,6 +82,8 @@ protected:
     /// @param configurationParser Configuration parser
     void SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
 
+    void AddPlatformSpecificReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
+
     /// @brief Clean all readers
     void CleanAllReaders();
 

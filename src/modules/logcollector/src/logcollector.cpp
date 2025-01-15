@@ -65,6 +65,7 @@ void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParse
     }
 
     SetupFileReader(configurationParser);
+    AddPlatformSpecificReader(configurationParser);
 }
 
 void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
