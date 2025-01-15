@@ -159,7 +159,7 @@ The following dependencies are required for this project:
 
     **To run the agent as a launchd service**
 
-    Copy the file `src/agent/service/com.wazuh.agent.plist` to `/Library/LaunchDaemons/`.
+    Copy the property list file `src/agent/service/com.wazuh.agent.plist` to `/Library/LaunchDaemons/`.
     Edit the file and replace the placeholder path with your wazuh-agent executable directory as well as the working directory.
 
     ```bash
@@ -167,15 +167,27 @@ The following dependencies are required for this project:
     sudo chmod 644 /Library/LaunchDaemons/com.wazuh.agent.plist
     ```
 
-    Load the service
+    ***Load the service***
 
     ```bash
     sudo launchctl bootstrap system /Library/LaunchDaemons/com.wazuh.agent.plist
     ```
 
-    Verify the service is running
+    This command has superseeded `load` in the legacy syntax. The daemon will run after load as indicated in the property list file.
 
+
+    ***Unload the service***
+
+    ```bash
+    sudo launchctl bootout system /Library/LaunchDaemons/com.wazuh.agent.plist
     ```
+
+    This command has superseeded `unload` in the legacy syntax.
+
+
+    ***Verify the service is running***
+
+    ```bash
     sudo launchctl print system/com.wazuh.agent
     ```
 
@@ -186,6 +198,16 @@ The following dependencies are required for this project:
     ```bash
     ctest --test-dir build --output-log build
     ```
+
+8. **Package Installation**
+
+    If you wish to install a package use the following command.
+
+    ```bash
+    sudo installer -pkg /path/to/package/package_filename.pkg -target /
+    ```
+
+    Then load and manage the service as indicated in point 6 above. Skip the property list file copying and editing as well as the permissions part - the installer takes care of that.
 
 ## Compilation steps for Windows
 
