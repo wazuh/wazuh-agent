@@ -1,60 +1,22 @@
 #pragma once
 
-#include <icertificate_utils.hpp>
+#include <icert_store_utils_mac.hpp>
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <Security/Security.h>
-#include <boost/asio/ssl.hpp>
 
 #include <string>
+#include <vector>
 
 namespace https_socket_verify_utils
 {
     /// @brief A wrapper class for managing certificate utilities and operations.
     ///
-    /// This class implements the ICertificateUtils interface and provides methods to interact with
+    /// This class implements the ICertificateStoreUtilsMac interface and provides methods to interact with
     /// certificates and SSL/TLS trust objects using the Core Foundation and Security frameworks.
-    class CertificateUtilsWrapper : public ICertificateUtils
+    class CertificateStoreUtilsWrapperMac : public ICertificateStoreUtilsMac
     {
     public:
-        /// @brief Retrieves the certificate chain from the given X509_STORE_CTX.
-        ///
-        /// @param ctx The X509_STORE_CTX context containing the certificate chain.
-        /// @return A STACK_OF(X509) containing the certificate chain.
-        STACK_OF(X509) * GetCertChain(X509_STORE_CTX* ctx) const override
-        {
-            return X509_STORE_CTX_get_chain(ctx);
-        }
-
-        /// @brief Retrieves a certificate from the certificate chain at the specified index.
-        ///
-        /// @param chain The certificate chain (STACK_OF(X509)).
-        /// @param index The index of the certificate to retrieve.
-        /// @return The X509 certificate at the specified index.
-        X509* GetCertificateFromChain(STACK_OF(X509) * chain, int index) const override
-        {
-            return sk_X509_value(chain, index);
-        }
-
-        /// @brief Retrieves the number of certificates in the given certificate chain.
-        ///
-        /// @param chain The certificate chain (STACK_OF(X509)).
-        /// @return The number of certificates in the chain.
-        int GetCertificateCount(STACK_OF(X509) * chain) const override
-        {
-            return sk_X509_num(chain);
-        }
-
-        /// @brief Encodes a certificate into DER format.
-        ///
-        /// @param cert The X509 certificate to encode.
-        /// @param certData A pointer to the encoded certificate data.
-        /// @return The length of the encoded certificate.
-        int EncodeCertificateToDER(X509* cert, unsigned char** certData) const override
-        {
-            return i2d_X509(cert, certData);
-        }
-
         /// @brief Creates a SecCertificateRef from the provided certificate data.
         ///
         /// @param certData The raw certificate data in CFDataRef format.
