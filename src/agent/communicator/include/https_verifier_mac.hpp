@@ -1,4 +1,7 @@
-#include <icertificate_utils.hpp>
+#pragma once
+
+#include <icert_store_utils_mac.hpp>
+#include <ix509_utils.hpp>
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <Security/Security.h>
@@ -23,17 +26,22 @@ namespace https_socket_verify_utils
         /// @brief Constructor to initialize the verifier object.
         /// @param mode The verification mode to use
         /// @param host The hostname to verify against
-        /// @param utils The certificate utilities object to use
-        HttpsVerifier(const std::string& mode, const std::string& host, std::unique_ptr<ICertificateUtils>& utils)
+        /// @param x509Utils The x509 utilities object to use
+        /// @param certStoreUtils The certificate store utilities object to use
+        HttpsVerifier(const std::string& mode,
+                      const std::string& host,
+                      std::unique_ptr<ICertificateX509Utils>& x509Utils,
+                      std::unique_ptr<ICertificateStoreUtilsMac>& certStoreUtils)
             : m_mode(mode)
             , m_host(host)
-            , m_utils(std::move(utils))
+            , m_x509Utils(std::move(x509Utils))
+            , m_certStoreUtils(std::move(certStoreUtils))
         {
             m_deleter = [this](CFTypeRef obj)
             {
                 if (obj)
                 {
-                    m_utils->ReleaseCFObject(obj);
+                    m_certStoreUtils->ReleaseCFObject(obj);
                 }
             };
         }
@@ -72,8 +80,11 @@ namespace https_socket_verify_utils
         /// @brief The hostname to verify against
         std::string m_host;
 
-        /// @brief The certificate utilities object to use
-        std::unique_ptr<ICertificateUtils> m_utils;
+        /// @brief The x509 utilities object to use
+        std::unique_ptr<ICertificateX509Utils> m_x509Utils;
+
+        /// @brief The certificate store utilities object to use
+        std::unique_ptr<ICertificateStoreUtilsMac> m_certStoreUtils;
 
         /// @brief The deleter function to release CFTypeRef objects
         std::function<void(CFTypeRef)> m_deleter;

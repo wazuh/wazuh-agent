@@ -2,7 +2,6 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <Security/Security.h>
-#include <boost/asio/ssl.hpp>
 
 #include <string>
 
@@ -13,37 +12,11 @@ namespace https_socket_verify_utils
     /// This interface defines methods for handling certificate chains, encoding certificates,
     /// creating trust objects, evaluating trust, and working with `CFTypeRef` and `CFStringRef`
     /// objects in the context of SSL/TLS certificate verification.
-    class ICertificateUtils
+    class ICertificateStoreUtilsMac
     {
     public:
         /// @brief Virtual destructor.
-        virtual ~ICertificateUtils() = default;
-
-        /// @brief Retrieves the certificate chain from the given context.
-        ///
-        /// @param ctx The X509_STORE_CTX context from which to extract the certificate chain.
-        /// @return A STACK_OF(X509) object containing the certificate chain.
-        virtual STACK_OF(X509) * GetCertChain(X509_STORE_CTX* ctx) const = 0;
-
-        /// @brief Retrieves a certificate from the given certificate chain at the specified index.
-        ///
-        /// @param chain The certificate chain (STACK_OF(X509)).
-        /// @param index The index of the certificate to retrieve.
-        /// @return The X509 certificate at the specified index in the chain.
-        virtual X509* GetCertificateFromChain(STACK_OF(X509) * chain, int index) const = 0;
-
-        /// @brief Retrieves the count of certificates in the given certificate chain.
-        ///
-        /// @param chain The certificate chain (STACK_OF(X509)).
-        /// @return The number of certificates in the chain.
-        virtual int GetCertificateCount(STACK_OF(X509) * chain) const = 0;
-
-        /// @brief Encodes the given certificate into DER format.
-        ///
-        /// @param cert The X509 certificate to encode.
-        /// @param certData A pointer to the pointer where the encoded data will be stored.
-        /// @return The length of the encoded certificate.
-        virtual int EncodeCertificateToDER(X509* cert, unsigned char** certData) const = 0;
+        virtual ~ICertificateStoreUtilsMac() = default;
 
         /// @brief Creates a SecCertificateRef from the given certificate data.
         ///
