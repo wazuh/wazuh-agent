@@ -1,22 +1,25 @@
 find_package(GTest CONFIG REQUIRED)
 
-FILE(GLOB LOGCOLLECTOR_TEST_SOURCES *_test.cpp)
-FILE(GLOB JOURNALD_TEST_SOURCES journald/*_test.cpp)
 if (UNIX AND NOT APPLE)
 	find_package(PkgConfig REQUIRED)
 	pkg_check_modules(SYSTEMD REQUIRED libsystemd)
 endif()
 
 if(WIN32)
-    FILE(GLOB EXCLUDED_SOURCES *_unix_test.cpp)
+	FILE(GLOB EXCLUDED_SOURCES *_unix_test.cpp)
 else()
-    FILE(GLOB EXCLUDED_SOURCES *_win_test.cpp)
+	FILE(GLOB EXCLUDED_SOURCES *_win_test.cpp)
 endif()
 
+FILE(GLOB LOGCOLLECTOR_TEST_SOURCES *_test.cpp)
 list(REMOVE_ITEM LOGCOLLECTOR_TEST_SOURCES ${EXCLUDED_SOURCES})
 
-add_executable(logcollector_unit_tests ${LOGCOLLECTOR_TEST_SOURCES}
-    $<$<PLATFORM_ID:Linux>:${JOURNALD_TEST_SOURCES}>
+FILE(GLOB JOURNALD_TEST_SOURCES journald/*_test.cpp)
+
+add_executable(logcollector_unit_tests
+	${LOGCOLLECTOR_TEST_SOURCES}
+	$<$<PLATFORM_ID:Linux>:${JOURNALD_TEST_SOURCES}>
+	$<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/macos/uls_reader_test.cpp>
 )
 configure_target(logcollector_unit_tests)
 
@@ -38,6 +41,10 @@ target_link_libraries(logcollector_unit_tests PRIVATE
 	GTest::gmock_main
 	$<$<PLATFORM_ID:Linux>:systemd>
 )
+
+if(APPLE)
+	target_link_libraries(logcollector_unit_tests PRIVATE OSLogStoreWrapper)
+endif()
 
 # TO DO: Fix unit tests for Apple
 if(NOT APPLE)
