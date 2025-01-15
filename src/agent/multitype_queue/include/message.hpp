@@ -4,10 +4,7 @@
 
 #include <string>
 
-/**
- * @brief Types of messages enum
- *
- */
+/// @brief Types of messages enum
 enum class MessageType
 {
     STATELESS,
@@ -15,11 +12,8 @@ enum class MessageType
     COMMAND
 };
 
-/**
- * @brief Wrapper for Message, contains the message type, the json data, the
- * module name, the module type and the metadata.
- *
- */
+/// @brief Wrapper for Message, contains the message type, the json data, the
+/// module name, the module type and the metadata.
 class Message
 {
 public:

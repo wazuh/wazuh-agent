@@ -11,14 +11,13 @@ target_link_libraries(test_MultiTypeQueue PUBLIC
     GTest::gmock_main)
 add_test(NAME MultiTypeQueueTest COMMAND test_MultiTypeQueue)
 
-add_executable(test_sqlitestorage sqlitestorage_test.cpp)
-configure_target(test_sqlitestorage)
-target_include_directories(test_sqlitestorage PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
-target_link_libraries(test_sqlitestorage
+add_executable(test_storage storage_test.cpp)
+configure_target(test_storage)
+target_include_directories(test_storage PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+target_link_libraries(test_storage
     MultiTypeQueue
-    SQLiteCpp
     GTest::gtest
     GTest::gtest_main
     GTest::gmock
     GTest::gmock_main)
-add_test(NAME SqliteStorageTest COMMAND test_sqlitestorage)
+add_test(NAME StorageTest COMMAND test_storage)

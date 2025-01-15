@@ -1,8 +1,7 @@
 #pragma once
 
 #include <imultitype_queue.hpp>
-#include <persistence.hpp>
-#include <persistence_factory.hpp>
+#include <storage.hpp>
 
 #include <config.h>
 #include <logger.hpp>
@@ -17,22 +16,30 @@
 #include <string>
 #include <vector>
 
-constexpr auto QUEUE_DB_NAME = "queue.db";
+namespace
+{
+    // database
+    const std::string QUEUE_DB_NAME = "queue.db";
 
-/**
- * @brief MultiTypeQueue implementation that handles multiple types of messages.
- *
- * This class implements the IMultiTypeQueue interface to provide a queue
- * that can handle different message types such as STATELESS, STATEFUL, and COMMAND.
- */
+    // table names
+    const std::string STATELESS_TABLE_NAME = "STATELESS";
+    const std::string STATEFUL_TABLE_NAME = "STATEFUL";
+    const std::string COMMAND_TABLE_NAME = "COMMAND";
+} // namespace
+
+/// @brief MultiTypeQueue implementation that handles multiple types of messages.
+///
+/// This class implements the IMultiTypeQueue interface to provide a queue
+/// that can handle different message types such as STATELESS, STATEFUL, and COMMAND.
 class MultiTypeQueue : public IMultiTypeQueue
 {
 private:
-    const std::vector<std::string> m_vMessageTypeStrings {"STATELESS", "STATEFUL", "COMMAND"};
+    const std::vector<std::string> m_vMessageTypeStrings {
+        STATELESS_TABLE_NAME, STATEFUL_TABLE_NAME, COMMAND_TABLE_NAME};
     const std::map<MessageType, std::string> m_mapMessageTypeName {
-        {MessageType::STATELESS, "STATELESS"},
-        {MessageType::STATEFUL, "STATEFUL"},
-        {MessageType::COMMAND, "COMMAND"},
+        {MessageType::STATELESS, STATELESS_TABLE_NAME},
+        {MessageType::STATEFUL, STATEFUL_TABLE_NAME},
+        {MessageType::COMMAND, COMMAND_TABLE_NAME},
     };
 
     /// @brief maximun quantity of message to stored on the queue
@@ -42,7 +49,7 @@ private:
     const std::chrono::milliseconds m_timeout;
 
     /// @brief class for persistence implementation
-    std::unique_ptr<Persistence> m_persistenceDest;
+    std::unique_ptr<Storage> m_persistenceDest;
 
     /// @brief mutex for protecting the queue access
     std::mutex m_mtx;
@@ -54,10 +61,8 @@ private:
     std::time_t m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
 
 public:
-    /**
-     * @brief Constructor.
-     * @param getConfigValue Function to retrieve configuration values
-     */
+    /// @brief Constructor.
+    /// @param getConfigValue Function to retrieve configuration values
     template<typename ConfigGetter>
     MultiTypeQueue(const ConfigGetter& getConfigValue)
         : m_timeout(config::agent::QUEUE_STATUS_REFRESH_TIMER)
@@ -82,12 +87,12 @@ public:
                     config::agent::QUEUE_DEFAULT_SIZE);
             m_maxItems = config::agent::QUEUE_DEFAULT_SIZE;
         }
+
         const auto dbFilePath = dbFolderPath + "/" + QUEUE_DB_NAME;
 
         try
         {
-            m_persistenceDest = PersistenceFactory::createPersistence(PersistenceFactory::PersistenceType::SQLITE3,
-                                                                      {dbFilePath, m_vMessageTypeStrings});
+            m_persistenceDest = std::make_unique<Storage>(dbFilePath, m_vMessageTypeStrings);
         }
         catch (const std::exception& e)
         {
@@ -95,95 +100,64 @@ public:
         }
     }
 
-    /**
-     * @brief Delete copy constructor
-     */
+    /// @brief Delete copy constructor
     MultiTypeQueue(const MultiTypeQueue&) = delete;
 
-    /**
-     * @brief Delete copy assignment operator
-     */
+    /// @brief Delete copy assignment operator
     MultiTypeQueue& operator=(const MultiTypeQueue&) = delete;
 
-    /**
-     * @brief Delete move constructor
-     */
+    /// @brief Delete move constructor
     MultiTypeQueue(MultiTypeQueue&&) = delete;
 
-    /**
-     * @brief Delete move assignment operator
-     */
+    /// @brief Delete move assignment operator
     MultiTypeQueue& operator=(MultiTypeQueue&&) = delete;
 
-    /**
-     * @brief Destructor.
-     */
+    /// @brief Destructor
     ~MultiTypeQueue() override = default;
 
-    /**
-     * @copydoc IMultiTypeQueue::push(Message, bool)
-     */
+    /// @copydoc IMultiTypeQueue::push(Message, bool)
     int push(Message message, bool shouldWait = false) override;
 
-    /**
-     * @copydoc IMultiTypeQueue::pushAwaitable(Message)
-     */
+    /// @copydoc IMultiTypeQueue::pushAwaitable(Message)
     boost::asio::awaitable<int> pushAwaitable(Message message) override;
 
-    /**
-     * @copydoc IMultiTypeQueue::push(std::vector<Message>)
-     */
+    /// @copydoc IMultiTypeQueue::push(std::vector<Message>)
     int push(std::vector<Message> messages) override;
 
-    /**
-     * @copydoc IMultiTypeQueue::getNext(MessageType, const std::string, const std::string)
-     */
+    /// @copydoc IMultiTypeQueue::getNext(MessageType, const std::string, const std::string)
     Message getNext(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
-    /**
-     * @copydoc IMultiTypeQueue::getNextBytesAwaitable(MessageType type, const size_t
-     * messageQuantity, const std::string moduleName, const std::string moduleType)
-     */
+    /// @copydoc IMultiTypeQueue::getNextBytesAwaitable(MessageType type, const size_t
+    /// messageQuantity, const std::string moduleName, const std::string moduleType)
     boost::asio::awaitable<std::vector<Message>> getNextBytesAwaitable(MessageType type,
                                                                        const size_t messageQuantity,
                                                                        const std::string moduleName = "",
                                                                        const std::string moduleType = "") override;
 
-    /**
-     * @copydoc IMultiTypeQueue::getNextBytes(MessageType, size_t, const std::string, const std::string)
-     */
+    /// @copydoc IMultiTypeQueue::getNextBytes(MessageType, size_t, const std::string, const std::string)
     std::vector<Message> getNextBytes(MessageType type,
                                       const size_t messageQuantity,
                                       const std::string moduleName = "",
                                       const std::string moduleType = "") override;
 
-    /**
-     * @copydoc IMultiTypeQueue::pop(MessageType, const std::string)
-     */
-    bool pop(MessageType type, const std::string moduleName = "") override;
+    /// @copydoc IMultiTypeQueue::pop(MessageType, const std::string, const std::string)
+    bool pop(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
-    /**
-     * @copydoc IMultiTypeQueue::popN(MessageType, int, const std::string)
-     */
-    int popN(MessageType type, int messageQuantity, const std::string moduleName = "") override;
+    /// @copydoc IMultiTypeQueue::popN(MessageType, int, const std::string, const std::string)
+    int popN(MessageType type,
+             int messageQuantity,
+             const std::string moduleName = "",
+             const std::string moduleType = "") override;
 
-    /**
-     * @copydoc IMultiTypeQueue::isEmpty(MessageType, const std::string)
-     */
-    bool isEmpty(MessageType type, const std::string moduleName = "") override;
+    /// @copydoc IMultiTypeQueue::isEmpty(MessageType, const std::string, const std::string)
+    bool isEmpty(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
-    /**
-     * @copydoc IMultiTypeQueue::isFull(MessageType, const std::string)
-     */
-    bool isFull(MessageType type, const std::string moduleName = "") override;
+    /// @copydoc IMultiTypeQueue::isFull(MessageType, const std::string, const std::string)
+    bool isFull(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
-    /**
-     * @copydoc IMultiTypeQueue::storedItems(MessageType, const std::string)
-     */
-    int storedItems(MessageType type, const std::string moduleName = "") override;
+    /// @copydoc IMultiTypeQueue::storedItems(MessageType, const std::string, const std::string)
+    int storedItems(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
-    /**
-     * @copydoc IMultiTypeQueue::sizePerType(MessageType type)
-     */
+    /// @copydoc IMultiTypeQueue::sizePerType(MessageType type)
     size_t sizePerType(MessageType type) override;
 };
