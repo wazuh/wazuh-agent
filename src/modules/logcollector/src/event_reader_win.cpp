@@ -18,8 +18,8 @@ void AddPlatformSpecificReader(std::shared_ptr<const configuration::Configuratio
 
     for (auto& entry : windowsConfig)
     {
-        auto channel = entry.at("channel");
-        auto query = entry.at("query");
+        const auto channel = entry.at("channel");
+        const auto query = entry.at("query");
         logcollector.AddReader(std::make_shared<WindowsEventTracerReader>(logcollector, channel, query, refreshInterval));
     }
 }
@@ -27,11 +27,13 @@ void AddPlatformSpecificReader(std::shared_ptr<const configuration::Configuratio
 WindowsEventTracerReader::WindowsEventTracerReader(Logcollector &logcollector,
                            const std::string channel,
                            const std::string query,
-                           const std::time_t channelRefreshInterval) :
+                           const std::time_t channelRefreshInterval,
+                           std::shared_ptr<IWinAPIWrapper> winAPI) :
     IReader(logcollector),
     m_channel(channel),
     m_query(query),
-    m_ChannelsRefreshInterval(channelRefreshInterval) { }
+    m_ChannelsRefreshInterval(channelRefreshInterval),
+    m_winAPI(winAPI ? winAPI : std::make_shared<DefaultWinAPIWrapper>()) { }
 
 Awaitable WindowsEventTracerReader::Run()
 {
@@ -46,8 +48,8 @@ void WindowsEventTracerReader::Stop()
 
 Awaitable WindowsEventTracerReader::QueryEvents()
 {
-    std::wstring wideStringChannel = std::wstring(m_channel.begin(), m_channel.end());
-    std::wstring wideStringQuery = std::wstring(m_query.begin(), m_query.end());
+    const auto wideStringChannel = std::wstring(m_channel.begin(), m_channel.end());
+    const auto wideStringQuery = std::wstring(m_query.begin(), m_query.end());
 
     auto subscriptionCallback = [](EVT_SUBSCRIBE_NOTIFY_ACTION action, PVOID userContext,
         EVT_HANDLE event) -> DWORD
@@ -61,7 +63,7 @@ Awaitable WindowsEventTracerReader::QueryEvents()
             break;
 
         case EvtSubscribeActionError:
-            //TODO: Handle this error
+            //Should this error be handled
             break;
 
         default:
@@ -71,7 +73,7 @@ Awaitable WindowsEventTracerReader::QueryEvents()
         return ERROR_SUCCESS;
     };
 
-    EVT_HANDLE subscriptionHandle = EvtSubscribe(
+    EVT_HANDLE subscriptionHandle = m_winAPI->EvtSubscribe(
         nullptr,
         nullptr,
         wideStringChannel.c_str(),
@@ -87,7 +89,7 @@ Awaitable WindowsEventTracerReader::QueryEvents()
         co_return;
     }
 
-    LogInfo("Subscribed to events for {} channel with query: '{}'", m_channel, m_query);
+    LogInfo("Subscribed to events for '{}' channel with query: '{}'", m_channel, m_query);
 
     while (m_keepRunning.load())
     {
@@ -97,7 +99,7 @@ Awaitable WindowsEventTracerReader::QueryEvents()
     LogInfo("Unsubscribing to channel '{}'.", m_channel);
     if (subscriptionHandle)
     {
-        EvtClose(subscriptionHandle);
+        m_winAPI->EvtClose(subscriptionHandle);
     }
 }
 
@@ -106,12 +108,12 @@ void WindowsEventTracerReader::ProcessEvent(EVT_HANDLE event)
     DWORD bufferUsed = 0;
     DWORD propertyCount = 0;
 
-    EvtRender(NULL, event, EvtRenderEventXml, 0, NULL, &bufferUsed, &propertyCount);
+    m_winAPI->EvtRender(NULL, event, EvtRenderEventXml, 0, NULL, &bufferUsed, &propertyCount);
 
     if (bufferUsed > 0)
     {
         std::vector<wchar_t> buffer(bufferUsed);
-        if (EvtRender(NULL, event, EvtRenderEventXml, bufferUsed, buffer.data(), &bufferUsed, &propertyCount))
+        if (m_winAPI->EvtRender(NULL, event, EvtRenderEventXml, bufferUsed, buffer.data(), &bufferUsed, &propertyCount))
         {
             std::string logString;
             try
