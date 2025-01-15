@@ -20,7 +20,14 @@ inventory:
   hotfixes: true
 logcollector:
   enabled: true
-  localfiles:
-    - /var/log/auth.log
   reload_interval: 1m
   file_wait: 500ms
+  localfiles:
+    - /var/log/auth.log
+  macos:
+    - query: process == "sshd" OR message CONTAINS "invalid"
+      level: info
+      type: trace,activity,log
+    - query: process == "wazuh-agent"
+      level: default
+      type: log

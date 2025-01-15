@@ -358,10 +358,12 @@ void Inventory::UpdateChanges(const std::string& table,
 {
     const auto callback
     {
+        // NOLINTBEGIN(bugprone-exception-escape)
         [this, table](ReturnTypeCallback result, const nlohmann::json & data)
         {
             NotifyChange(result, data, table);
         }
+        // NOLINTEND(bugprone-exception-escape)
     };
 
     std::unique_lock<std::mutex> lock{m_mutex};

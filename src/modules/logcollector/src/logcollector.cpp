@@ -65,6 +65,7 @@ void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParse
     }
 
     SetupFileReader(configurationParser);
+    AddPlatformSpecificReader(configurationParser);
 }
 
 void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
@@ -97,7 +98,13 @@ void Logcollector::SetPushMessageFunction(const std::function<int(Message)>& pus
     m_pushMessage = pushMessage;
 }
 
-void Logcollector::SendMessage(const std::string& location, const std::string& log, const std::string& collectorType) {
+void Logcollector::SendMessage(const std::string& location, const std::string& log, const std::string& collectorType)
+{
+    if (!m_pushMessage)
+    {
+        throw std::runtime_error("Message queue not set, cannot send message.");
+    }
+
     auto metadata = nlohmann::json::object();
     auto data = nlohmann::json::object();
 

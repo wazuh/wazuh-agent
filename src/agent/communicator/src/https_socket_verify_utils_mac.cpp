@@ -5,9 +5,13 @@
 #include <Security/Security.h>
 #include <boost/asio/ssl.hpp>
 
+namespace
+{
+    constexpr int BUFFER_SIZE = 256;
+} // namespace
+
 namespace https_socket_verify_utils
 {
-
     bool VerifyCertificate([[maybe_unused]] bool preverified,
                            boost::asio::ssl::verify_context& ctx,
                            const std::string& mode,
@@ -77,7 +81,7 @@ namespace https_socket_verify_utils
             if (error)
             {
                 CFStringRef errorDesc = CFErrorCopyDescription(error);
-                char bufferError[256] = {0};
+                char bufferError[BUFFER_SIZE] = {0};
                 CFStringGetCString(errorDesc, bufferError, sizeof(bufferError), kCFStringEncodingUTF8);
                 LogError("Trust evaluation failed: {}", bufferError);
                 CFRelease(errorDesc);
@@ -101,7 +105,7 @@ namespace https_socket_verify_utils
             }
 
             bool hostnameMatches = false;
-            char buffer[256] = {0};
+            char buffer[BUFFER_SIZE] = {0};
             if (CFStringGetCString(sanString, buffer, sizeof(buffer), kCFStringEncodingUTF8))
             {
                 hostnameMatches = (host == buffer);
@@ -123,5 +127,4 @@ namespace https_socket_verify_utils
 
         return true;
     }
-
 } // namespace https_socket_verify_utils
