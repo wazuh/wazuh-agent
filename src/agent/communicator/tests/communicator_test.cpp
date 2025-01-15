@@ -159,6 +159,8 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
         std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr, FUNC);
 
     const auto mockedToken = CreateToken();
+
+    // NOLINTBEGIN(bugprone-exception-escape)
     EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _, _, _))
         .WillOnce(Invoke(
             [communicatorPtr,
@@ -171,6 +173,7 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
                 communicatorPtr->Stop();
                 return mockedToken;
             }));
+    // NOLINTEND(bugprone-exception-escape)
 
     std::string capturedToken;
 
