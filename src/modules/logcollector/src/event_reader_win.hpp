@@ -9,11 +9,8 @@
 #include <string>
 #include <vector>
 
-#include <WinSock2.h>
-#include <Windows.h>
-#include <winevt.h>
-
 #include "reader.hpp"
+#include "winevt_wrapper_win.hpp"
 
 #pragma comment(lib, "wevtapi.lib")
 
@@ -28,10 +25,12 @@ public:
     /// @param channel Channel name.
     /// @param query Query.
     /// @param channelRefreshInterval channel query refresh interval in millisecconds.
+    /// @param  .
     WindowsEventTracerReader(Logcollector &logcollector,
                             const std::string channel,
                             const std::string query,
-                            const std::time_t channelRefreshInterval);
+                            const std::time_t channelRefreshInterval,
+                            std::shared_ptr<IWinAPIWrapper> winAPI = nullptr);
 
     /// @brief Runs the event reader.
     /// @return Awaitable result.
@@ -43,10 +42,10 @@ public:
     ///@brief Main function to query events from event channel.
     Awaitable QueryEvents();
 
-private:
     ///@brief Process an individual event and print its XML representation.
     /// @param event subscription handle event.
     void ProcessEvent(EVT_HANDLE event);
+private:
 
     /// @brief Function for wchar to string convertion.
     /// @param buffer wchar vector as input.
@@ -61,6 +60,9 @@ private:
 
     /// @brief channel query refresh interval in millisecconds.
     std::time_t m_ChannelsRefreshInterval;
+
+    /// @brief TODO
+    std::shared_ptr<IWinAPIWrapper> m_winAPI;
 
     /// @brief collector type.
     const std::string m_collectorType = "eventchannel";
