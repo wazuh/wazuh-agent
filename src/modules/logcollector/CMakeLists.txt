@@ -68,8 +68,8 @@ target_link_libraries(Logcollector
     Boost::system
     nlohmann_json::nlohmann_json
     PRIVATE
-    $<$<STREQUAL:$<PLATFORM_ID>,Darwin>:OSLogStoreWrapper>
-    $<$<STREQUAL:$<PLATFORM_ID>,Darwin>:fmt::fmt>
+    $<$<PLATFORM_ID:Darwin>:OSLogStoreWrapper>
+    $<$<PLATFORM_ID:Darwin>:fmt::fmt>
     Logger
     pal
     $<$<PLATFORM_ID:Linux>:systemd>
