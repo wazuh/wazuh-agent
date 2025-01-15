@@ -65,7 +65,6 @@ target_link_libraries(Agent
     MultiTypeQueue
     ModuleManager
     ModuleCommand
-    CentralizedConfiguration
     Boost::asio
     sysinfo
     PRIVATE

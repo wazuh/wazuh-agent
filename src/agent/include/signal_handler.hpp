@@ -23,6 +23,9 @@ public:
     /// @param signalToHandle The signal to be handled
     static void HandleSignal(int signalToHandle);
 
+    /// @brief Handles the self-restart signal
+    void Restart() override;
+
     /// @brief Keeps track of whether the agent should continue running
     static std::atomic<bool> KeepRunning;
 
