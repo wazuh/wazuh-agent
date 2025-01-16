@@ -15,6 +15,11 @@ public:
                 this->Logcollector::AddReader(reader);
             })
         );
+
+        this->SetPushMessageFunction([](Message) -> int // NOLINT(performance-unnecessary-value-param)
+        {
+            return 0;
+        });
     }
 
     void SetupFileReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser)

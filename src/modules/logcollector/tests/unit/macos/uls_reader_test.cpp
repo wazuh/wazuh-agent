@@ -1,8 +1,11 @@
 #include <gtest/gtest.h>
 
 #include <uls_reader.hpp>
+#include <logcollector.hpp>
 
 #include <boost/asio.hpp>
+
+#include "../logcollector_mock.hpp"
 
 #include <string>
 #include <vector>
@@ -12,21 +15,14 @@
 
 TEST(ULSReaderTest, Constructor)
 {
-    auto& logCollector = logcollector::Logcollector::Instance();
-    logCollector.Stop();
+    auto logCollector = LogcollectorMock();
     logcollector::ULSReader ulsReader(logCollector);
 }
 
 TEST(ULSReaderTest, RunAndStop)
 {
-    auto& logCollector = logcollector::Logcollector::Instance();
+    auto logCollector = LogcollectorMock();
     logCollector.Stop();
-    logCollector.SetPushMessageFunction(
-        [](Message) -> int // NOLINT(performance-unnecessary-value-param)
-        {
-            return 0;
-        }
-    );
 
     boost::asio::io_context ioContext;
 
@@ -66,14 +62,8 @@ TEST(ULSReaderTest, RunAndStop)
 
 TEST(ULSReaderTest, CreateQueryFromRule)
 {
-    auto& logCollector = logcollector::Logcollector::Instance();
+    auto logCollector = LogcollectorMock();
     logCollector.Stop();
-    logCollector.SetPushMessageFunction(
-        [](Message) -> int // NOLINT(performance-unnecessary-value-param)
-        {
-            return 0;
-        }
-    );
 
     logcollector::ULSReader ulsReader(
         logCollector,
