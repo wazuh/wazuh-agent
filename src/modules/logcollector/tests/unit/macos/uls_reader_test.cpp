@@ -13,10 +13,31 @@
 #include <chrono>
 #include <iostream>
 
+class MockIOSLogStoreWrapper : public IOSLogStoreWrapper
+{
+public:
+    MOCK_METHOD(
+        std::vector<LogEntry>,
+        AllEntries,
+        (const double startTimeSeconds, const std::string& query, const LogLevel logLevel),
+        (override)
+    );
+};
+
 TEST(ULSReaderTest, Constructor)
 {
     auto logCollector = LogcollectorMock();
     logcollector::ULSReader ulsReader(logCollector);
+}
+
+TEST(ULSReaderTest, ConstructorWithStoreWrapper)
+{
+    auto logCollector = LogcollectorMock();
+    auto logStoreMock = std::make_unique<MockIOSLogStoreWrapper>();
+    ULSReader reader(std::move(logStoreMock), logCollector);
+
+    // Just ensure the constructor works
+    SUCCEED();
 }
 
 TEST(ULSReaderTest, RunAndStop)
