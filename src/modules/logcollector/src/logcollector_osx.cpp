@@ -47,18 +47,18 @@ void Logcollector::AddPlatformSpecificReader(const std::shared_ptr<const configu
         config::logcollector::DEFAULT_FILE_WAIT
     );
 
-    const auto macosConfig = configurationParser->GetConfig<std::vector<std::map<std::string, std::string>>>(
+    auto macosConfig = configurationParser->GetConfig<std::vector<std::map<std::string, std::string>>>(
         "logcollector",
         "macos"
     ).value_or(
         std::vector<std::map<std::string, std::string>> {}
     );
 
-     for (const auto& entry : macosConfig)
+     for (auto& entry : macosConfig)
      {
-        const auto query = entry.at("query");
-        const auto level = entry.at("level");
-        const auto types = entry.at("type");
+        const auto query = entry["query"];
+        const auto level = entry["level"];
+        const auto types = entry["type"];
         const auto typeList = SplitAndTrim(types);
         AddReader(std::make_shared<ULSReader>(*this, fileWait, level, query, typeList));
      }

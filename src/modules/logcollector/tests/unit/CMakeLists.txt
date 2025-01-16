@@ -20,6 +20,7 @@ add_executable(logcollector_unit_tests
 	${LOGCOLLECTOR_TEST_SOURCES}
 	$<$<PLATFORM_ID:Linux>:${JOURNALD_TEST_SOURCES}>
 	$<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/macos/uls_reader_test.cpp>
+	$<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/macos/logcollector_osx_test.cpp>
 )
 configure_target(logcollector_unit_tests)
 
