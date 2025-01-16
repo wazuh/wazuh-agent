@@ -53,6 +53,9 @@ public:
                                              const LogLevel logLevel = LogLevel::Undefined) = 0;
 };
 
+/// @brief Forward declaration of the OSLogStoreWrapperImpl class.
+class OSLogStoreWrapperImpl;
+
 /// @class OSLogStoreWrapper
 /// @brief A C++ wrapper for accessing and enumerating OS logs using OSLogStore APIs.
 ///
@@ -74,6 +77,5 @@ public:
                                      const LogLevel logLevel = LogLevel::Undefined) override;
 
 private:
-    class Impl;
-    std::unique_ptr<Impl> m_impl;
+    std::unique_ptr<OSLogStoreWrapperImpl> m_impl;
 };
