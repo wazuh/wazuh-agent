@@ -13,8 +13,6 @@
 // Forward declaration for sd_journal
 struct sd_journal;
 
-namespace logcollector {
-
 /// @brief Structure to define journal filtering criteria
 struct JournalFilter {
     std::string field;      ///< Field name to filter on
@@ -156,15 +154,23 @@ private:
     void ThrowIfError(int result, const std::string& operation) const;
 
     /// @brief Applies filter set with OR logic between groups
+    /// @param filters Set of filter groups to apply
+    /// @param ignoreIfMissing Whether to ignore missing fields
+    /// @return true if any group matches, false otherwise
     bool ApplyFilterSet(const FilterSet& filters, bool ignoreIfMissing);
 
     /// @brief Applies filter group with AND logic between filters
+    /// @param group Group of filters to add
+    /// @param ignoreIfMissing Whether to ignore missing fields
+    /// @return true if all filters match, false otherwise
     bool ApplyFilterGroup(const FilterGroup& group, bool ignoreIfMissing) const;
 
     /// @brief Processes current journal entry
+    /// @param filters Set of filter groups to apply
+    /// @param ignoreIfMissing Whether to ignore missing fields
+    /// @param message Filtered message structure to fill
+    /// @return true if entry matches any filter, false otherwise
     bool ProcessJournalEntry(const FilterSet& filters,
                            bool ignoreIfMissing,
                            FilteredMessage& message) const;
 };
-
-}

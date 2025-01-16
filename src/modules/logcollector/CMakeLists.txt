@@ -24,6 +24,7 @@ elseif(APPLE)
     FILE(GLOB EXCLUDED_SOURCES src/*_win.cpp src/journal*.cpp)
 else()
     FILE(GLOB EXCLUDED_SOURCES src/*_win.cpp src/*_osx.cpp)
+    add_subdirectory(journal_log)
 endif()
 
 FILE(GLOB LOGCOLLECTOR_SOURCES src/*.cpp)
@@ -47,10 +48,10 @@ target_link_libraries(Logcollector
     Boost::asio
     Boost::system
     nlohmann_json::nlohmann_json
-    $<$<PLATFORM_ID:Linux>:systemd>
     PRIVATE
     Logger
     pal
+    $<$<PLATFORM_ID:Linux>:JournalLog>
 )
 
 include(../../cmake/ConfigureTarget.cmake)

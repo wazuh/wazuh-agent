@@ -2,8 +2,8 @@
 #include <logger.hpp>
 #include <sstream>
 
-using namespace logcollector;
-
+namespace logcollector
+{
 JournaldReader::JournaldReader(Logcollector& logcollector,
                              FilterGroup filters,
                              bool ignoreIfMissing,
@@ -75,3 +75,4 @@ void JournaldReader::Stop() {
     m_keepRunning.store(false);
     LogInfo("Journald stopped.");
 }
+} // namespace logcollector

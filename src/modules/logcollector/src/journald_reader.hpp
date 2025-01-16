@@ -1,7 +1,7 @@
 #pragma once
 
 #include "reader.hpp"
-#include "journal_log.hpp"
+#include <journal_log.hpp>
 #include <regex>
 #include <memory>
 

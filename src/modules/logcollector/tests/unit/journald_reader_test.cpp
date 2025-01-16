@@ -2,7 +2,6 @@
 #include <gmock/gmock.h>
 #include "journald_reader.hpp"
 #include "logcollector_mock.hpp"
-#include "journal_mock.hpp"
 
 using namespace logcollector;
 using namespace testing;
@@ -10,10 +9,9 @@ using namespace testing;
 class JournaldReaderTests : public ::testing::Test {
 protected:
     LogcollectorMock logcollector;
-    std::unique_ptr<JournalMock> journalMock;
     FilterGroup testFilters;
-    const bool ignoreIfMissing = true;
-    const std::time_t fileWait = 1000;
+    bool ignoreIfMissing{true};
+    std::time_t fileWait{1000};
     static constexpr size_t m_extraLength = 100;
 
     void SetUp() override {
@@ -21,7 +19,6 @@ protected:
             {"UNIT", "test.service", true},
             {"PRIORITY", "6", true}
         };
-        journalMock = std::make_unique<JournalMock>();
     }
 
     JournaldReader CreateReader() {

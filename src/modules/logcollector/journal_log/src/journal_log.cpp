@@ -1,11 +1,10 @@
-#include "journal_log.hpp"
+#include <journal_log.hpp>
 #include <systemd/sd-journal.h>
 #include <logger.hpp>
 #include <cstring>
 #include <algorithm>
 #include <ranges>
 
-using namespace logcollector;
 
 JournalLog::JournalLog()
     : m_journal(nullptr) {}

@@ -13,14 +13,15 @@ configure_target(logcollector_unit_tests)
 
 target_include_directories(logcollector_unit_tests PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/../../src
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../journal_log/include
 )
 
 target_link_libraries(logcollector_unit_tests PRIVATE
 	Logcollector
+    $<$<PLATFORM_ID:Linux>:JournalLog>
 	MultiTypeQueue
 	ConfigurationParser
 	Logger
-	$<$<PLATFORM_ID:Linux>:systemd>
 	GTest::gtest
 	GTest::gtest_main
 	GTest::gmock
