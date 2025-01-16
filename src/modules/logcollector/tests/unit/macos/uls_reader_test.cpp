@@ -13,6 +13,10 @@
 #include <chrono>
 #include <iostream>
 
+using ::testing::_;
+using ::testing::Return;
+using ::testing::Invoke;
+
 class MockIOSLogStoreWrapper : public IOSLogStoreWrapper
 {
 public:
@@ -139,4 +143,49 @@ TEST(ULSReaderTest, CreateQueryFromRule)
 
     ioContext.run();
     ioThread.join();
+}
+
+TEST(ULSReaderTest, ReadsEntriesCorrectly)
+{
+    auto logCollector = LogcollectorMock();
+    EXPECT_CALL(logCollector, Wait(::testing::_)).Times(::testing::AnyNumber());
+
+    auto logStoreMock = std::make_unique<MockIOSLogStoreWrapper>();
+    EXPECT_CALL(*logStoreMock, AllEntries(_, _, _))
+        .WillOnce(Return(std::vector<IOSLogStoreWrapper::LogEntry>{
+            {1672531200.0, "2023-01-01T00:00:00Z", "Sample log message 1"},
+            {1672531260.0, "2023-01-01T00:01:00Z", "Sample log message 2"}
+        }))
+    .WillRepeatedly(Return(std::vector<IOSLogStoreWrapper::LogEntry>{}));
+
+    ULSReader ulsReader(std::move(logStoreMock), logCollector);
+
+    int pushMessageCallCount = 0;
+
+    logCollector.SetPushMessageFunction([&pushMessageCallCount, &ulsReader](Message message) -> int // NOLINT(performance-unnecessary-value-param)
+    {
+        EXPECT_EQ(message.moduleName, "logcollector");
+        const auto dumpedData = message.data.dump();
+
+        EXPECT_THAT(dumpedData, ::testing::HasSubstr("2023-01-01T00"));
+        EXPECT_THAT(dumpedData, ::testing::HasSubstr("Sample log message "));
+
+        ++pushMessageCallCount;
+        ulsReader.Stop();
+        return 0;
+    });
+
+    boost::asio::io_context ioContext;
+
+    boost::asio::co_spawn(
+        ioContext,
+        [&ulsReader]() -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+        {
+            co_await ulsReader.Run();
+        },
+        boost::asio::detached
+    );
+
+    ioContext.run();
+    EXPECT_EQ(pushMessageCallCount, 2);
 }
