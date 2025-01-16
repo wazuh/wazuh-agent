@@ -80,14 +80,24 @@ set_vcpkg_remote_binary_cache(){
     git checkout "2024.09.30"
 
     export VCPKG_BINARY_SOURCES="clear;nuget,GitHub,readwrite"
+<<<<<<< HEAD
     ./bootstrap-vcpkg.sh
     mono `./vcpkg fetch nuget | tail -n 1` \
+=======
+    NUGET_PATH="/usr/local/bin/nuget"
+    curl -o $NUGET_PATH https://dist.nuget.org/win-x86-commandline/v6.10.2/nuget.exe
+    mono $NUGET_PATH \
+>>>>>>> 79135260c (feat: enable arm64 packages building)
         sources add \
         -source "https://nuget.pkg.github.com/wazuh/index.json" \
         -name "GitHub" \
         -username "wazuh" \
         -password "$vcpkg_token"
+<<<<<<< HEAD
     mono `./vcpkg fetch nuget | tail -n 1` \
+=======
+    mono $NUGET_PATH \
+>>>>>>> 79135260c (feat: enable arm64 packages building)
         setapikey "$vcpkg_token" \
         -source "https://nuget.pkg.github.com/wazuh/index.json"
 
