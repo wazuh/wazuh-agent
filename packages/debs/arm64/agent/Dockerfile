@@ -54,7 +54,6 @@ RUN mkdir -p /usr/local/lib/pkgconfig && \
 
 RUN git config --global --add safe.directory /wazuh-local-src
 
-RUN apt update && apt install dirmngr gnupg apt-transport-https ca-certificates -y && \
-    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && \
-    sh -c 'echo "deb https://download.mono-project.com/repo/debian stable-buster main" > /etc/apt/sources.list.d/mono-official-stable.list' && \
-    apt update && apt install mono-complete -y
+RUN git clone https://github.com/mono/mono.git && cd mono && \
+    ./autogen.sh --prefix=/usr/local && make -j $(nproc) && make install -j $(nproc) && \
+    cd .. && rm -rf mono && update-ca-certificates && cert-sync /etc/ssl/certs/ca-certificates.crt
