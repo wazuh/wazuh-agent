@@ -42,9 +42,6 @@ TEST_F(JournaldReaderTests, BasicOperations) {
 
 TEST_F(JournaldReaderTests, MessageProcessing) {
     auto reader = CreateReader();
-
-    ON_CALL(logcollector, MockWait).WillByDefault(Return());
-
     auto runTask = reader.Run();
     reader.Stop();
 }

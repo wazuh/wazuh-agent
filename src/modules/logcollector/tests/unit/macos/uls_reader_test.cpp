@@ -22,7 +22,7 @@ TEST(ULSReaderTest, Constructor)
 TEST(ULSReaderTest, RunAndStop)
 {
     auto logCollector = LogcollectorMock();
-    logCollector.Stop();
+    EXPECT_CALL(logCollector, Wait(::testing::_)).Times(::testing::AnyNumber());
 
     boost::asio::io_context ioContext;
 
@@ -63,7 +63,7 @@ TEST(ULSReaderTest, RunAndStop)
 TEST(ULSReaderTest, CreateQueryFromRule)
 {
     auto logCollector = LogcollectorMock();
-    logCollector.Stop();
+    EXPECT_CALL(logCollector, Wait(::testing::_)).Times(::testing::AnyNumber());
 
     logcollector::ULSReader ulsReader(
         logCollector,
