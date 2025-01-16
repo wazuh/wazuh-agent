@@ -7,13 +7,11 @@
 #include <stringHelper.h>
 #include <hashHelper.h>
 #include <timeHelper.h>
+#include "commonDefs.h"
+#include "statelessEvent.hpp"
 
 constexpr std::time_t INVENTORY_DEFAULT_INTERVAL { 3600000 };
 constexpr size_t MAX_ID_SIZE = 512;
-
-constexpr int BYTES_IN_KILOBYTE = 1024;
-constexpr int KILOBYTES_IN_MEGABYTE = 1024;
-constexpr int BYTES_IN_MEGABYTE = BYTES_IN_KILOBYTE * KILOBYTES_IN_MEGABYTE;
 
 constexpr auto QUEUE_SIZE
 {
@@ -1297,156 +1295,6 @@ nlohmann::json Inventory::AddPreviousFields(nlohmann::json& current, const nlohm
 }
 
 nlohmann::json Inventory::GenerateStatelessEvent(const std::string& operation, const std::string& type, const nlohmann::json& data) {
-    nlohmann::json event;
-    std::string action, reason;
-    std::string created = m_scanTime;
-
-    if (type == "packages") {
-        std::string packageName = data["package"]["name"];
-        std::string version = data["package"]["version"];
-
-        if (operation == "create") {
-            action = "package-installed";
-            reason = "Package " + packageName + " (version " + version + ") was installed";
-        } else if (operation == "update") {
-            reason = "Package " + packageName + " updated";
-            action = "package-updated";
-        } else if (operation == "remove") {
-            action = "package-removed";
-            reason = "Package " + packageName + " (version " + version + ") was removed";
-        }
-
-        event["event"] = {
-            {"action", action},
-            {"category", {"package"}},
-            {"type", {operation == "create" ? "installation" : operation == "update" ? "change" : "deletion"}},
-            {"created", created},
-            {"reason", reason}
-        };
-    } else if (type == "ports") {
-        int srcPort = data["source"]["port"];
-        int destPort = data["destination"]["port"];
-
-        if (operation == "create") {
-            action = "port-detected";
-            reason = "New connection established from source port " + std::to_string(srcPort) + " to destination port " + std::to_string(destPort);
-        } else if (operation == "update") {
-            action = "port-updated";
-            reason = "Change for the connection from source port " + std::to_string(srcPort) + " to destination port " + std::to_string(destPort);
-        } else if (operation == "remove") {
-            action = "port-closed";
-            reason = "Connection from source port " + std::to_string(srcPort) + " to destination port " + std::to_string(destPort) + " was closed";
-        }
-
-        event["event"] = {
-            {"action", action},
-            {"category", {"network"}},
-            {"type", {operation == "create" ? "connection" : operation == "update" ? "change" : "end"}},
-            {"created", created},
-            {"reason", reason}
-        };
-    } else if (type == "hardware") {
-        std::string cpuName = data["host"]["cpu"]["name"];
-        int memoryTotalGB = data["host"]["memory"]["total"].get<int>() / BYTES_IN_MEGABYTE;
-        std::string serialNumber = data["observer"]["serial_number"];
-
-        if (operation == "create") {
-            action = "hardware-detected";
-            reason = "New hardware detected: " + cpuName + " with " + std::to_string(memoryTotalGB) + " GB memory";
-        } else if (operation == "update") {
-            action = "hardware-updated";
-            reason = "Hardware changed";
-        } else if (operation == "remove") {
-            action = "hardware-removed";
-            reason = "Hardware with serial number " + serialNumber + " was removed";
-        }
-
-        event["event"] = {
-            {"action", action},
-            {"category", {"host"}},
-            {"type", {operation == "create" ? "info" : operation == "update" ? "change" : "deletion"}},
-            {"created", created},
-            {"reason", reason}
-        };
-    } else if (type == "networks") {
-        std::string interface = data["observer"]["ingress"]["interface"]["name"];
-
-        if (operation == "create") {
-            action = "network-interface-detected";
-            reason = "New network interface " + interface + " detected";
-        } else if (operation == "update") {
-            action = "network-interface-updated";
-            reason = "Network interface " + interface + "updated";
-        } else if (operation == "remove") {
-            action = "network-interface-removed";
-            reason = "Network interface " + interface + " was removed";
-        }
-
-        event["event"] = {
-            {"action", action},
-            {"category", {"network"}},
-            {"type", {operation == "create" ? "info" : operation == "update" ? "change" : "deletion"}},
-            {"created", created},
-            {"reason", reason}
-        };
-    } else if (type == "processes") {
-        std::string processName = data["process"]["name"];
-        std::string pid = data["process"]["pid"];
-
-        if (operation == "create") {
-            action = "process-started";
-            reason = "Process " + processName + " (PID: " + pid + ") was started";
-        } else if (operation == "update") {
-            action = "process-updated";
-            reason = "Process " + processName + " (PID: " + pid + ") was updated";
-        } else if (operation == "remove") {
-            action = "process-stopped";
-            reason = "Process " + processName + " (PID: " + pid + ") was stopped";
-        }
-
-        event["event"] = {
-            {"action", action},
-            {"category", {"process"}},
-            {"type", {operation == "create" ? "start" : operation == "update" ? "change" : "end"}},
-            {"created", created},
-            {"reason", reason}
-        };
-    } else if (type == "system") {
-        std::string hostname = data["host"]["hostname"];
-        std::string osVersion = data["host"]["os"]["version"];
-
-        action = (operation == "update") ? "system-updated" : "system-detected";
-        reason = "System " + hostname + " is running OS version " + osVersion;
-
-        event["event"] = {
-            {"action", action},
-            {"category", {"host"}},
-            {"type", {operation == "update" ? "change" : "info"}},
-            {"created", created},
-            {"reason", reason}
-        };
-    } else if (type == "hotfixes") {
-        std::string hotfixID = data["package"]["hotfix"]["name"];
-
-        if (operation == "create") {
-            action = "hotfix-installed";
-            reason = "Hotfix " + hotfixID + " was installed";
-        } else if (operation == "update") {
-            action = "hotfix-updated";
-            reason = "Hotfix " + hotfixID + " was updated";
-        } else if (operation == "remove") {
-            action = "hotfix-removed";
-            reason = "Hotfix " + hotfixID + " was removed";
-        }
-
-        event["event"] = {
-            {"action", action},
-            {"category", {"hotfix"}},
-            {"type", {operation == "create" ? "installation" : "deletion"}},
-            {"created", created},
-            {"reason", reason}
-        };
-    }
-
-    return event;
+    auto event = CreateStatelessEvent(type, operation, m_scanTime, data);
+    return event ? event->generate() : nlohmann::json{};
 }

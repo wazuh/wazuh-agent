@@ -16,7 +16,8 @@ find_package(Boost REQUIRED COMPONENTS asio beast)
 add_library(Inventory
     src/inventory.cpp
     src/inventoryImp.cpp
-    src/inventoryNormalizer.cpp)
+    src/inventoryNormalizer.cpp
+    src/statelessEvent.cpp)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_options(Inventory PRIVATE /WX-)
