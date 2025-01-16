@@ -5,6 +5,8 @@
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 
+#include <exception>
+
 namespace
 {
     const std::string COLLECTOR_TYPE = "macos";
@@ -21,6 +23,7 @@ ULSReader::ULSReader(
     const std::vector<std::string>& logTypes
 )
 : IReader(logcollector)
+, m_osLogStoreWrapper(std::make_unique<OSLogStoreWrapper>())
 , m_logLevel(OSLogStoreWrapper::LogLevel::Undefined)
 , m_lastLogEntryTimeInSecondsSince1970(std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count())
 , m_waitInMillis(waitInMillis)
@@ -29,12 +32,29 @@ ULSReader::ULSReader(
     SetQuery(query, logTypes);
 }
 
+ULSReader::ULSReader(
+    std::unique_ptr<IOSLogStoreWrapper> osLogStoreWrapper,
+    Logcollector& logcollector,
+    const std::time_t waitInMillis,
+    const std::string& logLevel,
+    const std::string& query,
+    const std::vector<std::string>& logTypes
+)
+: ULSReader(logcollector, waitInMillis, logLevel, query, logTypes)
+{
+    m_osLogStoreWrapper = std::move(osLogStoreWrapper);
+}
+
 Awaitable ULSReader::Run()
 {
+    if (!m_osLogStoreWrapper)
+    {
+        throw std::runtime_error("OSLogStoreWrapper is not initialized");
+    }
+
     while (m_keepRunning.load())
     {
-        OSLogStoreWrapper osLogStoreWrapper;
-        const auto logEntries = osLogStoreWrapper.AllEntries(m_lastLogEntryTimeInSecondsSince1970, m_query, m_logLevel);
+        const auto logEntries = m_osLogStoreWrapper->AllEntries(m_lastLogEntryTimeInSecondsSince1970, m_query, m_logLevel);
 
         for (const auto& log : logEntries)
         {

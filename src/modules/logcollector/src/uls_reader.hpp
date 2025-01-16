@@ -43,6 +43,22 @@ public:
         const std::vector<std::string>& logTypes = {}
     );
 
+    /// @brief Constructs a new `ULSReader` instance, allowing dependency injection for the `IOSLogStoreWrapper`.
+    /// @param osLogStoreWrapper A unique pointer to an instance of `IOSLogStoreWrapper`, used for interacting with the OS log store.
+    /// @param logcollector Reference to the `Logcollector` instance managing the log reading process.
+    /// @param waitInMillis Duration in milliseconds to wait before processing log files.
+    /// @param logLevel The minimum log level to filter log entries.
+    /// @param query An optional query string using `NSPredicate` syntax for additional log filtering.
+    /// @param logTypes A vector of log type strings to further filter log entries.
+    ULSReader(
+        std::unique_ptr<IOSLogStoreWrapper> osLogStoreWrapper,
+        Logcollector& logcollector,
+        const std::time_t waitInMillis = config::logcollector::DEFAULT_FILE_WAIT,
+        const std::string& logLevel = "",
+        const std::string& query = "",
+        const std::vector<std::string>& logTypes = {}
+    );
+
     /// @brief Destructor for `ULSReader`.
     ~ULSReader() override = default;
 
@@ -73,6 +89,7 @@ private:
     /// @param logTypes A vector of strings specifying the types of logs to include.
     void SetQuery(const std::string& query, const std::vector<std::string>& logTypes);
 
+    std::unique_ptr<IOSLogStoreWrapper> m_osLogStoreWrapper;
     OSLogStoreWrapper::LogLevel m_logLevel;
     std::string m_query;
     double m_lastLogEntryTimeInSecondsSince1970;
