@@ -68,4 +68,9 @@ if (-not (Get-Service -Name $serviceName -ErrorAction SilentlyContinue)) {
 Write-Host "Starting agent."
 & $wazuhagent
 
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Error executing wazuh-agent.exe. Error code: $LASTEXITCODE."
+    exit 1
+}
+
 Write-Host "postinstall.ps1 script completed."
