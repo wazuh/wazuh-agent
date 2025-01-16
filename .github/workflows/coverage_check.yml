@@ -24,9 +24,9 @@ jobs:
     - name: Set up dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake llvm gcovr autopoint \
+        sudo apt-get install -y cmake llvm gcovr autopoint libltdl-dev \
           libtool zlib1g-dev libgcrypt20-dev libmagic-dev libpopt-dev \
-          libmagic-dev libsqlite3-dev liblua5.4-dev gettext libarchive-dev
+          libsqlite3-dev liblua5.4-dev gettext libarchive-dev libsystemd-dev
       shell: bash
 
     - name: Set up Binary caching

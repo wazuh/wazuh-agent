@@ -1,4 +1,4 @@
-#include <journal_log.hpp>
+#include "journal_log.hpp"
 #include <systemd/sd-journal.h>
 #include <logger.hpp>
 #include <cstring>

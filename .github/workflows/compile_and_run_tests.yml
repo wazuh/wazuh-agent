@@ -30,7 +30,8 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
-        sudo apt-get install -y wget gnupg lsb-release software-properties-common libltdl-dev
+        sudo apt-get install -y wget gnupg lsb-release software-properties-common \
+          libltdl-dev libsystemd-dev
         wget https://apt.llvm.org/llvm.sh
         chmod +x llvm.sh
         sudo ./llvm.sh 18
