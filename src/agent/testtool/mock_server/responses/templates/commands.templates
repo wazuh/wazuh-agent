@@ -1,7 +1,0 @@
-{"commands":[{"document_id":"id","action":{"name":"command","version":"version","args":["arg1","arg2"]},"target":{"type":"type","id":"agentID"},"status":"sent"}]}
-
-# CentralizedConfiguration set-group
-{"commands":[{"document_id":"id","action":{"name":"set-group","version":"v5.0.0","args":["validYaml","invalidYaml"]},"target":{"type":"agent","id":"agentID"},"status":"sent"}]}
-
-# CentralizedConfiguration update-group
-{"commands":[{"document_id":"id","action":{"name":"update-group","version":"v5.0.0","args":[]},"target":{"type":"agent","id":"agentID"},"status":"sent"}]}
