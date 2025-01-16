@@ -11,6 +11,10 @@
 constexpr std::time_t INVENTORY_DEFAULT_INTERVAL { 3600000 };
 constexpr size_t MAX_ID_SIZE = 512;
 
+constexpr int BYTES_IN_KILOBYTE = 1024;
+constexpr int KILOBYTES_IN_MEGABYTE = 1024;
+constexpr int BYTES_IN_MEGABYTE = BYTES_IN_KILOBYTE * KILOBYTES_IN_MEGABYTE;
+
 constexpr auto QUEUE_SIZE
 {
     4096
@@ -28,7 +32,7 @@ static const std::map<ReturnTypeCallback, std::string> OPERATION_MAP
     // LCOV_EXCL_STOP
 };
 
-constexpr auto OS_SQL_STATEMENT
+constexpr auto SYSTEM_SQL_STATEMENT
 {
     R"(CREATE TABLE system (
     hostname TEXT,
@@ -49,7 +53,7 @@ constexpr auto OS_SQL_STATEMENT
     PRIMARY KEY (os_name)) WITHOUT ROWID;)"
 };
 
-constexpr auto HW_SQL_STATEMENT
+constexpr auto HARDWARE_SQL_STATEMENT
 {
     R"(CREATE TABLE hardware (
     board_serial TEXT,
@@ -181,8 +185,8 @@ constexpr auto PACKAGES_TABLE     { "packages"  };
 constexpr auto HOTFIXES_TABLE     { "hotfixes"  };
 constexpr auto PORTS_TABLE        { "ports"     };
 constexpr auto PROCESSES_TABLE    { "processes" };
-constexpr auto OS_TABLE           { "system"    };
-constexpr auto HW_TABLE           { "hardware"  };
+constexpr auto SYSTEM_TABLE       { "system"    };
+constexpr auto HARDWARE_TABLE     { "hardware"  };
 constexpr auto MD_TABLE           { "metadata"  };
 
 const std::unordered_map<std::string, std::string> TABLE_TO_KEY_MAP = {
@@ -191,9 +195,10 @@ const std::unordered_map<std::string, std::string> TABLE_TO_KEY_MAP = {
     {HOTFIXES_TABLE,    "hotfixes-first-scan"},
     {PORTS_TABLE,       "ports-first-scan"},
     {PROCESSES_TABLE,   "processes-first-scan"},
-    {OS_TABLE,          "system-first-scan"},
-    {HW_TABLE,          "hardware-first-scan"}
+    {SYSTEM_TABLE,      "system-first-scan"},
+    {HARDWARE_TABLE,    "hardware-first-scan"}
 };
+
 
 static std::string GetItemId(const nlohmann::json& item, const std::vector<std::string>& idFields)
 {
@@ -237,11 +242,11 @@ static bool IsElementDuplicated(const nlohmann::json& input, const std::pair<std
 nlohmann::json Inventory::EcsData(const nlohmann::json& data, const std::string& table, bool createFields)
 {
     nlohmann::json ret;
-    if(table == HW_TABLE)
+    if(table == HARDWARE_TABLE)
     {
         ret = EcsHardwareData(data, createFields);
     }
-    else if (table == OS_TABLE)
+    else if (table == SYSTEM_TABLE)
     {
         ret = EcsSystemData(data, createFields);
     }
@@ -271,11 +276,11 @@ nlohmann::json Inventory::EcsData(const nlohmann::json& data, const std::string&
 std::string Inventory::GetPrimaryKeys([[maybe_unused]] const nlohmann::json& data, const std::string& table)
 {
     std::string ret;
-    if (table == HW_TABLE)
+    if (table == HARDWARE_TABLE)
     {
         ret = data["observer"]["serial_number"];
     }
-    else if (table == OS_TABLE)
+    else if (table == SYSTEM_TABLE)
     {
         ret = data["host"]["os"]["name"];
     }
@@ -326,25 +331,36 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
         {
             for (const auto& item : data)
             {
-                nlohmann::json msg;
-                msg["type"] = table;
-                msg["operation"] = OPERATION_MAP.at(result);
+                // LCOV_EXCL_START
+                nlohmann::json msg{
+                    {"metadata", {
+                        {"type", table},
+                        {"operation", OPERATION_MAP.at(result)},
+                        {"module", Name()}
+                    }}
+                };
 
-                if(result == MODIFIED)
-                {
-                    msg["data"] = EcsData(item["new"], table);
-                    msg["old_data"] = EcsData(item["old"], table, false);
-                }
-                else
-                {
-                    msg["data"] = EcsData(item, table);
-                }
+                msg["data"] = EcsData(result == MODIFIED ? item["new"] : item, table);
+                nlohmann::json oldData = (result == MODIFIED) ? EcsData(item["old"], table, false) : nlohmann::json{};
 
-                msg["id"] = CalculateHashId(msg["data"], table);
+                msg["metadata"]["id"] = CalculateHashId(msg["data"], table);
 
-                if (msg["id"].is_string() && msg["id"].get<std::string>().size() <= MAX_ID_SIZE)
-                {
+                if (msg["metadata"]["id"].is_string() && msg["metadata"]["id"].get<std::string>().size() <= MAX_ID_SIZE) {
+
+                    nlohmann::json stateless;
+                    stateless = GenerateStatelessEvent(OPERATION_MAP.at(result), table, msg["data"]);
+
+                    nlohmann::json eventWithChanges;
+                    eventWithChanges = msg["data"];
+                    if (!oldData.empty())
+                    {
+                        stateless["event"]["changed_fields"] = AddPreviousFields(eventWithChanges, oldData);
+                    }
+
+                    stateless.update(eventWithChanges);
+                    msg["stateless"] = stateless;
                     msg["data"]["@timestamp"] = m_scanTime;
+
                     const auto msgToSend{msg.dump()};
                     m_reportDiffFunction(msgToSend);
                 }
@@ -353,30 +369,41 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
                     LogWarn("Event discarded for exceeding maximum size allowed in id field.");
                     LogTrace("Event discarded: {}", msg.dump());
                 }
+                // LCOV_EXCL_STOP
             }
         }
         else
         {
             // LCOV_EXCL_START
-            nlohmann::json msg;
-            msg["type"] = table;
-            msg["operation"] = OPERATION_MAP.at(result);
+            nlohmann::json msg{
+                {"metadata", {
+                    {"type", table},
+                    {"operation", OPERATION_MAP.at(result)},
+                    {"module", Name()}
+                }}
+            };
 
-            if(result == MODIFIED)
-            {
-                msg["data"] = EcsData(data["new"], table);
-                msg["old_data"] = EcsData(data["old"], table, false);
-            }
-            else
-            {
-                msg["data"] = EcsData(data, table);
-            }
+            msg["data"] = EcsData(result == MODIFIED ? data["new"] : data, table);
+            nlohmann::json oldData = (result == MODIFIED) ? EcsData(data["old"], table, false) : nlohmann::json{};
 
-            msg["id"] = CalculateHashId(msg["data"], table);
+            msg["metadata"]["id"] = CalculateHashId(msg["data"], table);
 
-            if (msg["id"].is_string() && msg["id"].get<std::string>().size() <= MAX_ID_SIZE)
-            {
+            if (msg["metadata"]["id"].is_string() && msg["metadata"]["id"].get<std::string>().size() <= MAX_ID_SIZE) {
+
+                nlohmann::json stateless;
+                stateless = GenerateStatelessEvent(OPERATION_MAP.at(result), table, msg["data"]);
+
+                nlohmann::json eventWithChanges;
+                eventWithChanges = msg["data"];
+                if (!oldData.empty())
+                {
+                    stateless["event"]["changed_fields"] = AddPreviousFields(eventWithChanges, oldData);
+                }
+
+                stateless.update(eventWithChanges);
+                msg["stateless"] = stateless;
                 msg["data"]["@timestamp"] = m_scanTime;
+
                 const auto msgToSend{msg.dump()};
                 m_reportDiffFunction(msgToSend);
             }
@@ -385,14 +412,14 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
                 LogWarn("Event discarded for exceeding maximum size allowed in id field.");
                 LogTrace("Event discarded: {}", msg.dump());
             }
-
             // LCOV_EXCL_STOP
         }
     }
 }
 
 void Inventory::UpdateChanges(const std::string& table,
-                                 const nlohmann::json& values)
+                                 const nlohmann::json& values,
+                                    const bool isFirstScan)
 {
     const auto callback
     {
@@ -414,7 +441,10 @@ void Inventory::UpdateChanges(const std::string& table,
     nlohmann::json input;
     input["table"] = table;
     input["data"] = values;
-    input["options"]["return_old_data"] = true;
+    if (isFirstScan)
+    {
+        input["options"]["return_old_data"] = true;
+    }
     txn.syncTxnRow(input);
     txn.getDeletedRows(callback);
 }
@@ -466,8 +496,8 @@ std::string Inventory::GetCreateStatement() const
 {
     std::string ret;
 
-    ret += OS_SQL_STATEMENT;
-    ret += HW_SQL_STATEMENT;
+    ret += SYSTEM_SQL_STATEMENT;
+    ret += HARDWARE_SQL_STATEMENT;
     ret += PACKAGES_SQL_STATEMENT;
     ret += HOTFIXES_SQL_STATEMENT;
     ret += PROCESSES_SQL_STATEMENT;
@@ -497,8 +527,8 @@ void Inventory::Init(const std::shared_ptr<ISysInfo>& spInfo,
         m_spNormalizer = std::make_unique<InvNormalizer>(normalizerConfigPath, normalizerType);
     }
 
-   m_hardwareFirstScan  = ReadMetadata(TABLE_TO_KEY_MAP.at(HW_TABLE)).empty() ? false:true;
-   m_systemFirstScan    = ReadMetadata(TABLE_TO_KEY_MAP.at(OS_TABLE)).empty() ? false:true;
+   m_hardwareFirstScan  = ReadMetadata(TABLE_TO_KEY_MAP.at(HARDWARE_TABLE)).empty() ? false:true;
+   m_systemFirstScan    = ReadMetadata(TABLE_TO_KEY_MAP.at(SYSTEM_TABLE)).empty() ? false:true;
    m_networksFirstScan  = ReadMetadata(TABLE_TO_KEY_MAP.at(NETWORKS_TABLE)).empty() ? false:true;
    m_packagesFirstScan  = ReadMetadata(TABLE_TO_KEY_MAP.at(PACKAGES_TABLE)).empty() ? false:true;
    m_portsFirstScan     = ReadMetadata(TABLE_TO_KEY_MAP.at(PORTS_TABLE)).empty() ? false:true;
@@ -507,13 +537,13 @@ void Inventory::Init(const std::shared_ptr<ISysInfo>& spInfo,
 
    if(m_hardwareFirstScan && !m_hardware)
    {
-       DeleteMetadata(TABLE_TO_KEY_MAP.at(HW_TABLE));
+       DeleteMetadata(TABLE_TO_KEY_MAP.at(HARDWARE_TABLE));
        m_hardwareFirstScan = false;
    }
 
    if(m_systemFirstScan && !m_system)
    {
-       DeleteMetadata(TABLE_TO_KEY_MAP.at(OS_TABLE));
+       DeleteMetadata(TABLE_TO_KEY_MAP.at(SYSTEM_TABLE));
        m_systemFirstScan = false;
    }
 
@@ -808,47 +838,35 @@ nlohmann::json Inventory::EcsNetworkData(const nlohmann::json& originalData, boo
     return ret;
 }
 
-nlohmann::json Inventory::GetHardwareData()
-{
-    nlohmann::json ret;
-    ret[0] = m_spInfo->hardware();
-    return ret;
-}
-
 void Inventory::ScanHardware()
 {
     if (m_hardware)
     {
         LogTrace( "Starting hardware scan");
-        const auto& hwData{GetHardwareData()};
-        UpdateChanges(HW_TABLE, hwData);
+        nlohmann::json hwData;
+        hwData[0] = m_spInfo->hardware();
+        UpdateChanges(HARDWARE_TABLE, hwData, m_hardwareFirstScan);
         LogTrace( "Ending hardware scan");
 
         if(!m_hardwareFirstScan){
-            WriteMetadata(TABLE_TO_KEY_MAP.at(HW_TABLE), Utils::getCurrentISO8601());
+            WriteMetadata(TABLE_TO_KEY_MAP.at(HARDWARE_TABLE), Utils::getCurrentISO8601());
             m_hardwareFirstScan = true;
         }
     }
 }
 
-nlohmann::json Inventory::GetOSData()
-{
-    nlohmann::json ret;
-    ret[0] = m_spInfo->os();
-    return ret;
-}
-
-void Inventory::ScanOs()
+void Inventory::ScanSystem()
 {
     if (m_system)
     {
         LogTrace( "Starting os scan");
-        const auto& osData{GetOSData()};
-        UpdateChanges(OS_TABLE, osData);
+        nlohmann::json SystemData;
+        SystemData[0] = m_spInfo->os();
+        UpdateChanges(SYSTEM_TABLE, SystemData, m_systemFirstScan);
         LogTrace( "Ending os scan");
 
         if(!m_systemFirstScan){
-            WriteMetadata(TABLE_TO_KEY_MAP.at(OS_TABLE), Utils::getCurrentISO8601());
+            WriteMetadata(TABLE_TO_KEY_MAP.at(SYSTEM_TABLE), Utils::getCurrentISO8601());
             m_systemFirstScan = true;
         }
     }
@@ -946,7 +964,7 @@ void Inventory::ScanNetwork()
 
             if (itNet != networkData.end())
             {
-                UpdateChanges(NETWORKS_TABLE, itNet.value());
+                UpdateChanges(NETWORKS_TABLE, itNet.value(), m_networksFirstScan);
             }
         }
 
@@ -992,7 +1010,10 @@ void Inventory::ScanPackages()
             if (!rawData.empty())
             {
                 input["data"] = nlohmann::json::array( { rawData } );
-                input["options"]["return_old_data"] = true;
+                if (m_packagesFirstScan)
+                {
+                    input["options"]["return_old_data"] = true;
+                }
                 txn.syncTxnRow(input);
             }
         });
@@ -1016,7 +1037,7 @@ void Inventory::ScanHotfixes()
 
         if (!hotfixes.is_null())
         {
-            UpdateChanges(HOTFIXES_TABLE, hotfixes);
+            UpdateChanges(HOTFIXES_TABLE, hotfixes, m_hotfixesFirstScan);
         }
 
         if(!m_hotfixesFirstScan){
@@ -1094,7 +1115,7 @@ void Inventory::ScanPorts()
     {
         LogTrace( "Starting ports scan");
         const auto& portsData { GetPortsData() };
-        UpdateChanges(PORTS_TABLE, portsData);
+        UpdateChanges(PORTS_TABLE, portsData, m_portsFirstScan);
         LogTrace( "Ending ports scan");
 
         if(!m_portsFirstScan){
@@ -1125,16 +1146,20 @@ void Inventory::ScanProcesses()
             QUEUE_SIZE,
             callback
         };
-        m_spInfo->processes([&txn](nlohmann::json & rawData)
-        {
-            nlohmann::json input;
+        m_spInfo->processes(std::function<void(nlohmann::json&)>(
+            [this, &txn](nlohmann::json & rawData)
+            {
+                nlohmann::json input;
+                input["table"] = PROCESSES_TABLE;
+                input["data"] = nlohmann::json::array({ rawData });
 
-            input["table"] = PROCESSES_TABLE;
-            input["data"] = nlohmann::json::array( { rawData } );
-            input["options"]["return_old_data"] = true;
+                if (m_processesFirstScan) {
+                    input["options"]["return_old_data"] = true;
+                }
 
-            txn.syncTxnRow(input);
-        });
+                txn.syncTxnRow(input);
+            }
+        ));
         txn.getDeletedRows(callback);
 
         if(!m_processesFirstScan){
@@ -1152,7 +1177,7 @@ void Inventory::Scan()
     m_scanTime = Utils::getCurrentISO8601();
 
     TryCatchTask([&]() { ScanHardware(); });
-    TryCatchTask([&]() { ScanOs(); });
+    TryCatchTask([&]() { ScanSystem(); });
     TryCatchTask([&]() { ScanPackages(); });
     TryCatchTask([&]() { ScanProcesses(); });
     TryCatchTask([&]() { ScanHotfixes(); });
@@ -1200,7 +1225,7 @@ std::string Inventory::ReadMetadata(const std::string &key) {
     std::string result;
     std::string filter = "WHERE key = '" + key + "'";
     auto selectQuery = SelectQuery::builder()
-        .table("metadata")
+        .table(MD_TABLE)
         .columnList({"key", "value"})
         .rowFilter(filter)
         .build();
@@ -1221,7 +1246,7 @@ void Inventory::DeleteMetadata(const std::string &key){
     auto deleteQuery
     {
         DeleteQuery::builder()
-        .table("metadata")
+        .table(MD_TABLE)
         .data({{"key", key}})
         .rowFilter("")
         .build()
@@ -1254,4 +1279,195 @@ void Inventory::CleanMetadata()
     {
         LogErrorInventory(ex.what());
     }
+}
+
+nlohmann::json Inventory::AddPreviousFields(nlohmann::json& current, const nlohmann::json& previous) {
+    using JsonPair = std::pair<nlohmann::json*, const nlohmann::json*>;
+    using PathPair = std::pair<std::string, JsonPair>;
+
+    std::stack<PathPair> stack;
+    nlohmann::json modifiedKeys = nlohmann::json::array();
+
+    stack.emplace("", JsonPair(&current, &previous));
+
+    while (!stack.empty()) {
+        auto [path, pair] = stack.top();
+        auto [curr, prev] = pair;
+        stack.pop();
+
+        for (auto& [key, value] : prev->items()) {
+
+            std::string currentPath = path;
+            if (!path.empty()) {
+                currentPath.append(".").append(key);
+            } else {
+                currentPath = key;
+            }
+
+            if (curr->contains(key)) {
+                if ((*curr)[key].is_object() && value.is_object()) {
+                    stack.emplace(currentPath, JsonPair(&((*curr)[key]), &value));
+                } else if ((*curr)[key] != value) {
+                    modifiedKeys.push_back(currentPath);
+                    (*curr)["previous"][key] = value;
+                }
+            }
+        }
+    }
+    return modifiedKeys;
+}
+
+nlohmann::json Inventory::GenerateStatelessEvent(const std::string& operation, const std::string& type, const nlohmann::json& data) {
+    nlohmann::json event;
+    std::string action, reason;
+    std::string created = m_scanTime;
+
+    if (type == "packages") {
+        std::string packageName = data["package"]["name"];
+        std::string version = data["package"]["version"];
+
+        if (operation == "create") {
+            action = "package-installed";
+            reason = "Package " + packageName + " (version " + version + ") was installed";
+        } else if (operation == "update") {
+            reason = "Package " + packageName + " updated";
+            action = "package-updated";
+        } else if (operation == "remove") {
+            action = "package-removed";
+            reason = "Package " + packageName + " (version " + version + ") was removed";
+        }
+
+        event["event"] = {
+            {"action", action},
+            {"category", {"package"}},
+            {"type", {operation == "create" ? "installation" : operation == "update" ? "change" : "deletion"}},
+            {"created", created},
+            {"reason", reason}
+        };
+    } else if (type == "ports") {
+        int srcPort = data["source"]["port"];
+        int destPort = data["destination"]["port"];
+
+        if (operation == "create") {
+            action = "port-detected";
+            reason = "New connection established from source port " + std::to_string(srcPort) + " to destination port " + std::to_string(destPort);
+        } else if (operation == "update") {
+            action = "port-updated";
+            reason = "Change for the connection from source port " + std::to_string(srcPort) + " to destination port " + std::to_string(destPort);
+        } else if (operation == "remove") {
+            action = "port-closed";
+            reason = "Connection from source port " + std::to_string(srcPort) + " to destination port " + std::to_string(destPort) + " was closed";
+        }
+
+        event["event"] = {
+            {"action", action},
+            {"category", {"network"}},
+            {"type", {operation == "create" ? "connection" : operation == "update" ? "change" : "end"}},
+            {"created", created},
+            {"reason", reason}
+        };
+    } else if (type == "hardware") {
+        std::string cpuName = data["host"]["cpu"]["name"];
+        int memoryTotalGB = data["host"]["memory"]["total"].get<int>() / BYTES_IN_MEGABYTE;
+        std::string serialNumber = data["observer"]["serial_number"];
+
+        if (operation == "create") {
+            action = "hardware-detected";
+            reason = "New hardware detected: " + cpuName + " with " + std::to_string(memoryTotalGB) + " GB memory";
+        } else if (operation == "update") {
+            action = "hardware-updated";
+            reason = "Hardware changed";
+        } else if (operation == "remove") {
+            action = "hardware-removed";
+            reason = "Hardware with serial number " + serialNumber + " was removed";
+        }
+
+        event["event"] = {
+            {"action", action},
+            {"category", {"host"}},
+            {"type", {operation == "create" ? "info" : operation == "update" ? "change" : "deletion"}},
+            {"created", created},
+            {"reason", reason}
+        };
+    } else if (type == "networks") {
+        std::string interface = data["observer"]["ingress"]["interface"]["name"];
+
+        if (operation == "create") {
+            action = "network-interface-detected";
+            reason = "New network interface " + interface + " detected";
+        } else if (operation == "update") {
+            action = "network-interface-updated";
+            reason = "Network interface " + interface + "updated";
+        } else if (operation == "remove") {
+            action = "network-interface-removed";
+            reason = "Network interface " + interface + " was removed";
+        }
+
+        event["event"] = {
+            {"action", action},
+            {"category", {"network"}},
+            {"type", {operation == "create" ? "info" : operation == "update" ? "change" : "deletion"}},
+            {"created", created},
+            {"reason", reason}
+        };
+    } else if (type == "processes") {
+        std::string processName = data["process"]["name"];
+        std::string pid = data["process"]["pid"];
+
+        if (operation == "create") {
+            action = "process-started";
+            reason = "Process " + processName + " (PID: " + pid + ") was started";
+        } else if (operation == "update") {
+            action = "process-updated";
+            reason = "Process " + processName + " (PID: " + pid + ") was updated";
+        } else if (operation == "remove") {
+            action = "process-stopped";
+            reason = "Process " + processName + " (PID: " + pid + ") was stopped";
+        }
+
+        event["event"] = {
+            {"action", action},
+            {"category", {"process"}},
+            {"type", {operation == "create" ? "start" : operation == "update" ? "change" : "end"}},
+            {"created", created},
+            {"reason", reason}
+        };
+    } else if (type == "system") {
+        std::string hostname = data["host"]["hostname"];
+        std::string osVersion = data["host"]["os"]["version"];
+
+        action = (operation == "update") ? "system-updated" : "system-detected";
+        reason = "System " + hostname + " is running OS version " + osVersion;
+
+        event["event"] = {
+            {"action", action},
+            {"category", {"host"}},
+            {"type", {operation == "update" ? "change" : "info"}},
+            {"created", created},
+            {"reason", reason}
+        };
+    } else if (type == "hotfixes") {
+        std::string hotfixID = data["package"]["hotfix"]["name"];
+
+        if (operation == "create") {
+            action = "hotfix-installed";
+            reason = "Hotfix " + hotfixID + " was installed";
+        } else if (operation == "update") {
+            action = "hotfix-updated";
+            reason = "Hotfix " + hotfixID + " was updated";
+        } else if (operation == "remove") {
+            action = "hotfix-removed";
+            reason = "Hotfix " + hotfixID + " was removed";
+        }
+
+        event["event"] = {
+            {"action", action},
+            {"category", {"hotfix"}},
+            {"type", {operation == "create" ? "installation" : "deletion"}},
+            {"created", created},
+            {"reason", reason}
+        };
+    }
+
+    return event;
 }

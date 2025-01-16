@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <ctime>
+#include <stack>
 
 #include <sysInfoInterface.hpp>
 #include <configuration_parser.hpp>
@@ -61,16 +62,14 @@ class Inventory {
         nlohmann::json EcsPackageData(const nlohmann::json& originalData, bool createFields = true);
         nlohmann::json EcsPortData(const nlohmann::json& originalData, bool createFields = true);
         nlohmann::json EcsNetworkData(const nlohmann::json& originalData, bool createFields = true);
-        nlohmann::json GetOSData();
-        nlohmann::json GetHardwareData();
         nlohmann::json GetNetworkData();
         nlohmann::json GetPortsData();
 
-        void UpdateChanges(const std::string& table, const nlohmann::json& values);
+        void UpdateChanges(const std::string& table, const nlohmann::json& values, const bool isFirstScan);
         void NotifyChange(ReturnTypeCallback result, const nlohmann::json& data, const std::string& table);
         void TryCatchTask(const std::function<void()>& task) const;
         void ScanHardware();
-        void ScanOs();
+        void ScanSystem();
         void ScanNetwork();
         void ScanPackages();
         void ScanHotfixes();
@@ -84,6 +83,8 @@ class Inventory {
         nlohmann::json EcsData(const nlohmann::json& data, const std::string& table, bool createFields = true);
         std::string GetPrimaryKeys(const nlohmann::json& data, const std::string& table);
         std::string CalculateHashId(const nlohmann::json& data, const std::string& table);
+        nlohmann::json AddPreviousFields(nlohmann::json& current, const nlohmann::json& previous);
+        nlohmann::json GenerateStatelessEvent(const std::string& operation, const std::string& type, const nlohmann::json& data);
 
         void WriteMetadata(const std::string &key, const std::string &value);
         std::string ReadMetadata(const std::string &key);
