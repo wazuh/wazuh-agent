@@ -62,8 +62,18 @@ public:
 class OSLogStoreWrapper : public IOSLogStoreWrapper
 {
 public:
+    /// @brief Constructor
+    OSLogStoreWrapper();
+
+    /// @brief  Destructor
+    ~OSLogStoreWrapper();
+
     /// @copydoc IOSLogStoreWrapper::AllEntries
     std::vector<LogEntry> AllEntries(const double startTimeSeconds,
                                      const std::string& query,
                                      const LogLevel logLevel = LogLevel::Undefined) override;
+
+private:
+    class Impl;
+    std::unique_ptr<Impl> m_impl;
 };
