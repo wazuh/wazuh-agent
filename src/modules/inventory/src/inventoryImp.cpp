@@ -323,99 +323,78 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
     if (DB_ERROR == result)
     {
         LogErrorInventory(data.dump());
+        return;
     }
-    else if (m_notify && !m_stopping)
+
+    if (!m_notify || m_stopping)
     {
+        return;
+    }
 
-        if (data.is_array())
+    if (data.is_array())
+    {
+        for (const auto& item : data)
         {
-            for (const auto& item : data)
-            {
-                // LCOV_EXCL_START
-                nlohmann::json msg{
-                    {"metadata", {
-                        {"type", table},
-                        {"operation", OPERATION_MAP.at(result)},
-                        {"module", Name()}
-                    }}
-                };
-
-                msg["data"] = EcsData(result == MODIFIED ? item["new"] : item, table);
-                nlohmann::json oldData = (result == MODIFIED) ? EcsData(item["old"], table, false) : nlohmann::json{};
-
-                msg["metadata"]["id"] = CalculateHashId(msg["data"], table);
-
-                if (msg["metadata"]["id"].is_string() && msg["metadata"]["id"].get<std::string>().size() <= MAX_ID_SIZE) {
-
-                    nlohmann::json stateless;
-                    stateless = GenerateStatelessEvent(OPERATION_MAP.at(result), table, msg["data"]);
-
-                    nlohmann::json eventWithChanges;
-                    eventWithChanges = msg["data"];
-                    if (!oldData.empty())
-                    {
-                        stateless["event"]["changed_fields"] = AddPreviousFields(eventWithChanges, oldData);
-                    }
-
-                    stateless.update(eventWithChanges);
-                    msg["stateless"] = stateless;
-                    msg["data"]["@timestamp"] = m_scanTime;
-
-                    const auto msgToSend{msg.dump()};
-                    m_reportDiffFunction(msgToSend);
-                }
-                else
-                {
-                    LogWarn("Event discarded for exceeding maximum size allowed in id field.");
-                    LogTrace("Event discarded: {}", msg.dump());
-                }
-                // LCOV_EXCL_STOP
-            }
+            ProcessEvent(result, item, table);
         }
-        else
-        {
-            // LCOV_EXCL_START
-            nlohmann::json msg{
-                {"metadata", {
-                    {"type", table},
-                    {"operation", OPERATION_MAP.at(result)},
-                    {"module", Name()}
-                }}
-            };
-
-            msg["data"] = EcsData(result == MODIFIED ? data["new"] : data, table);
-            nlohmann::json oldData = (result == MODIFIED) ? EcsData(data["old"], table, false) : nlohmann::json{};
-
-            msg["metadata"]["id"] = CalculateHashId(msg["data"], table);
-
-            if (msg["metadata"]["id"].is_string() && msg["metadata"]["id"].get<std::string>().size() <= MAX_ID_SIZE) {
-
-                nlohmann::json stateless;
-                stateless = GenerateStatelessEvent(OPERATION_MAP.at(result), table, msg["data"]);
-
-                nlohmann::json eventWithChanges;
-                eventWithChanges = msg["data"];
-                if (!oldData.empty())
-                {
-                    stateless["event"]["changed_fields"] = AddPreviousFields(eventWithChanges, oldData);
-                }
-
-                stateless.update(eventWithChanges);
-                msg["stateless"] = stateless;
-                msg["data"]["@timestamp"] = m_scanTime;
-
-                const auto msgToSend{msg.dump()};
-                m_reportDiffFunction(msgToSend);
-            }
-            else
-            {
-                LogWarn("Event discarded for exceeding maximum size allowed in id field.");
-                LogTrace("Event discarded: {}", msg.dump());
-            }
-            // LCOV_EXCL_STOP
-        }
+    }
+    else
+    {
+        ProcessEvent(result, data, table);
     }
 }
+
+void Inventory::ProcessEvent(ReturnTypeCallback result, const nlohmann::json& item, const std::string& table)
+{
+    nlohmann::json msg = GenerateMessage(result, item, table);
+
+    if (msg["metadata"]["id"].is_string() && msg["metadata"]["id"].get<std::string>().size() <= MAX_ID_SIZE)
+    {
+        NotifyEvent(result, msg, item, table);
+    }
+    else
+    {
+        LogWarn("Event discarded for exceeding maximum size allowed in id field.");
+        LogTrace("Event discarded: {}", msg.dump());
+    }
+}
+
+nlohmann::json Inventory::GenerateMessage(ReturnTypeCallback result, const nlohmann::json& item, const std::string& table)
+{
+    nlohmann::json msg{
+        {"metadata", {
+            {"type", table},
+            {"operation", OPERATION_MAP.at(result)},
+            {"module", Name()}
+        }}
+    };
+
+    msg["data"] = EcsData(result == MODIFIED ? item["new"] : item, table);
+    msg["metadata"]["id"] = CalculateHashId(msg["data"], table);
+
+    return msg;
+}
+
+void Inventory::NotifyEvent(ReturnTypeCallback result, nlohmann::json& msg, const nlohmann::json& item, const std::string& table)
+{
+    nlohmann::json oldData = (result == MODIFIED) ? EcsData(item["old"], table, false) : nlohmann::json{};
+
+    nlohmann::json stateless = GenerateStatelessEvent(OPERATION_MAP.at(result), table, msg["data"]);
+    nlohmann::json eventWithChanges = msg["data"];
+
+    if (!oldData.empty())
+    {
+        stateless["event"]["changed_fields"] = AddPreviousFields(eventWithChanges, oldData);
+    }
+
+    stateless.update(eventWithChanges);
+    msg["stateless"] = stateless;
+    msg["data"]["@timestamp"] = m_scanTime;
+
+    const auto msgToSend = msg.dump();
+    m_reportDiffFunction(msgToSend);
+}
+
 
 void Inventory::UpdateChanges(const std::string& table,
                                  const nlohmann::json& values,

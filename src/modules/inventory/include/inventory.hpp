@@ -67,6 +67,10 @@ class Inventory {
 
         void UpdateChanges(const std::string& table, const nlohmann::json& values, const bool isFirstScan);
         void NotifyChange(ReturnTypeCallback result, const nlohmann::json& data, const std::string& table);
+        void ProcessEvent(ReturnTypeCallback result, const nlohmann::json& item, const std::string& table);
+        nlohmann::json GenerateMessage(ReturnTypeCallback result, const nlohmann::json& item, const std::string& table);
+        void NotifyEvent(ReturnTypeCallback result, nlohmann::json& msg, const nlohmann::json& item, const std::string& table);
+
         void TryCatchTask(const std::function<void()>& task) const;
         void ScanHardware();
         void ScanSystem();
