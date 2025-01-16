@@ -82,7 +82,24 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     install(TARGETS wazuh-agent RUNTIME DESTINATION .)
     if(DEFINED ENV{CUSTOM_CMAKE_CONFIG})
-        file(GLOB DLLS "${CMAKE_BINARY_DIR}/$ENV{CUSTOM_CMAKE_CONFIG}/*.dll")
+        set(DLL_NAMES
+            "SQLiteCpp.dll"
+            "boost_program_options-vc144-mt-x64-1_85.dll"
+            "boost_url-vc144-mt-x64-1_85.dll"
+            "cjson.dll"
+            "fmt.dll"
+            "libcrypto-3-x64.dll"
+            "libssl-3-x64.dll"
+            "spdlog.dll"
+            "sqlite3.dll"
+            "yaml-cpp.dll"
+        )
+
+        set(DLLS "")
+        foreach(DLL ${DLL_NAMES})
+            list(APPEND DLLS "${CMAKE_BINARY_DIR}/$ENV{CUSTOM_CMAKE_CONFIG}/${DLL}")
+        endforeach()
+
         install(FILES ${DLLS} DESTINATION .)
     else()
         install(FILES $<TARGET_RUNTIME_DLLS:wazuh-agent> DESTINATION .)
