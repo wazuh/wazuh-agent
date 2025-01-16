@@ -18,13 +18,16 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio system)
 
+FILE(GLOB LOGCOLLECTOR_SOURCES src/*.cpp)
+
 if(WIN32)
+    FILE(GLOB WINEVT_READER_SOURCES src/winevt_reader/src/*.cpp)
+    list(APPEND LOGCOLLECTOR_SOURCES ${WINEVT_READER_SOURCES})
     FILE(GLOB EXCLUDED_SOURCES src/*_unix.cpp)
 else()
     FILE(GLOB EXCLUDED_SOURCES src/*_win.cpp)
 endif()
 
-FILE(GLOB LOGCOLLECTOR_SOURCES src/*.cpp)
 list(REMOVE_ITEM LOGCOLLECTOR_SOURCES ${EXCLUDED_SOURCES})
 
 add_library(Logcollector ${LOGCOLLECTOR_SOURCES})
@@ -32,6 +35,7 @@ add_library(Logcollector ${LOGCOLLECTOR_SOURCES})
 target_include_directories(Logcollector PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/winevt_reader/src/
     ${COMMON_FOLDER}
     ${COMMON_FOLDER}/stringHelper/include
     ${COMMON_FOLDER}/timeHelper/include)

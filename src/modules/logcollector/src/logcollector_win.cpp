@@ -6,7 +6,7 @@
 #include <chrono>
 #include <map>
 
-#include <logcollector.hpp>
+#include "logcollector.hpp"
 
 namespace logcollector
 {

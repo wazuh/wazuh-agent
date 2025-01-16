@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "reader.hpp"
+#include "../../reader.hpp"
 #include "winevt_wrapper_win.hpp"
 
 #pragma comment(lib, "wevtapi.lib")
@@ -26,7 +26,7 @@ public:
     /// @param channel Channel name.
     /// @param query Query.
     /// @param channelRefreshInterval channel query refresh interval in millisecconds.
-    /// @param  .
+    /// @param winAPI wrapper of winevt methods.
     WindowsEventTracerReader(Logcollector &logcollector,
                             const std::string channel,
                             const std::string query,
@@ -40,13 +40,13 @@ public:
     //@brief Stops the event reader.
     void Stop() override;
 
+private:
     ///@brief Main function to query events from event channel.
     Awaitable QueryEvents();
 
     ///@brief Process an individual event and print its XML representation.
     /// @param event subscription handle event.
     void ProcessEvent(EVT_HANDLE event);
-private:
 
     /// @brief Function for wchar to string convertion.
     /// @param buffer wchar vector as input.
