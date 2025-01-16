@@ -4,13 +4,9 @@
 #include <string>
 #include <vector>
 
-/// @class OSLogStoreWrapper
-/// @brief A C++ wrapper for accessing and enumerating OS logs using OSLogStore APIs.
-///
-/// This class provides an interface to retrieve and manage system log entries based on specified criteria such as
-/// time range, query filters, and log levels. It encapsulates the underlying Objective-C OSLogStore functionalities,
-/// facilitating seamless integration within C++ applications.
-class OSLogStoreWrapper
+/// @class IOSLogStoreWrapper
+/// @brief A C++ abstract class for a wrapper to retrieve LogEntries
+class IOSLogStoreWrapper
 {
 public:
     /// @struct LogEntry
@@ -42,6 +38,9 @@ public:
         Fault,
     };
 
+    /// @brief Destructor, virtual, default.
+    virtual ~IOSLogStoreWrapper() = default;
+
     /// @param startTimeSeconds The start time in seconds since the Unix epoch (e.g., 1672531200.0 for Jan 1, 2023).
     /// @param query An optional query string using NSPredicate syntax for additional filtering.
     /// @param logLevel The desired log level to filter entries.
@@ -49,6 +48,22 @@ public:
     /// @return A `std::vector` of `LogEntry` structs containing the date and log message for each matching entry.
     ///
     /// @throws std::runtime_error If the OSLogStore cannot be accessed or log enumeration fails.
-    std::vector<OSLogStoreWrapper::LogEntry>
-    AllEntries(const double startTimeSeconds, const std::string& query, const LogLevel logLevel = LogLevel::Undefined);
+    virtual std::vector<LogEntry> AllEntries(const double startTimeSeconds,
+                                             const std::string& query,
+                                             const LogLevel logLevel = LogLevel::Undefined) = 0;
+};
+
+/// @class OSLogStoreWrapper
+/// @brief A C++ wrapper for accessing and enumerating OS logs using OSLogStore APIs.
+///
+/// This class provides an interface to retrieve and manage system log entries based on specified criteria such as
+/// time range, query filters, and log levels. It encapsulates the underlying Objective-C OSLogStore functionalities,
+/// facilitating seamless integration within C++ applications.
+class OSLogStoreWrapper : public IOSLogStoreWrapper
+{
+public:
+    /// @copydoc IOSLogStoreWrapper::AllEntries
+    std::vector<LogEntry> AllEntries(const double startTimeSeconds,
+                                     const std::string& query,
+                                     const LogLevel logLevel = LogLevel::Undefined) override;
 };
