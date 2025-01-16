@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <uls_reader.hpp>
+#include <macos_reader.hpp>
 #include <logcollector.hpp>
 
 #include <boost/asio.hpp>
@@ -13,6 +13,10 @@
 #include <chrono>
 #include <iostream>
 
+namespace macos_reader_tests
+{
+
+using namespace logcollector;
 using ::testing::_;
 using ::testing::Return;
 using ::testing::Invoke;
@@ -28,48 +32,48 @@ public:
     );
 };
 
-TEST(ULSReaderTest, Constructor)
+TEST(MacOSReaderTest, Constructor)
 {
     auto logCollector = LogcollectorMock();
-    logcollector::ULSReader ulsReader(logCollector);
+    logcollector::MacOSReader macOSReader(logCollector);
 }
 
-TEST(ULSReaderTest, ConstructorWithStoreWrapper)
+TEST(MacOSReaderTest, ConstructorWithStoreWrapper)
 {
     auto logCollector = LogcollectorMock();
     auto logStoreMock = std::make_unique<MockIOSLogStoreWrapper>();
-    ULSReader reader(std::move(logStoreMock), logCollector);
+    MacOSReader reader(std::move(logStoreMock), logCollector);
 
     // Just ensure the constructor works
     SUCCEED();
 }
 
-TEST(ULSReaderTest, RunAndStop)
+TEST(MacOSReaderTest, RunAndStop)
 {
     auto logCollector = LogcollectorMock();
     EXPECT_CALL(logCollector, Wait(::testing::_)).Times(::testing::AnyNumber());
 
     boost::asio::io_context ioContext;
 
-    auto didULSReaderRun = false;
+    auto didMacOSReaderRun = false;
 
-    logcollector::ULSReader ulsReader(logCollector);
+    logcollector::MacOSReader macOSReader(logCollector);
     boost::asio::co_spawn(
         ioContext,
-        [&ulsReader, &didULSReaderRun]() -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+        [&macOSReader, &didMacOSReaderRun]() -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
         {
-            co_await ulsReader.Run();
-            didULSReaderRun = true;
+            co_await macOSReader.Run();
+            didMacOSReaderRun = true;
         },
         boost::asio::detached
     );
 
     boost::asio::post(
         ioContext,
-        [&ulsReader]() -> void
+        [&macOSReader]() -> void
         {
             std::this_thread::sleep_for(std::chrono::seconds(1)); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-            ulsReader.Stop();
+            macOSReader.Stop();
         }
     );
 
@@ -80,17 +84,17 @@ TEST(ULSReaderTest, RunAndStop)
 
     ioContext.run();
 
-    EXPECT_TRUE(didULSReaderRun);
+    EXPECT_TRUE(didMacOSReaderRun);
 
     ioThread.join();
 }
 
-TEST(ULSReaderTest, CreateQueryFromRule)
+TEST(MacOSReaderTest, CreateQueryFromRule)
 {
     auto logCollector = LogcollectorMock();
     EXPECT_CALL(logCollector, Wait(::testing::_)).Times(::testing::AnyNumber());
 
-    logcollector::ULSReader ulsReader(
+    logcollector::MacOSReader macOSReader(
         logCollector,
         50, // NOLINT
         "debug",
@@ -98,7 +102,7 @@ TEST(ULSReaderTest, CreateQueryFromRule)
         {"trace", "activity", "log"}
     );
 
-    logcollector::ULSReader ulsReader2(
+    logcollector::MacOSReader macOSReader2(
         logCollector,
         50, // NOLINT
         "debug",
@@ -110,29 +114,29 @@ TEST(ULSReaderTest, CreateQueryFromRule)
 
     boost::asio::co_spawn(
         ioContext,
-        [&ulsReader]() -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+        [&macOSReader]() -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
         {
-            co_await ulsReader.Run();
+            co_await macOSReader.Run();
         },
         boost::asio::detached
     );
 
     boost::asio::co_spawn(
         ioContext,
-        [&ulsReader2]() -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+        [&macOSReader2]() -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
         {
-            co_await ulsReader2.Run();
+            co_await macOSReader2.Run();
         },
         boost::asio::detached
     );
 
     boost::asio::post(
         ioContext,
-        [&ulsReader, &ulsReader2]() -> void
+        [&macOSReader, &macOSReader2]() -> void
         {
             std::this_thread::sleep_for(std::chrono::seconds(1)); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-            ulsReader.Stop();
-            ulsReader2.Stop();
+            macOSReader.Stop();
+            macOSReader2.Stop();
         }
     );
 
@@ -145,24 +149,27 @@ TEST(ULSReaderTest, CreateQueryFromRule)
     ioThread.join();
 }
 
-TEST(ULSReaderTest, ReadsEntriesCorrectly)
+TEST(MacOSReaderTest, ReadsEntriesCorrectly)
 {
     auto logCollector = LogcollectorMock();
     EXPECT_CALL(logCollector, Wait(::testing::_)).Times(::testing::AnyNumber());
 
+    const double aPointInTime = 1672531200.0;
+    const double anotherPointInTime = 1672531260.0;
+
     auto logStoreMock = std::make_unique<MockIOSLogStoreWrapper>();
     EXPECT_CALL(*logStoreMock, AllEntries(_, _, _))
         .WillOnce(Return(std::vector<IOSLogStoreWrapper::LogEntry>{
-            {1672531200.0, "2023-01-01T00:00:00Z", "Sample log message 1"},
-            {1672531260.0, "2023-01-01T00:01:00Z", "Sample log message 2"}
+            {aPointInTime, "2023-01-01T00:00:00Z", "Sample log message 1"},
+            {anotherPointInTime, "2023-01-01T00:01:00Z", "Sample log message 2"}
         }))
     .WillRepeatedly(Return(std::vector<IOSLogStoreWrapper::LogEntry>{}));
 
-    ULSReader ulsReader(std::move(logStoreMock), logCollector);
+    MacOSReader macOSReader(std::move(logStoreMock), logCollector);
 
     int pushMessageCallCount = 0;
 
-    logCollector.SetPushMessageFunction([&pushMessageCallCount, &ulsReader](Message message) -> int // NOLINT(performance-unnecessary-value-param)
+    logCollector.SetPushMessageFunction([&pushMessageCallCount, &macOSReader](Message message) -> int // NOLINT(performance-unnecessary-value-param)
     {
         EXPECT_EQ(message.moduleName, "logcollector");
         const auto dumpedData = message.data.dump();
@@ -171,7 +178,7 @@ TEST(ULSReaderTest, ReadsEntriesCorrectly)
         EXPECT_THAT(dumpedData, ::testing::HasSubstr("Sample log message "));
 
         ++pushMessageCallCount;
-        ulsReader.Stop();
+        macOSReader.Stop();
         return 0;
     });
 
@@ -179,9 +186,9 @@ TEST(ULSReaderTest, ReadsEntriesCorrectly)
 
     boost::asio::co_spawn(
         ioContext,
-        [&ulsReader]() -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+        [&macOSReader]() -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
         {
-            co_await ulsReader.Run();
+            co_await macOSReader.Run();
         },
         boost::asio::detached
     );
@@ -189,3 +196,5 @@ TEST(ULSReaderTest, ReadsEntriesCorrectly)
     ioContext.run();
     EXPECT_EQ(pushMessageCallCount, 2);
 }
+
+} // macos_reader_tests

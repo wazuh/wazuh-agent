@@ -1,4 +1,4 @@
-#include "uls_reader.hpp"
+#include <macos_reader.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -15,7 +15,7 @@ namespace
 namespace logcollector
 {
 
-ULSReader::ULSReader(
+MacOSReader::MacOSReader(
     Logcollector& logcollector,
     const std::time_t waitInMillis,
     const std::string& logLevel,
@@ -32,7 +32,7 @@ ULSReader::ULSReader(
     SetQuery(query, logTypes);
 }
 
-ULSReader::ULSReader(
+MacOSReader::MacOSReader(
     std::unique_ptr<IOSLogStoreWrapper> osLogStoreWrapper,
     Logcollector& logcollector,
     const std::time_t waitInMillis,
@@ -40,12 +40,12 @@ ULSReader::ULSReader(
     const std::string& query,
     const std::vector<std::string>& logTypes
 )
-: ULSReader(logcollector, waitInMillis, logLevel, query, logTypes)
+: MacOSReader(logcollector, waitInMillis, logLevel, query, logTypes)
 {
     m_osLogStoreWrapper = std::move(osLogStoreWrapper);
 }
 
-Awaitable ULSReader::Run()
+Awaitable MacOSReader::Run()
 {
     if (!m_osLogStoreWrapper)
     {
@@ -70,12 +70,12 @@ Awaitable ULSReader::Run()
     }
 }
 
-void ULSReader::Stop()
+void MacOSReader::Stop()
 {
     m_keepRunning.store(false);
 }
 
-void ULSReader::SetLogLevel(const std::string& logLevel)
+void MacOSReader::SetLogLevel(const std::string& logLevel)
 {
     if (logLevel == "debug")
     {
@@ -103,7 +103,7 @@ void ULSReader::SetLogLevel(const std::string& logLevel)
     }
 }
 
-void ULSReader::SetQuery(const std::string& query, const std::vector<std::string>& logTypes)
+void MacOSReader::SetQuery(const std::string& query, const std::vector<std::string>& logTypes)
 {
     const auto logTypesPredicate = [&logTypes] () -> std::string
     {

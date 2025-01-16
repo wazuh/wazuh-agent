@@ -1,10 +1,10 @@
 #pragma once
 
-#include "reader.hpp"
+#include "../../reader.hpp"
 
 #include <config.h>
 #include <logcollector.hpp>
-#include <oslogstore_wrapper.hpp>
+#include <oslogstore.hpp>
 
 #include <boost/asio/awaitable.hpp>
 
@@ -18,24 +18,24 @@
 namespace logcollector
 {
 
-/// @class ULSReader
+/// @class MacOSReader
 /// @brief A reader class for collecting and processing OS logs.
 ///
-/// The `ULSReader` class implements the `IReader` interface to provide functionality for
+/// The `MacOSReader` class implements the `IReader` interface to provide functionality for
 /// reading and processing system log entries using a `OSLogStoreWrapper`. It supports
 /// filtering logs based on log levels, custom queries, and specific log types. The reader
 /// operates asynchronously, allowing it to be integrated seamlessly into event-driven
 /// applications.
-class ULSReader : public IReader
+class MacOSReader : public IReader
 {
 public:
-    /// @brief Constructs a new `ULSReader` instance.
+    /// @brief Constructs a new `MacOSReader` instance.
     /// @param logcollector Reference to the `Logcollector` instance managing the log reading process.
     /// @param waitInMillis Duration in milliseconds to wait before processing log files.
     /// @param logLevel The minimum log level to filter log entries.
     /// @param query An optional query string using `NSPredicate` syntax for additional log filtering.
     /// @param logTypes A vector of log type strings to further filter log entries.
-    ULSReader(
+    MacOSReader(
         Logcollector& logcollector,
         const std::time_t waitInMillis = config::logcollector::DEFAULT_FILE_WAIT,
         const std::string& logLevel = "",
@@ -43,14 +43,14 @@ public:
         const std::vector<std::string>& logTypes = {}
     );
 
-    /// @brief Constructs a new `ULSReader` instance, allowing dependency injection for the `IOSLogStoreWrapper`.
+    /// @brief Constructs a new `MacOSReader` instance, allowing dependency injection for the `IOSLogStoreWrapper`.
     /// @param osLogStoreWrapper A unique pointer to an instance of `IOSLogStoreWrapper`, used for interacting with the OS log store.
     /// @param logcollector Reference to the `Logcollector` instance managing the log reading process.
     /// @param waitInMillis Duration in milliseconds to wait before processing log files.
     /// @param logLevel The minimum log level to filter log entries.
     /// @param query An optional query string using `NSPredicate` syntax for additional log filtering.
     /// @param logTypes A vector of log type strings to further filter log entries.
-    ULSReader(
+    MacOSReader(
         std::unique_ptr<IOSLogStoreWrapper> osLogStoreWrapper,
         Logcollector& logcollector,
         const std::time_t waitInMillis = config::logcollector::DEFAULT_FILE_WAIT,
@@ -59,8 +59,8 @@ public:
         const std::vector<std::string>& logTypes = {}
     );
 
-    /// @brief Destructor for `ULSReader`.
-    ~ULSReader() override = default;
+    /// @brief Destructor for `MacOSReader`.
+    ~MacOSReader() override = default;
 
     /// @brief Runs the log reader asynchronously.
     /// @return An `Awaitable` object representing the asynchronous operation.

@@ -5,7 +5,7 @@ set(VCPKG_MANIFEST_DIR ${CMAKE_SOURCE_DIR}/../../)
 
 project(OSLogStoreWrapper LANGUAGES CXX OBJCXX)
 
-include(../../../cmake/CommonSettings.cmake)
+include(../../../../../cmake/CommonSettings.cmake)
 set_common_settings()
 
 if(NOT APPLE)
@@ -16,7 +16,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_library(OSLogStoreWrapper ${CMAKE_CURRENT_SOURCE_DIR}/src/oslogstore_wrapper.mm)
+add_library(OSLogStoreWrapper ${CMAKE_CURRENT_SOURCE_DIR}/src/oslogstore.mm)
 target_include_directories(OSLogStoreWrapper PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(OSLogStoreWrapper PRIVATE
     Logger
@@ -24,7 +24,7 @@ target_link_libraries(OSLogStoreWrapper PRIVATE
     "-framework OSLog"
 )
 
-include(../../../cmake/ConfigureTarget.cmake)
+include(../../../../../cmake/ConfigureTarget.cmake)
 configure_target(OSLogStoreWrapper)
 
 if(BUILD_TESTS)

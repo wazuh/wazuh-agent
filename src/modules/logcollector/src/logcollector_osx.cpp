@@ -1,6 +1,6 @@
 #include <logcollector.hpp>
 
-#include "uls_reader.hpp"
+#include <macos_reader.hpp>
 
 #include <algorithm>
 #include <cctype>
@@ -60,7 +60,7 @@ void Logcollector::AddPlatformSpecificReader(const std::shared_ptr<const configu
         const auto level = entry["level"];
         const auto types = entry["type"];
         const auto typeList = SplitAndTrim(types);
-        AddReader(std::make_shared<ULSReader>(*this, fileWait, level, query, typeList));
+        AddReader(std::make_shared<MacOSReader>(*this, fileWait, level, query, typeList));
      }
 }
 

@@ -1,4 +1,4 @@
-#include "oslogstore_wrapper.hpp"
+#include "oslogstore.hpp"
 #include "oslogstore_dependencies.hpp"
 #include "oslogstore_impl.hpp"
 

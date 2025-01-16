@@ -1,7 +1,7 @@
 #include "../src/oslogstore_dependencies.hpp"
 #include "../src/oslogstore_impl.hpp"
 
-#include <oslogstore_wrapper.hpp>
+#include <oslogstore.hpp>
 
 #import <Foundation/Foundation.h>
 #import <OSLog/OSLog.h>

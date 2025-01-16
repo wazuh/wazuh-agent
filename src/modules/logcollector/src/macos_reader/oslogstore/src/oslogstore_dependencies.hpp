@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oslogstore_wrapper.hpp>
+#include <oslogstore.hpp>
 
 #import <Foundation/Foundation.h>
 #import <OSLog/OSLog.h>

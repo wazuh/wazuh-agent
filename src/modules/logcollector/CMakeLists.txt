@@ -15,7 +15,7 @@ get_filename_component(COMMON_FOLDER ${SRC_FOLDER}/common/ ABSOLUTE)
 
 if(APPLE)
     find_package(fmt REQUIRED)
-    add_subdirectory(oslogstore_wrapper)
+    add_subdirectory(src/macos_reader/oslogstore)
 endif()
 find_package(cJSON CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
@@ -26,15 +26,16 @@ FILE(GLOB LOGCOLLECTOR_SOURCES src/*.cpp)
 
 if(WIN32)
     FILE(GLOB EXCLUDED_SOURCES src/*_unix.cpp src/*_osx.cpp)
-    list(APPEND EXCLUDED_SOURCES src/uls_reader.cpp)
+    list(APPEND EXCLUDED_SOURCES src/macos_reader.cpp)
 
     FILE(GLOB WINEVT_READER_SOURCES src/winevt_reader/src/*.cpp)
     list(APPEND LOGCOLLECTOR_SOURCES ${WINEVT_READER_SOURCES})
 elseif(APPLE)
     FILE(GLOB EXCLUDED_SOURCES src/logcollector_unix.cpp src/*_win.cpp)
+    list(APPEND LOGCOLLECTOR_SOURCES src/macos_reader/src/macos_reader.cpp)
 else()
     FILE(GLOB EXCLUDED_SOURCES src/*_win.cpp src/*_osx.cpp)
-    list(APPEND EXCLUDED_SOURCES src/uls_reader.cpp)
+    list(APPEND EXCLUDED_SOURCES src/macos_reader.cpp)
 
     FILE(GLOB JOURNALD_SOURCES src/journald_reader/src/*.cpp)
     list(APPEND LOGCOLLECTOR_SOURCES ${JOURNALD_SOURCES})
@@ -56,7 +57,8 @@ target_include_directories(Logcollector PUBLIC
     PRIVATE
     $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/src/journald_reader/include>
     $<$<PLATFORM_ID:Linux>:${SYSTEMD_INCLUDE_DIRS}>
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/winevt_reader/src/>)
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/winevt_reader/src/>
+    $<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/src/macos_reader/include>)
 
 target_link_libraries(Logcollector
     PUBLIC
