@@ -9,7 +9,6 @@
 
 #include <filesystem>
 #include <functional>
-#include <mutex>
 #include <string>
 #include <vector>
 
@@ -86,8 +85,5 @@ namespace centralized_configuration
 
         /// @brief Function to reload modules.
         ReloadModulesFunctionType m_reloadModulesFunction;
-
-        /// @brief Mutex to avoid concurrent execution of centralized configuration commands.
-        std::mutex m_mutex;
     };
 } // namespace centralized_configuration

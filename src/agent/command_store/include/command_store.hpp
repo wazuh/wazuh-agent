@@ -30,6 +30,11 @@ namespace command_store
         /// @return The module_command::Status value corresponding
         module_command::Status StatusFromInt(const int i);
 
+        /// @brief Converts an integer to a module_command::CommandExecutionMode value
+        /// @param i The integer to convert
+        /// @return The module_command::CommandExecutionMode value corresponding
+        module_command::CommandExecutionMode ExecutionModeFromInt(const int i);
+
     public:
         /// @brief CommandStore constructor
         /// @param dbFolderPath The path to the database folder

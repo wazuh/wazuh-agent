@@ -2,8 +2,10 @@
 
 namespace command_handler
 {
-    const std::unordered_map<std::string, std::string> VALID_COMMANDS_MAP = {
-        {"set-group", "CentralizedConfiguration"}, {"update-group", "CentralizedConfiguration"}};
+    const std::unordered_map<std::string, std::pair<std::string, module_command::CommandExecutionMode>>
+        VALID_COMMANDS_MAP = {
+            {"set-group", {"CentralizedConfiguration", module_command::CommandExecutionMode::SYNC}},
+            {"update-group", {"CentralizedConfiguration", module_command::CommandExecutionMode::SYNC}}};
 
     void CommandHandler::Stop()
     {
@@ -27,7 +29,8 @@ namespace command_handler
                 }
             }
 
-            cmd.Module = it->second;
+            cmd.Module = it->second.first;
+            cmd.ExecutionMode = it->second.second;
             return true;
         }
         else
