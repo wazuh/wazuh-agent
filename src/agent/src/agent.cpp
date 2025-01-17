@@ -6,6 +6,7 @@
 #include <message.hpp>
 #include <message_queue_utils.hpp>
 #include <module_command/command_entry.hpp>
+#include <restart.hpp>
 
 #include <filesystem>
 #include <memory>
@@ -163,6 +164,14 @@ void Agent::Run()
                             return m_centralizedConfiguration.ExecuteCommand(std::move(command), std::move(parameters));
                         },
                         m_messageQueue);
+                }
+                else if (cmd.Module == "restart")
+                {
+                    LogInfo("Restart: Initiating self-restart");
+                    // cmd.value().ExecutionResult = module_command::CommandExecutionResult{module_command::Status::IN_PROGRESS, "HARCODING OUTPUT "};
+                    // m_commandHandler.m_commandStore.UpdateCommand(cmd.value());
+                    // std::this_thread::sleep_for(std::chrono::seconds(10));
+                    return restart::Restart::HandleRestartCommand();
                 }
                 return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue);
             }),
