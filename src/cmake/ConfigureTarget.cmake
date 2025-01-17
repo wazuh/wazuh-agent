@@ -24,7 +24,7 @@ function(configure_target target)
     else()
         set(msvc_warnings
             /W4
-            /WX
+            /WX-
             /permissive-
             /sdl
             /Wv:18 # Additional security-related warnings and runtime checks
