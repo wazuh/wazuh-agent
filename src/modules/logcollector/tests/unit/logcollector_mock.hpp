@@ -4,7 +4,8 @@
 #include <logcollector.hpp>
 #include <reader.hpp>
 
-using namespace logcollector;
+namespace logcollector
+{
 
 class LogcollectorMock : public Logcollector {
 public:
@@ -16,14 +17,10 @@ public:
         );
     }
 
-    void SetupFileReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
+    void SetupFileReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
+    {
         Logcollector::SetupFileReader(configurationParser);
     }
-
-    void AddPlatformSpecificReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
-        Logcollector::AddPlatformSpecificReader(configurationParser);
-    }
-
     MOCK_METHOD(void, AddReader, (std::shared_ptr<IReader> reader), (override));
     MOCK_METHOD(void, EnqueueTask, (Awaitable task), (override));
     MOCK_METHOD(void, MockWait, (std::chrono::milliseconds));
@@ -38,3 +35,5 @@ class PushMessageMock {
 public:
     MOCK_METHOD(int, Call, (Message), ());
 };
+
+}

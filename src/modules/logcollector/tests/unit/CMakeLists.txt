@@ -7,6 +7,12 @@ if (UNIX AND NOT APPLE)
 	pkg_check_modules(SYSTEMD REQUIRED libsystemd)
 endif()
 
+if(WIN32)
+    FILE(GLOB EXCLUDED_SOURCES *_unix_test.cpp)
+else()
+    FILE(GLOB EXCLUDED_SOURCES *_win_test.cpp)
+endif()
+
 list(REMOVE_ITEM LOGCOLLECTOR_TEST_SOURCES ${EXCLUDED_SOURCES})
 
 add_executable(logcollector_unit_tests ${LOGCOLLECTOR_TEST_SOURCES}
@@ -18,6 +24,7 @@ target_include_directories(logcollector_unit_tests PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/../../src
     $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/../../src/journald_reader/include>
 	$<$<PLATFORM_ID:Linux>:${SYSTEMD_INCLUDE_DIRS}>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/../../src/winevt_reader/src>
 )
 
 target_link_libraries(logcollector_unit_tests PRIVATE

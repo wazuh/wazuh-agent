@@ -22,6 +22,8 @@ FILE(GLOB LOGCOLLECTOR_SOURCES src/*.cpp)
 
 if(WIN32)
     FILE(GLOB EXCLUDED_SOURCES src/*_unix.cpp src/*_osx.cpp)
+    FILE(GLOB WINEVT_READER_SOURCES src/winevt_reader/src/*.cpp)
+    list(APPEND LOGCOLLECTOR_SOURCES ${WINEVT_READER_SOURCES})
 elseif(APPLE)
     FILE(GLOB EXCLUDED_SOURCES src/*_unix.cpp src/*_win.cpp)
 else()
@@ -46,7 +48,7 @@ target_include_directories(Logcollector PUBLIC
     PRIVATE
     $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/src/journald_reader/include>
     $<$<PLATFORM_ID:Linux>:${SYSTEMD_INCLUDE_DIRS}>
-)
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/winevt_reader/src/>)
 
 target_link_libraries(Logcollector
     PUBLIC

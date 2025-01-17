@@ -71,6 +71,10 @@ public:
         return s_instance;
     }
 
+    /// @brief Add platform specific implementation of IReader to logcollector.
+    /// @param ConfigurationParser where to get parameters.
+    void AddPlatformSpecificReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
+
 protected:
     /// @brief Constructor
     Logcollector() { }
@@ -84,8 +88,6 @@ protected:
 
     /// @brief Clean all readers
     void CleanAllReaders();
-
-    void AddPlatformSpecificReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
 
 private:
     /// @brief Module name
