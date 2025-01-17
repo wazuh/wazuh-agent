@@ -1,7 +1,13 @@
 #pragma once
 
-#include <wincrypt.h>
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
+// clang-format off
 #include <windows.h>
+#include <wincrypt.h>
+// clang-format on
 
 #include <string>
 

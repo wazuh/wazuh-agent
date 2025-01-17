@@ -1,9 +1,15 @@
 #pragma once
 
-#include <icert_store_utils_win.hpp>
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 
-#include <wincrypt.h>
+// clang-format off
 #include <windows.h>
+#include <wincrypt.h>
+// clang-format on
+
+#include <icert_store_utils_win.hpp>
 
 #include <string>
 

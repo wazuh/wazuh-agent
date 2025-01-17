@@ -15,6 +15,7 @@ find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
 
 if(WIN32)
     set(VERIFY_UTILS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/https_socket_verify_utils_win.cpp")
+    list(APPEND VERIFY_UTILS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/https_verifier_win.cpp")
 elseif(APPLE)
     set(VERIFY_UTILS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/https_socket_verify_utils_mac.cpp")
     list(APPEND VERIFY_UTILS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/https_verifier_mac.cpp")
