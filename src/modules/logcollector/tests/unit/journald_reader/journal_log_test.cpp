@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "journal_log.hpp"
+
+#include <journal_log.hpp>
 
 using namespace testing;
 

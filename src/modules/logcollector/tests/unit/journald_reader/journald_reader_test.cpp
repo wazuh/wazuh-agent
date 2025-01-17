@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "journald_reader.hpp"
-#include "../logcollector_mock.hpp"
+
+#include <journald_reader.hpp>
+#include <logcollector_mock.hpp>
 #include <config.h>
 
 using namespace logcollector;

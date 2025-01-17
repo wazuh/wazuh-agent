@@ -5,9 +5,9 @@
 #include <exception>
 #include <ctime>
 
-#include <logcollector.hpp>
-#include "reader.hpp"
 #include <config.h>
+#include <logcollector.hpp>
+#include <reader.hpp>
 
 namespace logcollector {
 

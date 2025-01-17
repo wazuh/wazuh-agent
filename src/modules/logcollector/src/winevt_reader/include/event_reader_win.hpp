@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "../../reader.hpp"
-#include "winevt_wrapper_win.hpp"
+#include <reader.hpp>
+#include <winevt_wrapper_win.hpp>
 
 #pragma comment(lib, "wevtapi.lib")
 

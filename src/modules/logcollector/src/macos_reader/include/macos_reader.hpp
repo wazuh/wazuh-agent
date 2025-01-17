@@ -1,10 +1,9 @@
 #pragma once
 
-#include "../../reader.hpp"
-
 #include <config.h>
 #include <logcollector.hpp>
 #include <oslogstore.hpp>
+#include <reader.hpp>
 
 #include <boost/asio/awaitable.hpp>
 

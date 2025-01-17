@@ -2,10 +2,9 @@
 
 #include <macos_reader.hpp>
 #include <logcollector.hpp>
+#include <logcollector_mock.hpp>
 
 #include <boost/asio.hpp>
-
-#include "../logcollector_mock.hpp"
 
 #include <string>
 #include <vector>

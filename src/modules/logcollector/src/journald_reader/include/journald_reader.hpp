@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../../reader.hpp"
-
+#include <journal_log.hpp>
 #include <logcollector.hpp>
-#include "journal_log.hpp"
+#include <reader.hpp>
+
 #include <regex>
 #include <memory>
 

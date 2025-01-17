@@ -3,9 +3,8 @@
 
 #include <configuration_parser.hpp>
 #include <logcollector.hpp>
+#include <logcollector_mock.hpp>
 #include <reader.hpp>
-
-#include "../logcollector_mock.hpp"
 
 #include <memory>
 #include <string>
