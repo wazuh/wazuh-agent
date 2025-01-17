@@ -30,6 +30,8 @@ int main(int argc, char* argv[])
 {
     Logger logger;
 
+    std::cout << "Wazuh-agent starting" << std::endl;
+
     try
     {
         program_options::options_description cmdParser("Allowed options");
@@ -70,6 +72,7 @@ int main(int argc, char* argv[])
         }
         else if (validOptions.count(OPT_STATUS) > 0)
         {
+            std::cout << "Calling StatusAgent()\n";
             StatusAgent(validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
         }
 #ifdef _WIN32
@@ -94,6 +97,7 @@ int main(int argc, char* argv[])
         }
         else
         {
+            std::cout << "calling StartAgent()\n";
             StartAgent(validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
         }
 
