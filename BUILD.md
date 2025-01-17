@@ -20,12 +20,12 @@ The following dependencies are required for this project:
 
     ```bash
     sudo apt-get update
-    sudo apt-get install cmake make gcc git zip curl tar ninja-build pkg-config wget gnupg lsb-release software-properties-common libbz2-dev
+    sudo apt-get install cmake make gcc git zip curl tar ninja-build pkg-config wget gnupg lsb-release software-properties-common libbz2-dev libsystemd-dev
     wget https://apt.llvm.org/llvm.sh
     chmod +x llvm.sh
     sudo ./llvm.sh 18
     sudo apt-get update
-    sudo apt-get install -y clang-tidy-18 autopoint libtool zlib1g-dev libgcrypt20-dev libmagic-dev libpopt-dev libmagic-dev libsqlite3-dev liblua5.4-dev gettext libarchive-dev
+    sudo apt-get install -y clang-tidy-18 autopoint libtool zlib1g-dev libgcrypt20-dev libpopt-dev libmagic-dev libsqlite3-dev liblua5.4-dev gettext libarchive-dev
     ```
 
 2. **Clone the Repository**

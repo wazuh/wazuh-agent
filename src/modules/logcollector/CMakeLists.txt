@@ -21,11 +21,18 @@ find_package(Boost REQUIRED COMPONENTS asio system)
 FILE(GLOB LOGCOLLECTOR_SOURCES src/*.cpp)
 
 if(WIN32)
+    FILE(GLOB EXCLUDED_SOURCES src/*_unix.cpp src/*_osx.cpp)
     FILE(GLOB WINEVT_READER_SOURCES src/winevt_reader/src/*.cpp)
     list(APPEND LOGCOLLECTOR_SOURCES ${WINEVT_READER_SOURCES})
-    FILE(GLOB EXCLUDED_SOURCES src/*_unix.cpp)
+elseif(APPLE)
+    FILE(GLOB EXCLUDED_SOURCES src/logcollector_unix.cpp src/*_win.cpp)
 else()
-    FILE(GLOB EXCLUDED_SOURCES src/*_win.cpp)
+    FILE(GLOB EXCLUDED_SOURCES src/*_win.cpp src/*_osx.cpp)
+    FILE(GLOB JOURNALD_SOURCES src/journald_reader/src/*.cpp)
+    list(APPEND LOGCOLLECTOR_SOURCES ${JOURNALD_SOURCES})
+
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(SYSTEMD REQUIRED libsystemd)
 endif()
 
 list(REMOVE_ITEM LOGCOLLECTOR_SOURCES ${EXCLUDED_SOURCES})
@@ -39,6 +46,8 @@ target_include_directories(Logcollector PUBLIC
     ${COMMON_FOLDER}/stringHelper/include
     ${COMMON_FOLDER}/timeHelper/include
     PRIVATE
+    $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/src/journald_reader/include>
+    $<$<PLATFORM_ID:Linux>:${SYSTEMD_INCLUDE_DIRS}>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/winevt_reader/src/>)
 
 target_link_libraries(Logcollector
@@ -53,6 +62,7 @@ target_link_libraries(Logcollector
     PRIVATE
     Logger
     pal
+    $<$<PLATFORM_ID:Linux>:systemd>
 )
 
 include(../../cmake/ConfigureTarget.cmake)

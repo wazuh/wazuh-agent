@@ -30,17 +30,18 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
-        sudo apt-get install -y wget gnupg lsb-release software-properties-common
+        sudo apt-get install -y wget gnupg lsb-release software-properties-common \
+          libltdl-dev libsystemd-dev
         wget https://apt.llvm.org/llvm.sh
         chmod +x llvm.sh
         sudo ./llvm.sh 18
         sudo apt-get update
         sudo apt-get install -y clang-tidy-18 autopoint libtool zlib1g-dev \
-          libgcrypt20-dev libmagic-dev libpopt-dev libmagic-dev libsqlite3-dev \
+          libgcrypt20-dev libpopt-dev libmagic-dev libsqlite3-dev \
           liblua5.4-dev gettext libarchive-dev
       shell: bash
 
-    - name: Set up Binary caching 
+    - name: Set up Binary caching
       uses: ./.github/actions/vcpkg_related/cover_vcpkg_dependencies
       with:
         gh_token: ${{ secrets.GITHUB_TOKEN }}

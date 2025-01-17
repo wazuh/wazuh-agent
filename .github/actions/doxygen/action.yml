@@ -21,7 +21,7 @@ runs:
       # - doxygen
       # - graphviz
       - name: Install dependencies
-        uses: awalsh128/cache-apt-pkgs-action@latest
+        uses: awalsh128/cache-apt-pkgs-action@v1.4.3
         with:
           packages: doxygen graphviz
           version: 1.0
