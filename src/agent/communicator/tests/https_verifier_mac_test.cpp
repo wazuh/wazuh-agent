@@ -323,7 +323,7 @@ TEST_F(HttpsVerifierTest, VerifyValidateHostnameSuccess)
     EXPECT_TRUE(verifier->Verify(ctx));
 }
 
-TEST_F(HttpsVerifierTestModeCertificate, VerifyCreateCertificateFails)
+TEST_F(HttpsVerifierTestModeCertificate, VerifyCertificateModeSuccess)
 {
     EXPECT_CALL(*mockX509Ptr, GetCertChain(_)).WillOnce(Return(reinterpret_cast<STACK_OF(X509)*>(0x1)));
     EXPECT_CALL(*mockX509Ptr, GetCertificateCount(_)).WillOnce(Return(1));
