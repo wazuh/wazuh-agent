@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "journald_reader.hpp"
-#include "../logcollector_mock.hpp"
+
+#include <journald_reader.hpp>
+#include <logcollector_mock.hpp>
 #include <config.h>
 
 using namespace logcollector;
@@ -42,9 +43,6 @@ TEST_F(JournaldReaderTests, BasicOperations) {
 
 TEST_F(JournaldReaderTests, MessageProcessing) {
     auto reader = CreateReader();
-
-    ON_CALL(logcollector, MockWait).WillByDefault(Return());
-
     auto runTask = reader.Run();
     reader.Stop();
 }

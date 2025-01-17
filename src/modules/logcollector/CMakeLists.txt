@@ -13,22 +13,28 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 get_filename_component(SRC_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
 get_filename_component(COMMON_FOLDER ${SRC_FOLDER}/common/ ABSOLUTE)
 
+if(APPLE)
+    find_package(fmt REQUIRED)
+    add_subdirectory(src/macos_reader/oslogstore)
+endif()
 find_package(cJSON CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio system)
 
-FILE(GLOB LOGCOLLECTOR_SOURCES src/*.cpp)
+FILE(GLOB LOGCOLLECTOR_SOURCES src/*.cpp src/file_reader/src/*.cpp)
+FILE(GLOB JOURNALD_SOURCES src/journald_reader/src/*.cpp)
+FILE(GLOB MACOS_SOURCES src/macos_reader/src/*.cpp)
+FILE(GLOB WIN_SOURCES src/winevt_reader/src/*.cpp)
 
 if(WIN32)
-    FILE(GLOB EXCLUDED_SOURCES src/*_unix.cpp src/*_osx.cpp)
-    FILE(GLOB WINEVT_READER_SOURCES src/winevt_reader/src/*.cpp)
-    list(APPEND LOGCOLLECTOR_SOURCES ${WINEVT_READER_SOURCES})
+    FILE(GLOB_RECURSE EXCLUDED_SOURCES *_unix.cpp *_osx.cpp)
+    list(APPEND LOGCOLLECTOR_SOURCES ${WIN_SOURCES})
 elseif(APPLE)
-    FILE(GLOB EXCLUDED_SOURCES src/logcollector_unix.cpp src/*_win.cpp)
+    FILE(GLOB_RECURSE EXCLUDED_SOURCES *_win.cpp src/logcollector_unix.cpp)
+    list(APPEND LOGCOLLECTOR_SOURCES ${MACOS_SOURCES})
 else()
-    FILE(GLOB EXCLUDED_SOURCES src/*_win.cpp src/*_osx.cpp)
-    FILE(GLOB JOURNALD_SOURCES src/journald_reader/src/*.cpp)
+    FILE(GLOB_RECURSE EXCLUDED_SOURCES *_win.cpp *_osx.cpp)
     list(APPEND LOGCOLLECTOR_SOURCES ${JOURNALD_SOURCES})
 
     find_package(PkgConfig REQUIRED)
@@ -46,9 +52,12 @@ target_include_directories(Logcollector PUBLIC
     ${COMMON_FOLDER}/stringHelper/include
     ${COMMON_FOLDER}/timeHelper/include
     PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/file_reader/include
     $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/src/journald_reader/include>
     $<$<PLATFORM_ID:Linux>:${SYSTEMD_INCLUDE_DIRS}>
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/winevt_reader/src/>)
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/winevt_reader/include>
+    $<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/src/macos_reader/include>)
 
 target_link_libraries(Logcollector
     PUBLIC
@@ -60,6 +69,8 @@ target_link_libraries(Logcollector
     Boost::system
     nlohmann_json::nlohmann_json
     PRIVATE
+    $<$<PLATFORM_ID:Darwin>:OSLogStoreWrapper>
+    $<$<PLATFORM_ID:Darwin>:fmt::fmt>
     Logger
     pal
     $<$<PLATFORM_ID:Linux>:systemd>

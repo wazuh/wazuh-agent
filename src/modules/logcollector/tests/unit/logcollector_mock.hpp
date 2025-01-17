@@ -15,6 +15,16 @@ public:
                 this->Logcollector::AddReader(reader);
             })
         );
+
+        ON_CALL(*this, Wait(::testing::_))
+            .WillByDefault(::testing::Invoke([](std::chrono::milliseconds) -> boost::asio::awaitable<void> {
+                co_return;
+            }));
+
+        this->SetPushMessageFunction([](Message) -> int // NOLINT(performance-unnecessary-value-param)
+        {
+            return 0;
+        });
     }
 
     void SetupFileReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
@@ -23,12 +33,7 @@ public:
     }
     MOCK_METHOD(void, AddReader, (std::shared_ptr<IReader> reader), (override));
     MOCK_METHOD(void, EnqueueTask, (Awaitable task), (override));
-    MOCK_METHOD(void, MockWait, (std::chrono::milliseconds));
-
-    boost::asio::awaitable<void> Wait(std::chrono::milliseconds duration) override {
-        MockWait(duration);
-        co_return;
-    }
+    MOCK_METHOD(boost::asio::awaitable<void>, Wait, (std::chrono::milliseconds ms), (override));
 };
 
 class PushMessageMock {

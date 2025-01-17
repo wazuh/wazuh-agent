@@ -1,9 +1,14 @@
 #pragma once
 
+#include <logcollector.hpp>
+
 #include <boost/asio/awaitable.hpp>
 #include <logcollector.hpp>
 
-namespace logcollector {
+#include <atomic>
+
+namespace logcollector
+{
 
 using Awaitable = boost::asio::awaitable<void>;
 
@@ -12,8 +17,7 @@ class IReader {
 public:
     /// @brief Constructor
     /// @param logcollector Logcollector instance
-    IReader(Logcollector& logcollector) :
-        m_logcollector(logcollector) { }
+    IReader(Logcollector& logcollector) : m_logcollector(logcollector) {}
 
     /// @brief Destructor
     virtual ~IReader() = default;

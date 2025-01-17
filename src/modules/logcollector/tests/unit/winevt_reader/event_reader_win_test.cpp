@@ -3,6 +3,7 @@
 #include <configuration_parser.hpp>
 #include <event_reader_win.hpp>
 #include <logcollector.hpp>
+
 #include "event_reader_mocks.hpp"
 
 #include <sstream>

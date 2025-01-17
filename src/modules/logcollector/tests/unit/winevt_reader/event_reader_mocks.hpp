@@ -2,9 +2,9 @@
 
 #include <gmock/gmock.h>
 
-#include "reader.hpp"
-#include "winevt_wrapper_win.hpp"
-#include "logcollector.hpp"
+#include <logcollector.hpp>
+#include <reader.hpp>
+#include <winevt_wrapper_win.hpp>
 
 namespace logcollector::winevt
 {
