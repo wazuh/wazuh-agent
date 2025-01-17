@@ -84,7 +84,13 @@ std::optional<module_command::CommandEntry> GetCommandFromQueue(std::shared_ptr<
         }
     }
 
-    module_command::CommandEntry cmd(id, "", command, parameters, "", module_command::Status::IN_PROGRESS);
+    module_command::CommandEntry cmd(id,
+                                     "",
+                                     command,
+                                     parameters,
+                                     module_command::CommandExecutionMode::ASYNC,
+                                     "",
+                                     module_command::Status::IN_PROGRESS);
     return cmd;
 }
 

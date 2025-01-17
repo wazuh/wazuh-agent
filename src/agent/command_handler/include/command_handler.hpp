@@ -89,16 +89,25 @@ namespace command_handler
 
                 PopCommandFromQueue();
 
-                co_spawn(
-                    executor,
-                    [cmd, DispatchCommand, this]() mutable -> boost::asio::awaitable<void>
-                    {
-                        cmd.value().ExecutionResult = co_await DispatchCommand(cmd.value());
-                        m_commandStore.UpdateCommand(cmd.value());
-                        LogInfo("Done processing command: {}({})", cmd.value().Command, cmd.value().Module);
-                        co_return;
-                    },
-                    boost::asio::detached);
+                if (cmd.value().ExecutionMode == module_command::CommandExecutionMode::SYNC)
+                {
+                    cmd.value().ExecutionResult = co_await DispatchCommand(cmd.value());
+                    m_commandStore.UpdateCommand(cmd.value());
+                    LogInfo("Done processing command: {}({})", cmd.value().Command, cmd.value().Module);
+                }
+                else
+                {
+                    co_spawn(
+                        executor,
+                        [cmd, DispatchCommand, this]() mutable -> boost::asio::awaitable<void>
+                        {
+                            cmd.value().ExecutionResult = co_await DispatchCommand(cmd.value());
+                            m_commandStore.UpdateCommand(cmd.value());
+                            LogInfo("Done processing command: {}({})", cmd.value().Command, cmd.value().Module);
+                            co_return;
+                        },
+                        boost::asio::detached);
+                }
             }
         }
 
