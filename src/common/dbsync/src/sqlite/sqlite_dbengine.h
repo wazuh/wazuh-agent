@@ -83,8 +83,12 @@ using ColumnData =
 using TableColumns =
     std::vector<ColumnData>;
 
-using TableField =
-    std::tuple<int32_t, std::string, int32_t, int64_t, uint64_t, double_t>;
+using TableField =  std::tuple<int32_t,         // Type
+                    std::optional<std::string>, // Text or null
+                    std::optional<int32_t>,     // Integer or null
+                    std::optional<int64_t>,     // BigInt or null
+                    std::optional<uint64_t>,    // UnsignedBigInt or null
+                    std::optional<double_t>>;   // Double or null
 
 using Row = std::map<std::string, TableField>;
 

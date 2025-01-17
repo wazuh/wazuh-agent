@@ -85,6 +85,7 @@ namespace SQLiteLegacy
             void bind(const int32_t index, const int64_t value) override;
             void bind(const int32_t index, const std::string& value) override;
             void bind(const int32_t index, const double_t value) override;
+            void bind(const int32_t index) override;
             int columnsCount() const override;
 
             std::string expand() override;

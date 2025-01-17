@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <ctime>
+#include <stack>
 
 #include <sysInfoInterface.hpp>
 #include <configuration_parser.hpp>
@@ -54,23 +55,25 @@ class Inventory {
         void Destroy();
 
         std::string GetCreateStatement() const;
-        nlohmann::json EcsProcessesData(const nlohmann::json& originalData);
-        nlohmann::json EcsSystemData(const nlohmann::json& originalData);
-        nlohmann::json EcsHotfixesData(const nlohmann::json& originalData);
-        nlohmann::json EcsHardwareData(const nlohmann::json& originalData);
-        nlohmann::json EcsPackageData(const nlohmann::json& originalData);
-        nlohmann::json EcsPortData(const nlohmann::json& originalData);
-        nlohmann::json EcsNetworkData(const nlohmann::json& originalData);
-        nlohmann::json GetOSData();
-        nlohmann::json GetHardwareData();
+        nlohmann::json EcsProcessesData(const nlohmann::json& originalData, bool createFields = true);
+        nlohmann::json EcsSystemData(const nlohmann::json& originalData, bool createFields = true);
+        nlohmann::json EcsHotfixesData(const nlohmann::json& originalData, bool createFields = true);
+        nlohmann::json EcsHardwareData(const nlohmann::json& originalData, bool createFields = true);
+        nlohmann::json EcsPackageData(const nlohmann::json& originalData, bool createFields = true);
+        nlohmann::json EcsPortData(const nlohmann::json& originalData, bool createFields = true);
+        nlohmann::json EcsNetworkData(const nlohmann::json& originalData, bool createFields = true);
         nlohmann::json GetNetworkData();
         nlohmann::json GetPortsData();
 
-        void UpdateChanges(const std::string& table, const nlohmann::json& values);
+        void UpdateChanges(const std::string& table, const nlohmann::json& values, const bool isFirstScan);
         void NotifyChange(ReturnTypeCallback result, const nlohmann::json& data, const std::string& table);
+        void ProcessEvent(ReturnTypeCallback result, const nlohmann::json& item, const std::string& table);
+        nlohmann::json GenerateMessage(ReturnTypeCallback result, const nlohmann::json& item, const std::string& table);
+        void NotifyEvent(ReturnTypeCallback result, nlohmann::json& msg, const nlohmann::json& item, const std::string& table);
+
         void TryCatchTask(const std::function<void()>& task) const;
         void ScanHardware();
-        void ScanOs();
+        void ScanSystem();
         void ScanNetwork();
         void ScanPackages();
         void ScanHotfixes();
@@ -81,9 +84,16 @@ class Inventory {
         void ShowConfig();
         cJSON * Dump() const;
         static void LogErrorInventory(const std::string& log);
-        nlohmann::json EcsData(const nlohmann::json& data, const std::string& table);
+        nlohmann::json EcsData(const nlohmann::json& data, const std::string& table, bool createFields = true);
         std::string GetPrimaryKeys(const nlohmann::json& data, const std::string& table);
         std::string CalculateHashId(const nlohmann::json& data, const std::string& table);
+        nlohmann::json AddPreviousFields(nlohmann::json& current, const nlohmann::json& previous);
+        nlohmann::json GenerateStatelessEvent(const std::string& operation, const std::string& type, const nlohmann::json& data);
+
+        void WriteMetadata(const std::string &key, const std::string &value);
+        std::string ReadMetadata(const std::string &key);
+        void DeleteMetadata(const std::string &key);
+        void CleanMetadata();
 
         const std::string                           m_moduleName {"inventory"};
         std::string                                 m_agentUUID {""};   // Agent UUID
@@ -109,4 +119,11 @@ class Inventory {
         std::unique_ptr<InvNormalizer>              m_spNormalizer;
         std::string                                 m_scanTime;
         std::function<int(Message)>                 m_pushMessage;
+        bool                                        m_hardwareFirstScan;  // Hardware first scan flag
+        bool                                        m_systemFirstScan;    // System first scan flag
+        bool                                        m_networksFirstScan;  // Networks first scan flag
+        bool                                        m_packagesFirstScan;  // Installed packages first scan flag
+        bool                                        m_portsFirstScan;     // Opened ports first scan flag
+        bool                                        m_processesFirstScan; // Running processes first scan flag
+        bool                                        m_hotfixesFirstScan;  // Windows hotfixes installed first scan flag
 };

@@ -45,7 +45,7 @@ TEST_F(PKGWrapperTest, LongVersion)
     wrapper->description(packageJson);
     EXPECT_EQ(packageJson["description"], "com.operasoftware.Opera");
     wrapper->architecture(packageJson);
-    EXPECT_EQ(packageJson["architecture"], UNKNOWN_VALUE);
+    EXPECT_EQ(packageJson["architecture"], EMPTY_VALUE);
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);
@@ -89,7 +89,7 @@ TEST_F(PKGWrapperTest, ShortVersion)
     wrapper->description(packageJson);
     EXPECT_EQ(packageJson["description"], "com.operasoftware.Opera");
     wrapper->architecture(packageJson);
-    EXPECT_EQ(packageJson["architecture"], UNKNOWN_VALUE);
+    EXPECT_EQ(packageJson["architecture"], EMPTY_VALUE);
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);
@@ -133,7 +133,7 @@ TEST_F(PKGWrapperTest, NoName)
     wrapper->description(packageJson);
     EXPECT_EQ(packageJson["description"], "com.operasoftware.Opera");
     wrapper->architecture(packageJson);
-    EXPECT_EQ(packageJson["architecture"], UNKNOWN_VALUE);
+    EXPECT_EQ(packageJson["architecture"], EMPTY_VALUE);
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);
@@ -177,7 +177,7 @@ TEST_F(PKGWrapperTest, NoVersion)
     wrapper->description(packageJson);
     EXPECT_EQ(packageJson["description"], "com.operasoftware.Opera");
     wrapper->architecture(packageJson);
-    EXPECT_EQ(packageJson["architecture"], UNKNOWN_VALUE);
+    EXPECT_EQ(packageJson["architecture"], EMPTY_VALUE);
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);
@@ -221,7 +221,7 @@ TEST_F(PKGWrapperTest, NoGroups)
     wrapper->description(packageJson);
     EXPECT_EQ(packageJson["description"], "com.operasoftware.Opera");
     wrapper->architecture(packageJson);
-    EXPECT_EQ(packageJson["architecture"], UNKNOWN_VALUE);
+    EXPECT_EQ(packageJson["architecture"], EMPTY_VALUE);
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);
@@ -265,7 +265,7 @@ TEST_F(PKGWrapperTest, NoDescription)
     wrapper->description(packageJson);
     EXPECT_EQ(packageJson["description"], EMPTY_VALUE);
     wrapper->architecture(packageJson);
-    EXPECT_EQ(packageJson["architecture"], UNKNOWN_VALUE);
+    EXPECT_EQ(packageJson["architecture"], EMPTY_VALUE);
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);
@@ -309,7 +309,7 @@ TEST_F(PKGWrapperTest, NoVendor)
     wrapper->description(packageJson);
     EXPECT_EQ(packageJson["description"], "description_text");
     wrapper->architecture(packageJson);
-    EXPECT_EQ(packageJson["architecture"], UNKNOWN_VALUE);
+    EXPECT_EQ(packageJson["architecture"], EMPTY_VALUE);
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);
@@ -353,7 +353,7 @@ TEST_F(PKGWrapperTest, pkgVersionXML)
     wrapper->description(packageJson);
     EXPECT_EQ(packageJson["description"], "com.wazuh.pkg.wazuh-agent");
     wrapper->architecture(packageJson);
-    EXPECT_EQ(packageJson["architecture"], UNKNOWN_VALUE);
+    EXPECT_EQ(packageJson["architecture"], EMPTY_VALUE);
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);
@@ -397,7 +397,7 @@ TEST_F(PKGWrapperTest, pkgVersionBin)
     wrapper->description(packageJson);
     EXPECT_EQ(packageJson["description"], "us.zoom.pkg.videomeeting");
     wrapper->architecture(packageJson);
-    EXPECT_EQ(packageJson["architecture"], UNKNOWN_VALUE);
+    EXPECT_EQ(packageJson["architecture"], EMPTY_VALUE);
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);
@@ -441,7 +441,7 @@ TEST_F(PKGWrapperTest, pkgVersionLong)
     wrapper->description(packageJson);
     EXPECT_EQ(packageJson["description"], "org.R-project.x86_64.R.GUI.pkg");
     wrapper->architecture(packageJson);
-    EXPECT_EQ(packageJson["architecture"], UNKNOWN_VALUE);
+    EXPECT_EQ(packageJson["architecture"], EMPTY_VALUE);
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);

@@ -101,8 +101,8 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationUnknownInEmpty)
     EXPECT_EQ(0, jsPackageInfo["size"]);
     EXPECT_EQ(UNKNOWN_VALUE, jsPackageInfo["install_time"]);
     EXPECT_EQ(UNKNOWN_VALUE, jsPackageInfo["groups"]);
-    EXPECT_EQ(UNKNOWN_VALUE, jsPackageInfo["version"]);
-    EXPECT_EQ(UNKNOWN_VALUE, jsPackageInfo["architecture"]);
+    EXPECT_EQ(EMPTY_VALUE, jsPackageInfo["version"]);
+    EXPECT_EQ(EMPTY_VALUE, jsPackageInfo["architecture"]);
     EXPECT_EQ("rpm", jsPackageInfo["format"]);
     EXPECT_EQ(UNKNOWN_VALUE, jsPackageInfo["vendor"]);
     EXPECT_EQ(UNKNOWN_VALUE, jsPackageInfo["description"]);

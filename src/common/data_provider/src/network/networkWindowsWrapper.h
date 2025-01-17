@@ -312,7 +312,7 @@ class NetworkWindowsInterface final : public INetworkInterfaceWrapper
 
         void type(nlohmann::json& network) const override
         {
-            network["type"] = UNKNOWN_VALUE;
+            network["type"] = EMPTY_VALUE;
             const auto interfaceType { NETWORK_INTERFACE_TYPES.find(m_interfaceAddress->IfType) };
 
             if (NETWORK_INTERFACE_TYPES.end() != interfaceType)

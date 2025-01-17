@@ -11,6 +11,7 @@ void Inventory::Start() {
 
     if (!m_enabled) {
         LogInfo("Inventory module is disabled.");
+        CleanMetadata();
         return;
     }
 
@@ -75,20 +76,38 @@ void Inventory::SetPushMessageFunction(const std::function<int(Message)>& pushMe
 void Inventory::SendDeltaEvent(const std::string& data) {
 
     const auto jsonData = nlohmann::json::parse(data);
-    auto metadata = nlohmann::json::object();
 
-    metadata["module"] = Name();
-    metadata["type"] = jsonData["type"];
-    metadata["operation"] = jsonData["operation"];
-    metadata["id"] = jsonData["id"];
-
-    const Message statefulMessage{ MessageType::STATEFUL, metadata["operation"] == "delete" ? "{}"_json : jsonData["data"], Name(), jsonData["type"], metadata.dump() };
+    const Message statefulMessage{
+        MessageType::STATEFUL,
+        jsonData["metadata"]["operation"] == "delete" ? "{}"_json : jsonData["data"],
+        Name(),
+        jsonData["metadata"]["type"],
+        jsonData["metadata"].dump()
+    };
 
     if(!m_pushMessage(statefulMessage)) {
-        LogWarn("Stateful event can't be pushed into the message queue: {}", data);
+        LogWarn("Stateful event can't be pushed into the message queue: {}", jsonData["data"].dump());
     }
     else {
-        LogTrace("Stateful event queued: {}, metadata {}", data, metadata.dump());
+        LogTrace("Stateful event queued: {}, metadata {}", jsonData["data"].dump(), jsonData["metadata"].dump());
+    }
+
+    if(jsonData.contains("stateless") && !jsonData["stateless"].empty()) {
+
+        const Message statelessMessage{
+            MessageType::STATELESS,
+            jsonData["stateless"],
+            Name(),
+            jsonData["metadata"]["type"],
+            ""
+        };
+
+        if(!m_pushMessage(statelessMessage)) {
+            LogWarn("Stateless event can't be pushed into the message queue: {}", jsonData["stateless"].dump());
+        }
+        else {
+            LogTrace("Stateless event queued: {}, metadata {}", jsonData["stateless"].dump(), jsonData["metadata"].dump());
+        }
     }
 }
 

@@ -135,13 +135,13 @@ class LinuxPortWrapper final : public IPortWrapper
             }
             else
             {
-                port["protocol"] = UNKNOWN_VALUE;
+                port["protocol"] = EMPTY_VALUE;
             }
         }
 
         void localIp(nlohmann::json& port) const override
         {
-            port["local_ip"] = UNKNOWN_VALUE;
+            port["local_ip"] = EMPTY_VALUE;
 
             if (m_localAddresses.size() == AddressField::ADDRESS_FIELD_SIZE)
             {
@@ -169,7 +169,7 @@ class LinuxPortWrapper final : public IPortWrapper
             }
             else
             {
-                port["local_port"] = UNKNOWN_VALUE;
+                port["local_port"] = EMPTY_VALUE;
             }
         }
 

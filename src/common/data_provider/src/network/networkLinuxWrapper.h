@@ -301,7 +301,7 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
 
         void adapter(nlohmann::json& network) const override
         {
-            network["adapter"] = UNKNOWN_VALUE;
+            network["adapter"] = EMPTY_VALUE;
         }
 
         int family() const override
@@ -507,7 +507,7 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
 
         void type(nlohmann::json& network) const override
         {
-            network["type"] = UNKNOWN_VALUE;
+            network["type"] = EMPTY_VALUE;
             const auto networkTypeCode { Utils::getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/type") };
 
             if (!networkTypeCode.empty())

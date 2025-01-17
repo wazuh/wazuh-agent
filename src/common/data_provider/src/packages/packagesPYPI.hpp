@@ -40,7 +40,7 @@ class PYPI final : public TFileSystem, public TFileIO
 
             packageInfo["groups"] = UNKNOWN_VALUE;
             packageInfo["description"] = UNKNOWN_VALUE;
-            packageInfo["architecture"] = UNKNOWN_VALUE;
+            packageInfo["architecture"] = EMPTY_VALUE;
             packageInfo["format"] = "pypi";
             packageInfo["source"] = UNKNOWN_VALUE;
             packageInfo["location"] = path.string();

@@ -139,7 +139,7 @@ static nlohmann::json getProcessInfo(const SysInfoProcess& process)
 
 static void getSerialNumber(nlohmann::json& info)
 {
-    info["board_serial"] = UNKNOWN_VALUE;
+    info["board_serial"] = EMPTY_VALUE;
     std::fstream file{WM_SYS_HW_DIR, std::ios_base::in};
 
     if (file.is_open())

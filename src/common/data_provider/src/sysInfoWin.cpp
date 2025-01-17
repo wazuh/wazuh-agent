@@ -370,7 +370,7 @@ static void getPackagesFromReg(const HKEY key, const std::string& subKey, std::f
                 {
                     packageJson["name"] = value;
 
-                    packageJson["version"] = UNKNOWN_VALUE;
+                    packageJson["version"] = EMPTY_VALUE;
                     if (packageReg.string("DisplayVersion", value))
                     {
                         packageJson["version"] = value;
@@ -399,13 +399,13 @@ static void getPackagesFromReg(const HKEY key, const std::string& subKey, std::f
                         packageJson["install_time"] = Utils::timestampToISO8601(packageReg.keyModificationDate());
                     }
 
-                    packageJson["location"] = UNKNOWN_VALUE;
+                    packageJson["location"] = EMPTY_VALUE;
                     if (packageReg.string("InstallLocation", value))
                     {
                         packageJson["location"] = value;
                     }
 
-                    packageJson["architecture"] = UNKNOWN_VALUE;
+                    packageJson["architecture"] = EMPTY_VALUE;
                     if (access & KEY_WOW64_32KEY)
                     {
                         packageJson["architecture"] = "i686";
@@ -509,7 +509,7 @@ static std::string getSerialNumber()
         }
         else
         {
-            ret = UNKNOWN_VALUE;
+            ret = EMPTY_VALUE;
         }
     }
 

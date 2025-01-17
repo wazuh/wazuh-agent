@@ -72,7 +72,7 @@ class PKGWrapper final : public IPackageWrapper
         }
         void architecture(nlohmann::json& package) const override
         {
-            package["architecture"] = UNKNOWN_VALUE;
+            package["architecture"] = EMPTY_VALUE;
         }
         void format(nlohmann::json& package) const override
         {

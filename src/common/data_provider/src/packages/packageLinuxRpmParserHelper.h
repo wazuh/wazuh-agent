@@ -48,7 +48,7 @@ namespace PackageLinuxHelper
             ret["name"]         = package.name;
             ret["size"]         = package.size;
             ret["install_time"] = package.installTime;
-            ret["location"]     = UNKNOWN_VALUE;
+            ret["location"]     = EMPTY_VALUE;
             ret["groups"]       = package.group;
             ret["version"]      = version;
             ret["priority"]     = UNKNOWN_VALUE;

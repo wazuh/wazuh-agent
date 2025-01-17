@@ -69,7 +69,7 @@ class BSDPortWrapper final : public IPortWrapper
 
         void protocol(nlohmann::json& port) const override
         {
-            port["protocol"] = UNKNOWN_VALUE;
+            port["protocol"] = EMPTY_VALUE;
             const auto it { PORTS_TYPE.find(m_spSocketInfo->psi.soi_kind) };
 
             if (it != PORTS_TYPE.end())

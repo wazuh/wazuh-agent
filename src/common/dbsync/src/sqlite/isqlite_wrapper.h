@@ -81,6 +81,7 @@ namespace SQLiteLegacy
             virtual void bind(const int32_t index, const int64_t value) = 0;
             virtual void bind(const int32_t index, const std::string& value) = 0;
             virtual void bind(const int32_t index, const double_t value) = 0;
+            virtual void bind(const int32_t index) = 0;
             virtual int columnsCount() const = 0;
 
             virtual std::string expand() = 0;

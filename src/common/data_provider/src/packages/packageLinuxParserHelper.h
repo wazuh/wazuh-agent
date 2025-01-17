@@ -69,15 +69,15 @@ namespace PackageLinuxHelper
         {
             ret["name"] = info.at("Package");
 
-            nlohmann::json priority {UNKNOWN_VALUE};
-            nlohmann::json groups {UNKNOWN_VALUE};
+            nlohmann::json priority = UNKNOWN_VALUE;
+            nlohmann::json groups = UNKNOWN_VALUE;
             // The multiarch field won't have a default value
-            nlohmann::json multiarch;
-            nlohmann::json architecture {UNKNOWN_VALUE};
-            nlohmann::json source {UNKNOWN_VALUE};
-            nlohmann::json version {UNKNOWN_VALUE};
-            nlohmann::json vendor {UNKNOWN_VALUE};
-            nlohmann::json description {UNKNOWN_VALUE};
+            nlohmann::json multiarch = UNKNOWN_VALUE;
+            nlohmann::json architecture = EMPTY_VALUE;
+            nlohmann::json source = UNKNOWN_VALUE;
+            nlohmann::json version = EMPTY_VALUE;
+            nlohmann::json vendor = UNKNOWN_VALUE;
+            nlohmann::json description = UNKNOWN_VALUE;
             int size                 { 0 };
 
             auto it{info.find("Priority")};
@@ -151,7 +151,7 @@ namespace PackageLinuxHelper
             ret["source"]       = source;
             ret["version"]      = version;
             ret["format"]       = "deb";
-            ret["location"]     = UNKNOWN_VALUE;
+            ret["location"]     = EMPTY_VALUE;
             ret["vendor"]       = vendor;
             ret["install_time"] = UNKNOWN_VALUE;
             ret["description"]  = description;
@@ -166,9 +166,9 @@ namespace PackageLinuxHelper
 
         std::string name;
         std::string version;
-        nlohmann::json vendor       { UNKNOWN_VALUE };
-        nlohmann::json install_time { UNKNOWN_VALUE };
-        nlohmann::json description  { UNKNOWN_VALUE };
+        nlohmann::json vendor = UNKNOWN_VALUE;
+        nlohmann::json install_time = UNKNOWN_VALUE;
+        nlohmann::json description = UNKNOWN_VALUE;
         int         size         { 0 };
         bool        hasName      { false };
         bool        hasVersion   { false };
@@ -262,7 +262,7 @@ namespace PackageLinuxHelper
 
         ret["priority"]         = UNKNOWN_VALUE;
         ret["multiarch"]        = UNKNOWN_VALUE;
-        ret["architecture"]     = UNKNOWN_VALUE;
+        ret["architecture"]     = EMPTY_VALUE;
         ret["groups"]           = UNKNOWN_VALUE;
 
         return ret;

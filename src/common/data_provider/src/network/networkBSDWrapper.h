@@ -60,7 +60,7 @@ class NetworkBSDInterface final : public INetworkInterfaceWrapper
 
         void adapter(nlohmann::json& network) const override
         {
-            network["adapter"] = UNKNOWN_VALUE;
+            network["adapter"] = EMPTY_VALUE;
         }
 
         int family() const override
@@ -201,7 +201,7 @@ class NetworkBSDInterface final : public INetworkInterfaceWrapper
 
         void type(nlohmann::json& network) const override
         {
-            network["type"] = UNKNOWN_VALUE;
+            network["type"] = EMPTY_VALUE;
 
             if (m_interfaceAddress->ifa_addr)
             {

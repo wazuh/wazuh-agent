@@ -7,6 +7,8 @@
 #include <stringHelper.h>
 #include <hashHelper.h>
 #include <timeHelper.h>
+#include "commonDefs.h"
+#include "statelessEvent.hpp"
 
 constexpr std::time_t INVENTORY_DEFAULT_INTERVAL { 3600000 };
 constexpr size_t MAX_ID_SIZE = 512;
@@ -28,7 +30,7 @@ static const std::map<ReturnTypeCallback, std::string> OPERATION_MAP
     // LCOV_EXCL_STOP
 };
 
-constexpr auto OS_SQL_STATEMENT
+constexpr auto SYSTEM_SQL_STATEMENT
 {
     R"(CREATE TABLE system (
     hostname TEXT,
@@ -49,7 +51,7 @@ constexpr auto OS_SQL_STATEMENT
     PRIMARY KEY (os_name)) WITHOUT ROWID;)"
 };
 
-constexpr auto HW_SQL_STATEMENT
+constexpr auto HARDWARE_SQL_STATEMENT
 {
     R"(CREATE TABLE hardware (
     board_serial TEXT,
@@ -140,7 +142,7 @@ constexpr auto PORTS_SQL_STATEMENT
 };
 static const std::vector<std::string> PORTS_ITEM_ID_FIELDS{"inode", "protocol", "local_ip", "local_port"};
 
-constexpr auto NETWORK_SQL_STATEMENT
+constexpr auto NETWORKS_SQL_STATEMENT
 {
     R"(CREATE TABLE networks (
         iface TEXT,
@@ -168,13 +170,32 @@ constexpr auto NETWORK_SQL_STATEMENT
         ) WITHOUT ROWID;)"
 };
 
+constexpr auto METADATA_SQL_STATEMENT
+{
+    R"(CREATE TABLE metadata(
+    key TEXT,
+    value TEXT,
+    PRIMARY KEY (key)) WITHOUT ROWID;)"
+};
+
 constexpr auto NETWORKS_TABLE     { "networks"  };
 constexpr auto PACKAGES_TABLE     { "packages"  };
 constexpr auto HOTFIXES_TABLE     { "hotfixes"  };
 constexpr auto PORTS_TABLE        { "ports"     };
 constexpr auto PROCESSES_TABLE    { "processes" };
-constexpr auto OS_TABLE           { "system"    };
-constexpr auto HW_TABLE           { "hardware"  };
+constexpr auto SYSTEM_TABLE       { "system"    };
+constexpr auto HARDWARE_TABLE     { "hardware"  };
+constexpr auto MD_TABLE           { "metadata"  };
+
+const std::unordered_map<std::string, std::string> TABLE_TO_KEY_MAP = {
+    {NETWORKS_TABLE,    "networks-first-scan"},
+    {PACKAGES_TABLE,    "packages-first-scan"},
+    {HOTFIXES_TABLE,    "hotfixes-first-scan"},
+    {PORTS_TABLE,       "ports-first-scan"},
+    {PROCESSES_TABLE,   "processes-first-scan"},
+    {SYSTEM_TABLE,      "system-first-scan"},
+    {HARDWARE_TABLE,    "hardware-first-scan"}
+};
 
 
 static std::string GetItemId(const nlohmann::json& item, const std::vector<std::string>& idFields)
@@ -216,36 +237,36 @@ static bool IsElementDuplicated(const nlohmann::json& input, const std::pair<std
     return it != input.end();
 }
 
-nlohmann::json Inventory::EcsData(const nlohmann::json& data, const std::string& table)
+nlohmann::json Inventory::EcsData(const nlohmann::json& data, const std::string& table, bool createFields)
 {
     nlohmann::json ret;
-    if(table == HW_TABLE)
+    if(table == HARDWARE_TABLE)
     {
-        ret = EcsHardwareData(data);
+        ret = EcsHardwareData(data, createFields);
     }
-    else if (table == OS_TABLE)
+    else if (table == SYSTEM_TABLE)
     {
-        ret = EcsSystemData(data);
+        ret = EcsSystemData(data, createFields);
     }
     else if (table == PACKAGES_TABLE)
     {
-        ret = EcsPackageData(data);
+        ret = EcsPackageData(data, createFields);
     }
     else if (table == PROCESSES_TABLE)
     {
-        ret = EcsProcessesData(data);
+        ret = EcsProcessesData(data, createFields);
     }
     else if(table == HOTFIXES_TABLE)
     {
-        ret = EcsHotfixesData(data);
+        ret = EcsHotfixesData(data, createFields);
     }
     else if (table == PORTS_TABLE)
     {
-        ret = EcsPortData(data);
+        ret = EcsPortData(data, createFields);
     }
     else if (table == NETWORKS_TABLE)
     {
-        ret = EcsNetworkData(data);
+        ret = EcsNetworkData(data, createFields);
     }
     return ret;
 }
@@ -253,11 +274,11 @@ nlohmann::json Inventory::EcsData(const nlohmann::json& data, const std::string&
 std::string Inventory::GetPrimaryKeys([[maybe_unused]] const nlohmann::json& data, const std::string& table)
 {
     std::string ret;
-    if (table == HW_TABLE)
+    if (table == HARDWARE_TABLE)
     {
         ret = data["observer"]["serial_number"];
     }
-    else if (table == OS_TABLE)
+    else if (table == SYSTEM_TABLE)
     {
         ret = data["host"]["os"]["name"];
     }
@@ -300,61 +321,82 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
     if (DB_ERROR == result)
     {
         LogErrorInventory(data.dump());
+        return;
     }
-    else if (m_notify && !m_stopping)
+
+    if (!m_notify || m_stopping)
     {
+        return;
+    }
 
-        if (data.is_array())
+    if (data.is_array())
+    {
+        for (const auto& item : data)
         {
-            for (const auto& item : data)
-            {
-                nlohmann::json msg;
-                msg["type"] = table;
-                msg["operation"] = OPERATION_MAP.at(result);
-                msg["data"] = EcsData(item, table);
-                msg["id"] = CalculateHashId(msg["data"], table);
-
-                if (msg["id"].is_string() && msg["id"].get<std::string>().size() <= MAX_ID_SIZE)
-                {
-                    msg["data"]["@timestamp"] = m_scanTime;
-                    const auto msgToSend{msg.dump()};
-                    m_reportDiffFunction(msgToSend);
-                }
-                else
-                {
-                    LogWarn("Event discarded for exceeding maximum size allowed in id field.");
-                    LogTrace("Event discarded: {}", msg.dump());
-                }
-            }
+            ProcessEvent(result, item, table);
         }
-        else
-        {
-            // LCOV_EXCL_START
-            nlohmann::json msg;
-            msg["type"] = table;
-            msg["operation"] = OPERATION_MAP.at(result);
-            msg["data"] = EcsData(data, table);
-            msg["id"] = CalculateHashId(msg["data"], table);
-
-            if (msg["id"].is_string() && msg["id"].get<std::string>().size() <= MAX_ID_SIZE)
-            {
-                msg["data"]["@timestamp"] = m_scanTime;
-                const auto msgToSend{msg.dump()};
-                m_reportDiffFunction(msgToSend);
-            }
-            else
-            {
-                LogWarn("Event discarded for exceeding maximum size allowed in id field.");
-                LogTrace("Event discarded: {}", msg.dump());
-            }
-
-            // LCOV_EXCL_STOP
-        }
+    }
+    else
+    {
+        ProcessEvent(result, data, table);
     }
 }
 
+void Inventory::ProcessEvent(ReturnTypeCallback result, const nlohmann::json& item, const std::string& table)
+{
+    nlohmann::json msg = GenerateMessage(result, item, table);
+
+    if (msg["metadata"]["id"].is_string() && msg["metadata"]["id"].get<std::string>().size() <= MAX_ID_SIZE)
+    {
+        NotifyEvent(result, msg, item, table);
+    }
+    else
+    {
+        LogWarn("Event discarded for exceeding maximum size allowed in id field.");
+        LogTrace("Event discarded: {}", msg.dump());
+    }
+}
+
+nlohmann::json Inventory::GenerateMessage(ReturnTypeCallback result, const nlohmann::json& item, const std::string& table)
+{
+    nlohmann::json msg{
+        {"metadata", {
+            {"type", table},
+            {"operation", OPERATION_MAP.at(result)},
+            {"module", Name()}
+        }}
+    };
+
+    msg["data"] = EcsData(result == MODIFIED ? item["new"] : item, table);
+    msg["metadata"]["id"] = CalculateHashId(msg["data"], table);
+
+    return msg;
+}
+
+void Inventory::NotifyEvent(ReturnTypeCallback result, nlohmann::json& msg, const nlohmann::json& item, const std::string& table)
+{
+    nlohmann::json oldData = (result == MODIFIED) ? EcsData(item["old"], table, false) : nlohmann::json{};
+
+    nlohmann::json stateless = GenerateStatelessEvent(OPERATION_MAP.at(result), table, msg["data"]);
+    nlohmann::json eventWithChanges = msg["data"];
+
+    if (!oldData.empty())
+    {
+        stateless["event"]["changed_fields"] = AddPreviousFields(eventWithChanges, oldData);
+    }
+
+    stateless.update(eventWithChanges);
+    msg["stateless"] = stateless;
+    msg["data"]["@timestamp"] = m_scanTime;
+
+    const auto msgToSend = msg.dump();
+    m_reportDiffFunction(msgToSend);
+}
+
+
 void Inventory::UpdateChanges(const std::string& table,
-                                 const nlohmann::json& values)
+                                 const nlohmann::json& values,
+                                    const bool isFirstScan)
 {
     const auto callback
     {
@@ -376,6 +418,10 @@ void Inventory::UpdateChanges(const std::string& table,
     nlohmann::json input;
     input["table"] = table;
     input["data"] = values;
+    if (isFirstScan)
+    {
+        input["options"]["return_old_data"] = true;
+    }
     txn.syncTxnRow(input);
     txn.getDeletedRows(callback);
 }
@@ -414,19 +460,27 @@ Inventory::Inventory()
     , m_hotfixes { true }
     , m_stopping { true }
     , m_notify { true }
+    , m_hardwareFirstScan { true }
+    , m_systemFirstScan { true }
+    , m_networksFirstScan { true }
+    , m_packagesFirstScan { true }
+    , m_portsFirstScan { true }
+    , m_processesFirstScan { true }
+    , m_hotfixesFirstScan { true }
 {}
 
 std::string Inventory::GetCreateStatement() const
 {
     std::string ret;
 
-    ret += OS_SQL_STATEMENT;
-    ret += HW_SQL_STATEMENT;
+    ret += SYSTEM_SQL_STATEMENT;
+    ret += HARDWARE_SQL_STATEMENT;
     ret += PACKAGES_SQL_STATEMENT;
     ret += HOTFIXES_SQL_STATEMENT;
     ret += PROCESSES_SQL_STATEMENT;
     ret += PORTS_SQL_STATEMENT;
-    ret += NETWORK_SQL_STATEMENT;
+    ret += NETWORKS_SQL_STATEMENT;
+    ret += METADATA_SQL_STATEMENT;
     return ret;
 }
 
@@ -450,6 +504,56 @@ void Inventory::Init(const std::shared_ptr<ISysInfo>& spInfo,
         m_spNormalizer = std::make_unique<InvNormalizer>(normalizerConfigPath, normalizerType);
     }
 
+   m_hardwareFirstScan  = ReadMetadata(TABLE_TO_KEY_MAP.at(HARDWARE_TABLE)).empty() ? false:true;
+   m_systemFirstScan    = ReadMetadata(TABLE_TO_KEY_MAP.at(SYSTEM_TABLE)).empty() ? false:true;
+   m_networksFirstScan  = ReadMetadata(TABLE_TO_KEY_MAP.at(NETWORKS_TABLE)).empty() ? false:true;
+   m_packagesFirstScan  = ReadMetadata(TABLE_TO_KEY_MAP.at(PACKAGES_TABLE)).empty() ? false:true;
+   m_portsFirstScan     = ReadMetadata(TABLE_TO_KEY_MAP.at(PORTS_TABLE)).empty() ? false:true;
+   m_processesFirstScan = ReadMetadata(TABLE_TO_KEY_MAP.at(PROCESSES_TABLE)).empty() ? false:true;
+   m_hotfixesFirstScan  = ReadMetadata(TABLE_TO_KEY_MAP.at(HOTFIXES_TABLE)).empty() ? false:true;
+
+   if(m_hardwareFirstScan && !m_hardware)
+   {
+       DeleteMetadata(TABLE_TO_KEY_MAP.at(HARDWARE_TABLE));
+       m_hardwareFirstScan = false;
+   }
+
+   if(m_systemFirstScan && !m_system)
+   {
+       DeleteMetadata(TABLE_TO_KEY_MAP.at(SYSTEM_TABLE));
+       m_systemFirstScan = false;
+   }
+
+   if(m_networksFirstScan && !m_networks)
+   {
+       DeleteMetadata(TABLE_TO_KEY_MAP.at(NETWORKS_TABLE));
+       m_networksFirstScan = false;
+   }
+
+   if(m_packagesFirstScan && !m_packages)
+   {
+       DeleteMetadata(TABLE_TO_KEY_MAP.at(PACKAGES_TABLE));
+       m_packagesFirstScan = false;
+   }
+
+   if(m_portsFirstScan && !m_ports)
+   {
+       DeleteMetadata(TABLE_TO_KEY_MAP.at(PORTS_TABLE));
+       m_portsFirstScan = false;
+   }
+
+   if(m_processesFirstScan && !m_processes)
+   {
+       DeleteMetadata(TABLE_TO_KEY_MAP.at(PROCESSES_TABLE));
+       m_processesFirstScan = false;
+   }
+
+   if(m_hotfixesFirstScan && !m_hotfixes)
+   {
+       DeleteMetadata(TABLE_TO_KEY_MAP.at(HOTFIXES_TABLE));
+       m_hotfixesFirstScan = false;
+   }
+
     SyncLoop();
 }
 
@@ -460,222 +564,254 @@ void Inventory::Destroy()
     m_cv.notify_all();
 }
 
-
-nlohmann::json Inventory::EcsHardwareData(const nlohmann::json& originalData)
+nlohmann::json Inventory::EcsHardwareData(const nlohmann::json& originalData, bool createFields)
 {
     nlohmann::json ret;
 
-    ret["observer"]["serial_number"] = (originalData.contains("board_serial") && !originalData["board_serial"].is_null()) ?
-        originalData["board_serial"] : EMPTY_VALUE;
-    ret["host"]["cpu"]["name"] = originalData.contains("cpu_name") ? originalData["cpu_name"] : UNKNOWN_VALUE;
-    ret["host"]["cpu"]["cores"] = originalData.contains("cpu_cores") ? originalData["cpu_cores"] : UNKNOWN_VALUE;
-    ret["host"]["cpu"]["speed"] = originalData.contains("cpu_mhz") ? originalData["cpu_mhz"] : UNKNOWN_VALUE;
-    ret["host"]["memory"]["total"] = originalData.contains("ram_total") ? originalData["ram_total"] : UNKNOWN_VALUE;
-    ret["host"]["memory"]["free"] = originalData.contains("ram_free") ? originalData["ram_free"] : UNKNOWN_VALUE;
-    ret["host"]["memory"]["used"]["percentage"] = originalData.contains("ram_usage") ? originalData["ram_usage"] : UNKNOWN_VALUE;
+    auto setField = [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue) {
+        if (createFields || originalData.contains(jsonKey)) {
+            nlohmann::json::json_pointer pointer(keyPath);
+            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE) {
+                ret[pointer] = originalData[jsonKey];
+            } else if (defaultValue.has_value()) {
+                ret[pointer] = *defaultValue;
+            } else {
+                ret[pointer] = nullptr;
+            }
+        }
+    };
+
+    setField("/observer/serial_number", "board_serial", EMPTY_VALUE);
+    setField("/host/cpu/name", "cpu_name", std::nullopt);
+    setField("/host/cpu/cores", "cpu_cores", std::nullopt);
+    setField("/host/cpu/speed", "cpu_mhz", std::nullopt);
+    setField("/host/memory/total", "ram_total", std::nullopt);
+    setField("/host/memory/free", "ram_free", std::nullopt);
+    setField("/host/memory/used/percentage", "ram_usage", std::nullopt);
 
     return ret;
 }
 
-nlohmann::json Inventory::EcsSystemData(const nlohmann::json& originalData)
+nlohmann::json Inventory::EcsSystemData(const nlohmann::json& originalData, bool createFields)
 {
     nlohmann::json ret;
 
-    ret["host"]["architecture"] = originalData.contains("architecture") ? originalData["architecture"] : UNKNOWN_VALUE;
-    ret["host"]["hostname"] = originalData.contains("hostname") ? originalData["hostname"] : UNKNOWN_VALUE;
-    ret["host"]["os"]["kernel"] = originalData.contains("os_build") ? originalData["os_build"] : UNKNOWN_VALUE;
-    ret["host"]["os"]["full"] = originalData.contains("os_codename") ? originalData["os_codename"] : UNKNOWN_VALUE;
-    ret["host"]["os"]["name"] = (originalData.contains("os_name") && !originalData["os_name"].is_null()) ?
-        originalData["os_name"] : EMPTY_VALUE;
-    ret["host"]["os"]["platform"] = originalData.contains("os_platform") ? originalData["os_platform"] : UNKNOWN_VALUE;
-    ret["host"]["os"]["version"]= originalData.contains("os_version") ? originalData["os_version"] : UNKNOWN_VALUE;
-    ret["host"]["os"]["type"]= originalData.contains("sysname") ? originalData["sysname"] : UNKNOWN_VALUE;
+    auto setField = [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue) {
+        if (createFields || originalData.contains(jsonKey)) {
+            nlohmann::json::json_pointer pointer(keyPath);
+            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE) {
+                ret[pointer] = originalData[jsonKey];
+            } else if (defaultValue.has_value()) {
+                ret[pointer] = *defaultValue;
+            } else {
+                ret[pointer] = nullptr;
+            }
+        }
+    };
+
+    setField("/host/architecture", "architecture", std::nullopt);
+    setField("/host/hostname", "hostname", std::nullopt);
+    setField("/host/os/kernel", "os_build", std::nullopt);
+    setField("/host/os/full", "os_codename", std::nullopt);
+    setField("/host/os/name", "os_name", EMPTY_VALUE);
+    setField("/host/os/platform", "os_platform", std::nullopt);
+    setField("/host/os/version", "os_version", std::nullopt);
+    setField("/host/os/type", "sysname", std::nullopt);
 
     return ret;
 }
 
-nlohmann::json Inventory::EcsPackageData(const nlohmann::json& originalData)
+nlohmann::json Inventory::EcsPackageData(const nlohmann::json& originalData, bool createFields)
 {
     nlohmann::json ret;
 
-    ret["package"]["architecture"] = (originalData.contains("architecture") && !originalData["architecture"].is_null()) ?
-        originalData["architecture"] : EMPTY_VALUE;
-    ret["package"]["description"] = originalData.contains("description") ? originalData["description"] : UNKNOWN_VALUE;
+    auto setField = [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue) {
+        if (createFields || originalData.contains(jsonKey)) {
+            nlohmann::json::json_pointer pointer(keyPath);
+            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE) {
+                ret[pointer] = originalData[jsonKey];
+            } else if (defaultValue.has_value()) {
+                ret[pointer] = *defaultValue;
+            } else {
+                ret[pointer] = nullptr;
+            }
+        }
+    };
 
-    if (originalData.contains("install_time") && !originalData["install_time"].empty() && !originalData["install_time"].is_null()) {
-        ret["package"]["installed"] = originalData["install_time"];
-    }
-    else {
-        ret["package"]["installed"] = UNKNOWN_VALUE;
-    }
-
-    ret["package"]["name"] = (originalData.contains("name") && !originalData["name"].is_null()) ?
-        originalData["name"] : EMPTY_VALUE;
-    ret["package"]["path"] = (originalData.contains("location") && !originalData["location"].is_null()) ?
-        originalData["location"] : EMPTY_VALUE;
-    ret["package"]["size"] = originalData.contains("size") ? originalData["size"] : UNKNOWN_VALUE;
-    ret["package"]["type"] = (originalData.contains("format") && !originalData["format"].is_null()) ?
-        originalData["format"] : EMPTY_VALUE;
-    ret["package"]["version"] = (originalData.contains("version") && !originalData["version"].is_null()) ?
-        originalData["version"] : EMPTY_VALUE;
+    setField("/package/architecture", "architecture", EMPTY_VALUE);
+    setField("/package/description", "description", std::nullopt);
+    setField("/package/installed", "install_time", std::nullopt);
+    setField("/package/name", "name", EMPTY_VALUE);
+    setField("/package/path", "location", EMPTY_VALUE);
+    setField("/package/size", "size", std::nullopt);
+    setField("/package/type", "format", EMPTY_VALUE);
+    setField("/package/version", "version", EMPTY_VALUE);
 
     return ret;
 }
 
-nlohmann::json Inventory::EcsProcessesData(const nlohmann::json& originalData)
+nlohmann::json Inventory::EcsProcessesData(const nlohmann::json& originalData, bool createFields)
 {
     nlohmann::json ret;
 
-    ret["process"]["pid"] = (originalData.contains("pid") && !originalData["pid"].is_null()) ?
-        originalData["pid"] : EMPTY_VALUE;
-    ret["process"]["name"] = originalData.contains("name") ? originalData["name"] : UNKNOWN_VALUE;
-    ret["process"]["parent"]["pid"] = originalData.contains("ppid") ? originalData["ppid"] : UNKNOWN_VALUE;
-    ret["process"]["command_line"] = originalData.contains("cmd") ? originalData["cmd"] : UNKNOWN_VALUE;
-    ret["process"]["args"] = originalData.contains("argvs") ? originalData["argvs"] : UNKNOWN_VALUE;
-    ret["process"]["user"]["id"] = originalData.contains("euser") ? originalData["euser"] : UNKNOWN_VALUE;
-    ret["process"]["real_user"]["id"]= originalData.contains("ruser") ? originalData["ruser"] : UNKNOWN_VALUE;
-    ret["process"]["saved_user"]["id"]= originalData.contains("suser") ? originalData["suser"] : UNKNOWN_VALUE;
-    ret["process"]["group"]["id"]= originalData.contains("egroup") ? originalData["egroup"] : UNKNOWN_VALUE;
-    ret["process"]["real_group"]["id"]= originalData.contains("rgroup") ? originalData["rgroup"] : UNKNOWN_VALUE;
-    ret["process"]["saved_group"]["id"]= originalData.contains("sgroup") ? originalData["sgroup"] : UNKNOWN_VALUE;
+    auto setField = [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue) {
+        if (createFields || originalData.contains(jsonKey)) {
+            nlohmann::json::json_pointer pointer(keyPath);
+            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE) {
+                ret[pointer] = originalData[jsonKey];
+            } else if (defaultValue.has_value()) {
+                ret[pointer] = *defaultValue;
+            } else {
+                ret[pointer] = nullptr;
+            }
+        }
+    };
 
-    if (originalData.contains("start_time") && !originalData["start_time"].empty() && !originalData["start_time"].is_null()) {
-            ret["process"]["start"] = originalData["start_time"];
-    }
-    else {
-        ret["process"]["start"] = UNKNOWN_VALUE;
-    }
-
-    ret["process"]["thread"]["id"]= originalData.contains("tgid") ? originalData["tgid"] : UNKNOWN_VALUE;
-    ret["process"]["tty"]["char_device"]["major"]= originalData.contains("tty") ? originalData["tty"] : UNKNOWN_VALUE;
+    setField("/process/pid", "pid", EMPTY_VALUE);
+    setField("/process/name", "name", std::nullopt);
+    setField("/process/parent/pid", "ppid", std::nullopt);
+    setField("/process/command_line", "cmd", std::nullopt);
+    setField("/process/args", "argvs", std::nullopt);
+    setField("/process/user/id", "euser", std::nullopt);
+    setField("/process/real_user/id", "ruser", std::nullopt);
+    setField("/process/saved_user/id", "suser", std::nullopt);
+    setField("/process/group/id", "egroup", std::nullopt);
+    setField("/process/real_group/id", "rgroup", std::nullopt);
+    setField("/process/saved_group/id", "sgroup", std::nullopt);
+    setField("/process/start", "start_time", std::nullopt);
+    setField("/process/thread/id", "tgid", std::nullopt);
+    setField("/process/tty/char_device/major", "tty", std::nullopt);
 
     return ret;
 }
 
-nlohmann::json Inventory::EcsHotfixesData(const nlohmann::json& originalData){
+nlohmann::json Inventory::EcsHotfixesData(const nlohmann::json& originalData, bool createFields){
 
     nlohmann::json ret;
 
-    ret["package"]["hotfix"]["name"] = (originalData.contains("hotfix") && !originalData["hotfix"].is_null()) ?
-        originalData["hotfix"] : EMPTY_VALUE;
+    if(createFields || originalData.contains("hotfix"))
+    {
+        if(originalData.contains("hotfix") && originalData["hotfix"] != EMPTY_VALUE)
+        {
+            ret["package"]["hotfix"]["name"] = originalData["hotfix"];
+        }
+        else
+        {
+            ret["package"]["hotfix"]["name"] = EMPTY_VALUE;
+        }
+    }
 
     return ret;
 }
 
-nlohmann::json Inventory::EcsPortData(const nlohmann::json& originalData)
+nlohmann::json Inventory::EcsPortData(const nlohmann::json& originalData, bool createFields)
 {
     nlohmann::json ret;
 
-    ret["network"]["protocol"] = (originalData.contains("protocol") && !originalData["protocol"].is_null()) ?
-        originalData["protocol"] : EMPTY_VALUE;
+    auto setField = [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue) {
+        if (createFields || originalData.contains(jsonKey)) {
+            nlohmann::json::json_pointer pointer(keyPath);
+            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE) {
+                ret[pointer] = originalData[jsonKey];
+            } else if (defaultValue.has_value()) {
+                ret[pointer] = *defaultValue;
+            } else {
+                ret[pointer] = nullptr;
+            }
+        }
+    };
 
-    ret["source"]["ip"] = nlohmann::json::array();
-    if (originalData.contains("local_ip") &&
-        !originalData["local_ip"].empty() &&
-        !originalData["local_ip"].is_null() &&
-        originalData["local_ip"] != EMPTY_VALUE)
-    {
-        ret["source"]["ip"].push_back(originalData["local_ip"]);
-    }
+    auto setFieldArray = [&](const std::string& destPath, const std::string& sourceKey) {
+        if (createFields || originalData.contains(sourceKey)) {
+            nlohmann::json::json_pointer destPointer(destPath);
+            ret[destPointer.parent_pointer()][destPointer.back()] = nlohmann::json::array();
+            nlohmann::json& destArray = ret[destPointer];
 
-    ret["source"]["port"] = (originalData.contains("local_port") && !originalData["local_port"].is_null()) ?
-        originalData["local_port"] : EMPTY_VALUE;
+            if (originalData.contains(sourceKey) &&
+                !originalData[sourceKey].empty() &&
+                !originalData[sourceKey].is_null() &&
+                originalData[sourceKey] != EMPTY_VALUE)
+            {
+                destArray.push_back(originalData[sourceKey]);
+            }
+        }
+    };
 
-    ret["destination"]["ip"] = nlohmann::json::array();
-    if (originalData.contains("remote_ip") &&
-        !originalData["remote_ip"].empty() &&
-        !originalData["remote_ip"].is_null() &&
-        originalData["remote_ip"] != EMPTY_VALUE)
-    {
-        ret["destination"]["ip"].push_back(originalData["remote_ip"]);
-    }
-
-    ret["destination"]["port"] = originalData.contains("remote_port") ? originalData["remote_port"] : UNKNOWN_VALUE;
-    ret["host"]["network"]["egress"]["queue"] = originalData.contains("tx_queue") ? originalData["tx_queue"] : UNKNOWN_VALUE;
-    ret["host"]["network"]["ingress"]["queue"] = originalData.contains("rx_queue") ? originalData["rx_queue"] : UNKNOWN_VALUE;
-    ret["file"]["inode"] = (originalData.contains("inode") && !originalData["inode"].is_null()) ?
-        originalData["inode"] : EMPTY_VALUE;
-    ret["interface"]["state"] = originalData.contains("state") ? originalData["state"] : UNKNOWN_VALUE;
-    ret["process"]["pid"] = originalData.contains("pid") ? originalData["pid"] : UNKNOWN_VALUE;
-    ret["process"]["name"] = originalData.contains("process") ? originalData["process"] : UNKNOWN_VALUE;
+    setField("/network/protocol", "protocol",  EMPTY_VALUE);
+    setFieldArray("/source/ip", "local_ip");
+    setField("/source/port", "local_port",  EMPTY_VALUE);
+    setFieldArray("/destination/ip", "remote_ip");
+    setField("/destination/port", "remote_port",  std::nullopt);
+    setField("/host/network/egress/queue", "tx_queue",  std::nullopt);
+    setField("/host/network/ingress/queue", "rx_queue",  std::nullopt);
+    setField("/file/inode", "inode",  EMPTY_VALUE);
+    setField("/interface/state", "state",  std::nullopt);
+    setField("/process/pid", "pid",  std::nullopt);
+    setField("/process/name", "process",  std::nullopt);
 
     return ret;
 }
 
-nlohmann::json Inventory::EcsNetworkData(const nlohmann::json& originalData)
+nlohmann::json Inventory::EcsNetworkData(const nlohmann::json& originalData, bool createFields)
 {
     nlohmann::json ret;
 
-    ret["host"]["ip"] = nlohmann::json::array();
-    if (originalData.contains("address") &&
-        !originalData["address"].empty() &&
-        !originalData["address"].is_null() &&
-        originalData["address"] != EMPTY_VALUE)
-    {
-        ret["host"]["ip"].push_back(originalData["address"]);
-    }
+    auto setField = [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue) {
+        if (createFields || originalData.contains(jsonKey)) {
+            nlohmann::json::json_pointer pointer(keyPath);
+            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE) {
+                ret[pointer] = originalData[jsonKey];
+            } else if (defaultValue.has_value()) {
+                ret[pointer] = *defaultValue;
+            } else {
+                ret[pointer] = nullptr;
+            }
+        }
+    };
 
-    ret["host"]["mac"] = originalData.contains("mac") ? originalData["mac"] : UNKNOWN_VALUE;
-    ret["host"]["network"]["egress"]["bytes"] = originalData.contains("tx_bytes") ? originalData["tx_bytes"] : UNKNOWN_VALUE;
-    ret["host"]["network"]["egress"]["packets"] = originalData.contains("tx_packets") ? originalData["tx_packets"] : UNKNOWN_VALUE;
-    ret["host"]["network"]["ingress"]["bytes"] = originalData.contains("rx_bytes") ? originalData["rx_bytes"] : UNKNOWN_VALUE;
-    ret["host"]["network"]["ingress"]["packets"] = originalData.contains("rx_packets") ? originalData["rx_packets"] : UNKNOWN_VALUE;
-    ret["host"]["network"]["egress"]["drops"] = originalData.contains("tx_dropped") ? originalData["tx_dropped"] : UNKNOWN_VALUE;
-    ret["host"]["network"]["egress"]["errors"] = originalData.contains("tx_errors") ? originalData["tx_errors"] : UNKNOWN_VALUE;
-    ret["host"]["network"]["ingress"]["drops"] = originalData.contains("rx_dropped") ? originalData["rx_dropped"] : UNKNOWN_VALUE;
-    ret["host"]["network"]["ingress"]["errors"] = originalData.contains("rx_errors") ? originalData["rx_errors"] : UNKNOWN_VALUE;
+    auto setFieldArray = [&](const std::string& destPath, const std::string& sourceKey) {
+        if (createFields || originalData.contains(sourceKey)) {
+            nlohmann::json::json_pointer destPointer(destPath);
+            ret[destPointer.parent_pointer()][destPointer.back()] = nlohmann::json::array();
+            nlohmann::json& destArray = ret[destPointer];
 
-    ret["interface"]["mtu"] = originalData.contains("mtu") ? originalData["mtu"] : UNKNOWN_VALUE;
-    ret["interface"]["state"] = originalData.contains("state") ? originalData["state"] : UNKNOWN_VALUE;
-    ret["interface"]["type"] = (originalData.contains("iface_type") && !originalData["iface_type"].is_null()) ?
-        originalData["iface_type"] : EMPTY_VALUE;
+            if (originalData.contains(sourceKey) &&
+                !originalData[sourceKey].empty() &&
+                !originalData[sourceKey].is_null() &&
+                originalData[sourceKey] != EMPTY_VALUE)
+            {
+                destArray.push_back(originalData[sourceKey]);
+            }
+        }
+    };
 
-    ret["network"]["netmask"] = nlohmann::json::array();
-    if (originalData.contains("netmask") &&
-        !originalData["netmask"].empty() &&
-        !originalData["netmask"].is_null() &&
-        originalData["netmask"] != EMPTY_VALUE)
-    {
-        ret["network"]["netmask"].push_back(originalData["netmask"]);
-    }
-
-    ret["network"]["gateway"] = nlohmann::json::array();
-    if (originalData.contains("gateway") &&
-        !originalData["gateway"].empty() &&
-        !originalData["gateway"].is_null() &&
-        originalData["gateway"] != EMPTY_VALUE)
-    {
-        ret["network"]["gateway"].push_back(originalData["gateway"]);
-    }
-
-    ret["network"]["broadcast"] = nlohmann::json::array();
-    if (originalData.contains("broadcast") &&
-        !originalData["broadcast"].empty() &&
-        !originalData["broadcast"].is_null() &&
-        originalData["broadcast"] != EMPTY_VALUE)
-    {
-        ret["network"]["broadcast"].push_back(originalData["broadcast"]);
-    }
-
-    ret["network"]["dhcp"] = originalData.contains("dhcp") ? originalData["dhcp"] : UNKNOWN_VALUE;
-    ret["network"]["type"] = (originalData.contains("proto_type") && !originalData["proto_type"].is_null()) ?
-        originalData["proto_type"] : EMPTY_VALUE;
-    ret["network"]["metric"] = originalData.contains("metric") ? originalData["metric"] : UNKNOWN_VALUE;
+    setFieldArray("/host/ip", "address");
+    setField("/host/mac", "mac", std::nullopt);
+    setField("/host/network/egress/bytes", "tx_bytes", std::nullopt);
+    setField("/host/network/egress/packets", "tx_packets", std::nullopt);
+    setField("/host/network/ingress/bytes", "rx_bytes", std::nullopt);
+    setField("/host/network/ingress/packets", "rx_packets", std::nullopt);
+    setField("/host/network/egress/drops", "tx_dropped", std::nullopt);
+    setField("/host/network/egress/errors", "tx_errors", std::nullopt);
+    setField("/host/network/ingress/drops", "rx_dropped", std::nullopt);
+    setField("/host/network/ingress/errors", "rx_errors", std::nullopt);
+    setField("/interface/mtu", "mtu", std::nullopt);
+    setField("/interface/state", "state", std::nullopt);
+    setField("/interface/type", "iface_type", EMPTY_VALUE);
+    setFieldArray("/network/netmask", "netmask");
+    setFieldArray("/network/gateway", "gateway");
+    setFieldArray("/network/broadcast", "broadcast");
+    setField("/network/dhcp", "dhcp", std::nullopt);
+    setField("/network/type", "proto_type", EMPTY_VALUE);
+    setField("/network/metric", "metric", std::nullopt);
     /* TODO this field should include http or https, it's related to an application not to a interface */
-    ret["network"]["protocol"] = UNKNOWN_VALUE;
+    if (createFields)
+    {
+        ret["network"]["protocol"] = nullptr;
+    }
+    setField("/observer/ingress/interface/alias", "adapter", EMPTY_VALUE);
+    setField("/observer/ingress/interface/name", "iface", EMPTY_VALUE);
 
-    ret["observer"]["ingress"]["interface"]["alias"] = (originalData.contains("adapter") && !originalData["adapter"].is_null()) ?
-        originalData["adapter"] : EMPTY_VALUE;
-    ret["observer"]["ingress"]["interface"]["name"] = (originalData.contains("iface") && !originalData["iface"].is_null()) ?
-        originalData["iface"] : EMPTY_VALUE;
-
-    return ret;
-}
-
-nlohmann::json Inventory::GetHardwareData()
-{
-    nlohmann::json ret;
-    ret[0] = m_spInfo->hardware();
     return ret;
 }
 
@@ -684,27 +820,32 @@ void Inventory::ScanHardware()
     if (m_hardware)
     {
         LogTrace( "Starting hardware scan");
-        const auto& hwData{GetHardwareData()};
-        UpdateChanges(HW_TABLE, hwData);
+        nlohmann::json hwData;
+        hwData[0] = m_spInfo->hardware();
+        UpdateChanges(HARDWARE_TABLE, hwData, m_hardwareFirstScan);
         LogTrace( "Ending hardware scan");
+
+        if(!m_hardwareFirstScan){
+            WriteMetadata(TABLE_TO_KEY_MAP.at(HARDWARE_TABLE), Utils::getCurrentISO8601());
+            m_hardwareFirstScan = true;
+        }
     }
 }
 
-nlohmann::json Inventory::GetOSData()
-{
-    nlohmann::json ret;
-    ret[0] = m_spInfo->os();
-    return ret;
-}
-
-void Inventory::ScanOs()
+void Inventory::ScanSystem()
 {
     if (m_system)
     {
         LogTrace( "Starting os scan");
-        const auto& osData{GetOSData()};
-        UpdateChanges(OS_TABLE, osData);
+        nlohmann::json SystemData;
+        SystemData[0] = m_spInfo->os();
+        UpdateChanges(SYSTEM_TABLE, SystemData, m_systemFirstScan);
         LogTrace( "Ending os scan");
+
+        if(!m_systemFirstScan){
+            WriteMetadata(TABLE_TO_KEY_MAP.at(SYSTEM_TABLE), Utils::getCurrentISO8601());
+            m_systemFirstScan = true;
+        }
     }
 }
 
@@ -800,8 +941,13 @@ void Inventory::ScanNetwork()
 
             if (itNet != networkData.end())
             {
-                UpdateChanges(NETWORKS_TABLE, itNet.value());
+                UpdateChanges(NETWORKS_TABLE, itNet.value(), m_networksFirstScan);
             }
+        }
+
+        if(!m_networksFirstScan){
+            WriteMetadata(TABLE_TO_KEY_MAP.at(NETWORKS_TABLE), Utils::getCurrentISO8601());
+            m_networksFirstScan = true;
         }
 
         LogTrace( "Ending network scan");
@@ -841,10 +987,19 @@ void Inventory::ScanPackages()
             if (!rawData.empty())
             {
                 input["data"] = nlohmann::json::array( { rawData } );
+                if (m_packagesFirstScan)
+                {
+                    input["options"]["return_old_data"] = true;
+                }
                 txn.syncTxnRow(input);
             }
         });
         txn.getDeletedRows(callback);
+
+        if(!m_packagesFirstScan){
+            WriteMetadata(TABLE_TO_KEY_MAP.at(PACKAGES_TABLE), Utils::getCurrentISO8601());
+            m_packagesFirstScan = true;
+        }
 
         LogTrace( "Ending packages scan");
     }
@@ -859,7 +1014,12 @@ void Inventory::ScanHotfixes()
 
         if (!hotfixes.is_null())
         {
-            UpdateChanges(HOTFIXES_TABLE, hotfixes);
+            UpdateChanges(HOTFIXES_TABLE, hotfixes, m_hotfixesFirstScan);
+        }
+
+        if(!m_hotfixesFirstScan){
+           WriteMetadata(TABLE_TO_KEY_MAP.at(HOTFIXES_TABLE), Utils::getCurrentISO8601());
+           m_hotfixesFirstScan = true;
         }
 
         LogTrace( "Ending hotfixes scan");
@@ -932,8 +1092,13 @@ void Inventory::ScanPorts()
     {
         LogTrace( "Starting ports scan");
         const auto& portsData { GetPortsData() };
-        UpdateChanges(PORTS_TABLE, portsData);
+        UpdateChanges(PORTS_TABLE, portsData, m_portsFirstScan);
         LogTrace( "Ending ports scan");
+
+        if(!m_portsFirstScan){
+           WriteMetadata(TABLE_TO_KEY_MAP.at(PORTS_TABLE), Utils::getCurrentISO8601());
+           m_portsFirstScan = true;
+        }
     }
 }
 
@@ -958,16 +1123,26 @@ void Inventory::ScanProcesses()
             QUEUE_SIZE,
             callback
         };
-        m_spInfo->processes([&txn](nlohmann::json & rawData)
-        {
-            nlohmann::json input;
+        m_spInfo->processes(std::function<void(nlohmann::json&)>(
+            [this, &txn](nlohmann::json & rawData)
+            {
+                nlohmann::json input;
+                input["table"] = PROCESSES_TABLE;
+                input["data"] = nlohmann::json::array({ rawData });
 
-            input["table"] = PROCESSES_TABLE;
-            input["data"] = nlohmann::json::array( { rawData } );
+                if (m_processesFirstScan) {
+                    input["options"]["return_old_data"] = true;
+                }
 
-            txn.syncTxnRow(input);
-        });
+                txn.syncTxnRow(input);
+            }
+        ));
         txn.getDeletedRows(callback);
+
+        if(!m_processesFirstScan){
+           WriteMetadata(TABLE_TO_KEY_MAP.at(PROCESSES_TABLE), Utils::getCurrentISO8601());
+           m_processesFirstScan = true;
+        }
 
         LogTrace( "Ending processes scan");
     }
@@ -979,7 +1154,7 @@ void Inventory::Scan()
     m_scanTime = Utils::getCurrentISO8601();
 
     TryCatchTask([&]() { ScanHardware(); });
-    TryCatchTask([&]() { ScanOs(); });
+    TryCatchTask([&]() { ScanSystem(); });
     TryCatchTask([&]() { ScanPackages(); });
     TryCatchTask([&]() { ScanProcesses(); });
     TryCatchTask([&]() { ScanHotfixes(); });
@@ -1010,4 +1185,116 @@ void Inventory::SyncLoop()
     }
     std::unique_lock<std::mutex> lock{m_mutex};
     m_spDBSync.reset(nullptr);
+}
+
+void Inventory::WriteMetadata(const std::string &key, const std::string &value){
+    auto insertQuery
+    {
+        InsertQuery::builder()
+        .table(MD_TABLE)
+        .data({{"key", key}, {"value", value}})
+        .build()
+    };
+    m_spDBSync->insertData(insertQuery.query());
+}
+
+std::string Inventory::ReadMetadata(const std::string &key) {
+    std::string result;
+    std::string filter = "WHERE key = '" + key + "'";
+    auto selectQuery = SelectQuery::builder()
+        .table(MD_TABLE)
+        .columnList({"key", "value"})
+        .rowFilter(filter)
+        .build();
+
+    auto callback = [&result](ReturnTypeCallback returnTypeCallback, const nlohmann::json& resultData) {
+        (void)returnTypeCallback;
+        if (resultData.is_object() && resultData.contains("key") && resultData.contains("value")) {
+            result = resultData["value"];
+        }
+    };
+
+    m_spDBSync->selectRows(selectQuery.query(), callback);
+
+    return result;
+}
+
+void Inventory::DeleteMetadata(const std::string &key){
+    auto deleteQuery
+    {
+        DeleteQuery::builder()
+        .table(MD_TABLE)
+        .data({{"key", key}})
+        .rowFilter("")
+        .build()
+    };
+    m_spDBSync->deleteRows(deleteQuery.query());
+}
+
+void Inventory::CleanMetadata()
+{
+    DBSync::initialize(LogErrorInventory);
+
+    try
+    {
+        {
+            std::unique_lock<std::mutex> lock{m_mutex};
+            m_spDBSync = std::make_unique<DBSync>(HostType::AGENT,
+                                                    DbEngineType::SQLITE3,
+                                                    m_dbFilePath,
+                                                    GetCreateStatement(),
+                                                    DbManagement::PERSISTENT);
+            for (const auto& key : TABLE_TO_KEY_MAP) {
+                if(!ReadMetadata(key.second).empty()){
+                    DeleteMetadata(key.second);
+                }
+            }
+            m_spDBSync.reset();
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        LogErrorInventory(ex.what());
+    }
+}
+
+nlohmann::json Inventory::AddPreviousFields(nlohmann::json& current, const nlohmann::json& previous) {
+    using JsonPair = std::pair<nlohmann::json*, const nlohmann::json*>;
+    using PathPair = std::pair<std::string, JsonPair>;
+
+    std::stack<PathPair> stack;
+    nlohmann::json modifiedKeys = nlohmann::json::array();
+
+    stack.emplace("", JsonPair(&current, &previous));
+
+    while (!stack.empty()) {
+        auto [path, pair] = stack.top();
+        auto [curr, prev] = pair;
+        stack.pop();
+
+        for (auto& [key, value] : prev->items()) {
+
+            std::string currentPath = path;
+            if (!path.empty()) {
+                currentPath.append(".").append(key);
+            } else {
+                currentPath = key;
+            }
+
+            if (curr->contains(key)) {
+                if ((*curr)[key].is_object() && value.is_object()) {
+                    stack.emplace(currentPath, JsonPair(&((*curr)[key]), &value));
+                } else if ((*curr)[key] != value) {
+                    modifiedKeys.push_back(currentPath);
+                    (*curr)["previous"][key] = value;
+                }
+            }
+        }
+    }
+    return modifiedKeys;
+}
+
+nlohmann::json Inventory::GenerateStatelessEvent(const std::string& operation, const std::string& type, const nlohmann::json& data) {
+    auto event = CreateStatelessEvent(type, operation, m_scanTime, data);
+    return event ? event->generate() : nlohmann::json{};
 }
