@@ -24,23 +24,3 @@ logcollector:
     - /var/log/auth.log
   reload_interval: 1m
   file_wait: 500ms
-
-  journald:
-    - field: "_SYSTEMD_UNIT"
-      value: "cron.service"
-      exact_match: true
-      ignore_if_missing: true
-
-    - field: "SYSLOG_IDENTIFIER"
-      value: "systemd"
-      exact_match: false
-      ignore_if_missing: true
-
-    - conditions:
-        - field: "_COMM"
-          value: "cat"
-          exact_match: true
-        - field: "PRIORITY"
-          value: "3|4"
-          exact_match: true
-      ignore_if_missing: true

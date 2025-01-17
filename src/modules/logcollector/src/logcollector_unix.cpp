@@ -1,6 +1,5 @@
 #include <logcollector.hpp>
-
-#include "journald_reader.hpp"
+#include <journald_reader.hpp>
 
 #include <memory>
 

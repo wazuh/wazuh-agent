@@ -18,16 +18,21 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio system)
 
+FILE(GLOB LOGCOLLECTOR_SOURCES src/*.cpp)
+
 if(WIN32)
-    FILE(GLOB EXCLUDED_SOURCES src/*_unix.cpp src/*_osx.cpp src/journal*.cpp)
+    FILE(GLOB EXCLUDED_SOURCES src/*_unix.cpp src/*_osx.cpp)
 elseif(APPLE)
-    FILE(GLOB EXCLUDED_SOURCES src/*_unix.cpp src/*_win.cpp src/journal*.cpp)
+    FILE(GLOB EXCLUDED_SOURCES src/*_unix.cpp src/*_win.cpp)
 else()
     FILE(GLOB EXCLUDED_SOURCES src/*_win.cpp src/*_osx.cpp)
-    add_subdirectory(journal_log)
+    FILE(GLOB JOURNALD_SOURCES src/journald_reader/src/*.cpp)
+    list(APPEND LOGCOLLECTOR_SOURCES ${JOURNALD_SOURCES})
+
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(SYSTEMD REQUIRED libsystemd)
 endif()
 
-FILE(GLOB LOGCOLLECTOR_SOURCES src/*.cpp)
 list(REMOVE_ITEM LOGCOLLECTOR_SOURCES ${EXCLUDED_SOURCES})
 
 add_library(Logcollector ${LOGCOLLECTOR_SOURCES})
@@ -37,7 +42,11 @@ target_include_directories(Logcollector PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
     ${COMMON_FOLDER}
     ${COMMON_FOLDER}/stringHelper/include
-    ${COMMON_FOLDER}/timeHelper/include)
+    ${COMMON_FOLDER}/timeHelper/include
+    PRIVATE
+    $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/src/journald_reader/include>
+    $<$<PLATFORM_ID:Linux>:${SYSTEMD_INCLUDE_DIRS}>
+)
 
 target_link_libraries(Logcollector
     PUBLIC
@@ -51,7 +60,7 @@ target_link_libraries(Logcollector
     PRIVATE
     Logger
     pal
-    $<$<PLATFORM_ID:Linux>:JournalLog>
+    $<$<PLATFORM_ID:Linux>:systemd>
 )
 
 include(../../cmake/ConfigureTarget.cmake)

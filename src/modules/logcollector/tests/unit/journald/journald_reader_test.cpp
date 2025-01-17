@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "journald_reader.hpp"
-#include "logcollector_mock.hpp"
+#include "../logcollector_mock.hpp"
+#include <config.h>
 
 using namespace logcollector;
 using namespace testing;
@@ -11,7 +12,7 @@ protected:
     LogcollectorMock logcollector;
     FilterGroup testFilters;
     bool ignoreIfMissing{true};
-    std::time_t fileWait{1000};
+    std::time_t fileWait{config::logcollector::DEFAULT_FILE_WAIT};
     static constexpr size_t m_extraLength = 100;
 
     void SetUp() override {

@@ -24,13 +24,16 @@ logcollector:
       use-bookmark: true
       reconnect-time: 5s
   journald:
-    - filter:
-      - field: "_SYSTEMD_UNIT"
-        query: ^ssh.service$
-      - field: PRIORITY
-        query: "[0-3]"
-        ignore-missing: true
-      use-bookmark: true
+    - field: "_SYSTEMD_UNIT"
+      value: "cron.service"
+      exact_match: true
+      ignore_if_missing: true
+    - conditions:
+        - field: "_SYSTEMD_UNIT"
+          value: "ssh.service"
+        - field: "PRIORITY"
+          value: "0|1|2|3"
+      ignore_if_missing: true
   macos:
     - query: process == "sshd" OR message CONTAINS "invalid"
       use-bookmark: true
@@ -151,7 +154,8 @@ classDiagram
     }
     class JournaldFilter {
         + field : string
-        + query : string
+        + value : string
+        + exact_match: bool
         + ignoreMissing : bool
     }
     class WindowsEventReader {
