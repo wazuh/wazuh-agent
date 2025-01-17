@@ -10,8 +10,6 @@ namespace centralized_configuration
         const std::string command,       // NOLINT(performance-unnecessary-value-param)
         const nlohmann::json parameters) // NOLINT(performance-unnecessary-value-param)
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
-
         try
         {
             std::vector<std::string> groupIds {};
