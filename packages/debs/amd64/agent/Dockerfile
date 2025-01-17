@@ -57,6 +57,7 @@ RUN git config --global --add safe.directory /wazuh-local-src
 RUN apt update && apt install dirmngr gnupg apt-transport-https ca-certificates -y && \
     apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && \
     sh -c 'echo "deb https://download.mono-project.com/repo/debian stable-buster main" > /etc/apt/sources.list.d/mono-official-stable.list' && \
-    apt update && apt install mono-devel -y
+    apt update && apt install mono-devel pip -y && \
+    pip install jinja2
 
 RUN curl -o /usr/local/bin/nuget https://dist.nuget.org/win-x86-commandline/v6.10.2/nuget.exe
