@@ -8,7 +8,28 @@
 
 #include <vector>
 
+#include <iostream> // remove
+
+// void StartAgent(const std::string& configFilePath)
+// {
+//     std::cout << fmt::format("StartAgent: configFilePath = {}", configFilePath.c_str()).c_str() << std::endl;
+//     WindowsService::ServiceStart(configFilePath);
+// }
+
 void StartAgent(const std::string& configFilePath)
+{
+    try
+    {
+        Agent agent(configFilePath);
+        agent.Run();
+    }
+    catch (const std::exception& e)
+    {
+        LogError("Exception thrown in wazuh-agent: {}", e.what());
+    }
+}
+
+void StartAgentService(const std::string& configFilePath)
 {
     WindowsService::ServiceStart(configFilePath);
 }
