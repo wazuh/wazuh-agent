@@ -86,9 +86,7 @@ namespace centralized_configuration
                 const std::filesystem::path tmpGroupFile =
                     m_fileSystemWrapper->temp_directory_path() / (groupId + config::DEFAULT_SHARED_FILE_EXTENSION);
 
-                // NOLINTBEGIN(cppcoreguidelines-no-suspend-with-lock)
                 const auto dlResult = co_await m_downloadGroupFilesFunction(groupId, tmpGroupFile.string());
-                // NOLINTEND(cppcoreguidelines-no-suspend-with-lock)
 
                 if (!dlResult)
                 {
