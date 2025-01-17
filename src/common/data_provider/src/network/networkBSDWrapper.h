@@ -118,7 +118,7 @@ class NetworkBSDInterface final : public INetworkInterfaceWrapper
 
         void gateway(nlohmann::json& network) const override
         {
-            network["gateway"] = EMPTY_VALUE;
+            network["gateway"] = UNKNOWN_VALUE;
             size_t tableSize { 0 };
             int mib[] = { CTL_NET, AF_ROUTE, 0, AF_UNSPEC, NET_RT_FLAGS, RTF_UP | RTF_GATEWAY };
 
@@ -158,22 +158,22 @@ class NetworkBSDInterface final : public INetworkInterfaceWrapper
 
         void metrics(nlohmann::json& network) const override
         {
-            network["metric"] = EMPTY_VALUE;
+            network["metric"] = UNKNOWN_VALUE;
         }
 
         void metricsV6(nlohmann::json& network) const override
         {
-            network["metric"] = EMPTY_VALUE;
+            network["metric"] = UNKNOWN_VALUE;
         }
 
         void dhcp(nlohmann::json& network) const override
         {
-            network["dhcp"] = EMPTY_VALUE;
+            network["dhcp"] = UNKNOWN_VALUE;
         }
 
         void mtu(nlohmann::json& network) const override
         {
-            network["mtu"] = EMPTY_VALUE;
+            network["mtu"] = UNKNOWN_VALUE;
             if(m_interfaceAddress->ifa_data)
             {
                 network["mtu"] = reinterpret_cast<if_data*>(m_interfaceAddress->ifa_data)->ifi_mtu;
@@ -221,7 +221,7 @@ class NetworkBSDInterface final : public INetworkInterfaceWrapper
 
         void MAC(nlohmann::json& network) const override
         {
-            network["mac"] = EMPTY_VALUE;
+            network["mac"] = UNKNOWN_VALUE;
             auto sdl { reinterpret_cast<struct sockaddr_dl*>(m_interfaceAddress->ifa_addr) };
             std::stringstream ss;
 

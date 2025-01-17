@@ -164,7 +164,7 @@ class NetworkWindowsInterface final : public INetworkInterfaceWrapper
 
         void broadcast(nlohmann::json& network) const override
         {
-            network["broadcast"] = EMPTY_VALUE;
+            network["broadcast"] = UNKNOWN_VALUE;
             const auto address { this->address() };
             const auto netmask { this->netmask() };
 
@@ -180,7 +180,7 @@ class NetworkWindowsInterface final : public INetworkInterfaceWrapper
 
         void broadcastV6(nlohmann::json& network) const override
         {
-            network["broadcast"] = EMPTY_VALUE;
+            network["broadcast"] = UNKNOWN_VALUE;
         }
 
         void gateway(nlohmann::json& network) const override
@@ -246,7 +246,7 @@ class NetworkWindowsInterface final : public INetworkInterfaceWrapper
 
             if (retVal.empty())
             {
-                network["gateway"] = EMPTY_VALUE;
+                network["gateway"] = UNKNOWN_VALUE;
             }
             else
             {
@@ -258,7 +258,7 @@ class NetworkWindowsInterface final : public INetworkInterfaceWrapper
 
         void metrics(nlohmann::json& network) const override
         {
-            network["metric"] = EMPTY_VALUE;
+            network["metric"] = UNKNOWN_VALUE;
 
             if (Utils::isVistaOrLater())
             {
@@ -268,7 +268,7 @@ class NetworkWindowsInterface final : public INetworkInterfaceWrapper
 
         void metricsV6(nlohmann::json& network) const override
         {
-            network["metric"] = EMPTY_VALUE;
+            network["metric"] = UNKNOWN_VALUE;
 
             if (Utils::isVistaOrLater())
             {
@@ -278,7 +278,7 @@ class NetworkWindowsInterface final : public INetworkInterfaceWrapper
 
         void dhcp(nlohmann::json& network) const override
         {
-            network["dhcp"] = EMPTY_VALUE;
+            network["dhcp"] = UNKNOWN_VALUE;
             const auto family { this->adapterFamily() };
 
             if (AF_INET == family)
@@ -323,7 +323,7 @@ class NetworkWindowsInterface final : public INetworkInterfaceWrapper
 
         void state(nlohmann::json& network) const override
         {
-            network["state"] = EMPTY_VALUE;
+            network["state"] = UNKNOWN_VALUE;
             const auto opStatus { NETWORK_OPERATIONAL_STATUS.find(m_interfaceAddress->OperStatus) };
 
             if (NETWORK_OPERATIONAL_STATUS.end() != opStatus)
@@ -334,7 +334,7 @@ class NetworkWindowsInterface final : public INetworkInterfaceWrapper
 
         void MAC(nlohmann::json& network) const override
         {
-            network["mac"] = EMPTY_VALUE;
+            network["mac"] = UNKNOWN_VALUE;
             constexpr auto MAC_ADDRESS_LENGTH { 6 };
 
             if (MAC_ADDRESS_LENGTH == m_interfaceAddress->PhysicalAddressLength)

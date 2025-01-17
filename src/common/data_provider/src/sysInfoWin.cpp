@@ -376,7 +376,7 @@ static void getPackagesFromReg(const HKEY key, const std::string& subKey, std::f
                         packageJson["version"] = value;
                     }
 
-                    packageJson["vendor"] = EMPTY_VALUE;
+                    packageJson["vendor"] = UNKNOWN_VALUE;
                     if (packageReg.string("Publisher", value))
                     {
                         packageJson["vendor"] = value;
@@ -415,11 +415,11 @@ static void getPackagesFromReg(const HKEY key, const std::string& subKey, std::f
                         packageJson["architecture"] = "x86_64";
                     }
 
-                    packageJson["description"]  = EMPTY_VALUE;
-                    packageJson["groups"]       = EMPTY_VALUE;
-                    packageJson["priority"]     = EMPTY_VALUE;
-                    packageJson["size"]         = EMPTY_VALUE;
-                    packageJson["source"]       = EMPTY_VALUE;
+                    packageJson["description"]  = UNKNOWN_VALUE;
+                    packageJson["groups"]       = UNKNOWN_VALUE;
+                    packageJson["priority"]     = UNKNOWN_VALUE;
+                    packageJson["size"]         = UNKNOWN_VALUE;
+                    packageJson["source"]       = UNKNOWN_VALUE;
                     packageJson["format"]       = "win";
 
                     returnCallback(packageJson);

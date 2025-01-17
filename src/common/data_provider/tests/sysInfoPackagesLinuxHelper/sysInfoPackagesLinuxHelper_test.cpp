@@ -99,13 +99,13 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationUnknownInEmpty)
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("curl", jsPackageInfo["name"]);
     EXPECT_EQ(0, jsPackageInfo["size"]);
-    EXPECT_EQ(EMPTY_VALUE, jsPackageInfo["install_time"]);
-    EXPECT_EQ(EMPTY_VALUE, jsPackageInfo["groups"]);
+    EXPECT_EQ(UNKNOWN_VALUE, jsPackageInfo["install_time"]);
+    EXPECT_EQ(UNKNOWN_VALUE, jsPackageInfo["groups"]);
     EXPECT_EQ(EMPTY_VALUE, jsPackageInfo["version"]);
     EXPECT_EQ(EMPTY_VALUE, jsPackageInfo["architecture"]);
     EXPECT_EQ("rpm", jsPackageInfo["format"]);
-    EXPECT_EQ(EMPTY_VALUE, jsPackageInfo["vendor"]);
-    EXPECT_EQ(EMPTY_VALUE, jsPackageInfo["description"]);
+    EXPECT_EQ(UNKNOWN_VALUE, jsPackageInfo["vendor"]);
+    EXPECT_EQ(UNKNOWN_VALUE, jsPackageInfo["description"]);
 }
 
 
@@ -370,9 +370,9 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapCorrectMapping)
     EXPECT_EQ("gnome-3-38-2004", jsPackageInfo["name"]);
     EXPECT_EQ(363151360, jsPackageInfo["size"]);
     EXPECT_EQ("2022/11/23 20:33:59", jsPackageInfo["install_time"]);
-    EXPECT_EQ("", jsPackageInfo["groups"]);
+    EXPECT_TRUE(jsPackageInfo["groups"].is_null());
     EXPECT_EQ("0+git.6f39565", jsPackageInfo["version"]);
-    EXPECT_EQ("", jsPackageInfo["groups"]);
+    EXPECT_TRUE(jsPackageInfo["groups"].is_null());
     EXPECT_EQ("snap", jsPackageInfo["format"]);
     EXPECT_EQ("Canonical", jsPackageInfo["vendor"]);
     EXPECT_EQ("Shared GNOME 3.38 Ubuntu stack", jsPackageInfo["description"]);

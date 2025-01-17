@@ -607,12 +607,14 @@ TEST_F(DBEngineTest, GetRowsToBeDeletedByStatusField)
     .WillOnce(Return(SQLITE_ROW))
     .WillOnce(Return(SQLITE_DONE));
 
-    auto mockColumn_9 { std::make_unique<MockColumn>() };
-    EXPECT_CALL(*mockColumn_9, value(An<const int32_t&>()))
-    .WillOnce(Return(1));
+    auto mockColumn_9 = std::make_unique<MockColumn>();
+    EXPECT_CALL(*mockColumn_9, hasValue()).WillOnce(Return(true));
+    auto mockColumn_10 = std::make_unique<MockColumn>();
+    EXPECT_CALL(*mockColumn_10, value(An<const int32_t&>())).WillOnce(Return(1));
 
     EXPECT_CALL(*mockStatement_3, column(0))
-    .WillOnce(Return(ByMove(std::move(mockColumn_9))));
+    .WillOnce(Return(ByMove(std::move(mockColumn_9))))
+    .WillOnce(Return(ByMove(std::move(mockColumn_10))));
 
     EXPECT_CALL(*mockFactory,
                 createStatement(_, "SELECT PID FROM dummy WHERE db_status_field_dm=0;"))

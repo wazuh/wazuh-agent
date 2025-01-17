@@ -49,7 +49,7 @@ TEST_F(PKGWrapperTest, LongVersion)
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);
-    EXPECT_EQ(packageJson["os_patch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["os_patch"], UNKNOWN_VALUE);
     wrapper->source(packageJson);
     EXPECT_EQ(packageJson["source"], "utilities");
     wrapper->location(packageJson);
@@ -57,13 +57,13 @@ TEST_F(PKGWrapperTest, LongVersion)
     wrapper->vendor(packageJson);
     EXPECT_EQ(packageJson["vendor"], "operasoftware");
     wrapper->priority(packageJson);
-    EXPECT_EQ(packageJson["priority"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["priority"], UNKNOWN_VALUE);
     wrapper->size(packageJson);
-    EXPECT_EQ(packageJson["size"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["size"], UNKNOWN_VALUE);
     wrapper->install_time(packageJson);
     EXPECT_EQ(packageJson["install_time"], EMPTY_VALUE);
     wrapper->multiarch(packageJson);
-    EXPECT_EQ(packageJson["multiarch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["multiarch"], UNKNOWN_VALUE);
 }
 
 TEST_F(PKGWrapperTest, ShortVersion)
@@ -93,7 +93,7 @@ TEST_F(PKGWrapperTest, ShortVersion)
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);
-    EXPECT_EQ(packageJson["os_patch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["os_patch"], UNKNOWN_VALUE);
     wrapper->source(packageJson);
     EXPECT_EQ(packageJson["source"], "utilities");
     wrapper->location(packageJson);
@@ -101,13 +101,13 @@ TEST_F(PKGWrapperTest, ShortVersion)
     wrapper->vendor(packageJson);
     EXPECT_EQ(packageJson["vendor"], "operasoftware");
     wrapper->priority(packageJson);
-    EXPECT_EQ(packageJson["priority"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["priority"], UNKNOWN_VALUE);
     wrapper->size(packageJson);
-    EXPECT_EQ(packageJson["size"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["size"], UNKNOWN_VALUE);
     wrapper->install_time(packageJson);
     EXPECT_EQ(packageJson["install_time"], EMPTY_VALUE);
     wrapper->multiarch(packageJson);
-    EXPECT_EQ(packageJson["multiarch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["multiarch"], UNKNOWN_VALUE);
 }
 
 TEST_F(PKGWrapperTest, NoName)
@@ -137,7 +137,7 @@ TEST_F(PKGWrapperTest, NoName)
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);
-    EXPECT_EQ(packageJson["os_patch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["os_patch"], UNKNOWN_VALUE);
     wrapper->source(packageJson);
     EXPECT_EQ(packageJson["source"], "utilities");
     wrapper->location(packageJson);
@@ -145,13 +145,13 @@ TEST_F(PKGWrapperTest, NoName)
     wrapper->vendor(packageJson);
     EXPECT_EQ(packageJson["vendor"], "operasoftware");
     wrapper->priority(packageJson);
-    EXPECT_EQ(packageJson["priority"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["priority"], UNKNOWN_VALUE);
     wrapper->size(packageJson);
-    EXPECT_EQ(packageJson["size"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["size"], UNKNOWN_VALUE);
     wrapper->install_time(packageJson);
     EXPECT_EQ(packageJson["install_time"], EMPTY_VALUE);
     wrapper->multiarch(packageJson);
-    EXPECT_EQ(packageJson["multiarch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["multiarch"], UNKNOWN_VALUE);
 }
 
 TEST_F(PKGWrapperTest, NoVersion)
@@ -181,7 +181,7 @@ TEST_F(PKGWrapperTest, NoVersion)
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);
-    EXPECT_EQ(packageJson["os_patch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["os_patch"], UNKNOWN_VALUE);
     wrapper->source(packageJson);
     EXPECT_EQ(packageJson["source"], "utilities");
     wrapper->location(packageJson);
@@ -189,13 +189,13 @@ TEST_F(PKGWrapperTest, NoVersion)
     wrapper->vendor(packageJson);
     EXPECT_EQ(packageJson["vendor"], "operasoftware");
     wrapper->priority(packageJson);
-    EXPECT_EQ(packageJson["priority"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["priority"], UNKNOWN_VALUE);
     wrapper->size(packageJson);
-    EXPECT_EQ(packageJson["size"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["size"], UNKNOWN_VALUE);
     wrapper->install_time(packageJson);
     EXPECT_EQ(packageJson["install_time"], EMPTY_VALUE);
     wrapper->multiarch(packageJson);
-    EXPECT_EQ(packageJson["multiarch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["multiarch"], UNKNOWN_VALUE);
 }
 
 TEST_F(PKGWrapperTest, NoGroups)
@@ -225,7 +225,7 @@ TEST_F(PKGWrapperTest, NoGroups)
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);
-    EXPECT_EQ(packageJson["os_patch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["os_patch"], UNKNOWN_VALUE);
     wrapper->source(packageJson);
     EXPECT_EQ(packageJson["source"], "utilities");
     wrapper->location(packageJson);
@@ -233,13 +233,13 @@ TEST_F(PKGWrapperTest, NoGroups)
     wrapper->vendor(packageJson);
     EXPECT_EQ(packageJson["vendor"], "operasoftware");
     wrapper->priority(packageJson);
-    EXPECT_EQ(packageJson["priority"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["priority"], UNKNOWN_VALUE);
     wrapper->size(packageJson);
-    EXPECT_EQ(packageJson["size"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["size"], UNKNOWN_VALUE);
     wrapper->install_time(packageJson);
     EXPECT_EQ(packageJson["install_time"], EMPTY_VALUE);
     wrapper->multiarch(packageJson);
-    EXPECT_EQ(packageJson["multiarch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["multiarch"], UNKNOWN_VALUE);
 }
 
 TEST_F(PKGWrapperTest, NoDescription)
@@ -269,7 +269,7 @@ TEST_F(PKGWrapperTest, NoDescription)
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);
-    EXPECT_EQ(packageJson["os_patch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["os_patch"], UNKNOWN_VALUE);
     wrapper->source(packageJson);
     EXPECT_EQ(packageJson["source"], "utilities");
     wrapper->location(packageJson);
@@ -277,13 +277,13 @@ TEST_F(PKGWrapperTest, NoDescription)
     wrapper->vendor(packageJson);
     EXPECT_EQ(packageJson["vendor"], EMPTY_VALUE);
     wrapper->priority(packageJson);
-    EXPECT_EQ(packageJson["priority"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["priority"], UNKNOWN_VALUE);
     wrapper->size(packageJson);
-    EXPECT_EQ(packageJson["size"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["size"], UNKNOWN_VALUE);
     wrapper->install_time(packageJson);
     EXPECT_EQ(packageJson["install_time"], EMPTY_VALUE);
     wrapper->multiarch(packageJson);
-    EXPECT_EQ(packageJson["multiarch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["multiarch"], UNKNOWN_VALUE);
 }
 
 TEST_F(PKGWrapperTest, NoVendor)
@@ -313,7 +313,7 @@ TEST_F(PKGWrapperTest, NoVendor)
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);
-    EXPECT_EQ(packageJson["os_patch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["os_patch"], UNKNOWN_VALUE);
     wrapper->source(packageJson);
     EXPECT_EQ(packageJson["source"], "utilities");
     wrapper->location(packageJson);
@@ -321,13 +321,13 @@ TEST_F(PKGWrapperTest, NoVendor)
     wrapper->vendor(packageJson);
     EXPECT_EQ(packageJson["vendor"], EMPTY_VALUE);
     wrapper->priority(packageJson);
-    EXPECT_EQ(packageJson["priority"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["priority"], UNKNOWN_VALUE);
     wrapper->size(packageJson);
-    EXPECT_EQ(packageJson["size"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["size"], UNKNOWN_VALUE);
     wrapper->install_time(packageJson);
     EXPECT_EQ(packageJson["install_time"], EMPTY_VALUE);
     wrapper->multiarch(packageJson);
-    EXPECT_EQ(packageJson["multiarch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["multiarch"], UNKNOWN_VALUE);
 }
 
 TEST_F(PKGWrapperTest, pkgVersionXML)
@@ -357,7 +357,7 @@ TEST_F(PKGWrapperTest, pkgVersionXML)
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);
-    EXPECT_EQ(packageJson["os_patch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["os_patch"], UNKNOWN_VALUE);
     wrapper->source(packageJson);
     EXPECT_EQ(packageJson["source"], "receipts");
     wrapper->location(packageJson);
@@ -365,13 +365,13 @@ TEST_F(PKGWrapperTest, pkgVersionXML)
     wrapper->vendor(packageJson);
     EXPECT_EQ(packageJson["vendor"], "wazuh");
     wrapper->priority(packageJson);
-    EXPECT_EQ(packageJson["priority"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["priority"], UNKNOWN_VALUE);
     wrapper->size(packageJson);
-    EXPECT_EQ(packageJson["size"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["size"], UNKNOWN_VALUE);
     wrapper->install_time(packageJson);
     EXPECT_EQ(packageJson["install_time"], "2024-11-07T08:58:38Z");
     wrapper->multiarch(packageJson);
-    EXPECT_EQ(packageJson["multiarch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["multiarch"], UNKNOWN_VALUE);
 }
 
 TEST_F(PKGWrapperTest, pkgVersionBin)
@@ -401,7 +401,7 @@ TEST_F(PKGWrapperTest, pkgVersionBin)
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);
-    EXPECT_EQ(packageJson["os_patch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["os_patch"], UNKNOWN_VALUE);
     wrapper->source(packageJson);
     EXPECT_EQ(packageJson["source"], "receipts");
     wrapper->location(packageJson);
@@ -409,13 +409,13 @@ TEST_F(PKGWrapperTest, pkgVersionBin)
     wrapper->vendor(packageJson);
     EXPECT_EQ(packageJson["vendor"], "zoom");
     wrapper->priority(packageJson);
-    EXPECT_EQ(packageJson["priority"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["priority"], UNKNOWN_VALUE);
     wrapper->size(packageJson);
-    EXPECT_EQ(packageJson["size"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["size"], UNKNOWN_VALUE);
     wrapper->install_time(packageJson);
     EXPECT_EQ(packageJson["install_time"], "2024-11-08T11:44:04Z");
     wrapper->multiarch(packageJson);
-    EXPECT_EQ(packageJson["multiarch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["multiarch"], UNKNOWN_VALUE);
 }
 
 TEST_F(PKGWrapperTest, pkgVersionLong)
@@ -445,7 +445,7 @@ TEST_F(PKGWrapperTest, pkgVersionLong)
     wrapper->format(packageJson);
     EXPECT_EQ(packageJson["format"], "pkg");
     wrapper->osPatch(packageJson);
-    EXPECT_EQ(packageJson["os_patch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["os_patch"], UNKNOWN_VALUE);
     wrapper->source(packageJson);
     EXPECT_EQ(packageJson["source"], "receipts");
     wrapper->location(packageJson);
@@ -453,11 +453,11 @@ TEST_F(PKGWrapperTest, pkgVersionLong)
     wrapper->vendor(packageJson);
     EXPECT_EQ(packageJson["vendor"], "R-project");
     wrapper->priority(packageJson);
-    EXPECT_EQ(packageJson["priority"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["priority"], UNKNOWN_VALUE);
     wrapper->size(packageJson);
-    EXPECT_EQ(packageJson["size"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["size"], UNKNOWN_VALUE);
     wrapper->install_time(packageJson);
     EXPECT_EQ(packageJson["install_time"], "2024-11-13T10:59:10Z");
     wrapper->multiarch(packageJson);
-    EXPECT_EQ(packageJson["multiarch"], EMPTY_VALUE);
+    EXPECT_EQ(packageJson["multiarch"], UNKNOWN_VALUE);
 }

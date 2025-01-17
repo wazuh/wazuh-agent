@@ -1242,7 +1242,7 @@ void Inventory::CleanMetadata()
             m_spDBSync = std::make_unique<DBSync>(HostType::AGENT,
                                                     DbEngineType::SQLITE3,
                                                     m_dbFilePath,
-                                                    METADATA_SQL_STATEMENT,
+                                                    GetCreateStatement(),
                                                     DbManagement::PERSISTENT);
             for (const auto& key : TABLE_TO_KEY_MAP) {
                 if(!ReadMetadata(key.second).empty()){

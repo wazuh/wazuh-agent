@@ -20,7 +20,7 @@ static void getOsInfoFromUname(nlohmann::json& info)
 {
     info["os_name"] = "Unix";
     info["os_platform"] = "Unix";
-    info["os_version"] = EMPTY_VALUE;
+    info["os_version"] = UNKNOWN_VALUE;
 }
 
 

@@ -804,13 +804,24 @@ bool SQLiteDBEngine::bindJsonData(const std::shared_ptr<SQLiteLegacy::IStatement
     bool retVal { true };
     const auto type { std::get<TableHeader::Type>(cd) };
     const auto name { std::get<TableHeader::Name>(cd) };
+    const auto isPrimaryKey { std::get<TableHeader::PK>(cd) };
     const auto& it  { valueType.find(name) };
 
     if (valueType.end() != it)
     {
         const auto& jsData { *it };
 
-        if (ColumnType::BigInt == type)
+        if (jsData.is_null()) {
+            if(!isPrimaryKey)
+            {
+                stmt->bind(cid);
+            }
+            else
+            {
+                throw dbengine_error { INVALID_DATA_BIND };
+            }
+        }
+        else if (ColumnType::BigInt == type)
         {
             int64_t value
             {
@@ -994,25 +1005,31 @@ void SQLiteDBEngine::getTableData(std::shared_ptr<SQLiteLegacy::IStatement>const
                                   const std::string& fieldName,
                                   Row& row)
 {
+    if (!stmt->column(index)->hasValue())
+    {
+        row[fieldName] = std::make_tuple(type, std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt);
+        return;
+    }
+
     if (ColumnType::BigInt == type)
     {
-        row[fieldName] = std::make_tuple(type, std::string(), 0, stmt->column(index)->value(int64_t{}), 0, 0);
+        row[fieldName] = std::make_tuple(type, std::nullopt, std::nullopt, stmt->column(index)->value(int64_t{}), std::nullopt, std::nullopt);
     }
     else if (ColumnType::UnsignedBigInt == type)
     {
-        row[fieldName] = std::make_tuple(type, std::string(), 0, 0, stmt->column(index)->value(int64_t{}), 0);
+        row[fieldName] = std::make_tuple(type, std::nullopt, std::nullopt, std::nullopt, stmt->column(index)->value(uint64_t{}), std::nullopt);
     }
     else if (ColumnType::Integer == type)
     {
-        row[fieldName] = std::make_tuple(type, std::string(), stmt->column(index)->value(int32_t{}), 0, 0, 0);
+        row[fieldName] = std::make_tuple(type, std::nullopt, stmt->column(index)->value(int32_t{}), std::nullopt, std::nullopt, std::nullopt);
     }
     else if (ColumnType::Text == type)
     {
-        row[fieldName] = std::make_tuple(type, stmt->column(index)->value(std::string{}), 0, 0, 0, 0);
+        row[fieldName] = std::make_tuple(type, stmt->column(index)->value(std::string{}), std::nullopt, std::nullopt, std::nullopt, std::nullopt);
     }
     else if (ColumnType::Double == type)
     {
-        row[fieldName] = std::make_tuple(type, std::string(), 0, 0, 0, stmt->column(index)->value(double_t{}));
+        row[fieldName] = std::make_tuple(type, std::nullopt, std::nullopt, std::nullopt, std::nullopt, stmt->column(index)->value(double_t{}));
     }
     else
     {
@@ -1238,34 +1255,68 @@ void SQLiteDBEngine::bindFieldData(const std::shared_ptr<SQLiteLegacy::IStatemen
     if (ColumnType::BigInt == type)
     {
         const auto value { std::get<GenericTupleIndex::GenBigInt>(fieldData) };
-        stmt->bind(index, value);
+        if (value.has_value())
+        {
+            stmt->bind(index, value.value());
+        }
+        else
+        {
+            stmt->bind(index);
+        }
     }
     else if (ColumnType::UnsignedBigInt == type)
     {
         const auto value { std::get<GenericTupleIndex::GenUnsignedBigInt>(fieldData) };
-        stmt->bind(index, value);
+        if (value.has_value())
+        {
+            stmt->bind(index, value.value());
+        }
+        else
+        {
+            stmt->bind(index);
+        }
     }
     else if (ColumnType::Integer == type)
     {
         const auto value { std::get<GenericTupleIndex::GenInteger>(fieldData) };
-        stmt->bind(index, value);
+        if (value.has_value())
+        {
+            stmt->bind(index, value.value());
+        }
+        else
+        {
+            stmt->bind(index);
+        }
     }
     else if (ColumnType::Text == type)
     {
         const auto value { std::get<GenericTupleIndex::GenString>(fieldData) };
-        stmt->bind(index, value);
+        if (value.has_value())
+        {
+            stmt->bind(index, value.value());
+        }
+        else
+        {
+            stmt->bind(index);
+        }
     }
     else if (ColumnType::Double == type)
     {
         const auto value { std::get<GenericTupleIndex::GenDouble>(fieldData) };
-        stmt->bind(index, value);
+        if (value.has_value())
+        {
+            stmt->bind(index, value.value());
+        }
+        else
+        {
+            stmt->bind(index);
+        }
     }
     else
     {
         throw dbengine_error { INVALID_DATA_BIND };
     }
 }
-
 
 std::string SQLiteDBEngine::buildSelectQuery(const std::string& table,
                                              const nlohmann::json& jsQuery)
@@ -1921,23 +1972,28 @@ void SQLiteDBEngine::getFieldValueFromTuple(const Field& value,
 
     if (ColumnType::BigInt == rowType)
     {
-        object[value.first] = std::get<ColumnType::BigInt>(value.second);
+        const auto& optValue = std::get<ColumnType::BigInt>(value.second);
+        object[value.first] = optValue.has_value() ? nlohmann::json(optValue.value()) : nlohmann::json(nullptr);
     }
     else if (ColumnType::UnsignedBigInt == rowType)
     {
-        object[value.first] = std::get<ColumnType::UnsignedBigInt>(value.second);
+        const auto& optValue = std::get<ColumnType::UnsignedBigInt>(value.second);
+        object[value.first] = optValue.has_value() ? nlohmann::json(optValue.value()) : nlohmann::json(nullptr);
     }
     else if (ColumnType::Integer == rowType)
     {
-        object[value.first] = std::get<ColumnType::Integer>(value.second);
+        const auto& optValue = std::get<ColumnType::Integer>(value.second);
+        object[value.first] = optValue.has_value() ? nlohmann::json(optValue.value()) : nlohmann::json(nullptr);
     }
     else if (ColumnType::Text == rowType)
     {
-        object[value.first] = std::get<ColumnType::Text>(value.second);
+        const auto& optValue = std::get<ColumnType::Text>(value.second);
+        object[value.first] = optValue.has_value() ? nlohmann::json(optValue.value()) : nlohmann::json(nullptr);
     }
     else if (ColumnType::Double == rowType)
     {
-        object[value.first] = std::get<ColumnType::Double>(value.second);
+        const auto& optValue = std::get<ColumnType::Double>(value.second);
+        object[value.first] = optValue.has_value() ? nlohmann::json(optValue.value()) : nlohmann::json(nullptr);
     }
     else
     {
@@ -1953,30 +2009,42 @@ void SQLiteDBEngine::getFieldValueFromTuple(const Field& value,
 
     if (ColumnType::BigInt == rowType)
     {
-        resultValue.append(std::to_string(std::get<ColumnType::BigInt>(value.second)));
+        const auto& optValue = std::get<ColumnType::BigInt>(value.second);
+        resultValue.append(optValue.has_value() ? std::to_string(optValue.value()) : "null");
     }
     else if (ColumnType::UnsignedBigInt == rowType)
     {
-        resultValue.append(std::to_string(std::get<ColumnType::UnsignedBigInt>(value.second)));
+        const auto& optValue = std::get<ColumnType::UnsignedBigInt>(value.second);
+        resultValue.append(optValue.has_value() ? std::to_string(optValue.value()) : "null");
     }
     else if (ColumnType::Integer == rowType)
     {
-        resultValue.append(std::to_string(std::get<ColumnType::Integer>(value.second)));
+        const auto& optValue = std::get<ColumnType::Integer>(value.second);
+        resultValue.append(optValue.has_value() ? std::to_string(optValue.value()) : "null");
     }
     else if (ColumnType::Text == rowType)
     {
-        if (quotationMarks)
+        const auto& optValue = std::get<ColumnType::Text>(value.second);
+        if (optValue.has_value())
         {
-            resultValue.append("'" + std::get<ColumnType::Text>(value.second) + "'");
+            if (quotationMarks)
+            {
+                resultValue.append("'" + optValue.value() + "'");
+            }
+            else
+            {
+                resultValue.append(optValue.value());
+            }
         }
         else
         {
-            resultValue.append(std::get<ColumnType::Text>(value.second));
+            resultValue.append("null");
         }
     }
     else if (ColumnType::Double == rowType)
     {
-        resultValue.append(std::to_string(std::get<ColumnType::Double>(value.second)));
+        const auto& optValue = std::get<ColumnType::Double>(value.second);
+        resultValue.append(optValue.has_value() ? std::to_string(optValue.value()) : "null");
     }
     else
     {

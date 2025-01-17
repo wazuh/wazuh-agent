@@ -135,12 +135,12 @@ class BSDPortWrapper final : public IPortWrapper
 
         void txQueue(nlohmann::json& port) const override
         {
-            port["tx_queue"] = EMPTY_VALUE;
+            port["tx_queue"] = UNKNOWN_VALUE;
         }
 
         void rxQueue(nlohmann::json& port) const override
         {
-            port["rx_queue"] = EMPTY_VALUE;
+            port["rx_queue"] = UNKNOWN_VALUE;
         }
 
         void inode(nlohmann::json& port) const override
@@ -150,7 +150,7 @@ class BSDPortWrapper final : public IPortWrapper
 
         void state(nlohmann::json& port) const override
         {
-            port["state"] = EMPTY_VALUE;
+            port["state"] = UNKNOWN_VALUE;
 
             const auto itProtocol { PORTS_TYPE.find(m_spSocketInfo->psi.soi_kind) };
 

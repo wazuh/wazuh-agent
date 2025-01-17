@@ -33,6 +33,7 @@ constexpr auto RPM_PATH {"/var/lib/rpm/"};
 
 constexpr auto SNAP_PATH {"/var/lib/snapd"};
 
+constexpr auto UNKNOWN_VALUE {nullptr};
 constexpr auto EMPTY_VALUE {""};
 constexpr auto MAC_ADDRESS_COUNT_SEGMENTS
 {

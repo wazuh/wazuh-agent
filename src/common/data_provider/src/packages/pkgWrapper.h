@@ -80,7 +80,7 @@ class PKGWrapper final : public IPackageWrapper
         }
         void osPatch(nlohmann::json& package) const override
         {
-            package["os_patch"] = EMPTY_VALUE;
+            package["os_patch"] = UNKNOWN_VALUE;
         }
         void source(nlohmann::json& package) const override
         {
@@ -97,12 +97,12 @@ class PKGWrapper final : public IPackageWrapper
 
         void priority(nlohmann::json& package) const override
         {
-            package["priority"] = EMPTY_VALUE;
+            package["priority"] = UNKNOWN_VALUE;
         }
 
         void size(nlohmann::json& package) const override
         {
-            package["size"] = EMPTY_VALUE;
+            package["size"] = UNKNOWN_VALUE;
         }
 
         void install_time(nlohmann::json& package) const override
@@ -112,7 +112,7 @@ class PKGWrapper final : public IPackageWrapper
 
         void multiarch(nlohmann::json& package) const override
         {
-            package["multiarch"] = EMPTY_VALUE;
+            package["multiarch"] = UNKNOWN_VALUE;
         }
 
     private:

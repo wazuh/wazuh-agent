@@ -260,6 +260,12 @@ void Statement::bind(const int32_t index, const double_t value)
     checkSqliteResult(result, sqlite3_errmsg(m_connection->db().get()));
     ++m_bindParametersIndex;
 }
+void Statement::bind(const int32_t index)
+{
+    const auto result{ sqlite3_bind_null(m_stmt.get(), index) };
+    checkSqliteResult(result, sqlite3_errmsg(m_connection->db().get()));
+    ++m_bindParametersIndex;
+}
 
 // LCOV_EXCL_START
 std::string Statement::expand()

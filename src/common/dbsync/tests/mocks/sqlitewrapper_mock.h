@@ -119,7 +119,10 @@ class MockStatement : public SQLiteLegacy::IStatement
                     bind,
                     (const int32_t index, const double_t value),
                     (override));
-
+        MOCK_METHOD(void,
+                    bind,
+                    (const int32_t index),
+                    (override));
         MOCK_METHOD(std::string,
                     expand,
                     (),
