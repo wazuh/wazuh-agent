@@ -15,7 +15,7 @@ configure_target(logcollector_unit_tests)
 
 target_include_directories(logcollector_unit_tests PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/../../src
-	${CMAKE_CURRENT_SOURCE_DIR}/../../src/winevt_reader/src
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/../../src/winevt_reader/src>
 )
 
 target_link_libraries(logcollector_unit_tests PRIVATE

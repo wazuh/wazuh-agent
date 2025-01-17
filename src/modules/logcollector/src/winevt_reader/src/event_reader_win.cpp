@@ -4,7 +4,7 @@
 #include <iomanip>
 
 #include <logger.hpp>
-#include "../../../include/logcollector.hpp"
+#include <logcollector.hpp>
 
 namespace logcollector::winevt
 {

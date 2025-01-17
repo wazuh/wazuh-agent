@@ -15,13 +15,13 @@ void Logcollector::AddPlatformSpecificReader(std::shared_ptr<const configuration
 {
     const auto refreshInterval = configurationParser->GetConfig<time_t>("logcollector", "channel_refresh").value_or(config::logcollector::DEFAULT_CHANNEL_REFRESH_INTERVAL);
 
-    const auto windowsConfig = configurationParser->GetConfig<std::vector<std::map<std::string, std::string>>>("logcollector", "windows").value_or(
+    auto windowsConfig = configurationParser->GetConfig<std::vector<std::map<std::string, std::string>>>("logcollector", "windows").value_or(
         std::vector<std::map<std::string, std::string>> {});
 
     for (auto& entry : windowsConfig)
     {
-        const auto channel = entry.at("channel");
-        const auto query = entry.at("query");
+        const auto channel = entry["channel"];
+        const auto query = entry["query"];
         AddReader(std::make_shared<winevt::WindowsEventTracerReader>(*this, channel, query, refreshInterval));
     }
 }

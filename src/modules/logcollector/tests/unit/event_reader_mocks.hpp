@@ -54,7 +54,7 @@ public:
     MOCK_METHOD(void, SendMessage, (const std::string& channel, const std::string& message,  const std::string& collectorType), (override));
     boost::asio::awaitable<void> Wait([[maybe_unused]]std::chrono::milliseconds ms)
     {
-        return Logcollector::Wait(ms);
+        co_return;
     }
     void Stop()
     {

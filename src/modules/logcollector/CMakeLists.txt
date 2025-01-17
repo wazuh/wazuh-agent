@@ -35,10 +35,11 @@ add_library(Logcollector ${LOGCOLLECTOR_SOURCES})
 target_include_directories(Logcollector PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/winevt_reader/src/
     ${COMMON_FOLDER}
     ${COMMON_FOLDER}/stringHelper/include
-    ${COMMON_FOLDER}/timeHelper/include)
+    ${COMMON_FOLDER}/timeHelper/include
+    PRIVATE
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/winevt_reader/src/>)
 
 target_link_libraries(Logcollector
     PUBLIC
