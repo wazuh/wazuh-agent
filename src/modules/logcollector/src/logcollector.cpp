@@ -9,18 +9,22 @@
 
 #include <chrono>
 #include <iomanip>
+#include <map>
 #include <sstream>
 
 #include "file_reader.hpp"
 
 using namespace logcollector;
 
-namespace logcollector {
+namespace logcollector
+{
     constexpr int ACTIVE_READERS_WAIT_MS = 10;
 }
 
-void Logcollector::Start() {
-    if (!m_enabled) {
+void Logcollector::Start()
+{
+    if (!m_enabled)
+    {
         LogInfo("Logcollector module is disabled.");
         return;
     }
@@ -29,7 +33,8 @@ void Logcollector::Start() {
     m_ioContext.run();
 }
 
-void Logcollector::EnqueueTask(boost::asio::awaitable<void> task) {
+void Logcollector::EnqueueTask(boost::asio::awaitable<void> task)
+{
     // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
     boost::asio::co_spawn(
         m_ioContext,
@@ -50,8 +55,10 @@ void Logcollector::EnqueueTask(boost::asio::awaitable<void> task) {
     // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 }
 
-void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
-    if (!configurationParser) {
+void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
+{
+    if (!configurationParser)
+    {
         LogError("Invalid Configuration Parser passed to setup, module set to disabled.");
         m_enabled = false;
         return;
@@ -65,21 +72,26 @@ void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParse
     }
 
     SetupFileReader(configurationParser);
+
+    AddPlatformSpecificReader(configurationParser);
 }
 
-void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser) {
+void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
+{
     auto fileWait = configurationParser->GetConfig<std::time_t>("logcollector", "file_wait").value_or(config::logcollector::DEFAULT_FILE_WAIT);
 
     auto reloadInterval = configurationParser->GetConfig<std::time_t>("logcollector", "reload_interval").value_or(config::logcollector::DEFAULT_RELOAD_INTERVAL);
 
     auto localfiles = configurationParser->GetConfig<std::vector<std::string>>("logcollector", "localfiles").value_or(std::vector<std::string>({config::logcollector::DEFAULT_LOCALFILES}));
 
-    for (auto& lf : localfiles) {
+    for (auto& lf : localfiles)
+    {
         AddReader(std::make_shared<FileReader>(*this, lf, fileWait, reloadInterval));
     }
 }
 
-void Logcollector::Stop() {
+void Logcollector::Stop()
+{
     CleanAllReaders();
     m_ioContext.stop();
     LogInfo("Logcollector module stopped.");
@@ -87,17 +99,20 @@ void Logcollector::Stop() {
 
 // NOLINTBEGIN(performance-unnecessary-value-param)
 Co_CommandExecutionResult Logcollector::ExecuteCommand(const std::string command,
-                                                    [[maybe_unused]] const nlohmann::json parameters) {
+                                                    [[maybe_unused]] const nlohmann::json parameters)
+                                                    {
   LogInfo("Logcollector command: ", command);
   co_return module_command::CommandExecutionResult{module_command::Status::SUCCESS, "OK"};
 }
 // NOLINTEND(performance-unnecessary-value-param)
 
-void Logcollector::SetPushMessageFunction(const std::function<int(Message)>& pushMessage) {
+void Logcollector::SetPushMessageFunction(const std::function<int(Message)>& pushMessage)
+{
     m_pushMessage = pushMessage;
 }
 
-void Logcollector::SendMessage(const std::string& location, const std::string& log, const std::string& collectorType) {
+void Logcollector::SendMessage(const std::string& location, const std::string& log, const std::string& collectorType)
+{
     auto metadata = nlohmann::json::object();
     auto data = nlohmann::json::object();
 
@@ -117,31 +132,38 @@ void Logcollector::SendMessage(const std::string& location, const std::string& l
     LogTrace("Message pushed: '{}':'{}'", location, log);
 }
 
-void Logcollector::AddReader(std::shared_ptr<IReader> reader) {
+void Logcollector::AddReader(std::shared_ptr<IReader> reader)
+{
     m_readers.push_back(reader);
     EnqueueTask(reader->Run());
 }
 
-void Logcollector::CleanAllReaders() {
-    for (const auto &reader : m_readers) {
+void Logcollector::CleanAllReaders()
+{
+    for (const auto &reader : m_readers)
+    {
         reader->Stop();
     }
 
     {
         std::lock_guard<std::mutex> lock(m_timersMutex);
-        for (const auto &timer : m_timers) {
+        for (const auto &timer : m_timers)
+        {
             timer->cancel();
         }
     }
 
-    while (m_activeReaders) {
+    while (m_activeReaders)
+    {
         std::this_thread::sleep_for(std::chrono::milliseconds(ACTIVE_READERS_WAIT_MS));
     }
     m_readers.clear();
 }
 
-Awaitable Logcollector::Wait(std::chrono::milliseconds ms) {
-    if (!m_ioContext.stopped()) {
+Awaitable Logcollector::Wait(std::chrono::milliseconds ms)
+{
+    if (!m_ioContext.stopped())
+    {
         auto timer = boost::asio::steady_timer(m_ioContext, ms);
         {
             std::lock_guard<std::mutex> lock(m_timersMutex);

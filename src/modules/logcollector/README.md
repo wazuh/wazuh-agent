@@ -15,14 +15,9 @@ logcollector:
   enabled: true
   file:
     - location: /var/log/*.log
-      age: 1d
-      delim-regex: "\n"
-      use-bookmark: true
   windows:
     - channel: Application
       query: Event[System/EventID = 4624]
-      use-bookmark: true
-      reconnect-time: 5s
   journald:
     - filter:
       - field: "_SYSTEMD_UNIT"
