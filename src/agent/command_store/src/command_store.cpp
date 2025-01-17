@@ -24,6 +24,7 @@ namespace
     const std::string COMMAND_STORE_MODULE_COLUMN_NAME = "module";
     const std::string COMMAND_STORE_COMMAND_COLUMN_NAME = "command";
     const std::string COMMAND_STORE_PARAMETERS_COLUMN_NAME = "parameters";
+    const std::string COMMAND_STORE_EXECUTION_MODE_COLUMN_NAME = "execution_mode";
     const std::string COMMAND_STORE_RESULT_COLUMN_NAME = "result";
     const std::string COMMAND_STORE_STATUS_COLUMN_NAME = "status";
     const std::string COMMAND_STORE_TIME_COLUMN_NAME = "time";
@@ -45,6 +46,18 @@ namespace command_store
         }
     }
 
+    module_command::CommandExecutionMode CommandStore::ExecutionModeFromInt(const int i)
+    {
+        if (i == 0)
+        {
+            return module_command::CommandExecutionMode::SYNC;
+        }
+        else
+        {
+            return module_command::CommandExecutionMode::ASYNC;
+        }
+    }
+
     CommandStore::CommandStore(const std::string& dbFolderPath)
     {
         const auto dbFilePath = dbFolderPath + "/" + COMMANDSTORE_DB_NAME;
@@ -61,6 +74,7 @@ namespace command_store
                 columns.emplace_back(COMMAND_STORE_MODULE_COLUMN_NAME, ColumnType::TEXT, NOT_NULL);
                 columns.emplace_back(COMMAND_STORE_COMMAND_COLUMN_NAME, ColumnType::TEXT, NOT_NULL);
                 columns.emplace_back(COMMAND_STORE_PARAMETERS_COLUMN_NAME, ColumnType::TEXT, NOT_NULL);
+                columns.emplace_back(COMMAND_STORE_EXECUTION_MODE_COLUMN_NAME, ColumnType::INTEGER, NOT_NULL);
                 columns.emplace_back(COMMAND_STORE_RESULT_COLUMN_NAME, ColumnType::TEXT, NOT_NULL);
                 columns.emplace_back(COMMAND_STORE_STATUS_COLUMN_NAME, ColumnType::INTEGER, NOT_NULL);
                 columns.emplace_back(COMMAND_STORE_TIME_COLUMN_NAME, ColumnType::REAL, NOT_NULL);
@@ -133,6 +147,9 @@ namespace command_store
         fields.emplace_back(
             COMMAND_STORE_TIME_COLUMN_NAME, ColumnType::REAL, std::to_string(GetCurrentTimestampAsReal()));
         fields.emplace_back(COMMAND_STORE_PARAMETERS_COLUMN_NAME, ColumnType::TEXT, cmd.Parameters.dump());
+        fields.emplace_back(COMMAND_STORE_EXECUTION_MODE_COLUMN_NAME,
+                            ColumnType::INTEGER,
+                            std::to_string(static_cast<int>(cmd.ExecutionMode)));
         fields.emplace_back(COMMAND_STORE_RESULT_COLUMN_NAME, ColumnType::TEXT, cmd.ExecutionResult.Message);
         fields.emplace_back(COMMAND_STORE_STATUS_COLUMN_NAME,
                             ColumnType::INTEGER,
@@ -200,6 +217,10 @@ namespace command_store
                 {
                     cmd.Parameters = nlohmann::json::parse(col.Value);
                 }
+                else if (col.Name == COMMAND_STORE_EXECUTION_MODE_COLUMN_NAME)
+                {
+                    cmd.ExecutionMode = ExecutionModeFromInt(std::stoi(col.Value));
+                }
                 else if (col.Name == COMMAND_STORE_RESULT_COLUMN_NAME)
                 {
                     cmd.ExecutionResult.Message = col.Value;
@@ -261,6 +282,10 @@ namespace command_store
                     else if (col.Name == COMMAND_STORE_PARAMETERS_COLUMN_NAME)
                     {
                         cmd.Parameters = nlohmann::json::parse(col.Value);
+                    }
+                    else if (col.Name == COMMAND_STORE_EXECUTION_MODE_COLUMN_NAME)
+                    {
+                        cmd.ExecutionMode = ExecutionModeFromInt(std::stoi(col.Value));
                     }
                     else if (col.Name == COMMAND_STORE_RESULT_COLUMN_NAME)
                     {

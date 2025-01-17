@@ -17,6 +17,13 @@ namespace module_command
         UNKNOWN
     };
 
+    /// @enum Execution mode of a command
+    enum class CommandExecutionMode
+    {
+        SYNC,
+        ASYNC
+    };
+
     /// @struct Result of a command execution
     struct CommandExecutionResult
     {
@@ -55,6 +62,7 @@ namespace module_command
                      std::string module,
                      std::string command,
                      nlohmann::json parameters,
+                     CommandExecutionMode executionMode,
                      std::string result,
                      Status status)
             : Id(std::move(id))
@@ -62,6 +70,7 @@ namespace module_command
             , Command(std::move(command))
             , Parameters(std::move(parameters))
             , Time(0.0)
+            , ExecutionMode(executionMode)
             , ExecutionResult(status, std::move(result))
         {
         }
@@ -80,6 +89,9 @@ namespace module_command
 
         /// @brief Time of the command execution
         double Time;
+
+        /// @brief Execution mode (sync or async) of the command.
+        CommandExecutionMode ExecutionMode;
 
         /// @brief Result of the command execution
         CommandExecutionResult ExecutionResult;
