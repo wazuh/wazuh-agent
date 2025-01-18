@@ -9,14 +9,15 @@ RUN yum install -y gcc make wget git \
     automake autoconf libtool policycoreutils-python \
     yum-utils epel-release redhat-rpm-config rpm-devel \
     autopoint gettext nspr nspr-devel \
-    nss nss-devel magic magic-devel ninja-build \
+    nss nss-devel magic magic-devel \
     db4 db4-devel zlib zlib-devel rpm-build bison \
     sharutils bzip2-devel xz-devel lzo-devel \
     e2fsprogs-devel libacl-devel libattr-devel \
     openssl-devel libxml2-devel kexec-tools elfutils \
     libarchive-devel elfutils-libelf-devel \
     patchelf elfutils-devel libgcrypt-devel \
-    file-devel gettext-devel curl-devel systemd-devel
+    file-devel gettext-devel curl-devel systemd-devel \
+    which python3
 
 RUN yum-builddep python34 -y
 
@@ -86,6 +87,7 @@ RUN mkdir -p /usr/local/var/lib/rpm && \
     cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages && \
     /usr/local/bin/rpm --rebuilddb && rm -rf /root/rpmbuild
 
-RUN rpmkeys --import "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF" && \
-    su -c 'curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo' && \
-    yum install mono-devel -y
+RUN git clone https://github.com/mono/mono.git && cd mono && ./autogen.sh --prefix=/usr/local && \
+    make -j $(nproc) && make install -j $(nproc) && cd .. && rm -rf mono && cert-sync /etc/ssl/certs/ca-bundle.crt
+
+RUN yum install ninja-build -y
