@@ -59,7 +59,7 @@ TEST_F(LoggerConstructorTest, WindowsLoggerConstructor)
 
     auto sinks = current_logger->sinks();
     ASSERT_FALSE(sinks.empty());
-    auto win_sink = std::dynamic_pointer_cast<spdlog::sinks::win_eventlog_sink_st>(sinks[0]);
+    auto win_sink = std::dynamic_pointer_cast<spdlog::sinks::win_eventlog_sink_mt>(sinks[0]);
     EXPECT_NE(win_sink, nullptr);
 }
 #else // __linux__ || __APPLE__
