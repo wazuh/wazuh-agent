@@ -1,7 +1,7 @@
 #include "https_socket_verify_utils.hpp"
 #include "https_verifier_mac.hpp"
-#include "icert_store_utils_mac.hpp"
-#include "ix509_utils.hpp"
+#include "mocks/mock_cert_store_utils_mac.hpp"
+#include "mocks/mock_x509_utils.hpp"
 #include <CoreFoundation/CoreFoundation.h>
 #include <boost/asio/ssl.hpp>
 #include <gmock/gmock.h>
@@ -13,33 +13,6 @@ using namespace https_socket_verify_utils;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
-
-class MockX509Utils : public ICertificateX509Utils
-{
-public:
-    MOCK_METHOD(STACK_OF(X509) *, GetCertChain, (X509_STORE_CTX*), (const, override));
-    MOCK_METHOD(X509*, GetCertificateFromChain, (STACK_OF(X509) *, int), (const, override));
-    MOCK_METHOD(int, GetCertificateCount, (STACK_OF(X509) *), (const, override));
-    MOCK_METHOD(int, EncodeCertificateToDER, (X509*, unsigned char**), (const, override));
-    MOCK_METHOD(void*, GetExtD2I, (X509 * x, int nid, int* crit, int* idx), (const, override));
-    MOCK_METHOD(const unsigned char*, GetASN1StringData, (const ASN1_STRING* str), (const, override));
-    MOCK_METHOD(void, FreeGeneralNames, (GENERAL_NAMES * genNames), (const, override));
-};
-
-class MockCertStoreUtils : public ICertificateStoreUtilsMac
-{
-public:
-    MOCK_METHOD(SecCertificateRef, CreateCertificate, (CFDataRef), (const, override));
-    MOCK_METHOD(OSStatus, CreateTrustObject, (CFArrayRef, SecPolicyRef, SecTrustRef*), (const, override));
-    MOCK_METHOD(bool, EvaluateTrust, (SecTrustRef, CFErrorRef*), (const, override));
-    MOCK_METHOD(CFDataRef, CreateCFData, (const unsigned char*, int), (const, override));
-    MOCK_METHOD(CFArrayRef, CreateCertArray, (const void**, size_t), (const, override));
-    MOCK_METHOD(CFStringRef, CopyErrorDescription, (CFErrorRef), (const, override));
-    MOCK_METHOD(CFStringRef, CopySubjectSummary, (SecCertificateRef), (const, override));
-    MOCK_METHOD(std::string, GetStringCFString, (CFStringRef), (const, override));
-    MOCK_METHOD(void, ReleaseCFObject, (CFTypeRef), (const, override));
-    MOCK_METHOD(SecPolicyRef, CreateSSLPolicy, (bool, const std::string&), (const, override));
-};
 
 class MockVerifyContext : public boost::asio::ssl::verify_context
 {

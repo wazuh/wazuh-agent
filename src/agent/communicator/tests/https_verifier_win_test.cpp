@@ -9,8 +9,8 @@
 
 #include "https_socket_verify_utils.hpp"
 #include "https_verifier_win.hpp"
-#include "icert_store_utils_win.hpp"
-#include "ix509_utils.hpp"
+#include "mocks/mock_cert_store_utils_win.hpp"
+#include "mocks/mock_x509_utils.hpp"
 #include <boost/asio/ssl.hpp>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -21,65 +21,6 @@ using namespace https_socket_verify_utils;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
-
-class MockX509Utils : public ICertificateX509Utils
-{
-public:
-    MOCK_METHOD(STACK_OF(X509) *, GetCertChain, (X509_STORE_CTX*), (const, override));
-    MOCK_METHOD(X509*, GetCertificateFromChain, (STACK_OF(X509) *, int), (const, override));
-    MOCK_METHOD(int, GetCertificateCount, (STACK_OF(X509) *), (const, override));
-    MOCK_METHOD(int, EncodeCertificateToDER, (X509*, unsigned char**), (const, override));
-    MOCK_METHOD(void*, GetExtD2I, (X509 * x, int nid, int* crit, int* idx), (const, override));
-    MOCK_METHOD(const unsigned char*, GetASN1StringData, (const ASN1_STRING* str), (const, override));
-    MOCK_METHOD(void, FreeGeneralNames, (GENERAL_NAMES * genNames), (const, override));
-};
-
-class MockCertStoreUtils : public ICertificateStoreUtilsWin
-{
-public:
-    MOCK_METHOD(PCCERT_CONTEXT,
-                CreateCertificateContext,
-                (DWORD dwCertEncodingType, const BYTE* pbCertEncoded, DWORD cbCertEncoded),
-                (const, override));
-
-    MOCK_METHOD(HCERTSTORE, OpenSystemStore, (HCRYPTPROV_LEGACY hProv, LPCSTR szSubsystemProtocol), (const, override));
-
-    MOCK_METHOD(BOOL, FreeCertificateContext, (PCCERT_CONTEXT pCertContext), (const, override));
-
-    MOCK_METHOD(BOOL,
-                GetCertificateChain,
-                (HCERTCHAINENGINE hChainEngine,
-                 PCCERT_CONTEXT pCertContext,
-                 LPFILETIME pTime,
-                 HCERTSTORE hAdditionalStore,
-                 PCERT_CHAIN_PARA pChainPara,
-                 DWORD dwFlags,
-                 LPVOID pvReserved,
-                 PCCERT_CHAIN_CONTEXT* ppChainContext),
-                (const, override));
-
-    MOCK_METHOD(BOOL,
-                VerifyCertificateChainPolicy,
-                (LPCSTR pszPolicyOID,
-                 PCCERT_CHAIN_CONTEXT pChainContext,
-                 PCERT_CHAIN_POLICY_PARA pPolicyPara,
-                 PCERT_CHAIN_POLICY_STATUS pPolicyStatus),
-                (const, override));
-
-    MOCK_METHOD(DWORD,
-                GetNameString,
-                (PCCERT_CONTEXT pCertContext,
-                 DWORD dwType,
-                 DWORD dwFlags,
-                 void* pvTypePara,
-                 LPSTR pszNameString,
-                 DWORD cchNameString),
-                (const, override));
-
-    MOCK_METHOD(void, FreeCertificateChain, (PCCERT_CHAIN_CONTEXT pChainContext), (const, override));
-
-    MOCK_METHOD(BOOL, CloseStore, (HCERTSTORE hCertStore, DWORD dwFlags), (const, override));
-};
 
 class MockVerifyContext : public boost::asio::ssl::verify_context
 {
