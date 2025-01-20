@@ -1,25 +1,21 @@
-#include <config.h>
-#include <defs.h>
-#include <sharedDefs.h>
-#include <inventory.hpp>
-#include <nlohmann/json.hpp>
-#include <iostream>
-#include <stringHelper.h>
-#include <hashHelper.h>
-#include <timeHelper.h>
 #include "commonDefs.h"
 #include "statelessEvent.hpp"
+#include <config.h>
+#include <defs.h>
+#include <hashHelper.h>
+#include <inventory.hpp>
+#include <iostream>
+#include <nlohmann/json.hpp>
+#include <sharedDefs.h>
+#include <stringHelper.h>
+#include <timeHelper.h>
 
-constexpr std::time_t INVENTORY_DEFAULT_INTERVAL { 3600000 };
+constexpr std::time_t INVENTORY_DEFAULT_INTERVAL {3600000};
 constexpr size_t MAX_ID_SIZE = 512;
 
-constexpr auto QUEUE_SIZE
-{
-    4096
-};
+constexpr auto QUEUE_SIZE {4096};
 
-static const std::map<ReturnTypeCallback, std::string> OPERATION_MAP
-{
+static const std::map<ReturnTypeCallback, std::string> OPERATION_MAP {
     // LCOV_EXCL_START
     {MODIFIED, "update"},
     {DELETED, "delete"},
@@ -30,8 +26,7 @@ static const std::map<ReturnTypeCallback, std::string> OPERATION_MAP
     // LCOV_EXCL_STOP
 };
 
-constexpr auto SYSTEM_SQL_STATEMENT
-{
+constexpr auto SYSTEM_SQL_STATEMENT {
     R"(CREATE TABLE system (
     hostname TEXT,
     architecture TEXT,
@@ -48,11 +43,9 @@ constexpr auto SYSTEM_SQL_STATEMENT
     version TEXT,
     os_release TEXT,
     os_display_version TEXT,
-    PRIMARY KEY (os_name)) WITHOUT ROWID;)"
-};
+    PRIMARY KEY (os_name)) WITHOUT ROWID;)"};
 
-constexpr auto HARDWARE_SQL_STATEMENT
-{
+constexpr auto HARDWARE_SQL_STATEMENT {
     R"(CREATE TABLE hardware (
     board_serial TEXT,
     cpu_name TEXT,
@@ -61,18 +54,14 @@ constexpr auto HARDWARE_SQL_STATEMENT
     ram_total INTEGER,
     ram_free INTEGER,
     ram_usage INTEGER,
-    PRIMARY KEY (board_serial)) WITHOUT ROWID;)"
-};
+    PRIMARY KEY (board_serial)) WITHOUT ROWID;)"};
 
-constexpr auto HOTFIXES_SQL_STATEMENT
-{
+constexpr auto HOTFIXES_SQL_STATEMENT {
     R"(CREATE TABLE hotfixes(
     hotfix TEXT,
-    PRIMARY KEY (hotfix)) WITHOUT ROWID;)"
-};
+    PRIMARY KEY (hotfix)) WITHOUT ROWID;)"};
 
-constexpr auto PACKAGES_SQL_STATEMENT
-{
+constexpr auto PACKAGES_SQL_STATEMENT {
     R"(CREATE TABLE packages(
     name TEXT,
     version TEXT,
@@ -87,11 +76,9 @@ constexpr auto PACKAGES_SQL_STATEMENT
     multiarch TEXT,
     source TEXT,
     format TEXT,
-    PRIMARY KEY (name,version,architecture,format,location)) WITHOUT ROWID;)"
-};
+    PRIMARY KEY (name,version,architecture,format,location)) WITHOUT ROWID;)"};
 
-constexpr auto PROCESSES_SQL_STATEMENT
-{
+constexpr auto PROCESSES_SQL_STATEMENT {
     R"(CREATE TABLE processes (
     pid TEXT,
     name TEXT,
@@ -121,11 +108,9 @@ constexpr auto PROCESSES_SQL_STATEMENT
     tgid BIGINT,
     tty BIGINT,
     processor BIGINT,
-    PRIMARY KEY (pid)) WITHOUT ROWID;)"
-};
+    PRIMARY KEY (pid)) WITHOUT ROWID;)"};
 
-constexpr auto PORTS_SQL_STATEMENT
-{
+constexpr auto PORTS_SQL_STATEMENT {
     R"(CREATE TABLE ports (
        protocol TEXT,
        local_ip TEXT,
@@ -138,12 +123,10 @@ constexpr auto PORTS_SQL_STATEMENT
        state TEXT,
        pid BIGINT,
        process TEXT,
-       PRIMARY KEY (inode,protocol,local_ip,local_port)) WITHOUT ROWID;)"
-};
-static const std::vector<std::string> PORTS_ITEM_ID_FIELDS{"inode", "protocol", "local_ip", "local_port"};
+       PRIMARY KEY (inode,protocol,local_ip,local_port)) WITHOUT ROWID;)"};
+static const std::vector<std::string> PORTS_ITEM_ID_FIELDS {"inode", "protocol", "local_ip", "local_port"};
 
-constexpr auto NETWORKS_SQL_STATEMENT
-{
+constexpr auto NETWORKS_SQL_STATEMENT {
     R"(CREATE TABLE networks (
         iface TEXT,
         adapter TEXT,
@@ -167,36 +150,30 @@ constexpr auto NETWORKS_SQL_STATEMENT
         netmask TEXT,
         broadcast TEXT,
         PRIMARY KEY (iface, adapter, iface_type, proto_type, address)
-        ) WITHOUT ROWID;)"
-};
+        ) WITHOUT ROWID;)"};
 
-constexpr auto METADATA_SQL_STATEMENT
-{
+constexpr auto METADATA_SQL_STATEMENT {
     R"(CREATE TABLE metadata(
     key TEXT,
     value TEXT,
-    PRIMARY KEY (key)) WITHOUT ROWID;)"
-};
+    PRIMARY KEY (key)) WITHOUT ROWID;)"};
 
-constexpr auto NETWORKS_TABLE     { "networks"  };
-constexpr auto PACKAGES_TABLE     { "packages"  };
-constexpr auto HOTFIXES_TABLE     { "hotfixes"  };
-constexpr auto PORTS_TABLE        { "ports"     };
-constexpr auto PROCESSES_TABLE    { "processes" };
-constexpr auto SYSTEM_TABLE       { "system"    };
-constexpr auto HARDWARE_TABLE     { "hardware"  };
-constexpr auto MD_TABLE           { "metadata"  };
+constexpr auto NETWORKS_TABLE {"networks"};
+constexpr auto PACKAGES_TABLE {"packages"};
+constexpr auto HOTFIXES_TABLE {"hotfixes"};
+constexpr auto PORTS_TABLE {"ports"};
+constexpr auto PROCESSES_TABLE {"processes"};
+constexpr auto SYSTEM_TABLE {"system"};
+constexpr auto HARDWARE_TABLE {"hardware"};
+constexpr auto MD_TABLE {"metadata"};
 
-const std::unordered_map<std::string, std::string> TABLE_TO_KEY_MAP = {
-    {NETWORKS_TABLE,    "networks-first-scan"},
-    {PACKAGES_TABLE,    "packages-first-scan"},
-    {HOTFIXES_TABLE,    "hotfixes-first-scan"},
-    {PORTS_TABLE,       "ports-first-scan"},
-    {PROCESSES_TABLE,   "processes-first-scan"},
-    {SYSTEM_TABLE,      "system-first-scan"},
-    {HARDWARE_TABLE,    "hardware-first-scan"}
-};
-
+const std::unordered_map<std::string, std::string> TABLE_TO_KEY_MAP = {{NETWORKS_TABLE, "networks-first-scan"},
+                                                                       {PACKAGES_TABLE, "packages-first-scan"},
+                                                                       {HOTFIXES_TABLE, "hotfixes-first-scan"},
+                                                                       {PORTS_TABLE, "ports-first-scan"},
+                                                                       {PROCESSES_TABLE, "processes-first-scan"},
+                                                                       {SYSTEM_TABLE, "system-first-scan"},
+                                                                       {HARDWARE_TABLE, "hardware-first-scan"}};
 
 static std::string GetItemId(const nlohmann::json& item, const std::vector<std::string>& idFields)
 {
@@ -204,19 +181,19 @@ static std::string GetItemId(const nlohmann::json& item, const std::vector<std::
 
     for (const auto& field : idFields)
     {
-        const auto& value{item.at(field)};
+        const auto& value {item.at(field)};
 
-        if(!value.is_null())
+        if (!value.is_null())
         {
             if (value.is_string())
             {
-                const auto& valueString{value.get<std::string>()};
+                const auto& valueString {value.get<std::string>()};
                 hash.update(valueString.c_str(), valueString.size());
             }
             else
             {
-                const auto& valueNumber{value.get<unsigned long>()};
-                const auto valueString{std::to_string(valueNumber)};
+                const auto& valueNumber {value.get<unsigned long>()};
+                const auto valueString {std::to_string(valueNumber)};
                 hash.update(valueString.c_str(), valueString.size());
             }
         }
@@ -227,20 +204,16 @@ static std::string GetItemId(const nlohmann::json& item, const std::vector<std::
 
 static bool IsElementDuplicated(const nlohmann::json& input, const std::pair<std::string, std::string>& keyValue)
 {
-    const auto it
-    {
-        std::find_if (input.begin(), input.end(), [&keyValue](const auto & elem)
-        {
-            return elem.at(keyValue.first) == keyValue.second;
-        })
-    };
+    const auto it {std::find_if(input.begin(),
+                                input.end(),
+                                [&keyValue](const auto& elem) { return elem.at(keyValue.first) == keyValue.second; })};
     return it != input.end();
 }
 
 nlohmann::json Inventory::EcsData(const nlohmann::json& data, const std::string& table, bool createFields)
 {
     nlohmann::json ret;
-    if(table == HARDWARE_TABLE)
+    if (table == HARDWARE_TABLE)
     {
         ret = EcsHardwareData(data, createFields);
     }
@@ -256,7 +229,7 @@ nlohmann::json Inventory::EcsData(const nlohmann::json& data, const std::string&
     {
         ret = EcsProcessesData(data, createFields);
     }
-    else if(table == HOTFIXES_TABLE)
+    else if (table == HOTFIXES_TABLE)
     {
         ret = EcsHotfixesData(data, createFields);
     }
@@ -284,23 +257,30 @@ std::string Inventory::GetPrimaryKeys([[maybe_unused]] const nlohmann::json& dat
     }
     else if (table == PACKAGES_TABLE)
     {
-        ret = data["package"]["name"].get<std::string>() + ":" + data["package"]["version"].get<std::string>() + ":" + data["package"]["architecture"].get<std::string>() + ":" + data["package"]["type"].get<std::string>() + ":" + data["package"]["path"].get<std::string>();
+        ret = data["package"]["name"].get<std::string>() + ":" + data["package"]["version"].get<std::string>() + ":" +
+              data["package"]["architecture"].get<std::string>() + ":" + data["package"]["type"].get<std::string>() +
+              ":" + data["package"]["path"].get<std::string>();
     }
     else if (table == PROCESSES_TABLE)
     {
         ret = data["process"]["pid"];
     }
-    else if(table == HOTFIXES_TABLE)
+    else if (table == HOTFIXES_TABLE)
     {
         ret = data["package"]["hotfix"]["name"];
     }
     else if (table == PORTS_TABLE)
     {
-        ret = std::to_string(data["file"]["inode"].get<int>()) + ":" + data["network"]["protocol"].get<std::string>() + ":" + data["source"]["ip"][0].get<std::string>() + ":" + std::to_string(data["source"]["port"].get<int>());
+        ret = std::to_string(data["file"]["inode"].get<int>()) + ":" + data["network"]["protocol"].get<std::string>() +
+              ":" + data["source"]["ip"][0].get<std::string>() + ":" +
+              std::to_string(data["source"]["port"].get<int>());
     }
     else if (table == NETWORKS_TABLE)
     {
-        ret = data["observer"]["ingress"]["interface"]["name"].get<std::string>() + ":" + data["observer"]["ingress"]["interface"]["alias"].get<std::string>() + ":" + data["interface"]["type"].get<std::string>() + ":" + data["network"]["type"].get<std::string>() + ":" + data["host"]["ip"][0].get<std::string>();
+        ret = data["observer"]["ingress"]["interface"]["name"].get<std::string>() + ":" +
+              data["observer"]["ingress"]["interface"]["alias"].get<std::string>() + ":" +
+              data["interface"]["type"].get<std::string>() + ":" + data["network"]["type"].get<std::string>() + ":" +
+              data["host"]["ip"][0].get<std::string>();
     }
     return ret;
 }
@@ -357,15 +337,10 @@ void Inventory::ProcessEvent(ReturnTypeCallback result, const nlohmann::json& it
     }
 }
 
-nlohmann::json Inventory::GenerateMessage(ReturnTypeCallback result, const nlohmann::json& item, const std::string& table)
+nlohmann::json
+Inventory::GenerateMessage(ReturnTypeCallback result, const nlohmann::json& item, const std::string& table)
 {
-    nlohmann::json msg{
-        {"metadata", {
-            {"type", table},
-            {"operation", OPERATION_MAP.at(result)},
-            {"module", Name()}
-        }}
-    };
+    nlohmann::json msg {{"metadata", {{"type", table}, {"operation", OPERATION_MAP.at(result)}, {"module", Name()}}}};
 
     msg["data"] = EcsData(result == MODIFIED ? item["new"] : item, table);
     msg["metadata"]["id"] = CalculateHashId(msg["data"], table);
@@ -373,9 +348,12 @@ nlohmann::json Inventory::GenerateMessage(ReturnTypeCallback result, const nlohm
     return msg;
 }
 
-void Inventory::NotifyEvent(ReturnTypeCallback result, nlohmann::json& msg, const nlohmann::json& item, const std::string& table)
+void Inventory::NotifyEvent(ReturnTypeCallback result,
+                            nlohmann::json& msg,
+                            const nlohmann::json& item,
+                            const std::string& table)
 {
-    nlohmann::json oldData = (result == MODIFIED) ? EcsData(item["old"], table, false) : nlohmann::json{};
+    nlohmann::json oldData = (result == MODIFIED) ? EcsData(item["old"], table, false) : nlohmann::json {};
 
     nlohmann::json stateless = GenerateStatelessEvent(OPERATION_MAP.at(result), table, msg["data"]);
     nlohmann::json eventWithChanges = msg["data"];
@@ -393,28 +371,15 @@ void Inventory::NotifyEvent(ReturnTypeCallback result, nlohmann::json& msg, cons
     m_reportDiffFunction(msgToSend);
 }
 
-
-void Inventory::UpdateChanges(const std::string& table,
-                                 const nlohmann::json& values,
-                                    const bool isFirstScan)
+void Inventory::UpdateChanges(const std::string& table, const nlohmann::json& values, const bool isFirstScan)
 {
-    const auto callback
-    {
-        [this, table](ReturnTypeCallback result, const nlohmann::json & data)
-        {
-            NotifyChange(result, data, table);
-        }
-    };
+    const auto callback {[this, table](ReturnTypeCallback result, const nlohmann::json& data)
+                         {
+                             NotifyChange(result, data, table);
+                         }};
 
-    std::unique_lock<std::mutex> lock{m_mutex};
-    DBSyncTxn txn
-    {
-        m_spDBSync->handle(),
-        nlohmann::json{table},
-        0,
-        QUEUE_SIZE,
-        callback
-    };
+    std::unique_lock<std::mutex> lock {m_mutex};
+    DBSyncTxn txn {m_spDBSync->handle(), nlohmann::json {table}, 0, QUEUE_SIZE, callback};
     nlohmann::json input;
     input["table"] = table;
     input["data"] = values;
@@ -441,33 +406,34 @@ void Inventory::TryCatchTask(const std::function<void()>& task) const
     }
     catch (const std::exception& ex)
     {
-        LogError("{}",std::string{ex.what()});
+        LogError("{}", std::string {ex.what()});
     }
 }
 
 Inventory::Inventory()
-    : m_enabled { true }
-    , m_dbFilePath { std::string(config::DEFAULT_DATA_PATH) + "/" + INVENTORY_DB_DISK_NAME }
-    , m_intervalValue { INVENTORY_DEFAULT_INTERVAL }
-    , m_scanOnStart { true }
-    , m_hardware { true }
-    , m_system { true }
-    , m_networks { true }
-    , m_packages { true }
-    , m_ports { true }
-    , m_portsAll { true }
-    , m_processes { true }
-    , m_hotfixes { true }
-    , m_stopping { true }
-    , m_notify { true }
-    , m_hardwareFirstScan { true }
-    , m_systemFirstScan { true }
-    , m_networksFirstScan { true }
-    , m_packagesFirstScan { true }
-    , m_portsFirstScan { true }
-    , m_processesFirstScan { true }
-    , m_hotfixesFirstScan { true }
-{}
+    : m_enabled {true}
+    , m_dbFilePath {std::string(config::DEFAULT_DATA_PATH) + "/" + INVENTORY_DB_DISK_NAME}
+    , m_intervalValue {INVENTORY_DEFAULT_INTERVAL}
+    , m_scanOnStart {true}
+    , m_hardware {true}
+    , m_system {true}
+    , m_networks {true}
+    , m_packages {true}
+    , m_ports {true}
+    , m_portsAll {true}
+    , m_processes {true}
+    , m_hotfixes {true}
+    , m_stopping {true}
+    , m_notify {true}
+    , m_hardwareFirstScan {true}
+    , m_systemFirstScan {true}
+    , m_networksFirstScan {true}
+    , m_packagesFirstScan {true}
+    , m_portsFirstScan {true}
+    , m_processesFirstScan {true}
+    , m_hotfixesFirstScan {true}
+{
+}
 
 std::string Inventory::GetCreateStatement() const
 {
@@ -485,81 +451,78 @@ std::string Inventory::GetCreateStatement() const
 }
 
 void Inventory::Init(const std::shared_ptr<ISysInfo>& spInfo,
-                        const std::function<void(const std::string&)>& reportDiffFunction,
-                        const std::string& dbPath,
-                        const std::string& normalizerConfigPath,
-                        const std::string& normalizerType)
+                     const std::function<void(const std::string&)>& reportDiffFunction,
+                     const std::string& dbPath,
+                     const std::string& normalizerConfigPath,
+                     const std::string& normalizerType)
 {
     m_spInfo = spInfo;
     m_reportDiffFunction = reportDiffFunction;
 
     {
-        std::unique_lock<std::mutex> lock{m_mutex};
+        std::unique_lock<std::mutex> lock {m_mutex};
         m_stopping = false;
-        m_spDBSync = std::make_unique<DBSync>(HostType::AGENT,
-                                                DbEngineType::SQLITE3,
-                                                dbPath,
-                                                GetCreateStatement(),
-                                                DbManagement::PERSISTENT);
+        m_spDBSync = std::make_unique<DBSync>(
+            HostType::AGENT, DbEngineType::SQLITE3, dbPath, GetCreateStatement(), DbManagement::PERSISTENT);
         m_spNormalizer = std::make_unique<InvNormalizer>(normalizerConfigPath, normalizerType);
     }
 
-   m_hardwareFirstScan  = ReadMetadata(TABLE_TO_KEY_MAP.at(HARDWARE_TABLE)).empty() ? false:true;
-   m_systemFirstScan    = ReadMetadata(TABLE_TO_KEY_MAP.at(SYSTEM_TABLE)).empty() ? false:true;
-   m_networksFirstScan  = ReadMetadata(TABLE_TO_KEY_MAP.at(NETWORKS_TABLE)).empty() ? false:true;
-   m_packagesFirstScan  = ReadMetadata(TABLE_TO_KEY_MAP.at(PACKAGES_TABLE)).empty() ? false:true;
-   m_portsFirstScan     = ReadMetadata(TABLE_TO_KEY_MAP.at(PORTS_TABLE)).empty() ? false:true;
-   m_processesFirstScan = ReadMetadata(TABLE_TO_KEY_MAP.at(PROCESSES_TABLE)).empty() ? false:true;
-   m_hotfixesFirstScan  = ReadMetadata(TABLE_TO_KEY_MAP.at(HOTFIXES_TABLE)).empty() ? false:true;
+    m_hardwareFirstScan = ReadMetadata(TABLE_TO_KEY_MAP.at(HARDWARE_TABLE)).empty() ? false : true;
+    m_systemFirstScan = ReadMetadata(TABLE_TO_KEY_MAP.at(SYSTEM_TABLE)).empty() ? false : true;
+    m_networksFirstScan = ReadMetadata(TABLE_TO_KEY_MAP.at(NETWORKS_TABLE)).empty() ? false : true;
+    m_packagesFirstScan = ReadMetadata(TABLE_TO_KEY_MAP.at(PACKAGES_TABLE)).empty() ? false : true;
+    m_portsFirstScan = ReadMetadata(TABLE_TO_KEY_MAP.at(PORTS_TABLE)).empty() ? false : true;
+    m_processesFirstScan = ReadMetadata(TABLE_TO_KEY_MAP.at(PROCESSES_TABLE)).empty() ? false : true;
+    m_hotfixesFirstScan = ReadMetadata(TABLE_TO_KEY_MAP.at(HOTFIXES_TABLE)).empty() ? false : true;
 
-   if(m_hardwareFirstScan && !m_hardware)
-   {
-       DeleteMetadata(TABLE_TO_KEY_MAP.at(HARDWARE_TABLE));
-       m_hardwareFirstScan = false;
-   }
+    if (m_hardwareFirstScan && !m_hardware)
+    {
+        DeleteMetadata(TABLE_TO_KEY_MAP.at(HARDWARE_TABLE));
+        m_hardwareFirstScan = false;
+    }
 
-   if(m_systemFirstScan && !m_system)
-   {
-       DeleteMetadata(TABLE_TO_KEY_MAP.at(SYSTEM_TABLE));
-       m_systemFirstScan = false;
-   }
+    if (m_systemFirstScan && !m_system)
+    {
+        DeleteMetadata(TABLE_TO_KEY_MAP.at(SYSTEM_TABLE));
+        m_systemFirstScan = false;
+    }
 
-   if(m_networksFirstScan && !m_networks)
-   {
-       DeleteMetadata(TABLE_TO_KEY_MAP.at(NETWORKS_TABLE));
-       m_networksFirstScan = false;
-   }
+    if (m_networksFirstScan && !m_networks)
+    {
+        DeleteMetadata(TABLE_TO_KEY_MAP.at(NETWORKS_TABLE));
+        m_networksFirstScan = false;
+    }
 
-   if(m_packagesFirstScan && !m_packages)
-   {
-       DeleteMetadata(TABLE_TO_KEY_MAP.at(PACKAGES_TABLE));
-       m_packagesFirstScan = false;
-   }
+    if (m_packagesFirstScan && !m_packages)
+    {
+        DeleteMetadata(TABLE_TO_KEY_MAP.at(PACKAGES_TABLE));
+        m_packagesFirstScan = false;
+    }
 
-   if(m_portsFirstScan && !m_ports)
-   {
-       DeleteMetadata(TABLE_TO_KEY_MAP.at(PORTS_TABLE));
-       m_portsFirstScan = false;
-   }
+    if (m_portsFirstScan && !m_ports)
+    {
+        DeleteMetadata(TABLE_TO_KEY_MAP.at(PORTS_TABLE));
+        m_portsFirstScan = false;
+    }
 
-   if(m_processesFirstScan && !m_processes)
-   {
-       DeleteMetadata(TABLE_TO_KEY_MAP.at(PROCESSES_TABLE));
-       m_processesFirstScan = false;
-   }
+    if (m_processesFirstScan && !m_processes)
+    {
+        DeleteMetadata(TABLE_TO_KEY_MAP.at(PROCESSES_TABLE));
+        m_processesFirstScan = false;
+    }
 
-   if(m_hotfixesFirstScan && !m_hotfixes)
-   {
-       DeleteMetadata(TABLE_TO_KEY_MAP.at(HOTFIXES_TABLE));
-       m_hotfixesFirstScan = false;
-   }
+    if (m_hotfixesFirstScan && !m_hotfixes)
+    {
+        DeleteMetadata(TABLE_TO_KEY_MAP.at(HOTFIXES_TABLE));
+        m_hotfixesFirstScan = false;
+    }
 
     SyncLoop();
 }
 
 void Inventory::Destroy()
 {
-    std::unique_lock<std::mutex> lock{m_mutex};
+    std::unique_lock<std::mutex> lock {m_mutex};
     m_stopping = true;
     m_cv.notify_all();
 }
@@ -568,14 +531,22 @@ nlohmann::json Inventory::EcsHardwareData(const nlohmann::json& originalData, bo
 {
     nlohmann::json ret;
 
-    auto setField = [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue) {
-        if (createFields || originalData.contains(jsonKey)) {
+    auto setField =
+        [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue)
+    {
+        if (createFields || originalData.contains(jsonKey))
+        {
             nlohmann::json::json_pointer pointer(keyPath);
-            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE) {
+            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE)
+            {
                 ret[pointer] = originalData[jsonKey];
-            } else if (defaultValue.has_value()) {
+            }
+            else if (defaultValue.has_value())
+            {
                 ret[pointer] = *defaultValue;
-            } else {
+            }
+            else
+            {
                 ret[pointer] = nullptr;
             }
         }
@@ -596,14 +567,22 @@ nlohmann::json Inventory::EcsSystemData(const nlohmann::json& originalData, bool
 {
     nlohmann::json ret;
 
-    auto setField = [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue) {
-        if (createFields || originalData.contains(jsonKey)) {
+    auto setField =
+        [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue)
+    {
+        if (createFields || originalData.contains(jsonKey))
+        {
             nlohmann::json::json_pointer pointer(keyPath);
-            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE) {
+            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE)
+            {
                 ret[pointer] = originalData[jsonKey];
-            } else if (defaultValue.has_value()) {
+            }
+            else if (defaultValue.has_value())
+            {
                 ret[pointer] = *defaultValue;
-            } else {
+            }
+            else
+            {
                 ret[pointer] = nullptr;
             }
         }
@@ -625,14 +604,22 @@ nlohmann::json Inventory::EcsPackageData(const nlohmann::json& originalData, boo
 {
     nlohmann::json ret;
 
-    auto setField = [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue) {
-        if (createFields || originalData.contains(jsonKey)) {
+    auto setField =
+        [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue)
+    {
+        if (createFields || originalData.contains(jsonKey))
+        {
             nlohmann::json::json_pointer pointer(keyPath);
-            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE) {
+            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE)
+            {
                 ret[pointer] = originalData[jsonKey];
-            } else if (defaultValue.has_value()) {
+            }
+            else if (defaultValue.has_value())
+            {
                 ret[pointer] = *defaultValue;
-            } else {
+            }
+            else
+            {
                 ret[pointer] = nullptr;
             }
         }
@@ -654,14 +641,22 @@ nlohmann::json Inventory::EcsProcessesData(const nlohmann::json& originalData, b
 {
     nlohmann::json ret;
 
-    auto setField = [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue) {
-        if (createFields || originalData.contains(jsonKey)) {
+    auto setField =
+        [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue)
+    {
+        if (createFields || originalData.contains(jsonKey))
+        {
             nlohmann::json::json_pointer pointer(keyPath);
-            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE) {
+            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE)
+            {
                 ret[pointer] = originalData[jsonKey];
-            } else if (defaultValue.has_value()) {
+            }
+            else if (defaultValue.has_value())
+            {
                 ret[pointer] = *defaultValue;
-            } else {
+            }
+            else
+            {
                 ret[pointer] = nullptr;
             }
         }
@@ -685,13 +680,14 @@ nlohmann::json Inventory::EcsProcessesData(const nlohmann::json& originalData, b
     return ret;
 }
 
-nlohmann::json Inventory::EcsHotfixesData(const nlohmann::json& originalData, bool createFields){
+nlohmann::json Inventory::EcsHotfixesData(const nlohmann::json& originalData, bool createFields)
+{
 
     nlohmann::json ret;
 
-    if(createFields || originalData.contains("hotfix"))
+    if (createFields || originalData.contains("hotfix"))
     {
-        if(originalData.contains("hotfix") && originalData["hotfix"] != EMPTY_VALUE)
+        if (originalData.contains("hotfix") && originalData["hotfix"] != EMPTY_VALUE)
         {
             ret["package"]["hotfix"]["name"] = originalData["hotfix"];
         }
@@ -708,46 +704,54 @@ nlohmann::json Inventory::EcsPortData(const nlohmann::json& originalData, bool c
 {
     nlohmann::json ret;
 
-    auto setField = [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue) {
-        if (createFields || originalData.contains(jsonKey)) {
+    auto setField =
+        [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue)
+    {
+        if (createFields || originalData.contains(jsonKey))
+        {
             nlohmann::json::json_pointer pointer(keyPath);
-            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE) {
+            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE)
+            {
                 ret[pointer] = originalData[jsonKey];
-            } else if (defaultValue.has_value()) {
+            }
+            else if (defaultValue.has_value())
+            {
                 ret[pointer] = *defaultValue;
-            } else {
+            }
+            else
+            {
                 ret[pointer] = nullptr;
             }
         }
     };
 
-    auto setFieldArray = [&](const std::string& destPath, const std::string& sourceKey) {
-        if (createFields || originalData.contains(sourceKey)) {
+    auto setFieldArray = [&](const std::string& destPath, const std::string& sourceKey)
+    {
+        if (createFields || originalData.contains(sourceKey))
+        {
             nlohmann::json::json_pointer destPointer(destPath);
             ret[destPointer.parent_pointer()][destPointer.back()] = nlohmann::json::array();
             nlohmann::json& destArray = ret[destPointer];
 
-            if (originalData.contains(sourceKey) &&
-                !originalData[sourceKey].empty() &&
-                !originalData[sourceKey].is_null() &&
-                originalData[sourceKey] != EMPTY_VALUE)
+            if (originalData.contains(sourceKey) && !originalData[sourceKey].empty() &&
+                !originalData[sourceKey].is_null() && originalData[sourceKey] != EMPTY_VALUE)
             {
                 destArray.push_back(originalData[sourceKey]);
             }
         }
     };
 
-    setField("/network/protocol", "protocol",  EMPTY_VALUE);
+    setField("/network/protocol", "protocol", EMPTY_VALUE);
     setFieldArray("/source/ip", "local_ip");
-    setField("/source/port", "local_port",  EMPTY_VALUE);
+    setField("/source/port", "local_port", EMPTY_VALUE);
     setFieldArray("/destination/ip", "remote_ip");
-    setField("/destination/port", "remote_port",  std::nullopt);
-    setField("/host/network/egress/queue", "tx_queue",  std::nullopt);
-    setField("/host/network/ingress/queue", "rx_queue",  std::nullopt);
-    setField("/file/inode", "inode",  EMPTY_VALUE);
-    setField("/interface/state", "state",  std::nullopt);
-    setField("/process/pid", "pid",  std::nullopt);
-    setField("/process/name", "process",  std::nullopt);
+    setField("/destination/port", "remote_port", std::nullopt);
+    setField("/host/network/egress/queue", "tx_queue", std::nullopt);
+    setField("/host/network/ingress/queue", "rx_queue", std::nullopt);
+    setField("/file/inode", "inode", EMPTY_VALUE);
+    setField("/interface/state", "state", std::nullopt);
+    setField("/process/pid", "pid", std::nullopt);
+    setField("/process/name", "process", std::nullopt);
 
     return ret;
 }
@@ -756,29 +760,37 @@ nlohmann::json Inventory::EcsNetworkData(const nlohmann::json& originalData, boo
 {
     nlohmann::json ret;
 
-    auto setField = [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue) {
-        if (createFields || originalData.contains(jsonKey)) {
+    auto setField =
+        [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue)
+    {
+        if (createFields || originalData.contains(jsonKey))
+        {
             nlohmann::json::json_pointer pointer(keyPath);
-            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE) {
+            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE)
+            {
                 ret[pointer] = originalData[jsonKey];
-            } else if (defaultValue.has_value()) {
+            }
+            else if (defaultValue.has_value())
+            {
                 ret[pointer] = *defaultValue;
-            } else {
+            }
+            else
+            {
                 ret[pointer] = nullptr;
             }
         }
     };
 
-    auto setFieldArray = [&](const std::string& destPath, const std::string& sourceKey) {
-        if (createFields || originalData.contains(sourceKey)) {
+    auto setFieldArray = [&](const std::string& destPath, const std::string& sourceKey)
+    {
+        if (createFields || originalData.contains(sourceKey))
+        {
             nlohmann::json::json_pointer destPointer(destPath);
             ret[destPointer.parent_pointer()][destPointer.back()] = nlohmann::json::array();
             nlohmann::json& destArray = ret[destPointer];
 
-            if (originalData.contains(sourceKey) &&
-                !originalData[sourceKey].empty() &&
-                !originalData[sourceKey].is_null() &&
-                originalData[sourceKey] != EMPTY_VALUE)
+            if (originalData.contains(sourceKey) && !originalData[sourceKey].empty() &&
+                !originalData[sourceKey].is_null() && originalData[sourceKey] != EMPTY_VALUE)
             {
                 destArray.push_back(originalData[sourceKey]);
             }
@@ -819,13 +831,14 @@ void Inventory::ScanHardware()
 {
     if (m_hardware)
     {
-        LogTrace( "Starting hardware scan");
+        LogTrace("Starting hardware scan");
         nlohmann::json hwData;
         hwData[0] = m_spInfo->hardware();
         UpdateChanges(HARDWARE_TABLE, hwData, m_hardwareFirstScan);
-        LogTrace( "Ending hardware scan");
+        LogTrace("Ending hardware scan");
 
-        if(!m_hardwareFirstScan){
+        if (!m_hardwareFirstScan)
+        {
             WriteMetadata(TABLE_TO_KEY_MAP.at(HARDWARE_TABLE), Utils::getCurrentISO8601());
             m_hardwareFirstScan = true;
         }
@@ -836,13 +849,14 @@ void Inventory::ScanSystem()
 {
     if (m_system)
     {
-        LogTrace( "Starting os scan");
+        LogTrace("Starting os scan");
         nlohmann::json SystemData;
         SystemData[0] = m_spInfo->os();
         UpdateChanges(SYSTEM_TABLE, SystemData, m_systemFirstScan);
-        LogTrace( "Ending os scan");
+        LogTrace("Ending os scan");
 
-        if(!m_systemFirstScan){
+        if (!m_systemFirstScan)
+        {
             WriteMetadata(TABLE_TO_KEY_MAP.at(SYSTEM_TABLE), Utils::getCurrentISO8601());
             m_systemFirstScan = true;
         }
@@ -851,39 +865,35 @@ void Inventory::ScanSystem()
 
 nlohmann::json Inventory::GetNetworkData()
 {
-    nlohmann::json ret ;
+    nlohmann::json ret;
     nlohmann::json networkTableData {};
-    constexpr auto IPV4 { 0 };
-    constexpr auto IPV6 { 1 };
-    static const std::map<int, std::string> IP_TYPE
-    {
-        { IPV4, "ipv4" },
-        { IPV6, "ipv6" }
-    };
+    constexpr auto IPV4 {0};
+    constexpr auto IPV6 {1};
+    static const std::map<int, std::string> IP_TYPE {{IPV4, "ipv4"}, {IPV6, "ipv6"}};
 
-    const auto& networks { m_spInfo->networks() };
+    const auto& networks {m_spInfo->networks()};
 
     ret[NETWORKS_TABLE] = nlohmann::json::array();
     if (!networks.is_null())
     {
-        const auto& itIface { networks.find("iface") };
+        const auto& itIface {networks.find("iface")};
 
         if (networks.end() != itIface)
         {
             for (const auto& item : itIface.value())
             {
-                networkTableData["iface"]      = item.at("name");
-                networkTableData["adapter"]    = item.at("adapter");
+                networkTableData["iface"] = item.at("name");
+                networkTableData["adapter"] = item.at("adapter");
                 networkTableData["iface_type"] = item.at("type");
-                networkTableData["state"]      = item.at("state");
-                networkTableData["mtu"]        = item.at("mtu");
-                networkTableData["mac"]        = item.at("mac");
+                networkTableData["state"] = item.at("state");
+                networkTableData["mtu"] = item.at("mtu");
+                networkTableData["mac"] = item.at("mac");
                 networkTableData["tx_packets"] = item.at("tx_packets");
                 networkTableData["rx_packets"] = item.at("rx_packets");
-                networkTableData["tx_errors"]  = item.at("tx_errors");
-                networkTableData["rx_errors"]  = item.at("rx_errors");
-                networkTableData["tx_bytes"]   = item.at("tx_bytes");
-                networkTableData["rx_bytes"]   = item.at("rx_bytes");
+                networkTableData["tx_errors"] = item.at("tx_errors");
+                networkTableData["rx_errors"] = item.at("rx_errors");
+                networkTableData["tx_bytes"] = item.at("tx_bytes");
+                networkTableData["rx_bytes"] = item.at("rx_bytes");
                 networkTableData["tx_dropped"] = item.at("tx_dropped");
                 networkTableData["rx_dropped"] = item.at("rx_dropped");
                 networkTableData["gateway"] = item.at("gateway");
@@ -893,11 +903,11 @@ nlohmann::json Inventory::GetNetworkData()
                     for (auto addressTableData : item.at("IPv4"))
                     {
                         nlohmann::json networkAddressData {};
-                        networkAddressData["proto_type"]    = IP_TYPE.at(IPV4);
+                        networkAddressData["proto_type"] = IP_TYPE.at(IPV4);
                         networkAddressData["address"] = addressTableData.at("address");
                         networkAddressData["broadcast"] = addressTableData.at("broadcast");
-                        networkAddressData["dhcp"]    = addressTableData.at("dhcp");
-                        networkAddressData["metric"]  = addressTableData.at("metric");
+                        networkAddressData["dhcp"] = addressTableData.at("dhcp");
+                        networkAddressData["metric"] = addressTableData.at("metric");
                         networkAddressData["netmask"] = addressTableData.at("netmask");
                         networkTableData.update(networkAddressData);
 
@@ -910,11 +920,11 @@ nlohmann::json Inventory::GetNetworkData()
                     for (auto addressTableData : item.at("IPv6"))
                     {
                         nlohmann::json networkAddressData {};
-                        networkAddressData["proto_type"]  = IP_TYPE.at(IPV6);
+                        networkAddressData["proto_type"] = IP_TYPE.at(IPV6);
                         networkAddressData["address"] = addressTableData.at("address");
                         networkAddressData["broadcast"] = addressTableData.at("broadcast");
-                        networkAddressData["dhcp"]    = addressTableData.at("dhcp");
-                        networkAddressData["metric"]  = addressTableData.at("metric");
+                        networkAddressData["dhcp"] = addressTableData.at("dhcp");
+                        networkAddressData["metric"] = addressTableData.at("metric");
                         networkAddressData["netmask"] = addressTableData.at("netmask");
                         networkTableData.update(networkAddressData);
 
@@ -932,12 +942,12 @@ void Inventory::ScanNetwork()
 {
     if (m_networks)
     {
-        LogTrace( "Starting network scan");
+        LogTrace("Starting network scan");
         const auto networkData(GetNetworkData());
 
         if (!networkData.is_null())
         {
-            const auto itNet { networkData.find(NETWORKS_TABLE) };
+            const auto itNet {networkData.find(NETWORKS_TABLE)};
 
             if (itNet != networkData.end())
             {
@@ -945,12 +955,13 @@ void Inventory::ScanNetwork()
             }
         }
 
-        if(!m_networksFirstScan){
+        if (!m_networksFirstScan)
+        {
             WriteMetadata(TABLE_TO_KEY_MAP.at(NETWORKS_TABLE), Utils::getCurrentISO8601());
             m_networksFirstScan = true;
         }
 
-        LogTrace( "Ending network scan");
+        LogTrace("Ending network scan");
     }
 }
 
@@ -958,50 +969,42 @@ void Inventory::ScanPackages()
 {
     if (m_packages)
     {
-        LogTrace( "Starting packages scan");
-        const auto callback
-        {
-            [this](ReturnTypeCallback result, const nlohmann::json & data)
+        LogTrace("Starting packages scan");
+        const auto callback {[this](ReturnTypeCallback result, const nlohmann::json& data)
+                             {
+                                 NotifyChange(result, data, PACKAGES_TABLE);
+                             }};
+
+        std::unique_lock<std::mutex> lock {m_mutex};
+        DBSyncTxn txn {m_spDBSync->handle(), nlohmann::json {PACKAGES_TABLE}, 0, QUEUE_SIZE, callback};
+        m_spInfo->packages(
+            [this, &txn](nlohmann::json& rawData)
             {
-                NotifyChange(result, data, PACKAGES_TABLE);
-            }
-        };
+                nlohmann::json input;
 
-        std::unique_lock<std::mutex> lock{m_mutex};
-        DBSyncTxn txn
-        {
-            m_spDBSync->handle(),
-            nlohmann::json{PACKAGES_TABLE},
-            0,
-            QUEUE_SIZE,
-            callback
-        };
-        m_spInfo->packages([this, &txn](nlohmann::json & rawData)
-        {
-            nlohmann::json input;
+                input["table"] = PACKAGES_TABLE;
+                m_spNormalizer->Normalize("packages", rawData);
+                m_spNormalizer->RemoveExcluded("packages", rawData);
 
-            input["table"] = PACKAGES_TABLE;
-            m_spNormalizer->Normalize("packages", rawData);
-            m_spNormalizer->RemoveExcluded("packages", rawData);
-
-            if (!rawData.empty())
-            {
-                input["data"] = nlohmann::json::array( { rawData } );
-                if (m_packagesFirstScan)
+                if (!rawData.empty())
                 {
-                    input["options"]["return_old_data"] = true;
+                    input["data"] = nlohmann::json::array({rawData});
+                    if (m_packagesFirstScan)
+                    {
+                        input["options"]["return_old_data"] = true;
+                    }
+                    txn.syncTxnRow(input);
                 }
-                txn.syncTxnRow(input);
-            }
-        });
+            });
         txn.getDeletedRows(callback);
 
-        if(!m_packagesFirstScan){
+        if (!m_packagesFirstScan)
+        {
             WriteMetadata(TABLE_TO_KEY_MAP.at(PACKAGES_TABLE), Utils::getCurrentISO8601());
             m_packagesFirstScan = true;
         }
 
-        LogTrace( "Ending packages scan");
+        LogTrace("Ending packages scan");
     }
 }
 
@@ -1009,7 +1012,7 @@ void Inventory::ScanHotfixes()
 {
     if (m_hotfixes)
     {
-        LogTrace( "Starting hotfixes scan");
+        LogTrace("Starting hotfixes scan");
         auto hotfixes = m_spInfo->hotfixes();
 
         if (!hotfixes.is_null())
@@ -1017,35 +1020,36 @@ void Inventory::ScanHotfixes()
             UpdateChanges(HOTFIXES_TABLE, hotfixes, m_hotfixesFirstScan);
         }
 
-        if(!m_hotfixesFirstScan){
-           WriteMetadata(TABLE_TO_KEY_MAP.at(HOTFIXES_TABLE), Utils::getCurrentISO8601());
-           m_hotfixesFirstScan = true;
+        if (!m_hotfixesFirstScan)
+        {
+            WriteMetadata(TABLE_TO_KEY_MAP.at(HOTFIXES_TABLE), Utils::getCurrentISO8601());
+            m_hotfixesFirstScan = true;
         }
 
-        LogTrace( "Ending hotfixes scan");
+        LogTrace("Ending hotfixes scan");
     }
 }
 
 nlohmann::json Inventory::GetPortsData()
 {
     nlohmann::json ret;
-    constexpr auto PORT_LISTENING_STATE { "listening" };
-    constexpr auto TCP_PROTOCOL { "tcp" };
-    constexpr auto UDP_PROTOCOL { "udp" };
+    constexpr auto PORT_LISTENING_STATE {"listening"};
+    constexpr auto TCP_PROTOCOL {"tcp"};
+    constexpr auto UDP_PROTOCOL {"udp"};
     auto data(m_spInfo->ports());
 
     if (!data.is_null())
     {
         for (auto& item : data)
         {
-            const auto protocol { item.at("protocol").get_ref<const std::string&>() };
+            const auto protocol {item.at("protocol").get_ref<const std::string&>()};
 
             if (Utils::startsWith(protocol, TCP_PROTOCOL))
             {
                 // All ports.
                 if (m_portsAll)
                 {
-                    const auto& itemId { GetItemId(item, PORTS_ITEM_ID_FIELDS) };
+                    const auto& itemId {GetItemId(item, PORTS_ITEM_ID_FIELDS)};
 
                     if (!IsElementDuplicated(ret, std::make_pair("item_id", itemId)))
                     {
@@ -1056,11 +1060,11 @@ nlohmann::json Inventory::GetPortsData()
                 else
                 {
                     // Only listening ports.
-                    const auto isListeningState { item.at("state") == PORT_LISTENING_STATE };
+                    const auto isListeningState {item.at("state") == PORT_LISTENING_STATE};
 
                     if (isListeningState)
                     {
-                        const auto& itemId { GetItemId(item, PORTS_ITEM_ID_FIELDS) };
+                        const auto& itemId {GetItemId(item, PORTS_ITEM_ID_FIELDS)};
 
                         if (!IsElementDuplicated(ret, std::make_pair("item_id", itemId)))
                         {
@@ -1072,7 +1076,7 @@ nlohmann::json Inventory::GetPortsData()
             }
             else if (Utils::startsWith(protocol, UDP_PROTOCOL))
             {
-                const auto& itemId { GetItemId(item, PORTS_ITEM_ID_FIELDS) };
+                const auto& itemId {GetItemId(item, PORTS_ITEM_ID_FIELDS)};
 
                 if (!IsElementDuplicated(ret, std::make_pair("item_id", itemId)))
                 {
@@ -1090,14 +1094,15 @@ void Inventory::ScanPorts()
 {
     if (m_ports)
     {
-        LogTrace( "Starting ports scan");
-        const auto& portsData { GetPortsData() };
+        LogTrace("Starting ports scan");
+        const auto& portsData {GetPortsData()};
         UpdateChanges(PORTS_TABLE, portsData, m_portsFirstScan);
-        LogTrace( "Ending ports scan");
+        LogTrace("Ending ports scan");
 
-        if(!m_portsFirstScan){
-           WriteMetadata(TABLE_TO_KEY_MAP.at(PORTS_TABLE), Utils::getCurrentISO8601());
-           m_portsFirstScan = true;
+        if (!m_portsFirstScan)
+        {
+            WriteMetadata(TABLE_TO_KEY_MAP.at(PORTS_TABLE), Utils::getCurrentISO8601());
+            m_portsFirstScan = true;
         }
     }
 }
@@ -1106,45 +1111,36 @@ void Inventory::ScanProcesses()
 {
     if (m_processes)
     {
-        LogTrace( "Starting processes scan");
-        const auto callback
-        {
-            [this](ReturnTypeCallback result, const nlohmann::json & data)
-            {
-                NotifyChange(result, data, PROCESSES_TABLE);
-            }
-        };
-        std::unique_lock<std::mutex> lock{m_mutex};
-        DBSyncTxn txn
-        {
-            m_spDBSync->handle(),
-            nlohmann::json{PROCESSES_TABLE},
-            0,
-            QUEUE_SIZE,
-            callback
-        };
+        LogTrace("Starting processes scan");
+        const auto callback {[this](ReturnTypeCallback result, const nlohmann::json& data)
+                             {
+                                 NotifyChange(result, data, PROCESSES_TABLE);
+                             }};
+        std::unique_lock<std::mutex> lock {m_mutex};
+        DBSyncTxn txn {m_spDBSync->handle(), nlohmann::json {PROCESSES_TABLE}, 0, QUEUE_SIZE, callback};
         m_spInfo->processes(std::function<void(nlohmann::json&)>(
-            [this, &txn](nlohmann::json & rawData)
+            [this, &txn](nlohmann::json& rawData)
             {
                 nlohmann::json input;
                 input["table"] = PROCESSES_TABLE;
-                input["data"] = nlohmann::json::array({ rawData });
+                input["data"] = nlohmann::json::array({rawData});
 
-                if (m_processesFirstScan) {
+                if (m_processesFirstScan)
+                {
                     input["options"]["return_old_data"] = true;
                 }
 
                 txn.syncTxnRow(input);
-            }
-        ));
+            }));
         txn.getDeletedRows(callback);
 
-        if(!m_processesFirstScan){
-           WriteMetadata(TABLE_TO_KEY_MAP.at(PROCESSES_TABLE), Utils::getCurrentISO8601());
-           m_processesFirstScan = true;
+        if (!m_processesFirstScan)
+        {
+            WriteMetadata(TABLE_TO_KEY_MAP.at(PROCESSES_TABLE), Utils::getCurrentISO8601());
+            m_processesFirstScan = true;
         }
 
-        LogTrace( "Ending processes scan");
+        LogTrace("Ending processes scan");
     }
 }
 
@@ -1177,39 +1173,32 @@ void Inventory::SyncLoop()
     while (!m_stopping)
     {
         {
-            std::unique_lock<std::mutex> lock{m_mutex};
-            m_cv.wait_for(lock,
-                std::chrono::milliseconds{m_intervalValue}, [&]() { return m_stopping; } );
+            std::unique_lock<std::mutex> lock {m_mutex};
+            m_cv.wait_for(lock, std::chrono::milliseconds {m_intervalValue}, [&]() { return m_stopping; });
         }
         Scan();
     }
-    std::unique_lock<std::mutex> lock{m_mutex};
+    std::unique_lock<std::mutex> lock {m_mutex};
     m_spDBSync.reset(nullptr);
 }
 
-void Inventory::WriteMetadata(const std::string &key, const std::string &value){
-    auto insertQuery
-    {
-        InsertQuery::builder()
-        .table(MD_TABLE)
-        .data({{"key", key}, {"value", value}})
-        .build()
-    };
+void Inventory::WriteMetadata(const std::string& key, const std::string& value)
+{
+    auto insertQuery {InsertQuery::builder().table(MD_TABLE).data({{"key", key}, {"value", value}}).build()};
     m_spDBSync->insertData(insertQuery.query());
 }
 
-std::string Inventory::ReadMetadata(const std::string &key) {
+std::string Inventory::ReadMetadata(const std::string& key)
+{
     std::string result;
     std::string filter = "WHERE key = '" + key + "'";
-    auto selectQuery = SelectQuery::builder()
-        .table(MD_TABLE)
-        .columnList({"key", "value"})
-        .rowFilter(filter)
-        .build();
+    auto selectQuery = SelectQuery::builder().table(MD_TABLE).columnList({"key", "value"}).rowFilter(filter).build();
 
-    auto callback = [&result](ReturnTypeCallback returnTypeCallback, const nlohmann::json& resultData) {
+    auto callback = [&result](ReturnTypeCallback returnTypeCallback, const nlohmann::json& resultData)
+    {
         (void)returnTypeCallback;
-        if (resultData.is_object() && resultData.contains("key") && resultData.contains("value")) {
+        if (resultData.is_object() && resultData.contains("key") && resultData.contains("value"))
+        {
             result = resultData["value"];
         }
     };
@@ -1219,15 +1208,9 @@ std::string Inventory::ReadMetadata(const std::string &key) {
     return result;
 }
 
-void Inventory::DeleteMetadata(const std::string &key){
-    auto deleteQuery
-    {
-        DeleteQuery::builder()
-        .table(MD_TABLE)
-        .data({{"key", key}})
-        .rowFilter("")
-        .build()
-    };
+void Inventory::DeleteMetadata(const std::string& key)
+{
+    auto deleteQuery {DeleteQuery::builder().table(MD_TABLE).data({{"key", key}}).rowFilter("").build()};
     m_spDBSync->deleteRows(deleteQuery.query());
 }
 
@@ -1238,14 +1221,13 @@ void Inventory::CleanMetadata()
     try
     {
         {
-            std::unique_lock<std::mutex> lock{m_mutex};
-            m_spDBSync = std::make_unique<DBSync>(HostType::AGENT,
-                                                    DbEngineType::SQLITE3,
-                                                    m_dbFilePath,
-                                                    GetCreateStatement(),
-                                                    DbManagement::PERSISTENT);
-            for (const auto& key : TABLE_TO_KEY_MAP) {
-                if(!ReadMetadata(key.second).empty()){
+            std::unique_lock<std::mutex> lock {m_mutex};
+            m_spDBSync = std::make_unique<DBSync>(
+                HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, GetCreateStatement(), DbManagement::PERSISTENT);
+            for (const auto& key : TABLE_TO_KEY_MAP)
+            {
+                if (!ReadMetadata(key.second).empty())
+                {
                     DeleteMetadata(key.second);
                 }
             }
@@ -1258,7 +1240,8 @@ void Inventory::CleanMetadata()
     }
 }
 
-nlohmann::json Inventory::AddPreviousFields(nlohmann::json& current, const nlohmann::json& previous) {
+nlohmann::json Inventory::AddPreviousFields(nlohmann::json& current, const nlohmann::json& previous)
+{
     using JsonPair = std::pair<nlohmann::json*, const nlohmann::json*>;
     using PathPair = std::pair<std::string, JsonPair>;
 
@@ -1267,24 +1250,33 @@ nlohmann::json Inventory::AddPreviousFields(nlohmann::json& current, const nlohm
 
     stack.emplace("", JsonPair(&current, &previous));
 
-    while (!stack.empty()) {
+    while (!stack.empty())
+    {
         auto [path, pair] = stack.top();
         auto [curr, prev] = pair;
         stack.pop();
 
-        for (auto& [key, value] : prev->items()) {
+        for (auto& [key, value] : prev->items())
+        {
 
             std::string currentPath = path;
-            if (!path.empty()) {
+            if (!path.empty())
+            {
                 currentPath.append(".").append(key);
-            } else {
+            }
+            else
+            {
                 currentPath = key;
             }
 
-            if (curr->contains(key)) {
-                if ((*curr)[key].is_object() && value.is_object()) {
+            if (curr->contains(key))
+            {
+                if ((*curr)[key].is_object() && value.is_object())
+                {
                     stack.emplace(currentPath, JsonPair(&((*curr)[key]), &value));
-                } else if ((*curr)[key] != value) {
+                }
+                else if ((*curr)[key] != value)
+                {
                     modifiedKeys.push_back(currentPath);
                     (*curr)["previous"][key] = value;
                 }
@@ -1294,7 +1286,9 @@ nlohmann::json Inventory::AddPreviousFields(nlohmann::json& current, const nlohm
     return modifiedKeys;
 }
 
-nlohmann::json Inventory::GenerateStatelessEvent(const std::string& operation, const std::string& type, const nlohmann::json& data) {
+nlohmann::json
+Inventory::GenerateStatelessEvent(const std::string& operation, const std::string& type, const nlohmann::json& data)
+{
     auto event = CreateStatelessEvent(type, operation, m_scanTime, data);
-    return event ? event->generate() : nlohmann::json{};
+    return event ? event->generate() : nlohmann::json {};
 }

@@ -1,10 +1,11 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <string>
 
-class StatelessEvent {
+class StatelessEvent
+{
 protected:
     std::string operation;
     std::string created;
@@ -16,12 +17,56 @@ public:
     virtual ~StatelessEvent() = default;
 };
 
-class NetworkEvent  : public StatelessEvent { public: using StatelessEvent::StatelessEvent; nlohmann::json generate() const override; };
-class PackageEvent  : public StatelessEvent { public: using StatelessEvent::StatelessEvent; nlohmann::json generate() const override; };
-class HotfixEvent   : public StatelessEvent { public: using StatelessEvent::StatelessEvent; nlohmann::json generate() const override; };
-class PortEvent     : public StatelessEvent { public: using StatelessEvent::StatelessEvent; nlohmann::json generate() const override; };
-class ProcessEvent  : public StatelessEvent { public: using StatelessEvent::StatelessEvent; nlohmann::json generate() const override; };
-class SystemEvent   : public StatelessEvent { public: using StatelessEvent::StatelessEvent; nlohmann::json generate() const override; };
-class HardwareEvent : public StatelessEvent { public: using StatelessEvent::StatelessEvent; nlohmann::json generate() const override; };
+class NetworkEvent : public StatelessEvent
+{
+public:
+    using StatelessEvent::StatelessEvent;
+    nlohmann::json generate() const override;
+};
 
-std::unique_ptr<StatelessEvent> CreateStatelessEvent(const std::string& type, const std::string& operation, const std::string& created, const nlohmann::json& data);
+class PackageEvent : public StatelessEvent
+{
+public:
+    using StatelessEvent::StatelessEvent;
+    nlohmann::json generate() const override;
+};
+
+class HotfixEvent : public StatelessEvent
+{
+public:
+    using StatelessEvent::StatelessEvent;
+    nlohmann::json generate() const override;
+};
+
+class PortEvent : public StatelessEvent
+{
+public:
+    using StatelessEvent::StatelessEvent;
+    nlohmann::json generate() const override;
+};
+
+class ProcessEvent : public StatelessEvent
+{
+public:
+    using StatelessEvent::StatelessEvent;
+    nlohmann::json generate() const override;
+};
+
+class SystemEvent : public StatelessEvent
+{
+public:
+    using StatelessEvent::StatelessEvent;
+    nlohmann::json generate() const override;
+};
+
+class HardwareEvent : public StatelessEvent
+{
+public:
+    using StatelessEvent::StatelessEvent;
+    nlohmann::json generate() const override;
+};
+
+std::unique_ptr<StatelessEvent> CreateStatelessEvent(const std::string& type,
+                                                     const std::string& operation,
+                                                     const std::string& created,
+                                                     const nlohmann::json& data);
