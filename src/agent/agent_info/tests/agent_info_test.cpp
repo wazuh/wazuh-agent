@@ -130,9 +130,9 @@ TEST_F(AgentInfoTest, TestSaveGroups)
 
 TEST_F(AgentInfoTest, TestLoadMetadataInfoNoSysInfo)
 {
-    const AgentInfo agentInfo(".");
+    const AgentInfo agentInfo(".", nullptr, nullptr, true);
 
-    auto metadataInfo = nlohmann::json::parse(agentInfo.GetMetadataInfo(true));
+    auto metadataInfo = nlohmann::json::parse(agentInfo.GetMetadataInfo());
 
     EXPECT_TRUE(metadataInfo != nullptr);
 
@@ -142,7 +142,7 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoNoSysInfo)
     EXPECT_EQ(metadataInfo["id"], agentInfo.GetUUID());
     EXPECT_EQ(metadataInfo["name"], agentInfo.GetName());
     EXPECT_EQ(metadataInfo["key"], agentInfo.GetKey());
-    EXPECT_TRUE(metadataInfo["groups"] != nullptr);
+    EXPECT_TRUE(metadataInfo["groups"] == nullptr);
 
     // Endpoint information
     EXPECT_TRUE(metadataInfo["host"] == nullptr);
@@ -176,9 +176,9 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoRegistration)
 
     networks["iface"].push_back(ip);
 
-    const AgentInfo agentInfo(".", [os]() { return os; }, [networks]() { return networks; });
+    const AgentInfo agentInfo(".", [os]() { return os; }, [networks]() { return networks; }, true);
 
-    auto metadataInfo = nlohmann::json::parse(agentInfo.GetMetadataInfo(true));
+    auto metadataInfo = nlohmann::json::parse(agentInfo.GetMetadataInfo());
 
     EXPECT_TRUE(metadataInfo != nullptr);
 
@@ -188,7 +188,7 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoRegistration)
     EXPECT_EQ(metadataInfo["id"], agentInfo.GetUUID());
     EXPECT_EQ(metadataInfo["name"], agentInfo.GetName());
     EXPECT_EQ(metadataInfo["key"], agentInfo.GetKey());
-    EXPECT_TRUE(metadataInfo["groups"] != nullptr);
+    EXPECT_TRUE(metadataInfo["groups"] == nullptr);
 
     // Endpoint information
     EXPECT_TRUE(metadataInfo["host"] != nullptr);
@@ -229,7 +229,7 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoConnected)
 
     const AgentInfo agentInfo(".", [os]() { return os; }, [networks]() { return networks; });
 
-    auto metadataInfo = nlohmann::json::parse(agentInfo.GetMetadataInfo(false));
+    auto metadataInfo = nlohmann::json::parse(agentInfo.GetMetadataInfo());
 
     EXPECT_TRUE(metadataInfo["agent"] != nullptr);
 

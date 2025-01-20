@@ -24,9 +24,11 @@ public:
     /// @param dbFolderPath Path to the database folder.
     /// @param getOSInfo Function to retrieve OS information in JSON format.
     /// @param getNetworksInfo Function to retrieve network information in JSON format.
+    /// @param agentIsRegistering True if the agent is being registered, false otherwise.
     AgentInfo(std::string dbFolderPath = config::DEFAULT_DATA_PATH,
               std::function<nlohmann::json()> getOSInfo = nullptr,
-              std::function<nlohmann::json()> getNetworksInfo = nullptr);
+              std::function<nlohmann::json()> getNetworksInfo = nullptr,
+              bool agentIsRegistering = false);
 
     /// @brief Gets the agent's name.
     /// @return The agent's name.
@@ -75,11 +77,10 @@ public:
     std::string GetHeaderInfo() const;
 
     /// @brief Gets all the information about the agent.
-    /// @param agentIsRegistering Indicates if the agent is about to register.
     /// @return A string with all information about the agent.
-    std::string GetMetadataInfo(const bool agentIsRegistering) const;
+    std::string GetMetadataInfo() const;
 
-    /// @brief Saves the agent's information to the database.
+    /// @brief Restores and saves the agent's information to the database.
     void Save() const;
 
     /// @brief Saves the agent's group information to the database.
@@ -137,4 +138,7 @@ private:
 
     /// @brief The networks information
     std::function<nlohmann::json()> m_getNetworksInfo;
+
+    /// @brief Specify if the agent is about to register.
+    bool m_agentIsRegistering;
 };
