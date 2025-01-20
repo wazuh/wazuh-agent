@@ -8,9 +8,22 @@
 
 #include <vector>
 
-void StartAgent(const std::string& configFilePath)
+void StartAgentService(const std::string& configFilePath)
 {
     WindowsService::ServiceStart(configFilePath);
+}
+
+void StartAgent(const std::string& configFilePath)
+{
+    try
+    {
+        Agent agent(configFilePath);
+        agent.Run();
+    }
+    catch (const std::exception& e)
+    {
+        LogError("Exception thrown in wazuh-agent: {}", e.what());
+    }
 }
 
 void StatusAgent([[maybe_unused]] const std::string& configFilePath)
