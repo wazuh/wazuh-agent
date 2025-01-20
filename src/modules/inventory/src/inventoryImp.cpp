@@ -33,16 +33,9 @@ constexpr auto SYSTEM_SQL_STATEMENT {
     os_name TEXT,
     os_version TEXT,
     os_codename TEXT,
-    os_major TEXT,
-    os_minor TEXT,
-    os_patch TEXT,
     os_build TEXT,
     os_platform TEXT,
     sysname TEXT,
-    release TEXT,
-    version TEXT,
-    os_release TEXT,
-    os_display_version TEXT,
     PRIMARY KEY (os_name)) WITHOUT ROWID;)"};
 
 constexpr auto HARDWARE_SQL_STATEMENT {
@@ -65,16 +58,11 @@ constexpr auto PACKAGES_SQL_STATEMENT {
     R"(CREATE TABLE packages(
     name TEXT,
     version TEXT,
-    vendor TEXT,
     install_time TEXT,
     location TEXT,
     architecture TEXT,
-    groups TEXT,
     description TEXT,
     size INTEGER,
-    priority TEXT,
-    multiarch TEXT,
-    source TEXT,
     format TEXT,
     PRIMARY KEY (name,version,architecture,format,location)) WITHOUT ROWID;)"};
 
@@ -82,10 +70,7 @@ constexpr auto PROCESSES_SQL_STATEMENT {
     R"(CREATE TABLE processes (
     pid TEXT,
     name TEXT,
-    state TEXT,
     ppid BIGINT,
-    utime BIGINT,
-    stime BIGINT,
     cmd TEXT,
     argvs TEXT,
     euser TEXT,
@@ -94,20 +79,9 @@ constexpr auto PROCESSES_SQL_STATEMENT {
     egroup TEXT,
     rgroup TEXT,
     sgroup TEXT,
-    fgroup TEXT,
-    priority BIGINT,
-    nice BIGINT,
-    size BIGINT,
-    vm_size BIGINT,
-    resident BIGINT,
-    share BIGINT,
     start_time BIGINT,
-    pgrp BIGINT,
-    session BIGINT,
-    nlwp BIGINT,
     tgid BIGINT,
     tty BIGINT,
-    processor BIGINT,
     PRIMARY KEY (pid)) WITHOUT ROWID;)"};
 
 constexpr auto PORTS_SQL_STATEMENT {
