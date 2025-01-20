@@ -1,6 +1,6 @@
 #include <gmock/gmock.h>
 
-#include <ix509_utils.hpp>
+#include "ix509_utils.hpp"
 
 class MockX509Utils : public https_socket_verify_utils::ICertificateX509Utils
 {

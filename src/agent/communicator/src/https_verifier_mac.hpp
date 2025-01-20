@@ -1,7 +1,7 @@
 #pragma once
 
-#include <icert_store_utils_mac.hpp>
-#include <ix509_utils.hpp>
+#include "icert_store_utils_mac.hpp"
+#include "ix509_utils.hpp"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <Security/Security.h>

@@ -9,8 +9,8 @@
 #include <wincrypt.h>
 // clang-format on
 
-#include <icert_store_utils_win.hpp>
-#include <ix509_utils.hpp>
+#include "icert_store_utils_win.hpp"
+#include "ix509_utils.hpp"
 
 #include <boost/asio/ssl.hpp>
 

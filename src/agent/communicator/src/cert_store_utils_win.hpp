@@ -9,7 +9,7 @@
 #include <wincrypt.h>
 // clang-format on
 
-#include <icert_store_utils_win.hpp>
+#include "icert_store_utils_win.hpp"
 
 #include <string>
 

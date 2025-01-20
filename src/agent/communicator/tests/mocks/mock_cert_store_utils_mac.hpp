@@ -1,6 +1,6 @@
 #include <gmock/gmock.h>
 
-#include <icert_store_utils_mac.hpp>
+#include "icert_store_utils_mac.hpp"
 
 class MockCertStoreUtils : public https_socket_verify_utils::ICertificateStoreUtilsMac
 {
