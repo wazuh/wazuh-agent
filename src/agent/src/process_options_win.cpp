@@ -4,8 +4,11 @@
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <logger.hpp>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 #include <windows_service.hpp>
 
+#include <memory>
 #include <vector>
 
 void StartAgentService(const std::string& configFilePath)
@@ -17,6 +20,14 @@ void StartAgent(const std::string& configFilePath)
 {
     try
     {
+        std::shared_ptr<spdlog::logger> logger = spdlog::get("wazuh-agent");
+        if (logger != nullptr)
+        {
+            auto stdOutSink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
+            logger->sinks().clear();
+            logger->sinks().push_back(stdOutSink);
+        }
+
         Agent agent(configFilePath);
         agent.Run();
     }
