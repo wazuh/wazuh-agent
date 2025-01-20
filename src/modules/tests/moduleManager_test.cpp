@@ -1,21 +1,26 @@
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include <moduleManager.hpp>
 
 #include <memory>
 
 // Mock classes to simulate modules
-class MockModule {
+class MockModule
+{
 public:
     MOCK_METHOD(void, Start, (), ());
     MOCK_METHOD(void, Setup, (std::shared_ptr<const configuration::ConfigurationParser>), ());
     MOCK_METHOD(void, Stop, (), ());
-    MOCK_METHOD(boost::asio::awaitable<module_command::CommandExecutionResult>, ExecuteCommand, (const std::string&, const nlohmann::json&), ());
+    MOCK_METHOD(boost::asio::awaitable<module_command::CommandExecutionResult>,
+                ExecuteCommand,
+                (const std::string&, const nlohmann::json&),
+                ());
     MOCK_METHOD(std::string, Name, (), (const));
     MOCK_METHOD(void, SetPushMessageFunction, (const std::function<int(Message)>));
 };
 
-class ModuleManagerTest : public ::testing::Test {
+class ModuleManagerTest : public ::testing::Test
+{
 protected:
     std::function<int(Message)> pushMessage;
     std::shared_ptr<configuration::ConfigurationParser> configurationParser;
@@ -25,9 +30,11 @@ protected:
     ModuleManagerTest()
         : pushMessage([](const Message&) { return 0; })
         , configurationParser(std::make_shared<configuration::ConfigurationParser>())
-    {}
+    {
+    }
 
-    void SetUp() override {
+    void SetUp() override
+    {
         // Set up default expectations for mock methods
         ON_CALL(mockModule, Name()).WillByDefault(testing::Return("MockModule"));
 
@@ -40,11 +47,13 @@ protected:
     std::condition_variable cv;
 };
 
-TEST_F(ModuleManagerTest, Constructor) {
+TEST_F(ModuleManagerTest, Constructor)
+{
     EXPECT_NO_THROW(ModuleManager(pushMessage, configurationParser, "uuid1234"));
 }
 
-TEST_F(ModuleManagerTest, AddModule) {
+TEST_F(ModuleManagerTest, AddModule)
+{
     EXPECT_CALL(mockModule, Name()).Times(1);
 
     manager->AddModule(mockModule);
@@ -53,7 +62,8 @@ TEST_F(ModuleManagerTest, AddModule) {
     EXPECT_NE(moduleWrapper, nullptr);
 }
 
-TEST_F(ModuleManagerTest, AddMultipleModules) {
+TEST_F(ModuleManagerTest, AddMultipleModules)
+{
     MockModule mockModule1, mockModule2;
 
     EXPECT_CALL(mockModule1, Name()).WillOnce(testing::Return("MockModule1"));
@@ -69,7 +79,8 @@ TEST_F(ModuleManagerTest, AddMultipleModules) {
     EXPECT_NE(moduleWrapper2, nullptr);
 }
 
-TEST_F(ModuleManagerTest, AddModuleDuplicateName) {
+TEST_F(ModuleManagerTest, AddModuleDuplicateName)
+{
     MockModule mockModule1, mockModule2;
 
     EXPECT_CALL(mockModule1, Name()).WillOnce(testing::Return("MockModule"));
@@ -80,12 +91,14 @@ TEST_F(ModuleManagerTest, AddModuleDuplicateName) {
     EXPECT_THROW(manager->AddModule(mockModule2), std::runtime_error);
 }
 
-TEST_F(ModuleManagerTest, GetModuleNotFound) {
+TEST_F(ModuleManagerTest, GetModuleNotFound)
+{
     auto moduleWrapper = manager->GetModule("NonExistentModule");
     EXPECT_EQ(moduleWrapper, nullptr);
 }
 
-TEST_F(ModuleManagerTest, SetupModules) {
+TEST_F(ModuleManagerTest, SetupModules)
+{
     EXPECT_CALL(mockModule, Name()).Times(1);
     EXPECT_CALL(mockModule, Setup(testing::_)).Times(1);
 
@@ -93,7 +106,8 @@ TEST_F(ModuleManagerTest, SetupModules) {
     manager->Setup();
 }
 
-TEST_F(ModuleManagerTest, SetupMultipleModules) {
+TEST_F(ModuleManagerTest, SetupMultipleModules)
+{
     MockModule mockModule1, mockModule2;
 
     EXPECT_CALL(mockModule1, Name()).WillOnce(testing::Return("MockModule1"));
@@ -107,13 +121,20 @@ TEST_F(ModuleManagerTest, SetupMultipleModules) {
     manager->Setup();
 }
 
-TEST_F(ModuleManagerTest, StartModules) {
+TEST_F(ModuleManagerTest, StartModules)
+{
     EXPECT_CALL(mockModule, Name()).Times(3);
-    EXPECT_CALL(mockModule, Start()).Times(1).WillOnce(testing::InvokeWithoutArgs([&]() {         {
-            std::lock_guard<std::mutex> lock(mtx);
-            taskExecuted = true;
-        }
-        cv.notify_one(); }));
+    EXPECT_CALL(mockModule, Start())
+        .Times(1)
+        .WillOnce(testing::InvokeWithoutArgs(
+            [&]()
+            {
+                {
+                    std::lock_guard<std::mutex> lock(mtx);
+                    taskExecuted = true;
+                }
+                cv.notify_one();
+            }));
 
     manager->AddModule(mockModule);
     manager->Start();
@@ -129,22 +150,35 @@ TEST_F(ModuleManagerTest, StartModules) {
     manager->Stop();
 }
 
-TEST_F(ModuleManagerTest, StartMultipleModules) {
+TEST_F(ModuleManagerTest, StartMultipleModules)
+{
     MockModule mockModule1, mockModule2;
 
     EXPECT_CALL(mockModule1, Name()).Times(3).WillRepeatedly(testing::Return("MockModule1"));
     EXPECT_CALL(mockModule2, Name()).Times(3).WillRepeatedly(testing::Return("MockModule2"));
 
-    EXPECT_CALL(mockModule1, Start()).Times(1).WillOnce(testing::InvokeWithoutArgs([&]() {         {
-            std::lock_guard<std::mutex> lock(mtx);
-            taskExecuted = true;
-        }
-        cv.notify_one(); }));
-    EXPECT_CALL(mockModule2, Start()).Times(1).WillOnce(testing::InvokeWithoutArgs([&]() {         {
-            std::lock_guard<std::mutex> lock(mtx);
-            taskExecuted = true;
-        }
-        cv.notify_one(); }));
+    EXPECT_CALL(mockModule1, Start())
+        .Times(1)
+        .WillOnce(testing::InvokeWithoutArgs(
+            [&]()
+            {
+                {
+                    std::lock_guard<std::mutex> lock(mtx);
+                    taskExecuted = true;
+                }
+                cv.notify_one();
+            }));
+    EXPECT_CALL(mockModule2, Start())
+        .Times(1)
+        .WillOnce(testing::InvokeWithoutArgs(
+            [&]()
+            {
+                {
+                    std::lock_guard<std::mutex> lock(mtx);
+                    taskExecuted = true;
+                }
+                cv.notify_one();
+            }));
     EXPECT_CALL(mockModule1, Stop()).Times(1);
     EXPECT_CALL(mockModule2, Stop()).Times(1);
 
@@ -153,7 +187,7 @@ TEST_F(ModuleManagerTest, StartMultipleModules) {
 
     manager->Start();
 
-        {
+    {
         std::unique_lock<std::mutex> lock(mtx);
         cv.wait(lock, [&]() { return taskExecuted.load(); });
     }
@@ -170,7 +204,8 @@ TEST_F(ModuleManagerTest, StartMultipleModules) {
     manager->Stop();
 }
 
-TEST_F(ModuleManagerTest, StopModules) {
+TEST_F(ModuleManagerTest, StopModules)
+{
     EXPECT_CALL(mockModule, Name()).Times(1);
     EXPECT_CALL(mockModule, Stop()).Times(1);
 
@@ -178,7 +213,8 @@ TEST_F(ModuleManagerTest, StopModules) {
     manager->Stop();
 }
 
-TEST_F(ModuleManagerTest, StopMultipleModules) {
+TEST_F(ModuleManagerTest, StopMultipleModules)
+{
     MockModule mockModule1, mockModule2;
 
     EXPECT_CALL(mockModule1, Name()).WillOnce(testing::Return("MockModule1"));
