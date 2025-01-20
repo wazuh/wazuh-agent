@@ -18,14 +18,19 @@ namespace
 
 AgentInfo::AgentInfo(std::string dbFolderPath,
                      std::function<nlohmann::json()> getOSInfo,
-                     std::function<nlohmann::json()> getNetworksInfo)
+                     std::function<nlohmann::json()> getNetworksInfo,
+                     bool agentIsRegistering)
     : m_dataFolderPath(std::move(dbFolderPath))
+    , m_agentIsRegistering(agentIsRegistering)
 {
-    AgentInfoPersistance agentInfoPersistance(m_dataFolderPath);
-    m_name = agentInfoPersistance.GetName();
-    m_key = agentInfoPersistance.GetKey();
-    m_uuid = agentInfoPersistance.GetUUID();
-    m_groups = agentInfoPersistance.GetGroups();
+    if (!m_agentIsRegistering)
+    {
+        AgentInfoPersistance agentInfoPersistance(m_dataFolderPath);
+        m_name = agentInfoPersistance.GetName();
+        m_key = agentInfoPersistance.GetKey();
+        m_uuid = agentInfoPersistance.GetUUID();
+        m_groups = agentInfoPersistance.GetGroups();
+    }
 
     if (m_uuid.empty())
     {
@@ -149,25 +154,28 @@ std::string AgentInfo::GetHeaderInfo() const
     return m_headerInfo;
 }
 
-std::string AgentInfo::GetMetadataInfo(const bool agentIsRegistering) const
+std::string AgentInfo::GetMetadataInfo() const
 {
     nlohmann::json agentMetadataInfo;
-    auto& target = agentIsRegistering ? agentMetadataInfo : agentMetadataInfo["agent"];
+    auto& target = m_agentIsRegistering ? agentMetadataInfo : agentMetadataInfo["agent"];
 
     target["id"] = GetUUID();
     target["name"] = GetName();
     target["type"] = GetType();
     target["version"] = GetVersion();
-    target["groups"] = GetGroups();
 
     if (!m_endpointInfo.empty())
     {
         target["host"] = m_endpointInfo;
     }
 
-    if (agentIsRegistering)
+    if (m_agentIsRegistering)
     {
         target["key"] = GetKey();
+    }
+    else
+    {
+        target["groups"] = GetGroups();
     }
 
     return agentMetadataInfo.dump();
@@ -176,6 +184,7 @@ std::string AgentInfo::GetMetadataInfo(const bool agentIsRegistering) const
 void AgentInfo::Save() const
 {
     AgentInfoPersistance agentInfoPersistance(m_dataFolderPath);
+    agentInfoPersistance.ResetToDefault();
     agentInfoPersistance.SetName(m_name);
     agentInfoPersistance.SetKey(m_key);
     agentInfoPersistance.SetUUID(m_uuid);

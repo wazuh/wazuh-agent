@@ -18,7 +18,7 @@ namespace agent_registration
                                          const std::string& dbFolderPath,
                                          std::string verificationMode)
         : m_agentInfo(
-              dbFolderPath, [this]() { return m_sysInfo.os(); }, [this]() { return m_sysInfo.networks(); })
+              dbFolderPath, [this]() { return m_sysInfo.os(); }, [this]() { return m_sysInfo.networks(); }, true)
         , m_serverUrl(std::move(url))
         , m_user(std::move(user))
         , m_password(std::move(password))
@@ -53,7 +53,7 @@ namespace agent_registration
                                                               m_verificationMode,
                                                               token.value(),
                                                               "",
-                                                              m_agentInfo.GetMetadataInfo(true));
+                                                              m_agentInfo.GetMetadataInfo());
 
         const auto res = httpClient.PerformHttpRequest(reqParams);
 

@@ -125,8 +125,7 @@ void Agent::Run()
                                       return GetMessagesFromQueue(m_messageQueue,
                                                                   MessageType::STATEFUL,
                                                                   numMessages,
-                                                                  [this]()
-                                                                  { return m_agentInfo.GetMetadataInfo(false); });
+                                                                  [this]() { return m_agentInfo.GetMetadataInfo(); });
                                   },
                                   [this]([[maybe_unused]] const int messageCount, const std::string&)
                                   { PopMessagesFromQueue(m_messageQueue, MessageType::STATEFUL, messageCount); }),
@@ -138,8 +137,7 @@ void Agent::Run()
                                       return GetMessagesFromQueue(m_messageQueue,
                                                                   MessageType::STATELESS,
                                                                   numMessages,
-                                                                  [this]()
-                                                                  { return m_agentInfo.GetMetadataInfo(false); });
+                                                                  [this]() { return m_agentInfo.GetMetadataInfo(); });
                                   },
                                   [this]([[maybe_unused]] const int messageCount, const std::string&)
                                   { PopMessagesFromQueue(m_messageQueue, MessageType::STATELESS, messageCount); }),
