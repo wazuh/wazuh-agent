@@ -1,33 +1,218 @@
-run-name: Test package
+run-name: test reuse binaries
+name: test reuse binaries
 
 on:
-  workflow_dispatch:    
+  workflow_dispatch:
+    inputs:
+      docker_image_tag:
+        description: |
+          Specify the docker tag used to build the package.
+          Use 'developer' to set branch name as tag.
+          Use 'auto' to set branch version as tag.
+          Default is 'auto'.
+        required: false
+        default: 'auto'
+      architecture:
+        type: choice
+        description: Package architecture [amd64, arm64, x86_64, aarch64].
+        required: true
+        options:
+          - amd64
+          - arm64
+          - x86_64
+          - aarch64
+      system:
+        type: choice
+        description: Package OS [deb, rpm].
+        required: true
+        options:
+          - deb
+          - rpm
+      revision:
+        description: |
+          Package revision (name and metadata).
+          Default is '0'.
+        required: false
+        default: '0'
+      is_stage:
+        type: boolean
+        description: |
+          Set production nomenclature if true.
+          Default is 'false'.
+        required: false
+      checksum:
+        type: boolean
+        description: |
+          Generate package checksum.
+          Default is 'false'.
+        required: false
+      source_reference:
+        description: |
+          Branch from wazuh/wazuh-agent repository to use.
+        required: true
+      upload_to:
+        type: choice
+        description: Upload destination for the workflow result.
+        required: true
+        options:
+          - no_upload
+          - artifact
+          - s3
+          - artifact_and_s3
+      id:
+        type: string
+        description: |
+          ID used to identify the workflow uniquely.
+        required: false
+
+  workflow_call:
+    inputs:
+      docker_image_tag:
+        type: string
+        required: false
+        default: 'auto'
+      architecture:
+        type: string
+        required: true
+      system:
+        type: string
+        required: true
+      revision:
+        type: string
+        required: false
+      is_stage:
+        type: boolean
+        required: false
+      checksum:
+        type: boolean
+        required: false
+      source_reference:
+        type: string
+        required: true
+      upload_to:
+        type: string
+        required: true
+      id:
+        type: string
+        required: false
 
 jobs:
-  build-binaries-agent-macos-packages:
-    runs-on: ubuntu-latest
-    timeout-minutes: 50
-    name: Test package
-
+  Build-agent-linux-binaries:
+    runs-on: ${{ (inputs.architecture == 'arm64' || inputs.architecture == 'aarch64') && 'wz-linux-arm64' || 'ubuntu-latest' }}
+    timeout-minutes: 60
+    name: Build binaries
     steps:
-      - name: Checkout the wazuh-agent repository
+      - name: Checkout wazuh/wazuh-agent repository
         uses: actions/checkout@v4
         with:
           repository: wazuh/wazuh-agent
-          ref: enhancement/137-pkg-build-trigger
-        
-      - name: Call package build workflow and wait
-        id: workflow_call
-        uses: ./.github/actions/call_workflow_and_wait
+          submodules: true
+          ref: ${{ inputs.source_reference }}
+
+      - name: Set ARCH
+        run: |
+          if [ ${{ inputs.architecture }} = 'x86_64' ]; then
+            arch="amd64"
+          elif [ ${{ inputs.architecture }} = 'aarch64' ]; then
+            arch="arm64"
+          else
+            arch=${{ inputs.architecture }}
+          fi
+          echo "ARCH=$arch" >> $GITHUB_ENV;
+
+      - name: Set TAG and CONTAINER_NAME
+        run: |
+          VERSION=$(sed 's/.*\([0-9]\.[0-9]*\.[0-9]*\).*/\1/' ./src/VERSION)
+          if [ "${{ inputs.docker_image_tag }}" == "auto" ]; then
+            echo "TAG=$VERSION" >> $GITHUB_ENV;
+          elif [ "${{ inputs.docker_image_tag }}" == "developer" ]; then
+            echo "TAG=$(sed 's|[/\]|--|g' <<< ${{ inputs.source_reference }})" >> $GITHUB_ENV;
+          else
+            echo "TAG=${{ inputs.docker_image_tag }}" >> $GITHUB_ENV;
+          fi
+          echo "CONTAINER_NAME=pkg_${{ inputs.system }}_agent_builder_${{ env.ARCH }}" >> $GITHUB_ENV
+
+      - name: Download docker image for package building
+        run: |
+          bash .github/actions/ghcr_pull_and_push/pull_image_from_ghcr.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.actor}} ${{ env.CONTAINER_NAME }} ${{ env.TAG }}
+
+      - name: Build binaries
+        run: |
+          sudo docker run -i --rm -v $(pwd):/home:rw ${{ env.CONTAINER_NAME }}:${{ env.TAG }} bash -c "cd /home/src && mkdir build && cd build && cmake .. && make -j $(nproc) && rm -rf /home/.git*"
+
+      - name: Check result
+        run: |
+          ls
+          ls src/build
+
+      - name: Zip repo
+        run: |
+          zip -r /tmp/wazuh-agent-binaries.zip .
+
+      - name: Upload wazuh-agent-binaries.zip
+        uses: actions/upload-artifact@v4
         with:
-          ref: change/137-setup-pkg-build-workflow-for-macos
-          repository: wazuh-agent-packages
-          workflow: packages-build-macos-agent.yml
-          token: ${{ github.token }}
-    
-      - uses: actions/download-artifact@v4
+          name: wazuh-agent-binaries
+          path: /tmp/wazuh-agent-binaries.zip
+
+  Test-agent-linux-packages:
+    needs: Build-agent-linux-binaries
+    runs-on: ${{ (inputs.architecture == 'arm64' || inputs.architecture == 'aarch64') && 'wz-linux-arm64' || 'ubuntu-latest' }}
+    timeout-minutes: 60
+    name: Test binaries
+    steps:
+      - name: Checkout wazuh/wazuh-agent repository
+        uses: actions/checkout@v4
         with:
-          repository: wazuh-agent-packages
-          name: tested-wazuh-agent-package
-          github-token: ${{ github.token }}
-          run-id: ${{ steps.workflow_call.outputs.dispatched_workflow_id }}
+          repository: wazuh/wazuh-agent
+          submodules: true
+          ref: ${{ inputs.source_reference }}
+
+      - name: Set ARCH
+        run: |
+          if [ ${{ inputs.architecture }} = 'x86_64' ]; then
+            arch="amd64"
+          elif [ ${{ inputs.architecture }} = 'aarch64' ]; then
+            arch="arm64"
+          else
+            arch=${{ inputs.architecture }}
+          fi
+          echo "ARCH=$arch" >> $GITHUB_ENV;
+
+      - name: Set TAG and CONTAINER_NAME
+        run: |
+          VERSION=$(sed 's/.*\([0-9]\.[0-9]*\.[0-9]*\).*/\1/' ./src/VERSION)
+          if [ "${{ inputs.docker_image_tag }}" == "auto" ]; then
+            echo "TAG=$VERSION" >> $GITHUB_ENV;
+          elif [ "${{ inputs.docker_image_tag }}" == "developer" ]; then
+            echo "TAG=$(sed 's|[/\]|--|g' <<< ${{ inputs.source_reference }})" >> $GITHUB_ENV;
+          else
+            echo "TAG=${{ inputs.docker_image_tag }}" >> $GITHUB_ENV;
+          fi
+          echo "CONTAINER_NAME=pkg_${{ inputs.system }}_agent_builder_${{ env.ARCH }}" >> $GITHUB_ENV
+
+      - name: Download docker image for package building
+        run: |
+          bash .github/actions/ghcr_pull_and_push/pull_image_from_ghcr.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.actor}} ${{ env.CONTAINER_NAME }} ${{ env.TAG }}
+
+      - name: Download wazuh-agent-binaries.zip
+        uses: actions/download-artifact@v4
+        with:
+          name: wazuh-agent-binaries
+          path: /tmp
+
+      - name: Expand wazuh-agent-binaries.zip
+        run: |
+          echo "ls /tmp"
+          ls /tmp
+          echo "ls"
+          ls
+          unzip /tmp/wazuh-agent-binaries.zip -d /tmp && rm /tmp/wazuh-agent-binaries.zip
+
+      - name: Install binaries inside docker
+        run: |
+          sudo docker run -i --rm -v /tmp:/home:rw ${{ env.CONTAINER_NAME }}:${{ env.TAG }} bash -c "cd /home/src/build && mkdir /test && make DESTDIR=/test install"
+
+      - name: Install binaries in runner
+        run: |
+          cd /tmp/src/build && make install
