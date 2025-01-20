@@ -12,7 +12,8 @@
 
 using Co_CommandExecutionResult = boost::asio::awaitable<module_command::CommandExecutionResult>;
 
-struct ModuleWrapper {
+struct ModuleWrapper
+{
     std::function<void()> Start;
     std::function<void(std::shared_ptr<const configuration::ConfigurationParser>)> Setup;
     std::function<void()> Stop;

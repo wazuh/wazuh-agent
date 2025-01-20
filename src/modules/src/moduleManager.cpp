@@ -9,7 +9,8 @@
 using logcollector::Logcollector;
 #endif
 
-namespace {
+namespace
+{
     constexpr int MODULES_START_WAIT_SECS = 60;
 }
 
@@ -32,7 +33,7 @@ void ModuleManager::AddModules()
     Setup();
 }
 
-std::shared_ptr<ModuleWrapper> ModuleManager::GetModule(const std::string & name)
+std::shared_ptr<ModuleWrapper> ModuleManager::GetModule(const std::string& name)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     if (auto it = m_modules.find(name); it != m_modules.end())
@@ -50,16 +51,15 @@ void ModuleManager::Start()
 
     m_started.store(0);
 
-    for (const auto &[_, module] : m_modules)
+    for (const auto& [_, module] : m_modules)
     {
         m_taskManager.EnqueueTask(
             [this, module]
             {
                 ++m_started;
                 module->Start();
-            }
-            , module->Name()
-        );
+            },
+            module->Name());
     }
 
     const auto start = std::chrono::steady_clock::now();
@@ -87,7 +87,7 @@ void ModuleManager::Setup()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    for (const auto &[_, module] : m_modules)
+    for (const auto& [_, module] : m_modules)
     {
         module->Setup(m_configurationParser);
     }
@@ -97,7 +97,7 @@ void ModuleManager::Stop()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    for (const auto &[_, module] : m_modules)
+    for (const auto& [_, module] : m_modules)
     {
         module->Stop();
     }

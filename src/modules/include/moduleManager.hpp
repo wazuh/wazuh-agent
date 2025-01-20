@@ -1,7 +1,7 @@
 #pragma once
 
-#include <multitype_queue.hpp>
 #include <moduleWrapper.hpp>
+#include <multitype_queue.hpp>
 #include <task_manager.hpp>
 
 #include <boost/asio/awaitable.hpp>
@@ -12,10 +12,12 @@
 #include <string>
 #include <thread>
 
-
-class ModuleManager {
+class ModuleManager
+{
 public:
-    ModuleManager(const std::function<int(Message)>& pushMessage, std::shared_ptr<configuration::ConfigurationParser> configurationParser, std::string uuid)
+    ModuleManager(const std::function<int(Message)>& pushMessage,
+                  std::shared_ptr<configuration::ConfigurationParser> configurationParser,
+                  std::string uuid)
         : m_pushMessage(pushMessage)
         , m_configurationParser(std::move(configurationParser))
         , m_agentUUID(std::move(uuid))
@@ -24,31 +26,35 @@ public:
 
     ~ModuleManager() = default;
 
-    template <typename T>
-    void AddModule(T& module) {
+    template<typename T>
+    void AddModule(T& module)
+    {
         const std::string& moduleName = module.Name();
-        if (m_modules.find(moduleName) != m_modules.end()) {
+        if (m_modules.find(moduleName) != m_modules.end())
+        {
             throw std::runtime_error("Module '" + moduleName + "' already exists.");
         }
 
         module.SetPushMessageFunction(m_pushMessage);
 
-        auto wrapper = std::make_shared<ModuleWrapper>(ModuleWrapper{
+        auto wrapper = std::make_shared<ModuleWrapper>(ModuleWrapper {
             .Start = [&module]() { module.Start(); },
-            .Setup = [&module](std::shared_ptr<const configuration::ConfigurationParser> configurationParser) { module.Setup(configurationParser); },
+            .Setup = [&module](std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
+            { module.Setup(configurationParser); },
             .Stop = [&module]() { module.Stop(); },
             .ExecuteCommand = [&module](std::string command, nlohmann::json parameters) -> Co_CommandExecutionResult
+            { co_return co_await module.ExecuteCommand(command, parameters); },
+            .Name =
+                [&module]()
             {
-                co_return co_await module.ExecuteCommand(command, parameters);
-            },
-            .Name = [&module]() { return module.Name(); }
-        });
+                return module.Name();
+            }});
 
         m_modules[moduleName] = wrapper;
     }
 
     void AddModules();
-    std::shared_ptr<ModuleWrapper> GetModule(const std::string & name);
+    std::shared_ptr<ModuleWrapper> GetModule(const std::string& name);
 
     /// @brief Start the modules
     ///

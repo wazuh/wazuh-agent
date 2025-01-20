@@ -1,18 +1,19 @@
 #include <gtest/gtest.h>
-#include <sstream>
 #include <list>
 #include <spdlog/spdlog.h>
+#include <sstream>
 
-#include <logcollector.hpp>
 #include <file_reader.hpp>
-#include <tempfile.hpp>
+#include <logcollector.hpp>
 #include <logcollector_mock.hpp>
+#include <tempfile.hpp>
 
 using namespace logcollector;
 
-class MockCallback {
+class MockCallback
+{
 public:
-    MOCK_METHOD(void, Call, (const std::string &), ());
+    MOCK_METHOD(void, Call, (const std::string&), ());
 };
 
 TEST(Localfile, FullLine)
@@ -41,10 +42,13 @@ TEST(Localfile, PartialLine)
 
 TEST(Localfile, OpenError)
 {
-    try {
+    try
+    {
         auto lf = Localfile("unexisting.file");
         FAIL() << "Expected OpenError";
-    } catch (OpenError & err) {
+    }
+    catch (OpenError& err)
+    {
         ASSERT_STREQ(err.what(), "Cannot open file: unexisting.file");
     }
 }
@@ -68,15 +72,19 @@ TEST(Localfile, Deleted)
 
     fileA.reset();
 
-    try {
+    try
+    {
         lf.Rotated();
         FAIL() << "Expected OpenError";
-    } catch (OpenError & err) {
+    }
+    catch (OpenError& err)
+    {
         ASSERT_STREQ(err.what(), "Cannot open file: /tmp/A.log");
     }
 }
 
-TEST(FileReader, Reload) {
+TEST(FileReader, Reload)
+{
     spdlog::default_logger()->sinks().clear();
     MockCallback mockCallback;
 
@@ -90,7 +98,7 @@ TEST(FileReader, Reload) {
     auto c = TempFile("/tmp/fileC.log");
 
     auto regex = "/tmp/file*.log";
-    FileReader reader(Logcollector::Instance(), regex, 500, 60000); //NOLINT
+    FileReader reader(Logcollector::Instance(), regex, 500, 60000); // NOLINT
     reader.Reload([&](Localfile& lf) { mockCallback.Call(lf.Filename()); });
 
     auto d = TempFile("/tmp/fileD.log");

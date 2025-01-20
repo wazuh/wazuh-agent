@@ -6,11 +6,11 @@
 
 #include "event_reader_mocks.hpp"
 
-#include <sstream>
-#include <spdlog/spdlog.h>
-#include <boost/asio/io_context.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <boost/asio/io_context.hpp>
+#include <spdlog/spdlog.h>
+#include <sstream>
 
 using namespace testing;
 using namespace logcollector::winevt;
@@ -18,7 +18,7 @@ using namespace logcollector::winevt;
 class WindowsEventChannel : public ::testing::Test
 {
 protected:
-    void SetUp() override { };
+    void SetUp() override {};
 
     const std::string channelName {"Application"};
     const std::string query {"TestQuery"};
@@ -29,7 +29,7 @@ protected:
 TEST_F(WindowsEventChannel, Constructor)
 {
     auto logcollector = LogcollectorMock();
-    EXPECT_NO_THROW(WindowsEventTracerReader(logcollector,"","", (time_t) 0 ));
+    EXPECT_NO_THROW(WindowsEventTracerReader(logcollector, "", "", (time_t)0));
 }
 
 TEST_F(WindowsEventChannel, RunMethodEnqueueTask)
@@ -59,7 +59,8 @@ TEST_F(WindowsEventChannel, AddReader)
     auto mockedLogcollector = LogcollectorMock();
     auto config = std::make_shared<configuration::ConfigurationParser>(std::string(CONFIG_RAW));
 
-    EXPECT_CALL(mockedLogcollector, AddReader(_)).Times(2)
+    EXPECT_CALL(mockedLogcollector, AddReader(_))
+        .Times(2)
         .WillOnce(SaveArg<0>(&capturedReader1))
         .WillOnce(SaveArg<0>(&capturedReader2));
 

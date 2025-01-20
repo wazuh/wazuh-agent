@@ -1,14 +1,13 @@
 #pragma once
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 class InvNormalizerTest : public ::testing::Test
 {
-    protected:
+protected:
+    InvNormalizerTest() = default;
+    virtual ~InvNormalizerTest() = default;
 
-        InvNormalizerTest() = default;
-        virtual ~InvNormalizerTest() = default;
-
-        void SetUp() override;
-        void TearDown() override;
+    void SetUp() override;
+    void TearDown() override;
 };

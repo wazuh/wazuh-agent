@@ -1,17 +1,16 @@
-#include <gtest/gtest.h>
-#include <regex>
 #include "logcollector_mock.hpp"
+#include "tempfile.hpp"
 #include <configuration_parser.hpp>
 #include <file_reader.hpp>
-#include "tempfile.hpp"
+#include <gtest/gtest.h>
+#include <regex>
 
 using namespace configuration;
 using namespace logcollector;
 
-static bool IsISO8601(const std::string& datetime) {
-    const std::regex iso8601Regex(
-        R"(^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$)"
-    );
+static bool IsISO8601(const std::string& datetime)
+{
+    const std::regex iso8601Regex(R"(^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$)");
     return std::regex_match(datetime, iso8601Regex);
 }
 
@@ -19,7 +18,7 @@ TEST(Logcollector, AddReader)
 {
     auto logcollector = LogcollectorMock();
     auto a = TempFile("/tmp/A.log");
-    auto fileReader = std::make_shared<FileReader>(logcollector, "/tmp/*.log", 500, 60000); //NOLINT
+    auto fileReader = std::make_shared<FileReader>(logcollector, "/tmp/*.log", 500, 60000); // NOLINT
 
     EXPECT_CALL(logcollector, EnqueueTask(::testing::_)).Times(1);
     EXPECT_CALL(logcollector, AddReader(::testing::_));
@@ -43,7 +42,8 @@ TEST(Logcollector, SetupFileReader)
     auto logcollector = LogcollectorMock();
     auto config = std::make_shared<configuration::ConfigurationParser>(std::string(CONFIG_RAW));
 
-    EXPECT_CALL(logcollector, AddReader(::testing::_)).Times(2)
+    EXPECT_CALL(logcollector, AddReader(::testing::_))
+        .Times(2)
         .WillOnce(::testing::SaveArg<0>(&capturedReader1))
         .WillOnce(::testing::SaveArg<0>(&capturedReader2));
 
@@ -58,13 +58,12 @@ TEST(Logcollector, SendMessage)
     PushMessageMock mock;
     LogcollectorMock logcollector;
 
-    logcollector.SetPushMessageFunction([&mock](Message message) {
-        return mock.Call(std::move(message));
-    });
+    logcollector.SetPushMessageFunction([&mock](Message message) { return mock.Call(std::move(message)); });
 
     Message capturedMessage(MessageType::STATELESS, nlohmann::json::object(), "", "", "");
 
-    EXPECT_CALL(mock, Call(::testing::_)).WillOnce(::testing::DoAll(::testing::SaveArg<0>(&capturedMessage), ::testing::Return(0)));
+    EXPECT_CALL(mock, Call(::testing::_))
+        .WillOnce(::testing::DoAll(::testing::SaveArg<0>(&capturedMessage), ::testing::Return(0)));
 
     const auto MODULE = "logcollector";
     const auto LOCATION = "/test/location";

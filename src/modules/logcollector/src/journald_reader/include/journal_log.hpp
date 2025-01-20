@@ -1,36 +1,40 @@
 #pragma once
 
-#include <string>
-#include <memory>
-#include <stdexcept>
+#include <algorithm>
 #include <chrono>
-#include <regex>
+#include <memory>
 #include <optional>
+#include <regex>
+#include <stdexcept>
+#include <string>
 #include <string_view>
 #include <vector>
-#include <algorithm>
 
 // Forward declaration for sd_journal
 struct sd_journal;
 
 /// @brief Structure to define journal filtering criteria
-struct JournalFilter {
-    std::string field;      ///< Field name to filter on
-    std::string value;      ///< Value or pattern to match (supports OR with '|')
-    bool exact_match{true}; ///< Whether to perform exact matching or substring matching
+struct JournalFilter
+{
+    std::string field;       ///< Field name to filter on
+    std::string value;       ///< Value or pattern to match (supports OR with '|')
+    bool exact_match {true}; ///< Whether to perform exact matching or substring matching
 
     /// @brief Splits the value string into multiple values based on '|' separator
     /// @return Vector of string_views representing individual values
-    std::vector<std::string_view> GetValueViews() const {
+    std::vector<std::string_view> GetValueViews() const
+    {
         std::vector<std::string_view> values;
         std::string_view sv(value);
         size_t pos = 0;
 
-        while ((pos = sv.find('|')) != std::string_view::npos) {
+        while ((pos = sv.find('|')) != std::string_view::npos)
+        {
             values.push_back(sv.substr(0, pos));
             sv.remove_prefix(pos + 1);
         }
-        if (!sv.empty()) {
+        if (!sv.empty())
+        {
             values.push_back(sv);
         }
         return values;
@@ -39,14 +43,13 @@ struct JournalFilter {
     /// @brief Checks if a field value matches any of the filter values
     /// @param fieldValue The value to check against filter values
     /// @return true if matches, false otherwise
-    bool Matches(const std::string& fieldValue) const {
+    bool Matches(const std::string& fieldValue) const
+    {
         auto values = GetValueViews();
-        return std::any_of(values.begin(), values.end(),
-            [&fieldValue, this](const auto& val) {
-                return exact_match ?
-                    fieldValue == val :
-                    fieldValue.find(val) != std::string::npos;
-            });
+        return std::any_of(values.begin(),
+                           values.end(),
+                           [&fieldValue, this](const auto& val)
+                           { return exact_match ? fieldValue == val : fieldValue.find(val) != std::string::npos; });
     }
 };
 
@@ -56,19 +59,25 @@ using FilterGroup = std::vector<JournalFilter>;
 using FilterSet = std::vector<FilterGroup>;
 
 /// @brief Exception class for journal-related errors
-class JournalLogException : public std::runtime_error {
+class JournalLogException : public std::runtime_error
+{
 public:
-    explicit JournalLogException(const std::string& message) : std::runtime_error(message) {}
+    explicit JournalLogException(const std::string& message)
+        : std::runtime_error(message)
+    {
+    }
 };
 
 /// @brief Class for interacting with systemd journal
 ///
 /// This class provides an interface to read and filter systemd journal entries.
 /// It supports complex filtering with AND/OR logic and handles journal rotation.
-class JournalLog {
+class JournalLog
+{
 public:
     /// @brief Message structure containing filtered journal entry data
-    struct FilteredMessage {
+    struct FilteredMessage
+    {
         std::string fieldValue; ///< Value of the matched field
         std::string message;    ///< Journal message content
     };
@@ -116,8 +125,7 @@ public:
     /// @param filters Set of filter groups to apply
     /// @param ignoreIfMissing Whether to ignore missing fields
     /// @return Optional containing filtered message if found
-    virtual std::optional<FilteredMessage> GetNextFilteredMessage(
-        const FilterSet& filters, bool ignoreIfMissing);
+    virtual std::optional<FilteredMessage> GetNextFilteredMessage(const FilterSet& filters, bool ignoreIfMissing);
 
     /// @brief Clears all active filters
     void FlushFilters();
@@ -125,7 +133,8 @@ public:
     /// @brief Validates a filter configuration
     /// @param filter Filter to validate
     /// @return true if filter is valid, false otherwise
-    static bool ValidateFilter(const JournalFilter& filter) {
+    static bool ValidateFilter(const JournalFilter& filter)
+    {
         return !filter.field.empty() && !filter.value.empty();
     }
 
@@ -140,10 +149,10 @@ public:
     virtual bool CursorValid(const std::string& cursor) const;
 
 private:
-    struct sd_journal* m_journal;          ///< Pointer to journal structure
-    uint64_t m_currentTimestamp{0};        ///< Current entry timestamp
-    bool m_hasActiveFilters{false};        ///< Whether filters are currently active
-    FilterSet m_filters;                   ///< Currently active filters
+    struct sd_journal* m_journal;    ///< Pointer to journal structure
+    uint64_t m_currentTimestamp {0}; ///< Current entry timestamp
+    bool m_hasActiveFilters {false}; ///< Whether filters are currently active
+    FilterSet m_filters;             ///< Currently active filters
 
     /// @brief Gets current epoch time in microseconds
     static uint64_t GetEpochTime();
@@ -170,7 +179,5 @@ private:
     /// @param ignoreIfMissing Whether to ignore missing fields
     /// @param message Filtered message structure to fill
     /// @return true if entry matches any filter, false otherwise
-    bool ProcessJournalEntry(const FilterSet& filters,
-                           bool ignoreIfMissing,
-                           FilteredMessage& message) const;
+    bool ProcessJournalEntry(const FilterSet& filters, bool ignoreIfMissing, FilteredMessage& message) const;
 };
