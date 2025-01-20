@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include <sstream>
 #include <list>
 #include <spdlog/spdlog.h>
+#include <sstream>
 
 #include <file_reader.hpp>
 #include <logcollector.hpp>
@@ -18,9 +18,10 @@ inline std::string GetFullFileName(const std::string& filename)
     return TMP_FILE_DIR + filename;
 }
 
-class MockCallback {
+class MockCallback
+{
 public:
-    MOCK_METHOD(void, Call, (const std::string &), ());
+    MOCK_METHOD(void, Call, (const std::string&), ());
 };
 
 TEST(Localfile, FullLine)
@@ -49,10 +50,13 @@ TEST(Localfile, PartialLine)
 
 TEST(Localfile, OpenError)
 {
-    try {
+    try
+    {
         auto lf = Localfile("unexisting.file");
         FAIL() << "Expected OpenError";
-    } catch (OpenError & err) {
+    }
+    catch (OpenError& err)
+    {
         ASSERT_STREQ(err.what(), "Cannot open file: unexisting.file");
     }
 }
@@ -71,22 +75,26 @@ TEST(Localfile, Rotated)
 
 TEST(Localfile, Deleted)
 {
-    //FIXME: The process cannot access the file because it is being used by another process.
+    // FIXME: The process cannot access the file because it is being used by another process.
     GTEST_SKIP();
     auto fileA = std::make_unique<TempFile>("/tmp/A.log", "Hello World");
     auto lf = Localfile("/tmp/A.log");
 
     fileA.reset();
 
-    try {
+    try
+    {
         lf.Rotated();
         FAIL() << "Expected OpenError";
-    } catch (OpenError & err) {
+    }
+    catch (OpenError& err)
+    {
         ASSERT_STREQ(err.what(), "Cannot open file: /tmp/A.log");
     }
 }
 
-TEST(FileReader, Reload) {
+TEST(FileReader, Reload)
+{
     spdlog::default_logger()->sinks().clear();
     MockCallback mockCallback;
 
@@ -100,7 +108,7 @@ TEST(FileReader, Reload) {
     auto c = TempFile(GetFullFileName("C.log"));
 
     auto regex = TMP_FILE_DIR + std::string("*.log");
-    FileReader reader(Logcollector::Instance(), regex, 500, 60000); //NOLINT
+    FileReader reader(Logcollector::Instance(), regex, 500, 60000); // NOLINT
     reader.Reload([&](Localfile& lf) { mockCallback.Call(lf.Filename()); });
 
     auto d = TempFile(GetFullFileName("D.log"));

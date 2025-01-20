@@ -62,8 +62,9 @@ public:
     {
     }
 
-    std::unique_ptr<IOSLogEntries>
-    GetOSLogEntries([[maybe_unused]] NSDate* startDate, [[maybe_unused]] NSPredicate* predicate, std::string& error) override
+    std::unique_ptr<IOSLogEntries> GetOSLogEntries([[maybe_unused]] NSDate* startDate,
+                                                   [[maybe_unused]] NSPredicate* predicate,
+                                                   std::string& error) override
     {
         if (m_shouldFail)
         {
@@ -89,8 +90,9 @@ public:
 
     ~MockILogProcessor() override = default;
 
-    std::vector<IOSLogStoreWrapper::LogEntry> ProcessEntries([[maybe_unused]] NSArray<OSLogEntry*>* entries,
-                                                             [[maybe_unused]] IOSLogStoreWrapper::LogLevel logLevel) override
+    std::vector<IOSLogStoreWrapper::LogEntry>
+    ProcessEntries([[maybe_unused]] NSArray<OSLogEntry*>* entries,
+                   [[maybe_unused]] IOSLogStoreWrapper::LogLevel logLevel) override
     {
         return m_processedEntries;
     }

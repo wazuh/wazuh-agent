@@ -13,9 +13,10 @@ TEST(OSLogStoreWrapperTest, Constructor)
 TEST(OSLogStoreWrapperTest, AllEntriesDoesNotThrow)
 {
     OSLogStoreWrapper oslogstore;
-    EXPECT_NO_THROW(oslogstore.AllEntries(static_cast<double>(std::chrono::system_clock::now().time_since_epoch().count()),
-                                          "process != \"wazuh-agent\"",
-                                          OSLogStoreWrapper::LogLevel::Info));
+    EXPECT_NO_THROW(
+        oslogstore.AllEntries(static_cast<double>(std::chrono::system_clock::now().time_since_epoch().count()),
+                              "process != \"wazuh-agent\"",
+                              OSLogStoreWrapper::LogLevel::Info));
 }
 
 TEST(OSLogStoreWrapperTest, AllEntiresThrowForInvalidStartTimes)
@@ -28,9 +29,10 @@ TEST(OSLogStoreWrapperTest, AllEntiresThrowForInvalidStartTimes)
 TEST(OSLogStoreWrapperTest, AllEntriesThrowsWhenGivenAnInvalidQuery)
 {
     OSLogStoreWrapper oslogstore;
-    EXPECT_ANY_THROW(oslogstore.AllEntries(static_cast<double>(std::chrono::system_clock::now().time_since_epoch().count()),
-                                           "invalidfieldthatwillthrow != \"wazuh-agent\"",
-                                           OSLogStoreWrapper::LogLevel::Info));
+    EXPECT_ANY_THROW(
+        oslogstore.AllEntries(static_cast<double>(std::chrono::system_clock::now().time_since_epoch().count()),
+                              "invalidfieldthatwillthrow != \"wazuh-agent\"",
+                              OSLogStoreWrapper::LogLevel::Info));
 }
 
 int main(int argc, char** argv)

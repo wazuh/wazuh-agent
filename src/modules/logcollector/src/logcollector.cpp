@@ -1,10 +1,10 @@
 #include <logcollector.hpp>
 
-#include <logger.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/redirect_error.hpp>
 #include <config.h>
+#include <logger.hpp>
 #include <timeHelper.h>
 
 #include <chrono>
@@ -64,7 +64,8 @@ void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParse
         return;
     }
 
-    m_enabled = configurationParser->GetConfig<bool>("logcollector", "enabled").value_or(config::logcollector::DEFAULT_ENABLED);
+    m_enabled =
+        configurationParser->GetConfig<bool>("logcollector", "enabled").value_or(config::logcollector::DEFAULT_ENABLED);
 
     if (m_ioContext.stopped())
     {
@@ -77,11 +78,14 @@ void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParse
 
 void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
 {
-    auto fileWait = configurationParser->GetConfig<std::time_t>("logcollector", "file_wait").value_or(config::logcollector::DEFAULT_FILE_WAIT);
+    auto fileWait = configurationParser->GetConfig<std::time_t>("logcollector", "file_wait")
+                        .value_or(config::logcollector::DEFAULT_FILE_WAIT);
 
-    auto reloadInterval = configurationParser->GetConfig<std::time_t>("logcollector", "reload_interval").value_or(config::logcollector::DEFAULT_RELOAD_INTERVAL);
+    auto reloadInterval = configurationParser->GetConfig<std::time_t>("logcollector", "reload_interval")
+                              .value_or(config::logcollector::DEFAULT_RELOAD_INTERVAL);
 
-    auto localfiles = configurationParser->GetConfig<std::vector<std::string>>("logcollector", "localfiles").value_or(std::vector<std::string>({config::logcollector::DEFAULT_LOCALFILES}));
+    auto localfiles = configurationParser->GetConfig<std::vector<std::string>>("logcollector", "localfiles")
+                          .value_or(std::vector<std::string>({config::logcollector::DEFAULT_LOCALFILES}));
 
     for (auto& lf : localfiles)
     {
@@ -98,11 +102,12 @@ void Logcollector::Stop()
 
 // NOLINTBEGIN(performance-unnecessary-value-param)
 Co_CommandExecutionResult Logcollector::ExecuteCommand(const std::string command,
-                                                    [[maybe_unused]] const nlohmann::json parameters)
-                                                    {
-  LogInfo("Logcollector command: ", command);
-  co_return module_command::CommandExecutionResult{module_command::Status::SUCCESS, "OK"};
+                                                       [[maybe_unused]] const nlohmann::json parameters)
+{
+    LogInfo("Logcollector command: ", command);
+    co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS, "OK"};
 }
+
 // NOLINTEND(performance-unnecessary-value-param)
 
 void Logcollector::SetPushMessageFunction(const std::function<int(Message)>& pushMessage)
@@ -144,14 +149,14 @@ void Logcollector::AddReader(std::shared_ptr<IReader> reader)
 
 void Logcollector::CleanAllReaders()
 {
-    for (const auto &reader : m_readers)
+    for (const auto& reader : m_readers)
     {
         reader->Stop();
     }
 
     {
         std::lock_guard<std::mutex> lock(m_timersMutex);
-        for (const auto &timer : m_timers)
+        for (const auto& timer : m_timers)
         {
             timer->cancel();
         }

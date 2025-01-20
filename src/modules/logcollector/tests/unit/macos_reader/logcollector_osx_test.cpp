@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 #include <configuration_parser.hpp>
 #include <logcollector.hpp>
@@ -11,9 +11,12 @@
 
 using namespace logcollector;
 
-class LogcollectorTest : public ::testing::TestWithParam<std::string> {};
+class LogcollectorTest : public ::testing::TestWithParam<std::string>
+{
+};
 
-TEST_P(LogcollectorTest, SetupHandlesMacOSConfig) {
+TEST_P(LogcollectorTest, SetupHandlesMacOSConfig)
+{
     auto config_raw = GetParam();
 
     std::shared_ptr<IReader> capturedReader1;
@@ -21,7 +24,8 @@ TEST_P(LogcollectorTest, SetupHandlesMacOSConfig) {
     auto logcollector = LogcollectorMock();
     auto config = std::make_shared<configuration::ConfigurationParser>(config_raw);
 
-    EXPECT_CALL(logcollector, AddReader(::testing::_)).Times(2)
+    EXPECT_CALL(logcollector, AddReader(::testing::_))
+        .Times(2)
         .WillOnce(::testing::SaveArg<0>(&capturedReader1))
         .WillOnce(::testing::SaveArg<0>(&capturedReader2));
 
@@ -31,12 +35,11 @@ TEST_P(LogcollectorTest, SetupHandlesMacOSConfig) {
     ASSERT_NE(capturedReader2, nullptr);
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    Configurations,
-    LogcollectorTest,
-    ::testing::Values(
-        // All fields are present
-        R"(
+INSTANTIATE_TEST_SUITE_P(Configurations,
+                         LogcollectorTest,
+                         ::testing::Values(
+                             // All fields are present
+                             R"(
         logcollector:
           enabled: true
           reload_interval: 60
@@ -49,8 +52,8 @@ INSTANTIATE_TEST_SUITE_P(
               level: debug
               type: log
         )",
-        // Missing level type and level
-        R"(
+                             // Missing level type and level
+                             R"(
         logcollector:
           enabled: true
           reload_interval: 60
@@ -59,6 +62,4 @@ INSTANTIATE_TEST_SUITE_P(
               level: info
             - query: process == "wazuh-agent"
               type: log
-        )"
-    )
-);
+        )"));
