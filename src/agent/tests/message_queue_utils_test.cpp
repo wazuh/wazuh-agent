@@ -1,7 +1,9 @@
 #include <message_queue_utils.hpp>
 
+#include <command_entry.hpp>
 #include <message.hpp>
-#include <multitype_queue.hpp>
+
+#include <imultitype_queue.hpp>
 
 #include <boost/asio.hpp>
 #include <gmock/gmock.h>
@@ -11,29 +13,42 @@
 const nlohmann::json BASE_DATA_CONTENT =
     R"({"document_id":"112233", "action":{"name":"command_test","args":{"parameters":["parameters_test"]}}})"_json;
 
-const auto FUNC = []<typename T>([[maybe_unused]] const std::string&,
-                                 [[maybe_unused]] const std::string&) -> std::optional<T>
-{
-    return T {};
-};
-
-class MockMultiTypeQueue : public MultiTypeQueue
+class MockMultiTypeQueue : public IMultiTypeQueue
 {
 public:
-    MockMultiTypeQueue()
-        : MultiTypeQueue(FUNC)
-    {
-    }
-
+    MOCK_METHOD(int, push, (Message message, bool shouldWait), (override));
+    MOCK_METHOD(boost::asio::awaitable<int>, pushAwaitable, (Message message), (override));
+    MOCK_METHOD(int, push, (std::vector<Message> messages), (override));
+    MOCK_METHOD(Message,
+                getNext,
+                (MessageType type, const std::string module, const std::string moduleType),
+                (override));
     MOCK_METHOD(boost::asio::awaitable<std::vector<Message>>,
                 getNextBytesAwaitable,
-                (MessageType, const size_t, const std::string, const std::string),
+                (MessageType type, const size_t, const std::string moduleName, const std::string moduleType),
                 (override));
-    MOCK_METHOD(int, popN, (MessageType, int, const std::string, const std::string), (override));
-    MOCK_METHOD(int, push, (Message, bool), (override));
-    MOCK_METHOD(int, push, (std::vector<Message>), (override));
-    MOCK_METHOD(bool, isEmpty, (MessageType, const std::string, const std::string), (override));
-    MOCK_METHOD(Message, getNext, (MessageType, const std::string, const std::string), (override));
+    MOCK_METHOD(std::vector<Message>,
+                getNextBytes,
+                (MessageType type, const size_t, const std::string moduleName, const std::string moduleType),
+                (override));
+    MOCK_METHOD(bool, pop, (MessageType type, const std::string moduleName, const std::string moduleType), (override));
+    MOCK_METHOD(int,
+                popN,
+                (MessageType type, int messageQuantity, const std::string moduleName, const std::string moduleType),
+                (override));
+    MOCK_METHOD(bool,
+                isEmpty,
+                (MessageType type, const std::string moduleName, const std::string moduleType),
+                (override));
+    MOCK_METHOD(bool,
+                isFull,
+                (MessageType type, const std::string moduleName, const std::string moduleType),
+                (override));
+    MOCK_METHOD(int,
+                storedItems,
+                (MessageType type, const std::string moduleName, const std::string moduleType),
+                (override));
+    MOCK_METHOD(size_t, sizePerType, (MessageType type), (override));
 };
 
 class MessageQueueUtilsTest : public ::testing::Test

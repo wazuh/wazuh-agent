@@ -1,8 +1,8 @@
 #pragma once
 
+#include <command_entry.hpp>
 #include <filesystem_wrapper.hpp>
 #include <ifilesystem.hpp>
-#include <module_command/command_entry.hpp>
 
 #include <boost/asio/awaitable.hpp>
 #include <nlohmann/json.hpp>

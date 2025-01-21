@@ -1,5 +1,6 @@
 #pragma once
 
+#include <command_entry.hpp>
 #include <command_store.hpp>
 #include <logger.hpp>
 

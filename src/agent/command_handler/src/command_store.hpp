@@ -1,6 +1,6 @@
 #pragma once
 
-#include <module_command/command_entry.hpp>
+#include <command_entry.hpp>
 
 #include <memory>
 #include <optional>

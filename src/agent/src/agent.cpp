@@ -1,11 +1,11 @@
 #include <agent.hpp>
 
+#include <command_entry.hpp>
 #include <command_handler_utils.hpp>
 #include <config.h>
 #include <http_client.hpp>
 #include <message.hpp>
 #include <message_queue_utils.hpp>
-#include <module_command/command_entry.hpp>
 
 #include <filesystem>
 #include <memory>

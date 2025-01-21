@@ -11,10 +11,8 @@ set_common_settings()
 add_subdirectory(agent_info)
 add_subdirectory(centralized_configuration)
 add_subdirectory(command_handler)
-add_subdirectory(command_store)
 add_subdirectory(communicator)
 add_subdirectory(configuration_parser)
-add_subdirectory(module_command)
 add_subdirectory(multitype_queue)
 add_subdirectory(persistence)
 add_subdirectory(task_manager)
@@ -64,8 +62,6 @@ target_link_libraries(Agent
     CommandHandler
     MultiTypeQueue
     ModuleManager
-    ModuleCommand
-    CentralizedConfiguration
     Boost::asio
     sysinfo
     PRIVATE

@@ -1,7 +1,8 @@
 #pragma once
 
+#include <command_entry.hpp>
+#include <message.hpp>
 #include <moduleWrapper.hpp>
-#include <multitype_queue.hpp>
 #include <task_manager.hpp>
 
 #include <boost/asio/awaitable.hpp>

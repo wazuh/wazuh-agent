@@ -25,7 +25,7 @@ if(ENABLE_LOGCOLLECTOR)
     target_link_libraries(ModuleManager PUBLIC Logcollector)
 endif()
 
-target_link_libraries(ModuleManager PUBLIC TaskManager ConfigurationParser MultiTypeQueue PRIVATE Logger ModuleCommand)
+target_link_libraries(ModuleManager PUBLIC TaskManager ConfigurationParser MessageEntry CommandEntry PRIVATE Logger)
 
 include(../cmake/ConfigureTarget.cmake)
 configure_target(ModuleManager)
