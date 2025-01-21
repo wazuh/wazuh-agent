@@ -1,6 +1,5 @@
 #include "https_verifier_mac.hpp"
 #include "cert_store_utils_mac.hpp"
-#include "https_socket_verify_utils.hpp"
 #include "icert_store_utils_mac.hpp"
 #include "ix509_utils.hpp"
 #include "x509_utils.hpp"

@@ -33,5 +33,4 @@ namespace https_socket_verify_utils
 
         return verifier.Verify(ctx);
     }
-
 } // namespace https_socket_verify_utils
