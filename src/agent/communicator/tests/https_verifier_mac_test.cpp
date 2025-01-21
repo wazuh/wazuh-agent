@@ -40,7 +40,7 @@ class HttpsVerifierTest : public ::testing::Test
 protected:
     MockX509Utils* mockX509Ptr;
     MockCertStoreUtils* mockCertStorePtr;
-    std::unique_ptr<HttpsVerifier> verifier;
+    std::unique_ptr<HttpsVerifierMac> verifier;
     MockVerifyContext ctx;
 
     void SetUp() override
@@ -50,7 +50,7 @@ protected:
 
         mockCertStorePtr = new MockCertStoreUtils();
         std::unique_ptr<ICertificateStoreUtilsMac> certStorePtr(mockCertStorePtr);
-        verifier = std::make_unique<HttpsVerifier>("full", "example.com", x509Ptr, certStorePtr);
+        verifier = std::make_unique<HttpsVerifierMac>("full", "example.com", x509Ptr, certStorePtr);
     }
 
     void TearDown() override
@@ -64,7 +64,7 @@ class HttpsVerifierTestModeCertificate : public ::testing::Test
 protected:
     MockX509Utils* mockX509Ptr;
     MockCertStoreUtils* mockCertStorePtr;
-    std::unique_ptr<HttpsVerifier> verifier;
+    std::unique_ptr<HttpsVerifierMac> verifier;
     MockVerifyContext ctx;
 
     void SetUp() override
@@ -74,7 +74,7 @@ protected:
 
         mockCertStorePtr = new MockCertStoreUtils();
         std::unique_ptr<ICertificateStoreUtilsMac> certStorePtr(mockCertStorePtr);
-        verifier = std::make_unique<HttpsVerifier>("certificate", "example.com", x509Ptr, certStorePtr);
+        verifier = std::make_unique<HttpsVerifierMac>("certificate", "example.com", x509Ptr, certStorePtr);
     }
 
     void TearDown() override

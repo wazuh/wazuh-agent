@@ -20,7 +20,7 @@ namespace https_socket_verify_utils
     using SecCertificatePtr = std::unique_ptr<__SecCertificate, std::function<void(CFTypeRef)>>;
     using SecPolicyPtr = std::unique_ptr<__SecPolicy, std::function<void(CFTypeRef)>>;
 
-    class HttpsVerifier
+    class HttpsVerifierMac
     {
     public:
         /// @brief Constructor to initialize the verifier object.
@@ -28,10 +28,10 @@ namespace https_socket_verify_utils
         /// @param host The hostname to verify against
         /// @param x509Utils The x509 utilities object to use
         /// @param certStoreUtils The certificate store utilities object to use
-        HttpsVerifier(const std::string& mode,
-                      const std::string& host,
-                      std::unique_ptr<ICertificateX509Utils>& x509Utils,
-                      std::unique_ptr<ICertificateStoreUtilsMac>& certStoreUtils)
+        HttpsVerifierMac(const std::string& mode,
+                         const std::string& host,
+                         std::unique_ptr<ICertificateX509Utils>& x509Utils,
+                         std::unique_ptr<ICertificateStoreUtilsMac>& certStoreUtils)
             : m_mode(mode)
             , m_host(host)
             , m_x509Utils(std::move(x509Utils))

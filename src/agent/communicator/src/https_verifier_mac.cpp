@@ -14,8 +14,14 @@
 
 namespace https_socket_verify_utils
 {
-    bool HttpsVerifier::Verify(boost::asio::ssl::verify_context& ctx)
+    bool HttpsVerifierMac::Verify(boost::asio::ssl::verify_context& ctx)
     {
+        if (!m_x509Utils || !m_certStoreUtils)
+        {
+            LogError("Invalid utils pointers");
+            return false;
+        }
+
         CFDataPtr certData;
         if (!ExtractCertificate(ctx, certData))
         {
@@ -45,7 +51,7 @@ namespace https_socket_verify_utils
         return true;
     }
 
-    bool HttpsVerifier::ExtractCertificate(boost::asio::ssl::verify_context& ctx, CFDataPtr& certData)
+    bool HttpsVerifierMac::ExtractCertificate(boost::asio::ssl::verify_context& ctx, CFDataPtr& certData)
     {
         STACK_OF(X509)* certChain = m_x509Utils->GetCertChain(ctx.native_handle());
         if (!certChain || m_x509Utils->GetCertificateCount(certChain) == 0)
@@ -75,7 +81,7 @@ namespace https_socket_verify_utils
         return certData != nullptr;
     }
 
-    bool HttpsVerifier::CreateTrustObject(const CFDataPtr& certData, SecTrustPtr& trust)
+    bool HttpsVerifierMac::CreateTrustObject(const CFDataPtr& certData, SecTrustPtr& trust)
     {
         SecCertificatePtr serverCert(m_certStoreUtils->CreateCertificate(certData.get()), m_deleter);
         if (!serverCert)
@@ -103,7 +109,7 @@ namespace https_socket_verify_utils
         return true;
     }
 
-    bool HttpsVerifier::EvaluateTrust(const SecTrustPtr& trust)
+    bool HttpsVerifierMac::EvaluateTrust(const SecTrustPtr& trust)
     {
         CFErrorRef errorRef = nullptr;
         const bool trustResult = m_certStoreUtils->EvaluateTrust(trust.get(), &errorRef);
@@ -120,7 +126,7 @@ namespace https_socket_verify_utils
         return trustResult;
     }
 
-    bool HttpsVerifier::ValidateHostname(const SecCertificatePtr& serverCert)
+    bool HttpsVerifierMac::ValidateHostname(const SecCertificatePtr& serverCert)
     {
         CFStringPtr sanString(m_certStoreUtils->CopySubjectSummary(serverCert.get()), m_deleter);
         if (!sanString)

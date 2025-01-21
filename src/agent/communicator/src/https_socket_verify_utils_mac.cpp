@@ -20,7 +20,7 @@ namespace https_socket_verify_utils
         std::unique_ptr<ICertificateX509Utils> x509Utils = std::make_unique<CertificateX509UtilsWrapper>();
         std::unique_ptr<ICertificateStoreUtilsMac> certStoreUtils = std::make_unique<CertificateStoreUtilsWrapperMac>();
 
-        HttpsVerifier verifier(mode, host, x509Utils, certStoreUtils);
+        HttpsVerifierMac verifier(mode, host, x509Utils, certStoreUtils);
 
         return verifier.Verify(ctx);
     }
