@@ -43,7 +43,7 @@ INSTANTIATE_TEST_SUITE_P(Configurations,
         logcollector:
           enabled: true
           reload_interval: 60
-          file_wait: 500
+          read_interval: 500
           macos:
             - query: process == "sshd" OR message CONTAINS "invalid"
               level: info

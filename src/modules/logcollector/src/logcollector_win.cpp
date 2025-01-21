@@ -14,7 +14,7 @@ namespace logcollector
     void Logcollector::AddPlatformSpecificReader(
         std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
     {
-        const auto refreshInterval = configurationParser->GetConfig<time_t>("logcollector", "channel_refresh")
+        const auto refreshInterval = configurationParser->GetConfig<time_t>("logcollector", "reload_interval")
                                          .value_or(config::logcollector::DEFAULT_CHANNEL_REFRESH_INTERVAL);
 
         auto windowsConfig =

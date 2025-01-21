@@ -81,7 +81,7 @@ logcollector:
   localfiles:
     - /var/log/auth.log
   reload_interval: 1m
-  file_wait: 500ms
+  read_interval: 500ms
 )";
         configFilePath.close();
     }

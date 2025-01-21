@@ -35,7 +35,7 @@ protected:
                 localfiles:
                 - /var/log/other.log
                 reload_interval: 120
-                file_wait: 1000
+                read_interval: 1000
         )";
         outFile.close();
     }
@@ -56,7 +56,7 @@ protected:
         m_tempConfigFilePath = "temp_wazuh-agent.yml";
 
         std::ofstream outFile(m_tempConfigFilePath);
-        // This string does not respect the yaml format in the line of the file_wait field, the field is misaligned.
+        // This string does not respect the yaml format in the line of the read_interval field, the field is misaligned.
         // With this case we want it to fail when parsing the file.
         outFile << R"(
             agent:
@@ -70,7 +70,7 @@ protected:
                 localfiles:
                 - /var/log/other.log
                 reload_interval: 120
-                  file_wait: 1000
+                  read_interval: 1000
         )";
         outFile.close();
     }
@@ -336,13 +336,13 @@ TEST(ConfigurationParser, GetConfigMultiNode)
           - /var/log/auth.log
           - /var/log/other.log
           reload_interval: 60
-          file_wait: 500
+          read_interval: 500
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
     const auto ret = parserStr->GetConfig<std::vector<std::string>>("agent_array", "array_manager_ip")
                          .value_or(std::vector<std::string> {});
     const auto retEnabled = parserStr->GetConfig<bool>("logcollector", "enabled").value_or(false);
-    const auto retFileWait = parserStr->GetConfig<int>("logcollector", "file_wait").value_or(0);
+    const auto retFileWait = parserStr->GetConfig<int>("logcollector", "read_interval").value_or(0);
     const auto retLocalFiles = parserStr->GetConfig<std::vector<std::string>>("logcollector", "localfiles")
                                    .value_or(std::vector<std::string> {});
     ASSERT_EQ(ret[0], "192.168.0.0");
@@ -373,7 +373,7 @@ TEST_F(ConfigurationParserFileTest, ValidConfigFileLoadsCorrectly)
         EXPECT_FALSE(parser->GetConfig<bool>("inventory", "enabled").value_or(true));
         EXPECT_EQ(parser->GetConfig<int>("inventory", "interval").value_or(0), 7200);
         EXPECT_FALSE(parser->GetConfig<bool>("logcollector", "enabled").value_or(true));
-        EXPECT_EQ(parser->GetConfig<int>("logcollector", "file_wait").value_or(0), 1000);
+        EXPECT_EQ(parser->GetConfig<int>("logcollector", "read_interval").value_or(0), 1000);
     }
     catch (const std::exception& e)
     {
@@ -394,7 +394,7 @@ TEST_F(ConfigurationParserInvalidYamlFileTest, InvalidConfigFileLoadsDefault)
         EXPECT_TRUE(parser->GetConfig<bool>("inventory", "enabled").value_or(true));
         EXPECT_EQ(parser->GetConfig<int>("inventory", "interval").value_or(3600), 3600);
         EXPECT_TRUE(parser->GetConfig<bool>("logcollector", "enabled").value_or(true));
-        EXPECT_EQ(parser->GetConfig<int>("logcollector", "file_wait").value_or(500), 500);
+        EXPECT_EQ(parser->GetConfig<int>("logcollector", "read_interval").value_or(500), 500);
     }
     catch (const std::exception& e)
     {

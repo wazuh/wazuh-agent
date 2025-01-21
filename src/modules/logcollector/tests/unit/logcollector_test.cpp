@@ -34,7 +34,7 @@ TEST(Logcollector, SetupFileReader)
         - /var/log/auth.log
         - /var/log/syslog
       reload_interval: 60
-      file_wait: 500
+      read_interval: 500
     )";
 
     std::shared_ptr<IReader> capturedReader1;
