@@ -114,8 +114,12 @@ void Inventory::SendDeltaEvent(const std::string& data)
     if (jsonData.contains("stateless") && !jsonData["stateless"].empty())
     {
 
+        auto metadataAux = jsonData["metadata"];
+        metadataAux.erase("id");
+        metadataAux.erase("operation");
+
         const Message statelessMessage {
-            MessageType::STATELESS, jsonData["stateless"], Name(), jsonData["metadata"]["type"], ""};
+            MessageType::STATELESS, jsonData["stateless"], Name(), jsonData["metadata"]["type"], metadataAux.dump()};
 
         if (!m_pushMessage(statelessMessage))
         {
