@@ -1,0 +1,41 @@
+server:
+  nodes:
+    - master
+  node:
+    name: server_01
+    type: master
+    ssl:
+      key: /etc/wazuh-server/certs/server-key.pem
+      cert: /etc/wazuh-server/certs/server.pem
+      ca: /etc/wazuh-server/certs/root-ca.pem
+indexer:
+  hosts:
+    - host: indexer
+      port: 9200
+  username: admin
+  password: admin
+  ssl:
+    use_ssl: true
+    key: /etc/wazuh-indexer/certs/admin-key.pem
+    certificate: /etc/wazuh-indexer/certs/admin.pem
+    certificate_authorities:
+      - /etc/wazuh-indexer/certs/root-ca.pem
+    verify_certificates: false
+communications_api:
+  host: 0.0.0.0
+  port: 27000
+  ssl:
+    key: /etc/wazuh-server/certs/server-key.pem
+    cert: /etc/wazuh-server/certs/server.pem
+    use_ca: false
+    ca: /etc/wazuh-server/certs/root-ca.pem
+management_api:
+  host:
+    - 0.0.0.0
+    - ::1
+  port: 55000
+  ssl:
+    key: /etc/wazuh-server/certs/server-key.pem
+    cert: /etc/wazuh-server/certs/server.pem
+    use_ca: false
+    ca: /etc/wazuh-server/certs/root-ca.pem

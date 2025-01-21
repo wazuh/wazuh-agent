@@ -1,0 +1,54 @@
+services:
+  indexer:
+    build:
+      context: ./indexer
+      dockerfile: Dockerfile
+    healthcheck:
+      test: ["CMD", "curl", "-k", "https://localhost:9200"]
+      interval: 10s
+    ports:
+      - "9200:9200"
+    volumes:
+      - /etc/wazuh-indexer/certs
+
+  dashboard:
+    build: ./dashboard
+    ports:
+      - "443:443"
+    volumes:
+      - ./dashboard/opensearch_dashboards.yml:/etc/wazuh-dashboard/opensearch_dashboards.yml
+    volumes_from:
+      - indexer:r
+
+  server:
+    build: ./server
+    healthcheck:
+      test: ["CMD", "curl", "-k", "https://localhost:55000"]
+      interval: 10s
+    ports:
+      - "27000:27000"
+      - "55000:55000"
+    volumes:
+      - ./server/wazuh-server.yml:/etc/wazuh-server/wazuh-server.yml
+    volumes_from:
+      - indexer:r
+    depends_on:
+      indexer:
+        condition: service_healthy
+
+  mitmproxy:
+    image: mitmproxy/mitmproxy:7.0.4
+    command: mitmweb --web-host 0.0.0.0 --mode reverse:https://server:27000 -k
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+
+  agent:
+    build: ./agent
+    volumes:
+      - ./agent/wazuh-agent.yml:/etc/wazuh-agent/wazuh-agent.yml
+    depends_on:
+      server:
+        condition: service_healthy
+      mitmproxy:
+        condition: service_started
