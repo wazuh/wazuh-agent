@@ -15,12 +15,6 @@ endif()
 include(cmake/CommonSettings.cmake)
 set_common_settings()
 
-string(REPLACE "\\" "\\\\" DEFAULT_BIN_PATH "${BIN_INSTALL_DIR}")
-string(REPLACE "\\" "\\\\" DEFAULT_DATA_PATH "${DATA_INSTALL_DIR}")
-string(REPLACE "\\" "\\\\" DEFAULT_RUN_PATH "${RUN_INSTALL_DIR}")
-string(REPLACE "\\" "\\\\" DEFAULT_SHARED_CONFIG_PATH "${SHARED_CONFIG_INSTALL_DIR}")
-string(REPLACE "\\" "\\\\" DEFAULT_CONFIG_PATH "${CONFIG_INSTALL_DIR}")
-
 if(ENABLE_LOGCOLLECTOR OR ENABLE_INVENTORY)
     add_subdirectory(common)
 else()

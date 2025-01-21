@@ -6,6 +6,14 @@ set(VERSION "0.1")
 
 set(DEFAULT_THREAD_COUNT 4 CACHE STRING "Default number of threads (4)")
 
+string(REPLACE "\\" "\\\\" DEFAULT_DATA_PATH "${DATA_INSTALL_DIR}")
+
+string(REPLACE "\\" "\\\\" DEFAULT_RUN_PATH "${RUN_INSTALL_DIR}")
+
+string(REPLACE "\\" "\\\\" DEFAULT_SHARED_CONFIG_PATH "${SHARED_CONFIG_INSTALL_DIR}")
+
+string(REPLACE "\\" "\\\\" DEFAULT_CONFIG_PATH "${CONFIG_INSTALL_DIR}")
+
 set(DEFAULT_SHARED_FILE_EXTENSION ".yml" CACHE STRING "Default shared file extension")
 
 set(DEFAULT_SERVER_URL "https://localhost:27000" CACHE STRING "Default Agent Server Url")
