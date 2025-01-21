@@ -42,7 +42,7 @@ namespace logcollector
     void Logcollector::AddPlatformSpecificReader(
         const std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
     {
-        const auto fileWait = configurationParser->GetConfig<time_t>("logcollector", "file_wait")
+        const auto fileWait = configurationParser->GetConfig<time_t>("logcollector", "read_interval")
                                   .value_or(config::logcollector::DEFAULT_FILE_WAIT);
 
         auto macosConfig =

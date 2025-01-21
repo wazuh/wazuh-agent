@@ -6,8 +6,7 @@
 logcollector:
   enabled: true
   reload_interval: 1m
-  file_wait: 500ms
-  channel_refresh: 5s
+  read_interval: 500ms
   localfiles:
     - location: /var/log/*.log
   journald:
@@ -26,6 +25,6 @@ logcollector:
 
 ### Reference
 
-|Mandatory|Option|Description|Default|
-|:-:|--|--|--|
-||`enabled`|Sets the module as enabled|yes|
+| Mandatory | Option    | Description                | Default |
+| :-------: | --------- | -------------------------- | ------- |
+|           | `enabled` | Sets the module as enabled | yes     |
