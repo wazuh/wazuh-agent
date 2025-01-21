@@ -39,7 +39,7 @@ void StartAgent(const std::string& configFilePath)
 
 void StatusAgent([[maybe_unused]] const std::string& configFilePath)
 {
-    WindowsService::ServiceStatus();
+    // TODO: implement our own status function using lock files
 }
 
 bool InstallService()
