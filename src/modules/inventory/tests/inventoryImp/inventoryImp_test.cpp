@@ -1395,13 +1395,14 @@ TEST_F(InventoryImpTest, statelessMessage)
                                                                {
                                                                    auto delta = nlohmann::json::parse(data);
                                                                    delta.erase("data");
-                                                                   delta.erase("metadata");
+                                                                   delta["metadata"].erase("id");
+                                                                   delta["metadata"].erase("operation");
                                                                    delta["stateless"]["event"].erase("created");
                                                                    wrapperDelta.callbackMock(delta.dump());
                                                                }};
 
     const auto expectedResult1 {
-        R"({"stateless":{"event":{"action":"system-detected","category":["host"],"reason":"System UBUNTU is running OS version 6.1.7601","type":["info"]},"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}}})"};
+        R"({"metadata":{"module":"inventory","type":"system"},"stateless":{"event":{"action":"system-detected","category":["host"],"reason":"System UBUNTU is running OS version 6.1.7601","type":["info"]},"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
 
