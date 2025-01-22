@@ -51,7 +51,7 @@ public:
 
 TEST(CentralizedConfiguration, Constructor)
 {
-    EXPECT_NO_THROW([[maybe_unused]] CentralizedConfiguration centralizedConfiguration);
+    EXPECT_NO_THROW(CentralizedConfiguration centralizedConfiguration(nullptr, nullptr, nullptr, nullptr, nullptr));
 }
 
 TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnUnrecognizedCommand)
@@ -62,7 +62,7 @@ TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnUnrecognizedCommand
         io_context,
         []() -> boost::asio::awaitable<void>
         {
-            CentralizedConfiguration centralizedConfiguration;
+            CentralizedConfiguration centralizedConfiguration(nullptr, nullptr, nullptr, nullptr, nullptr);
             co_await TestExecuteCommand(centralizedConfiguration,
                                         "unknown-command",
                                         {},
@@ -82,12 +82,12 @@ TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnParseParameters)
         io_context,
         []() -> boost::asio::awaitable<void>
         {
-            CentralizedConfiguration centralizedConfiguration;
-            centralizedConfiguration.SetGroupIdFunction([](const std::vector<std::string>&) { return true; });
-            centralizedConfiguration.SetDownloadGroupFilesFunction(
-                [](std::string, std::string) -> boost::asio::awaitable<bool> { co_return true; });
-            centralizedConfiguration.ValidateFileFunction([](const std::filesystem::path&) { return true; });
-            centralizedConfiguration.ReloadModulesFunction([]() {});
+            CentralizedConfiguration centralizedConfiguration(
+                [](const std::vector<std::string>&) { return true; },
+                nullptr,
+                [](std::string, std::string) -> boost::asio::awaitable<bool> { co_return true; },
+                [](const std::filesystem::path&) { return true; },
+                []() {});
 
             const nlohmann::json parameterListCase1 = nlohmann::json::parse(R"({"groups":[true, "group2"]})");
             co_await TestExecuteCommand(centralizedConfiguration,
@@ -135,13 +135,13 @@ TEST(CentralizedConfiguration, ExecuteCommandHandlesRecognizedCommands)
             EXPECT_CALL(*mockFileSystem, remove(_)).WillRepeatedly(Return(true));
             EXPECT_CALL(*mockFileSystem, rename(_, _)).WillRepeatedly(Return());
 
-            CentralizedConfiguration centralizedConfiguration(std::move(mockFileSystem));
-            centralizedConfiguration.SetGroupIdFunction([](const std::vector<std::string>&) { return true; });
-            centralizedConfiguration.GetGroupIdFunction([]() { return std::vector<std::string> {"group1", "group2"}; });
-            centralizedConfiguration.SetDownloadGroupFilesFunction(
-                [](std::string, std::string) -> boost::asio::awaitable<bool> { co_return true; });
-            centralizedConfiguration.ValidateFileFunction([](const std::filesystem::path&) { return true; });
-            centralizedConfiguration.ReloadModulesFunction([]() {});
+            CentralizedConfiguration centralizedConfiguration(
+                [](const std::vector<std::string>&) { return true; },
+                []() { return std::vector<std::string> {"group1", "group2"}; },
+                [](std::string, std::string) -> boost::asio::awaitable<bool> { co_return true; },
+                [](const std::filesystem::path&) { return true; },
+                []() {},
+                std::move(mockFileSystem));
 
             const nlohmann::json groupsList = nlohmann::json::parse(R"({"groups":["group1", "group2"]})");
 
@@ -187,31 +187,28 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForS
             EXPECT_CALL(*mockFileSystem, remove(_)).WillRepeatedly(Return(true));
             EXPECT_CALL(*mockFileSystem, rename(_, _)).WillRepeatedly(Return());
 
-            CentralizedConfiguration centralizedConfiguration(std::move(mockFileSystem));
-
-            const nlohmann::json groupsList = nlohmann::json::parse(R"({"groups":["group1", "group2"]})");
-
             bool wasSetGroupIdFunctionCalled = false;
             bool wasDownloadGroupFilesFunctionCalled = false;
 
-            centralizedConfiguration.SetGroupIdFunction(
+            CentralizedConfiguration centralizedConfiguration(
+                // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
                 [&wasSetGroupIdFunctionCalled](const std::vector<std::string>&)
                 {
                     wasSetGroupIdFunctionCalled = true;
                     return true;
-                });
-
-            // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-            centralizedConfiguration.SetDownloadGroupFilesFunction(
+                },
+                nullptr,
                 [&wasDownloadGroupFilesFunctionCalled](std::string, std::string) -> boost::asio::awaitable<bool>
                 {
                     wasDownloadGroupFilesFunctionCalled = true;
                     co_return wasDownloadGroupFilesFunctionCalled;
-                });
-            // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+                },
+                // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+                [](const std::filesystem::path&) { return true; },
+                []() {},
+                std::move(mockFileSystem));
 
-            centralizedConfiguration.ValidateFileFunction([](const std::filesystem::path&) { return true; });
-            centralizedConfiguration.ReloadModulesFunction([]() {});
+            const nlohmann::json groupsList = nlohmann::json::parse(R"({"groups":["group1", "group2"]})");
 
             EXPECT_FALSE(wasSetGroupIdFunctionCalled);
             EXPECT_FALSE(wasDownloadGroupFilesFunctionCalled);
@@ -249,29 +246,26 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForU
             EXPECT_CALL(*mockFileSystem, remove(_)).WillRepeatedly(Return(true));
             EXPECT_CALL(*mockFileSystem, rename(_, _)).WillRepeatedly(Return());
 
-            CentralizedConfiguration centralizedConfiguration(std::move(mockFileSystem));
-
             bool wasGetGroupIdFunctionCalled = false;
             bool wasDownloadGroupFilesFunctionCalled = false;
 
-            centralizedConfiguration.GetGroupIdFunction(
+            CentralizedConfiguration centralizedConfiguration(
+                nullptr,
+                // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
                 [&wasGetGroupIdFunctionCalled]()
                 {
                     wasGetGroupIdFunctionCalled = true;
                     return std::vector<std::string> {"group1", "group2"};
-                });
-
-            // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-            centralizedConfiguration.SetDownloadGroupFilesFunction(
+                },
                 [&wasDownloadGroupFilesFunctionCalled](std::string, std::string) -> boost::asio::awaitable<bool>
                 {
                     wasDownloadGroupFilesFunctionCalled = true;
                     co_return wasDownloadGroupFilesFunctionCalled;
-                });
-            // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-
-            centralizedConfiguration.ValidateFileFunction([](const std::filesystem::path&) { return true; });
-            centralizedConfiguration.ReloadModulesFunction([]() {});
+                },
+                // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+                [](const std::filesystem::path&) { return true; },
+                []() {},
+                std::move(mockFileSystem));
 
             EXPECT_FALSE(wasGetGroupIdFunctionCalled);
             EXPECT_FALSE(wasDownloadGroupFilesFunctionCalled);

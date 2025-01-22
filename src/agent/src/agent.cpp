@@ -29,6 +29,22 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
                       m_configurationParser,
                       m_agentInfo.GetUUID())
     , m_commandHandler(m_configurationParser)
+    , m_centralizedConfiguration(
+          [this](const std::vector<std::string>& groups)
+          {
+              m_agentInfo.SetGroups(groups);
+              return m_agentInfo.SaveGroups();
+          },
+          [this]() { return m_agentInfo.GetGroups(); },
+          // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+          [this](std::string groupId, std::string destinationPath) -> boost::asio::awaitable<bool> {
+              co_return co_await m_communicator.GetGroupConfigurationFromManager(std::move(groupId),
+                                                                                 std::move(destinationPath));
+          },
+          // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+          [this](const std::filesystem::path& fileToValidate)
+          { return m_configurationParser->isValidYamlFile(fileToValidate); },
+          [this]() { ReloadModules(); })
 {
     // Check if agent is registered
     if (m_agentInfo.GetName().empty() || m_agentInfo.GetKey().empty() || m_agentInfo.GetUUID().empty())
@@ -37,29 +53,6 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
     }
 
     m_configurationParser->SetGetGroupIdsFunction([this]() { return m_agentInfo.GetGroups(); });
-
-    m_centralizedConfiguration.SetGroupIdFunction(
-        [this](const std::vector<std::string>& groups)
-        {
-            m_agentInfo.SetGroups(groups);
-            return m_agentInfo.SaveGroups();
-        });
-
-    m_centralizedConfiguration.GetGroupIdFunction([this]() { return m_agentInfo.GetGroups(); });
-
-    // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    m_centralizedConfiguration.SetDownloadGroupFilesFunction(
-        [this](std::string groupId, std::string destinationPath) -> boost::asio::awaitable<bool>
-        {
-            co_return co_await m_communicator.GetGroupConfigurationFromManager(std::move(groupId),
-                                                                               std::move(destinationPath));
-        });
-    // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-
-    m_centralizedConfiguration.ValidateFileFunction([this](const std::filesystem::path& fileToValidate)
-                                                    { return m_configurationParser->isValidYamlFile(fileToValidate); });
-
-    m_centralizedConfiguration.ReloadModulesFunction([this]() { ReloadModules(); });
 
     m_agentThreadCount =
         m_configurationParser->GetConfig<size_t>("agent", "thread_count").value_or(config::DEFAULT_THREAD_COUNT);

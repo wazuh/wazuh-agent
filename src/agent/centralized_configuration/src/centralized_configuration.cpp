@@ -161,30 +161,4 @@ namespace centralized_configuration
                 module_command::Status::FAILURE, "CentralizedConfiguration error while parsing parameters"};
         }
     }
-
-    void CentralizedConfiguration::SetGroupIdFunction(SetGroupIdFunctionType setGroupIdFunction)
-    {
-        m_setGroupIdFunction = std::move(setGroupIdFunction);
-    }
-
-    void CentralizedConfiguration::GetGroupIdFunction(GetGroupIdFunctionType getGroupIdFunction)
-    {
-        m_getGroupIdFunction = std::move(getGroupIdFunction);
-    }
-
-    void
-    CentralizedConfiguration::SetDownloadGroupFilesFunction(DownloadGroupFilesFunctionType downloadGroupFilesFunction)
-    {
-        m_downloadGroupFilesFunction = std::move(downloadGroupFilesFunction);
-    }
-
-    void CentralizedConfiguration::ValidateFileFunction(ValidateFileFunctionType validateFileFunction)
-    {
-        m_validateFileFunction = std::move(validateFileFunction);
-    }
-
-    void CentralizedConfiguration::ReloadModulesFunction(ReloadModulesFunctionType reloadModulesFunction)
-    {
-        m_reloadModulesFunction = std::move(reloadModulesFunction);
-    }
 } // namespace centralized_configuration
