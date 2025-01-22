@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
 
-set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/../../vcpkg/scripts/buildsystems/vcpkg.cmake")
-set(VCPKG_MANIFEST_DIR ${CMAKE_SOURCE_DIR}/../../)
-
 project(MultiTypeQueue)
 
 include(../../cmake/CommonSettings.cmake)
@@ -24,17 +21,17 @@ find_package(Boost REQUIRED COMPONENTS asio)
 add_library(MultiTypeQueue src/storage.cpp src/multitype_queue.cpp)
 
 target_include_directories(MultiTypeQueue PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    ${CMAKE_CURRENT_SOURCE_DIR}/include PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 target_link_libraries(MultiTypeQueue
-        PUBLIC
-        Config
-        ConfigurationParser
-        MessageEntry
-        Boost::asio
-        Logger
-        PRIVATE
-        Persistence)
+    PUBLIC
+    Config
+    ConfigurationParser
+    MessageEntry
+    Boost::asio
+    Logger
+    PRIVATE
+    Persistence)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(MultiTypeQueue)
