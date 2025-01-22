@@ -31,6 +31,12 @@ The File collector handles plain-text log files. It needs a file path to work.
 |           | read_interval   | Time in milliseconds to recheck for available logs       | 500     |
 |     ✔️     | localfiles      | Vector of file paths to monitor                          |         |
 
+
+```json
+{"collector":"file","module":"logcollector"}
+{"event":{"created":"2025-01-22T21:45:01.916Z","original":"2025-01-22T18:45:01.555243-03:00 box CRON[23505]: pam_unix(cron:session): session closed for user root"},"log":{"file":{"path":"/var/log/auth.log"}}}
+```
+
 #### Journald Collector
 
 ```yaml
@@ -60,12 +66,12 @@ This collector gets logs from Journald on Linux. It needs a field and a value to
 
 ```json
 {"agent":{"groups":[],"host":{"architecture":"x86_64","hostname":"HOSTNAME","ip":["LOCALIP","4444:4444:4444:4444:4444:44444:4444:4444","127.0.0.1","::1"],"os":{"name":"Ubuntu 24.01","type":"Unknown","version":"24.04"}},"id":"4444-4444-4444-4444-ae5a7d59936c","name":"","type":"Endpoint","version":"5.0.0"}}
-{"module":"logcollector","type":"journald"}
-{"event":{"created":"2025-01-17T17:58:26.212Z","module":"logcollector","original":"hello0003","provider":"syslog"},"log":{"file":{"path":"unknown"}},"tags":["mvp"]}
-{"module":"logcollector","type":"journald"}
-{"event":{"created":"2025-01-17T17:58:32.026Z","module":"logcollector","original":"(CRON) INFO (pidfile fd = 3)","provider":"syslog"},"log":{"file":{"path":"cron.service"}},"tags":["mvp"]}
-{"module":"logcollector","type":"journald"}
-{"event":{"created":"2025-01-17T17:58:32.110Z","module":"logcollector","original":"Stopping Regular background program processing daemon...","provider":"syslog"},"log":{"file":{"path":"init.scope"}},"tags":["mvp"]}
+{"module":"logcollector","collector":"journald"}
+{"event":{"created":"2025-01-17T17:58:26.212Z","original":"hello0003","provider":"unknown"}}
+{"module":"logcollector","collector":"journald"}
+{"event":{"created":"2025-01-17T17:58:32.026Z","original":"(CRON) INFO (pidfile fd = 3)","provider":"cron.service"}}
+{"module":"logcollector","collector":"journald"}
+{"event":{"created":"2025-01-17T17:58:32.110Z","original":"Stopping Regular background program processing daemon...","provider":"init.scope"}}
 ```
 
 | Mandatory | Option                     | Description                                                                                  | Default |
@@ -93,8 +99,8 @@ This collector gets logs from the Windows Event Viewer. It needs a channel and a
 
 ```json
 {"agent":{"groups":[],"host":{"architecture":"x86_64","hostname":"HOSTNAME","ip":["LOCALIP","4444:4444:4444:4444:4444:44444:4444:4444","127.0.0.1","::1"],"os":{"name":"Microsoft Windows Server 2022","type":"Unknown","version":"10.0.20348.2762"}},"id":"4444-4444-4444-4444-ae5a7d59936c","name":"","type":"Endpoint","version":"5.0.0"}}
-{"module":"logcollector","type":"eventchannel"}
-{"event":{"created":"2025-01-07T21:41:27.712Z","module":"logcollector","original":"<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Time-Service' Guid='{06edcfeb-0fd0-4e53-acca-a6f8bbf81bcb}'/><EventID>37</EventID><Version>0</Version><Level>4</Level><Task>0</Task><Opcode>0</Opcode><Keywords>0x8000000000000000</Keywords><TimeCreated SystemTime='2025-01-07T21:41:26.8876581Z'/><EventRecordID>13597</EventRecordID><Correlation/><Execution ProcessID='12848' ThreadID='14956'/><Channel>System</Channel><Computer>HOSTNAME</Computer><Security UserID='S-1-5-19'/></System><EventData Name='TMP_EVENT_TIME_SOURCE_REACHABLE'><Data Name='TimeSource'>time.windows.com,0x8 (ntp.m|0x8|0.0.0.0:123-&gt;40.444.4.444:444)</Data></EventData></Event>","provider":"syslog"},"log":{"file":{"path":"System"}},"tags":["mvp"]}
+{"module":"logcollector","collector":"windows-eventlog"}
+{"event":{"created":"2025-01-07T21:41:27.712Z","original":"<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Time-Service' Guid='{06edcfeb-0fd0-4e53-acca-a6f8bbf81bcb}'/><EventID>37</EventID><Version>0</Version><Level>4</Level><Task>0</Task><Opcode>0</Opcode><Keywords>0x8000000000000000</Keywords><TimeCreated SystemTime='2025-01-07T21:41:26.8876581Z'/><EventRecordID>13597</EventRecordID><Correlation/><Execution ProcessID='12848' ThreadID='14956'/><Channel>System</Channel><Computer>HOSTNAME</Computer><Security UserID='S-1-5-19'/></System><EventData Name='TMP_EVENT_TIME_SOURCE_REACHABLE'><Data Name='TimeSource'>time.windows.com,0x8 (ntp.m|0x8|0.0.0.0:123-&gt;40.444.4.444:444)</Data></EventData></Event>","provider":"System"}}
 ```
 
 | Mandatory | Option          | Description                                       | Default |
@@ -120,14 +126,14 @@ This collector gets logs from macOS through the Unified Logging System. It needs
 
 ```json
 {"agent":{"groups":[],"host":{"architecture":"x86_64","hostname":"HOSTNAME","ip":["LOCALIP","4444:4444:4444:4444:4444:44444:4444:4444","127.0.0.1","::1"],"os":{"name":"macOS","type":"Unknown","version":"15"}},"id":"4444-4444-4444-4444-ae5a7d59936c","name":"","type":"Endpoint","version":"5.0.0"}}
-{"module":"logcollector","type":"macos"}
-{"event":{"created":"2025-01-17T20:40:56.072Z","module":"logcollector","original":"2025-01-17 20:40:55 +0000 Setting mfgr data:<private> len:9 id:4C","provider":"syslog"},"log":{"file":{"path":"macos"}},"tags":["mvp"]}
-{"module":"logcollector","type":"macos"}
-{"event":{"created":"2025-01-17T20:40:56.072Z","module":"logcollector","original":"2025-01-17 20:40:55 +0000 APSMessageStore - Destroying database.","provider":"syslog"},"log":{"file":{"path":"macos"}},"tags":["mvp"]}
-{"module":"logcollector","type":"macos"}
-{"event":{"created":"2025-01-17T20:40:56.072Z","module":"logcollector","original":"2025-01-17 20:40:55 +0000 WPDScanManager - Notifying Client About Discovered Device: Client (<private>) - UUID (<private>)","provider":"syslog"},"log":{"file":{"path":"macos"}},"tags":["mvp"]}
-{"module":"logcollector","type":"macos"}
-{"event":{"created":"2025-01-17T20:40:56.073Z","module":"logcollector","original":"2025-01-17 20:40:55 +0000 Device found changed: CBDevice 555E3FA6-AE3A-412A-6C97-2E7E2A069AD3, BDA 60:06:E3:8F:14:AF, Nm 'Bluetooth Device', DsFl 0x40 < NearbyInfo >, RSSI -44, Ch 37, AdTsMC <28588540497>, AMfD <4c 00 10 05 2c 98 bc 13 ff>, nbIAT <bc 13 ff>, nbIF 0xCA < Ranging AUE AT Duet >, CF 0x200000000 < RSSI >","provider":"syslog"},"log":{"file":{"path":"macos"}},"tags":["mvp"]}
+{"module":"logcollector","collector":"macos-uls"}
+{"event":{"created":"2025-01-17T20:40:56.072Z","original":"2025-01-17 20:40:55 +0000 Setting mfgr data:<private> len:9 id:4C","provider":"macos-uls"}}
+{"module":"logcollector","collector":"macos-uls"}
+{"event":{"created":"2025-01-17T20:40:56.072Z","original":"2025-01-17 20:40:55 +0000 APSMessageStore - Destroying database.","provider":"macos-uls"}}
+{"module":"logcollector","collector":"macos-uls"}
+{"event":{"created":"2025-01-17T20:40:56.072Z","original":"2025-01-17 20:40:55 +0000 WPDScanManager - Notifying Client About Discovered Device: Client (<private>) - UUID (<private>)","provider":"macos-uls"}}
+{"module":"logcollector","collector":"macos-uls"}
+{"event":{"created":"2025-01-17T20:40:56.073Z","original":"2025-01-17 20:40:55 +0000 Device found changed: CBDevice 555E3FA6-AE3A-412A-6C97-2E7E2A069AD3, BDA 60:06:E3:8F:14:AF, Nm 'Bluetooth Device', DsFl 0x40 < NearbyInfo >, RSSI -44, Ch 37, AdTsMC <28588540497>, AMfD <4c 00 10 05 2c 98 bc 13 ff>, nbIAT <bc 13 ff>, nbIF 0xCA < Ranging AUE AT Duet >, CF 0x200000000 < RSSI >","provider":"macos-uls"}}
 ```
 
 | Mandatory | Option        | Description                                                             | Default |

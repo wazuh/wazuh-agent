@@ -6,6 +6,11 @@
 #include <logcollector.hpp>
 #include <logger.hpp>
 
+namespace
+{
+    const std::string COLLECTOR_TYPE = "windows-eventlog";
+}
+
 namespace logcollector::winevt
 {
 
@@ -108,7 +113,7 @@ namespace logcollector::winevt
                     LogError("Cannot convert utf16 string: {}", e.what());
                     return;
                 }
-                m_logcollector.SendMessage(m_channel, logString, m_collectorType);
+                m_logcollector.SendMessage(m_channel, logString, COLLECTOR_TYPE);
             }
         }
     }
