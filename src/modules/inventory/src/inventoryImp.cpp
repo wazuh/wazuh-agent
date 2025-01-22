@@ -505,34 +505,13 @@ nlohmann::json Inventory::EcsHardwareData(const nlohmann::json& originalData, bo
 {
     nlohmann::json ret;
 
-    auto setField =
-        [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue)
-    {
-        if (createFields || originalData.contains(jsonKey))
-        {
-            nlohmann::json::json_pointer pointer(keyPath);
-            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE)
-            {
-                ret[pointer] = originalData[jsonKey];
-            }
-            else if (defaultValue.has_value())
-            {
-                ret[pointer] = *defaultValue;
-            }
-            else
-            {
-                ret[pointer] = nullptr;
-            }
-        }
-    };
-
-    setField("/observer/serial_number", "board_serial", EMPTY_VALUE);
-    setField("/host/cpu/name", "cpu_name", std::nullopt);
-    setField("/host/cpu/cores", "cpu_cores", std::nullopt);
-    setField("/host/cpu/speed", "cpu_mhz", std::nullopt);
-    setField("/host/memory/total", "ram_total", std::nullopt);
-    setField("/host/memory/free", "ram_free", std::nullopt);
-    setField("/host/memory/used/percentage", "ram_usage", std::nullopt);
+    SetJsonField(ret, originalData, "/observer/serial_number", "board_serial", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/host/cpu/name", "cpu_name", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/cpu/cores", "cpu_cores", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/cpu/speed", "cpu_mhz", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/memory/total", "ram_total", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/memory/free", "ram_free", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/memory/used/percentage", "ram_usage", std::nullopt, createFields);
 
     return ret;
 }
@@ -541,35 +520,14 @@ nlohmann::json Inventory::EcsSystemData(const nlohmann::json& originalData, bool
 {
     nlohmann::json ret;
 
-    auto setField =
-        [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue)
-    {
-        if (createFields || originalData.contains(jsonKey))
-        {
-            nlohmann::json::json_pointer pointer(keyPath);
-            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE)
-            {
-                ret[pointer] = originalData[jsonKey];
-            }
-            else if (defaultValue.has_value())
-            {
-                ret[pointer] = *defaultValue;
-            }
-            else
-            {
-                ret[pointer] = nullptr;
-            }
-        }
-    };
-
-    setField("/host/architecture", "architecture", std::nullopt);
-    setField("/host/hostname", "hostname", std::nullopt);
-    setField("/host/os/kernel", "os_build", std::nullopt);
-    setField("/host/os/full", "os_codename", std::nullopt);
-    setField("/host/os/name", "os_name", EMPTY_VALUE);
-    setField("/host/os/platform", "os_platform", std::nullopt);
-    setField("/host/os/version", "os_version", std::nullopt);
-    setField("/host/os/type", "sysname", std::nullopt);
+    SetJsonField(ret, originalData, "/host/architecture", "architecture", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/hostname", "hostname", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/os/kernel", "os_build", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/os/full", "os_codename", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/os/name", "os_name", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/host/os/platform", "os_platform", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/os/version", "os_version", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/os/type", "sysname", std::nullopt, createFields);
 
     return ret;
 }
@@ -578,35 +536,14 @@ nlohmann::json Inventory::EcsPackageData(const nlohmann::json& originalData, boo
 {
     nlohmann::json ret;
 
-    auto setField =
-        [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue)
-    {
-        if (createFields || originalData.contains(jsonKey))
-        {
-            nlohmann::json::json_pointer pointer(keyPath);
-            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE)
-            {
-                ret[pointer] = originalData[jsonKey];
-            }
-            else if (defaultValue.has_value())
-            {
-                ret[pointer] = *defaultValue;
-            }
-            else
-            {
-                ret[pointer] = nullptr;
-            }
-        }
-    };
-
-    setField("/package/architecture", "architecture", EMPTY_VALUE);
-    setField("/package/description", "description", std::nullopt);
-    setField("/package/installed", "install_time", std::nullopt);
-    setField("/package/name", "name", EMPTY_VALUE);
-    setField("/package/path", "location", EMPTY_VALUE);
-    setField("/package/size", "size", std::nullopt);
-    setField("/package/type", "format", EMPTY_VALUE);
-    setField("/package/version", "version", EMPTY_VALUE);
+    SetJsonField(ret, originalData, "/package/architecture", "architecture", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/package/description", "description", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/package/installed", "install_time", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/package/name", "name", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/package/path", "location", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/package/size", "size", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/package/type", "format", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/package/version", "version", EMPTY_VALUE, createFields);
 
     return ret;
 }
@@ -615,41 +552,20 @@ nlohmann::json Inventory::EcsProcessesData(const nlohmann::json& originalData, b
 {
     nlohmann::json ret;
 
-    auto setField =
-        [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue)
-    {
-        if (createFields || originalData.contains(jsonKey))
-        {
-            nlohmann::json::json_pointer pointer(keyPath);
-            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE)
-            {
-                ret[pointer] = originalData[jsonKey];
-            }
-            else if (defaultValue.has_value())
-            {
-                ret[pointer] = *defaultValue;
-            }
-            else
-            {
-                ret[pointer] = nullptr;
-            }
-        }
-    };
-
-    setField("/process/pid", "pid", EMPTY_VALUE);
-    setField("/process/name", "name", std::nullopt);
-    setField("/process/parent/pid", "ppid", std::nullopt);
-    setField("/process/command_line", "cmd", std::nullopt);
-    setField("/process/args", "argvs", std::nullopt);
-    setField("/process/user/id", "euser", std::nullopt);
-    setField("/process/real_user/id", "ruser", std::nullopt);
-    setField("/process/saved_user/id", "suser", std::nullopt);
-    setField("/process/group/id", "egroup", std::nullopt);
-    setField("/process/real_group/id", "rgroup", std::nullopt);
-    setField("/process/saved_group/id", "sgroup", std::nullopt);
-    setField("/process/start", "start_time", std::nullopt);
-    setField("/process/thread/id", "tgid", std::nullopt);
-    setField("/process/tty/char_device/major", "tty", std::nullopt);
+    SetJsonField(ret, originalData, "/process/pid", "pid", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/process/name", "name", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/process/parent/pid", "ppid", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/process/command_line", "cmd", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/process/args", "argvs", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/process/user/id", "euser", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/process/real_user/id", "ruser", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/process/saved_user/id", "suser", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/process/group/id", "egroup", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/process/real_group/id", "rgroup", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/process/saved_group/id", "sgroup", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/process/start", "start_time", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/process/thread/id", "tgid", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/process/tty/char_device/major", "tty", std::nullopt, createFields);
 
     return ret;
 }
@@ -659,17 +575,7 @@ nlohmann::json Inventory::EcsHotfixesData(const nlohmann::json& originalData, bo
 
     nlohmann::json ret;
 
-    if (createFields || originalData.contains("hotfix"))
-    {
-        if (originalData.contains("hotfix") && originalData["hotfix"] != EMPTY_VALUE)
-        {
-            ret["package"]["hotfix"]["name"] = originalData["hotfix"];
-        }
-        else
-        {
-            ret["package"]["hotfix"]["name"] = EMPTY_VALUE;
-        }
-    }
+    SetJsonField(ret, originalData, "/package/hotfix/name", "hotfix", EMPTY_VALUE, createFields);
 
     return ret;
 }
@@ -678,54 +584,17 @@ nlohmann::json Inventory::EcsPortData(const nlohmann::json& originalData, bool c
 {
     nlohmann::json ret;
 
-    auto setField =
-        [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue)
-    {
-        if (createFields || originalData.contains(jsonKey))
-        {
-            nlohmann::json::json_pointer pointer(keyPath);
-            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE)
-            {
-                ret[pointer] = originalData[jsonKey];
-            }
-            else if (defaultValue.has_value())
-            {
-                ret[pointer] = *defaultValue;
-            }
-            else
-            {
-                ret[pointer] = nullptr;
-            }
-        }
-    };
-
-    auto setFieldArray = [&](const std::string& destPath, const std::string& sourceKey)
-    {
-        if (createFields || originalData.contains(sourceKey))
-        {
-            nlohmann::json::json_pointer destPointer(destPath);
-            ret[destPointer.parent_pointer()][destPointer.back()] = nlohmann::json::array();
-            nlohmann::json& destArray = ret[destPointer];
-
-            if (originalData.contains(sourceKey) && !originalData[sourceKey].empty() &&
-                !originalData[sourceKey].is_null() && originalData[sourceKey] != EMPTY_VALUE)
-            {
-                destArray.push_back(originalData[sourceKey]);
-            }
-        }
-    };
-
-    setField("/network/protocol", "protocol", EMPTY_VALUE);
-    setFieldArray("/source/ip", "local_ip");
-    setField("/source/port", "local_port", EMPTY_VALUE);
-    setFieldArray("/destination/ip", "remote_ip");
-    setField("/destination/port", "remote_port", std::nullopt);
-    setField("/host/network/egress/queue", "tx_queue", std::nullopt);
-    setField("/host/network/ingress/queue", "rx_queue", std::nullopt);
-    setField("/file/inode", "inode", EMPTY_VALUE);
-    setField("/interface/state", "state", std::nullopt);
-    setField("/process/pid", "pid", std::nullopt);
-    setField("/process/name", "process", std::nullopt);
+    SetJsonField(ret, originalData, "/network/protocol", "protocol", EMPTY_VALUE, createFields);
+    SetJsonFieldArray(ret, originalData, "/source/ip", "local_ip", createFields);
+    SetJsonField(ret, originalData, "/source/port", "local_port", EMPTY_VALUE, createFields);
+    SetJsonFieldArray(ret, originalData, "/destination/ip", "remote_ip", createFields);
+    SetJsonField(ret, originalData, "/destination/port", "remote_port", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/network/egress/queue", "tx_queue", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/network/ingress/queue", "rx_queue", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/file/inode", "inode", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/interface/state", "state", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/process/pid", "pid", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/process/name", "process", std::nullopt, createFields);
 
     return ret;
 }
@@ -734,69 +603,32 @@ nlohmann::json Inventory::EcsNetworkData(const nlohmann::json& originalData, boo
 {
     nlohmann::json ret;
 
-    auto setField =
-        [&](const std::string& keyPath, const std::string& jsonKey, const std::optional<std::string>& defaultValue)
-    {
-        if (createFields || originalData.contains(jsonKey))
-        {
-            nlohmann::json::json_pointer pointer(keyPath);
-            if (originalData.contains(jsonKey) && originalData[jsonKey] != EMPTY_VALUE)
-            {
-                ret[pointer] = originalData[jsonKey];
-            }
-            else if (defaultValue.has_value())
-            {
-                ret[pointer] = *defaultValue;
-            }
-            else
-            {
-                ret[pointer] = nullptr;
-            }
-        }
-    };
-
-    auto setFieldArray = [&](const std::string& destPath, const std::string& sourceKey)
-    {
-        if (createFields || originalData.contains(sourceKey))
-        {
-            nlohmann::json::json_pointer destPointer(destPath);
-            ret[destPointer.parent_pointer()][destPointer.back()] = nlohmann::json::array();
-            nlohmann::json& destArray = ret[destPointer];
-
-            if (originalData.contains(sourceKey) && !originalData[sourceKey].empty() &&
-                !originalData[sourceKey].is_null() && originalData[sourceKey] != EMPTY_VALUE)
-            {
-                destArray.push_back(originalData[sourceKey]);
-            }
-        }
-    };
-
-    setFieldArray("/host/ip", "address");
-    setField("/host/mac", "mac", std::nullopt);
-    setField("/host/network/egress/bytes", "tx_bytes", std::nullopt);
-    setField("/host/network/egress/packets", "tx_packets", std::nullopt);
-    setField("/host/network/ingress/bytes", "rx_bytes", std::nullopt);
-    setField("/host/network/ingress/packets", "rx_packets", std::nullopt);
-    setField("/host/network/egress/drops", "tx_dropped", std::nullopt);
-    setField("/host/network/egress/errors", "tx_errors", std::nullopt);
-    setField("/host/network/ingress/drops", "rx_dropped", std::nullopt);
-    setField("/host/network/ingress/errors", "rx_errors", std::nullopt);
-    setField("/interface/mtu", "mtu", std::nullopt);
-    setField("/interface/state", "state", std::nullopt);
-    setField("/interface/type", "iface_type", EMPTY_VALUE);
-    setFieldArray("/network/netmask", "netmask");
-    setFieldArray("/network/gateway", "gateway");
-    setFieldArray("/network/broadcast", "broadcast");
-    setField("/network/dhcp", "dhcp", std::nullopt);
-    setField("/network/type", "proto_type", EMPTY_VALUE);
-    setField("/network/metric", "metric", std::nullopt);
+    SetJsonFieldArray(ret, originalData, "/host/ip", "address", createFields);
+    SetJsonField(ret, originalData, "/host/mac", "mac", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/network/egress/bytes", "tx_bytes", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/network/egress/packets", "tx_packets", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/network/ingress/bytes", "rx_bytes", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/network/ingress/packets", "rx_packets", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/network/egress/drops", "tx_dropped", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/network/egress/errors", "tx_errors", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/network/ingress/drops", "rx_dropped", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/host/network/ingress/errors", "rx_errors", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/interface/mtu", "mtu", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/interface/state", "state", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/interface/type", "iface_type", EMPTY_VALUE, createFields);
+    SetJsonFieldArray(ret, originalData, "/network/netmask", "netmask", createFields);
+    SetJsonFieldArray(ret, originalData, "/network/gateway", "gateway", createFields);
+    SetJsonFieldArray(ret, originalData, "/network/broadcast", "broadcast", createFields);
+    SetJsonField(ret, originalData, "/network/dhcp", "dhcp", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/network/type", "proto_type", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/network/metric", "metric", std::nullopt, createFields);
     /* TODO this field should include http or https, it's related to an application not to a interface */
     if (createFields)
     {
         ret["network"]["protocol"] = nullptr;
     }
-    setField("/observer/ingress/interface/alias", "adapter", EMPTY_VALUE);
-    setField("/observer/ingress/interface/name", "iface", EMPTY_VALUE);
+    SetJsonField(ret, originalData, "/observer/ingress/interface/alias", "adapter", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/observer/ingress/interface/name", "iface", EMPTY_VALUE, createFields);
 
     return ret;
 }
@@ -1265,4 +1097,49 @@ Inventory::GenerateStatelessEvent(const std::string& operation, const std::strin
 {
     auto event = CreateStatelessEvent(type, operation, m_scanTime, data);
     return event ? event->generate() : nlohmann::json {};
+}
+
+void Inventory::SetJsonField(nlohmann::json& target,
+                             const nlohmann::json& source,
+                             const std::string& keyPath,
+                             const std::string& jsonKey,
+                             const std::optional<std::string>& defaultValue,
+                             bool createFields)
+{
+    if (createFields || source.contains(jsonKey))
+    {
+        nlohmann::json::json_pointer pointer(keyPath);
+        if (source.contains(jsonKey) && source[jsonKey] != EMPTY_VALUE)
+        {
+            target[pointer] = source[jsonKey];
+        }
+        else if (defaultValue.has_value())
+        {
+            target[pointer] = *defaultValue;
+        }
+        else
+        {
+            target[pointer] = nullptr;
+        }
+    }
+}
+
+void Inventory::SetJsonFieldArray(nlohmann::json& target,
+                                  const nlohmann::json& source,
+                                  const std::string& destPath,
+                                  const std::string& sourceKey,
+                                  bool createFields)
+{
+    if (createFields || source.contains(sourceKey))
+    {
+        nlohmann::json::json_pointer destPointer(destPath);
+        target[destPointer.parent_pointer()][destPointer.back()] = nlohmann::json::array();
+        nlohmann::json& destArray = target[destPointer];
+
+        if (source.contains(sourceKey) && !source[sourceKey].empty() && !source[sourceKey].is_null() &&
+            source[sourceKey] != EMPTY_VALUE)
+        {
+            destArray.push_back(source[sourceKey]);
+        }
+    }
 }

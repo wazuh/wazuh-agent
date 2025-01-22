@@ -109,6 +109,18 @@ private:
     void DeleteMetadata(const std::string& key);
     void CleanMetadata();
 
+    void SetJsonField(nlohmann::json& target,
+                      const nlohmann::json& source,
+                      const std::string& keyPath,
+                      const std::string& jsonKey,
+                      const std::optional<std::string>& defaultValue,
+                      bool createFields);
+    void SetJsonFieldArray(nlohmann::json& target,
+                           const nlohmann::json& source,
+                           const std::string& destPath,
+                           const std::string& sourceKey,
+                           bool createFields);
+
     const std::string m_moduleName {"inventory"};
     std::string m_agentUUID {""}; // Agent UUID
     std::shared_ptr<ISysInfo> m_spInfo;
