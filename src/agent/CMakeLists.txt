@@ -28,10 +28,11 @@ if(WIN32)
         src/windows/windows_service.cpp
         src/process_options_win.cpp
         src/signal_handler_win.cpp
+        src/windows/instance_handler_win.cpp
     )
 elseif(UNIX)
     set(SOURCES
-        src/unix/unix_daemon.cpp
+        src/unix/instance_handler_unix.cpp
         src/process_options_unix.cpp
         src/signal_handler_unix.cpp
     )
@@ -44,6 +45,7 @@ list(APPEND SOURCES
     src/message_queue_utils.cpp
     src/process_options.cpp
     src/signal_handler.cpp
+    src/instance_handler.cpp
 )
 
 add_library(Agent ${SOURCES})

@@ -1,4 +1,4 @@
-#include <unix_daemon.hpp>
+#include <instance_handler.hpp>
 
 #include <config.h>
 #include <configuration_parser.hpp>
@@ -23,13 +23,6 @@ namespace fs = std::filesystem;
 
 namespace unix_daemon
 {
-    LockFileHandler::LockFileHandler(std::string lockFilePath)
-        : m_lockFilePath(std::move(lockFilePath))
-        , m_errno(0)
-        , m_lockFileCreated(createLockFile())
-    {
-    }
-
     void LockFileHandler::removeLockFile() const
     {
         if (!m_lockFileCreated)

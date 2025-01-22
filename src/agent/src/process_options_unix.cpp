@@ -3,8 +3,8 @@
 #include <agent.hpp>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
+#include <instance_handler.hpp>
 #include <logger.hpp>
-#include <unix_daemon.hpp>
 
 #include <csignal>
 #include <iostream>
