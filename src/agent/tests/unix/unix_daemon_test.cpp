@@ -32,18 +32,18 @@ std::filesystem::path UnixDaemonTest::m_tempConfigFilePath;
 
 TEST_F(UnixDaemonTest, CreateLockFile)
 {
-    unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile("./temp_wazuh-agent.yml");
-    bool res = lockFileHandler.isLockFileCreated();
+    instance_handler::InstanceHandler lockFileHandler = instance_handler::GetInstanceHandler("./temp_wazuh-agent.yml");
+    bool res = lockFileHandler.isLockAcquired();
     ASSERT_TRUE(res);
 }
 
 TEST_F(UnixDaemonTest, CreateLockFileTwice)
 {
-    unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile("./temp_wazuh-agent.yml");
-    unix_daemon::LockFileHandler lockFileHandler2 = unix_daemon::GenerateLockFile("./temp_wazuh-agent.yml");
+    instance_handler::InstanceHandler lockFileHandler = instance_handler::GetInstanceHandler("./temp_wazuh-agent.yml");
+    instance_handler::InstanceHandler lockFileHandler2 = instance_handler::GetInstanceHandler("./temp_wazuh-agent.yml");
 
-    bool reslockFileHandler = lockFileHandler.isLockFileCreated();
-    bool reslockFileHandler2 = lockFileHandler2.isLockFileCreated();
+    bool reslockFileHandler = lockFileHandler.isLockAcquired();
+    bool reslockFileHandler2 = lockFileHandler2.isLockAcquired();
 
     ASSERT_TRUE(reslockFileHandler);
     ASSERT_FALSE(reslockFileHandler2);
@@ -51,23 +51,24 @@ TEST_F(UnixDaemonTest, CreateLockFileTwice)
 
 TEST_F(UnixDaemonTest, GetDaemonStatusRunning)
 {
-    unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile("./temp_wazuh-agent.yml");
-    std::string res = unix_daemon::GetDaemonStatus("./temp_wazuh-agent.yml");
+    instance_handler::InstanceHandler lockFileHandler = instance_handler::GetInstanceHandler("./temp_wazuh-agent.yml");
+    std::string res = instance_handler::GetAgentStatus("./temp_wazuh-agent.yml");
     ASSERT_EQ(res, "running");
 }
 
 TEST_F(UnixDaemonTest, GetDaemonStatusStoppedPrevInstanceDestroyed)
 {
     {
-        unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile("./temp_wazuh-agent.yml");
+        instance_handler::InstanceHandler lockFileHandler =
+            instance_handler::GetInstanceHandler("./temp_wazuh-agent.yml");
     }
-    std::string res = unix_daemon::GetDaemonStatus("./temp_wazuh-agent.yml");
+    std::string res = instance_handler::GetAgentStatus("./temp_wazuh-agent.yml");
     ASSERT_EQ(res, "stopped");
 }
 
 TEST_F(UnixDaemonTest, GetDaemonStatusStoppedNoPrevInstance)
 {
-    std::string res = unix_daemon::GetDaemonStatus("./temp_wazuh-agent.yml");
+    std::string res = instance_handler::GetAgentStatus("./temp_wazuh-agent.yml");
     ASSERT_EQ(res, "stopped");
 }
 

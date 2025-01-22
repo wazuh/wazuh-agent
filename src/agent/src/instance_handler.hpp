@@ -2,38 +2,35 @@
 
 #include <string>
 
-namespace unix_daemon
+namespace instance_handler
 {
-    /// @class LockFileHandler class
-    /// @brief Handles the creation and deletion of lock files to prevent multiple instances of wazuh agent running
-    class LockFileHandler
+    /// @class InstanceHandler class
+    /// @brief Handles the acquisition and release of instance locks to prevent multiple instances of wazuh agent
+    /// running
+    class InstanceHandler
     {
     public:
-        /// @brief Default constructor
-        /// @details Creates a lock file when the instance is created
-        /// @param lockFilePath The path where the lock file will be created
-        LockFileHandler(std::string lockFilePath);
+        /// @brief InstanceHandler constructor
+        /// @details Creates a instance lock when the instance is created (lock file for linux/macOS, named mutex for
+        /// Windows).
+        /// @param lockFilePath The path where the lock file will be created (linux/macOS only). Unused in Windows, use
+        /// "".
+        InstanceHandler(std::string lockFilePath);
 
-        /// @brief Destructor
-        /// @details Removes lock file if it was created on construction
-        ~LockFileHandler()
+        /// @details Removes lock file if it was created on construction (linux/macOS only). Windows implementation uses
+        /// a named mutex which is released on destruction by the OS.
+        ~InstanceHandler()
         {
-            removeLockFile();
+            releaseInstanceLock();
         }
 
-        /// @brief Checks if the lock file has been successfully created
-        /// @return True if the lock file is created, false otherwise
-        bool isLockFileCreated() const
-        {
-            return m_lockFileCreated;
-        }
+        /// @brief Checks if the instance lock has been successfully acquired
+        /// @return True if the lock is acquired, false otherwise
+        bool isLockAcquired() const;
 
-        /// @brief Returns the errno from the latest attempt to create/lock the lock-file
+        /// @brief Returns the errno from the latest attempt to create/lock the lock-file or mutex
         /// @return The errno
-        int getErrno() const
-        {
-            return m_errno;
-        }
+        int getErrno() const;
 
     private:
         /// @brief Creates the directory path for the lock file
@@ -41,29 +38,29 @@ namespace unix_daemon
         /// @return True if the directory is created, false otherwise
         bool createDirectory(const std::string& path) const;
 
-        /// @brief Creates the lock file
-        /// @return True if the lock file is created, false otherwise
-        bool createLockFile();
+        /// @brief Gets a lock on the either the lock file or the mutex
+        /// @return True if the lock is aqcuired, false otherwise
+        bool getInstanceLock();
 
-        /// @brief Removes the lock file
-        void removeLockFile() const;
+        /// @brief Releases the instance lock on the lock file or mutex
+        void releaseInstanceLock() const;
 
         std::string m_lockFilePath;
 
         /// @brief Holds the errno from the lock-file create/lock attempt
         int m_errno;
 
-        /// @brief Indicates the lock file was created by this instance of the LockFileHandler
-        bool m_lockFileCreated;
+        /// @brief Indicates the lock has been acquired by this instance of the InstanceHandler
+        bool m_lockAcquired;
     };
 
     /// @brief Gets the status of the daemon
     /// @param configFilePath The path to the configuration file
     /// @return A string indicating whether the daemon is "running" or "stopped"
-    std::string GetDaemonStatus(const std::string& configFilePath);
+    std::string GetAgentStatus(const std::string& configFilePath);
 
-    /// @brief Generates a lock file for the daemon
+    /// @brief Generates an instance handler for the daemon
     /// @param configFilePath The path to the configuration file
-    /// @return A LockFileHandler object
-    LockFileHandler GenerateLockFile(const std::string& configFilePath);
-} // namespace unix_daemon
+    /// @return An InstanceHandler object
+    InstanceHandler GetInstanceHandler(const std::string& configFilePath);
+} // namespace instance_handler

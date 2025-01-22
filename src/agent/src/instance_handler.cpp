@@ -1,11 +1,21 @@
 #include <instance_handler.hpp>
 
-namespace unix_daemon
+namespace instance_handler
 {
-    LockFileHandler::LockFileHandler(std::string lockFilePath)
+    InstanceHandler::InstanceHandler(std::string lockFilePath)
         : m_lockFilePath(std::move(lockFilePath))
         , m_errno(0)
-        , m_lockFileCreated(createLockFile())
+        , m_lockAcquired(getInstanceLock())
     {
     }
-} // namespace unix_daemon
+
+    bool InstanceHandler::isLockAcquired() const
+    {
+        return m_lockAcquired;
+    }
+
+    int InstanceHandler::getErrno() const
+    {
+        return m_errno;
+    }
+} // namespace instance_handler
