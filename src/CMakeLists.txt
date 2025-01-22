@@ -4,6 +4,8 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.c
 
 get_filename_component(SRC_FOLDER ${CMAKE_SOURCE_DIR}/../ ABSOLUTE)
 get_filename_component(CONFIG_FOLDER ${CMAKE_SOURCE_DIR}/../etc/config/ ABSOLUTE)
+get_filename_component(WINDOWS_FOLDER ${CMAKE_SOURCE_DIR}/../packages/windows/ ABSOLUTE)
+
 project(wazuh-agent)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -39,26 +41,26 @@ include(cmake/ConfigureTarget.cmake)
 configure_target(wazuh-agent)
 
 ## Installation
-set(INSTALL_ROOT "" CACHE PATH "Root directory for installation")
-
-if("${INSTALL_ROOT}" STREQUAL "/")
-    set(INSTALL_ROOT "")
-endif()
-
-install(CODE "file(MAKE_DIRECTORY \"${INSTALL_ROOT}${DATA_INSTALL_DIR}\")")
-
-install(TARGETS wazuh-agent
-        DESTINATION ${INSTALL_ROOT}${BIN_INSTALL_DIR})
-
-install(CODE "file(MAKE_DIRECTORY \"${INSTALL_ROOT}${CONFIG_INSTALL_DIR}\")")
-install(FILES ${CONFIG_FOLDER}/wazuh-agent.yml
-        DESTINATION ${INSTALL_ROOT}${CONFIG_INSTALL_DIR})
-install(TARGETS wazuh-agent
-         DESTINATION ${INSTALL_ROOT}${BIN_INSTALL_DIR})
-
-message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
-
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(INSTALL_ROOT "" CACHE PATH "Root directory for installation")
+
+    if("${INSTALL_ROOT}" STREQUAL "/")
+        set(INSTALL_ROOT "")
+    endif()
+
+    install(CODE "file(MAKE_DIRECTORY \"${INSTALL_ROOT}${DATA_INSTALL_DIR}\")")
+
+    install(TARGETS wazuh-agent
+            DESTINATION ${INSTALL_ROOT}${BIN_INSTALL_DIR})
+
+    install(CODE "file(MAKE_DIRECTORY \"${INSTALL_ROOT}${CONFIG_INSTALL_DIR}\")")
+    install(FILES ${CONFIG_FOLDER}/wazuh-agent.yml
+            DESTINATION ${INSTALL_ROOT}${CONFIG_INSTALL_DIR})
+    install(TARGETS wazuh-agent
+            DESTINATION ${INSTALL_ROOT}${BIN_INSTALL_DIR})
+
+    message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
+
     get_filename_component(SERVICE_FILENAME "${SERVICE_FILE}" NAME)
     set(SOURCE_FILE "${CMAKE_SOURCE_DIR}/agent/service/${SERVICE_FILENAME}")
     set(OUTPUT_FILE "${CMAKE_BINARY_DIR}/${SERVICE_FILENAME}")
@@ -70,6 +72,40 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     add_custom_target(generate_service_file ALL DEPENDS "${OUTPUT_FILE}")
     install(FILES "${OUTPUT_FILE}"
         DESTINATION "${INSTALL_ROOT}${SERVICE_INSTALL_DIR}")
+
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION .)
+    include(InstallRequiredSystemLibraries)
+    install(DIRECTORY ${CMAKE_BINARY_DIR}/$ENV{CUSTOM_CMAKE_CONFIG}/ DESTINATION .)
+    install(FILES ${CONFIG_FOLDER}/wazuh-agent.yml DESTINATION .)
+    install(FILES ${WINDOWS_FOLDER}/postinstall.ps1 DESTINATION .)
+    install(FILES ${WINDOWS_FOLDER}/cleanup.ps1 DESTINATION .)
+
+    set(CPACK_GENERATOR "WIX")
+    set(CPACK_PACKAGE_NAME "Wazuh Agent")
+    set(CPACK_PACKAGE_VERSION "5.0.0")
+    if(DEFINED ENV{CUSTOM_PACKAGE_NAME})
+        set(CPACK_PACKAGE_FILE_NAME "$ENV{CUSTOM_PACKAGE_NAME}")
+    else()
+        set(CPACK_PACKAGE_FILE_NAME "wazuh-agent-${CPACK_PACKAGE_VERSION}")
+    endif()
+    set(CPACK_PACKAGE_VENDOR "Wazuh, Inc.")
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
+    "Wazuh helps you to gain security visibility into your infrastructure "
+    "by monitoring hosts at an operating system and application level. "
+    "It provides capabilities like log analysis, file integrity monitoring, "
+    "intrusion detection, and compliance monitoring.")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "wazuh-agent")
+    set(CPACK_RESOURCE_FILE_LICENSE "${WINDOWS_FOLDER}/license.rtf")
+    set(CPACK_WIX_UPGRADE_GUID "F495AC57-7BDE-4C4B-92D8-DBE40A9AA5A0")
+    set(CPACK_WIX_UI_BANNER "${WINDOWS_FOLDER}/ui/bannrbmp.jpg")
+    set(CPACK_WIX_UI_DIALOG "${WINDOWS_FOLDER}/ui/dlgbmp.jpg")
+    set(CPACK_WIX_PRODUCT_ICON "${WINDOWS_FOLDER}/ui/favicon.ico")
+    set(CPACK_WIX_PROPERTY_ARPNOREPAIR "yes")
+    set(CPACK_WIX_PROPERTY_ALLUSERS "1")
+    set(CPACK_WIX_PATCH_FILE "${WINDOWS_FOLDER}/wix-patch.xml")
+    set(CPACK_WIX_EXTENSIONS "WixUtilExtension")
+    include(CPack)
 endif()
 
 if(BUILD_TESTS)
