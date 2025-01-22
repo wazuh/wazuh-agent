@@ -1,5 +1,5 @@
 #include <instance_handler.hpp>
 
-namespace unix_daemon
+namespace instance_handler
 {
-} // namespace unix_daemon
+} // namespace instance_handler

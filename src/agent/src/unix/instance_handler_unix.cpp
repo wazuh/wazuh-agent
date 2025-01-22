@@ -21,11 +21,11 @@
 
 namespace fs = std::filesystem;
 
-namespace unix_daemon
+namespace instance_handler
 {
-    void LockFileHandler::removeLockFile() const
+    void InstanceHandler::releaseInstanceLock() const
     {
-        if (!m_lockFileCreated)
+        if (!m_lockAcquired)
             return;
 
         const std::string filePath = fmt::format("{}/wazuh-agent.lock", m_lockFilePath);
@@ -39,7 +39,7 @@ namespace unix_daemon
         }
     }
 
-    bool LockFileHandler::createDirectory(const std::string& path) const
+    bool InstanceHandler::createDirectory(const std::string& path) const
     {
         try
         {
@@ -58,7 +58,7 @@ namespace unix_daemon
         }
     }
 
-    bool LockFileHandler::createLockFile()
+    bool InstanceHandler::getInstanceLock()
     {
         if (!createDirectory(m_lockFilePath))
         {
@@ -90,7 +90,7 @@ namespace unix_daemon
         return true;
     }
 
-    LockFileHandler GenerateLockFile(const std::string& configFilePath)
+    InstanceHandler GetInstanceHandler(const std::string& configFilePath)
     {
         auto configurationParser = configFilePath.empty()
                                        ? configuration::ConfigurationParser()
@@ -99,14 +99,14 @@ namespace unix_daemon
         const std::string lockFilePath =
             configurationParser.GetConfig<std::string>("agent", "path.run").value_or(config::DEFAULT_RUN_PATH);
 
-        return {LockFileHandler(lockFilePath)};
+        return {InstanceHandler(lockFilePath)};
     }
 
-    std::string GetDaemonStatus(const std::string& configFilePath)
+    std::string GetAgentStatus(const std::string& configFilePath)
     {
-        LockFileHandler lockFileHandler = GenerateLockFile(configFilePath);
+        InstanceHandler lockFileHandler = GetInstanceHandler(configFilePath);
 
-        if (!lockFileHandler.isLockFileCreated())
+        if (!lockFileHandler.isLockAcquired())
         {
             if (lockFileHandler.getErrno() == EAGAIN)
             {
@@ -121,4 +121,4 @@ namespace unix_daemon
 
         return "stopped";
     }
-} // namespace unix_daemon
+} // namespace instance_handler

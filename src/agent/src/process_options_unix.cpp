@@ -13,9 +13,9 @@
 
 void StartAgent(const std::string& configFilePath)
 {
-    unix_daemon::LockFileHandler lockFileHandler = unix_daemon::GenerateLockFile(configFilePath);
+    instance_handler::InstanceHandler instanceHandler = instance_handler::GetInstanceHandler(configFilePath);
 
-    if (!lockFileHandler.isLockFileCreated())
+    if (!instanceHandler.isLockAcquired())
     {
         std::cout << "wazuh-agent already running\n";
         return;
@@ -32,9 +32,4 @@ void StartAgent(const std::string& configFilePath)
     {
         LogError("Exception thrown in wazuh-agent: {}", e.what());
     }
-}
-
-void StatusAgent(const std::string& configFilePath)
-{
-    std::cout << fmt::format("wazuh-agent status: {}\n", unix_daemon::GetDaemonStatus(configFilePath));
 }
