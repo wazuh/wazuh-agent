@@ -20,8 +20,16 @@ namespace
 
 namespace command_handler
 {
-    CommandHandler::CommandHandler(const std::string& dbFolderPath)
+    CommandHandler::CommandHandler(std::shared_ptr<configuration::ConfigurationParser> configurationParser)
     {
+        if (!configurationParser)
+        {
+            throw std::runtime_error(std::string("Invalid Configuration Parser passed."));
+        }
+
+        auto dbFolderPath =
+            configurationParser->GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH);
+
         try
         {
             m_commandStore = std::make_unique<command_store::CommandStore>(dbFolderPath);

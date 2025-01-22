@@ -1,6 +1,9 @@
 #pragma once
 
 #include <command_entry.hpp>
+#include <configuration_parser.hpp>
+
+#include <config.h>
 #include <logger.hpp>
 
 #include <boost/asio.hpp>
@@ -28,8 +31,8 @@ namespace command_handler
     {
     public:
         /// @brief CommandHandler constructor
-        /// @param dbFolderPath The path to the database folder
-        CommandHandler(const std::string& dbFolderPath);
+        /// @param configurationParser Pointer to the configuration parser
+        CommandHandler(std::shared_ptr<configuration::ConfigurationParser> configurationParser);
 
         /// @brief CommandHandler destructor
         ~CommandHandler();

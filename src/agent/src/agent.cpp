@@ -11,26 +11,24 @@
 #include <memory>
 
 Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> signalHandler)
-    : m_configurationParser(configFilePath.empty() ? std::make_shared<configuration::ConfigurationParser>()
+    : m_signalHandler(std::move(signalHandler))
+    , m_configurationParser(configFilePath.empty() ? std::make_shared<configuration::ConfigurationParser>()
                                                    : std::make_shared<configuration::ConfigurationParser>(
                                                          std::filesystem::path(configFilePath)))
-    , m_dataPath(
-          m_configurationParser->GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH))
-    , m_messageQueue(std::make_shared<MultiTypeQueue>(m_configurationParser))
-    , m_signalHandler(std::move(signalHandler))
     , m_agentInfo(
-          m_dataPath, [this]() { return m_sysInfo.os(); }, [this]() { return m_sysInfo.networks(); })
-    , m_communicator(
-          std::make_unique<http_client::HttpClient>(),
-          m_agentInfo.GetUUID(),
-          m_agentInfo.GetKey(),
-          [this]() { return m_agentInfo.GetHeaderInfo(); },
-          [this]<typename T>(std::string table, std::string key) -> std::optional<T>
-          { return m_configurationParser->GetConfig<T>(std::move(table), std::move(key)); })
+          m_configurationParser->GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH),
+          [this]() { return m_sysInfo.os(); },
+          [this]() { return m_sysInfo.networks(); })
+    , m_messageQueue(std::make_shared<MultiTypeQueue>(m_configurationParser))
+    , m_communicator(std::make_unique<http_client::HttpClient>(),
+                     m_configurationParser,
+                     m_agentInfo.GetUUID(),
+                     m_agentInfo.GetKey(),
+                     [this]() { return m_agentInfo.GetHeaderInfo(); })
     , m_moduleManager([this](Message message) -> int { return m_messageQueue->push(std::move(message)); },
                       m_configurationParser,
                       m_agentInfo.GetUUID())
-    , m_commandHandler(m_dataPath)
+    , m_commandHandler(m_configurationParser)
 {
     // Check if agent is registered
     if (m_agentInfo.GetName().empty() || m_agentInfo.GetKey().empty() || m_agentInfo.GetUUID().empty())

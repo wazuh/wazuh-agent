@@ -12,10 +12,72 @@
 #include <thread>
 #include <utility>
 
+namespace
+{
+    constexpr auto MIN_BATCH_SIZE = 1000ULL;
+    constexpr auto MAX_BATCH_SIZE = 100000000ULL;
+} // namespace
+
 namespace communicator
 {
     constexpr int TOKEN_PRE_EXPIRY_SECS = 2;
     constexpr int A_SECOND_IN_MILLIS = 1000;
+
+    Communicator::Communicator(std::unique_ptr<http_client::IHttpClient> httpClient,
+                               std::shared_ptr<configuration::ConfigurationParser> configurationParser,
+                               std::string uuid,
+                               std::string key,
+                               std::function<std::string()> getHeaderInfo)
+        : m_httpClient(std::move(httpClient))
+        , m_uuid(std::move(uuid))
+        , m_key(std::move(key))
+        , m_getHeaderInfo(std::move(getHeaderInfo))
+        , m_token(std::make_shared<std::string>())
+    {
+        if (!configurationParser)
+        {
+            throw std::runtime_error(std::string("Invalid Configuration Parser passed."));
+        }
+
+        m_serverUrl = configurationParser->GetConfig<std::string>("agent", "server_url")
+                          .value_or(config::agent::DEFAULT_SERVER_URL);
+
+        if (boost::urls::url_view url(m_serverUrl); url.scheme() != "https")
+        {
+            LogInfo("Using insecure connection.");
+        }
+
+        m_retryInterval = configurationParser->GetConfig<std::time_t>("agent", "retry_interval")
+                              .value_or(config::agent::DEFAULT_RETRY_INTERVAL);
+
+        if (m_retryInterval < 0)
+        {
+            LogWarn("retry_interval must be greater than or equal to 0. Using default value.");
+            m_retryInterval = config::agent::DEFAULT_RETRY_INTERVAL;
+        }
+
+        m_batchSize =
+            configurationParser->GetConfig<size_t>("events", "batch_size").value_or(config::agent::DEFAULT_BATCH_SIZE);
+
+        if (m_batchSize < MIN_BATCH_SIZE || m_batchSize > MAX_BATCH_SIZE)
+        {
+            LogWarn("batch_size must be between 1KB and 100MB. Using default value.");
+            m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
+        }
+
+        m_verificationMode = configurationParser->GetConfig<std::string>("agent", "verification_mode")
+                                 .value_or(config::agent::DEFAULT_VERIFICATION_MODE);
+
+        if (std::find(std::begin(config::agent::VALID_VERIFICATION_MODES),
+                      std::end(config::agent::VALID_VERIFICATION_MODES),
+                      m_verificationMode) == std::end(config::agent::VALID_VERIFICATION_MODES))
+        {
+            LogWarn("Incorrect value for 'verification_mode', in case of HTTPS connections the default value '{}' "
+                    "is used.",
+                    config::agent::DEFAULT_VERIFICATION_MODE);
+            m_verificationMode = config::agent::DEFAULT_VERIFICATION_MODE;
+        }
+    }
 
     boost::beast::http::status Communicator::SendAuthenticationRequest()
     {
