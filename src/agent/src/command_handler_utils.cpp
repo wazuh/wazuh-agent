@@ -10,7 +10,9 @@
 
 namespace
 {
-    template<typename ExecuteFunction>
+    using ExecuteFunction =
+        std::function<boost::asio::awaitable<module_command::CommandExecutionResult>(std::string, nlohmann::json)>;
+
     boost::asio::awaitable<void> ExecuteCommandTask(ExecuteFunction executeFunction,
                                                     module_command::CommandEntry commandEntry,
                                                     std::shared_ptr<module_command::CommandExecutionResult> result)
