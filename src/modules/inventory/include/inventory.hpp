@@ -10,7 +10,6 @@
 #include <thread>
 
 #include <commonDefs.h>
-#include <configuration_parser.hpp>
 #include <dbsync.hpp>
 #include <inventoryNormalizer.hpp>
 #include <sysInfoInterface.hpp>

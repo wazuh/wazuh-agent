@@ -10,6 +10,9 @@ using namespace column;
 
 namespace
 {
+    // database
+    const std::string QUEUE_DB_NAME = "queue.db";
+
     // column names
     const std::string ROW_ID_COLUMN_NAME = "rowid";
     const std::string MODULE_NAME_COLUMN_NAME = "module_name";
@@ -68,8 +71,10 @@ namespace
     }
 } // namespace
 
-Storage::Storage(const std::string& dbFilePath, const std::vector<std::string>& tableNames)
+Storage::Storage(const std::string& dbFolderPath, const std::vector<std::string>& tableNames)
 {
+    const auto dbFilePath = dbFolderPath + "/" + QUEUE_DB_NAME;
+
     try
     {
         m_db = PersistenceFactory::CreatePersistence(PersistenceFactory::PersistenceType::SQLITE3, dbFilePath);
@@ -107,6 +112,23 @@ void Storage::CreateTable(const std::string& tableName)
         LogError("Error creating table: {}.", e.what());
         throw;
     }
+}
+
+bool Storage::Clear(const std::vector<std::string>& tableNames)
+{
+    try
+    {
+        for (const auto& table : tableNames)
+        {
+            m_db->Remove(table, {});
+        }
+    }
+    catch (const std::exception& e)
+    {
+        LogError("Clear operation failed: {}.", e.what());
+        return false;
+    }
+    return true;
 }
 
 int Storage::Store(const nlohmann::json& message,

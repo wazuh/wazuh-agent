@@ -12,9 +12,12 @@
 #include <boost/asio.hpp>
 #include <boost/asio/experimental/co_spawn.hpp>
 
-#include "multitype_queue.hpp"
+#include <multitype_queue.hpp>
+#include <storage.hpp>
+
 #include "multitype_queue_test.hpp"
 
+const std::string QUEUE_DB_NAME = "queue.db";
 constexpr size_t SMALL_QUEUE_CAPACITY = 1000;
 const nlohmann::json BASE_DATA_CONTENT = R"({{"data": "for STATELESS_0"}})";
 const nlohmann::json MULTIPLE_DATA_CONTENT = {"content 1", "content 2", "content 3"};
@@ -66,38 +69,16 @@ namespace
         }
     }
 
-    const auto MOCK_GET_CONFIG = []<typename T>(const std::string& table, const std::string& key) -> std::optional<T>
-    {
-        if (table == "agent" && key == "path.data")
-        {
-            if constexpr (std::is_same_v<T, std::string>)
-            {
-                return std::optional<T>(".");
-            }
-        }
-        return std::nullopt;
-    };
+    const auto MOCK_CONFIG_PARSER = std::make_shared<configuration::ConfigurationParser>(std::string(R"(
+        agent:
+          path.data: "."
+    )"));
 
-    const auto MOCK_GET_CONFIG_SMALL_SIZE = []<typename T>(const std::string& table,
-                                                           const std::string& key) -> std::optional<T>
-    {
-        if (table == "agent" && key == "path.data")
-        {
-            if constexpr (std::is_same_v<T, std::string>)
-            {
-                return std::optional<T>(".");
-            }
-        }
-        else if (table == "agent" && key == "queue_size")
-        {
-            if constexpr (std::is_same_v<T, size_t>)
-            {
-                return std::optional<T>(SMALL_QUEUE_CAPACITY);
-            }
-        }
-        return std::nullopt;
-    };
-
+    const auto MOCK_CONFIG_PARSER_SMALL_SIZE = std::make_shared<configuration::ConfigurationParser>(std::string(R"(
+        agent:
+          path.data: "."
+          queue_size: 1000
+    )"));
 } // namespace
 
 /// Test Methods
@@ -162,20 +143,21 @@ TEST_F(JsonTest, JSONArrays)
 
 TEST_F(MultiTypeQueueTest, Constructor)
 {
+    std::shared_ptr<configuration::ConfigurationParser> configurationParser =
+        std::make_shared<configuration::ConfigurationParser>();
 
-    const auto FUNC = []<typename T>([[maybe_unused]] const std::string&,
-                                     [[maybe_unused]] const std::string&) -> std::optional<T>
-    {
-        return T {};
-    };
+    EXPECT_NO_THROW(MultiTypeQueue multiTypeQueue(configurationParser));
+}
 
-    EXPECT_NO_THROW(MultiTypeQueue multiTypeQueue(FUNC));
+TEST_F(MultiTypeQueueTest, ConstructorNoConfigParser)
+{
+    EXPECT_THROW(MultiTypeQueue multiTypeQueue(nullptr), std::runtime_error);
 }
 
 // Push, get and check the queue is not empty
 TEST_F(MultiTypeQueueTest, SinglePushGetNotEmpty)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_GET_CONFIG);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, BASE_DATA_CONTENT};
 
@@ -195,7 +177,7 @@ TEST_F(MultiTypeQueueTest, SinglePushGetNotEmpty)
 // push and pop on a non-full queue
 TEST_F(MultiTypeQueueTest, SinglePushPopEmpty)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_GET_CONFIG);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, BASE_DATA_CONTENT};
 
@@ -219,7 +201,7 @@ TEST_F(MultiTypeQueueTest, SinglePushPopEmpty)
 
 TEST_F(MultiTypeQueueTest, SinglePushGetWithModule)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_GET_CONFIG);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
     const MessageType messageType {MessageType::STATELESS};
     const std::string moduleFakeName = "fake-module";
     const std::string moduleName = "module";
@@ -246,7 +228,7 @@ TEST_F(MultiTypeQueueTest, SinglePushGetWithModule)
 // Push, get and check while the queue is full
 TEST_F(MultiTypeQueueTest, SinglePushPopFullWithTimeout)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_GET_CONFIG_SMALL_SIZE);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER_SMALL_SIZE);
 
     // complete the queue with messages
     const MessageType messageType {MessageType::COMMAND};
@@ -274,7 +256,7 @@ TEST_F(MultiTypeQueueTest, SinglePushPopFullWithTimeout)
 // Accesing different types of queues from several threads
 TEST_F(MultiTypeQueueTest, MultithreadDifferentType)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_GET_CONFIG);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
 
     auto consumerStateLess = [&](const int& count)
     {
@@ -344,7 +326,7 @@ TEST_F(MultiTypeQueueTest, MultithreadDifferentType)
 // Accesing same queue from 2 different threads
 TEST_F(MultiTypeQueueTest, MultithreadSameType)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_GET_CONFIG);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
     auto messageType = MessageType::COMMAND;
 
     auto consumerCommand1 = [&](const int& count)
@@ -399,7 +381,7 @@ TEST_F(MultiTypeQueueTest, MultithreadSameType)
 // several gets, checks and pops
 TEST_F(MultiTypeQueueTest, PushMultipleSeveralSingleGets)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_GET_CONFIG);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT};
 
@@ -419,7 +401,7 @@ TEST_F(MultiTypeQueueTest, PushMultipleSeveralSingleGets)
 
 TEST_F(MultiTypeQueueTest, PushMultipleWithMessageVector)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_GET_CONFIG);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
 
     std::vector<Message> messages;
     const MessageType messageType {MessageType::STATELESS};
@@ -436,7 +418,7 @@ TEST_F(MultiTypeQueueTest, PushMultipleWithMessageVector)
 // push message vector with a mutiple data element
 TEST_F(MultiTypeQueueTest, PushVectorWithAMultipleInside)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_GET_CONFIG);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
 
     std::vector<Message> messages;
 
@@ -458,7 +440,7 @@ TEST_F(MultiTypeQueueTest, PushVectorWithAMultipleInside)
 // Push Multiple, pop multiples
 TEST_F(MultiTypeQueueTest, PushMultipleGetMultiple)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_GET_CONFIG);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT};
 
@@ -472,7 +454,7 @@ TEST_F(MultiTypeQueueTest, PushMultipleGetMultiple)
 
 TEST_F(MultiTypeQueueTest, PushAwaitable)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_GET_CONFIG_SMALL_SIZE);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER_SMALL_SIZE);
     boost::asio::io_context io_context;
 
     int upperLimit = SMALL_QUEUE_CAPACITY + 1;
@@ -517,7 +499,7 @@ TEST_F(MultiTypeQueueTest, PushAwaitable)
 
 TEST_F(MultiTypeQueueTest, FifoOrderCheck)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_GET_CONFIG);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
 
     // complete the queue with messages
     const MessageType messageType {MessageType::STATEFUL};
@@ -550,7 +532,7 @@ TEST_F(MultiTypeQueueTest, FifoOrderCheck)
 
 TEST_F(MultiTypeQueueTest, GetBySizeAboveMax)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_GET_CONFIG);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
     const MessageType messageType {MessageType::STATELESS};
     const std::string moduleName = "testModule";
     const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT, moduleName};
@@ -579,7 +561,7 @@ TEST_F(MultiTypeQueueTest, GetBySizeAboveMax)
 
 TEST_F(MultiTypeQueueTest, GetByBelowMax)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_GET_CONFIG);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
     const MessageType messageType {MessageType::STATELESS};
     const std::string moduleName = "testModule";
     const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT, moduleName};

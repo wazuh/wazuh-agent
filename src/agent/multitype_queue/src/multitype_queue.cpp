@@ -1,9 +1,60 @@
 #include <multitype_queue.hpp>
+#include <storage.hpp>
 
 #include <boost/asio.hpp>
 
 #include <stop_token>
 #include <utility>
+
+namespace
+{
+    constexpr auto MIN_BATCH_INTERVAL = 1000;
+    constexpr auto MAX_BATCH_INTERVAL = 60 * 60 * 1000;
+    constexpr auto MIN_QUEUE_SIZE = 1000;
+    constexpr auto MAX_QUEUE_SIZE = 60 * 60 * 1000;
+} // namespace
+
+MultiTypeQueue::MultiTypeQueue(std::shared_ptr<configuration::ConfigurationParser> configurationParser)
+    : m_timeout(config::agent::QUEUE_STATUS_REFRESH_TIMER)
+{
+    if (!configurationParser)
+    {
+        throw std::runtime_error(std::string("Invalid Configuration Parser passed."));
+    }
+
+    m_batchInterval = configurationParser->GetConfig<std::time_t>("events", "batch_interval")
+                          .value_or(config::agent::DEFAULT_BATCH_INTERVAL);
+
+    if (m_batchInterval < MIN_BATCH_INTERVAL || m_batchInterval > MAX_BATCH_INTERVAL)
+    {
+        LogWarn("batch_interval must be between 1s and 1h. Using default value.");
+        m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
+    }
+
+    m_maxItems =
+        configurationParser->GetConfig<size_t>("agent", "queue_size").value_or(config::agent::QUEUE_DEFAULT_SIZE);
+
+    if (m_maxItems < MIN_QUEUE_SIZE || m_maxItems > MAX_QUEUE_SIZE)
+    {
+        LogWarn("queue_size must be between 1'000 and 100'000'000. Using default value {}.",
+                config::agent::QUEUE_DEFAULT_SIZE);
+        m_maxItems = config::agent::QUEUE_DEFAULT_SIZE;
+    }
+
+    auto dbFolderPath =
+        configurationParser->GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH);
+
+    try
+    {
+        m_persistenceDest = std::make_unique<Storage>(dbFolderPath, m_vMessageTypeStrings);
+    }
+    catch (const std::exception& e)
+    {
+        LogError("Error creating persistence: {}.", e.what());
+    }
+}
+
+MultiTypeQueue::~MultiTypeQueue() = default;
 
 int MultiTypeQueue::push(Message message, bool shouldWait)
 {

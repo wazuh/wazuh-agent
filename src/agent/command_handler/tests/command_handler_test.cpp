@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <command_handler.hpp>
+#include <command_store.hpp>
 
 TEST(CommandHandlerTest, CommandHandlerConstructor)
 {

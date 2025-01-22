@@ -24,11 +24,12 @@ find_package(Boost REQUIRED COMPONENTS asio)
 add_library(MultiTypeQueue src/storage.cpp src/multitype_queue.cpp)
 
 target_include_directories(MultiTypeQueue PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src)
+        ${CMAKE_CURRENT_SOURCE_DIR}/include PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 target_link_libraries(MultiTypeQueue
         PUBLIC
         Config
+        ConfigurationParser
         MessageEntry
         Boost::asio
         Logger

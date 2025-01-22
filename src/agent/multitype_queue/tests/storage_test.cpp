@@ -7,12 +7,11 @@
 #include "gtest/gtest.h"
 #include <nlohmann/json.hpp>
 
-#include "storage.hpp"
+#include <storage.hpp>
 
 class StorageTest : public ::testing::Test
 {
 protected:
-    const std::string dbName = "testdb.db";
     const std::string tableName = "test_table";
     const std::string moduleName = "moduleX";
     const std::vector<std::string> m_vMessageTypeStrings {"test_table", "test_table2"};
@@ -20,33 +19,11 @@ protected:
 
     void SetUp() override
     {
-        // Ensure the database file does not already exist
-        for (const auto& entry : std::filesystem::directory_iterator("."))
-        {
-            const auto fileFullPath = entry.path().string();
-            if (fileFullPath.find(dbName) != std::string::npos)
-            {
-                std::error_code ec;
-                std::filesystem::remove(fileFullPath, ec);
-            }
-        }
-
-        storage = std::make_unique<Storage>(dbName, m_vMessageTypeStrings);
+        storage = std::make_unique<Storage>(".", m_vMessageTypeStrings);
+        storage->Clear(m_vMessageTypeStrings);
     }
 
-    void TearDown() override
-    {
-        // Clean up: remove the database file
-        std::error_code ec;
-        if (std::filesystem::exists(dbName.c_str()))
-        {
-            std::filesystem::remove(dbName.c_str(), ec);
-            if (ec)
-            {
-                std::cerr << "Error removing file: " << ec.message() << '\n';
-            }
-        }
-    }
+    void TearDown() override {}
 };
 
 TEST_F(StorageTest, StoreSingleMessage)
@@ -234,22 +211,9 @@ TEST_F(StorageTest, GetMessagesByMoreSize)
 class StorageMultithreadedTest : public ::testing::Test
 {
 protected:
-    const std::string dbName = "testdb";
     const std::vector<std::string> m_vMessageTypeStrings {"test_table1", "test_table2", "test_table3"};
 
-    void SetUp() override
-    {
-        // Clean up: Delete the Storage instances and remove the database file
-        std::error_code ec;
-        if (std::filesystem::exists(dbName.c_str()))
-        {
-            std::filesystem::remove(dbName.c_str());
-            if (ec)
-            {
-                std::cerr << "Error removing file: " << ec.message() << '\n';
-            }
-        }
-    }
+    void SetUp() override {}
 
     void TearDown() override {}
 };
@@ -274,7 +238,8 @@ TEST_F(StorageMultithreadedTest, MultithreadedStoreAndRetrieve)
 {
     constexpr size_t messagesToStore = 100;
 
-    Storage storage1(dbName, m_vMessageTypeStrings);
+    Storage storage1(".", m_vMessageTypeStrings);
+    storage1.Clear(m_vMessageTypeStrings);
 
     auto messages1 = nlohmann::json::array();
     auto messages2 = nlohmann::json::array();

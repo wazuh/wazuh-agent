@@ -1,7 +1,6 @@
 #pragma once
 
 #include <command_entry.hpp>
-#include <command_store.hpp>
 #include <logger.hpp>
 
 #include <boost/asio.hpp>
@@ -11,6 +10,12 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
+
+namespace command_store
+{
+    class CommandStore;
+} // namespace command_store
 
 namespace command_handler
 {
@@ -24,95 +29,26 @@ namespace command_handler
     public:
         /// @brief CommandHandler constructor
         /// @param dbFolderPath The path to the database folder
-        CommandHandler(const std::string& dbFolderPath)
-            : m_commandStore(dbFolderPath)
-        {
-        }
+        CommandHandler(const std::string& dbFolderPath);
+
+        /// @brief CommandHandler destructor
+        ~CommandHandler();
 
         /// @brief Processes commands asynchronously
         ///
         /// This task retrieves commands from the queue and dispatches them for execution.
         /// If no command is available, it waits for a specified duration before retrying.
         ///
-        /// @tparam T The type of the command to process
-        /// @param GetCommandFromQueue Function to retrieve a command from the queue
-        /// @param PopCommandFromQueue Function to remove a command from the queue
-        /// @param ReportCommandResult Function to report a command result
-        /// @param DispatchCommand Function to dispatch the command for execution
-        template<typename T>
-        boost::asio::awaitable<void> CommandsProcessingTask(
-            const std::function<std::optional<T>()> GetCommandFromQueue,
-            const std::function<void()> PopCommandFromQueue,
-            const std::function<void(T&)> ReportCommandResult,
-            const std::function<boost::asio::awaitable<module_command::CommandExecutionResult>(T&)> DispatchCommand)
-        {
-            using namespace std::chrono_literals;
-            const auto executor = co_await boost::asio::this_coro::executor;
-            std::unique_ptr<boost::asio::steady_timer> expTimer = std::make_unique<boost::asio::steady_timer>(executor);
-
-            CleanUpInProgressCommands(ReportCommandResult);
-
-            while (m_keepRunning.load())
-            {
-                auto cmd = GetCommandFromQueue();
-                if (cmd == std::nullopt)
-                {
-                    expTimer->expires_after(1000ms);
-                    co_await expTimer->async_wait(boost::asio::use_awaitable);
-                    continue;
-                }
-
-                LogDebug("Processing command: {}({})", cmd.value().Command, cmd.value().Parameters.dump());
-
-                if (!CheckCommand(cmd.value()))
-                {
-                    cmd.value().ExecutionResult.ErrorCode = module_command::Status::FAILURE;
-                    cmd.value().ExecutionResult.Message = "Command is not valid";
-                    LogError("Error checking module and args for command: {} {}. Error: {}",
-                             cmd.value().Id,
-                             cmd.value().Command,
-                             cmd.value().ExecutionResult.Message);
-                    ReportCommandResult(cmd.value());
-                    PopCommandFromQueue();
-                    continue;
-                }
-
-                if (!m_commandStore.StoreCommand(cmd.value()))
-                {
-                    cmd.value().ExecutionResult.ErrorCode = module_command::Status::FAILURE;
-                    cmd.value().ExecutionResult.Message = "Agent's database failure";
-                    LogError("Error storing command: {} {}. Error: {}",
-                             cmd.value().Id,
-                             cmd.value().Command,
-                             cmd.value().ExecutionResult.Message);
-                    ReportCommandResult(cmd.value());
-                    PopCommandFromQueue();
-                    continue;
-                }
-
-                PopCommandFromQueue();
-
-                if (cmd.value().ExecutionMode == module_command::CommandExecutionMode::SYNC)
-                {
-                    cmd.value().ExecutionResult = co_await DispatchCommand(cmd.value());
-                    m_commandStore.UpdateCommand(cmd.value());
-                    LogInfo("Done processing command: {}({})", cmd.value().Command, cmd.value().Module);
-                }
-                else
-                {
-                    co_spawn(
-                        executor,
-                        [cmd, DispatchCommand, this]() mutable -> boost::asio::awaitable<void>
-                        {
-                            cmd.value().ExecutionResult = co_await DispatchCommand(cmd.value());
-                            m_commandStore.UpdateCommand(cmd.value());
-                            LogInfo("Done processing command: {}({})", cmd.value().Command, cmd.value().Module);
-                            co_return;
-                        },
-                        boost::asio::detached);
-                }
-            }
-        }
+        /// @param getCommandFromQueue Function to retrieve a command from the queue
+        /// @param popCommandFromQueue Function to remove a command from the queue
+        /// @param reportCommandResult Function to report a command result
+        /// @param dispatchCommand Function to dispatch the command for execution
+        boost::asio::awaitable<void>
+        CommandsProcessingTask(const std::function<std::optional<module_command::CommandEntry>()> getCommandFromQueue,
+                               const std::function<void()> popCommandFromQueue,
+                               const std::function<void(module_command::CommandEntry&)> reportCommandResult,
+                               const std::function<boost::asio::awaitable<module_command::CommandExecutionResult>(
+                                   module_command::CommandEntry&)> dispatchCommand);
 
         /// @brief Stops the command handler
         void Stop();
@@ -122,26 +58,10 @@ namespace command_handler
         ///
         /// This function will set the status of all commands that are currently in
         /// progress to FAILED and update the command store. It will also call the
-        /// ReportCommandResult function for each command to report the result.
+        /// reportCommandResult function for each command to report the result.
         ///
-        /// @tparam T The type of the command
-        /// @param ReportCommandResult The function to report the command result
-        template<typename T>
-        void CleanUpInProgressCommands(std::function<void(T&)> ReportCommandResult)
-        {
-            auto cmds = m_commandStore.GetCommandByStatus(module_command::Status::IN_PROGRESS);
-
-            if (cmds != std::nullopt)
-            {
-                for (auto& cmd : *cmds)
-                {
-                    cmd.ExecutionResult.ErrorCode = module_command::Status::FAILURE;
-                    cmd.ExecutionResult.Message = "Agent stopped during execution";
-                    ReportCommandResult(cmd);
-                    m_commandStore.UpdateCommand(cmd);
-                }
-            }
-        }
+        /// @param reportCommandResult The function to report the command result
+        void CleanUpInProgressCommands(std::function<void(module_command::CommandEntry&)> reportCommandResult);
 
         /// @brief Check if the command is valid
         ///
@@ -158,7 +78,7 @@ namespace command_handler
         /// @brief Indicates whether the command handler is running or not
         std::atomic<bool> m_keepRunning = true;
 
-        /// @brief An instance of the command store
-        command_store::CommandStore m_commandStore;
+        /// @brief Unique pointer to the command store
+        std::unique_ptr<command_store::CommandStore> m_commandStore;
     };
 } // namespace command_handler
