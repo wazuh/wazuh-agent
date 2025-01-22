@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
 
-set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/../../vcpkg/scripts/buildsystems/vcpkg.cmake")
-set(VCPKG_MANIFEST_DIR ${CMAKE_SOURCE_DIR}/../../)
-
 project(Communicator)
 
 include(../../cmake/CommonSettings.cmake)
@@ -26,9 +23,9 @@ endif()
 add_library(Communicator src/communicator.cpp src/http_client.cpp src/http_request_params.cpp ${VERIFY_UTILS_FILE})
 
 target_include_directories(Communicator PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-        SYSTEM PRIVATE
-        ${JWT_CPP_INCLUDE_DIRS})
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    SYSTEM PRIVATE
+    ${JWT_CPP_INCLUDE_DIRS})
 
 target_compile_definitions(Communicator PRIVATE -DJWT_DISABLE_PICOJSON=ON)
 target_link_libraries(Communicator PUBLIC Config ConfigurationParser Boost::asio Boost::beast Boost::system Boost::url Logger PRIVATE OpenSSL::SSL OpenSSL::Crypto nlohmann_json::nlohmann_json)

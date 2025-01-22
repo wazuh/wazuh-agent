@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
 
-set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/../../vcpkg/scripts/buildsystems/vcpkg.cmake")
-set(VCPKG_MANIFEST_DIR ${CMAKE_SOURCE_DIR}/../../)
-
 project(Logcollector)
 
 include(../../cmake/CommonSettings.cmake)
@@ -17,6 +14,7 @@ if(APPLE)
     find_package(fmt REQUIRED)
     add_subdirectory(src/macos_reader/oslogstore)
 endif()
+
 find_package(cJSON CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
