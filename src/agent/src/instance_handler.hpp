@@ -17,12 +17,9 @@ namespace instance_handler
         /// "".
         InstanceHandler(std::string lockFilePath);
 
-        /// @details Removes lock file if it was created on construction (linux/macOS only). Windows implementation uses
-        /// a named mutex which is released on destruction by the OS.
-        ~InstanceHandler()
-        {
-            releaseInstanceLock();
-        }
+        /// @brief Destructor
+        /// @details Removes lock file or releases the mutex if it was created on construction
+        ~InstanceHandler();
 
         /// @brief Checks if the instance lock has been successfully acquired
         /// @return True if the lock is acquired, false otherwise

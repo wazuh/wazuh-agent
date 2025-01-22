@@ -23,6 +23,11 @@ namespace fs = std::filesystem;
 
 namespace instance_handler
 {
+    InstanceHandler::~InstanceHandler()
+    {
+        releaseInstanceLock();
+    }
+
     void InstanceHandler::releaseInstanceLock() const
     {
         if (!m_lockAcquired)
@@ -104,18 +109,18 @@ namespace instance_handler
 
     std::string GetAgentStatus(const std::string& configFilePath)
     {
-        InstanceHandler lockFileHandler = GetInstanceHandler(configFilePath);
+        InstanceHandler instanceHandler = GetInstanceHandler(configFilePath);
 
-        if (!lockFileHandler.isLockAcquired())
+        if (!instanceHandler.isLockAcquired())
         {
-            if (lockFileHandler.getErrno() == EAGAIN)
+            if (instanceHandler.getErrno() == EAGAIN)
             {
                 return "running";
             }
             else
             {
                 return fmt::format(
-                    "Error: {} ({})", lockFileHandler.getErrno(), std::strerror(lockFileHandler.getErrno()));
+                    "Error: {} ({})", instanceHandler.getErrno(), std::strerror(instanceHandler.getErrno()));
             }
         }
 
