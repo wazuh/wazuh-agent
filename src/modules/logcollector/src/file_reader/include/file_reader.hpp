@@ -9,6 +9,8 @@
 #include <logcollector.hpp>
 #include <reader.hpp>
 
+const std::string FILE_READER_TYPE = "file";
+
 namespace logcollector
 {
 
@@ -128,7 +130,7 @@ namespace logcollector
         std::time_t m_reloadInterval;
 
         /// @brief File pattern
-        const std::string m_collectorType = "file";
+        const std::string m_collectorType = FILE_READER_TYPE;
     };
 
     /// @brief Open error class

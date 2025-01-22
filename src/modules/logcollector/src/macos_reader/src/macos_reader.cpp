@@ -9,7 +9,7 @@
 
 namespace
 {
-    const std::string COLLECTOR_TYPE = "macos";
+    const std::string COLLECTOR_TYPE = "macos-uls";
 }
 
 namespace logcollector
