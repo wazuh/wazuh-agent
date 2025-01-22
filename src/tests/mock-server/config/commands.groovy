@@ -11,13 +11,15 @@ def generateUUIDv7() {
 }
 
 def actions = [
-    ["name": "set-group", "version": "v5.0.0", "args": ["validYaml", "invalidYaml"]],
-    ["name": "set-group", "version": "v5.0.0", "args": []],
-    ["name": "set-group", "version": "v5.0.0", "args": [""]],
-    ["name": "set-group", "version": "v5.0.0", "args": ["validYaml", 8]],
-    ["name": "set-group", "version": "v5.0.0", "args": ["validYaml"]],
-    ["name": "update-group", "version": "v5.0.0", "args": ["noNeedArgs"]],
-    ["name": "update-group", "version": "v5.0.0"],
+    ["name": "set-group", "version": "v5.0.0", "args": ["groups": ["validYaml", "invalidYaml"]]],
+    ["name": "set-group", "version": "v5.0.0", "args": ["groups": []]],
+    ["name": "set-group", "version": "v5.0.0", "args": ["groups": [""]]],
+    ["name": "set-group", "version": "v5.0.0", "args": ["groups": ["validYaml", 8]]],
+    ["name": "set-group", "version": "v5.0.0", "args": ["groups": ["validYaml"]]],
+    ["name": "set-group", "version": "v5.0.0"],
+    ["name": "set-group", "version": "v5.0.0", "args": ["other": "noNeedArgs"]],
+    ["name": "set-group", "version": "v5.0.0", "args": ["groups": ["validYaml"],"other": "noNeedArgs"]],
+    ["name": "update-group", "version": "v5.0.0", "args": ["groups": ["noNeedArgs"]]],
     ["name": "update-group", "version": "v5.0.0", "args": ""]
 ]
 
