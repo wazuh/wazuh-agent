@@ -19,7 +19,15 @@ namespace centralized_configuration
                 if (m_setGroupIdFunction && m_downloadGroupFilesFunction && m_validateFileFunction &&
                     m_reloadModulesFunction)
                 {
-                    groupIds = parameters.get<std::vector<std::string>>();
+                    groupIds = parameters.at("groups").get<std::vector<std::string>>();
+                    if (!std::all_of(
+                            groupIds.begin(), groupIds.end(), [](const std::string& id) { return !id.empty(); }))
+                    {
+                        LogWarn("Group name can not be an empty string.");
+                        co_return module_command::CommandExecutionResult {
+                            module_command::Status::FAILURE,
+                            "CentralizedConfiguration group set failed, a group name can not be an empty string."};
+                    }
 
                     if (!m_setGroupIdFunction(groupIds))
                     {
