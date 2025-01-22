@@ -2,6 +2,7 @@
 
 #include "process_options.hpp"
 #include <agent.hpp>
+#include <instance_handler.hpp>
 #include <logger.hpp>
 #include <signal_handler.hpp>
 
@@ -203,8 +204,6 @@ namespace WindowsService
 
         ReportServiceStatus(SERVICE_RUNNING, NO_ERROR, 0);
 
-        LogInfo("Starting Wazuh Agent.");
-
         std::string configFilePath;
         if (argc > 1 && argv[1] != nullptr)
         {
@@ -221,6 +220,17 @@ namespace WindowsService
 
         try
         {
+            instance_handler::InstanceHandler instanceHandler = instance_handler::GetInstanceHandler(configFilePath);
+
+            if (!instanceHandler.isLockAcquired())
+            {
+                LogError("Wazuh Agent cannot start. Wazuh Agent is already running");
+                ReportServiceStatus(SERVICE_STOPPED, NO_ERROR, 0);
+                return;
+            }
+
+            LogInfo("Starting Wazuh Agent.");
+
             Agent agent(configFilePath);
             agent.Run();
         }

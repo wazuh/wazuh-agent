@@ -3,18 +3,15 @@
 #include <agent.hpp>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
+#include <instance_handler.hpp>
 #include <logger.hpp>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 #include <windows_service.hpp>
 
+#include <iostream>
 #include <memory>
 #include <vector>
-
-void StartAgentService(const std::string& configFilePath)
-{
-    WindowsService::ServiceStart(configFilePath);
-}
 
 void StartAgent(const std::string& configFilePath)
 {
@@ -28,6 +25,15 @@ void StartAgent(const std::string& configFilePath)
             logger->sinks().push_back(stdOutSink);
         }
 
+        instance_handler::InstanceHandler instanceHandler = instance_handler::GetInstanceHandler(configFilePath);
+
+        if (!instanceHandler.isLockAcquired())
+        {
+            std::cout << "wazuh-agent already running\n";
+            return;
+        }
+
+        LogInfo("Starting wazuh-agent");
         Agent agent(configFilePath);
         agent.Run();
     }
@@ -35,11 +41,6 @@ void StartAgent(const std::string& configFilePath)
     {
         LogError("Exception thrown in wazuh-agent: {}", e.what());
     }
-}
-
-void StatusAgent([[maybe_unused]] const std::string& configFilePath)
-{
-    // TODO: implement our own status function using lock files
 }
 
 bool InstallService()
