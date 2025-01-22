@@ -61,6 +61,8 @@ namespace command_handler
                     continue;
                 }
 
+                LogDebug("Processing command: {}({})", cmd.value().Command, cmd.value().Parameters.dump());
+
                 if (!CheckCommand(cmd.value()))
                 {
                     cmd.value().ExecutionResult.ErrorCode = module_command::Status::FAILURE;
