@@ -9,7 +9,7 @@
 #include <nlohmann/json.hpp>
 
 const nlohmann::json BASE_DATA_CONTENT =
-    R"({"document_id":"112233", "action":{"name":"command_test","args":["parameters_test"]}})"_json;
+    R"({"document_id":"112233", "action":{"name":"command_test","args":{"parameters":["parameters_test"]}}})"_json;
 
 const auto FUNC = []<typename T>([[maybe_unused]] const std::string&,
                                  [[maybe_unused]] const std::string&) -> std::optional<T>
@@ -206,8 +206,8 @@ TEST_F(MessageQueueUtilsTest, GetCommandFromQueueTest)
 
     ASSERT_EQ(cmd.has_value() ? cmd.value().Id : "", "112233");
     ASSERT_EQ(cmd.has_value() ? cmd.value().Command : "", "command_test");
-    ASSERT_EQ(cmd.has_value() ? cmd.value().Parameters : nlohmann::json::array({""}),
-              nlohmann::json::array({"parameters_test"}));
+    ASSERT_EQ(cmd.has_value() ? cmd.value().Parameters : nlohmann::json::object({"{}"}),
+              R"({"parameters":["parameters_test"]})"_json);
     ASSERT_EQ(cmd.has_value() ? cmd.value().ExecutionResult.ErrorCode : module_command::Status::UNKNOWN,
               module_command::Status::IN_PROGRESS);
 }
