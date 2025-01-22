@@ -1,6 +1,6 @@
 #pragma once
 
-#include <https_socket_verify_utils.hpp>
+#include "https_socket_verify_utils.hpp"
 #include <ihttp_socket.hpp>
 #include <logger.hpp>
 
@@ -72,19 +72,27 @@ namespace http_client
             {
                 m_ssl_socket.next_layer().expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
                 m_ssl_socket.next_layer().async_connect(
-                    endpoints, [&ec](boost::beast::error_code const& code, auto const&) { ec = code; });
-                if (ec)
-                {
-                    LogDebug("Connect failed: {}", ec.message());
-                    return;
-                }
+                    endpoints,
+                    [this, &ec](boost::system::error_code const& ecConnect, auto const&)
+                    {
+                        ec = ecConnect;
+                        if (ec)
+                        {
+                            LogDebug("Connect failed: {}", ec.message());
+                            return;
+                        }
 
-                m_ssl_socket.handshake(boost::asio::ssl::stream_base::client, ec);
-                if (ec)
-                {
-                    LogDebug("Handshake failed: {}", ec.message());
-                    return;
-                }
+                        m_ssl_socket.next_layer().expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+                        m_ssl_socket.async_handshake(boost::asio::ssl::stream_base::client,
+                                                     [&ec](const boost::system::error_code& ecHandshake)
+                                                     {
+                                                         ec = ecHandshake;
+                                                         if (ecHandshake)
+                                                         {
+                                                             LogInfo("Handshake failed: {}", ecHandshake.message());
+                                                         }
+                                                     });
+                    });
             }
             catch (const std::exception& e)
             {
