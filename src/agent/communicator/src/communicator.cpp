@@ -34,6 +34,11 @@ namespace communicator
         , m_getHeaderInfo(std::move(getHeaderInfo))
         , m_token(std::make_shared<std::string>())
     {
+        if (!m_httpClient)
+        {
+            throw std::runtime_error(std::string("Invalid HTTP Client passed."));
+        }
+
         if (!configurationParser)
         {
             throw std::runtime_error(std::string("Invalid Configuration Parser passed."));

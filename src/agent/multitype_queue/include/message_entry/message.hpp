@@ -23,6 +23,12 @@ public:
     std::string moduleType;
     std::string metaData;
 
+    /// @brief Constructor
+    /// @param t The type of the message
+    /// @param d The json data
+    /// @param mN The module name
+    /// @param mT The module type
+    /// @param mD The metadata
     Message(MessageType t, nlohmann::json d, std::string mN = "", std::string mT = "", std::string mD = "")
         : type(t)
         , data(d)
@@ -32,7 +38,7 @@ public:
     {
     }
 
-    // Define equality operator
+    /// @brief Define equality operator
     bool operator==(const Message& other) const
     {
         return type == other.type && data == other.data && moduleName == other.moduleName &&

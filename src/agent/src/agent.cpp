@@ -142,7 +142,7 @@ void Agent::Run()
             [this](const module_command::CommandEntry& cmd) { return ReportCommandResult(cmd, m_messageQueue); },
             [this](module_command::CommandEntry& cmd)
             {
-                if (cmd.Module == "CentralizedConfiguration")
+                if (cmd.Module == module_command::CENTRALIZED_CONFIGURATION_MODULE)
                 {
                     return DispatchCommand(
                         cmd,

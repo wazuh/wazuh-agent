@@ -143,8 +143,7 @@ TEST_F(JsonTest, JSONArrays)
 
 TEST_F(MultiTypeQueueTest, Constructor)
 {
-    std::shared_ptr<configuration::ConfigurationParser> configurationParser =
-        std::make_shared<configuration::ConfigurationParser>();
+    auto configurationParser = std::make_shared<configuration::ConfigurationParser>();
 
     EXPECT_NO_THROW(MultiTypeQueue multiTypeQueue(configurationParser));
 }

@@ -5,8 +5,7 @@
 
 TEST(CommandHandlerTest, CommandHandlerConstructor)
 {
-    std::shared_ptr<configuration::ConfigurationParser> configurationParser =
-        std::make_shared<configuration::ConfigurationParser>();
+    auto configurationParser = std::make_shared<configuration::ConfigurationParser>();
 
     EXPECT_NO_THROW(command_handler::CommandHandler cm(configurationParser));
 }

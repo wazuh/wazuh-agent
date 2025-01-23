@@ -11,11 +11,13 @@ namespace
     };
 
     const std::unordered_map<std::string, CommandDetails> VALID_COMMANDS_MAP = {
-        {"set-group",
-         CommandDetails {"CentralizedConfiguration",
+        {module_command::SET_GROUP_COMMAND,
+         CommandDetails {module_command::CENTRALIZED_CONFIGURATION_MODULE,
                          module_command::CommandExecutionMode::SYNC,
-                         {{"groups", nlohmann::json::value_t::array}}}},
-        {"update-group", CommandDetails {"CentralizedConfiguration", module_command::CommandExecutionMode::SYNC, {}}}};
+                         {{module_command::GROUPS_ARG, nlohmann::json::value_t::array}}}},
+        {module_command::UPDATE_GROUP_COMMAND,
+         CommandDetails {
+             module_command::CENTRALIZED_CONFIGURATION_MODULE, module_command::CommandExecutionMode::SYNC, {}}}};
 } // namespace
 
 namespace command_handler

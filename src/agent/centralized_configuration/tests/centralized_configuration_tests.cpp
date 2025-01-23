@@ -51,7 +51,72 @@ public:
 
 TEST(CentralizedConfiguration, Constructor)
 {
-    EXPECT_NO_THROW(CentralizedConfiguration centralizedConfiguration(nullptr, nullptr, nullptr, nullptr, nullptr));
+    EXPECT_NO_THROW(CentralizedConfiguration centralizedConfiguration(
+        [](const std::vector<std::string>&) { return true; },
+        []() { return std::vector<std::string> {}; },
+        [](std::string, std::string) -> boost::asio::awaitable<bool> { co_return true; },
+        [](const std::filesystem::path&) { return true; },
+        []() {},
+        nullptr));
+}
+
+TEST(CentralizedConfiguration, ConstructorNoGetGroups)
+{
+    EXPECT_THROW(CentralizedConfiguration centralizedConfiguration(
+                     nullptr,
+                     []() { return std::vector<std::string> {}; },
+                     [](std::string, std::string) -> boost::asio::awaitable<bool> { co_return true; },
+                     [](const std::filesystem::path&) { return true; },
+                     []() {},
+                     nullptr),
+                 std::runtime_error);
+}
+
+TEST(CentralizedConfiguration, ConstructorNoSetGroups)
+{
+    EXPECT_THROW(CentralizedConfiguration centralizedConfiguration(
+                     [](const std::vector<std::string>&) { return true; },
+                     nullptr,
+                     [](std::string, std::string) -> boost::asio::awaitable<bool> { co_return true; },
+                     [](const std::filesystem::path&) { return true; },
+                     []() {},
+                     nullptr),
+                 std::runtime_error);
+}
+
+TEST(CentralizedConfiguration, ConstructorNoDownloadGroups)
+{
+    EXPECT_THROW(CentralizedConfiguration centralizedConfiguration([](const std::vector<std::string>&) { return true; },
+                                                                   []() { return std::vector<std::string> {}; },
+                                                                   nullptr,
+                                                                   [](const std::filesystem::path&) { return true; },
+                                                                   []() {},
+                                                                   nullptr),
+                 std::runtime_error);
+}
+
+TEST(CentralizedConfiguration, ConstructorNoValidateGroups)
+{
+    EXPECT_THROW(CentralizedConfiguration centralizedConfiguration(
+                     [](const std::vector<std::string>&) { return true; },
+                     []() { return std::vector<std::string> {}; },
+                     [](std::string, std::string) -> boost::asio::awaitable<bool> { co_return true; },
+                     nullptr,
+                     []() {},
+                     nullptr),
+                 std::runtime_error);
+}
+
+TEST(CentralizedConfiguration, ConstructorNoReloadModules)
+{
+    EXPECT_THROW(CentralizedConfiguration centralizedConfiguration(
+                     [](const std::vector<std::string>&) { return true; },
+                     []() { return std::vector<std::string> {}; },
+                     [](std::string, std::string) -> boost::asio::awaitable<bool> { co_return true; },
+                     [](const std::filesystem::path&) { return true; },
+                     nullptr,
+                     nullptr),
+                 std::runtime_error);
 }
 
 TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnUnrecognizedCommand)
@@ -62,7 +127,13 @@ TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnUnrecognizedCommand
         io_context,
         []() -> boost::asio::awaitable<void>
         {
-            CentralizedConfiguration centralizedConfiguration(nullptr, nullptr, nullptr, nullptr, nullptr);
+            CentralizedConfiguration centralizedConfiguration(
+                [](const std::vector<std::string>&) { return true; },
+                []() { return std::vector<std::string> {}; },
+                [](std::string, std::string) -> boost::asio::awaitable<bool> { co_return true; },
+                [](const std::filesystem::path&) { return true; },
+                []() {},
+                nullptr);
             co_await TestExecuteCommand(centralizedConfiguration,
                                         "unknown-command",
                                         {},
@@ -84,7 +155,7 @@ TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnParseParameters)
         {
             CentralizedConfiguration centralizedConfiguration(
                 [](const std::vector<std::string>&) { return true; },
-                nullptr,
+                []() { return std::vector<std::string> {}; },
                 [](std::string, std::string) -> boost::asio::awaitable<bool> { co_return true; },
                 [](const std::filesystem::path&) { return true; },
                 []() {});
@@ -197,7 +268,7 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForS
                     wasSetGroupIdFunctionCalled = true;
                     return true;
                 },
-                nullptr,
+                []() { return std::vector<std::string> {}; },
                 [&wasDownloadGroupFilesFunctionCalled](std::string, std::string) -> boost::asio::awaitable<bool>
                 {
                     wasDownloadGroupFilesFunctionCalled = true;
@@ -250,7 +321,7 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForU
             bool wasDownloadGroupFilesFunctionCalled = false;
 
             CentralizedConfiguration centralizedConfiguration(
-                nullptr,
+                [](const std::vector<std::string>&) { return true; },
                 // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
                 [&wasGetGroupIdFunctionCalled]()
                 {

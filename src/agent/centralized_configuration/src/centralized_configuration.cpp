@@ -6,6 +6,29 @@
 
 namespace centralized_configuration
 {
+    CentralizedConfiguration::CentralizedConfiguration(SetGroupIdFunctionType setGroupIdFunction,
+                                                       GetGroupIdFunctionType getGroupIdFunction,
+                                                       DownloadGroupFilesFunctionType downloadGroupFilesFunction,
+                                                       ValidateFileFunctionType validateFileFunction,
+                                                       ReloadModulesFunctionType reloadModulesFunction,
+                                                       std::shared_ptr<IFileSystem> fileSystemWrapper)
+        : m_setGroupIdFunction(std::move(setGroupIdFunction))
+        , m_getGroupIdFunction(std::move(getGroupIdFunction))
+        , m_downloadGroupFilesFunction(std::move(downloadGroupFilesFunction))
+        , m_validateFileFunction(std::move(validateFileFunction))
+        , m_reloadModulesFunction(std::move(reloadModulesFunction))
+        , m_fileSystemWrapper(fileSystemWrapper ? fileSystemWrapper
+                                                : std::make_shared<filesystem_wrapper::FileSystemWrapper>())
+    {
+        if (m_setGroupIdFunction == nullptr || m_getGroupIdFunction == nullptr ||
+            m_downloadGroupFilesFunction == nullptr || m_validateFileFunction == nullptr ||
+            m_reloadModulesFunction == nullptr)
+        {
+            throw std::runtime_error("SetGroupIdFunction, GetGroupIdFunction, DownloadGroupFilesFunction, "
+                                     "ValidateFileFunction, and ReloadModulesFunction must be provided.");
+        }
+    }
+
     boost::asio::awaitable<module_command::CommandExecutionResult> CentralizedConfiguration::ExecuteCommand(
         const std::string command,       // NOLINT(performance-unnecessary-value-param)
         const nlohmann::json parameters) // NOLINT(performance-unnecessary-value-param)
@@ -14,73 +37,48 @@ namespace centralized_configuration
         {
             std::vector<std::string> groupIds {};
 
-            if (command == "set-group")
+            if (command == module_command::SET_GROUP_COMMAND)
             {
-                if (m_setGroupIdFunction && m_downloadGroupFilesFunction && m_validateFileFunction &&
-                    m_reloadModulesFunction)
+                groupIds = parameters.at(module_command::GROUPS_ARG).get<std::vector<std::string>>();
+                if (!std::all_of(groupIds.begin(), groupIds.end(), [](const std::string& id) { return !id.empty(); }))
                 {
-                    groupIds = parameters.at("groups").get<std::vector<std::string>>();
-                    if (!std::all_of(
-                            groupIds.begin(), groupIds.end(), [](const std::string& id) { return !id.empty(); }))
-                    {
-                        LogWarn("Group name can not be an empty string.");
-                        co_return module_command::CommandExecutionResult {
-                            module_command::Status::FAILURE,
-                            "CentralizedConfiguration group set failed, a group name can not be an empty string."};
-                    }
+                    LogWarn("Group name can not be an empty string.");
+                    co_return module_command::CommandExecutionResult {
+                        module_command::Status::FAILURE,
+                        "CentralizedConfiguration group set failed, a group name can not be an empty string."};
+                }
 
-                    if (!m_setGroupIdFunction(groupIds))
-                    {
-                        LogWarn("Group set failed, error saving group information");
-                        co_return module_command::CommandExecutionResult {
-                            module_command::Status::FAILURE,
-                            "CentralizedConfiguration group set failed, error saving group information"};
-                    }
+                if (!m_setGroupIdFunction(groupIds))
+                {
+                    LogWarn("Group set failed, error saving group information");
+                    co_return module_command::CommandExecutionResult {
+                        module_command::Status::FAILURE,
+                        "CentralizedConfiguration group set failed, error saving group information"};
+                }
 
-                    try
-                    {
-                        std::filesystem::path sharedDirPath(config::DEFAULT_SHARED_CONFIG_PATH);
+                try
+                {
+                    std::filesystem::path sharedDirPath(config::DEFAULT_SHARED_CONFIG_PATH);
 
-                        if (m_fileSystemWrapper->exists(sharedDirPath) &&
-                            m_fileSystemWrapper->is_directory(sharedDirPath))
+                    if (m_fileSystemWrapper->exists(sharedDirPath) && m_fileSystemWrapper->is_directory(sharedDirPath))
+                    {
+                        for (const auto& entry : std::filesystem::directory_iterator(sharedDirPath))
                         {
-                            for (const auto& entry : std::filesystem::directory_iterator(sharedDirPath))
-                            {
-                                m_fileSystemWrapper->remove_all(entry);
-                            }
+                            m_fileSystemWrapper->remove_all(entry);
                         }
                     }
-                    catch (const std::filesystem::filesystem_error& e)
-                    {
-                        LogWarn("Error while cleaning the shared directory {}.", e.what());
-                        co_return module_command::CommandExecutionResult {
-                            module_command::Status::FAILURE,
-                            "CentralizedConfiguration group set failed, error while cleaning the shared directory"};
-                    }
                 }
-                else
+                catch (const std::filesystem::filesystem_error& e)
                 {
-                    LogWarn("Group set failed, one of the required functions has not been set.");
+                    LogWarn("Error while cleaning the shared directory {}.", e.what());
                     co_return module_command::CommandExecutionResult {
                         module_command::Status::FAILURE,
-                        "CentralizedConfiguration group set failed, one of the required functions has not been set."};
+                        "CentralizedConfiguration group set failed, error while cleaning the shared directory"};
                 }
             }
-            else if (command == "update-group")
+            else if (command == module_command::UPDATE_GROUP_COMMAND)
             {
-                if (m_getGroupIdFunction && m_downloadGroupFilesFunction && m_validateFileFunction &&
-                    m_reloadModulesFunction)
-                {
-                    groupIds = m_getGroupIdFunction();
-                }
-                else
-                {
-                    LogWarn("Group update failed, one of the required functions has not been set.");
-                    co_return module_command::CommandExecutionResult {
-                        module_command::Status::FAILURE,
-                        "CentralizedConfiguration group update failed, one of the required functions has not been "
-                        "set."};
-                }
+                groupIds = m_getGroupIdFunction();
             }
             else
             {

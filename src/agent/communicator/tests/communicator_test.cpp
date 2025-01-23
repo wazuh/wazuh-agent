@@ -41,15 +41,28 @@ namespace
 
 TEST(CommunicatorTest, CommunicatorConstructor)
 {
-    std::shared_ptr<configuration::ConfigurationParser> configurationParser =
-        std::make_shared<configuration::ConfigurationParser>();
+    auto mockHttpClient = std::make_unique<MockHttpClient>();
 
-    EXPECT_NO_THROW(communicator::Communicator communicator(nullptr, configurationParser, "uuid", "key", nullptr));
+    auto configurationParser = std::make_shared<configuration::ConfigurationParser>();
+
+    EXPECT_NO_THROW(communicator::Communicator communicator(
+        std::move(mockHttpClient), configurationParser, "uuid", "key", nullptr));
+}
+
+TEST(CommunicatorTest, CommunicatorConstructorNoHttpClient)
+{
+    auto configurationParser = std::make_shared<configuration::ConfigurationParser>();
+
+    EXPECT_THROW(communicator::Communicator communicator(nullptr, configurationParser, "uuid", "key", nullptr),
+                 std::runtime_error);
 }
 
 TEST(CommunicatorTest, CommunicatorConstructorNoConfigParser)
 {
-    EXPECT_THROW(communicator::Communicator communicator(nullptr, nullptr, "uuid", "key", nullptr), std::runtime_error);
+    auto mockHttpClient = std::make_unique<MockHttpClient>();
+
+    EXPECT_THROW(communicator::Communicator communicator(std::move(mockHttpClient), nullptr, "uuid", "key", nullptr),
+                 std::runtime_error);
 }
 
 TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)

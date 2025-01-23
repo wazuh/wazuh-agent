@@ -37,16 +37,7 @@ namespace centralized_configuration
                                           DownloadGroupFilesFunctionType downloadGroupFilesFunction,
                                           ValidateFileFunctionType validateFileFunction,
                                           ReloadModulesFunctionType reloadModulesFunction,
-                                          std::shared_ptr<IFileSystem> fileSystemWrapper = nullptr)
-            : m_setGroupIdFunction(std::move(setGroupIdFunction))
-            , m_getGroupIdFunction(std::move(getGroupIdFunction))
-            , m_downloadGroupFilesFunction(std::move(downloadGroupFilesFunction))
-            , m_validateFileFunction(std::move(validateFileFunction))
-            , m_reloadModulesFunction(std::move(reloadModulesFunction))
-            , m_fileSystemWrapper(fileSystemWrapper ? fileSystemWrapper
-                                                    : std::make_shared<filesystem_wrapper::FileSystemWrapper>())
-        {
-        }
+                                          std::shared_ptr<IFileSystem> fileSystemWrapper = nullptr);
 
         /// @brief Executes a command for the centralized configuration system.
         /// @param command A string containing a JSON command to execute.
