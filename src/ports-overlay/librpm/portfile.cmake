@@ -64,7 +64,15 @@ vcpkg_configure_make(
 )
 
 vcpkg_install_make()
-vcpkg_fixup_pkgconfig()
+
+vcpkg_fixup_pkgconfig(
+  RELEASE_FILES
+  ${CURRENT_PACKAGES_DIR}/lib/pkgconfig/rpm.pc
+  DEBUG_FILES
+  ${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig/rpm.pc
+  SKIP_CHECK
+)
+
 vcpkg_copy_pdbs()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share"
