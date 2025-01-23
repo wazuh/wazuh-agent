@@ -12,6 +12,21 @@
     {
       "name": "vcpkg-cmake-config",
       "host": true
+    },
+    {
+      "name": "bzip2"
+    },
+    {
+      "name": "libmagic"
+    },
+    {
+      "name": "libpopt"
+    },
+    {
+      "name": "lua"
+    },
+    {
+      "name": "sqlite3"
     }
   ]
 }

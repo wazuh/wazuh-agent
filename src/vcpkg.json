@@ -23,6 +23,10 @@
         "version>=": "1.85.0"
       },
       {
+        "name": "bzip2",
+        "version>=": "1.0.8#5"
+      },
+      {
         "name": "cjson",
         "version>=": "1.7.17"
       },
