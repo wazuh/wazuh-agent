@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.22)
 
+include(FetchContent)
+FetchContent_Declare(vcpkg
+    GIT_REPOSITORY https://github.com/microsoft/vcpkg/
+    GIT_TAG 2024.09.30
+)
+FetchContent_MakeAvailable(vcpkg)
+
+set(CMAKE_TOOLCHAIN_FILE "${vcpkg_SOURCE_DIR}/scripts/buildsystems/vcpkg.cmake" CACHE FILEPATH "")
+
 get_filename_component(SRC_FOLDER ${CMAKE_SOURCE_DIR}/../ ABSOLUTE)
 get_filename_component(CONFIG_FOLDER ${CMAKE_SOURCE_DIR}/../etc/config/ ABSOLUTE)
 get_filename_component(WINDOWS_FOLDER ${CMAKE_SOURCE_DIR}/../packages/windows/ ABSOLUTE)
