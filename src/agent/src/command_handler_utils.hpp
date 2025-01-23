@@ -1,7 +1,6 @@
 #pragma once
 
 #include <command_entry.hpp>
-#include <imultitype_queue.hpp>
 #include <moduleWrapper.hpp>
 
 #include <boost/asio/awaitable.hpp>
@@ -10,6 +9,8 @@
 #include <functional>
 #include <memory>
 #include <string>
+
+class IMultiTypeQueue;
 
 /// @brief Dispatch a command to be executed locally
 ///

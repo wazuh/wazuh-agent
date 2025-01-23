@@ -5,9 +5,9 @@
 #include <command_handler.hpp>
 #include <communicator.hpp>
 #include <configuration_parser.hpp>
+#include <imultitype_queue.hpp>
 #include <isignal_handler.hpp>
 #include <moduleManager.hpp>
-#include <multitype_queue.hpp>
 #include <signal_handler.hpp>
 #include <task_manager.hpp>
 
@@ -63,7 +63,7 @@ private:
     AgentInfo m_agentInfo;
 
     /// @brief Queue for storing messages
-    std::shared_ptr<MultiTypeQueue> m_messageQueue;
+    std::shared_ptr<IMultiTypeQueue> m_messageQueue;
 
     /// @brief Communicator
     communicator::Communicator m_communicator;

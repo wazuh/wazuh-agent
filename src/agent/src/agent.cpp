@@ -6,6 +6,7 @@
 #include <http_client.hpp>
 #include <message.hpp>
 #include <message_queue_utils.hpp>
+#include <multitype_queue.hpp>
 
 #include <filesystem>
 #include <memory>
