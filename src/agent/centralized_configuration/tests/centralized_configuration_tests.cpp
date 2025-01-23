@@ -89,12 +89,27 @@ TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnParseParameters)
             centralizedConfiguration.ValidateFileFunction([](const std::filesystem::path&) { return true; });
             centralizedConfiguration.ReloadModulesFunction([]() {});
 
-            const nlohmann::json parameterList = nlohmann::json::parse(R"([true, "group2"])");
+            const nlohmann::json parameterListCase1 = nlohmann::json::parse(R"({"groups":[true, "group2"]})");
             co_await TestExecuteCommand(centralizedConfiguration,
                                         "set-group",
-                                        parameterList,
+                                        parameterListCase1,
                                         module_command::Status::FAILURE,
                                         "CentralizedConfiguration error while parsing parameters");
+
+            const nlohmann::json parameterListCase2 = nlohmann::json::parse(R"({"wrongKey":["group1", "group2"]})");
+            co_await TestExecuteCommand(centralizedConfiguration,
+                                        "set-group",
+                                        parameterListCase2,
+                                        module_command::Status::FAILURE,
+                                        "CentralizedConfiguration error while parsing parameters");
+
+            const nlohmann::json parameterListCase3 = nlohmann::json::parse(R"({"groups":["", "group2"]})");
+            co_await TestExecuteCommand(
+                centralizedConfiguration,
+                "set-group",
+                parameterListCase3,
+                module_command::Status::FAILURE,
+                "CentralizedConfiguration group set failed, a group name can not be an empty string.");
         }(),
         boost::asio::detached);
 
@@ -128,7 +143,7 @@ TEST(CentralizedConfiguration, ExecuteCommandHandlesRecognizedCommands)
             centralizedConfiguration.ValidateFileFunction([](const std::filesystem::path&) { return true; });
             centralizedConfiguration.ReloadModulesFunction([]() {});
 
-            const nlohmann::json groupsList = nlohmann::json::parse(R"(["group1", "group2"])");
+            const nlohmann::json groupsList = nlohmann::json::parse(R"({"groups":["group1", "group2"]})");
 
             co_await TestExecuteCommand(centralizedConfiguration,
                                         "set-group",
@@ -174,7 +189,7 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForS
 
             CentralizedConfiguration centralizedConfiguration(std::move(mockFileSystem));
 
-            const nlohmann::json groupsList = nlohmann::json::parse(R"(["group1", "group2"])");
+            const nlohmann::json groupsList = nlohmann::json::parse(R"({"groups":["group1", "group2"]})");
 
             bool wasSetGroupIdFunctionCalled = false;
             bool wasDownloadGroupFilesFunctionCalled = false;

@@ -63,7 +63,7 @@ std::optional<module_command::CommandEntry> GetCommandFromQueue(std::shared_ptr<
 
     std::string id;
     std::string command;
-    nlohmann::json parameters = nlohmann::json::array();
+    nlohmann::json parameters = nlohmann::json::object();
 
     if (jsonData.contains("document_id") && jsonData["document_id"].is_string())
     {
@@ -76,12 +76,9 @@ std::optional<module_command::CommandEntry> GetCommandFromQueue(std::shared_ptr<
         {
             command = jsonData["action"]["name"].get<std::string>();
         }
-        if (jsonData["action"].contains("args") && jsonData["action"]["args"].is_array())
+        if (jsonData["action"].contains("args") && jsonData["action"]["args"].is_object())
         {
-            for (const auto& arg : jsonData["action"]["args"])
-            {
-                parameters.push_back(arg);
-            }
+            parameters = jsonData["action"]["args"];
         }
     }
 
