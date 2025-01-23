@@ -41,7 +41,7 @@ void getDpkgInfo(const std::string& libPath, std::function<void(nlohmann::json&)
  * @brief Fills a JSON object with all available snap-related information
  * @param callback Callback to be called for every single element being found
  */
-// void getSnapInfo(std::function<void(nlohmann::json&)> callback);
+void getSnapInfo(std::function<void(nlohmann::json&)> callback);
 
 // Exception template
 template <LinuxType linuxType>
@@ -74,11 +74,10 @@ class FactoryPackagesCreator<LinuxType::STANDARD> final
                 getRpmInfo(callback);
             }
 
-            // TODO: Implment without http_request library
-            // if (Utils::existsDir(SNAP_PATH))
-            // {
-            //     getSnapInfo(callback);
-            // }
+            if (Utils::existsDir(SNAP_PATH))
+            {
+                getSnapInfo(callback);
+            }
         }
 };
 

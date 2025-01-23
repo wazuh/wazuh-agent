@@ -11,35 +11,50 @@
 #include "sharedDefs.h"
 #include "packageLinuxParserHelper.h"
 
-// TO DO: Replace UNIXSocketRequest and HttpUnixSocketURL
-// #include "UNIXSocketRequest.hpp"
+#include <boost/asio.hpp>
+#include <boost/beast/core.hpp>
+#include <boost/beast/http.hpp>
+#include <iostream>
 
-// void getSnapInfo(std::function<void(nlohmann::json&)> callback)
-// {
-//     UNIXSocketRequest::instance().get(
-//         HttpUnixSocketURL("/run/snapd.socket", "http://localhost/v2/snaps"),
-//         [&](const std::string & result)
-//     {
-//         auto feed = nlohmann::json::parse(result, nullptr, false).at("result");
+namespace http = boost::beast::http;
 
-//         if (feed.is_discarded())
-//         {
-//             std::cerr << "Error parsing JSON feed\n";
-//         }
+void getSnapInfo(std::function<void(nlohmann::json&)> callback)
+{
+   try
+   {
+        boost::asio::io_context io_context;
+        boost::asio::local::stream_protocol::socket socket(io_context);
 
-//         for (const auto& entry : feed)
-//         {
-//             nlohmann::json mapping = PackageLinuxHelper::parseSnap(entry);
+        socket.connect("/run/snapd.socket");
+        http::request<http::string_body> req(http::verb::get, "/v2/snaps", 11);
+        req.set(http::field::host, "localhost");
+        req.set(http::field::connection, "close");
 
-//             if (!mapping.empty())
-//             {
-//                 callback(mapping);
-//             }
-//         }
-//     },
-//     [&](const std::string & result, const long responseCode)
-//     {
-//         std::cerr << "Error retrieving packages using snap unix-socket (" << responseCode << ") " << result << "\n";
-//     });
-// }
+        boost::beast::flat_buffer buffer;
+        http::write(socket, req);
+        http::response<http::string_body> res;
+        http::read(socket, buffer, res);
+
+        auto feed = nlohmann::json::parse(res.body(), nullptr, false);
+        if (feed.is_discarded() && !feed.contains("result") && feed.at("result").is_array())
+        {
+            throw std::runtime_error { "Invalid JSON." };
+        }
+
+        auto result = feed.at("result");
+        for (const auto& entry : result)
+        {
+            nlohmann::json mapping = PackageLinuxHelper::parseSnap(entry);
+            if (!mapping.empty())
+            {
+                callback(mapping);
+            }
+        }
+
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error retrieving packages using snap unix-socket: " << e.what() << std::endl;
+    }
+}
 
