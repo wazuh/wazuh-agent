@@ -14,6 +14,24 @@ namespace
     constexpr int MODULES_START_WAIT_SECS = 60;
 }
 
+ModuleManager::ModuleManager(const std::function<int(Message)>& pushMessage,
+                             std::shared_ptr<configuration::ConfigurationParser> configurationParser,
+                             std::string uuid)
+    : m_pushMessage(pushMessage)
+    , m_configurationParser(std::move(configurationParser))
+    , m_agentUUID(std::move(uuid))
+{
+    if (!m_pushMessage)
+    {
+        throw std::runtime_error("Invalid Push Message Function passed.");
+    }
+
+    if (!m_configurationParser)
+    {
+        throw std::runtime_error("Invalid Configuration Parser passed.");
+    }
+}
+
 void ModuleManager::AddModules()
 {
     {

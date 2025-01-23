@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include <command_store.hpp>
-#include <module_command/command_entry.hpp>
 
 #include <memory>
 #include <optional>

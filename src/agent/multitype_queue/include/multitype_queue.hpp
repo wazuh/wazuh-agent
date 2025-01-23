@@ -1,7 +1,7 @@
 #pragma once
 
+#include <configuration_parser.hpp>
 #include <imultitype_queue.hpp>
-#include <storage.hpp>
 
 #include <config.h>
 #include <logger.hpp>
@@ -16,11 +16,10 @@
 #include <string>
 #include <vector>
 
+class Storage;
+
 namespace
 {
-    // database
-    const std::string QUEUE_DB_NAME = "queue.db";
-
     // table names
     const std::string STATELESS_TABLE_NAME = "STATELESS";
     const std::string STATEFUL_TABLE_NAME = "STATEFUL";
@@ -61,44 +60,9 @@ private:
     std::time_t m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
 
 public:
-    /// @brief Constructor.
-    /// @param getConfigValue Function to retrieve configuration values
-    template<typename ConfigGetter>
-    MultiTypeQueue(const ConfigGetter& getConfigValue)
-        : m_timeout(config::agent::QUEUE_STATUS_REFRESH_TIMER)
-    {
-        auto dbFolderPath =
-            getConfigValue.template operator()<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH);
-
-        m_batchInterval = getConfigValue.template operator()<std::time_t>("events", "batch_interval")
-                              .value_or(config::agent::DEFAULT_BATCH_INTERVAL);
-
-        if (m_batchInterval < 1'000 || m_batchInterval > (1'000 * 60 * 60))
-        {
-            LogWarn("batch_interval must be between 1s and 1h. Using default value.");
-            m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
-        }
-
-        m_maxItems = getConfigValue.template operator()<size_t>("agent", "queue_size")
-                         .value_or(config::agent::QUEUE_DEFAULT_SIZE);
-        if (m_maxItems < 1'000 || m_maxItems > (1'000 * 60 * 60))
-        {
-            LogWarn("queue_size must be between 1'000 and 100'000'000. Using default value {}.",
-                    config::agent::QUEUE_DEFAULT_SIZE);
-            m_maxItems = config::agent::QUEUE_DEFAULT_SIZE;
-        }
-
-        const auto dbFilePath = dbFolderPath + "/" + QUEUE_DB_NAME;
-
-        try
-        {
-            m_persistenceDest = std::make_unique<Storage>(dbFilePath, m_vMessageTypeStrings);
-        }
-        catch (const std::exception& e)
-        {
-            LogError("Error creating persistence: {}.", e.what());
-        }
-    }
+    /// @brief Constructor
+    /// @param configurationParser Pointer to the configuration parser
+    MultiTypeQueue(std::shared_ptr<configuration::ConfigurationParser> configurationParser);
 
     /// @brief Delete copy constructor
     MultiTypeQueue(const MultiTypeQueue&) = delete;
@@ -113,7 +77,7 @@ public:
     MultiTypeQueue& operator=(MultiTypeQueue&&) = delete;
 
     /// @brief Destructor
-    ~MultiTypeQueue() override = default;
+    ~MultiTypeQueue() override;
 
     /// @copydoc IMultiTypeQueue::push(Message, bool)
     int push(Message message, bool shouldWait = false) override;

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <configuration_parser.hpp>
-#include <module_command/command_entry.hpp>
 
 #include <boost/asio/awaitable.hpp>
 

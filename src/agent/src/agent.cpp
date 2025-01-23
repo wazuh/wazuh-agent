@@ -1,38 +1,51 @@
 #include <agent.hpp>
 
+#include <command_entry.hpp>
 #include <command_handler_utils.hpp>
 #include <config.h>
 #include <http_client.hpp>
 #include <message.hpp>
 #include <message_queue_utils.hpp>
-#include <module_command/command_entry.hpp>
+#include <multitype_queue.hpp>
 
 #include <filesystem>
 #include <memory>
 
 Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> signalHandler)
-    : m_configurationParser(configFilePath.empty() ? std::make_shared<configuration::ConfigurationParser>()
+    : m_signalHandler(std::move(signalHandler))
+    , m_configurationParser(configFilePath.empty() ? std::make_shared<configuration::ConfigurationParser>()
                                                    : std::make_shared<configuration::ConfigurationParser>(
                                                          std::filesystem::path(configFilePath)))
-    , m_dataPath(
-          m_configurationParser->GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH))
-    , m_messageQueue(std::make_shared<MultiTypeQueue>(
-          [this]<typename T>(std::string table, std::string key) -> std::optional<T>
-          { return m_configurationParser->GetConfig<T>(std::move(table), std::move(key)); }))
-    , m_signalHandler(std::move(signalHandler))
     , m_agentInfo(
-          m_dataPath, [this]() { return m_sysInfo.os(); }, [this]() { return m_sysInfo.networks(); })
-    , m_communicator(
-          std::make_unique<http_client::HttpClient>(),
-          m_agentInfo.GetUUID(),
-          m_agentInfo.GetKey(),
-          [this]() { return m_agentInfo.GetHeaderInfo(); },
-          [this]<typename T>(std::string table, std::string key) -> std::optional<T>
-          { return m_configurationParser->GetConfig<T>(std::move(table), std::move(key)); })
+          m_configurationParser->GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH),
+          [this]() { return m_sysInfo.os(); },
+          [this]() { return m_sysInfo.networks(); })
+    , m_messageQueue(std::make_shared<MultiTypeQueue>(m_configurationParser))
+    , m_communicator(std::make_unique<http_client::HttpClient>(),
+                     m_configurationParser,
+                     m_agentInfo.GetUUID(),
+                     m_agentInfo.GetKey(),
+                     [this]() { return m_agentInfo.GetHeaderInfo(); })
     , m_moduleManager([this](Message message) -> int { return m_messageQueue->push(std::move(message)); },
                       m_configurationParser,
                       m_agentInfo.GetUUID())
-    , m_commandHandler(m_dataPath)
+    , m_commandHandler(m_configurationParser)
+    , m_centralizedConfiguration(
+          [this](const std::vector<std::string>& groups)
+          {
+              m_agentInfo.SetGroups(groups);
+              return m_agentInfo.SaveGroups();
+          },
+          [this]() { return m_agentInfo.GetGroups(); },
+          // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+          [this](std::string groupId, std::string destinationPath) -> boost::asio::awaitable<bool> {
+              co_return co_await m_communicator.GetGroupConfigurationFromManager(std::move(groupId),
+                                                                                 std::move(destinationPath));
+          },
+          // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+          [this](const std::filesystem::path& fileToValidate)
+          { return m_configurationParser->isValidYamlFile(fileToValidate); },
+          [this]() { ReloadModules(); })
 {
     // Check if agent is registered
     if (m_agentInfo.GetName().empty() || m_agentInfo.GetKey().empty() || m_agentInfo.GetUUID().empty())
@@ -41,29 +54,6 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
     }
 
     m_configurationParser->SetGetGroupIdsFunction([this]() { return m_agentInfo.GetGroups(); });
-
-    m_centralizedConfiguration.SetGroupIdFunction(
-        [this](const std::vector<std::string>& groups)
-        {
-            m_agentInfo.SetGroups(groups);
-            return m_agentInfo.SaveGroups();
-        });
-
-    m_centralizedConfiguration.GetGroupIdFunction([this]() { return m_agentInfo.GetGroups(); });
-
-    // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    m_centralizedConfiguration.SetDownloadGroupFilesFunction(
-        [this](std::string groupId, std::string destinationPath) -> boost::asio::awaitable<bool>
-        {
-            co_return co_await m_communicator.GetGroupConfigurationFromManager(std::move(groupId),
-                                                                               std::move(destinationPath));
-        });
-    // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-
-    m_centralizedConfiguration.ValidateFileFunction([this](const std::filesystem::path& fileToValidate)
-                                                    { return m_configurationParser->isValidYamlFile(fileToValidate); });
-
-    m_centralizedConfiguration.ReloadModulesFunction([this]() { ReloadModules(); });
 
     m_agentThreadCount =
         m_configurationParser->GetConfig<size_t>("agent", "thread_count").value_or(config::DEFAULT_THREAD_COUNT);
@@ -147,13 +137,13 @@ void Agent::Run()
     m_moduleManager.Start();
 
     m_taskManager.EnqueueTask(
-        m_commandHandler.CommandsProcessingTask<module_command::CommandEntry>(
+        m_commandHandler.CommandsProcessingTask(
             [this]() { return GetCommandFromQueue(m_messageQueue); },
             [this]() { return PopCommandFromQueue(m_messageQueue); },
             [this](const module_command::CommandEntry& cmd) { return ReportCommandResult(cmd, m_messageQueue); },
             [this](module_command::CommandEntry& cmd)
             {
-                if (cmd.Module == "CentralizedConfiguration")
+                if (cmd.Module == module_command::CENTRALIZED_CONFIGURATION_MODULE)
                 {
                     return DispatchCommand(
                         cmd,

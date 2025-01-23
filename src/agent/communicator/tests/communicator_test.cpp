@@ -36,16 +36,33 @@ namespace
             .sign(jwt::algorithm::hs256 {"secret"});
     }
 
-    const auto FUNC = []<typename T>([[maybe_unused]] const std::string&,
-                                     [[maybe_unused]] const std::string&) -> std::optional<T>
-    {
-        return T {};
-    };
+    const auto MOCK_CONFIG_PARSER = std::make_shared<configuration::ConfigurationParser>(std::string(""));
 } // namespace
 
 TEST(CommunicatorTest, CommunicatorConstructor)
 {
-    EXPECT_NO_THROW(communicator::Communicator communicator(nullptr, "uuid", "key", nullptr, FUNC));
+    auto mockHttpClient = std::make_unique<MockHttpClient>();
+
+    auto configurationParser = std::make_shared<configuration::ConfigurationParser>();
+
+    EXPECT_NO_THROW(communicator::Communicator communicator(
+        std::move(mockHttpClient), configurationParser, "uuid", "key", nullptr));
+}
+
+TEST(CommunicatorTest, CommunicatorConstructorNoHttpClient)
+{
+    auto configurationParser = std::make_shared<configuration::ConfigurationParser>();
+
+    EXPECT_THROW(communicator::Communicator communicator(nullptr, configurationParser, "uuid", "key", nullptr),
+                 std::runtime_error);
+}
+
+TEST(CommunicatorTest, CommunicatorConstructorNoConfigParser)
+{
+    auto mockHttpClient = std::make_unique<MockHttpClient>();
+
+    EXPECT_THROW(communicator::Communicator communicator(std::move(mockHttpClient), nullptr, "uuid", "key", nullptr),
+                 std::runtime_error);
 }
 
 TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
@@ -80,7 +97,7 @@ TEST(CommunicatorTest, StatefulMessageProcessingTask_Success)
     EXPECT_CALL(*mockHttpClient, Co_PerformHttpRequest(_, _, _, _, _, _, _, _))
         .WillOnce(Invoke(MockCo_PerformHttpRequest));
 
-    communicator::Communicator communicator(std::move(mockHttpClient), "uuid", "key", nullptr, FUNC);
+    communicator::Communicator communicator(std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
 
     auto task = communicator.StatefulMessageProcessingTask(getMessages, onSuccess);
     boost::asio::io_context ioContext;
@@ -96,8 +113,8 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
     // not really a leak, as its lifetime is managed by the Communicator
     testing::Mock::AllowLeak(mockHttpClientPtr);
 
-    auto communicatorPtr =
-        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr, FUNC);
+    auto communicatorPtr = std::make_shared<communicator::Communicator>(
+        std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
 
     // A failed authentication won't return a token
     EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _, _, _))
@@ -155,8 +172,8 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
     // not really a leak, as its lifetime is managed by the Communicator
     testing::Mock::AllowLeak(mockHttpClientPtr);
 
-    auto communicatorPtr =
-        std::make_shared<communicator::Communicator>(std::move(mockHttpClient), "uuid", "key", nullptr, FUNC);
+    auto communicatorPtr = std::make_shared<communicator::Communicator>(
+        std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
 
     const auto mockedToken = CreateToken();
     EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _, _, _))
@@ -244,7 +261,7 @@ TEST(CommunicatorTest, GetGroupConfigurationFromManager_Success)
     EXPECT_CALL(*mockHttpClient, Co_PerformHttpRequest(_, _, _, _, _, _, _, _))
         .WillOnce(Invoke(MockCo_PerformHttpRequest));
 
-    communicator::Communicator communicator(std::move(mockHttpClient), "uuid", "key", nullptr, FUNC);
+    communicator::Communicator communicator(std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
 
     std::future<bool> result;
 
@@ -298,7 +315,7 @@ TEST(CommunicatorTest, GetGroupConfigurationFromManager_Error)
     EXPECT_CALL(*mockHttpClient, Co_PerformHttpRequest(_, _, _, _, _, _, _, _))
         .WillOnce(Invoke(MockCo_PerformHttpRequest));
 
-    communicator::Communicator communicator(std::move(mockHttpClient), "uuid", "key", nullptr, FUNC);
+    communicator::Communicator communicator(std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
 
     std::future<bool> result;
 

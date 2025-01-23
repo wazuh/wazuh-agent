@@ -62,8 +62,8 @@ target_include_directories(Logcollector PUBLIC
 target_link_libraries(Logcollector
     PUBLIC
     ConfigurationParser
-    MultiTypeQueue
-    ModuleCommand
+    MessageEntry
+    CommandEntry
     Config
     Boost::asio
     Boost::system

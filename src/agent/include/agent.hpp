@@ -5,9 +5,9 @@
 #include <command_handler.hpp>
 #include <communicator.hpp>
 #include <configuration_parser.hpp>
+#include <imultitype_queue.hpp>
 #include <isignal_handler.hpp>
 #include <moduleManager.hpp>
-#include <multitype_queue.hpp>
 #include <signal_handler.hpp>
 #include <task_manager.hpp>
 
@@ -53,19 +53,17 @@ private:
     /// @brief System info
     SysInfo m_sysInfo;
 
-    /// @brief Configuration parser
-    std::shared_ptr<configuration::ConfigurationParser> m_configurationParser;
-
-    std::string m_dataPath;
-
-    /// @brief Queue for storing messages
-    std::shared_ptr<MultiTypeQueue> m_messageQueue;
-
     /// @brief Pointer to a custom ISignalHandler implementation
     std::unique_ptr<ISignalHandler> m_signalHandler;
 
+    /// @brief Configuration parser
+    std::shared_ptr<configuration::ConfigurationParser> m_configurationParser;
+
     /// @brief Agent info
     AgentInfo m_agentInfo;
+
+    /// @brief Queue for storing messages
+    std::shared_ptr<IMultiTypeQueue> m_messageQueue;
 
     /// @brief Communicator
     communicator::Communicator m_communicator;

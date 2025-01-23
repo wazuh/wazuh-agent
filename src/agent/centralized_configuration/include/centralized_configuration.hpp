@@ -1,8 +1,8 @@
 #pragma once
 
+#include <command_entry.hpp>
 #include <filesystem_wrapper.hpp>
 #include <ifilesystem.hpp>
-#include <module_command/command_entry.hpp>
 
 #include <boost/asio/awaitable.hpp>
 #include <nlohmann/json.hpp>
@@ -26,12 +26,18 @@ namespace centralized_configuration
         using ReloadModulesFunctionType = std::function<void()>;
 
         /// @brief Constructor that allows injecting a file system wrapper.
+        /// @param setGroupIdFunction A function to set group IDs.
+        /// @param getGroupIdFunction A function to get group IDs.
+        /// @param downloadGroupFilesFunction A function to download files for a given group ID.
+        /// @param validateFileFunction A function to validate a file.
+        /// @param reloadModulesFunction A function to reload modules.
         /// @param fileSystemWrapper An optional filesystem wrapper. If nullptr, it will use FileSystemWrapper
-        explicit CentralizedConfiguration(std::shared_ptr<IFileSystem> fileSystemWrapper = nullptr)
-            : m_fileSystemWrapper(fileSystemWrapper ? fileSystemWrapper
-                                                    : std::make_shared<filesystem_wrapper::FileSystemWrapper>())
-        {
-        }
+        explicit CentralizedConfiguration(SetGroupIdFunctionType setGroupIdFunction,
+                                          GetGroupIdFunctionType getGroupIdFunction,
+                                          DownloadGroupFilesFunctionType downloadGroupFilesFunction,
+                                          ValidateFileFunctionType validateFileFunction,
+                                          ReloadModulesFunctionType reloadModulesFunction,
+                                          std::shared_ptr<IFileSystem> fileSystemWrapper = nullptr);
 
         /// @brief Executes a command for the centralized configuration system.
         /// @param command A string containing a JSON command to execute.
@@ -40,37 +46,7 @@ namespace centralized_configuration
         boost::asio::awaitable<module_command::CommandExecutionResult> ExecuteCommand(std::string command,
                                                                                       nlohmann::json parameters);
 
-        /// @brief Sets the function to assign group IDs.
-        /// @details The "set-group" commands requires such function to be set.
-        /// @param setGroupIdFunction A function to set group IDs.
-        void SetGroupIdFunction(SetGroupIdFunctionType setGroupIdFunction);
-
-        /// @brief Sets the function to retrieve group IDs.
-        /// @details The "update-group" commands requires such function to be set.
-        /// @param getGroupIdFunction A function to get group IDs.
-        void GetGroupIdFunction(GetGroupIdFunctionType getGroupIdFunction);
-
-        /// @brief Sets the function to download group configuration files.
-        /// @details Configures how and where to download group configuration files.
-        /// These will be used to set and update the Agent groups via the "set-group" and "update-group"
-        /// commands.
-        /// @param downloadGroupFilesFunction A function to download files for a given group ID.
-        void SetDownloadGroupFilesFunction(DownloadGroupFilesFunctionType downloadGroupFilesFunction);
-
-        /// @brief Sets the function to validate a file.
-        /// @details The "set-group" and "update-group" commands requires such function to validate files
-        /// @param validateFileFunction A function to validate a file.
-        void ValidateFileFunction(ValidateFileFunctionType validateFileFunction);
-
-        /// @brief Sets the function to reload modules.
-        /// @details The "set-group" and "update-group" commands requires such function to reload modules
-        /// @param validateFileFunction A function to reload the modules.
-        void ReloadModulesFunction(ReloadModulesFunctionType reloadModulesFunction);
-
     private:
-        /// @brief Member to interact with the file system.
-        std::shared_ptr<IFileSystem> m_fileSystemWrapper;
-
         /// @brief Function to set group IDs.
         SetGroupIdFunctionType m_setGroupIdFunction;
 
@@ -85,5 +61,8 @@ namespace centralized_configuration
 
         /// @brief Function to reload modules.
         ReloadModulesFunctionType m_reloadModulesFunction;
+
+        /// @brief Member to interact with the file system.
+        std::shared_ptr<IFileSystem> m_fileSystemWrapper;
     };
 } // namespace centralized_configuration

@@ -4,7 +4,6 @@ add_executable(module_manager_test moduleManager_test.cpp)
 configure_target(module_manager_test)
 target_include_directories(module_manager_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 target_link_libraries(module_manager_test PRIVATE
-    ModuleCommand
     ModuleManager
     GTest::gtest
     GTest::gtest_main

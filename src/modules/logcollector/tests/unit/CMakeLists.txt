@@ -30,9 +30,6 @@ target_include_directories(logcollector_unit_tests PRIVATE
 
 target_link_libraries(logcollector_unit_tests PRIVATE
 	Logcollector
-	MultiTypeQueue
-	ConfigurationParser
-	Logger
 	GTest::gtest
 	GTest::gtest_main
 	GTest::gmock

@@ -48,8 +48,8 @@ target_link_libraries(Inventory
     utils
     pthreads_op
     ConfigurationParser
-    MultiTypeQueue
-    ModuleCommand
+    MessageEntry
+    CommandEntry
     Boost::asio
     Boost::beast
     PRIVATE

@@ -31,7 +31,7 @@ target_include_directories(Communicator PUBLIC
         ${JWT_CPP_INCLUDE_DIRS})
 
 target_compile_definitions(Communicator PRIVATE -DJWT_DISABLE_PICOJSON=ON)
-target_link_libraries(Communicator PUBLIC Config Boost::asio Boost::beast Boost::system Boost::url Logger PRIVATE OpenSSL::SSL OpenSSL::Crypto nlohmann_json::nlohmann_json)
+target_link_libraries(Communicator PUBLIC Config ConfigurationParser Boost::asio Boost::beast Boost::system Boost::url Logger PRIVATE OpenSSL::SSL OpenSSL::Crypto nlohmann_json::nlohmann_json)
 
 if(WIN32)
     target_link_libraries(Communicator PRIVATE Crypt32)

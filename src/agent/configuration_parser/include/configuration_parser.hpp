@@ -27,6 +27,9 @@ namespace configuration
         /// @brief Holds the location of the configuration file.
         std::filesystem::path m_configFilePath;
 
+        /// @brief Function to get the groups information
+        std::function<std::vector<std::string>()> m_getGroups;
+
         /// @brief Converts a time unit represented as a string to an time_t value (ms).
         /// @param option A string representing a time unit.
         /// @return The corresponding time_t value.
@@ -36,9 +39,6 @@ namespace configuration
         /// "1m"), hours (e.g. "1h"), or days (e.g. "1d"). If no unit is specified, the value is assumed to be in
         /// seconds.
         std::time_t ParseTimeUnit(const std::string& option) const;
-
-        /// @brief Function to get the groups information
-        std::function<std::vector<std::string>()> m_getGroups;
 
         /// @brief Method for loading the configuration from local file
         void LoadLocalConfig();

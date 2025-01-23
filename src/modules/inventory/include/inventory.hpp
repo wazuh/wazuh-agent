@@ -10,12 +10,12 @@
 #include <thread>
 
 #include <commonDefs.h>
-#include <configuration_parser.hpp>
 #include <dbsync.hpp>
 #include <inventoryNormalizer.hpp>
-#include <multitype_queue.hpp>
 #include <sysInfoInterface.hpp>
 
+#include <command_entry.hpp>
+#include <message.hpp>
 #include <moduleWrapper.hpp>
 
 #include <boost/asio/awaitable.hpp>

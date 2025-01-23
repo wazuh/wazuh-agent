@@ -16,9 +16,9 @@ class Storage
 {
 public:
     /// @brief Constructor
-    /// @param dbFilePath The path to the database
+    /// @param dbFolderPath The path to the database folder
     /// @param tableNames A vector of table names
-    Storage(const std::string& dbFilePath, const std::vector<std::string>& tableNames);
+    Storage(const std::string& dbFolderPath, const std::vector<std::string>& tableNames);
 
     /// @brief Delete copy constructor
     Storage(const Storage&) = delete;
@@ -34,6 +34,11 @@ public:
 
     /// @brief Destructor
     ~Storage();
+
+    /// @brief Clears all messages from the database
+    /// @param tableNames A vector of table names
+    /// @return True if successful, false otherwise
+    bool Clear(const std::vector<std::string>& tableNames);
 
     /// @brief Store a JSON message in the storage.
     /// @param message The JSON message to store.

@@ -1,7 +1,7 @@
 #pragma once
 
+#include <command_entry.hpp>
 #include <message.hpp>
-#include <module_command/command_entry.hpp>
 
 #include <boost/asio/awaitable.hpp>
 #include <nlohmann/json.hpp>
