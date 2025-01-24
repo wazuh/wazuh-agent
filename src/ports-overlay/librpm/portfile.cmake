@@ -17,6 +17,11 @@ set(LIBPOPTD_FILE "${COMMON_PATH}poptd${VCPKG_TARGET_STATIC_LIBRARY_SUFFIX}/")
 set(LIBPOPT_FILE "${COMMON_PATH}popt${VCPKG_TARGET_STATIC_LIBRARY_SUFFIX}")
 file(COPY ${LIBPOPTD_FILE} DESTINATION ${LIBPOPT_FILE})
 
+# RPM looks for "bz2d" but Vcpkg generates a bz2 library file, without the d suffix in debug
+set(BZ2D_FILE "${COMMON_PATH}bz2d${VCPKG_TARGET_STATIC_LIBRARY_SUFFIX}/")
+set(BZ2_FILE "${COMMON_PATH}bz2${VCPKG_TARGET_STATIC_LIBRARY_SUFFIX}")
+file(COPY ${BZ2D_FILE} DESTINATION ${BZ2_FILE})
+
 vcpkg_configure_make(
   SOURCE_PATH "${SOURCE_PATH}"
   OPTIONS
@@ -33,15 +38,15 @@ vcpkg_fixup_pkgconfig()
 vcpkg_copy_pdbs()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share"
-                    "${CURRENT_PACKAGES_DIR}/debug/lib/rpm-plugins"
-                    "${CURRENT_PACKAGES_DIR}/debug/lib/rpm/lua"
-                    "${CURRENT_PACKAGES_DIR}/debug/lib/rpm/macros.d"
-                    "${CURRENT_PACKAGES_DIR}/debug/var/tmp"
-                    "${CURRENT_PACKAGES_DIR}/lib/rpm-plugins"
-                    "${CURRENT_PACKAGES_DIR}/lib/rpm/lua"
-                    "${CURRENT_PACKAGES_DIR}/lib/rpm/macros.d"
-                    "${CURRENT_PACKAGES_DIR}/var/tmp"
-                    "${CURRENT_PACKAGES_DIR}/debug/var"
-                    "${CURRENT_PACKAGES_DIR}/var")
+  "${CURRENT_PACKAGES_DIR}/debug/lib/rpm-plugins"
+  "${CURRENT_PACKAGES_DIR}/debug/lib/rpm/lua"
+  "${CURRENT_PACKAGES_DIR}/debug/lib/rpm/macros.d"
+  "${CURRENT_PACKAGES_DIR}/debug/var/tmp"
+  "${CURRENT_PACKAGES_DIR}/lib/rpm-plugins"
+  "${CURRENT_PACKAGES_DIR}/lib/rpm/lua"
+  "${CURRENT_PACKAGES_DIR}/lib/rpm/macros.d"
+  "${CURRENT_PACKAGES_DIR}/var/tmp"
+  "${CURRENT_PACKAGES_DIR}/debug/var"
+  "${CURRENT_PACKAGES_DIR}/var")
 
 set(VCPKG_POLICY_SKIP_COPYRIGHT_CHECK enabled)
