@@ -8,7 +8,7 @@
 Logger::Logger()
 {
     auto sink = std::make_shared<spdlog::sinks::win_eventlog_sink_mt>("Wazuh-Agent");
-    auto logger = std::make_shared<spdlog::logger>("wazuh-agent", sink);
+    auto logger = std::make_shared<spdlog::logger>(LOGGER_NAME, sink);
 
     spdlog::register_logger(logger);
 
