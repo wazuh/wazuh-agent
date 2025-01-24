@@ -2,10 +2,10 @@
 
 #include <config.h>
 #include <configuration_parser.hpp>
+#include <filesystem_wrapper.hpp>
 #include <logger.hpp>
 
 #include <cerrno>
-#include <filesystem>
 #include <fmt/format.h>
 #include <fstream>
 #include <sys/file.h>
@@ -19,7 +19,32 @@
 #error "Unsupported platform"
 #endif
 
-namespace fs = std::filesystem;
+namespace
+{
+    /// @brief Creates the directory path for the lock file
+    /// @param path The path for the lock file
+    /// @return True if the directory is created, false otherwise
+    bool CreateDirectory(const std::string& path)
+    {
+        try
+        {
+            auto fsWrapper = std::make_unique<filesystem_wrapper::FileSystemWrapper>();
+
+            if (fsWrapper->exists(path) && fsWrapper->is_directory(path))
+            {
+                return true;
+            }
+
+            fsWrapper->create_directories(path);
+            return true;
+        }
+        catch (const std::filesystem::filesystem_error& e)
+        {
+            LogCritical("Error creating directory: {}", e.what());
+            return false;
+        }
+    }
+} // namespace
 
 namespace instance_handler
 {
@@ -44,28 +69,9 @@ namespace instance_handler
         }
     }
 
-    bool InstanceHandler::createDirectory(const std::string& path) const
-    {
-        try
-        {
-            if (fs::exists(path) && fs::is_directory(path))
-            {
-                return true;
-            }
-
-            fs::create_directories(path);
-            return true;
-        }
-        catch (const fs::filesystem_error& e)
-        {
-            LogCritical("Error creating directory: {}", e.what());
-            return false;
-        }
-    }
-
     bool InstanceHandler::getInstanceLock()
     {
-        if (!createDirectory(m_lockFilePath))
+        if (!CreateDirectory(m_lockFilePath))
         {
             LogError("Unable to create lock directory: {}", m_lockFilePath);
             return false;

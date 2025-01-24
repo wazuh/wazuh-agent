@@ -15,10 +15,11 @@ namespace instance_handler
         /// Windows).
         /// @param lockFilePath The path where the lock file will be created (linux/macOS only). Unused in Windows, use
         /// "".
-        InstanceHandler(std::string lockFilePath);
+        explicit InstanceHandler(std::string lockFilePath);
 
         /// @brief Destructor
-        /// @details Removes lock file or releases the mutex if it was created on construction
+        /// @details Removes lock file if it was created on construction (linux/macOS only). Windows implementation uses
+        /// a named mutex which is released on destruction by the OS.
         ~InstanceHandler();
 
         /// @brief Checks if the instance lock has been successfully acquired
@@ -30,11 +31,6 @@ namespace instance_handler
         int getErrno() const;
 
     private:
-        /// @brief Creates the directory path for the lock file
-        /// @param path The path for the lock file
-        /// @return True if the directory is created, false otherwise
-        bool createDirectory(const std::string& path) const;
-
         /// @brief Gets a lock on the either the lock file or the mutex
         /// @return True if the lock is aqcuired, false otherwise
         bool getInstanceLock();
