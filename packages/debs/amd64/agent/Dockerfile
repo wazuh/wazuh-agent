@@ -5,8 +5,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Installing necessary packages
 RUN apt-get update && apt-get install -y build-essential \
     curl wget git gawk devscripts sudo libssl-dev unzip \
-    zip tar texinfo pkg-config uuid autopoint libtool  \
-    gettext ninja-build libsystemd-dev selinux-basics \
+    zip tar pkg-config uuid autopoint libtool gettext \
+    ninja-build libsystemd-dev selinux-basics \
     debhelper && rm -rf /var/lib/apt/lists/*
 
 RUN echo "deb http://ftp.de.debian.org/debian bullseye main" >>/etc/apt/sources.list && \
