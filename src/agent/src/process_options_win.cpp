@@ -5,8 +5,6 @@
 #include <fmt/ranges.h>
 #include <instance_handler.hpp>
 #include <logger.hpp>
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/spdlog.h>
 #include <windows_service.hpp>
 
 #include <iostream>
@@ -17,14 +15,7 @@ void StartAgent(const std::string& configFilePath)
 {
     try
     {
-        std::shared_ptr<spdlog::logger> logger = spdlog::get("wazuh-agent");
-        if (logger != nullptr)
-        {
-            auto stdOutSink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
-            logger->sinks().clear();
-            logger->sinks().push_back(stdOutSink);
-        }
-
+        Logger::AddStdErrSink();
         instance_handler::InstanceHandler instanceHandler = instance_handler::GetInstanceHandler(configFilePath);
 
         if (!instanceHandler.isLockAcquired())

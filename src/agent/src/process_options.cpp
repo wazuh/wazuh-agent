@@ -3,6 +3,7 @@
 #include <agent.hpp>
 #include <agent_registration.hpp>
 #include <config.h>
+#include <fmt/format.h>
 #include <http_client.hpp>
 #include <instance_handler.hpp>
 
