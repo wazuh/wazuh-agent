@@ -22,6 +22,36 @@ set(BZ2D_FILE "${COMMON_PATH}bz2d${VCPKG_TARGET_STATIC_LIBRARY_SUFFIX}/")
 set(BZ2_FILE "${COMMON_PATH}bz2${VCPKG_TARGET_STATIC_LIBRARY_SUFFIX}")
 file(COPY ${BZ2D_FILE} DESTINATION ${BZ2_FILE})
 
+# Vcpkg doesn't generate a lua.pc file, so we need to create it for librpm
+file(WRITE ${CURRENT_INSTALLED_DIR}/debug/lib/pkgconfig/lua.pc "
+prefix=\${pcfiledir}/../..
+exec_prefix=\${prefix}
+libdir=\${prefix}/lib
+includedir=${prefix}/../include
+
+Name: Lua
+Description: Lua
+Version: 5.4.2
+
+Libs: -L\${libdir} -llua -lm
+Cflags: -I\${includedir}
+")
+
+# We need to create one for each build type
+file(WRITE ${CURRENT_INSTALLED_DIR}/lib/pkgconfig/lua.pc "
+prefix=\${pcfiledir}/../..
+exec_prefix=\${prefix}
+libdir=\${prefix}/lib
+includedir=\${prefix}/include
+
+Name: Lua
+Description: Lua
+Version: 5.4.2
+
+Libs: -L\${libdir} -llua -lm
+Cflags: -I\${includedir}
+")
+
 vcpkg_configure_make(
   SOURCE_PATH "${SOURCE_PATH}"
   OPTIONS
