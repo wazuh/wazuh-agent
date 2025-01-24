@@ -78,13 +78,13 @@ set_vcpkg_remote_binary_cache(){
 
     export VCPKG_BINARY_SOURCES="clear;nuget,GitHub,readwrite"
     ./bootstrap-vcpkg.sh
-    mono ./vcpkg fetch nuget | tail -n 1` \
+    mono `./vcpkg fetch nuget | tail -n 1` \
         sources add \
         -source "https://nuget.pkg.github.com/wazuh/index.json" \
         -name "GitHub" \
         -username "wazuh" \
         -password "$vcpkg_token"
-    mono `./vcpkg/vcpkg fetch nuget | tail -n 1` \
+    mono `./vcpkg fetch nuget | tail -n 1` \
         setapikey "$vcpkg_token" \
         -source "https://nuget.pkg.github.com/wazuh/index.json"
 
