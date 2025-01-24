@@ -12,6 +12,28 @@
     {
       "name": "vcpkg-cmake-config",
       "host": true
+    },
+    {
+      "name": "bzip2",
+      "version>=": "1.0.8#5"
+    },
+    {
+      "name": "libmagic"
+    },
+    {
+      "name": "libpopt"
+    },
+    {
+      "name": "lua"
+    },
+    {
+      "name": "sqlite3"
+    }
+  ],
+  "overrides": [
+    {
+      "name": "lua",
+      "version": "5.4.2"
     }
   ]
 }
