@@ -38,9 +38,9 @@ The execution of this command triggers the download of the configuration files f
 }
 ```
 
-### **`update-group`**
+### **`fetch-config`**
 
-This centralized configuration command is responsible for updating the groups to which the agent belongs. This command does not require any arguments.
+This centralized configuration command is responsible for fetching the configuration of the groups to which the agent belongs. This command does not require any arguments.
 
 Executing this command triggers a reload of the configuration and modules to ensure the new settings are applied.
 
@@ -50,7 +50,7 @@ Executing this command triggers a reload of the configuration and modules to ens
     {
         "args":
         {},
-        "name": "update-group",
+        "name": "fetch-config",
         "version": "5.0.0"
     },
     "source": "Users/Services",
