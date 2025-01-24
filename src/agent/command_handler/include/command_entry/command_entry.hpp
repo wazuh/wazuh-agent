@@ -9,7 +9,7 @@ namespace module_command
 {
     /// @brief Commands
     const std::string SET_GROUP_COMMAND = "set-group";
-    const std::string UPDATE_GROUP_COMMAND = "update-group";
+    const std::string FETCH_CONFIG_COMMAND = "fetch-config";
 
     /// @brief Commands arguments
     const std::string GROUPS_ARG = "groups";

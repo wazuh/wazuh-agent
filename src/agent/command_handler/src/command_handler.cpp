@@ -15,7 +15,7 @@ namespace
          CommandDetails {module_command::CENTRALIZED_CONFIGURATION_MODULE,
                          module_command::CommandExecutionMode::SYNC,
                          {{module_command::GROUPS_ARG, nlohmann::json::value_t::array}}}},
-        {module_command::UPDATE_GROUP_COMMAND,
+        {module_command::FETCH_CONFIG_COMMAND,
          CommandDetails {
              module_command::CENTRALIZED_CONFIGURATION_MODULE, module_command::CommandExecutionMode::SYNC, {}}}};
 } // namespace

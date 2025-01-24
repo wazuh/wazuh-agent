@@ -23,6 +23,8 @@
   - [Packages](ref/getting-started/packages.md)
   - [Installation](ref/getting-started/installation.md)
 - [Configuration](ref/configuration.md)
+- [Messages](ref/messages.md)
+- [Commands](ref/commands.md)
 - [Modules](ref/modules/README.md)
   - [File Integrity monitoring](ref/modules/fim/README.md)
     - [Architecture](ref/modules/fim/architecture.md)
