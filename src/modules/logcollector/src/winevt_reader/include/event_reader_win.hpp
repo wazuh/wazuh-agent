@@ -64,9 +64,6 @@ namespace logcollector::winevt
 
         /// @brief winevt wrapper for overriding while testing.
         std::shared_ptr<IWinAPIWrapper> m_winAPI;
-
-        /// @brief collector type.
-        const std::string m_collectorType = "eventchannel";
     };
 
 } // namespace logcollector::winevt

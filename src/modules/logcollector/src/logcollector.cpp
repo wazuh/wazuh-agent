@@ -126,14 +126,18 @@ void Logcollector::SendMessage(const std::string& location, const std::string& l
     auto data = nlohmann::json::object();
 
     metadata["module"] = m_moduleName;
-    metadata["type"] = collectorType;
+    metadata["collector"] = collectorType;
 
-    data["log"]["file"]["path"] = location;
-    data["tags"] = nlohmann::json::array({"mvp"});
+    if (collectorType == FILE_READER_TYPE)
+    {
+        data["log"]["file"]["path"] = location;
+    }
+    else
+    {
+        data["event"]["provider"] = location;
+    }
     data["event"]["original"] = log;
     data["event"]["created"] = Utils::getCurrentISO8601();
-    data["event"]["module"] = m_moduleName;
-    data["event"]["provider"] = "syslog";
 
     auto message = Message(MessageType::STATELESS, data, m_moduleName, collectorType, metadata.dump());
     m_pushMessage(message);

@@ -340,7 +340,8 @@ void Inventory::ProcessEvent(ReturnTypeCallback result, const nlohmann::json& it
 nlohmann::json
 Inventory::GenerateMessage(ReturnTypeCallback result, const nlohmann::json& item, const std::string& table)
 {
-    nlohmann::json msg {{"metadata", {{"type", table}, {"operation", OPERATION_MAP.at(result)}, {"module", Name()}}}};
+    nlohmann::json msg {
+        {"metadata", {{"collector", table}, {"operation", OPERATION_MAP.at(result)}, {"module", Name()}}}};
 
     msg["data"] = EcsData(result == MODIFIED ? item["new"] : item, table);
     msg["metadata"]["id"] = CalculateHashId(msg["data"], table);

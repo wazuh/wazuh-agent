@@ -99,7 +99,7 @@ void Inventory::SendDeltaEvent(const std::string& data)
     const Message statefulMessage {MessageType::STATEFUL,
                                    jsonData["metadata"]["operation"] == "delete" ? "{}"_json : jsonData["data"],
                                    Name(),
-                                   jsonData["metadata"]["type"],
+                                   jsonData["metadata"]["collector"],
                                    jsonData["metadata"].dump()};
 
     if (!m_pushMessage(statefulMessage))
@@ -118,8 +118,11 @@ void Inventory::SendDeltaEvent(const std::string& data)
         metadataAux.erase("id");
         metadataAux.erase("operation");
 
-        const Message statelessMessage {
-            MessageType::STATELESS, jsonData["stateless"], Name(), jsonData["metadata"]["type"], metadataAux.dump()};
+        const Message statelessMessage {MessageType::STATELESS,
+                                        jsonData["stateless"],
+                                        Name(),
+                                        jsonData["metadata"]["collector"],
+                                        metadataAux.dump()};
 
         if (!m_pushMessage(statelessMessage))
         {

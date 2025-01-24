@@ -53,7 +53,7 @@ TEST(Logcollector, SetupFileReader)
     ASSERT_NE(capturedReader2, nullptr);
 }
 
-TEST(Logcollector, SendMessage)
+TEST(Logcollector, SendMessageFile)
 {
     PushMessageMock mock;
     LogcollectorMock logcollector;
@@ -65,20 +65,41 @@ TEST(Logcollector, SendMessage)
     EXPECT_CALL(mock, Call(::testing::_))
         .WillOnce(::testing::DoAll(::testing::SaveArg<0>(&capturedMessage), ::testing::Return(0)));
 
-    const auto MODULE = "logcollector";
     const auto LOCATION = "/test/location";
     const auto LOG = "test log";
-    const auto PROVIDER = "syslog";
-    const auto METADATA = R"({"module":"logcollector","type":"reader"})";
+    const auto METADATA = R"({"collector":"file","module":"logcollector"})";
 
-    logcollector.SendMessage(LOCATION, LOG, "reader");
+    logcollector.SendMessage(LOCATION, LOG, "file");
 
     ASSERT_EQ(capturedMessage.type, MessageType::STATELESS);
     ASSERT_EQ(capturedMessage.data["log"]["file"]["path"], LOCATION);
     ASSERT_EQ(capturedMessage.data["event"]["original"], LOG);
     ASSERT_TRUE(IsISO8601(capturedMessage.data["event"]["created"]));
-    ASSERT_EQ(capturedMessage.data["event"]["module"], MODULE);
-    ASSERT_EQ(capturedMessage.data["event"]["provider"], PROVIDER);
+    ASSERT_EQ(capturedMessage.metaData, METADATA);
+}
+
+TEST(Logcollector, SendMessageApp)
+{
+    PushMessageMock mock;
+    LogcollectorMock logcollector;
+
+    logcollector.SetPushMessageFunction([&mock](Message message) { return mock.Call(std::move(message)); });
+
+    Message capturedMessage(MessageType::STATELESS, nlohmann::json::object(), "", "", "");
+
+    EXPECT_CALL(mock, Call(::testing::_))
+        .WillOnce(::testing::DoAll(::testing::SaveArg<0>(&capturedMessage), ::testing::Return(0)));
+
+    const auto LOCATION = "Audit";
+    const auto LOG = "test log";
+    const auto METADATA = R"({"collector":"windows-eventlog","module":"logcollector"})";
+
+    logcollector.SendMessage(LOCATION, LOG, "windows-eventlog");
+
+    ASSERT_EQ(capturedMessage.type, MessageType::STATELESS);
+    ASSERT_EQ(capturedMessage.data["event"]["original"], LOG);
+    ASSERT_TRUE(IsISO8601(capturedMessage.data["event"]["created"]));
+    ASSERT_EQ(capturedMessage.data["event"]["provider"], LOCATION);
     ASSERT_EQ(capturedMessage.metaData, METADATA);
 }
 

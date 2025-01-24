@@ -100,19 +100,19 @@ TEST_F(InventoryImpTest, defaultCtor)
                                                                }};
 
     const auto expectedResult1 {
-        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"module":"inventory","operation":"create","type":"hardware"}})"};
+        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
     const auto expectedResult2 {
-        R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"module":"inventory","operation":"create","type":"system"}})"};
+        R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"collector":"system","module":"inventory","operation":"create"}})"};
     const auto expectedResult3 {
-        R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"module":"inventory","operation":"create","type":"packages"}})"};
+        R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"collector":"packages","module":"inventory","operation":"create"}})"};
     const auto expectedResult4 {
-        R"({"data":{"process":{"args":null,"command_line":null,"group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"metadata":{"module":"inventory","operation":"create","type":"processes"}})"};
+        R"({"data":{"process":{"args":null,"command_line":null,"group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"metadata":{"collector":"processes","module":"inventory","operation":"create"}})"};
     const auto expectedResult5 {
-        R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"module":"inventory","operation":"create","type":"hotfixes"}})"};
+        R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"collector":"hotfixes","module":"inventory","operation":"create"}})"};
     const auto expectedResult6 {
-        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"module":"inventory","operation":"create","type":"ports"}})"};
+        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"module":"inventory","operation":"create","type":"networks"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(testing::AtLeast(1));
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(testing::AtLeast(1));
@@ -281,17 +281,17 @@ TEST_F(InventoryImpTest, noHardware)
                                                                }};
 
     const auto expectedResult2 {
-        R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"module":"inventory","operation":"create","type":"system"}})"};
+        R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"collector":"system","module":"inventory","operation":"create"}})"};
     const auto expectedResult3 {
-        R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"module":"inventory","operation":"create","type":"packages"}})"};
+        R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"collector":"packages","module":"inventory","operation":"create"}})"};
     const auto expectedResult4 {
-        R"({"data":{"process":{"args":null,"command_line":null,"group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"metadata":{"module":"inventory","operation":"create","type":"processes"}})"};
+        R"({"data":{"process":{"args":null,"command_line":null,"group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"metadata":{"collector":"processes","module":"inventory","operation":"create"}})"};
     const auto expectedResult5 {
-        R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"module":"inventory","operation":"create","type":"hotfixes"}})"};
+        R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"collector":"hotfixes","module":"inventory","operation":"create"}})"};
     const auto expectedResult6 {
-        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"module":"inventory","operation":"create","type":"ports"}})"};
+        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"module":"inventory","operation":"create","type":"networks"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(1);
@@ -369,17 +369,17 @@ TEST_F(InventoryImpTest, noOs)
                                                                }};
 
     const auto expectedResult1 {
-        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"module":"inventory","operation":"create","type":"hardware"}})"};
+        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
     const auto expectedResult2 {
-        R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"module":"inventory","operation":"create","type":"packages"}})"};
+        R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"collector":"packages","module":"inventory","operation":"create"}})"};
     const auto expectedResult3 {
-        R"({"data":{"process":{"args":null,"command_line":null,"group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"metadata":{"module":"inventory","operation":"create","type":"processes"}})"};
+        R"({"data":{"process":{"args":null,"command_line":null,"group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"metadata":{"collector":"processes","module":"inventory","operation":"create"}})"};
     const auto expectedResult4 {
-        R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"module":"inventory","operation":"create","type":"hotfixes"}})"};
+        R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"collector":"hotfixes","module":"inventory","operation":"create"}})"};
     const auto expectedResult5 {
-        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"module":"inventory","operation":"create","type":"ports"}})"};
+        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"module":"inventory","operation":"create","type":"networks"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -457,17 +457,17 @@ TEST_F(InventoryImpTest, noNetwork)
                                                                }};
 
     const auto expectedResult1 {
-        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"module":"inventory","operation":"create","type":"hardware"}})"};
+        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
     const auto expectedResult2 {
-        R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"module":"inventory","operation":"create","type":"system"}})"};
+        R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"collector":"system","module":"inventory","operation":"create"}})"};
     const auto expectedResult3 {
-        R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"module":"inventory","operation":"create","type":"packages"}})"};
+        R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"collector":"packages","module":"inventory","operation":"create"}})"};
     const auto expectedResult4 {
-        R"({"data":{"process":{"args":null,"command_line":null,"group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"metadata":{"module":"inventory","operation":"create","type":"processes"}})"};
+        R"({"data":{"process":{"args":null,"command_line":null,"group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"metadata":{"collector":"processes","module":"inventory","operation":"create"}})"};
     const auto expectedResult5 {
-        R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"module":"inventory","operation":"create","type":"hotfixes"}})"};
+        R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"collector":"hotfixes","module":"inventory","operation":"create"}})"};
     const auto expectedResult6 {
-        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"module":"inventory","operation":"create","type":"ports"}})"};
+        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -544,17 +544,17 @@ TEST_F(InventoryImpTest, noPackages)
                                                                }};
 
     const auto expectedResult1 {
-        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"module":"inventory","operation":"create","type":"hardware"}})"};
+        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
     const auto expectedResult2 {
-        R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"module":"inventory","operation":"create","type":"system"}})"};
+        R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"collector":"system","module":"inventory","operation":"create"}})"};
     const auto expectedResult3 {
-        R"({"data":{"process":{"args":null,"command_line":null,"group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"metadata":{"module":"inventory","operation":"create","type":"processes"}})"};
+        R"({"data":{"process":{"args":null,"command_line":null,"group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"metadata":{"collector":"processes","module":"inventory","operation":"create"}})"};
     const auto expectedResult4 {
-        R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"module":"inventory","operation":"create","type":"hotfixes"}})"};
+        R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"collector":"hotfixes","module":"inventory","operation":"create"}})"};
     const auto expectedResult5 {
-        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"module":"inventory","operation":"create","type":"ports"}})"};
+        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"module":"inventory","operation":"create","type":"networks"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -632,17 +632,17 @@ TEST_F(InventoryImpTest, noPorts)
                                                                }};
 
     const auto expectedResult1 {
-        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"module":"inventory","operation":"create","type":"hardware"}})"};
+        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
     const auto expectedResult2 {
-        R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"module":"inventory","operation":"create","type":"system"}})"};
+        R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"collector":"system","module":"inventory","operation":"create"}})"};
     const auto expectedResult3 {
-        R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"module":"inventory","operation":"create","type":"packages"}})"};
+        R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"collector":"packages","module":"inventory","operation":"create"}})"};
     const auto expectedResult4 {
-        R"({"data":{"process":{"args":null,"command_line":null,"group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"metadata":{"module":"inventory","operation":"create","type":"processes"}})"};
+        R"({"data":{"process":{"args":null,"command_line":null,"group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"metadata":{"collector":"processes","module":"inventory","operation":"create"}})"};
     const auto expectedResult5 {
-        R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"module":"inventory","operation":"create","type":"hotfixes"}})"};
+        R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"collector":"hotfixes","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"module":"inventory","operation":"create","type":"networks"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -722,21 +722,21 @@ TEST_F(InventoryImpTest, noPortsAll)
                                                                }};
 
     const auto expectedResult1 {
-        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"module":"inventory","operation":"create","type":"hardware"}})"};
+        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
     const auto expectedResult2 {
-        R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"module":"inventory","operation":"create","type":"system"}})"};
+        R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"collector":"system","module":"inventory","operation":"create"}})"};
     const auto expectedResult3 {
-        R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"module":"inventory","operation":"create","type":"packages"}})"};
+        R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"collector":"packages","module":"inventory","operation":"create"}})"};
     const auto expectedResult4 {
-        R"({"data":{"process":{"args":null,"command_line":null,"group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"metadata":{"module":"inventory","operation":"create","type":"processes"}})"};
+        R"({"data":{"process":{"args":null,"command_line":null,"group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"metadata":{"collector":"processes","module":"inventory","operation":"create"}})"};
     const auto expectedResult5 {
-        R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"module":"inventory","operation":"create","type":"hotfixes"}})"};
+        R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"collector":"hotfixes","module":"inventory","operation":"create"}})"};
     const auto expectedResult6 {
-        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":null},"network":{"protocol":"udp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"module":"inventory","operation":"create","type":"ports"}})"};
+        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":null},"network":{"protocol":"udp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"module":"inventory","operation":"create","type":"ports"}})"};
+        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult8 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"module":"inventory","operation":"create","type":"networks"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -816,17 +816,17 @@ TEST_F(InventoryImpTest, noProcesses)
                                                                }};
 
     const auto expectedResult1 {
-        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"module":"inventory","operation":"create","type":"hardware"}})"};
+        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
     const auto expectedResult2 {
-        R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"module":"inventory","operation":"create","type":"system"}})"};
+        R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"collector":"system","module":"inventory","operation":"create"}})"};
     const auto expectedResult3 {
-        R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"module":"inventory","operation":"create","type":"packages"}})"};
+        R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"collector":"packages","module":"inventory","operation":"create"}})"};
     const auto expectedResult4 {
-        R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"module":"inventory","operation":"create","type":"hotfixes"}})"};
+        R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"collector":"hotfixes","module":"inventory","operation":"create"}})"};
     const auto expectedResult5 {
-        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"module":"inventory","operation":"create","type":"ports"}})"};
+        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"module":"inventory","operation":"create","type":"networks"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -905,17 +905,17 @@ TEST_F(InventoryImpTest, noHotfixes)
                                                                }};
 
     const auto expectedResult1 {
-        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"module":"inventory","operation":"create","type":"hardware"}})"};
+        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
     const auto expectedResult2 {
-        R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"module":"inventory","operation":"create","type":"system"}})"};
+        R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"collector":"system","module":"inventory","operation":"create"}})"};
     const auto expectedResult3 {
-        R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"module":"inventory","operation":"create","type":"packages"}})"};
+        R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"collector":"packages","module":"inventory","operation":"create"}})"};
     const auto expectedResult4 {
-        R"({"data":{"process":{"args":null,"command_line":null,"group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"metadata":{"module":"inventory","operation":"create","type":"processes"}})"};
+        R"({"data":{"process":{"args":null,"command_line":null,"group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"metadata":{"collector":"processes","module":"inventory","operation":"create"}})"};
     const auto expectedResult5 {
-        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"module":"inventory","operation":"create","type":"ports"}})"};
+        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"module":"inventory","operation":"create","type":"networks"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -1095,16 +1095,16 @@ TEST_F(InventoryImpTest, portAllEnable)
                                                               wrapper.callbackMock(delta.dump());
                                                           }};
     const auto expectedResult1 {
-        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":43481},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":null},"network":{"protocol":"udp"},"process":{"name":null,"pid":0},"source":{"ip":["0.0.0.0"],"port":47748}},"metadata":{"module":"inventory","operation":"create","type":"ports"}})"};
+        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":43481},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":null},"network":{"protocol":"udp"},"process":{"name":null,"pid":0},"source":{"ip":["0.0.0.0"],"port":47748}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
 
     const auto expectedResult2 {
-        R"({"data":{"destination":{"ip":["::"],"port":0},"file":{"inode":43482},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":null},"network":{"protocol":"udp6"},"process":{"name":null,"pid":0},"source":{"ip":["::"],"port":51087}},"metadata":{"module":"inventory","operation":"create","type":"ports"}})"};
+        R"({"data":{"destination":{"ip":["::"],"port":0},"file":{"inode":43482},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":null},"network":{"protocol":"udp6"},"process":{"name":null,"pid":0},"source":{"ip":["::"],"port":51087}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
 
     const auto expectedResult3 {
-        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":50324},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":33060}},"metadata":{"module":"inventory","operation":"create","type":"ports"}})"};
+        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":50324},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":33060}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
 
     const auto expectedResult4 {
-        R"({"data":{"destination":{"ip":["44.238.116.130"],"port":443},"file":{"inode":122575},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"established"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["192.168.0.104"],"port":39106}},"metadata":{"module":"inventory","operation":"create","type":"ports"}})"};
+        R"({"data":{"destination":{"ip":["44.238.116.130"],"port":443},"file":{"inode":122575},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"established"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["192.168.0.104"],"port":39106}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapper, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapper, callbackMock(expectedResult2)).Times(1);
@@ -1225,13 +1225,13 @@ TEST_F(InventoryImpTest, portAllDisable)
                                                               wrapper.callbackMock(delta.dump());
                                                           }};
     const auto expectedResult1 {
-        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":43481},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":null},"network":{"protocol":"udp"},"process":{"name":null,"pid":0},"source":{"ip":["0.0.0.0"],"port":47748}},"metadata":{"module":"inventory","operation":"create","type":"ports"}})"};
+        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":43481},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":null},"network":{"protocol":"udp"},"process":{"name":null,"pid":0},"source":{"ip":["0.0.0.0"],"port":47748}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
 
     const auto expectedResult2 {
-        R"({"data":{"destination":{"ip":["::"],"port":0},"file":{"inode":43482},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":null},"network":{"protocol":"udp6"},"process":{"name":null,"pid":0},"source":{"ip":["::"],"port":51087}},"metadata":{"module":"inventory","operation":"create","type":"ports"}})"};
+        R"({"data":{"destination":{"ip":["::"],"port":0},"file":{"inode":43482},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":null},"network":{"protocol":"udp6"},"process":{"name":null,"pid":0},"source":{"ip":["::"],"port":51087}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
 
     const auto expectedResult3 {
-        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":50324},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":33060}},"metadata":{"module":"inventory","operation":"create","type":"ports"}})"};
+        R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":50324},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":33060}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapper, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapper, callbackMock(expectedResult2)).Times(1);
@@ -1292,7 +1292,7 @@ TEST_F(InventoryImpTest, PackagesDuplicated)
                                                           }};
 
     const auto expectedResult1 {
-        R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"module":"inventory","operation":"create","type":"packages"}})"};
+        R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"collector":"packages","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapper, callbackMock(expectedResult1)).Times(1);
 
@@ -1346,7 +1346,7 @@ TEST_F(InventoryImpTest, hashId)
                                                                }};
 
     const auto expectedResult2 {
-        R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"id":"6bd3291be0d2314de0329e8ac36be434a085eb32","module":"inventory","operation":"create","type":"system"}})"};
+        R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"collector":"system","id":"6bd3291be0d2314de0329e8ac36be434a085eb32","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
 
@@ -1402,7 +1402,7 @@ TEST_F(InventoryImpTest, statelessMessage)
                                                                }};
 
     const auto expectedResult1 {
-        R"({"metadata":{"module":"inventory","type":"system"},"stateless":{"event":{"action":"system-detected","category":["host"],"reason":"System UBUNTU is running OS version 6.1.7601","type":["info"]},"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}}})"};
+        R"({"metadata":{"collector":"system","module":"inventory"},"stateless":{"event":{"action":"system-detected","category":["host"],"reason":"System UBUNTU is running OS version 6.1.7601","type":["info"]},"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
 

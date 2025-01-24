@@ -3,6 +3,11 @@
 #include <logger.hpp>
 #include <sstream>
 
+namespace
+{
+    const std::string COLLECTOR_TYPE = "journald";
+}
+
 namespace logcollector
 {
     JournaldReader::JournaldReader(Logcollector& logcollector,
@@ -68,7 +73,7 @@ namespace logcollector
                             LogDebug("Truncating message of length {}", message.length());
                             message.resize(MAX_LINE_LENGTH);
                         }
-                        m_logcollector.SendMessage(filteredMessage->fieldValue, message, "journald");
+                        m_logcollector.SendMessage(filteredMessage->fieldValue, message, COLLECTOR_TYPE);
                     }
                 }
                 catch (const JournalLogException& e)

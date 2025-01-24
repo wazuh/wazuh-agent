@@ -23,7 +23,7 @@ TEST_F(InventoryTest, SendUpdateEvent_Stateful)
             {
                 EXPECT_EQ(msg.type, MessageType::STATEFUL);
                 nlohmann::json expectedData = {{"key", "value"}};
-                nlohmann::json expectedMetadata = {{"type", "hardware"}, {"operation", "update"}, {"id", "123"}};
+                nlohmann::json expectedMetadata = {{"collector", "hardware"}, {"operation", "update"}, {"id", "123"}};
                 EXPECT_EQ(msg.data, expectedData);
                 EXPECT_EQ(nlohmann::json::parse(msg.metaData), expectedMetadata);
                 return 1;
@@ -31,7 +31,7 @@ TEST_F(InventoryTest, SendUpdateEvent_Stateful)
 
     auto inputData = R"({
         "metadata": {
-            "type": "hardware",
+            "collector": "hardware",
             "operation": "update",
             "id": "123"
         },
@@ -52,7 +52,7 @@ TEST_F(InventoryTest, SendDeleteEvent_Stateful)
             {
                 EXPECT_EQ(msg.type, MessageType::STATEFUL);
                 nlohmann::json expectedData = nlohmann::json::object();
-                nlohmann::json expectedMetadata = {{"type", "hardware"}, {"operation", "delete"}, {"id", "123"}};
+                nlohmann::json expectedMetadata = {{"collector", "hardware"}, {"operation", "delete"}, {"id", "123"}};
                 EXPECT_EQ(msg.data, expectedData);
                 EXPECT_EQ(nlohmann::json::parse(msg.metaData), expectedMetadata);
                 return 1;
@@ -60,7 +60,7 @@ TEST_F(InventoryTest, SendDeleteEvent_Stateful)
 
     auto inputData = R"({
         "metadata": {
-            "type": "hardware",
+            "collector": "hardware",
             "operation": "delete",
             "id": "123"
         },
@@ -96,7 +96,7 @@ TEST_F(InventoryTest, SendUpdateEvent_WithStateless)
 
     auto inputData = R"({
         "metadata": {
-            "type": "hardware",
+            "collector": "hardware",
             "operation": "update",
             "id": "123"
         },
@@ -116,7 +116,7 @@ TEST_F(InventoryTest, PushMessageFails_LogsWarning)
 
     auto inputData = R"({
         "metadata": {
-            "type": "hardware",
+            "collector": "hardware",
             "operation": "update",
             "id": "123"
         },
