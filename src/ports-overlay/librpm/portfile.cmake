@@ -11,6 +11,12 @@ vcpkg_replace_string("${SOURCE_PATH}/configure.ac"
   "RPMCONFIGDIR=\"/usr/lib/rpm\""
 )
 
+# RPM looks for "popt" but Vcpkg generates a poptd library file
+set(COMMON_PATH "${CURRENT_INSTALLED_DIR}/debug/lib/${VCPKG_TARGET_STATIC_LIBRARY_PREFIX}")
+set(LIBPOPTD_FILE "${COMMON_PATH}poptd${VCPKG_TARGET_STATIC_LIBRARY_SUFFIX}/")
+set(LIBPOPT_FILE "${COMMON_PATH}popt${VCPKG_TARGET_STATIC_LIBRARY_SUFFIX}")
+file(COPY ${LIBPOPTD_FILE} DESTINATION ${LIBPOPT_FILE})
+
 vcpkg_configure_make(
   SOURCE_PATH "${SOURCE_PATH}"
   OPTIONS
