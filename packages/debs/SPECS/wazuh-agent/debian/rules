@@ -39,7 +39,6 @@ override_dh_auto_install:
 override_dh_install:
 
 	# Build the binaries
-	git submodule update --init --recursive
 	cmake src -B build -DINSTALL_ROOT=${TARGET_DIR}$(INSTALLATION_DIR)
 	cmake --build build --parallel $(JOBS)
 

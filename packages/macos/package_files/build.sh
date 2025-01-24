@@ -20,17 +20,27 @@ set_vcpkg_remote_binary_cache(){
 
   if [[ $(mono --version 2>/dev/null) =~ [0-9] ]]; then
     echo "mono already installed, proceeding"
+
+    git clone --branch master --single-branch https://github.com/microsoft/vcpkg.git
+    pushd vcpkg
+
+    export VCPKG_ROOT="$(pwd)"
+
+    git checkout "2024.09.30"
+
     export VCPKG_BINARY_SOURCES="clear;nuget,GitHub,readwrite"
-    $WAZUH_PATH/src/vcpkg/bootstrap-vcpkg.sh
-    mono `$WAZUH_PATH/src/vcpkg/vcpkg fetch nuget | tail -n 1` \
+    ./bootstrap-vcpkg.sh
+    mono `./vcpkg fetch nuget | tail -n 1` \
         sources add \
         -source "https://nuget.pkg.github.com/wazuh/index.json" \
         -name "GitHub" \
         -username "wazuh" \
         -password "$vcpkg_token"
-    mono `$WAZUH_PATH/src/vcpkg/vcpkg fetch nuget | tail -n 1` \
+    mono `./vcpkg fetch nuget | tail -n 1` \
         setapikey "$vcpkg_token" \
-        -source "https://nuget.pkg.github.com/wazuh/index.json"  
+        -source "https://nuget.pkg.github.com/wazuh/index.json"
+
+    popd
   else
     echo "mono is not installed, remote binary caching not being enabled"
   fi

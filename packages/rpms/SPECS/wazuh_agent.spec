@@ -38,7 +38,6 @@ log analysis, file integrity monitoring, intrusions detection and policy and com
 
 %build
 pushd src
-git submodule update --init --recursive
 mkdir build
 pushd build
 cmake .. -DINSTALL_ROOT=%{buildroot}%{_localstatedir} && make -j $(nproc)

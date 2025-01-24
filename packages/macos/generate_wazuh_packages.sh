@@ -141,10 +141,10 @@ function build_package_binaries() {
     if [ -n "$BRANCH_TAG" ]; then
         SOURCES_DIRECTORY="${CURRENT_PATH}/repository"
         WAZUH_PATH="${SOURCES_DIRECTORY}/wazuh"
-        git clone -b ${BRANCH_TAG} --single-branch --recurse-submodules ${WAZUH_SOURCE_REPOSITORY} "${WAZUH_PATH}"
+        git clone -b ${BRANCH_TAG} --single-branch ${WAZUH_SOURCE_REPOSITORY} "${WAZUH_PATH}"
     else
         WAZUH_PATH="${CURRENT_PATH}/../.."
-        cd $WAZUH_PATH && git submodule update --init --recursive 
+        cd $WAZUH_PATH
     fi
 
     short_commit_hash="$(cd "${WAZUH_PATH}" && git rev-parse --short HEAD)"
@@ -230,7 +230,7 @@ function testdep() {
         echo "Error: brew not found. Download and install it."
         echo "Use $0 -x for install it."
         exit 1
-    fi  
+    fi
 
     if [[ ! $(munkipkg --version 2>/dev/null) =~ [0-9] ]]; then
         echo "Error: munkipkg not found. Download and install dependencies."
@@ -243,7 +243,7 @@ function testdep() {
             echo "Error: mono not found. Download and install dependencies."
             echo "Use $0 -i for install it."
             exit 1
-        fi    
+        fi
     fi
 }
 
@@ -255,7 +255,7 @@ function install_deps() {
         # Install mono tool
         echo "Installing mono"
         brew install mono
-    fi 
+    fi
 
     if [[ $(munkipkg --version 2>/dev/null) =~ [0-9] ]]; then
         echo "munkipkg already installed"
@@ -468,7 +468,7 @@ function main() {
 
     testdep
     check_root
-    
+
     case "$BUILD_TYPE" in
         binaries)
             echo "Building only the binaries for the package."
@@ -495,9 +495,9 @@ function main() {
     esac
 
     if [ "${NOTARIZE}" = "yes" ] && { [ "${BUILD_TYPE}" = "package" ] || [ "${BUILD_TYPE}" = "full_package" ]; }; then
-        
+
         notarization_path="${DESTINATION}/${pkg_name}.pkg"
-    
+
         if [ -z "${notarization_path}" ]; then
             echo "The path of the package to be notarized has not been specified."
             help 1
