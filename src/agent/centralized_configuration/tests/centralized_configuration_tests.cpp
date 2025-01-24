@@ -223,10 +223,10 @@ TEST(CentralizedConfiguration, ExecuteCommandHandlesRecognizedCommands)
                                         "CentralizedConfiguration set-group done.");
 
             co_await TestExecuteCommand(centralizedConfiguration,
-                                        "update-group",
+                                        "fetch-config",
                                         {},
                                         module_command::Status::SUCCESS,
-                                        "CentralizedConfiguration update-group done.");
+                                        "CentralizedConfiguration fetch-config done.");
 
             co_await TestExecuteCommand(centralizedConfiguration,
                                         "unknown-command",
@@ -342,10 +342,10 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForU
             EXPECT_FALSE(wasDownloadGroupFilesFunctionCalled);
 
             co_await TestExecuteCommand(centralizedConfiguration,
-                                        "update-group",
+                                        "fetch-config",
                                         {},
                                         module_command::Status::SUCCESS,
-                                        "CentralizedConfiguration update-group done.");
+                                        "CentralizedConfiguration fetch-config done.");
 
             EXPECT_TRUE(wasGetGroupIdFunctionCalled);
             EXPECT_TRUE(wasDownloadGroupFilesFunctionCalled);

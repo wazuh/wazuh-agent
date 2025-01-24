@@ -19,8 +19,8 @@ def actions = [
     ["name": "set-group", "version": "v5.0.0"],
     ["name": "set-group", "version": "v5.0.0", "args": ["other": "noNeedArgs"]],
     ["name": "set-group", "version": "v5.0.0", "args": ["groups": ["validYaml"],"other": "noNeedArgs"]],
-    ["name": "update-group", "version": "v5.0.0", "args": ["groups": ["noNeedArgs"]]],
-    ["name": "update-group", "version": "v5.0.0", "args": ""]
+    ["name": "fetch-config", "version": "v5.0.0", "args": ["groups": ["noNeedArgs"]]],
+    ["name": "fetch-config", "version": "v5.0.0", "args": ""]
 ]
 
 def numCommands = new Random().nextInt(3)

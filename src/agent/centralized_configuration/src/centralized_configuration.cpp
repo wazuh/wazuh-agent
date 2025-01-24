@@ -76,7 +76,7 @@ namespace centralized_configuration
                         "CentralizedConfiguration group set failed, error while cleaning the shared directory"};
                 }
             }
-            else if (command == module_command::UPDATE_GROUP_COMMAND)
+            else if (command == module_command::FETCH_CONFIG_COMMAND)
             {
                 groupIds = m_getGroupIdFunction();
             }
