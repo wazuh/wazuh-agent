@@ -6,6 +6,8 @@
 // Extract file name from path (inline function for C++ and macro for C)
 #ifdef __cplusplus
 #include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+
 inline const char* GetFileName(const char* path)
 {
     const char* file = strrchr(path, '/');
@@ -36,8 +38,6 @@ void LogCritical_C(const char* file, int line, const char* func, const char* mes
 
 #ifdef __cplusplus
 
-#include <ilogger.hpp>
-
 #define LogTrace(message, ...) spdlog::trace("[TRACE] [{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
 #define LogDebug(message, ...) spdlog::debug("[DEBUG] [{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
 #define LogInfo(message, ...)  spdlog::info("[INFO] [{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
@@ -45,10 +45,27 @@ void LogCritical_C(const char* file, int line, const char* func, const char* mes
 #define LogError(message, ...) spdlog::error("[ERROR] [{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
 #define LogCritical(message, ...) spdlog::critical("[CRITICAL] [{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
 
-class Logger : public Ilogger
+namespace
+{
+    const std::string LOGGER_NAME = "wazuh-agent";
+}
+
+class Logger
 {
 public:
     Logger();
+
+    /// @brief Add a sink to the specified logger
+    static void AddStdErrSink()
+    {
+        std::shared_ptr<spdlog::logger> logger = spdlog::get(LOGGER_NAME);
+        if (logger != nullptr)
+        {
+            auto stdOutSink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
+            logger->sinks().clear();
+            logger->sinks().push_back(stdOutSink);
+        }
+    }
 };
 
 #else

@@ -1,11 +1,11 @@
-#include <unix_daemon.hpp>
+#include <instance_handler.hpp>
 
 #include <config.h>
 #include <configuration_parser.hpp>
+#include <filesystem_wrapper.hpp>
 #include <logger.hpp>
 
 #include <cerrno>
-#include <filesystem>
 #include <fmt/format.h>
 #include <fstream>
 #include <sys/file.h>
@@ -19,20 +19,43 @@
 #error "Unsupported platform"
 #endif
 
-namespace fs = std::filesystem;
-
-namespace unix_daemon
+namespace
 {
-    LockFileHandler::LockFileHandler(std::string lockFilePath)
-        : m_lockFilePath(std::move(lockFilePath))
-        , m_errno(0)
-        , m_lockFileCreated(createLockFile())
+    /// @brief Creates the directory path for the lock file
+    /// @param path The path for the lock file
+    /// @return True if the directory is created, false otherwise
+    bool CreateDirectory(const std::string& path)
     {
+        try
+        {
+            auto fsWrapper = std::make_unique<filesystem_wrapper::FileSystemWrapper>();
+
+            if (fsWrapper->exists(path) && fsWrapper->is_directory(path))
+            {
+                return true;
+            }
+
+            fsWrapper->create_directories(path);
+            return true;
+        }
+        catch (const std::filesystem::filesystem_error& e)
+        {
+            LogCritical("Error creating directory: {}", e.what());
+            return false;
+        }
+    }
+} // namespace
+
+namespace instance_handler
+{
+    InstanceHandler::~InstanceHandler()
+    {
+        releaseInstanceLock();
     }
 
-    void LockFileHandler::removeLockFile() const
+    void InstanceHandler::releaseInstanceLock() const
     {
-        if (!m_lockFileCreated)
+        if (!m_lockAcquired)
             return;
 
         const std::string filePath = fmt::format("{}/wazuh-agent.lock", m_lockFilePath);
@@ -46,28 +69,9 @@ namespace unix_daemon
         }
     }
 
-    bool LockFileHandler::createDirectory(const std::string& path) const
+    bool InstanceHandler::getInstanceLock()
     {
-        try
-        {
-            if (fs::exists(path) && fs::is_directory(path))
-            {
-                return true;
-            }
-
-            fs::create_directories(path);
-            return true;
-        }
-        catch (const fs::filesystem_error& e)
-        {
-            LogCritical("Error creating directory: {}", e.what());
-            return false;
-        }
-    }
-
-    bool LockFileHandler::createLockFile()
-    {
-        if (!createDirectory(m_lockFilePath))
+        if (!CreateDirectory(m_lockFilePath))
         {
             LogError("Unable to create lock directory: {}", m_lockFilePath);
             return false;
@@ -97,7 +101,7 @@ namespace unix_daemon
         return true;
     }
 
-    LockFileHandler GenerateLockFile(const std::string& configFilePath)
+    InstanceHandler GetInstanceHandler(const std::string& configFilePath)
     {
         auto configurationParser = configFilePath.empty()
                                        ? configuration::ConfigurationParser()
@@ -106,26 +110,26 @@ namespace unix_daemon
         const std::string lockFilePath =
             configurationParser.GetConfig<std::string>("agent", "path.run").value_or(config::DEFAULT_RUN_PATH);
 
-        return {LockFileHandler(lockFilePath)};
+        return {InstanceHandler(lockFilePath)};
     }
 
-    std::string GetDaemonStatus(const std::string& configFilePath)
+    std::string GetAgentStatus(const std::string& configFilePath)
     {
-        LockFileHandler lockFileHandler = GenerateLockFile(configFilePath);
+        InstanceHandler instanceHandler = GetInstanceHandler(configFilePath);
 
-        if (!lockFileHandler.isLockFileCreated())
+        if (!instanceHandler.isLockAcquired())
         {
-            if (lockFileHandler.getErrno() == EAGAIN)
+            if (instanceHandler.getErrno() == EAGAIN)
             {
                 return "running";
             }
             else
             {
                 return fmt::format(
-                    "Error: {} ({})", lockFileHandler.getErrno(), std::strerror(lockFileHandler.getErrno()));
+                    "Error: {} ({})", instanceHandler.getErrno(), std::strerror(instanceHandler.getErrno()));
             }
         }
 
         return "stopped";
     }
-} // namespace unix_daemon
+} // namespace instance_handler

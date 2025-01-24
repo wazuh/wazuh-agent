@@ -3,19 +3,35 @@
 #include <agent.hpp>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
+#include <instance_handler.hpp>
 #include <logger.hpp>
 #include <windows_service.hpp>
 
+#include <iostream>
+#include <memory>
 #include <vector>
 
 void StartAgent(const std::string& configFilePath)
 {
-    WindowsService::ServiceStart(configFilePath);
-}
+    try
+    {
+        Logger::AddStdErrSink();
+        instance_handler::InstanceHandler instanceHandler = instance_handler::GetInstanceHandler(configFilePath);
 
-void StatusAgent([[maybe_unused]] const std::string& configFilePath)
-{
-    WindowsService::ServiceStatus();
+        if (!instanceHandler.isLockAcquired())
+        {
+            std::cout << "wazuh-agent already running\n";
+            return;
+        }
+
+        LogInfo("Starting wazuh-agent");
+        Agent agent(configFilePath);
+        agent.Run();
+    }
+    catch (const std::exception& e)
+    {
+        LogError("Exception thrown in wazuh-agent: {}", e.what());
+    }
 }
 
 bool InstallService()

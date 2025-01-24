@@ -3,7 +3,9 @@
 #include <agent.hpp>
 #include <agent_registration.hpp>
 #include <config.h>
+#include <fmt/format.h>
 #include <http_client.hpp>
+#include <instance_handler.hpp>
 
 #include <iostream>
 #include <string>
@@ -49,4 +51,9 @@ void RegisterAgent(const std::string& url,
     {
         std::cout << "--url, --user and --password args are mandatory\n";
     }
+}
+
+void StatusAgent(const std::string& configFilePath)
+{
+    std::cout << fmt::format("wazuh-agent status: {}\n", instance_handler::GetAgentStatus(configFilePath));
 }

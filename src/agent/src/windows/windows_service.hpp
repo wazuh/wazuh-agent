@@ -32,7 +32,4 @@ namespace WindowsService
     /// @brief Starts the Wazuh Agent Service.
     /// @param configFilePath The path to the configuration file.
     void ServiceStart(const std::string& configFilePath);
-
-    /// @brief Shows the status of the Wazuh Agent Service.
-    void ServiceStatus();
 } // namespace WindowsService

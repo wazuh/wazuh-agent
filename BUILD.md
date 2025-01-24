@@ -265,7 +265,16 @@ The following dependencies are required for this project:
 
 5. **Run the Agent**
 
-    **Install windows service**
+   **To run the agent in the foreground from the CLI**
+
+    You can start and get status with the following commands:
+
+    ```bash
+    .\wazuh-agent
+    .\wazuh-agent --status
+    ```
+ 
+    **To install the agent as a windows service**
 
     ```bash
     .\RelWithDebInfo\wazuh-agent --install-service
@@ -273,9 +282,10 @@ The following dependencies are required for this project:
     You can start, stop or restart the service from Windows SCM.
 
     Or from the CLI
+    
     ```bash
-    .\RelWithDebInfo\wazuh-agent
-    .\RelWithDebInfo\wazuh-agent --status
+    net start "Wazuh Agent"
+    net stop "Wazuh Agent"
     ```
 
     **To remove the service**

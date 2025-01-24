@@ -2,6 +2,7 @@
 
 #include "process_options.hpp"
 #include <agent.hpp>
+#include <instance_handler.hpp>
 #include <logger.hpp>
 #include <signal_handler.hpp>
 
@@ -77,28 +78,6 @@ namespace
 
         SetEvent(g_ServiceStopEvent);
         ReportServiceStatus(g_ServiceStatus.dwCurrentState, NO_ERROR, 0);
-    }
-
-    std::string ServiceStatusToString(DWORD currentState)
-    {
-        static const std::unordered_map<DWORD, std::string> statusMap = {
-            {SERVICE_STOPPED, "Service is stopped."},
-            {SERVICE_START_PENDING, "Service is starting..."},
-            {SERVICE_STOP_PENDING, "Service is stopping..."},
-            {SERVICE_RUNNING, "Service is running."},
-            {SERVICE_CONTINUE_PENDING, "Service is resuming..."},
-            {SERVICE_PAUSE_PENDING, "Service is pausing..."},
-            {SERVICE_PAUSED, "Service is paused."}};
-
-        auto it = statusMap.find(currentState);
-        if (it != statusMap.end())
-        {
-            return it->second;
-        }
-        else
-        {
-            return "Unknown service status.";
-        }
     }
 
     bool GetService(ServiceHandle& hSCManager, ServiceHandle& hService, DWORD desiredAccess)
@@ -225,8 +204,6 @@ namespace WindowsService
 
         ReportServiceStatus(SERVICE_RUNNING, NO_ERROR, 0);
 
-        LogInfo("Starting Wazuh Agent.");
-
         std::string configFilePath;
         if (argc > 1 && argv[1] != nullptr)
         {
@@ -243,6 +220,17 @@ namespace WindowsService
 
         try
         {
+            instance_handler::InstanceHandler instanceHandler = instance_handler::GetInstanceHandler(configFilePath);
+
+            if (!instanceHandler.isLockAcquired())
+            {
+                LogError("Wazuh Agent cannot start. Wazuh Agent is already running");
+                ReportServiceStatus(SERVICE_STOPPED, NO_ERROR, 0);
+                return;
+            }
+
+            LogInfo("Starting Wazuh Agent.");
+
             Agent agent(configFilePath);
             agent.Run();
         }
@@ -301,30 +289,6 @@ namespace WindowsService
         else
         {
             LogInfo("Service {} started successfully.", AGENT_SERVICENAME.c_str());
-        }
-    }
-
-    void ServiceStatus()
-    {
-        ServiceHandle hService;
-        ServiceHandle hSCManager;
-
-        if (!GetService(hSCManager, hService, SERVICE_QUERY_STATUS))
-            return;
-
-        SERVICE_STATUS_PROCESS serviceStatus;
-        DWORD bytesNeeded;
-        if (!QueryServiceStatusEx(hService.get(),
-                                  SC_STATUS_PROCESS_INFO,
-                                  (LPBYTE)&serviceStatus,
-                                  sizeof(SERVICE_STATUS_PROCESS),
-                                  &bytesNeeded))
-        {
-            LogError("Error: Unable to query service status. Error: {}", GetLastError());
-        }
-        else
-        {
-            LogInfo("{}", ServiceStatusToString(serviceStatus.dwCurrentState));
         }
     }
 } // namespace WindowsService
