@@ -105,8 +105,6 @@
 #include "defs.h"
 #include "os_err.h"
 
-#include "os_ip.h"
-
 #ifndef LARGEFILE64_SOURCE
 #define LARGEFILE64_SOURCE
 #endif /* LARGEFILE64_SOURCE */
