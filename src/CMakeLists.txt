@@ -63,21 +63,11 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 
     install(CODE "file(MAKE_DIRECTORY \"${DATA_INSTALL_DIR}\")")
 
-<<<<<<< HEAD
-    install(CODE "file(MAKE_DIRECTORY \"${INSTALL_ROOT}${DATA_INSTALL_DIR}\")")
-
-    install(TARGETS wazuh-agent DESTINATION ${INSTALL_ROOT}${BIN_INSTALL_DIR})
-
-    install(CODE "file(MAKE_DIRECTORY \"${INSTALL_ROOT}${CONFIG_INSTALL_DIR}\")")
-    install(FILES ${CONFIG_FOLDER}/wazuh-agent.yml DESTINATION ${INSTALL_ROOT}${CONFIG_INSTALL_DIR})
-    install(TARGETS wazuh-agent DESTINATION ${INSTALL_ROOT}${BIN_INSTALL_DIR})
-=======
     install(CODE "file(MAKE_DIRECTORY \"${CONFIG_INSTALL_DIR}\")")
     install(FILES ${CONFIG_FOLDER}/wazuh-agent.yml
             DESTINATION ${CONFIG_INSTALL_DIR})
     install(TARGETS wazuh-agent
             DESTINATION ${BIN_INSTALL_DIR})
->>>>>>> df9dde3e5 (feat: use relative path to set installation folder)
 
     message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 
@@ -90,12 +80,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     file(WRITE "${OUTPUT_FILE}" "${FILE_CONTENTS}")
 
     add_custom_target(generate_service_file ALL DEPENDS "${OUTPUT_FILE}")
-<<<<<<< HEAD
-    install(FILES "${OUTPUT_FILE}" DESTINATION "${INSTALL_ROOT}${SERVICE_INSTALL_DIR}")
-=======
     install(FILES "${OUTPUT_FILE}"
         DESTINATION "${SERVICE_INSTALL_DIR}")
->>>>>>> df9dde3e5 (feat: use relative path to set installation folder)
 
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION .)

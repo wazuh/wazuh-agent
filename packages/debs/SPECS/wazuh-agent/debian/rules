@@ -39,10 +39,13 @@ override_dh_auto_install:
 override_dh_install:
 
 	# Build the binaries
-	cmake src -B build -DINSTALL_ROOT=${TARGET_DIR}$(INSTALLATION_DIR)
-	cmake --build build --parallel $(JOBS)
-
-	make -C build install -j $(JOBS)
+	if [ -d "$(shell pwd)/src/build" ]; then \
+		cmake --install $(shell pwd)/src/build --prefix ${TARGET_DIR}$(INSTALLATION_DIR); \
+	else \
+		cmake src -B build -DINSTALL_ROOT=${TARGET_DIR}$(INSTALLATION_DIR); \
+		cmake --build build --parallel $(JOBS); \
+		make -C build install -j $(JOBS); \
+	fi
 
 override_dh_auto_clean:
 	make -C src clean

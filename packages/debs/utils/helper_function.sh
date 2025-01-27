@@ -19,11 +19,6 @@ setup_build(){
     debug="$5"
 
     cp -pr ${specs_path}/wazuh-${BUILD_TARGET}/debian ${sources_dir}/debian
-    cp -p /home/gen_permissions.sh ${sources_dir}
-
-    # Generating directory structure to build the .deb package
-    cd ${build_dir}/${BUILD_TARGET} && tar -czf ${package_name}.orig.tar.gz "${package_name}"
-
 
     # Configure the package with the different parameters
     if [ "${ARCHITECTURE_TARGET}" != "amd64" ]; then
