@@ -104,8 +104,18 @@ void Logcollector::Stop()
 Co_CommandExecutionResult Logcollector::ExecuteCommand(const std::string command,
                                                        [[maybe_unused]] const nlohmann::json parameters)
 {
+    if (!m_enabled)
+    {
+        LogInfo("Logcollector module is disabled.");
+        co_return module_command::CommandExecutionResult {module_command::Status::FAILURE, "Module is disabled"};
+    }
+    else if (m_ioContext.stopped())
+    {
+        LogInfo("Logcollector module is stopped.");
+        co_return module_command::CommandExecutionResult {module_command::Status::FAILURE, "Module is stopped"};
+    }
     LogInfo("Logcollector command: ", command);
-    co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS, "OK"};
+    co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS, "Command not implemented yet"};
 }
 
 // NOLINTEND(performance-unnecessary-value-param)

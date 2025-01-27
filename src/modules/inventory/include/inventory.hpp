@@ -32,7 +32,7 @@ public:
     void Start();
     void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
     void Stop();
-    Co_CommandExecutionResult ExecuteCommand(const std::string command, const nlohmann::json parameters);
+    Co_CommandExecutionResult ExecuteCommand(const std::string command, const nlohmann::json parameters) const;
 
     const std::string& Name() const
     {
