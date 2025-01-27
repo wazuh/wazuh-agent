@@ -10,6 +10,7 @@ add_subdirectory(centralized_configuration)
 add_subdirectory(command_handler)
 add_subdirectory(communicator)
 add_subdirectory(configuration_parser)
+add_subdirectory(http_client)
 add_subdirectory(multitype_queue)
 add_subdirectory(persistence)
 add_subdirectory(task_manager)
@@ -54,14 +55,15 @@ target_include_directories(Agent
     ${CMAKE_CURRENT_SOURCE_DIR}/src/windows)
 target_link_libraries(Agent
     PUBLIC
-    TaskManager
-    CentralizedConfiguration
-    ConfigurationParser
-    Communicator
     AgentInfo
+    CentralizedConfiguration
     CommandHandler
+    Communicator
+    ConfigurationParser
+    HttpClient
     MultiTypeQueue
     ModuleManager
+    TaskManager
     Boost::asio
     RestartHandler
     sysinfo

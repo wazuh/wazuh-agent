@@ -7,7 +7,7 @@
 #include <ihttp_client.hpp>
 #include <ihttp_socket.hpp>
 
-#include "../communicator/tests/mocks/mock_http_client.hpp"
+#include "../http_client/tests/mocks/mock_http_client.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>

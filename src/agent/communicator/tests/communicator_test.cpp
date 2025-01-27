@@ -7,7 +7,7 @@
 #include <jwt-cpp/jwt.h>
 #include <jwt-cpp/traits/nlohmann-json/traits.h>
 
-#include "mocks/mock_http_client.hpp"
+#include "../../http_client/tests/mocks/mock_http_client.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
