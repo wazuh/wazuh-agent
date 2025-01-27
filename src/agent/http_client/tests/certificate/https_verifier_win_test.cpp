@@ -7,9 +7,9 @@
 #include <wincrypt.h>
 // clang-format on
 
+#include "../mocks/mock_cert_store_utils_win.hpp"
+#include "../mocks/mock_x509_utils.hpp"
 #include "https_verifier_win.hpp"
-#include "mocks/mock_cert_store_utils_win.hpp"
-#include "mocks/mock_x509_utils.hpp"
 #include <boost/asio/ssl.hpp>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>

@@ -1,6 +1,6 @@
+#include "../mocks/mock_cert_store_utils_mac.hpp"
+#include "../mocks/mock_x509_utils.hpp"
 #include "https_verifier_mac.hpp"
-#include "mocks/mock_cert_store_utils_mac.hpp"
-#include "mocks/mock_x509_utils.hpp"
 #include <CoreFoundation/CoreFoundation.h>
 #include <boost/asio/ssl.hpp>
 #include <gmock/gmock.h>
