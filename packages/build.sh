@@ -74,6 +74,9 @@ set_vcpkg_remote_binary_cache(){
 
     git clone --branch master --single-branch https://github.com/microsoft/vcpkg.git
     pushd vcpkg
+
+    export VCPKG_ROOT="$(pwd)"
+
     git checkout "2024.09.30"
 
     export VCPKG_BINARY_SOURCES="clear;nuget,GitHub,readwrite"

@@ -6,18 +6,13 @@ COPY CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo
 RUN rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
 RUN yum clean all && yum update -y
 
-RUN yum install -y gcc make wget git \
-    openssh-clients sudo gnupg libdb libdb-devel\
-    automake autoconf libtool policycoreutils-python \
-    yum-utils epel-release redhat-rpm-config rpm-devel \
-    autopoint gettext nspr nspr-devel \
-    nss nss-devel magic magic-devel \
-    db4 db4-devel zlib zlib-devel rpm-build bison \
-    sharutils bzip2-devel xz-devel lzo-devel \
-    e2fsprogs-devel libacl-devel libattr-devel \
-    openssl-devel libxml2-devel kexec-tools elfutils \
-    libarchive-devel elfutils-libelf-devel \
-    patchelf elfutils-devel libgcrypt-devel \
+RUN yum install -y gcc make wget git openssh-clients sudo gnupg \
+    libdb-devel automake autoconf libtool policycoreutils-python \
+    epel-release redhat-rpm-config rpm-devel autopoint \
+    nspr-devel nss-devel db4-devel zlib-devel rpm-build bison \
+    sharutils lzo-devel e2fsprogs-devel libacl-devel \
+    libattr-devel openssl-devel kexec-tools libarchive-devel \
+    elfutils-libelf-devel patchelf elfutils-devel libgcrypt-devel \
     file-devel gettext-devel curl-devel systemd-devel
 
 RUN yum-builddep python34 -y
@@ -51,21 +46,12 @@ RUN git clone https://github.com/Perl/perl5.git --branch v5.34.0 --single-branch
     make -j$(nproc) && make install && ln -fs /usr/local/bin/perl /bin/perl && \
     cd / && rm -rf perl*
 
-RUN curl -O http://packages.wazuh.com/utils/autoconf/autoconf-2.69.tar.gz && \
-    gunzip autoconf-2.69.tar.gz && tar xvf autoconf-2.69.tar && \
-    cd autoconf-2.69 && ./configure && make -j$(nproc) && \
-    make install && cd / && rm -rf autoconf-*
-
-RUN git clone https://github.com/sqlite/sqlite.git --branch version-3.46.1 --single-branch && \
-    cd sqlite && ./configure && make -j$(nproc) && \
-    make install -j$(nproc) && ln -fs /usr/local/bin/sqlite3 /usr/bin/sqlite3 && \
-    cd / && rm -rf sqlit*
-
 RUN curl -sO https://lua.org/ftp/lua-5.4.7.tar.gz && tar -xzvf lua-5.4.7.tar.gz && \
     cd lua-5.4.7 && make -j$(nproc) linux CFLAGS+="-fPIC" LDFLAGS+="-fPIC" && make install && \
     ln -fs /usr/local/bin/lua /usr/bin/lua && cd / && rm -rf lua*
 
-RUN echo "# Package Information for pkg-config" > /usr/local/lib/pkgconfig/lua.pc && \
+RUN mkdir -p /usr/local/lib/pkgconfig && \
+    echo "# Package Information for pkg-config" > /usr/local/lib/pkgconfig/lua.pc && \
     echo "prefix=/usr/local" >> /usr/local/lib/pkgconfig/lua.pc && \
     echo "exec_prefix=\${prefix}" >> /usr/local/lib/pkgconfig/lua.pc && \
     echo "libdir=\${exec_prefix}/lib" >> /usr/local/lib/pkgconfig/lua.pc && \
@@ -76,10 +62,6 @@ RUN echo "# Package Information for pkg-config" > /usr/local/lib/pkgconfig/lua.p
     echo "Version: 5.4.7" >> /usr/local/lib/pkgconfig/lua.pc && \
     echo "Libs: -L\${libdir} -llua -lm" >> /usr/local/lib/pkgconfig/lua.pc && \
     echo "Cflags: -I\${includedir}" >> /usr/local/lib/pkgconfig/lua.pc
-
-RUN git clone https://github.com/rpm-software-management/popt.git --branch popt-1.19-release --single-branch && \
-    cd popt && ./autogen.sh && ./configure && make -j$(nproc) && make install -j$(nproc) && \
-    cd / && rm -rf popt*
 
 RUN git clone https://github.com/rpm-software-management/rpm.git --branch rpm-4.15.1-release --single-branch && \
     cd rpm && ./autogen.sh && make -j$(nproc) && make install && cd / && rm -rf rpm*
