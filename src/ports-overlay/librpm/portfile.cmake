@@ -31,7 +31,7 @@ includedir=${prefix}/../include
 
 Name: Lua
 Description: Lua
-Version: 5.4.2
+Version: 5.4.6
 
 Libs: -L\${libdir} -llua -lm
 Cflags: -I\${includedir}
@@ -46,7 +46,7 @@ includedir=\${prefix}/include
 
 Name: Lua
 Description: Lua
-Version: 5.4.2
+Version: 5.4.6
 
 Libs: -L\${libdir} -llua -lm
 Cflags: -I\${includedir}

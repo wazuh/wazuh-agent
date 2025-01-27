@@ -30,10 +30,17 @@
       "name": "sqlite3"
     }
   ],
+  "vcpkg-configuration": {
+    "default-registry": {
+      "kind": "git",
+      "repository": "https://github.com/Microsoft/vcpkg",
+      "baseline": "f7423ee180c4b7f40d43402c2feb3859161ef625"
+    }
+  },
   "overrides": [
     {
       "name": "lua",
-      "version": "5.4.2"
+      "version": "5.4.6"
     }
   ]
 }
