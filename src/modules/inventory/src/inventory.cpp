@@ -80,10 +80,20 @@ void Inventory::Stop()
 }
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
-Co_CommandExecutionResult Inventory::ExecuteCommand(const std::string command, const nlohmann::json)
+Co_CommandExecutionResult Inventory::ExecuteCommand(const std::string command, const nlohmann::json) const
 {
+    if (!m_enabled)
+    {
+        LogInfo("Inventory module is disabled.");
+        co_return module_command::CommandExecutionResult {module_command::Status::FAILURE, "Module is disabled"};
+    }
+    else if (m_stopping)
+    {
+        LogInfo("Inventory module is stopped.");
+        co_return module_command::CommandExecutionResult {module_command::Status::FAILURE, "Module is stopped"};
+    }
     LogInfo("Command: {}", command);
-    co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS, "OK"};
+    co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS, "Command not implemented yet"};
 }
 
 void Inventory::SetPushMessageFunction(const std::function<int(Message)>& pushMessage)

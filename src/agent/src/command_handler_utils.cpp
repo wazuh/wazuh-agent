@@ -36,7 +36,7 @@ namespace
     {
         try
         {
-            constexpr auto timeout = std::chrono::minutes {60};
+            constexpr auto timeout = std::chrono::minutes {10};
             auto timer = std::make_shared<boost::asio::steady_timer>(co_await boost::asio::this_coro::executor);
             timer->expires_after(timeout);
             co_await timer->async_wait(boost::asio::use_awaitable);
