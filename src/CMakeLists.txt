@@ -61,7 +61,7 @@ configure_target(wazuh-agent)
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set(CMAKE_INSTALL_PREFIX "" CACHE PATH "Root directory for installation")
 
-    install(CODE "file(MAKE_DIRECTORY \"${DATA_INSTALL_DIR}\")")
+    install(DIRECTORY DESTINATION "${DATA_INSTALL_DIR}")
 
     install(CODE "file(MAKE_DIRECTORY \"${CONFIG_INSTALL_DIR}\")")
     install(FILES ${CONFIG_FOLDER}/wazuh-agent.yml
