@@ -17,7 +17,9 @@ namespace
                          {{module_command::GROUPS_ARG, nlohmann::json::value_t::array}}}},
         {module_command::FETCH_CONFIG_COMMAND,
          CommandDetails {
-             module_command::CENTRALIZED_CONFIGURATION_MODULE, module_command::CommandExecutionMode::SYNC, {}}}};
+             module_command::CENTRALIZED_CONFIGURATION_MODULE, module_command::CommandExecutionMode::SYNC, {}}},
+        {module_command::RESTART_COMMAND,
+         CommandDetails {module_command::RESTART_HANDLER_MODULE, module_command::CommandExecutionMode::SYNC, {}}}};
 } // namespace
 
 namespace command_handler
@@ -133,8 +135,17 @@ namespace command_handler
         {
             for (auto& cmd : cmds.value())
             {
-                cmd.ExecutionResult.ErrorCode = module_command::Status::FAILURE;
-                cmd.ExecutionResult.Message = "Agent stopped during execution";
+                if (cmd.Command == module_command::RESTART_COMMAND)
+                {
+                    LogInfo("Agent restarted successfully");
+                    cmd.ExecutionResult.ErrorCode = module_command::Status::SUCCESS;
+                    cmd.ExecutionResult.Message = "Agent restarted successfully";
+                }
+                else
+                {
+                    cmd.ExecutionResult.ErrorCode = module_command::Status::FAILURE;
+                    cmd.ExecutionResult.Message = "Agent stopped during execution";
+                }
                 reportCommandResult(cmd);
                 m_commandStore->UpdateCommand(cmd);
             }

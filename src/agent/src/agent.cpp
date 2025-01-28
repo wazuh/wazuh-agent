@@ -7,6 +7,7 @@
 #include <message.hpp>
 #include <message_queue_utils.hpp>
 #include <multitype_queue.hpp>
+#include <restart_handler.hpp>
 
 #include <filesystem>
 #include <memory>
@@ -151,6 +152,11 @@ void Agent::Run()
                             return m_centralizedConfiguration.ExecuteCommand(std::move(command), std::move(parameters));
                         },
                         m_messageQueue);
+                }
+                else if (cmd.Module == module_command::RESTART_HANDLER_MODULE)
+                {
+                    LogInfo("Restart: Initiating restart");
+                    return restart_handler::RestartHandler::RestartCommand();
                 }
                 return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue);
             }),

@@ -15,18 +15,9 @@ case "$1" in
       elif ${BINARY_DIR}wazuh-agent --status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
           pid=$(ps -ef | grep "${BINARY_DIR}wazuh-agent" | grep -v grep | awk '{print $2}')
           if [ -n "$pid" ]; then
-              kill -SIGTERM "$pid" 2>/dev/null
+              kill -15 "$pid" 2>/dev/null
           fi
       fi
-
-      # # Process: wazuh-agent
-      # if pgrep -f "wazuh-agent" > /dev/null 2>&1; then
-      #   kill -15 $(pgrep -f "wazuh-agent") > /dev/null 2>&1
-      # fi
-
-      # if pgrep -f "wazuh-agent" > /dev/null 2>&1; then
-      #   kill -9 $(pgrep -f "wazuh-agent") > /dev/null 2>&1
-      # fi
     ;;
 
     remove)
@@ -38,10 +29,9 @@ case "$1" in
       elif ${BINARY_DIR}wazuh-agent --status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
           pid=$(ps -ef | grep "${BINARY_DIR}wazuh-agent" | grep -v grep | awk '{print $2}')
           if [ -n "$pid" ]; then
-              kill -SIGTERM "$pid" 2>/dev/null
+              kill -15 "$pid" 2>/dev/null
           fi
       fi
-
     ;;
 
     failed-upgrade)
@@ -52,20 +42,9 @@ case "$1" in
       elif ${BINARY_DIR}wazuh-agent --status 2>/dev/null | grep "is running" > /dev/null 2>&1; then
           pid=$(ps -ef | grep "${BINARY_DIR}wazuh-agent" | grep -v grep | awk '{print $2}')
           if [ -n "$pid" ]; then
-              kill -SIGTERM "$pid" 2>/dev/null
+              kill -15 "$pid" 2>/dev/null
           fi
       fi
-
-      # if [ -f ${INSTALLATION_WAZUH_DIR}/bin/wazuh-agent ]; then
-      #   # pkill wazuh-agent
-      #   if pgrep -f "wazuh-agent" > /dev/null 2>&1; then
-      #     kill -15 $(pgrep -f "wazuh-agent") > /dev/null 2>&1
-      #   fi
-
-      #   if pgrep -f "wazuh-agent" > /dev/null 2>&1; then
-      #     kill -9 $(pgrep -f "wazuh-agent") > /dev/null 2>&1
-      #   fi
-      # fi
     ;;
 
     *)

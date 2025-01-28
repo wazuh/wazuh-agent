@@ -10,12 +10,14 @@ namespace module_command
     /// @brief Commands
     const std::string SET_GROUP_COMMAND = "set-group";
     const std::string FETCH_CONFIG_COMMAND = "fetch-config";
+    const std::string RESTART_COMMAND = "restart";
 
     /// @brief Commands arguments
     const std::string GROUPS_ARG = "groups";
 
     /// @brief Modules
     const std::string CENTRALIZED_CONFIGURATION_MODULE = "CentralizedConfiguration";
+    const std::string RESTART_HANDLER_MODULE = "RestartHandler";
 
     /// @enum Status of a command execution
     enum class Status
