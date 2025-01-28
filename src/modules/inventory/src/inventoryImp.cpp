@@ -270,7 +270,10 @@ std::string Inventory::CalculateHashId(const nlohmann::json& data, const std::st
     return Utils::asciiToHex(hash.hash());
 }
 
-void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& data, const std::string& table)
+void Inventory::NotifyChange(ReturnTypeCallback result,
+                             const nlohmann::json& data,
+                             const std::string& table,
+                             const bool isFirstScan)
 {
     if (DB_ERROR == result)
     {
@@ -287,22 +290,25 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
     {
         for (const auto& item : data)
         {
-            ProcessEvent(result, item, table);
+            ProcessEvent(result, item, table, isFirstScan);
         }
     }
     else
     {
-        ProcessEvent(result, data, table);
+        ProcessEvent(result, data, table, isFirstScan);
     }
 }
 
-void Inventory::ProcessEvent(ReturnTypeCallback result, const nlohmann::json& item, const std::string& table)
+void Inventory::ProcessEvent(ReturnTypeCallback result,
+                             const nlohmann::json& item,
+                             const std::string& table,
+                             const bool isFirstScan)
 {
     nlohmann::json msg = GenerateMessage(result, item, table);
 
     if (msg["metadata"]["id"].is_string() && msg["metadata"]["id"].get<std::string>().size() <= MAX_ID_SIZE)
     {
-        NotifyEvent(result, msg, item, table);
+        NotifyEvent(result, msg, item, table, isFirstScan);
     }
     else
     {
@@ -326,20 +332,25 @@ Inventory::GenerateMessage(ReturnTypeCallback result, const nlohmann::json& item
 void Inventory::NotifyEvent(ReturnTypeCallback result,
                             nlohmann::json& msg,
                             const nlohmann::json& item,
-                            const std::string& table)
+                            const std::string& table,
+                            const bool isFirstScan)
 {
-    nlohmann::json oldData = (result == MODIFIED) ? EcsData(item["old"], table, false) : nlohmann::json {};
-
-    nlohmann::json stateless = GenerateStatelessEvent(OPERATION_MAP.at(result), table, msg["data"]);
-    nlohmann::json eventWithChanges = msg["data"];
-
-    if (!oldData.empty())
+    if (!isFirstScan)
     {
-        stateless["event"]["changed_fields"] = AddPreviousFields(eventWithChanges, oldData);
+        nlohmann::json oldData = (result == MODIFIED) ? EcsData(item["old"], table, false) : nlohmann::json {};
+
+        nlohmann::json stateless = GenerateStatelessEvent(OPERATION_MAP.at(result), table, msg["data"]);
+        nlohmann::json eventWithChanges = msg["data"];
+
+        if (!oldData.empty())
+        {
+            stateless["event"]["changed_fields"] = AddPreviousFields(eventWithChanges, oldData);
+        }
+
+        stateless.update(eventWithChanges);
+        msg["stateless"] = stateless;
     }
 
-    stateless.update(eventWithChanges);
-    msg["stateless"] = stateless;
     msg["data"]["@timestamp"] = m_scanTime;
 
     const auto msgToSend = msg.dump();
@@ -348,9 +359,9 @@ void Inventory::NotifyEvent(ReturnTypeCallback result,
 
 void Inventory::UpdateChanges(const std::string& table, const nlohmann::json& values, const bool isFirstScan)
 {
-    const auto callback {[this, table](ReturnTypeCallback result, const nlohmann::json& data)
+    const auto callback {[this, table, isFirstScan](ReturnTypeCallback result, const nlohmann::json& data)
                          {
-                             NotifyChange(result, data, table);
+                             NotifyChange(result, data, table, isFirstScan);
                          }};
 
     std::unique_lock<std::mutex> lock {m_mutex};
@@ -358,7 +369,7 @@ void Inventory::UpdateChanges(const std::string& table, const nlohmann::json& va
     nlohmann::json input;
     input["table"] = table;
     input["data"] = values;
-    if (isFirstScan)
+    if (!isFirstScan)
     {
         input["options"]["return_old_data"] = true;
     }
@@ -640,7 +651,7 @@ void Inventory::ScanHardware()
         LogTrace("Starting hardware scan");
         nlohmann::json hwData;
         hwData[0] = m_spInfo->hardware();
-        UpdateChanges(HARDWARE_TABLE, hwData, m_hardwareFirstScan);
+        UpdateChanges(HARDWARE_TABLE, hwData, !m_hardwareFirstScan);
         LogTrace("Ending hardware scan");
 
         if (!m_hardwareFirstScan && !m_stopping)
@@ -658,7 +669,7 @@ void Inventory::ScanSystem()
         LogTrace("Starting os scan");
         nlohmann::json SystemData;
         SystemData[0] = m_spInfo->os();
-        UpdateChanges(SYSTEM_TABLE, SystemData, m_systemFirstScan);
+        UpdateChanges(SYSTEM_TABLE, SystemData, !m_systemFirstScan);
         LogTrace("Ending os scan");
 
         if (!m_systemFirstScan && !m_stopping)
@@ -757,7 +768,7 @@ void Inventory::ScanNetwork()
 
             if (itNet != networkData.end())
             {
-                UpdateChanges(NETWORKS_TABLE, itNet.value(), m_networksFirstScan);
+                UpdateChanges(NETWORKS_TABLE, itNet.value(), !m_networksFirstScan);
             }
         }
 
@@ -778,7 +789,7 @@ void Inventory::ScanPackages()
         LogTrace("Starting packages scan");
         const auto callback {[this](ReturnTypeCallback result, const nlohmann::json& data)
                              {
-                                 NotifyChange(result, data, PACKAGES_TABLE);
+                                 NotifyChange(result, data, PACKAGES_TABLE, !m_packagesFirstScan);
                              }};
 
         std::unique_lock<std::mutex> lock {m_mutex};
@@ -828,7 +839,7 @@ void Inventory::ScanHotfixes()
 
         if (!hotfixes.is_null())
         {
-            UpdateChanges(HOTFIXES_TABLE, hotfixes, m_hotfixesFirstScan);
+            UpdateChanges(HOTFIXES_TABLE, hotfixes, !m_hotfixesFirstScan);
         }
 
         if (!m_hotfixesFirstScan && !m_stopping)
@@ -907,7 +918,7 @@ void Inventory::ScanPorts()
     {
         LogTrace("Starting ports scan");
         const auto& portsData {GetPortsData()};
-        UpdateChanges(PORTS_TABLE, portsData, m_portsFirstScan);
+        UpdateChanges(PORTS_TABLE, portsData, !m_portsFirstScan);
         LogTrace("Ending ports scan");
 
         if (!m_portsFirstScan && !m_stopping)
@@ -925,7 +936,7 @@ void Inventory::ScanProcesses()
         LogTrace("Starting processes scan");
         const auto callback {[this](ReturnTypeCallback result, const nlohmann::json& data)
                              {
-                                 NotifyChange(result, data, PROCESSES_TABLE);
+                                 NotifyChange(result, data, PROCESSES_TABLE, !m_processesFirstScan);
                              }};
         std::unique_lock<std::mutex> lock {m_mutex};
         DBSyncTxn txn {m_spDBSync->handle(), nlohmann::json {PROCESSES_TABLE}, 0, QUEUE_SIZE, callback};
