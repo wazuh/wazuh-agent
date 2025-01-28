@@ -1,6 +1,5 @@
 #pragma once
 #include <boost/asio/awaitable.hpp>
-#include <command_entry.hpp>
 #include <restart_handler.hpp>
 #include <vector>
 
@@ -13,11 +12,15 @@ namespace restart_handler
     /// @return true if systemctl is available and running as a systemd service, otherwise returns false.
     bool UsingSystemctl();
 
-    /// @brief Stops the agent by terminating the child process.
+    /// @brief Stops the agent by terminating its process.
     ///
-    /// This function sends a SIGTERM signal to the agent process to stop it. If the agent process
-    /// does not stop within a specified timeout period (30 seconds), it forces termination with a SIGKILL signal.
-    void StopAgent();
+    /// This function sends a SIGTERM signal to the agent process to request its termination. If the agent
+    /// process does not stop within the specified timeout period (30 seconds), a SIGKILL signal is sent to force
+    /// termination.
+    ///
+    /// @param pid The process ID of the agent to be stopped.
+    /// @param timeout The maximum time (in seconds) to wait for the agent to stop before forcing termination.
+    void StopAgent(const pid_t pid, const int timeout);
 
     /// @brief Restarts the module by forking a new process.
     ///

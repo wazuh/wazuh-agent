@@ -14,8 +14,15 @@ else()
 endif()
 
 add_library(RestartHandler ${SOURCES})
-target_include_directories(RestartHandler PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(RestartHandler
+                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(RestartHandler PUBLIC Boost::asio CommandEntry PRIVATE Logger)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(RestartHandler)
+
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
