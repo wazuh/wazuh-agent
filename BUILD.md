@@ -24,18 +24,15 @@
     git clone https://github.com/wazuh/wazuh-agent.git
     ```
 
-3. **Initialize Submodules**
+3. **Vcpkg**
 
-    The project uses submodules, so you need to initialize and update them. Run the following commands:
-
-    ```bash
-    cd wazuh-agent
-    git submodule update --init --recursive
-    ```
+    The project uses Vcpkg for dependency management. If you already have Vcpkg's repository checked out, make sure that `VCPKG_ROOT` is set.
+    Otherwise, the repository will be checked out during CMake's configuration phase.
 
 4. **Configure and Build the Project**
 
     ```bash
+    cd wazuh-agent
     cmake src -B build
     cmake --build build
     ```
@@ -111,18 +108,15 @@
     git clone https://github.com/wazuh/wazuh-agent.git
     ```
 
-4. **Initialize Submodules**
+4. **Vcpkg**
 
-    The project uses submodules, so you need to initialize and update them. Run the following commands:
-
-    ```bash
-    cd wazuh-agent
-    git submodule update --init --recursive
-    ```
+    The project uses Vcpkg for dependency management. If you already have Vcpkg's repository checked out, make sure that `VCPKG_ROOT` is set.
+    Otherwise, the repository will be checked out during CMake's configuration phase.
 
 5. **Configure and Build the Project**
 
     ```bash
+    cd wazuh-agent
     cmake src -B build
     cmake --build build
     ```
@@ -228,18 +222,15 @@
     git clone https://github.com/wazuh/wazuh-agent.git
     ```
 
-3. **Initialize Submodules**
+3. **Vcpkg**
 
-    The project uses submodules, so you need to initialize and update them. Run the following commands:
-
-    ```bash
-    cd wazuh-agent
-    git submodule update --init --recursive
-    ```
+    The project uses Vcpkg for dependency management. If you already have Vcpkg's repository checked out, make sure that `VCPKG_ROOT` is set.
+    Otherwise, the repository will be checked out during CMake's configuration phase.
 
 4. **Configure and Build the Project**
 
     ```bash
+    cd wazuh-agent
     cmake src -B build -G "Visual Studio 17 2022" -A x64
     cmake --build build
     ```
@@ -261,7 +252,7 @@
     .\wazuh-agent
     .\wazuh-agent --status
     ```
- 
+
     **To install the agent as a windows service**
 
     ```bash
@@ -270,7 +261,7 @@
     You can start, stop or restart the service from Windows SCM.
 
     Or from the CLI
-    
+
     ```bash
     net start "Wazuh Agent"
     net stop "Wazuh Agent"
@@ -299,6 +290,3 @@
 |`ENABLE_INVENTORY`|Enable Inventory module |`ON`|
 |`ENABLE_LOGCOLLECTOR`|Enable Logcollector module|`ON`|
 
-## Notes
-
-- The project uses `vcpkg` as a submodule to manage dependencies. By initializing the submodules, `vcpkg` will automatically fetch the necessary dependencies when running CMake.
