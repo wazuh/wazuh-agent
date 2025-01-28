@@ -1,13 +1,8 @@
-FROM debian:12
+FROM rockylinux:9
 
-COPY wazuh-dashboard*.deb /tmp
+COPY wazuh-dashboard*.rpm /tmp
 
-RUN <<EOF
-apt-get update
-apt-get install -f -y /tmp/wazuh-dashboard*.deb
-rm -f /tmp/wazuh-dashboard*.deb
-rm -rf /var/lib/apt/lists/*
-EOF
+RUN rpm -i --nodeps /tmp/wazuh-dashboard*.rpm && rm -f /tmp/wazuh-dashboard*.rpm
 
 COPY run.sh /usr/local/bin
 
