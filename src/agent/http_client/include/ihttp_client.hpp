@@ -1,10 +1,8 @@
 #pragma once
 
 #include <http_request_params.hpp>
-#include <ihttp_socket.hpp>
 
 #include <boost/asio/awaitable.hpp>
-#include <boost/beast/http.hpp>
 
 #include <ctime>
 #include <functional>
@@ -24,12 +22,6 @@ namespace http_client
     public:
         /// @brief Destroys the IHttpClient
         virtual ~IHttpClient() = default;
-
-        /// @brief Create an HTTP request
-        /// @param params The parameters for the request
-        /// @return The created request
-        virtual boost::beast::http::request<boost::beast::http::string_body>
-        CreateHttpRequest(const HttpRequestParams& params) = 0;
 
         /// @brief Coroutine to perform an HTTP request
         /// @param token A shared pointer to the authentication token
@@ -53,8 +45,7 @@ namespace http_client
 
         /// @brief Perform an HTTP request and receive the response
         /// @param params The parameters for the request
-        /// @return The response
-        virtual boost::beast::http::response<boost::beast::http::dynamic_body>
-        PerformHttpRequest(const HttpRequestParams& params) = 0;
+        /// @return A tuple containing the response status code and body
+        virtual std::tuple<int, std::string> PerformHttpRequest(const HttpRequestParams& params) = 0;
     };
 } // namespace http_client

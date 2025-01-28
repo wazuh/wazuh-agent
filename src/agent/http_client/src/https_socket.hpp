@@ -6,7 +6,9 @@
 
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
-#include <boost/beast.hpp>
+#include <boost/beast/core/flat_buffer.hpp>
+#include <boost/beast/core/tcp_stream.hpp>
+#include <boost/beast/http.hpp>
 #include <boost/beast/ssl/ssl_stream.hpp>
 #include <boost/system/error_code.hpp>
 

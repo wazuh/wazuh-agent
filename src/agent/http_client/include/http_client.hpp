@@ -1,11 +1,8 @@
 #pragma once
 
 #include <ihttp_client.hpp>
-#include <ihttp_resolver_factory.hpp>
-#include <ihttp_socket_factory.hpp>
 
 #include <boost/asio/awaitable.hpp>
-#include <boost/beast/http.hpp>
 
 #include <functional>
 #include <memory>
@@ -14,6 +11,9 @@
 
 namespace http_client
 {
+    class IHttpResolverFactory;
+    class IHttpSocketFactory;
+
     /// @brief HTTP client implementation
     ///
     /// This class implements the IHttpClient interface, providing
@@ -26,12 +26,6 @@ namespace http_client
         /// @param socketFactory Factory to create HTTP sockets
         HttpClient(std::shared_ptr<IHttpResolverFactory> resolverFactory = nullptr,
                    std::shared_ptr<IHttpSocketFactory> socketFactory = nullptr);
-
-        /// @brief Creates an HTTP request
-        /// @param params Parameters for constructing the request
-        /// @return The constructed HTTP request
-        boost::beast::http::request<boost::beast::http::string_body>
-        CreateHttpRequest(const HttpRequestParams& params) override;
 
         /// @brief Performs an asynchronous HTTP request
         /// @param token Authorization token
@@ -55,9 +49,8 @@ namespace http_client
 
         /// @brief Performs a synchronous HTTP request
         /// @param params Parameters for the request
-        /// @return The HTTP response
-        boost::beast::http::response<boost::beast::http::dynamic_body>
-        PerformHttpRequest(const HttpRequestParams& params) override;
+        /// @return A tuple containing the response status code and body
+        std::tuple<int, std::string> PerformHttpRequest(const HttpRequestParams& params) override;
 
     private:
         /// @brief HTTP resolver factory

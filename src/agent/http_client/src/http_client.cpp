@@ -2,10 +2,14 @@
 
 #include "http_resolver_factory.hpp"
 #include "http_socket_factory.hpp"
-#include "ihttp_socket.hpp"
+#include "ihttp_resolver_factory.hpp"
+#include "ihttp_socket_factory.hpp"
 
 #include <boost/asio.hpp>
-#include <boost/beast.hpp>
+#include <boost/beast/core/buffers_to_string.hpp>
+#include <boost/beast/core/detail/base64.hpp>
+#include <boost/beast/core/ostream.hpp>
+#include <boost/beast/http.hpp>
 
 #include <logger.hpp>
 
@@ -17,6 +21,56 @@
 
 namespace
 {
+    boost::beast::http::verb GetRequestMethod(http_client::MethodType method)
+    {
+        switch (method)
+        {
+            case http_client::MethodType::GET: return boost::beast::http::verb::get;
+            case http_client::MethodType::POST: return boost::beast::http::verb::post;
+            case http_client::MethodType::PUT: return boost::beast::http::verb::put;
+            case http_client::MethodType::DELETE_: return boost::beast::http::verb::delete_;
+            default: return boost::beast::http::verb::get;
+        }
+    }
+
+    boost::beast::http::request<boost::beast::http::string_body>
+    CreateHttpRequest(const http_client::HttpRequestParams& params)
+    {
+        static constexpr int HttpVersion1_1 = 11;
+
+        boost::beast::http::request<boost::beast::http::string_body> req {
+            GetRequestMethod(params.Method), params.Endpoint, HttpVersion1_1};
+        req.set(boost::beast::http::field::host, params.Host);
+        req.set(boost::beast::http::field::user_agent, params.User_agent);
+        req.set(boost::beast::http::field::accept, "application/json");
+
+        if (!params.Token.empty())
+        {
+            req.set(boost::beast::http::field::authorization, "Bearer " + params.Token);
+        }
+
+        if (!params.User_pass.empty())
+        {
+            std::string basicAuth {};
+
+            basicAuth.resize(boost::beast::detail::base64::encoded_size(params.User_pass.size()));
+
+            boost::beast::detail::base64::encode(&basicAuth[0], params.User_pass.c_str(), params.User_pass.size());
+
+            req.set(boost::beast::http::field::authorization, "Basic " + basicAuth);
+        }
+
+        if (!params.Body.empty())
+        {
+            req.set(boost::beast::http::field::content_type, "application/json");
+            req.set(boost::beast::http::field::transfer_encoding, "chunked");
+            req.body() = params.Body;
+            req.prepare_payload();
+        }
+
+        return req;
+    }
+
     boost::asio::awaitable<void> WaitForTimer(std::shared_ptr<boost::asio::steady_timer> timer,
                                               const std::time_t retryInMillis)
     {
@@ -63,38 +117,6 @@ namespace http_client
         {
             m_socketFactory = std::make_shared<HttpSocketFactory>();
         }
-    }
-
-    boost::beast::http::request<boost::beast::http::string_body>
-    HttpClient::CreateHttpRequest(const HttpRequestParams& params)
-    {
-        static constexpr int HttpVersion1_1 = 11;
-
-        boost::beast::http::request<boost::beast::http::string_body> req {
-            params.Method, params.Endpoint, HttpVersion1_1};
-        req.set(boost::beast::http::field::host, params.Host);
-        req.set(boost::beast::http::field::user_agent, params.User_agent);
-        req.set(boost::beast::http::field::accept, "application/json");
-
-        if (!params.Token.empty())
-        {
-            req.set(boost::beast::http::field::authorization, "Bearer " + params.Token);
-        }
-
-        if (!params.User_pass.empty())
-        {
-            req.set(boost::beast::http::field::authorization, "Basic " + params.User_pass);
-        }
-
-        if (!params.Body.empty())
-        {
-            req.set(boost::beast::http::field::content_type, "application/json");
-            req.set(boost::beast::http::field::transfer_encoding, "chunked");
-            req.body() = params.Body;
-            req.prepare_payload();
-        }
-
-        return req;
     }
 
     boost::asio::awaitable<void> HttpClient::Co_PerformHttpRequest(
@@ -238,8 +260,7 @@ namespace http_client
         } while (loopRequestCondition != nullptr && loopRequestCondition());
     }
 
-    boost::beast::http::response<boost::beast::http::dynamic_body>
-    HttpClient::PerformHttpRequest(const HttpRequestParams& params)
+    std::tuple<int, std::string> HttpClient::PerformHttpRequest(const HttpRequestParams& params)
     {
         boost::beast::http::response<boost::beast::http::dynamic_body> res;
 
@@ -307,6 +328,6 @@ namespace http_client
             res.prepare_payload();
         }
 
-        return res;
+        return std::tuple<int, std::string> {res.result_int(), boost::beast::buffers_to_string(res.body().data())};
     }
 } // namespace http_client

@@ -37,6 +37,11 @@ namespace https_socket_verify_utils
             , m_x509Utils(std::move(x509Utils))
             , m_certStoreUtils(std::move(certStoreUtils))
         {
+            if (!m_x509Utils || !m_certStoreUtils)
+            {
+                throw std::invalid_argument("Invalid utils pointers");
+            }
+
             m_deleter = [this](CFTypeRef obj)
             {
                 if (obj)

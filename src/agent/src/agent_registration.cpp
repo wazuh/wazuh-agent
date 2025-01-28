@@ -1,9 +1,5 @@
 #include <agent_registration.hpp>
-
-#include <boost/beast/core/buffers_to_string.hpp>
-#include <boost/beast/core/detail/base64.hpp>
-#include <boost/beast/http/status.hpp>
-#include <boost/beast/http/verb.hpp>
+#include <http_request_params.hpp>
 
 #include <config.h>
 #include <nlohmann/json.hpp>
@@ -54,7 +50,7 @@ namespace agent_registration
             return false;
         }
 
-        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
+        const auto reqParams = http_client::HttpRequestParams(http_client::MethodType::POST,
                                                               m_serverUrl,
                                                               "/agents",
                                                               m_agentInfo.GetHeaderInfo(),
@@ -64,10 +60,11 @@ namespace agent_registration
                                                               m_agentInfo.GetMetadataInfo());
 
         const auto res = m_httpClient->PerformHttpRequest(reqParams);
+        const auto res_status = std::get<0>(res);
 
-        if (res.result() != boost::beast::http::status::created)
+        if (res_status != 201) // NOLINT(cppcoreguidelines-avoid-magic-numbers)
         {
-            std::cout << "Registration error: " << res.result_int() << ".\n";
+            std::cout << "Registration error: " << res_status << ".\n";
             return false;
         }
 
@@ -77,36 +74,27 @@ namespace agent_registration
 
     std::optional<std::string> AgentRegistration::AuthenticateWithUserPassword()
     {
-        std::string basicAuth {};
-        std::string userPass {m_user + ":" + m_password};
-
-        basicAuth.resize(boost::beast::detail::base64::encoded_size(userPass.size()));
-
-        boost::beast::detail::base64::encode(&basicAuth[0], userPass.c_str(), userPass.size());
-
-        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
+        const auto reqParams = http_client::HttpRequestParams(http_client::MethodType::POST,
                                                               m_serverUrl,
                                                               "/security/user/authenticate",
                                                               m_agentInfo.GetHeaderInfo(),
                                                               m_verificationMode,
                                                               "",
-                                                              basicAuth);
+                                                              m_user + ":" + m_password);
 
         const auto res = m_httpClient->PerformHttpRequest(reqParams);
+        const auto res_status = std::get<0>(res);
+        const auto res_message = std::get<1>(res);
 
-        if (res.result() < boost::beast::http::status::ok ||
-            res.result() >= boost::beast::http::status::multiple_choices)
+        if (res_status < 200 || res_status >= 300) // NOLINT(cppcoreguidelines-avoid-magic-numbers)
         {
-            std::cout << "Error authenticating: " << res.result_int() << ".\n";
+            std::cout << "Error authenticating: " << res_status << ".\n";
             return std::nullopt;
         }
 
         try
         {
-            return nlohmann::json::parse(boost::beast::buffers_to_string(res.body().data()))
-                .at("data")
-                .at("token")
-                .get_ref<const std::string&>();
+            return nlohmann::json::parse(res_message).at("data").at("token").get_ref<const std::string&>();
         }
         catch (const std::exception& e)
         {

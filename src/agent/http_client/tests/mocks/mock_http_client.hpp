@@ -7,11 +7,6 @@ using intStringTuple = std::tuple<int, std::string>;
 class MockHttpClient : public http_client::IHttpClient
 {
 public:
-    MOCK_METHOD(boost::beast::http::request<boost::beast::http::string_body>,
-                CreateHttpRequest,
-                (const http_client::HttpRequestParams& params),
-                (override));
-
     MOCK_METHOD(boost::asio::awaitable<void>,
                 Co_PerformHttpRequest,
                 (std::shared_ptr<std::string> token,
@@ -24,7 +19,7 @@ public:
                  std::function<bool()> loopRequestCondition),
                 (override));
 
-    MOCK_METHOD(boost::beast::http::response<boost::beast::http::dynamic_body>,
+    MOCK_METHOD((std::tuple<int, std::string>),
                 PerformHttpRequest,
                 (const http_client::HttpRequestParams& params),
                 (override));

@@ -4,8 +4,9 @@
 #include <logger.hpp>
 
 #include <boost/asio.hpp>
-#include <boost/beast.hpp>
+#include <boost/beast/core/flat_buffer.hpp>
 #include <boost/beast/core/tcp_stream.hpp>
+#include <boost/beast/http.hpp>
 #include <boost/system/error_code.hpp>
 
 #include <exception>
@@ -43,7 +44,7 @@ namespace http_client
             {
                 m_socket.expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
                 m_socket.async_connect(endpoints,
-                                       [&ec](boost::beast::error_code const& code, auto const&) { ec = code; });
+                                       [&ec](boost::system::error_code const& code, auto const&) { ec = code; });
             }
             catch (const std::exception& e)
             {

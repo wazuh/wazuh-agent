@@ -16,8 +16,7 @@ add_subdirectory(persistence)
 add_subdirectory(task_manager)
 add_subdirectory(restart_handler)
 
-find_package(OpenSSL REQUIRED)
-find_package(Boost REQUIRED COMPONENTS asio beast system program_options)
+find_package(Boost REQUIRED COMPONENTS asio system program_options)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(fmt REQUIRED)
 
@@ -67,10 +66,7 @@ target_link_libraries(Agent
     RestartHandler
     sysinfo
     PRIVATE
-    OpenSSL::SSL
-    OpenSSL::Crypto
     Boost::asio
-    Boost::beast
     Boost::system
     Boost::program_options
     nlohmann_json::nlohmann_json

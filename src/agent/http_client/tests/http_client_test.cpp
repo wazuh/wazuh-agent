@@ -9,7 +9,7 @@
 #include "mocks/mock_http_socket_factory.hpp"
 
 #include <boost/asio.hpp>
-#include <boost/beast.hpp>
+#include <boost/beast/http.hpp>
 
 #include <functional>
 #include <memory>
@@ -117,63 +117,6 @@ protected:
     boost::asio::ip::tcp::resolver::results_type dummyResults;
 };
 
-TEST(CreateHttpRequestTest, BasicGetRequest)
-{
-    auto httpClient = http_client::HttpClient();
-    const auto reqParams = http_client::HttpRequestParams(
-        boost::beast::http::verb::get, "https://localhost", "/test", "Wazuh 5.0.0", "full");
-    const auto req = httpClient.CreateHttpRequest(reqParams);
-
-    EXPECT_EQ(req.method(), boost::beast::http::verb::get);
-    EXPECT_EQ(req.target(), "/test");
-    EXPECT_EQ(req.version(), 11);
-    EXPECT_EQ(req[boost::beast::http::field::host], "localhost");
-    EXPECT_EQ(req[boost::beast::http::field::user_agent], "Wazuh 5.0.0");
-    EXPECT_EQ(req[boost::beast::http::field::accept], "application/json");
-}
-
-TEST(CreateHttpRequestTest, PostRequestWithBody)
-{
-    auto httpClient = http_client::HttpClient();
-    const std::string body = R"({"key": "value"})";
-    const auto reqParams = http_client::HttpRequestParams(
-        boost::beast::http::verb::post, "https://localhost:8080", "/submit", "Wazuh 5.0.0", "full", "", "", body);
-    const auto req = httpClient.CreateHttpRequest(reqParams);
-
-    EXPECT_EQ(req.method(), boost::beast::http::verb::post);
-    EXPECT_EQ(req.target(), "/submit");
-    EXPECT_EQ(req.version(), 11);
-    EXPECT_EQ(req[boost::beast::http::field::host], "localhost");
-    EXPECT_EQ(req[boost::beast::http::field::user_agent], "Wazuh 5.0.0");
-    EXPECT_EQ(req[boost::beast::http::field::accept], "application/json");
-    EXPECT_EQ(req[boost::beast::http::field::content_type], "application/json");
-    EXPECT_EQ(req.body(), body);
-}
-
-TEST(CreateHttpRequestTest, AuthorizationBearerToken)
-{
-    auto httpClient = http_client::HttpClient();
-    const std::string token = "dummy_token";
-    const auto reqParams = http_client::HttpRequestParams(
-        boost::beast::http::verb::get, "localhost", "/secure", "Wazuh 5.0.0", "full", token);
-    const auto req = httpClient.CreateHttpRequest(reqParams);
-
-    EXPECT_EQ(req[boost::beast::http::field::user_agent], "Wazuh 5.0.0");
-    EXPECT_EQ(req[boost::beast::http::field::authorization], "Bearer dummy_token");
-}
-
-TEST(CreateHttpRequestTest, AuthorizationBasic)
-{
-    auto httpClient = http_client::HttpClient();
-    const std::string user_pass = "username:password";
-    const auto reqParams = http_client::HttpRequestParams(
-        boost::beast::http::verb::get, "https://localhost:8080", "/secure", "Wazuh 5.0.0", "full", "", user_pass);
-    const auto req = httpClient.CreateHttpRequest(reqParams);
-
-    EXPECT_EQ(req[boost::beast::http::field::user_agent], "Wazuh 5.0.0");
-    EXPECT_EQ(req[boost::beast::http::field::authorization], "Basic username:password");
-}
-
 TEST_F(HttpClientTest, PerformHttpRequest_Success_verification_full)
 {
     SetupMockResolverFactory();
@@ -186,10 +129,10 @@ TEST_F(HttpClientTest, PerformHttpRequest_Success_verification_full)
     EXPECT_CALL(*mockSocket, Read(_, _)).WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::ok); });
 
     const http_client::HttpRequestParams params(
-        boost::beast::http::verb::get, "https://localhost:80", "/", "Wazuh 5.0.0", "full");
+        http_client::MethodType::GET, "https://localhost:80", "/", "Wazuh 5.0.0", "full");
     const auto response = client->PerformHttpRequest(params);
 
-    EXPECT_EQ(response.result(), boost::beast::http::status::ok);
+    EXPECT_EQ(std::get<0>(response), 200);
 }
 
 TEST_F(HttpClientTest, PerformHttpRequest_Success_verification_certificate)
@@ -204,10 +147,10 @@ TEST_F(HttpClientTest, PerformHttpRequest_Success_verification_certificate)
     EXPECT_CALL(*mockSocket, Read(_, _)).WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::ok); });
 
     const http_client::HttpRequestParams params(
-        boost::beast::http::verb::get, "https://localhost:80", "/", "Wazuh 5.0.0", "certificate");
+        http_client::MethodType::GET, "https://localhost:80", "/", "Wazuh 5.0.0", "certificate");
     const auto response = client->PerformHttpRequest(params);
 
-    EXPECT_EQ(response.result(), boost::beast::http::status::ok);
+    EXPECT_EQ(std::get<0>(response), 200);
 }
 
 TEST_F(HttpClientTest, PerformHttpRequest_Success_verification_none)
@@ -222,10 +165,10 @@ TEST_F(HttpClientTest, PerformHttpRequest_Success_verification_none)
     EXPECT_CALL(*mockSocket, Read(_, _)).WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::ok); });
 
     const http_client::HttpRequestParams params(
-        boost::beast::http::verb::get, "https://localhost:80", "/", "Wazuh 5.0.0", "none");
+        http_client::MethodType::GET, "https://localhost:80", "/", "Wazuh 5.0.0", "none");
     const auto response = client->PerformHttpRequest(params);
 
-    EXPECT_EQ(response.result(), boost::beast::http::status::ok);
+    EXPECT_EQ(std::get<0>(response), 200);
 }
 
 TEST_F(HttpClientTest, PerformHttpRequest_ExceptionThrown)
@@ -235,12 +178,11 @@ TEST_F(HttpClientTest, PerformHttpRequest_ExceptionThrown)
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Throw(std::runtime_error("Simulated resolution failure")));
 
     const http_client::HttpRequestParams params(
-        boost::beast::http::verb::get, "https://localhost:80", "/", "Wazuh 5.0.0", "full");
+        http_client::MethodType::GET, "https://localhost:80", "/", "Wazuh 5.0.0", "full");
     const auto response = client->PerformHttpRequest(params);
 
-    EXPECT_EQ(response.result(), boost::beast::http::status::internal_server_error);
-    EXPECT_TRUE(boost::beast::buffers_to_string(response.body().data()).find("Simulated resolution failure") !=
-                std::string::npos);
+    EXPECT_EQ(std::get<0>(response), 500);
+    EXPECT_TRUE(std::get<1>(response).find("Simulated resolution failure") != std::string::npos);
 }
 
 TEST_P(HttpClientTest, Co_PerformHttpRequest_Success)
@@ -279,7 +221,7 @@ TEST_P(HttpClientTest, Co_PerformHttpRequest_Success)
     };
 
     const auto reqParams = http_client::HttpRequestParams(
-        boost::beast::http::verb::get, "https://localhost:8080", "/", "Wazuh 5.0.0", "full");
+        http_client::MethodType::GET, "https://localhost:8080", "/", "Wazuh 5.0.0", "full");
 
     auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
                                               reqParams,
@@ -334,7 +276,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
     };
 
     const auto reqParams = http_client::HttpRequestParams(
-        boost::beast::http::verb::get, "https://localhost:8080", "/", "Wazuh 5.0.0", "full");
+        http_client::MethodType::GET, "https://localhost:8080", "/", "Wazuh 5.0.0", "full");
     auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
                                               reqParams,
                                               getMessages,
@@ -388,7 +330,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails
     };
 
     const auto reqParams = http_client::HttpRequestParams(
-        boost::beast::http::verb::get, "https://localhost:8080", "/", "Wazuh 5.0.0", "full");
+        http_client::MethodType::GET, "https://localhost:8080", "/", "Wazuh 5.0.0", "full");
     auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
                                               reqParams,
                                               getMessages,
@@ -444,7 +386,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
     };
 
     const auto reqParams = http_client::HttpRequestParams(
-        boost::beast::http::verb::get, "https://localhost:8080", "/", "Wazuh 5.0.0", "full");
+        http_client::MethodType::GET, "https://localhost:8080", "/", "Wazuh 5.0.0", "full");
     auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
                                               reqParams,
                                               getMessages,
@@ -499,7 +441,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_UnauthorizedCalledWhenAuthorization
     };
 
     const auto reqParams = http_client::HttpRequestParams(
-        boost::beast::http::verb::get, "https://localhost:8080", "/", "Wazuh 5.0.0", "full");
+        http_client::MethodType::GET, "https://localhost:8080", "/", "Wazuh 5.0.0", "full");
     auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
                                               reqParams,
                                               getMessages,

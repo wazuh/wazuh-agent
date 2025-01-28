@@ -11,7 +11,7 @@ get_filename_component(COMMON_FOLDER ${SRC_FOLDER}/common/ ABSOLUTE)
 find_package(cJSON CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
-find_package(Boost REQUIRED COMPONENTS asio beast)
+find_package(Boost REQUIRED COMPONENTS asio)
 
 add_library(Inventory
     src/inventory.cpp
@@ -51,7 +51,6 @@ target_link_libraries(Inventory
     MessageEntry
     CommandEntry
     Boost::asio
-    Boost::beast
     PRIVATE
     Logger
     cjson

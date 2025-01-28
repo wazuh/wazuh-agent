@@ -27,7 +27,7 @@ target_include_directories(HttpClient
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/src/certificate)
 
-target_link_libraries(HttpClient PUBLIC Boost::asio Boost::beast Boost::system PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::url Logger)
+target_link_libraries(HttpClient PUBLIC Boost::asio PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::beast Boost::system Boost::url Logger)
 
 if(WIN32)
     target_link_libraries(HttpClient PRIVATE Crypt32)

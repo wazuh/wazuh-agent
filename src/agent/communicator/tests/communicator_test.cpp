@@ -10,7 +10,6 @@
 #include "../../http_client/tests/mocks/mock_http_client.hpp"
 
 #include <boost/asio.hpp>
-#include <boost/beast.hpp>
 
 #include <chrono>
 #include <functional>
@@ -120,13 +119,12 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
         std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
 
     // A failed authentication won't return a token
-    boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
-    expectedResponse.result(boost::beast::http::status::unauthorized);
-    boost::beast::ostream(expectedResponse.body()) << R"({"message":"Try again"})";
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+    std::tuple<int, std::string> expectedResponse {401, R"({"message":"Try again"})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
         .WillOnce(Invoke(
-            [communicatorPtr, &expectedResponse]() -> boost::beast::http::response<boost::beast::http::dynamic_body>
+            [communicatorPtr, &expectedResponse]() -> std::tuple<int, std::string>
             {
                 communicatorPtr->Stop();
                 return expectedResponse;
@@ -180,13 +178,12 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
 
     const auto mockedToken = CreateToken();
 
-    boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
-    expectedResponse.result(boost::beast::http::status::ok);
-    boost::beast::ostream(expectedResponse.body()) << R"({"token":")" + mockedToken + R"("})";
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+    std::tuple<int, std::string> expectedResponse {200, R"({"token":")" + mockedToken + R"("})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
         .WillOnce(Invoke(
-            [communicatorPtr, &expectedResponse]() -> boost::beast::http::response<boost::beast::http::dynamic_body>
+            [communicatorPtr, &expectedResponse]() -> std::tuple<int, std::string>
             {
                 communicatorPtr->Stop();
                 return expectedResponse;
@@ -242,8 +239,8 @@ TEST(CommunicatorTest, GetGroupConfigurationFromManager_Success)
     std::string groupName = "group1";
     std::string dstFilePath = "./test-output";
 
-    boost::beast::http::response<boost::beast::http::dynamic_body> mockResponse;
-    mockResponse.result(boost::beast::http::status::ok);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+    std::tuple<int, std::string> expectedResponse {200, ""};
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-reference-coroutine-parameters)
     auto MockCo_PerformHttpRequest =
@@ -296,8 +293,8 @@ TEST(CommunicatorTest, GetGroupConfigurationFromManager_Error)
     std::string groupName = "group1";
     std::string dstFilePath = "dummy/non/existing/path";
 
-    boost::beast::http::response<boost::beast::http::dynamic_body> mockResponse;
-    mockResponse.result(boost::beast::http::status::ok);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+    std::tuple<int, std::string> expectedResponse {200, ""};
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-reference-coroutine-parameters)
     auto MockCo_PerformHttpRequest =
@@ -347,9 +344,8 @@ TEST(CommunicatorTest, AuthenticateWithUuidAndKey_Success)
     auto communicatorPtr = std::make_shared<communicator::Communicator>(
         std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
 
-    boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
-    expectedResponse.result(boost::beast::http::status::ok);
-    boost::beast::ostream(expectedResponse.body()) << R"({"token":"valid_token"})";
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+    std::tuple<int, std::string> expectedResponse {200, R"({"token":"valid_token"})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
@@ -369,9 +365,8 @@ TEST(CommunicatorTest, AuthenticateWithUuidAndKey_Failure)
     auto communicatorPtr = std::make_shared<communicator::Communicator>(
         std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
 
-    boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
-    expectedResponse.result(boost::beast::http::status::unauthorized);
-    boost::beast::ostream(expectedResponse.body()) << R"({"message":"Try again"})";
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+    std::tuple<int, std::string> expectedResponse {401, R"({"message":"Try again"})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
@@ -388,9 +383,8 @@ TEST(CommunicatorTest, AuthenticateWithUuidAndKey_FailureThrowsException)
     auto communicatorPtr = std::make_shared<communicator::Communicator>(
         std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
 
-    boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
-    expectedResponse.result(boost::beast::http::status::unauthorized);
-    boost::beast::ostream(expectedResponse.body()) << R"({"message":"Invalid key"})";
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+    std::tuple<int, std::string> expectedResponse {401, R"({"message":"Invalid key"})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 

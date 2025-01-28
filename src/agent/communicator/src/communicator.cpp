@@ -1,9 +1,7 @@
 #include <communicator.hpp>
+#include <http_request_params.hpp>
 
 #include <boost/asio.hpp>
-#include <boost/beast/core/buffers_to_string.hpp>
-#include <boost/beast/http/status.hpp>
-#include <boost/beast/http/verb.hpp>
 
 #include <jwt-cpp/jwt.h>
 #include <jwt-cpp/traits/nlohmann-json/traits.h>
@@ -135,7 +133,7 @@ namespace communicator
     std::optional<std::string> Communicator::AuthenticateWithUuidAndKey()
     {
         const std::string body = R"({"uuid":")" + m_uuid + R"(", "key":")" + m_key + "\"}";
-        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
+        const auto reqParams = http_client::HttpRequestParams(http_client::MethodType::POST,
                                                               m_serverUrl,
                                                               "/api/v1/authentication",
                                                               m_getHeaderInfo ? m_getHeaderInfo() : "",
@@ -145,20 +143,18 @@ namespace communicator
                                                               body);
 
         const auto res = m_httpClient->PerformHttpRequest(reqParams);
+        const auto res_status = std::get<0>(res);
+        const auto res_message = std::get<1>(res);
 
-        if (res.result() < boost::beast::http::status::ok ||
-            res.result() >= boost::beast::http::status::multiple_choices)
+        if (res_status < 200 || res_status >= 300) // NOLINT(cppcoreguidelines-avoid-magic-numbers)
         {
-            if (res.result() == boost::beast::http::status::unauthorized ||
-                res.result() == boost::beast::http::status::forbidden)
+            if (res_status == 401 || res_status == 403) // NOLINT(cppcoreguidelines-avoid-magic-numbers)
             {
                 std::string message {};
 
                 try
                 {
-                    message = nlohmann::json::parse(boost::beast::buffers_to_string(res.body().data()))
-                                  .at("message")
-                                  .get_ref<const std::string&>();
+                    message = nlohmann::json::parse(res_message).at("message").get_ref<const std::string&>();
                 }
                 catch (const std::exception& e)
                 {
@@ -170,15 +166,13 @@ namespace communicator
                     throw std::runtime_error(message);
                 }
             }
-            LogWarn("Error: {}.", res.result_int());
+            LogWarn("Error: {}.", res_status);
             return std::nullopt;
         }
 
         try
         {
-            return nlohmann::json::parse(boost::beast::buffers_to_string(res.body().data()))
-                .at("token")
-                .get_ref<const std::string&>();
+            return nlohmann::json::parse(res_message).at("token").get_ref<const std::string&>();
         }
         catch (const std::exception& e)
         {
@@ -208,7 +202,7 @@ namespace communicator
             return m_keepRunning.load();
         };
 
-        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get,
+        const auto reqParams = http_client::HttpRequestParams(http_client::MethodType::GET,
                                                               m_serverUrl,
                                                               "/api/v1/commands",
                                                               m_getHeaderInfo ? m_getHeaderInfo() : "",
@@ -285,7 +279,7 @@ namespace communicator
             return m_keepRunning.load();
         };
 
-        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
+        const auto reqParams = http_client::HttpRequestParams(http_client::MethodType::POST,
                                                               m_serverUrl,
                                                               "/api/v1/events/stateful",
                                                               m_getHeaderInfo ? m_getHeaderInfo() : "",
@@ -314,7 +308,7 @@ namespace communicator
             return m_keepRunning.load();
         };
 
-        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
+        const auto reqParams = http_client::HttpRequestParams(http_client::MethodType::POST,
                                                               m_serverUrl,
                                                               "/api/v1/events/stateless",
                                                               m_getHeaderInfo ? m_getHeaderInfo() : "",
@@ -371,7 +365,7 @@ namespace communicator
             }
         };
 
-        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::get,
+        const auto reqParams = http_client::HttpRequestParams(http_client::MethodType::GET,
                                                               m_serverUrl,
                                                               "/api/v1/files?file_name=" + groupName +
                                                                   config::DEFAULT_SHARED_FILE_EXTENSION,

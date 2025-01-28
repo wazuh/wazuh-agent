@@ -6,7 +6,7 @@
 
 namespace http_client
 {
-    HttpRequestParams::HttpRequestParams(boost::beast::http::verb method,
+    HttpRequestParams::HttpRequestParams(MethodType method,
                                          const std::string& serverUrl,
                                          std::string endpoint,
                                          std::string userAgent,

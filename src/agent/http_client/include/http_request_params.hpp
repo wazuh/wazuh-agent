@@ -1,16 +1,23 @@
 #pragma once
 
-#include <boost/beast/http/verb.hpp>
-
 #include <string>
 
 namespace http_client
 {
+    /// @brief Supported HTTP methods
+    enum class MethodType
+    {
+        GET,
+        POST,
+        PUT,
+        DELETE_
+    };
+
     /// @struct HttpRequestParams
     /// @brief Parameters for HTTP requests
     struct HttpRequestParams
     {
-        boost::beast::http::verb Method;
+        MethodType Method;
         std::string Host;
         std::string Port;
         std::string Endpoint;
@@ -30,7 +37,7 @@ namespace http_client
         /// @param token Optional token for authorization
         /// @param userPass Optional user credentials for basic authentication
         /// @param body Optional body for the request
-        HttpRequestParams(boost::beast::http::verb method,
+        HttpRequestParams(MethodType method,
                           const std::string& serverUrl,
                           std::string endpoint,
                           std::string userAgent = "",
