@@ -67,16 +67,9 @@ RUN mkdir -p /usr/local/var/lib/rpm && \
     cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages && \
     /usr/local/bin/rpm --rebuilddb && rm -rf /root/rpmbuild
 
-<<<<<<< HEAD
-RUN git clone https://github.com/mono/mono.git && cd mono && ./autogen.sh --prefix=/usr/local && \
-    make -j $(nproc) && make install -j $(nproc) && cd .. && rm -rf mono && cert-sync /etc/ssl/certs/ca-bundle.crt
-
-RUN yum install ninja-build -y
-=======
 RUN rpmkeys --import "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF" && \
     su -c 'curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo' && \
     yum install mono-devel -y
 
 # Needs to be built later, version might be lower than vcpkg requires
 RUN yum install -y ninja-build
->>>>>>> deac4c5a3 (feat: remove no longer need packages from Dockerfiles)
