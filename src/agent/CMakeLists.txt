@@ -64,12 +64,12 @@ target_link_libraries(Agent
     MultiTypeQueue
     ModuleManager
     TaskManager
-    Boost::asio
     RestartHandler
     sysinfo
     PRIVATE
     OpenSSL::SSL
     OpenSSL::Crypto
+    Boost::asio
     Boost::beast
     Boost::system
     Boost::program_options

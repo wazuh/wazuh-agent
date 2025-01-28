@@ -27,6 +27,7 @@ namespace agent_registration
     public:
         ///@brief Constructor for the AgentRegistration class.
         ///
+        /// @param httpClient The HTTP client to use for communication.
         /// @param url The server URL.
         /// @param user The user's username.
         /// @param password The user's password.
@@ -34,7 +35,8 @@ namespace agent_registration
         /// @param name The agent's name.
         /// @param dbFolderPath The path to the database folder.
         /// @param verificationMode The connection verification mode.
-        AgentRegistration(std::string url,
+        AgentRegistration(std::unique_ptr<http_client::IHttpClient> httpClient,
+                          std::string url,
                           std::string user,
                           std::string password,
                           const std::string& key,
@@ -44,11 +46,18 @@ namespace agent_registration
 
         /// @brief Registers the agent with the manager.
         ///
-        /// @param httpClient The HTTP client to use for registration.
         /// @return True if the registration was successful, false otherwise.
-        bool Register(http_client::IHttpClient& httpClient);
+        bool Register();
+
+        /// @brief Authenticates using username and password
+        ///
+        /// @return Authentication token if successful, otherwise nullopt
+        std::optional<std::string> AuthenticateWithUserPassword();
 
     private:
+        /// @brief The HTTP client to use for communication
+        std::unique_ptr<http_client::IHttpClient> m_httpClient;
+
         /// @brief The system's information.
         SysInfo m_sysInfo;
 

@@ -3,10 +3,7 @@
 #include <command_entry.hpp>
 #include <configuration_parser.hpp>
 
-#include <config.h>
-#include <logger.hpp>
-
-#include <boost/asio.hpp>
+#include <boost/asio/awaitable.hpp>
 
 #include <atomic>
 #include <chrono>

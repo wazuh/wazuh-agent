@@ -5,8 +5,6 @@
 #include <oslogstore.hpp>
 #include <reader.hpp>
 
-#include <boost/asio/awaitable.hpp>
-
 #include <atomic>
 #include <chrono>
 #include <ctime>

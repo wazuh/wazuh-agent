@@ -7,7 +7,6 @@ set_common_settings()
 
 find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio beast system url)
-find_package(nlohmann_json CONFIG REQUIRED)
 
 if(WIN32)
     set(VERIFY_UTILS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/certificate/https_socket_verify_utils_win.cpp")
@@ -28,7 +27,7 @@ target_include_directories(HttpClient
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/src/certificate)
 
-target_link_libraries(HttpClient PUBLIC Boost::asio Boost::beast Boost::system Boost::url Logger PRIVATE OpenSSL::SSL OpenSSL::Crypto nlohmann_json::nlohmann_json)
+target_link_libraries(HttpClient PUBLIC Boost::asio Boost::beast Boost::system PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::url Logger)
 
 if(WIN32)
     target_link_libraries(HttpClient PRIVATE Crypt32)

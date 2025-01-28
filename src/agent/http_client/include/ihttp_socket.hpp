@@ -1,7 +1,8 @@
 #pragma once
 
-#include <boost/asio.hpp>
-#include <boost/beast.hpp>
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/beast/http.hpp>
 #include <boost/system/error_code.hpp>
 
 #include <string>

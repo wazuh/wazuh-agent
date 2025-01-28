@@ -16,7 +16,7 @@ public:
                 Co_PerformHttpRequest,
                 (std::shared_ptr<std::string> token,
                  http_client::HttpRequestParams params,
-                 std::function<boost::asio::awaitable<intStringTuple>(const size_t)> messageGetter,
+                 std::function<boost::asio::awaitable<intStringTuple>(const size_t)> bodyGetter,
                  std::function<void()> onUnauthorized,
                  std::time_t connectionRetry,
                  size_t batchSize,
@@ -27,23 +27,5 @@ public:
     MOCK_METHOD(boost::beast::http::response<boost::beast::http::dynamic_body>,
                 PerformHttpRequest,
                 (const http_client::HttpRequestParams& params),
-                (override));
-
-    MOCK_METHOD(std::optional<std::string>,
-                AuthenticateWithUuidAndKey,
-                (const std::string& host,
-                 const std::string& userAgent,
-                 const std::string& uuid,
-                 const std::string& key,
-                 const std::string& verificationMode),
-                (override));
-
-    MOCK_METHOD(std::optional<std::string>,
-                AuthenticateWithUserPassword,
-                (const std::string& host,
-                 const std::string& userAgent,
-                 const std::string& user,
-                 const std::string& password,
-                 const std::string& verificationMode),
                 (override));
 };

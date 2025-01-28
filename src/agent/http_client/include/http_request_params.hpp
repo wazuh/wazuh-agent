@@ -1,6 +1,6 @@
 #pragma once
 
-#include <boost/beast.hpp>
+#include <boost/beast/http/verb.hpp>
 
 #include <string>
 
@@ -33,8 +33,8 @@ namespace http_client
         HttpRequestParams(boost::beast::http::verb method,
                           const std::string& serverUrl,
                           std::string endpoint,
-                          std::string userAgent,
-                          std::string verificationMode,
+                          std::string userAgent = "",
+                          std::string verificationMode = "full",
                           std::string token = "",
                           std::string userPass = "",
                           std::string body = "");

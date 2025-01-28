@@ -9,7 +9,6 @@
 
 namespace logcollector
 {
-
     using Awaitable = boost::asio::awaitable<void>;
 
     /// @brief Interface for log readers

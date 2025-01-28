@@ -1,9 +1,16 @@
 #include <communicator.hpp>
 
 #include <boost/asio.hpp>
-#include <boost/beast.hpp>
+#include <boost/beast/core/buffers_to_string.hpp>
+#include <boost/beast/http/status.hpp>
+#include <boost/beast/http/verb.hpp>
+
 #include <jwt-cpp/jwt.h>
 #include <jwt-cpp/traits/nlohmann-json/traits.h>
+
+#include <boost/url.hpp>
+
+#include <logger.hpp>
 
 #include <algorithm>
 #include <chrono>
@@ -84,10 +91,9 @@ namespace communicator
         }
     }
 
-    boost::beast::http::status Communicator::SendAuthenticationRequest()
+    bool Communicator::SendAuthenticationRequest()
     {
-        const auto token = m_httpClient->AuthenticateWithUuidAndKey(
-            m_serverUrl, m_getHeaderInfo ? m_getHeaderInfo() : "", m_uuid, m_key, m_verificationMode);
+        const auto token = AuthenticateWithUuidAndKey();
 
         if (token.has_value())
         {
@@ -98,7 +104,7 @@ namespace communicator
         {
             LogWarn("Failed to authenticate with the manager. Retrying in {} seconds.",
                     m_retryInterval / A_SECOND_IN_MILLIS);
-            return boost::beast::http::status::unauthorized;
+            return false;
         }
 
         try
@@ -120,10 +126,66 @@ namespace communicator
             LogError("Failed to decode token: {}", e.what());
             m_token->clear();
             m_tokenExpTimeInSeconds = 1;
-            return boost::beast::http::status::unauthorized;
+            return false;
         }
 
-        return boost::beast::http::status::ok;
+        return true;
+    }
+
+    std::optional<std::string> Communicator::AuthenticateWithUuidAndKey()
+    {
+        const std::string body = R"({"uuid":")" + m_uuid + R"(", "key":")" + m_key + "\"}";
+        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
+                                                              m_serverUrl,
+                                                              "/api/v1/authentication",
+                                                              m_getHeaderInfo ? m_getHeaderInfo() : "",
+                                                              m_verificationMode,
+                                                              "",
+                                                              "",
+                                                              body);
+
+        const auto res = m_httpClient->PerformHttpRequest(reqParams);
+
+        if (res.result() < boost::beast::http::status::ok ||
+            res.result() >= boost::beast::http::status::multiple_choices)
+        {
+            if (res.result() == boost::beast::http::status::unauthorized ||
+                res.result() == boost::beast::http::status::forbidden)
+            {
+                std::string message {};
+
+                try
+                {
+                    message = nlohmann::json::parse(boost::beast::buffers_to_string(res.body().data()))
+                                  .at("message")
+                                  .get_ref<const std::string&>();
+                }
+                catch (const std::exception& e)
+                {
+                    LogError("Error parsing message in response: {}.", e.what());
+                }
+
+                if (message == "Invalid key" || message == "Agent does not exist")
+                {
+                    throw std::runtime_error(message);
+                }
+            }
+            LogWarn("Error: {}.", res.result_int());
+            return std::nullopt;
+        }
+
+        try
+        {
+            return nlohmann::json::parse(boost::beast::buffers_to_string(res.body().data()))
+                .at("token")
+                .get_ref<const std::string&>();
+        }
+        catch (const std::exception& e)
+        {
+            LogError("Error parsing token in response: {}.", e.what());
+        }
+
+        return std::nullopt;
     }
 
     long Communicator::GetTokenRemainingSecs() const
@@ -174,8 +236,7 @@ namespace communicator
             {
                 try
                 {
-                    const auto result = SendAuthenticationRequest();
-                    if (result != boost::beast::http::status::ok)
+                    if (!SendAuthenticationRequest())
                     {
                         return std::chrono::milliseconds(m_retryInterval);
                     }

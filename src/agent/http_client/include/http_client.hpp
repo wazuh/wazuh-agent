@@ -4,8 +4,8 @@
 #include <ihttp_resolver_factory.hpp>
 #include <ihttp_socket_factory.hpp>
 
-#include <boost/asio.hpp>
-#include <boost/beast.hpp>
+#include <boost/asio/awaitable.hpp>
+#include <boost/beast/http.hpp>
 
 #include <functional>
 #include <memory>
@@ -36,7 +36,7 @@ namespace http_client
         /// @brief Performs an asynchronous HTTP request
         /// @param token Authorization token
         /// @param params Request parameters
-        /// @param messageGetter Function to get the message body asynchronously
+        /// @param bodyGetter Function to get the body asynchronously
         /// @param onUnauthorized Callback for unauthorized access
         /// @param connectionRetry Time in milliseconds to wait before retrying the connection
         /// @param batchSize The minimum number of bytes of messages to batch
@@ -46,7 +46,7 @@ namespace http_client
         boost::asio::awaitable<void> Co_PerformHttpRequest(
             std::shared_ptr<std::string> token,
             HttpRequestParams params,
-            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> messageGetter,
+            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> bodyGetter,
             std::function<void()> onUnauthorized,
             std::time_t connectionRetry,
             size_t batchSize,
@@ -58,32 +58,6 @@ namespace http_client
         /// @return The HTTP response
         boost::beast::http::response<boost::beast::http::dynamic_body>
         PerformHttpRequest(const HttpRequestParams& params) override;
-
-        /// @brief Authenticates using UUID and key
-        /// @param serverUrl Server URL for authentication
-        /// @param userAgent User agent header
-        /// @param uuid Unique user identifier
-        /// @param key Authentication key
-        /// @param verificationMode Verification mode
-        /// @return Authentication token if successful, otherwise nullopt
-        std::optional<std::string> AuthenticateWithUuidAndKey(const std::string& serverUrl,
-                                                              const std::string& userAgent,
-                                                              const std::string& uuid,
-                                                              const std::string& key,
-                                                              const std::string& verificationMode) override;
-
-        /// @brief Authenticates using username and password
-        /// @param serverUrl Server URL for authentication
-        /// @param userAgent User agent header
-        /// @param user Username for authentication
-        /// @param password User password
-        /// @param verificationMode Verification mode
-        /// @return Authentication token if successful, otherwise nullopt
-        std::optional<std::string> AuthenticateWithUserPassword(const std::string& serverUrl,
-                                                                const std::string& userAgent,
-                                                                const std::string& user,
-                                                                const std::string& password,
-                                                                const std::string& verificationMode) override;
 
     private:
         /// @brief HTTP resolver factory

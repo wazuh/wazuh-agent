@@ -1,4 +1,7 @@
 #include <centralized_configuration.hpp>
+
+#include <boost/asio.hpp>
+
 #include <config.h>
 #include <filesystem_wrapper.hpp>
 #include <logger.hpp>

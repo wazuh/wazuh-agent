@@ -4,9 +4,11 @@
 #include "http_socket_factory.hpp"
 #include "ihttp_socket.hpp"
 
+#include <boost/asio.hpp>
+#include <boost/beast.hpp>
+
 #include <logger.hpp>
 
-#include <boost/beast/core/detail/base64.hpp>
 #include <nlohmann/json.hpp>
 
 #include <chrono>
@@ -98,7 +100,7 @@ namespace http_client
     boost::asio::awaitable<void> HttpClient::Co_PerformHttpRequest(
         std::shared_ptr<std::string> token,
         HttpRequestParams reqParams,
-        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> messageGetter,
+        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> bodyGetter,
         std::function<void()> onUnauthorized,
         std::time_t connectionRetry,
         size_t batchSize,
@@ -156,18 +158,18 @@ namespace http_client
                 continue;
             }
 
-            auto messagesCount = 0;
+            auto itemsCount = 0;
 
-            if (messageGetter != nullptr)
+            if (bodyGetter != nullptr)
             {
                 while (loopRequestCondition != nullptr && loopRequestCondition())
                 {
-                    const auto messages = co_await messageGetter(batchSize);
-                    messagesCount = std::get<0>(messages);
+                    const auto messages = co_await bodyGetter(batchSize);
+                    itemsCount = std::get<0>(messages);
 
-                    if (messagesCount)
+                    if (itemsCount)
                     {
-                        LogTrace("Messages count: {}", messagesCount);
+                        LogTrace("Items count: {}", itemsCount);
                         reqParams.Body = std::get<1>(messages);
                         break;
                     }
@@ -216,7 +218,7 @@ namespace http_client
             {
                 if (onSuccess != nullptr)
                 {
-                    onSuccess(messagesCount, boost::beast::buffers_to_string(res.body().data()));
+                    onSuccess(itemsCount, boost::beast::buffers_to_string(res.body().data()));
                 }
             }
             else if (res.result() == boost::beast::http::status::unauthorized ||
@@ -306,110 +308,5 @@ namespace http_client
         }
 
         return res;
-    }
-
-    std::optional<std::string> HttpClient::AuthenticateWithUuidAndKey(const std::string& serverUrl,
-                                                                      const std::string& userAgent,
-                                                                      const std::string& uuid,
-                                                                      const std::string& key,
-                                                                      const std::string& verificationMode)
-    {
-        const std::string body = R"({"uuid":")" + uuid + R"(", "key":")" + key + "\"}";
-        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
-                                                              serverUrl,
-                                                              "/api/v1/authentication",
-                                                              userAgent,
-                                                              verificationMode,
-                                                              "",
-                                                              "",
-                                                              body);
-
-        const auto res = PerformHttpRequest(reqParams);
-
-        if (res.result() < boost::beast::http::status::ok ||
-            res.result() >= boost::beast::http::status::multiple_choices)
-        {
-            if (res.result() == boost::beast::http::status::unauthorized ||
-                res.result() == boost::beast::http::status::forbidden)
-            {
-                std::string message {};
-
-                try
-                {
-                    message = nlohmann::json::parse(boost::beast::buffers_to_string(res.body().data()))
-                                  .at("message")
-                                  .get_ref<const std::string&>();
-                }
-                catch (const std::exception& e)
-                {
-                    LogError("Error parsing message in response: {}.", e.what());
-                }
-
-                if (message == "Invalid key" || message == "Agent does not exist")
-                {
-                    throw std::runtime_error(message);
-                }
-            }
-            LogWarn("Error: {}.", res.result_int());
-            return std::nullopt;
-        }
-
-        try
-        {
-            return nlohmann::json::parse(boost::beast::buffers_to_string(res.body().data()))
-                .at("token")
-                .get_ref<const std::string&>();
-        }
-        catch (const std::exception& e)
-        {
-            LogError("Error parsing token in response: {}.", e.what());
-        }
-
-        return std::nullopt;
-    }
-
-    std::optional<std::string> HttpClient::AuthenticateWithUserPassword(const std::string& serverUrl,
-                                                                        const std::string& userAgent,
-                                                                        const std::string& user,
-                                                                        const std::string& password,
-                                                                        const std::string& verificationMode)
-    {
-        std::string basicAuth {};
-        std::string userPass {user + ":" + password};
-
-        basicAuth.resize(boost::beast::detail::base64::encoded_size(userPass.size()));
-
-        boost::beast::detail::base64::encode(&basicAuth[0], userPass.c_str(), userPass.size());
-
-        const auto reqParams = http_client::HttpRequestParams(boost::beast::http::verb::post,
-                                                              serverUrl,
-                                                              "/security/user/authenticate",
-                                                              userAgent,
-                                                              verificationMode,
-                                                              "",
-                                                              basicAuth);
-
-        const auto res = PerformHttpRequest(reqParams);
-
-        if (res.result() < boost::beast::http::status::ok ||
-            res.result() >= boost::beast::http::status::multiple_choices)
-        {
-            LogWarn("Error: {}.", res.result_int());
-            return std::nullopt;
-        }
-
-        try
-        {
-            return nlohmann::json::parse(boost::beast::buffers_to_string(res.body().data()))
-                .at("data")
-                .at("token")
-                .get_ref<const std::string&>();
-        }
-        catch (const std::exception& e)
-        {
-            LogError("Error parsing token in response: {}.", e.what());
-        }
-
-        return std::nullopt;
     }
 } // namespace http_client

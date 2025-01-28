@@ -1,6 +1,7 @@
 #include <http_request_params.hpp>
 
 #include <boost/url.hpp>
+
 #include <logger.hpp>
 
 namespace http_client

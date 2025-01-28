@@ -36,7 +36,10 @@ namespace
             .sign(jwt::algorithm::hs256 {"secret"});
     }
 
-    const auto MOCK_CONFIG_PARSER = std::make_shared<configuration::ConfigurationParser>(std::string(""));
+    const auto MOCK_CONFIG_PARSER = std::make_shared<configuration::ConfigurationParser>(std::string(R"(
+        agent:
+          retry_interval: 1s
+    )"));
 } // namespace
 
 TEST(CommunicatorTest, CommunicatorConstructor)
@@ -117,16 +120,16 @@ TEST(CommunicatorTest, WaitForTokenExpirationAndAuthenticate_FailedAuthenticatio
         std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
 
     // A failed authentication won't return a token
-    EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _, _, _))
+    boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
+    expectedResponse.result(boost::beast::http::status::unauthorized);
+    boost::beast::ostream(expectedResponse.body()) << R"({"message":"Try again"})";
+
+    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
         .WillOnce(Invoke(
-            [communicatorPtr]([[maybe_unused]] const std::string& host,
-                              [[maybe_unused]] const std::string& userAgent,
-                              [[maybe_unused]] const std::string& uuid,
-                              [[maybe_unused]] const std::string& key,
-                              [[maybe_unused]] const std::string& verificationMode) -> std::optional<std::string>
+            [communicatorPtr, &expectedResponse]() -> boost::beast::http::response<boost::beast::http::dynamic_body>
             {
                 communicatorPtr->Stop();
-                return std::nullopt;
+                return expectedResponse;
             }));
 
     auto MockCo_PerformHttpRequest =
@@ -176,17 +179,17 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
         std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
 
     const auto mockedToken = CreateToken();
-    EXPECT_CALL(*mockHttpClientPtr, AuthenticateWithUuidAndKey(_, _, _, _, _))
+
+    boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
+    expectedResponse.result(boost::beast::http::status::ok);
+    boost::beast::ostream(expectedResponse.body()) << R"({"token":")" + mockedToken + R"("})";
+
+    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
         .WillOnce(Invoke(
-            [communicatorPtr,
-             mockedToken]([[maybe_unused]] const std::string& host,
-                          [[maybe_unused]] const std::string& userAgent,
-                          [[maybe_unused]] const std::string& uuid,
-                          [[maybe_unused]] const std::string& key,
-                          [[maybe_unused]] const std::string& verificationMode) -> std::optional<std::string>
+            [communicatorPtr, &expectedResponse]() -> boost::beast::http::response<boost::beast::http::dynamic_body>
             {
                 communicatorPtr->Stop();
-                return mockedToken;
+                return expectedResponse;
             }));
 
     std::string capturedToken;
@@ -334,6 +337,64 @@ TEST(CommunicatorTest, GetGroupConfigurationFromManager_Error)
 
     ioContext.run();
     EXPECT_FALSE(result.get());
+}
+
+TEST(CommunicatorTest, AuthenticateWithUuidAndKey_Success)
+{
+    auto mockHttpClient = std::make_unique<MockHttpClient>();
+    auto mockHttpClientPtr = mockHttpClient.get();
+
+    auto communicatorPtr = std::make_shared<communicator::Communicator>(
+        std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
+
+    boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
+    expectedResponse.result(boost::beast::http::status::ok);
+    boost::beast::ostream(expectedResponse.body()) << R"({"token":"valid_token"})";
+
+    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
+
+    const auto token = communicatorPtr->AuthenticateWithUuidAndKey();
+
+    ASSERT_TRUE(token.has_value());
+
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+    EXPECT_EQ(token.value(), "valid_token");
+}
+
+TEST(CommunicatorTest, AuthenticateWithUuidAndKey_Failure)
+{
+    auto mockHttpClient = std::make_unique<MockHttpClient>();
+    auto mockHttpClientPtr = mockHttpClient.get();
+
+    auto communicatorPtr = std::make_shared<communicator::Communicator>(
+        std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
+
+    boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
+    expectedResponse.result(boost::beast::http::status::unauthorized);
+    boost::beast::ostream(expectedResponse.body()) << R"({"message":"Try again"})";
+
+    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
+
+    const auto token = communicatorPtr->AuthenticateWithUuidAndKey();
+
+    EXPECT_FALSE(token.has_value());
+}
+
+TEST(CommunicatorTest, AuthenticateWithUuidAndKey_FailureThrowsException)
+{
+    auto mockHttpClient = std::make_unique<MockHttpClient>();
+    auto mockHttpClientPtr = mockHttpClient.get();
+
+    auto communicatorPtr = std::make_shared<communicator::Communicator>(
+        std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
+
+    boost::beast::http::response<boost::beast::http::dynamic_body> expectedResponse;
+    expectedResponse.result(boost::beast::http::status::unauthorized);
+    boost::beast::ostream(expectedResponse.body()) << R"({"message":"Invalid key"})";
+
+    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
+
+    EXPECT_THROW(communicatorPtr->AuthenticateWithUuidAndKey(), std::runtime_error);
 }
 
 int main(int argc, char** argv)

@@ -29,9 +29,9 @@ target_link_libraries(MultiTypeQueue
     ConfigurationParser
     MessageEntry
     Boost::asio
-    Logger
     PRIVATE
-    Persistence)
+    Persistence
+    Logger)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(MultiTypeQueue)

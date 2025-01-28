@@ -1,7 +1,5 @@
 #include <macos_reader.hpp>
 
-#include <boost/asio.hpp>
-#include <boost/asio/steady_timer.hpp>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 
