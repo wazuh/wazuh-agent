@@ -278,7 +278,7 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
         return;
     }
 
-    if (!m_notify || m_stopping)
+    if (!m_notify || m_stopping.load())
     {
         return;
     }
@@ -370,7 +370,7 @@ void Inventory::TryCatchTask(const std::function<void()>& task) const
 {
     try
     {
-        if (!m_stopping)
+        if (!m_stopping.load())
         {
             task();
         }
@@ -436,7 +436,7 @@ void Inventory::Init(const std::shared_ptr<ISysInfo>& spInfo,
 
     {
         std::unique_lock<std::mutex> lock {m_mutex};
-        m_stopping = false;
+        m_stopping.store(false);
         m_spDBSync = std::make_unique<DBSync>(
             HostType::AGENT, DbEngineType::SQLITE3, dbPath, GetCreateStatement(), DbManagement::PERSISTENT);
         m_spNormalizer = std::make_unique<InvNormalizer>(normalizerConfigPath, normalizerType);
@@ -497,8 +497,7 @@ void Inventory::Init(const std::shared_ptr<ISysInfo>& spInfo,
 
 void Inventory::Destroy()
 {
-    std::unique_lock<std::mutex> lock {m_mutex};
-    m_stopping = true;
+    m_stopping.store(true);
     m_cv.notify_all();
 }
 
@@ -972,22 +971,18 @@ void Inventory::SyncLoop()
 {
     LogInfo("Module started.");
 
-    if (m_scanOnStart && !m_stopping)
+    if (m_scanOnStart && !m_stopping.load())
     {
         Scan();
     }
 
-    while (!m_stopping)
+    while (!m_stopping.load())
     {
         {
             std::unique_lock<std::mutex> lock {m_mutex};
-            m_cv.wait_for(lock, std::chrono::milliseconds {m_intervalValue}, [&]() { return m_stopping; });
+            m_cv.wait_for(lock, std::chrono::milliseconds {m_intervalValue}, [&]() { return m_stopping.load(); });
         }
-
-        if (!m_stopping)
-        {
-            Scan();
-        }
+        Scan();
     }
     std::unique_lock<std::mutex> lock {m_mutex};
     m_spDBSync.reset(nullptr);
