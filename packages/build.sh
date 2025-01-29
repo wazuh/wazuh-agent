@@ -71,17 +71,27 @@ set_vcpkg_remote_binary_cache(){
 
   if [[ $(mono --version 2>/dev/null) =~ [0-9] ]]; then
     echo "mono already installed, proceeding"
+
+    git clone --branch master --single-branch https://github.com/microsoft/vcpkg.git
+    pushd vcpkg
+
+    export VCPKG_ROOT="$(pwd)"
+
+    git checkout "2024.09.30"
+
     export VCPKG_BINARY_SOURCES="clear;nuget,GitHub,readwrite"
-    $sources_dir/src/vcpkg/bootstrap-vcpkg.sh
-    mono `$sources_dir/src/vcpkg/vcpkg fetch nuget | tail -n 1` \
+    ./bootstrap-vcpkg.sh
+    mono `./vcpkg fetch nuget | tail -n 1` \
         sources add \
         -source "https://nuget.pkg.github.com/wazuh/index.json" \
         -name "GitHub" \
         -username "wazuh" \
         -password "$vcpkg_token"
-    mono `$sources_dir/src/vcpkg/vcpkg fetch nuget | tail -n 1` \
+    mono `./vcpkg fetch nuget | tail -n 1` \
         setapikey "$vcpkg_token" \
-        -source "https://nuget.pkg.github.com/wazuh/index.json"  
+        -source "https://nuget.pkg.github.com/wazuh/index.json"
+
+    popd
   else
     echo "mono in not installed, remote binary caching not being enabled"
   fi
@@ -107,7 +117,7 @@ fi
 
 # Download source code if it is not shared from the local host
 if [ ! -d "/wazuh-local-src" ] ; then
-  git clone --branch ${WAZUH_BRANCH} --single-branch --recurse-submodules https://github.com/wazuh/wazuh-agent.git
+  git clone --branch ${WAZUH_BRANCH} --single-branch https://github.com/wazuh/wazuh-agent.git
   short_commit_hash="$(curl -s https://api.github.com/repos/wazuh/wazuh-agent/commits/${WAZUH_BRANCH} \
                           | grep '"sha"' | head -n 1| cut -d '"' -f 4 | cut -c 1-11)"
 else
