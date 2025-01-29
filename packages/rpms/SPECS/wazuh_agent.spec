@@ -37,17 +37,15 @@ log analysis, file integrity monitoring, intrusions detection and policy and com
 %setup -q
 
 %build
-pushd src
-mkdir build
-pushd build
-cmake .. -DINSTALL_ROOT=%{buildroot}%{_localstatedir} && make -j $(nproc)
+if [ ! -d "$(pwd)/src/build" ]; then 
+  cmake src -B $(pwd)/src/build 
+  cmake --build $(pwd)/src/build --parallel %{_threads}
+fi
 
 %install
 # Clean BUILDROOT
 rm -fr %{buildroot}
-pushd src
-pushd build
-make install -j $(nproc)
+cmake --install "$(pwd)/src/build" --prefix %{buildroot}%{_localstatedir}
 exit 0
 
 %pre

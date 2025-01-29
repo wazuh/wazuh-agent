@@ -42,9 +42,9 @@ override_dh_install:
 	if [ -d "$(shell pwd)/src/build" ]; then \
 		cmake --install $(shell pwd)/src/build --prefix ${TARGET_DIR}$(INSTALLATION_DIR); \
 	else \
-		cmake src -B build -DINSTALL_ROOT=${TARGET_DIR}$(INSTALLATION_DIR); \
-		cmake --build build --parallel $(JOBS); \
-		make -C build install -j $(JOBS); \
+		cmake src -B $(shell pwd)/src/build; \
+		cmake --build $(shell pwd)/src/build --parallel $(JOBS); \
+		cmake --install $(shell pwd)/src/build --prefix ${TARGET_DIR}$(INSTALLATION_DIR); \
 	fi
 
 override_dh_auto_clean:

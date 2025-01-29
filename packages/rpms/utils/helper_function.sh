@@ -24,7 +24,11 @@ setup_build(){
     mkdir -p ${rpm_build_dir}/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
 
     cp ${specs_path}/wazuh_${BUILD_TARGET}.spec ${rpm_build_dir}/SPECS/${package_name}.spec
+
+    # Generating source tar.gz
+    cd ${build_dir}/${BUILD_TARGET} && tar czf "${rpm_build_dir}/SOURCES/${package_name}.tar.gz" "${package_name}"
 }
+
 
 set_debug(){
     local debug="$1"
