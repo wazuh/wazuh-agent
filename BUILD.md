@@ -1,5 +1,19 @@
 # Build Instructions
 
+The following dependencies are required for building this project:
+
+- **Git**
+- **CMake** at least 3.22
+- **C++ compiler** (GCC 10 or Clang 13, coroutines support needed)
+- **Vcpkg**
+    - **Zip** (for [vcpkg](https://vcpkg.io))
+    - **Unzip** (for [vcpkg](https://vcpkg.io))
+    - **Curl** (for [vcpkg](https://vcpkg.io))
+    - **Tar** (for [vcpkg](https://vcpkg.io))
+    - **Ninja-build** (for [vcpkg](https://vcpkg.io))
+- **Pkg-config**
+- Plus some additional packages listed below...
+
 ## Compilation steps for Linux
 
 1. **Installing Dependencies on Debian**
@@ -8,12 +22,8 @@
 
     ```bash
     sudo apt-get update
-    sudo apt-get install cmake make g++ gcc git zip curl tar ninja-build pkg-config wget gnupg lsb-release software-properties-common libsystemd-dev
-    wget https://apt.llvm.org/llvm.sh
-    chmod +x llvm.sh
-    sudo ./llvm.sh 18
-    sudo apt-get update
-    sudo apt-get install -y clang-tidy-18 autopoint libtool zlib1g-dev libgcrypt20-dev gettext
+    sudo apt-get install cmake make g++ gcc git zip unzip curl tar ninja-build pkg-config wget \
+    lsb-release libsystemd-dev autopoint autoconf libtool gettext
     ```
 
 2. **Clone the Repository**
@@ -26,8 +36,9 @@
 
 3. **Vcpkg**
 
-    The project uses Vcpkg for dependency management. If you already have Vcpkg's repository checked out, make sure that `VCPKG_ROOT` is set.
-    Otherwise, the repository will be checked out during CMake's configuration phase.
+    The project uses Vcpkg for dependency management. If you already have Vcpkg's repository checked out,
+    you can speed up the configuration process slightly by making sure that `VCPKG_ROOT` is set to its path.
+    Otherwise, it will be checked out during CMake's configuration phase.
 
 4. **Configure and Build the Project**
 
@@ -110,8 +121,9 @@
 
 4. **Vcpkg**
 
-    The project uses Vcpkg for dependency management. If you already have Vcpkg's repository checked out, make sure that `VCPKG_ROOT` is set.
-    Otherwise, the repository will be checked out during CMake's configuration phase.
+    The project uses Vcpkg for dependency management. If you already have Vcpkg's repository checked out,
+    you can speed up the configuration process slightly by making sure that `VCPKG_ROOT` is set to its path.
+    Otherwise, it will be checked out during CMake's configuration phase.
 
 5. **Configure and Build the Project**
 
@@ -142,7 +154,8 @@
     **To run the agent as a launchd service**
 
     Copy the property list file `src/agent/service/com.wazuh.agent.plist` to `/Library/LaunchDaemons/`.
-    Edit the file and replace the placeholder path with your wazuh-agent executable directory as well as the working directory.
+    Edit the file and replace the placeholder path with your wazuh-agent executable directory as well
+    as the working directory.
 
     ```bash
     sudo chown root:wheel /Library/LaunchDaemons/com.wazuh.agent.plist
@@ -155,7 +168,8 @@
     sudo launchctl bootstrap system /Library/LaunchDaemons/com.wazuh.agent.plist
     ```
 
-    This command has superseeded `load` in the legacy syntax. The daemon will run after load as indicated in the property list file.
+    This command has superseeded `load` in the legacy syntax. The daemon will run after load as indicated
+    in the property list file.
 
 
     ***Unload the service***
@@ -189,7 +203,8 @@
     sudo installer -pkg /path/to/package/package_filename.pkg -target /
     ```
 
-    Then load and manage the service as indicated in point 6 above. Skip the property list file copying and editing as well as the permissions part - the installer takes care of that.
+    Then load and manage the service as indicated in point 6 above. Skip the property list file copying and
+    editing as well as the permissions part - the installer takes care of that.
 
 ## Compilation steps for Windows
 
@@ -224,8 +239,9 @@
 
 3. **Vcpkg**
 
-    The project uses Vcpkg for dependency management. If you already have Vcpkg's repository checked out, make sure that `VCPKG_ROOT` is set.
-    Otherwise, the repository will be checked out during CMake's configuration phase.
+    The project uses Vcpkg for dependency management. If you already have Vcpkg's repository checked out,
+    you can speed up the configuration process slightly by making sure that `VCPKG_ROOT` is set to its path.
+    Otherwise, it will be checked out during CMake's configuration phase.
 
 4. **Configure and Build the Project**
 
@@ -286,7 +302,21 @@
 |---|---|---|
 |`BUILD_TESTS`|Enable tests compilation|`OFF`|
 |`COVERAGE`|Enable coverage report|`OFF`|
-|`ENABLE_CLANG_TIDY`|Check code with _clang-tidy_|`ON`|
+|`ENABLE_CLANG_TIDY`|Check code with _clang-tidy_ (requires `clang-tidy-18`) |`ON`|
 |`ENABLE_INVENTORY`|Enable Inventory module |`ON`|
 |`ENABLE_LOGCOLLECTOR`|Enable Logcollector module|`ON`|
 
+## Notes for developers
+
+In addition to the requirements listed above, our development process mandates the use of
+clang-format and clang-tidy, with checks integrated into our CI pipelines.
+
+On Linux, these tools can be installed with the following commands:
+
+```bash
+wget https://apt.llvm.org/llvm.sh
+chmod +x llvm.sh
+sudo ./llvm.sh 18
+sudo apt-get update
+sudo apt-get install -y clang-tidy-18 clang-format-18
+```
