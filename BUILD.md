@@ -320,3 +320,12 @@ sudo ./llvm.sh 18
 sudo apt-get update
 sudo apt-get install -y clang-tidy-18 clang-format-18
 ```
+
+Additionally, you may choose to checkout `Vcpkg` to a separate path and use that instance for builds:
+
+```bash
+git clone https://github.com/microsoft/vcpkg.git
+cd vcpkg
+./bootstrap-vcpkg.sh
+export VCPKG_ROOT=$(pwd)
+```
