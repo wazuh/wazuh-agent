@@ -25,7 +25,6 @@ VERBOSE="no"                          # Enables the full log by using `set -exf`
 DEBUG="no"                            # Enables debug symbols while compiling.
 CHECKSUM="no"                         # Enables the checksum generation.
 IS_STAGE="no"                         # Enables release package naming.
-BUILD_TYPE="full_package"             # Set build type
 CERT_APPLICATION_ID=""                # Apple Developer ID certificate to sign Apps and binaries.
 CERT_INSTALLER_ID=""                  # Apple Developer ID certificate to sign pkg.
 KEYCHAIN=""                           # Keychain where the Apple Developer ID certificate is.
@@ -135,7 +134,7 @@ function prepare_building_folder() {
     mkdir -p $DESTINATION
 }
 
-function build_package_binaries() {
+function build_package() {
 
     # Download source code
     if [ -n "$BRANCH_TAG" ]; then
@@ -160,15 +159,13 @@ function build_package_binaries() {
 
     prepare_building_folder $VERSION $pkg_name
 
+    # Build binaries
     ${WAZUH_PACKAGES_PATH}/package_files/build.sh "${VERBOSE}" "${PACKAGED_DIRECTORY}" "${WAZUH_PATH}" ${JOBS} ${VCPKG_KEY}
 
-}
-
-function build_package() {
-    # sign the binaries and the libraries
+    # Sign the binaries and the libraries
     sign_binaries
 
-    # create package
+    # Create package
     if munkipkg $CURRENT_PATH/wazuh-agent ; then
         echo "The wazuh agent package for macOS has been successfully built."
         mv $CURRENT_PATH/wazuh-agent/build/*.pkg $DESTINATION/
@@ -202,7 +199,6 @@ function help() {
     echo "    -d, --debug                   [Optional] Build the binaries with debug symbols. By default: no."
     echo "    -c, --checksum                [Optional] Generate checksum on the store path."
     echo "    --is_stage                    [Optional] Use release name in package"
-    echo "    -bt, --build-type             [Optional] Set building type, binaries, package, or full_package [binaries,package,full_package]. By Default: full."
     echo "    --vcpkg-binary-caching-key    [Optional] VCPK remote binary caching repository key."
     echo "    -h, --help                    [  Util  ] Show this help."
     echo "    -i, --install-deps            [  Util  ] Install build dependencies."
@@ -367,14 +363,6 @@ function main() {
             IS_STAGE="yes"
             shift 1
             ;;
-        "-bt"|"--build-type")
-            if [ -n "$2" ]; then
-                BUILD_TYPE="$2"
-                shift 2
-            else
-                help 1
-            fi
-            ;;
        "--vcpkg-binary-caching-key")
             if [ -n "$2" ]; then
                 VCPKG_KEY="$2"
@@ -468,34 +456,10 @@ function main() {
 
     testdep
     check_root
+    build_package
 
-    case "$BUILD_TYPE" in
-        binaries)
-            echo "Building only the binaries for the package."
-            build_package_binaries
-            ;;
-        package)
-            if [ -d $PACKAGED_DIRECTORY ] ; then
-                echo "Building package with previously generated binaries."
-                build_package
-            else
-                echo "Binaries have not been created, existing."
-                clean_and_exit 1
-            fi
-            ;;
-        full_package)
-            echo "Building binaries and packaging them."
-            build_package_binaries
-            build_package
-            ;;
-        *)
-            echo "Error: BUILD_TYPE mus't be one of: [binaries, package, full_package]"
-            clean_and_exit 1
-            ;;
-    esac
-
-    if [ "${NOTARIZE}" = "yes" ] && { [ "${BUILD_TYPE}" = "package" ] || [ "${BUILD_TYPE}" = "full_package" ]; }; then
-
+    if [ "${NOTARIZE}" = "yes" ]; then
+        
         notarization_path="${DESTINATION}/${pkg_name}.pkg"
 
         if [ -z "${notarization_path}" ]; then

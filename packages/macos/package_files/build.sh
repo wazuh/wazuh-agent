@@ -52,12 +52,14 @@ function build() {
         set -ex
     fi
 
-    if [ ! -z "${VCPKG_KEY}" ]; then
-        set_vcpkg_remote_binary_cache $VCPKG_KEY
-    fi
+ 	if [ ! -d "$SOURCES_DIR/build" ]; then     
+        if [ ! -z "${VCPKG_KEY}" ]; then
+            set_vcpkg_remote_binary_cache $VCPKG_KEY
+        fi
 
-    cmake -S $SOURCES_DIR -B $SOURCES_DIR/build -DINSTALL_ROOT=$DESTINATION_PATH
-    make -C $SOURCES_DIR/build -j $BUILD_JOBS
+        cmake -S $SOURCES_DIR -B $SOURCES_DIR/build -DVCPKG_INSTALL_OPTIONS="--debug" 
+        cmake --build $SOURCES_DIR/build --parallel $BUILD_JOBS
+    fi
 
     EXECUTABLE_FILES=$(find "${SOURCES_DIR}" -maxdepth 1 -type f ! -name "*.py" -exec file {} + | grep 'executable' | cut -d: -f1)
     EXECUTABLE_FILES+=" $(find "${SOURCES_DIR}" -type f ! -name "*.py" ! -path "${SOURCES_DIR}/external/*" ! -path "${SOURCES_DIR}/symbols/*" -name "*.dylib" -print 2>/dev/null)"
@@ -68,7 +70,8 @@ function build() {
     done
 
     echo "Installing sources"
-    make -C $SOURCES_DIR/build install -j $BUILD_JOBS
+    cmake --install $SOURCES_DIR/build --prefix $DESTINATION_PATH
+
 }
 
 build
