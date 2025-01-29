@@ -223,38 +223,36 @@ std::string Inventory::GetPrimaryKeys([[maybe_unused]] const nlohmann::json& dat
     std::string ret;
     if (table == HARDWARE_TABLE)
     {
-        ret = data["observer"]["serial_number"];
+        ret = data["board_serial"];
     }
     else if (table == SYSTEM_TABLE)
     {
-        ret = data["host"]["os"]["name"];
+        ret = data["os_name"];
     }
     else if (table == PACKAGES_TABLE)
     {
-        ret = data["package"]["name"].get<std::string>() + ":" + data["package"]["version"].get<std::string>() + ":" +
-              data["package"]["architecture"].get<std::string>() + ":" + data["package"]["type"].get<std::string>() +
-              ":" + data["package"]["path"].get<std::string>();
+        ret = data["name"].get<std::string>() + ":" + data["version"].get<std::string>() + ":" +
+              data["architecture"].get<std::string>() + ":" + data["format"].get<std::string>() + ":" +
+              data["location"].get<std::string>();
     }
     else if (table == PROCESSES_TABLE)
     {
-        ret = data["process"]["pid"];
+        ret = data["pid"];
     }
     else if (table == HOTFIXES_TABLE)
     {
-        ret = data["package"]["hotfix"]["name"];
+        ret = data["hotfix"];
     }
     else if (table == PORTS_TABLE)
     {
-        ret = std::to_string(data["file"]["inode"].get<int>()) + ":" + data["network"]["protocol"].get<std::string>() +
-              ":" + data["source"]["ip"][0].get<std::string>() + ":" +
-              std::to_string(data["source"]["port"].get<int>());
+        ret = std::to_string(data["inode"].get<int>()) + ":" + data["protocol"].get<std::string>() + ":" +
+              data["local_ip"].get<std::string>() + ":" + std::to_string(data["local_port"].get<int>());
     }
     else if (table == NETWORKS_TABLE)
     {
-        ret = data["observer"]["ingress"]["interface"]["name"].get<std::string>() + ":" +
-              data["observer"]["ingress"]["interface"]["alias"].get<std::string>() + ":" +
-              data["interface"]["type"].get<std::string>() + ":" + data["network"]["type"].get<std::string>() + ":" +
-              data["host"]["ip"][0].get<std::string>();
+        ret = data["iface"].get<std::string>() + ":" + data["adapter"].get<std::string>() + ":" +
+              data["iface_type"].get<std::string>() + ":" + data["proto_type"].get<std::string>() + ":" +
+              data["address"].get<std::string>();
     }
     return ret;
 }
@@ -323,8 +321,8 @@ Inventory::GenerateMessage(ReturnTypeCallback result, const nlohmann::json& item
     nlohmann::json msg {
         {"metadata", {{"collector", table}, {"operation", OPERATION_MAP.at(result)}, {"module", Name()}}}};
 
+    msg["metadata"]["id"] = CalculateHashId(result == MODIFIED ? item["new"] : item, table);
     msg["data"] = EcsData(result == MODIFIED ? item["new"] : item, table);
-    msg["metadata"]["id"] = CalculateHashId(msg["data"], table);
 
     return msg;
 }
@@ -516,7 +514,7 @@ nlohmann::json Inventory::EcsHardwareData(const nlohmann::json& originalData, bo
 {
     nlohmann::json ret;
 
-    SetJsonField(ret, originalData, "/observer/serial_number", "board_serial", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/observer/serial_number", "board_serial", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/host/cpu/name", "cpu_name", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/host/cpu/cores", "cpu_cores", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/host/cpu/speed", "cpu_mhz", std::nullopt, createFields);
@@ -535,7 +533,7 @@ nlohmann::json Inventory::EcsSystemData(const nlohmann::json& originalData, bool
     SetJsonField(ret, originalData, "/host/hostname", "hostname", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/host/os/kernel", "os_build", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/host/os/full", "os_codename", std::nullopt, createFields);
-    SetJsonField(ret, originalData, "/host/os/name", "os_name", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/host/os/name", "os_name", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/host/os/platform", "os_platform", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/host/os/version", "os_version", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/host/os/type", "sysname", std::nullopt, createFields);
@@ -547,14 +545,14 @@ nlohmann::json Inventory::EcsPackageData(const nlohmann::json& originalData, boo
 {
     nlohmann::json ret;
 
-    SetJsonField(ret, originalData, "/package/architecture", "architecture", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/package/architecture", "architecture", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/package/description", "description", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/package/installed", "install_time", std::nullopt, createFields);
-    SetJsonField(ret, originalData, "/package/name", "name", EMPTY_VALUE, createFields);
-    SetJsonField(ret, originalData, "/package/path", "location", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/package/name", "name", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/package/path", "location", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/package/size", "size", std::nullopt, createFields);
-    SetJsonField(ret, originalData, "/package/type", "format", EMPTY_VALUE, createFields);
-    SetJsonField(ret, originalData, "/package/version", "version", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/package/type", "format", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/package/version", "version", std::nullopt, createFields);
 
     return ret;
 }
@@ -563,7 +561,7 @@ nlohmann::json Inventory::EcsProcessesData(const nlohmann::json& originalData, b
 {
     nlohmann::json ret;
 
-    SetJsonField(ret, originalData, "/process/pid", "pid", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/process/pid", "pid", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/process/name", "name", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/process/parent/pid", "ppid", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/process/command_line", "cmd", std::nullopt, createFields);
@@ -586,7 +584,7 @@ nlohmann::json Inventory::EcsHotfixesData(const nlohmann::json& originalData, bo
 
     nlohmann::json ret;
 
-    SetJsonField(ret, originalData, "/package/hotfix/name", "hotfix", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/package/hotfix/name", "hotfix", std::nullopt, createFields);
 
     return ret;
 }
@@ -595,14 +593,14 @@ nlohmann::json Inventory::EcsPortData(const nlohmann::json& originalData, bool c
 {
     nlohmann::json ret;
 
-    SetJsonField(ret, originalData, "/network/protocol", "protocol", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/network/protocol", "protocol", std::nullopt, createFields);
     SetJsonFieldArray(ret, originalData, "/source/ip", "local_ip", createFields);
-    SetJsonField(ret, originalData, "/source/port", "local_port", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/source/port", "local_port", std::nullopt, createFields);
     SetJsonFieldArray(ret, originalData, "/destination/ip", "remote_ip", createFields);
     SetJsonField(ret, originalData, "/destination/port", "remote_port", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/host/network/egress/queue", "tx_queue", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/host/network/ingress/queue", "rx_queue", std::nullopt, createFields);
-    SetJsonField(ret, originalData, "/file/inode", "inode", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/file/inode", "inode", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/interface/state", "state", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/process/pid", "pid", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/process/name", "process", std::nullopt, createFields);
@@ -626,20 +624,20 @@ nlohmann::json Inventory::EcsNetworkData(const nlohmann::json& originalData, boo
     SetJsonField(ret, originalData, "/host/network/ingress/errors", "rx_errors", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/interface/mtu", "mtu", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/interface/state", "state", std::nullopt, createFields);
-    SetJsonField(ret, originalData, "/interface/type", "iface_type", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/interface/type", "iface_type", std::nullopt, createFields);
     SetJsonFieldArray(ret, originalData, "/network/netmask", "netmask", createFields);
     SetJsonFieldArray(ret, originalData, "/network/gateway", "gateway", createFields);
     SetJsonFieldArray(ret, originalData, "/network/broadcast", "broadcast", createFields);
     SetJsonField(ret, originalData, "/network/dhcp", "dhcp", std::nullopt, createFields);
-    SetJsonField(ret, originalData, "/network/type", "proto_type", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/network/type", "proto_type", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/network/metric", "metric", std::nullopt, createFields);
     /* TODO this field should include http or https, it's related to an application not to a interface */
     if (createFields)
     {
         ret["network"]["protocol"] = nullptr;
     }
-    SetJsonField(ret, originalData, "/observer/ingress/interface/alias", "adapter", EMPTY_VALUE, createFields);
-    SetJsonField(ret, originalData, "/observer/ingress/interface/name", "iface", EMPTY_VALUE, createFields);
+    SetJsonField(ret, originalData, "/observer/ingress/interface/alias", "adapter", std::nullopt, createFields);
+    SetJsonField(ret, originalData, "/observer/ingress/interface/name", "iface", std::nullopt, createFields);
 
     return ret;
 }

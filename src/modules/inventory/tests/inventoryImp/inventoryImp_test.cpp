@@ -64,7 +64,7 @@ TEST_F(InventoryImpTest, defaultCtor)
 
     EXPECT_CALL(*spInfoWrapper, hardware())
         .WillRepeatedly(Return(nlohmann::json::parse(
-            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
+            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_mhz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
 
     EXPECT_CALL(*spInfoWrapper, os())
         .WillRepeatedly(Return(nlohmann::json::parse(
@@ -100,7 +100,7 @@ TEST_F(InventoryImpTest, defaultCtor)
                                                                }};
 
     const auto expectedResult1 {
-        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":2904},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
     const auto expectedResult2 {
         R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"collector":"system","module":"inventory","operation":"create"}})"};
     const auto expectedResult3 {
@@ -112,7 +112,7 @@ TEST_F(InventoryImpTest, defaultCtor)
     const auto expectedResult6 {
         R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(testing::AtLeast(1));
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(testing::AtLeast(1));
@@ -145,7 +145,7 @@ TEST_F(InventoryImpTest, intervalSeconds)
 
     EXPECT_CALL(*spInfoWrapper, hardware())
         .WillRepeatedly(Return(nlohmann::json::parse(
-            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
+            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_mhz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
     EXPECT_CALL(*spInfoWrapper, os())
         .WillRepeatedly(Return(nlohmann::json::parse(
             R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})")));
@@ -291,7 +291,7 @@ TEST_F(InventoryImpTest, noHardware)
     const auto expectedResult6 {
         R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(1);
@@ -338,7 +338,7 @@ TEST_F(InventoryImpTest, noOs)
 
     EXPECT_CALL(*spInfoWrapper, hardware())
         .WillRepeatedly(Return(nlohmann::json::parse(
-            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
+            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_mhz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
     EXPECT_CALL(*spInfoWrapper, ports())
         .WillRepeatedly(Return(nlohmann::json::parse(
             R"([{"inode":0,"local_ip":"127.0.0.1","scan_time":"2020/12/28 21:49:50", "local_port":631,"pid":0,"process_name":"System Idle Process","protocol":"tcp","remote_ip":"0.0.0.0","remote_port":0,"rx_queue":0,"state":"listening","tx_queue":0}])")));
@@ -369,7 +369,7 @@ TEST_F(InventoryImpTest, noOs)
                                                                }};
 
     const auto expectedResult1 {
-        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":2904},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
     const auto expectedResult2 {
         R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":411,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"collector":"packages","module":"inventory","operation":"create"}})"};
     const auto expectedResult3 {
@@ -379,7 +379,7 @@ TEST_F(InventoryImpTest, noOs)
     const auto expectedResult5 {
         R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -426,7 +426,7 @@ TEST_F(InventoryImpTest, noNetwork)
 
     EXPECT_CALL(*spInfoWrapper, hardware())
         .WillRepeatedly(Return(nlohmann::json::parse(
-            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
+            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_mhz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
     EXPECT_CALL(*spInfoWrapper, os())
         .WillRepeatedly(Return(nlohmann::json::parse(
             R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})")));
@@ -457,7 +457,7 @@ TEST_F(InventoryImpTest, noNetwork)
                                                                }};
 
     const auto expectedResult1 {
-        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":2904},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
     const auto expectedResult2 {
         R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"collector":"system","module":"inventory","operation":"create"}})"};
     const auto expectedResult3 {
@@ -514,7 +514,7 @@ TEST_F(InventoryImpTest, noPackages)
 
     EXPECT_CALL(*spInfoWrapper, hardware())
         .WillRepeatedly(Return(nlohmann::json::parse(
-            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
+            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_mhz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
     EXPECT_CALL(*spInfoWrapper, os())
         .WillRepeatedly(Return(nlohmann::json::parse(
             R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})")));
@@ -544,7 +544,7 @@ TEST_F(InventoryImpTest, noPackages)
                                                                }};
 
     const auto expectedResult1 {
-        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":2904},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
     const auto expectedResult2 {
         R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"collector":"system","module":"inventory","operation":"create"}})"};
     const auto expectedResult3 {
@@ -554,7 +554,7 @@ TEST_F(InventoryImpTest, noPackages)
     const auto expectedResult5 {
         R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -601,7 +601,7 @@ TEST_F(InventoryImpTest, noPorts)
 
     EXPECT_CALL(*spInfoWrapper, hardware())
         .WillRepeatedly(Return(nlohmann::json::parse(
-            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
+            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_mhz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
     EXPECT_CALL(*spInfoWrapper, os())
         .WillRepeatedly(Return(nlohmann::json::parse(
             R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})")));
@@ -632,7 +632,7 @@ TEST_F(InventoryImpTest, noPorts)
                                                                }};
 
     const auto expectedResult1 {
-        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":2904},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
     const auto expectedResult2 {
         R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"collector":"system","module":"inventory","operation":"create"}})"};
     const auto expectedResult3 {
@@ -642,7 +642,7 @@ TEST_F(InventoryImpTest, noPorts)
     const auto expectedResult5 {
         R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"collector":"hotfixes","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -689,7 +689,7 @@ TEST_F(InventoryImpTest, noPortsAll)
 
     EXPECT_CALL(*spInfoWrapper, hardware())
         .WillRepeatedly(Return(nlohmann::json::parse(
-            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
+            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_mhz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
     EXPECT_CALL(*spInfoWrapper, os())
         .WillRepeatedly(Return(nlohmann::json::parse(
             R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})")));
@@ -722,7 +722,7 @@ TEST_F(InventoryImpTest, noPortsAll)
                                                                }};
 
     const auto expectedResult1 {
-        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":2904},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
     const auto expectedResult2 {
         R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"collector":"system","module":"inventory","operation":"create"}})"};
     const auto expectedResult3 {
@@ -736,7 +736,7 @@ TEST_F(InventoryImpTest, noPortsAll)
     const auto expectedResult7 {
         R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult8 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -786,7 +786,7 @@ TEST_F(InventoryImpTest, noProcesses)
 
     EXPECT_CALL(*spInfoWrapper, hardware())
         .WillRepeatedly(Return(nlohmann::json::parse(
-            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
+            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_mhz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
     EXPECT_CALL(*spInfoWrapper, os())
         .WillRepeatedly(Return(nlohmann::json::parse(
             R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})")));
@@ -816,7 +816,7 @@ TEST_F(InventoryImpTest, noProcesses)
                                                                }};
 
     const auto expectedResult1 {
-        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":2904},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
     const auto expectedResult2 {
         R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"collector":"system","module":"inventory","operation":"create"}})"};
     const auto expectedResult3 {
@@ -826,7 +826,7 @@ TEST_F(InventoryImpTest, noProcesses)
     const auto expectedResult5 {
         R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -873,7 +873,7 @@ TEST_F(InventoryImpTest, noHotfixes)
 
     EXPECT_CALL(*spInfoWrapper, hardware())
         .WillRepeatedly(Return(nlohmann::json::parse(
-            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
+            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_mhz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
     EXPECT_CALL(*spInfoWrapper, os())
         .WillRepeatedly(Return(nlohmann::json::parse(
             R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})")));
@@ -905,7 +905,7 @@ TEST_F(InventoryImpTest, noHotfixes)
                                                                }};
 
     const auto expectedResult1 {
-        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":null},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":2904},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
     const auto expectedResult2 {
         R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"collector":"system","module":"inventory","operation":"create"}})"};
     const auto expectedResult3 {
@@ -915,7 +915,7 @@ TEST_F(InventoryImpTest, noHotfixes)
     const auto expectedResult5 {
         R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":"","name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -961,7 +961,7 @@ TEST_F(InventoryImpTest, scanInvalidData)
     const auto spInfoWrapper {std::make_shared<SysInfoWrapper>()};
     EXPECT_CALL(*spInfoWrapper, hardware())
         .WillRepeatedly(Return(nlohmann::json::parse(
-            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_MHz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
+            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_mhz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","ram_free":2257872,"ram_total":4972208,"ram_usage":54})")));
     EXPECT_CALL(*spInfoWrapper, os())
         .WillRepeatedly(Return(nlohmann::json::parse(
             R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})")));
@@ -1369,8 +1369,8 @@ TEST_F(InventoryImpTest, hashId)
 
     std::thread t {[&spInfoWrapper, &callbackDataDelta]()
                    {
-                       Inventory::Instance().Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
                        Inventory::Instance().SetAgentUUID("1234");
+                       Inventory::Instance().Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
                    }};
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -1386,33 +1386,40 @@ TEST_F(InventoryImpTest, statelessMessage)
 {
     const auto spInfoWrapper {std::make_shared<SysInfoWrapper>()};
 
-    EXPECT_CALL(*spInfoWrapper, os())
+    EXPECT_CALL(*spInfoWrapper, hardware())
+        .WillOnce(Return(nlohmann::json::parse(
+            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_mhz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":2257872,"ram_total":4972208,"ram_usage":54})")))
         .WillRepeatedly(Return(nlohmann::json::parse(
-            R"({"architecture":"x86_64","scan_time":"2020/12/28 21:49:50", "hostname":"UBUNTU","os_build":"7601","os_major":"6","os_minor":"1","os_name":"Microsoft Windows 7","os_release":"sp1","os_version":"6.1.7601"})")));
+            R"({"board_serial":"Intel Corporation","scan_time":"2020/12/28 21:49:50", "cpu_mhz":2904,"cpu_cores":2,"cpu_name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz", "ram_free":1000000,"ram_total":4972208,"ram_usage":80})")));
 
     CallbackMock wrapperDelta;
     std::function<void(const std::string&)> callbackDataDelta {[&wrapperDelta](const std::string& data)
                                                                {
                                                                    auto delta = nlohmann::json::parse(data);
-                                                                   delta.erase("data");
+                                                                   delta["data"].erase("@timestamp");
                                                                    delta["metadata"].erase("id");
-                                                                   delta["metadata"].erase("operation");
-                                                                   delta["stateless"]["event"].erase("created");
+                                                                   if (delta.contains("stateless"))
+                                                                   {
+                                                                       delta["stateless"]["event"].erase("created");
+                                                                   }
                                                                    wrapperDelta.callbackMock(delta.dump());
                                                                }};
 
     const auto expectedResult1 {
-        R"({"metadata":{"collector":"system","module":"inventory"},"stateless":{"event":{"action":"system-detected","category":["host"],"reason":"System UBUNTU is running OS version 6.1.7601","type":["info"]},"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}}})"};
+        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":2904},"memory":{"free":2257872,"total":4972208,"used":{"percentage":54}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"create"}})"};
+    const auto expectedResult2 {
+        R"({"data":{"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":2904},"memory":{"free":1000000,"total":4972208,"used":{"percentage":80}}},"observer":{"serial_number":"Intel Corporation"}},"metadata":{"collector":"hardware","module":"inventory","operation":"update"},"stateless":{"event":{"action":"hardware-updated","category":["host"],"changed_fields":["host.memory.free","host.memory.used.percentage"],"reason":"Hardware changed","type":["change"]},"host":{"cpu":{"cores":2,"name":"Intel(R) Core(TM) i5-9400 CPU @ 2.90GHz","speed":2904},"memory":{"free":1000000,"previous":{"free":2257872},"total":4972208,"used":{"percentage":80,"previous":{"percentage":54}}}},"observer":{"serial_number":"Intel Corporation"}}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
 
     std::string inventoryConfig = R"(
         inventory:
             enabled: true
-            interval: 3600
+            interval: 1
             scan_on_start: true
-            hardware: false
-            system: true
+            hardware: true
+            system: false
             networks: false
             packages: false
             ports: false
@@ -1429,7 +1436,7 @@ TEST_F(InventoryImpTest, statelessMessage)
                        Inventory::Instance().SetAgentUUID("1234");
                    }};
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::this_thread::sleep_for(std::chrono::seconds(2));
     Inventory::Instance().Stop();
 
     if (t.joinable())
