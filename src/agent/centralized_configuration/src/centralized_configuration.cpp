@@ -2,7 +2,27 @@
 #include <config.h>
 #include <logger.hpp>
 
+#include <chrono>
 #include <filesystem>
+#include <random>
+
+namespace
+{
+    std::string CreateTmpFilename()
+    {
+        constexpr int MIN_VALUE = 1000;
+        constexpr int MAX_VALUE = 9999;
+        std::random_device rd;
+        std::mt19937 generator(rd());
+        std::uniform_int_distribution<int> distribution(MIN_VALUE, MAX_VALUE);
+        int random = distribution(generator);
+
+        auto now = std::chrono::high_resolution_clock::now();
+        auto timestamp = now.time_since_epoch().count();
+
+        return std::to_string(timestamp) + "_" + std::to_string(random);
+    }
+} // namespace
 
 namespace centralized_configuration
 {
@@ -90,7 +110,8 @@ namespace centralized_configuration
             for (const auto& groupId : groupIds)
             {
                 const std::filesystem::path tmpGroupFile =
-                    m_fileSystemWrapper->temp_directory_path() / (groupId + config::DEFAULT_SHARED_FILE_EXTENSION);
+                    m_fileSystemWrapper->temp_directory_path() /
+                    (groupId + "_" + CreateTmpFilename() + config::DEFAULT_SHARED_FILE_EXTENSION);
 
                 const auto dlResult = co_await m_downloadGroupFilesFunction(groupId, tmpGroupFile.string());
 
