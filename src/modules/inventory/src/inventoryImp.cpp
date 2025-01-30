@@ -10,8 +10,6 @@
 #include <stringHelper.h>
 #include <timeHelper.h>
 
-#include <iostream>
-
 constexpr std::time_t INVENTORY_DEFAULT_INTERVAL {3600000};
 constexpr size_t MAX_ID_SIZE = 512;
 
@@ -151,35 +149,6 @@ const std::unordered_map<std::string, std::string> TABLE_TO_KEY_MAP = {{NETWORKS
                                                                        {SYSTEM_TABLE, "system-first-scan"},
                                                                        {HARDWARE_TABLE, "hardware-first-scan"}};
 
-class Stopper
-{
-public:
-    int loadAtomicCount = 0;
-
-    bool IsStop(const std::atomic<bool> & stopping)
-    {
-        constexpr auto kStoppingIdentifier = -1;
-        auto constexpr kAtomicLoadCount = 100u;
-        if(loadAtomicCount == kStoppingIdentifier || loadAtomicCount + 1 == kAtomicLoadCount)
-        {
-            if(loadAtomicCount == kStoppingIdentifier || stopping)
-            {
-                LogInfo("omiting ScanProcesses iteration");
-                loadAtomicCount = kStoppingIdentifier;
-                return true;
-            }
-            
-            loadAtomicCount = 0;
-        }
-        else if (loadAtomicCount != kStoppingIdentifier)
-        {
-            ++loadAtomicCount;
-        }
-
-        return false;
-    }
-};
-
 static std::string GetItemId(const nlohmann::json& item, const std::vector<std::string>& idFields)
 {
     Utils::HashData hash;
@@ -309,7 +278,7 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
         return;
     }
 
-    if (!m_notify || m_stopping)
+    if (!m_notify)
     {
         return;
     }
@@ -812,13 +781,12 @@ void Inventory::ScanPackages()
                                  NotifyChange(result, data, PACKAGES_TABLE);
                              }};
 
-        Stopper stopper;
         std::unique_lock<std::mutex> lock {m_mutex};
         DBSyncTxn txn {m_spDBSync->handle(), nlohmann::json {PACKAGES_TABLE}, 0, QUEUE_SIZE, callback};
         m_spInfo->packages(
-            [this, &txn, &stopper](nlohmann::json& rawData)
+            [this, &txn](nlohmann::json& rawData)
             {
-                if(stopper.IsStop(m_stopping))
+                if (m_stopping)
                 {
                     return;
                 }
@@ -961,12 +929,10 @@ void Inventory::ScanProcesses()
                              }};
         std::unique_lock<std::mutex> lock {m_mutex};
         DBSyncTxn txn {m_spDBSync->handle(), nlohmann::json {PROCESSES_TABLE}, 0, QUEUE_SIZE, callback};
-
-        Stopper stopper;
         m_spInfo->processes(std::function<void(nlohmann::json&)>(
-            [this, &txn, &stopper](nlohmann::json& rawData)
+            [this, &txn](nlohmann::json& rawData)
             {
-                if(stopper.IsStop(m_stopping))
+                if (m_stopping)
                 {
                     return;
                 }
