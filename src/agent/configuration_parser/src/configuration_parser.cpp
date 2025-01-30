@@ -68,7 +68,7 @@ namespace configuration
         }
     }
 
-    std::time_t ConfigurationParser::ParseTimeUnit(const std::string& option) const
+    std::time_t ConfigurationParser::ParseTimeUnit(const std::string& option)
     {
         std::string number;
         unsigned int multiplier = 1;
@@ -192,7 +192,7 @@ namespace configuration
         LogInfo("Reload configuration done.");
     }
 
-    size_t ConfigurationParser::ParseSizeUnit(const std::string& option) const
+    size_t ConfigurationParser::ParseSizeUnit(const std::string& option)
     {
         std::string number;
         unsigned int multiplier = 1;
