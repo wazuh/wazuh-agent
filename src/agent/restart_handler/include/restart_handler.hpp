@@ -15,6 +15,9 @@ namespace restart_handler
         /// @brief A list of command line arguments used to restart the agent process.
         static std::vector<char*> startupCmdLineArgs;
 
+        /// @brief Timeout for the restart operation until force a hard restart.
+        static const int timeoutInSecs = 30;
+
         /// @brief RestartHandler class.
         explicit RestartHandler();
 

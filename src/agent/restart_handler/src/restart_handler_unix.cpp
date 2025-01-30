@@ -1,6 +1,5 @@
-#include "restart_handler_unix.hpp"
-#include <fstream>
 #include <logger.hpp>
+#include <restart_handler_unix.hpp>
 
 #include <chrono>
 #include <thread>
@@ -31,12 +30,9 @@ namespace restart_handler
         }
     }
 
-    void StopAgent()
+    void StopAgent(const pid_t pid, const int timeoutInSecs)
     {
-        const int timeoutInSecs = 30;
         const time_t startTime = time(nullptr);
-
-        pid_t pid = getppid();
 
         // Shutdown Gracefully
         kill(pid, SIGTERM);
@@ -45,7 +41,7 @@ namespace restart_handler
         {
             if (kill(pid, 0) != 0)
             {
-                LogInfo("Agent gracefully stopped.");
+                LogInfo("Agent stopped.");
                 break;
             }
 
@@ -70,7 +66,7 @@ namespace restart_handler
         else if (pid == 0)
         {
             // Child process
-            StopAgent();
+            StopAgent(getppid(), RestartHandler::timeoutInSecs);
 
             LogInfo("Starting wazuh agent in a new process.");
 
