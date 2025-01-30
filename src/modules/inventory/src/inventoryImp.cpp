@@ -915,6 +915,35 @@ void Inventory::ScanPorts()
     }
 }
 
+class Stopper
+{
+public:
+    int loadAtomicCount = 0;
+
+    bool IsStop(const std::atomic<bool> & stopping)
+    {
+        constexpr auto kStoppingIdentifier = -1;
+        auto constexpr kAtomicLoadCount = 100u;
+        if(loadAtomicCount == kStoppingIdentifier || loadAtomicCount + 1 == kAtomicLoadCount)
+        {
+            if(loadAtomicCount == kStoppingIdentifier || stopping)
+            {
+                LogInfo("omiting ScanProcesses iteration");
+                loadAtomicCount = kStoppingIdentifier;
+                return true;
+            }
+            
+            loadAtomicCount = 0;
+        }
+        else if (loadAtomicCount != kStoppingIdentifier)
+        {
+            ++loadAtomicCount;
+        }
+
+        return false;
+    }
+};
+
 void Inventory::ScanProcesses()
 {
     if (m_processes)
@@ -927,26 +956,13 @@ void Inventory::ScanProcesses()
         std::unique_lock<std::mutex> lock {m_mutex};
         DBSyncTxn txn {m_spDBSync->handle(), nlohmann::json {PROCESSES_TABLE}, 0, QUEUE_SIZE, callback};
 
-        int loadAtomicCount = 0;
-        constexpr auto kStoppingIdentifier = -1;
+        Stopper stopper;
         m_spInfo->processes(std::function<void(nlohmann::json&)>(
-            [this, &txn, &loadAtomicCount](nlohmann::json& rawData)
+            [this, &txn, &stopper](nlohmann::json& rawData)
             {
-                auto constexpr kAtomicLoadCount = 100u;
-                if(loadAtomicCount == kStoppingIdentifier || loadAtomicCount + 1 == kAtomicLoadCount)
+                if(stopper.IsStop(m_stopping))
                 {
-                    if(m_stopping)
-                    {
-                        LogInfo("omiting ScanProcesses iteration");
-                        loadAtomicCount = kStoppingIdentifier;
-                        return;
-                    }
-                    
-                    loadAtomicCount = 0;
-                }
-                else if (loadAtomicCount != kStoppingIdentifier)
-                {
-                    ++loadAtomicCount;
+                    return;
                 }
 
                 nlohmann::json input;
