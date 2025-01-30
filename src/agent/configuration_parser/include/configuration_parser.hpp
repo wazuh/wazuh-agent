@@ -20,46 +20,6 @@ namespace configuration
     /// and provides methods to access configuration parameters.
     class ConfigurationParser
     {
-    private:
-        /// @brief Holds the parsed YAML configuration.
-        YAML::Node m_config;
-
-        /// @brief Holds the location of the configuration file.
-        std::filesystem::path m_configFilePath;
-
-        /// @brief Function to get the groups information
-        std::function<std::vector<std::string>()> m_getGroups;
-
-        /// @brief Converts a time unit represented as a string to an time_t value (ms).
-        /// @param option A string representing a time unit.
-        /// @return The corresponding time_t value.
-        /// @throws std::invalid_argument if the string does not represent a valid time unit.
-        /// @details This function parses a string representing a time unit and returns the equivalent time_t
-        /// value. The time unit can be expressed in milliseconds (e.g. "1ms"), seconds (e.g. "1s"), minutes (e.g.
-        /// "1m"), hours (e.g. "1h"), or days (e.g. "1d"). If no unit is specified, the value is assumed to be in
-        /// seconds.
-        std::time_t ParseTimeUnit(const std::string& option) const;
-
-        /// @brief Method for loading the configuration from local file
-        void LoadLocalConfig();
-
-        /// @brief Loads shared configuration files for specific groups and merges them into the main configuration.
-        ///
-        /// This function attempts to load configuration files for each group from a shared directory.
-        /// The loaded configurations are merged into the main configuration.
-        ///
-        /// @throws YAML::Exception If there is an error while loading or parsing a YAML file.
-        void LoadSharedConfig();
-
-        /// @brief Converts a size unit represented as a string to an size_t value (B).
-        /// @param option A string representing a size unit.
-        /// @return The corresponding size_t value.
-        /// @throws std::invalid_argument if the string does not represent a valid size unit.
-        /// @details This function parses a string representing a size unit and returns the equivalent size_t
-        /// value. The size unit can be expressed in Bytes (e.g. "1B"), Mega bytes (e.g. "1M" or "1MB"), kilo bytes
-        /// (e.g. "1K" or "1KB"). If no unit is specified, the value is assumed to be in Bytes
-        size_t ParseSizeUnit(const std::string& option) const;
-
     public:
         /// @brief Default constructor. Loads configuration from a default file path.
         ///
@@ -168,5 +128,45 @@ namespace configuration
 
         /// @brief Method for loading the new available configuration
         void ReloadConfiguration();
+
+    private:
+        /// @brief Method for loading the configuration from local file
+        void LoadLocalConfig();
+
+        /// @brief Loads shared configuration files for specific groups and merges them into the main configuration.
+        ///
+        /// This function attempts to load configuration files for each group from a shared directory.
+        /// The loaded configurations are merged into the main configuration.
+        ///
+        /// @throws YAML::Exception If there is an error while loading or parsing a YAML file.
+        void LoadSharedConfig();
+
+        /// @brief Converts a time unit represented as a string to an time_t value (ms).
+        /// @param option A string representing a time unit.
+        /// @return The corresponding time_t value.
+        /// @throws std::invalid_argument if the string does not represent a valid time unit.
+        /// @details This function parses a string representing a time unit and returns the equivalent time_t
+        /// value. The time unit can be expressed in milliseconds (e.g. "1ms"), seconds (e.g. "1s"), minutes (e.g.
+        /// "1m"), hours (e.g. "1h"), or days (e.g. "1d"). If no unit is specified, the value is assumed to be in
+        /// seconds.
+        std::time_t ParseTimeUnit(const std::string& option) const;
+
+        /// @brief Converts a size unit represented as a string to an size_t value (B).
+        /// @param option A string representing a size unit.
+        /// @return The corresponding size_t value.
+        /// @throws std::invalid_argument if the string does not represent a valid size unit.
+        /// @details This function parses a string representing a size unit and returns the equivalent size_t
+        /// value. The size unit can be expressed in Bytes (e.g. "1B"), Mega bytes (e.g. "1M" or "1MB"), kilo bytes
+        /// (e.g. "1K" or "1KB"). If no unit is specified, the value is assumed to be in Bytes
+        size_t ParseSizeUnit(const std::string& option) const;
+
+        /// @brief Holds the parsed YAML configuration.
+        YAML::Node m_config;
+
+        /// @brief Holds the location of the configuration file.
+        std::filesystem::path m_configFilePath;
+
+        /// @brief Function to get the groups information
+        std::function<std::vector<std::string>()> m_getGroups;
     };
 } // namespace configuration
