@@ -151,6 +151,35 @@ const std::unordered_map<std::string, std::string> TABLE_TO_KEY_MAP = {{NETWORKS
                                                                        {SYSTEM_TABLE, "system-first-scan"},
                                                                        {HARDWARE_TABLE, "hardware-first-scan"}};
 
+class Stopper
+{
+public:
+    int loadAtomicCount = 0;
+
+    bool IsStop(const std::atomic<bool> & stopping)
+    {
+        constexpr auto kStoppingIdentifier = -1;
+        auto constexpr kAtomicLoadCount = 100u;
+        if(loadAtomicCount == kStoppingIdentifier || loadAtomicCount + 1 == kAtomicLoadCount)
+        {
+            if(loadAtomicCount == kStoppingIdentifier || stopping)
+            {
+                LogInfo("omiting ScanProcesses iteration");
+                loadAtomicCount = kStoppingIdentifier;
+                return true;
+            }
+            
+            loadAtomicCount = 0;
+        }
+        else if (loadAtomicCount != kStoppingIdentifier)
+        {
+            ++loadAtomicCount;
+        }
+
+        return false;
+    }
+};
+
 static std::string GetItemId(const nlohmann::json& item, const std::vector<std::string>& idFields)
 {
     Utils::HashData hash;
@@ -920,35 +949,6 @@ void Inventory::ScanPorts()
         }
     }
 }
-
-class Stopper
-{
-public:
-    int loadAtomicCount = 0;
-
-    bool IsStop(const std::atomic<bool> & stopping)
-    {
-        constexpr auto kStoppingIdentifier = -1;
-        auto constexpr kAtomicLoadCount = 100u;
-        if(loadAtomicCount == kStoppingIdentifier || loadAtomicCount + 1 == kAtomicLoadCount)
-        {
-            if(loadAtomicCount == kStoppingIdentifier || stopping)
-            {
-                LogInfo("omiting ScanProcesses iteration");
-                loadAtomicCount = kStoppingIdentifier;
-                return true;
-            }
-            
-            loadAtomicCount = 0;
-        }
-        else if (loadAtomicCount != kStoppingIdentifier)
-        {
-            ++loadAtomicCount;
-        }
-
-        return false;
-    }
-};
 
 void Inventory::ScanProcesses()
 {
