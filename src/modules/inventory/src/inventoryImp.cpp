@@ -10,6 +10,8 @@
 #include <stringHelper.h>
 #include <timeHelper.h>
 
+#include <iostream>
+
 constexpr std::time_t INVENTORY_DEFAULT_INTERVAL {3600000};
 constexpr size_t MAX_ID_SIZE = 512;
 
@@ -278,7 +280,7 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
         return;
     }
 
-    if (!m_notify || m_stopping.load())
+    if (!m_notify || m_stopping)
     {
         return;
     }
@@ -370,7 +372,7 @@ void Inventory::TryCatchTask(const std::function<void()>& task) const
 {
     try
     {
-        if (!m_stopping.load())
+        if (!m_stopping)
         {
             task();
         }
@@ -436,7 +438,7 @@ void Inventory::Init(const std::shared_ptr<ISysInfo>& spInfo,
 
     {
         std::unique_lock<std::mutex> lock {m_mutex};
-        m_stopping.store(false);
+        m_stopping = false;
         m_spDBSync = std::make_unique<DBSync>(
             HostType::AGENT, DbEngineType::SQLITE3, dbPath, GetCreateStatement(), DbManagement::PERSISTENT);
         m_spNormalizer = std::make_unique<InvNormalizer>(normalizerConfigPath, normalizerType);
@@ -497,7 +499,7 @@ void Inventory::Init(const std::shared_ptr<ISysInfo>& spInfo,
 
 void Inventory::Destroy()
 {
-    m_stopping.store(true);
+    m_stopping = true;
     m_cv.notify_all();
 }
 
@@ -643,7 +645,7 @@ void Inventory::ScanHardware()
         UpdateChanges(HARDWARE_TABLE, hwData, m_hardwareFirstScan);
         LogTrace("Ending hardware scan");
 
-        if (!m_hardwareFirstScan && !m_stopping.load())
+        if (!m_hardwareFirstScan && !m_stopping)
         {
             WriteMetadata(TABLE_TO_KEY_MAP.at(HARDWARE_TABLE), Utils::getCurrentISO8601());
             m_hardwareFirstScan = true;
@@ -661,7 +663,7 @@ void Inventory::ScanSystem()
         UpdateChanges(SYSTEM_TABLE, SystemData, m_systemFirstScan);
         LogTrace("Ending os scan");
 
-        if (!m_systemFirstScan && !m_stopping.load())
+        if (!m_systemFirstScan && !m_stopping)
         {
             WriteMetadata(TABLE_TO_KEY_MAP.at(SYSTEM_TABLE), Utils::getCurrentISO8601());
             m_systemFirstScan = true;
@@ -761,7 +763,7 @@ void Inventory::ScanNetwork()
             }
         }
 
-        if (!m_networksFirstScan && !m_stopping.load())
+        if (!m_networksFirstScan && !m_stopping)
         {
             WriteMetadata(TABLE_TO_KEY_MAP.at(NETWORKS_TABLE), Utils::getCurrentISO8601());
             m_networksFirstScan = true;
@@ -804,7 +806,7 @@ void Inventory::ScanPackages()
             });
         txn.getDeletedRows(callback);
 
-        if (!m_packagesFirstScan && !m_stopping.load())
+        if (!m_packagesFirstScan && !m_stopping)
         {
             WriteMetadata(TABLE_TO_KEY_MAP.at(PACKAGES_TABLE), Utils::getCurrentISO8601());
             m_packagesFirstScan = true;
@@ -826,7 +828,7 @@ void Inventory::ScanHotfixes()
             UpdateChanges(HOTFIXES_TABLE, hotfixes, m_hotfixesFirstScan);
         }
 
-        if (!m_hotfixesFirstScan && !m_stopping.load())
+        if (!m_hotfixesFirstScan && !m_stopping)
         {
             WriteMetadata(TABLE_TO_KEY_MAP.at(HOTFIXES_TABLE), Utils::getCurrentISO8601());
             m_hotfixesFirstScan = true;
@@ -905,7 +907,7 @@ void Inventory::ScanPorts()
         UpdateChanges(PORTS_TABLE, portsData, m_portsFirstScan);
         LogTrace("Ending ports scan");
 
-        if (!m_portsFirstScan && !m_stopping.load())
+        if (!m_portsFirstScan && !m_stopping)
         {
             WriteMetadata(TABLE_TO_KEY_MAP.at(PORTS_TABLE), Utils::getCurrentISO8601());
             m_portsFirstScan = true;
@@ -924,9 +926,29 @@ void Inventory::ScanProcesses()
                              }};
         std::unique_lock<std::mutex> lock {m_mutex};
         DBSyncTxn txn {m_spDBSync->handle(), nlohmann::json {PROCESSES_TABLE}, 0, QUEUE_SIZE, callback};
+
+        int loadAtomicCount = 0;
+        constexpr auto kStoppingIdentifier = -1;
         m_spInfo->processes(std::function<void(nlohmann::json&)>(
-            [this, &txn](nlohmann::json& rawData)
+            [this, &txn, &loadAtomicCount](nlohmann::json& rawData)
             {
+                auto constexpr kAtomicLoadCount = 100u;
+                if(loadAtomicCount == kStoppingIdentifier || loadAtomicCount + 1 == kAtomicLoadCount)
+                {
+                    if(m_stopping)
+                    {
+                        LogInfo("omiting ScanProcesses iteration");
+                        loadAtomicCount = kStoppingIdentifier;
+                        return;
+                    }
+                    
+                    loadAtomicCount = 0;
+                }
+                else if (loadAtomicCount != kStoppingIdentifier)
+                {
+                    ++loadAtomicCount;
+                }
+
                 nlohmann::json input;
                 input["table"] = PROCESSES_TABLE;
                 input["data"] = nlohmann::json::array({rawData});
@@ -940,7 +962,7 @@ void Inventory::ScanProcesses()
             }));
         txn.getDeletedRows(callback);
 
-        if (!m_processesFirstScan && !m_stopping.load())
+        if (!m_processesFirstScan && !m_stopping)
         {
             WriteMetadata(TABLE_TO_KEY_MAP.at(PROCESSES_TABLE), Utils::getCurrentISO8601());
             m_processesFirstScan = true;
@@ -971,12 +993,12 @@ void Inventory::SyncLoop()
 {
     LogInfo("Module started.");
 
-    if (m_scanOnStart && !m_stopping.load())
+    if (m_scanOnStart && !m_stopping)
     {
         Scan();
     }
 
-    while (!m_stopping.load())
+    while (!m_stopping)
     {
         {
             std::unique_lock<std::mutex> lock {m_mutex};
