@@ -195,50 +195,28 @@ TEST_P(HttpClientTest, Co_PerformHttpRequest_Success)
     SetupMockSocketWriteExpectations();
     SetupMockSocketReadExpectations(GetParam());
 
-    auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled](const size_t) -> boost::asio::awaitable<std::tuple<int, std::string>>
-    {
-        getMessagesCalled = true;
-        co_return std::tuple<int, std::string>(1, "test message");
-    };
+    const http_client::HttpRequestParams params(
+        http_client::MethodType::GET, "https://localhost:8080", "/test", "Wazuh 5.0.0", "full");
 
-    auto onSuccessCalled = false;
-    std::function<void(const int, const std::string&)> onSuccess = [&onSuccessCalled](const int, const std::string&)
-    {
-        onSuccessCalled = true;
-    };
-
-    auto unauthorizedCalled = false;
-    std::function<void()> onUnauthorized = [&unauthorizedCalled]()
-    {
-        unauthorizedCalled = true;
-    };
-
-    auto loopCondition = true;
-    std::function<bool()> loopRequestCondition = [&loopCondition]()
-    {
-        return std::exchange(loopCondition, false);
-    };
-
-    const auto reqParams = http_client::HttpRequestParams(
-        http_client::MethodType::GET, "https://localhost:8080", "/", "Wazuh 5.0.0", "full");
-
-    auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
-                                              reqParams,
-                                              getMessages,
-                                              onUnauthorized,
-                                              5, // NOLINT
-                                              1, // NOLINT
-                                              onSuccess,
-                                              loopRequestCondition);
+    std::future<std::tuple<int, std::string>> response;
 
     boost::asio::io_context ioContext;
-    boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);
+    boost::asio::co_spawn(
+        ioContext,
+        [&]() -> boost::asio::awaitable<void>
+        {
+            auto value = co_await client->Co_PerformHttpRequest(params);
+            std::promise<std::tuple<int, std::string>> promise;
+            promise.set_value(value);
+            response = promise.get_future();
+        },
+        boost::asio::detached);
+
     ioContext.run();
 
-    EXPECT_TRUE(getMessagesCalled);
-    EXPECT_FALSE(unauthorizedCalled);
-    EXPECT_TRUE(onSuccessCalled);
+    const auto res = response.get();
+
+    EXPECT_EQ(std::get<0>(res), static_cast<int>(GetParam()));
 }
 
 INSTANTIATE_TEST_SUITE_P(HttpClientTest,
@@ -256,43 +234,29 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
     SetupMockSocketConnectExpectations(boost::system::errc::make_error_code(boost::system::errc::bad_address));
     EXPECT_CALL(*mockSocket, SetVerificationMode("localhost", "full")).Times(1);
 
-    auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled](const size_t) -> boost::asio::awaitable<std::tuple<int, std::string>>
-    {
-        getMessagesCalled = true;
-        co_return std::tuple<int, std::string>(1, "test message");
-    };
+    const http_client::HttpRequestParams params(
+        http_client::MethodType::GET, "https://localhost:8080", "/test", "Wazuh 5.0.0", "full");
 
-    auto onSuccessCalled = false;
-    std::function<void(const int, const std::string&)> onSuccess = [&onSuccessCalled](const int, const std::string&)
-    {
-        onSuccessCalled = true;
-    };
-
-    auto unauthorizedCalled = false;
-    std::function<void()> onUnauthorized = [&unauthorizedCalled]()
-    {
-        unauthorizedCalled = true;
-    };
-
-    const auto reqParams = http_client::HttpRequestParams(
-        http_client::MethodType::GET, "https://localhost:8080", "/", "Wazuh 5.0.0", "full");
-    auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
-                                              reqParams,
-                                              getMessages,
-                                              onUnauthorized,
-                                              5, // NOLINT
-                                              1, // NOLINT
-                                              onSuccess,
-                                              nullptr);
+    std::future<std::tuple<int, std::string>> response;
 
     boost::asio::io_context ioContext;
-    boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);
+    boost::asio::co_spawn(
+        ioContext,
+        [&]() -> boost::asio::awaitable<void>
+        {
+            auto value = co_await client->Co_PerformHttpRequest(params);
+            std::promise<std::tuple<int, std::string>> promise;
+            promise.set_value(value);
+            response = promise.get_future();
+        },
+        boost::asio::detached);
+
     ioContext.run();
 
-    EXPECT_FALSE(getMessagesCalled);
-    EXPECT_FALSE(unauthorizedCalled);
-    EXPECT_FALSE(onSuccessCalled);
+    const auto res = response.get();
+
+    EXPECT_EQ(std::get<0>(res), 500);
+    EXPECT_EQ(std::get<1>(res), "Internal server error: Error connecting to host: Bad address");
 }
 
 TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails)
@@ -304,49 +268,29 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails
     EXPECT_CALL(*mockSocket, SetVerificationMode("localhost", "full")).Times(1);
     SetupMockSocketWriteExpectations(boost::system::errc::make_error_code(boost::system::errc::bad_address));
 
-    auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled](const size_t) -> boost::asio::awaitable<std::tuple<int, std::string>>
-    {
-        getMessagesCalled = true;
-        co_return std::tuple<int, std::string>(1, "test message");
-    };
+    const http_client::HttpRequestParams params(
+        http_client::MethodType::GET, "https://localhost:8080", "/test", "Wazuh 5.0.0", "full");
 
-    auto onSuccessCalled = false;
-    std::function<void(const int, const std::string&)> onSuccess = [&onSuccessCalled](const int, const std::string&)
-    {
-        onSuccessCalled = true;
-    };
-
-    auto unauthorizedCalled = false;
-    std::function<void()> onUnauthorized = [&unauthorizedCalled]()
-    {
-        unauthorizedCalled = true;
-    };
-
-    auto loopCondition = true;
-    std::function<bool()> loopRequestCondition = [&loopCondition]()
-    {
-        return std::exchange(loopCondition, false);
-    };
-
-    const auto reqParams = http_client::HttpRequestParams(
-        http_client::MethodType::GET, "https://localhost:8080", "/", "Wazuh 5.0.0", "full");
-    auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
-                                              reqParams,
-                                              getMessages,
-                                              onUnauthorized,
-                                              5, // NOLINT
-                                              1, // NOLINT
-                                              onSuccess,
-                                              loopRequestCondition);
+    std::future<std::tuple<int, std::string>> response;
 
     boost::asio::io_context ioContext;
-    boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);
+    boost::asio::co_spawn(
+        ioContext,
+        [&]() -> boost::asio::awaitable<void>
+        {
+            auto value = co_await client->Co_PerformHttpRequest(params);
+            std::promise<std::tuple<int, std::string>> promise;
+            promise.set_value(value);
+            response = promise.get_future();
+        },
+        boost::asio::detached);
+
     ioContext.run();
 
-    EXPECT_TRUE(getMessagesCalled);
-    EXPECT_FALSE(unauthorizedCalled);
-    EXPECT_FALSE(onSuccessCalled);
+    const auto res = response.get();
+
+    EXPECT_EQ(std::get<0>(res), 500);
+    EXPECT_EQ(std::get<1>(res), "Internal server error: Error writing request: Bad address");
 }
 
 TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
@@ -360,104 +304,29 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
     SetupMockSocketReadExpectations(boost::beast::http::status::not_found,
                                     boost::system::errc::make_error_code(boost::system::errc::bad_address));
 
-    auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled](const size_t) -> boost::asio::awaitable<std::tuple<int, std::string>>
-    {
-        getMessagesCalled = true;
-        co_return std::tuple<int, std::string>(1, "test message");
-    };
+    const http_client::HttpRequestParams params(
+        http_client::MethodType::GET, "https://localhost:8080", "/test", "Wazuh 5.0.0", "full");
 
-    auto onSuccessCalled = false;
-    std::function<void(const int, const std::string&)> onSuccess = [&onSuccessCalled](const int, const std::string&)
-    {
-        onSuccessCalled = true;
-    };
-
-    auto unauthorizedCalled = false;
-    std::function<void()> onUnauthorized = [&unauthorizedCalled]()
-    {
-        unauthorizedCalled = true;
-    };
-
-    auto loopCondition = true;
-    std::function<bool()> loopRequestCondition = [&loopCondition]()
-    {
-        return std::exchange(loopCondition, false);
-    };
-
-    const auto reqParams = http_client::HttpRequestParams(
-        http_client::MethodType::GET, "https://localhost:8080", "/", "Wazuh 5.0.0", "full");
-    auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
-                                              reqParams,
-                                              getMessages,
-                                              onUnauthorized,
-                                              5, // NOLINT
-                                              1, // NOLINT
-                                              onSuccess,
-                                              loopRequestCondition);
+    std::future<std::tuple<int, std::string>> response;
 
     boost::asio::io_context ioContext;
-    boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);
+    boost::asio::co_spawn(
+        ioContext,
+        [&]() -> boost::asio::awaitable<void>
+        {
+            auto value = co_await client->Co_PerformHttpRequest(params);
+            std::promise<std::tuple<int, std::string>> promise;
+            promise.set_value(value);
+            response = promise.get_future();
+        },
+        boost::asio::detached);
+
     ioContext.run();
 
-    EXPECT_TRUE(getMessagesCalled);
-    EXPECT_FALSE(unauthorizedCalled);
-    EXPECT_FALSE(onSuccessCalled);
-}
+    const auto res = response.get();
 
-TEST_F(HttpClientTest, Co_PerformHttpRequest_UnauthorizedCalledWhenAuthorizationFails)
-{
-    SetupMockResolverFactory();
-    SetupMockSocketFactory();
-    SetupMockResolverExpectations();
-    SetupMockSocketConnectExpectations(boost::system::errc::make_error_code(boost::system::errc::success));
-    EXPECT_CALL(*mockSocket, SetVerificationMode("localhost", "full")).Times(1);
-    SetupMockSocketWriteExpectations();
-    SetupMockSocketReadExpectations(boost::beast::http::status::unauthorized);
-
-    auto getMessagesCalled = false;
-    auto getMessages = [&getMessagesCalled](const size_t) -> boost::asio::awaitable<std::tuple<int, std::string>>
-    {
-        getMessagesCalled = true;
-        co_return std::tuple<int, std::string>(1, "test message");
-    };
-
-    auto onSuccessCalled = false;
-    std::function<void(const int, const std::string&)> onSuccess = [&onSuccessCalled](const int, const std::string&)
-    {
-        onSuccessCalled = true;
-    };
-
-    auto unauthorizedCalled = false;
-    std::function<void()> onUnauthorized = [&unauthorizedCalled]()
-    {
-        unauthorizedCalled = true;
-    };
-
-    auto loopCondition = true;
-    std::function<bool()> loopRequestCondition = [&loopCondition]()
-    {
-        return std::exchange(loopCondition, false);
-    };
-
-    const auto reqParams = http_client::HttpRequestParams(
-        http_client::MethodType::GET, "https://localhost:8080", "/", "Wazuh 5.0.0", "full");
-    auto task = client->Co_PerformHttpRequest(std::make_shared<std::string>("token"),
-                                              reqParams,
-                                              getMessages,
-                                              onUnauthorized,
-                                              5, // NOLINT
-                                              1, // NOLINT
-                                              onSuccess,
-                                              loopRequestCondition);
-
-    boost::asio::io_context ioContext;
-    boost::asio::co_spawn(ioContext, std::move(task), boost::asio::detached);
-    ioContext.run();
-
-    EXPECT_TRUE(getMessagesCalled);
-    EXPECT_TRUE(unauthorizedCalled);
-    EXPECT_FALSE(onSuccessCalled);
+    EXPECT_EQ(std::get<0>(res), 500);
+    EXPECT_EQ(std::get<1>(res), "Internal server error: Error handling response: Bad address");
 }
 
 int main(int argc, char** argv)

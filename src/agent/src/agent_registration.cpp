@@ -62,7 +62,7 @@ namespace agent_registration
         const auto res = m_httpClient->PerformHttpRequest(reqParams);
         const auto res_status = std::get<0>(res);
 
-        if (res_status != 201) // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+        if (res_status != http_client::HTTP_CODE_CREATED)
         {
             std::cout << "Registration error: " << res_status << ".\n";
             return false;
@@ -86,7 +86,7 @@ namespace agent_registration
         const auto res_status = std::get<0>(res);
         const auto res_message = std::get<1>(res);
 
-        if (res_status < 200 || res_status >= 300) // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+        if (res_status < http_client::HTTP_CODE_OK || res_status >= http_client::HTTP_CODE_MULTIPLE_CHOICES)
         {
             std::cout << "Error authenticating: " << res_status << ".\n";
             return std::nullopt;

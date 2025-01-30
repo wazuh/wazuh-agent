@@ -4,6 +4,16 @@
 
 namespace http_client
 {
+    /// @brief HTTP status codes
+    constexpr int HTTP_CODE_OK = 200;
+    constexpr int HTTP_CODE_CREATED = 201;
+    constexpr int HTTP_CODE_MULTIPLE_CHOICES = 300;
+    constexpr int HTTP_CODE_BAD_REQUEST = 400;
+    constexpr int HTTP_CODE_UNAUTHORIZED = 401;
+    constexpr int HTTP_CODE_FORBIDDEN = 403;
+    constexpr int HTTP_CODE_TIMEOUT = 408;
+    constexpr int HTTP_CODE_INTERNAL_SERVER_ERROR = 500;
+
     /// @brief Supported HTTP methods
     enum class MethodType
     {
@@ -41,7 +51,7 @@ namespace http_client
                           const std::string& serverUrl,
                           std::string endpoint,
                           std::string userAgent = "",
-                          std::string verificationMode = "full",
+                          std::string verificationMode = "none",
                           std::string token = "",
                           std::string userPass = "",
                           std::string body = "");

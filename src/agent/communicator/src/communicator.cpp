@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <chrono>
 #include <fstream>
-#include <sstream>
 #include <thread>
 #include <utility>
 
@@ -21,6 +20,19 @@ namespace
 {
     constexpr auto MIN_BATCH_SIZE = 1000ULL;
     constexpr auto MAX_BATCH_SIZE = 100000000ULL;
+
+    boost::asio::awaitable<void> WaitForTimer(std::shared_ptr<boost::asio::steady_timer> timer,
+                                              const std::time_t retryInMillis)
+    {
+        if (!timer)
+        {
+            LogError("Timer is null.");
+            co_return;
+        }
+        const auto duration = std::chrono::milliseconds(retryInMillis);
+        (*timer).expires_after(duration);
+        co_await timer->async_wait(boost::asio::use_awaitable);
+    }
 } // namespace
 
 namespace communicator
@@ -146,9 +158,9 @@ namespace communicator
         const auto res_status = std::get<0>(res);
         const auto res_message = std::get<1>(res);
 
-        if (res_status < 200 || res_status >= 300) // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+        if (res_status < http_client::HTTP_CODE_OK || res_status >= http_client::HTTP_CODE_MULTIPLE_CHOICES)
         {
-            if (res_status == 401 || res_status == 403) // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+            if (res_status == http_client::HTTP_CODE_UNAUTHORIZED || res_status == http_client::HTTP_CODE_FORBIDDEN)
             {
                 std::string message {};
 
@@ -187,28 +199,6 @@ namespace communicator
         const auto now = std::chrono::system_clock::now();
         const auto now_seconds = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
         return std::max(0L, static_cast<long>(m_tokenExpTimeInSeconds - now_seconds));
-    }
-
-    boost::asio::awaitable<void>
-    Communicator::GetCommandsFromManager(std::function<void(const int, const std::string&)> onSuccess)
-    {
-        auto onAuthenticationFailed = [this]()
-        {
-            TryReAuthenticate();
-        };
-
-        auto loopCondition = [this]()
-        {
-            return m_keepRunning.load();
-        };
-
-        const auto reqParams = http_client::HttpRequestParams(http_client::MethodType::GET,
-                                                              m_serverUrl,
-                                                              "/api/v1/commands",
-                                                              m_getHeaderInfo ? m_getHeaderInfo() : "",
-                                                              m_verificationMode);
-        co_await m_httpClient->Co_PerformHttpRequest(
-            m_token, reqParams, {}, onAuthenticationFailed, m_retryInterval, m_batchSize, onSuccess, loopCondition);
     }
 
     boost::asio::awaitable<void> Communicator::WaitForTokenExpirationAndAuthenticate()
@@ -265,62 +255,39 @@ namespace communicator
         }
     }
 
+    boost::asio::awaitable<void>
+    Communicator::GetCommandsFromManager(std::function<void(const int, const std::string&)> onSuccess)
+    {
+        const auto reqParams = http_client::HttpRequestParams(http_client::MethodType::GET,
+                                                              m_serverUrl,
+                                                              "/api/v1/commands",
+                                                              m_getHeaderInfo ? m_getHeaderInfo() : "",
+                                                              m_verificationMode);
+        co_await ExecuteRequestLoop(reqParams, {}, onSuccess);
+    }
+
     boost::asio::awaitable<void> Communicator::StatefulMessageProcessingTask(
         std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> getMessages,
         std::function<void(const int, const std::string&)> onSuccess)
     {
-        auto onAuthenticationFailed = [this]()
-        {
-            TryReAuthenticate();
-        };
-
-        auto loopCondition = [this]()
-        {
-            return m_keepRunning.load();
-        };
-
         const auto reqParams = http_client::HttpRequestParams(http_client::MethodType::POST,
                                                               m_serverUrl,
                                                               "/api/v1/events/stateful",
                                                               m_getHeaderInfo ? m_getHeaderInfo() : "",
                                                               m_verificationMode);
-        co_await m_httpClient->Co_PerformHttpRequest(m_token,
-                                                     reqParams,
-                                                     getMessages,
-                                                     onAuthenticationFailed,
-                                                     m_retryInterval,
-                                                     m_batchSize,
-                                                     onSuccess,
-                                                     loopCondition);
+        co_await ExecuteRequestLoop(reqParams, getMessages, onSuccess);
     }
 
     boost::asio::awaitable<void> Communicator::StatelessMessageProcessingTask(
         std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> getMessages,
         std::function<void(const int, const std::string&)> onSuccess)
     {
-        auto onAuthenticationFailed = [this]()
-        {
-            TryReAuthenticate();
-        };
-
-        auto loopCondition = [this]()
-        {
-            return m_keepRunning.load();
-        };
-
         const auto reqParams = http_client::HttpRequestParams(http_client::MethodType::POST,
                                                               m_serverUrl,
                                                               "/api/v1/events/stateless",
                                                               m_getHeaderInfo ? m_getHeaderInfo() : "",
                                                               m_verificationMode);
-        co_await m_httpClient->Co_PerformHttpRequest(m_token,
-                                                     reqParams,
-                                                     getMessages,
-                                                     onAuthenticationFailed,
-                                                     m_retryInterval,
-                                                     m_batchSize,
-                                                     onSuccess,
-                                                     loopCondition);
+        co_await ExecuteRequestLoop(reqParams, getMessages, onSuccess);
     }
 
     void Communicator::TryReAuthenticate()
@@ -347,36 +314,113 @@ namespace communicator
     boost::asio::awaitable<bool> Communicator::GetGroupConfigurationFromManager(std::string groupName,
                                                                                 std::string dstFilePath)
     {
-        auto onAuthenticationFailed = [this]()
-        {
-            TryReAuthenticate();
-        };
-
         bool downloaded = false;
 
-        auto onSuccess = [path = std::move(dstFilePath), &downloaded](const int, const std::string& res)
+        if (m_token && !m_token->empty())
         {
-            std::ofstream file(path, std::ios::binary);
-            if (file)
+            const auto reqParams = http_client::HttpRequestParams(http_client::MethodType::GET,
+                                                                  m_serverUrl,
+                                                                  "/api/v1/files?file_name=" + groupName +
+                                                                      config::DEFAULT_SHARED_FILE_EXTENSION,
+                                                                  m_getHeaderInfo ? m_getHeaderInfo() : "",
+                                                                  m_verificationMode,
+                                                                  *m_token);
+
+            const auto res = co_await m_httpClient->Co_PerformHttpRequest(reqParams);
+            const auto res_status = std::get<0>(res);
+            const auto res_message = std::get<1>(res);
+
+            if (res_status >= http_client::HTTP_CODE_OK && res_status < http_client::HTTP_CODE_MULTIPLE_CHOICES)
             {
-                file << res;
-                file.close();
-                downloaded = true;
+                std::ofstream file(dstFilePath, std::ios::binary);
+                if (file)
+                {
+                    file << res_message;
+                    file.close();
+                    downloaded = true;
+                }
             }
-        };
-
-        const auto reqParams = http_client::HttpRequestParams(http_client::MethodType::GET,
-                                                              m_serverUrl,
-                                                              "/api/v1/files?file_name=" + groupName +
-                                                                  config::DEFAULT_SHARED_FILE_EXTENSION,
-                                                              m_getHeaderInfo ? m_getHeaderInfo() : "",
-                                                              m_verificationMode,
-                                                              *m_token);
-
-        co_await m_httpClient->Co_PerformHttpRequest(
-            m_token, reqParams, {}, onAuthenticationFailed, m_retryInterval, m_batchSize, onSuccess, {});
+            else
+            {
+                if (res_status == http_client::HTTP_CODE_UNAUTHORIZED || res_status == http_client::HTTP_CODE_FORBIDDEN)
+                {
+                    TryReAuthenticate();
+                }
+            }
+        }
 
         co_return downloaded;
+    }
+
+    boost::asio::awaitable<void> Communicator::ExecuteRequestLoop(
+        http_client::HttpRequestParams reqParams,
+        std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> messageGetter,
+        std::function<void(const int, const std::string&)> onSuccess)
+    {
+        using namespace std::chrono_literals;
+
+        auto executor = co_await boost::asio::this_coro::executor;
+        auto timer = std::make_shared<boost::asio::steady_timer>(executor);
+
+        do
+        {
+            if (!m_token || m_token->empty())
+            {
+                co_await WaitForTimer(timer, A_SECOND_IN_MILLIS);
+                continue;
+            }
+
+            auto messagesCount = 0;
+
+            if (messageGetter != nullptr)
+            {
+                while (m_keepRunning.load())
+                {
+                    const auto messages = co_await messageGetter(m_batchSize);
+                    messagesCount = std::get<0>(messages);
+
+                    if (messagesCount)
+                    {
+                        LogTrace("Items count: {}", messagesCount);
+                        reqParams.Body = std::get<1>(messages);
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                reqParams.Body = "";
+            }
+
+            reqParams.Token = *m_token;
+
+            const auto res = co_await m_httpClient->Co_PerformHttpRequest(reqParams);
+            const auto res_status = std::get<0>(res);
+            const auto res_message = std::get<1>(res);
+
+            std::time_t timerSleep = A_SECOND_IN_MILLIS;
+
+            if (res_status >= http_client::HTTP_CODE_OK && res_status < http_client::HTTP_CODE_MULTIPLE_CHOICES)
+            {
+                if (onSuccess != nullptr)
+                {
+                    onSuccess(messagesCount, res_message);
+                }
+            }
+            else
+            {
+                if (res_status == http_client::HTTP_CODE_UNAUTHORIZED || res_status == http_client::HTTP_CODE_FORBIDDEN)
+                {
+                    TryReAuthenticate();
+                }
+                if (res_status != http_client::HTTP_CODE_TIMEOUT)
+                {
+                    timerSleep = m_retryInterval;
+                }
+            }
+
+            co_await WaitForTimer(timer, timerSleep);
+        } while (m_keepRunning.load());
     }
 
     void Communicator::Stop()

@@ -87,6 +87,15 @@ namespace communicator
         /// @brief Checks if the authentication token has expired and authenticates again if necessary
         void TryReAuthenticate();
 
+        /// @brief Executes a request loop
+        /// @param reqParams The parameters for the request
+        /// @param messageGetter Function to retrieve messages
+        /// @param onSuccess Action to take on successful request
+        boost::asio::awaitable<void> ExecuteRequestLoop(
+            http_client::HttpRequestParams reqParams,
+            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> messageGetter = {},
+            std::function<void(const int, const std::string&)> onSuccess = {});
+
         /// @brief Indicates if the communication process should keep running
         std::atomic<bool> m_keepRunning = true;
 

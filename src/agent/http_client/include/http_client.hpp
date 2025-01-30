@@ -6,8 +6,8 @@
 
 #include <functional>
 #include <memory>
-#include <optional>
 #include <string>
+#include <tuple>
 
 namespace http_client
 {
@@ -28,24 +28,10 @@ namespace http_client
                    std::shared_ptr<IHttpSocketFactory> socketFactory = nullptr);
 
         /// @brief Performs an asynchronous HTTP request
-        /// @param token Authorization token
-        /// @param params Request parameters
-        /// @param bodyGetter Function to get the body asynchronously
-        /// @param onUnauthorized Callback for unauthorized access
-        /// @param connectionRetry Time in milliseconds to wait before retrying the connection
-        /// @param batchSize The minimum number of bytes of messages to batch
-        /// @param onSuccess Callback for successful request completion
-        /// @param loopRequestCondition Condition to continue looping requests
-        /// @return Awaitable task for the HTTP request
-        boost::asio::awaitable<void> Co_PerformHttpRequest(
-            std::shared_ptr<std::string> token,
-            HttpRequestParams params,
-            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> bodyGetter,
-            std::function<void()> onUnauthorized,
-            std::time_t connectionRetry,
-            size_t batchSize,
-            std::function<void(const int, const std::string&)> onSuccess = {},
-            std::function<bool()> loopRequestCondition = {}) override;
+        /// @param params Parameters for the request
+        /// @return An awaitable tuple containing the response status code and body
+        boost::asio::awaitable<std::tuple<int, std::string>>
+        Co_PerformHttpRequest(const HttpRequestParams params) override;
 
         /// @brief Performs a synchronous HTTP request
         /// @param params Parameters for the request
