@@ -1,5 +1,6 @@
 #include "process_options.hpp"
 
+#include <config.h>
 #include <logger.hpp>
 
 #include <boost/program_options.hpp>
@@ -60,14 +61,15 @@ int main(int argc, char* argv[])
 
         if (validOptions.count(OPT_REGISTER_AGENT) > 0)
         {
-            RegisterAgent(
-                validOptions.count(OPT_URL) ? validOptions[OPT_URL].as<std::string>() : "",
-                validOptions.count(OPT_USER) ? validOptions[OPT_USER].as<std::string>() : "",
-                validOptions.count(OPT_PASS) ? validOptions[OPT_PASS].as<std::string>() : "",
-                validOptions.count(OPT_KEY) ? validOptions[OPT_KEY].as<std::string>() : "",
-                validOptions.count(OPT_NAME) ? validOptions[OPT_NAME].as<std::string>() : "",
-                validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "",
-                validOptions.count(OPT_VERIFICATION_MODE) ? validOptions[OPT_VERIFICATION_MODE].as<std::string>() : "");
+            RegisterAgent(validOptions.count(OPT_URL) ? validOptions[OPT_URL].as<std::string>() : "",
+                          validOptions.count(OPT_USER) ? validOptions[OPT_USER].as<std::string>() : "",
+                          validOptions.count(OPT_PASS) ? validOptions[OPT_PASS].as<std::string>() : "",
+                          validOptions.count(OPT_KEY) ? validOptions[OPT_KEY].as<std::string>() : "",
+                          validOptions.count(OPT_NAME) ? validOptions[OPT_NAME].as<std::string>() : "",
+                          validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "",
+                          validOptions.count(OPT_VERIFICATION_MODE)
+                              ? validOptions[OPT_VERIFICATION_MODE].as<std::string>()
+                              : config::agent::DEFAULT_VERIFICATION_MODE);
         }
         else if (validOptions.count(OPT_STATUS) > 0)
         {
