@@ -28,9 +28,17 @@ static const auto OPT_REMOVE_SERVICE {"remove-service"};
 static const auto OPT_RUN_SERVICE {"run-service"};
 #endif
 
+#include <openssl/provider.h>
+
 int main(int argc, char* argv[])
 {
     Logger logger;
+
+    auto legacyProvider = OSSL_PROVIDER_load(nullptr, "legacy");
+    if (!legacyProvider)
+    {
+        LogWarn("Failed to load the OpenSSL legacy provider.");
+    }
 
     try
     {

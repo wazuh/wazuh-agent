@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 
+set(OPENSSL_NO_AUTOLOAD_CONFIG ON)
+
 if(DEFINED ENV{VCPKG_ROOT})
     message(STATUS "VCPKG is installed. VCPKG_ROOT: $ENV{VCPKG_ROOT}")
     set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE FILEPATH "")
