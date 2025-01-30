@@ -8,9 +8,9 @@ The agent now includes functionality to validate whether the server's certificat
 
 The agent supports three validation modes:
 
-- `full`: Verifies both that the certificate is signed by a trusted CA and that the SAN/CN belongs to the host being connected to (default)
+- `full`: Verifies both that the certificate is signed by a trusted CA and that the SAN/CN belongs to the host being connected to
 - `certificate`: Verifies only that the certificate is signed by a trusted CA
-- `none`: Skips all certificate validation
+- `none`: Skips all certificate validation (default)
 
 ### Usage
 
