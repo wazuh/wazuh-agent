@@ -783,11 +783,17 @@ void Inventory::ScanPackages()
                                  NotifyChange(result, data, PACKAGES_TABLE);
                              }};
 
+        Stopper stopper;
         std::unique_lock<std::mutex> lock {m_mutex};
         DBSyncTxn txn {m_spDBSync->handle(), nlohmann::json {PACKAGES_TABLE}, 0, QUEUE_SIZE, callback};
         m_spInfo->packages(
-            [this, &txn](nlohmann::json& rawData)
+            [this, &txn, &stopper](nlohmann::json& rawData)
             {
+                if(stopper.IsStop(m_stopping))
+                {
+                    return;
+                }
+
                 nlohmann::json input;
 
                 input["table"] = PACKAGES_TABLE;
