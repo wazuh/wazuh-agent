@@ -448,19 +448,20 @@ TEST(ConfigurationParser, GetConfigBytes)
           size_default_KB: 53
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<size_t>("batch_size", "size_bytes").value_or(1234);
+    const auto ret = parserStr->ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_bytes").value());
     ASSERT_EQ(ret, 500);
-    const auto retKB = parserStr->GetConfig<size_t>("batch_size", "size_KB").value_or(1234);
+    const auto retKB = parserStr->ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_KB").value());
     ASSERT_EQ(retKB, 45000);
-    const auto retMB = parserStr->GetConfig<size_t>("batch_size", "size_MB").value_or(1234);
+    const auto retMB = parserStr->ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_MB").value());
     ASSERT_EQ(retMB, 1000000);
-    const auto retM = parserStr->GetConfig<size_t>("batch_size", "size_M").value_or(1234);
+    const auto retM = parserStr->ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_M").value());
     ASSERT_EQ(retM, 4000000);
-    const auto retGB = parserStr->GetConfig<size_t>("batch_size", "size_GB").value_or(1234);
+    const auto retGB = parserStr->ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_GB").value());
     ASSERT_EQ(retGB, 2000000000);
-    const auto retG = parserStr->GetConfig<size_t>("batch_size", "size_G").value_or(1234);
+    const auto retG = parserStr->ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_G").value());
     ASSERT_EQ(retG, 3000000000);
-    const auto retDefaultKB = parserStr->GetConfig<size_t>("batch_size", "size_default_KB").value_or(1234);
+    const auto retDefaultKB =
+        parserStr->ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_default_KB").value());
     ASSERT_EQ(retDefaultKB, 53);
 }
 

@@ -112,7 +112,7 @@ namespace communicator
         std::time_t m_retryInterval = config::agent::DEFAULT_RETRY_INTERVAL;
 
         /// @brief Size for batch requests
-        size_t m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
+        size_t m_batchSize;
 
         /// @brief The server URL
         std::string m_serverUrl;

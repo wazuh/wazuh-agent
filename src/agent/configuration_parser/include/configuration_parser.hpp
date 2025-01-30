@@ -51,22 +51,12 @@ namespace configuration
         std::optional<T> GetConfig(Keys... keys) const
         {
             YAML::Node current = YAML::Clone(m_config);
-            bool should_parse_size = false;
 
             try
             {
                 (
-                    [&current, &should_parse_size](const auto& key)
+                    [&current](const auto& key)
                     {
-                        if constexpr (std::is_convertible_v<decltype(key), std::string_view>)
-                        {
-                            // This is a workaround for parsing size units
-                            if (std::string_view(key) == "batch_size")
-                            {
-                                should_parse_size = true;
-                            }
-                        }
-
                         current = current[key];
                         if (!current.IsDefined())
                         {
@@ -75,20 +65,7 @@ namespace configuration
                     }(keys),
                     ...);
 
-                if (should_parse_size)
-                {
-                    // For batch_size, always parse as size unit and convert to requested type
-                    auto size = ParseSizeUnit(current.as<std::string>());
-                    if constexpr (std::is_integral_v<T>)
-                    {
-                        return static_cast<T>(size);
-                    }
-                    else
-                    {
-                        throw std::invalid_argument("Invalid type for batch_size");
-                    }
-                }
-                else if constexpr (std::is_same_v<T, std::time_t>)
+                if constexpr (std::is_same_v<T, std::time_t>)
                 {
                     return ParseTimeUnit(current.as<std::string>());
                 }

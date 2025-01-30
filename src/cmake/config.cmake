@@ -22,7 +22,7 @@ set(DEFAULT_RETRY_INTERVAL 30000 CACHE STRING "Default Agent retry interval (30s
 
 set(DEFAULT_BATCH_INTERVAL 10000 CACHE STRING "Default Agent batch interval (10s)")
 
-set(DEFAULT_BATCH_SIZE 1000000ULL CACHE STRING "Default Agent batch size limit (1MB)")
+set(DEFAULT_BATCH_SIZE "\"1000000B\"" CACHE STRING "Default Agent batch size limit (1MB)")
 
 set(DEFAULT_VERIFICATION_MODE "none" CACHE STRING "Default Agent verification mode")
 
@@ -60,4 +60,4 @@ set(DEFAULT_HOTFIXES true CACHE BOOL "Default inventory hotfixes")
 
 set(QUEUE_STATUS_REFRESH_TIMER 100 CACHE STRING "Default Agent's queue refresh timer (100ms)")
 
-set(QUEUE_DEFAULT_SIZE 10000 CACHE STRING "Default Agent's queue size (10000)")
+set(QUEUE_DEFAULT_SIZE "\"10000B\"" CACHE STRING "Default Agent's queue size (10000)")

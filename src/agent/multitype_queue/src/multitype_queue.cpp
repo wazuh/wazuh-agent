@@ -33,14 +33,16 @@ MultiTypeQueue::MultiTypeQueue(std::shared_ptr<configuration::ConfigurationParse
         m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
     }
 
-    m_maxItems =
-        configurationParser->GetConfig<size_t>("agent", "queue_size").value_or(config::agent::QUEUE_DEFAULT_SIZE);
+    const auto configMaxItems =
+        configurationParser->GetConfig<std::string>("agent", "queue_size").value_or(config::agent::QUEUE_DEFAULT_SIZE);
+
+    m_maxItems = configurationParser->ParseSizeUnit(configMaxItems);
 
     if (m_maxItems < MIN_QUEUE_SIZE || m_maxItems > MAX_QUEUE_SIZE)
     {
         LogWarn("queue_size must be between 1'000 and 100'000'000. Using default value {}.",
                 config::agent::QUEUE_DEFAULT_SIZE);
-        m_maxItems = config::agent::QUEUE_DEFAULT_SIZE;
+        m_maxItems = configurationParser->ParseSizeUnit(config::agent::QUEUE_DEFAULT_SIZE);
     }
 
     auto dbFolderPath =
