@@ -6,7 +6,6 @@
 #include <regex>
 #include <sstream>
 #include <stdexcept>
-#include <stop_token>
 #include <thread>
 
 #include <boost/asio.hpp>
