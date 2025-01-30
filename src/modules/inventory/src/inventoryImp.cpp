@@ -278,7 +278,7 @@ void Inventory::NotifyChange(ReturnTypeCallback result, const nlohmann::json& da
         return;
     }
 
-    if (!m_notify || m_stopping)
+    if (!m_notify)
     {
         return;
     }
@@ -497,7 +497,6 @@ void Inventory::Init(const std::shared_ptr<ISysInfo>& spInfo,
 
 void Inventory::Destroy()
 {
-    std::unique_lock<std::mutex> lock {m_mutex};
     m_stopping = true;
     m_cv.notify_all();
 }
@@ -644,7 +643,7 @@ void Inventory::ScanHardware()
         UpdateChanges(HARDWARE_TABLE, hwData, m_hardwareFirstScan);
         LogTrace("Ending hardware scan");
 
-        if (!m_hardwareFirstScan)
+        if (!m_hardwareFirstScan && !m_stopping)
         {
             WriteMetadata(TABLE_TO_KEY_MAP.at(HARDWARE_TABLE), Utils::getCurrentISO8601());
             m_hardwareFirstScan = true;
@@ -662,7 +661,7 @@ void Inventory::ScanSystem()
         UpdateChanges(SYSTEM_TABLE, SystemData, m_systemFirstScan);
         LogTrace("Ending os scan");
 
-        if (!m_systemFirstScan)
+        if (!m_systemFirstScan && !m_stopping)
         {
             WriteMetadata(TABLE_TO_KEY_MAP.at(SYSTEM_TABLE), Utils::getCurrentISO8601());
             m_systemFirstScan = true;
@@ -762,7 +761,7 @@ void Inventory::ScanNetwork()
             }
         }
 
-        if (!m_networksFirstScan)
+        if (!m_networksFirstScan && !m_stopping)
         {
             WriteMetadata(TABLE_TO_KEY_MAP.at(NETWORKS_TABLE), Utils::getCurrentISO8601());
             m_networksFirstScan = true;
@@ -787,6 +786,11 @@ void Inventory::ScanPackages()
         m_spInfo->packages(
             [this, &txn](nlohmann::json& rawData)
             {
+                if (m_stopping)
+                {
+                    return;
+                }
+
                 nlohmann::json input;
 
                 input["table"] = PACKAGES_TABLE;
@@ -805,7 +809,7 @@ void Inventory::ScanPackages()
             });
         txn.getDeletedRows(callback);
 
-        if (!m_packagesFirstScan)
+        if (!m_packagesFirstScan && !m_stopping)
         {
             WriteMetadata(TABLE_TO_KEY_MAP.at(PACKAGES_TABLE), Utils::getCurrentISO8601());
             m_packagesFirstScan = true;
@@ -827,7 +831,7 @@ void Inventory::ScanHotfixes()
             UpdateChanges(HOTFIXES_TABLE, hotfixes, m_hotfixesFirstScan);
         }
 
-        if (!m_hotfixesFirstScan)
+        if (!m_hotfixesFirstScan && !m_stopping)
         {
             WriteMetadata(TABLE_TO_KEY_MAP.at(HOTFIXES_TABLE), Utils::getCurrentISO8601());
             m_hotfixesFirstScan = true;
@@ -906,7 +910,7 @@ void Inventory::ScanPorts()
         UpdateChanges(PORTS_TABLE, portsData, m_portsFirstScan);
         LogTrace("Ending ports scan");
 
-        if (!m_portsFirstScan)
+        if (!m_portsFirstScan && !m_stopping)
         {
             WriteMetadata(TABLE_TO_KEY_MAP.at(PORTS_TABLE), Utils::getCurrentISO8601());
             m_portsFirstScan = true;
@@ -928,6 +932,11 @@ void Inventory::ScanProcesses()
         m_spInfo->processes(std::function<void(nlohmann::json&)>(
             [this, &txn](nlohmann::json& rawData)
             {
+                if (m_stopping)
+                {
+                    return;
+                }
+
                 nlohmann::json input;
                 input["table"] = PROCESSES_TABLE;
                 input["data"] = nlohmann::json::array({rawData});
@@ -941,7 +950,7 @@ void Inventory::ScanProcesses()
             }));
         txn.getDeletedRows(callback);
 
-        if (!m_processesFirstScan)
+        if (!m_processesFirstScan && !m_stopping)
         {
             WriteMetadata(TABLE_TO_KEY_MAP.at(PROCESSES_TABLE), Utils::getCurrentISO8601());
             m_processesFirstScan = true;
@@ -981,7 +990,7 @@ void Inventory::SyncLoop()
     {
         {
             std::unique_lock<std::mutex> lock {m_mutex};
-            m_cv.wait_for(lock, std::chrono::milliseconds {m_intervalValue}, [&]() { return m_stopping; });
+            m_cv.wait_for(lock, std::chrono::milliseconds {m_intervalValue}, [&]() { return m_stopping.load(); });
         }
         Scan();
     }

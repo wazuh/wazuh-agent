@@ -137,7 +137,7 @@ private:
     bool m_portsAll;             // Scan only listening ports or all
     bool m_processes;            // Running processes inventory
     bool m_hotfixes;             // Windows hotfixes installed
-    bool m_stopping;
+    std::atomic<bool> m_stopping;
     bool m_notify;
     std::unique_ptr<DBSync> m_spDBSync;
     std::condition_variable m_cv;
