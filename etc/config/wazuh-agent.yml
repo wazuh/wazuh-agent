@@ -2,7 +2,7 @@ agent:
   thread_count: 4
   server_url: https://localhost:27000
   retry_interval: 30s
-  verification_mode: none # TODO: change this setting to full
+  verification_mode: none
 events:
   batch_interval: 10s
   batch_size: 1MB
