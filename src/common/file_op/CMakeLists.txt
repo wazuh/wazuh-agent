@@ -7,4 +7,4 @@ target_include_directories(file_op PUBLIC
     include
     ${COMMON_FOLDER}/pal/include)
 
-target_link_libraries(file_op utils time_op version_op ZLIB::ZLIB Logger)
+target_link_libraries(file_op utils time_op ZLIB::ZLIB Logger)

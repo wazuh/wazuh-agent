@@ -4,7 +4,6 @@
 #include <imultitype_queue.hpp>
 
 #include <config.h>
-#include <logger.hpp>
 
 #include <boost/asio/awaitable.hpp>
 

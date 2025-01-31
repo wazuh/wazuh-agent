@@ -10,13 +10,13 @@ add_subdirectory(centralized_configuration)
 add_subdirectory(command_handler)
 add_subdirectory(communicator)
 add_subdirectory(configuration_parser)
+add_subdirectory(http_client)
 add_subdirectory(multitype_queue)
 add_subdirectory(persistence)
 add_subdirectory(task_manager)
 add_subdirectory(restart_handler)
 
-find_package(OpenSSL REQUIRED)
-find_package(Boost REQUIRED COMPONENTS asio beast system program_options)
+find_package(Boost REQUIRED COMPONENTS asio system program_options)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(fmt REQUIRED)
 
@@ -26,13 +26,13 @@ if(WIN32)
         src/windows/windows_service.cpp
         src/process_options_win.cpp
         src/signal_handler_win.cpp
-        src/windows/instance_handler_win.cpp
+        src/instance_handler_win.cpp
     )
 elseif(UNIX)
     set(SOURCES
-        src/unix/instance_handler_unix.cpp
         src/process_options_unix.cpp
         src/signal_handler_unix.cpp
+        src/instance_handler_unix.cpp
     )
 endif()
 
@@ -54,21 +54,19 @@ target_include_directories(Agent
     ${CMAKE_CURRENT_SOURCE_DIR}/src/windows)
 target_link_libraries(Agent
     PUBLIC
-    TaskManager
-    CentralizedConfiguration
-    ConfigurationParser
-    Communicator
     AgentInfo
+    CentralizedConfiguration
     CommandHandler
+    Communicator
+    ConfigurationParser
+    HttpClient
     MultiTypeQueue
     ModuleManager
-    Boost::asio
+    TaskManager
     RestartHandler
     sysinfo
     PRIVATE
-    OpenSSL::SSL
-    OpenSSL::Crypto
-    Boost::beast
+    Boost::asio
     Boost::system
     Boost::program_options
     nlohmann_json::nlohmann_json

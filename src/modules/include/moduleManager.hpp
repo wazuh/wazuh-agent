@@ -5,8 +5,6 @@
 #include <moduleWrapper.hpp>
 #include <task_manager.hpp>
 
-#include <boost/asio/awaitable.hpp>
-
 #include <map>
 #include <memory>
 #include <mutex>

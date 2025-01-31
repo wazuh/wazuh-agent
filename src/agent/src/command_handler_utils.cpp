@@ -1,7 +1,6 @@
 #include <command_handler_utils.hpp>
 #include <imultitype_queue.hpp>
 
-#include <boost/asio/co_spawn.hpp>
 #include <boost/asio/experimental/awaitable_operators.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/system/system_error.hpp>

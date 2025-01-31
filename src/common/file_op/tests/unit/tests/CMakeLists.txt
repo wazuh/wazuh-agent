@@ -12,7 +12,7 @@ if(NOT ${TARGET} STREQUAL "winagent")
                             -Wl,--wrap,unlink,--wrap,fopen,--wrap,fflush,--wrap,fclose \
                             -Wl,--wrap,fread,--wrap,ftell,--wrap,fseek,--wrap,fwrite,--wrap,remove \
                             -Wl,--wrap,fprintf,--wrap,fgets,--wrap,File_DateofChange \
-                            -Wl,--wrap,bzip2_uncompress,--wrap,lstat,--wrap,popen \
+                            -Wl,--wrap,lstat,--wrap,popen \
                             -Wl,--wrap,gzopen,--wrap,gzread,--wrap,gzclose,--wrap,fgetc \
                             -Wl,--wrap,gzeof,--wrap,gzerror,--wrap,gzwrite,--wrap,fgetpos \
                             -Wl,--wrap,realpath,--wrap,getenv,--wrap,atexit ${DEBUG_OP_WRAPPERS} \

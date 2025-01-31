@@ -3,6 +3,8 @@
 
 #include <boost/asio.hpp>
 
+#include <logger.hpp>
+
 #include <stop_token>
 #include <utility>
 

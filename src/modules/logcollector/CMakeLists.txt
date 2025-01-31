@@ -18,7 +18,7 @@ endif()
 find_package(cJSON CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
-find_package(Boost REQUIRED COMPONENTS asio system)
+find_package(Boost REQUIRED COMPONENTS asio)
 
 FILE(GLOB LOGCOLLECTOR_SOURCES src/*.cpp src/file_reader/src/*.cpp)
 FILE(GLOB JOURNALD_SOURCES src/journald_reader/src/*.cpp)
@@ -64,7 +64,6 @@ target_link_libraries(Logcollector
     CommandEntry
     Config
     Boost::asio
-    Boost::system
     nlohmann_json::nlohmann_json
     PRIVATE
     $<$<PLATFORM_ID:Darwin>:OSLogStoreWrapper>

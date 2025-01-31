@@ -1,4 +1,3 @@
-#include <boost/asio/awaitable.hpp>
 #include <logger.hpp>
 #include <restart_handler.hpp>
 

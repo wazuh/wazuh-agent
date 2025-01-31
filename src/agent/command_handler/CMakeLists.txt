@@ -24,7 +24,7 @@ include(../../cmake/ConfigureTarget.cmake)
 configure_target(CommandHandler)
 
 target_include_directories(CommandHandler PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_link_libraries(CommandHandler PUBLIC Config ConfigurationParser CommandEntry Boost::asio Logger PRIVATE Persistence)
+target_link_libraries(CommandHandler PUBLIC ConfigurationParser CommandEntry Boost::asio PRIVATE nlohmann_json::nlohmann_json Persistence Logger Config)
 
 if(BUILD_TESTS)
     enable_testing()

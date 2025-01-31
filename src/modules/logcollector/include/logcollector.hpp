@@ -6,6 +6,7 @@
 #include <message.hpp>
 #include <moduleWrapper.hpp>
 
+#include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 

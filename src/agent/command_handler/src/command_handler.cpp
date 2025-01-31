@@ -1,6 +1,13 @@
 #include <command_handler.hpp>
 #include <command_store.hpp>
 
+#include <boost/asio.hpp>
+
+#include <nlohmann/json.hpp>
+
+#include <config.h>
+#include <logger.hpp>
+
 namespace
 {
     struct CommandDetails

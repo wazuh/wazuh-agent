@@ -1,7 +1,6 @@
 #pragma once
 
 #include <command_entry.hpp>
-#include <filesystem_wrapper.hpp>
 #include <ifilesystem.hpp>
 
 #include <boost/asio/awaitable.hpp>

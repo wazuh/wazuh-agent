@@ -30,10 +30,16 @@ void RegisterAgent(const std::string& url,
         {
             std::cout << "Starting wazuh-agent registration\n";
 
-            agent_registration::AgentRegistration reg(url, user, password, key, name, dbFolderPath, verificationMode);
+            agent_registration::AgentRegistration reg(std::make_unique<http_client::HttpClient>(),
+                                                      url,
+                                                      user,
+                                                      password,
+                                                      key,
+                                                      name,
+                                                      dbFolderPath,
+                                                      verificationMode);
 
-            http_client::HttpClient httpClient;
-            if (reg.Register(httpClient))
+            if (reg.Register())
             {
                 std::cout << "wazuh-agent registered\n";
             }

@@ -4,18 +4,16 @@
 #include <ihttp_client.hpp>
 
 #include <config.h>
-#include <logger.hpp>
 
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/steady_timer.hpp>
-#include <boost/beast/http/status.hpp>
-#include <boost/url.hpp>
 
 #include <atomic>
 #include <ctime>
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 
 namespace communicator
@@ -43,8 +41,12 @@ namespace communicator
                      std::function<std::string()> getHeaderInfo);
 
         /// @brief Sends an authentication request to the manager
-        /// @return The HTTP status of the authentication request
-        boost::beast::http::status SendAuthenticationRequest();
+        /// @return true if the request was sent successfully, false otherwise
+        bool SendAuthenticationRequest();
+
+        /// @brief Authenticate with a UUID and key
+        /// @return The authentication token
+        std::optional<std::string> AuthenticateWithUuidAndKey();
 
         /// @brief Waits for the authentication token to expire and authenticates again
         boost::asio::awaitable<void> WaitForTokenExpirationAndAuthenticate();
@@ -84,6 +86,15 @@ namespace communicator
 
         /// @brief Checks if the authentication token has expired and authenticates again if necessary
         void TryReAuthenticate();
+
+        /// @brief Executes a request loop
+        /// @param reqParams The parameters for the request
+        /// @param messageGetter Function to retrieve messages
+        /// @param onSuccess Action to take on successful request
+        boost::asio::awaitable<void> ExecuteRequestLoop(
+            http_client::HttpRequestParams reqParams,
+            std::function<boost::asio::awaitable<std::tuple<int, std::string>>(const size_t)> messageGetter = {},
+            std::function<void(const int, const std::string&)> onSuccess = {});
 
         /// @brief Indicates if the communication process should keep running
         std::atomic<bool> m_keepRunning = true;
