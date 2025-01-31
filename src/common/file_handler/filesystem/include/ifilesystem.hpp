@@ -28,7 +28,7 @@ public:
     /// @brief Removes all files and subdirectories in the specified directory.
     /// @param path The directory path to remove.
     /// @return Returns the number of files and directories removed.
-    virtual std::uintmax_t remove_all(const std::filesystem::path& path) = 0;
+    virtual std::uintmax_t remove_all(const std::filesystem::path& path) const = 0;
 
     /// @brief Retrieves the system's temporary directory path.
     /// @return Returns the path of the system's temporary directory.
@@ -37,15 +37,15 @@ public:
     /// @brief Creates a new directory at the specified path.
     /// @param path The path of the directory to create.
     /// @return Returns true if the directory was successfully created, otherwise false.
-    virtual bool create_directories(const std::filesystem::path& path) = 0;
+    virtual bool create_directories(const std::filesystem::path& path) const = 0;
 
     /// @brief Renames a file or directory from the 'from' path to the 'to' path.
     /// @param from The current path of the file or directory.
     /// @param to The new path for the file or directory.
-    virtual void rename(const std::filesystem::path& from, const std::filesystem::path& to) = 0;
+    virtual void rename(const std::filesystem::path& from, const std::filesystem::path& to) const = 0;
 
     /// @brief Removes the specified file or directory.
     /// @param path The file or directory to remove.
     /// @return Returns true if the file or directory was successfully removed, otherwise false.
-    virtual bool remove(const std::filesystem::path& path) = 0;
+    virtual bool remove(const std::filesystem::path& path) const = 0;
 };

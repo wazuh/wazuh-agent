@@ -1,16 +1,16 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(FilesystemWrapper)
+project(Filesystem)
 
-include(../../cmake/CommonSettings.cmake)
+include(../../../cmake/CommonSettings.cmake)
 set_common_settings()
 
-add_library(FilesystemWrapper STATIC
-    src/filesystem_wrapper.cpp
+add_library(Filesystem STATIC
+    src/filesystem.cpp
 )
 
-target_include_directories(FilesystemWrapper PUBLIC include)
-target_link_libraries(FilesystemWrapper PUBLIC utils)
+target_include_directories(Filesystem PUBLIC include)
+target_link_libraries(Filesystem PUBLIC utils)
 
-include(../../cmake/ConfigureTarget.cmake)
-configure_target(FilesystemWrapper)
+include(../../../cmake/ConfigureTarget.cmake)
+configure_target(Filesystem)
