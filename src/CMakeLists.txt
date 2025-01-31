@@ -27,6 +27,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
 endif()
 
+find_package(OpenSSL REQUIRED)
+
 include(cmake/CommonSettings.cmake)
 set_common_settings()
 
@@ -46,7 +48,7 @@ add_subdirectory(modules)
 add_subdirectory(agent)
 
 add_executable(wazuh-agent agent/src/main.cpp)
-target_link_libraries(wazuh-agent Agent Logger)
+target_link_libraries(wazuh-agent PRIVATE Agent Logger OpenSSL::SSL OpenSSL::Crypto)
 
 if(WIN32)
     include(cmake/SetWindowsManifest.cmake)
