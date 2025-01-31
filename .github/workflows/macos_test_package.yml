@@ -1,0 +1,96 @@
+run-name: Packages - Test Wazuh agent macOS package - ${{ inputs.architecture }} - ${{ inputs.id }}
+name: Build Wazuh agent macOS packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      architecture:
+        type: choice
+        description: Package architecture [intel64, arm64].
+        options:
+          - intel64
+          - arm64
+        required: true
+      checksum:
+        type: boolean
+        description: |
+          Generate package checksum.
+          Default is 'false'.
+        required: false
+      upload_to_s3:
+        type: boolean
+        description: |
+          Upload generated package to S3.
+          Default is 'false'.
+        default: false
+        required: false
+      id:
+        type: string
+        description: |
+          ID used to identify the workflow uniquely.
+        required: false
+
+  workflow_call:
+    inputs:
+      architecture:
+        type: string
+        required: true
+      checksum:
+        type: boolean
+        required: false
+      upload_to_s3:
+        type: boolean
+        required: false
+      id:
+        type: string
+        required: false
+
+jobs:
+  test-package-agent-macos-packages:
+    runs-on: ${{ inputs.architecture == 'arm64' && 'macos-14' || 'macos-13' }}
+    timeout-minutes: 50
+    name: Test macOS wazuh-agent package - ${{ inputs.architecture }}
+
+    steps:
+      - name: Download wazuh agent package
+        uses: actions/download-artifact@v4
+        with:
+          name: wazuh-agent-package-${{ inputs.architecture }}
+
+      - name: Test macOS package installation
+        run: |
+          ls
+          unzip wazuh-agent-package-${{ inputs.architecture }}.zip -d .
+          package_name=$(find . -type f -name "*agent*.pkg" -exec basename {} 2>/dev/null \;)
+          echo "PACKAGE_NAME=$package_name" >> $GITHUB_ENV
+          sudo installer -pkg ./*agent*pkg -target / | sudo tee /tmp/installer.log
+          if grep -q "The install was successful" "/tmp/installer.log"; then
+            echo "Installation successfully."
+          else
+            echo "The installation could not be completed. The package will not be uploaded.";
+            exit 1;
+          fi
+
+      - name: Set up AWS CLI
+        if: ${{ inputs.upload_to_s3 }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.CI_INTERNAL_DEVELOPMENT_BUCKET_USER_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.CI_INTERNAL_DEVELOPMENT_BUCKET_USER_SECRET_KEY }}
+          aws-region: ${{ secrets.CI_AWS_REGION }}
+
+      - name: Upload package to S3
+        if: ${{ inputs.upload_to_s3 }}
+        uses: ./.github/actions/upload_file_to_s3
+        with:
+          s3_uri: "s3://packages-dev.internal.wazuh.com/development/wazuh/5.x/main/packages"
+          uploaded_file_name: ${{ env.PACKAGE_NAME }}
+          uploaded_file_location: "."
+
+      - name: Upload checksums to S3
+        if: ${{ inputs.checksum && inputs.upload_to_s3 }}
+        uses: ./.github/actions/upload_file_to_s3
+        with:
+          s3_uri: "s3://packages-dev.internal.wazuh.com/development/wazuh/5.x/main/packages"
+          uploaded_file_name: ${{ env.PACKAGE_NAME }}.sha512
+          uploaded_file_location: "."
