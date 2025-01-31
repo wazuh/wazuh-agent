@@ -14,6 +14,11 @@ namespace filesystem
         return std::filesystem::is_directory(path);
     }
 
+    bool FileSystem::is_regular_file(const std::filesystem::path& path) const
+    {
+        return std::filesystem::is_regular_file(path);
+    }
+
     std::uintmax_t FileSystem::remove_all(const std::filesystem::path& path) const
     {
         return std::filesystem::remove_all(path);
@@ -27,6 +32,16 @@ namespace filesystem
     bool FileSystem::create_directories(const std::filesystem::path& path) const
     {
         return std::filesystem::create_directories(path);
+    }
+
+    std::filesystem::directory_iterator FileSystem::directory_iterator(const std::filesystem::path& path) const
+    {
+        return std::filesystem::directory_iterator(path);
+    }
+
+    std::filesystem::directory_iterator FileSystem::directory_iterator(const std::filesystem::path& path) const
+    {
+        return std::filesystem::directory_iterator(path);
     }
 
     void FileSystem::rename(const std::filesystem::path& from, const std::filesystem::path& to) const

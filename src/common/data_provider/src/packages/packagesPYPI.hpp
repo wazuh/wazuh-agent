@@ -13,8 +13,8 @@
 #define _PACKAGES_PYPI_HPP
 
 #include "fileIO.hpp"
-#include "fileSystem.hpp"
 #include "stdFileSystemHelper.hpp"
+#include "filesystem.hpp"
 #include <nlohmann/json.hpp>
 #include "sharedDefs.h"
 #include "stringHelper.h"
@@ -23,7 +23,7 @@
 
 const static std::map<std::string, std::string> FILE_MAPPING_PYPI {{"egg-info", "PKG-INFO"}, {"dist-info", "METADATA"}};
 
-template<typename TFileSystem = RealFileSystem, typename TFileIO = FileIO>
+template<typename TFileSystem = filesystem::FileSystem, typename TFileIO = FileIO>
 class PYPI final : public TFileSystem, public TFileIO
 {
         void parseMetadata(const std::filesystem::path& path, std::function<void(nlohmann::json&)>& callback)

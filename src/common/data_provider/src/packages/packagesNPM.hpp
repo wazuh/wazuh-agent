@@ -12,8 +12,8 @@
 #ifndef _PACKAGES_NPM_HPP
 #define _PACKAGES_NPM_HPP
 
-#include "fileSystem.hpp"
 #include "stdFileSystemHelper.hpp"
+#include "filesystem.hpp"
 #include <nlohmann/json.hpp>
 #include "jsonIO.hpp"
 #include "sharedDefs.h"
@@ -22,7 +22,7 @@
 #include <iostream>
 #include <set>
 
-template<typename TFileSystem = RealFileSystem, typename TJsonReader = JsonIO<nlohmann::json>>
+template<typename TFileSystem = filesystem::FileSystem, typename TJsonReader = JsonIO<nlohmann::json>>
 class NPM final
     : public TFileSystem
     , public TJsonReader

@@ -165,6 +165,7 @@ add_library(sysinfo STATIC
     ${SRC_FOLDER}/${RESOURCE_OBJ})
 
 target_include_directories(sysinfo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
+target_link_libraries(sysinfo PUBLIC Filesystem)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   target_link_libraries(sysinfo PUBLIC psapi iphlpapi ws2_32)

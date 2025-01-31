@@ -16,6 +16,7 @@
 #include "sharedDefs.h"
 #include "stringHelper.h"
 #include "filesystemHelper.h"
+#include "filesystem.hpp"
 #include "cmdHelper.h"
 #include "osinfo/sysOsParsers.h"
 #include "sysInfo.hpp"

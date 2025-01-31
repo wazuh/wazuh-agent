@@ -23,6 +23,11 @@ namespace filesystem
         /// @return Returns true if the path is a directory, otherwise false.
         bool is_directory(const std::filesystem::path& path) const override;
 
+        /// @brief Checks if the specified path is a regular file.
+        /// @param path The path to check.
+        /// @return Returns true if the path is a regular file, otherwise false.
+        bool is_regular_file(const std::filesystem::path& path) const override;
+
         /// @brief Removes all files and subdirectories in the specified directory.
         /// @param path The directory path to remove.
         /// @return Returns the number of files and directories removed.
@@ -36,6 +41,11 @@ namespace filesystem
         /// @param path The path of the directory to create.
         /// @return Returns true if the directory was successfully created, otherwise false.
         bool create_directories(const std::filesystem::path& path) const override;
+
+        /// @brief Returns the iterator to the first element of a directory
+        /// @param path Path to the directory
+        /// @return The iterator to the first element of a directory
+        std::filesystem::directory_iterator directory_iterator(const std::filesystem::path& path) const override;
 
         /// @brief Renames a file or directory from the 'from' path to the 'to' path.
         /// @param from The current path of the file or directory.
