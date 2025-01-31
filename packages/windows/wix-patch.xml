@@ -9,8 +9,8 @@
         BinaryKey="WixCA"
         DllEntry="WixQuietExec"
         Return="check"
-        Execute="immediate"
-        Impersonate="no"
+        Execute="deferred"
+        Impersonate="yes"
     />
     <CustomAction
         Id="SetCleanupCmdLine"
@@ -22,8 +22,8 @@
         BinaryKey="WixCA"
         DllEntry="WixQuietExec"
         Return="check"
-        Execute="immediate"
-        Impersonate="no"
+        Execute="deferred"
+        Impersonate="yes"
     />
     <InstallExecuteSequence>
       <Custom Action="PostInstall" After="InstallFinalize">NOT Installed</Custom>
