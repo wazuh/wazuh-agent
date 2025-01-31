@@ -36,4 +36,4 @@ mono $NUGET_PATH \
     -password "$1"
 mono $NUGET_PATH \
     setapikey "$1" \
-    -source "https://nuget.pkg.github.com/wazuh/index.json" 
+    -source "https://nuget.pkg.github.com/wazuh/index.json"

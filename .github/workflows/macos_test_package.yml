@@ -1,35 +1,7 @@
 run-name: Packages - Test Wazuh agent macOS package - ${{ inputs.architecture }} - ${{ inputs.id }}
-name: Build Wazuh agent macOS packages
+name: Test Wazuh agent macOS packages
 
 on:
-  workflow_dispatch:
-    inputs:
-      architecture:
-        type: choice
-        description: Package architecture [intel64, arm64].
-        options:
-          - intel64
-          - arm64
-        required: true
-      checksum:
-        type: boolean
-        description: |
-          Generate package checksum.
-          Default is 'false'.
-        required: false
-      upload_to_s3:
-        type: boolean
-        description: |
-          Upload generated package to S3.
-          Default is 'false'.
-        default: false
-        required: false
-      id:
-        type: string
-        description: |
-          ID used to identify the workflow uniquely.
-        required: false
-
   workflow_call:
     inputs:
       architecture:
@@ -59,7 +31,6 @@ jobs:
 
       - name: Test macOS package installation
         run: |
-          ls
           unzip wazuh-agent-package-${{ inputs.architecture }}.zip -d .
           package_name=$(find . -type f -name "*agent*.pkg" -exec basename {} 2>/dev/null \;)
           echo "PACKAGE_NAME=$package_name" >> $GITHUB_ENV

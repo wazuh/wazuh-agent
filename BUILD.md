@@ -46,6 +46,7 @@ The following dependencies are required for building this project:
     cd wazuh-agent
     cmake src -B build
     cmake --build build
+    cmake --install src/build --prefix /
     ```
 
     If you want to include tests, configure the project with the following command:
@@ -131,6 +132,7 @@ The following dependencies are required for building this project:
     cd wazuh-agent
     cmake src -B build
     cmake --build build
+    cmake --install src/build --prefix /
     ```
 
     If you want to include tests, configure the project with the following command:

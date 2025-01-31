@@ -2,26 +2,6 @@ run-name: Build Wazuh agent macOS binaries - ${{ inputs.architecture }} - ${{ in
 name: Build Wazuh agent macOS binaries
 
 on:
-  workflow_dispatch:
-    inputs:
-      architecture:
-        type: choice
-        description: Package architecture [intel64, arm64].
-        options:
-          - intel64
-          - arm64
-        required: true
-      source_reference:
-        type: string
-        description: |
-          Branch/tag of wazuh/wazuh-agent to generate packages.
-        required: true
-      id:
-        type: string
-        description: |
-          ID used to identify the workflow uniquely.
-        required: false
-
   workflow_call:
     inputs:
       architecture:
