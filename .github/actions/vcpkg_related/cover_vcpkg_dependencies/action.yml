@@ -10,9 +10,7 @@ runs:
       if: runner.os != 'Windows'
       id: cover_vcpkg_dependencies
       shell: bash
-      env:
-          GH_TOKEN: ${{ inputs.gh_token }}
-      run: .github/actions/vcpkg_related/cover_vcpkg_dependencies/cover_vcpkg_dependencies.sh
+      run: .github/actions/vcpkg_related/cover_vcpkg_dependencies/cover_vcpkg_dependencies.sh ${{ inputs.gh_token }}
 
     - name: Cover vcpkg dependencies
       if: runner.os == 'Windows'

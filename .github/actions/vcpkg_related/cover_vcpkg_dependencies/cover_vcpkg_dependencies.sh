@@ -2,6 +2,11 @@
 # Copyright (C) 2024, Wazuh Inc.
 
 # Check mono installation and run it if needed
+if [ -z "$1" ]; then
+    echo "Missing TOKEN, provide it."
+    exit 1
+fi
+
 if [[ $(mono --version 2>/dev/null) =~ [0-9] ]]; then
     echo "mono already installed."
 else
@@ -28,7 +33,7 @@ mono $NUGET_PATH \
     -source "https://nuget.pkg.github.com/wazuh/index.json" \
     -name "GitHub" \
     -username "wazuh" \
-    -password "$GH_TOKEN"
+    -password "$1"
 mono $NUGET_PATH \
-    setapikey "$GH_TOKEN" \
+    setapikey "$1" \
     -source "https://nuget.pkg.github.com/wazuh/index.json" 
