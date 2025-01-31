@@ -3,6 +3,8 @@
 
 #include <boost/asio.hpp>
 
+#include <nlohmann/json.hpp>
+
 #include <config.h>
 #include <logger.hpp>
 

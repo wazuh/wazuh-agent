@@ -3,6 +3,8 @@
 
 #include <boost/asio.hpp>
 
+#include <nlohmann/json.hpp>
+
 #include <jwt-cpp/jwt.h>
 #include <jwt-cpp/traits/nlohmann-json/traits.h>
 

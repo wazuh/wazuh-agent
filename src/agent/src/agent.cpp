@@ -9,6 +9,8 @@
 #include <multitype_queue.hpp>
 #include <restart_handler.hpp>
 
+#include <nlohmann/json.hpp>
+
 #include <filesystem>
 #include <memory>
 

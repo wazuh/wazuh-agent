@@ -30,6 +30,7 @@ target_link_libraries(MultiTypeQueue
     MessageEntry
     Boost::asio
     PRIVATE
+    nlohmann_json::nlohmann_json
     Persistence
     Logger)
 
