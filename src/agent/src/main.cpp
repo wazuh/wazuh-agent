@@ -28,9 +28,15 @@ static const auto OPT_REMOVE_SERVICE {"remove-service"};
 static const auto OPT_RUN_SERVICE {"run-service"};
 #endif
 
+#include <openssl/ssl.h>
+
 int main(int argc, char* argv[])
 {
     Logger logger;
+
+    SSL_library_init();
+    SSL_load_error_strings();
+    OpenSSL_add_all_algorithms();
 
     try
     {
