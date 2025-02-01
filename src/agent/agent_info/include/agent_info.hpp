@@ -1,9 +1,11 @@
 #pragma once
 
+#include <agent_info_persistance.hpp>
 #include <config.h>
 #include <nlohmann/json.hpp>
 
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -25,10 +27,12 @@ public:
     /// @param getOSInfo Function to retrieve OS information in JSON format.
     /// @param getNetworksInfo Function to retrieve network information in JSON format.
     /// @param agentIsRegistering True if the agent is being registered, false otherwise.
+    /// @param persistence Optional pointer to an AgentInfoPersistance object.
     AgentInfo(std::string dbFolderPath = config::DEFAULT_DATA_PATH,
               std::function<nlohmann::json()> getOSInfo = nullptr,
               std::function<nlohmann::json()> getNetworksInfo = nullptr,
-              bool agentIsRegistering = false);
+              bool agentIsRegistering = false,
+              std::unique_ptr<AgentInfoPersistance> persistence = nullptr);
 
     /// @brief Gets the agent's name.
     /// @return The agent's name.
@@ -141,4 +145,7 @@ private:
 
     /// @brief Specify if the agent is about to register.
     bool m_agentIsRegistering;
+
+    /// @brief Unique pointer to the agent info persistence instance.
+    std::unique_ptr<AgentInfoPersistance> m_persistence;
 };
