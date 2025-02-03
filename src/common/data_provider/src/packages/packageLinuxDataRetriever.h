@@ -14,6 +14,7 @@
 
 #include <memory>
 #include "filesystemHelper.h"
+#include <filesystem.hpp>
 #include <nlohmann/json.hpp>
 #include "sharedDefs.h"
 #include "utilsWrapperLinux.hpp"
@@ -64,17 +65,18 @@ class FactoryPackagesCreator<LinuxType::STANDARD> final
     public:
         static void getPackages(std::function<void(nlohmann::json&)> callback)
         {
-            if (Utils::existsDir(DPKG_PATH))
+            const auto fsWrapper = std::make_unique<filesystem::FileSystem>();
+            if (fsWrapper->exists(DPKG_PATH) && fsWrapper->is_directory(DPKG_PATH))
             {
                 getDpkgInfo(DPKG_STATUS_PATH, callback);
             }
 
-            if (Utils::existsDir(RPM_PATH))
+            if (fsWrapper->exists(RPM_PATH) && fsWrapper->is_directory(RPM_PATH))
             {
                 getRpmInfo(callback);
             }
 
-            if (Utils::existsDir(SNAP_PATH))
+            if (fsWrapper->exists(SNAP_PATH) && fsWrapper->is_directory(SNAP_PATH))
             {
                 getSnapInfo(callback);
             }
@@ -88,7 +90,8 @@ class FactoryPackagesCreator<LinuxType::LEGACY> final
     public:
         static void getPackages(std::function<void(nlohmann::json&)> callback)
         {
-            if (Utils::existsDir(RPM_PATH))
+            const auto fsWrapper = std::make_unique<filesystem::FileSystem>();
+            if (fsWrapper->exists(RPM_PATH) && fsWrapper->is_directory(RPM_PATH))
             {
                 getRpmInfoLegacy(callback);
             }

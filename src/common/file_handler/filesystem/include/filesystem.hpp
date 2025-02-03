@@ -28,6 +28,11 @@ namespace filesystem
         /// @return Returns true if the path is a regular file, otherwise false.
         bool is_regular_file(const std::filesystem::path& path) const override;
 
+        /// @brief Checks if the specified path is a socket.
+        /// @param path The path to check.
+        /// @return Returns true if the path is a socket, otherwise false.
+        bool is_socket(const std::filesystem::path& path) const override;
+
         /// @brief Removes all files and subdirectories in the specified directory.
         /// @param path The directory path to remove.
         /// @return Returns the number of files and directories removed.
@@ -61,5 +66,10 @@ namespace filesystem
         /// @param path The path to expand.
         /// @param output The deque to store the expanded path.
         void expand_absolute_path(const std::string& path, std::deque<std::string>& output) const override;
+
+        /// @brief Enumerates the contents of a directory.
+        /// @param path The path of the directory to enumerate.
+        /// @return A vector containing the names of the files and directories in the directory.
+        std::vector<std::string> enumerate_dir(const std::string& path) const override;
     };
 }

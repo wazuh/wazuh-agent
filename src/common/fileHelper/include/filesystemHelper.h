@@ -38,48 +38,10 @@
 
 namespace Utils
 {
-    static bool existsDir(const std::string& path)
-    {
-        struct stat info {};
-        return !stat(path.c_str(), &info) && (info.st_mode & S_IFDIR);
-    }
     static bool existsRegular(const std::string& path)
     {
         struct stat info {};
         return !stat(path.c_str(), &info) && (info.st_mode & S_IFREG);
-    }
-#ifndef WIN32
-    static bool existsSocket(const std::string& path)
-    {
-        struct stat info {};
-        return !stat(path.c_str(), &info) && ((info.st_mode & S_IFMT) == S_IFSOCK);
-    }
-#endif
-    struct DirSmartDeleter
-    {
-        void operator()(DIR* dir)
-        {
-            closedir(dir);
-        }
-    };
-
-    static std::vector<std::string> enumerateDir(const std::string& path)
-    {
-        std::vector<std::string> ret;
-        std::unique_ptr<DIR, DirSmartDeleter> spDir{opendir(path.c_str())};
-
-        if (spDir)
-        {
-            auto entry{readdir(spDir.get())};
-
-            while (entry)
-            {
-                ret.push_back(entry->d_name);
-                entry = readdir(spDir.get());
-            }
-        }
-
-        return ret;
     }
 
     static std::string getFileContent(const std::string& filePath)

@@ -14,23 +14,6 @@
 void FilesystemUtilsTest::SetUp() {};
 
 void FilesystemUtilsTest::TearDown() {};
-#ifdef WIN32
-TEST_F(FilesystemUtilsTest, FilesystemExistsDir)
-{
-    EXPECT_TRUE(Utils::existsDir(R"(C:\)"));
-}
-
-TEST_F(FilesystemUtilsTest, FilesystemEnumerateDir)
-{
-    const auto items {Utils::enumerateDir(R"(C:\)")};
-    EXPECT_FALSE(items.empty());
-}
-
-#else
-TEST_F(FilesystemUtilsTest, FilesystemExistsDir)
-{
-    EXPECT_TRUE(Utils::existsDir(R"(/usr)"));
-}
 
 TEST_F(FilesystemUtilsTest, FilesystemExistsRegular)
 {
@@ -39,12 +22,6 @@ TEST_F(FilesystemUtilsTest, FilesystemExistsRegular)
 
     // Check wrong input
     EXPECT_FALSE(Utils::existsRegular(R"(/etc)"));
-}
-
-TEST_F(FilesystemUtilsTest, FilesystemEnumerateDir)
-{
-    const auto items {Utils::enumerateDir(R"(/usr)")};
-    EXPECT_FALSE(items.empty());
 }
 
 TEST_F(FilesystemUtilsTest, getFileContent)
@@ -59,6 +36,3 @@ TEST_F(FilesystemUtilsTest, getFileBinaryContent)
     const auto binContent {Utils::getBinaryContent("/usr/bin/gcc")};
     EXPECT_FALSE(binContent.empty());
 }
-
-
-#endif

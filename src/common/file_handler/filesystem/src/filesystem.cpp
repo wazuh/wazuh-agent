@@ -22,6 +22,11 @@ namespace filesystem
         return std::filesystem::is_regular_file(path);
     }
 
+    bool FileSystem::is_socket(const std::filesystem::path& path) const
+    {
+        return std::filesystem::is_socket(path);
+    }
+
     std::uintmax_t FileSystem::remove_all(const std::filesystem::path& path) const
     {
         return std::filesystem::remove_all(path);
@@ -35,11 +40,6 @@ namespace filesystem
     bool FileSystem::create_directories(const std::filesystem::path& path) const
     {
         return std::filesystem::create_directories(path);
-    }
-
-    std::filesystem::directory_iterator FileSystem::directory_iterator(const std::filesystem::path& path) const
-    {
-        return std::filesystem::directory_iterator(path);
     }
 
     std::filesystem::directory_iterator FileSystem::directory_iterator(const std::filesystem::path& path) const
@@ -138,5 +138,20 @@ namespace filesystem
         {
             output.push_back(path);
         }
+    }
+
+    std::vector<std::string> FileSystem::enumerate_dir(const std::string& path) const
+    {
+        std::vector<std::string> ret;
+
+        if (!exists(path) || !is_directory(path))
+            return ret;
+
+        for (const auto& entry : directory_iterator(path))
+        {
+            ret.push_back(entry.path().filename().string());
+        }
+
+        return ret;
     }
 }

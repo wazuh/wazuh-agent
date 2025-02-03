@@ -15,8 +15,7 @@
 #include "packages/modernPackageDataRetriever.hpp"
 #include "sharedDefs.h"
 #include "stringHelper.h"
-#include "filesystemHelper.h"
-#include "filesystem.hpp"
+#include <filesystem.hpp>
 #include "cmdHelper.h"
 #include "osinfo/sysOsParsers.h"
 #include "sysInfo.hpp"
@@ -193,7 +192,8 @@ static void getCpuMHz(nlohmann::json& info)
     else
     {
         int cpuFreq { 0 };
-        const auto cpusInfo { Utils::enumerateDir(WM_SYS_CPU_FREC_DIR) };
+        const auto fsWrapper = std::make_unique<filesystem::FileSystem>();
+        const auto cpusInfo { fsWrapper->enumerate_dir(WM_SYS_CPU_FREC_DIR) };
         constexpr auto CPU_FREQ_DIRNAME_PATTERN {"cpu[0-9]+"};
         const std::regex cpuDirectoryRegex {CPU_FREQ_DIRNAME_PATTERN};
 
@@ -408,6 +408,9 @@ nlohmann::json SysInfo::getNetworks() const
 ProcessInfo portProcessInfo(const std::string& procPath, const std::deque<int64_t>& inodes)
 {
     ProcessInfo ret;
+
+    const auto fsWrapper = std::make_unique<filesystem::FileSystem>();
+
     auto getProcessName = [](const std::string & filePath) -> std::string
     {
         // Get stat file content.
@@ -444,9 +447,9 @@ ProcessInfo portProcessInfo(const std::string& procPath, const std::deque<int64_
         return std::stoll(match);
     };
 
-    if (Utils::existsDir(procPath))
+    if (fsWrapper->exists(procPath) && fsWrapper->is_directory(procPath))
     {
-        std::vector<std::string> procFiles = Utils::enumerateDir(procPath);
+        std::vector<std::string> procFiles = fsWrapper->enumerate_dir(procPath);
 
         // Iterate proc directory.
         for (const auto& procFile : procFiles)
@@ -454,14 +457,14 @@ ProcessInfo portProcessInfo(const std::string& procPath, const std::deque<int64_
             // Only directories that represent a PID are inspected.
             const std::string procFilePath {procPath + "/" + procFile};
 
-            if (Utils::isNumber(procFile) && Utils::existsDir(procFilePath))
+            if (Utils::isNumber(procFile) && fsWrapper->exists(procFilePath) && fsWrapper->is_directory(procFilePath))
             {
                 // Only fd directory is inspected.
                 const std::string pidFilePath {procFilePath + "/fd"};
 
-                if (Utils::existsDir(pidFilePath))
+                if (fsWrapper->exists(procFilePath) && fsWrapper->is_directory(procFilePath))
                 {
-                    std::vector<std::string> fdFiles = Utils::enumerateDir(pidFilePath);
+                    std::vector<std::string> fdFiles = fsWrapper->enumerate_dir(pidFilePath);
 
                     // Iterate fd directory.
                     for (const auto& fdFile : fdFiles)
@@ -469,7 +472,7 @@ ProcessInfo portProcessInfo(const std::string& procPath, const std::deque<int64_
                         // Only sysmlinks that represent a socket are read.
                         const std::string fdFilePath {pidFilePath + "/" + fdFile};
 
-                        if (!Utils::startsWith(fdFile, ".") && Utils::existsSocket(fdFilePath))
+                        if (!Utils::startsWith(fdFile, ".") && fsWrapper->exists(fdFilePath) && fsWrapper->is_socket(fdFilePath))
                         {
                             try
                             {
