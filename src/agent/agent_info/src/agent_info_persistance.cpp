@@ -25,13 +25,20 @@ namespace
     const std::string AGENT_GROUP_NAME_COLUMN_NAME = "name";
 } // namespace
 
-AgentInfoPersistance::AgentInfoPersistance(const std::string& dbFolderPath)
+AgentInfoPersistance::AgentInfoPersistance(const std::string& dbFolderPath, std::unique_ptr<Persistence> persistence)
 {
     const auto dbFilePath = dbFolderPath + "/" + AGENT_INFO_DB_NAME;
 
     try
     {
-        m_db = PersistenceFactory::CreatePersistence(PersistenceFactory::PersistenceType::SQLITE3, dbFilePath);
+        if (persistence)
+        {
+            m_db = std::move(persistence);
+        }
+        else
+        {
+            m_db = PersistenceFactory::CreatePersistence(PersistenceFactory::PersistenceType::SQLITE3, dbFilePath);
+        }
 
         if (!m_db->TableExists(AGENT_INFO_TABLE_NAME))
         {

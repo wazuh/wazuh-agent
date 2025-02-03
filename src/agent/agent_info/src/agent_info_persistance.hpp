@@ -1,10 +1,10 @@
 #pragma once
 
+#include <persistence.hpp>
+
 #include <memory>
 #include <string>
 #include <vector>
-
-class Persistence;
 
 /// @brief Manages persistence of agent information and groups in a database.
 class AgentInfoPersistance
@@ -12,7 +12,7 @@ class AgentInfoPersistance
 public:
     /// @brief Constructs the persistence manager for agent info, initializing the database and tables if necessary.
     /// @param dbFolderPath Path to the database folder.
-    explicit AgentInfoPersistance(const std::string& dbFolderPath);
+    explicit AgentInfoPersistance(const std::string& dbFolderPath, std::unique_ptr<Persistence> persistence = nullptr);
 
     /// @brief Destructor for AgentInfoPersistance.
     ~AgentInfoPersistance();
