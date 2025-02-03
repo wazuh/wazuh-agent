@@ -1,0 +1,23 @@
+name: 'Run Docker run command'
+description: 'Run Docker run command'
+inputs:
+  docker_image_name:
+    description: 'Used image name'
+    required: true
+  docker_image_tag:
+    description: 'Used image tag'
+    required: true
+  arguments:
+    description: 'Docker command additional arguments'
+    required: true
+  container_name:
+    description: 'Used container name'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Run Docker run command
+      shell: bash
+      run: |
+        sudo docker run ${{ inputs.arguments }} --name ${{ inputs.container_name }} \
+          ${{ inputs.docker_image_name }}:${{ inputs.docker_image_tag }}

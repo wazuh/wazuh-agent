@@ -1,0 +1,17 @@
+name: 'Run Docker exec command'
+description: 'Run Docker exec command'
+inputs:
+  container_name:
+    description: 'Used container name'
+    required: true
+  commands:
+    description: 'Commands to be run'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Run Docker exec command
+      shell: bash
+      run: |
+        sudo docker exec ${{ inputs.container_name }} bash -c \
+          "${{ inputs.commands }}"

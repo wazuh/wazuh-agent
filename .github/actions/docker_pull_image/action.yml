@@ -5,7 +5,7 @@ inputs:
     description: 'User to access ghcr repositoy'
     required: true
   gh_token:
-    description: 'User's token'
+    description: 'User token'
     required: true
   docker_image_name:
     description: 'Built image name'
@@ -19,6 +19,6 @@ runs:
     - name: Pull image from ghcr
       shell: bash
       run: |
-        .github/actions/docker_pull_image/pull_image_from_ghcr.sh \
+        sudo bash .github/actions/docker_pull_image/pull_image_from_ghcr.sh \
           ${{ inputs.gh_token }} ${{ inputs.gh_user}} \
           ${{ inputs.docker_image_name }} ${{ inputs.docker_image_tag }}
