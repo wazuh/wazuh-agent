@@ -14,12 +14,6 @@
 #include "file_op.h"
 #include "pal.h"
 #include "shared.h"
-<<<<<<< Updated upstream
-#include "pal.h"
-#include "file_op.h"
-=======
-#include "version_op.h"
->>>>>>> Stashed changes
 
 #include <zlib.h>
 
@@ -1184,6 +1178,7 @@ int mkstemp_ex(char* tmp_path)
 
 <<<<<<< Updated upstream
 =======
+
 /* Get uname. Memory must be freed after use */
 const char* getuname()
 {
@@ -1631,9 +1626,11 @@ cleanup:
 
 <<<<<<< Updated upstream
 
-void w_ch_exec_dir() {
-    TCHAR path[2048] = { 0 };
+void w_ch_exec_dir()
+{
+    TCHAR path[2048] = {0};
 =======
+
 const char* getuname()
 {
     int ret_size = OS_SIZE_1024 - 2;
@@ -2936,8 +2933,10 @@ int w_ref_parent_folder(const char* path)
 
 <<<<<<< Updated upstream
 
-wino_t get_fp_inode(FILE * fp) {
+wino_t get_fp_inode(FILE* fp)
+{
 =======
+
 cJSON* getunameJSON()
 {
     os_info* read_info;
