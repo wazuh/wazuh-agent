@@ -21,7 +21,7 @@ TEST_F(StdFileSystemHelperTest, FilesystemExpandSimpleWildcard)
     std::deque<std::string> output;
     std::unordered_map<std::string, uint32_t> outputMap;
 
-    Utils::expandAbsolutePath(PATH_TO_EXPAND_1, output);
+    FileSystem::expand_absolute_path(PATH_TO_EXPAND_1, output);
 
     for (const auto& item : output)
     {
@@ -39,7 +39,7 @@ TEST_F(StdFileSystemHelperTest, FilesystemExpandWildcard)
     std::deque<std::string> output;
     std::unordered_map<std::string, uint32_t> outputMap;
 
-    Utils::expandAbsolutePath(PATH_TO_EXPAND_2, output);
+    FileSystem::expand_absolute_path(PATH_TO_EXPAND_2, output);
 
     for (const auto& item : output)
     {
@@ -59,7 +59,7 @@ TEST_F(StdFileSystemHelperTest, FilesystemExpandWildcardWithPrefix)
     std::deque<std::string> output;
     std::unordered_map<std::string, uint32_t> outputMap;
 
-    Utils::expandAbsolutePath(PATH_TO_EXPAND_3, output);
+    FileSystem::expand_absolute_path(PATH_TO_EXPAND_3, output);
 
     for (const auto& item : output)
     {
@@ -78,7 +78,7 @@ TEST_F(StdFileSystemHelperTest, FilesystemExpandWildcardWithSuffix)
     constexpr auto PATH_MATCH_SIZE { 2u };
     std::deque<std::string> output;
     std::unordered_map<std::string, uint32_t> outputMap;
-    Utils::expandAbsolutePath(PATH_TO_EXPAND_4, output);
+    FileSystem::expand_absolute_path(PATH_TO_EXPAND_4, output);
 
     for (const auto& item : output)
     {
@@ -95,7 +95,7 @@ TEST_F(StdFileSystemHelperTest, FilesystemExpandWildcardWithQuestionMark)
     constexpr auto PATH_MATCH_SIZE { 2u };
     std::deque<std::string> output;
     std::unordered_map<std::string, uint32_t> outputMap;
-    Utils::expandAbsolutePath(PATH_TO_EXPAND_5, output);
+    FileSystem::expand_absolute_path(PATH_TO_EXPAND_5, output);
 
     for (const auto& item : output)
     {
@@ -112,7 +112,7 @@ TEST_F(StdFileSystemHelperTest, FilesystemExpandWildcardWithQuestionMark2)
     constexpr auto PATH_MATCH_SIZE { 2u };
     std::deque<std::string> output;
     std::unordered_map<std::string, uint32_t> outputMap;
-    Utils::expandAbsolutePath(PATH_TO_EXPAND_6, output);
+    FileSystem::expand_absolute_path(PATH_TO_EXPAND_6, output);
 
     for (const auto& item : output)
     {

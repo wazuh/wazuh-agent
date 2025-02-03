@@ -34,6 +34,13 @@ TEST_F(NPMTest, getPackages_ValidPackagesTest)
     bool foundPackage1 = false;
     bool foundPackage2 = false;
 
+    std::set<std::string> folders = {"/fake"};
+
+    EXPECT_CALL(*npm, expand_absolute_path(_, _))
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
+            out.push_back(base + "/node_modules");
+        });
+
     auto callback = [&](nlohmann::json & json)
     {
         if (json.at("name") == "TestPackage1" && json.at("version") == "1.0.0")
@@ -45,8 +52,6 @@ TEST_F(NPMTest, getPackages_ValidPackagesTest)
             foundPackage2 = true;
         }
     };
-
-    std::set<std::string> folders = {"/fake"};
 
     npm->getPackages(folders, callback);
 
@@ -88,6 +93,11 @@ TEST_F(NPMTest, getPackages_NoPackageJsonTest)
 
     std::set<std::string> folders = {"/fake"};
 
+    EXPECT_CALL(*npm, expand_absolute_path(_, _))
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
+            out.push_back(base + "/node_modules");
+        });
+
     npm->getPackages(folders, [&](nlohmann::json&)
     {
         callbackCalled = true;
@@ -111,6 +121,11 @@ TEST_F(NPMTest, getPackages_InvalidPackageJsonNameTest)
 
     std::set<std::string> folders = {"/fake"};
 
+    EXPECT_CALL(*npm, expand_absolute_path(_, _))
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
+            out.push_back(base + "/node_modules");
+        });
+
     npm->getPackages(folders, [&](nlohmann::json&)
     {
         callbackCalled = true;
@@ -133,6 +148,11 @@ TEST_F(NPMTest, getPackages_InvalidPackageJsonVersionTest)
     bool callbackCalled = false;
 
     std::set<std::string> folders = {"/fake"};
+
+    EXPECT_CALL(*npm, expand_absolute_path(_, _))
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
+            out.push_back(base + "/node_modules");
+        });
 
     npm->getPackages(folders, [&](nlohmann::json&)
     {
@@ -160,6 +180,11 @@ TEST_F(NPMTest, getPackages_ValidPackageJson2Test)
     bool callbackCalledSecond = false;
 
     std::set<std::string> folders = {"/fake"};
+
+    EXPECT_CALL(*npm, expand_absolute_path(_, _))
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
+            out.push_back(base + "/node_modules");
+        });
 
     npm->getPackages(folders,
                      [&](nlohmann::json & j)

@@ -12,7 +12,6 @@
 #ifndef _PACKAGES_NPM_HPP
 #define _PACKAGES_NPM_HPP
 
-#include "stdFileSystemHelper.hpp"
 #include "filesystem.hpp"
 #include <nlohmann/json.hpp>
 #include "jsonIO.hpp"
@@ -124,7 +123,7 @@ class NPM final
                     std::deque<std::string> expandedPaths;
 
                     // Expand paths
-                    Utils::expandAbsolutePath(osRootFolder, expandedPaths);
+                    TFileSystem::expand_absolute_path(osRootFolder, expandedPaths);
                     // Explore expanded paths
                     exploreExpandedPaths(expandedPaths, callback);
                 }

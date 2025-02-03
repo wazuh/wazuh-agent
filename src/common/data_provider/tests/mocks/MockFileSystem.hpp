@@ -16,6 +16,8 @@
 #include "gmock/gmock.h"
 #include <filesystem>
 
+#include <deque>
+
 template <typename T>
 class MockFileSystem
 {
@@ -24,6 +26,7 @@ class MockFileSystem
         MOCK_METHOD(bool, is_regular_file, (const std::filesystem::path&), ());
         MOCK_METHOD(bool, is_directory, (const std::filesystem::path&), ());
         MOCK_METHOD(T, directory_iterator, (const std::filesystem::path&), ());
+        MOCK_METHOD(void, expand_absolute_path, (const std::string& path, std::deque<std::string>& output), ());
 };
 
 #endif  // _MOCKFILESYSTEM_HPP

@@ -38,6 +38,11 @@ TEST_F(PYPITest, getPackagesTest)
 
     std::set<std::string> folders = { "/usr/local/lib/python3.9/site-packages" };
 
+    EXPECT_CALL(*pypi, expand_absolute_path(_, _))
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
+            out.push_back(base + "/fake");
+        });
+
     pypi->getPackages(folders, callback);
 
     EXPECT_TRUE(capturedJson.empty());
@@ -61,6 +66,11 @@ TEST_F(PYPITest, getPackages_NoFilesInDirectoryTest)
 
     std::set<std::string> folders = { "/usr/local/lib/python3.9/site-packages" };
 
+    EXPECT_CALL(*pypi, expand_absolute_path(_, _))
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
+            out.push_back(base + "/fake");
+        });
+
     pypi->getPackages(folders, callback);
 
     EXPECT_TRUE(capturedJson.empty());
@@ -68,10 +78,9 @@ TEST_F(PYPITest, getPackages_NoFilesInDirectoryTest)
 
 TEST_F(PYPITest, getPackages_NonDirectoryPathTest)
 {
-    EXPECT_CALL(*pypi, exists(_))
-    .WillRepeatedly(Return(true));
-    EXPECT_CALL(*pypi, is_directory(_))
-    .WillRepeatedly(Return(false));
+    EXPECT_CALL(*pypi, exists(_)).WillRepeatedly(Return(true));
+    EXPECT_CALL(*pypi, is_directory(_)).WillRepeatedly(Return(false));
+
 
     std::set<std::string> folders = { "/usr/local/lib/python3.9/site-packages" };
     nlohmann::json capturedJson;
@@ -79,7 +88,14 @@ TEST_F(PYPITest, getPackages_NonDirectoryPathTest)
     {
         capturedJson = j;
     };
+
+    EXPECT_CALL(*pypi, expand_absolute_path(_, _))
+    .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
+        out.push_back(base + "/fake");
+    });
+
     pypi->getPackages(folders, callback);
+
     EXPECT_TRUE(capturedJson.empty());
 }
 
@@ -108,6 +124,11 @@ TEST_F(PYPITest, getPackages_OneValidPackageTestEggInfo)
     };
 
     std::set<std::string> folders = { "/usr/local/lib/python3.9/site-packages" };
+
+    EXPECT_CALL(*pypi, expand_absolute_path(_, _))
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
+            out.push_back(base + "/fake");
+        });
 
     pypi->getPackages(folders, callback);
 
@@ -141,6 +162,11 @@ TEST_F(PYPITest, getPackages_OneValidPackageTestNoRegularFileDistInfo)
 
     std::set<std::string> folders = { "/usr/local/lib/python3.9/site-packages" };
 
+    EXPECT_CALL(*pypi, expand_absolute_path(_, _))
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
+            out.push_back(base + "/fake");
+        });
+
     pypi->getPackages(folders, callback);
 
     EXPECT_EQ(capturedJson.at("name"), "TestPackage");
@@ -173,6 +199,11 @@ TEST_F(PYPITest, getPackages_OneValidPackageTestDistInfo)
 
     std::set<std::string> folders = { "/usr/local/lib/python3.9/site-packages" };
 
+    EXPECT_CALL(*pypi, expand_absolute_path(_, _))
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
+            out.push_back(base + "/fake");
+        });
+
     pypi->getPackages(folders, callback);
 
     EXPECT_EQ(capturedJson.at("name"), "TestPackage");
@@ -204,6 +235,11 @@ TEST_F(PYPITest, getPackages_OneValidPackageTestNoRegularFileEggInfo)
     };
 
     std::set<std::string> folders = { "/usr/local/lib/python3.9/site-packages" };
+
+    EXPECT_CALL(*pypi, expand_absolute_path(_, _))
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
+            out.push_back(base + "/fake");
+        });
 
     pypi->getPackages(folders, callback);
 
@@ -258,6 +294,11 @@ TEST_F(PYPITest, getPackages_MultipleValidPackagesTest)
 
     std::set<std::string> folders = { "/usr/local/lib/python3.9/site-packages" };
 
+    EXPECT_CALL(*pypi, expand_absolute_path(_, _))
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
+            out.push_back(base + "/fake");
+        });
+
     pypi->getPackages(folders, callback);
 
     EXPECT_TRUE(foundPackage1);
@@ -291,6 +332,11 @@ TEST_F(PYPITest, getPackages_InvalidPackageTest_NoLines)
 
     std::set<std::string> folders = { "/usr/local/lib/python3.9/site-packages" };
 
+    EXPECT_CALL(*pypi, expand_absolute_path(_, _))
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
+            out.push_back(base + "/fake");
+        });
+
     pypi->getPackages(folders, callback);
 
     EXPECT_TRUE(capturedJson.empty());
@@ -322,6 +368,11 @@ TEST_F(PYPITest, getPackages_InvalidPackageTest_InvalidLines)
     };
 
     std::set<std::string> folders = { "/usr/local/lib/python3.9/site-packages" };
+
+    EXPECT_CALL(*pypi, expand_absolute_path(_, _))
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
+            out.push_back(base + "/fake");
+        });
 
     pypi->getPackages(folders, callback);
 
@@ -355,6 +406,11 @@ TEST_F(PYPITest, getPackages_InvalidPackageTest_MissingName)
 
     std::set<std::string> folders = { "/usr/local/lib/python3.9/site-packages" };
 
+    EXPECT_CALL(*pypi, expand_absolute_path(_, _))
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
+            out.push_back(base + "/fake");
+        });
+
     pypi->getPackages(folders, callback);
 
     EXPECT_TRUE(capturedJson.empty());
@@ -386,6 +442,11 @@ TEST_F(PYPITest, getPackages_InvalidPackageTest_MissingVersion)
     };
 
     std::set<std::string> folders = { "/usr/local/lib/python3.9/site-packages" };
+
+    EXPECT_CALL(*pypi, expand_absolute_path(_, _))
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
+            out.push_back(base + "/fake");
+        });
 
     pypi->getPackages(folders, callback);
 

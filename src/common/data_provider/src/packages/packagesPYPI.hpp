@@ -13,7 +13,6 @@
 #define _PACKAGES_PYPI_HPP
 
 #include "fileIO.hpp"
-#include "stdFileSystemHelper.hpp"
 #include "filesystem.hpp"
 #include <nlohmann/json.hpp>
 #include "sharedDefs.h"
@@ -144,7 +143,7 @@ class PYPI final : public TFileSystem, public TFileIO
                 try
                 {
                     // Expand paths
-                    Utils::expandAbsolutePath(osFolder, expandedPaths);
+                    TFileSystem::expand_absolute_path(osFolder, expandedPaths);
                     // Explore expanded paths
                     exploreExpandedPaths(expandedPaths, callback);
                 }

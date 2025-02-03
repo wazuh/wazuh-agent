@@ -56,5 +56,10 @@ namespace filesystem
         /// @param path The file or directory to remove.
         /// @return Returns true if the file or directory was successfully removed, otherwise false.
         bool remove(const std::filesystem::path& path) const override;
+
+        /// @brief Expands the absolute path of a file or directory.
+        /// @param path The path to expand.
+        /// @param output The deque to store the expanded path.
+        void expand_absolute_path(const std::string& path, std::deque<std::string>& output) const override;
     };
 }
