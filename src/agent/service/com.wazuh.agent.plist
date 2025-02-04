@@ -23,6 +23,6 @@
          <true/>
 
          <key>KeepAlive</key>
-         <true/>
+         <false/>
      </dict>
  </plist>
