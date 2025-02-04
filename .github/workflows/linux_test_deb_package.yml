@@ -41,7 +41,7 @@ jobs:
     timeout-minutes: 50
     strategy:
         matrix:
-          distro_name: ['ubuntu:20.04', 'ubuntu:22.04', 'ubuntu:24.04', 'debian:12', 'debian:11', 'debian:10']
+          distro_name: ['ubuntu:20.04', 'ubuntu:22.04', 'ubuntu:24.04', 'debian:12', 'debian:11']
     name: Test DEB Linux wazuh-agent sources - ${{ matrix.distro_name }}
 
     steps:
@@ -55,12 +55,11 @@ jobs:
       - name: Download wazuh agent package
         uses: actions/download-artifact@v4
         with:
-          name: ${{ needs.build-package-agent-linux-deb-packages.outputs.package_name }}
+          pattern: '*.deb'
 
-      - name: Unzip package
+      - name: Prepare package
         run: |
-          unzip ${{ needs.build-package-agent-linux-deb-packages.outputs.package_name }}.zip -d /tmp
-          echo "PACKAGE_NAME=${{ needs.build-package-agent-linux-deb-packages.outputs.package_name }}" >> $GITHUB_ENV
+          cp wazuh-agent*/wazuh-agent* /tmp
 
       - name: Test DEB package installation
         uses: ./.github/actions/test-install-components

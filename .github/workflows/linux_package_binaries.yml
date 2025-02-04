@@ -98,8 +98,6 @@ jobs:
   Build-agent-linux-packages:
     runs-on: ${{ (inputs.architecture == 'arm64' || inputs.architecture == 'aarch64') && 'wz-linux-arm64' || 'ubuntu-latest' }}
     timeout-minutes: 25
-    outputs:
-        package_name: ${{ steps.package-built.outputs.PACKAGE_NAME }}
     name: Package Wazuh agent binaries Linux ${{ inputs.architecture }} - ${{ inputs.system }}  - agent packages ${{ inputs.is_stage && ' - is stage' || '' }}${{ inputs.checksum && ' - checksum' || '' }} - ${{ inputs.id }}
     
     steps:
@@ -129,7 +127,6 @@ jobs:
           docker_image_tag: ${{ env.TAG }}
 
       - name: Build ${{ inputs.system }} wazuh-agent on ${{ env.ARCH }}
-        id: package-built
         run: |
           REVISION=${{ inputs.revision }}
           FLAGS="--verbose -s /tmp --dont-build-docker -j $(nproc) "
@@ -139,7 +136,13 @@ jobs:
           echo "generate_package.sh -a ${{ env.ARCH }} --tag ${{ env.TAG }} --system ${{ inputs.system }} $FLAGS"
           sudo bash packages/generate_package.sh -a ${{ env.ARCH }} --tag ${{ env.TAG }} --system ${{ inputs.system }} $FLAGS
           echo "PACKAGE_NAME=$(find /tmp -maxdepth 1 -type f -name *agent*.${{ inputs.system }} -exec basename {} 2>/dev/null \;| grep -v -E "^(wazuh-agent-dbg|wazuh-agent-debuginfo)")" | tee -a $GITHUB_ENV
-          echo "PACKAGE_NAME=$(find /tmp -maxdepth 1 -type f -name *agent*.${{ inputs.system }} -exec basename {} 2>/dev/null \;| grep -v -E "^(wazuh-agent-dbg|wazuh-agent-debuginfo)")" >> $GITHUB_OUTPUT
+
+      - name: Test package installation
+        uses: ./.github/actions/test-install-components
+        with:
+          system: ${{ inputs.system }}
+          architecture: ${{ (inputs.architecture == 'arm64' || inputs.architecture == 'aarch64') && 'arm64' || 'amd64' }}
+          tested_docker: ${{ inputs.system == 'deb' && 'ubuntu:22.04' || 'rockylinux:9' }}
 
       - name: Set up AWS CLI
         if: ${{ inputs.upload_to_s3 }}

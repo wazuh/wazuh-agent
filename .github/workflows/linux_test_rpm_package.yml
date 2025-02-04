@@ -55,12 +55,11 @@ jobs:
       - name: Download wazuh agent package
         uses: actions/download-artifact@v4
         with:
-          name: ${{ needs.build-package-agent-linux-rpm-packages.outputs.package_name }}
+          pattern: '*.rpm'
 
-      - name: Unzip package
+      - name: Prepare package
         run: |
-          unzip ${{ needs.build-package-agent-linux-deb-packages.outputs.package_name }}.zip -d /tmp
-          echo "PACKAGE_NAME=${{ needs.build-package-agent-linux-deb-packages.outputs.package_name }}" >> $GITHUB_ENV
+          cp wazuh-agent*/wazuh-agent* /tmp
 
       - name: Test RPM package installation
         uses: ./.github/actions/test-install-components

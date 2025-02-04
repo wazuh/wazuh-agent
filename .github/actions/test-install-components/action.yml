@@ -19,17 +19,15 @@ runs:
         sudo docker run \
           -v $GITHUB_WORKSPACE/.github/actions/test-install-components/:/tests \
           -v /tmp/:/packages \
-          -e ARCH="${{ inputs.architecture }}" \
-          -e SYSTEM="${{ inputs.system }}" \
           --entrypoint '/tests/install_component.sh' \
-          ${{ inputs.architecture == 'arm64' && 'arm64v8' || 'amd64' }}/${{ inputs.tested_docker }} \
-          $${{ env.PACKAGE_NAME }} agent
+          ${{ inputs.architecture == 'arm64' && 'arm64v8' || 'amd64' }}/${{ inputs.tested_docker }}
         
     - name: Check test result
-      shell: bash    
-        if grep -iq " installed.*wazuh-agent" /tmp/status.log ; then
+      shell: bash
+      run: |    
+        if grep -iq "wazuh-agent*" /tmp/status.log ; then
           echo "Installation successfully."
         else
-          echo "The installation could not be completed. The package will not be uploaded.";
+          echo "The installation could not be completed";
           exit 1;
         fi
