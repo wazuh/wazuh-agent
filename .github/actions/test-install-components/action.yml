@@ -1,0 +1,35 @@
+name: 'Test install Wazuh agent package'
+description: 'Test install Wazuh agent package'
+inputs:
+  system:
+    description: 'Package system [DEB, RPM]'
+    required: true
+  architecture:
+    description: 'Package architecture'
+    required: true
+  tested_docker:
+    description: 'image:tag of tested Docker'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Run test install Wazuh agent package
+      shell: bash
+      run: |
+        sudo docker run \
+          -v $GITHUB_WORKSPACE/.github/actions/test-install-components/:/tests \
+          -v /tmp/:/packages \
+          -e ARCH="${{ inputs.architecture }}" \
+          -e SYSTEM="${{ inputs.system }}" \
+          --entrypoint '/tests/install_component.sh' \
+          ${{ inputs.architecture == 'arm64' && 'arm64v8' || 'amd64' }}/${{ inputs.tested_docker }} \
+          $${{ env.PACKAGE_NAME }} agent
+        
+    - name: Check test result
+      shell: bash    
+        if grep -iq " installed.*wazuh-agent" /tmp/status.log ; then
+          echo "Installation successfully."
+        else
+          echo "The installation could not be completed. The package will not be uploaded.";
+          exit 1;
+        fi

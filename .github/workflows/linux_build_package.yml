@@ -133,3 +133,21 @@ jobs:
       source_reference: ${{ inputs.source_reference }}
       upload_to_s3: false
       id: ${{ inputs.id }}
+
+  test-package-agent-linux-deb-packages:
+    needs: build-package-agent-linux-deb-packages
+    if: ${{ inputs.system == 'deb' ||  inputs.system == 'both'  }}
+    uses: wazuh/wazuh-agent/.github/workflows/linux_test_deb_package.yml@enhancement/137-pkg-build-trigger
+    with:
+      architecture: ${{ inputs.architecture }}
+      source_reference: ${{ inputs.source_reference }}
+      id: ${{ inputs.id }}
+      
+  test-package-agent-linux-rpm-packages:
+    needs: build-package-agent-linux-rpm-packages
+    if: ${{ inputs.system == 'rpm' ||  inputs.system == 'both'  }}
+    uses: wazuh/wazuh-agent/.github/workflows/linux_test_rpm_package.yml@enhancement/137-pkg-build-trigger
+    with:
+      architecture: ${{ inputs.architecture }}
+      source_reference: ${{ inputs.source_reference }}
+      id: ${{ inputs.id }}  

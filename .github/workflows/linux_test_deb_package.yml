@@ -1,0 +1,70 @@
+run-name: Test DEB Wazuh agent Linux package - ${{ inputs.architecture }} - ${{ inputs.source_reference }} - ${{ inputs.id }}
+name: Test DEB Wazuh agent Linux package
+
+on:
+  workflow_dispatch:
+    inputs:
+      architecture:
+        type: choice
+        description: Package architecture [amd64, arm64, x86_64, aarch64].
+        required: true
+        options:
+          - amd64
+          - arm64
+          - x86_64
+          - aarch64
+      source_reference:
+        description: |
+          Branch from wazuh/wazuh-agent repository to use.
+        required: true
+      id:
+        type: string
+        description: |
+          ID used to identify the workflow uniquely.
+        required: false
+
+  workflow_call:
+    inputs:
+      architecture:
+        type: string
+        required: true
+      source_reference:
+        type: string
+        required: true
+      id:
+        type: string
+        required: false
+
+jobs:
+  build-binaries-agent-linux:
+    runs-on: ${{ (inputs.architecture == 'arm64' || inputs.architecture == 'aarch64') && 'wz-linux-arm64' || 'ubuntu-latest' }}
+    timeout-minutes: 50
+    strategy:
+        matrix:
+          distro_name: ['ubuntu:20.04', 'ubuntu:22.04', 'ubuntu:24.04', 'debian:12', 'debian:11', 'debian:10']
+    name: Test DEB Linux wazuh-agent sources - ${{ matrix.distro_name }}
+
+    steps:
+      - name: Checkout the wazuh-agent repository
+        uses: actions/checkout@v4
+        with:
+          repository: wazuh/wazuh-agent
+          ref: ${{ inputs.source_reference }}
+          persist-credentials: false
+
+      - name: Download wazuh agent package
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build-package-agent-linux-deb-packages.outputs.package_name }}
+
+      - name: Unzip package
+        run: |
+          unzip ${{ needs.build-package-agent-linux-deb-packages.outputs.package_name }}.zip -d /tmp
+          echo "PACKAGE_NAME=${{ needs.build-package-agent-linux-deb-packages.outputs.package_name }}" >> $GITHUB_ENV
+
+      - name: Test DEB package installation
+        uses: ./.github/actions/test-install-components
+        with:
+          system: deb
+          architecture: ${{ (inputs.architecture == 'arm64' || inputs.architecture == 'aarch64') && 'arm64' || 'amd64' }}
+          tested_docker: ${{ matrix.distro_name }}

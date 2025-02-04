@@ -99,7 +99,7 @@ jobs:
     runs-on: ${{ (inputs.architecture == 'arm64' || inputs.architecture == 'aarch64') && 'wz-linux-arm64' || 'ubuntu-latest' }}
     timeout-minutes: 25
     outputs:
-        output1: ${{ steps.package-built.outputs.PACKAGE_NAME }}
+        package_name: ${{ steps.package-built.outputs.PACKAGE_NAME }}
     name: Package Wazuh agent binaries Linux ${{ inputs.architecture }} - ${{ inputs.system }}  - agent packages ${{ inputs.is_stage && ' - is stage' || '' }}${{ inputs.checksum && ' - checksum' || '' }} - ${{ inputs.id }}
     
     steps:
