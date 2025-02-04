@@ -1,5 +1,5 @@
-run-name: Test RPM Wazuh agent Linux package - ${{ inputs.architecture }} - ${{ inputs.source_reference }} - ${{ inputs.id }}
-name: Test RPM Wazuh agent Linux package
+run-name: Test DEB Wazuh agent Linux package - ${{ inputs.architecture }} - ${{ inputs.source_reference }} - ${{ inputs.id }}
+name: Test DEB Wazuh agent Linux package
 
 on:
   workflow_call:
@@ -8,6 +8,12 @@ on:
         type: string
         required: true
       source_reference:
+        type: string
+        required: true
+      system:
+        type: string
+        required: true    
+      tested_distros:
         type: string
         required: true
       id:
@@ -20,8 +26,8 @@ jobs:
     timeout-minutes: 50
     strategy:
         matrix:
-          distro_name: ['fedora:42', 'fedora:41', 'amazonlinux:2023', 'amazonlinux:2', 'redhat/ubi8']
-    name: Test RPM Linux wazuh-agent package - ${{ matrix.distro_name }}
+          distro_name: ${{ fromJSON(inputs.tested_distros)}}
+    name: Test DEB Linux wazuh-agent package - ${{ matrix.distro_name }}
 
     steps:
       - name: Checkout the wazuh-agent repository
@@ -34,14 +40,14 @@ jobs:
       - name: Download wazuh agent package
         uses: actions/download-artifact@v4
         with:
-          pattern: '*.rpm'
+          pattern: '*.${{ inputs.system }}'
 
       - name: Prepare package
         run: |
           cp wazuh-agent*/wazuh-agent* /tmp
 
-      - name: Test RPM package installation
+      - name: Test DEB package installation
         uses: ./.github/actions/test-install-components
         with:
-          system: rpm
+          system: ${{ inputs.system }}
           tested_docker: ${{ matrix.distro_name }}

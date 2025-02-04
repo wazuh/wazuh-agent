@@ -58,6 +58,14 @@ on:
             Default is 'false'.
           default: false
           required: false
+        extensive_testing:
+          type: boolean
+          description: |
+            Run final extensive testing stage intalling 
+            the package in different docker images.
+            Default is 'false'.
+          default: false
+          required: false
         id:
           type: string
           description: |
@@ -91,6 +99,9 @@ on:
         upload_to_s3:
           type: boolean
           required: true
+        extensive_testing:
+          type: boolean
+          required: false
         id:
           type: string
           required: false
@@ -136,18 +147,22 @@ jobs:
 
   test-package-agent-linux-deb-packages:
     needs: build-package-agent-linux-deb-packages
-    if: ${{ inputs.system == 'deb' ||  inputs.system == 'both' }}
-    uses: wazuh/wazuh-agent/.github/workflows/linux_test_deb_package.yml@enhancement/137-pkg-build-trigger
+    if: ${{ inputs.extensive_testing && (inputs.system == 'deb' ||  inputs.system == 'both') }}
+    uses: wazuh/wazuh-agent/.github/workflows/linux_test_package.yml@enhancement/137-pkg-build-trigger
     with:
       architecture: ${{ inputs.architecture }}
       source_reference: ${{ inputs.source_reference }}
+      system: deb
+      tested_distros: '["ubuntu:20.04", "ubuntu:24.04", "debian:12", "debian:11"]'
       id: ${{ inputs.id }}
       
   test-package-agent-linux-rpm-packages:
     needs: build-package-agent-linux-rpm-packages
-    if: ${{ inputs.system == 'rpm' ||  inputs.system == 'both' }}
-    uses: wazuh/wazuh-agent/.github/workflows/linux_test_rpm_package.yml@enhancement/137-pkg-build-trigger
+    if: ${{ inputs.extensive_testing && (inputs.system == 'rpm' ||  inputs.system == 'both') }}
+    uses: wazuh/wazuh-agent/.github/workflows/linux_test_package.yml@enhancement/137-pkg-build-trigger
     with:
       architecture: ${{ inputs.architecture }}
       source_reference: ${{ inputs.source_reference }}
+      system: rpm
+      tested_distros: '["fedora:42", "fedora:41", "amazonlinux:2023", "amazonlinux:2", "redhat/ubi8"]'
       id: ${{ inputs.id }}  
