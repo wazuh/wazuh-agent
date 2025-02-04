@@ -11,25 +11,25 @@
 /* Functions to handle operation with files
  */
 
-#include "shared.h"
-#include "pal.h"
 #include "file_op.h"
+#include "pal.h"
+#include "shared.h"
 
 #include <zlib.h>
 
 #ifdef WAZUH_UNIT_TESTING
 #ifdef WIN32
-#include "unit_tests/wrappers/windows/libc/stdio_wrappers.h"
 #include "unit_tests/wrappers/windows/fileapi_wrappers.h"
 #include "unit_tests/wrappers/windows/handleapi_wrappers.h"
+#include "unit_tests/wrappers/windows/libc/stdio_wrappers.h"
 #endif
 #endif
 
 #ifndef WIN32
 #include <regex.h>
 #else
-#include <aclapi.h>
 #include <Shlwapi.h>
+#include <aclapi.h>
 #endif
 
 /* Vista product information */
@@ -389,7 +389,7 @@
 #define FIRST_BUILD_WINDOWS_11 22000
 #endif
 
-#define mkstemp(x) 0
+#define mkstemp(x)  0
 #define mkdir(x, y) mkdir(x)
 #endif /* WIN32 */
 
@@ -397,137 +397,158 @@
 int isVista;
 #endif
 
-const char *__local_name = "unset";
+const char* __local_name = "unset";
 
 /* Set the name of the starting program */
-void OS_SetName(const char *name)
+void OS_SetName(const char* name)
 {
     __local_name = name;
     return;
 }
 
-
-time_t File_DateofChange(const char *file)
+time_t File_DateofChange(const char* file)
 {
     struct stat file_status;
 
-    if (stat(file, &file_status) < 0) {
+    if (stat(file, &file_status) < 0)
+    {
         return (-1);
     }
 
     return (file_status.st_mtime);
 }
 
-
-ino_t File_Inode(const char *file)
+ino_t File_Inode(const char* file)
 {
     struct stat buffer;
     return stat(file, &buffer) ? 0 : buffer.st_ino;
 }
 
-
-int IsDir(const char *file)
+int IsDir(const char* file)
 {
     struct stat file_status;
-    if (stat(file, &file_status) < 0) {
+    if (stat(file, &file_status) < 0)
+    {
         return (-1);
     }
-    if (S_ISDIR(file_status.st_mode)) {
+    if (S_ISDIR(file_status.st_mode))
+    {
         return (0);
     }
     return (-1);
 }
 
-
-int check_path_type(const char *dir)
+#ifndef WIN32
+int check_path_type(const char* dir)
 {
-    DIR *dp;
+    DIR* dp;
     int retval;
 
-    if (dp = opendir(dir), dp) {
+    if (dp = opendir(dir), dp)
+    {
         retval = 2;
         closedir(dp);
-    } else if (errno == ENOTDIR){
+    }
+    else if (errno == ENOTDIR)
+    {
         retval = 1;
-    } else {
+    }
+    else
+    {
         retval = 0;
     }
     return retval;
 }
+#else
+int check_path_type(const char* dir)
+{
+    DWORD attributes = GetFileAttributes(dir);
+    if (attributes == INVALID_FILE_ATTRIBUTES)
+    {
+        return 0;
+    }
 
+    return (attributes & FILE_ATTRIBUTE_DIRECTORY) ? 2 : 1;
+}
+#endif
 
-int IsFile(const char *file) {
+int IsFile(const char* file)
+{
     struct stat buf;
     return (!stat(file, &buf) && S_ISREG(buf.st_mode)) ? 0 : -1;
 }
 
 #ifndef WIN32
 
-int IsSocket(const char * file) {
+int IsSocket(const char* file)
+{
     struct stat buf;
     return (!stat(file, &buf) && S_ISSOCK(buf.st_mode)) ? 0 : -1;
 }
 
-
-int IsLink(const char * file) {
+int IsLink(const char* file)
+{
     struct stat buf;
     return (!lstat(file, &buf) && S_ISLNK(buf.st_mode)) ? 0 : -1;
 }
 
 #endif // WIN32
 
-
-off_t FileSize(const char * path) {
+off_t FileSize(const char* path)
+{
     struct stat buf;
     return stat(path, &buf) ? -1 : buf.st_size;
 }
 
-
 #ifndef WIN32
 
-float DirSize(const char *path) {
-    struct dirent *dir;
+float DirSize(const char* path)
+{
+    struct dirent* dir;
     struct stat buf;
-    DIR *directory;
+    DIR* directory;
     float folder_size = 0.0;
     float file_size = 0.0;
-    char *entry;
+    char* entry;
 
-    if (directory = opendir(path), directory == NULL) {
+    if (directory = opendir(path), directory == NULL)
+    {
         LogDebug("Couldn't open directory '%s'.", path);
         return -1;
     }
 
-    while ((dir = readdir(directory)) != NULL) {
+    while ((dir = readdir(directory)) != NULL)
+    {
         // Ignore . and ..
-        if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0) {
+        if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
+        {
             continue;
         }
 
         os_malloc(strlen(path) + strlen(dir->d_name) + 2, entry);
         snprintf(entry, strlen(path) + 2 + strlen(dir->d_name), "%s/%s", path, dir->d_name);
 
-        if (stat(entry, &buf) == -1) {
+        if (stat(entry, &buf) == -1)
+        {
             os_free(entry);
             closedir(directory);
             return 0;
         }
 
         // Recursion if the path points to a directory
-        switch (buf.st_mode & S_IFMT) {
-        case S_IFDIR:
-            folder_size += DirSize(entry);
-            break;
+        switch (buf.st_mode & S_IFMT)
+        {
+            case S_IFDIR: folder_size += DirSize(entry); break;
 
-        case S_IFREG:
-            if (file_size = FileSize(entry), file_size != -1) {
-                folder_size += file_size;
-            }
+            case S_IFREG:
+                if (file_size = FileSize(entry), file_size != -1)
+                {
+                    folder_size += file_size;
+                }
 
-            break;
+                break;
 
-        default:
-            break;
+            default: break;
         }
 
         os_free(entry);
@@ -538,26 +559,29 @@ float DirSize(const char *path) {
     return folder_size;
 }
 
-int CreatePID(const char *name, int pid)
+int CreatePID(const char* name, int pid)
 {
     char file[256];
-    FILE *fp;
+    FILE* fp;
 
     snprintf(file, 255, "%s/%s-%d.pid", OS_PIDFILE, name, pid);
 
     fp = wfopen(file, "a");
-    if (!fp) {
+    if (!fp)
+    {
         return (-1);
     }
 
     fprintf(fp, "%d\n", pid);
-    if (chmod(file, 0640) != 0) {
+    if (chmod(file, 0640) != 0)
+    {
         LogError(CHMOD_ERROR, file, errno, strerror(errno));
         fclose(fp);
         return (-1);
     }
 
-    if (fclose(fp)) {
+    if (fclose(fp))
+    {
         LogError("Could not write PID file '%s': %s (%d)", file, strerror(errno), errno);
         return -1;
     }
@@ -565,42 +589,46 @@ int CreatePID(const char *name, int pid)
     return (0);
 }
 
-
-char *GetRandomNoise()
+char* GetRandomNoise()
 {
-    FILE *fp;
+    FILE* fp;
     char buf[2048 + 1];
     size_t n;
 
     /* Reading urandom */
     fp = wfopen("/dev/urandom", "r");
-    if(!fp)
+    if (!fp)
     {
-        return(NULL);
+        return (NULL);
     }
 
     n = fread(buf, 1, 2048, fp);
     fclose(fp);
 
-    if (n == 2048) {
+    if (n == 2048)
+    {
         buf[2048] = '\0';
-        return(strdup(buf));
-    } else {
+        return (strdup(buf));
+    }
+    else
+    {
         return NULL;
     }
 }
 
-int DeletePID(const char *name)
+int DeletePID(const char* name)
 {
     char file[256] = {'\0'};
 
     snprintf(file, 255, "%s/%s-%d.pid", OS_PIDFILE, name, (int)getpid());
 
-    if (File_DateofChange(file) < 0) {
+    if (File_DateofChange(file) < 0)
+    {
         return (-1);
     }
 
-    if (unlink(file)) {
+    if (unlink(file))
+    {
         LogError(DELETE_ERROR, file, errno, strerror(errno));
         return (-1);
     }
@@ -609,84 +637,98 @@ int DeletePID(const char *name)
 }
 #endif
 
-void DeleteState() {
+void DeleteState()
+{
     char path[PATH_MAX + 1];
 
-    if (strcmp(__local_name, "unset")) {
+    if (strcmp(__local_name, "unset"))
+    {
 #ifdef WIN32
         snprintf(path, sizeof(path), "%s.state", __local_name);
 #else
         snprintf(path, sizeof(path), OS_PIDFILE "/%s.state", __local_name);
 #endif
         unlink(path);
-    } else {
+    }
+    else
+    {
         LogError("At DeleteState(): __local_name is unset.");
     }
 }
 
-
-int UnmergeFiles(const char *finalpath, const char *optdir, int mode, char ***unmerged_files)
+int UnmergeFiles(const char* finalpath, const char* optdir, int mode, char*** unmerged_files)
 {
     int ret = 1;
     int state_ok;
     int file_count = 0;
     size_t i = 0, n = 0, files_size = 0;
-    char *files;
-    char * copy;
+    char* files;
+    char* copy;
     char final_name[2048 + 1];
     char buf[2048 + 1];
-    char *file_name;
-    FILE *fp;
-    FILE *finalfp;
+    char* file_name;
+    FILE* fp;
+    FILE* finalfp;
 
     finalfp = wfopen(finalpath, mode == OS_BINARY ? "rb" : "r");
-    if (!finalfp) {
+    if (!finalfp)
+    {
         LogError("Unable to read merged file: '%s' due to [(%d)-(%s)].", finalpath, errno, strerror(errno));
         return (0);
     }
 
     /* Finds index of the last element on the list */
-    if (unmerged_files != NULL) {
-        for(file_count = 0; *(*unmerged_files + file_count); file_count++);
+    if (unmerged_files != NULL)
+    {
+        for (file_count = 0; *(*unmerged_files + file_count); file_count++);
     }
 
-    while (1) {
+    while (1)
+    {
         /* Read header portion */
-        if (fgets(buf, sizeof(buf) - 1, finalfp) == NULL) {
+        if (fgets(buf, sizeof(buf) - 1, finalfp) == NULL)
+        {
             break;
         }
 
         /* Initiator */
-        if (buf[0] != '!') {
+        if (buf[0] != '!')
+        {
             continue;
         }
 
         /* Get file size and name */
-        files_size = (size_t) atol(buf + 1);
+        files_size = (size_t)atol(buf + 1);
 
         files = strchr(buf, '\n');
-        if (files) {
+        if (files)
+        {
             *files = '\0';
         }
 
         files = strchr(buf, ' ');
-        if (!files) {
+        if (!files)
+        {
             ret = 0;
             continue;
         }
         files++;
         state_ok = 1;
 
-        if (optdir) {
+        if (optdir)
+        {
             snprintf(final_name, 2048, "%s/%s", optdir, files);
 
             // Check that final_name is inside optdir
 
-            if (w_ref_parent_folder(final_name)) {
+            if (w_ref_parent_folder(final_name))
+            {
                 LogError("Unmerging '%s': unable to unmerge '%s' (it contains '..')", finalpath, final_name);
                 state_ok = 0;
             }
-        } else {
+        }
+        else
+        {
             strncpy(final_name, files, 2048);
             final_name[2048] = '\0';
         }
@@ -694,8 +736,14 @@ int UnmergeFiles(const char *finalpath, const char *optdir, int mode, char ***un
         // Create directory
 
         copy = strdup(final_name);
-
-        if (mkdir_ex(dirname(copy))) {
+#ifndef WIN32
+        char* dir = dirname(copy);
+#else
+        char dir[_MAX_DRIVE + _MAX_DIR];
+        dirname_win(copy, dir);
+#endif
+        if (mkdir_ex(dir))
+        {
             LogError("Unmerging '%s': couldn't create directory '%s'", finalpath, files);
             state_ok = 0;
         }
@@ -704,90 +752,113 @@ int UnmergeFiles(const char *finalpath, const char *optdir, int mode, char ***un
 
         /* Create temporary file */
         unsigned long tmp_file_size = strlen(final_name) + 7;
-        char *tmp_file = malloc(tmp_file_size);
-        if(!tmp_file){
+        char* tmp_file = malloc(tmp_file_size);
+        if (!tmp_file)
+        {
             LogError("Unmerging '%s': could not reserve temporary memory for '%s'", finalpath, files);
             state_ok = 0;
             continue;
         }
         snprintf(tmp_file, tmp_file_size, "%sXXXXXX", final_name);
 
-        if (mkstemp_ex(tmp_file) == -1) {
+        if (mkstemp_ex(tmp_file) == -1)
+        {
             LogError("Unmerging '%s': could not create temporary file for '%s'", finalpath, files);
             state_ok = 0;
         }
 
         /* Open filename */
 
-        if (state_ok) {
+        if (state_ok)
+        {
             fp = wfopen(tmp_file, mode == OS_BINARY ? "wb" : "w");
-            if (!fp) {
+            if (!fp)
+            {
                 ret = 0;
                 LogError("Unable to unmerge file '%s' due to [(%d)-(%s)].", tmp_file, errno, strerror(errno));
             }
-        } else {
+        }
+        else
+        {
             fp = NULL;
             ret = 0;
         }
 
-        if (files_size < sizeof(buf) - 1) {
+        if (files_size < sizeof(buf) - 1)
+        {
             i = files_size;
             files_size = 0;
-        } else {
+        }
+        else
+        {
             i = sizeof(buf) - 1;
             files_size -= sizeof(buf) - 1;
         }
 
-        while ((n = fread(buf, 1, i, finalfp)) > 0) {
+        while ((n = fread(buf, 1, i, finalfp)) > 0)
+        {
             buf[n] = '\0';
 
-            if (fp) {
+            if (fp)
+            {
                 fwrite(buf, n, 1, fp);
             }
 
-            if (files_size == 0) {
+            if (files_size == 0)
+            {
                 break;
-            } else {
-                if (files_size < sizeof(buf) - 1) {
+            }
+            else
+            {
+                if (files_size < sizeof(buf) - 1)
+                {
                     i = files_size;
                     files_size = 0;
-                } else {
+                }
+                else
+                {
                     i = sizeof(buf) - 1;
                     files_size -= sizeof(buf) - 1;
                 }
             }
         }
 
-        if (fp) {
+        if (fp)
+        {
             fclose(fp);
         }
 
         /* Mv to original name */
-        if (rename_ex(tmp_file, final_name) != 0) {
+        if (rename_ex(tmp_file, final_name) != 0)
+        {
             unlink(tmp_file);
             ret = 0;
             break;
         }
 
-        if (unmerged_files != NULL) {
+        if (unmerged_files != NULL)
+        {
             /* Removes path from file name */
             file_name = strrchr(final_name, '/');
-            if (file_name) {
+            if (file_name)
+            {
                 file_name++;
             }
-            else {
+            else
+            {
                 file_name = final_name;
             }
 
             /* Appends file name to unmerged files list */
-            os_realloc(*unmerged_files, (file_count + 2) * sizeof(char *), *unmerged_files);
+            os_realloc(*unmerged_files, (file_count + 2) * sizeof(char*), *unmerged_files);
             os_strdup(file_name, *(*unmerged_files + file_count));
             file_count++;
         }
         free(tmp_file);
     }
 
-    if (unmerged_files != NULL) {
+    if (unmerged_files != NULL)
+    {
         *(*unmerged_files + file_count) = NULL;
     }
 
@@ -795,148 +866,172 @@ int UnmergeFiles(const char *finalpath, const char *optdir, int mode, char ***un
     return (ret);
 }
 
-
-int TestUnmergeFiles(const char *finalpath, int mode)
+int TestUnmergeFiles(const char* finalpath, int mode)
 {
     int ret = 1;
-    size_t i = 0, n = 0, files_size = 0, read_bytes = 0,data_size = 0;
-    char *files;
+    size_t i = 0, n = 0, files_size = 0, read_bytes = 0, data_size = 0;
+    char* files;
     char buf[2048 + 1];
-    FILE *finalfp;
+    FILE* finalfp;
 
     finalfp = wfopen(finalpath, mode == OS_BINARY ? "rb" : "r");
-    if (!finalfp) {
+    if (!finalfp)
+    {
         LogError("Unable to read merged file: '%s'.", finalpath);
         return (0);
     }
 
-    while (1) {
+    while (1)
+    {
         /* Read header portion */
-        if (fgets(buf, sizeof(buf) - 1, finalfp) == NULL) {
+        if (fgets(buf, sizeof(buf) - 1, finalfp) == NULL)
+        {
             break;
         }
 
         /* Initiator */
-        switch(buf[0]) {
-            case '#':
-                continue;
-            case '!':
-                goto parse;
-            default:
-                ret = 0;
-                goto end;
+        switch (buf[0])
+        {
+            case '#': continue;
+            case '!': goto parse;
+            default: ret = 0; goto end;
         }
 
-parse:
+    parse:
         /* Get file size and name */
-        files_size = (size_t) atol(buf + 1);
+        files_size = (size_t)atol(buf + 1);
         data_size = files_size;
 
         files = strchr(buf, '\n');
-        if (files) {
+        if (files)
+        {
             *files = '\0';
         }
 
         files = strchr(buf, ' ');
-        if (!files) {
+        if (!files)
+        {
             ret = 0;
             continue;
         }
         files++;
 
         /* Check for file name */
-        if(*files == '\0') {
+        if (*files == '\0')
+        {
             ret = 0;
             goto end;
         }
 
-        if (files_size < sizeof(buf) - 1) {
+        if (files_size < sizeof(buf) - 1)
+        {
             i = files_size;
             files_size = 0;
-        } else {
+        }
+        else
+        {
             i = sizeof(buf) - 1;
             files_size -= sizeof(buf) - 1;
         }
 
         read_bytes = 0;
-        while ((n = fread(buf, 1, i, finalfp)) > 0) {
+        while ((n = fread(buf, 1, i, finalfp)) > 0)
+        {
             buf[n] = '\0';
             read_bytes += n;
 
-            if (files_size == 0) {
+            if (files_size == 0)
+            {
                 break;
-            } else {
-                if (files_size < sizeof(buf) - 1) {
+            }
+            else
+            {
+                if (files_size < sizeof(buf) - 1)
+                {
                     i = files_size;
                     files_size = 0;
-                } else {
+                }
+                else
+                {
                     i = sizeof(buf) - 1;
                     files_size -= sizeof(buf) - 1;
                 }
             }
         }
 
-        if(read_bytes != data_size){
+        if (read_bytes != data_size)
+        {
             ret = 0;
             goto end;
         }
-
     }
 end:
     fclose(finalfp);
     return (ret);
 }
 
-
-int MergeAppendFile(FILE *finalfp, const char *files, int path_offset)
+int MergeAppendFile(FILE* finalfp, const char* files, int path_offset)
 {
     size_t n = 0;
     long files_size = 0;
     long files_final_size = 0;
     char buf[2048 + 1];
-    FILE *fp = NULL;
+    FILE* fp = NULL;
 
-    if (path_offset < 0) {
+    if (path_offset < 0)
+    {
         char filename[PATH_MAX];
-        char * basedir;
+        char* basedir;
 
         // Create default basedir
 
         strncpy(filename, files, sizeof(filename));
         filename[sizeof(filename) - 1] = '\0';
+#ifndef WIN32
         basedir = dirname(filename);
+#else
+        char dir[_MAX_DRIVE + _MAX_DIR];
+        dirname_win(filename, dir);
+        basedir = dir;
+#endif
         path_offset = strlen(basedir);
 
-        if (basedir[path_offset - 1] != '/') {
+        if (basedir[path_offset - 1] != '/')
+        {
             path_offset++;
         }
     }
 
-    if (fp = wfopen(files, "r"), fp == NULL) {
+    if (fp = wfopen(files, "r"), fp == NULL)
+    {
         LogError("Unable to open file: '%s' due to [(%d)-(%s)].", files, errno, strerror(errno));
         return (0);
     }
 
-    if (fseek(fp, 0, SEEK_END) != 0) {
+    if (fseek(fp, 0, SEEK_END) != 0)
+    {
         LogError("Unable to set EOF offset in file: '%s', due to [(%d)-(%s)].", files, errno, strerror(errno));
         fclose(fp);
         return (0);
     }
 
     files_size = ftell(fp);
-    if (files_size == 0) {
+    if (files_size == 0)
+    {
         LogWarn("File '%s' is empty.", files);
     }
 
     fprintf(finalfp, "!%ld %s\n", files_size, files + path_offset);
 
-    if (fseek(fp, 0, SEEK_SET) != 0) {
+    if (fseek(fp, 0, SEEK_SET) != 0)
+    {
         LogError("Unable to set the offset in file: '%s', due to [(%d)-(%s)].", files, errno, strerror(errno));
         fclose(fp);
         return (0);
     }
 
-    while ((n = fread(buf, 1, sizeof(buf) - 1, fp)) > 0) {
+    while ((n = fread(buf, 1, sizeof(buf) - 1, fp)) > 0)
+    {
         buf[n] = '\0';
         fwrite(buf, n, 1, finalfp);
     }
@@ -945,7 +1040,8 @@ int MergeAppendFile(FILE *finalfp, const char *files, int path_offset)
 
     fclose(fp);
 
-    if (files_size != files_final_size) {
+    if (files_size != files_final_size)
+    {
         LogError("File '%s' was modified after getting its size.", files);
         return (0);
     }
@@ -953,9 +1049,9 @@ int MergeAppendFile(FILE *finalfp, const char *files, int path_offset)
     return (1);
 }
 
-
-int checkBinaryFile(const char *f_name) {
-    FILE *fp;
+int checkBinaryFile(const char* f_name)
+{
+    FILE* fp;
     char str[OS_MAXSTR + 1];
     fpos_t fp_pos;
     int64_t offset;
@@ -965,7 +1061,8 @@ int checkBinaryFile(const char *f_name) {
 
     fp = wfopen(f_name, "r");
 
-     if (!fp) {
+    if (!fp)
+    {
         LogError("Unable to open file '%s' due to [(%d)-(%s)].", f_name, errno, strerror(errno));
         return 1;
     }
@@ -973,22 +1070,27 @@ int checkBinaryFile(const char *f_name) {
     /* Get initial file location */
     fgetpos(fp, &fp_pos);
 
-    for (offset = w_ftell(fp); fgets(str, OS_MAXSTR + 1, fp) != NULL; offset += rbytes) {
+    for (offset = w_ftell(fp); fgets(str, OS_MAXSTR + 1, fp) != NULL; offset += rbytes)
+    {
         rbytes = w_ftell(fp) - offset;
 
         /* Flow control */
-        if (rbytes <= 0 || (rbytes > OS_MAXSTR + 1)) {
+        if (rbytes <= 0 || (rbytes > OS_MAXSTR + 1))
+        {
             fclose(fp);
             return 1;
         }
 
         /* Get the last occurrence of \n */
-        if (str[rbytes - 1] == '\n') {
+        if (str[rbytes - 1] == '\n')
+        {
             str[rbytes - 1] = '\0';
 
             if ((long)strlen(str) != rbytes - 1)
             {
-                LogDebug("Line contains some zero-bytes (valid=" FTELL_TT "/ total=" FTELL_TT ").", FTELL_INT64 strlen(str), FTELL_INT64 rbytes - 1);
+                LogDebug("Line contains some zero-bytes (valid=" FTELL_TT "/ total=" FTELL_TT ").",
+                         FTELL_INT64 strlen(str),
+                         FTELL_INT64 rbytes - 1);
                 fclose(fp);
                 return 1;
             }
@@ -998,18 +1100,18 @@ int checkBinaryFile(const char *f_name) {
     return 0;
 }
 
-
 #ifndef WIN32
 /* Get basename of path */
-char *basename_ex(char *path)
+char* basename_ex(char* path)
 {
     return (basename(path));
 }
 
 /* Rename file or directory */
-int rename_ex(const char *source, const char *destination)
+int rename_ex(const char* source, const char* destination)
 {
-    if (rename(source, destination)) {
+    if (rename(source, destination))
+    {
         LogError(RENAME_ERROR, source, destination, errno, strerror(errno));
 
         return (-1);
@@ -1019,7 +1121,7 @@ int rename_ex(const char *source, const char *destination)
 }
 
 /* Create a temporary file */
-int mkstemp_ex(char *tmp_path)
+int mkstemp_ex(char* tmp_path)
 {
     int fd;
     mode_t old_mask = umask(0177);
@@ -1027,19 +1129,22 @@ int mkstemp_ex(char *tmp_path)
     fd = mkstemp(tmp_path);
     umask(old_mask);
 
-    if (fd == -1) {
+    if (fd == -1)
+    {
         LogError(MKSTEMP_ERROR, tmp_path, errno, strerror(errno));
 
         return (-1);
     }
 
     /* mkstemp() only implicitly does this in POSIX 2008 */
-    if (fchmod(fd, 0600) == -1) {
+    if (fchmod(fd, 0600) == -1)
+    {
         close(fd);
 
         LogError(CHMOD_ERROR, tmp_path, errno, strerror(errno));
 
-        if (unlink(tmp_path)) {
+        if (unlink(tmp_path))
+        {
             LogError(DELETE_ERROR, tmp_path, errno, strerror(errno));
         }
 
@@ -1050,7 +1155,6 @@ int mkstemp_ex(char *tmp_path)
     return (0);
 }
 
-
 /* Daemonize a process without closing stdin/stdout/stderr */
 void goDaemonLight()
 {
@@ -1058,25 +1162,32 @@ void goDaemonLight()
 
     pid = fork();
 
-    if (pid < 0) {
+    if (pid < 0)
+    {
         LogError(FORK_ERROR, errno, strerror(errno));
         return;
-    } else if (pid) {
+    }
+    else if (pid)
+    {
         exit(0);
     }
 
     /* Become session leader */
-    if (setsid() < 0) {
+    if (setsid() < 0)
+    {
         LogError(SETSID_ERROR, errno, strerror(errno));
         return;
     }
 
     /* Fork again */
     pid = fork();
-    if (pid < 0) {
+    if (pid < 0)
+    {
         LogError(FORK_ERROR, errno, strerror(errno));
         return;
-    } else if (pid) {
+    }
+    else if (pid)
+    {
         exit(0);
     }
 
@@ -1093,30 +1204,38 @@ void goDaemon()
     pid_t pid;
 
     pid = fork();
-    if (pid < 0) {
+    if (pid < 0)
+    {
         LogError(FORK_ERROR, errno, strerror(errno));
         return;
-    } else if (pid) {
+    }
+    else if (pid)
+    {
         exit(0);
     }
 
     /* Become session leader */
-    if (setsid() < 0) {
+    if (setsid() < 0)
+    {
         LogError(SETSID_ERROR, errno, strerror(errno));
         return;
     }
 
     /* Fork again */
     pid = fork();
-    if (pid < 0) {
+    if (pid < 0)
+    {
         LogError(FORK_ERROR, errno, strerror(errno));
         return;
-    } else if (pid) {
+    }
+    else if (pid)
+    {
         exit(0);
     }
 
     /* Dup stdin, stdout and stderr to /dev/null */
-    if ((fd = open("/dev/null", O_RDWR)) >= 0) {
+    if ((fd = open("/dev/null", O_RDWR)) >= 0)
+    {
         dup2(fd, 0);
         dup2(fd, 1);
         dup2(fd, 2);
@@ -1135,35 +1254,47 @@ int checkVista()
     /* Check if the system is Vista (must be called during the startup) */
     isVista = 0;
 
-    OSVERSIONINFOEX osvi = { .dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX) };
+    OSVERSIONINFOEX osvi = {.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX)};
     BOOL bOsVersionInfoEx;
 
-    if (bOsVersionInfoEx = GetVersionEx ((OSVERSIONINFO *) &osvi), !bOsVersionInfoEx) {
+    if (bOsVersionInfoEx = GetVersionEx((OSVERSIONINFO*)&osvi), !bOsVersionInfoEx)
+    {
         osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-        if (!GetVersionEx((OSVERSIONINFO *)&osvi)) {
+        if (!GetVersionEx((OSVERSIONINFO*)&osvi))
+        {
             LogError("Cannot get Windows version number.");
             return -1;
         }
     }
 
-    if (osvi.dwMajorVersion >= 6) {
+    if (osvi.dwMajorVersion >= 6)
+    {
         isVista = 1;
     }
 
     return (isVista);
 }
 
-
-int get_creation_date(char *dir, SYSTEMTIME *utc) {
+int get_creation_date(char* dir, SYSTEMTIME* utc)
+{
     HANDLE hdle;
     FILETIME creation_date;
     int retval = 1;
 
-    if (hdle = CreateFile(dir, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL), hdle == INVALID_HANDLE_VALUE) {
+    if (hdle = CreateFile(dir,
+                          GENERIC_READ,
+                          FILE_SHARE_READ,
+                          NULL,
+                          OPEN_EXISTING,
+                          FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS,
+                          NULL),
+        hdle == INVALID_HANDLE_VALUE)
+    {
         return retval;
     }
 
-    if (!GetFileTime(hdle, &creation_date, NULL, NULL)) {
+    if (!GetFileTime(hdle, &creation_date, NULL, NULL))
+    {
         goto end;
     }
 
@@ -1174,17 +1305,25 @@ end:
     return retval;
 }
 
-
-time_t get_UTC_modification_time(const char *file){
+time_t get_UTC_modification_time(const char* file)
+{
     HANDLE hdle;
     FILETIME modification_date;
-    if (hdle = CreateFile(file, GENERIC_READ, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL), \
-        hdle == INVALID_HANDLE_VALUE) {
+    if (hdle = CreateFile(file,
+                          GENERIC_READ,
+                          FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+                          NULL,
+                          OPEN_EXISTING,
+                          FILE_ATTRIBUTE_NORMAL,
+                          NULL),
+        hdle == INVALID_HANDLE_VALUE)
+    {
         LogError(FIM_WARN_OPEN_HANDLE_FILE, file, GetLastError());
         return 0;
     }
 
-    if (!GetFileTime(hdle, NULL, NULL, &modification_date)) {
+    if (!GetFileTime(hdle, NULL, NULL, &modification_date))
+    {
         CloseHandle(hdle);
         LogError(FIM_WARN_GET_FILETIME, file, GetLastError());
         return 0;
@@ -1192,22 +1331,21 @@ time_t get_UTC_modification_time(const char *file){
 
     CloseHandle(hdle);
 
-    return (time_t) get_windows_file_time_epoch(modification_date);
+    return (time_t)get_windows_file_time_epoch(modification_date);
 }
 
-
-char *basename_ex(char *path)
+char* basename_ex(char* path)
 {
     return (PathFindFileNameA(path));
 }
 
-
-int rename_ex(const char *source, const char *destination)
+int rename_ex(const char* source, const char* destination)
 {
     BOOL file_created = FALSE;
     DWORD dwFileAttributes = GetFileAttributes(destination);
 
-    if (dwFileAttributes == INVALID_FILE_ATTRIBUTES) {
+    if (dwFileAttributes == INVALID_FILE_ATTRIBUTES)
+    {
         // If the destination file does not exist, create it.
 
         const DWORD dwDesiredAccess = GENERIC_WRITE;
@@ -1215,9 +1353,11 @@ int rename_ex(const char *source, const char *destination)
         const DWORD dwCreationDisposition = CREATE_ALWAYS;
         const DWORD dwFlagsAndAttributes = FILE_ATTRIBUTE_NORMAL;
 
-        HANDLE hFile = CreateFile(destination, dwDesiredAccess, dwShareMode, NULL, dwCreationDisposition, dwFlagsAndAttributes, NULL);
+        HANDLE hFile = CreateFile(
+            destination, dwDesiredAccess, dwShareMode, NULL, dwCreationDisposition, dwFlagsAndAttributes, NULL);
 
-        if (hFile == INVALID_HANDLE_VALUE) {
+        if (hFile == INVALID_HANDLE_VALUE)
+        {
             LogError("Could not create file (%s) which returned (%lu)", destination, GetLastError());
             return -1;
         }
@@ -1226,10 +1366,12 @@ int rename_ex(const char *source, const char *destination)
         file_created = TRUE;
     }
 
-    if (!ReplaceFile(destination, source, NULL, 0, NULL, NULL)) {
+    if (!ReplaceFile(destination, source, NULL, 0, NULL, NULL))
+    {
         LogError("Could not move (%s) to (%s) which returned (%lu)", source, destination, GetLastError());
 
-        if (file_created) {
+        if (file_created)
+        {
             // Delete the destination file as it's been created by this function.
             DeleteFile(destination);
         }
@@ -1240,8 +1382,7 @@ int rename_ex(const char *source, const char *destination)
     return (0);
 }
 
-
-int mkstemp_ex(char *tmp_path)
+int mkstemp_ex(char* tmp_path)
 {
     DWORD dwResult;
     int result;
@@ -1257,38 +1398,32 @@ int mkstemp_ex(char *tmp_path)
     PSID pSystemGroupSID = NULL;
     SID_IDENTIFIER_AUTHORITY SIDAuthNT = {SECURITY_NT_AUTHORITY};
 
-
-    if (result = _mktemp_s(tmp_path, strlen(tmp_path) + 1), result) {
-        LogError("Could not create temporary file (%s) which returned %d [(%d)-(%s)].", tmp_path, result, errno, strerror(errno));
+    if (result = _mktemp_s(tmp_path, strlen(tmp_path) + 1), result)
+    {
+        LogError("Could not create temporary file (%s) which returned %d [(%d)-(%s)].",
+                 tmp_path,
+                 result,
+                 errno,
+                 strerror(errno));
         return (-1);
     }
 
     /* Create SID for the BUILTIN\Administrators group */
     result = AllocateAndInitializeSid(
-                 &SIDAuthNT,
-                 2,
-                 SECURITY_BUILTIN_DOMAIN_RID,
-                 DOMAIN_ALIAS_RID_ADMINS,
-                 0, 0, 0, 0, 0, 0,
-                 &pAdminGroupSID
-             );
+        &SIDAuthNT, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &pAdminGroupSID);
 
-    if (!result) {
+    if (!result)
+    {
         LogError("Could not create BUILTIN\\Administrators group SID which returned (%lu)", GetLastError());
 
         goto cleanup;
     }
 
     /* Create SID for the SYSTEM group */
-    result = AllocateAndInitializeSid(
-                 &SIDAuthNT,
-                 1,
-                 SECURITY_LOCAL_SYSTEM_RID,
-                 0, 0, 0, 0, 0, 0, 0,
-                 &pSystemGroupSID
-             );
+    result = AllocateAndInitializeSid(&SIDAuthNT, 1, SECURITY_LOCAL_SYSTEM_RID, 0, 0, 0, 0, 0, 0, 0, &pSystemGroupSID);
 
-    if (!result) {
+    if (!result)
+    {
         LogError("Could not create SYSTEM group SID which returned (%lu)", GetLastError());
 
         goto cleanup;
@@ -1316,73 +1451,73 @@ int mkstemp_ex(char *tmp_path)
     /* Set entries in ACL */
     dwResult = SetEntriesInAcl(2, ea, NULL, &pACL);
 
-    if (dwResult != ERROR_SUCCESS) {
+    if (dwResult != ERROR_SUCCESS)
+    {
         LogError("Could not set ACL entries which returned (%lu)", dwResult);
 
         goto cleanup;
     }
 
     /* Initialize security descriptor */
-    pSD = (PSECURITY_DESCRIPTOR)LocalAlloc(
-              LPTR,
-              SECURITY_DESCRIPTOR_MIN_LENGTH
-          );
+    pSD = (PSECURITY_DESCRIPTOR)LocalAlloc(LPTR, SECURITY_DESCRIPTOR_MIN_LENGTH);
 
-    if (pSD == NULL) {
-        LogError("Could not initialize SECURITY_DESCRIPTOR because of a LocalAlloc() failure which returned (%lu)", GetLastError());
+    if (pSD == NULL)
+    {
+        LogError("Could not initialize SECURITY_DESCRIPTOR because of a LocalAlloc() failure which returned (%lu)",
+                 GetLastError());
 
         goto cleanup;
     }
 
-    if (!InitializeSecurityDescriptor(pSD, SECURITY_DESCRIPTOR_REVISION)) {
-        LogError("Could not initialize SECURITY_DESCRIPTOR because of an InitializeSecurityDescriptor() failure which returned (%lu)", GetLastError());
+    if (!InitializeSecurityDescriptor(pSD, SECURITY_DESCRIPTOR_REVISION))
+    {
+        LogError("Could not initialize SECURITY_DESCRIPTOR because of an InitializeSecurityDescriptor() failure which "
+                 "returned (%lu)",
+                 GetLastError());
 
         goto cleanup;
     }
 
     /* Set owner */
-    if (!SetSecurityDescriptorOwner(pSD, NULL, FALSE)) {
+    if (!SetSecurityDescriptorOwner(pSD, NULL, FALSE))
+    {
         LogError("Could not set owner which returned (%lu)", GetLastError());
 
         goto cleanup;
     }
 
     /* Set group owner */
-    if (!SetSecurityDescriptorGroup(pSD, NULL, FALSE)) {
+    if (!SetSecurityDescriptorGroup(pSD, NULL, FALSE))
+    {
         LogError("Could not set group owner which returned (%lu)", GetLastError());
 
         goto cleanup;
     }
 
     /* Add ACL to security descriptor */
-    if (!SetSecurityDescriptorDacl(pSD, TRUE, pACL, FALSE)) {
+    if (!SetSecurityDescriptorDacl(pSD, TRUE, pACL, FALSE))
+    {
         LogError("Could not set SECURITY_DESCRIPTOR DACL which returned (%lu)", GetLastError());
 
         goto cleanup;
     }
 
     /* Initialize security attributes structure */
-    sa.nLength = sizeof (SECURITY_ATTRIBUTES);
+    sa.nLength = sizeof(SECURITY_ATTRIBUTES);
     sa.lpSecurityDescriptor = pSD;
     sa.bInheritHandle = FALSE;
 
-    h = CreateFileA(
-            tmp_path,
-            GENERIC_WRITE,
-            0,
-            &sa,
-            CREATE_NEW,
-            FILE_ATTRIBUTE_NORMAL,
-            NULL
-        );
+    h = CreateFileA(tmp_path, GENERIC_WRITE, 0, &sa, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
 
-    if (h == INVALID_HANDLE_VALUE) {
+    if (h == INVALID_HANDLE_VALUE)
+    {
         LogError("Could not create temporary file (%s) which returned (%lu)", tmp_path, GetLastError());
 
         goto cleanup;
     }
 
-    if (!CloseHandle(h)) {
+    if (!CloseHandle(h))
+    {
         LogError("Could not close file handle to (%s) which returned (%lu)", tmp_path, GetLastError());
 
         goto cleanup;
@@ -1392,28 +1527,32 @@ int mkstemp_ex(char *tmp_path)
     status = 0;
 
 cleanup:
-    if (pAdminGroupSID) {
+    if (pAdminGroupSID)
+    {
         FreeSid(pAdminGroupSID);
     }
 
-    if (pSystemGroupSID) {
+    if (pSystemGroupSID)
+    {
         FreeSid(pSystemGroupSID);
     }
 
-    if (pACL) {
+    if (pACL)
+    {
         LocalFree(pACL);
     }
 
-    if (pSD) {
+    if (pSD)
+    {
         LocalFree(pSD);
     }
 
     return (status);
 }
 
-
-void w_ch_exec_dir() {
-    TCHAR path[2048] = { 0 };
+void w_ch_exec_dir()
+{
+    TCHAR path[2048] = {0};
     DWORD last_error;
     int ret;
 
@@ -1421,19 +1560,18 @@ void w_ch_exec_dir() {
     ret = GetModuleFileName(NULL, path, sizeof(path));
 
     /* Check for errors */
-    if (!ret) {
+    if (!ret)
+    {
         print_out(GMF_ERROR);
 
         /* Get last error */
         last_error = GetLastError();
 
         /* Look for errors */
-        switch (last_error) {
-        case ERROR_INSUFFICIENT_BUFFER:
-            print_out(GMF_BUFF_ERROR, ret, sizeof(path));
-            break;
-        default:
-            print_out(GMF_UNKN_ERROR, last_error);
+        switch (last_error)
+        {
+            case ERROR_INSUFFICIENT_BUFFER: print_out(GMF_BUFF_ERROR, ret, sizeof(path)); break;
+            default: print_out(GMF_UNKN_ERROR, last_error);
         }
 
         exit(EXIT_FAILURE);
@@ -1443,39 +1581,51 @@ void w_ch_exec_dir() {
     PathRemoveFileSpec(path);
 
     /* Move to correct directory */
-    if (chdir(path)) {
+    if (chdir(path))
+    {
         print_out(CHDIR_ERROR, path, errno, strerror(errno));
         exit(EXIT_FAILURE);
     }
 }
 
-FILE * w_fopen_r(const char *file, const char * mode, BY_HANDLE_FILE_INFORMATION * lpFileInformation) {
+FILE* w_fopen_r(const char* file, const char* mode, BY_HANDLE_FILE_INFORMATION* lpFileInformation)
+{
 
-    FILE *fp = NULL;
+    FILE* fp = NULL;
     int fd;
     HANDLE h;
 
-    h = CreateFile(file, GENERIC_READ, FILE_SHARE_DELETE|FILE_SHARE_READ|FILE_SHARE_WRITE,
-                   NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-    if (h == INVALID_HANDLE_VALUE) {
+    h = CreateFile(file,
+                   GENERIC_READ,
+                   FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+                   NULL,
+                   OPEN_EXISTING,
+                   FILE_ATTRIBUTE_NORMAL,
+                   NULL);
+    if (h == INVALID_HANDLE_VALUE)
+    {
         return NULL;
     }
 
-    if (lpFileInformation != NULL) {
+    if (lpFileInformation != NULL)
+    {
         memset(lpFileInformation, 0, sizeof(BY_HANDLE_FILE_INFORMATION));
     }
 
-    if (GetFileInformationByHandle(h, lpFileInformation) == 0) {
+    if (GetFileInformationByHandle(h, lpFileInformation) == 0)
+    {
         LogError(FILE_ERROR, file);
     }
 
-    if (fd = _open_osfhandle((intptr_t)h, 0), fd == -1) {
+    if (fd = _open_osfhandle((intptr_t)h, 0), fd == -1)
+    {
         LogError(FOPEN_ERROR, file, errno, strerror(errno));
         CloseHandle(h);
         return NULL;
     }
 
-    if (fp = _fdopen(fd, mode), fp == NULL) {
+    if (fp = _fdopen(fd, mode), fp == NULL)
+    {
         LogError(FOPEN_ERROR, file, errno, strerror(errno));
         CloseHandle(h);
         return NULL;
@@ -1484,61 +1634,74 @@ FILE * w_fopen_r(const char *file, const char * mode, BY_HANDLE_FILE_INFORMATION
     return fp;
 }
 
-char **expand_win32_wildcards(const char *path) {
+char** expand_win32_wildcards(const char* path)
+{
     WIN32_FIND_DATA FindFileData;
     HANDLE hFind;
-    char **pending_expand = NULL;
-    char **expanded_paths = NULL;
-    char *pattern = NULL;
-    char *next_glob = NULL;
-    char *parent_path = NULL;
+    char** pending_expand = NULL;
+    char** expanded_paths = NULL;
+    char* pattern = NULL;
+    char* next_glob = NULL;
+    char* parent_path = NULL;
     int pending_expand_index = 0;
     int expanded_index = 0;
     size_t glob_pos = 0;
 
-    os_calloc(2, sizeof(char *), pending_expand);
+    os_calloc(2, sizeof(char*), pending_expand);
     os_strdup(path, pending_expand[0]);
     // Loop until there is not any directory to expand.
-    while(true) {
+    while (true)
+    {
         pattern = pending_expand[0];
 
-        if (pattern == NULL) {
+        if (pattern == NULL)
+        {
             break;
         }
 
         glob_pos = strcspn(pattern, "*?");
-        if (glob_pos == strlen(pattern)) {
+        if (glob_pos == strlen(pattern))
+        {
             // If there are no more patterns, exit
             expanded_paths = pending_expand;
             break;
         }
 
-        os_calloc(2, sizeof(char *), expanded_paths);
+        os_calloc(2, sizeof(char*), expanded_paths);
 
-        for (pending_expand_index = 0; pattern != NULL; pattern = pending_expand[++pending_expand_index]) {
+        for (pending_expand_index = 0; pattern != NULL; pattern = pending_expand[++pending_expand_index])
+        {
             glob_pos = strcspn(pattern, "*?");
             next_glob = strchr(pattern + glob_pos, PATH_SEP);
 
             // Find the next regex to be appended in case there is an expanded folder.
-            if (next_glob != NULL) {
+            if (next_glob != NULL)
+            {
                 *next_glob = '\0';
                 next_glob++;
             }
             os_strdup(pattern, parent_path);
-            char *look_back = strrchr(parent_path, PATH_SEP);
+            char* look_back = strrchr(parent_path, PATH_SEP);
 
-            if (look_back) {
+            if (look_back)
+            {
                 *look_back = '\0';
             }
 
             hFind = FindFirstFile(pattern, &FindFileData);
-            if (hFind == INVALID_HANDLE_VALUE) {
+            if (hFind == INVALID_HANDLE_VALUE)
+            {
                 long unsigned errcode = GetLastError();
-                if (errcode == 2) {
+                if (errcode == 2)
+                {
                     LogDebug("No file that matches %s.", pattern);
-                } else if (errcode == 3) {
+                }
+                else if (errcode == 3)
+                {
                     LogDebug("No folder that matches %s.", pattern);
-                } else {
+                }
+                else
+                {
                     LogDebug("FindFirstFile failed (%lu) - '%s'\n", errcode, pattern);
                 }
 
@@ -1547,31 +1710,36 @@ char **expand_win32_wildcards(const char *path) {
                 next_glob = NULL;
                 continue;
             }
-            do {
-                if (strcmp(FindFileData.cFileName, ".") == 0 || strcmp(FindFileData.cFileName, "..") == 0) {
+            do
+            {
+                if (strcmp(FindFileData.cFileName, ".") == 0 || strcmp(FindFileData.cFileName, "..") == 0)
+                {
                     continue;
                 }
 
-                if ((FindFileData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
+                if ((FindFileData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT))
+                {
                     continue;
                 }
 
-                if ((FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0 && next_glob != NULL) {
+                if ((FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0 && next_glob != NULL)
+                {
                     continue;
                 }
 
                 os_strdup(parent_path, expanded_paths[expanded_index]);
                 wm_strcat(&expanded_paths[expanded_index], FindFileData.cFileName, PATH_SEP);
 
-                if (next_glob != NULL) {
+                if (next_glob != NULL)
+                {
                     wm_strcat(&expanded_paths[expanded_index], next_glob, PATH_SEP);
                 }
 
-                os_realloc(expanded_paths, (expanded_index + 2) * sizeof(char *), expanded_paths);
+                os_realloc(expanded_paths, (expanded_index + 2) * sizeof(char*), expanded_paths);
                 expanded_index++;
                 expanded_paths[expanded_index] = NULL;
 
-            } while(FindNextFile(hFind, &FindFileData));
+            } while (FindNextFile(hFind, &FindFileData));
 
             FindClose(hFind);
             // Now, free the memory, as the path that needed to be expanded is no longer needed and it's expansion is
@@ -1591,65 +1759,74 @@ char **expand_win32_wildcards(const char *path) {
 
 #endif /* WIN32 */
 
-
-int rmdir_ex(const char *name) {
-    if (rmdir(name) == 0) {
+int rmdir_ex(const char* name)
+{
+    if (rmdir(name) == 0)
+    {
         return 0;
     }
 
-    switch (errno) {
-    case ENOTDIR:   // Not a directory
+    switch (errno)
+    {
+        case ENOTDIR: // Not a directory
 
 #ifdef WIN32
-    case EINVAL:    // Not a directory
+        case EINVAL: // Not a directory
 #endif
-        return unlink(name);
+            return unlink(name);
 
 #if EEXIST != ENOTEMPTY
-    case EEXIST:
+        case EEXIST:
 #endif
-    case ENOTEMPTY: // Directory not empty
-        // Erase content and try to erase again
-        return cldir_ex(name) || rmdir(name) ? -1 : 0;
+        case ENOTEMPTY: // Directory not empty
+            // Erase content and try to erase again
+            return cldir_ex(name) || rmdir(name) ? -1 : 0;
 
-    default:
-        return -1;
+        default: return -1;
     }
 }
 
-
-int cldir_ex(const char *name) {
+int cldir_ex(const char* name)
+{
     return cldir_ex_ignore(name, NULL);
 }
 
-
-int cldir_ex_ignore(const char * name, const char ** ignore) {
-    DIR *dir;
-    struct dirent *dirent = NULL;
+#ifndef WIN32
+int cldir_ex_ignore(const char* name, const char** ignore)
+{
+    DIR* dir;
+    struct dirent* dirent = NULL;
     char path[PATH_MAX + 1];
 
     // Erase content
 
     dir = opendir(name);
 
-    if (!dir) {
+    if (!dir)
+    {
         return -1;
     }
 
-    while (dirent = readdir(dir), dirent) {
+    while (dirent = readdir(dir), dirent)
+    {
         // Skip "." and ".."
         // TODO: replace function w_str_in_array
-        // if ((dirent->d_name[0] == '.' && (dirent->d_name[1] == '\0' || (dirent->d_name[1] == '.' && dirent->d_name[2] == '\0'))) || w_str_in_array(dirent->d_name, ignore)) {
-        if (dirent->d_name[0] == '.' && (dirent->d_name[1] == '\0' || (dirent->d_name[1] == '.' && dirent->d_name[2] == '\0'))) {
+        // if ((dirent->d_name[0] == '.' && (dirent->d_name[1] == '\0' || (dirent->d_name[1] == '.' && dirent->d_name[2]
+        // == '\0'))) || w_str_in_array(dirent->d_name, ignore)) {
+        if (dirent->d_name[0] == '.' &&
+            (dirent->d_name[1] == '\0' || (dirent->d_name[1] == '.' && dirent->d_name[2] == '\0')))
+        {
             continue;
         }
 
-        if (snprintf(path, PATH_MAX + 1, "%s/%s", name, dirent->d_name) > PATH_MAX) {
+        if (snprintf(path, PATH_MAX + 1, "%s/%s", name, dirent->d_name) > PATH_MAX)
+        {
             closedir(dir);
             return -1;
         }
 
-        if (rmdir_ex(path) < 0) {
+        if (rmdir_ex(path) < 0)
+        {
             closedir(dir);
             return -1;
         }
@@ -1657,10 +1834,61 @@ int cldir_ex_ignore(const char * name, const char ** ignore) {
 
     return closedir(dir);
 }
+#else
+int cldir_ex_ignore(const char* name, const char** ignore)
+{
+    WIN32_FIND_DATA findFileData;
+    HANDLE hFind = INVALID_HANDLE_VALUE;
+    char path[MAX_PATH + 1];
+    char searchPattern[MAX_PATH + 1];
 
+    // Create the search pattern
+    snprintf(searchPattern, MAX_PATH + 1, "%s\\*", name);
 
-int TempFile(File *file, const char *source, int copy) {
-    FILE *fp_src;
+    // Find the first file in the directory
+    hFind = FindFirstFile(searchPattern, &findFileData);
+
+    if (hFind == INVALID_HANDLE_VALUE)
+    {
+        return -1;
+    }
+
+    do
+    {
+        // Skip "." and ".."
+        if (strcmp(findFileData.cFileName, ".") == 0 || strcmp(findFileData.cFileName, "..") == 0)
+        {
+            continue;
+        }
+
+        // Create the full path
+        if (snprintf(path, MAX_PATH + 1, "%s\\%s", name, findFileData.cFileName) > MAX_PATH)
+        {
+            FindClose(hFind);
+            return -1;
+        }
+
+        // Remove the file or directory
+        if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+        {
+            // Recursively remove the directory
+            cldir_ex_ignore(path, ignore);
+            RemoveDirectory(path);
+        }
+        else
+        {
+            // Remove the file
+            DeleteFile(path);
+        }
+    } while (FindNextFile(hFind, &findFileData) != 0);
+
+    return FindClose(hFind) ? 0 : -1;
+}
+#endif
+
+int TempFile(File* file, const char* source, int copy)
+{
+    FILE* fp_src;
     int fd;
     char template[OS_FLSIZE + 1];
     mode_t old_mask;
@@ -1671,32 +1899,40 @@ int TempFile(File *file, const char *source, int copy) {
     fd = mkstemp(template);
     umask(old_mask);
 
-    if (fd < 0) {
+    if (fd < 0)
+    {
         return -1;
     }
 
-    fp_src = wfopen(source,"r");
+    fp_src = wfopen(source, "r");
 
 #ifndef WIN32
     struct stat buf;
 
-    if (stat(source, &buf) == 0) {
-        if (fchmod(fd, buf.st_mode) < 0) {
-            if (fp_src) {
+    if (stat(source, &buf) == 0)
+    {
+        if (fchmod(fd, buf.st_mode) < 0)
+        {
+            if (fp_src)
+            {
                 fclose(fp_src);
             }
             close(fd);
             unlink(template);
             return -1;
         }
-    } else {
+    }
+    else
+    {
         LogDebug(FSTAT_ERROR, source, errno, strerror(errno));
     }
 
 #endif
 
-    if (file->fp = fdopen(fd, "w"), !file->fp) {
-        if (fp_src) {
+    if (file->fp = fdopen(fd, "w"), !file->fp)
+    {
+        if (fp_src)
+        {
             fclose(fp_src);
         }
         close(fd);
@@ -1704,16 +1940,20 @@ int TempFile(File *file, const char *source, int copy) {
         return -1;
     }
 
-    if (copy) {
+    if (copy)
+    {
         size_t count_r;
         size_t count_w;
         char buffer[4096];
 
-        if (fp_src) {
-            while (!feof(fp_src)) {
+        if (fp_src)
+        {
+            while (!feof(fp_src))
+            {
                 count_r = fread(buffer, 1, 4096, fp_src);
 
-                if (ferror(fp_src)) {
+                if (ferror(fp_src))
+                {
                     fclose(fp_src);
                     fclose(file->fp);
                     unlink(template);
@@ -1722,7 +1962,8 @@ int TempFile(File *file, const char *source, int copy) {
 
                 count_w = fwrite(buffer, 1, count_r, file->fp);
 
-                if (count_w != count_r || ferror(file->fp)) {
+                if (count_w != count_r || ferror(file->fp))
+                {
                     fclose(fp_src);
                     fclose(file->fp);
                     unlink(template);
@@ -1732,7 +1973,8 @@ int TempFile(File *file, const char *source, int copy) {
         }
     }
 
-    if (fp_src) {
+    if (fp_src)
+    {
         fclose(fp_src);
     }
 
@@ -1740,16 +1982,17 @@ int TempFile(File *file, const char *source, int copy) {
     return 0;
 }
 
-
-int OS_MoveFile(const char *src, const char *dst) {
-    FILE *fp_src;
-    FILE *fp_dst;
+int OS_MoveFile(const char* src, const char* dst)
+{
+    FILE* fp_src;
+    FILE* fp_dst;
     size_t count_r;
     size_t count_w;
     char buffer[4096];
     int status = 0;
 
-    if (rename(src, dst) == 0) {
+    if (rename(src, dst) == 0)
+    {
         return 0;
     }
 
@@ -1757,24 +2000,28 @@ int OS_MoveFile(const char *src, const char *dst) {
 
     fp_src = wfopen(src, "r");
 
-    if (!fp_src) {
+    if (!fp_src)
+    {
         LogError("Couldn't open file '%s'", src);
         return -1;
     }
 
     fp_dst = wfopen(dst, "w");
 
-    if (!fp_dst) {
+    if (!fp_dst)
+    {
         LogError("Couldn't open file '%s'", dst);
         fclose(fp_src);
         unlink(src);
         return -1;
     }
 
-    while (!feof(fp_src)) {
+    while (!feof(fp_src))
+    {
         count_r = fread(buffer, 1, 4096, fp_src);
 
-        if (ferror(fp_src)) {
+        if (ferror(fp_src))
+        {
             LogError("Couldn't read file '%s'", src);
             status = -1;
             break;
@@ -1782,7 +2029,8 @@ int OS_MoveFile(const char *src, const char *dst) {
 
         count_w = fwrite(buffer, 1, count_r, fp_dst);
 
-        if (count_w != count_r || ferror(fp_dst)) {
+        if (count_w != count_r || ferror(fp_dst))
+        {
             LogError("Couldn't write file '%s'", dst);
             status = -1;
             break;
@@ -1794,10 +2042,10 @@ int OS_MoveFile(const char *src, const char *dst) {
     return status ? status : unlink(src);
 }
 
-
-int w_copy_file(const char *src, const char *dst, char mode, char * message, int silent) {
-    FILE *fp_src;
-    FILE *fp_dst;
+int w_copy_file(const char* src, const char* dst, char mode, char* message, int silent)
+{
+    FILE* fp_src;
+    FILE* fp_dst;
     size_t count_r;
     size_t count_w;
     char buffer[4096];
@@ -1805,24 +2053,29 @@ int w_copy_file(const char *src, const char *dst, char mode, char * message, int
 
     fp_src = wfopen(src, "r");
 
-    if (!fp_src) {
-        if(!silent) {
+    if (!fp_src)
+    {
+        if (!silent)
+        {
             LogError("At w_copy_file(): Couldn't open file '%s'", src);
         }
         return -1;
     }
 
     /* Append to file */
-    if (mode == 'a') {
+    if (mode == 'a')
+    {
         fp_dst = wfopen(dst, "a");
     }
-    else {
+    else
+    {
         fp_dst = wfopen(dst, "w");
     }
 
-
-    if (!fp_dst) {
-        if (!silent) {
+    if (!fp_dst)
+    {
+        if (!silent)
+        {
             LogError("At w_copy_file(): Couldn't open file '%s'", dst);
         }
         fclose(fp_src);
@@ -1830,12 +2083,15 @@ int w_copy_file(const char *src, const char *dst, char mode, char * message, int
     }
 
     /* Write message to the destination file */
-    if (message) {
+    if (message)
+    {
         count_r = strlen(message);
         count_w = fwrite(message, 1, count_r, fp_dst);
 
-        if (count_w != count_r || ferror(fp_dst)) {
-            if (!silent) {
+        if (count_w != count_r || ferror(fp_dst))
+        {
+            if (!silent)
+            {
                 LogError("Couldn't write file '%s'", dst);
             }
             status = -1;
@@ -1845,11 +2101,14 @@ int w_copy_file(const char *src, const char *dst, char mode, char * message, int
         }
     }
 
-    while (!feof(fp_src)) {
+    while (!feof(fp_src))
+    {
         count_r = fread(buffer, 1, 4096, fp_src);
 
-        if (ferror(fp_src)) {
-            if (!silent) {
+        if (ferror(fp_src))
+        {
+            if (!silent)
+            {
                 LogError("Couldn't read file '%s'", src);
             }
             status = -1;
@@ -1858,8 +2117,10 @@ int w_copy_file(const char *src, const char *dst, char mode, char * message, int
 
         count_w = fwrite(buffer, 1, count_r, fp_dst);
 
-        if (count_w != count_r || ferror(fp_dst)) {
-            if (!silent) {
+        if (count_w != count_r || ferror(fp_dst))
+        {
+            if (!silent)
+            {
                 LogError("Couldn't write file '%s'", dst);
             }
             status = -1;
@@ -1872,40 +2133,44 @@ int w_copy_file(const char *src, const char *dst, char mode, char * message, int
     return status;
 }
 
-
-int mkdir_ex(const char * path) {
+int mkdir_ex(const char* path)
+{
     char sep;
-    char * temp = strdup(path);
-    char * psep;
-    char * next;
+    char* temp = strdup(path);
+    char* psep;
+    char* next;
 
 #ifndef WIN32
-    for (next = temp; psep = strchr(next, '/'), psep; next = psep + 1) {
+    for (next = temp; psep = strchr(next, '/'), psep; next = psep + 1)
+    {
 #else
-    for (next = temp; psep = strchr(next, '/'), psep || (psep = strchr(next, '\\'), psep); next = psep + 1) {
+    for (next = temp; psep = strchr(next, '/'), psep || (psep = strchr(next, '\\'), psep); next = psep + 1)
+    {
 #endif
 
         sep = *psep;
         *psep = '\0';
 
-        if (*temp && mkdir(temp, 0770) < 0) {
-            switch (errno) {
-            case EEXIST:
-                if (IsDir(temp) < 0) {
-                    LogError("Couldn't make dir '%s': not a directory.", temp);
+        if (*temp && mkdir(temp, 0770) < 0)
+        {
+            switch (errno)
+            {
+                case EEXIST:
+                    if (IsDir(temp) < 0)
+                    {
+                        LogError("Couldn't make dir '%s': not a directory.", temp);
+                        free(temp);
+                        return -1;
+                    }
+
+                    break;
+
+                case EISDIR: break;
+
+                default:
+                    LogError("Couldn't make dir '%s': %s", temp, strerror(errno));
                     free(temp);
                     return -1;
-                }
-
-                break;
-
-            case EISDIR:
-                break;
-
-            default:
-                LogError("Couldn't make dir '%s': %s", temp, strerror(errno));
-                free(temp);
-                return -1;
             }
         }
 
@@ -1914,62 +2179,66 @@ int mkdir_ex(const char * path) {
 
     free(temp);
 
-    if (mkdir(path, 0770) < 0) {
-        switch (errno) {
-        case EEXIST:
-            if (IsDir(path) < 0) {
-                LogError("Couldn't make dir '%s': not a directory.", path);
-                return -1;
-            }
+    if (mkdir(path, 0770) < 0)
+    {
+        switch (errno)
+        {
+            case EEXIST:
+                if (IsDir(path) < 0)
+                {
+                    LogError("Couldn't make dir '%s': not a directory.", path);
+                    return -1;
+                }
 
-            break;
+                break;
 
-        case EISDIR:
-            break;
+            case EISDIR: break;
 
-        default:
-            LogError("Couldn't make dir '%s': %s", path, strerror(errno));
-            return -1;
+            default: LogError("Couldn't make dir '%s': %s", path, strerror(errno)); return -1;
         }
     }
 
     return 0;
 }
 
+int w_ref_parent_folder(const char* path)
+{
+    const char* str;
+    char* ptr;
 
-int w_ref_parent_folder(const char * path) {
-    const char * str;
-    char * ptr;
-
-    switch (path[0]) {
-    case '\0':
-        return 0;
-
-    case '.':
-        switch (path[1]) {
-        case '\0':
-            return 0;
+    switch (path[0])
+    {
+        case '\0': return 0;
 
         case '.':
-            switch (path[2]) {
-            case '\0':
-                return 1;
+            switch (path[1])
+            {
+                case '\0': return 0;
 
-            case '/':
+                case '.':
+                    switch (path[2])
+                    {
+                        case '\0': return 1;
+
+                        case '/':
 #ifdef WIN32
-            case '\\':
+                        case '\\':
 #endif
-                return 1;
+                            return 1;
+                    }
             }
-        }
     }
 
 #ifdef WIN32
-    for (str = path; ptr = strstr(str, "/.."), ptr || (ptr = strstr(str, "\\.."), ptr); str = ptr + 3) {
-        if (ptr[3] == '\0' || ptr[3] == '/' || ptr[3] == '\\') {
+    for (str = path; ptr = strstr(str, "/.."), ptr || (ptr = strstr(str, "\\.."), ptr); str = ptr + 3)
+    {
+        if (ptr[3] == '\0' || ptr[3] == '/' || ptr[3] == '\\')
+        {
 #else
-    for (str = path; ptr = strstr(str, "/.."), ptr; str = ptr + 3) {
-        if (ptr[3] == '\0' || ptr[3] == '/') {
+    for (str = path; ptr = strstr(str, "/.."), ptr; str = ptr + 3)
+    {
+        if (ptr[3] == '\0' || ptr[3] == '/')
+        {
 #endif
             return 1;
         }
@@ -1978,22 +2247,25 @@ int w_ref_parent_folder(const char * path) {
     return 0;
 }
 
-
-wino_t get_fp_inode(FILE * fp) {
+wino_t get_fp_inode(FILE* fp)
+{
 #ifdef WIN32
     int fd;
     HANDLE h;
     BY_HANDLE_FILE_INFORMATION fileInfo;
 
-    if (fd = _fileno(fp), fd < 0) {
+    if (fd = _fileno(fp), fd < 0)
+    {
         return -1;
     }
 
-    if (h = (HANDLE)_get_osfhandle(fd), h == INVALID_HANDLE_VALUE) {
+    if (h = (HANDLE)_get_osfhandle(fd), h == INVALID_HANDLE_VALUE)
+    {
         return -1;
     }
 
-    return GetFileInformationByHandle(h, &fileInfo) ? (wino_t)fileInfo.nFileIndexHigh << 32 | fileInfo.nFileIndexLow : (wino_t)-1;
+    return GetFileInformationByHandle(h, &fileInfo) ? (wino_t)fileInfo.nFileIndexHigh << 32 | fileInfo.nFileIndexLow
+                                                    : (wino_t)-1;
 
 #else
 
@@ -2003,17 +2275,19 @@ wino_t get_fp_inode(FILE * fp) {
 #endif
 }
 
-
 #ifdef WIN32
-int get_fp_file_information(FILE * fp, LPBY_HANDLE_FILE_INFORMATION fileInfo) {
+int get_fp_file_information(FILE* fp, LPBY_HANDLE_FILE_INFORMATION fileInfo)
+{
     int fd;
     HANDLE h;
 
-    if (fd = _fileno(fp), fd < 0) {
+    if (fd = _fileno(fp), fd < 0)
+    {
         return 0;
     }
 
-    if (h = (HANDLE)_get_osfhandle(fd), h == INVALID_HANDLE_VALUE) {
+    if (h = (HANDLE)_get_osfhandle(fd), h == INVALID_HANDLE_VALUE)
+    {
         return 0;
     }
 
@@ -2021,76 +2295,145 @@ int get_fp_file_information(FILE * fp, LPBY_HANDLE_FILE_INFORMATION fileInfo) {
 }
 #endif
 
-
-long get_fp_size(FILE * fp) {
+long get_fp_size(FILE* fp)
+{
     long offset;
     long size;
 
     // Get initial position
 
-    if (offset = ftell(fp), offset < 0) {
+    if (offset = ftell(fp), offset < 0)
+    {
         return -1;
     }
 
     // Move to end
 
-    if (fseek(fp, 0, SEEK_END) != 0) {
+    if (fseek(fp, 0, SEEK_END) != 0)
+    {
         return -1;
     }
 
     // Get ending position
 
-    if (size = ftell(fp), size < 0) {
+    if (size = ftell(fp), size < 0)
+    {
         return -1;
     }
 
     // Restore original offset
 
-    if (fseek(fp, offset, SEEK_SET) != 0) {
+    if (fseek(fp, offset, SEEK_SET) != 0)
+    {
         return -1;
     }
 
     return size;
 }
 
-static int qsort_strcmp(const void *s1, const void *s2) {
-    return strcmp(*(const char **)s1, *(const char **)s2);
+static int qsort_strcmp(const void* s1, const void* s2)
+{
+    return strcmp(*(const char**)s1, *(const char**)s2);
 }
 
-
-char ** wreaddir(const char * name) {
-    DIR * dir;
-    struct dirent * dirent = NULL;
-    char ** files;
+#ifndef WIN32
+char** wreaddir(const char* name)
+{
+    DIR* dir;
+    struct dirent* dirent = NULL;
+    char** files;
     unsigned int i = 0;
 
-    if (dir = opendir(name), !dir) {
+    if (dir = opendir(name), !dir)
+    {
         return NULL;
     }
 
-    os_malloc(sizeof(char *), files);
+    os_malloc(sizeof(char*), files);
 
-    while (dirent = readdir(dir), dirent) {
+    while (dirent = readdir(dir), dirent)
+    {
         // Skip "." and ".."
-        if (dirent->d_name[0] == '.' && (dirent->d_name[1] == '\0' || (dirent->d_name[1] == '.' && dirent->d_name[2] == '\0'))) {
+        if (dirent->d_name[0] == '.' &&
+            (dirent->d_name[1] == '\0' || (dirent->d_name[1] == '.' && dirent->d_name[2] == '\0')))
+        {
             continue;
         }
 
-        os_realloc(files, (i + 2) * sizeof(char *), files);
-        if(!files){
-           LogCritical(MEM_ERROR, errno, strerror(errno));
+        os_realloc(files, (i + 2) * sizeof(char*), files);
+        if (!files)
+        {
+            LogCritical(MEM_ERROR, errno, strerror(errno));
         }
         files[i++] = strdup(dirent->d_name);
     }
 
     files[i] = NULL;
-    qsort(files, i, sizeof(char *), qsort_strcmp);
+    qsort(files, i, sizeof(char*), qsort_strcmp);
     closedir(dir);
     return files;
 }
+#else
+char** wreaddir(const char* name)
+{
+    WIN32_FIND_DATA findFileData;
+    HANDLE hFind = INVALID_HANDLE_VALUE;
+    char** files = NULL;
+    unsigned int i = 0;
+    char searchPattern[MAX_PATH + 1];
 
+    // Create the search pattern
+    snprintf(searchPattern, MAX_PATH + 1, "%s\\*", name);
 
-FILE * wfopen(const char * pathname, const char * mode) {
+    // Find the first file in the directory
+    hFind = FindFirstFile(searchPattern, &findFileData);
+
+    if (hFind == INVALID_HANDLE_VALUE)
+    {
+        return NULL;
+    }
+
+    files = (char**)malloc(sizeof(char*));
+
+    do
+    {
+        // Skip "." and ".."
+        if (strcmp(findFileData.cFileName, ".") == 0 || strcmp(findFileData.cFileName, "..") == 0)
+        {
+            continue;
+        }
+
+        // Allocate more memory for the files array
+        char** tempFiles = (char**)realloc(files, (i + 2) * sizeof(char*));
+        if (!tempFiles)
+        {
+            LogCritical(MEM_ERROR, errno, strerror(errno));
+            free(files);
+            FindClose(hFind);
+            return NULL;
+        }
+
+        files = tempFiles;
+        files[i] = _strdup(findFileData.cFileName);
+        if (!files[i])
+        {
+            free(files);
+            FindClose(hFind);
+            return NULL;
+        }
+        i++;
+    } while (FindNextFile(hFind, &findFileData) != 0);
+
+    files[i] = NULL;
+    qsort(files, i, sizeof(char*), qsort_strcmp);
+
+    FindClose(hFind);
+    return files;
+}
+#endif
+
+FILE* wfopen(const char* pathname, const char* mode)
+{
 #ifdef WIN32
     HANDLE hFile;
     DWORD dwDesiredAccess = 0;
@@ -2099,61 +2442,62 @@ FILE * wfopen(const char * pathname, const char * mode) {
     const DWORD dwFlagsAndAttributes = FILE_ATTRIBUTE_NORMAL;
     int flags = _O_TEXT;
     int fd;
-    FILE * fp;
+    FILE* fp;
     int i;
 
-    if (pathname && strchr("\\/", pathname[0]) && strchr("\\/?\"<>|", pathname[1])) {
+    if (pathname && strchr("\\/", pathname[0]) && strchr("\\/?\"<>|", pathname[1]))
+    {
         errno = EINVAL;
         return NULL;
     }
 
-    for (i = 0; mode[i]; ++i) {
-        switch (mode[i]) {
-        case '+':
-            dwDesiredAccess |= GENERIC_WRITE | GENERIC_READ;
-            flags &= ~_O_RDONLY;
-            break;
-        case 'a':
-            dwDesiredAccess = GENERIC_WRITE;
-            dwCreationDisposition = OPEN_ALWAYS;
-            flags = _O_APPEND;
-            break;
-        case 'b':
-            flags &= ~_O_TEXT;
-            break;
-        case 'r':
-            dwDesiredAccess = GENERIC_READ;
-            dwCreationDisposition = OPEN_EXISTING;
-            flags |= _O_RDONLY;
-            break;
-        case 't':
-            flags |= _O_TEXT;
-            break;
-        case 'w':
-            dwDesiredAccess = GENERIC_WRITE;
-            dwCreationDisposition = CREATE_ALWAYS;
+    for (i = 0; mode[i]; ++i)
+    {
+        switch (mode[i])
+        {
+            case '+':
+                dwDesiredAccess |= GENERIC_WRITE | GENERIC_READ;
+                flags &= ~_O_RDONLY;
+                break;
+            case 'a':
+                dwDesiredAccess = GENERIC_WRITE;
+                dwCreationDisposition = OPEN_ALWAYS;
+                flags = _O_APPEND;
+                break;
+            case 'b': flags &= ~_O_TEXT; break;
+            case 'r':
+                dwDesiredAccess = GENERIC_READ;
+                dwCreationDisposition = OPEN_EXISTING;
+                flags |= _O_RDONLY;
+                break;
+            case 't': flags |= _O_TEXT; break;
+            case 'w': dwDesiredAccess = GENERIC_WRITE; dwCreationDisposition = CREATE_ALWAYS;
         }
     }
 
-    if (!(dwDesiredAccess && dwCreationDisposition)) {
+    if (!(dwDesiredAccess && dwCreationDisposition))
+    {
         errno = EINVAL;
         return NULL;
     }
 
     hFile = CreateFile(pathname, dwDesiredAccess, dwShareMode, NULL, dwCreationDisposition, dwFlagsAndAttributes, NULL);
 
-    if (hFile == INVALID_HANDLE_VALUE) {
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
         errno = GetLastError();
         return NULL;
     }
 
-    if (fd = _open_osfhandle((intptr_t)hFile, flags), fd < 0) {
+    if (fd = _open_osfhandle((intptr_t)hFile, flags), fd < 0)
+    {
         errno = GetLastError();
         CloseHandle(hFile);
         return NULL;
     }
 
-    if (fp = _fdopen(fd, mode), fp == NULL) {
+    if (fp = _fdopen(fd, mode), fp == NULL)
+    {
         errno = GetLastError();
         CloseHandle(hFile);
         return NULL;
@@ -2166,11 +2510,11 @@ FILE * wfopen(const char * pathname, const char * mode) {
 #endif
 }
 
-
-int w_compress_gzfile(const char *filesrc, const char *filedst) {
-    FILE *fd;
+int w_compress_gzfile(const char* filesrc, const char* filedst)
+{
+    FILE* fd;
     gzFile gz_fd;
-    char *buf;
+    char* buf;
     int len;
     int err;
 
@@ -2179,35 +2523,33 @@ int w_compress_gzfile(const char *filesrc, const char *filedst) {
 
     /* Read file */
     fd = wfopen(filesrc, "rb");
-    if (!fd) {
-        LogError("in w_compress_gzfile(): fopen error %s (%d):'%s'",
-                filesrc,
-                errno,
-                strerror(errno));
+    if (!fd)
+    {
+        LogError("in w_compress_gzfile(): fopen error %s (%d):'%s'", filesrc, errno, strerror(errno));
         return -1;
     }
 
     /* Open compressed file */
     gz_fd = gzopen(filedst, "w");
-    if (!gz_fd) {
+    if (!gz_fd)
+    {
         fclose(fd);
-        LogError("in w_compress_gzfile(): gzopen error %s (%d):'%s'",
-                filedst,
-                errno,
-                strerror(errno));
+        LogError("in w_compress_gzfile(): gzopen error %s (%d):'%s'", filedst, errno, strerror(errno));
         return -1;
     }
 
     os_calloc(OS_SIZE_8192 + 1, sizeof(char), buf);
-    for (;;) {
+    for (;;)
+    {
         len = fread(buf, 1, OS_SIZE_8192, fd);
-        if (len <= 0) {
+        if (len <= 0)
+        {
             break;
         }
 
-        if (gzwrite(gz_fd, buf, (unsigned)len) != len) {
-            LogError("in w_compress_gzfile(): Compression error: %s",
-                    gzerror(gz_fd, &err));
+        if (gzwrite(gz_fd, buf, (unsigned)len) != len)
+        {
+            LogError("in w_compress_gzfile(): Compression error: %s", gzerror(gz_fd, &err));
             fclose(fd);
             gzclose(gz_fd);
             os_free(buf);
@@ -2221,11 +2563,11 @@ int w_compress_gzfile(const char *filesrc, const char *filedst) {
     return 0;
 }
 
-
-int w_uncompress_gzfile(const char *gzfilesrc, const char *gzfiledst) {
-    FILE *fd;
+int w_uncompress_gzfile(const char* gzfilesrc, const char* gzfiledst)
+{
+    FILE* fd;
     gzFile gz_fd;
-    char *buf;
+    char* buf;
     int len;
     int err;
     struct stat statbuf;
@@ -2244,38 +2586,38 @@ int w_uncompress_gzfile(const char *gzfilesrc, const char *gzfiledst) {
 
     /* Read file */
     fd = wfopen(gzfiledst, "wb");
-    if (!fd) {
-        LogError("in w_uncompress_gzfile(): fopen error %s (%d):'%s'",
-                gzfiledst,
-                errno,
-                strerror(errno));
+    if (!fd)
+    {
+        LogError("in w_uncompress_gzfile(): fopen error %s (%d):'%s'", gzfiledst, errno, strerror(errno));
         return -1;
     }
 
     /* Open compressed file */
     gz_fd = gzopen(gzfilesrc, "rb");
-    if (!gz_fd) {
-        LogError("in w_uncompress_gzfile(): gzopen error %s (%d):'%s'",
-                gzfilesrc,
-                errno,
-                strerror(errno));
+    if (!gz_fd)
+    {
+        LogError("in w_uncompress_gzfile(): gzopen error %s (%d):'%s'", gzfilesrc, errno, strerror(errno));
         fclose(fd);
         return -1;
     }
 
     os_calloc(OS_SIZE_8192, sizeof(char), buf);
-    do {
+    do
+    {
         len = gzread(gz_fd, buf, OS_SIZE_8192);
 
-        if (len > 0) {
+        if (len > 0)
+        {
             fwrite(buf, 1, len, fd);
             buf[0] = '\0';
         }
     } while (len == OS_SIZE_8192);
 
-    if (!gzeof(gz_fd)) {
-        const char * gzerr = gzerror(gz_fd, &err);
-        if (err) {
+    if (!gzeof(gz_fd))
+    {
+        const char* gzerr = gzerror(gz_fd, &err);
+        if (err)
+        {
             LogError("in w_uncompress_gzfile(): gzread error: '%s'", gzerr);
             fclose(fd);
             gzclose(gz_fd);
@@ -2291,19 +2633,20 @@ int w_uncompress_gzfile(const char *gzfilesrc, const char *gzfiledst) {
     return 0;
 }
 
-
-int is_ascii_utf8(const char * file, unsigned int max_lines_ascii, unsigned int max_chars_utf8) {
+int is_ascii_utf8(const char* file, unsigned int max_lines_ascii, unsigned int max_chars_utf8)
+{
     int is_ascii = 1;
     int retval = 0;
-    char *buffer = NULL;
+    char* buffer = NULL;
     unsigned int lines_read_ascii = 0;
     unsigned int chars_read_utf8 = 0;
     fpos_t begin;
-    FILE *fp;
+    FILE* fp;
 
     fp = wfopen(file, "r");
 
-    if (!fp) {
+    if (!fp)
+    {
         LogDebug(OPEN_UNABLE, file);
         retval = 1;
         goto end;
@@ -2314,29 +2657,35 @@ int is_ascii_utf8(const char * file, unsigned int max_lines_ascii, unsigned int 
     os_calloc(OS_MAXSTR + 1, sizeof(char), buffer);
 
     /* ASCII */
-    while (fgets(buffer, OS_MAXSTR, fp)) {
+    while (fgets(buffer, OS_MAXSTR, fp))
+    {
         int i;
-        unsigned char *c = (unsigned char *)buffer;
+        unsigned char* c = (unsigned char*)buffer;
 
-        if (lines_read_ascii >= max_lines_ascii) {
+        if (lines_read_ascii >= max_lines_ascii)
+        {
             break;
         }
 
         lines_read_ascii++;
 
-        for (i = 0; i < OS_MAXSTR; i++) {
-            if( c[i] >= 0x80 ) {
+        for (i = 0; i < OS_MAXSTR; i++)
+        {
+            if (c[i] >= 0x80)
+            {
                 is_ascii = 0;
                 break;
             }
         }
 
-        if (!is_ascii) {
+        if (!is_ascii)
+        {
             break;
         }
     }
 
-    if (is_ascii) {
+    if (is_ascii)
+    {
         goto end;
     }
 
@@ -2345,34 +2694,43 @@ int is_ascii_utf8(const char * file, unsigned int max_lines_ascii, unsigned int 
     unsigned char b[4] = {0};
     size_t nbytes = 0;
 
-    while (nbytes = fread(b, sizeof(char), 4, fp), nbytes) {
+    while (nbytes = fread(b, sizeof(char), 4, fp), nbytes)
+    {
 
-        if (chars_read_utf8 >= max_chars_utf8) {
+        if (chars_read_utf8 >= max_chars_utf8)
+        {
             break;
         }
 
         chars_read_utf8++;
 
         /* Check for UTF-8 BOM */
-        if (b[0] == 0xEF && b[1] == 0xBB && b[2] == 0xBF) {
-            if (fseek(fp, -1, SEEK_CUR) != 0) {
+        if (b[0] == 0xEF && b[1] == 0xBB && b[2] == 0xBF)
+        {
+            if (fseek(fp, -1, SEEK_CUR) != 0)
+            {
                 LogError(FSEEK_ERROR, file, errno, strerror(errno));
             }
             goto next;
         }
 
         /* Valid ASCII */
-        if (b[0] == 0x09 || b[0] == 0x0A || b[0] == 0x0D || (0x20 <= b[0] && b[0] <= 0x7E)) {
-            if (fseek(fp, -nbytes + 1, SEEK_CUR) != 0) {
+        if (b[0] == 0x09 || b[0] == 0x0A || b[0] == 0x0D || (0x20 <= b[0] && b[0] <= 0x7E))
+        {
+            if (fseek(fp, -nbytes + 1, SEEK_CUR) != 0)
+            {
                 LogError(FSEEK_ERROR, file, errno, strerror(errno));
             }
             goto next;
         }
 
         /* Two bytes UTF-8 */
-        if (b[0] >= 0xC2 && b[0] <= 0xDF) {
-            if (b[1] >= 0x80 && b[1] <= 0xBF) {
-                if (fseek(fp, -2, SEEK_CUR) != 0) {
+        if (b[0] >= 0xC2 && b[0] <= 0xDF)
+        {
+            if (b[1] >= 0x80 && b[1] <= 0xBF)
+            {
+                if (fseek(fp, -2, SEEK_CUR) != 0)
+                {
                     LogError(FSEEK_ERROR, file, errno, strerror(errno));
                 }
                 goto next;
@@ -2380,10 +2738,14 @@ int is_ascii_utf8(const char * file, unsigned int max_lines_ascii, unsigned int 
         }
 
         /* Exclude overlongs */
-        if ( b[0] == 0xE0 ) {
-            if ( b[1] >= 0xA0 && b[1] <= 0xBF) {
-                if ( b[2] >= 0x80 && b[2] <= 0xBF ) {
-                    if (fseek(fp, -1, SEEK_CUR) != 0 ) {
+        if (b[0] == 0xE0)
+        {
+            if (b[1] >= 0xA0 && b[1] <= 0xBF)
+            {
+                if (b[2] >= 0x80 && b[2] <= 0xBF)
+                {
+                    if (fseek(fp, -1, SEEK_CUR) != 0)
+                    {
                         LogError(FSEEK_ERROR, file, errno, strerror(errno));
                     }
                     goto next;
@@ -2392,10 +2754,14 @@ int is_ascii_utf8(const char * file, unsigned int max_lines_ascii, unsigned int 
         }
 
         /* Three bytes UTF-8 */
-        if ((b[0] >= 0xE1 && b[0] <= 0xEC) || b[0] == 0xEE || b[0] == 0xEF) {
-            if (b[1] >= 0x80 && b[1] <= 0xBF) {
-                if (b[2] >= 0x80 && b[2] <= 0xBF) {
-                    if (fseek(fp, -1, SEEK_CUR) != 0 ) {
+        if ((b[0] >= 0xE1 && b[0] <= 0xEC) || b[0] == 0xEE || b[0] == 0xEF)
+        {
+            if (b[1] >= 0x80 && b[1] <= 0xBF)
+            {
+                if (b[2] >= 0x80 && b[2] <= 0xBF)
+                {
+                    if (fseek(fp, -1, SEEK_CUR) != 0)
+                    {
                         LogError(FSEEK_ERROR, file, errno, strerror(errno));
                     }
                     goto next;
@@ -2404,10 +2770,14 @@ int is_ascii_utf8(const char * file, unsigned int max_lines_ascii, unsigned int 
         }
 
         /* Exclude surrogates */
-        if (b[0] == 0xED) {
-            if ( b[1] >= 0x80 && b[1] <= 0x9F) {
-                if ( b[2] >= 0x80 && b[2] <= 0xBF) {
-                    if (fseek(fp, -1, SEEK_CUR) != 0 ) {
+        if (b[0] == 0xED)
+        {
+            if (b[1] >= 0x80 && b[1] <= 0x9F)
+            {
+                if (b[2] >= 0x80 && b[2] <= 0xBF)
+                {
+                    if (fseek(fp, -1, SEEK_CUR) != 0)
+                    {
                         LogError(FSEEK_ERROR, file, errno, strerror(errno));
                     }
                     goto next;
@@ -2416,10 +2786,14 @@ int is_ascii_utf8(const char * file, unsigned int max_lines_ascii, unsigned int 
         }
 
         /* Four bytes UTF-8 plane 1-3 */
-        if (b[0] == 0xF0) {
-            if (b[1] >= 0x90 && b[1] <= 0xBF) {
-                if (b[2] >= 0x80 && b[2] <= 0xBF) {
-                    if (b[3] >= 0x80 && b[3] <= 0xBF) {
+        if (b[0] == 0xF0)
+        {
+            if (b[1] >= 0x90 && b[1] <= 0xBF)
+            {
+                if (b[2] >= 0x80 && b[2] <= 0xBF)
+                {
+                    if (b[3] >= 0x80 && b[3] <= 0xBF)
+                    {
                         goto next;
                     }
                 }
@@ -2427,10 +2801,14 @@ int is_ascii_utf8(const char * file, unsigned int max_lines_ascii, unsigned int 
         }
 
         /* Four bytes UTF-8 plane 4-15*/
-        if (b[0] >= 0xF1 && b[0] <= 0xF3) {
-            if (b[1] >= 0x80 && b[1] <= 0xBF) {
-                if (b[2] >= 0x80 && b[2] <= 0xBF) {
-                    if (b[3] >= 0x80 && b[3] <= 0xBF) {
+        if (b[0] >= 0xF1 && b[0] <= 0xF3)
+        {
+            if (b[1] >= 0x80 && b[1] <= 0xBF)
+            {
+                if (b[2] >= 0x80 && b[2] <= 0xBF)
+                {
+                    if (b[3] >= 0x80 && b[3] <= 0xBF)
+                    {
                         goto next;
                     }
                 }
@@ -2438,10 +2816,14 @@ int is_ascii_utf8(const char * file, unsigned int max_lines_ascii, unsigned int 
         }
 
         /* Four bytes UTF-8 plane 16 */
-        if (b[0] == 0xF4) {
-            if (b[1] >= 0x80 && b[1] <= 0x8F) {
-                if (b[2] >= 0x80 && b[2] <= 0xBF) {
-                    if (b[3] >= 0x80 && b[3] <= 0xBF) {
+        if (b[0] == 0xF4)
+        {
+            if (b[1] >= 0x80 && b[1] <= 0x8F)
+            {
+                if (b[2] >= 0x80 && b[2] <= 0xBF)
+                {
+                    if (b[3] >= 0x80 && b[3] <= 0xBF)
+                    {
                         goto next;
                     }
                 }
@@ -2451,13 +2833,14 @@ int is_ascii_utf8(const char * file, unsigned int max_lines_ascii, unsigned int 
         retval = 1;
         goto end;
 
-next:
+    next:
         memset(b, 0, 4);
         continue;
     }
 
 end:
-    if (fp) {
+    if (fp)
+    {
         fclose(fp);
     }
     os_free(buffer);
@@ -2465,14 +2848,15 @@ end:
     return retval;
 }
 
-
-int is_usc2(const char * file) {
+int is_usc2(const char* file)
+{
     int retval = 0;
-    FILE *fp;
+    FILE* fp;
 
     fp = wfopen(file, "r");
 
-    if (!fp) {
+    if (!fp)
+    {
         LogDebug(OPEN_UNABLE, file);
         retval = 1;
         goto end;
@@ -2482,16 +2866,19 @@ int is_usc2(const char * file) {
     unsigned char b[2] = {0};
     size_t nbytes = 0;
 
-    while (nbytes = fread(b, sizeof(char), 2, fp), nbytes) {
+    while (nbytes = fread(b, sizeof(char), 2, fp), nbytes)
+    {
 
         /* Check for UCS-2 LE BOM */
-        if (b[0] == 0xFF && b[1] == 0xFE) {
+        if (b[0] == 0xFF && b[1] == 0xFE)
+        {
             retval = UCS2_LE;
             goto end;
         }
 
         /* Check for UCS-2 BE BOM */
-        if (b[0] == 0xFE && b[1] == 0xFF) {
+        if (b[0] == 0xFE && b[1] == 0xFF)
+        {
             retval = UCS2_BE;
             goto end;
         }
@@ -2501,7 +2888,8 @@ int is_usc2(const char * file) {
     }
 
 end:
-    if (fp) {
+    if (fp)
+    {
         fclose(fp);
     }
 
@@ -2509,19 +2897,29 @@ end:
 }
 
 #ifdef WIN32
-DWORD FileSizeWin(const char * file) {
+DWORD FileSizeWin(const char* file)
+{
     HANDLE h1;
     BY_HANDLE_FILE_INFORMATION lpFileInfo;
 
-    h1 = CreateFile(file, GENERIC_READ,
+    h1 = CreateFile(file,
+                    GENERIC_READ,
                     FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-                    NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-    if (h1 == INVALID_HANDLE_VALUE) {
+                    NULL,
+                    OPEN_EXISTING,
+                    FILE_ATTRIBUTE_NORMAL,
+                    NULL);
+    if (h1 == INVALID_HANDLE_VALUE)
+    {
         LogError(FILE_ERROR, file);
-    } else if (GetFileInformationByHandle(h1, &lpFileInfo) == 0) {
+    }
+    else if (GetFileInformationByHandle(h1, &lpFileInfo) == 0)
+    {
         CloseHandle(h1);
         LogError(FILE_ERROR, file);
-    } else {
+    }
+    else
+    {
         CloseHandle(h1);
         return lpFileInfo.nFileSizeHigh + lpFileInfo.nFileSizeLow;
     }
@@ -2529,7 +2927,8 @@ DWORD FileSizeWin(const char * file) {
     return -1;
 }
 
-float DirSize(const char *path) {
+float DirSize(const char* path)
+{
     WIN32_FIND_DATA fdFile;
     HANDLE hFind = NULL;
     float folder_size = 0.0;
@@ -2540,22 +2939,28 @@ float DirSize(const char *path) {
     // Specify a file mask. *.* = We want everything!
     sprintf(sPath, "%s\\*.*", path);
 
-    if ((hFind = FindFirstFile(sPath, &fdFile)) == INVALID_HANDLE_VALUE) {
+    if ((hFind = FindFirstFile(sPath, &fdFile)) == INVALID_HANDLE_VALUE)
+    {
         LogError(FILE_ERROR, path);
         return 0;
     }
 
-    do {
-        if (strcmp(fdFile.cFileName, ".") != 0 && strcmp(fdFile.cFileName, "..") != 0) {
+    do
+    {
+        if (strcmp(fdFile.cFileName, ".") != 0 && strcmp(fdFile.cFileName, "..") != 0)
+        {
             // Build up our file path using the passed in
             //  [path] and the file/foldername we just found:
             sprintf(sPath, "%s\\%s", path, fdFile.cFileName);
 
-            if (fdFile.dwFileAttributes &FILE_ATTRIBUTE_DIRECTORY) {
+            if (fdFile.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+            {
                 folder_size += DirSize(sPath);
             }
-            else {
-                if (file_size = FileSizeWin(sPath), file_size != -1) {
+            else
+            {
+                if (file_size = FileSizeWin(sPath), file_size != -1)
+                {
                     folder_size += file_size;
                 }
             }
@@ -2569,8 +2974,8 @@ float DirSize(const char *path) {
 
 #endif
 
-
-int64_t w_ftell(FILE *x) {
+int64_t w_ftell(FILE* x)
+{
 
 #ifndef WIN32
     int64_t z = ftell(x);
@@ -2578,54 +2983,67 @@ int64_t w_ftell(FILE *x) {
     int64_t z = ftello64(x);
 #endif
 
-    if (z < 0)  {
+    if (z < 0)
+    {
         LogError("Ftell function failed due to [(%d)-(%s)]", errno, strerror(errno));
         return -1;
-    } else {
+    }
+    else
+    {
         return z;
     }
 }
 
-int w_fseek(FILE *x, int64_t pos, int mode) {
+int w_fseek(FILE* x, int64_t pos, int mode)
+{
 
 #ifndef WIN32
     int64_t z = fseek(x, pos, mode);
 #else
     int64_t z = fseeko64(x, pos, mode);
 #endif
-    if (z < 0)  {
+    if (z < 0)
+    {
         LogWarn("Fseek function failed due to [(%d)-(%s)]", errno, strerror(errno));
         return -1;
-    } else {
+    }
+    else
+    {
         return z;
     }
 }
 
 /* Prevent children processes from inheriting a file pointer */
-void w_file_cloexec(ATTR_UNUSED FILE * fp) {
+void w_file_cloexec(ATTR_UNUSED FILE* fp)
+{
 #ifndef WIN32
     w_descriptor_cloexec(fileno(fp));
 #endif
 }
 
 /* Prevent children processes from inheriting a file descriptor */
-void w_descriptor_cloexec(ATTR_UNUSED int fd){
+void w_descriptor_cloexec(ATTR_UNUSED int fd)
+{
 #ifndef WIN32
-    if (fcntl(fd, F_SETFD, FD_CLOEXEC) < 0) {
+    if (fcntl(fd, F_SETFD, FD_CLOEXEC) < 0)
+    {
         LogWarn("Cannot set close-on-exec flag to the descriptor: %s (%d)", strerror(errno), errno);
     }
 #endif
 }
 
 // Add a trailing separator to a path string
-int trail_path_separator(char * dest, const char * src, size_t n) {
-    const char STR_SEPARATOR[] = { PATH_SEP, '\0' };
-    if (strlen(src) == 0) return 0;
+int trail_path_separator(char* dest, const char* src, size_t n)
+{
+    const char STR_SEPARATOR[] = {PATH_SEP, '\0'};
+    if (strlen(src) == 0)
+        return 0;
     return snprintf(dest, n, "%s%s", src, src[strlen(src) - 1] == PATH_SEP ? "" : STR_SEPARATOR);
 }
 
 // Check if a path is absolute
-bool isabspath(const char * path) {
+bool isabspath(const char* path)
+{
 #ifdef WIN32
     return strlen(path) >= 3 && isalpha(path[0]) && path[1] == ':' && (path[2] == '\\' || path[2] == '/');
 #else
@@ -2635,16 +3053,20 @@ bool isabspath(const char * path) {
 
 // Unify path separators (slashes) for Windows paths
 
-void win_path_backslash(char * path) {
-    for (char * c = strchr(path, '/'); c != NULL; c = strchr(c + 1, '/')) {
+void win_path_backslash(char* path)
+{
+    for (char* c = strchr(path, '/'); c != NULL; c = strchr(c + 1, '/'))
+    {
         *c = '\\';
     }
 }
 
 // Get an absolute path
-char * abspath(const char * path, char * buffer, size_t size) {
+char* abspath(const char* path, char* buffer, size_t size)
+{
     // If the path is already absolute, copy and return
-    if (isabspath(path)) {
+    if (isabspath(path))
+    {
         strncpy(buffer, path, size);
         buffer[size - 1] = '\0';
 #ifdef WIN32
@@ -2655,36 +3077,41 @@ char * abspath(const char * path, char * buffer, size_t size) {
 
     char cwd[PATH_MAX];
 
-    if (getcwd(cwd, sizeof(cwd)) == NULL) {
+    if (getcwd(cwd, sizeof(cwd)) == NULL)
+    {
         return NULL;
     }
 
 #ifdef WIN32
     size_t len;
 
-    switch (path[0]) {
-    case '/':
-    case '\\':
-        // Starts with \: current drive's root
-        if (snprintf(buffer, size, "%c:%s", cwd[0], path) >= (int)size) {
-            return NULL;
-        }
+    switch (path[0])
+    {
+        case '/':
+        case '\\':
+            // Starts with \: current drive's root
+            if (snprintf(buffer, size, "%c:%s", cwd[0], path) >= (int)size)
+            {
+                return NULL;
+            }
 
-        break;
+            break;
 
-    default:
-        // Remove root's backslash: "C:\" must be "C:"
-        len = strlen(cwd);
-        cwd[len - 1] = cwd[len - 1] == '\\' ? '\0' : cwd[len - 1];
+        default:
+            // Remove root's backslash: "C:\" must be "C:"
+            len = strlen(cwd);
+            cwd[len - 1] = cwd[len - 1] == '\\' ? '\0' : cwd[len - 1];
 
-        if (snprintf(buffer, size, "%s\\%s", cwd, path) >= (int)size) {
-            return NULL;
-        }
+            if (snprintf(buffer, size, "%s\\%s", cwd, path) >= (int)size)
+            {
+                return NULL;
+            }
     }
 
     win_path_backslash(buffer);
 #else
-    if (snprintf(buffer, size, "%s/%s", strcmp(cwd, "/") == 0 ? "" : cwd, path) >= (int)size) {
+    if (snprintf(buffer, size, "%s/%s", strcmp(cwd, "/") == 0 ? "" : cwd, path) >= (int)size)
+    {
         return NULL;
     }
 #endif
@@ -2693,32 +3120,37 @@ char * abspath(const char * path, char * buffer, size_t size) {
 }
 
 /* Return the content of a file from a given path */
-char * w_get_file_content(const char * path, unsigned long max_size) {
-    FILE * fp = NULL;
-    char * buffer = NULL;
+char* w_get_file_content(const char* path, unsigned long max_size)
+{
+    FILE* fp = NULL;
+    char* buffer = NULL;
     long size;
     size_t read;
 
     // Check if path is NULL
-    if (path == NULL) {
+    if (path == NULL)
+    {
         LogDebug("Cannot open NULL path");
         goto end;
     }
 
     // Load file
-    if (fp = wfopen(path, "r"), !fp) {
+    if (fp = wfopen(path, "r"), !fp)
+    {
         LogDebug(FOPEN_ERROR, path, errno, strerror(errno));
         goto end;
     }
 
     // Get file size
-    if (size = get_fp_size(fp), size < 0) {
+    if (size = get_fp_size(fp), size < 0)
+    {
         LogDebug(FSEEK_ERROR, path, errno, strerror(errno));
         goto end;
     }
 
     // Check file size limit
-    if ((unsigned long)size > max_size) {
+    if ((unsigned long)size > max_size)
+    {
         LogDebug("Cannot load file '%s': it exceeds %ld MiB", path, (max_size / (1024 * 1024)));
         goto end;
     }
@@ -2727,7 +3159,8 @@ char * w_get_file_content(const char * path, unsigned long max_size) {
     os_malloc(size + 1, buffer);
 
     // Get file content
-    if (read = fread(buffer, 1, size, fp), read != (size_t)size && !feof(fp)) {
+    if (read = fread(buffer, 1, size, fp), read != (size_t)size && !feof(fp))
+    {
         LogDebug(FREAD_ERROR, path, errno, strerror(errno));
         os_free(buffer);
         goto end;
@@ -2736,7 +3169,8 @@ char * w_get_file_content(const char * path, unsigned long max_size) {
     buffer[size] = '\0';
 
 end:
-    if (fp) {
+    if (fp)
+    {
         fclose(fp);
     }
 
@@ -2744,17 +3178,20 @@ end:
 }
 
 /* Return the pointer to a file from a given path */
-FILE * w_get_file_pointer(const char * path) {
-    FILE * fp = NULL;
+FILE* w_get_file_pointer(const char* path)
+{
+    FILE* fp = NULL;
 
     // Check if path is NULL
-    if (path == NULL) {
+    if (path == NULL)
+    {
         LogDebug("Cannot open NULL path");
         return NULL;
     }
 
     // Load file
-    if (fp = wfopen(path, "r"), !fp) {
+    if (fp = wfopen(path, "r"), !fp)
+    {
         LogDebug(FOPEN_ERROR, path, errno, strerror(errno));
         return NULL;
     }
@@ -2763,21 +3200,25 @@ FILE * w_get_file_pointer(const char * path) {
 }
 
 /* Check if a file is gzip compressed. */
-int w_is_compressed_gz_file(const char * path) {
+int w_is_compressed_gz_file(const char* path)
+{
     unsigned char buf[2];
     int retval = 0;
-    FILE *fp;
+    FILE* fp;
 
     fp = wfopen(path, "rb");
 
     /* Magic number: 1f 8b */
-    if (fp && fread(buf, 1, 2, fp) == 2) {
-        if (buf[0] == 0x1f && buf[1] == 0x8b) {
+    if (fp && fread(buf, 1, 2, fp) == 2)
+    {
+        if (buf[0] == 0x1f && buf[1] == 0x8b)
+        {
             retval = 1;
         }
     }
 
-    if (fp) {
+    if (fp)
+    {
         fclose(fp);
     }
 
@@ -2785,21 +3226,25 @@ int w_is_compressed_gz_file(const char * path) {
 }
 
 /* Check if a file is bzip2 compressed. */
-int w_is_compressed_bz2_file(const char * path) {
+int w_is_compressed_bz2_file(const char* path)
+{
     unsigned char buf[3];
     int retval = 0;
-    FILE *fp;
+    FILE* fp;
 
     fp = wfopen(path, "rb");
 
     /* Magic number: 42 5a 68 */
-    if (fp && fread(buf, 1, 3, fp) == 3) {
-        if (buf[0] == 0x42 && buf[1] == 0x5a && buf[2] == 0x68) {
+    if (fp && fread(buf, 1, 3, fp) == 3)
+    {
+        if (buf[0] == 0x42 && buf[1] == 0x5a && buf[2] == 0x68)
+        {
             retval = 1;
         }
     }
 
-    if (fp) {
+    if (fp)
+    {
         fclose(fp);
     }
 
@@ -2815,47 +3260,57 @@ int w_is_compressed_bz2_file(const char * path) {
  * @param arg ARGV0 - Program name
  * @return Pointer to the Wazuh installation path on success
  */
-char *w_homedir(char *arg) {
-    char *buff = NULL;
+char* w_homedir(char* arg)
+{
+    char* buff = NULL;
     struct stat buff_stat;
-    char * delim = "/bin";
+    char* delim = "/bin";
     os_calloc(PATH_MAX, sizeof(char), buff);
 #ifdef __MACH__
     pid_t pid = getpid();
-    if (proc_pidpath(pid, buff, PATH_MAX) > 0) {
+    if (proc_pidpath(pid, buff, PATH_MAX) > 0)
+    {
         // TODO: replace function w_strtok_r_str_delim
-        //buff = w_strtok_r_str_delim(delim, &buff);
+        // buff = w_strtok_r_str_delim(delim, &buff);
     }
 #else
-    if (realpath("/proc/self/exe", buff) != NULL) {
+    if (realpath("/proc/self/exe", buff) != NULL)
+    {
         dirname(buff);
         // TODO: replace function w_strtok_r_str_delim
-        //buff = w_strtok_r_str_delim(delim, &buff);
+        // buff = w_strtok_r_str_delim(delim, &buff);
     }
-    else if (realpath("/proc/curproc/file", buff) != NULL) {
+    else if (realpath("/proc/curproc/file", buff) != NULL)
+    {
         dirname(buff);
         // TODO: replace function w_strtok_r_str_delim
-        //buff = w_strtok_r_str_delim(delim, &buff);
+        // buff = w_strtok_r_str_delim(delim, &buff);
     }
-    else if (realpath("/proc/self/path/a.out", buff) != NULL) {
+    else if (realpath("/proc/self/path/a.out", buff) != NULL)
+    {
         dirname(buff);
         // TODO: replace function w_strtok_r_str_delim
-        //buff = w_strtok_r_str_delim(delim, &buff);
+        // buff = w_strtok_r_str_delim(delim, &buff);
     }
 #endif
-    else if (realpath(arg, buff) != NULL) {
+    else if (realpath(arg, buff) != NULL)
+    {
         dirname(buff);
         // TODO: replace function w_strtok_r_str_delim
-        //buff = w_strtok_r_str_delim(delim, &buff);
-    } else {
+        // buff = w_strtok_r_str_delim(delim, &buff);
+    }
+    else
+    {
         // The path was not found so read WAZUH_HOME env var
-        char * home_env = NULL;
-        if (home_env = getenv(WAZUH_HOME_ENV), home_env) {
+        char* home_env = NULL;
+        if (home_env = getenv(WAZUH_HOME_ENV), home_env)
+        {
             snprintf(buff, PATH_MAX, "%s", home_env);
         }
     }
 
-    if ((stat(buff, &buff_stat) < 0) || !S_ISDIR(buff_stat.st_mode)) {
+    if ((stat(buff, &buff_stat) < 0) || !S_ISDIR(buff_stat.st_mode))
+    {
         os_free(buff);
         LogCritical(HOME_ERROR);
     }
