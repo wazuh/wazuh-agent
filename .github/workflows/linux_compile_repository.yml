@@ -2,35 +2,6 @@ run-name: Build Wazuh agent Linux binaries - ${{ inputs.architecture }} - ${{ in
 name: Build Wazuh agent Linux binaries
 
 on:
-  workflow_dispatch:
-    inputs:
-      docker_image_tag:
-        description: |
-          Specify the docker tag used to build the package.
-          Use 'developer' to set branch name as tag.
-          Use 'auto' to set branch version as tag.
-          Default is 'auto'.
-        required: false
-        default: 'auto'
-      architecture:
-        type: choice
-        description: Package architecture [amd64, arm64, x86_64, aarch64].
-        required: true
-        options:
-          - amd64
-          - arm64
-          - x86_64
-          - aarch64
-      source_reference:
-        description: |
-          Branch from wazuh/wazuh-agent repository to use.
-        required: true
-      id:
-        type: string
-        description: |
-          ID used to identify the workflow uniquely.
-        required: false
-
   workflow_call:
     inputs:
       docker_image_tag:

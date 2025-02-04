@@ -2,27 +2,6 @@ run-name: Test RPM Wazuh agent Linux package - ${{ inputs.architecture }} - ${{ 
 name: Test RPM Wazuh agent Linux package
 
 on:
-  workflow_dispatch:
-    inputs:
-      architecture:
-        type: choice
-        description: Package architecture [amd64, arm64, x86_64, aarch64].
-        required: true
-        options:
-          - amd64
-          - arm64
-          - x86_64
-          - aarch64
-      source_reference:
-        description: |
-          Branch from wazuh/wazuh-agent repository to use.
-        required: true
-      id:
-        type: string
-        description: |
-          ID used to identify the workflow uniquely.
-        required: false
-
   workflow_call:
     inputs:
       architecture:
@@ -41,8 +20,8 @@ jobs:
     timeout-minutes: 50
     strategy:
         matrix:
-          distro_name: ['fedora:42', 'fedora:41', 'amazonlinux:2023', 'amazonlinux:2', 'rockylinux:9', 'rockylinux:8']
-    name: Test RPM Linux wazuh-agent sources - ${{ matrix.distro_name }}
+          distro_name: ['fedora:42', 'fedora:41', 'amazonlinux:2023', 'amazonlinux:2', 'redhat/ubi8']
+    name: Test RPM Linux wazuh-agent package - ${{ matrix.distro_name }}
 
     steps:
       - name: Checkout the wazuh-agent repository
@@ -65,5 +44,4 @@ jobs:
         uses: ./.github/actions/test-install-components
         with:
           system: rpm
-          architecture: ${{ (inputs.architecture == 'arm64' || inputs.architecture == 'aarch64') && 'arm64' || 'amd64' }}
           tested_docker: ${{ matrix.distro_name }}

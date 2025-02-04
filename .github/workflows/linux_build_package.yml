@@ -106,7 +106,7 @@ jobs:
 
   build-package-agent-linux-deb-packages:
     needs: build-binaries-agent-linux-packages
-    if: ${{ inputs.system == 'deb' ||  inputs.system == 'both'  }}
+    if: ${{ inputs.system == 'deb' ||  inputs.system == 'both' }}
     uses: wazuh/wazuh-agent/.github/workflows/linux_package_binaries.yml@enhancement/137-pkg-build-trigger
     with:
       docker_image_tag: ${{ inputs.docker_image_tag }}
@@ -121,7 +121,7 @@ jobs:
 
   build-package-agent-linux-rpm-packages:
     needs: build-binaries-agent-linux-packages
-    if: ${{ inputs.system == 'rpm' ||  inputs.system == 'both'  }}
+    if: ${{ inputs.system == 'rpm' ||  inputs.system == 'both' }}
     uses: wazuh/wazuh-agent/.github/workflows/linux_package_binaries.yml@enhancement/137-pkg-build-trigger
     with:
       docker_image_tag: ${{ inputs.docker_image_tag }}
@@ -136,7 +136,7 @@ jobs:
 
   test-package-agent-linux-deb-packages:
     needs: build-package-agent-linux-deb-packages
-    if: ${{ inputs.system == 'deb' ||  inputs.system == 'both'  }}
+    if: ${{ inputs.system == 'deb' ||  inputs.system == 'both' }}
     uses: wazuh/wazuh-agent/.github/workflows/linux_test_deb_package.yml@enhancement/137-pkg-build-trigger
     with:
       architecture: ${{ inputs.architecture }}
@@ -145,7 +145,7 @@ jobs:
       
   test-package-agent-linux-rpm-packages:
     needs: build-package-agent-linux-rpm-packages
-    if: ${{ inputs.system == 'rpm' ||  inputs.system == 'both'  }}
+    if: ${{ inputs.system == 'rpm' ||  inputs.system == 'both' }}
     uses: wazuh/wazuh-agent/.github/workflows/linux_test_rpm_package.yml@enhancement/137-pkg-build-trigger
     with:
       architecture: ${{ inputs.architecture }}
