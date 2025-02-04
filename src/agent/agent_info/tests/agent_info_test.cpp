@@ -2,146 +2,180 @@
 
 #include <agent_info.hpp>
 #include <agent_info_persistance.hpp>
+#include <mocks_persistence.hpp>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 class AgentInfoTest : public ::testing::Test
 {
 protected:
+    MockPersistence* mockPersistence = nullptr;
+    std::unique_ptr<AgentInfoPersistance> agentPersistence;
+    std::unique_ptr<AgentInfo> agentInfo;
+
     void SetUp() override
     {
-        // We need to reset the database to the default state before each test
-        AgentInfoPersistance agentInfoPersistance(".");
-        agentInfoPersistance.ResetToDefault();
+        InitializeAgentInfo();
+    }
+
+    void InitializeAgentInfo(const std::function<nlohmann::json()>& osLambda = nullptr,
+                             const std::function<nlohmann::json()>& networksLambda = nullptr,
+                             bool agentIsRegistering = false)
+    {
+        auto mockPersistencePtr = std::make_unique<MockPersistence>();
+        mockPersistence = mockPersistencePtr.get();
+
+        SetUpPersistenceMock();
+
+        if (!agentIsRegistering)
+        {
+            SetUpAgentInfoInitialization();
+        }
+
+        agentPersistence = std::make_unique<AgentInfoPersistance>("db_path", std::move(mockPersistencePtr));
+
+        agentInfo = std::make_unique<AgentInfo>("db_path",
+                                                osLambda ? osLambda : nullptr,
+                                                networksLambda ? networksLambda : nullptr,
+                                                agentIsRegistering,
+                                                std::move(agentPersistence));
+    }
+
+    void SetUpPersistenceMock()
+    {
+        EXPECT_CALL(*mockPersistence, TableExists("agent_info")).WillOnce(testing::Return(true));
+        EXPECT_CALL(*mockPersistence, TableExists("agent_group")).WillOnce(testing::Return(true));
+        EXPECT_CALL(*mockPersistence, GetCount("agent_info", testing::_, testing::_)).WillOnce(testing::Return(1));
+    }
+
+    void SetUpAgentInfoInitialization()
+    {
+        std::vector<column::Row> mockRowName = {{column::ColumnValue("name", column::ColumnType::TEXT, "name_test")}};
+        std::vector<column::Row> mockRowKey = {{column::ColumnValue("key", column::ColumnType::TEXT, "key_test")}};
+        std::vector<column::Row> mockRowUUID = {{column::ColumnValue("uuid", column::ColumnType::TEXT, "uuid_test")}};
+        std::vector<column::Row> mockRowGroup = {{column::ColumnValue("name", column::ColumnType::TEXT, "group_test")}};
+
+        testing::Sequence seq;
+        EXPECT_CALL(*mockPersistence,
+                    Select("agent_info", testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
+            .InSequence(seq)
+            .WillOnce(testing::Return(mockRowName))
+            .WillOnce(testing::Return(mockRowKey))
+            .WillOnce(testing::Return(mockRowUUID));
+        EXPECT_CALL(*mockPersistence,
+                    Select("agent_group", testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
+            .WillOnce(testing::Return(mockRowGroup));
     }
 };
 
 TEST_F(AgentInfoTest, TestDefaultConstructorDefaultValues)
 {
     EXPECT_NO_THROW({
-        const AgentInfo agentInfo(".");
-        EXPECT_EQ(agentInfo.GetName(), "");
-        EXPECT_EQ(agentInfo.GetKey(), "");
-        EXPECT_NE(agentInfo.GetUUID(), "");
+        EXPECT_EQ(agentInfo->GetName(), "name_test");
+        EXPECT_EQ(agentInfo->GetKey(), "key_test");
+        EXPECT_NE(agentInfo->GetUUID(), "");
     });
-}
-
-TEST_F(AgentInfoTest, TestPersistedValues)
-{
-    AgentInfo agentInfo(".");
-    agentInfo.SetName("test_name");
-    agentInfo.SetKey("4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
-    agentInfo.SetUUID("test_uuid");
-    agentInfo.Save();
-    const AgentInfo agentInfoReloaded(".");
-    EXPECT_EQ(agentInfoReloaded.GetName(), "test_name");
-    EXPECT_EQ(agentInfoReloaded.GetKey(), "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
-    EXPECT_EQ(agentInfoReloaded.GetUUID(), "test_uuid");
 }
 
 TEST_F(AgentInfoTest, TestSetName)
 {
-    AgentInfo agentInfo(".");
-    const std::string oldName = agentInfo.GetName();
     const std::string newName = "new_name";
 
-    agentInfo.SetName(newName);
-    EXPECT_EQ(agentInfo.GetName(), newName);
-
-    const AgentInfo agentInfoReloaded(".");
-    EXPECT_EQ(agentInfoReloaded.GetName(), oldName);
+    agentInfo->SetName(newName);
+    EXPECT_EQ(agentInfo->GetName(), newName);
 }
 
 TEST_F(AgentInfoTest, TestSetKey)
 {
-    AgentInfo agentInfo(".");
-    const std::string oldKey = agentInfo.GetKey();
     const std::string newKey = "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj";
 
-    agentInfo.SetKey(newKey);
-    EXPECT_EQ(agentInfo.GetKey(), newKey);
-
-    const AgentInfo agentInfoReloaded(".");
-    EXPECT_EQ(agentInfoReloaded.GetKey(), oldKey);
+    agentInfo->SetKey(newKey);
+    EXPECT_EQ(agentInfo->GetKey(), newKey);
 }
 
 TEST_F(AgentInfoTest, TestSetBadKey)
 {
-    AgentInfo agentInfo(".");
     const std::string newKey1 = "4GhT7uFm";
     const std::string newKey2 = "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrN=";
 
-    ASSERT_FALSE(agentInfo.SetKey(newKey1));
-    ASSERT_FALSE(agentInfo.SetKey(newKey2));
+    ASSERT_FALSE(agentInfo->SetKey(newKey1));
+    ASSERT_FALSE(agentInfo->SetKey(newKey2));
 }
 
 TEST_F(AgentInfoTest, TestSetEmptyKey)
 {
-    AgentInfo agentInfo(".");
     const std::string newKey;
-    const std::string oldKey = agentInfo.GetKey();
 
-    agentInfo.SetKey(newKey);
-    EXPECT_NE(agentInfo.GetKey(), newKey);
-
-    const AgentInfo agentInfoReloaded(".");
-    EXPECT_EQ(agentInfoReloaded.GetKey(), oldKey);
+    agentInfo->SetKey(newKey);
+    EXPECT_NE(agentInfo->GetKey(), newKey);
 }
 
 TEST_F(AgentInfoTest, TestSetUUID)
 {
-    AgentInfo agentInfo(".");
     const std::string newUUID = "new_uuid";
 
-    agentInfo.SetUUID(newUUID);
-    EXPECT_EQ(agentInfo.GetUUID(), newUUID);
-
-    const AgentInfo agentInfoReloaded(".");
-    EXPECT_NE(agentInfoReloaded.GetUUID(), newUUID);
+    agentInfo->SetUUID(newUUID);
+    EXPECT_EQ(agentInfo->GetUUID(), newUUID);
 }
 
 TEST_F(AgentInfoTest, TestSetGroups)
 {
-    AgentInfo agentInfo(".");
-    const std::vector<std::string> oldGroups = agentInfo.GetGroups();
     const std::vector<std::string> newGroups = {"t_group_1", "t_group_2"};
 
-    agentInfo.SetGroups(newGroups);
-    EXPECT_EQ(agentInfo.GetGroups(), newGroups);
-
-    const AgentInfo agentInfoReloaded(".");
-    EXPECT_EQ(agentInfoReloaded.GetGroups(), oldGroups);
+    agentInfo->SetGroups(newGroups);
+    EXPECT_EQ(agentInfo->GetGroups(), newGroups);
 }
 
 TEST_F(AgentInfoTest, TestSaveGroups)
 {
-    AgentInfo agentInfo(".");
-    const std::vector<std::string> oldGroups = agentInfo.GetGroups();
     const std::vector<std::string> newGroups = {"t_group_1", "t_group_2"};
 
-    agentInfo.SetGroups(newGroups);
-    agentInfo.SaveGroups();
-    EXPECT_EQ(agentInfo.GetGroups(), newGroups);
+    EXPECT_CALL(*mockPersistence, BeginTransaction()).Times(1);
+    EXPECT_CALL(*mockPersistence, Remove("agent_group", testing::_, testing::_)).Times(1);
+    EXPECT_CALL(*mockPersistence, Insert("agent_group", testing::_)).Times(2);
+    EXPECT_CALL(*mockPersistence, CommitTransaction(testing::_)).Times(1);
 
-    const AgentInfo agentInfoReloaded(".");
-    EXPECT_EQ(agentInfoReloaded.GetGroups(), newGroups);
+    agentInfo->SetGroups(newGroups);
+    EXPECT_TRUE(agentInfo->SaveGroups());
+    EXPECT_EQ(agentInfo->GetGroups(), newGroups);
+}
+
+TEST_F(AgentInfoTest, TestSave)
+{
+    // Mock for: m_persistence->ResetToDefault();
+    EXPECT_CALL(*mockPersistence, DropTable("agent_info")).Times(1);
+    EXPECT_CALL(*mockPersistence, DropTable("agent_group")).Times(1);
+    EXPECT_CALL(*mockPersistence, CreateTable(testing::_, testing::_)).Times(2);
+    EXPECT_CALL(*mockPersistence, GetCount("agent_info", testing::_, testing::_)).WillOnce(testing::Return(0));
+    EXPECT_CALL(*mockPersistence, Insert(testing::_, testing::_)).Times(1);
+
+    // Mock for: m_persistence->SetName(m_name); m_persistence->SetKey(m_key); m_persistence->SetUUID(m_uuid);
+    EXPECT_CALL(*mockPersistence, Update("agent_info", testing::_, testing::_, testing::_)).Times(3);
+
+    // Mock for: m_persistence->SetGroups(m_groups);
+    EXPECT_CALL(*mockPersistence, BeginTransaction()).Times(1);
+    EXPECT_CALL(*mockPersistence, Remove("agent_group", testing::_, testing::_)).Times(1);
+    EXPECT_CALL(*mockPersistence, Insert("agent_group", testing::_)).Times(1);
+    EXPECT_CALL(*mockPersistence, CommitTransaction(testing::_)).Times(1);
+    agentInfo->Save();
 }
 
 TEST_F(AgentInfoTest, TestLoadMetadataInfoNoSysInfo)
 {
-    const AgentInfo agentInfo(".", nullptr, nullptr, true);
+    InitializeAgentInfo(nullptr, nullptr, true);
 
-    auto metadataInfo = nlohmann::json::parse(agentInfo.GetMetadataInfo());
+    auto metadataInfo = nlohmann::json::parse(agentInfo->GetMetadataInfo());
 
     EXPECT_TRUE(metadataInfo != nullptr);
 
     // Agent information
-    EXPECT_EQ(metadataInfo["type"], agentInfo.GetType());
-    EXPECT_EQ(metadataInfo["version"], agentInfo.GetVersion());
-    EXPECT_EQ(metadataInfo["id"], agentInfo.GetUUID());
-    EXPECT_EQ(metadataInfo["name"], agentInfo.GetName());
-    EXPECT_EQ(metadataInfo["key"], agentInfo.GetKey());
+    EXPECT_EQ(metadataInfo["type"], agentInfo->GetType());
+    EXPECT_EQ(metadataInfo["version"], agentInfo->GetVersion());
+    EXPECT_EQ(metadataInfo["id"], agentInfo->GetUUID());
+    EXPECT_EQ(metadataInfo["name"], agentInfo->GetName());
+    EXPECT_EQ(metadataInfo["key"], agentInfo->GetKey());
     EXPECT_TRUE(metadataInfo["groups"] == nullptr);
 
     // Endpoint information
@@ -176,18 +210,18 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoRegistration)
 
     networks["iface"].push_back(ip);
 
-    const AgentInfo agentInfo(".", [os]() { return os; }, [networks]() { return networks; }, true);
+    InitializeAgentInfo([os]() { return os; }, [networks]() { return networks; }, true);
 
-    auto metadataInfo = nlohmann::json::parse(agentInfo.GetMetadataInfo());
+    auto metadataInfo = nlohmann::json::parse(agentInfo->GetMetadataInfo());
 
     EXPECT_TRUE(metadataInfo != nullptr);
 
     // Agent information
-    EXPECT_EQ(metadataInfo["type"], agentInfo.GetType());
-    EXPECT_EQ(metadataInfo["version"], agentInfo.GetVersion());
-    EXPECT_EQ(metadataInfo["id"], agentInfo.GetUUID());
-    EXPECT_EQ(metadataInfo["name"], agentInfo.GetName());
-    EXPECT_EQ(metadataInfo["key"], agentInfo.GetKey());
+    EXPECT_EQ(metadataInfo["type"], agentInfo->GetType());
+    EXPECT_EQ(metadataInfo["version"], agentInfo->GetVersion());
+    EXPECT_EQ(metadataInfo["id"], agentInfo->GetUUID());
+    EXPECT_EQ(metadataInfo["name"], agentInfo->GetName());
+    EXPECT_EQ(metadataInfo["key"], agentInfo->GetKey());
     EXPECT_TRUE(metadataInfo["groups"] == nullptr);
 
     // Endpoint information
@@ -227,17 +261,17 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoConnected)
 
     networks["iface"].push_back(ip);
 
-    const AgentInfo agentInfo(".", [os]() { return os; }, [networks]() { return networks; });
+    InitializeAgentInfo([os]() { return os; }, [networks]() { return networks; });
 
-    auto metadataInfo = nlohmann::json::parse(agentInfo.GetMetadataInfo());
+    auto metadataInfo = nlohmann::json::parse(agentInfo->GetMetadataInfo());
 
     EXPECT_TRUE(metadataInfo["agent"] != nullptr);
 
     // Agent information
-    EXPECT_EQ(metadataInfo["agent"]["type"], agentInfo.GetType());
-    EXPECT_EQ(metadataInfo["agent"]["version"], agentInfo.GetVersion());
-    EXPECT_EQ(metadataInfo["agent"]["id"], agentInfo.GetUUID());
-    EXPECT_EQ(metadataInfo["agent"]["name"], agentInfo.GetName());
+    EXPECT_EQ(metadataInfo["agent"]["type"], agentInfo->GetType());
+    EXPECT_EQ(metadataInfo["agent"]["version"], agentInfo->GetVersion());
+    EXPECT_EQ(metadataInfo["agent"]["id"], agentInfo->GetUUID());
+    EXPECT_EQ(metadataInfo["agent"]["name"], agentInfo->GetName());
     EXPECT_TRUE(metadataInfo["agent"]["key"] == nullptr);
     EXPECT_TRUE(metadataInfo["agent"]["groups"] != nullptr);
 
@@ -255,12 +289,10 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoConnected)
 
 TEST_F(AgentInfoTest, TestLoadHeaderInfo)
 {
-    const AgentInfo agentInfo(".");
-
-    auto headerInfo = agentInfo.GetHeaderInfo();
+    auto headerInfo = agentInfo->GetHeaderInfo();
 
     EXPECT_NE(headerInfo, "");
-    EXPECT_TRUE(headerInfo.starts_with("WazuhXDR/" + agentInfo.GetVersion() + " (" + agentInfo.GetType() + "; "));
+    EXPECT_TRUE(headerInfo.starts_with("WazuhXDR/" + agentInfo->GetVersion() + " (" + agentInfo->GetType() + "; "));
 }
 
 int main(int argc, char** argv)
