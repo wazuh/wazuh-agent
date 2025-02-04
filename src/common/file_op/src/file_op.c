@@ -438,40 +438,6 @@ int IsDir(const char* file)
     return (-1);
 }
 
-#ifndef WIN32
-int check_path_type(const char* dir)
-{
-    DIR* dp;
-    int retval;
-
-    if (dp = opendir(dir), dp)
-    {
-        retval = 2;
-        closedir(dp);
-    }
-    else if (errno == ENOTDIR)
-    {
-        retval = 1;
-    }
-    else
-    {
-        retval = 0;
-    }
-    return retval;
-}
-#else
-int check_path_type(const char* dir)
-{
-    DWORD attributes = GetFileAttributes(dir);
-    if (attributes == INVALID_FILE_ATTRIBUTES)
-    {
-        return 0;
-    }
-
-    return (attributes & FILE_ATTRIBUTE_DIRECTORY) ? 2 : 1;
-}
-#endif
-
 int IsFile(const char* file)
 {
     struct stat buf;
@@ -1791,101 +1757,6 @@ int cldir_ex(const char* name)
     return cldir_ex_ignore(name, NULL);
 }
 
-#ifndef WIN32
-int cldir_ex_ignore(const char* name, const char** ignore)
-{
-    DIR* dir;
-    struct dirent* dirent = NULL;
-    char path[PATH_MAX + 1];
-
-    // Erase content
-
-    dir = opendir(name);
-
-    if (!dir)
-    {
-        return -1;
-    }
-
-    while (dirent = readdir(dir), dirent)
-    {
-        // Skip "." and ".."
-        // TODO: replace function w_str_in_array
-        // if ((dirent->d_name[0] == '.' && (dirent->d_name[1] == '\0' || (dirent->d_name[1] == '.' && dirent->d_name[2]
-        // == '\0'))) || w_str_in_array(dirent->d_name, ignore)) {
-        if (dirent->d_name[0] == '.' &&
-            (dirent->d_name[1] == '\0' || (dirent->d_name[1] == '.' && dirent->d_name[2] == '\0')))
-        {
-            continue;
-        }
-
-        if (snprintf(path, PATH_MAX + 1, "%s/%s", name, dirent->d_name) > PATH_MAX)
-        {
-            closedir(dir);
-            return -1;
-        }
-
-        if (rmdir_ex(path) < 0)
-        {
-            closedir(dir);
-            return -1;
-        }
-    }
-
-    return closedir(dir);
-}
-#else
-int cldir_ex_ignore(const char* name, const char** ignore)
-{
-    WIN32_FIND_DATA findFileData;
-    HANDLE hFind = INVALID_HANDLE_VALUE;
-    char path[MAX_PATH + 1];
-    char searchPattern[MAX_PATH + 1];
-
-    // Create the search pattern
-    snprintf(searchPattern, MAX_PATH + 1, "%s\\*", name);
-
-    // Find the first file in the directory
-    hFind = FindFirstFile(searchPattern, &findFileData);
-
-    if (hFind == INVALID_HANDLE_VALUE)
-    {
-        return -1;
-    }
-
-    do
-    {
-        // Skip "." and ".."
-        if (strcmp(findFileData.cFileName, ".") == 0 || strcmp(findFileData.cFileName, "..") == 0)
-        {
-            continue;
-        }
-
-        // Create the full path
-        if (snprintf(path, MAX_PATH + 1, "%s\\%s", name, findFileData.cFileName) > MAX_PATH)
-        {
-            FindClose(hFind);
-            return -1;
-        }
-
-        // Remove the file or directory
-        if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-        {
-            // Recursively remove the directory
-            cldir_ex_ignore(path, ignore);
-            RemoveDirectory(path);
-        }
-        else
-        {
-            // Remove the file
-            DeleteFile(path);
-        }
-    } while (FindNextFile(hFind, &findFileData) != 0);
-
-    return FindClose(hFind) ? 0 : -1;
-}
-#endif
-
 int TempFile(File* file, const char* source, int copy)
 {
     FILE* fp_src;
@@ -2330,107 +2201,6 @@ long get_fp_size(FILE* fp)
 
     return size;
 }
-
-static int qsort_strcmp(const void* s1, const void* s2)
-{
-    return strcmp(*(const char**)s1, *(const char**)s2);
-}
-
-#ifndef WIN32
-char** wreaddir(const char* name)
-{
-    DIR* dir;
-    struct dirent* dirent = NULL;
-    char** files;
-    unsigned int i = 0;
-
-    if (dir = opendir(name), !dir)
-    {
-        return NULL;
-    }
-
-    os_malloc(sizeof(char*), files);
-
-    while (dirent = readdir(dir), dirent)
-    {
-        // Skip "." and ".."
-        if (dirent->d_name[0] == '.' &&
-            (dirent->d_name[1] == '\0' || (dirent->d_name[1] == '.' && dirent->d_name[2] == '\0')))
-        {
-            continue;
-        }
-
-        os_realloc(files, (i + 2) * sizeof(char*), files);
-        if (!files)
-        {
-            LogCritical(MEM_ERROR, errno, strerror(errno));
-        }
-        files[i++] = strdup(dirent->d_name);
-    }
-
-    files[i] = NULL;
-    qsort(files, i, sizeof(char*), qsort_strcmp);
-    closedir(dir);
-    return files;
-}
-#else
-char** wreaddir(const char* name)
-{
-    WIN32_FIND_DATA findFileData;
-    HANDLE hFind = INVALID_HANDLE_VALUE;
-    char** files = NULL;
-    unsigned int i = 0;
-    char searchPattern[MAX_PATH + 1];
-
-    // Create the search pattern
-    snprintf(searchPattern, MAX_PATH + 1, "%s\\*", name);
-
-    // Find the first file in the directory
-    hFind = FindFirstFile(searchPattern, &findFileData);
-
-    if (hFind == INVALID_HANDLE_VALUE)
-    {
-        return NULL;
-    }
-
-    files = (char**)malloc(sizeof(char*));
-
-    do
-    {
-        // Skip "." and ".."
-        if (strcmp(findFileData.cFileName, ".") == 0 || strcmp(findFileData.cFileName, "..") == 0)
-        {
-            continue;
-        }
-
-        // Allocate more memory for the files array
-        char** tempFiles = (char**)realloc(files, (i + 2) * sizeof(char*));
-        if (!tempFiles)
-        {
-            LogCritical(MEM_ERROR, errno, strerror(errno));
-            free(files);
-            FindClose(hFind);
-            return NULL;
-        }
-
-        files = tempFiles;
-        files[i] = _strdup(findFileData.cFileName);
-        if (!files[i])
-        {
-            free(files);
-            FindClose(hFind);
-            return NULL;
-        }
-        i++;
-    } while (FindNextFile(hFind, &findFileData) != 0);
-
-    files[i] = NULL;
-    qsort(files, i, sizeof(char*), qsort_strcmp);
-
-    FindClose(hFind);
-    return files;
-}
-#endif
 
 FILE* wfopen(const char* pathname, const char* mode)
 {
@@ -3249,6 +3019,11 @@ int w_is_compressed_bz2_file(const char* path)
     }
 
     return retval;
+}
+
+int qsort_strcmp(const void* s1, const void* s2)
+{
+    return strcmp(*(const char**)s1, *(const char**)s2);
 }
 
 #ifndef WIN32

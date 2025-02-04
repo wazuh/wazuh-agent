@@ -7,9 +7,10 @@
 #define PRIV_PAL_H_REQUIRED
 #include <stdint.h>
 
-#include "priv_pal_time.h"
-#include "priv_pal_string.h"
+#include "priv_pal_file_op.h"
 #include "priv_pal_process.h"
+#include "priv_pal_string.h"
+#include "priv_pal_time.h"
 
 #define ATTR_NONNULL
 #define ATTR_NONNULL_ONE
@@ -29,4 +30,4 @@ typedef uint8_t u_int8_t;
 typedef int pid_t;
 
 typedef int mode_t;
-#define PATH_MAX 1024*1024
+#define PATH_MAX 1024 * 1024
