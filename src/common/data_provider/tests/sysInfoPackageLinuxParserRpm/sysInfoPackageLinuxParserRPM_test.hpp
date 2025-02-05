@@ -13,6 +13,8 @@
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "packages/packageLinuxDataRetriever.h"
+#include <MockFileSystem.hpp>
 
 class SysInfoPackagesLinuxParserRPMTest : public ::testing::Test
 {
@@ -20,9 +22,16 @@ class SysInfoPackagesLinuxParserRPMTest : public ::testing::Test
 
         SysInfoPackagesLinuxParserRPMTest() = default;
         virtual ~SysInfoPackagesLinuxParserRPMTest() = default;
+        std::unique_ptr<RPM<MockFileSystem<std::vector<std::filesystem::path>>>> rpm;
 
-        void SetUp() override;
-        void TearDown() override;
+        void SetUp() override
+        {
+            rpm = std::make_unique<RPM<MockFileSystem<std::vector<std::filesystem::path>>>>();
+        }
+        void TearDown() override
+        {
+            rpm.reset();
+        }
 };
 
 #endif //_SYSINFO_PACKAGES_LINUX_PARSER_RPM_TEST_H

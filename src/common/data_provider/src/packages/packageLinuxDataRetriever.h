@@ -18,12 +18,7 @@
 #include <nlohmann/json.hpp>
 #include "sharedDefs.h"
 #include "utilsWrapperLinux.hpp"
-
-/**
- * @brief Fills a JSON object with all available rpm-related information
- * @param callback Callback to be called for every single element being found
- */
-void getRpmInfo(std::function<void(nlohmann::json&)> callback);
+#include "packageLinuxParserRpm.hpp"
 
 /**
  * @brief Fills a JSON object with all available rpm-related information for legacy Linux.
@@ -73,7 +68,7 @@ class FactoryPackagesCreator<LinuxType::STANDARD> final
 
             if (fsWrapper->exists(RPM_PATH) && fsWrapper->is_directory(RPM_PATH))
             {
-                getRpmInfo(callback);
+                RPM<>().getRpmInfo(callback);
             }
 
             if (fsWrapper->exists(SNAP_PATH) && fsWrapper->is_directory(SNAP_PATH))

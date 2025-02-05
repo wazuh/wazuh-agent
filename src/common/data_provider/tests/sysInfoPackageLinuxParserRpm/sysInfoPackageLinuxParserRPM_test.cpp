@@ -10,7 +10,6 @@
  */
 
 #include "sysInfoPackageLinuxParserRPM_test.hpp"
-#include "packages/packageLinuxDataRetriever.h"
 #include "packages/berkeleyRpmDbHelper.h"
 #include <rpm/header.h>
 #include <rpm/rpmdb.h>
@@ -182,7 +181,7 @@ class CallbackMock
         MOCK_METHOD(void, callbackMock, (nlohmann::json&), ());
 };
 
-TEST(SysInfoPackageLinuxParserRPM_test, rpmFromBerkleyDB)
+TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFromBerkleyDB)
 {
     CallbackMock wrapper;
 
@@ -333,14 +332,14 @@ TEST(SysInfoPackageLinuxParserRPM_test, rpmFromBerkleyDB)
 
     EXPECT_CALL(wrapper, callbackMock(expectedPackage1)).Times(1);
 
-    getRpmInfo([&wrapper](nlohmann::json & packageInfo)
+    rpm->getRpmInfo([&wrapper](nlohmann::json & packageInfo)
     {
         wrapper.callbackMock(packageInfo);
     });
 
 }
 
-TEST(SysInfoPackageLinuxParserRPM_test, rpmFromLibRPM)
+TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFromLibRPM)
 {
     CallbackMock wrapper;
 
@@ -390,14 +389,14 @@ TEST(SysInfoPackageLinuxParserRPM_test, rpmFromLibRPM)
 
     EXPECT_CALL(wrapper, callbackMock(expectedPackage1)).Times(1);
 
-    getRpmInfo([&wrapper](nlohmann::json & data)
+    rpm->getRpmInfo([&wrapper](nlohmann::json & data)
     {
         wrapper.callbackMock(data);
     });
 
 }
 
-TEST(SysInfoPackageLinuxParserRPM_test, rpmFallbackFromLibRPM)
+TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromLibRPM)
 {
     CallbackMock wrapper;
 
@@ -418,14 +417,14 @@ TEST(SysInfoPackageLinuxParserRPM_test, rpmFallbackFromLibRPM)
     EXPECT_CALL(wrapper, callbackMock(expectedPackage1)).Times(1);
     EXPECT_CALL(wrapper, callbackMock(expectedPackage2)).Times(1);
 
-    getRpmInfo([&wrapper](nlohmann::json & data)
+    rpm->getRpmInfo([&wrapper](nlohmann::json & data)
     {
         wrapper.callbackMock(data);
     });
 
 }
 
-TEST(SysInfoPackageLinuxParserRPM_test, rpmFallbackFromBerkleyDBConfigError)
+TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBConfigError)
 {
     CallbackMock wrapper;
 
@@ -447,14 +446,14 @@ TEST(SysInfoPackageLinuxParserRPM_test, rpmFallbackFromBerkleyDBConfigError)
     EXPECT_CALL(wrapper, callbackMock(expectedPackage1)).Times(1);
     EXPECT_CALL(wrapper, callbackMock(expectedPackage2)).Times(1);
 
-    getRpmInfo([&wrapper](nlohmann::json & data)
+    rpm->getRpmInfo([&wrapper](nlohmann::json & data)
     {
         wrapper.callbackMock(data);
     });
 
 }
 
-TEST(SysInfoPackageLinuxParserRPM_test, rpmFallbackFromBerkleyDBOpenError)
+TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBOpenError)
 {
     CallbackMock wrapper;
 
@@ -485,14 +484,14 @@ TEST(SysInfoPackageLinuxParserRPM_test, rpmFallbackFromBerkleyDBOpenError)
     EXPECT_CALL(wrapper, callbackMock(expectedPackage1)).Times(1);
     EXPECT_CALL(wrapper, callbackMock(expectedPackage2)).Times(1);
 
-    getRpmInfo([&wrapper](nlohmann::json & data)
+    rpm->getRpmInfo([&wrapper](nlohmann::json & data)
     {
         wrapper.callbackMock(data);
     });
 
 }
 
-TEST(SysInfoPackageLinuxParserRPM_test, rpmFallbackFromBerkleyDBCursorError)
+TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBCursorError)
 {
     CallbackMock wrapper;
 
@@ -525,14 +524,14 @@ TEST(SysInfoPackageLinuxParserRPM_test, rpmFallbackFromBerkleyDBCursorError)
     EXPECT_CALL(wrapper, callbackMock(expectedPackage1)).Times(1);
     EXPECT_CALL(wrapper, callbackMock(expectedPackage2)).Times(1);
 
-    getRpmInfo([&wrapper](nlohmann::json & data)
+    rpm->getRpmInfo([&wrapper](nlohmann::json & data)
     {
         wrapper.callbackMock(data);
     });
 
 }
 
-TEST(SysInfoPackageLinuxParserRPM_test, emptyRpmFallback)
+TEST_F(SysInfoPackagesLinuxParserRPMTest, emptyRpmFallback)
 {
     CallbackMock wrapper;
 
@@ -547,13 +546,13 @@ TEST(SysInfoPackageLinuxParserRPM_test, emptyRpmFallback)
     EXPECT_CALL(*utils_mock, exec(_, _)).Times(1).WillOnce(Return(""));
     EXPECT_CALL(wrapper, callbackMock(_)).Times(0);
 
-    getRpmInfo([&wrapper](nlohmann::json & data)
+    rpm->getRpmInfo([&wrapper](nlohmann::json & data)
     {
         wrapper.callbackMock(data);
     });
 }
 
-TEST(SysInfoPackageLinuxParserRPM_test, invalidPackageParsingRpmFallback)
+TEST_F(SysInfoPackagesLinuxParserRPMTest, invalidPackageParsingRpmFallback)
 {
     CallbackMock wrapper;
 
@@ -569,7 +568,7 @@ TEST(SysInfoPackageLinuxParserRPM_test, invalidPackageParsingRpmFallback)
     EXPECT_CALL(*utils_mock, exec(_, _)).Times(1).WillOnce(Return("this is not a valid rpm -qa output"));
     EXPECT_CALL(wrapper, callbackMock(_)).Times(0);
 
-    getRpmInfo([&wrapper](nlohmann::json & data)
+    rpm->getRpmInfo([&wrapper](nlohmann::json & data)
     {
         wrapper.callbackMock(data);
     });
