@@ -228,7 +228,18 @@ bool AgentInfoPersistance::SetUUID(const std::string& uuid)
 
 bool AgentInfoPersistance::SetGroups(const std::vector<std::string>& groupList)
 {
-    auto transaction = m_db->BeginTransaction();
+    TransactionId transaction = 0;
+
+    // Handle the exception separately since it would not be necessary to perform RollBack.
+    try
+    {
+        transaction = m_db->BeginTransaction();
+    }
+    catch (const std::exception& e)
+    {
+        LogError("Failed to begin transaction: {}.", e.what());
+        return false;
+    }
 
     try
     {
@@ -245,7 +256,16 @@ bool AgentInfoPersistance::SetGroups(const std::vector<std::string>& groupList)
     catch (const std::exception& e)
     {
         LogError("Error inserting group: {}.", e.what());
-        m_db->RollbackTransaction(transaction);
+
+        try
+        {
+            m_db->RollbackTransaction(transaction);
+        }
+        catch (const std::exception& ee)
+        {
+            LogError("Rollback failed: {}.", ee.what());
+        }
+
         return false;
     }
     return true;
