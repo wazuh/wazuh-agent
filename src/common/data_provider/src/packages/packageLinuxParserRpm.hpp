@@ -53,7 +53,7 @@ public:
             }
         };
 
-        if (!UtilsWrapperLinux::existsRegular(RPM_DATABASE))
+        if (!(TFileSystem::exists(RPM_DATABASE) && TFileSystem::is_regular_file(RPM_DATABASE)))
         {
             // We are probably using RPM >= 4.16 – get the packages from librpm.
             try

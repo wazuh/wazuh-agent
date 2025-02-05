@@ -28,7 +28,6 @@ class UtilsMock
 {
     public:
         MOCK_METHOD(std::string, exec, (const std::string&, const size_t));
-        MOCK_METHOD(bool, existsRegular, (const std::string& path));
 };
 
 static UtilsMock* gs_utils_mock = NULL;
@@ -36,10 +35,6 @@ static UtilsMock* gs_utils_mock = NULL;
 std::string UtilsWrapperLinux::exec(const std::string& cmd, const size_t bufferSize)
 {
     return gs_utils_mock->exec(cmd, bufferSize);
-}
-bool UtilsWrapperLinux::existsRegular(const std::string& path)
-{
-    return gs_utils_mock->existsRegular(path);
 }
 
 class RpmLibMock
@@ -204,14 +199,14 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFromBerkleyDB)
     cursor.c_get = db_c_get;
     cursor.c_close = db_c_close;
 
-    EXPECT_CALL(*utils_mock, existsRegular(_)).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(*rpm, exists(_)).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(*rpm, is_regular_file(_)).Times(1).WillOnce(Return(true));
     EXPECT_CALL(*libdb_mock, db_create(_, _, _)).Times(1).WillOnce(DoAll(SetArgPointee<0>(&db), Return(0)));
     EXPECT_CALL(*libdb_mock, set_lorder(_, _)).Times(1).WillOnce(Return(0));
     EXPECT_CALL(*libdb_mock, open(_, _, _, _, _, _, _)).Times(1).WillOnce(Return(0));
     EXPECT_CALL(*libdb_mock, cursor(_, _, _, _)).Times(1).WillOnce(DoAll(SetArgPointee<2>(&cursor), Return(0)));
 
     // Emulate data stored in database
-
     std::string name { "Wazuh" };
     std::string version { "4.4" };
     std::string release { "1" };
@@ -267,7 +262,6 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFromBerkleyDB)
         }
     };
 
-
     auto content_string
     {
         [&cp](std::string value)
@@ -285,7 +279,6 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFromBerkleyDB)
             cp += sizeof(int);
         }
     };
-
 
     {
         // Header
@@ -321,7 +314,6 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFromBerkleyDB)
     content_string(source);
     content_string(arch);
 
-
     EXPECT_CALL(*libdb_mock, c_get(_, _, _, _)).Times(3)
     .WillOnce(DoAll(SetArgPointee<1>(key), SetArgPointee<2>(data), Return(0)))
     .WillOnce(DoAll(SetArgPointee<1>(key), SetArgPointee<2>(data), Return(0)))
@@ -336,7 +328,6 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFromBerkleyDB)
     {
         wrapper.callbackMock(packageInfo);
     });
-
 }
 
 TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFromLibRPM)
@@ -356,10 +347,9 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFromLibRPM)
     rpmdbMatchIterator mi = (rpmdbMatchIterator) 0x123;
     Header header = (Header) 0x123;
 
-    EXPECT_CALL(*utils_mock, existsRegular(_)).Times(1).WillOnce(Return(false));
+    EXPECT_CALL(*rpm, exists(_)).Times(1).WillOnce(Return(false));
     EXPECT_CALL(*rpm_mock, rpmReadConfigFiles(_, _)).Times(1).WillOnce(Return(0));
     EXPECT_CALL(*rpm_mock, rpmtsCreate()).Times(1).WillOnce(Return(ts));
-
 
     EXPECT_CALL(*rpm_mock, rpmtsOpenDB(_, _)).Times(1).WillOnce(Return(0));
     EXPECT_CALL(*rpm_mock, rpmtsRun(_, _, _)).Times(1).WillOnce(Return(0));
@@ -386,14 +376,12 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFromLibRPM)
     .WillOnce(Return("3"));
     EXPECT_CALL(*rpm_mock, rpmtdGetNumber(_)).WillOnce(Return(5)).WillOnce(Return(9)).WillOnce(Return(4));
 
-
     EXPECT_CALL(wrapper, callbackMock(expectedPackage1)).Times(1);
 
     rpm->getRpmInfo([&wrapper](nlohmann::json & data)
     {
         wrapper.callbackMock(data);
     });
-
 }
 
 TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromLibRPM)
@@ -411,7 +399,7 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromLibRPM)
     gs_utils_mock = utils_mock.get();
     gs_rpm_mock = rpm_mock.get();
 
-    EXPECT_CALL(*utils_mock, existsRegular(_)).Times(1).WillOnce(Return(false));
+    EXPECT_CALL(*rpm, exists(_)).Times(1).WillOnce(Return(false));
     EXPECT_CALL(*rpm_mock, rpmReadConfigFiles(_, _)).Times(1).WillOnce(Return(1));
     EXPECT_CALL(*utils_mock, exec(_, _)).Times(1).WillOnce(Return("1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t\n11\t12\t13\t14\t15\t16\t17\t18\t19\t20\t\n"));
     EXPECT_CALL(wrapper, callbackMock(expectedPackage1)).Times(1);
@@ -421,7 +409,6 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromLibRPM)
     {
         wrapper.callbackMock(data);
     });
-
 }
 
 TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBConfigError)
@@ -439,7 +426,8 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBConfigError)
     gs_utils_mock = utils_mock.get();
     gs_libdb_mock = libdb_mock.get();
 
-    EXPECT_CALL(*utils_mock, existsRegular(_)).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(*rpm, exists(_)).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(*rpm, is_regular_file(_)).Times(1).WillOnce(Return(true));
     EXPECT_CALL(*libdb_mock, db_create(_, _, _)).Times(1).WillOnce(Return(1));
     EXPECT_CALL(*libdb_mock, db_strerror(_)).Times(1).WillOnce(Return(const_cast<char*>("test")));
     EXPECT_CALL(*utils_mock, exec(_, _)).Times(1).WillOnce(Return("1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t\n11\t12\t13\t14\t15\t16\t17\t18\t19\t20\t\n"));
@@ -450,7 +438,6 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBConfigError)
     {
         wrapper.callbackMock(data);
     });
-
 }
 
 TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBOpenError)
@@ -474,7 +461,8 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBOpenError)
     db.open = db_open;
     db.close = db_close;
 
-    EXPECT_CALL(*utils_mock, existsRegular(_)).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(*rpm, exists(_)).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(*rpm, is_regular_file(_)).Times(1).WillOnce(Return(true));
     EXPECT_CALL(*libdb_mock, db_create(_, _, _)).Times(1).WillOnce(DoAll(SetArgPointee<0>(&db), Return(0)));
     EXPECT_CALL(*libdb_mock, set_lorder(_, _)).Times(1).WillOnce(Return(0));
     EXPECT_CALL(*libdb_mock, open(_, _, _, _, _, _, _)).Times(1).WillOnce(Return(1));
@@ -488,7 +476,6 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBOpenError)
     {
         wrapper.callbackMock(data);
     });
-
 }
 
 TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBCursorError)
@@ -513,7 +500,8 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBCursorError)
     db.close = db_close;
     db.cursor = db_cursor;
 
-    EXPECT_CALL(*utils_mock, existsRegular(_)).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(*rpm, exists(_)).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(*rpm, is_regular_file(_)).Times(1).WillOnce(Return(true));
     EXPECT_CALL(*libdb_mock, db_create(_, _, _)).Times(1).WillOnce(DoAll(SetArgPointee<0>(&db), Return(0)));
     EXPECT_CALL(*libdb_mock, set_lorder(_, _)).Times(1).WillOnce(Return(0));
     EXPECT_CALL(*libdb_mock, open(_, _, _, _, _, _, _)).Times(1).WillOnce(Return(0));
@@ -528,7 +516,6 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBCursorError)
     {
         wrapper.callbackMock(data);
     });
-
 }
 
 TEST_F(SysInfoPackagesLinuxParserRPMTest, emptyRpmFallback)
@@ -541,7 +528,7 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, emptyRpmFallback)
     gs_utils_mock = utils_mock.get();
     gs_rpm_mock = rpm_mock.get();
 
-    EXPECT_CALL(*utils_mock, existsRegular(_)).Times(1).WillOnce(Return(false));
+    EXPECT_CALL(*rpm, exists(_)).Times(1).WillOnce(Return(false));
     EXPECT_CALL(*rpm_mock, rpmReadConfigFiles(_, _)).Times(1).WillOnce(Return(1));
     EXPECT_CALL(*utils_mock, exec(_, _)).Times(1).WillOnce(Return(""));
     EXPECT_CALL(wrapper, callbackMock(_)).Times(0);
@@ -563,7 +550,7 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, invalidPackageParsingRpmFallback)
     gs_utils_mock = utils_mock.get();
     gs_rpm_mock = rpm_mock.get();
 
-    EXPECT_CALL(*utils_mock, existsRegular(_)).Times(1).WillOnce(Return(false));
+    EXPECT_CALL(*rpm, exists(_)).Times(1).WillOnce(Return(false));
     EXPECT_CALL(*rpm_mock, rpmReadConfigFiles(_, _)).Times(1).WillOnce(Return(1));
     EXPECT_CALL(*utils_mock, exec(_, _)).Times(1).WillOnce(Return("this is not a valid rpm -qa output"));
     EXPECT_CALL(wrapper, callbackMock(_)).Times(0);

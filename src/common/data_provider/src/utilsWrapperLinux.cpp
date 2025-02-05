@@ -17,8 +17,3 @@ std::string UtilsWrapperLinux::exec(const std::string& cmd, const size_t bufferS
 {
     return Utils::exec(cmd, bufferSize);
 }
-
-bool UtilsWrapperLinux::existsRegular(const std::string& path)
-{
-    return Utils::existsRegular(path);
-}

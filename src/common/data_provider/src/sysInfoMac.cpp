@@ -108,7 +108,9 @@ static void getPackagesFromPath(const std::string& pkgDirectory, const int pkgTy
 {
     if (MACPORTS == pkgType)
     {
-        if (Utils::existsRegular(pkgDirectory + "/" + MACPORTS_DB_NAME))
+        const auto fsWrapper = std::make_unique<filesystem::FileSystem>();
+        if (fsWrapper->exists(pkgDirectory + "/" + MACPORTS_DB_NAME)
+            && fsWrapper->is_regular_file(pkgDirectory + "/" + MACPORTS_DB_NAME))
         {
             try
             {

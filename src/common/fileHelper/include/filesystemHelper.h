@@ -38,12 +38,6 @@
 
 namespace Utils
 {
-    static bool existsRegular(const std::string& path)
-    {
-        struct stat info {};
-        return !stat(path.c_str(), &info) && (info.st_mode & S_IFREG);
-    }
-
     static std::string getFileContent(const std::string& filePath)
     {
         std::stringstream content;
