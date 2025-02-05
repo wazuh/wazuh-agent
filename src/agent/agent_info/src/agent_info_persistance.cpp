@@ -133,17 +133,20 @@ void AgentInfoPersistance::InsertDefaultAgentInfo()
     }
 }
 
-void AgentInfoPersistance::SetAgentInfoValue(const std::string& column, const std::string& value)
+bool AgentInfoPersistance::SetAgentInfoValue(const std::string& column, const std::string& value)
 {
     try
     {
         const Row columns = {ColumnValue(column, ColumnType::TEXT, value)};
         m_db->Update(AGENT_INFO_TABLE_NAME, columns);
+        return true;
     }
     catch (const std::exception& e)
     {
         LogError("Error updating {}: {}.", column, e.what());
     }
+
+    return false;
 }
 
 std::string AgentInfoPersistance::GetAgentInfoValue(const std::string& column) const
@@ -208,19 +211,19 @@ std::vector<std::string> AgentInfoPersistance::GetGroups() const
     return groupList;
 }
 
-void AgentInfoPersistance::SetName(const std::string& name)
+bool AgentInfoPersistance::SetName(const std::string& name)
 {
-    SetAgentInfoValue(AGENT_INFO_NAME_COLUMN_NAME, name);
+    return SetAgentInfoValue(AGENT_INFO_NAME_COLUMN_NAME, name);
 }
 
-void AgentInfoPersistance::SetKey(const std::string& key)
+bool AgentInfoPersistance::SetKey(const std::string& key)
 {
-    SetAgentInfoValue(AGENT_INFO_KEY_COLUMN_NAME, key);
+    return SetAgentInfoValue(AGENT_INFO_KEY_COLUMN_NAME, key);
 }
 
-void AgentInfoPersistance::SetUUID(const std::string& uuid)
+bool AgentInfoPersistance::SetUUID(const std::string& uuid)
 {
-    SetAgentInfoValue(AGENT_INFO_UUID_COLUMN_NAME, uuid);
+    return SetAgentInfoValue(AGENT_INFO_UUID_COLUMN_NAME, uuid);
 }
 
 bool AgentInfoPersistance::SetGroups(const std::vector<std::string>& groupList)
@@ -248,7 +251,7 @@ bool AgentInfoPersistance::SetGroups(const std::vector<std::string>& groupList)
     return true;
 }
 
-void AgentInfoPersistance::ResetToDefault()
+bool AgentInfoPersistance::ResetToDefault()
 {
     try
     {
@@ -257,9 +260,11 @@ void AgentInfoPersistance::ResetToDefault()
         CreateAgentInfoTable();
         CreateAgentGroupTable();
         InsertDefaultAgentInfo();
+        return true;
     }
     catch (const std::exception& e)
     {
         LogError("Error resetting to default values: {}.", e.what());
     }
+    return false;
 }

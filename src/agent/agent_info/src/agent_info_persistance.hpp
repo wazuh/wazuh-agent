@@ -47,15 +47,18 @@ public:
 
     /// @brief Sets the agent's name in the database.
     /// @param name The name to set.
-    void SetName(const std::string& name);
+    /// @return True if the operation was successful, false otherwise.
+    bool SetName(const std::string& name);
 
     /// @brief Sets the agent's key in the database.
     /// @param key The key to set.
-    void SetKey(const std::string& key);
+    /// @return True if the operation was successful, false otherwise.
+    bool SetKey(const std::string& key);
 
     /// @brief Sets the agent's UUID in the database.
     /// @param uuid The UUID to set.
-    void SetUUID(const std::string& uuid);
+    /// @return True if the operation was successful, false otherwise.
+    bool SetUUID(const std::string& uuid);
 
     /// @brief Sets the agent's group list in the database, replacing any existing groups.
     /// @param groupList A vector of strings, each representing a group name.
@@ -63,7 +66,8 @@ public:
     bool SetGroups(const std::vector<std::string>& groupList);
 
     /// @brief Resets the database tables to default values, clearing all data.
-    void ResetToDefault();
+    /// @return True if the reset was successful, false otherwise.
+    bool ResetToDefault();
 
 private:
     /// @brief Checks if the agent info table is empty.
@@ -82,7 +86,8 @@ private:
     /// @brief Sets a specific agent info value in the database.
     /// @param column The name of the column to set.
     /// @param value The value to set in the specified column.
-    void SetAgentInfoValue(const std::string& column, const std::string& value);
+    /// @return True if the operation was successful, false otherwise.
+    bool SetAgentInfoValue(const std::string& column, const std::string& value);
 
     /// @brief Retrieves a specific agent info value from the database.
     /// @param column The name of the column to retrieve.
