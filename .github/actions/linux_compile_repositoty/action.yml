@@ -17,13 +17,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Checkout the wazuh-agent repository
-      uses: actions/checkout@v4
-      with:
-        repository: wazuh/wazuh-agent
-        ref: ${{ inputs.source_reference }}
-        persist-credentials: false
-
     - name: Set ARCH, TAG and DOCKER_IMAGE_NAME
       uses: ./.github/actions/docker_set_arch_tag_and_image_name
       with:
