@@ -5,6 +5,7 @@
 #include <logger.hpp>
 
 #include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
 #include <boost/beast/core/flat_buffer.hpp>
 #include <boost/beast/core/tcp_stream.hpp>
 #include <boost/beast/http.hpp>
@@ -16,6 +17,7 @@
 
 namespace http_client
 {
+    /// @brief Helper class that wraps boost network functions for testing purposes
     class HttpSocketHelper : public ISocketHelper
     {
     public:
@@ -25,6 +27,15 @@ namespace http_client
         }
 
         virtual ~HttpSocketHelper() {}
+
+        void set_verify_mode([[maybe_unused]] boost::asio::ssl::verify_mode mode) override
+        { // No implementation for Http
+        }
+
+        void
+        set_verify_callback([[maybe_unused]] std::function<bool(bool, boost::asio::ssl::verify_context&)> vf) override {
+            // No implementation for Http
+        };
 
         void expires_after(std::chrono::seconds seconds) override
         {
@@ -87,6 +98,7 @@ namespace http_client
     public:
         /// @brief Constructor for HttpSocket
         /// @param io_context The io context to use for the socket
+        /// @param socket The socket helper to use
         HttpSocket([[maybe_unused]] const boost::asio::any_io_executor& io_context,
                    std::shared_ptr<http_client::ISocketHelper> socket = nullptr)
             : m_socket(socket != nullptr ? std::move(socket)

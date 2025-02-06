@@ -5,7 +5,10 @@
 class MockHttpHelper : public http_client::ISocketHelper
 {
 public:
-    // MOCK_METHOD(void, SetVerificationMode, (const std::string&, const std::string&), (override));
+    MOCK_METHOD(void, set_verify_mode, (boost::asio::ssl::verify_mode), (override));
+
+    MOCK_METHOD(void, set_verify_callback, (std::function<bool(bool, boost::asio::ssl::verify_context&)>), (override));
+
     MOCK_METHOD(void, expires_after, (std::chrono::seconds), (override));
     MOCK_METHOD(void,
                 connect,

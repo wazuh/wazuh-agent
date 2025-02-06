@@ -2,6 +2,7 @@
 
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ssl.hpp>
 #include <boost/beast/core/flat_buffer.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/system/error_code.hpp>
@@ -17,6 +18,10 @@ namespace http_client
     {
     public:
         virtual ~ISocketHelper() {};
+
+        virtual void set_verify_mode(boost::asio::ssl::verify_mode mode) = 0;
+
+        virtual void set_verify_callback(std::function<bool(bool, boost::asio::ssl::verify_context&)> vf) = 0;
 
         virtual void expires_after(std::chrono::seconds seconds) = 0;
 
