@@ -89,16 +89,9 @@ namespace http_client
         /// @param io_context The io context to use for the socket
         HttpSocket([[maybe_unused]] const boost::asio::any_io_executor& io_context,
                    std::shared_ptr<http_client::ISocketHelper> socket = nullptr)
-            : m_socket(nullptr)
+            : m_socket(socket != nullptr ? std::move(socket)
+                                         : std::make_shared<http_client::HttpSocketHelper>(io_context))
         {
-            if (socket != nullptr)
-            {
-                m_socket = std::move(socket);
-            }
-            else
-            {
-                m_socket = std::make_shared<http_client::HttpSocketHelper>(io_context);
-            }
         }
 
         /// @brief Sets the verification mode for the host
