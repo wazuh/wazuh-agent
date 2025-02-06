@@ -13,3 +13,12 @@ add_library(Filesystem STATIC
 
 target_include_directories(Filesystem PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/filesystem/include)
 target_link_libraries(Filesystem PUBLIC utils)
+
+# File io target
+
+add_library(FileIO STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/file_io/src/file_io.cpp
+)
+
+target_include_directories(FileIO PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/file_io/include)
+
