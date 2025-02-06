@@ -26,13 +26,13 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformation)
 {
     constexpr auto RPM_PACKAGE_CENTOS
     {
-        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t15432\t3\t24.el5\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
+        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t4111222333\t3\t24.el5\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
     };
 
     const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS) };
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(15432, jsPackageInfo["size"]);
+    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("3:1.5-24.el5", jsPackageInfo["version"]);
@@ -46,7 +46,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationLibRpm)
 {
     RpmPackageManager::Package input;
     input.name = "mktemp";
-    input.size = 15432;
+    input.size = 4111222333;
     input.installTime = "1425472738";
     input.group = "System Environment/Base";
     input.version = "1.5";
@@ -58,7 +58,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationLibRpm)
 
     const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(input) };
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(15432, jsPackageInfo["size"]);
+    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("3:1.5-24.el5", jsPackageInfo["version"]);
@@ -113,13 +113,13 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonEpoch)
 {
     constexpr auto RPM_PACKAGE_CENTOS
     {
-        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t15432\t\t24.el5\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
+        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t4111222333\t\t24.el5\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
     };
 
     const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS) };
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(15432, jsPackageInfo["size"]);
+    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("1.5-24.el5", jsPackageInfo["version"]);
@@ -133,7 +133,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmNoEpochNoReleaseLibRpm)
 {
     RpmPackageManager::Package input;
     input.name = "mktemp";
-    input.size = 15432;
+    input.size = 4111222333;
     input.installTime = "1425472738";
     input.group = "System Environment/Base";
     input.version = "4.16";
@@ -143,7 +143,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmNoEpochNoReleaseLibRpm)
 
     const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(input) };
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(15432, jsPackageInfo["size"]);
+    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("4.16", jsPackageInfo["version"]);
@@ -157,7 +157,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmNoEpochLibRpm)
 {
     RpmPackageManager::Package input;
     input.name = "mktemp";
-    input.size = 15432;
+    input.size = 4111222333;
     input.installTime = "1425472738";
     input.group = "System Environment/Base";
     input.version = "4.16";
@@ -168,7 +168,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmNoEpochLibRpm)
 
     const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(input) };
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(15432, jsPackageInfo["size"]);
+    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("1:4.16", jsPackageInfo["version"]);
@@ -182,13 +182,13 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonEpochNonRelease)
 {
     constexpr auto RPM_PACKAGE_CENTOS
     {
-        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t15432\t\t\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
+        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t4111222333\t\t\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
     };
 
     const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS) };
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(15432, jsPackageInfo["size"]);
+    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("1.5", jsPackageInfo["version"]);
@@ -202,13 +202,13 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonRelease)
 {
     constexpr auto RPM_PACKAGE_CENTOS
     {
-        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t15432\t3\t\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
+        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t4111222333\t3\t\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
     };
 
     const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS) };
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(15432, jsPackageInfo["size"]);
+    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("3:1.5", jsPackageInfo["version"]);
@@ -222,13 +222,13 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonEpochWithNone)
 {
     constexpr auto RPM_PACKAGE_CENTOS
     {
-        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t15432\t(none)\t24.el5\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
+        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t4111222333\t(none)\t24.el5\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
     };
 
     const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS) };
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(15432, jsPackageInfo["size"]);
+    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("1.5-24.el5", jsPackageInfo["version"]);
@@ -242,13 +242,13 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonReleaseWithNone)
 {
     constexpr auto RPM_PACKAGE_CENTOS
     {
-        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t15432\t3\t(none)\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
+        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t4111222333\t3\t(none)\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
     };
 
     const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS) };
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(15432, jsPackageInfo["size"]);
+    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("3:1.5", jsPackageInfo["version"]);
@@ -262,13 +262,13 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonEpochNonReleaseWith
 {
     constexpr auto RPM_PACKAGE_CENTOS
     {
-        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t15432\t(none)\t(none)\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
+        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t4111222333\t(none)\t(none)\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
     };
 
     const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS) };
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(15432, jsPackageInfo["size"]);
+    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("1.5", jsPackageInfo["version"]);
@@ -284,7 +284,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseDpkgInformation)
     constexpr auto STATUS_INFO      {"Status: install ok installed"};
     constexpr auto PRIORITY_INFO    {"Priority: optional"};
     constexpr auto SECTION_INFO     {"Section: libdevel"};
-    constexpr auto SIZE_INFO        {"Installed-Size: 591"};
+    constexpr auto SIZE_INFO        {"Installed-Size: 4014865"};
     constexpr auto VENDOR_INFO      {"Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>"};
     constexpr auto ARCH_INFO        {"Architecture: amd64"};
     constexpr auto MULTIARCH_INFO   {"Multi-Arch: same"};
@@ -313,7 +313,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseDpkgInformation)
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("zlib1g-dev", jsPackageInfo["name"]);
     EXPECT_EQ("optional", jsPackageInfo["priority"]);
-    EXPECT_EQ(605184, jsPackageInfo["size"]);
+    EXPECT_EQ(4111221760, jsPackageInfo["size"]);
     EXPECT_EQ("libdevel", jsPackageInfo["groups"]);
     EXPECT_EQ("same", jsPackageInfo["multiarch"]);
     EXPECT_EQ("1:1.2.11.dfsg-2ubuntu1.2", jsPackageInfo["version"]);
@@ -333,7 +333,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapCorrectMapping)
             "summary": "Shared GNOME 3.38 Ubuntu stack",
             "description": "This snap includes a GNOME 3.38 stack (the base libraries and desktop \nintegration components) and shares it through the content interface. \n",
             "icon": "/v2/icons/gnome-3-38-2004/icon",
-            "installed-size": 363151360,
+            "installed-size": 4111222333,
             "name": "gnome-3-38-2004",
             "publisher": {
                 "id": "canonical",
@@ -368,7 +368,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapCorrectMapping)
 
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("gnome-3-38-2004", jsPackageInfo["name"]);
-    EXPECT_EQ(363151360, jsPackageInfo["size"]);
+    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
     EXPECT_EQ("2022/11/23 20:33:59", jsPackageInfo["install_time"]);
     EXPECT_TRUE(jsPackageInfo["groups"].is_null());
     EXPECT_EQ("0+git.6f39565", jsPackageInfo["version"]);
@@ -475,7 +475,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapValidSizeAsString)
             "summary": "Shared GNOME 3.38 Ubuntu stack",
             "description": "This snap includes a GNOME 3.38 stack (the base libraries and desktop \nintegration components) and shares it through the content interface. \n",
             "icon": "/v2/icons/gnome-3-38-2004/icon",
-            "installed-size": "363151360",
+            "installed-size": "4111222333",
             "name": "gnome-3-38-2004",
             "publisher": {
                 "id": "canonical",
@@ -509,7 +509,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapValidSizeAsString)
         )"_json) };
 
     EXPECT_FALSE(jsPackageInfo.empty());
-    EXPECT_EQ(363151360, jsPackageInfo["size"]);
+    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
 }
 
 TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapEmptyJSON)

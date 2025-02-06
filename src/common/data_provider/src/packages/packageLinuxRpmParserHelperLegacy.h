@@ -63,7 +63,7 @@ namespace PackageLinuxHelper
                 }
 
                 ret["name"]         = name;
-                ret["size"]         = size.empty() || size.compare(DEFAULT_VALUE) == 0 ? 0 : stoi(size);
+                ret["size"]         = size.empty() || size.compare(DEFAULT_VALUE) == 0 ? 0 : stoll(size);
                 ret["install_time"] = install_time.empty() || install_time.compare(DEFAULT_VALUE) == 0 ? UNKNOWN_VALUE : nlohmann::json(install_time);
                 ret["location"]     = EMPTY_VALUE;
                 ret["groups"]       = groups.empty() || groups.compare(DEFAULT_VALUE) == 0 ? UNKNOWN_VALUE : nlohmann::json(groups);

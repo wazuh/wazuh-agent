@@ -62,7 +62,7 @@ constexpr auto PACKAGES_SQL_STATEMENT {
     location TEXT,
     architecture TEXT,
     description TEXT,
-    size INTEGER,
+    size BIGINT,
     format TEXT,
     PRIMARY KEY (name,version,architecture,format,location)) WITHOUT ROWID;)"};
 
