@@ -11,7 +11,6 @@
 #include "sysInfo.hpp"
 #include "cmdHelper.h"
 #include "stringHelper.h"
-#include "filesystemHelper.h"
 #include <filesystem.hpp>
 #include "osinfo/sysOsParsers.h"
 #include <libproc.h>

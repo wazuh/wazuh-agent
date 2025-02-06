@@ -13,7 +13,6 @@
 #define _PACKAGE_LINUX_DATA_RETRIEVER_H
 
 #include <memory>
-#include "filesystemHelper.h"
 #include <filesystem.hpp>
 #include <nlohmann/json.hpp>
 #include "sharedDefs.h"

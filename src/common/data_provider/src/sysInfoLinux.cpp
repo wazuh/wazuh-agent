@@ -415,7 +415,8 @@ ProcessInfo portProcessInfo(const std::string& procPath, const std::deque<int64_
     {
         // Get stat file content.
         std::string processInfo { EMPTY_VALUE };
-        const std::string statContent {Utils::getFileContent(filePath)};
+        const auto fileIoWrapper = std::make_unique<file_io::FileIO>();
+        const std::string statContent {fileIoWrapper->getFileContent(filePath)};
 
         const auto openParenthesisPos {statContent.find("(")};
         const auto closeParenthesisPos {statContent.find(")")};
@@ -511,7 +512,8 @@ nlohmann::json SysInfo::getPorts() const
 
     for (const auto& portType : PORTS_TYPE)
     {
-        const auto fileContent { Utils::getFileContent(WM_SYS_NET_DIR + portType.second) };
+        const auto fileIoWrapper = std::make_unique<file_io::FileIO>();
+        const auto fileContent { fileIoWrapper->getFileContent(WM_SYS_NET_DIR + portType.second) };
         auto rows { Utils::split(fileContent, '\n') };
         auto fileBody { false };
 

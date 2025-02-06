@@ -11,7 +11,6 @@
 
 #include "utilsWrapperLinux.hpp"
 #include "cmdHelper.h"
-#include "filesystemHelper.h"
 
 std::string UtilsWrapperLinux::exec(const std::string& cmd, const size_t bufferSize)
 {
