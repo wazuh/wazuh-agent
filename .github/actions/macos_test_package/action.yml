@@ -1,0 +1,34 @@
+name: 'Test Mac OS Package'
+description: 'Test Mac OS Package'
+inputs:
+  checksum:
+    description: 'Generate package checksum'
+    required: false
+  upload_to_s3:
+    description: 'Upload package to S3'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Download wazuh agent package
+      uses: actions/download-artifact@v4
+      with:
+        pattern: '*.pkg*'
+
+    - name: Prepare package
+      shell: bash
+      run: |
+        cp wazuh-agent*/wazuh-agent* /tmp
+
+    - name: Test macOS package installation
+      shell: bash
+      run: |
+        PACKAGE_NAME=$(ls /tmp | grep "wazuh-agent.*pkg") && echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
+        sudo installer -pkg /tmp/"$PACKAGE_NAME" -target / | sudo tee /tmp/installer.log
+        if grep -q "The install was successful" "/tmp/installer.log"; then
+          echo "Installation successfully."
+        else
+          echo "The installation could not be completed. The package will not be uploaded.";
+          exit 1;
+        fi

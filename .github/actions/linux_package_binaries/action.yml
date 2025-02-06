@@ -77,22 +77,6 @@ runs:
         system: ${{ inputs.system }}
         tested_docker: ${{ inputs.system == 'deb' && 'ubuntu:22.04' || 'redhat/ubi9' }}
 
-    - name: Set up AWS CLI
-      if: ${{ inputs.upload_to_s3 == 'true' }}
-      uses: ./.github/actions/upload_file_to_s3
-      with:
-        s3_uri: "s3://packages-dev.internal.wazuh.com/development/wazuh/5.x/main/packages"
-        uploaded_file_name: ${{ env.PKG_NAME }}
-        uploaded_file_location: "/tmp"
-
-    - name: Upload checksums to S3
-      if: ${{ inputs.upload_to_s3 == 'true' && inputs.checksum == 'true' }}
-      uses: ./.github/actions/upload_file_to_s3
-      with:
-        s3_uri: "s3://packages-dev.internal.wazuh.com/development/wazuh/5.x/main/packages"
-        uploaded_file_name: ${{ env.PKG_NAME }}.sha512
-        uploaded_file_location: "/tmp"
-
     - name: Upload package to artifact
       uses: actions/upload-artifact@v4
       with:

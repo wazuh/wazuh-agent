@@ -74,53 +74,64 @@ on:
 
 jobs:
   build-binaries-agent-macos-packages:
-    uses: wazuh/wazuh-agent/.github/workflows/macos_compile_repository.yml@enhancement/137-pkg-build-trigger
-    with:
-      architecture: ${{ inputs.architecture }}
-      source_reference: ${{ inputs.source_reference }}
-      id: ${{ inputs.id }}  
+    runs-on: ${{ inputs.architecture == 'arm64' && 'macos-14' || 'macos-13' }}
+    env:
+      VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
+    timeout-minutes: 50
+    name: Build Mac OS wazuh-agent sources - ${{ inputs.architecture }}
+
+    steps:
+      - name: Checkout the wazuh-agent repository
+        uses: actions/checkout@v4
+        with:
+          repository: wazuh/wazuh-agent
+          ref: ${{ inputs.source_reference }}
+          persist-credentials: false
+
+      - name: Compile Mac OS Repository
+        uses: ./.github/actions/macos_compile_repository
+        with:
+          architecture: ${{ inputs.architecture }}
+          gh_token: ${{ github.token }}
 
   build-package-agent-macos-packages:
     needs: build-binaries-agent-macos-packages
     runs-on: macos-14
     timeout-minutes: 50
-    name: Build macOS wazuh-agent package - ${{ inputs.architecture }}${{ inputs.is_stage && ' - is stage' || '' }}${{ inputs.checksum && ' - checksum' || '' }}
+    name: Build Mac OS wazuh-agent package - ${{ inputs.architecture }}${{ inputs.is_stage && ' - is stage' || '' }}${{ inputs.checksum && ' - checksum' || '' }}
 
     steps:
-      - name: Download wazuh-agent-binaries.zip
-        uses: actions/download-artifact@v4
+      - name: Checkout the wazuh-agent repository
+        uses: actions/checkout@v4
         with:
-          name: wazuh-agent-binaries-${{ inputs.architecture }}
+          repository: wazuh/wazuh-agent
+          ref: ${{ inputs.source_reference }}
+          persist-credentials: false
 
-      - name: Set vars to build macOS package
-        run: |
-          FLAGS="-a ${{ inputs.architecture }} -j $(sysctl -n hw.ncpu) -r ${{ inputs.revision }} -s /tmp --verbose "
-          if [ "${{ inputs.is_stage }}" == "true" ]; then FLAGS+="--is_stage "; fi
-          if [ "${{ inputs.checksum }}" == "true" ]; then FLAGS+="--checksum "; fi
-          echo "FLAGS=$FLAGS" >> $GITHUB_ENV
-
-      - name: Build macOS package
-        run: |
-          sudo unzip wazuh-agent-binaries-${{ inputs.architecture }}.zip -d /
-          bash packages/macos/generate_wazuh_packages.sh -i
-          echo 'generate_wazuh_packages.sh ${{ env.FLAGS }}'
-          sudo bash packages/macos/generate_wazuh_packages.sh ${{ env.FLAGS }}
-
-      - name: Zip package
-        run: |
-          sudo zip -r /tmp/wazuh-agent-package-${{ inputs.architecture }}.zip /tmp/*.pkg* -j
-
-      - name: Upload wazuh agent package
-        uses: actions/upload-artifact@v4
+      - name: Build Mac OS Package - ${{ inputs.architecture }}
+        uses: ./.github/actions/macos_package_binaries
         with:
-          name: wazuh-agent-package-${{ inputs.architecture }}
-          path: /tmp/wazuh-agent-package-${{ inputs.architecture }}.zip
+          architecture: ${{ inputs.architecture }}
+          revision: ${{ inputs.revision }}
+          is_stage: ${{ inputs.is_stage }}
+          checksum: ${{ inputs.checksum }}
 
   test-package-agent-macos-packages:
     needs: build-package-agent-macos-packages
-    uses: wazuh/wazuh-agent/.github/workflows/macos_test_package.yml@enhancement/137-pkg-build-trigger
-    with:
-      architecture: ${{ inputs.architecture }}
-      checksum: ${{ inputs.checksum }}
-      upload_to_s3: ${{ inputs.upload_to_s3 }}
-      id: ${{ inputs.id }}
+    runs-on: ${{ inputs.architecture == 'arm64' && 'macos-14' || 'macos-13' }}
+    timeout-minutes: 50
+    name: Test Mac OS wazuh-agent package - ${{ inputs.architecture }}${{ inputs.is_stage && ' - is stage' || '' }}${{ inputs.checksum && ' - checksum' || '' }}
+
+    steps:
+      - name: Checkout the wazuh-agent repository
+        uses: actions/checkout@v4
+        with:
+          repository: wazuh/wazuh-agent
+          ref: ${{ inputs.source_reference }}
+          persist-credentials: false
+      
+      - name: Test Mac OS Package - ${{ inputs.architecture }}
+        uses: ./.github/actions/macos_test_package
+        with:
+          checksum: ${{ inputs.checksum }}
+          upload_to_s3: 'false'

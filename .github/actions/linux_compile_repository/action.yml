@@ -1,5 +1,5 @@
 name: 'Compile Linux Repository'
-description: 'Set Docker architecture, tag and image name'
+description: 'Compile Linux Repository'
 inputs:
   architecture:
     description: 'Linux image architecture'

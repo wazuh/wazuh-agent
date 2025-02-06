@@ -120,8 +120,8 @@ jobs:
           ref: ${{ inputs.source_reference }}
           persist-credentials: false
 
-      - name: Compile Linux Repositorys
-        uses: ./.github/actions/linux_compile_repositoty
+      - name: Compile Linux Repository
+        uses: ./.github/actions/linux_compile_repository
         with:
           architecture: ${{ inputs.architecture }}
           docker_image_tag: ${{ inputs.docker_image_tag }}
@@ -143,7 +143,7 @@ jobs:
           ref: ${{ inputs.source_reference }}
           persist-credentials: false
 
-      - name: Compile Linux Repository
+      - name: Build Linux DEB Package - ${{ inputs.architecture }}
         uses: ./.github/actions/linux_package_binaries
         with:
           architecture: ${{ inputs.architecture }}
@@ -171,7 +171,7 @@ jobs:
           ref: ${{ inputs.source_reference }}
           persist-credentials: false
 
-      - name: Compile Linux Repository
+      - name: Build Linux RPM Package - ${{ inputs.architecture }}
         uses: ./.github/actions/linux_package_binaries
         with:
           architecture: ${{ inputs.architecture }}
