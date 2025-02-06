@@ -13,7 +13,7 @@ add_executable(agent_registration_test agent_registration_test.cpp)
 configure_target(agent_registration_test)
 target_include_directories(agent_registration_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src
     ${CMAKE_CURRENT_SOURCE_DIR}/../agent_info/src)
-target_link_libraries(agent_registration_test PRIVATE Agent GTest::gmock GTest::gtest)
+target_link_libraries(agent_registration_test PRIVATE Agent Persistence GTest::gmock GTest::gtest)
 add_test(NAME AgentRegistrationTest COMMAND agent_registration_test)
 
 add_executable(signal_handler_test signal_handler_test.cpp)

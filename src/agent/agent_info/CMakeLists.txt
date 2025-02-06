@@ -11,8 +11,8 @@ find_package(nlohmann_json CONFIG REQUIRED)
 add_library(AgentInfo src/agent_info.cpp src/agent_info_persistance.cpp)
 target_include_directories(AgentInfo PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_link_libraries(AgentInfo PUBLIC nlohmann_json::nlohmann_json Config Persistence PRIVATE Boost::uuid Logger)
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_link_libraries(AgentInfo PUBLIC nlohmann_json::nlohmann_json Config PRIVATE Persistence Boost::uuid Logger)
 
 if(MSVC)
     target_link_libraries(AgentInfo PRIVATE bcrypt)

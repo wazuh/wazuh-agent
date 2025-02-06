@@ -12,7 +12,7 @@ class AgentInfoTest : public ::testing::Test
 {
 protected:
     MockPersistence* mockPersistence = nullptr;
-    std::unique_ptr<AgentInfoPersistance> agentPersistence;
+    std::shared_ptr<AgentInfoPersistance> agentPersistence;
     std::unique_ptr<AgentInfo> agentInfo;
 
     void SetUp() override
@@ -34,7 +34,7 @@ protected:
             SetUpAgentInfoInitialization();
         }
 
-        agentPersistence = std::make_unique<AgentInfoPersistance>("db_path", std::move(mockPersistencePtr));
+        agentPersistence = std::make_shared<AgentInfoPersistance>("db_path", std::move(mockPersistencePtr));
 
         agentInfo = std::make_unique<AgentInfo>("db_path",
                                                 osLambda ? osLambda : nullptr,
