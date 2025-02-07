@@ -14,7 +14,9 @@
 #include <filesystem>
 #include <memory>
 
-Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> signalHandler)
+Agent::Agent(const std::string& configFilePath,
+             std::unique_ptr<ISignalHandler> signalHandler,
+             std::unique_ptr<http_client::IHttpClient> httpClient)
     : m_signalHandler(std::move(signalHandler))
     , m_configurationParser(configFilePath.empty() ? std::make_shared<configuration::ConfigurationParser>()
                                                    : std::make_shared<configuration::ConfigurationParser>(
@@ -24,7 +26,7 @@ Agent::Agent(const std::string& configFilePath, std::unique_ptr<ISignalHandler> 
           [this]() { return m_sysInfo.os(); },
           [this]() { return m_sysInfo.networks(); })
     , m_messageQueue(std::make_shared<MultiTypeQueue>(m_configurationParser))
-    , m_communicator(std::make_unique<http_client::HttpClient>(),
+    , m_communicator(httpClient ? std::move(httpClient) : std::make_unique<http_client::HttpClient>(),
                      m_configurationParser,
                      m_agentInfo.GetUUID(),
                      m_agentInfo.GetKey(),
