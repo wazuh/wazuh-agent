@@ -78,7 +78,7 @@ namespace PackageLinuxHelper
             nlohmann::json version = EMPTY_VALUE;
             nlohmann::json vendor = UNKNOWN_VALUE;
             nlohmann::json description = UNKNOWN_VALUE;
-            int size                 { 0 };
+            int64_t size { 0 };
 
             auto it{info.find("Priority")};
 
@@ -98,7 +98,7 @@ namespace PackageLinuxHelper
 
             if (it != info.end())
             {
-                size = stol(it->second) * 1024;
+                size = stoll(it->second) * 1024;
             }
 
             it = info.find("Multi-Arch");
@@ -169,7 +169,7 @@ namespace PackageLinuxHelper
         nlohmann::json vendor = UNKNOWN_VALUE;
         nlohmann::json install_time = UNKNOWN_VALUE;
         nlohmann::json description = UNKNOWN_VALUE;
-        int         size         { 0 };
+        int64_t     size         { 0 };
         bool        hasName      { false };
         bool        hasVersion   { false };
 
@@ -230,7 +230,7 @@ namespace PackageLinuxHelper
 
             if (data.is_number())
             {
-                size = data.get<int>();
+                size = data.get<int64_t>();
             }
             else if (data.is_string())
             {
@@ -240,7 +240,7 @@ namespace PackageLinuxHelper
                 {
                     try
                     {
-                        size = std::stoi( stringData );
+                        size = std::stoll( stringData );
                     }
                     catch (const std::exception& e)
                     {

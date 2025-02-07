@@ -119,7 +119,7 @@ CREATE TABLE packages (
     location TEXT,
     architecture TEXT,
     description TEXT,
-    size INTEGER,
+    size BIGINT,
     format TEXT,
     PRIMARY KEY (name, version, architecture, format, location)
 ) WITHOUT ROWID;
@@ -135,7 +135,7 @@ This table stores information about installed software packages.
 |     ✔️     | `location`     | TEXT    | Installation location.                  |         |
 |     ✔️     | `architecture` | TEXT    | Architecture of the package.            |         |
 |           | `description`  | TEXT    | Description of the package.             |         |
-|           | `size`         | INTEGER | Size of the package in bytes.           |         |
+|           | `size`         | BIGINT  | Size of the package in bytes.           |         |
 |     ✔️     | `format`       | TEXT    | Format of the package (e.g., RPM, DEB). |         |
 
 ### Processes Table
