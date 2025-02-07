@@ -61,6 +61,7 @@ namespace filesystem
         return std::filesystem::remove(path);
     }
 
+    // NOLINTNEXTLINE(misc-no-recursion)
     void FileSystem::expand_absolute_path(const std::string& path, std::deque<std::string>& output) const
     {
         // Find the first * or ? from path.
