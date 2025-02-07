@@ -85,7 +85,7 @@ namespace centralized_configuration
 
                     if (m_fileSystemWrapper->exists(sharedDirPath) && m_fileSystemWrapper->is_directory(sharedDirPath))
                     {
-                        for (const auto& entry : std::filesystem::directory_iterator(sharedDirPath))
+                        for (const auto& entry : m_fileSystemWrapper->list_directory(sharedDirPath))
                         {
                             m_fileSystemWrapper->remove_all(entry);
                         }

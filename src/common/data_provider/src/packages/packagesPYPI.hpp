@@ -119,7 +119,7 @@ class PYPI final : public TFileSystem, public TFileIO
                     // Exist and is a directory
                     if (TFileSystem::exists(expandedPath) && TFileSystem::is_directory(expandedPath))
                     {
-                        for (const std::filesystem::path& path : TFileSystem::directory_iterator(expandedPath))
+                        for (const std::filesystem::path& path : TFileSystem::list_directory(expandedPath))
                         {
                             findCorrectPath(path, callback);
                         }

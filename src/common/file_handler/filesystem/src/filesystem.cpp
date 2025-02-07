@@ -42,9 +42,13 @@ namespace filesystem
         return std::filesystem::create_directories(path);
     }
 
-    std::filesystem::directory_iterator FileSystem::directory_iterator(const std::filesystem::path& path) const
+    std::vector<std::filesystem::path> FileSystem::list_directory(const std::filesystem::path& path) const
     {
-        return std::filesystem::directory_iterator(path);
+        std::vector<std::filesystem::path> result;
+        for (const auto& entry : std::filesystem::directory_iterator(path)) {
+            result.push_back(entry.path());
+        }
+        return result;
     }
 
     void FileSystem::rename(const std::filesystem::path& from, const std::filesystem::path& to) const
@@ -116,9 +120,9 @@ namespace filesystem
 
             if (exists(baseDir))
             {
-                for (const auto& entry : directory_iterator(baseDir))
+                for (const auto& entry : list_directory(baseDir))
                 {
-                    const auto entryName { entry.path().filename().string()};
+                    const auto entryName { entry.filename().string()};
 
                     if (Utils::patternMatch(entryName, pattern))
                     {
@@ -147,9 +151,9 @@ namespace filesystem
         if (!exists(path) || !is_directory(path))
             return ret;
 
-        for (const auto& entry : directory_iterator(path))
+        for (const auto& entry : list_directory(path))
         {
-            ret.push_back(entry.path().filename().string());
+            ret.push_back(entry.filename().string());
         }
 
         return ret;

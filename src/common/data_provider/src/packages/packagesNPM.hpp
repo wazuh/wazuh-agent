@@ -91,7 +91,7 @@ class NPM final
 
                     if (TFileSystem::exists(nodeModulesFolder))
                     {
-                        for (const auto& packageFolder : TFileSystem::directory_iterator(nodeModulesFolder))
+                        for (const auto& packageFolder : TFileSystem::list_directory(nodeModulesFolder))
                         {
                             if (TFileSystem::is_directory(packageFolder))
                             {

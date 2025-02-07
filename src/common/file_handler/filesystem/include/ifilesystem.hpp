@@ -52,10 +52,10 @@ public:
     /// @return Returns true if the directory was successfully created, otherwise false.
     virtual bool create_directories(const std::filesystem::path& path) const = 0;
 
-    /// @brief Returns the iterator to the first element of a directory
+    /// @brief Returns a vector containing the elements of a directory
     /// @param path Path to the directory
-    /// @return The iterator to the first element of a directory
-    virtual std::filesystem::directory_iterator directory_iterator(const std::filesystem::path& path) const = 0;
+    /// @return The vector containing the elements of the directory
+    virtual std::vector<std::filesystem::path> list_directory(const std::filesystem::path& path) const = 0;
 
     /// @brief Renames a file or directory from the 'from' path to the 'to' path.
     /// @param from The current path of the file or directory.

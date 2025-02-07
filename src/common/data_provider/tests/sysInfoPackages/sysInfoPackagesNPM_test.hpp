@@ -13,18 +13,18 @@
 #define _NPMTEST_HPP
 
 #include "gtest/gtest.h"
-#include "MockFileSystem.hpp"
+#include "../../../file_handler/filesystem/tests/mocks/mock_filesystem.hpp"
 #include "MockJsonIO.hpp"
 #include "packagesNPM.hpp"
 
 class NPMTest : public ::testing::Test
 {
     protected:
-        std::unique_ptr<NPM<MockFileSystem<std::vector<std::filesystem::path>>, MockJsonIO>> npm;
+        std::unique_ptr<NPM<MockFileSystem, MockJsonIO>> npm;
 
         void SetUp() override
         {
-            npm = std::make_unique<NPM<MockFileSystem<std::vector<std::filesystem::path>>, MockJsonIO>>();
+            npm = std::make_unique<NPM<MockFileSystem, MockJsonIO>>();
         }
 
         void TearDown() override
@@ -32,7 +32,5 @@ class NPMTest : public ::testing::Test
             npm.reset();
         }
 };
-
-
 
 #endif // _NPMTEST_HPP

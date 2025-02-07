@@ -21,7 +21,7 @@ TEST_F(NPMTest, getPackages_ValidPackagesTest)
 
     EXPECT_CALL(*npm, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*npm, is_directory(_)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*npm, directory_iterator(_)).WillRepeatedly(Return(fakePackages));
+    EXPECT_CALL(*npm, list_directory(_)).WillRepeatedly(Return((fakePackages)));
 
     nlohmann::json fakePackageJson1 = {{"name", "TestPackage1"}, {"version", "1.0.0"}};
     nlohmann::json fakePackageJson2 = {{"name", "TestPackage2"}, {"version", "2.0.0"}};
@@ -38,7 +38,7 @@ TEST_F(NPMTest, getPackages_ValidPackagesTest)
 
     EXPECT_CALL(*npm, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base + "/node_modules");
+            out.push_back(base);
         });
 
     auto callback = [&](nlohmann::json & json)
@@ -64,7 +64,7 @@ TEST_F(NPMTest, getPackages_NoPackagesFoundTest)
     std::vector<std::filesystem::path> fakePackages = {};
 
     EXPECT_CALL(*npm, exists(_)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*npm, directory_iterator(_)).WillRepeatedly(Return(fakePackages));
+    EXPECT_CALL(*npm, list_directory(_)).WillRepeatedly(Return(fakePackages));
 
     bool callbackCalled = false;
 
@@ -84,7 +84,7 @@ TEST_F(NPMTest, getPackages_NoPackageJsonTest)
 
     EXPECT_CALL(*npm, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*npm, is_directory(_)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*npm, directory_iterator(_)).WillRepeatedly(Return(fakePackages));
+    EXPECT_CALL(*npm, list_directory(_)).WillRepeatedly(Return(fakePackages));
 
     EXPECT_CALL(*npm, readJson(std::filesystem::path("/fake/node_modules/package1/package.json")))
     .WillOnce(Return(nlohmann::json()));
@@ -95,7 +95,7 @@ TEST_F(NPMTest, getPackages_NoPackageJsonTest)
 
     EXPECT_CALL(*npm, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base + "/node_modules");
+            out.push_back(base);
         });
 
     npm->getPackages(folders, [&](nlohmann::json&)
@@ -112,7 +112,7 @@ TEST_F(NPMTest, getPackages_InvalidPackageJsonNameTest)
 
     EXPECT_CALL(*npm, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*npm, is_directory(_)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*npm, directory_iterator(_)).WillRepeatedly(Return(fakePackages));
+    EXPECT_CALL(*npm, list_directory(_)).WillRepeatedly(Return(fakePackages));
 
     EXPECT_CALL(*npm, readJson(std::filesystem::path("/fake/node_modules/package1/package.json")))
     .WillOnce(Return(nlohmann::json::parse(R"({"name": 1})")));
@@ -123,7 +123,7 @@ TEST_F(NPMTest, getPackages_InvalidPackageJsonNameTest)
 
     EXPECT_CALL(*npm, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base + "/node_modules");
+            out.push_back(base);
         });
 
     npm->getPackages(folders, [&](nlohmann::json&)
@@ -140,7 +140,7 @@ TEST_F(NPMTest, getPackages_InvalidPackageJsonVersionTest)
 
     EXPECT_CALL(*npm, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*npm, is_directory(_)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*npm, directory_iterator(_)).WillRepeatedly(Return(fakePackages));
+    EXPECT_CALL(*npm, list_directory(_)).WillRepeatedly(Return(fakePackages));
 
     EXPECT_CALL(*npm, readJson(std::filesystem::path("/fake/node_modules/package1/package.json")))
     .WillOnce(Return(nlohmann::json::parse(R"({"name": "TestPackage1", "version": 1})")));
@@ -151,7 +151,7 @@ TEST_F(NPMTest, getPackages_InvalidPackageJsonVersionTest)
 
     EXPECT_CALL(*npm, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base + "/node_modules");
+            out.push_back(base);
         });
 
     npm->getPackages(folders, [&](nlohmann::json&)
@@ -168,7 +168,7 @@ TEST_F(NPMTest, getPackages_ValidPackageJson2Test)
 
     EXPECT_CALL(*npm, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*npm, is_directory(_)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*npm, directory_iterator(_)).WillOnce(Return(fakePackages));
+    EXPECT_CALL(*npm, list_directory(_)).WillOnce(Return(fakePackages));
 
     EXPECT_CALL(*npm, readJson(std::filesystem::path("/fake/node_modules/package1/package.json")))
     .WillOnce(Return(nlohmann::json::parse(R"({"name": "TestPackage1", "version": "1.0.0"})")));
@@ -183,7 +183,7 @@ TEST_F(NPMTest, getPackages_ValidPackageJson2Test)
 
     EXPECT_CALL(*npm, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base + "/node_modules");
+            out.push_back(base);
         });
 
     npm->getPackages(folders,
@@ -206,4 +206,3 @@ TEST_F(NPMTest, getPackages_ValidPackageJson2Test)
     EXPECT_TRUE(callbackCalledFirst);
     EXPECT_TRUE(callbackCalledSecond);
 }
-

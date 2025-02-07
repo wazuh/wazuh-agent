@@ -24,7 +24,7 @@ TEST_F(PYPITest, getPackagesTest)
     EXPECT_CALL(*pypi, is_directory(_))
     .WillRepeatedly(Return(true));
 
-    EXPECT_CALL(*pypi, directory_iterator(_))
+    EXPECT_CALL(*pypi, list_directory(_))
     .WillRepeatedly(Return(fakeFiles));
 
     EXPECT_CALL(*pypi, readLineByLine(_, _))
@@ -40,7 +40,7 @@ TEST_F(PYPITest, getPackagesTest)
 
     EXPECT_CALL(*pypi, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base + "/fake");
+            out.push_back(base);
         });
 
     pypi->getPackages(folders, callback);
@@ -56,7 +56,7 @@ TEST_F(PYPITest, getPackages_NoFilesInDirectoryTest)
 
     EXPECT_CALL(*pypi, is_directory(_)).WillRepeatedly(Return(true));
 
-    EXPECT_CALL(*pypi, directory_iterator(_)).WillRepeatedly(Return(fakeFiles));
+    EXPECT_CALL(*pypi, list_directory(_)).WillRepeatedly(Return(fakeFiles));
 
     nlohmann::json capturedJson;
     auto callback = [&](nlohmann::json & j)
@@ -68,7 +68,7 @@ TEST_F(PYPITest, getPackages_NoFilesInDirectoryTest)
 
     EXPECT_CALL(*pypi, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base + "/fake");
+            out.push_back(base);
         });
 
     pypi->getPackages(folders, callback);
@@ -91,7 +91,7 @@ TEST_F(PYPITest, getPackages_NonDirectoryPathTest)
 
     EXPECT_CALL(*pypi, expand_absolute_path(_, _))
     .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-        out.push_back(base + "/fake");
+        out.push_back(base);
     });
 
     pypi->getPackages(folders, callback);
@@ -105,7 +105,7 @@ TEST_F(PYPITest, getPackages_OneValidPackageTestEggInfo)
 
     EXPECT_CALL(*pypi, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*pypi, is_directory(_)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*pypi, directory_iterator(_)).WillRepeatedly(Return(fakeFiles));
+    EXPECT_CALL(*pypi, list_directory(_)).WillRepeatedly(Return(fakeFiles));
     EXPECT_CALL(*pypi, is_regular_file(_)).WillRepeatedly(Return(true));
 
     std::vector<std::string> fakePackageLines = {"Name: TestPackage", "Version: 1.0.0"};
@@ -127,7 +127,7 @@ TEST_F(PYPITest, getPackages_OneValidPackageTestEggInfo)
 
     EXPECT_CALL(*pypi, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base + "/fake");
+            out.push_back(base);
         });
 
     pypi->getPackages(folders, callback);
@@ -142,7 +142,7 @@ TEST_F(PYPITest, getPackages_OneValidPackageTestNoRegularFileDistInfo)
 
     EXPECT_CALL(*pypi, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*pypi, is_directory(_)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*pypi, directory_iterator(_)).WillRepeatedly(Return(fakeFiles));
+    EXPECT_CALL(*pypi, list_directory(_)).WillRepeatedly(Return(fakeFiles));
     EXPECT_CALL(*pypi, is_regular_file(_)).WillRepeatedly(Return(false));
 
     std::vector<std::string> fakePackageLines = {"Name: TestPackage", "Version: 1.0.0"};
@@ -164,7 +164,7 @@ TEST_F(PYPITest, getPackages_OneValidPackageTestNoRegularFileDistInfo)
 
     EXPECT_CALL(*pypi, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base + "/fake");
+            out.push_back(base);
         });
 
     pypi->getPackages(folders, callback);
@@ -179,7 +179,7 @@ TEST_F(PYPITest, getPackages_OneValidPackageTestDistInfo)
 
     EXPECT_CALL(*pypi, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*pypi, is_directory(_)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*pypi, directory_iterator(_)).WillRepeatedly(Return(fakeFiles));
+    EXPECT_CALL(*pypi, list_directory(_)).WillRepeatedly(Return(fakeFiles));
     EXPECT_CALL(*pypi, is_regular_file(_)).WillRepeatedly(Return(true));
 
     std::vector<std::string> fakePackageLines = {"Name: TestPackage", "Version: 1.0.0"};
@@ -201,7 +201,7 @@ TEST_F(PYPITest, getPackages_OneValidPackageTestDistInfo)
 
     EXPECT_CALL(*pypi, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base + "/fake");
+            out.push_back(base);
         });
 
     pypi->getPackages(folders, callback);
@@ -216,7 +216,7 @@ TEST_F(PYPITest, getPackages_OneValidPackageTestNoRegularFileEggInfo)
 
     EXPECT_CALL(*pypi, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*pypi, is_directory(_)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*pypi, directory_iterator(_)).WillRepeatedly(Return(fakeFiles));
+    EXPECT_CALL(*pypi, list_directory(_)).WillRepeatedly(Return(fakeFiles));
     EXPECT_CALL(*pypi, is_regular_file(_)).WillRepeatedly(Return(false));
 
     std::vector<std::string> fakePackageLines = {"Name: TestPackage", "Version: 1.0.0"};
@@ -238,7 +238,7 @@ TEST_F(PYPITest, getPackages_OneValidPackageTestNoRegularFileEggInfo)
 
     EXPECT_CALL(*pypi, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base + "/fake");
+            out.push_back(base);
         });
 
     pypi->getPackages(folders, callback);
@@ -254,7 +254,7 @@ TEST_F(PYPITest, getPackages_MultipleValidPackagesTest)
 
     EXPECT_CALL(*pypi, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*pypi, is_directory(_)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*pypi, directory_iterator(_)).WillRepeatedly(Return(fakeFiles));
+    EXPECT_CALL(*pypi, list_directory(_)).WillRepeatedly(Return(fakeFiles));
     EXPECT_CALL(*pypi, is_regular_file(_)).WillRepeatedly(Return(true));
 
     std::vector<std::string> fakePackageLines1 = {"Name: TestPackage1", "Version: 1.0.0"};
@@ -296,7 +296,7 @@ TEST_F(PYPITest, getPackages_MultipleValidPackagesTest)
 
     EXPECT_CALL(*pypi, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base + "/fake");
+            out.push_back(base);
         });
 
     pypi->getPackages(folders, callback);
@@ -311,7 +311,7 @@ TEST_F(PYPITest, getPackages_InvalidPackageTest_NoLines)
 
     EXPECT_CALL(*pypi, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*pypi, is_directory(_)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*pypi, directory_iterator(_)).WillRepeatedly(Return(fakeFiles));
+    EXPECT_CALL(*pypi, list_directory(_)).WillRepeatedly(Return(fakeFiles));
     EXPECT_CALL(*pypi, is_regular_file(_)).WillRepeatedly(Return(true));
 
     std::vector<std::string> fakePackageLines = {};
@@ -334,7 +334,7 @@ TEST_F(PYPITest, getPackages_InvalidPackageTest_NoLines)
 
     EXPECT_CALL(*pypi, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base + "/fake");
+            out.push_back(base);
         });
 
     pypi->getPackages(folders, callback);
@@ -348,7 +348,7 @@ TEST_F(PYPITest, getPackages_InvalidPackageTest_InvalidLines)
 
     EXPECT_CALL(*pypi, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*pypi, is_directory(_)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*pypi, directory_iterator(_)).WillRepeatedly(Return(fakeFiles));
+    EXPECT_CALL(*pypi, list_directory(_)).WillRepeatedly(Return(fakeFiles));
     EXPECT_CALL(*pypi, is_regular_file(_)).WillRepeatedly(Return(true));
 
     std::vector<std::string> fakePackageLines = {"Invalid: TestPackage", "Invalid: 1.0.0"};
@@ -371,7 +371,7 @@ TEST_F(PYPITest, getPackages_InvalidPackageTest_InvalidLines)
 
     EXPECT_CALL(*pypi, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base + "/fake");
+            out.push_back(base);
         });
 
     pypi->getPackages(folders, callback);
@@ -385,7 +385,7 @@ TEST_F(PYPITest, getPackages_InvalidPackageTest_MissingName)
 
     EXPECT_CALL(*pypi, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*pypi, is_directory(_)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*pypi, directory_iterator(_)).WillRepeatedly(Return(fakeFiles));
+    EXPECT_CALL(*pypi, list_directory(_)).WillRepeatedly(Return(fakeFiles));
     EXPECT_CALL(*pypi, is_regular_file(_)).WillRepeatedly(Return(true));
 
     std::vector<std::string> fakePackageLines = {"Version: 1.0.0"};
@@ -408,7 +408,7 @@ TEST_F(PYPITest, getPackages_InvalidPackageTest_MissingName)
 
     EXPECT_CALL(*pypi, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base + "/fake");
+            out.push_back(base);
         });
 
     pypi->getPackages(folders, callback);
@@ -422,7 +422,7 @@ TEST_F(PYPITest, getPackages_InvalidPackageTest_MissingVersion)
 
     EXPECT_CALL(*pypi, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*pypi, is_directory(_)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*pypi, directory_iterator(_)).WillRepeatedly(Return(fakeFiles));
+    EXPECT_CALL(*pypi, list_directory(_)).WillRepeatedly(Return(fakeFiles));
     EXPECT_CALL(*pypi, is_regular_file(_)).WillRepeatedly(Return(true));
 
     std::vector<std::string> fakePackageLines = {"Name: TestPackage"};
@@ -445,7 +445,7 @@ TEST_F(PYPITest, getPackages_InvalidPackageTest_MissingVersion)
 
     EXPECT_CALL(*pypi, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base + "/fake");
+            out.push_back(base);
         });
 
     pypi->getPackages(folders, callback);

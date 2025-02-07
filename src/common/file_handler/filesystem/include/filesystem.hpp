@@ -47,10 +47,10 @@ namespace filesystem
         /// @return Returns true if the directory was successfully created, otherwise false.
         bool create_directories(const std::filesystem::path& path) const override;
 
-        /// @brief Returns the iterator to the first element of a directory
+        /// @brief Returns a vector containing the elements of a directory
         /// @param path Path to the directory
-        /// @return The iterator to the first element of a directory
-        std::filesystem::directory_iterator directory_iterator(const std::filesystem::path& path) const override;
+        /// @return The vector containing the elements of the directory
+        std::vector<std::filesystem::path> list_directory(const std::filesystem::path& path) const override;
 
         /// @brief Renames a file or directory from the 'from' path to the 'to' path.
         /// @param from The current path of the file or directory.

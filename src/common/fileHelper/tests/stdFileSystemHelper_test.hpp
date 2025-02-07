@@ -13,7 +13,6 @@
 #define _STD_FILESYSTEM_HELPER_TESTS_HPP
 
 #include "gtest/gtest.h"
-#include "stdFileSystemHelper.hpp"
 #include <filesystem>
 #include <fstream>
 #include <thread>
