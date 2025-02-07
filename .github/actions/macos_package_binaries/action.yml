@@ -37,7 +37,7 @@ runs:
         bash packages/macos/generate_wazuh_packages.sh -i
         echo 'generate_wazuh_packages.sh ${{ env.FLAGS }}'
         sudo bash packages/macos/generate_wazuh_packages.sh ${{ env.FLAGS }}
-        PACKAGE_NAME=$(ls /tmp | grep "wazuh-agent.*pkg") && echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
+        PACKAGE_NAME=$(ls /tmp | grep "wazuh-agent.*pkg$") && echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
 
     - name: Upload wazuh agent package
       uses: actions/upload-artifact@v4

@@ -24,7 +24,7 @@ runs:
     - name: Test macOS package installation
       shell: bash
       run: |
-        PACKAGE_NAME=$(ls /tmp | grep "wazuh-agent.*pkg") && echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
+        PACKAGE_NAME=$(ls /tmp | grep "wazuh-agent.*pkg$") && echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
         sudo installer -pkg /tmp/"$PACKAGE_NAME" -target / | sudo tee /tmp/installer.log
         if grep -q "The install was successful" "/tmp/installer.log"; then
           echo "Installation successfully."

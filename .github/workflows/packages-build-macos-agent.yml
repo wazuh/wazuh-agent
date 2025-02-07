@@ -1,5 +1,5 @@
-run-name: Packages - Build Wazuh agent macOS packages - ${{ inputs.architecture }}${{ inputs.is_stage && ' - is stage' || '' }}${{ inputs.checksum && ' - checksum' || '' }} ${{ inputs.id }}
-name: Build Wazuh agent macOS packages
+run-name: Packages - Build Wazuh agent Mac OS packages - ${{ inputs.architecture }}${{ inputs.is_stage && ' - is stage' || '' }}${{ inputs.checksum && ' - checksum' || '' }} ${{ inputs.id }}
+name: Build Wazuh agent Mac OS packages
 
 on:
   workflow_dispatch:
