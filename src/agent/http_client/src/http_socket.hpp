@@ -1,11 +1,10 @@
 #pragma once
 
+#include <http_socket_helper.hpp>
 #include <ihttp_socket.hpp>
-#include <ihttp_socket_factory.hpp>
 #include <logger.hpp>
 
 #include <boost/asio.hpp>
-#include <boost/asio/ssl.hpp>
 #include <boost/beast/core/flat_buffer.hpp>
 #include <boost/beast/core/tcp_stream.hpp>
 #include <boost/beast/http.hpp>
@@ -17,81 +16,6 @@
 
 namespace http_client
 {
-    /// @brief Helper class that wraps boost network functions for testing purposes
-    class HttpSocketHelper : public ISocketHelper
-    {
-    public:
-        HttpSocketHelper(const boost::asio::any_io_executor& io_context)
-            : m_socket(io_context)
-        {
-        }
-
-        virtual ~HttpSocketHelper() {}
-
-        void set_verify_mode([[maybe_unused]] boost::asio::ssl::verify_mode mode) override
-        { // No implementation for Http
-        }
-
-        void
-        set_verify_callback([[maybe_unused]] std::function<bool(bool, boost::asio::ssl::verify_context&)> vf) override {
-            // No implementation for Http
-        };
-
-        void expires_after(std::chrono::seconds seconds) override
-        {
-            m_socket.expires_after(seconds);
-        }
-
-        void connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
-                     boost::system::error_code& ec) override
-        {
-            m_socket.async_connect(endpoints, [&ec](boost::system::error_code const& code, auto const&) { ec = code; });
-        }
-
-        boost::asio::awaitable<void> async_connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
-                                                   boost::system::error_code& ec) override
-        {
-            co_await m_socket.async_connect(endpoints, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
-        }
-
-        void write(const boost::beast::http::request<boost::beast::http::string_body>& req,
-                   boost::system::error_code& ec) override
-        {
-            boost::beast::http::write(m_socket, req, ec);
-        }
-
-        boost::asio::awaitable<void>
-        async_write(const boost::beast::http::request<boost::beast::http::string_body>& req,
-                    boost::system::error_code& ec) override
-        {
-            co_await boost::beast::http::async_write(
-                m_socket, req, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
-        }
-
-        void read(boost::beast::flat_buffer& buffer,
-                  boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                  boost::system::error_code& ec) override
-        {
-            boost::beast::http::read(m_socket, buffer, res, ec);
-        }
-
-        boost::asio::awaitable<void> async_read(boost::beast::flat_buffer& buffer,
-                                                boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                                                boost::system::error_code& ec) override
-        {
-            co_await boost::beast::http::async_read(
-                m_socket, buffer, res, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
-        }
-
-        void close() override
-        {
-            m_socket.close();
-        }
-
-    private:
-        boost::beast::tcp_stream m_socket;
-    };
-
     /// @brief Implementation of IHttpSocket for HTTP requests
     class HttpSocket : public IHttpSocket
     {
@@ -99,7 +23,7 @@ namespace http_client
         /// @brief Constructor for HttpSocket
         /// @param io_context The io context to use for the socket
         /// @param socket The socket helper to use
-        HttpSocket([[maybe_unused]] const boost::asio::any_io_executor& io_context,
+        HttpSocket(const boost::asio::any_io_executor& io_context,
                    std::shared_ptr<http_client::ISocketHelper> socket = nullptr)
             : m_socket(socket != nullptr ? std::move(socket)
                                          : std::make_shared<http_client::HttpSocketHelper>(io_context))
@@ -129,6 +53,7 @@ namespace http_client
             catch (const std::exception& e)
             {
                 LogDebug("Exception thrown: {}", e.what());
+                ec = boost::asio::error::operation_aborted;
             }
         }
 
