@@ -14,11 +14,16 @@ namespace agent_registration
                                          std::string password,
                                          const std::string& key,
                                          const std::string& name,
-                                         const std::string& dbFolderPath,
-                                         std::string verificationMode)
+                                         [[maybe_unused]] const std::string& dbFolderPath,
+                                         std::string verificationMode,
+                                         std::optional<AgentInfo> agentInfo)
         : m_httpClient(std::move(httpClient))
-        , m_agentInfo(
-              dbFolderPath, [this]() { return m_sysInfo.os(); }, [this]() { return m_sysInfo.networks(); }, true)
+        , m_agentInfo(agentInfo.has_value() ? std::move(*agentInfo)
+                                            : AgentInfo(
+                                                  dbFolderPath,
+                                                  [this]() { return m_sysInfo.os(); },
+                                                  [this]() { return m_sysInfo.networks(); },
+                                                  true))
         , m_serverUrl(std::move(url))
         , m_user(std::move(user))
         , m_password(std::move(password))

@@ -35,6 +35,7 @@ namespace agent_registration
         /// @param name The agent's name.
         /// @param dbFolderPath The path to the database folder.
         /// @param verificationMode The connection verification mode.
+        /// @param agentInfo Optional agent's information object.
         AgentRegistration(std::unique_ptr<http_client::IHttpClient> httpClient,
                           std::string url,
                           std::string user,
@@ -42,7 +43,8 @@ namespace agent_registration
                           const std::string& key,
                           const std::string& name,
                           const std::string& dbFolderPath,
-                          std::string verificationMode);
+                          std::string verificationMode,
+                          std::optional<AgentInfo> agentInfo = std::nullopt);
 
         /// @brief Registers the agent with the manager.
         ///
