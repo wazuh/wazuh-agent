@@ -23,9 +23,6 @@ inputs:
   checksum:
     description: 'Generate package checksum'
     required: false
-  upload_to_s3:
-    description: 'Upload package to S3'
-    required: true
   gh_token:
     description: 'Used token to fetch Docker images'
     required: true

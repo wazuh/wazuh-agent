@@ -92,7 +92,7 @@ jobs:
         uses: ./.github/actions/macos_compile_repository
         with:
           architecture: ${{ inputs.architecture }}
-          gh_token: ${{ github.token }}
+          gh_token: ${{ secrets.CI_WAZUH_AGENT_PACKAGES_CLASSIC }}
 
   build-package-agent-macos-packages:
     needs: build-binaries-agent-macos-packages
