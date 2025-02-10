@@ -108,6 +108,39 @@ namespace configuration
             return GetConfigOrDefault<std::string>(std::string(defaultValue), keys...);
         }
 
+        /// @brief Retrieves a configuration value or returns a default value if the key is not found or the value is
+        /// outside the specified range.
+        /// @tparam T The expected type of the configuration value.
+        /// @tparam Keys The types of the keys used to access the configuration node.
+        /// @param defaultValue The value to return if the requested configuration value is not found or out of range.
+        /// @param min The optional minimum acceptable value (inclusive). If not provided, no lower bound is applied.
+        /// @param max The optional maximum acceptable value (inclusive). If not provided, no upper bound is applied.
+        /// @param keys The sequence of keys to navigate through the configuration hierarchy.
+        /// @return The retrieved configuration value if found and within range; otherwise, the default value.
+        template<typename T, typename... Keys>
+        T GetConfigInRangeOrDefault(const T& defaultValue,
+                                    std::optional<T> min = std::nullopt,
+                                    std::optional<T> max = std::nullopt,
+                                    Keys... keys) const
+        {
+            if ((min && max) && (*min >= *max))
+            {
+                LogWarn("Invalid range: min value is greater or equal to max value.");
+                return defaultValue;
+            }
+
+            if (auto result = GetConfig<T>(keys...))
+            {
+                if ((!min || *result >= *min) && (!max || *result <= *max))
+                {
+                    return *result;
+                }
+            }
+
+            LogWarn("Requested setting is not found or out of range, default value used.");
+            return defaultValue;
+        }
+
         /// @brief Checks if the specified YAML file is valid.
         ///
         /// This function attempts to load the YAML file located at the given path.

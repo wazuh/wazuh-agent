@@ -64,13 +64,11 @@ Agent::Agent(const std::string& configFilePath,
     m_configurationParser->SetGetGroupIdsFunction([this]() { return m_agentInfo.GetGroups(); });
 
     m_agentThreadCount =
-        m_configurationParser->GetConfigOrDefault(config::DEFAULT_THREAD_COUNT, "agent", "thread_count");
-
-    if (m_agentThreadCount < config::DEFAULT_THREAD_COUNT)
-    {
-        LogWarn("thread_count must be greater than {}. Using default value.", config::DEFAULT_THREAD_COUNT);
-        m_agentThreadCount = config::DEFAULT_THREAD_COUNT;
-    }
+        m_configurationParser->GetConfigInRangeOrDefault<size_t>(config::DEFAULT_THREAD_COUNT,
+                                                                 std::optional<size_t>(config::DEFAULT_THREAD_COUNT),
+                                                                 std::optional<size_t> {},
+                                                                 "agent",
+                                                                 "thread_count");
 }
 
 Agent::~Agent()
