@@ -17,14 +17,13 @@ namespace
     const std::string PRODUCT_NAME = "WazuhXDR";
 } // namespace
 
-AgentInfo::AgentInfo(std::string dbFolderPath,
+AgentInfo::AgentInfo(const std::string& dbFolderPath,
                      std::function<nlohmann::json()> getOSInfo,
                      std::function<nlohmann::json()> getNetworksInfo,
                      bool agentIsRegistering,
                      std::shared_ptr<AgentInfoPersistance> persistence)
-    : m_dataFolderPath(std::move(dbFolderPath))
-    , m_agentIsRegistering(agentIsRegistering)
-    , m_persistence(persistence ? std::move(persistence) : std::make_shared<AgentInfoPersistance>(m_dataFolderPath))
+    : m_agentIsRegistering(agentIsRegistering)
+    , m_persistence(persistence ? std::move(persistence) : std::make_shared<AgentInfoPersistance>(dbFolderPath))
 {
     if (!m_agentIsRegistering)
     {

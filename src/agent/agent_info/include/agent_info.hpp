@@ -29,7 +29,7 @@ public:
     /// @param getNetworksInfo Function to retrieve network information in JSON format.
     /// @param agentIsRegistering True if the agent is being registered, false otherwise.
     /// @param persistence Optional pointer to an AgentInfoPersistance object.
-    AgentInfo(std::string dbFolderPath = config::DEFAULT_DATA_PATH,
+    AgentInfo(const std::string& dbFolderPath = config::DEFAULT_DATA_PATH,
               std::function<nlohmann::json()> getOSInfo = nullptr,
               std::function<nlohmann::json()> getNetworksInfo = nullptr,
               bool agentIsRegistering = false,
@@ -116,9 +116,6 @@ private:
     /// @param networksJson JSON object containing network interface information.
     /// @return Vector of strings with the active IP addresses.
     std::vector<std::string> GetActiveIPAddresses(const nlohmann::json& networksJson) const;
-
-    /// @brief The agent's data folder path.
-    std::string m_dataFolderPath;
 
     /// @brief The agent's name.
     std::string m_name;
