@@ -80,6 +80,34 @@ namespace configuration
             }
         }
 
+        /// @brief Retrieves a configuration value or returns a default value if the key is not found.
+        /// This function attempts to retrieve a value from the configuration using the specified keys.
+        /// If the value is not found or cannot be converted to the requested type, the provided default
+        /// value is returned instead.
+        /// @tparam T The expected type of the configuration value.
+        /// @tparam Keys The types of the keys used to access the configuration node.
+        /// @param defaultValue The value to return if the requested configuration value is not found.
+        /// @param keys The sequence of keys to navigate through the configuration hierarchy.
+        /// @return The retrieved configuration value if found and valid; otherwise, the default value.
+        template<typename T, typename... Keys>
+        T GetConfigOrDefault(const T& defaultValue, Keys... keys) const
+        {
+            if (auto result = GetConfig<T>(keys...))
+            {
+                return *result;
+            }
+            return defaultValue;
+        }
+
+        /// @brief Specialization for const char* of \ref GetConfigOrDefault that returns a std::string.
+        /// @details This specialization is needed to handle the case where
+        /// the default value is a string literal (i.e.: coming from config.h).
+        template<typename... Keys>
+        std::string GetConfigOrDefault(const char* defaultValue, Keys... keys) const
+        {
+            return GetConfigOrDefault<std::string>(std::string(defaultValue), keys...);
+        }
+
         /// @brief Checks if the specified YAML file is valid.
         ///
         /// This function attempts to load the YAML file located at the given path.
