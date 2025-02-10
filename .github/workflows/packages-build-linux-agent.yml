@@ -126,7 +126,7 @@ jobs:
           architecture: ${{ inputs.architecture }}
           docker_image_tag: ${{ inputs.docker_image_tag }}
           source_reference: ${{ inputs.source_reference }}
-          gh_token: ${{ github.token }}
+          gh_token: ${{ secrets.CI_WAZUH_AGENT_PACKAGES_CLASSIC }}
 
   build-package-agent-linux-deb-packages:
     needs: build-binaries-agent-linux-packages
@@ -153,8 +153,7 @@ jobs:
           revision: ${{ inputs.revision }}
           is_stage: ${{ inputs.is_stage }}
           checksum: ${{ inputs.checksum }}
-          upload_to_s3: 'false'
-          gh_token: ${{ github.token }}
+          gh_token: ${{ secrets.CI_WAZUH_AGENT_PACKAGES_CLASSIC }}
 
   build-package-agent-linux-rpm-packages:
     needs: build-binaries-agent-linux-packages
@@ -181,8 +180,7 @@ jobs:
           revision: ${{ inputs.revision }}
           is_stage: ${{ inputs.is_stage }}
           checksum: ${{ inputs.checksum }}
-          upload_to_s3: 'false'
-          gh_token: ${{ github.token }}
+          gh_token: ${{ secrets.CI_WAZUH_AGENT_PACKAGES_CLASSIC }}
 
   test-package-agent-linux-deb-packages:
     needs: build-package-agent-linux-deb-packages
