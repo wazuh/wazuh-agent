@@ -22,53 +22,53 @@ protected:
     void SetUp() override
     {
         auto mockPersistencePtr = std::make_unique<MockPersistence>();
-        mockPersistence = mockPersistencePtr.get();
+        m_mockPersistence = mockPersistencePtr.get();
 
         SetConstructorPersistenceExpectCalls();
 
         SysInfo sysInfo;
-        agent = std::make_unique<AgentInfo>(
+        m_agentInfo = std::make_unique<AgentInfo>(
             ".",
             [sysInfo]() mutable { return sysInfo.os(); },
             [sysInfo]() mutable { return sysInfo.networks(); },
             true,
             std::make_shared<AgentInfoPersistance>("db_path", std::move(mockPersistencePtr)));
 
-        agent->SetKey("4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
-        agent->SetName("agent_name");
+        m_agentInfo->SetKey("4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
+        m_agentInfo->SetName("agent_name");
     }
 
     void SetConstructorPersistenceExpectCalls()
     {
-        EXPECT_CALL(*mockPersistence, TableExists("agent_info")).WillOnce(testing::Return(true));
-        EXPECT_CALL(*mockPersistence, TableExists("agent_group")).WillOnce(testing::Return(true));
-        EXPECT_CALL(*mockPersistence, GetCount("agent_info", testing::_, testing::_))
+        EXPECT_CALL(*m_mockPersistence, TableExists("agent_info")).WillOnce(testing::Return(true));
+        EXPECT_CALL(*m_mockPersistence, TableExists("agent_group")).WillOnce(testing::Return(true));
+        EXPECT_CALL(*m_mockPersistence, GetCount("agent_info", testing::_, testing::_))
             .WillOnce(testing::Return(0))
             .WillOnce(testing::Return(0));
-        EXPECT_CALL(*mockPersistence, Insert("agent_info", testing::_)).Times(1);
+        EXPECT_CALL(*m_mockPersistence, Insert("agent_info", testing::_)).Times(1);
     }
 
     void SetAgentInfoSaveExpectCalls()
     {
         // Mock for: m_persistence->ResetToDefault();
-        EXPECT_CALL(*mockPersistence, DropTable("agent_info")).Times(1);
-        EXPECT_CALL(*mockPersistence, DropTable("agent_group")).Times(1);
-        EXPECT_CALL(*mockPersistence, CreateTable(testing::_, testing::_)).Times(2);
-        EXPECT_CALL(*mockPersistence, GetCount("agent_info", testing::_, testing::_)).WillOnce(testing::Return(0));
-        EXPECT_CALL(*mockPersistence, Insert(testing::_, testing::_)).Times(1);
+        EXPECT_CALL(*m_mockPersistence, DropTable("agent_info")).Times(1);
+        EXPECT_CALL(*m_mockPersistence, DropTable("agent_group")).Times(1);
+        EXPECT_CALL(*m_mockPersistence, CreateTable(testing::_, testing::_)).Times(2);
+        EXPECT_CALL(*m_mockPersistence, GetCount("agent_info", testing::_, testing::_)).WillOnce(testing::Return(0));
+        EXPECT_CALL(*m_mockPersistence, Insert(testing::_, testing::_)).Times(1);
 
         // Mock for: m_persistence->SetName(m_name); m_persistence->SetKey(m_key); m_persistence->SetUUID(m_uuid);
-        EXPECT_CALL(*mockPersistence, Update("agent_info", testing::_, testing::_, testing::_)).Times(3);
+        EXPECT_CALL(*m_mockPersistence, Update("agent_info", testing::_, testing::_, testing::_)).Times(3);
 
         // Mock for: m_persistence->SetGroups(m_groups);
-        EXPECT_CALL(*mockPersistence, BeginTransaction()).Times(1);
-        EXPECT_CALL(*mockPersistence, Remove("agent_group", testing::_, testing::_)).Times(1);
-        EXPECT_CALL(*mockPersistence, CommitTransaction(testing::_)).Times(1);
+        EXPECT_CALL(*m_mockPersistence, BeginTransaction()).Times(1);
+        EXPECT_CALL(*m_mockPersistence, Remove("agent_group", testing::_, testing::_)).Times(1);
+        EXPECT_CALL(*m_mockPersistence, CommitTransaction(testing::_)).Times(1);
     }
 
-    std::unique_ptr<AgentInfo> agent;
-    std::unique_ptr<agent_registration::AgentRegistration> registration;
-    MockPersistence* mockPersistence = nullptr;
+    std::unique_ptr<AgentInfo> m_agentInfo;
+    std::unique_ptr<agent_registration::AgentRegistration> m_registration;
+    MockPersistence* m_mockPersistence = nullptr;
 };
 
 TEST_F(RegisterTest, RegistrationTestSuccess)
@@ -76,15 +76,15 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     auto mockHttpClientPtr = mockHttpClient.get();
 
-    registration = std::make_unique<agent_registration::AgentRegistration>(std::move(mockHttpClient),
-                                                                           "https://localhost:55000",
-                                                                           "user",
-                                                                           "password",
-                                                                           "",
-                                                                           "",
-                                                                           ".",
-                                                                           "full",
-                                                                           std::move(*agent));
+    m_registration = std::make_unique<agent_registration::AgentRegistration>(std::move(mockHttpClient),
+                                                                             "https://localhost:55000",
+                                                                             "user",
+                                                                             "password",
+                                                                             "",
+                                                                             "",
+                                                                             ".",
+                                                                             "full",
+                                                                             std::move(*m_agentInfo));
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     std::tuple<int, std::string> expectedResponse1 {200, R"({"data":{"token":"token"}})"};
@@ -101,7 +101,7 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
 
     SetAgentInfoSaveExpectCalls();
 
-    const bool res = registration->Register();
+    const bool res = m_registration->Register();
     ASSERT_TRUE(res);
 }
 
@@ -110,15 +110,15 @@ TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     auto mockHttpClientPtr = mockHttpClient.get();
 
-    registration = std::make_unique<agent_registration::AgentRegistration>(std::move(mockHttpClient),
-                                                                           "https://localhost:55000",
-                                                                           "user",
-                                                                           "password",
-                                                                           "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj",
-                                                                           "agent_name",
-                                                                           ".",
-                                                                           "certificate",
-                                                                           std::move(*agent));
+    m_registration = std::make_unique<agent_registration::AgentRegistration>(std::move(mockHttpClient),
+                                                                             "https://localhost:55000",
+                                                                             "user",
+                                                                             "password",
+                                                                             "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj",
+                                                                             "agent_name",
+                                                                             ".",
+                                                                             "certificate",
+                                                                             std::move(*m_agentInfo));
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     std::tuple<int, std::string> expectedResponse {401, ""};
@@ -126,7 +126,7 @@ TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
-    const bool res = registration->Register();
+    const bool res = m_registration->Register();
     ASSERT_FALSE(res);
 }
 
@@ -135,15 +135,15 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     auto mockHttpClientPtr = mockHttpClient.get();
 
-    registration = std::make_unique<agent_registration::AgentRegistration>(std::move(mockHttpClient),
-                                                                           "https://localhost:55000",
-                                                                           "user",
-                                                                           "password",
-                                                                           "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj",
-                                                                           "agent_name",
-                                                                           ".",
-                                                                           "none",
-                                                                           std::move(*agent));
+    m_registration = std::make_unique<agent_registration::AgentRegistration>(std::move(mockHttpClient),
+                                                                             "https://localhost:55000",
+                                                                             "user",
+                                                                             "password",
+                                                                             "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj",
+                                                                             "agent_name",
+                                                                             ".",
+                                                                             "none",
+                                                                             std::move(*m_agentInfo));
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     std::tuple<int, std::string> expectedResponse1 {200, R"({"data":{"token":"token"}})"};
@@ -157,7 +157,7 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
         .WillOnce(testing::Return(expectedResponse2));
 
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
-    const bool res = registration->Register();
+    const bool res = m_registration->Register();
     ASSERT_FALSE(res);
 }
 
@@ -166,15 +166,15 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     auto mockHttpClientPtr = mockHttpClient.get();
 
-    registration = std::make_unique<agent_registration::AgentRegistration>(std::move(mockHttpClient),
-                                                                           "https://localhost:55000",
-                                                                           "user",
-                                                                           "password",
-                                                                           "",
-                                                                           "agent_name",
-                                                                           ".",
-                                                                           "full",
-                                                                           std::move(*agent));
+    m_registration = std::make_unique<agent_registration::AgentRegistration>(std::move(mockHttpClient),
+                                                                             "https://localhost:55000",
+                                                                             "user",
+                                                                             "password",
+                                                                             "",
+                                                                             "agent_name",
+                                                                             ".",
+                                                                             "full",
+                                                                             std::move(*m_agentInfo));
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     std::tuple<int, std::string> expectedResponse1 {200, R"({"data":{"token":"token"}})"};
@@ -190,15 +190,15 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
 
     // Mock for: m_persistence->ResetToDefault();
-    EXPECT_CALL(*mockPersistence, DropTable("agent_info")).Times(1);
-    EXPECT_CALL(*mockPersistence, DropTable("agent_group")).Times(1);
-    EXPECT_CALL(*mockPersistence, CreateTable(testing::_, testing::_)).Times(2);
-    EXPECT_CALL(*mockPersistence, GetCount("agent_info", testing::_, testing::_)).WillOnce(testing::Return(0));
-    EXPECT_CALL(*mockPersistence, Insert(testing::_, testing::_)).Times(1);
+    EXPECT_CALL(*m_mockPersistence, DropTable("agent_info")).Times(1);
+    EXPECT_CALL(*m_mockPersistence, DropTable("agent_group")).Times(1);
+    EXPECT_CALL(*m_mockPersistence, CreateTable(testing::_, testing::_)).Times(2);
+    EXPECT_CALL(*m_mockPersistence, GetCount("agent_info", testing::_, testing::_)).WillOnce(testing::Return(0));
+    EXPECT_CALL(*m_mockPersistence, Insert(testing::_, testing::_)).Times(1);
 
     // Mock for: m_persistence->SetName(m_name); m_persistence->SetKey(m_key); m_persistence->SetUUID(m_uuid);
     testing::InSequence seq;
-    EXPECT_CALL(*mockPersistence,
+    EXPECT_CALL(*m_mockPersistence,
                 Update(testing::Eq("agent_info"),
                        testing::AllOf(
                            testing::SizeIs(1),
@@ -208,7 +208,7 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
                        testing::_))
         .Times(1);
 
-    EXPECT_CALL(*mockPersistence,
+    EXPECT_CALL(*m_mockPersistence,
                 Update(testing::Eq("agent_info"),
                        testing::AllOf(testing::SizeIs(1),
                                       testing::Contains(testing::AllOf(
@@ -218,7 +218,7 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
                        testing::_))
         .Times(1);
 
-    EXPECT_CALL(*mockPersistence,
+    EXPECT_CALL(*m_mockPersistence,
                 Update(testing::Eq("agent_info"),
                        testing::AllOf(testing::SizeIs(1),
                                       testing::Contains(testing::AllOf(
@@ -229,11 +229,11 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
         .Times(1);
 
     // Mock for: m_persistence->SetGroups(m_groups);
-    EXPECT_CALL(*mockPersistence, BeginTransaction()).Times(1);
-    EXPECT_CALL(*mockPersistence, Remove("agent_group", testing::_, testing::_)).Times(1);
-    EXPECT_CALL(*mockPersistence, CommitTransaction(testing::_)).Times(1);
+    EXPECT_CALL(*m_mockPersistence, BeginTransaction()).Times(1);
+    EXPECT_CALL(*m_mockPersistence, Remove("agent_group", testing::_, testing::_)).Times(1);
+    EXPECT_CALL(*m_mockPersistence, CommitTransaction(testing::_)).Times(1);
 
-    const bool res = registration->Register();
+    const bool res = m_registration->Register();
     ASSERT_TRUE(res);
 }
 
@@ -249,16 +249,22 @@ TEST_F(RegisterTest, RegistrationTestFailWithBadKey)
                                                        "agent_name",
                                                        ".",
                                                        "full",
-                                                       std::move(*agent)),
+                                                       std::move(*m_agentInfo)),
                  std::invalid_argument);
 }
 
 TEST_F(RegisterTest, RegistrationTestFailWithHttpClientError)
 {
-    ASSERT_THROW(
-        agent_registration::AgentRegistration(
-            nullptr, "https://localhost:55000", "user", "password", "", "agent_name", ".", "full", std::move(*agent)),
-        std::runtime_error);
+    ASSERT_THROW(agent_registration::AgentRegistration(nullptr,
+                                                       "https://localhost:55000",
+                                                       "user",
+                                                       "password",
+                                                       "",
+                                                       "agent_name",
+                                                       ".",
+                                                       "full",
+                                                       std::move(*m_agentInfo)),
+                 std::runtime_error);
 }
 
 TEST_F(RegisterTest, AuthenticateWithUserPassword_Success)
@@ -266,22 +272,22 @@ TEST_F(RegisterTest, AuthenticateWithUserPassword_Success)
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     auto mockHttpClientPtr = mockHttpClient.get();
 
-    registration = std::make_unique<agent_registration::AgentRegistration>(std::move(mockHttpClient),
-                                                                           "https://localhost:55000",
-                                                                           "user",
-                                                                           "password",
-                                                                           "",
-                                                                           "",
-                                                                           ".",
-                                                                           "full",
-                                                                           std::move(*agent));
+    m_registration = std::make_unique<agent_registration::AgentRegistration>(std::move(mockHttpClient),
+                                                                             "https://localhost:55000",
+                                                                             "user",
+                                                                             "password",
+                                                                             "",
+                                                                             "",
+                                                                             ".",
+                                                                             "full",
+                                                                             std::move(*m_agentInfo));
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     std::tuple<int, std::string> expectedResponse {200, R"({"data":{"token":"valid_token"}})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
-    const auto token = registration->AuthenticateWithUserPassword();
+    const auto token = m_registration->AuthenticateWithUserPassword();
 
     ASSERT_TRUE(token.has_value());
 
@@ -294,22 +300,22 @@ TEST_F(RegisterTest, AuthenticateWithUserPassword_Failure)
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     auto mockHttpClientPtr = mockHttpClient.get();
 
-    registration = std::make_unique<agent_registration::AgentRegistration>(std::move(mockHttpClient),
-                                                                           "https://localhost:55000",
-                                                                           "user",
-                                                                           "password",
-                                                                           "",
-                                                                           "",
-                                                                           ".",
-                                                                           "full",
-                                                                           std::move(*agent));
+    m_registration = std::make_unique<agent_registration::AgentRegistration>(std::move(mockHttpClient),
+                                                                             "https://localhost:55000",
+                                                                             "user",
+                                                                             "password",
+                                                                             "",
+                                                                             "",
+                                                                             ".",
+                                                                             "full",
+                                                                             std::move(*m_agentInfo));
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     std::tuple<int, std::string> expectedResponse {401, ""};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
-    const auto token = registration->AuthenticateWithUserPassword();
+    const auto token = m_registration->AuthenticateWithUserPassword();
 
     EXPECT_FALSE(token.has_value());
 }

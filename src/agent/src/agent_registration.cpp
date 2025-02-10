@@ -14,7 +14,7 @@ namespace agent_registration
                                          std::string password,
                                          const std::string& key,
                                          const std::string& name,
-                                         [[maybe_unused]] const std::string& dbFolderPath,
+                                         const std::string& dbFolderPath,
                                          std::string verificationMode,
                                          std::optional<AgentInfo> agentInfo)
         : m_httpClient(std::move(httpClient))
