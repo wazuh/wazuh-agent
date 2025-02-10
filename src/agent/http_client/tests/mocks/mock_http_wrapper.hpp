@@ -1,8 +1,8 @@
 #include <gmock/gmock.h>
 
-#include <ihttp_socket.hpp>
+#include <ihttp_socket_wrapper.hpp>
 
-class MockHttpHelper : public http_client::ISocketHelper
+class MockHttpHelper : public http_client::ISocketWrapper
 {
 public:
     MOCK_METHOD(void, set_verify_mode, (boost::asio::ssl::verify_mode), (override));

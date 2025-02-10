@@ -12,10 +12,10 @@
 namespace http_client
 {
     /// @brief Wrapper Interface for boost functions - To be replaced with mocks in unit tests
-    class ISocketHelper
+    class ISocketWrapper
     {
     public:
-        virtual ~ISocketHelper() {};
+        virtual ~ISocketWrapper() {};
 
         virtual void set_verify_mode(boost::asio::ssl::verify_mode mode) = 0;
 

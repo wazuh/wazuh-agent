@@ -1,8 +1,6 @@
 #pragma once
 
-#include <https_socket_verify_utils.hpp>
-#include <ihttp_socket.hpp>
-#include <ihttp_socket_helper.hpp>
+#include <ihttp_socket_wrapper.hpp>
 
 #include <logger.hpp>
 
@@ -17,7 +15,7 @@
 namespace http_client
 {
     /// @brief Helper class that wraps boost network functions for testing purposes
-    class HttpsSocketHelper : public ISocketHelper
+    class HttpsSocketHelper : public ISocketWrapper
     {
     public:
         HttpsSocketHelper(const boost::asio::any_io_executor& io_context, boost::asio::ssl::context& ctx)
@@ -60,7 +58,7 @@ namespace http_client
                                                             ec = ecHandshake;
                                                             if (ecHandshake)
                                                             {
-                                                                LogInfo("Handshake failed: {}", ecHandshake.message());
+                                                                LogDebug("Handshake failed: {}", ecHandshake.message());
                                                             }
                                                         });
                                                 });

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ihttp_socket_helper.hpp>
+#include <ihttp_socket_wrapper.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/beast/core/flat_buffer.hpp>
@@ -11,7 +11,7 @@
 namespace http_client
 {
     /// @brief Helper class that wraps boost network functions for testing purposes
-    class HttpSocketHelper : public ISocketHelper
+    class HttpSocketHelper : public ISocketWrapper
     {
     public:
         HttpSocketHelper(const boost::asio::any_io_executor& io_context)

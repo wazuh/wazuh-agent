@@ -3,7 +3,7 @@
 
 #include "../src/http_socket.hpp"
 #include "../src/ihttp_socket.hpp"
-#include "mocks/mock_http_helper.hpp"
+#include "mocks/mock_http_wrapper.hpp"
 
 #include <chrono>
 #include <memory>

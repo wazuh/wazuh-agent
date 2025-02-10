@@ -1,7 +1,7 @@
 #pragma once
 
-#include <https_socket_helper.hpp>
 #include <https_socket_verify_utils.hpp>
+#include <https_socket_wrapper.hpp>
 #include <ihttp_socket.hpp>
 #include <logger.hpp>
 
@@ -25,7 +25,7 @@ namespace http_client
         /// @param io_context The io context to use for the socket
         /// @param socket The socket helper to use
         HttpsSocket(const boost::asio::any_io_executor& io_context,
-                    std::shared_ptr<http_client::ISocketHelper> socket = nullptr)
+                    std::shared_ptr<http_client::ISocketWrapper> socket = nullptr)
             : m_ctx(boost::asio::ssl::context::sslv23)
             , m_ssl_socket(socket != nullptr ? std::move(socket)
                                              : std::make_shared<http_client::HttpsSocketHelper>(io_context, m_ctx))
@@ -193,6 +193,6 @@ namespace http_client
         boost::asio::ssl::context m_ctx;
 
         /// @brief The SSL socket to use for the connection
-        std::shared_ptr<ISocketHelper> m_ssl_socket;
+        std::shared_ptr<ISocketWrapper> m_ssl_socket;
     };
 } // namespace http_client

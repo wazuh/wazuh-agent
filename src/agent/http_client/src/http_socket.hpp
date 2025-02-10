@@ -1,6 +1,6 @@
 #pragma once
 
-#include <http_socket_helper.hpp>
+#include <http_socket_wrapper.hpp>
 #include <ihttp_socket.hpp>
 #include <logger.hpp>
 
@@ -24,7 +24,7 @@ namespace http_client
         /// @param io_context The io context to use for the socket
         /// @param socket The socket helper to use
         HttpSocket(const boost::asio::any_io_executor& io_context,
-                   std::shared_ptr<http_client::ISocketHelper> socket = nullptr)
+                   std::shared_ptr<http_client::ISocketWrapper> socket = nullptr)
             : m_socket(socket != nullptr ? std::move(socket)
                                          : std::make_shared<http_client::HttpSocketHelper>(io_context))
         {
@@ -162,6 +162,6 @@ namespace http_client
 
     private:
         /// @brief The socket to use for the HTTP connection
-        std::shared_ptr<ISocketHelper> m_socket;
+        std::shared_ptr<ISocketWrapper> m_socket;
     };
 } // namespace http_client
