@@ -141,6 +141,49 @@ namespace configuration
             return defaultValue;
         }
 
+        /// @brief Fetches a configuration value as in GetConfigInRangeOrDefault, but parses the string value as a
+        /// time_t.
+        /// @tparam Keys The types of the keys used to access the configuration hierarchy.
+        /// @param defaultValue The default value (in string format) to return if the key is not found or the value is
+        /// out of range.
+        /// @param min The minimum acceptable value (inclusive) as a time_t.
+        /// @param max The maximum acceptable value (inclusive) as a time_t.
+        /// @param keys The sequence of keys used to navigate through the configuration hierarchy.
+        /// @return The parsed configuration value as a time_t, or the default value if not found or out of range.
+        template<typename... Keys>
+        std::time_t GetTimeConfigInRangeOrDefault(const std::string& defaultValue,
+                                                  std::time_t min,
+                                                  std::time_t max,
+                                                  Keys... keys) const
+        {
+            if (min >= max)
+            {
+                LogWarn("Invalid range: min value is greater or equal to max value.");
+                return ParseTimeUnit(defaultValue);
+            }
+
+            if (const auto result = GetConfig<std::string>(keys...))
+            {
+                try
+                {
+                    const auto parsedResult = ParseTimeUnit(*result);
+
+                    if ((parsedResult >= min) && (parsedResult <= max))
+                    {
+                        return parsedResult;
+                    }
+                }
+                catch (const std::exception& e)
+                {
+                    LogWarn("Exception while parsing time unit: {}. Default value used.", e.what());
+                    return ParseTimeUnit(defaultValue);
+                }
+            }
+
+            LogWarn("Requested setting is not found or out of range, default value used.");
+            return ParseTimeUnit(defaultValue);
+        }
+
         /// @brief Checks if the specified YAML file is valid.
         ///
         /// This function attempts to load the YAML file located at the given path.

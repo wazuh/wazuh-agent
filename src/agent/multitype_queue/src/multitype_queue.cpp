@@ -25,14 +25,8 @@ MultiTypeQueue::MultiTypeQueue(std::shared_ptr<configuration::ConfigurationParse
         throw std::runtime_error(std::string("Invalid Configuration Parser passed."));
     }
 
-    m_batchInterval = configurationParser->ParseTimeUnit(
-        configurationParser->GetConfigOrDefault(config::agent::DEFAULT_BATCH_INTERVAL, "events", "batch_interval"));
-
-    if (m_batchInterval < MIN_BATCH_INTERVAL || m_batchInterval > MAX_BATCH_INTERVAL)
-    {
-        LogWarn("batch_interval must be between 1s and 1h. Using default value.");
-        m_batchInterval = configurationParser->ParseTimeUnit(config::agent::DEFAULT_BATCH_INTERVAL);
-    }
+    m_batchInterval = configurationParser->GetTimeConfigInRangeOrDefault(
+        config::agent::DEFAULT_BATCH_INTERVAL, MIN_BATCH_INTERVAL, MAX_BATCH_INTERVAL, "events", "batch_interval");
 
     const auto configMaxItems =
         configurationParser->GetConfigOrDefault(config::agent::QUEUE_DEFAULT_SIZE, "agent", "queue_size");
