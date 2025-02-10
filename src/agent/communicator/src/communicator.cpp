@@ -75,16 +75,8 @@ namespace communicator
         m_retryInterval = configurationParser->GetTimeConfigInRangeOrDefault(
             config::agent::DEFAULT_RETRY_INTERVAL, 0, std::numeric_limits<time_t>::max(), "agent", "retry_interval");
 
-        const auto configBatchSize =
-            configurationParser->GetConfigOrDefault(config::agent::DEFAULT_BATCH_SIZE, "events", "batch_size");
-
-        m_batchSize = configurationParser->ParseSizeUnit(configBatchSize);
-
-        if (m_batchSize < MIN_BATCH_SIZE || m_batchSize > MAX_BATCH_SIZE)
-        {
-            LogWarn("batch_size must be between 1KB and 100MB. Using default value.");
-            m_batchSize = configurationParser->ParseSizeUnit(config::agent::DEFAULT_BATCH_SIZE);
-        }
+        m_batchSize = configurationParser->GetBytesConfigInRangeOrDefault(
+            config::agent::DEFAULT_BATCH_SIZE, MIN_BATCH_SIZE, MAX_BATCH_SIZE, "events", "batch_size");
 
         m_verificationMode = configurationParser->GetConfigOrDefault(
             config::agent::DEFAULT_VERIFICATION_MODE, "agent", "verification_mode");

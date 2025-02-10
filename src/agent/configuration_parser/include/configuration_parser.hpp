@@ -129,7 +129,7 @@ namespace configuration
                 return defaultValue;
             }
 
-            if (auto result = GetConfig<T>(keys...))
+            if (const auto result = GetConfig<T>(keys...))
             {
                 if ((!min || *result >= *min) && (!max || *result <= *max))
                 {
@@ -156,32 +156,25 @@ namespace configuration
                                                   std::time_t max,
                                                   Keys... keys) const
         {
-            if (min >= max)
-            {
-                LogWarn("Invalid range: min value is greater or equal to max value.");
-                return ParseTimeUnit(defaultValue);
-            }
+            return GetParsedConfigInRangeOrDefault(defaultValue, min, max, ParseTimeUnit, keys...);
+        }
 
-            if (const auto result = GetConfig<std::string>(keys...))
-            {
-                try
-                {
-                    const auto parsedResult = ParseTimeUnit(*result);
-
-                    if ((parsedResult >= min) && (parsedResult <= max))
-                    {
-                        return parsedResult;
-                    }
-                }
-                catch (const std::exception& e)
-                {
-                    LogWarn("Exception while parsing time unit: {}. Default value used.", e.what());
-                    return ParseTimeUnit(defaultValue);
-                }
-            }
-
-            LogWarn("Requested setting is not found or out of range, default value used.");
-            return ParseTimeUnit(defaultValue);
+        /// @brief Fetches a configuration value as in GetConfigInRangeOrDefault, but parses the string value as a
+        /// value in bytes, as in \ref ParseSizeUnit.
+        /// @tparam Keys The types of the keys used to access the configuration hierarchy.
+        /// @param defaultValue The default value (in string format) to return if the key is not found or the value is
+        /// out of range.
+        /// @param min The minimum acceptable value (inclusive) as a bytes.
+        /// @param max The maximum acceptable value (inclusive) as a bytes.
+        /// @param keys The sequence of keys used to navigate through the configuration hierarchy.
+        /// @return The parsed configuration value as a bytes, or the default value if not found or out of range.
+        template<typename... Keys>
+        std::size_t GetBytesConfigInRangeOrDefault(const std::string& defaultValue,
+                                                   std::size_t min,
+                                                   std::size_t max,
+                                                   Keys... keys) const
+        {
+            return GetParsedConfigInRangeOrDefault(defaultValue, min, max, ParseSizeUnit, keys...);
         }
 
         /// @brief Checks if the specified YAML file is valid.
@@ -224,6 +217,47 @@ namespace configuration
         static size_t ParseSizeUnit(const std::string& option);
 
     private:
+        /// @brief Parses a string configuration value into a type and validates it within a range.
+        /// @tparam T The type to parse the configuration value into.
+        /// @tparam ParseFunc The function to parse the configuration value into type T.
+        /// @tparam Keys The types of the keys used to access the configuration hierarchy.
+        /// @param defaultValue The default value to return if the key is not found or the value is out of range.
+        /// @param min The minimum acceptable value (inclusive) for the parsed value.
+        /// @param max The maximum acceptable value (inclusive) for the parsed value.
+        /// @param parseFunc The function to parse the configuration value into type T.
+        /// @param keys The sequence of keys used to navigate through the configuration hierarchy.
+        /// @return The parsed configuration value if found and within range; otherwise, the default value.
+        template<typename T, typename ParseFunc, typename... Keys>
+        T GetParsedConfigInRangeOrDefault(
+            const std::string& defaultValue, T min, T max, ParseFunc parseFunc, Keys... keys) const
+        {
+            if (min >= max)
+            {
+                LogWarn("Invalid range: min value is greater or equal to max value.");
+                return parseFunc(defaultValue);
+            }
+
+            if (const auto result = GetConfig<std::string>(keys...))
+            {
+                try
+                {
+                    const auto parsedResult = parseFunc(*result);
+
+                    if (min <= parsedResult && parsedResult <= max)
+                    {
+                        return parsedResult;
+                    }
+                }
+                catch (const std::exception& e)
+                {
+                    LogWarn("Exception while parsing configuration value: {}. Default value used.", e.what());
+                }
+            }
+
+            LogWarn("Requested setting is not found or out of range, default value used.");
+            return parseFunc(defaultValue);
+        }
+
         /// @brief Method for loading the configuration from local file
         void LoadLocalConfig();
 
