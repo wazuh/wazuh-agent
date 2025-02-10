@@ -1,4 +1,5 @@
 #include <communicator.hpp>
+#include <config.h>
 #include <http_request_params.hpp>
 
 #include <boost/asio.hpp>
@@ -71,13 +72,14 @@ namespace communicator
             LogInfo("Using insecure connection.");
         }
 
-        m_retryInterval = configurationParser->GetConfig<std::time_t>("agent", "retry_interval")
-                              .value_or(config::agent::DEFAULT_RETRY_INTERVAL);
+        m_retryInterval =
+            configurationParser->ParseTimeUnit(configurationParser->GetConfig<std::string>("agent", "retry_interval")
+                                                   .value_or(config::agent::DEFAULT_RETRY_INTERVAL));
 
         if (m_retryInterval < 0)
         {
             LogWarn("retry_interval must be greater than or equal to 0. Using default value.");
-            m_retryInterval = config::agent::DEFAULT_RETRY_INTERVAL;
+            m_retryInterval = configurationParser->ParseTimeUnit(config::agent::DEFAULT_RETRY_INTERVAL);
         }
 
         const auto configBatchSize = configurationParser->GetConfig<std::string>("events", "batch_size")

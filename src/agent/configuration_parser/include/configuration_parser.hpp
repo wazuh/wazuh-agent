@@ -54,25 +54,19 @@ namespace configuration
 
             try
             {
-                (
-                    [&current](const auto& key)
-                    {
-                        current = current[key];
-                        if (!current.IsDefined())
-                        {
-                            throw YAML::Exception(YAML::Mark::null_mark(), "Key not found: " + std::string(key));
-                        }
-                    }(keys),
-                    ...);
+                // clang-format off
+                ([&current] (const auto& key)
+                {
+                    current = current[key];
 
-                if constexpr (std::is_same_v<T, std::time_t>)
-                {
-                    return ParseTimeUnit(current.as<std::string>());
-                }
-                else
-                {
-                    return current.as<T>();
-                }
+                    if (!current.IsDefined())
+                    {
+                        throw YAML::Exception(YAML::Mark::null_mark(), "Key not found: " + std::string(key));
+                    }
+                }(keys), ...);
+                // clang-format on
+
+                return current.as<T>();
             }
             catch (const std::invalid_argument& e)
             {

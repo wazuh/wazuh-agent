@@ -1,3 +1,4 @@
+#include <config.h>
 #include <multitype_queue.hpp>
 #include <storage.hpp>
 
@@ -24,13 +25,14 @@ MultiTypeQueue::MultiTypeQueue(std::shared_ptr<configuration::ConfigurationParse
         throw std::runtime_error(std::string("Invalid Configuration Parser passed."));
     }
 
-    m_batchInterval = configurationParser->GetConfig<std::time_t>("events", "batch_interval")
-                          .value_or(config::agent::DEFAULT_BATCH_INTERVAL);
+    m_batchInterval =
+        configurationParser->ParseTimeUnit(configurationParser->GetConfig<std::string>("events", "batch_interval")
+                                               .value_or(config::agent::DEFAULT_BATCH_INTERVAL));
 
     if (m_batchInterval < MIN_BATCH_INTERVAL || m_batchInterval > MAX_BATCH_INTERVAL)
     {
         LogWarn("batch_interval must be between 1s and 1h. Using default value.");
-        m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
+        m_batchInterval = configurationParser->ParseTimeUnit(config::agent::DEFAULT_BATCH_INTERVAL);
     }
 
     const auto configMaxItems =

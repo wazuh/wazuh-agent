@@ -133,7 +133,8 @@ TEST(ConfigurationParser, GetConfigMilliseconds)
           milliseconds_conf: 500ms
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<std::time_t>("agent_array", "milliseconds_conf").value_or(1234);
+    const auto ret =
+        parserStr->ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "milliseconds_conf").value());
     ASSERT_EQ(ret, 500);
 }
 
@@ -147,7 +148,7 @@ TEST(ConfigurationParser, GetConfigSeconds)
           seconds_conf: 45s
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<std::time_t>("agent_array", "seconds_conf").value_or(1234);
+    const auto ret = parserStr->ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "seconds_conf").value());
     ASSERT_EQ(ret, 45000);
 }
 
@@ -161,7 +162,7 @@ TEST(ConfigurationParser, GetConfigMinutes)
           minutes_conf: 3m
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<std::time_t>("agent_array", "minutes_conf").value_or(1234);
+    const auto ret = parserStr->ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "minutes_conf").value());
     ASSERT_EQ(ret, 180000);
 }
 
@@ -175,7 +176,7 @@ TEST(ConfigurationParser, GetConfigHours)
           hours_conf: 2h
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<std::time_t>("agent_array", "hours_conf").value_or(1234);
+    const auto ret = parserStr->ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "hours_conf").value());
     ASSERT_EQ(ret, 7200000);
 }
 
@@ -189,7 +190,7 @@ TEST(ConfigurationParser, GetConfigDays)
           days_conf: 1d
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<std::time_t>("agent_array", "days_conf").value_or(1234);
+    const auto ret = parserStr->ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "days_conf").value());
     ASSERT_EQ(ret, 86400000);
 }
 
@@ -203,8 +204,8 @@ TEST(ConfigurationParser, GetConfigTimeInvalid)
           time_invalid_conf: 30k
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<std::time_t>("agent_array", "time_invalid_conf").value_or(1234);
-    ASSERT_EQ(ret, 1234);
+    EXPECT_ANY_THROW(
+        parserStr->ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "time_invalid_conf").value()));
 }
 
 TEST(ConfigurationParser, GetConfigFloat)

@@ -3,8 +3,6 @@
 #include <configuration_parser.hpp>
 #include <imultitype_queue.hpp>
 
-#include <config.h>
-
 #include <boost/asio/awaitable.hpp>
 
 #include <chrono>
@@ -56,7 +54,7 @@ private:
     std::condition_variable m_cv;
 
     /// @brief Time between batch requests
-    std::time_t m_batchInterval = config::agent::DEFAULT_BATCH_INTERVAL;
+    std::time_t m_batchInterval;
 
 public:
     /// @brief Constructor

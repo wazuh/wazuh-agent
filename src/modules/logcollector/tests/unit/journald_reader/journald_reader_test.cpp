@@ -14,7 +14,7 @@ protected:
     LogcollectorMock logcollector;
     FilterGroup testFilters;
     bool ignoreIfMissing {true};
-    std::time_t fileWait {config::logcollector::DEFAULT_FILE_WAIT};
+    std::time_t fileWait = 500;
     static constexpr size_t m_extraLength = 100;
 
     void SetUp() override

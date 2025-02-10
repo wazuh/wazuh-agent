@@ -33,7 +33,7 @@ namespace logcollector
         /// @param query An optional query string using `NSPredicate` syntax for additional log filtering.
         /// @param logTypes A vector of log type strings to further filter log entries.
         MacOSReader(Logcollector& logcollector,
-                    const std::time_t waitInMillis = config::logcollector::DEFAULT_FILE_WAIT,
+                    const std::time_t waitInMillis,
                     const std::string& logLevel = "",
                     const std::string& query = "",
                     const std::vector<std::string>& logTypes = {});
@@ -48,7 +48,7 @@ namespace logcollector
         /// @param logTypes A vector of log type strings to further filter log entries.
         MacOSReader(std::unique_ptr<IOSLogStoreWrapper> osLogStoreWrapper,
                     Logcollector& logcollector,
-                    const std::time_t waitInMillis = config::logcollector::DEFAULT_FILE_WAIT,
+                    const std::time_t waitInMillis,
                     const std::string& logLevel = "",
                     const std::string& query = "",
                     const std::vector<std::string>& logTypes = {});

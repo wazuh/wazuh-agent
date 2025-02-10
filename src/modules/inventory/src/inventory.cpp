@@ -53,8 +53,9 @@ void Inventory::Setup(std::shared_ptr<const configuration::ConfigurationParser> 
     m_dbFilePath =
         configurationParser->GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH) + "/" +
         INVENTORY_DB_DISK_NAME;
-    m_intervalValue = configurationParser->GetConfig<std::time_t>("inventory", "interval")
-                          .value_or(config::inventory::DEFAULT_INTERVAL);
+    m_intervalValue =
+        configurationParser->ParseTimeUnit(configurationParser->GetConfig<std::string>("inventory", "interval")
+                                               .value_or(config::inventory::DEFAULT_INTERVAL));
     m_scanOnStart = configurationParser->GetConfig<bool>("inventory", "scan_on_start")
                         .value_or(config::inventory::DEFAULT_SCAN_ON_START);
     m_hardware =
