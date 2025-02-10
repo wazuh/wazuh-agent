@@ -18,7 +18,7 @@ else()
     set(VERIFY_UTILS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/certificate/https_socket_verify_utils_lin.cpp")
 endif()
 
-add_library(HttpClient src/http_client.cpp src/http_request_params.cpp ${VERIFY_UTILS_FILE})
+add_library(HttpClient src/http_client.cpp src/http_request_params.cpp src/http_socket.cpp src/https_socket.cpp ${VERIFY_UTILS_FILE})
 
 target_include_directories(HttpClient
         PUBLIC
