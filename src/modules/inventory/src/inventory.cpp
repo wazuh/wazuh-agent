@@ -48,30 +48,23 @@ void Inventory::Setup(std::shared_ptr<const configuration::ConfigurationParser> 
         return;
     }
 
-    m_enabled =
-        configurationParser->GetConfig<bool>("inventory", "enabled").value_or(config::inventory::DEFAULT_ENABLED);
-    m_dbFilePath =
-        configurationParser->GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH) + "/" +
-        INVENTORY_DB_DISK_NAME;
-    m_intervalValue =
-        configurationParser->ParseTimeUnit(configurationParser->GetConfig<std::string>("inventory", "interval")
-                                               .value_or(config::inventory::DEFAULT_INTERVAL));
-    m_scanOnStart = configurationParser->GetConfig<bool>("inventory", "scan_on_start")
-                        .value_or(config::inventory::DEFAULT_SCAN_ON_START);
-    m_hardware =
-        configurationParser->GetConfig<bool>("inventory", "hardware").value_or(config::inventory::DEFAULT_HARDWARE);
-    m_system = configurationParser->GetConfig<bool>("inventory", "system").value_or(config::inventory::DEFAULT_OS);
-    m_networks =
-        configurationParser->GetConfig<bool>("inventory", "networks").value_or(config::inventory::DEFAULT_NETWORK);
-    m_packages =
-        configurationParser->GetConfig<bool>("inventory", "packages").value_or(config::inventory::DEFAULT_PACKAGES);
-    m_ports = configurationParser->GetConfig<bool>("inventory", "ports").value_or(config::inventory::DEFAULT_PORTS);
+    m_enabled = configurationParser->GetConfigOrDefault(config::inventory::DEFAULT_ENABLED, "inventory", "enabled");
+    m_dbFilePath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
+                   INVENTORY_DB_DISK_NAME;
+    m_intervalValue = configurationParser->ParseTimeUnit(
+        configurationParser->GetConfigOrDefault(config::inventory::DEFAULT_INTERVAL, "inventory", "interval"));
+    m_scanOnStart =
+        configurationParser->GetConfigOrDefault(config::inventory::DEFAULT_SCAN_ON_START, "inventory", "scan_on_start");
+    m_hardware = configurationParser->GetConfigOrDefault(config::inventory::DEFAULT_HARDWARE, "inventory", "hardware");
+    m_system = configurationParser->GetConfigOrDefault(config::inventory::DEFAULT_OS, "inventory", "system");
+    m_networks = configurationParser->GetConfigOrDefault(config::inventory::DEFAULT_NETWORK, "inventory", "networks");
+    m_packages = configurationParser->GetConfigOrDefault(config::inventory::DEFAULT_PACKAGES, "inventory", "packages");
+    m_ports = configurationParser->GetConfigOrDefault(config::inventory::DEFAULT_PORTS, "inventory", "ports");
     m_portsAll =
-        configurationParser->GetConfig<bool>("inventory", "ports_all").value_or(config::inventory::DEFAULT_PORTS_ALL);
+        configurationParser->GetConfigOrDefault(config::inventory::DEFAULT_PORTS_ALL, "inventory", "ports_all");
     m_processes =
-        configurationParser->GetConfig<bool>("inventory", "processes").value_or(config::inventory::DEFAULT_PROCESSES);
-    m_hotfixes =
-        configurationParser->GetConfig<bool>("inventory", "hotfixes").value_or(config::inventory::DEFAULT_HOTFIXES);
+        configurationParser->GetConfigOrDefault(config::inventory::DEFAULT_PROCESSES, "inventory", "processes");
+    m_hotfixes = configurationParser->GetConfigOrDefault(config::inventory::DEFAULT_HOTFIXES, "inventory", "hotfixes");
 }
 
 void Inventory::Stop()
