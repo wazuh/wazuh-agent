@@ -25,6 +25,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         cjson
         pthread
         utils
+        pal
         -static-libgcc
     )
 else()
@@ -38,6 +39,7 @@ else()
         pthread
         dl
         utils
+        pal
     )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 

@@ -25,6 +25,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         unofficial::sqlite3::sqlite3
         cjson
         utils
+        pal
         -static-libgcc
     )
 else()
@@ -38,6 +39,7 @@ else()
         cjson
         dl
         utils
+        pal
     )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 

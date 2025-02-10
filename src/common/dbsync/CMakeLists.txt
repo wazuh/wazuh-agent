@@ -54,8 +54,6 @@ include_directories(${COMMON_FOLDER}/mapWrapper/include/)
 include_directories(${COMMON_FOLDER}/pipelineHelper/include/)
 include_directories(${COMMON_FOLDER}/stringHelper/include/)
 include_directories(${COMMON_FOLDER}/threadDispatcher/include/)
-include_directories(${COMMON_FOLDER}/utils/)
-include_directories(${COMMON_FOLDER}/pal/include)
 
 add_definitions(-DPROMISE_TYPE=PromiseType::NORMAL)
 
@@ -69,14 +67,14 @@ add_library(dbsync STATIC
     ${DBSYNC_SRC}
     ${SRC_FOLDER}/${RESOURCE_OBJ})
 
-target_link_libraries(dbsync utils nlohmann_json::nlohmann_json cjson unofficial::sqlite3::sqlite3)
+target_link_libraries(dbsync PUBLIC utils nlohmann_json::nlohmann_json cjson unofficial::sqlite3::sqlite3 pal)
 
 if(BUILD_TESTS)
   if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-      target_link_libraries(dbsync -fprofile-arcs)
+      target_link_libraries(dbsync PRIVATE -fprofile-arcs)
     else()
-      target_link_libraries(dbsync gcov)
+      target_link_libraries(dbsync PRIVATE gcov)
     endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
     add_subdirectory(tests)
@@ -86,7 +84,7 @@ endif(BUILD_TESTS)
 
 if(NOT DEFINED COVERITY AND NOT DEFINED BUILD_TESTS)
   if(FSANITIZE)
-      target_link_libraries(dbsync gcov)
+      target_link_libraries(dbsync PRIVATE gcov)
   endif(FSANITIZE)
   add_subdirectory(example)
   add_subdirectory(testtool)

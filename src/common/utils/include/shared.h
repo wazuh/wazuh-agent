@@ -94,8 +94,6 @@
 #define _Atomic(T) std::atomic<T>
 #endif
 
-#include <logger.hpp>
-
 #include <time.h>
 #include <errno.h>
 #ifndef WIN32

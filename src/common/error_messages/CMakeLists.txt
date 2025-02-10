@@ -1,3 +1,0 @@
-add_library(error_messages INTERFACE)
-
-target_include_directories(error_messages INTERFACE include)

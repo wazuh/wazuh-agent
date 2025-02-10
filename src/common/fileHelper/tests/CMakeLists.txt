@@ -2,11 +2,10 @@ cmake_minimum_required(VERSION 3.22)
 
 project(utils_unit_test)
 
-file(GLOB UTIL_CXX_UNITTEST_WINDOWS_SRC
-    "windowsHelper_test.cpp"
-)
+file(GLOB UTIL_CXX_UNITTEST_WINDOWS_SRC)
 
 file(GLOB UTIL_CXX_UNITTEST_COMMON_SRC
+    "filesystemHelper_test.cpp"
     "main.cpp"
 )
 

@@ -25,17 +25,19 @@
 #include <iphlpapi.h>
 #include <netioapi.h>
 #include <versionhelpers.h>
-#include "mem_op.h"
 #include "stringHelper.h"
 #include "encodingWindowsHelper.h"
 #include "timeHelper.h"
-#include "pal.h"
+#include "../../pal/include/pal.h"
 #include <WTypesbase.h>
 
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable: 4505)
 #endif
+
+#define win_alloc(x) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (x))
+#define win_free(x) HeapFree(GetProcessHeap(), 0, (x))
 
 typedef unsigned int UINT;
 typedef ULONG (WINAPI* ConvertLengthToIpv4Mask_t)(ULONG, PULONG);

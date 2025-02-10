@@ -16,8 +16,7 @@
 #include "sharedDefs.h"
 #include "stringHelper.h"
 #include "windowsHelper.h"
-#include "shared.h"
-#include "pal.h"
+#include <pal.h>
 
 static const std::map<int32_t, std::string> STATE_TYPE =
 {

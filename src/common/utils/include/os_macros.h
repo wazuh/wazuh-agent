@@ -5,8 +5,6 @@
 #include <errno.h>
 #include <stdlib.h>
 #include "error_messages.h"
-#include "logger.hpp"
-
 
 #define os_calloc(x,y,z) ((z = (__typeof__(z)) calloc(x,y)))?(void)1:LogCritical(MEM_ERROR, strerror(errno))
 

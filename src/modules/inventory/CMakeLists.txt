@@ -27,14 +27,10 @@ target_include_directories(Inventory PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
     ${COMMON_FOLDER}
-    ${COMMON_FOLDER}/data_provider/src
     ${COMMON_FOLDER}/data_provider/include
     ${COMMON_FOLDER}/dbsync/include
-    ${COMMON_FOLDER}/error_messages/include
     ${COMMON_FOLDER}/hashHelper/include
-    ${COMMON_FOLDER}/privsep_op/include
     ${COMMON_FOLDER}/stringHelper/include
-    ${COMMON_FOLDER}/time_op/include
     ${COMMON_FOLDER}/timeHelper/include)
 
 target_link_libraries(Inventory
@@ -45,7 +41,6 @@ target_link_libraries(Inventory
     OpenSSL::SSL
     OpenSSL::Crypto
     utils
-    pthreads_op
     ConfigurationParser
     MessageEntry
     CommandEntry

@@ -86,32 +86,23 @@ find_package(unofficial-sqlite3 CONFIG REQUIRED)
 find_path(POPT_INCLUDE_DIR include/popt.h)
 include_directories(${POPT_INCLUDE_DIR})
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
-include_directories(${SRC_FOLDER}/headers/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
 include_directories(${SRC_FOLDER}/common/)
-include_directories(${SRC_FOLDER}/common/utils/)
 include_directories(${SRC_FOLDER}/common/byteArrayHelper/include/)
 include_directories(${SRC_FOLDER}/common/cmdHelper/include/)
 include_directories(${SRC_FOLDER}/common/globHelper/include/)
 include_directories(${SRC_FOLDER}/common/jsonHelper/include/)
 include_directories(${SRC_FOLDER}/common/linuxHelper/include/)
+include_directories(${SRC_FOLDER}/common/networkHelper/include/)
+include_directories(${SRC_FOLDER}/common/sqliteWrapper/include/)
 include_directories(${SRC_FOLDER}/common/stringHelper/include/)
 include_directories(${SRC_FOLDER}/common/timeHelper/include/)
-include_directories(${SRC_FOLDER}/shared_modules/common/)
-include_directories(${SRC_FOLDER}/common/pal/include/)
 
 if(WIN32)
-  include_directories(${SRC_FOLDER}/common/time_op/include/)
-  include_directories(${SRC_FOLDER}/common/regex_op/include/)
-  include_directories(${SRC_FOLDER}/common/validate_op/include/)
-  include_directories(${SRC_FOLDER}/common/binaries_op/include/)
-  include_directories(${SRC_FOLDER}/common/randombytes/include/)
-  include_directories(${SRC_FOLDER}/common/error_messages/include/)
+  include_directories(${SRC_FOLDER}/common/encodingHelper/include/)
   include_directories(${SRC_FOLDER}/common/registryHelper/include/)
   include_directories(${SRC_FOLDER}/common/windowsHelper/include/)
-  include_directories(${SRC_FOLDER}/common/encodingHelper/include/)
-  include_directories(${SRC_FOLDER}/common/mem_op/include/)
 endif()
 
 get_filename_component(COMMON_FOLDER  ${CMAKE_CURRENT_SOURCE_DIR}/../ ABSOLUTE)
@@ -178,20 +169,21 @@ elseif(APPLE)
     message(FATAL_ERROR "CoreFoundation library not found! Aborting...")
   endif()
 
-  target_link_libraries(sysinfo PUBLIC
-    unofficial::libplist::libplist
-    unofficial::libplist::libplist++
-    ${iokit_lib}
-    ${corefoundation_lib}
-    sqliteWrapper
-    LibArchive::LibArchive)
+target_link_libraries(sysinfo PUBLIC
+  unofficial::libplist::libplist
+  unofficial::libplist::libplist++
+  ${iokit_lib}
+  ${corefoundation_lib}
+  LibArchive::LibArchive)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
-target_link_libraries(sysinfo PUBLIC
-  pal
-  networkHelper
+target_link_libraries(sysinfo
+  PUBLIC
+  utils
   nlohmann_json::nlohmann_json
-  cjson)
+  cjson
+  PRIVATE
+  pal)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   find_library(POPT_LIBRARY libpopt.a)

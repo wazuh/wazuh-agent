@@ -1,14 +1,16 @@
-#include "commonDefs.h"
 #include "statelessEvent.hpp"
+
+#include <commonDefs.h>
 #include <config.h>
 #include <defs.h>
 #include <hashHelper.h>
 #include <inventory.hpp>
 #include <iostream>
 #include <nlohmann/json.hpp>
-#include <sharedDefs.h>
 #include <stringHelper.h>
 #include <timeHelper.h>
+
+constexpr auto EMPTY_VALUE {""};
 
 constexpr std::time_t INVENTORY_DEFAULT_INTERVAL {3600000};
 constexpr size_t MAX_ID_SIZE = 512;

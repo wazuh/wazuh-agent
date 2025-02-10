@@ -5,7 +5,6 @@ project(dbsyncPipelineFactory_unit_test)
 set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
 
 include_directories(${CMAKE_SOURCE_DIR}/src/)
-include_directories(${CMAKE_SOURCE_DIR}/utils/)
 link_directories(${CMAKE_BINARY_DIR}/lib)
 
 
@@ -32,6 +31,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         unofficial::sqlite3::sqlite3
         cjson
         utils
+        pal
         -static-libgcc
     )
 else()
@@ -45,6 +45,7 @@ else()
         cjson
         dl
         utils
+        pal
     )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 

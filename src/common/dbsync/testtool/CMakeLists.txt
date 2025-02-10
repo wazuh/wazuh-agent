@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.22)
 project(dbsync_test_tool)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/utils/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/testtool/)
 link_directories(${CMAKE_BINARY_DIR}/lib)
 
@@ -26,10 +25,12 @@ add_executable(dbsync_test_tool
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	target_link_libraries(dbsync_test_tool
 	    dbsync
+		utils
 	)
 else()
 	target_link_libraries(dbsync_test_tool
 	    dbsync
+		utils
 	    pthread
 	    dl
 	)
