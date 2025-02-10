@@ -18,11 +18,11 @@ void RegisterAgent(const std::string& url,
                    const std::string& configFilePath,
                    const std::string& verificationMode)
 {
-    auto configurationParser = configFilePath.empty()
-                                   ? configuration::ConfigurationParser()
-                                   : configuration::ConfigurationParser(std::filesystem::path(configFilePath));
-    auto dbFolderPath =
-        configurationParser.GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH);
+    const auto configurationParser = configFilePath.empty()
+                                         ? configuration::ConfigurationParser()
+                                         : configuration::ConfigurationParser(std::filesystem::path(configFilePath));
+
+    const auto dbFolderPath = configurationParser.GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data");
 
     if (!url.empty() && !user.empty() && !password.empty())
     {
