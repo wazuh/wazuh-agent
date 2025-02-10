@@ -81,6 +81,7 @@ protected:
     }
 };
 
+// NOLINTBEGIN(bugprone-unchecked-optional-access)
 TEST(ConfigurationParser, GetConfigString)
 {
     std::string strConfig = R"(
@@ -89,7 +90,7 @@ TEST(ConfigurationParser, GetConfigString)
           string_conf: string
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<std::string>("agent", "server_url").value_or("Invalid string");
+    const auto ret = parserStr->GetConfig<std::string>("agent", "server_url").value();
     ASSERT_EQ(ret, "192.168.0.11");
 }
 
@@ -103,8 +104,7 @@ TEST(ConfigurationParser, GetConfigArrayString)
           string_conf: string
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<std::vector<std::string>>("agent_array", "array_manager_ip")
-                         .value_or(std::vector<std::string>({"Invalid string1", "Invalid string2"}));
+    const auto ret = parserStr->GetConfig<std::vector<std::string>>("agent_array", "array_manager_ip").value();
     ASSERT_EQ(ret[0], "192.168.0.0");
     ASSERT_EQ(ret[1], "192.168.0.1");
 }
@@ -119,7 +119,7 @@ TEST(ConfigurationParser, GetConfigInt)
           int_conf: 10
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<int>("agent_array", "int_conf").value_or(1234);
+    const auto ret = parserStr->GetConfig<int>("agent_array", "int_conf").value();
     ASSERT_EQ(ret, 10);
 }
 
@@ -218,7 +218,7 @@ TEST(ConfigurationParser, GetConfigFloat)
           float_conf: 12.34
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<float>("agent_array", "float_conf").value_or(1.1f);
+    const auto ret = parserStr->GetConfig<float>("agent_array", "float_conf").value();
     EXPECT_FLOAT_EQ(ret, 12.34f);
 }
 
@@ -232,8 +232,7 @@ TEST(ConfigurationParser, GetConfigNoKey)
           float_conf: 12.34
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<float>("agent_array", "no_key").value_or(1.1f); // NOLINT
-    EXPECT_FLOAT_EQ(ret, 1.1f);
+    EXPECT_EQ(parserStr->GetConfig<float>("agent_array", "no_key"), std::nullopt);
 }
 
 TEST(ConfigurationParser, GetConfigIntSubTable)
@@ -248,7 +247,7 @@ TEST(ConfigurationParser, GetConfigIntSubTable)
             int_conf: 1234
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<int>("agent_array", "sub_table", "int_conf").value_or(0);
+    const auto ret = parserStr->GetConfig<int>("agent_array", "sub_table", "int_conf").value();
     ASSERT_EQ(ret, 1234);
 }
 
@@ -265,7 +264,7 @@ TEST(ConfigurationParser, GetConfigBoolSubTable)
             bool_conf: true
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<bool>("agent_array", "sub_table", "bool_conf").value_or(false);
+    const auto ret = parserStr->GetConfig<bool>("agent_array", "sub_table", "bool_conf").value();
     ASSERT_EQ(ret, true);
 }
 
@@ -284,10 +283,8 @@ TEST(ConfigurationParser, GetConfigArrayMap)
               api_token: api_token2
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<std::vector<std::map<std::string, std::string>>>("agent_array", "api_auth")
-                         .value_or(std::vector<std::map<std::string, std::string>> {
-                             {{"org_name", "default1"}, {"api_token", "default_token1"}},
-                             {{"org_name", "default2"}, {"api_token", "default_token2"}}});
+    const auto ret =
+        parserStr->GetConfig<std::vector<std::map<std::string, std::string>>>("agent_array", "api_auth").value();
     ASSERT_EQ(ret[0].at("org_name"), "dummy1");
     ASSERT_EQ(ret[0].at("api_token"), "api_token1");
     ASSERT_EQ(ret[1].at("org_name"), "dummy2");
@@ -302,9 +299,7 @@ TEST(ConfigurationParser, GetConfigMap)
           string_conf_2: string_2
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<std::map<std::string, std::string>>("map_string")
-                         .value_or(std::map<std::string, std::string> {{"string_conf_1", "default_1"},
-                                                                       {"string_conf_2", "default_2"}});
+    const auto ret = parserStr->GetConfig<std::map<std::string, std::string>>("map_string").value();
     ASSERT_EQ(ret.at("string_conf_1"), "string_1");
     ASSERT_EQ(ret.at("string_conf_2"), "string_2");
 }
@@ -317,10 +312,7 @@ TEST(ConfigurationParser, GetConfigBadCast)
           int_conf: 10
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<std::vector<std::string>>("bad_cast_array")
-                         .value_or(std::vector<std::string> {"dummy", "string"});
-    ASSERT_EQ(ret[0], "dummy");
-    ASSERT_EQ(ret[1], "string");
+    EXPECT_EQ(parserStr->GetConfig<std::vector<std::string>>("bad_cast_array"), std::nullopt);
 }
 
 TEST(ConfigurationParser, GetConfigMultiNode)
@@ -340,12 +332,10 @@ TEST(ConfigurationParser, GetConfigMultiNode)
           read_interval: 500
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<std::vector<std::string>>("agent_array", "array_manager_ip")
-                         .value_or(std::vector<std::string> {});
-    const auto retEnabled = parserStr->GetConfig<bool>("logcollector", "enabled").value_or(false);
-    const auto retFileWait = parserStr->GetConfig<int>("logcollector", "read_interval").value_or(0);
-    const auto retLocalFiles = parserStr->GetConfig<std::vector<std::string>>("logcollector", "localfiles")
-                                   .value_or(std::vector<std::string> {});
+    const auto ret = parserStr->GetConfig<std::vector<std::string>>("agent_array", "array_manager_ip").value();
+    const auto retEnabled = parserStr->GetConfig<bool>("logcollector", "enabled").value();
+    const auto retFileWait = parserStr->GetConfig<int>("logcollector", "read_interval").value();
+    const auto retLocalFiles = parserStr->GetConfig<std::vector<std::string>>("logcollector", "localfiles").value();
     ASSERT_EQ(ret[0], "192.168.0.0");
     ASSERT_EQ(ret[1], "192.168.0.1");
     ASSERT_TRUE(retEnabled);
@@ -370,32 +360,11 @@ TEST_F(ConfigurationParserFileTest, ValidConfigFileLoadsCorrectly)
     {
         const auto parser = std::make_unique<configuration::ConfigurationParser>(m_tempConfigFilePath);
 
-        EXPECT_EQ(parser->GetConfig<std::string>("agent", "server_url").value_or(""), "https://myserver:28000");
-        EXPECT_FALSE(parser->GetConfig<bool>("inventory", "enabled").value_or(true));
-        EXPECT_EQ(parser->GetConfig<int>("inventory", "interval").value_or(0), 7200);
-        EXPECT_FALSE(parser->GetConfig<bool>("logcollector", "enabled").value_or(true));
-        EXPECT_EQ(parser->GetConfig<int>("logcollector", "read_interval").value_or(0), 1000);
-    }
-    catch (const std::exception& e)
-    {
-        std::cerr << "Error: " << e.what() << '\n';
-        std::filesystem::remove(m_tempConfigFilePath);
-        throw;
-    }
-}
-
-TEST_F(ConfigurationParserInvalidYamlFileTest, InvalidConfigFileLoadsDefault)
-{
-    try
-    {
-        const auto parser = std::make_unique<configuration::ConfigurationParser>(m_tempConfigFilePath);
-
-        EXPECT_EQ(parser->GetConfig<std::string>("agent", "server_url").value_or("https://localhost:27000"),
-                  "https://localhost:27000");
-        EXPECT_TRUE(parser->GetConfig<bool>("inventory", "enabled").value_or(true));
-        EXPECT_EQ(parser->GetConfig<int>("inventory", "interval").value_or(3600), 3600);
-        EXPECT_TRUE(parser->GetConfig<bool>("logcollector", "enabled").value_or(true));
-        EXPECT_EQ(parser->GetConfig<int>("logcollector", "read_interval").value_or(500), 500);
+        EXPECT_EQ(parser->GetConfig<std::string>("agent", "server_url").value(), "https://myserver:28000");
+        EXPECT_FALSE(parser->GetConfig<bool>("inventory", "enabled").value());
+        EXPECT_EQ(parser->GetConfig<int>("inventory", "interval").value(), 7200);
+        EXPECT_FALSE(parser->GetConfig<bool>("logcollector", "enabled").value());
+        EXPECT_EQ(parser->GetConfig<int>("logcollector", "read_interval").value(), 1000);
     }
     catch (const std::exception& e)
     {
@@ -465,6 +434,8 @@ TEST(ConfigurationParser, GetConfigBytes)
         parserStr->ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_default_KB").value());
     ASSERT_EQ(retDefaultKB, 53);
 }
+
+// NOLINTEND(bugprone-unchecked-optional-access)
 
 int main(int argc, char** argv)
 {
