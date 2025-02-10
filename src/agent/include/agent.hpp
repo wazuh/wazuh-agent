@@ -5,13 +5,13 @@
 #include <command_handler.hpp>
 #include <communicator.hpp>
 #include <configuration_parser.hpp>
+#include <ihttp_client.hpp>
 #include <imultitype_queue.hpp>
 #include <isignal_handler.hpp>
 #include <moduleManager.hpp>
 #include <signal_handler.hpp>
-#include <task_manager.hpp>
-
 #include <sysInfo.hpp>
+#include <task_manager.hpp>
 
 #include <atomic>
 #include <memory>
@@ -28,10 +28,12 @@ public:
     /// @brief Constructor
     /// @param configFilePath Path to the configuration file
     /// @param signalHandler Pointer to a custom ISignalHandler implementation
+    /// @param httpClient Pointer to an IHttpClient implementation
     /// @throws std::runtime_error If the Agent is not registered
     /// @throws Any exception propagated from dependencies used within the constructor
     Agent(const std::string& configFilePath,
-          std::unique_ptr<ISignalHandler> signalHandler = std::make_unique<SignalHandler>());
+          std::unique_ptr<ISignalHandler> signalHandler = std::make_unique<SignalHandler>(),
+          std::unique_ptr<http_client::IHttpClient> httpClient = nullptr);
 
     /// @brief Destructor
     ~Agent();

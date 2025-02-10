@@ -1,3 +1,4 @@
+#include "../http_client/tests/mocks/mock_http_client.hpp"
 #include <agent.hpp>
 #include <cstdio>
 #include <fstream>
@@ -103,13 +104,20 @@ TEST_F(AgentTests, AgentStopsWhenSignalReceived)
     auto mockSignalHandler = std::make_unique<MockSignalHandler>();
     MockSignalHandler* mockSignalHandlerPtr = mockSignalHandler.get();
 
+    auto mockHttpClient = std::make_unique<MockHttpClient>();
+
     auto WaitForSignalCalled = false;
 
     EXPECT_CALL(*mockSignalHandlerPtr, WaitForSignal())
         .Times(1)
         .WillOnce([&WaitForSignalCalled]() { WaitForSignalCalled = true; });
 
-    Agent agent(AGENT_CONFIG_PATH, std::move(mockSignalHandler));
+    intStringTuple expectedResponse {http_client::HTTP_CODE_UNAUTHORIZED, R"({"message":"Try again"})"};
+
+    EXPECT_CALL(*mockHttpClient, PerformHttpRequest(testing::_))
+        .WillRepeatedly(testing::Invoke([&expectedResponse]() -> intStringTuple { return expectedResponse; }));
+
+    Agent agent(AGENT_CONFIG_PATH, std::move(mockSignalHandler), std::move(mockHttpClient));
 
     EXPECT_NO_THROW(agent.Run());
     EXPECT_TRUE(WaitForSignalCalled);
