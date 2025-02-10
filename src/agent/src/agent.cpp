@@ -22,12 +22,12 @@ Agent::Agent(const std::string& configFilePath,
     , m_configurationParser(configFilePath.empty() ? std::make_shared<configuration::ConfigurationParser>()
                                                    : std::make_shared<configuration::ConfigurationParser>(
                                                          std::filesystem::path(configFilePath)))
-    , m_agentInfo(agentInfo.has_value() ? std::move(*agentInfo)
-                                        : AgentInfo(
-                                              m_configurationParser->GetConfig<std::string>("agent", "path.data")
-                                                  .value_or(config::DEFAULT_DATA_PATH),
-                                              [this]() { return m_sysInfo.os(); },
-                                              [this]() { return m_sysInfo.networks(); }))
+    , m_agentInfo(agentInfo.has_value()
+                      ? std::move(*agentInfo)
+                      : AgentInfo(
+                            m_configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data"),
+                            [this]() { return m_sysInfo.os(); },
+                            [this]() { return m_sysInfo.networks(); }))
     , m_messageQueue(std::make_shared<MultiTypeQueue>(m_configurationParser))
     , m_communicator(httpClient ? std::move(httpClient) : std::make_unique<http_client::HttpClient>(),
                      m_configurationParser,
@@ -64,7 +64,7 @@ Agent::Agent(const std::string& configFilePath,
     m_configurationParser->SetGetGroupIdsFunction([this]() { return m_agentInfo.GetGroups(); });
 
     m_agentThreadCount =
-        m_configurationParser->GetConfig<size_t>("agent", "thread_count").value_or(config::DEFAULT_THREAD_COUNT);
+        m_configurationParser->GetConfigOrDefault(config::DEFAULT_THREAD_COUNT, "agent", "thread_count");
 
     if (m_agentThreadCount < config::DEFAULT_THREAD_COUNT)
     {
