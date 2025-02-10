@@ -25,9 +25,8 @@ MultiTypeQueue::MultiTypeQueue(std::shared_ptr<configuration::ConfigurationParse
         throw std::runtime_error(std::string("Invalid Configuration Parser passed."));
     }
 
-    m_batchInterval =
-        configurationParser->ParseTimeUnit(configurationParser->GetConfig<std::string>("events", "batch_interval")
-                                               .value_or(config::agent::DEFAULT_BATCH_INTERVAL));
+    m_batchInterval = configurationParser->ParseTimeUnit(
+        configurationParser->GetConfigOrDefault(config::agent::DEFAULT_BATCH_INTERVAL, "events", "batch_interval"));
 
     if (m_batchInterval < MIN_BATCH_INTERVAL || m_batchInterval > MAX_BATCH_INTERVAL)
     {
@@ -36,7 +35,7 @@ MultiTypeQueue::MultiTypeQueue(std::shared_ptr<configuration::ConfigurationParse
     }
 
     const auto configMaxItems =
-        configurationParser->GetConfig<std::string>("agent", "queue_size").value_or(config::agent::QUEUE_DEFAULT_SIZE);
+        configurationParser->GetConfigOrDefault(config::agent::QUEUE_DEFAULT_SIZE, "agent", "queue_size");
 
     m_maxItems = configurationParser->ParseSizeUnit(configMaxItems);
 
@@ -47,8 +46,7 @@ MultiTypeQueue::MultiTypeQueue(std::shared_ptr<configuration::ConfigurationParse
         m_maxItems = configurationParser->ParseSizeUnit(config::agent::QUEUE_DEFAULT_SIZE);
     }
 
-    auto dbFolderPath =
-        configurationParser->GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH);
+    const auto dbFolderPath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data");
 
     try
     {
