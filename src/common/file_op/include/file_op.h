@@ -140,14 +140,6 @@ int IsFile(const char* file) ATTR_NONNULL;
  */
 int IsSocket(const char* file) ATTR_NONNULL;
 
-/**
- * @brief Get the type of the specified file.
- *
- * @param dir File path.
- * @return 1 if it is a file, 2 if it is a directory, 0 otherwise.
- */
-int check_path_type(const char* dir) ATTR_NONNULL;
-
 #ifndef WIN32
 /**
  * @brief Check if the specified file is a link.
@@ -307,15 +299,6 @@ int rmdir_ex(const char* path);
 int cldir_ex(const char* name);
 
 /**
- * @brief Delete directory content with exception list.
- *
- * @param name Path of the folder.
- * @param ignore Array of files to be ignored. This array must be NULL terminated.
- * @return 0 on success. On error, -1 is returned, and errno is set appropriately.
- */
-int cldir_ex_ignore(const char* name, const char** ignore);
-
-/**
  * @brief Create directory recursively.
  *
  * @param path Path of the folder.
@@ -330,14 +313,6 @@ int mkdir_ex(const char* path);
  * @return 0 if the path is safe, 1 otherwise.
  */
 int w_ref_parent_folder(const char* path);
-
-/**
- * @brief Read directory and return an array of contained files and folders, sorted alphabetically.
- *
- * @param name Path of the directory.
- * @return Array of filenames.
- */
-char** wreaddir(const char* name);
 
 /**
  * @brief Open file normally in Linux, allow read/write/delete in Windows.
