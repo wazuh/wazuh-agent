@@ -1,6 +1,5 @@
 #pragma once
 
-#include <config.h>
 #include <logcollector.hpp>
 #include <oslogstore.hpp>
 #include <reader.hpp>

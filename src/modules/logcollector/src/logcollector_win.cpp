@@ -14,13 +14,12 @@ namespace logcollector
     void Logcollector::AddPlatformSpecificReader(
         std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
     {
-        const auto refreshInterval = configurationParser->ParseTimeUnit(
-            configurationParser->GetConfig<std::string>("logcollector", "reload_interval")
-                .value_or(config::logcollector::DEFAULT_CHANNEL_REFRESH_INTERVAL));
+        const auto refreshInterval = configurationParser->ParseTimeUnit(configurationParser->GetConfigOrDefault(
+            config::logcollector::DEFAULT_CHANNEL_REFRESH_INTERVAL, "logcollector", "reload_interval"));
 
-        auto windowsConfig =
-            configurationParser->GetConfig<std::vector<std::map<std::string, std::string>>>("logcollector", "windows")
-                .value_or(std::vector<std::map<std::string, std::string>> {});
+        const std::vector<std::map<std::string, std::string>> defaultWinOsConfig {};
+
+        auto windowsConfig = configurationParser->GetConfigOrDefault(defaultWinOsConfig, "logcollector", "windows");
 
         for (auto& entry : windowsConfig)
         {

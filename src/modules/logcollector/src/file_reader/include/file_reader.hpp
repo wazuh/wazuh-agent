@@ -5,7 +5,6 @@
 #include <fstream>
 #include <list>
 
-#include <config.h>
 #include <logcollector.hpp>
 #include <reader.hpp>
 

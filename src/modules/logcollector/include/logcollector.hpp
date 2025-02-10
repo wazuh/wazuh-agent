@@ -1,7 +1,5 @@
 #pragma once
 
-#include <config.h>
-
 #include <command_entry.hpp>
 #include <message.hpp>
 #include <moduleWrapper.hpp>

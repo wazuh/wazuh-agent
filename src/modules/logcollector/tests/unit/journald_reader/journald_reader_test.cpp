@@ -1,7 +1,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <config.h>
 #include <journald_reader.hpp>
 #include <logcollector_mock.hpp>
 
