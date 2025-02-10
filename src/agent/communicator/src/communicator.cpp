@@ -64,17 +64,15 @@ namespace communicator
             throw std::runtime_error(std::string("Invalid Configuration Parser passed."));
         }
 
-        m_serverUrl = configurationParser->GetConfig<std::string>("agent", "server_url")
-                          .value_or(config::agent::DEFAULT_SERVER_URL);
+        m_serverUrl = configurationParser->GetConfigOrDefault(config::agent::DEFAULT_SERVER_URL, "agent", "server_url");
 
         if (boost::urls::url_view url(m_serverUrl); url.scheme() != "https")
         {
             LogInfo("Using insecure connection.");
         }
 
-        m_retryInterval =
-            configurationParser->ParseTimeUnit(configurationParser->GetConfig<std::string>("agent", "retry_interval")
-                                                   .value_or(config::agent::DEFAULT_RETRY_INTERVAL));
+        m_retryInterval = configurationParser->ParseTimeUnit(
+            configurationParser->GetConfigOrDefault(config::agent::DEFAULT_RETRY_INTERVAL, "agent", "retry_interval"));
 
         if (m_retryInterval < 0)
         {
@@ -82,8 +80,8 @@ namespace communicator
             m_retryInterval = configurationParser->ParseTimeUnit(config::agent::DEFAULT_RETRY_INTERVAL);
         }
 
-        const auto configBatchSize = configurationParser->GetConfig<std::string>("events", "batch_size")
-                                         .value_or(config::agent::DEFAULT_BATCH_SIZE);
+        const auto configBatchSize =
+            configurationParser->GetConfigOrDefault(config::agent::DEFAULT_BATCH_SIZE, "events", "batch_size");
 
         m_batchSize = configurationParser->ParseSizeUnit(configBatchSize);
 
@@ -93,8 +91,8 @@ namespace communicator
             m_batchSize = configurationParser->ParseSizeUnit(config::agent::DEFAULT_BATCH_SIZE);
         }
 
-        m_verificationMode = configurationParser->GetConfig<std::string>("agent", "verification_mode")
-                                 .value_or(config::agent::DEFAULT_VERIFICATION_MODE);
+        m_verificationMode = configurationParser->GetConfigOrDefault(
+            config::agent::DEFAULT_VERIFICATION_MODE, "agent", "verification_mode");
 
         if (std::find(std::begin(config::agent::VALID_VERIFICATION_MODES),
                       std::end(config::agent::VALID_VERIFICATION_MODES),
