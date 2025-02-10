@@ -1,10 +1,12 @@
 #include "../http_client/tests/mocks/mock_http_client.hpp"
 #include <agent.hpp>
+#include <agent_info_persistance.hpp>
 #include <cstdio>
 #include <fstream>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <isignal_handler.hpp>
+#include <mocks_persistence.hpp>
 
 class MockSignalHandler : public ISignalHandler
 {
@@ -16,8 +18,9 @@ class AgentTests : public ::testing::Test
 {
 protected:
     std::string AGENT_CONFIG_PATH;
-    std::string AGENT_DB_PATH;
     std::string AGENT_PATH;
+    std::unique_ptr<AgentInfo> agentInfo;
+    MockPersistence* mockPersistence = nullptr;
 
     void SetUp() override
     {
@@ -28,25 +31,29 @@ protected:
         _dupenv_s(&tmpPath, &len, "TMP");
         std::string tempFolder = std::string(tmpPath);
         AGENT_CONFIG_PATH = tempFolder + "wazuh-agent.yml";
-        AGENT_DB_PATH = tempFolder + "agent_info.db";
         AGENT_PATH = tempFolder;
 #else
         AGENT_CONFIG_PATH = "/tmp/wazuh-agent.yml";
-        AGENT_DB_PATH = "/tmp/agent_info.db";
         AGENT_PATH = "/tmp";
 #endif
 
         CreateTempConfigFile();
 
-        SysInfo sysInfo;
-        std::unique_ptr<AgentInfo> agent = std::make_unique<AgentInfo>(
-            AGENT_PATH,
-            [&sysInfo]() mutable { return sysInfo.os(); },
-            [&sysInfo]() mutable { return sysInfo.networks(); });
+        auto mockPersistencePtr = std::make_unique<MockPersistence>();
+        mockPersistence = mockPersistencePtr.get();
 
-        agent->SetKey("4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
-        agent->SetName("agent_name");
-        agent->Save();
+        SetConstructorPersistenceExpectCalls();
+
+        SysInfo sysInfo;
+        agentInfo = std::make_unique<AgentInfo>(
+            AGENT_PATH,
+            [sysInfo]() mutable { return sysInfo.os(); },
+            [sysInfo]() mutable { return sysInfo.networks(); },
+            false,
+            std::make_shared<AgentInfoPersistance>("db_path", std::move(mockPersistencePtr)));
+
+        agentInfo->SetKey("4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
+        agentInfo->SetName("agent_name");
     }
 
     void TearDown() override
@@ -90,14 +97,35 @@ logcollector:
     void CleanUpTempFiles()
     {
         std::remove(AGENT_CONFIG_PATH.c_str());
-        std::remove(AGENT_DB_PATH.c_str());
+    }
+
+    void SetConstructorPersistenceExpectCalls()
+    {
+        std::vector<column::Row> mockRowName = {{column::ColumnValue("name", column::ColumnType::TEXT, "agent_name")}};
+        std::vector<column::Row> mockRowKey = {
+            {column::ColumnValue("key", column::ColumnType::TEXT, "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj")}};
+        std::vector<column::Row> mockRowUUID = {{}};
+        std::vector<column::Row> mockRowGroup = {{}};
+
+        EXPECT_CALL(*mockPersistence, TableExists("agent_info")).WillOnce(testing::Return(true));
+        EXPECT_CALL(*mockPersistence, TableExists("agent_group")).WillOnce(testing::Return(true));
+        EXPECT_CALL(*mockPersistence, GetCount("agent_info", testing::_, testing::_))
+            .WillOnce(testing::Return(0))
+            .WillOnce(testing::Return(0));
+        EXPECT_CALL(*mockPersistence, Insert("agent_info", testing::_)).Times(1);
+
+        testing::Sequence seq;
+        EXPECT_CALL(*mockPersistence,
+                    Select("agent_info", testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
+            .InSequence(seq)
+            .WillOnce(testing::Return(mockRowName))
+            .WillOnce(testing::Return(mockRowKey))
+            .WillOnce(testing::Return(mockRowUUID));
+        EXPECT_CALL(*mockPersistence,
+                    Select("agent_group", testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
+            .WillOnce(testing::Return(mockRowGroup));
     }
 };
-
-TEST_F(AgentTests, AgentDefaultConstruction)
-{
-    EXPECT_NO_THROW(Agent {AGENT_CONFIG_PATH});
-}
 
 TEST_F(AgentTests, AgentStopsWhenSignalReceived)
 {
@@ -117,7 +145,7 @@ TEST_F(AgentTests, AgentStopsWhenSignalReceived)
     EXPECT_CALL(*mockHttpClient, PerformHttpRequest(testing::_))
         .WillRepeatedly(testing::Invoke([&expectedResponse]() -> intStringTuple { return expectedResponse; }));
 
-    Agent agent(AGENT_CONFIG_PATH, std::move(mockSignalHandler), std::move(mockHttpClient));
+    Agent agent(AGENT_CONFIG_PATH, std::move(mockSignalHandler), std::move(mockHttpClient), std::move(*agentInfo));
 
     EXPECT_NO_THROW(agent.Run());
     EXPECT_TRUE(WaitForSignalCalled);
