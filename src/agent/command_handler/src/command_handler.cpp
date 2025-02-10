@@ -38,8 +38,8 @@ namespace command_handler
             throw std::runtime_error(std::string("Invalid Configuration Parser passed."));
         }
 
-        auto dbFolderPath =
-            configurationParser->GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH);
+        const auto dbFolderPath =
+            configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data");
 
         try
         {
