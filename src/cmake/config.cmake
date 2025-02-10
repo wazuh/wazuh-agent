@@ -52,9 +52,9 @@ set(DEFAULT_PACKAGES true CACHE BOOL "Default inventory packages")
 
 set(DEFAULT_PORTS true CACHE BOOL "Default inventory ports")
 
-set(DEFAULT_PORTS_ALL true CACHE BOOL "Default inventory ports all")
+set(DEFAULT_PORTS_ALL false CACHE BOOL "Default inventory ports all")
 
-set(DEFAULT_PROCESSES true CACHE BOOL "Default inventory processes")
+set(DEFAULT_PROCESSES false CACHE BOOL "Default inventory processes")
 
 set(DEFAULT_HOTFIXES true CACHE BOOL "Default inventory hotfixes")
 

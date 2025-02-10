@@ -16,8 +16,8 @@ The **Inventory** module is responsible for collecting and storing detailed info
 |           | `networks`      | Enables the network scan                           | true    |
 |           | `packages`      | Enables the package scan                           | true    |
 |           | `ports`         | Enables the port scan                              | true    |
-|           | `ports_all`     | Enables the all ports scan or only listening ports | true    |
-|           | `processes`     | Enables the process scan                           | true    |
+|           | `ports_all`     | Enables the all ports scan or only listening ports | false   |
+|           | `processes`     | Enables the process scan                           | false   |
 |           | `hotfixes`      | Enables the hotfix scan                            | true    |
 
 
@@ -31,8 +31,8 @@ inventory:
   networks: true
   packages: true
   ports: true
-  ports_all: true
-  processes: true
+  ports_all: false
+  processes: false
   hotfixes: true
 ```
 ---

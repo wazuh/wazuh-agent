@@ -77,11 +77,6 @@ TEST_F(InventoryImpTest, defaultCtor)
         .WillOnce(::testing::InvokeArgument<0>(
             R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":4111222333,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
-    EXPECT_CALL(*spInfoWrapper, processes(testing::_))
-        .Times(testing::AtLeast(1))
-        .WillOnce(::testing::InvokeArgument<0>(
-            R"({"egroup":"root","euser":"root","fgroup":"root","name":"kworker/u256:2-","scan_time":"2020/12/28 21:49:50", "nice":0,"nlwp":1,"pgrp":0,"pid":"431625","ppid":2,"priority":20,"processor":1,"resident":0,"rgroup":"root","ruser":"root","session":0,"sgroup":"root","share":0,"size":0,"start_time":9302261,"state":"I","stime":3,"suser":"root","tgid":431625,"tty":0,"utime":0,"vm_size":0})"_json));
-
     EXPECT_CALL(*spInfoWrapper, hotfixes())
         .WillRepeatedly(Return(nlohmann::json::parse(R"([{"hotfix":"KB12345678"}])")));
 
@@ -105,8 +100,6 @@ TEST_F(InventoryImpTest, defaultCtor)
         R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"collector":"system","module":"inventory","operation":"create"}})"};
     const auto expectedResult3 {
         R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":4111222333,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"collector":"packages","module":"inventory","operation":"create"}})"};
-    const auto expectedResult4 {
-        R"({"data":{"process":{"args":null,"command_line":null,"group":{"id":"root"},"name":"kworker/u256:2-","parent":{"pid":2},"pid":"431625","real_group":{"id":"root"},"real_user":{"id":"root"},"saved_group":{"id":"root"},"saved_user":{"id":"root"},"start":9302261,"thread":{"id":431625},"tty":{"char_device":{"major":0}},"user":{"id":"root"}}},"metadata":{"collector":"processes","module":"inventory","operation":"create"}})"};
     const auto expectedResult5 {
         R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"collector":"hotfixes","module":"inventory","operation":"create"}})"};
     const auto expectedResult6 {
@@ -117,7 +110,6 @@ TEST_F(InventoryImpTest, defaultCtor)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(testing::AtLeast(1));
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(testing::AtLeast(1));
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(testing::AtLeast(1));
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult4)).Times(testing::AtLeast(1));
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult5)).Times(testing::AtLeast(1));
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult6)).Times(testing::AtLeast(1));
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult7)).Times(testing::AtLeast(1));
