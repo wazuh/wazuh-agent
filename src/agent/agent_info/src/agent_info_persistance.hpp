@@ -12,6 +12,7 @@ class AgentInfoPersistance
 public:
     /// @brief Constructs the persistence manager for agent info, initializing the database and tables if necessary.
     /// @param dbFolderPath Path to the database folder.
+    /// @param persistence Optional pointer to an existing persistence object.
     explicit AgentInfoPersistance(const std::string& dbFolderPath, std::unique_ptr<Persistence> persistence = nullptr);
 
     /// @brief Destructor for AgentInfoPersistance.
