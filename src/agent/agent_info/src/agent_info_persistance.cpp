@@ -3,7 +3,6 @@
 #include <logger.hpp>
 
 #include <column.hpp>
-#include <persistence.hpp>
 #include <persistence_factory.hpp>
 
 using namespace column;
@@ -25,13 +24,20 @@ namespace
     const std::string AGENT_GROUP_NAME_COLUMN_NAME = "name";
 } // namespace
 
-AgentInfoPersistance::AgentInfoPersistance(const std::string& dbFolderPath)
+AgentInfoPersistance::AgentInfoPersistance(const std::string& dbFolderPath, std::unique_ptr<Persistence> persistence)
 {
     const auto dbFilePath = dbFolderPath + "/" + AGENT_INFO_DB_NAME;
 
     try
     {
-        m_db = PersistenceFactory::CreatePersistence(PersistenceFactory::PersistenceType::SQLITE3, dbFilePath);
+        if (persistence)
+        {
+            m_db = std::move(persistence);
+        }
+        else
+        {
+            m_db = PersistenceFactory::CreatePersistence(PersistenceFactory::PersistenceType::SQLITE3, dbFilePath);
+        }
 
         if (!m_db->TableExists(AGENT_INFO_TABLE_NAME))
         {
@@ -126,17 +132,20 @@ void AgentInfoPersistance::InsertDefaultAgentInfo()
     }
 }
 
-void AgentInfoPersistance::SetAgentInfoValue(const std::string& column, const std::string& value)
+bool AgentInfoPersistance::SetAgentInfoValue(const std::string& column, const std::string& value)
 {
     try
     {
         const Row columns = {ColumnValue(column, ColumnType::TEXT, value)};
         m_db->Update(AGENT_INFO_TABLE_NAME, columns);
+        return true;
     }
     catch (const std::exception& e)
     {
         LogError("Error updating {}: {}.", column, e.what());
     }
+
+    return false;
 }
 
 std::string AgentInfoPersistance::GetAgentInfoValue(const std::string& column) const
@@ -201,24 +210,35 @@ std::vector<std::string> AgentInfoPersistance::GetGroups() const
     return groupList;
 }
 
-void AgentInfoPersistance::SetName(const std::string& name)
+bool AgentInfoPersistance::SetName(const std::string& name)
 {
-    SetAgentInfoValue(AGENT_INFO_NAME_COLUMN_NAME, name);
+    return SetAgentInfoValue(AGENT_INFO_NAME_COLUMN_NAME, name);
 }
 
-void AgentInfoPersistance::SetKey(const std::string& key)
+bool AgentInfoPersistance::SetKey(const std::string& key)
 {
-    SetAgentInfoValue(AGENT_INFO_KEY_COLUMN_NAME, key);
+    return SetAgentInfoValue(AGENT_INFO_KEY_COLUMN_NAME, key);
 }
 
-void AgentInfoPersistance::SetUUID(const std::string& uuid)
+bool AgentInfoPersistance::SetUUID(const std::string& uuid)
 {
-    SetAgentInfoValue(AGENT_INFO_UUID_COLUMN_NAME, uuid);
+    return SetAgentInfoValue(AGENT_INFO_UUID_COLUMN_NAME, uuid);
 }
 
 bool AgentInfoPersistance::SetGroups(const std::vector<std::string>& groupList)
 {
-    auto transaction = m_db->BeginTransaction();
+    TransactionId transaction = 0;
+
+    // Handle the exception separately since it would not be necessary to perform RollBack.
+    try
+    {
+        transaction = m_db->BeginTransaction();
+    }
+    catch (const std::exception& e)
+    {
+        LogError("Failed to begin transaction: {}.", e.what());
+        return false;
+    }
 
     try
     {
@@ -235,13 +255,22 @@ bool AgentInfoPersistance::SetGroups(const std::vector<std::string>& groupList)
     catch (const std::exception& e)
     {
         LogError("Error inserting group: {}.", e.what());
-        m_db->RollbackTransaction(transaction);
+
+        try
+        {
+            m_db->RollbackTransaction(transaction);
+        }
+        catch (const std::exception& ee)
+        {
+            LogError("Rollback failed: {}.", ee.what());
+        }
+
         return false;
     }
     return true;
 }
 
-void AgentInfoPersistance::ResetToDefault()
+bool AgentInfoPersistance::ResetToDefault()
 {
     try
     {
@@ -250,9 +279,11 @@ void AgentInfoPersistance::ResetToDefault()
         CreateAgentInfoTable();
         CreateAgentGroupTable();
         InsertDefaultAgentInfo();
+        return true;
     }
     catch (const std::exception& e)
     {
         LogError("Error resetting to default values: {}.", e.what());
     }
+    return false;
 }

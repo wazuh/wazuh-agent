@@ -4,8 +4,11 @@
 #include <nlohmann/json.hpp>
 
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
+
+class AgentInfoPersistance;
 
 /// @brief Stores and manages information about an agent.
 ///
@@ -25,10 +28,12 @@ public:
     /// @param getOSInfo Function to retrieve OS information in JSON format.
     /// @param getNetworksInfo Function to retrieve network information in JSON format.
     /// @param agentIsRegistering True if the agent is being registered, false otherwise.
-    AgentInfo(std::string dbFolderPath = config::DEFAULT_DATA_PATH,
+    /// @param persistence Optional pointer to an AgentInfoPersistance object.
+    AgentInfo(const std::string& dbFolderPath = config::DEFAULT_DATA_PATH,
               std::function<nlohmann::json()> getOSInfo = nullptr,
               std::function<nlohmann::json()> getNetworksInfo = nullptr,
-              bool agentIsRegistering = false);
+              bool agentIsRegistering = false,
+              std::shared_ptr<AgentInfoPersistance> persistence = nullptr);
 
     /// @brief Gets the agent's name.
     /// @return The agent's name.
@@ -112,9 +117,6 @@ private:
     /// @return Vector of strings with the active IP addresses.
     std::vector<std::string> GetActiveIPAddresses(const nlohmann::json& networksJson) const;
 
-    /// @brief The agent's data folder path.
-    std::string m_dataFolderPath;
-
     /// @brief The agent's name.
     std::string m_name;
 
@@ -141,4 +143,7 @@ private:
 
     /// @brief Specify if the agent is about to register.
     bool m_agentIsRegistering;
+
+    /// @brief Pointer to the agent info persistence instance.
+    std::shared_ptr<AgentInfoPersistance> m_persistence;
 };

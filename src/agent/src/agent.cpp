@@ -16,15 +16,18 @@
 
 Agent::Agent(const std::string& configFilePath,
              std::unique_ptr<ISignalHandler> signalHandler,
-             std::unique_ptr<http_client::IHttpClient> httpClient)
+             std::unique_ptr<http_client::IHttpClient> httpClient,
+             std::optional<AgentInfo> agentInfo)
     : m_signalHandler(std::move(signalHandler))
     , m_configurationParser(configFilePath.empty() ? std::make_shared<configuration::ConfigurationParser>()
                                                    : std::make_shared<configuration::ConfigurationParser>(
                                                          std::filesystem::path(configFilePath)))
-    , m_agentInfo(
-          m_configurationParser->GetConfig<std::string>("agent", "path.data").value_or(config::DEFAULT_DATA_PATH),
-          [this]() { return m_sysInfo.os(); },
-          [this]() { return m_sysInfo.networks(); })
+    , m_agentInfo(agentInfo.has_value() ? std::move(*agentInfo)
+                                        : AgentInfo(
+                                              m_configurationParser->GetConfig<std::string>("agent", "path.data")
+                                                  .value_or(config::DEFAULT_DATA_PATH),
+                                              [this]() { return m_sysInfo.os(); },
+                                              [this]() { return m_sysInfo.networks(); }))
     , m_messageQueue(std::make_shared<MultiTypeQueue>(m_configurationParser))
     , m_communicator(httpClient ? std::move(httpClient) : std::make_unique<http_client::HttpClient>(),
                      m_configurationParser,

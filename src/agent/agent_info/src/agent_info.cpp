@@ -5,6 +5,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <memory>
 #include <random>
 #include <utility>
 
@@ -16,20 +17,20 @@ namespace
     const std::string PRODUCT_NAME = "WazuhXDR";
 } // namespace
 
-AgentInfo::AgentInfo(std::string dbFolderPath,
+AgentInfo::AgentInfo(const std::string& dbFolderPath,
                      std::function<nlohmann::json()> getOSInfo,
                      std::function<nlohmann::json()> getNetworksInfo,
-                     bool agentIsRegistering)
-    : m_dataFolderPath(std::move(dbFolderPath))
-    , m_agentIsRegistering(agentIsRegistering)
+                     bool agentIsRegistering,
+                     std::shared_ptr<AgentInfoPersistance> persistence)
+    : m_agentIsRegistering(agentIsRegistering)
+    , m_persistence(persistence ? std::move(persistence) : std::make_shared<AgentInfoPersistance>(dbFolderPath))
 {
     if (!m_agentIsRegistering)
     {
-        AgentInfoPersistance agentInfoPersistance(m_dataFolderPath);
-        m_name = agentInfoPersistance.GetName();
-        m_key = agentInfoPersistance.GetKey();
-        m_uuid = agentInfoPersistance.GetUUID();
-        m_groups = agentInfoPersistance.GetGroups();
+        m_name = m_persistence->GetName();
+        m_key = m_persistence->GetKey();
+        m_uuid = m_persistence->GetUUID();
+        m_groups = m_persistence->GetGroups();
     }
 
     if (m_uuid.empty())
@@ -183,18 +184,16 @@ std::string AgentInfo::GetMetadataInfo() const
 
 void AgentInfo::Save() const
 {
-    AgentInfoPersistance agentInfoPersistance(m_dataFolderPath);
-    agentInfoPersistance.ResetToDefault();
-    agentInfoPersistance.SetName(m_name);
-    agentInfoPersistance.SetKey(m_key);
-    agentInfoPersistance.SetUUID(m_uuid);
-    agentInfoPersistance.SetGroups(m_groups);
+    m_persistence->ResetToDefault();
+    m_persistence->SetName(m_name);
+    m_persistence->SetKey(m_key);
+    m_persistence->SetUUID(m_uuid);
+    m_persistence->SetGroups(m_groups);
 }
 
 bool AgentInfo::SaveGroups() const
 {
-    AgentInfoPersistance agentInfoPersistance(m_dataFolderPath);
-    return agentInfoPersistance.SetGroups(m_groups);
+    return m_persistence->SetGroups(m_groups);
 }
 
 std::vector<std::string> AgentInfo::GetActiveIPAddresses(const nlohmann::json& networksJson) const
