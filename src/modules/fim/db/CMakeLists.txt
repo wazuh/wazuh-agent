@@ -87,7 +87,7 @@ add_custom_command(TARGET fimdb POST_BUILD
   COMMENT "Creating delayed load library for fimdb.")
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
-if(UNIT_TEST)
+if(BUILD_TESTS)
   if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_link_libraries(fimdb -fprofile-arcs)
   else()

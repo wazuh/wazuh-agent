@@ -2,21 +2,22 @@ cmake_minimum_required(VERSION 3.22)
 
 project(dbsync)
 
-enable_testing()
+include(../../cmake/CommonSettings.cmake)
+set_common_settings()
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-get_filename_component(COMMON_FOLDER  ${CMAKE_CURRENT_SOURCE_DIR}/../ ABSOLUTE)
 get_filename_component(SRC_FOLDER     ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
+get_filename_component(COMMON_FOLDER  ${CMAKE_CURRENT_SOURCE_DIR}/../ ABSOLUTE)
 
 if(COVERITY)
   add_definitions(-D__GNUC__=8)
 endif(COVERITY)
 
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wshadow -Wnon-virtual-dtor -Woverloaded-virtual -Wunused -Wcast-align -Wformat=2 -std=c++14 -pthread")
+  set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wshadow -Wnon-virtual-dtor -Woverloaded-virtual -Wunused -Wcast-align -Wformat=2")
   set(CMAKE_CXX_FLAGS_DEBUG "-g")
   if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -28,7 +29,7 @@ if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address,leak,undefined")
   endif(FSANITIZE)
 else()
-  set(CMAKE_CXX_FLAGS "/W4 /permissive- /std:c++14 /MT /EHsc")
+  set(CMAKE_CXX_FLAGS "/W4 /permissive- /MT /EHsc")
 endif()
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -50,10 +51,6 @@ find_package(unofficial-sqlite3 CONFIG REQUIRED)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
 include_directories(${COMMON_FOLDER})
-include_directories(${COMMON_FOLDER}/mapWrapper/include/)
-include_directories(${COMMON_FOLDER}/pipelineHelper/include/)
-include_directories(${COMMON_FOLDER}/stringHelper/include/)
-include_directories(${COMMON_FOLDER}/threadDispatcher/include/)
 
 add_definitions(-DPROMISE_TYPE=PromiseType::NORMAL)
 
@@ -67,16 +64,20 @@ add_library(dbsync STATIC
     ${DBSYNC_SRC}
     ${SRC_FOLDER}/${RESOURCE_OBJ})
 
-target_link_libraries(dbsync PUBLIC utils nlohmann_json::nlohmann_json cjson unofficial::sqlite3::sqlite3 pal)
+target_include_directories(dbsync PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
+
+target_link_libraries(dbsync PUBLIC
+  map_wrapper
+  pipeline_helper
+  string_helper
+  thread_dispatcher
+)
+
+target_link_libraries(dbsync PUBLIC utils nlohmann_json::nlohmann_json cjson pal PRIVATE unofficial::sqlite3::sqlite3)
 
 if(BUILD_TESTS)
   if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-      target_link_libraries(dbsync PRIVATE -fprofile-arcs)
-    else()
-      target_link_libraries(dbsync PRIVATE gcov)
-    endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-
+    enable_testing()
     add_subdirectory(tests)
     add_subdirectory(integrationTests)
   endif(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")

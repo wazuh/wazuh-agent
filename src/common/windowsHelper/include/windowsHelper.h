@@ -28,7 +28,7 @@
 #include "stringHelper.h"
 #include "encodingWindowsHelper.h"
 #include "timeHelper.h"
-#include "../../pal/include/pal.h"
+#include <pal.h>
 #include <WTypesbase.h>
 
 #ifdef _MSC_VER

@@ -12,7 +12,6 @@
 #ifndef MAP_WRAPPER_SAFE_TESTS_H
 #define MAP_WRAPPER_SAFE_TESTS_H
 #include "gtest/gtest.h"
-#include "gmock/gmock.h"
 
 class MapWrapperSafeTest : public ::testing::Test
 {

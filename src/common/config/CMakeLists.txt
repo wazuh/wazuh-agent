@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.22)
 
 project(Config)
 
+include(../../cmake/CommonSettings.cmake)
+set_common_settings()
+
 add_library(Config INTERFACE)
 
 include(../../cmake/config.cmake)

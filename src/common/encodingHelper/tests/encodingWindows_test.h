@@ -12,7 +12,6 @@
 #ifndef ENCODING_WINDOWS_HELPER_TEST_H
 #define ENCODING_WINDOWS_HELPER_TEST_H
 #include "gtest/gtest.h"
-#include "gmock/gmock.h"
 
 class EncodingWindowsHelperTest : public ::testing::Test
 {

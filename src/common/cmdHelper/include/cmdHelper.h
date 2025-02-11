@@ -16,7 +16,7 @@
 #include <cstdio>
 #include <memory>
 #include <vector>
-#include "../../pal/include/pal.h"
+#include <pal.h>
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push

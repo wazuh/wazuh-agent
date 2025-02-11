@@ -11,6 +11,7 @@ file(GLOB sysinfo_UNIT_TEST_SRC
     ${sysinfo_UNIT_TEST_SRC})
 
 target_link_libraries(sysInfoWindows_unit_test
+    sysinfo
     debug gtestd
     debug gmockd
     debug gtest_maind
@@ -22,7 +23,6 @@ target_link_libraries(sysInfoWindows_unit_test
     pthread
     sqlite3
     cjson
-    -static-libgcc
 )
 
 add_test(NAME sysInfoWindows_unit_test

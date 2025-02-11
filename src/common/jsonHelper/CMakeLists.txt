@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.22)
 
-if(UNIT_TEST)
-    add_subdirectory(tests)
-endif()
+project(json_helper)
+
+include(../../cmake/CommonSettings.cmake)
+set_common_settings()
+
+add_library(json_helper INTERFACE)
+
+target_include_directories(json_helper INTERFACE include)

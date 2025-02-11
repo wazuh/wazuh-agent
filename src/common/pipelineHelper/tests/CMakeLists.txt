@@ -1,84 +1,21 @@
-cmake_minimum_required(VERSION 3.22)
-
-project(utils_unit_test)
-
-file(GLOB UTIL_CXX_UNITTEST_WINDOWS_SRC)
+find_package(GTest CONFIG REQUIRED)
 
 file(GLOB UTIL_CXX_UNITTEST_COMMON_SRC
     "pipelineNodes_test.cpp"
     "main.cpp"
 )
 
-file(GLOB UTIL_CXX_UNITTEST_LINUX_SRC)
+add_executable(pipeline_helper_tests
+    ${UTIL_CXX_UNITTEST_COMMON_SRC}
+)
 
-file(COPY input_files DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+include(../../../cmake/ConfigureTarget.cmake)
+configure_target(pipeline_helper_tests)
 
-link_directories(${SRC_FOLDER}/external/googletest/lib)
-link_directories(${SRC_FOLDER}/external/libarchive/.libs/)
+target_include_directories(pipeline_helper_tests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include
+)
 
-if(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
-  add_definitions(-DPROMISE_TYPE=PromiseType::SLEEP)
-else()
-  add_definitions(-DPROMISE_TYPE=PromiseType::NORMAL)
-endif(CMAKE_SYSTEM_NAME STREQUAL "HP-UX")
+target_link_libraries(pipeline_helper_tests PRIVATE pipeline_helper GTest::gtest GTest::gmock)
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    add_executable(utils_unit_test
-      ${UTIL_CXX_UNITTEST_COMMON_SRC}
-      ${UTIL_CXX_UNITTEST_WINDOWS_SRC}
-      ${UTIL_CXX_UNITTEST_CPP17_SRC}
-    )
-    add_definitions(-DWIN32=1
-                    -D_WIN32_WINNT=0x600)
-    target_link_libraries(utils_unit_test
-        debug gtestd
-        debug gmockd
-        optimized gtest
-        optimized gmock
-        pthread
-        crypto
-        ssl
-        -static-libgcc
-        ws2_32
-        crypt32
-    )
-else()
-
-    if (APPLE)
-      add_executable(utils_unit_test
-        ${UTIL_CXX_UNITTEST_COMMON_SRC}
-        ${UTIL_CXX_UNITTEST_CPP17_SRC}
-      )
-    else()
-      add_executable(utils_unit_test
-        ${UTIL_CXX_UNITTEST_COMMON_SRC}
-        ${UTIL_CXX_UNITTEST_LINUX_SRC}
-        ${UTIL_CXX_UNITTEST_CPP17_SRC}
-      )
-    endif(APPLE)
-
-    target_link_libraries(utils_unit_test
-        debug gtestd
-        debug gmockd
-        optimized gtest
-        optimized gmock
-        rocksdb
-        crypto
-        dl
-        pthread
-        rt
-        lzma
-        z
-        minizip
-        archive
-    )
-endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  target_link_libraries(utils_unit_test -fprofile-arcs)
-else()
-  target_link_libraries(utils_unit_test gcov)
-endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-
-add_test(NAME utils_unit_test
-         COMMAND utils_unit_test)
+add_test(NAME pipelineHelperTests COMMAND pipeline_helper_tests)

@@ -27,6 +27,7 @@ add_executable(dbengine_unit_test
     ${SQLITE_ENGINE_SRC})
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(dbengine_unit_test
+        dbsync
         GTest::gtest
         GTest::gmock
         GTest::gtest_main
@@ -35,11 +36,10 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         cjson
         pthread
         utils
-        pal
-        -static-libgcc
     )
 else()
     target_link_libraries(dbengine_unit_test
+        dbsync
         GTest::gtest
         GTest::gmock
         GTest::gtest_main
@@ -49,7 +49,6 @@ else()
         pthread
         dl
         utils
-        pal
     )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 

@@ -15,6 +15,7 @@ add_executable(sysInfoNetworkWindows_unit_test
     ${SYSINFO_SRC})
 
 target_link_libraries(sysInfoNetworkWindows_unit_test
+    sysinfo
     debug gtestd
     debug gmockd
     debug gtest_maind
@@ -26,7 +27,6 @@ target_link_libraries(sysInfoNetworkWindows_unit_test
     pthread
     sqlite3
     cjson
-    -static-libgcc
 )
 
 add_test(NAME sysInfoNetworkWindows_unit_test

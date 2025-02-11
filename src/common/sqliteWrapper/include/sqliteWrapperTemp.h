@@ -21,7 +21,7 @@
 #include <sys/stat.h>
 #include <math.h>
 #include <stdexcept>
-#include "../../pal/include/pal.h"
+#include <pal.h>
 
 using DBSyncExceptionType = const std::pair<int, std::string>;
 

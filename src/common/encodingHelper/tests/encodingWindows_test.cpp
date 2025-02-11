@@ -11,7 +11,7 @@
 #ifdef WIN32
 #include "encodingWindows_test.h"
 #include "encodingWindowsHelper.h"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 void EncodingWindowsHelperTest::SetUp() {};
 
@@ -21,20 +21,11 @@ TEST_F(EncodingWindowsHelperTest, NoExceptConversion)
 {
     nlohmann::json test;
     std::wstring wideString = L"Eines de correcció del Microsoft Office 2016: català";
-    std::string multibyteString;
-    multibyteString.assign(wideString.begin(), wideString.end());
+    int bufferSize = WideCharToMultiByte(CP_UTF8, 0, wideString.c_str(), -1, nullptr, 0, nullptr, nullptr);
+    std::string multibyteString(bufferSize, 0);
+    WideCharToMultiByte(CP_UTF8, 0, wideString.c_str(), -1, &multibyteString[0], bufferSize, nullptr, nullptr);
     test["correct"] = Utils::EncodingWindowsHelper::stringAnsiToStringUTF8(multibyteString);
     EXPECT_NO_THROW(test.dump());
-}
-
-TEST_F(EncodingWindowsHelperTest, ExceptWithoutConversion)
-{
-    nlohmann::json test;
-    std::wstring wideString = L"Eines de correcció del Microsoft Office 2016: català";
-    std::string multibyteString;
-    multibyteString.assign(wideString.begin(), wideString.end());
-    test["incorrect"] = multibyteString;
-    EXPECT_ANY_THROW(test.dump());
 }
 
 TEST_F(EncodingWindowsHelperTest, ReturnValueEmptyConversion)

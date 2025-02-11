@@ -21,12 +21,18 @@ class FunctorWrapper
     public:
         FunctorWrapper() = default;
         ~FunctorWrapper() = default;
+
+        FunctorWrapper(const FunctorWrapper&) = delete;
+        FunctorWrapper& operator=(const FunctorWrapper&) = delete;
+        FunctorWrapper(FunctorWrapper&&) = delete;
+        FunctorWrapper& operator=(FunctorWrapper&&) = delete;
+
         MOCK_METHOD(void, Operator, (const int), ());
         void operator()(const int value)
         {
             Operator(value);
         }
-        void receive(const int& value)
+        void receive(const int& value) // NOLINT(readability-identifier-naming)
         {
             Operator(value);
         }
@@ -151,12 +157,12 @@ TEST_F(PipelineNodesTest, ConnectInvalidPtrs3)
 template<typename T>
 static void ReadNodeBehaviour(FunctorWrapper& functor, T& rNode)
 {
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 10; ++i) // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     {
         EXPECT_CALL(functor, Operator(i));
     }
 
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 10; ++i) // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     {
         rNode.receive(i);
     }
@@ -171,12 +177,12 @@ static void ReadWriteNodeBehaviour(FunctorWrapper& functor, std::shared_ptr<R>& 
 {
     Utils::connect(spReadWriteNode, spReadNode);
 
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 10; ++i) // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     {
         EXPECT_CALL(functor, Operator(i));
     }
 
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 10; ++i) // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     {
         spReadWriteNode->receive(std::to_string(i));
     }

@@ -23,6 +23,7 @@ add_executable(dbsyncPipelineFactory_unit_test
     ${PIPELINE_FACTORY_SRC})
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(dbsyncPipelineFactory_unit_test
+        dbsync
         GTest::gtest
         GTest::gmock
         GTest::gtest_main
@@ -31,11 +32,10 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         unofficial::sqlite3::sqlite3
         cjson
         utils
-        pal
-        -static-libgcc
     )
 else()
     target_link_libraries(dbsyncPipelineFactory_unit_test
+        dbsync
         GTest::gtest
         GTest::gmock
         GTest::gtest_main
@@ -45,7 +45,6 @@ else()
         cjson
         dl
         utils
-        pal
     )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 

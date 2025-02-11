@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
+
 project(pal)
+
+include(../../cmake/CommonSettings.cmake)
+set_common_settings()
 
 if(WIN32)
     set(OS_NAME "windows")
