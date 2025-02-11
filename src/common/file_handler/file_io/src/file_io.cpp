@@ -28,7 +28,7 @@ namespace file_io
     void FileIO::readLineByLine(const std::filesystem::path& filePath,
                                 const std::function<bool(const std::string&)>& callback) const
     {
-        std::ifstream file = create_ifstream(filePath);
+        std::ifstream file = create_ifstream(filePath.string());
 
         if (!is_open(file))
         {
