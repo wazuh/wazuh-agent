@@ -51,7 +51,7 @@ namespace file_io
         std::stringstream content;
         std::ifstream file = create_ifstream(filePath);
 
-        if (file.is_open())
+        if (is_open(file))
         {
             content << get_rdbuf(file);
         }
