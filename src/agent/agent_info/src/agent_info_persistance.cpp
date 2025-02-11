@@ -3,7 +3,6 @@
 #include <logger.hpp>
 
 #include <column.hpp>
-#include <persistence.hpp>
 #include <persistence_factory.hpp>
 
 using namespace column;
