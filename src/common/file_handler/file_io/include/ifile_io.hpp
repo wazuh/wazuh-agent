@@ -18,7 +18,7 @@ public:
     virtual ~IFileIO() = default;
 
     virtual std::ifstream create_ifstream(const std::string& filePath,
-                                          std::ios_base::openmode mode = std::ios_base::in) const;
+                                          std::ios_base::openmode mode = std::ios_base::in) const = 0;
 
     virtual std::streambuf* get_rdbuf(const std::ifstream& file) const = 0;
 
