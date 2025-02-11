@@ -435,6 +435,125 @@ TEST(ConfigurationParser, GetConfigBytes)
     ASSERT_EQ(retDefaultKB, 53);
 }
 
+TEST(ConfigurationParser, GetConfigOrDefaultReturnsDefaultIfKeyNotFound)
+{
+    const std::string strConfig = R"(
+        agent:
+            server_url: https://myserver:28000
+    )";
+    const auto configParser = std::make_unique<configuration::ConfigurationParser>(strConfig);
+    const auto ret = configParser->GetConfigOrDefault("default", "agent", "key_not_found");
+    EXPECT_EQ(ret, "default");
+}
+
+TEST(ConfigurationParser, GetConfigOrDefaultReturnsExpectedValue)
+{
+    const std::string strConfig = R"(
+        agent:
+            server_url: https://myserver:28000
+    )";
+    const auto configParser = std::make_unique<configuration::ConfigurationParser>(strConfig);
+    const auto ret = configParser->GetConfigOrDefault("default", "agent", "server_url");
+    EXPECT_EQ(ret, "https://myserver:28000");
+}
+
+TEST(ConfigurationParser, GetConfigInRangeOrDefaultReturnsDefaultIfKeyNotFound)
+{
+    const std::string strConfig = R"(
+        agent:
+            some_value: 13
+            some_size: 26KB
+            some_time: 39ms
+    )";
+    const auto configParser = std::make_unique<configuration::ConfigurationParser>(strConfig);
+
+    const auto expectedValue = configParser->GetConfigInRangeOrDefault(
+        42, std::optional<int>(0), std::optional<int>(100), "agent", "key_not_found");
+    EXPECT_EQ(expectedValue, 42);
+
+    const size_t expectedSize = configParser->GetBytesConfigInRangeOrDefault("42B", 0, 100, "agent", "key_not_found");
+    EXPECT_EQ(expectedSize, 42);
+
+    const time_t expectedTime = configParser->GetTimeConfigInRangeOrDefault("42ms", 0, 100, "agent", "key_not_found");
+    EXPECT_EQ(expectedTime, 42);
+}
+
+TEST(ConfigurationParser, GetConfigInRangeOrDefaultReturnsDefaultIfRangeIsInvalid)
+{
+    const std::string strConfig = R"(
+        agent:
+            some_value: 13
+            some_size: 26KB
+            some_time: 39ms
+    )";
+    const auto configParser = std::make_unique<configuration::ConfigurationParser>(strConfig);
+
+    const auto expectedValue = configParser->GetConfigInRangeOrDefault(
+        42, std::optional<int>(1), std::optional<int>(0), "agent", "some_value");
+    EXPECT_EQ(expectedValue, 42);
+
+    const size_t expectedSize = configParser->GetBytesConfigInRangeOrDefault("42B", 1, 0, "agent", "some_size");
+    EXPECT_EQ(expectedSize, 42);
+
+    const time_t expectedTime = configParser->GetTimeConfigInRangeOrDefault("42ms", 1, 0, "agent", "some_time");
+    EXPECT_EQ(expectedTime, 42);
+}
+
+TEST(ConfigurationParser, GetConfigInRangeOrDefaultReturnsDefaultIfValueIsOutOfRange)
+{
+    const std::string strConfig = R"(
+        agent:
+            some_value: 13
+            some_size: 26KB
+            some_time: 39ms
+    )";
+    const auto configParser = std::make_unique<configuration::ConfigurationParser>(strConfig);
+
+    const auto expectedDefaultSinceValueIsAboveRange = configParser->GetConfigInRangeOrDefault(
+        42, std::optional<int>(0), std::optional<int>(1), "agent", "some_value");
+    EXPECT_EQ(expectedDefaultSinceValueIsAboveRange, 42);
+
+    const auto expectedDefaultSinceValueIsBelowRange = configParser->GetConfigInRangeOrDefault(
+        42, std::optional<int>(14), std::optional<int>(15), "agent", "some_value");
+    EXPECT_EQ(expectedDefaultSinceValueIsBelowRange, 42);
+
+    const size_t expectedDefaultSinceSizeIsAboveRange =
+        configParser->GetBytesConfigInRangeOrDefault("42B", 0, 1, "agent", "some_size");
+    EXPECT_EQ(expectedDefaultSinceSizeIsAboveRange, 42);
+
+    const size_t expectedDefaultSinceSizeIsBelowRange =
+        configParser->GetBytesConfigInRangeOrDefault("42B", 27000, 28000, "agent", "some_size");
+    EXPECT_EQ(expectedDefaultSinceSizeIsBelowRange, 42);
+
+    const time_t expectedDefaultSinceTimeIsAboveRange =
+        configParser->GetTimeConfigInRangeOrDefault("42ms", 0, 1, "agent", "some_time");
+    EXPECT_EQ(expectedDefaultSinceTimeIsAboveRange, 42);
+
+    const time_t expectedDefaultSinceTimeIsBelowRange =
+        configParser->GetTimeConfigInRangeOrDefault("42ms", 40, 41, "agent", "some_time");
+    EXPECT_EQ(expectedDefaultSinceTimeIsBelowRange, 42);
+}
+
+TEST(ConfigurationParser, GetConfigInRangeOrDefaultReturnsValueIfExistsAndWithinRange)
+{
+    const std::string strConfig = R"(
+        agent:
+            some_value: 13
+            some_size: 26KB
+            some_time: 39ms
+    )";
+    const auto configParser = std::make_unique<configuration::ConfigurationParser>(strConfig);
+    const auto expectedValue = configParser->GetConfigInRangeOrDefault(
+        42, std::optional<int>(12), std::optional<int>(14), "agent", "some_value");
+    EXPECT_EQ(expectedValue, 13);
+
+    const size_t expectedSize = configParser->GetBytesConfigInRangeOrDefault("42B", 25000, 27000, "agent", "some_size");
+    EXPECT_EQ(expectedSize, 26000);
+
+    const time_t expectedTime = configParser->GetTimeConfigInRangeOrDefault("42ms", 38, 40, "agent", "some_time");
+    EXPECT_EQ(expectedTime, 39);
+}
+
 // NOLINTEND(bugprone-unchecked-optional-access)
 
 int main(int argc, char** argv)
