@@ -22,5 +22,4 @@ public:
                 expand_absolute_path,
                 (const std::string& path, std::deque<std::string>& output),
                 (const, override));
-    MOCK_METHOD(std::vector<std::string>, enumerate_dir, (const std::string& path), (const, override));
 };

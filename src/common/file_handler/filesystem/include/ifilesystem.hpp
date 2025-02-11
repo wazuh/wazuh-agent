@@ -1,7 +1,7 @@
 #pragma once
 
-#include <filesystem>
 #include <deque>
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -11,7 +11,8 @@
 /// removing files or directories, creating directories, and renaming files. Any concrete class
 /// that implements this interface will be expected to provide the actual functionality for these
 /// operations. This allows for abstraction and easier testing or swapping of file system implementations.
-class IFileSystem {
+class IFileSystem
+{
 public:
     /// @brief Virtual destructor for IFileSystem.
     ///
@@ -71,9 +72,4 @@ public:
     /// @param path The path to expand.
     /// @param output The deque to store the expanded path.
     virtual void expand_absolute_path(const std::string& path, std::deque<std::string>& output) const = 0;
-
-    /// @brief Enumerates the contents of a directory.
-    /// @param path The path of the directory to enumerate.
-    /// @return A vector containing the names of the files and directories in the directory.
-    virtual std::vector<std::string> enumerate_dir(const std::string& path) const = 0;
 };

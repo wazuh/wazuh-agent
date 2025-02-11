@@ -1,7 +1,7 @@
 #pragma once
 
-#include <ifilesystem.hpp>
 #include <filesystem>
+#include <ifilesystem.hpp>
 
 namespace filesystem
 {
@@ -11,7 +11,8 @@ namespace filesystem
     /// removing directories, creating directories, and renaming files, among others. It is designed
     /// to be used as a concrete implementation of the IFileSystem interface, encapsulating the actual
     /// file system operations.
-    class FileSystem : public IFileSystem {
+    class FileSystem : public IFileSystem
+    {
     public:
         /// @brief Checks if the specified path exists in the file system.
         /// @param path The path to check.
@@ -66,10 +67,5 @@ namespace filesystem
         /// @param path The path to expand.
         /// @param output The deque to store the expanded path.
         void expand_absolute_path(const std::string& path, std::deque<std::string>& output) const override;
-
-        /// @brief Enumerates the contents of a directory.
-        /// @param path The path of the directory to enumerate.
-        /// @return A vector containing the names of the files and directories in the directory.
-        std::vector<std::string> enumerate_dir(const std::string& path) const override;
     };
-}
+} // namespace filesystem

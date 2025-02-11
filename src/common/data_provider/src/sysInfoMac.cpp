@@ -151,17 +151,22 @@ static void getPackagesFromPath(const std::string& pkgDirectory, const int pkgTy
     else
     {
         const auto fsWrapper = std::make_unique<filesystem::FileSystem>();
-        const auto packages { fsWrapper->enumerate_dir(pkgDirectory) };
+        std::vector<std::filesystem::path> packages;
+        if(fsWrapper->exists(pkgDirectory) && fsWrapper->is_directory(pkgDirectory))
+        {
+            packages = fsWrapper->list_directory(pkgDirectory);
+        }
 
         for (const auto& package : packages)
         {
-            if ((PKG == pkgType && Utils::endsWith(package, ".app")) ||
-                    (RCP == pkgType && Utils::endsWith(package, ".plist")))
+            const auto packageName {package.filename().string()};
+            if ((PKG == pkgType && Utils::endsWith(packageName, ".app")) ||
+                    (RCP == pkgType && Utils::endsWith(packageName, ".plist")))
             {
                 try
                 {
                     nlohmann::json jsPackage;
-                    FactoryPackageFamilyCreator<OSPlatformType::BSDBASED>::create(std::make_pair(PackageContext{pkgDirectory, package, ""}, pkgType))->buildPackageData(jsPackage);
+                    FactoryPackageFamilyCreator<OSPlatformType::BSDBASED>::create(std::make_pair(PackageContext{pkgDirectory, packageName, ""}, pkgType))->buildPackageData(jsPackage);
 
                     if (!jsPackage.at("name").get_ref<const std::string&>().empty())
                     {
@@ -176,18 +181,23 @@ static void getPackagesFromPath(const std::string& pkgDirectory, const int pkgTy
             }
             else if (BREW == pkgType)
             {
-                if (!Utils::startsWith(package, "."))
+                if (!Utils::startsWith(packageName, "."))
                 {
-                    const auto packageVersions {  fsWrapper->enumerate_dir(pkgDirectory + "/" + package) };
+                    std::vector<std::filesystem::path> packageVersions;
+                    if (fsWrapper->exists(pkgDirectory + "/" + packageName) && fsWrapper->is_directory(pkgDirectory + "/" + packageName))
+                    {
+                        packageVersions = fsWrapper->list_directory(pkgDirectory + "/" + packageName);
+                    }
 
                     for (const auto& version : packageVersions)
                     {
-                        if (!Utils::startsWith(version, "."))
+                        const auto versionFilename {version.filename().string()};
+                        if (!Utils::startsWith(versionFilename, "."))
                         {
                             try
                             {
                                 nlohmann::json jsPackage;
-                                FactoryPackageFamilyCreator<OSPlatformType::BSDBASED>::create(std::make_pair(PackageContext{pkgDirectory, package, version}, pkgType))->buildPackageData(jsPackage);
+                                FactoryPackageFamilyCreator<OSPlatformType::BSDBASED>::create(std::make_pair(PackageContext{pkgDirectory, packageName, versionFilename}, pkgType))->buildPackageData(jsPackage);
 
                                 if (!jsPackage.at("name").get_ref<const std::string&>().empty())
                                 {
