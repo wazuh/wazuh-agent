@@ -15,8 +15,8 @@ inventory:
   networks: true
   packages: true
   ports: true
-  ports_all: true
-  processes: true
+  ports_all: false
+  processes: false
   hotfixes: true
 logcollector:
   enabled: true
