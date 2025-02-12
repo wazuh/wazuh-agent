@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cctype>
 #include <config.h>
-#include <configuration_parser_utils.hpp>
+#include <yaml_utils.hpp>
 
 #include <queue>
 #include <unordered_set>

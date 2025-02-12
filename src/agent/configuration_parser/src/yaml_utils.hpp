@@ -1,6 +1,9 @@
 #pragma once
 
-#include <yaml-cpp/yaml.h>
+namespace YAML
+{
+    class Node;
+}
 
 /// @brief Merges two YAML nodes, modifying the baseYaml node to include or additionalYaml values from the
 /// additionalYaml node.
