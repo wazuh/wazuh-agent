@@ -16,7 +16,6 @@
 #include <algorithm>
 #include <chrono>
 #include <fstream>
-#include <limits>
 #include <thread>
 #include <utility>
 
@@ -72,8 +71,8 @@ namespace communicator
             LogInfo("Using insecure connection.");
         }
 
-        m_retryInterval = configurationParser->GetTimeConfigInRangeOrDefault(
-            config::agent::DEFAULT_RETRY_INTERVAL, 0, std::numeric_limits<time_t>::max(), "agent", "retry_interval");
+        m_retryInterval = configurationParser->GetTimeConfigOrDefault(
+            config::agent::DEFAULT_RETRY_INTERVAL, "agent", "retry_interval");
 
         m_batchSize = configurationParser->GetBytesConfigInRangeOrDefault(
             config::agent::DEFAULT_BATCH_SIZE, MIN_BATCH_SIZE, MAX_BATCH_SIZE, "events", "batch_size");

@@ -78,11 +78,11 @@ void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParse
 
 void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
 {
-    const auto fileWait = ParseTimeUnit(configurationParser->GetConfigOrDefault(
-        config::logcollector::DEFAULT_RELOAD_INTERVAL, "logcollector", "read_interval"));
+    const auto fileWait = configurationParser->GetTimeConfigOrDefault(
+        config::logcollector::DEFAULT_RELOAD_INTERVAL, "logcollector", "read_interval");
 
-    const auto reloadInterval = ParseTimeUnit(configurationParser->GetConfigOrDefault(
-        config::logcollector::DEFAULT_RELOAD_INTERVAL, "logcollector", "reload_interval"));
+    const auto reloadInterval = configurationParser->GetTimeConfigOrDefault(
+        config::logcollector::DEFAULT_RELOAD_INTERVAL, "logcollector", "reload_interval");
 
     const auto localFilesDefault = std::vector<std::string> {config::logcollector::DEFAULT_LOCALFILES};
 

@@ -559,6 +559,23 @@ TEST(ConfigurationParser, GetConfigInRangeOrDefaultReturnsValueIfExistsAndWithin
     EXPECT_EQ(expectedTime, 39);
 }
 
+TEST(ConfigurationParser, GetTimeConfigOrDefaultTests)
+{
+    const std::string strConfig = R"(
+        agent:
+            some_invalid_time: -39ms
+            some_valid_time: 39ms
+    )";
+    const auto configParser = std::make_unique<configuration::ConfigurationParser>(strConfig);
+
+    const time_t expectedDefaultDueToInvalidTime =
+        configParser->GetTimeConfigOrDefault("42ms", "agent", "some_invalid_time");
+    EXPECT_EQ(expectedDefaultDueToInvalidTime, 42);
+
+    const time_t expectedValidTime = configParser->GetTimeConfigOrDefault("42ms", "agent", "some_valid_time");
+    EXPECT_EQ(expectedValidTime, 39);
+}
+
 // NOLINTEND(bugprone-unchecked-optional-access)
 
 int main(int argc, char** argv)

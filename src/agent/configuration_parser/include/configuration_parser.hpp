@@ -8,6 +8,7 @@
 #include <ctime>
 #include <exception>
 #include <filesystem>
+#include <limits>
 #include <optional>
 #include <string>
 #include <type_traits>
@@ -120,11 +121,23 @@ namespace configuration
             return GetParsedConfigInRangeOrDefault(defaultValue, min, max, ParseTimeUnit, keys...);
         }
 
+        /// @brief Fetches a configuration value as in GetConfigOrDefault, but parses the string value as a time_t.
+        /// @tparam ...Keys The types of the keys used to access the configuration hierarchy.
+        /// @param defaultValue The default value (in string format) to return if the key is not found or the value is
+        /// invalid (non positive).
+        /// @param ...keys The sequence of keys used to navigate through the configuration hierarchy.
+        /// @return The parsed configuration value as a time_t, or the default value if not found or invalid.
+        template<typename... Keys>
+        std::time_t GetTimeConfigOrDefault(const std::string& defaultValue, Keys... keys) const
+        {
+            return GetTimeConfigInRangeOrDefault(defaultValue, 1, std::numeric_limits<time_t>::max(), keys...);
+        }
+
         /// @brief Fetches a configuration value as in GetConfigInRangeOrDefault, but parses the string value as a
         /// value in bytes, as in \ref ParseSizeUnit.
         /// @tparam Keys The types of the keys used to access the configuration hierarchy.
-        /// @param defaultValue The default value (in string format) to return if the key is not found or the value is
-        /// out of range.
+        /// @param defaultValue The default value (in string format) to return if the key is not found or the value
+        /// is out of range.
         /// @param min The minimum acceptable value (inclusive) as a bytes.
         /// @param max The maximum acceptable value (inclusive) as a bytes.
         /// @param keys The sequence of keys used to navigate through the configuration hierarchy.

@@ -1,10 +1,11 @@
 #include <inventory.hpp>
 
-#include <cjson/cJSON.h>
 #include <config.h>
 #include <defs.h>
 #include <logger.hpp>
 #include <sysInfo.hpp>
+
+#include <cjson/cJSON.h>
 
 void Inventory::Start()
 {
@@ -51,8 +52,8 @@ void Inventory::Setup(std::shared_ptr<const configuration::ConfigurationParser> 
     m_enabled = configurationParser->GetConfigOrDefault(config::inventory::DEFAULT_ENABLED, "inventory", "enabled");
     m_dbFilePath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
                    INVENTORY_DB_DISK_NAME;
-    m_intervalValue = ParseTimeUnit(
-        configurationParser->GetConfigOrDefault(config::inventory::DEFAULT_INTERVAL, "inventory", "interval"));
+    m_intervalValue =
+        configurationParser->GetTimeConfigOrDefault(config::inventory::DEFAULT_INTERVAL, "inventory", "interval");
     m_scanOnStart =
         configurationParser->GetConfigOrDefault(config::inventory::DEFAULT_SCAN_ON_START, "inventory", "scan_on_start");
     m_hardware = configurationParser->GetConfigOrDefault(config::inventory::DEFAULT_HARDWARE, "inventory", "hardware");
