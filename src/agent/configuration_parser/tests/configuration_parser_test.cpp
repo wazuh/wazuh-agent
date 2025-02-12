@@ -13,6 +13,11 @@
 
 using namespace configuration;
 
+namespace
+{
+    const std::string DEFAULT_STRING = "default_string";
+}
+
 class ConfigurationParserFileTest : public ::testing::Test
 {
 protected:
@@ -82,7 +87,7 @@ protected:
 };
 
 // NOLINTBEGIN(bugprone-unchecked-optional-access)
-TEST(ConfigurationParser, GetConfigString)
+TEST(ConfigurationParser, GetConfigOrDefaultString)
 {
     std::string strConfig = R"(
         agent:
@@ -90,11 +95,11 @@ TEST(ConfigurationParser, GetConfigString)
           string_conf: string
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<std::string>("agent", "server_url").value();
+    const auto ret = parserStr->GetConfigOrDefault(DEFAULT_STRING, "agent", "server_url");
     ASSERT_EQ(ret, "192.168.0.11");
 }
 
-TEST(ConfigurationParser, GetConfigArrayString)
+TEST(ConfigurationParser, GetConfigOrDefaultArrayString)
 {
     std::string strConfig = R"(
         agent_array:
@@ -104,12 +109,12 @@ TEST(ConfigurationParser, GetConfigArrayString)
           string_conf: string
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<std::vector<std::string>>("agent_array", "array_manager_ip").value();
+    const auto ret = parserStr->GetConfigOrDefault<std::vector<std::string>>({}, "agent_array", "array_manager_ip");
     ASSERT_EQ(ret[0], "192.168.0.0");
     ASSERT_EQ(ret[1], "192.168.0.1");
 }
 
-TEST(ConfigurationParser, GetConfigInt)
+TEST(ConfigurationParser, GetConfigOrDefaultInt)
 {
     std::string strConfig = R"(
         agent_array:
@@ -119,11 +124,11 @@ TEST(ConfigurationParser, GetConfigInt)
           int_conf: 10
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<int>("agent_array", "int_conf").value();
+    const auto ret = parserStr->GetConfigOrDefault(0, "agent_array", "int_conf");
     ASSERT_EQ(ret, 10);
 }
 
-TEST(ConfigurationParser, GetConfigMilliseconds)
+TEST(ConfigurationParser, GetConfigOrDefaultMilliseconds)
 {
     std::string strConfig = R"(
         agent_array:
@@ -133,11 +138,11 @@ TEST(ConfigurationParser, GetConfigMilliseconds)
           milliseconds_conf: 500ms
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "milliseconds_conf").value());
+    const auto ret = ParseTimeUnit(parserStr->GetConfigOrDefault(DEFAULT_STRING, "agent_array", "milliseconds_conf"));
     ASSERT_EQ(ret, 500);
 }
 
-TEST(ConfigurationParser, GetConfigSeconds)
+TEST(ConfigurationParser, GetConfigOrDefaultSeconds)
 {
     std::string strConfig = R"(
         agent_array:
@@ -147,11 +152,11 @@ TEST(ConfigurationParser, GetConfigSeconds)
           seconds_conf: 45s
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "seconds_conf").value());
+    const auto ret = ParseTimeUnit(parserStr->GetConfigOrDefault(DEFAULT_STRING, "agent_array", "seconds_conf"));
     ASSERT_EQ(ret, 45000);
 }
 
-TEST(ConfigurationParser, GetConfigMinutes)
+TEST(ConfigurationParser, GetConfigOrDefaultMinutes)
 {
     std::string strConfig = R"(
         agent_array:
@@ -161,11 +166,11 @@ TEST(ConfigurationParser, GetConfigMinutes)
           minutes_conf: 3m
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "minutes_conf").value());
+    const auto ret = ParseTimeUnit(parserStr->GetConfigOrDefault(DEFAULT_STRING, "agent_array", "minutes_conf"));
     ASSERT_EQ(ret, 180000);
 }
 
-TEST(ConfigurationParser, GetConfigHours)
+TEST(ConfigurationParser, GetConfigOrDefaultHours)
 {
     std::string strConfig = R"(
         agent_array:
@@ -175,11 +180,11 @@ TEST(ConfigurationParser, GetConfigHours)
           hours_conf: 2h
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "hours_conf").value());
+    const auto ret = ParseTimeUnit(parserStr->GetConfigOrDefault(DEFAULT_STRING, "agent_array", "hours_conf"));
     ASSERT_EQ(ret, 7200000);
 }
 
-TEST(ConfigurationParser, GetConfigDays)
+TEST(ConfigurationParser, GetConfigOrDefaultDays)
 {
     std::string strConfig = R"(
         agent_array:
@@ -189,11 +194,11 @@ TEST(ConfigurationParser, GetConfigDays)
           days_conf: 1d
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "days_conf").value());
+    const auto ret = ParseTimeUnit(parserStr->GetConfigOrDefault(DEFAULT_STRING, "agent_array", "days_conf"));
     ASSERT_EQ(ret, 86400000);
 }
 
-TEST(ConfigurationParser, GetConfigTimeInvalid)
+TEST(ConfigurationParser, GetConfigOrDefaultTimeInvalid)
 {
     std::string strConfig = R"(
         agent_array:
@@ -203,10 +208,10 @@ TEST(ConfigurationParser, GetConfigTimeInvalid)
           time_invalid_conf: 30k
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    EXPECT_ANY_THROW(ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "time_invalid_conf").value()));
+    EXPECT_ANY_THROW(ParseTimeUnit(parserStr->GetConfigOrDefault(DEFAULT_STRING, "agent_array", "time_invalid_conf")));
 }
 
-TEST(ConfigurationParser, GetConfigFloat)
+TEST(ConfigurationParser, GetConfigOrDefaultFloat)
 {
     std::string strConfig = R"(
         agent_array:
@@ -216,11 +221,11 @@ TEST(ConfigurationParser, GetConfigFloat)
           float_conf: 12.34
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<float>("agent_array", "float_conf").value();
+    const auto ret = parserStr->GetConfigOrDefault<float>(0.0f, "agent_array", "float_conf");
     EXPECT_FLOAT_EQ(ret, 12.34f);
 }
 
-TEST(ConfigurationParser, GetConfigNoKey)
+TEST(ConfigurationParser, GetConfigOrDefaultNoKey)
 {
     std::string strConfig = R"(
         agent_array:
@@ -230,10 +235,10 @@ TEST(ConfigurationParser, GetConfigNoKey)
           float_conf: 12.34
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    EXPECT_EQ(parserStr->GetConfig<float>("agent_array", "no_key"), std::nullopt);
+    EXPECT_EQ(parserStr->GetConfigOrDefault(42.f, "agent_array", "no_key"), 42.f);
 }
 
-TEST(ConfigurationParser, GetConfigIntSubTable)
+TEST(ConfigurationParser, GetConfigOrDefaultIntSubTable)
 {
     std::string strConfig = R"(
         agent_array:
@@ -245,11 +250,11 @@ TEST(ConfigurationParser, GetConfigIntSubTable)
             int_conf: 1234
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<int>("agent_array", "sub_table", "int_conf").value();
+    const auto ret = parserStr->GetConfigOrDefault(42, "agent_array", "sub_table", "int_conf");
     ASSERT_EQ(ret, 1234);
 }
 
-TEST(ConfigurationParser, GetConfigBoolSubTable)
+TEST(ConfigurationParser, GetConfigOrDefaultBoolSubTable)
 {
     std::string strConfig = R"(
         agent_array:
@@ -262,11 +267,11 @@ TEST(ConfigurationParser, GetConfigBoolSubTable)
             bool_conf: true
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<bool>("agent_array", "sub_table", "bool_conf").value();
+    const auto ret = parserStr->GetConfigOrDefault(false, "agent_array", "sub_table", "bool_conf");
     ASSERT_EQ(ret, true);
 }
 
-TEST(ConfigurationParser, GetConfigArrayMap)
+TEST(ConfigurationParser, GetConfigOrDefaultArrayMap)
 {
     std::string strConfig = R"(
         agent_array:
@@ -282,14 +287,14 @@ TEST(ConfigurationParser, GetConfigArrayMap)
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
     const auto ret =
-        parserStr->GetConfig<std::vector<std::map<std::string, std::string>>>("agent_array", "api_auth").value();
+        parserStr->GetConfigOrDefault<std::vector<std::map<std::string, std::string>>>({}, "agent_array", "api_auth");
     ASSERT_EQ(ret[0].at("org_name"), "dummy1");
     ASSERT_EQ(ret[0].at("api_token"), "api_token1");
     ASSERT_EQ(ret[1].at("org_name"), "dummy2");
     ASSERT_EQ(ret[1].at("api_token"), "api_token2");
 }
 
-TEST(ConfigurationParser, GetConfigMap)
+TEST(ConfigurationParser, GetConfigOrDefaultMap)
 {
     std::string strConfig = R"(
         map_string:
@@ -297,12 +302,12 @@ TEST(ConfigurationParser, GetConfigMap)
           string_conf_2: string_2
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<std::map<std::string, std::string>>("map_string").value();
+    const auto ret = parserStr->GetConfigOrDefault<std::map<std::string, std::string>>({}, "map_string");
     ASSERT_EQ(ret.at("string_conf_1"), "string_1");
     ASSERT_EQ(ret.at("string_conf_2"), "string_2");
 }
 
-TEST(ConfigurationParser, GetConfigBadCast)
+TEST(ConfigurationParser, GetConfigOrDefaultBadCast)
 {
     std::string strConfig = R"(
         bad_cast_array:
@@ -310,10 +315,11 @@ TEST(ConfigurationParser, GetConfigBadCast)
           int_conf: 10
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    EXPECT_EQ(parserStr->GetConfig<std::vector<std::string>>("bad_cast_array"), std::nullopt);
+    EXPECT_EQ(parserStr->GetConfigOrDefault<std::vector<std::string>>({}, "bad_cast_array"),
+              std::vector<std::string> {});
 }
 
-TEST(ConfigurationParser, GetConfigMultiNode)
+TEST(ConfigurationParser, GetConfigOrDefaultMultiNode)
 {
     std::string strConfig = R"(
         agent_array:
@@ -330,10 +336,11 @@ TEST(ConfigurationParser, GetConfigMultiNode)
           read_interval: 500
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->GetConfig<std::vector<std::string>>("agent_array", "array_manager_ip").value();
-    const auto retEnabled = parserStr->GetConfig<bool>("logcollector", "enabled").value();
-    const auto retFileWait = parserStr->GetConfig<int>("logcollector", "read_interval").value();
-    const auto retLocalFiles = parserStr->GetConfig<std::vector<std::string>>("logcollector", "localfiles").value();
+    const auto ret = parserStr->GetConfigOrDefault<std::vector<std::string>>({}, "agent_array", "array_manager_ip");
+    const auto retEnabled = parserStr->GetConfigOrDefault<bool>(false, "logcollector", "enabled");
+    const auto retFileWait = parserStr->GetConfigOrDefault<int>(42, "logcollector", "read_interval");
+    const auto retLocalFiles =
+        parserStr->GetConfigOrDefault<std::vector<std::string>>({}, "logcollector", "localfiles");
     ASSERT_EQ(ret[0], "192.168.0.0");
     ASSERT_EQ(ret[1], "192.168.0.1");
     ASSERT_TRUE(retEnabled);
@@ -358,11 +365,11 @@ TEST_F(ConfigurationParserFileTest, ValidConfigFileLoadsCorrectly)
     {
         const auto parser = std::make_unique<configuration::ConfigurationParser>(m_tempConfigFilePath);
 
-        EXPECT_EQ(parser->GetConfig<std::string>("agent", "server_url").value(), "https://myserver:28000");
-        EXPECT_FALSE(parser->GetConfig<bool>("inventory", "enabled").value());
-        EXPECT_EQ(parser->GetConfig<int>("inventory", "interval").value(), 7200);
-        EXPECT_FALSE(parser->GetConfig<bool>("logcollector", "enabled").value());
-        EXPECT_EQ(parser->GetConfig<int>("logcollector", "read_interval").value(), 1000);
+        EXPECT_EQ(parser->GetConfigOrDefault(DEFAULT_STRING, "agent", "server_url"), "https://myserver:28000");
+        EXPECT_FALSE(parser->GetConfigOrDefault<bool>(true, "inventory", "enabled"));
+        EXPECT_EQ(parser->GetConfigOrDefault<int>(42, "inventory", "interval"), 7200);
+        EXPECT_FALSE(parser->GetConfigOrDefault<bool>(true, "logcollector", "enabled"));
+        EXPECT_EQ(parser->GetConfigOrDefault<int>(42, "logcollector", "read_interval"), 1000);
     }
     catch (const std::exception& e)
     {
@@ -402,7 +409,7 @@ TEST_F(ConfigurationParserFileTest, isValidYamlFileValid)
     }
 }
 
-TEST(ConfigurationParser, GetConfigBytes)
+TEST(ConfigurationParser, GetConfigOrDefaultBytes)
 {
     // Config should contain batch_size string in order to apply parsing
     std::string strConfig = R"(
@@ -416,19 +423,20 @@ TEST(ConfigurationParser, GetConfigBytes)
           size_default_KB: 53
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_bytes").value());
+    const auto ret = ParseSizeUnit(parserStr->GetConfigOrDefault(DEFAULT_STRING, "batch_size", "size_bytes"));
     ASSERT_EQ(ret, 500);
-    const auto retKB = ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_KB").value());
+    const auto retKB = ParseSizeUnit(parserStr->GetConfigOrDefault(DEFAULT_STRING, "batch_size", "size_KB"));
     ASSERT_EQ(retKB, 45000);
-    const auto retMB = ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_MB").value());
+    const auto retMB = ParseSizeUnit(parserStr->GetConfigOrDefault(DEFAULT_STRING, "batch_size", "size_MB"));
     ASSERT_EQ(retMB, 1000000);
-    const auto retM = ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_M").value());
+    const auto retM = ParseSizeUnit(parserStr->GetConfigOrDefault(DEFAULT_STRING, "batch_size", "size_M"));
     ASSERT_EQ(retM, 4000000);
-    const auto retGB = ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_GB").value());
+    const auto retGB = ParseSizeUnit(parserStr->GetConfigOrDefault(DEFAULT_STRING, "batch_size", "size_GB"));
     ASSERT_EQ(retGB, 2000000000);
-    const auto retG = ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_G").value());
+    const auto retG = ParseSizeUnit(parserStr->GetConfigOrDefault(DEFAULT_STRING, "batch_size", "size_G"));
     ASSERT_EQ(retG, 3000000000);
-    const auto retDefaultKB = ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_default_KB").value());
+    const auto retDefaultKB =
+        ParseSizeUnit(parserStr->GetConfigOrDefault(DEFAULT_STRING, "batch_size", "size_default_KB"));
     ASSERT_EQ(retDefaultKB, 53);
 }
 

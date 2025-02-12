@@ -41,46 +41,6 @@ namespace configuration
         /// If parsing fails, an error is logged, and the exception is re-thrown.
         ConfigurationParser(const std::string& stringToParse);
 
-        /// @brief Retrieves a configuration value by following a sequence of nested keys.
-        /// @tparam T The expected type of the configuration value to retrieve.
-        /// @tparam Keys Variadic template parameters representing the hierarchical path to the desired value.
-        /// @param keys A sequence of keys to locate the configuration value within the YAML structure.
-        /// @return The configuration value corresponding to the specified keys or std::nullopt.
-        /// @details This method provides a flexible way to retrieve deeply nested configuration values using
-        /// a variadic sequence of keys, which allows specifying paths within the YAML structure.
-        template<typename T, typename... Keys>
-        std::optional<T> GetConfig(Keys... keys) const
-        {
-            YAML::Node current = YAML::Clone(m_config);
-
-            try
-            {
-                // clang-format off
-                ([&current] (const auto& key)
-                {
-                    current = current[key];
-
-                    if (!current.IsDefined())
-                    {
-                        throw YAML::Exception(YAML::Mark::null_mark(), "Key not found: " + std::string(key));
-                    }
-                }(keys), ...);
-                // clang-format on
-
-                return current.as<T>();
-            }
-            catch (const std::invalid_argument& e)
-            {
-                LogWarn("Requested setting is invalid, default value used. {}", e.what());
-                return std::nullopt;
-            }
-            catch (const std::exception& e)
-            {
-                LogDebug("Requested setting not found, default value used. {}", e.what());
-                return std::nullopt;
-            }
-        }
-
         /// @brief Retrieves a configuration value or returns a default value if the key is not found.
         /// This function attempts to retrieve a value from the configuration using the specified keys.
         /// If the value is not found or cannot be converted to the requested type, the provided default
@@ -199,6 +159,46 @@ namespace configuration
         void ReloadConfiguration();
 
     private:
+        /// @brief Retrieves a configuration value by following a sequence of nested keys.
+        /// @tparam T The expected type of the configuration value to retrieve.
+        /// @tparam Keys Variadic template parameters representing the hierarchical path to the desired value.
+        /// @param keys A sequence of keys to locate the configuration value within the YAML structure.
+        /// @return The configuration value corresponding to the specified keys or std::nullopt.
+        /// @details This method provides a flexible way to retrieve deeply nested configuration values using
+        /// a variadic sequence of keys, which allows specifying paths within the YAML structure.
+        template<typename T, typename... Keys>
+        std::optional<T> GetConfig(Keys... keys) const
+        {
+            YAML::Node current = YAML::Clone(m_config);
+
+            try
+            {
+                // clang-format off
+                ([&current] (const auto& key)
+                {
+                    current = current[key];
+
+                    if (!current.IsDefined())
+                    {
+                        throw YAML::Exception(YAML::Mark::null_mark(), "Key not found: " + std::string(key));
+                    }
+                }(keys), ...);
+                // clang-format on
+
+                return current.as<T>();
+            }
+            catch (const std::invalid_argument& e)
+            {
+                LogWarn("Requested setting is invalid, default value used. {}", e.what());
+                return std::nullopt;
+            }
+            catch (const std::exception& e)
+            {
+                LogDebug("Requested setting not found, default value used. {}", e.what());
+                return std::nullopt;
+            }
+        }
+
         /// @brief Parses a string configuration value into a type and validates it within a range.
         /// @tparam T The type to parse the configuration value into.
         /// @tparam ParseFunc The function to parse the configuration value into type T.
