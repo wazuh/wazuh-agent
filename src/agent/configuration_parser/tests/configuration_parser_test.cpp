@@ -133,8 +133,7 @@ TEST(ConfigurationParser, GetConfigMilliseconds)
           milliseconds_conf: 500ms
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret =
-        parserStr->ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "milliseconds_conf").value());
+    const auto ret = ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "milliseconds_conf").value());
     ASSERT_EQ(ret, 500);
 }
 
@@ -148,7 +147,7 @@ TEST(ConfigurationParser, GetConfigSeconds)
           seconds_conf: 45s
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "seconds_conf").value());
+    const auto ret = ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "seconds_conf").value());
     ASSERT_EQ(ret, 45000);
 }
 
@@ -162,7 +161,7 @@ TEST(ConfigurationParser, GetConfigMinutes)
           minutes_conf: 3m
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "minutes_conf").value());
+    const auto ret = ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "minutes_conf").value());
     ASSERT_EQ(ret, 180000);
 }
 
@@ -176,7 +175,7 @@ TEST(ConfigurationParser, GetConfigHours)
           hours_conf: 2h
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "hours_conf").value());
+    const auto ret = ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "hours_conf").value());
     ASSERT_EQ(ret, 7200000);
 }
 
@@ -190,7 +189,7 @@ TEST(ConfigurationParser, GetConfigDays)
           days_conf: 1d
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "days_conf").value());
+    const auto ret = ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "days_conf").value());
     ASSERT_EQ(ret, 86400000);
 }
 
@@ -204,8 +203,7 @@ TEST(ConfigurationParser, GetConfigTimeInvalid)
           time_invalid_conf: 30k
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    EXPECT_ANY_THROW(
-        parserStr->ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "time_invalid_conf").value()));
+    EXPECT_ANY_THROW(ParseTimeUnit(parserStr->GetConfig<std::string>("agent_array", "time_invalid_conf").value()));
 }
 
 TEST(ConfigurationParser, GetConfigFloat)
@@ -418,20 +416,19 @@ TEST(ConfigurationParser, GetConfigBytes)
           size_default_KB: 53
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret = parserStr->ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_bytes").value());
+    const auto ret = ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_bytes").value());
     ASSERT_EQ(ret, 500);
-    const auto retKB = parserStr->ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_KB").value());
+    const auto retKB = ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_KB").value());
     ASSERT_EQ(retKB, 45000);
-    const auto retMB = parserStr->ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_MB").value());
+    const auto retMB = ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_MB").value());
     ASSERT_EQ(retMB, 1000000);
-    const auto retM = parserStr->ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_M").value());
+    const auto retM = ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_M").value());
     ASSERT_EQ(retM, 4000000);
-    const auto retGB = parserStr->ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_GB").value());
+    const auto retGB = ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_GB").value());
     ASSERT_EQ(retGB, 2000000000);
-    const auto retG = parserStr->ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_G").value());
+    const auto retG = ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_G").value());
     ASSERT_EQ(retG, 3000000000);
-    const auto retDefaultKB =
-        parserStr->ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_default_KB").value());
+    const auto retDefaultKB = ParseSizeUnit(parserStr->GetConfig<std::string>("batch_size", "size_default_KB").value());
     ASSERT_EQ(retDefaultKB, 53);
 }
 

@@ -13,7 +13,7 @@ namespace logcollector
         const auto journaldConfigs = configurationParser->GetConfigOrDefault<YAML::Node>(
             YAML::Node(YAML::NodeType::Sequence), "logcollector", "journald");
 
-        const auto fileWait = configurationParser->ParseTimeUnit(configurationParser->GetConfigOrDefault(
+        const auto fileWait = ParseTimeUnit(configurationParser->GetConfigOrDefault(
             config::logcollector::DEFAULT_FILE_WAIT, "logcollector", "read_interval"));
 
         for (const auto& config : journaldConfigs)
