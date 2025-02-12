@@ -7,7 +7,6 @@
 #define PRIV_PAL_H_REQUIRED
 #include <stdint.h>
 
-#include "priv_pal_file_op.h"
 #include "priv_pal_process.h"
 #include "priv_pal_string.h"
 #include "priv_pal_time.h"

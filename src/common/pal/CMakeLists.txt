@@ -12,7 +12,6 @@ else()
 endif()
 
 file(GLOB_RECURSE SOURCE_FILES src/${OS_NAME}/*.c)
-get_filename_component(COMMON_FOLDER  ${CMAKE_CURRENT_SOURCE_DIR}/../ ABSOLUTE)
 
 message(STATUS "Source files: ${SOURCE_FILES}")
 
@@ -21,14 +20,8 @@ if(NOT SOURCE_FILES)
 endif()
 
 add_library(pal STATIC ${SOURCE_FILES})
-
-include_directories(${COMMON_FOLDER}/error_messages/include/)
-
 target_include_directories(pal PUBLIC include)
 target_include_directories(pal PUBLIC include/${OS_NAME})
-
-find_package(cJSON CONFIG REQUIRED)
-target_link_libraries(pal file_op cjson)
 
 if(BUILD_TESTS)
     enable_testing()
