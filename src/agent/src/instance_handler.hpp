@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ifilesystem.hpp>
+
 #include <string>
 
 namespace instance_handler
@@ -15,7 +17,9 @@ namespace instance_handler
         /// Windows).
         /// @param lockFilePath The path where the lock file will be created (linux/macOS only). Unused in Windows, use
         /// "".
-        explicit InstanceHandler(std::string lockFilePath);
+        /// @param fileSystemWrapper An optional filesystem wrapper. If nullptr, it will use FileSystemWrapper. Unused
+        /// in Windows.
+        explicit InstanceHandler(std::string lockFilePath, std::shared_ptr<IFileSystem> fileSystemWrapper = nullptr);
 
         /// @brief Destructor
         /// @details Removes lock file if it was created on construction (linux/macOS only). Windows implementation uses
@@ -42,6 +46,9 @@ namespace instance_handler
 
         /// @brief Holds the errno from the lock-file create/lock attempt
         int m_errno;
+
+        /// @brief Member to interact with the file system.
+        std::shared_ptr<IFileSystem> m_fileSystemWrapper;
 
         /// @brief Indicates the lock has been acquired by this instance of the InstanceHandler
         bool m_lockAcquired;

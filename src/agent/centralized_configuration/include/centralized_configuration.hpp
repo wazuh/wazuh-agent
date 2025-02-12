@@ -30,7 +30,7 @@ namespace centralized_configuration
         /// @param downloadGroupFilesFunction A function to download files for a given group ID.
         /// @param validateFileFunction A function to validate a file.
         /// @param reloadModulesFunction A function to reload modules.
-        /// @param fileSystemWrapper An optional filesystem wrapper. If nullptr, it will use FileSystemWrapper
+        /// @param fileSystemWrapper An optional filesystem wrapper. If nullptr, it will use FileSystemWrapper.
         explicit CentralizedConfiguration(SetGroupIdFunctionType setGroupIdFunction,
                                           GetGroupIdFunctionType getGroupIdFunction,
                                           DownloadGroupFilesFunctionType downloadGroupFilesFunction,

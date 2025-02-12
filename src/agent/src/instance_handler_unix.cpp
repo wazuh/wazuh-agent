@@ -23,19 +23,18 @@ namespace
 {
     /// @brief Creates the directory path for the lock file
     /// @param path The path for the lock file
+    /// @param fileSystemWrapper The filesystem wrapper
     /// @return True if the directory is created, false otherwise
-    bool CreateDirectory(const std::string& path)
+    bool CreateDirectory(const std::string& path, std::shared_ptr<IFileSystem> fileSystemWrapper)
     {
         try
         {
-            const auto fsWrapper = std::make_unique<filesystem_wrapper::FileSystemWrapper>();
-
-            if (fsWrapper->exists(path) && fsWrapper->is_directory(path))
+            if (fileSystemWrapper->exists(path) && fileSystemWrapper->is_directory(path))
             {
                 return true;
             }
 
-            fsWrapper->create_directories(path);
+            fileSystemWrapper->create_directories(path);
             return true;
         }
         catch (const std::filesystem::filesystem_error& e)
@@ -61,7 +60,7 @@ namespace instance_handler
         const std::string filePath = fmt::format("{}/wazuh-agent.lock", m_lockFilePath);
         try
         {
-            std::filesystem::remove(filePath);
+            m_fileSystemWrapper->remove(filePath);
         }
         catch (const std::filesystem::filesystem_error& e)
         {
@@ -71,7 +70,7 @@ namespace instance_handler
 
     bool InstanceHandler::getInstanceLock()
     {
-        if (!CreateDirectory(m_lockFilePath))
+        if (!CreateDirectory(m_lockFilePath, m_fileSystemWrapper))
         {
             LogError("Unable to create lock directory: {}", m_lockFilePath);
             return false;
