@@ -1,48 +1,48 @@
-#include <filesystem.hpp>
 #include <filesystem>
+#include <filesystem_wrapper.hpp>
 
 #include "../../../globHelper/include/globHelper.h" //fix
 
 #include <array>
 
-namespace filesystem
+namespace filesystem_wrapper
 {
-    bool FileSystem::exists(const std::filesystem::path& path) const
+    bool FileSystemWrapper::exists(const std::filesystem::path& path) const
     {
         return std::filesystem::exists(path);
     }
 
-    bool FileSystem::is_directory(const std::filesystem::path& path) const
+    bool FileSystemWrapper::is_directory(const std::filesystem::path& path) const
     {
         return std::filesystem::is_directory(path);
     }
 
-    bool FileSystem::is_regular_file(const std::filesystem::path& path) const
+    bool FileSystemWrapper::is_regular_file(const std::filesystem::path& path) const
     {
         return std::filesystem::is_regular_file(path);
     }
 
-    bool FileSystem::is_socket(const std::filesystem::path& path) const
+    bool FileSystemWrapper::is_socket(const std::filesystem::path& path) const
     {
         return std::filesystem::is_socket(path);
     }
 
-    std::uintmax_t FileSystem::remove_all(const std::filesystem::path& path) const
+    std::uintmax_t FileSystemWrapper::remove_all(const std::filesystem::path& path) const
     {
         return std::filesystem::remove_all(path);
     }
 
-    std::filesystem::path FileSystem::temp_directory_path() const
+    std::filesystem::path FileSystemWrapper::temp_directory_path() const
     {
         return std::filesystem::temp_directory_path();
     }
 
-    bool FileSystem::create_directories(const std::filesystem::path& path) const
+    bool FileSystemWrapper::create_directories(const std::filesystem::path& path) const
     {
         return std::filesystem::create_directories(path);
     }
 
-    std::vector<std::filesystem::path> FileSystem::list_directory(const std::filesystem::path& path) const
+    std::vector<std::filesystem::path> FileSystemWrapper::list_directory(const std::filesystem::path& path) const
     {
         std::vector<std::filesystem::path> result;
         for (const auto& entry : std::filesystem::directory_iterator(path))
@@ -52,18 +52,18 @@ namespace filesystem
         return result;
     }
 
-    void FileSystem::rename(const std::filesystem::path& from, const std::filesystem::path& to) const
+    void FileSystemWrapper::rename(const std::filesystem::path& from, const std::filesystem::path& to) const
     {
         std::filesystem::rename(from, to);
     }
 
-    bool FileSystem::remove(const std::filesystem::path& path) const
+    bool FileSystemWrapper::remove(const std::filesystem::path& path) const
     {
         return std::filesystem::remove(path);
     }
 
     // NOLINTNEXTLINE(misc-no-recursion)
-    void FileSystem::expand_absolute_path(const std::string& path, std::deque<std::string>& output) const
+    void FileSystemWrapper::expand_absolute_path(const std::string& path, std::deque<std::string>& output) const
     {
         // Find the first * or ? from path.
         std::array<char, 2> wildcards {'*', '?'};
@@ -143,4 +143,4 @@ namespace filesystem
             output.push_back(path);
         }
     }
-} // namespace filesystem
+} // namespace filesystem_wrapper

@@ -13,8 +13,8 @@
 #define _PYPITEST_HPP
 
 #include "gtest/gtest.h"
-#include "../../../file_handler/filesystem/tests/mocks/mock_filesystem.hpp"
-#include "../../../file_handler/file_io/tests/mocks/MockFileIO.hpp"
+#include "../../../file_helper/filesystem/tests/mocks/mock_filesystem.hpp"
+#include "../../../file_helper/file_io/tests/mocks/MockFileIO.hpp"
 #include "packagesPYPI.hpp"
 
 class PYPITest : public ::testing::Test

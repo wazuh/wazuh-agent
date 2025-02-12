@@ -2,7 +2,7 @@
 
 #include <config.h>
 #include <configuration_parser.hpp>
-#include <filesystem.hpp>
+#include <filesystem_wrapper.hpp>
 #include <logger.hpp>
 
 #include <cerrno>
@@ -28,7 +28,7 @@ namespace
     {
         try
         {
-            const auto fsWrapper = std::make_unique<filesystem::FileSystem>();
+            const auto fsWrapper = std::make_unique<filesystem_wrapper::FileSystemWrapper>();
 
             if (fsWrapper->exists(path) && fsWrapper->is_directory(path))
             {

@@ -18,7 +18,7 @@
 #include "stringHelper.h"
 #include "rpmlib.h"
 
-template<typename TFileSystem = filesystem::FileSystem>
+template<typename TFileSystem = filesystem_wrapper::FileSystemWrapper>
 class RPM final : public TFileSystem
 {
 public:

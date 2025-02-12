@@ -14,7 +14,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "packages/packageLinuxDataRetriever.h"
-#include "../../../file_handler/filesystem/tests/mocks/mock_filesystem.hpp"
+#include "../../../file_helper/filesystem/tests/mocks/mock_filesystem.hpp"
 
 class SysInfoPackagesLinuxParserRPMTest : public ::testing::Test
 {

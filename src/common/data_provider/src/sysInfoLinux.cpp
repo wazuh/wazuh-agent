@@ -15,7 +15,7 @@
 #include "packages/modernPackageDataRetriever.hpp"
 #include "sharedDefs.h"
 #include "stringHelper.h"
-#include <filesystem.hpp>
+#include <filesystem_wrapper.hpp>
 #include "cmdHelper.h"
 #include "osinfo/sysOsParsers.h"
 #include "sysInfo.hpp"
@@ -192,7 +192,7 @@ static void getCpuMHz(nlohmann::json& info)
     else
     {
         int cpuFreq { 0 };
-        const auto fsWrapper = std::make_unique<filesystem::FileSystem>();
+        const auto fsWrapper = std::make_unique<filesystem_wrapper::FileSystemWrapper>();
         std::vector<std::filesystem::path> cpusInfo;
         if (fsWrapper->exists(WM_SYS_CPU_FREC_DIR) && fsWrapper->is_directory(WM_SYS_CPU_FREC_DIR))
         {
@@ -414,7 +414,7 @@ ProcessInfo portProcessInfo(const std::string& procPath, const std::deque<int64_
 {
     ProcessInfo ret;
 
-    const auto fsWrapper = std::make_unique<filesystem::FileSystem>();
+    const auto fsWrapper = std::make_unique<filesystem_wrapper::FileSystemWrapper>();
 
     auto getProcessName = [](const std::string & filePath) -> std::string
     {

@@ -3,7 +3,7 @@
 #include <boost/asio.hpp>
 
 #include <config.h>
-#include <filesystem.hpp>
+#include <filesystem_wrapper.hpp>
 #include <logger.hpp>
 
 #include <chrono>
@@ -41,7 +41,8 @@ namespace centralized_configuration
         , m_downloadGroupFilesFunction(std::move(downloadGroupFilesFunction))
         , m_validateFileFunction(std::move(validateFileFunction))
         , m_reloadModulesFunction(std::move(reloadModulesFunction))
-        , m_fileSystemWrapper(fileSystemWrapper ? fileSystemWrapper : std::make_shared<filesystem::FileSystem>())
+        , m_fileSystemWrapper(fileSystemWrapper ? fileSystemWrapper
+                                                : std::make_shared<filesystem_wrapper::FileSystemWrapper>())
     {
         if (m_setGroupIdFunction == nullptr || m_getGroupIdFunction == nullptr ||
             m_downloadGroupFilesFunction == nullptr || m_validateFileFunction == nullptr ||

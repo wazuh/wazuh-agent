@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "../../../common/file_handler/filesystem/tests/mocks/mock_filesystem.hpp"
+#include "../../../common/file_helper/filesystem/tests/mocks/mock_filesystem.hpp"
 #include <filesystem>
 
 using centralized_configuration::CentralizedConfiguration;

@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <ifilesystem.hpp>
 
-namespace filesystem
+namespace filesystem_wrapper
 {
     /// @brief A wrapper class for file system operations, implementing the IFileSystem interface.
     ///
@@ -11,7 +11,7 @@ namespace filesystem
     /// removing directories, creating directories, and renaming files, among others. It is designed
     /// to be used as a concrete implementation of the IFileSystem interface, encapsulating the actual
     /// file system operations.
-    class FileSystem : public IFileSystem
+    class FileSystemWrapper : public IFileSystem
     {
     public:
         /// @brief Checks if the specified path exists in the file system.
@@ -68,4 +68,4 @@ namespace filesystem
         /// @param output The deque to store the expanded path.
         void expand_absolute_path(const std::string& path, std::deque<std::string>& output) const override;
     };
-} // namespace filesystem
+} // namespace filesystem_wrapper

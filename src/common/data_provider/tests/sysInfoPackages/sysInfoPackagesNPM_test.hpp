@@ -13,7 +13,7 @@
 #define _NPMTEST_HPP
 
 #include "gtest/gtest.h"
-#include "../../../file_handler/filesystem/tests/mocks/mock_filesystem.hpp"
+#include "../../../file_helper/filesystem/tests/mocks/mock_filesystem.hpp"
 #include "MockJsonIO.hpp"
 #include "packagesNPM.hpp"
 
