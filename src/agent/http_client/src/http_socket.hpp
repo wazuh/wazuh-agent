@@ -60,8 +60,10 @@ namespace http_client
         /// @brief Asynchronous version of Read
         /// @param res The response to read
         /// @param ec The error code, if any occurred
+        /// @param socketTimeout Timeout for reading in millisenconds
         boost::asio::awaitable<void> AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                                               boost::system::error_code& ec) override;
+                                               boost::system::error_code& ec,
+                                               const time_t socketTimeout = http_client::SOCKET_TIMEOUT_MSECS) override;
 
         /// @brief Closes the socket
         void Close() override;

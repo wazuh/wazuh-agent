@@ -56,7 +56,7 @@ TEST_F(HttpSocketTest, SetVerificationMode)
 
 TEST_F(HttpSocketTest, ConnectSocketSuccess)
 {
-    EXPECT_CALL(*m_mockHelper, expires_after(_)).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(testing::An<std::chrono::seconds>())).Times(1);
     EXPECT_CALL(*m_mockHelper, connect(_, _)).Times(1);
 
     boost::system::error_code ec;
@@ -67,7 +67,7 @@ TEST_F(HttpSocketTest, ConnectSocketSuccess)
 
 TEST_F(HttpSocketTest, ConnectSocketFailure)
 {
-    EXPECT_CALL(*m_mockHelper, expires_after(_)).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(testing::An<std::chrono::seconds>())).Times(1);
     EXPECT_CALL(*m_mockHelper, connect(_, _))
         .WillOnce([](const boost::asio::ip::tcp::resolver::results_type&, boost::system::error_code& ec)
                   { ec = boost::asio::error::operation_aborted; });
@@ -80,7 +80,7 @@ TEST_F(HttpSocketTest, ConnectSocketFailure)
 
 TEST_F(HttpSocketTest, ConnectSocketException)
 {
-    EXPECT_CALL(*m_mockHelper, expires_after(_)).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(testing::An<std::chrono::seconds>())).Times(1);
     EXPECT_CALL(*m_mockHelper, connect(_, _))
         .WillOnce([](const boost::asio::ip::tcp::resolver::results_type&, boost::system::error_code&)
                   { throw std::runtime_error("Test exception"); });
@@ -93,7 +93,7 @@ TEST_F(HttpSocketTest, ConnectSocketException)
 
 TEST_F(HttpSocketTest, AsyncConnectSuccess)
 {
-    EXPECT_CALL(*m_mockHelper, expires_after(_)).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(testing::An<std::chrono::seconds>())).Times(1);
     EXPECT_CALL(*m_mockHelper, async_connect(dummyResults, testing::_))
         .WillOnce(
             [](const boost::asio::ip::tcp::resolver::results_type&,
@@ -116,7 +116,7 @@ TEST_F(HttpSocketTest, AsyncConnectSuccess)
 
 TEST_F(HttpSocketTest, AsyncConnectFailure)
 {
-    EXPECT_CALL(*m_mockHelper, expires_after(_)).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(testing::An<std::chrono::seconds>())).Times(1);
     EXPECT_CALL(*m_mockHelper, async_connect(dummyResults, testing::_))
         .WillOnce(
             [](const boost::asio::ip::tcp::resolver::results_type&,
@@ -140,7 +140,7 @@ TEST_F(HttpSocketTest, AsyncConnectFailure)
 
 TEST_F(HttpSocketTest, AsyncConnectException)
 {
-    EXPECT_CALL(*m_mockHelper, expires_after(_)).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(testing::An<std::chrono::seconds>())).Times(1);
     EXPECT_CALL(*m_mockHelper, async_connect(dummyResults, testing::_))
         .WillOnce([](const boost::asio::ip::tcp::resolver::results_type&,
                      boost::system::error_code&) -> boost::asio::awaitable<void>
@@ -161,7 +161,7 @@ TEST_F(HttpSocketTest, WriteSuccess)
 {
     boost::beast::http::request<boost::beast::http::string_body> req {boost::beast::http::verb::get, "/", 11};
 
-    EXPECT_CALL(*m_mockHelper, expires_after(_)).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(testing::An<std::chrono::seconds>())).Times(1);
     EXPECT_CALL(*m_mockHelper, write(_, _))
         .WillOnce([](const boost::beast::http::request<boost::beast::http::string_body>&, boost::system::error_code& ec)
                   { ec = boost::system::error_code {}; });
@@ -176,7 +176,7 @@ TEST_F(HttpSocketTest, WriteFailure)
 {
     boost::beast::http::request<boost::beast::http::string_body> req {boost::beast::http::verb::get, "/", 11};
 
-    EXPECT_CALL(*m_mockHelper, expires_after(_)).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(testing::An<std::chrono::seconds>())).Times(1);
     EXPECT_CALL(*m_mockHelper, write(_, _))
         .WillOnce([](const boost::beast::http::request<boost::beast::http::string_body>&, boost::system::error_code& ec)
                   { ec = boost::asio::error::connection_refused; });
@@ -192,7 +192,7 @@ TEST_F(HttpSocketTest, WriteException)
 {
     boost::beast::http::request<boost::beast::http::string_body> req {boost::beast::http::verb::get, "/", 11};
 
-    EXPECT_CALL(*m_mockHelper, expires_after(_)).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(testing::An<std::chrono::seconds>())).Times(1);
     EXPECT_CALL(*m_mockHelper, write(_, _))
         .WillOnce([](const boost::beast::http::request<boost::beast::http::string_body>&, boost::system::error_code&)
                   { throw std::runtime_error("Test exception"); });
@@ -207,7 +207,7 @@ TEST_F(HttpSocketTest, AsyncWriteSuccess)
 {
     boost::beast::http::request<boost::beast::http::string_body> req {boost::beast::http::verb::get, "/", 11};
 
-    EXPECT_CALL(*m_mockHelper, expires_after(_)).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(testing::An<std::chrono::seconds>())).Times(1);
     EXPECT_CALL(*m_mockHelper, async_write(_, _))
         .WillOnce(
             [](const boost::beast::http::request<boost::beast::http::string_body>&,
@@ -231,7 +231,7 @@ TEST_F(HttpSocketTest, AsyncWriteFailure)
 {
     boost::beast::http::request<boost::beast::http::string_body> req {boost::beast::http::verb::get, "/", 11};
 
-    EXPECT_CALL(*m_mockHelper, expires_after(_)).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(testing::An<std::chrono::seconds>())).Times(1);
     EXPECT_CALL(*m_mockHelper, async_write(_, _))
         .WillOnce(
             [](const boost::beast::http::request<boost::beast::http::string_body>&,
@@ -255,7 +255,7 @@ TEST_F(HttpSocketTest, AsyncWriteException)
 {
     boost::beast::http::request<boost::beast::http::string_body> req {boost::beast::http::verb::get, "/", 11};
 
-    EXPECT_CALL(*m_mockHelper, expires_after(_)).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(testing::An<std::chrono::seconds>())).Times(1);
     EXPECT_CALL(*m_mockHelper, async_write(_, _))
         .WillOnce([](const boost::beast::http::request<boost::beast::http::string_body>&,
                      boost::system::error_code&) -> boost::asio::awaitable<void>
@@ -276,7 +276,7 @@ TEST_F(HttpSocketTest, ReadSuccess)
     boost::beast::http::response<boost::beast::http::dynamic_body> res;
     res.result(boost::beast::http::status::ok);
 
-    EXPECT_CALL(*m_mockHelper, expires_after(_)).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(testing::An<std::chrono::seconds>())).Times(1);
     EXPECT_CALL(*m_mockHelper, read(_, _, _))
         .WillOnce([](boost::beast::flat_buffer&,
                      boost::beast::http::response<boost::beast::http::dynamic_body>&,
@@ -294,7 +294,7 @@ TEST_F(HttpSocketTest, ReadFailure)
     boost::beast::http::response<boost::beast::http::dynamic_body> res;
     res.result(boost::beast::http::status::ok);
 
-    EXPECT_CALL(*m_mockHelper, expires_after(_)).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(testing::An<std::chrono::seconds>())).Times(1);
     EXPECT_CALL(*m_mockHelper, read(_, _, _))
         .WillOnce([](boost::beast::flat_buffer&,
                      boost::beast::http::response<boost::beast::http::dynamic_body>&,
@@ -312,7 +312,7 @@ TEST_F(HttpSocketTest, ReadException)
     boost::beast::http::response<boost::beast::http::dynamic_body> res;
     res.result(boost::beast::http::status::ok);
 
-    EXPECT_CALL(*m_mockHelper, expires_after(_)).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(testing::An<std::chrono::seconds>())).Times(1);
     EXPECT_CALL(*m_mockHelper, read(_, _, _))
         .WillOnce([](boost::beast::flat_buffer&,
                      boost::beast::http::response<boost::beast::http::dynamic_body>&,
@@ -329,7 +329,7 @@ TEST_F(HttpSocketTest, AsyncReadSuccess)
     boost::beast::http::response<boost::beast::http::dynamic_body> res;
     res.result(boost::beast::http::status::ok);
 
-    EXPECT_CALL(*m_mockHelper, expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS))).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(std::chrono::milliseconds(http_client::SOCKET_TIMEOUT_MSECS))).Times(1);
     EXPECT_CALL(*m_mockHelper, async_read(testing::_, testing::_, testing::_))
         .WillOnce(
             [](boost::beast::flat_buffer&,
@@ -357,7 +357,7 @@ TEST_F(HttpSocketTest, AsyncReadFailure)
     boost::beast::http::response<boost::beast::http::dynamic_body> res;
     res.result(boost::beast::http::status::ok);
 
-    EXPECT_CALL(*m_mockHelper, expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS))).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(std::chrono::milliseconds(http_client::SOCKET_TIMEOUT_MSECS))).Times(1);
     EXPECT_CALL(*m_mockHelper, async_read(testing::_, testing::_, testing::_))
         .WillOnce(
             [](boost::beast::flat_buffer&,
@@ -384,7 +384,7 @@ TEST_F(HttpSocketTest, AsyncReadException)
     boost::beast::http::response<boost::beast::http::dynamic_body> res;
     res.result(boost::beast::http::status::ok);
 
-    EXPECT_CALL(*m_mockHelper, expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS))).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(std::chrono::milliseconds(http_client::SOCKET_TIMEOUT_MSECS))).Times(1);
     EXPECT_CALL(*m_mockHelper, async_read(testing::_, testing::_, testing::_))
         .WillOnce([](boost::beast::flat_buffer&,
                      boost::beast::http::response<boost::beast::http::dynamic_body>&,
@@ -404,7 +404,7 @@ TEST_F(HttpSocketTest, AsyncReadException)
 
 TEST_F(HttpSocketTest, CloseSocket)
 {
-    EXPECT_CALL(*m_mockHelper, expires_after(_)).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(testing::An<std::chrono::seconds>())).Times(1);
     EXPECT_CALL(*m_mockHelper, connect(_, _)).Times(1);
     EXPECT_CALL(*m_mockHelper, close()).Times(1);
 

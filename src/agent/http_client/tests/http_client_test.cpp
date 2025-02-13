@@ -98,9 +98,10 @@ protected:
 
     void SetupMockSocketReadExpectations(boost::beast::http::status status, boost::system::error_code readEc = {})
     {
-        EXPECT_CALL(*mockSocket, AsyncRead(_, _))
+        EXPECT_CALL(*mockSocket, AsyncRead(_, _, _))
             .WillOnce(Invoke(
-                [status, readEc](auto& res, boost::system::error_code& ec) -> boost::asio::awaitable<void>
+                [status, readEc](auto& res, boost::system::error_code& ec, [[maybe_unused]] const time_t timeout)
+                    -> boost::asio::awaitable<void>
                 {
                     res.result(status);
                     ec = readEc;

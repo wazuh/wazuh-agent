@@ -23,6 +23,8 @@ namespace http_client
 
         virtual void expires_after(std::chrono::seconds seconds) = 0;
 
+        virtual void expires_after(std::chrono::milliseconds ms) = 0;
+
         virtual void connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
                              boost::system::error_code& ec) = 0;
 

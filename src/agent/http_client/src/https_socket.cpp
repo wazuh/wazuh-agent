@@ -121,12 +121,13 @@ namespace http_client
 
     boost::asio::awaitable<void>
     HttpsSocket::AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                           boost::system::error_code& ec)
+                           boost::system::error_code& ec,
+                           const time_t socketTimeout)
     {
         try
         {
             boost::beast::flat_buffer buffer;
-            m_ssl_socket->expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+            m_ssl_socket->expires_after(std::chrono::milliseconds(socketTimeout));
             co_await m_ssl_socket->async_read(buffer, res, ec);
         }
         catch (const std::exception& e)

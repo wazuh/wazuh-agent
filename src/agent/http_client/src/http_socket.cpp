@@ -96,11 +96,12 @@ namespace http_client
 
     boost::asio::awaitable<void>
     HttpSocket::AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                          boost::system::error_code& ec)
+                          boost::system::error_code& ec,
+                          const std::time_t socketTimeout)
     {
         try
         {
-            m_socket->expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+            m_socket->expires_after(std::chrono::milliseconds(socketTimeout));
             boost::beast::flat_buffer buffer;
             co_await m_socket->async_read(buffer, res, ec);
         }

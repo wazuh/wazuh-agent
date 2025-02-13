@@ -135,5 +135,8 @@ namespace communicator
 
         /// @brief The verification mode
         std::string m_verificationMode;
+
+        /// @brief Timeout for command requests to manager in secconds.
+        std::time_t m_timeoutCommands;
     };
 } // namespace communicator

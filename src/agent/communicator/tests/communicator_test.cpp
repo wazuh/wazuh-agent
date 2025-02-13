@@ -214,7 +214,7 @@ TEST(CommunicatorTest, GetCommandsFromManager_CallsWithValidToken)
         .WillOnce(Invoke([communicatorPtr, &expectedResponse1]() -> intStringTuple { return expectedResponse1; }));
 
     const auto reqParams = http_client::HttpRequestParams(
-        http_client::MethodType::GET, "https://localhost:27000", "/api/v1/commands", "", "none");
+        http_client::MethodType::GET, "https://localhost:27000", "/api/v1/commands", "", "none", "", "", "", 60000);
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     intStringTuple expectedResponse2 {200, "Dummy response"};
@@ -266,7 +266,7 @@ TEST(CommunicatorTest, GetCommandsFromManager_Failure)
         .WillOnce(Invoke([communicatorPtr, &expectedResponse1]() -> intStringTuple { return expectedResponse1; }));
 
     const auto reqParams = http_client::HttpRequestParams(
-        http_client::MethodType::GET, "https://localhost:27000", "/api/v1/commands", "", "none");
+        http_client::MethodType::GET, "https://localhost:27000", "/api/v1/commands", "", "none", "", "", "", 60000);
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     intStringTuple expectedResponse2 {401, "Dummy response"};

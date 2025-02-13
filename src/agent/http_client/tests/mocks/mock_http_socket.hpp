@@ -35,7 +35,9 @@ public:
 
     MOCK_METHOD(boost::asio::awaitable<void>,
                 AsyncRead,
-                (boost::beast::http::response<boost::beast::http::dynamic_body> & res, boost::system::error_code& ec),
+                (boost::beast::http::response<boost::beast::http::dynamic_body> & res,
+                 boost::system::error_code& ec,
+                 const time_t timeout),
                 (override));
 
     MOCK_METHOD(void, Close, (), (override));

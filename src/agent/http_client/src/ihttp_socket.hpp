@@ -11,6 +11,7 @@ namespace http_client
 {
     /// @brief The socket timeout in seconds
     constexpr int SOCKET_TIMEOUT_SECS = 60;
+    constexpr int SOCKET_TIMEOUT_MSECS = SOCKET_TIMEOUT_SECS * 1000;
 
     /// @brief Interface for HTTP sockets
     class IHttpSocket
@@ -58,9 +59,11 @@ namespace http_client
         /// @brief Asynchronous version of Read
         /// @param res The response to read
         /// @param ec The error code, if any occurred
+        /// @param socketTimeout Timeout for reading in millisenconds
         virtual boost::asio::awaitable<void>
         AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                  boost::system::error_code& ec) = 0;
+                  boost::system::error_code& ec,
+                  const time_t socketTimeout = http_client::SOCKET_TIMEOUT_MSECS) = 0;
 
         /// @brief Closes the socket
         virtual void Close() = 0;
