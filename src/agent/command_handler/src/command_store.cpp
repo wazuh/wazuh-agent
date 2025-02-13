@@ -58,14 +58,21 @@ namespace command_store
         }
     }
 
-    CommandStore::CommandStore(const std::string& dbFolderPath)
+    CommandStore::CommandStore(const std::string& dbFolderPath, std::unique_ptr<Persistence> persistence)
     {
         const auto dbFilePath = dbFolderPath + "/" + COMMANDSTORE_DB_NAME;
 
         try
         {
-            m_dataBase =
-                PersistenceFactory::CreatePersistence(PersistenceFactory::PersistenceType::SQLITE3, dbFilePath);
+            if (persistence)
+            {
+                m_dataBase = std::move(persistence);
+            }
+            else
+            {
+                m_dataBase =
+                    PersistenceFactory::CreatePersistence(PersistenceFactory::PersistenceType::SQLITE3, dbFilePath);
+            }
 
             if (!m_dataBase->TableExists(COMMAND_STORE_TABLE_NAME))
             {

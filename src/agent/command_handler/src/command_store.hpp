@@ -1,12 +1,11 @@
 #pragma once
 
 #include <command_entry.hpp>
+#include <persistence.hpp>
 
 #include <memory>
 #include <optional>
 #include <string>
-
-class Persistence;
 
 namespace command_store
 {
@@ -38,7 +37,8 @@ namespace command_store
     public:
         /// @brief CommandStore constructor
         /// @param dbFolderPath The path to the database folder
-        CommandStore(const std::string& dbFolderPath);
+        /// @param persistence Optional pointer to an existing persistence object.
+        CommandStore(const std::string& dbFolderPath, std::unique_ptr<Persistence> persistence = nullptr);
 
         /// @brief CommandStore destructor
         ~CommandStore();
