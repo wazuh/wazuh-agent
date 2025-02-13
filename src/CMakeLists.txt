@@ -48,7 +48,7 @@ add_subdirectory(modules)
 add_subdirectory(agent)
 
 add_executable(wazuh-agent agent/src/main.cpp)
-target_link_libraries(wazuh-agent PRIVATE Agent Logger OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(wazuh-agent PRIVATE Agent Config Logger OpenSSL::SSL OpenSSL::Crypto)
 
 if(WIN32)
     include(cmake/SetWindowsManifest.cmake)

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <config.h>
 #include <nlohmann/json.hpp>
 
 #include <functional>
@@ -29,7 +28,7 @@ public:
     /// @param getNetworksInfo Function to retrieve network information in JSON format.
     /// @param agentIsRegistering True if the agent is being registered, false otherwise.
     /// @param persistence Optional pointer to an AgentInfoPersistance object.
-    AgentInfo(const std::string& dbFolderPath = config::DEFAULT_DATA_PATH,
+    AgentInfo(const std::string& dbFolderPath,
               std::function<nlohmann::json()> getOSInfo = nullptr,
               std::function<nlohmann::json()> getNetworksInfo = nullptr,
               bool agentIsRegistering = false,

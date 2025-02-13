@@ -1,10 +1,10 @@
 #include <configuration_parser.hpp>
 
-#include <algorithm>
-#include <cctype>
 #include <config.h>
 #include <yaml_utils.hpp>
 
+#include <algorithm>
+#include <cctype>
 #include <queue>
 #include <unordered_set>
 #include <utility>
