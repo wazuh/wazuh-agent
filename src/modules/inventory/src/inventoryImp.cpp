@@ -631,11 +631,6 @@ nlohmann::json Inventory::EcsNetworkData(const nlohmann::json& originalData, boo
     SetJsonField(ret, originalData, "/network/dhcp", "dhcp", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/network/type", "proto_type", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/network/metric", "metric", std::nullopt, createFields);
-    /* TODO this field should include http or https, it's related to an application not to a interface */
-    if (createFields)
-    {
-        ret["network"]["protocol"] = nullptr;
-    }
     SetJsonField(ret, originalData, "/observer/ingress/interface/alias", "adapter", std::nullopt, createFields);
     SetJsonField(ret, originalData, "/observer/ingress/interface/name", "iface", std::nullopt, createFields);
 

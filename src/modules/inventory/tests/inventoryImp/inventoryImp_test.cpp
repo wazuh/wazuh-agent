@@ -105,7 +105,7 @@ TEST_F(InventoryImpTest, defaultCtor)
     const auto expectedResult6 {
         R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(testing::AtLeast(1));
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(testing::AtLeast(1));
@@ -283,7 +283,7 @@ TEST_F(InventoryImpTest, noHardware)
     const auto expectedResult6 {
         R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(1);
@@ -371,7 +371,7 @@ TEST_F(InventoryImpTest, noOs)
     const auto expectedResult5 {
         R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -546,7 +546,7 @@ TEST_F(InventoryImpTest, noPackages)
     const auto expectedResult5 {
         R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -634,7 +634,7 @@ TEST_F(InventoryImpTest, noPorts)
     const auto expectedResult5 {
         R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"collector":"hotfixes","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -728,7 +728,7 @@ TEST_F(InventoryImpTest, noPortsAll)
     const auto expectedResult7 {
         R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult8 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -818,7 +818,7 @@ TEST_F(InventoryImpTest, noProcesses)
     const auto expectedResult5 {
         R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
@@ -907,7 +907,7 @@ TEST_F(InventoryImpTest, noHotfixes)
     const auto expectedResult5 {
         R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
     const auto expectedResult7 {
-        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"protocol":null,"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
+        R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
