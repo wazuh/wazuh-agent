@@ -85,11 +85,19 @@ jobs:
           fi
           echo "BINARIES_NAME=windows-build-${VERSION}-${{ inputs.revision }}_${COMMIT_HASH}" >> $GITHUB_ENV
 
+      - name: Fetch debug symbols tool
+        run: | 
+          $url = "https://github.com/rainers/cv2pdb/releases/download/v0.53/cv2pdb-0.53.zip"
+          $zipFile = "C:\tmp\cv2pdb-0.53.zip"
+          $extractPath = "C:\tmp\cv2pdb"
+          New-Item -ItemType Directory -Path (Split-Path -Path $zipFile) -Force
+          Invoke-WebRequest -Uri $url -OutFile $zipFile
+          Expand-Archive -Path $zipFile -DestinationPath $extractPath -Force          
+
       - name: Build MSI for Windows package
         run: |
-          New-Item -ItemType Directory -Path "C:\tmp" -Force
           ./packages/windows/generate_compiled_windows_agent.ps1 -MSI_NAME ${{ env.PKG_NAME }} -CMAKE_CONFIG RelWithDebInfo -BUILD_TESTS 1
-          ./packages/windows/generate_wazuh_msi.ps1 -MSI_NAME "${{ env.PKG_NAME }}" -CMAKE_CONFIG RelWithDebInfo -DEBUG yes | Out-File -FilePath "C:\tmp\generate_msi.log"
+          ./packages/windows/generate_wazuh_msi.ps1 -MSI_NAME "${{ env.PKG_NAME }}" -CMAKE_CONFIG RelWithDebInfo -DEBUG yes -CV2PDB_PATH C:\tmp\cv2pdb | Out-File -FilePath "C:\tmp\generate_msi.log"
 
       - name: Check MSI for Windows package
         run: |
@@ -106,10 +114,8 @@ jobs:
 
       - name: Install Windows agent
         run: |
-          Start-Process -FilePath './wazuh-agent/packages/windows/${{ env.PKG_NAME }}.msi' -ArgumentList '/l ./installer.log' -wait
-          installerfile=$("Get-Content ./installer.log")
-          Write-Output $installerfile
-          if ($installerfile -like "*Wazuh Agent -- Installation completed successfully*") {
+          Start-Process -FilePath './packages/windows/${{ env.PKG_NAME }}.msi' -ArgumentList '/quiet /l ./installer.log' -wait
+          if (Select-String -Path ./installer.log -Pattern "Wazuh Agent -- Installation completed successfully") {
               Write-Output "Installation successfully."
           } else {
               Write-Output "The installation could not be completed. The package will not be uploaded."
@@ -122,7 +128,7 @@ jobs:
           $msiPath = "C:\tmp\${{ env.PKG_NAME }}.msi"
           $hashFile = "C:\tmp\${{ env.PKG_NAME }}.msi.sha512"
           Get-FileHash -Path $msiPath -Algorithm SHA512 | Select-Object -ExpandProperty Hash | Out-File -FilePath $hashFile
-          if (Test-Path $hashFile -and (Get-Content $hashFile).Length -gt 0) {
+          if ((Test-Path $hashFile) -and ((Get-Content $hashFile).Length -gt 0)) {
               Write-Output "Checksum file successfully created."
           } else {
               Write-Output "Checksum file is empty or does not exist."
