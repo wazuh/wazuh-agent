@@ -1,3 +1,4 @@
+#include <config.h>
 #include <journald_reader.hpp>
 #include <logcollector.hpp>
 
@@ -9,11 +10,11 @@ namespace logcollector
     void Logcollector::AddPlatformSpecificReader(
         const std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
     {
-        auto journaldConfigs = configurationParser->GetConfig<YAML::Node>("logcollector", "journald")
-                                   .value_or(YAML::Node(YAML::NodeType::Sequence));
+        const auto journaldConfigs = configurationParser->GetConfigOrDefault<YAML::Node>(
+            YAML::Node(YAML::NodeType::Sequence), "logcollector", "journald");
 
-        auto fileWait = configurationParser->GetConfig<std::time_t>("logcollector", "read_interval")
-                            .value_or(config::logcollector::DEFAULT_FILE_WAIT);
+        const auto fileWait = configurationParser->GetTimeConfigOrDefault(
+            config::logcollector::DEFAULT_FILE_WAIT, "logcollector", "read_interval");
 
         for (const auto& config : journaldConfigs)
         {

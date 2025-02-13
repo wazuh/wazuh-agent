@@ -3,8 +3,6 @@
 #include <configuration_parser.hpp>
 #include <ihttp_client.hpp>
 
-#include <config.h>
-
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/steady_timer.hpp>
 
@@ -109,10 +107,10 @@ namespace communicator
         std::atomic<bool> m_isReAuthenticating = false;
 
         /// @brief Time in milliseconds between authentication attemps in case of failure
-        std::time_t m_retryInterval = config::agent::DEFAULT_RETRY_INTERVAL;
+        std::time_t m_retryInterval;
 
         /// @brief Size for batch requests
-        size_t m_batchSize = config::agent::DEFAULT_BATCH_SIZE;
+        size_t m_batchSize;
 
         /// @brief The server URL
         std::string m_serverUrl;

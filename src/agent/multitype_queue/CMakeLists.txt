@@ -25,11 +25,11 @@ target_include_directories(MultiTypeQueue PUBLIC
 
 target_link_libraries(MultiTypeQueue
     PUBLIC
-    Config
     ConfigurationParser
     MessageEntry
     Boost::asio
     PRIVATE
+    Config
     nlohmann_json::nlohmann_json
     Persistence
     Logger)

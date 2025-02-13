@@ -62,10 +62,10 @@ target_link_libraries(Logcollector
     ConfigurationParser
     MessageEntry
     CommandEntry
-    Config
     Boost::asio
     nlohmann_json::nlohmann_json
     PRIVATE
+    Config
     $<$<PLATFORM_ID:Darwin>:OSLogStoreWrapper>
     $<$<PLATFORM_ID:Darwin>:fmt::fmt>
     Logger

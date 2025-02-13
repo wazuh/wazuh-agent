@@ -14,6 +14,7 @@
 
 namespace macos_reader_tests
 {
+    constexpr time_t DEFAULT_WAIT_IN_MILLIS = 50;
 
     using namespace logcollector;
     using ::testing::_;
@@ -32,14 +33,14 @@ namespace macos_reader_tests
     TEST(MacOSReaderTest, Constructor)
     {
         auto logCollector = LogcollectorMock();
-        logcollector::MacOSReader macOSReader(logCollector);
+        logcollector::MacOSReader macOSReader(logCollector, DEFAULT_WAIT_IN_MILLIS);
     }
 
     TEST(MacOSReaderTest, ConstructorWithStoreWrapper)
     {
         auto logCollector = LogcollectorMock();
         auto logStoreMock = std::make_unique<MockIOSLogStoreWrapper>();
-        MacOSReader reader(std::move(logStoreMock), logCollector);
+        MacOSReader reader(std::move(logStoreMock), logCollector, DEFAULT_WAIT_IN_MILLIS);
 
         // Just ensure the constructor works
         SUCCEED();
@@ -54,7 +55,7 @@ namespace macos_reader_tests
 
         auto didMacOSReaderRun = false;
 
-        logcollector::MacOSReader macOSReader(logCollector);
+        logcollector::MacOSReader macOSReader(logCollector, DEFAULT_WAIT_IN_MILLIS);
         boost::asio::co_spawn(
             ioContext,
             [&macOSReader, &didMacOSReaderRun]()
@@ -88,13 +89,13 @@ namespace macos_reader_tests
         EXPECT_CALL(logCollector, Wait(::testing::_)).Times(::testing::AnyNumber());
 
         logcollector::MacOSReader macOSReader(logCollector,
-                                              50, // NOLINT
+                                              DEFAULT_WAIT_IN_MILLIS,
                                               "debug",
                                               R"(process != "sshd" OR message CONTAINS "invalid")",
                                               {"trace", "activity", "log"});
 
         logcollector::MacOSReader macOSReader2(logCollector,
-                                               50, // NOLINT
+                                               DEFAULT_WAIT_IN_MILLIS,
                                                "debug",
                                                R"(process != "wazuh-agent"")",
                                                {"trace", "activity", "log"});
@@ -145,7 +146,7 @@ namespace macos_reader_tests
                 {anotherPointInTime, "2023-01-01T00:01:00Z", "Sample log message 2"}}))
             .WillRepeatedly(Return(std::vector<IOSLogStoreWrapper::LogEntry> {}));
 
-        MacOSReader macOSReader(std::move(logStoreMock), logCollector);
+        MacOSReader macOSReader(std::move(logStoreMock), logCollector, DEFAULT_WAIT_IN_MILLIS);
 
         int pushMessageCallCount = 0;
 

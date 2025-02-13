@@ -1,5 +1,6 @@
 #include <logcollector.hpp>
 
+#include <config.h>
 #include <macos_reader.hpp>
 
 #include <algorithm>
@@ -42,12 +43,12 @@ namespace logcollector
     void Logcollector::AddPlatformSpecificReader(
         const std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
     {
-        const auto fileWait = configurationParser->GetConfig<time_t>("logcollector", "read_interval")
-                                  .value_or(config::logcollector::DEFAULT_FILE_WAIT);
+        const auto fileWait = configurationParser->GetTimeConfigOrDefault(
+            config::logcollector::DEFAULT_FILE_WAIT, "logcollector", "read_interval");
 
-        auto macosConfig =
-            configurationParser->GetConfig<std::vector<std::map<std::string, std::string>>>("logcollector", "macos")
-                .value_or(std::vector<std::map<std::string, std::string>> {});
+        const std::vector<std::map<std::string, std::string>> defaultMacOsConfig {};
+
+        auto macosConfig = configurationParser->GetConfigOrDefault(defaultMacOsConfig, "logcollector", "macos");
 
         for (auto& entry : macosConfig)
         {

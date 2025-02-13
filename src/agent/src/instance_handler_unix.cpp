@@ -102,12 +102,11 @@ namespace instance_handler
 
     InstanceHandler GetInstanceHandler(const std::string& configFilePath)
     {
-        auto configurationParser = configFilePath.empty()
-                                       ? configuration::ConfigurationParser()
-                                       : configuration::ConfigurationParser(std::filesystem::path(configFilePath));
+        const auto configurationParser =
+            configFilePath.empty() ? configuration::ConfigurationParser()
+                                   : configuration::ConfigurationParser(std::filesystem::path(configFilePath));
 
-        const std::string lockFilePath =
-            configurationParser.GetConfig<std::string>("agent", "path.run").value_or(config::DEFAULT_RUN_PATH);
+        const auto lockFilePath = configurationParser.GetConfigOrDefault(config::DEFAULT_RUN_PATH, "agent", "path.run");
 
         return {InstanceHandler(lockFilePath)};
     }

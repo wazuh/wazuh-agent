@@ -65,7 +65,7 @@ void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParse
     }
 
     m_enabled =
-        configurationParser->GetConfig<bool>("logcollector", "enabled").value_or(config::logcollector::DEFAULT_ENABLED);
+        configurationParser->GetConfigOrDefault(config::logcollector::DEFAULT_ENABLED, "logcollector", "enabled");
 
     if (m_ioContext.stopped())
     {
@@ -78,16 +78,17 @@ void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParse
 
 void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
 {
-    auto fileWait = configurationParser->GetConfig<std::time_t>("logcollector", "read_interval")
-                        .value_or(config::logcollector::DEFAULT_FILE_WAIT);
+    const auto fileWait = configurationParser->GetTimeConfigOrDefault(
+        config::logcollector::DEFAULT_RELOAD_INTERVAL, "logcollector", "read_interval");
 
-    auto reloadInterval = configurationParser->GetConfig<std::time_t>("logcollector", "reload_interval")
-                              .value_or(config::logcollector::DEFAULT_RELOAD_INTERVAL);
+    const auto reloadInterval = configurationParser->GetTimeConfigOrDefault(
+        config::logcollector::DEFAULT_RELOAD_INTERVAL, "logcollector", "reload_interval");
 
-    auto localfiles = configurationParser->GetConfig<std::vector<std::string>>("logcollector", "localfiles")
-                          .value_or(std::vector<std::string>({config::logcollector::DEFAULT_LOCALFILES}));
+    const auto localFilesDefault = std::vector<std::string> {config::logcollector::DEFAULT_LOCALFILES};
 
-    for (auto& lf : localfiles)
+    const auto localfiles = configurationParser->GetConfigOrDefault(localFilesDefault, "logcollector", "localfiles");
+
+    for (const auto& lf : localfiles)
     {
         AddReader(std::make_shared<FileReader>(*this, lf, fileWait, reloadInterval));
     }

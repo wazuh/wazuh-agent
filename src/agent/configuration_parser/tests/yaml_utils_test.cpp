@@ -1,5 +1,7 @@
-#include "configuration_parser_utils.hpp"
+#include "yaml_utils.hpp"
+
 #include <gtest/gtest.h>
+
 #include <yaml-cpp/yaml.h>
 
 /// @brief Test for merging two simple YAML maps with unique keys.

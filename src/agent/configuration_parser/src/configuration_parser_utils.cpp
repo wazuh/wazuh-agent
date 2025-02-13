@@ -1,112 +1,113 @@
-#include "configuration_parser_utils.hpp"
-#include <queue>
-#include <unordered_set>
+#include <configuration_parser_utils.hpp>
 
-void MergeYamlNodes(YAML::Node& baseYaml, const YAML::Node& additionalYaml)
+#include <algorithm>
+#include <stdexcept>
+
+namespace
 {
-    // Queue to manage nodes to be merged. Pairs of nodes are handled directly.
-    std::queue<std::pair<YAML::Node, YAML::Node>> nodesToProcess;
-    nodesToProcess.emplace(baseYaml, additionalYaml);
+    constexpr unsigned int A_SECOND_IN_MILLIS = 1000;
+    constexpr unsigned int A_MINUTE_IN_MILLIS = 60 * A_SECOND_IN_MILLIS;
+    constexpr unsigned int A_HOUR_IN_MILLIS = 60 * A_MINUTE_IN_MILLIS;
+    constexpr unsigned int A_DAY_IN_MILLIS = 24 * A_HOUR_IN_MILLIS;
 
-    while (!nodesToProcess.empty())
+    constexpr unsigned int A_KB_IN_BYTES = 1000;
+    constexpr unsigned int A_MB_IN_BYTES = 1000 * A_KB_IN_BYTES;
+    constexpr unsigned int A_GB_IN_BYTES = 1000 * A_MB_IN_BYTES;
+} // namespace
+
+std::time_t ParseTimeUnit(const std::string& option)
+{
+    std::string number;
+    unsigned int multiplier = 1;
+
+    if (option.ends_with("ms"))
     {
-        auto [baseNode, additionalNode] = nodesToProcess.front();
-        nodesToProcess.pop();
-
-        // Traverse each key-value pair in the additionalYaml node.
-        for (auto it = additionalNode.begin(); it != additionalNode.end(); ++it)
-        {
-            const auto key = it->first.as<std::string>();
-            YAML::Node value = it->second;
-
-            if (baseNode[key])
-            {
-                // Key exists in the baseYaml node.
-                if (value.IsMap() && baseNode[key].IsMap())
-                {
-                    // Both values are maps: enqueue for further merging.
-                    nodesToProcess.emplace(baseNode[key], value);
-                }
-                else if (value.IsSequence() && baseNode[key].IsSequence())
-                {
-                    // Merge sequences while preserving the order.
-                    YAML::Node mergedSequence = YAML::Node(YAML::NodeType::Sequence);
-
-                    // Collect elements from 'additionalYaml' sequence to preserve insertion order.
-                    std::vector<std::pair<std::string, YAML::Node>> additionalElements;
-                    for (const YAML::Node& elem : value)
-                    {
-                        if (elem.IsScalar())
-                        {
-                            additionalElements.emplace_back(elem.as<std::string>(), elem);
-                        }
-                        else if (elem.IsMap() && elem.begin() != elem.end())
-                        {
-                            additionalElements.emplace_back(elem.begin()->first.as<std::string>(), elem);
-                        }
-                    }
-
-                    // Track which keys from 'additionalYaml' sequence are merged.
-                    std::unordered_set<std::string> mergedKeys;
-
-                    for (const YAML::Node& elem : baseNode[key])
-                    {
-                        std::string elemKey;
-
-                        // Extract the key based on the type of element.
-                        if (elem.IsScalar())
-                        {
-                            elemKey = elem.as<std::string>();
-                        }
-                        else if (elem.IsMap() && elem.begin() != elem.end())
-                        {
-                            elemKey = elem.begin()->first.as<std::string>();
-                        }
-                        else
-                        {
-                            // Skip elements that don't fit the expected types.
-                            mergedSequence.push_back(elem);
-                            continue;
-                        }
-
-                        // Common logic for merging elements.
-                        auto additionalItem =
-                            std::find_if(additionalElements.begin(),
-                                         additionalElements.end(),
-                                         [&elemKey](const auto& pair) { return pair.first == elemKey; });
-                        if (additionalItem != additionalElements.end())
-                        {
-                            mergedSequence.push_back(additionalItem->second);
-                            mergedKeys.insert(additionalItem->first);
-                        }
-                        else
-                        {
-                            mergedSequence.push_back(elem);
-                        }
-                    }
-
-                    // Add remaining elements from 'additionalYaml' sequence in order.
-                    for (const auto& [itemKey, itemNode] : additionalElements)
-                    {
-                        if (mergedKeys.find(itemKey) == mergedKeys.end())
-                        {
-                            mergedSequence.push_back(itemNode);
-                        }
-                    }
-
-                    baseNode[key] = mergedSequence;
-                }
-                else
-                {
-                    // Other cases (scalar, alias, null): overwrite the value.
-                    baseNode[key] = value;
-                }
-            }
-            else
-            {
-                // Key does not exist in the baseYaml node: add it directly.
-                baseNode[key] = value;
-            }
-        }
+        number = option.substr(0, option.length() - 2);
     }
+    else if (option.ends_with("s"))
+    {
+        number = option.substr(0, option.length() - 1);
+        multiplier = A_SECOND_IN_MILLIS;
+    }
+    else if (option.ends_with("m"))
+    {
+        number = option.substr(0, option.length() - 1);
+        multiplier = A_MINUTE_IN_MILLIS;
+    }
+    else if (option.ends_with("h"))
+    {
+        number = option.substr(0, option.length() - 1);
+        multiplier = A_HOUR_IN_MILLIS;
+    }
+    else if (option.ends_with("d"))
+    {
+        number = option.substr(0, option.length() - 1);
+        multiplier = A_DAY_IN_MILLIS;
+    }
+    else
+    {
+        // By default, assume seconds
+        number = option;
+        multiplier = A_SECOND_IN_MILLIS;
+    }
+
+    if (!std::all_of(number.begin(), number.end(), static_cast<int (*)(int)>(std::isdigit)))
+    {
+        throw std::invalid_argument("Invalid time unit: " + option);
+    }
+
+    return static_cast<std::time_t>(std::stoul(number) * multiplier);
+}
+
+size_t ParseSizeUnit(const std::string& option)
+{
+    std::string number;
+    unsigned int multiplier = 1;
+
+    if (option.ends_with("K"))
+    {
+        number = option.substr(0, option.length() - 1);
+        multiplier = A_KB_IN_BYTES;
+    }
+    else if (option.ends_with("KB"))
+    {
+        number = option.substr(0, option.length() - 2);
+        multiplier = A_KB_IN_BYTES;
+    }
+    else if (option.ends_with("M"))
+    {
+        number = option.substr(0, option.length() - 1);
+        multiplier = A_MB_IN_BYTES;
+    }
+    else if (option.ends_with("MB"))
+    {
+        number = option.substr(0, option.length() - 2);
+        multiplier = A_MB_IN_BYTES;
+    }
+    else if (option.ends_with("G"))
+    {
+        number = option.substr(0, option.length() - 1);
+        multiplier = A_GB_IN_BYTES;
+    }
+    else if (option.ends_with("GB"))
+    {
+        number = option.substr(0, option.length() - 2);
+        multiplier = A_GB_IN_BYTES;
+    }
+    else if (option.ends_with("B"))
+    {
+        number = option.substr(0, option.length() - 1);
+    }
+    else
+    {
+        // By default, assume B
+        number = option;
+    }
+
+    if (!std::all_of(number.begin(), number.end(), static_cast<int (*)(int)>(std::isdigit)))
+    {
+        throw std::invalid_argument("Invalid size unit: " + option);
+    }
+
+    return static_cast<size_t>(std::stoul(number) * multiplier);
 }

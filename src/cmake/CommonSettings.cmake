@@ -20,6 +20,9 @@ function(set_common_settings)
         set(SERVICE_FILE "${CMAKE_SOURCE_DIR}/agent/service/com.wazuh.agent.plist" PARENT_SCOPE)
         set(SHARED_CONFIG_INSTALL_DIR "/Library/Application Support/Wazuh agent.app/etc/shared" PARENT_SCOPE)
     elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        # We need to define NOMINMAX to avoid conflicts with std::min and std::max
+        add_definitions(-DNOMINMAX)
+
         if(DEFINED ENV{ProgramFiles})
             set(BIN_INSTALL_DIR "$ENV{ProgramFiles}\\wazuh-agent" PARENT_SCOPE)
         else()

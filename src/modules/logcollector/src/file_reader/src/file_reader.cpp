@@ -1,5 +1,6 @@
 #include "file_reader.hpp"
 
+#include <config.h>
 #include <logcollector.hpp>
 #include <logger.hpp>
 

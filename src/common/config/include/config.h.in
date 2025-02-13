@@ -6,7 +6,7 @@ namespace config
 {
     constexpr auto PROJECT_NAME = "@PROJECT_NAME@";
     constexpr auto VERSION = "@VERSION@";
-    constexpr auto DEFAULT_THREAD_COUNT = @DEFAULT_THREAD_COUNT@;
+    constexpr auto DEFAULT_THREAD_COUNT = @DEFAULT_THREAD_COUNT@UL;
     constexpr auto DEFAULT_DATA_PATH = "@DEFAULT_DATA_PATH@";
     constexpr auto DEFAULT_RUN_PATH = "@DEFAULT_RUN_PATH@";
     constexpr auto DEFAULT_SHARED_CONFIG_PATH = "@DEFAULT_SHARED_CONFIG_PATH@";
