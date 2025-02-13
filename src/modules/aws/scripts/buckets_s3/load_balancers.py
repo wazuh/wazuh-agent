@@ -70,7 +70,7 @@ class AWSALBBucket(AWSLBBucket):
                             port += f"{item[1]} "
                         log_entry[field_to_process], log_entry[ip_field] = port.strip(), ip.strip()
                     except (ValueError, IndexError):
-                        aws_tools.debug(f"Unable to process correctly ABL log entry, for field {field_to_process}.",
+                        aws_tools.debug(f"Unable to process correctly ALB log entry, for field {field_to_process}.",
                                         msg_level=1)
                         aws_tools.debug(f"Log Entry: {log_entry}", msg_level=2)
 
