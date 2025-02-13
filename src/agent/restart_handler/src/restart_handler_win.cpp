@@ -6,7 +6,7 @@ namespace restart_handler
 
     std::vector<char*> RestartHandler::startupCmdLineArgs;
 
-    boost::asio::awaitable<module_command::CommandExecutionResult> RestartHandler::RestartCommand()
+    boost::asio::awaitable<module_command::CommandExecutionResult> RestartHandler::RestartAgent()
     {
         // TODO
         co_return module_command::CommandExecutionResult {module_command::Status::FAILURE,

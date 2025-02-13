@@ -6,29 +6,7 @@
 
 namespace restart_handler
 {
-
     std::vector<char*> RestartHandler::startupCmdLineArgs;
-
-    bool UsingSystemctl()
-    {
-        return (0 == std::system("which systemctl > /dev/null 2>&1") && nullptr != std::getenv("INVOCATION_ID"));
-    }
-
-    boost::asio::awaitable<module_command::CommandExecutionResult> RestartWithSystemd()
-    {
-        LogInfo("Systemctl restarting wazuh agent service.");
-        if (std::system("systemctl restart wazuh-agent") != 0)
-        {
-            co_return module_command::CommandExecutionResult {module_command::Status::IN_PROGRESS,
-                                                              "Systemctl restart execution"};
-        }
-        else
-        {
-            LogError("Failed using systemctl.");
-            co_return module_command::CommandExecutionResult {module_command::Status::FAILURE,
-                                                              "Systemctl restart failed"};
-        }
-    }
 
     void StopAgent(const pid_t pid, const int timeoutInSecs)
     {
@@ -80,8 +58,9 @@ namespace restart_handler
                                                           "Pending restart execution"};
     }
 
-    boost::asio::awaitable<module_command::CommandExecutionResult> RestartHandler::RestartCommand()
+    boost::asio::awaitable<module_command::CommandExecutionResult> RestartHandler::RestartAgent()
     {
+        LogInfo("Restarting wazuh agent");
 
         if (UsingSystemctl())
         {

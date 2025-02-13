@@ -7,7 +7,6 @@
 
 namespace restart_handler
 {
-
     /// @brief Checks if systemctl is available and running as a systemd service.
     ///
     /// Determines if systemctl can be used in the current environment.
@@ -38,5 +37,4 @@ namespace restart_handler
     ///
     /// @return A boost::asio::awaitable containing the result of the command execution.
     boost::asio::awaitable<module_command::CommandExecutionResult> RestartWithSystemd();
-
 } // namespace restart_handler

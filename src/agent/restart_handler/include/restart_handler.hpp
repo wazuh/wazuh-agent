@@ -37,6 +37,6 @@ namespace restart_handler
 
         /// @brief Executes the restart command.
         /// @return Result of the restart command execution.
-        static boost::asio::awaitable<module_command::CommandExecutionResult> RestartCommand();
+        static boost::asio::awaitable<module_command::CommandExecutionResult> RestartAgent();
     };
 } // namespace restart_handler
