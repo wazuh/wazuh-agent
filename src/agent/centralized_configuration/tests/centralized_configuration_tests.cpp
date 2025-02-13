@@ -13,8 +13,8 @@
 #include <string>
 #include <vector>
 
+#include "../../../common/file_helper/filesystem/tests/mocks/mock_filesystem.hpp"
 #include <filesystem>
-#include <ifilesystem.hpp>
 
 using centralized_configuration::CentralizedConfiguration;
 using namespace testing;
@@ -35,18 +35,6 @@ namespace
 
     // NOLINTEND(cppcoreguidelines-avoid-reference-coroutine-parameters)
 } // namespace
-
-class MockFileSystem : public IFileSystem
-{
-public:
-    MOCK_METHOD(bool, exists, (const std::filesystem::path& path), (const, override));
-    MOCK_METHOD(bool, is_directory, (const std::filesystem::path& path), (const, override));
-    MOCK_METHOD(std::uintmax_t, remove_all, (const std::filesystem::path& path), (override));
-    MOCK_METHOD(std::filesystem::path, temp_directory_path, (), (const, override));
-    MOCK_METHOD(bool, create_directories, (const std::filesystem::path& path), (override));
-    MOCK_METHOD(void, rename, (const std::filesystem::path& from, const std::filesystem::path& to), (override));
-    MOCK_METHOD(bool, remove, (const std::filesystem::path& path), (override));
-};
 
 TEST(CentralizedConfiguration, Constructor)
 {

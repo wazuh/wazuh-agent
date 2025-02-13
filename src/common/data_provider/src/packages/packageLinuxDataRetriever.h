@@ -13,16 +13,11 @@
 #define _PACKAGE_LINUX_DATA_RETRIEVER_H
 
 #include <memory>
-#include "filesystemHelper.h"
+#include <filesystem_wrapper.hpp>
 #include <nlohmann/json.hpp>
 #include "sharedDefs.h"
 #include "utilsWrapperLinux.hpp"
-
-/**
- * @brief Fills a JSON object with all available rpm-related information
- * @param callback Callback to be called for every single element being found
- */
-void getRpmInfo(std::function<void(nlohmann::json&)> callback);
+#include "packageLinuxParserRpm.hpp"
 
 /**
  * @brief Fills a JSON object with all available rpm-related information for legacy Linux.
@@ -64,17 +59,18 @@ class FactoryPackagesCreator<LinuxType::STANDARD> final
     public:
         static void getPackages(std::function<void(nlohmann::json&)> callback)
         {
-            if (Utils::existsDir(DPKG_PATH))
+            const auto fsWrapper = std::make_unique<filesystem_wrapper::FileSystemWrapper>();
+            if (fsWrapper->exists(DPKG_PATH) && fsWrapper->is_directory(DPKG_PATH))
             {
                 getDpkgInfo(DPKG_STATUS_PATH, callback);
             }
 
-            if (Utils::existsDir(RPM_PATH))
+            if (fsWrapper->exists(RPM_PATH) && fsWrapper->is_directory(RPM_PATH))
             {
-                getRpmInfo(callback);
+                RPM<>().getRpmInfo(callback);
             }
 
-            if (Utils::existsDir(SNAP_PATH))
+            if (fsWrapper->exists(SNAP_PATH) && fsWrapper->is_directory(SNAP_PATH))
             {
                 getSnapInfo(callback);
             }
@@ -88,7 +84,8 @@ class FactoryPackagesCreator<LinuxType::LEGACY> final
     public:
         static void getPackages(std::function<void(nlohmann::json&)> callback)
         {
-            if (Utils::existsDir(RPM_PATH))
+            const auto fsWrapper = std::make_unique<filesystem_wrapper::FileSystemWrapper>();
+            if (fsWrapper->exists(RPM_PATH) && fsWrapper->is_directory(RPM_PATH))
             {
                 getRpmInfoLegacy(callback);
             }

@@ -1,6 +1,9 @@
 #pragma once
 
+#include <deque>
 #include <filesystem>
+#include <string>
+#include <vector>
 
 /// @brief Interface for file system operations.
 ///
@@ -8,7 +11,8 @@
 /// removing files or directories, creating directories, and renaming files. Any concrete class
 /// that implements this interface will be expected to provide the actual functionality for these
 /// operations. This allows for abstraction and easier testing or swapping of file system implementations.
-class IFileSystem {
+class IFileSystem
+{
 public:
     /// @brief Virtual destructor for IFileSystem.
     ///
@@ -25,10 +29,20 @@ public:
     /// @return Returns true if the path is a directory, otherwise false.
     virtual bool is_directory(const std::filesystem::path& path) const = 0;
 
+    /// @brief Checks if the specified path is a regular file.
+    /// @param path The path to check.
+    /// @return Returns true if the path is a regular file, otherwise false.
+    virtual bool is_regular_file(const std::filesystem::path& path) const = 0;
+
+    /// @brief Checks if the specified path is a socket.
+    /// @param path The path to check.
+    /// @return Returns true if the path is a socket, otherwise false.
+    virtual bool is_socket(const std::filesystem::path& path) const = 0;
+
     /// @brief Removes all files and subdirectories in the specified directory.
     /// @param path The directory path to remove.
     /// @return Returns the number of files and directories removed.
-    virtual std::uintmax_t remove_all(const std::filesystem::path& path) = 0;
+    virtual std::uintmax_t remove_all(const std::filesystem::path& path) const = 0;
 
     /// @brief Retrieves the system's temporary directory path.
     /// @return Returns the path of the system's temporary directory.
@@ -37,15 +51,25 @@ public:
     /// @brief Creates a new directory at the specified path.
     /// @param path The path of the directory to create.
     /// @return Returns true if the directory was successfully created, otherwise false.
-    virtual bool create_directories(const std::filesystem::path& path) = 0;
+    virtual bool create_directories(const std::filesystem::path& path) const = 0;
+
+    /// @brief Returns a vector containing the elements of a directory
+    /// @param path Path to the directory
+    /// @return The vector containing the elements of the directory
+    virtual std::vector<std::filesystem::path> list_directory(const std::filesystem::path& path) const = 0;
 
     /// @brief Renames a file or directory from the 'from' path to the 'to' path.
     /// @param from The current path of the file or directory.
     /// @param to The new path for the file or directory.
-    virtual void rename(const std::filesystem::path& from, const std::filesystem::path& to) = 0;
+    virtual void rename(const std::filesystem::path& from, const std::filesystem::path& to) const = 0;
 
     /// @brief Removes the specified file or directory.
     /// @param path The file or directory to remove.
     /// @return Returns true if the file or directory was successfully removed, otherwise false.
-    virtual bool remove(const std::filesystem::path& path) = 0;
+    virtual bool remove(const std::filesystem::path& path) const = 0;
+
+    /// @brief Expands the absolute path of a file or directory.
+    /// @param path The path to expand.
+    /// @param output The deque to store the expanded path.
+    virtual void expand_absolute_path(const std::string& path, std::deque<std::string>& output) const = 0;
 };

@@ -71,6 +71,7 @@ target_link_libraries(Agent
     Boost::program_options
     nlohmann_json::nlohmann_json
     fmt::fmt
+    FilesystemWrapper
     Logger
     Config
 )

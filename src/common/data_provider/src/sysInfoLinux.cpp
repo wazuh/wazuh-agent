@@ -15,7 +15,7 @@
 #include "packages/modernPackageDataRetriever.hpp"
 #include "sharedDefs.h"
 #include "stringHelper.h"
-#include "filesystemHelper.h"
+#include <filesystem_wrapper.hpp>
 #include "cmdHelper.h"
 #include "osinfo/sysOsParsers.h"
 #include "sysInfo.hpp"
@@ -192,15 +192,21 @@ static void getCpuMHz(nlohmann::json& info)
     else
     {
         int cpuFreq { 0 };
-        const auto cpusInfo { Utils::enumerateDir(WM_SYS_CPU_FREC_DIR) };
+        const auto fsWrapper = std::make_unique<filesystem_wrapper::FileSystemWrapper>();
+        std::vector<std::filesystem::path> cpusInfo;
+        if (fsWrapper->exists(WM_SYS_CPU_FREC_DIR) && fsWrapper->is_directory(WM_SYS_CPU_FREC_DIR))
+        {
+            cpusInfo = fsWrapper->list_directory(WM_SYS_CPU_FREC_DIR);
+        }
         constexpr auto CPU_FREQ_DIRNAME_PATTERN {"cpu[0-9]+"};
         const std::regex cpuDirectoryRegex {CPU_FREQ_DIRNAME_PATTERN};
 
         for (const auto& cpu : cpusInfo)
         {
-            if (std::regex_match(cpu, cpuDirectoryRegex))
+            const auto cpuFilename = cpu.filename().string();
+            if (std::regex_match(cpuFilename, cpuDirectoryRegex))
             {
-                std::fstream file{WM_SYS_CPU_FREC_DIR + cpu + "/cpufreq/cpuinfo_max_freq", std::ios_base::in};
+                std::fstream file{WM_SYS_CPU_FREC_DIR + cpuFilename + "/cpufreq/cpuinfo_max_freq", std::ios_base::in};
 
                 if (file.is_open())
                 {
@@ -407,11 +413,15 @@ nlohmann::json SysInfo::getNetworks() const
 ProcessInfo portProcessInfo(const std::string& procPath, const std::deque<int64_t>& inodes)
 {
     ProcessInfo ret;
+
+    const auto fsWrapper = std::make_unique<filesystem_wrapper::FileSystemWrapper>();
+
     auto getProcessName = [](const std::string & filePath) -> std::string
     {
         // Get stat file content.
         std::string processInfo { EMPTY_VALUE };
-        const std::string statContent {Utils::getFileContent(filePath)};
+        const auto fileIoWrapper = std::make_unique<file_io::FileIO>();
+        const std::string statContent {fileIoWrapper->getFileContent(filePath)};
 
         const auto openParenthesisPos {statContent.find("(")};
         const auto closeParenthesisPos {statContent.find(")")};
@@ -443,32 +453,34 @@ ProcessInfo portProcessInfo(const std::string& procPath, const std::deque<int64_
         return std::stoll(match);
     };
 
-    if (Utils::existsDir(procPath))
+    if (fsWrapper->exists(procPath) && fsWrapper->is_directory(procPath))
     {
-        std::vector<std::string> procFiles = Utils::enumerateDir(procPath);
+        std::vector<std::filesystem::path> procFiles = fsWrapper->list_directory(procPath);
 
         // Iterate proc directory.
         for (const auto& procFile : procFiles)
         {
+            const auto procFileName = procFile.filename().string();
             // Only directories that represent a PID are inspected.
-            const std::string procFilePath {procPath + "/" + procFile};
+            const std::string procFilePath {procPath + "/" + procFileName};
 
-            if (Utils::isNumber(procFile) && Utils::existsDir(procFilePath))
+            if (Utils::isNumber(procFileName) && fsWrapper->exists(procFilePath) && fsWrapper->is_directory(procFilePath))
             {
                 // Only fd directory is inspected.
                 const std::string pidFilePath {procFilePath + "/fd"};
 
-                if (Utils::existsDir(pidFilePath))
+                if (fsWrapper->exists(procFilePath) && fsWrapper->is_directory(procFilePath))
                 {
-                    std::vector<std::string> fdFiles = Utils::enumerateDir(pidFilePath);
+                    std::vector<std::filesystem::path> fdFiles = fsWrapper->list_directory(pidFilePath);
 
                     // Iterate fd directory.
                     for (const auto& fdFile : fdFiles)
                     {
+                        const auto fdFileName = fdFile.filename().string();
                         // Only sysmlinks that represent a socket are read.
-                        const std::string fdFilePath {pidFilePath + "/" + fdFile};
+                        const std::string fdFilePath {pidFilePath + "/" + fdFileName};
 
-                        if (!Utils::startsWith(fdFile, ".") && Utils::existsSocket(fdFilePath))
+                        if (!Utils::startsWith(fdFileName, ".") && fsWrapper->exists(fdFilePath) && fsWrapper->is_socket(fdFilePath))
                         {
                             try
                             {
@@ -481,7 +493,7 @@ ProcessInfo portProcessInfo(const std::string& procPath, const std::deque<int64_
                                 {
                                     std::string statPath {procFilePath + "/" + "stat"};
                                     std::string processName = getProcessName(statPath);
-                                    int32_t pid { std::stoi(procFile) };
+                                    int32_t pid { std::stoi(procFileName) };
 
                                     ret.emplace(std::make_pair(inode, std::make_pair(pid, processName)));
                                 }
@@ -507,7 +519,8 @@ nlohmann::json SysInfo::getPorts() const
 
     for (const auto& portType : PORTS_TYPE)
     {
-        const auto fileContent { Utils::getFileContent(WM_SYS_NET_DIR + portType.second) };
+        const auto fileIoWrapper = std::make_unique<file_io::FileIO>();
+        const auto fileContent { fileIoWrapper->getFileContent(WM_SYS_NET_DIR + portType.second) };
         auto rows { Utils::split(fileContent, '\n') };
         auto fileBody { false };
 

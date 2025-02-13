@@ -13,18 +13,18 @@
 #define _PYPITEST_HPP
 
 #include "gtest/gtest.h"
-#include "MockFileSystem.hpp"
-#include "MockFileIO.hpp"
+#include "../../../file_helper/filesystem/tests/mocks/mock_filesystem.hpp"
+#include "../../../file_helper/file_io/tests/mocks/MockFileIO.hpp"
 #include "packagesPYPI.hpp"
 
 class PYPITest : public ::testing::Test
 {
     protected:
-        std::unique_ptr<PYPI<MockFileSystem<std::vector<std::filesystem::path>>, MockFileIO>> pypi;
+        std::unique_ptr<PYPI<MockFileSystem, MockFileIO>> pypi;
 
         void SetUp() override
         {
-            pypi = std::make_unique<PYPI<MockFileSystem<std::vector<std::filesystem::path>>, MockFileIO>>();
+            pypi = std::make_unique<PYPI<MockFileSystem, MockFileIO>>();
         }
 
         void TearDown() override

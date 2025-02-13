@@ -17,7 +17,7 @@
 #include <sys/socket.h>
 #include "inetworkWrapper.h"
 #include "networkHelper.h"
-#include "filesystemHelper.h"
+#include <file_io.hpp>
 #include "stringHelper.h"
 #include "sharedDefs.h"
 
@@ -263,7 +263,8 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
             }
             else
             {
-                auto fileData { Utils::getFileContent(std::string(WM_SYS_NET_DIR) + "route") };
+                const auto fileIoWrapper = std::make_unique<file_io::FileIO>();
+                auto fileData { fileIoWrapper->getFileContent(std::string(WM_SYS_NET_DIR) + "route") };
                 const auto ifName { this->name() };
 
                 if (!fileData.empty())
@@ -377,7 +378,8 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
 
         void dhcp(nlohmann::json& network) const override
         {
-            auto fileData { Utils::getFileContent(WM_SYS_IF_FILE) };
+            const auto fileIoWrapper = std::make_unique<file_io::FileIO>();
+            auto fileData { fileIoWrapper->getFileContent(WM_SYS_IF_FILE) };
             network["dhcp"] = UNKNOWN_VALUE;
             const auto family { this->family() };
             const auto ifName { this->name() };
@@ -412,8 +414,8 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
             else
             {
                 const auto fileName { "ifcfg-" + ifName };
-                fileData = Utils::getFileContent(WM_SYS_IF_DIR_RH + fileName);
-                fileData = fileData.empty() ? Utils::getFileContent(WM_SYS_IF_DIR_SUSE + fileName) : fileData;
+                fileData = fileIoWrapper->getFileContent(WM_SYS_IF_DIR_RH + fileName);
+                fileData = fileData.empty() ? fileIoWrapper->getFileContent(WM_SYS_IF_DIR_SUSE + fileName) : fileData;
 
                 if (!fileData.empty())
                 {
@@ -450,7 +452,8 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
         void mtu(nlohmann::json& network) const override
         {
             network["mtu"] = UNKNOWN_VALUE;
-            const auto mtuFileContent { Utils::getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/mtu") };
+            const auto fileIoWrapper = std::make_unique<file_io::FileIO>();
+            const auto mtuFileContent { fileIoWrapper->getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/mtu") };
 
             if (!mtuFileContent.empty())
             {
@@ -464,7 +467,8 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
 
             try
             {
-                const auto devData { Utils::getFileContent(std::string(WM_SYS_NET_DIR) + "dev") };
+                const auto fileIoWrapper = std::make_unique<file_io::FileIO>();
+                const auto devData { fileIoWrapper->getFileContent(std::string(WM_SYS_NET_DIR) + "dev") };
 
                 if (!devData.empty())
                 {
@@ -508,7 +512,8 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
         void type(nlohmann::json& network) const override
         {
             network["type"] = EMPTY_VALUE;
-            const auto networkTypeCode { Utils::getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/type") };
+            const auto fileIoWrapper = std::make_unique<file_io::FileIO>();
+            const auto networkTypeCode { fileIoWrapper->getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/type") };
 
             if (!networkTypeCode.empty())
             {
@@ -519,7 +524,8 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
         void state(nlohmann::json& network) const override
         {
             network["state"] = UNKNOWN_VALUE;
-            const std::string operationalState { Utils::getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/operstate") };
+            const auto fileIoWrapper = std::make_unique<file_io::FileIO>();
+            const std::string operationalState { fileIoWrapper->getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/operstate") };
 
             if (!operationalState.empty())
             {
@@ -530,7 +536,8 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
         void MAC(nlohmann::json& network) const override
         {
             network["mac"] = UNKNOWN_VALUE;
-            const std::string macContent { Utils::getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/address")};
+            const auto fileIoWrapper = std::make_unique<file_io::FileIO>();
+            const std::string macContent { fileIoWrapper->getFileContent(std::string(WM_SYS_IFDATA_DIR) + this->name() + "/address")};
 
             if (!macContent.empty())
             {

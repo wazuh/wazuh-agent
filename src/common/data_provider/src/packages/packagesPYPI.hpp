@@ -12,9 +12,8 @@
 #ifndef _PACKAGES_PYPI_HPP
 #define _PACKAGES_PYPI_HPP
 
-#include "fileIO.hpp"
-#include "fileSystem.hpp"
-#include "stdFileSystemHelper.hpp"
+#include "file_io.hpp"
+#include "filesystem_wrapper.hpp"
 #include <nlohmann/json.hpp>
 #include "sharedDefs.h"
 #include "stringHelper.h"
@@ -23,7 +22,7 @@
 
 const static std::map<std::string, std::string> FILE_MAPPING_PYPI {{"egg-info", "PKG-INFO"}, {"dist-info", "METADATA"}};
 
-template<typename TFileSystem = RealFileSystem, typename TFileIO = FileIO>
+template<typename TFileSystem = filesystem_wrapper::FileSystemWrapper, typename TFileIO = file_io::FileIO>
 class PYPI final : public TFileSystem, public TFileIO
 {
         void parseMetadata(const std::filesystem::path& path, std::function<void(nlohmann::json&)>& callback)
@@ -120,7 +119,7 @@ class PYPI final : public TFileSystem, public TFileIO
                     // Exist and is a directory
                     if (TFileSystem::exists(expandedPath) && TFileSystem::is_directory(expandedPath))
                     {
-                        for (const std::filesystem::path& path : TFileSystem::directory_iterator(expandedPath))
+                        for (const std::filesystem::path& path : TFileSystem::list_directory(expandedPath))
                         {
                             findCorrectPath(path, callback);
                         }
@@ -144,7 +143,7 @@ class PYPI final : public TFileSystem, public TFileIO
                 try
                 {
                     // Expand paths
-                    Utils::expandAbsolutePath(osFolder, expandedPaths);
+                    TFileSystem::expand_absolute_path(osFolder, expandedPaths);
                     // Explore expanded paths
                     exploreExpandedPaths(expandedPaths, callback);
                 }

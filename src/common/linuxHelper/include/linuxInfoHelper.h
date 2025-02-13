@@ -12,11 +12,12 @@
 #ifndef LINUXINFO_HELPER_H
 #define LINUXINFO_HELPER_H
 
-#include "filesystemHelper.h"
 #include <vector>
 #include <cstdint>
 #include <string>
 #include <unistd.h>
+
+#include "file_io.hpp"
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -44,7 +45,8 @@ namespace Utils
             if (0UL == btime)
             {
                 const std::string key {"btime "};
-                const auto file { Utils::getFileContent("/proc/stat") };
+                const auto fileIoWrapper = std::make_unique<file_io::FileIO>();
+                const auto file { fileIoWrapper->getFileContent("/proc/stat") };
 
                 btime = std::stoull(file.substr(file.find(key) + key.length()));
             }

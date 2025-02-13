@@ -12,8 +12,7 @@
 #ifndef _PACKAGES_NPM_HPP
 #define _PACKAGES_NPM_HPP
 
-#include "fileSystem.hpp"
-#include "stdFileSystemHelper.hpp"
+#include "filesystem_wrapper.hpp"
 #include <nlohmann/json.hpp>
 #include "jsonIO.hpp"
 #include "sharedDefs.h"
@@ -22,7 +21,7 @@
 #include <iostream>
 #include <set>
 
-template<typename TFileSystem = RealFileSystem, typename TJsonReader = JsonIO<nlohmann::json>>
+template<typename TFileSystem = filesystem_wrapper::FileSystemWrapper, typename TJsonReader = JsonIO<nlohmann::json>>
 class NPM final
     : public TFileSystem
     , public TJsonReader
@@ -92,7 +91,7 @@ class NPM final
 
                     if (TFileSystem::exists(nodeModulesFolder))
                     {
-                        for (const auto& packageFolder : TFileSystem::directory_iterator(nodeModulesFolder))
+                        for (const auto& packageFolder : TFileSystem::list_directory(nodeModulesFolder))
                         {
                             if (TFileSystem::is_directory(packageFolder))
                             {
@@ -124,7 +123,7 @@ class NPM final
                     std::deque<std::string> expandedPaths;
 
                     // Expand paths
-                    Utils::expandAbsolutePath(osRootFolder, expandedPaths);
+                    TFileSystem::expand_absolute_path(osRootFolder, expandedPaths);
                     // Explore expanded paths
                     exploreExpandedPaths(expandedPaths, callback);
                 }

@@ -41,7 +41,7 @@ else()
     add_subdirectory(common/utils)
     add_subdirectory(common/data_provider)
     add_subdirectory(common/networkHelper)
-    add_subdirectory(common/filesystem_wrapper)
+    add_subdirectory(common/file_helper)
 endif()
 
 add_subdirectory(modules)

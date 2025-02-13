@@ -94,7 +94,6 @@ include_directories(${SRC_FOLDER}/common/utils/)
 include_directories(${SRC_FOLDER}/common/byteArrayHelper/include/)
 include_directories(${SRC_FOLDER}/common/cmdHelper/include/)
 include_directories(${SRC_FOLDER}/common/globHelper/include/)
-include_directories(${SRC_FOLDER}/common/fileHelper/include/)
 include_directories(${SRC_FOLDER}/common/jsonHelper/include/)
 include_directories(${SRC_FOLDER}/common/linuxHelper/include/)
 include_directories(${SRC_FOLDER}/common/stringHelper/include/)
@@ -165,6 +164,7 @@ add_library(sysinfo STATIC
     ${SRC_FOLDER}/${RESOURCE_OBJ})
 
 target_include_directories(sysinfo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
+target_link_libraries(sysinfo PUBLIC FilesystemWrapper FileIO)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   target_link_libraries(sysinfo PUBLIC psapi iphlpapi ws2_32)

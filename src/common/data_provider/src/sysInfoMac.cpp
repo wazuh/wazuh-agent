@@ -11,7 +11,7 @@
 #include "sysInfo.hpp"
 #include "cmdHelper.h"
 #include "stringHelper.h"
-#include "filesystemHelper.h"
+#include <filesystem_wrapper.hpp>
 #include "osinfo/sysOsParsers.h"
 #include <libproc.h>
 #include <pwd.h>
@@ -107,7 +107,9 @@ static void getPackagesFromPath(const std::string& pkgDirectory, const int pkgTy
 {
     if (MACPORTS == pkgType)
     {
-        if (Utils::existsRegular(pkgDirectory + "/" + MACPORTS_DB_NAME))
+        const auto fsWrapper = std::make_unique<filesystem_wrapper::FileSystemWrapper>();
+        if (fsWrapper->exists(pkgDirectory + "/" + MACPORTS_DB_NAME)
+            && fsWrapper->is_regular_file(pkgDirectory + "/" + MACPORTS_DB_NAME))
         {
             try
             {
@@ -148,17 +150,23 @@ static void getPackagesFromPath(const std::string& pkgDirectory, const int pkgTy
     }
     else
     {
-        const auto packages { Utils::enumerateDir(pkgDirectory) };
+        const auto fsWrapper = std::make_unique<filesystem_wrapper::FileSystemWrapper>();
+        std::vector<std::filesystem::path> packages;
+        if(fsWrapper->exists(pkgDirectory) && fsWrapper->is_directory(pkgDirectory))
+        {
+            packages = fsWrapper->list_directory(pkgDirectory);
+        }
 
         for (const auto& package : packages)
         {
-            if ((PKG == pkgType && Utils::endsWith(package, ".app")) ||
-                    (RCP == pkgType && Utils::endsWith(package, ".plist")))
+            const auto packageName {package.filename().string()};
+            if ((PKG == pkgType && Utils::endsWith(packageName, ".app")) ||
+                    (RCP == pkgType && Utils::endsWith(packageName, ".plist")))
             {
                 try
                 {
                     nlohmann::json jsPackage;
-                    FactoryPackageFamilyCreator<OSPlatformType::BSDBASED>::create(std::make_pair(PackageContext{pkgDirectory, package, ""}, pkgType))->buildPackageData(jsPackage);
+                    FactoryPackageFamilyCreator<OSPlatformType::BSDBASED>::create(std::make_pair(PackageContext{pkgDirectory, packageName, ""}, pkgType))->buildPackageData(jsPackage);
 
                     if (!jsPackage.at("name").get_ref<const std::string&>().empty())
                     {
@@ -173,18 +181,23 @@ static void getPackagesFromPath(const std::string& pkgDirectory, const int pkgTy
             }
             else if (BREW == pkgType)
             {
-                if (!Utils::startsWith(package, "."))
+                if (!Utils::startsWith(packageName, "."))
                 {
-                    const auto packageVersions { Utils::enumerateDir(pkgDirectory + "/" + package) };
+                    std::vector<std::filesystem::path> packageVersions;
+                    if (fsWrapper->exists(pkgDirectory + "/" + packageName) && fsWrapper->is_directory(pkgDirectory + "/" + packageName))
+                    {
+                        packageVersions = fsWrapper->list_directory(pkgDirectory + "/" + packageName);
+                    }
 
                     for (const auto& version : packageVersions)
                     {
-                        if (!Utils::startsWith(version, "."))
+                        const auto versionFilename {version.filename().string()};
+                        if (!Utils::startsWith(versionFilename, "."))
                         {
                             try
                             {
                                 nlohmann::json jsPackage;
-                                FactoryPackageFamilyCreator<OSPlatformType::BSDBASED>::create(std::make_pair(PackageContext{pkgDirectory, package, version}, pkgType))->buildPackageData(jsPackage);
+                                FactoryPackageFamilyCreator<OSPlatformType::BSDBASED>::create(std::make_pair(PackageContext{pkgDirectory, packageName, versionFilename}, pkgType))->buildPackageData(jsPackage);
 
                                 if (!jsPackage.at("name").get_ref<const std::string&>().empty())
                                 {
@@ -421,11 +434,12 @@ void SysInfo::getProcessesInfo(std::function<void(nlohmann::json&)> callback) co
 
 void SysInfo::getPackages(std::function<void(nlohmann::json&)> callback) const
 {
+    const auto fsWrapper = std::make_unique<filesystem_wrapper::FileSystemWrapper>();
     for (const auto& packageDirectory : s_mapPackagesDirectories)
     {
         const auto pkgDirectory { packageDirectory.first };
 
-        if (Utils::existsDir(pkgDirectory))
+        if (fsWrapper->exists(pkgDirectory) && fsWrapper->is_directory(pkgDirectory))
         {
             getPackagesFromPath(pkgDirectory, packageDirectory.second, callback);
         }

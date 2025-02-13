@@ -34,12 +34,11 @@ target_link_libraries(message_queue_utils_test PRIVATE Agent GTest::gtest GTest:
 add_test(NAME MessageQueueUtilsTest COMMAND message_queue_utils_test)
 
 if(UNIX AND NOT APPLE)
-    add_executable(instance_handler_test unix/instance_handler_test.cpp)
+    add_executable(instance_handler_test instance_handler_test.cpp)
     configure_target(instance_handler_test)
-    target_include_directories(instance_handler_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src
-                                                        ${CMAKE_CURRENT_SOURCE_DIR}/../src/unix)
+    target_include_directories(instance_handler_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
     target_link_libraries(instance_handler_test PRIVATE Agent GTest::gtest)
-    add_test(NAME UnixDaemonTest COMMAND instance_handler_test)
+    add_test(NAME InstanceHandlerTest COMMAND instance_handler_test)
 endif()
 
 if(WIN32)
