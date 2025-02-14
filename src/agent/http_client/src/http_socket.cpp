@@ -19,12 +19,17 @@ namespace http_client
         // No functionality for HTTP sockets
     }
 
+    void HttpSocket::SetTimeout(const time_t timeout)
+    {
+        m_timeoutInMilliseconds = timeout;
+    }
+
     void HttpSocket::Connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
                              boost::system::error_code& ec)
     {
         try
         {
-            m_socket->expires_after(std::chrono::milliseconds(http_client::SOCKET_TIMEOUT_MSECS));
+            m_socket->expires_after(std::chrono::milliseconds(m_timeoutInMilliseconds));
             m_socket->connect(endpoints, ec);
         }
         catch (const std::exception& e)
@@ -39,7 +44,7 @@ namespace http_client
     {
         try
         {
-            m_socket->expires_after(std::chrono::milliseconds(http_client::SOCKET_TIMEOUT_MSECS));
+            m_socket->expires_after(std::chrono::milliseconds(m_timeoutInMilliseconds));
             co_await m_socket->async_connect(endpoints, ec);
         }
         catch (const std::exception& e)
@@ -54,7 +59,7 @@ namespace http_client
     {
         try
         {
-            m_socket->expires_after(std::chrono::milliseconds(http_client::SOCKET_TIMEOUT_MSECS));
+            m_socket->expires_after(std::chrono::milliseconds(m_timeoutInMilliseconds));
             m_socket->write(req, ec);
         }
         catch (const std::exception& e)
@@ -69,7 +74,7 @@ namespace http_client
     {
         try
         {
-            m_socket->expires_after(std::chrono::milliseconds(http_client::SOCKET_TIMEOUT_MSECS));
+            m_socket->expires_after(std::chrono::milliseconds(m_timeoutInMilliseconds));
             co_await m_socket->async_write(req, ec);
         }
         catch (const std::exception& e)
@@ -84,7 +89,7 @@ namespace http_client
     {
         try
         {
-            m_socket->expires_after(std::chrono::milliseconds(http_client::SOCKET_TIMEOUT_MSECS));
+            m_socket->expires_after(std::chrono::milliseconds(m_timeoutInMilliseconds));
             boost::beast::flat_buffer buffer;
             m_socket->read(buffer, res, ec);
         }
@@ -96,12 +101,11 @@ namespace http_client
 
     boost::asio::awaitable<void>
     HttpSocket::AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                          boost::system::error_code& ec,
-                          const std::time_t socketTimeout)
+                          boost::system::error_code& ec)
     {
         try
         {
-            m_socket->expires_after(std::chrono::milliseconds(socketTimeout));
+            m_socket->expires_after(std::chrono::milliseconds(m_timeoutInMilliseconds));
             boost::beast::flat_buffer buffer;
             co_await m_socket->async_read(buffer, res, ec);
         }

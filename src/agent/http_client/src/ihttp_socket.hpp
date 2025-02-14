@@ -25,6 +25,10 @@ namespace http_client
         /// @param verificationMode The verification mode to set
         virtual void SetVerificationMode(const std::string& host, const std::string& verificationMode) = 0;
 
+        /// @brief Sets the timeout for requests in milliseconds.
+        /// @param timeout Timeout in milliseconds applied to all requests
+        virtual void SetTimeout(const time_t timeout) = 0;
+
         /// @brief Connects the socket to the given endpoints
         /// @param endpoints The endpoints to connect to
         /// @param ec The error code, if any occurred
@@ -59,11 +63,9 @@ namespace http_client
         /// @brief Asynchronous version of Read
         /// @param res The response to read
         /// @param ec The error code, if any occurred
-        /// @param socketTimeout Timeout for reading in millisenconds
         virtual boost::asio::awaitable<void>
         AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
-                  boost::system::error_code& ec,
-                  const time_t socketTimeout = http_client::SOCKET_TIMEOUT_MSECS) = 0;
+                  boost::system::error_code& ec) = 0;
 
         /// @brief Closes the socket
         virtual void Close() = 0;

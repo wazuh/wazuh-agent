@@ -343,8 +343,7 @@ TEST_F(HttpSocketTest, AsyncReadSuccess)
     boost::system::error_code result_ec;
     boost::asio::co_spawn(
         *m_ioContext,
-        [&]() -> boost::asio::awaitable<void>
-        { co_await m_socket->AsyncRead(res, result_ec, http_client::SOCKET_TIMEOUT_MSECS); },
+        [&]() -> boost::asio::awaitable<void> { co_await m_socket->AsyncRead(res, result_ec); },
         boost::asio::detached);
 
     m_ioContext->run();
@@ -372,8 +371,7 @@ TEST_F(HttpSocketTest, AsyncReadFailure)
     boost::system::error_code result_ec;
     boost::asio::co_spawn(
         *m_ioContext,
-        [&]() -> boost::asio::awaitable<void>
-        { co_await m_socket->AsyncRead(res, result_ec, http_client::SOCKET_TIMEOUT_MSECS); },
+        [&]() -> boost::asio::awaitable<void> { co_await m_socket->AsyncRead(res, result_ec); },
         boost::asio::detached);
 
     m_ioContext->run();
@@ -396,8 +394,7 @@ TEST_F(HttpSocketTest, AsyncReadException)
     boost::system::error_code result_ec;
     boost::asio::co_spawn(
         *m_ioContext,
-        [&]() -> boost::asio::awaitable<void>
-        { co_await m_socket->AsyncRead(res, result_ec, http_client::SOCKET_TIMEOUT_MSECS); },
+        [&]() -> boost::asio::awaitable<void> { co_await m_socket->AsyncRead(res, result_ec); },
         boost::asio::detached);
 
     m_ioContext->run();

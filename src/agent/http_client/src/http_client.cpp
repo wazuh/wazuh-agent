@@ -129,6 +129,11 @@ namespace http_client
                 socket->SetVerificationMode(params.Host, params.Verification_Mode);
             }
 
+            if (params.RequestTimeoutInMilliSeconds)
+            {
+                socket->SetTimeout(params.RequestTimeoutInMilliSeconds);
+            }
+
             boost::system::error_code ec;
 
             co_await socket->AsyncConnect(results, ec);
@@ -147,14 +152,7 @@ namespace http_client
                 throw std::runtime_error("Error writing request: " + ec.message());
             }
 
-            if (params.RequestTimeoutInMilliSeconds)
-            {
-                co_await socket->AsyncRead(res, ec, params.RequestTimeoutInMilliSeconds);
-            }
-            else
-            {
-                co_await socket->AsyncRead(res, ec);
-            }
+            co_await socket->AsyncRead(res, ec);
 
             if (ec)
             {
