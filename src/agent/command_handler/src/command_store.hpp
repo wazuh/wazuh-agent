@@ -1,6 +1,7 @@
 #pragma once
 
 #include <command_entry.hpp>
+#include <icommand_store.hpp>
 #include <persistence.hpp>
 
 #include <memory>
@@ -14,7 +15,7 @@ namespace command_store
     /// This class provides methods for storing, retrieving, and deleting commands
     /// in the command store database. It uses a database to store the
     /// commands.
-    class CommandStore
+    class CommandStore : public ICommandStore
     {
     private:
         /// @brief Unique pointer to the persistence instance.

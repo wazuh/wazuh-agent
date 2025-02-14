@@ -2,6 +2,7 @@
 
 #include <command_entry.hpp>
 #include <configuration_parser.hpp>
+#include <icommand_store.hpp>
 
 #include <boost/asio/awaitable.hpp>
 
@@ -29,7 +30,8 @@ namespace command_handler
     public:
         /// @brief CommandHandler constructor
         /// @param configurationParser Pointer to the configuration parser
-        CommandHandler(std::shared_ptr<configuration::ConfigurationParser> configurationParser);
+        CommandHandler(std::shared_ptr<configuration::ConfigurationParser> configurationParser,
+                       std::unique_ptr<command_store::ICommandStore> commandStore = nullptr);
 
         /// @brief CommandHandler destructor
         ~CommandHandler();
@@ -79,6 +81,6 @@ namespace command_handler
         std::atomic<bool> m_keepRunning = true;
 
         /// @brief Unique pointer to the command store
-        std::unique_ptr<command_store::CommandStore> m_commandStore;
+        std::unique_ptr<command_store::ICommandStore> m_commandStore;
     };
 } // namespace command_handler
