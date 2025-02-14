@@ -5,7 +5,7 @@ inputs:
     description: 'Building architecture'
     required: true
   gh_token:
-    description: 'Used token to fetch Docker images'
+    description: 'Used token to fetch dependencies'
     required: true
 
 runs:

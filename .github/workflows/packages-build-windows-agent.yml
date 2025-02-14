@@ -51,12 +51,11 @@ on:
         type: string
         required: false
 
-env:
-  VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
-
 jobs:
   generate-agent-windows-package:
     runs-on: windows-2022
+    env:
+      VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
     timeout-minutes: 120
     name: Generate MSI Windows wazuh-agent${{ inputs.is_stage && ' - is stage' || '' }}${{ inputs.checksum && ' - checksum' || '' }}
 
@@ -68,82 +67,11 @@ jobs:
           ref: ${{ inputs.source_reference }}
           persist-credentials: false
 
-      - name: Set up Binary caching
-        uses: ./.github/actions/vcpkg_related/cover_vcpkg_dependencies
+      - name: Build Windows MSI
+        uses: ./.github/actions/windows_package_build
         with:
-            gh_token: ${{ secrets.CI_WAZUH_AGENT_PACKAGES_CLASSIC }}
-
-      - name: Set PKG_NAME
-        shell: bash
-        run: |
-          VERSION=$(curl -s "https://raw.githubusercontent.com/wazuh/wazuh-agent/${{ inputs.source_reference }}/src/VERSION" | sed 's/.*\([0-9]\.[0-9]*\.[0-9]*\).*/\1/')
-          COMMIT_HASH="$(curl -s "https://api.github.com/repos/wazuh/wazuh-agent/branches/${{ inputs.source_reference }}" | grep '"sha"' | head -1 | sed 's/.*: "\(.*\)",/\1/' | cut -c1-7)"
-          if [ "${{ inputs.is_stage }}" == "true" ]; then
-            echo "PKG_NAME=wazuh-agent-${VERSION}-${{ inputs.revision }}" >> $GITHUB_ENV
-          else
-            echo "PKG_NAME=wazuh-agent_${VERSION}-${{ inputs.revision }}_windows_${COMMIT_HASH}" >> $GITHUB_ENV
-          fi
-          echo "BINARIES_NAME=windows-build-${VERSION}-${{ inputs.revision }}_${COMMIT_HASH}" >> $GITHUB_ENV
-
-      - name: Fetch debug symbols tool
-        run: | 
-          $url = "https://github.com/rainers/cv2pdb/releases/download/v0.53/cv2pdb-0.53.zip"
-          $zipFile = "C:\tmp\cv2pdb-0.53.zip"
-          $extractPath = "C:\tmp\cv2pdb"
-          New-Item -ItemType Directory -Path (Split-Path -Path $zipFile) -Force
-          Invoke-WebRequest -Uri $url -OutFile $zipFile
-          Expand-Archive -Path $zipFile -DestinationPath $extractPath -Force          
-
-      - name: Build MSI for Windows package
-        run: |
-          ./packages/windows/generate_compiled_windows_agent.ps1 -MSI_NAME ${{ env.PKG_NAME }} -CMAKE_CONFIG RelWithDebInfo -BUILD_TESTS 1
-          ./packages/windows/generate_wazuh_msi.ps1 -MSI_NAME "${{ env.PKG_NAME }}" -CMAKE_CONFIG RelWithDebInfo -DEBUG yes -CV2PDB_PATH C:\tmp\cv2pdb | Out-File -FilePath "C:\tmp\generate_msi.log"
-
-      - name: Check MSI for Windows package
-        run: |
-          Get-Content "C:\tmp\generate_msi.log"
-          $errorCount = (Select-String -Path "C:\tmp\generate_msi.log" -Pattern "SignTool Error").Count
-          if ($errorCount -ne 0) {
-              Write-Output "The generation and sign could not be completed."
-              exit 1
-          } else {
-              Write-Output "Package correctly generated."
-              Copy-Item ".\packages\windows\${{ env.PKG_NAME }}.msi" -Destination "C:\tmp\"
-              Copy-Item ".\build\RelWithDebInfo\${{ env.PKG_NAME }}-debug-symbols.zip" -Destination "C:\tmp\"
-          }
-
-      - name: Install Windows agent
-        run: |
-          Start-Process -FilePath './packages/windows/${{ env.PKG_NAME }}.msi' -ArgumentList '/quiet /l ./installer.log' -wait
-          if (Select-String -Path ./installer.log -Pattern "Wazuh Agent -- Installation completed successfully") {
-              Write-Output "Installation successfully."
-          } else {
-              Write-Output "The installation could not be completed. The package will not be uploaded."
-              exit 1
-          }
-
-      - name: Create checksum file
-        if: ${{ inputs.checksum }}
-        run: |
-          $msiPath = "C:\tmp\${{ env.PKG_NAME }}.msi"
-          $hashFile = "C:\tmp\${{ env.PKG_NAME }}.msi.sha512"
-          Get-FileHash -Path $msiPath -Algorithm SHA512 | Select-Object -ExpandProperty Hash | Out-File -FilePath $hashFile
-          if ((Test-Path $hashFile) -and ((Get-Content $hashFile).Length -gt 0)) {
-              Write-Output "Checksum file successfully created."
-          } else {
-              Write-Output "Checksum file is empty or does not exist."
-              exit 1
-          }
-
-      - name: Upload Windows Wazuh agent package
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.PKG_NAME }}
-          path: C:/tmp/${{ env.PKG_NAME }}.msi
-
-      - name: Upload Windows Wazuh agent package checksum
-        if: ${{ inputs.checksum }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.PKG_NAME }}.sha512
-          path: C:/tmp/${{ env.PKG_NAME }}.msi.sha512
+          revision: ${{ inputs.revision }}
+          is_stage: ${{ inputs.is_stage }}
+          checksum: ${{ inputs.checksum }}
+          source_reference: ${{ inputs.source_reference }}
+          gh_token: ${{ secrets.CI_WAZUH_AGENT_PACKAGES_CLASSIC }}
