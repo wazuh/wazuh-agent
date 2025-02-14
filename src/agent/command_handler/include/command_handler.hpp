@@ -13,11 +13,6 @@
 #include <string>
 #include <vector>
 
-namespace command_store
-{
-    class CommandStore;
-} // namespace command_store
-
 namespace command_handler
 {
     /// @brief CommandHandler class

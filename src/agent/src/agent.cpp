@@ -17,7 +17,8 @@
 Agent::Agent(const std::string& configFilePath,
              std::unique_ptr<ISignalHandler> signalHandler,
              std::unique_ptr<http_client::IHttpClient> httpClient,
-             std::optional<AgentInfo> agentInfo)
+             std::optional<AgentInfo> agentInfo,
+             std::unique_ptr<command_store::ICommandStore> commandStore)
     : m_signalHandler(std::move(signalHandler))
     , m_configurationParser(configFilePath.empty() ? std::make_shared<configuration::ConfigurationParser>()
                                                    : std::make_shared<configuration::ConfigurationParser>(
@@ -37,7 +38,7 @@ Agent::Agent(const std::string& configFilePath,
     , m_moduleManager([this](Message message) -> int { return m_messageQueue->push(std::move(message)); },
                       m_configurationParser,
                       m_agentInfo.GetUUID())
-    , m_commandHandler(m_configurationParser)
+    , m_commandHandler(m_configurationParser, commandStore ? std::move(commandStore) : nullptr)
     , m_centralizedConfiguration(
           [this](const std::vector<std::string>& groups)
           {
