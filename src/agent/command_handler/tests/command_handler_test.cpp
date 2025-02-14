@@ -14,6 +14,8 @@
 #include <string>
 #include <vector>
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines,cppcoreguidelines-avoid-reference-coroutine-parameters)
+
 using namespace testing;
 
 TEST(CommandHandlerConstructorTest, CommandHandlerConstructor)
@@ -433,3 +435,5 @@ int main(int argc, char** argv)
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
+
+// NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines,cppcoreguidelines-avoid-reference-coroutine-parameters)
