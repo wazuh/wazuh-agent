@@ -33,11 +33,6 @@ namespace http_client
             m_socket.set_verify_callback(vf);
         }
 
-        void expires_after(std::chrono::seconds seconds) override
-        {
-            m_socket.next_layer().expires_after(seconds);
-        }
-
         void expires_after(std::chrono::milliseconds ms) override
         {
             m_socket.next_layer().expires_after(std::chrono::duration_cast<std::chrono::seconds>(ms));

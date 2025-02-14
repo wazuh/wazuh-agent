@@ -27,11 +27,6 @@ namespace http_client
         { // No implementation for Http
         }
 
-        void expires_after(std::chrono::seconds seconds) override
-        {
-            m_socket.expires_after(seconds);
-        }
-
         void expires_after(std::chrono::milliseconds ms) override
         {
             m_socket.expires_after(std::chrono::duration_cast<std::chrono::seconds>(ms));

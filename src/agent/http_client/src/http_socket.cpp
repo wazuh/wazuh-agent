@@ -24,7 +24,7 @@ namespace http_client
     {
         try
         {
-            m_socket->expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+            m_socket->expires_after(std::chrono::milliseconds(http_client::SOCKET_TIMEOUT_MSECS));
             m_socket->connect(endpoints, ec);
         }
         catch (const std::exception& e)
@@ -39,7 +39,7 @@ namespace http_client
     {
         try
         {
-            m_socket->expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+            m_socket->expires_after(std::chrono::milliseconds(http_client::SOCKET_TIMEOUT_MSECS));
             co_await m_socket->async_connect(endpoints, ec);
         }
         catch (const std::exception& e)
@@ -54,7 +54,7 @@ namespace http_client
     {
         try
         {
-            m_socket->expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+            m_socket->expires_after(std::chrono::milliseconds(http_client::SOCKET_TIMEOUT_MSECS));
             m_socket->write(req, ec);
         }
         catch (const std::exception& e)
@@ -69,7 +69,7 @@ namespace http_client
     {
         try
         {
-            m_socket->expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+            m_socket->expires_after(std::chrono::milliseconds(http_client::SOCKET_TIMEOUT_MSECS));
             co_await m_socket->async_write(req, ec);
         }
         catch (const std::exception& e)
@@ -84,7 +84,7 @@ namespace http_client
     {
         try
         {
-            m_socket->expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+            m_socket->expires_after(std::chrono::milliseconds(http_client::SOCKET_TIMEOUT_MSECS));
             boost::beast::flat_buffer buffer;
             m_socket->read(buffer, res, ec);
         }
