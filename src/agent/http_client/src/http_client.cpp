@@ -147,9 +147,9 @@ namespace http_client
                 throw std::runtime_error("Error writing request: " + ec.message());
             }
 
-            if (params.RequestTimeout)
+            if (params.RequestTimeoutInMilliSeconds)
             {
-                co_await socket->AsyncRead(res, ec, params.RequestTimeout);
+                co_await socket->AsyncRead(res, ec, params.RequestTimeoutInMilliSeconds);
             }
             else
             {

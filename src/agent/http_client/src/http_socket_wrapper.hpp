@@ -34,7 +34,7 @@ namespace http_client
 
         void expires_after(std::chrono::milliseconds ms) override
         {
-            m_socket.expires_after((ms / 1000));
+            m_socket.expires_after(std::chrono::duration_cast<std::chrono::seconds>(ms));
         }
 
         void connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,

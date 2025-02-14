@@ -23,12 +23,12 @@ def actions = [
     ["name": "fetch-config", "version": "v5.0.0", "args": ""]
 ]
 
-def numCommands = 1
+def numCommands = new Random().nextInt(3)
 
 def commands = []
-if (0) {
+if (numCommands > 0) {
     for (int i = 0; i < numCommands; i++) {
-        def action = actions[3]
+        def action = actions[new Random().nextInt(actions.size())]
         def command = [
             "document_id": generateUUIDv7(),
             "action": action,
@@ -41,13 +41,12 @@ if (0) {
 
 if (commands.isEmpty()) {
     respond {
-        withStatusCode(200)
+        withStatusCode(408)
     }
 } else {
     def jsonResponse = JsonOutput.toJson(["commands": commands])
     respond {
         withStatusCode(200)
         withContent(jsonResponse)
-        sleep(9999999)
     }
 }

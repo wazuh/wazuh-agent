@@ -90,14 +90,12 @@ namespace communicator
             m_verificationMode = config::agent::DEFAULT_VERIFICATION_MODE;
         }
 
-        m_timeoutCommands = configurationParser->GetConfig<std::time_t>("agent", "commands_request_timeout")
-                                .value_or(config::agent::DEFAULT_COMMANDS_REQUEST_TIMEOUT);
-        if (m_timeoutCommands <= 0)
-        {
-            LogWarn("Incorrect value for 'commands_request_timeout', should be above 0.",
-                    config::agent::DEFAULT_COMMANDS_REQUEST_TIMEOUT);
-            m_timeoutCommands = config::agent::DEFAULT_COMMANDS_REQUEST_TIMEOUT;
-        }
+        m_timeoutCommandsInMilliSeconds =
+            configurationParser->GetTimeConfigInRangeOrDefault(config::agent::DEFAULT_COMMANDS_REQUEST_TIMEOUT,
+                                                               0,
+                                                               std::numeric_limits<time_t>::max(),
+                                                               "agent",
+                                                               "commands_request_timeout");
     }
 
     bool Communicator::SendAuthenticationRequest()
@@ -265,7 +263,7 @@ namespace communicator
                                                               "",
                                                               "",
                                                               "",
-                                                              m_timeoutCommands);
+                                                              m_timeoutCommandsInMilliSeconds);
         co_await ExecuteRequestLoop(reqParams, {}, onSuccess);
     }
 
