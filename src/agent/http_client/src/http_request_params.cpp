@@ -14,7 +14,7 @@ namespace http_client
                                          std::string token,
                                          std::string userPass,
                                          std::string body,
-                                         const time_t requestTimeout)
+                                         const time_t requestTimeoutInMilliSeconds)
         : Method(method)
         , Endpoint(std::move(endpoint))
         , User_agent(std::move(userAgent))
@@ -22,7 +22,7 @@ namespace http_client
         , Token(std::move(token))
         , User_pass(std::move(userPass))
         , Body(std::move(body))
-        , RequestTimeoutInMilliSeconds(requestTimeout)
+        , RequestTimeoutInMilliSeconds(requestTimeoutInMilliSeconds)
     {
         const auto result = boost::urls::parse_uri(serverUrl);
 

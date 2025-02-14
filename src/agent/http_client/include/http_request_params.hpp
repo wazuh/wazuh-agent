@@ -48,7 +48,7 @@ namespace http_client
         /// @param token Optional token for authorization
         /// @param userPass Optional user credentials for basic authentication
         /// @param body Optional body for the request
-        /// @param RequestTimeoutInMilliSeconds Optional request timeout in milliseconds
+        /// @param requestTimeoutInMilliSeconds Optional request timeout in milliseconds
         HttpRequestParams(MethodType method,
                           const std::string& serverUrl,
                           std::string endpoint,
@@ -57,7 +57,7 @@ namespace http_client
                           std::string token = "",
                           std::string userPass = "",
                           std::string body = "",
-                          const time_t RequestTimeoutInMilliSeconds = 0);
+                          const time_t requestTimeoutInMilliSeconds = 0);
 
         /// @brief Equality operator for comparing two HttpRequestParams objects
         /// @param other The other HttpRequestParams object to compare with
