@@ -47,11 +47,6 @@ namespace
             .sign(jwt::algorithm::hs256 {"secret"});
     }
 
-    const auto MOCK_CONFIG_PARSER = std::make_shared<configuration::ConfigurationParser>(std::string(R"(
-        agent:
-          retry_interval: 1s
-    )"));
-
     const auto MOCK_CONFIG_PARSER_LOOP = std::make_shared<configuration::ConfigurationParser>(std::string(R"(
         agent:
           retry_interval: 5
@@ -323,7 +318,7 @@ TEST_F(CommunicatorTest, GetGroupConfigurationFromManager_Error)
 TEST_F(CommunicatorTest, AuthenticateWithUuidAndKey_Success)
 {
     const auto communicatorPtr = std::make_shared<communicator::Communicator>(
-        std::move(m_mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
+        std::move(m_mockHttpClient), MOCK_CONFIG_PARSER_LOOP, "uuid", "key", nullptr);
 
     const intStringTuple expectedResponse {http_client::HTTP_CODE_OK, R"({"token":"valid_token"})"};
 
@@ -340,7 +335,7 @@ TEST_F(CommunicatorTest, AuthenticateWithUuidAndKey_Success)
 TEST_F(CommunicatorTest, AuthenticateWithUuidAndKey_Failure)
 {
     const auto communicatorPtr = std::make_shared<communicator::Communicator>(
-        std::move(m_mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
+        std::move(m_mockHttpClient), MOCK_CONFIG_PARSER_LOOP, "uuid", "key", nullptr);
 
     const intStringTuple expectedResponse {http_client::HTTP_CODE_UNAUTHORIZED, R"({"message":"Try again"})"};
 
@@ -354,7 +349,7 @@ TEST_F(CommunicatorTest, AuthenticateWithUuidAndKey_Failure)
 TEST_F(CommunicatorTest, AuthenticateWithUuidAndKey_FailureThrowsException)
 {
     const auto communicatorPtr = std::make_shared<communicator::Communicator>(
-        std::move(m_mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
+        std::move(m_mockHttpClient), MOCK_CONFIG_PARSER_LOOP, "uuid", "key", nullptr);
 
     const intStringTuple expectedResponse {http_client::HTTP_CODE_UNAUTHORIZED, R"({"message":"Invalid key"})"};
 
