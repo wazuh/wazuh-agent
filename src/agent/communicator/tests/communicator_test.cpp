@@ -278,9 +278,6 @@ TEST_F(CommunicatorTest, GetCommandsFromManager_Failure)
 
 TEST_F(CommunicatorTest, GetGroupConfigurationFromManager_Success)
 {
-    const std::string groupName = "group1";
-    const std::string dstFilePath = "./test-output";
-
     const auto communicatorPtr = std::make_shared<communicator::Communicator>(
         std::move(m_mockHttpClient), MOCK_CONFIG_PARSER_LOOP, "uuid", "key", nullptr);
 
@@ -303,6 +300,9 @@ TEST_F(CommunicatorTest, GetGroupConfigurationFromManager_Success)
         [&]() -> boost::asio::awaitable<void>
         {
             communicatorPtr->SendAuthenticationRequest();
+
+            const std::string groupName = "group1";
+            const std::string dstFilePath = "./test-output";
             result = co_await communicatorPtr->GetGroupConfigurationFromManager(groupName, dstFilePath);
         },
         boost::asio::detached);
@@ -313,9 +313,6 @@ TEST_F(CommunicatorTest, GetGroupConfigurationFromManager_Success)
 
 TEST_F(CommunicatorTest, GetGroupConfigurationFromManager_Error)
 {
-    const std::string groupName = "group1";
-    const std::string dstFilePath = "dummy/non/existing/path";
-
     const auto communicatorPtr = std::make_shared<communicator::Communicator>(
         std::move(m_mockHttpClient), MOCK_CONFIG_PARSER_LOOP, "uuid", "key", nullptr);
 
@@ -338,6 +335,9 @@ TEST_F(CommunicatorTest, GetGroupConfigurationFromManager_Error)
         [&]() -> boost::asio::awaitable<void>
         {
             communicatorPtr->SendAuthenticationRequest();
+
+            const std::string groupName = "group1";
+            const std::string dstFilePath = "dummy/non/existing/path";
             result = co_await communicatorPtr->GetGroupConfigurationFromManager(groupName, dstFilePath);
         },
         boost::asio::detached);
