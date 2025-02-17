@@ -4,6 +4,7 @@
 #include <agent_info.hpp>
 #include <agent_info_persistance.hpp>
 #include <agent_registration.hpp>
+#include <http_request_params.hpp>
 #include <ihttp_client.hpp>
 
 #include "../http_client/tests/mocks/mock_http_client.hpp"
@@ -86,11 +87,8 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
                                                                              "full",
                                                                              std::move(*m_agentInfo));
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    const std::tuple<int, std::string> expectedResponse1 {200, R"({"data":{"token":"token"}})"};
-
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    const std::tuple<int, std::string> expectedResponse2 {201, ""};
+    const std::tuple<int, std::string> expectedResponse1 {http_client::HTTP_CODE_OK, R"({"data":{"token":"token"}})"};
+    const std::tuple<int, std::string> expectedResponse2 {http_client::HTTP_CODE_CREATED, ""};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
         .Times(2)
@@ -120,8 +118,7 @@ TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
                                                                              "certificate",
                                                                              std::move(*m_agentInfo));
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    const std::tuple<int, std::string> expectedResponse {401, ""};
+    const std::tuple<int, std::string> expectedResponse {http_client::HTTP_CODE_UNAUTHORIZED, ""};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
@@ -145,11 +142,8 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
                                                                              "none",
                                                                              std::move(*m_agentInfo));
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    const std::tuple<int, std::string> expectedResponse1 {200, R"({"data":{"token":"token"}})"};
-
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    const std::tuple<int, std::string> expectedResponse2 {400, ""};
+    const std::tuple<int, std::string> expectedResponse1 {http_client::HTTP_CODE_OK, R"({"data":{"token":"token"}})"};
+    const std::tuple<int, std::string> expectedResponse2 {http_client::HTTP_CODE_BAD_REQUEST, ""};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
         .Times(2)
@@ -176,11 +170,8 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
                                                                              "full",
                                                                              std::move(*m_agentInfo));
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    const std::tuple<int, std::string> expectedResponse1 {200, R"({"data":{"token":"token"}})"};
-
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    const std::tuple<int, std::string> expectedResponse2 {201, ""};
+    const std::tuple<int, std::string> expectedResponse1 {http_client::HTTP_CODE_OK, R"({"data":{"token":"token"}})"};
+    const std::tuple<int, std::string> expectedResponse2 {http_client::HTTP_CODE_CREATED, ""};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
         .Times(2)
@@ -282,8 +273,7 @@ TEST_F(RegisterTest, AuthenticateWithUserPassword_Success)
                                                                              "full",
                                                                              std::move(*m_agentInfo));
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    const std::tuple<int, std::string> expectedResponse {200, R"({"data":{"token":"valid_token"}})"};
+    const std::tuple<int, std::string> expectedResponse {http_client::HTTP_CODE_OK, R"({"data":{"token":"valid_token"}})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
@@ -310,8 +300,7 @@ TEST_F(RegisterTest, AuthenticateWithUserPassword_Failure)
                                                                              "full",
                                                                              std::move(*m_agentInfo));
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    const std::tuple<int, std::string> expectedResponse {401, ""};
+    const std::tuple<int, std::string> expectedResponse {http_client::HTTP_CODE_UNAUTHORIZED, ""};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 

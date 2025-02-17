@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 
 #include <http_client.hpp>
+#include <http_request_params.hpp>
 
 #include "mocks/mock_http_resolver.hpp"
 #include "mocks/mock_http_resolver_factory.hpp"
@@ -132,7 +133,7 @@ TEST_F(HttpClientTest, PerformHttpRequest_Success_verification_full)
         http_client::MethodType::GET, "https://localhost:80", "/", "Wazuh 5.0.0", "full");
     const auto response = client->PerformHttpRequest(params);
 
-    EXPECT_EQ(std::get<0>(response), 200);
+    EXPECT_EQ(std::get<0>(response), http_client::HTTP_CODE_OK);
 }
 
 TEST_F(HttpClientTest, PerformHttpRequest_Success_verification_certificate)
@@ -150,7 +151,7 @@ TEST_F(HttpClientTest, PerformHttpRequest_Success_verification_certificate)
         http_client::MethodType::GET, "https://localhost:80", "/", "Wazuh 5.0.0", "certificate");
     const auto response = client->PerformHttpRequest(params);
 
-    EXPECT_EQ(std::get<0>(response), 200);
+    EXPECT_EQ(std::get<0>(response), http_client::HTTP_CODE_OK);
 }
 
 TEST_F(HttpClientTest, PerformHttpRequest_Success_verification_none)
@@ -168,7 +169,7 @@ TEST_F(HttpClientTest, PerformHttpRequest_Success_verification_none)
         http_client::MethodType::GET, "https://localhost:80", "/", "Wazuh 5.0.0", "none");
     const auto response = client->PerformHttpRequest(params);
 
-    EXPECT_EQ(std::get<0>(response), 200);
+    EXPECT_EQ(std::get<0>(response), http_client::HTTP_CODE_OK);
 }
 
 TEST_F(HttpClientTest, PerformHttpRequest_ExceptionThrown)
@@ -181,7 +182,7 @@ TEST_F(HttpClientTest, PerformHttpRequest_ExceptionThrown)
         http_client::MethodType::GET, "https://localhost:80", "/", "Wazuh 5.0.0", "full");
     const auto response = client->PerformHttpRequest(params);
 
-    EXPECT_EQ(std::get<0>(response), 500);
+    EXPECT_EQ(std::get<0>(response), http_client::HTTP_CODE_INTERNAL_SERVER_ERROR);
     EXPECT_TRUE(std::get<1>(response).find("Simulated resolution failure") != std::string::npos);
 }
 
@@ -255,7 +256,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
 
     const auto res = response.get();
 
-    EXPECT_EQ(std::get<0>(res), 500);
+    EXPECT_EQ(std::get<0>(res), http_client::HTTP_CODE_INTERNAL_SERVER_ERROR);
     EXPECT_EQ(std::get<1>(res), "Internal server error: Error connecting to host: Bad address");
 }
 
@@ -289,7 +290,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails
 
     const auto res = response.get();
 
-    EXPECT_EQ(std::get<0>(res), 500);
+    EXPECT_EQ(std::get<0>(res), http_client::HTTP_CODE_INTERNAL_SERVER_ERROR);
     EXPECT_EQ(std::get<1>(res), "Internal server error: Error writing request: Bad address");
 }
 
@@ -325,7 +326,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
 
     const auto res = response.get();
 
-    EXPECT_EQ(std::get<0>(res), 500);
+    EXPECT_EQ(std::get<0>(res), http_client::HTTP_CODE_INTERNAL_SERVER_ERROR);
     EXPECT_EQ(std::get<1>(res), "Internal server error: Error handling response: Bad address");
 }
 
