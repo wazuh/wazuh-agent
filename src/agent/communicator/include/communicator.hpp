@@ -74,6 +74,10 @@ namespace communicator
         /// @return true if the configuration was successfully retrieved, false otherwise
         boost::asio::awaitable<bool> GetGroupConfigurationFromManager(std::string groupName, std::string dstFilePath);
 
+        /// @brief Sends a message to the manager signaling the agent has started
+        /// @details This method sends both stateful and stateless messages
+        void SendAgentStartupMessage();
+
         /// @brief Stops the communication process
         void Stop();
 

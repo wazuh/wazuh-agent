@@ -319,6 +319,58 @@ TEST_F(CommunicatorTest, AuthenticateWithUuidAndKey_FailureThrowsException)
     EXPECT_THROW(m_communicator->AuthenticateWithUuidAndKey(), std::runtime_error);
 }
 
+TEST_F(CommunicatorTest, SendAgentStartupMessageDoesNothingIfNotAuthenticated)
+{
+    EXPECT_CALL(*m_mockHttpClientPtr, PerformHttpRequest(testing::_)).Times(0);
+
+    SpawnCoroutine(
+        [this]() -> boost::asio::awaitable<void>
+        {
+            m_communicator->SendAgentStartupMessage();
+            co_return;
+        });
+}
+
+TEST_F(CommunicatorTest, SendAgentStartupMessageSendsStatelessMessage)
+{
+    const intStringTuple expectedResponse {http_client::HTTP_CODE_OK, "dummy response"};
+
+    EXPECT_CALL(*m_mockHttpClientPtr, PerformHttpRequest(testing::_))
+        .Times(1)
+        .WillOnce(Invoke([token = m_mockedToken]() -> intStringTuple
+                         { return {http_client::HTTP_CODE_OK, R"({"token":")" + token + R"("})"}; }));
+
+    const auto reqParams = http_client::HttpRequestParams(http_client::MethodType::POST,
+                                                          "https://localhost:27000",
+                                                          "/api/v1/events/stateless",
+                                                          "",
+                                                          "none",
+                                                          m_mockedToken,
+                                                          "",
+                                                          R"({"event_type":"agent_startup"})");
+
+    EXPECT_CALL(*m_mockHttpClientPtr, PerformHttpRequest(reqParams)).WillOnce(testing::Return(expectedResponse));
+
+    const auto reqParams2 = http_client::HttpRequestParams(http_client::MethodType::POST,
+                                                           "https://localhost:27000",
+                                                           "/api/v1/events/stateful",
+                                                           "",
+                                                           "none",
+                                                           m_mockedToken,
+                                                           "",
+                                                           R"({"event_type":"agent_startup"})");
+
+    EXPECT_CALL(*m_mockHttpClientPtr, PerformHttpRequest(reqParams2)).WillOnce(testing::Return(expectedResponse));
+
+    SpawnCoroutine(
+        [this]() -> boost::asio::awaitable<void>
+        {
+            m_communicator->SendAuthenticationRequest();
+            m_communicator->SendAgentStartupMessage();
+            co_return;
+        });
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
