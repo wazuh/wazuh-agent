@@ -6,6 +6,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <isignal_handler.hpp>
+#include <mock_command_store.hpp>
 #include <mocks_persistence.hpp>
 
 class MockSignalHandler : public ISignalHandler
@@ -135,6 +136,8 @@ TEST_F(AgentTests, AgentStopsWhenSignalReceived)
 
     auto mockHttpClient = std::make_unique<MockHttpClient>();
 
+    auto mockCommandStore = std::make_unique<command_store::MockCommandStore>();
+
     auto WaitForSignalCalled = false;
 
     EXPECT_CALL(*mockSignalHandlerPtr, WaitForSignal())
@@ -146,7 +149,13 @@ TEST_F(AgentTests, AgentStopsWhenSignalReceived)
     EXPECT_CALL(*mockHttpClient, PerformHttpRequest(testing::_))
         .WillRepeatedly(testing::Invoke([&expectedResponse]() -> intStringTuple { return expectedResponse; }));
 
-    Agent agent(AGENT_CONFIG_PATH, std::move(mockSignalHandler), std::move(mockHttpClient), std::move(*m_agentInfo));
+    EXPECT_CALL(*mockCommandStore, GetCommandByStatus(testing::_)).WillOnce(testing::Return(std::nullopt));
+
+    Agent agent(AGENT_CONFIG_PATH,
+                std::move(mockSignalHandler),
+                std::move(mockHttpClient),
+                std::move(*m_agentInfo),
+                std::move(mockCommandStore));
 
     EXPECT_NO_THROW(agent.Run());
     EXPECT_TRUE(WaitForSignalCalled);
