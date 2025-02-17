@@ -183,4 +183,5 @@ void Agent::Run()
     m_commandHandler.Stop();
     m_communicator.Stop();
     m_moduleManager.Stop();
+    m_communicator.SendAgentShutdownMessage();
 }
