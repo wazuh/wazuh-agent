@@ -16,6 +16,7 @@ SYSTEM="deb"
 OUTDIR="${CURRENT_PATH}/output/"
 BRANCH=""
 VCPKG_KEY=""
+VCPKG_BINARY_SOURCES=""
 REVISION="0"
 TARGET="agent"
 JOBS="2"
@@ -77,6 +78,7 @@ build_pkg() {
         -e WAZUH_BRANCH="${BRANCH}" \
         -e WAZUH_VERBOSE="${VERBOSE}" \
         -e VCPKG_KEY="${VCPKG_KEY}" \
+        -e VCPKG_BINARY_SOURCES="${VCPKG_BINARY_SOURCES}" \
         ${CUSTOM_CODE_VOL} \
         -v ${DOCKERFILE_PATH}:/home:Z \
         ${CONTAINER_NAME}:${DOCKER_TAG} \
@@ -237,6 +239,7 @@ main() {
         "--vcpkg-binary-caching-key")
             if [ -n "$2" ]; then
                 VCPKG_KEY="$2"
+                VCPKG_BINARY_SOURCES="clear;nuget,GitHub,readwrite"
                 shift 2
             else
                 help 1

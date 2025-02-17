@@ -2,16 +2,11 @@ FROM arm64v8/debian:10
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Installing necessary packages
 RUN apt-get update && apt-get install -y build-essential \
-            curl wget git gawk devscripts sudo libssl-dev \
-            unzip zip tar texinfo pkg-config clang-tidy uuid \
-            libmpfr-dev libgmp3-dev libmpc-dev autopoint libtool \
-            zlib1g-dev libgcrypt20-dev libmagic-dev libpopt-dev \
-            libmagic-dev libsqlite3-dev gettext ninja-build \
-            ninja-build libsystemd-dev libaudit-dev selinux-basics \
-            libarchive-dev debhelper libssl-dev libbz2-dev \
-            && rm -rf /var/lib/apt/lists/*
+    curl wget git devscripts sudo libssl-dev unzip zip \
+    tar pkg-config autopoint libtool gettext ninja-build \
+    libsystemd-dev selinux-basics debhelper nuget \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN echo "deb http://ftp.de.debian.org/debian bullseye main" >>/etc/apt/sources.list && \
     apt-get update && apt-get install -y g++-10 && rm -rf /var/lib/apt/lists/*
@@ -35,26 +30,8 @@ RUN curl -OL https://github.com/Kitware/CMake/releases/download/v3.30.3/cmake-3.
     make -j$(nproc) && make install && ln -s /usr/local/bin/cmake /usr/bin/cmake && \
     cd / && rm -rf cmake-*
 
-RUN curl -sO https://lua.org/ftp/lua-5.4.7.tar.gz && tar -xzvf lua-5.4.7.tar.gz && \
-    cd lua-5.4.7 && make -j$(nproc) linux CFLAGS+="-fPIC" LDFLAGS+="-fPIC" && make install && \
-    ln -fs /usr/local/bin/lua /usr/bin/lua && cd / && rm -rf lua*
-
-RUN mkdir -p /usr/local/lib/pkgconfig && \
-    echo "# Package Information for pkg-config" > /usr/local/lib/pkgconfig/lua.pc && \
-    echo "prefix=/usr/local" >> /usr/local/lib/pkgconfig/lua.pc && \
-    echo "exec_prefix=\${prefix}" >> /usr/local/lib/pkgconfig/lua.pc && \
-    echo "libdir=\${exec_prefix}/lib" >> /usr/local/lib/pkgconfig/lua.pc && \
-    echo "includedir=\${prefix}/include" >> /usr/local/lib/pkgconfig/lua.pc && \
-    echo "" >> /usr/local/lib/pkgconfig/lua.pc && \
-    echo "Name: Lua" >> /usr/local/lib/pkgconfig/lua.pc && \
-    echo "Description: Lua" >> /usr/local/lib/pkgconfig/lua.pc && \
-    echo "Version: 5.4.7" >> /usr/local/lib/pkgconfig/lua.pc && \
-    echo "Libs: -L\${libdir} -llua -lm" >> /usr/local/lib/pkgconfig/lua.pc && \
-    echo "Cflags: -I\${includedir}" >> /usr/local/lib/pkgconfig/lua.pc
-
 RUN git config --global --add safe.directory /wazuh-local-src
 
-RUN apt update && apt install dirmngr gnupg apt-transport-https ca-certificates -y && \
-    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && \
-    sh -c 'echo "deb https://download.mono-project.com/repo/debian stable-buster main" > /etc/apt/sources.list.d/mono-official-stable.list' && \
-    apt update && apt install mono-complete -y
+RUN git clone https://github.com/mono/mono.git && cd mono && \
+    ./autogen.sh --prefix=/usr/local && make -j $(nproc) && make install -j $(nproc) && \
+    cd .. && rm -rf mono && update-ca-certificates && cert-sync /etc/ssl/certs/ca-certificates.crt
