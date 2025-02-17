@@ -93,6 +93,10 @@ namespace communicator
         /// @brief Checks if the authentication token has expired and authenticates again if necessary
         void TryReAuthenticate();
 
+        /// @brief Sends an event message to the manager
+        /// @details This method sends both stateful and stateless messages
+        void SendAgentEventMessage(const std::string& eventType);
+
         /// @brief Executes a request loop
         /// @param reqParams The parameters for the request
         /// @param messageGetter Function to retrieve messages

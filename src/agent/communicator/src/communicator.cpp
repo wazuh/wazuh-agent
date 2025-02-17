@@ -424,35 +424,15 @@ namespace communicator
 
     void Communicator::SendAgentStartupMessage()
     {
-        if (!m_token || m_token->empty())
-        {
-            return;
-        }
-
-        const auto sendMessage = [this](std::string endpoint, std::string messageBody)
-        {
-            const auto reqParams = http_client::HttpRequestParams(http_client::MethodType::POST,
-                                                                  m_serverUrl,
-                                                                  std::move(endpoint),
-                                                                  m_getHeaderInfo ? m_getHeaderInfo() : "",
-                                                                  m_verificationMode,
-                                                                  *m_token,
-                                                                  "",
-                                                                  std::move(messageBody));
-
-            const auto [errorCode, errorMessage] = m_httpClient->PerformHttpRequest(reqParams);
-
-            if (errorCode < http_client::HTTP_CODE_OK || errorCode >= http_client::HTTP_CODE_MULTIPLE_CHOICES)
-            {
-                LogWarn("Error: {}.", errorMessage);
-            }
-        };
-
-        sendMessage("/api/v1/events/stateless", R"({"event_type":"agent_startup"})");
-        sendMessage("/api/v1/events/stateful", R"({"event_type":"agent_startup"})");
+        SendAgentEventMessage("agent_startup");
     }
 
     void Communicator::SendAgentShutdownMessage()
+    {
+        SendAgentEventMessage("agent_shutdown");
+    }
+
+    void Communicator::SendAgentEventMessage(const std::string& eventType)
     {
         if (!m_token || m_token->empty())
         {
@@ -478,8 +458,8 @@ namespace communicator
             }
         };
 
-        sendMessage("/api/v1/events/stateless", R"({"event_type":"agent_shutdown"})");
-        sendMessage("/api/v1/events/stateful", R"({"event_type":"agent_shutdown"})");
+        sendMessage("/api/v1/events/stateless", R"({"event_type":")" + eventType + "\"}");
+        sendMessage("/api/v1/events/stateful", R"({"event_type":")" + eventType + "\"}");
     }
 
     void Communicator::Stop()
