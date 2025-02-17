@@ -5,6 +5,7 @@ configure_target(test_MultiTypeQueue)
 target_include_directories(test_MultiTypeQueue PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 target_link_libraries(test_MultiTypeQueue PUBLIC
     MultiTypeQueue
+    Persistence
     GTest::gtest
     GTest::gtest_main
     GTest::gmock
@@ -16,6 +17,7 @@ configure_target(test_storage)
 target_include_directories(test_storage PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 target_link_libraries(test_storage
     MultiTypeQueue
+    Persistence
     GTest::gtest
     GTest::gtest_main
     GTest::gmock

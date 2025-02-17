@@ -1,5 +1,7 @@
 #pragma once
 
+#include <persistence.hpp>
+
 #include <nlohmann/json.hpp>
 
 #include <memory>
@@ -18,7 +20,10 @@ public:
     /// @brief Constructor
     /// @param dbFolderPath The path to the database folder
     /// @param tableNames A vector of table names
-    Storage(const std::string& dbFolderPath, const std::vector<std::string>& tableNames);
+    /// @param persistence Optional pointer to an existing persistence object.
+    Storage(const std::string& dbFolderPath,
+            const std::vector<std::string>& tableNames,
+            std::unique_ptr<Persistence> persistence = nullptr);
 
     /// @brief Delete copy constructor
     Storage(const Storage&) = delete;
