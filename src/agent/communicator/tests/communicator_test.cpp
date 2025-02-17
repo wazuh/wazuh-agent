@@ -59,6 +59,13 @@ namespace
         events:
           batch_size: 1
     )"));
+
+    void SpawnCoroutine(std::function<boost::asio::awaitable<void>()> func)
+    {
+        boost::asio::io_context ioContext;
+        boost::asio::co_spawn(ioContext, std::move(func), boost::asio::detached);
+        ioContext.run();
+    }
 } // namespace
 
 class CommunicatorTest : public ::testing::Test
@@ -125,10 +132,7 @@ TEST_F(CommunicatorTest, StatelessMessageProcessingTask_FailedAuthenticationLeav
     auto getMessagesCalled = false;
     auto onSuccessCalled = false;
 
-    boost::asio::io_context ioContext;
-
-    boost::asio::co_spawn(
-        ioContext,
+    SpawnCoroutine(
         [communicatorPtr, &getMessagesCalled, &onSuccessCalled]() mutable -> boost::asio::awaitable<void>
         {
             communicatorPtr->SendAuthenticationRequest();
@@ -139,10 +143,7 @@ TEST_F(CommunicatorTest, StatelessMessageProcessingTask_FailedAuthenticationLeav
                     co_return intStringTuple {1, std::string {"message"}};
                 },
                 [&onSuccessCalled](const int, const std::string&) { onSuccessCalled = true; });
-        }(),
-        boost::asio::detached);
-
-    ioContext.run();
+        });
 
     EXPECT_FALSE(getMessagesCalled);
     EXPECT_FALSE(onSuccessCalled);
@@ -172,10 +173,7 @@ TEST_F(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
     auto getMessagesCalled = false;
     auto onSuccessCalled = false;
 
-    boost::asio::io_context ioContext;
-
-    boost::asio::co_spawn(
-        ioContext,
+    SpawnCoroutine(
         [communicatorPtr, &getMessagesCalled, &onSuccessCalled]() mutable -> boost::asio::awaitable<void>
         {
             communicatorPtr->SendAuthenticationRequest();
@@ -186,10 +184,7 @@ TEST_F(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
                     co_return intStringTuple {1, std::string {"message"}};
                 },
                 [&onSuccessCalled](const int, const std::string&) { onSuccessCalled = true; });
-        }(),
-        boost::asio::detached);
-
-    ioContext.run();
+        });
 
     EXPECT_TRUE(getMessagesCalled);
     EXPECT_TRUE(onSuccessCalled);
@@ -218,19 +213,13 @@ TEST_F(CommunicatorTest, GetCommandsFromManager_CallsWithValidToken)
 
     auto onSuccessCalled = false;
 
-    boost::asio::io_context ioContext;
-
-    boost::asio::co_spawn(
-        ioContext,
+    SpawnCoroutine(
         [communicatorPtr, &onSuccessCalled]() mutable -> boost::asio::awaitable<void>
         {
             communicatorPtr->SendAuthenticationRequest();
             co_await communicatorPtr->GetCommandsFromManager([&onSuccessCalled](const int, const std::string&)
                                                              { onSuccessCalled = true; });
-        }(),
-        boost::asio::detached);
-
-    ioContext.run();
+        });
 
     EXPECT_TRUE(onSuccessCalled);
 }
@@ -258,19 +247,13 @@ TEST_F(CommunicatorTest, GetCommandsFromManager_Failure)
 
     auto onSuccessCalled = false;
 
-    boost::asio::io_context ioContext;
-
-    boost::asio::co_spawn(
-        ioContext,
+    SpawnCoroutine(
         [communicatorPtr, &onSuccessCalled]() mutable -> boost::asio::awaitable<void>
         {
             communicatorPtr->SendAuthenticationRequest();
             co_await communicatorPtr->GetCommandsFromManager([&onSuccessCalled](const int, const std::string&)
                                                              { onSuccessCalled = true; });
-        }(),
-        boost::asio::detached);
-
-    ioContext.run();
+        });
 
     EXPECT_FALSE(onSuccessCalled);
 }
@@ -293,9 +276,7 @@ TEST_F(CommunicatorTest, GetGroupConfigurationFromManager_Success)
 
     auto result = false;
 
-    boost::asio::io_context ioContext;
-    boost::asio::co_spawn(
-        ioContext,
+    SpawnCoroutine(
         [&]() -> boost::asio::awaitable<void>
         {
             communicatorPtr->SendAuthenticationRequest();
@@ -303,10 +284,8 @@ TEST_F(CommunicatorTest, GetGroupConfigurationFromManager_Success)
             const std::string groupName = "group1";
             const std::string dstFilePath = "./test-output";
             result = co_await communicatorPtr->GetGroupConfigurationFromManager(groupName, dstFilePath);
-        },
-        boost::asio::detached);
+        });
 
-    ioContext.run();
     EXPECT_TRUE(result);
 }
 
@@ -328,9 +307,7 @@ TEST_F(CommunicatorTest, GetGroupConfigurationFromManager_Error)
 
     auto result = false;
 
-    boost::asio::io_context ioContext;
-    boost::asio::co_spawn(
-        ioContext,
+    SpawnCoroutine(
         [&]() -> boost::asio::awaitable<void>
         {
             communicatorPtr->SendAuthenticationRequest();
@@ -338,10 +315,8 @@ TEST_F(CommunicatorTest, GetGroupConfigurationFromManager_Error)
             const std::string groupName = "group1";
             const std::string dstFilePath = "dummy/non/existing/path";
             result = co_await communicatorPtr->GetGroupConfigurationFromManager(groupName, dstFilePath);
-        },
-        boost::asio::detached);
+        });
 
-    ioContext.run();
     EXPECT_FALSE(result);
 }
 
