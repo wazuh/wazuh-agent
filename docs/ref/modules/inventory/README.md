@@ -56,16 +56,16 @@ CREATE TABLE system (
 
 This table stores information about the operating system and system architecture.
 
-| Mandatory | Column        | Type   | Description                  | Default |
-| :-------: | ------------- | ------ | ---------------------------- | ------- |
-|           | `hostname`    | TEXT   | Hostname of the machine.     |         |
-|           | `architecture`| TEXT   | System architecture.         |         |
-|     ✔️     | `os_name`     | TEXT   | Name of the operating system.|         |
-|           | `os_version`  | TEXT   | Version of the operating system. |     |
-|           | `os_codename` | TEXT   | Codename of the operating system. |   |
-|           | `os_build`    | TEXT   | OS build identifier.         |         |
-|           | `os_platform` | TEXT   | Platform type (e.g., Linux). |         |
-|           | `sysname`     | TEXT   | System name.                 |         |
+| Mandatory | Column        | Data Type | Description                  | ECS                  | ECS Data Type |
+| :-------: | ------------- | ------ | ---------------------------- | -------------------- | --------- |
+|     ✔️     | `os_name`     | TEXT   | Name of the operating system.| `host.os.name`      | keyword   |
+|           | `hostname`    | TEXT   | Hostname of the machine.     | `host.hostname`     | keyword   |
+|           | `architecture`| TEXT   | System architecture.         | `host.architecture` | keyword   |
+|           | `os_version`  | TEXT   | Version of the operating system. | `host.os.version` | keyword   |
+|           | `os_codename` | TEXT   | Codename of the operating system. | `host.os.full` | keyword   |
+|           | `os_build`    | TEXT   | OS build identifier.         | `host.os.kernel`   | keyword   |
+|           | `os_platform` | TEXT   | Platform type.               | `host.os.platform` | keyword   |
+|           | `sysname`     | TEXT   | System name.                 | `host.os.type`     | keyword   |
 
 ### Hardware Table
 
@@ -84,15 +84,15 @@ CREATE TABLE hardware (
 
 This table stores information about the system hardware.
 
-| Mandatory | Column         | Type    | Description                     | Default |
-| :-------: | -------------- | ------- | ------------------------------- | ------- |
-|     ✔️     | `board_serial` | TEXT    | Serial number of the motherboard. |         |
-|           | `cpu_name`     | TEXT    | Name of the CPU.                |         |
-|           | `cpu_cores`    | INTEGER | Number of CPU cores.            |         |
-|           | `cpu_mhz`      | INTEGER | CPU speed in MHz.               |         |
-|           | `ram_total`    | INTEGER | Total RAM in bytes.             |         |
-|           | `ram_free`     | INTEGER | Free RAM in bytes.              |         |
-|           | `ram_usage`    | INTEGER | RAM usage in bytes.             |         |
+| Mandatory | Column         | Data Type | Description                     | ECS                              | ECS Data Type |
+| :-------: | -------------- | ------- | ------------------------------- | -------------------------------- | --------- |
+|     ✔️     | `board_serial` | TEXT    | Serial number of the motherboard. | `observer.serial_number`        | keyword   |
+|           | `cpu_name`     | TEXT    | Name of the CPU.                | `host.cpu.name`                 | keyword   |
+|           | `cpu_cores`    | INTEGER | Number of CPU cores.            | `host.cpu.cores`                | long      |
+|           | `cpu_mhz`      | INTEGER | CPU speed in MHz.               | `host.cpu.speed`                | long      |
+|           | `ram_total`    | INTEGER | Total RAM in bytes.             | `host.memory.total`             | long      |
+|           | `ram_free`     | INTEGER | Free RAM in bytes.              | `host.memory.free`              | long      |
+|           | `ram_usage`    | INTEGER | RAM usage as a percentage.      | `host.memory.used.percentage`   | long      |
 
 ### Hotfixes Table
 
@@ -105,9 +105,9 @@ CREATE TABLE hotfixes (
 
 This table stores information about system hotfixes.
 
-| Mandatory | Column   | Type | Description         | Default |
-| :-------: | -------- | ---- | ------------------- | ------- |
-|     ✔️     | `hotfix` | TEXT | Hotfix identifier.  |         |
+| Mandatory | Column   | Data Type | Description         | ECS | ECS Data Type |
+| :-------: | -------- | ---- | ------------------- | ------- | ------- |
+|     ✔️     | `hotfix` | TEXT | Hotfix identifier.  | `package.hotfix.name` | keyword |
 
 ### Packages Table
 
@@ -127,16 +127,16 @@ CREATE TABLE packages (
 
 This table stores information about installed software packages.
 
-| Mandatory | Column         | Type    | Description                              | Default |
-| :-------: | -------------- | ------- | ---------------------------------------- | ------- |
-|     ✔️     | `name`         | TEXT    | Name of the package.                    |         |
-|     ✔️     | `version`      | TEXT    | Version of the package.                 |         |
-|           | `install_time` | TEXT    | Installation timestamp.                 |         |
-|     ✔️     | `location`     | TEXT    | Installation location.                  |         |
-|     ✔️     | `architecture` | TEXT    | Architecture of the package.            |         |
-|           | `description`  | TEXT    | Description of the package.             |         |
-|           | `size`         | BIGINT  | Size of the package in bytes.           |         |
-|     ✔️     | `format`       | TEXT    | Format of the package (e.g., RPM, DEB). |         |
+| Mandatory | Column         | Data Type | Description                              | ECS                  | ECS Data Type |
+| :-------: | -------------- | --------- | ---------------------------------------- | -------------------- | --------- |
+|     ✔️     | `name`         | TEXT      | Name of the package.                    | `package.name`      | keyword   |
+|     ✔️     | `version`      | TEXT      | Version of the package.                 | `package.version`   | keyword   |
+|     ✔️     | `architecture` | TEXT      | Architecture of the package.            | `package.architecture` | keyword   |
+|     ✔️     | `format`       | TEXT      | Format of the package.                  | `package.type`      | keyword   |
+|     ✔️     | `location`     | TEXT      | Installation location.                  | `package.path`      | keyword   |
+|           | `install_time`  | TEXT      | Installation timestamp.                 | `package.installed` | date      |
+|           | `description`   | TEXT      | Description of the package.             | `package.description` | keyword   |
+|           | `size`         | INTEGER   | Size of the package in bytes.           | `package.size`      | long      |
 
 ### Processes Table
 
@@ -162,22 +162,22 @@ CREATE TABLE processes (
 
 This table stores information about running processes.
 
-| Mandatory | Column       | Type   | Description                        | Default |
-| :-------: | ------------ | ------ | ---------------------------------- | ------- |
-|     ✔️     | `pid`        | TEXT   | Process ID.                       |         |
-|           | `name`       | TEXT   | Name of the process.              |         |
-|           | `ppid`       | BIGINT | Parent process ID.                |         |
-|           | `cmd`        | TEXT   | Command used to start the process.|         |
-|           | `argvs`      | TEXT   | Command-line arguments.           |         |
-|           | `euser`      | TEXT   | Effective user of the process.    |         |
-|           | `ruser`      | TEXT   | Real user of the process.         |         |
-|           | `suser`      | TEXT   | Saved user of the process.        |         |
-|           | `egroup`     | TEXT   | Effective group of the process.   |         |
-|           | `rgroup`     | TEXT   | Real group of the process.        |         |
-|           | `sgroup`     | TEXT   | Saved group of the process.       |         |
-|           | `start_time` | BIGINT | Start time in epoch format.       |         |
-|           | `tgid`       | BIGINT | Thread group ID.                  |         |
-|           | `tty`        | BIGINT | Terminal ID.                      |         |
+| Mandatory | Column       | Data Type | Description                        | ECS               |  ECS Data Type |
+| :-------: | ------------ | ------ | ---------------------------------- | -------------------- | ------- |
+|     ✔️     | `pid`        | TEXT   | Process ID.                       | `process.pid`        | long |
+|           | `name`       | TEXT   | Name of the process.              | `process.name`         | keyword |
+|           | `ppid`       | BIGINT | Parent process ID.                | `process.parent.pid`   | long |
+|           | `cmd`        | TEXT   | Command used to start the process.| `process.command_line` | wildcard |
+|           | `argvs`      | TEXT   | Command-line arguments.           | `process.args`         | keyword |
+|           | `euser`      | TEXT   | Effective user of the process.    | `process.user.id`      | keyword |
+|           | `ruser`      | TEXT   | Real user of the process.         | `process.real_user.id` | keyword |
+|           | `suser`      | TEXT   | Saved user of the process.        | `process.saved_user.id` | keyword |
+|           | `egroup`     | TEXT   | Effective group of the process.   | `process.group.id`     | keyword |
+|           | `rgroup`     | TEXT   | Real group of the process.        | `process.real_group.id` | keyword |
+|           | `sgroup`     | TEXT   | Saved group of the process.       | `process.saved_group.id` | keyword |
+|           | `start_time` | BIGINT | Start time in epoch format.       | `process.start`          | date |
+|           | `tgid`       | BIGINT | Thread group ID.                  | `process.thread.id`      | long |
+|           | `tty`        | BIGINT | Terminal ID.                      | `process.tty.char_device.major` | long |
 
 ### Ports Table
 
@@ -200,19 +200,19 @@ CREATE TABLE ports (
 
 This table stores information about active network ports.
 
-| Mandatory | Column       | Type   | Description                         | Default |
-| :-------: | ------------ | ------ | ----------------------------------- | ------- |
-|     ✔️     | `protocol`   | TEXT   | Protocol (e.g., TCP, UDP).         |         |
-|     ✔️     | `local_ip`   | TEXT   | Local IP address.                  |         |
-|     ✔️     | `local_port` | BIGINT | Local port number.                 |         |
-|           | `remote_ip`  | TEXT   | Remote IP address.                 |         |
-|           | `remote_port`| BIGINT | Remote port number.                |         |
-|           | `tx_queue`   | BIGINT | Transmit queue size.               |         |
-|           | `rx_queue`   | BIGINT | Receive queue size.                |         |
-|     ✔️     | `inode`      | BIGINT | Inode of the socket.               |         |
-|           | `state`      | TEXT   | State of the connection.           |         |
-|           | `pid`        | BIGINT | Process ID associated with the port.|         |
-|           | `process`    | TEXT   | Name of the associated process.    |         |
+| Mandatory | Column       | Data Type | Description                         | ECS | ECS Data Type |
+| :-------: | ------------ | ------ | ----------------------------------- | ------- | ------- |
+|     ✔️     | `inode`      | BIGINT | Inode of the socket.               | `file.inode` | long |
+|     ✔️     | `protocol`   | TEXT   | Protocol.                          | `network.protocol` | keyword |
+|     ✔️     | `local_ip`   | TEXT   | Local IP address.                  | `source.ip` | ip |
+|     ✔️     | `local_port` | BIGINT | Local port number.                 | `source.port` |long |
+|           | `remote_ip`  | TEXT   | Remote IP address.                 | `destination.ip` |  ip |
+|           | `remote_port`| BIGINT | Remote port number.                | `destination.port` | long |
+|           | `tx_queue`   | BIGINT | Transmit queue size.               | `host.network.egress.queue` | long |
+|           | `rx_queue`   | BIGINT | Receive queue size.                | `host.network.ingress.queue` | long |
+|           | `state`      | TEXT   | State of the connection.           | `interface.state` | keyword |
+|           | `pid`        | BIGINT | Process ID associated with the port.| `process.pid` | long |
+|           | `process`    | TEXT   | Name of the associated process.    | `process.name` | keyword |
 
 ### Networks Table
 
@@ -245,24 +245,27 @@ CREATE TABLE networks (
 
 This table stores information about network interfaces.
 
-| Mandatory | Column       | Type    | Description                     | Default |
-| :-------: | ------------ | ------- | ------------------------------- | ------- |
-|     ✔️     | `iface`      | TEXT    | Interface name.                |         |
-|     ✔️     | `adapter`    | TEXT    | Adapter name.                  |         |
-|     ✔️     | `iface_type` | TEXT    | Interface type (e.g., Ethernet).|         |
-|           | `state`      | TEXT    | State of the interface.        |         |
-|           | `mtu`        | BIGINT  | Maximum transmission unit.     |         |
-|           | `mac`        | TEXT    | MAC address.                   |         |
-|           | `tx_packets` | INTEGER | Transmitted packets.           |         |
-|           | `rx_packets` | INTEGER | Received packets.              |         |
-|           | `tx_bytes`   | BIGINT  | Transmitted bytes.             |         |
-|           | `rx_bytes`   | BIGINT  | Received bytes.                |         |
-|           | `tx_errors`  | INTEGER | Transmission errors.           |         |
-|           | `rx_errors`  | INTEGER | Reception errors.              |         |
-|     ✔️     | `proto_type` | TEXT    | Protocol type.                 |         |
-|           | `gateway`    | TEXT    | Gateway address.               |         |
-|           | `dhcp`       | TEXT    | DHCP status.                   |         |
-|     ✔️     | `address`    | TEXT    | IP address.                    |         |
-|           | `netmask`    | TEXT    | Subnet mask.                   |         |
-|           | `broadcast`  | TEXT    | Broadcast address.             |         |
+| Mandatory | Column       | Data Type | Description                     | ECS | ECS Data Type |
+| :-------: | ------------ | ------- | ------------------------------- | ------- | ------- |
+|     ✔️     | `iface`      | TEXT    | Interface name.                | `observer.ingress.interface.name` | keyword |
+|     ✔️     | `adapter`    | TEXT    | Adapter name.                  | `observer.ingress.interface.alias` | keyword |
+|     ✔️     | `iface_type` | TEXT    | Interface type.                | `interface.type`| keyword |
+|     ✔️     | `proto_type` | TEXT    | Protocol type.                 | `network.type` | keyword |
+|     ✔️     | `address`    | TEXT    | IP address.                    | `host.ip` | ip |
+|           | `mac`        | TEXT    | MAC address.                   | `host.mac` | keyword |
+|           | `tx_packets` | INTEGER | Transmitted packets.           | `host.network.egress.packets` | long |
+|           | `rx_packets` | INTEGER | Received packets.              | `host.network.ingress.packets` | long |
+|           | `tx_bytes`   | BIGINT  | Transmitted bytes.             | `host.network.egress.bytes` | long |
+|           | `rx_bytes`   | BIGINT  | Received bytes.                | `host.network.ingress.bytes` | long |
+|           | `tx_errors`  | INTEGER | Transmission errors.           | `host.network.egress.errors` | long |
+|           | `rx_errors`  | INTEGER | Reception errors.              | `host.network.ingress.errors` | long |
+|           | `tx_dropped` | INTEGER | Transmission errors.           | `host.network.egress.drops` | long |
+|           | `rx_dropped` | INTEGER | Reception errors.              | `host.network.ingress.drops` | long |
+|           | `mtu`        | BIGINT  | Maximum transmission unit.     | `interface.mtu` | long |
+|           | `state`      | TEXT    | State of the interface.        | `interface.state` | keyword |
+|           | `broadcast`  | TEXT    | Broadcast address.             | `network.broadcast` | ip |
+|           | `dhcp`       | TEXT    | DHCP status.                   | `network.dhcp` | keyword |
+|           | `gateway`    | TEXT    | Gateway address.               | `network.gateway` | ip |
+|           | `metric`     | TEXT    | Metric of the network protocol.| `network.metric` | keyword |
+|           | `netmask`    | TEXT    | Subnet mask.                   | `network.netmask` | ip |
 
