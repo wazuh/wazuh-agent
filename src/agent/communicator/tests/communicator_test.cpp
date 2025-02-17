@@ -294,7 +294,7 @@ TEST_F(CommunicatorTest, GetGroupConfigurationFromManager_Success)
         .WillOnce(Invoke([communicatorPtr]() -> boost::asio::awaitable<intStringTuple>
                          { co_return intStringTuple {http_client::HTTP_CODE_OK, "Dummy response"}; }));
 
-    std::future<bool> result;
+    auto result = false;
 
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(
@@ -302,15 +302,12 @@ TEST_F(CommunicatorTest, GetGroupConfigurationFromManager_Success)
         [&]() -> boost::asio::awaitable<void>
         {
             communicatorPtr->SendAuthenticationRequest();
-            bool value = co_await communicatorPtr->GetGroupConfigurationFromManager(groupName, dstFilePath);
-            std::promise<bool> promise;
-            promise.set_value(value);
-            result = promise.get_future();
+            result = co_await communicatorPtr->GetGroupConfigurationFromManager(groupName, dstFilePath);
         },
         boost::asio::detached);
 
     ioContext.run();
-    EXPECT_TRUE(result.get());
+    EXPECT_TRUE(result);
 }
 
 TEST_F(CommunicatorTest, GetGroupConfigurationFromManager_Error)
@@ -332,7 +329,7 @@ TEST_F(CommunicatorTest, GetGroupConfigurationFromManager_Error)
         .WillOnce(Invoke([communicatorPtr]() -> boost::asio::awaitable<intStringTuple>
                          { co_return intStringTuple {http_client::HTTP_CODE_OK, "Dummy response"}; }));
 
-    std::future<bool> result;
+    auto result = false;
 
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(
@@ -340,15 +337,12 @@ TEST_F(CommunicatorTest, GetGroupConfigurationFromManager_Error)
         [&]() -> boost::asio::awaitable<void>
         {
             communicatorPtr->SendAuthenticationRequest();
-            bool value = co_await communicatorPtr->GetGroupConfigurationFromManager(groupName, dstFilePath);
-            std::promise<bool> promise;
-            promise.set_value(value);
-            result = promise.get_future();
+            result = co_await communicatorPtr->GetGroupConfigurationFromManager(groupName, dstFilePath);
         },
         boost::asio::detached);
 
     ioContext.run();
-    EXPECT_FALSE(result.get());
+    EXPECT_FALSE(result);
 }
 
 TEST_F(CommunicatorTest, AuthenticateWithUuidAndKey_Success)
