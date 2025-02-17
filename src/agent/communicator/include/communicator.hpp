@@ -78,6 +78,10 @@ namespace communicator
         /// @details This method sends both stateful and stateless messages
         void SendAgentStartupMessage();
 
+        /// @brief Sends a message to the manager signaling the agent has shut down
+        /// @details This method sends both stateful and stateless messages
+        void SendAgentShutdownMessage();
+
         /// @brief Stops the communication process
         void Stop();
 
