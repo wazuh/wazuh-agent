@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 
 #include <communicator.hpp>
+#include <http_request_params.hpp>
 #include <ihttp_client.hpp>
 
 #include <jwt-cpp/jwt.h>
@@ -98,8 +99,7 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_FailedAuthenticationLeaves
         std::move(mockHttpClient), MOCK_CONFIG_PARSER_LOOP, "uuid", "key", nullptr);
 
     // A failed authentication won't return a token
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse {401, R"({"message":"Try again"})"};
+    intStringTuple expectedResponse {http_client::HTTP_CODE_UNAUTHORIZED, R"({"message":"Try again"})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
         .WillOnce(Invoke(
@@ -148,8 +148,7 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
 
     const auto mockedToken = CreateToken();
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse1 {200, R"({"token":")" + mockedToken + R"("})"};
+    intStringTuple expectedResponse1 {http_client::HTTP_CODE_OK, R"({"token":")" + mockedToken + R"("})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
         .WillOnce(Invoke([communicatorPtr, &expectedResponse1]() -> intStringTuple { return expectedResponse1; }));
@@ -157,8 +156,7 @@ TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
     const auto reqParams = http_client::HttpRequestParams(
         http_client::MethodType::POST, "https://localhost:27000", "/api/v1/events/stateless", "", "none");
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse2 {200, "Dummy response"};
+    intStringTuple expectedResponse2 {http_client::HTTP_CODE_OK, "Dummy response"};
 
     EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(HttpRequestParamsCheck(reqParams, mockedToken, "message")))
         .WillOnce(Invoke(
@@ -207,8 +205,7 @@ TEST(CommunicatorTest, GetCommandsFromManager_CallsWithValidToken)
 
     const auto mockedToken = CreateToken();
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse1 {200, R"({"token":")" + mockedToken + R"("})"};
+    intStringTuple expectedResponse1 {http_client::HTTP_CODE_OK, R"({"token":")" + mockedToken + R"("})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
         .WillOnce(Invoke([communicatorPtr, &expectedResponse1]() -> intStringTuple { return expectedResponse1; }));
@@ -217,8 +214,7 @@ TEST(CommunicatorTest, GetCommandsFromManager_CallsWithValidToken)
     const auto reqParams = http_client::HttpRequestParams(
         http_client::MethodType::GET, "https://localhost:27000", "/api/v1/commands", "", "none", "", "", "", timeout);
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse2 {200, "Dummy response"};
+    intStringTuple expectedResponse2 {http_client::HTTP_CODE_OK, "Dummy response"};
 
     EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(HttpRequestParamsCheck(reqParams, mockedToken, "")))
         .WillOnce(Invoke(
@@ -260,8 +256,7 @@ TEST(CommunicatorTest, GetCommandsFromManager_Failure)
 
     const auto mockedToken = CreateToken();
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse1 {200, R"({"token":")" + mockedToken + R"("})"};
+    intStringTuple expectedResponse1 {http_client::HTTP_CODE_OK, R"({"token":")" + mockedToken + R"("})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
         .WillOnce(Invoke([communicatorPtr, &expectedResponse1]() -> intStringTuple { return expectedResponse1; }));
@@ -270,8 +265,7 @@ TEST(CommunicatorTest, GetCommandsFromManager_Failure)
     const auto reqParams = http_client::HttpRequestParams(
         http_client::MethodType::GET, "https://localhost:27000", "/api/v1/commands", "", "none", "", "", "", timeout);
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse2 {401, "Dummy response"};
+    intStringTuple expectedResponse2 {http_client::HTTP_CODE_UNAUTHORIZED, "Dummy response"};
 
     EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(HttpRequestParamsCheck(reqParams, mockedToken, "")))
         .WillOnce(Invoke(
@@ -316,8 +310,7 @@ TEST(CommunicatorTest, GetGroupConfigurationFromManager_Success)
 
     const auto mockedToken = CreateToken();
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse1 {200, R"({"token":")" + mockedToken + R"("})"};
+    intStringTuple expectedResponse1 {http_client::HTTP_CODE_OK, R"({"token":")" + mockedToken + R"("})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
         .WillOnce(Invoke([communicatorPtr, &expectedResponse1]() -> intStringTuple { return expectedResponse1; }));
@@ -325,8 +318,7 @@ TEST(CommunicatorTest, GetGroupConfigurationFromManager_Success)
     const auto reqParams = http_client::HttpRequestParams(
         http_client::MethodType::GET, "https://localhost:27000", "/api/v1/files?file_name=group1.yml", "", "none");
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse2 {200, "Dummy response"};
+    intStringTuple expectedResponse2 {http_client::HTTP_CODE_OK, "Dummy response"};
 
     EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(HttpRequestParamsCheck(reqParams, mockedToken, "")))
         .WillOnce(Invoke([communicatorPtr, &expectedResponse2]() -> boost::asio::awaitable<intStringTuple>
@@ -367,8 +359,7 @@ TEST(CommunicatorTest, GetGroupConfigurationFromManager_Error)
 
     const auto mockedToken = CreateToken();
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse1 {200, R"({"token":")" + mockedToken + R"("})"};
+    intStringTuple expectedResponse1 {http_client::HTTP_CODE_OK, R"({"token":")" + mockedToken + R"("})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
         .WillOnce(Invoke([communicatorPtr, &expectedResponse1]() -> intStringTuple { return expectedResponse1; }));
@@ -376,8 +367,7 @@ TEST(CommunicatorTest, GetGroupConfigurationFromManager_Error)
     const auto reqParams = http_client::HttpRequestParams(
         http_client::MethodType::GET, "https://localhost:27000", "/api/v1/files?file_name=group1.yml", "", "none");
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse2 {200, "Dummy response"};
+    intStringTuple expectedResponse2 {http_client::HTTP_CODE_OK, "Dummy response"};
 
     EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(HttpRequestParamsCheck(reqParams, mockedToken, "")))
         .WillOnce(Invoke([communicatorPtr, &expectedResponse2]() -> boost::asio::awaitable<intStringTuple>
@@ -410,8 +400,7 @@ TEST(CommunicatorTest, AuthenticateWithUuidAndKey_Success)
     auto communicatorPtr = std::make_shared<communicator::Communicator>(
         std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse {200, R"({"token":"valid_token"})"};
+    intStringTuple expectedResponse {http_client::HTTP_CODE_OK, R"({"token":"valid_token"})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
@@ -431,8 +420,7 @@ TEST(CommunicatorTest, AuthenticateWithUuidAndKey_Failure)
     auto communicatorPtr = std::make_shared<communicator::Communicator>(
         std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse {401, R"({"message":"Try again"})"};
+    intStringTuple expectedResponse {http_client::HTTP_CODE_UNAUTHORIZED, R"({"message":"Try again"})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
@@ -449,8 +437,7 @@ TEST(CommunicatorTest, AuthenticateWithUuidAndKey_FailureThrowsException)
     auto communicatorPtr = std::make_shared<communicator::Communicator>(
         std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse {401, R"({"message":"Invalid key"})"};
+    intStringTuple expectedResponse {http_client::HTTP_CODE_UNAUTHORIZED, R"({"message":"Invalid key"})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
