@@ -137,6 +137,6 @@ namespace communicator
         std::string m_verificationMode;
 
         /// @brief Timeout for command requests to manager in millisecconds.
-        std::time_t m_timeoutCommandsInMilliSeconds;
+        std::time_t m_timeoutCommands;
     };
 } // namespace communicator

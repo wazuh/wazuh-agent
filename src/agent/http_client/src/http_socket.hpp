@@ -29,7 +29,7 @@ namespace http_client
 
         /// @brief Sets the timeout for requests in milliseconds.
         /// @param timeout Timeout in milliseconds applied to all requests
-        void SetTimeout(const time_t timeout) override;
+        void SetTimeout(const std::chrono::milliseconds timeout) override;
 
         /// @brief Connects the socket to the given endpoints
         /// @param endpoints The endpoints to connect to
@@ -75,6 +75,6 @@ namespace http_client
         std::shared_ptr<ISocketWrapper> m_socket;
 
         /// @brief Timeout in milliseconds used in every operation
-        time_t m_timeoutInMilliseconds = http_client::SOCKET_TIMEOUT_MSECS;
+        std::chrono::milliseconds m_timeout {http_client::SOCKET_TIMEOUT_MSECS};
     };
 } // namespace http_client

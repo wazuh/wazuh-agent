@@ -43,9 +43,9 @@ namespace http_client
         }
     }
 
-    void HttpsSocket::SetTimeout(const time_t timeout)
+    void HttpsSocket::SetTimeout(const std::chrono::milliseconds timeout)
     {
-        m_timeoutInMilliseconds = timeout;
+        m_timeout = timeout;
     }
 
     void HttpsSocket::Connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
@@ -53,7 +53,7 @@ namespace http_client
     {
         try
         {
-            m_ssl_socket->expires_after(std::chrono::milliseconds(m_timeoutInMilliseconds));
+            m_ssl_socket->expires_after(m_timeout);
             m_ssl_socket->connect(endpoints, ec);
         }
         catch (const std::exception& e)
@@ -69,7 +69,7 @@ namespace http_client
     {
         try
         {
-            m_ssl_socket->expires_after(std::chrono::milliseconds(m_timeoutInMilliseconds));
+            m_ssl_socket->expires_after(m_timeout);
             co_await m_ssl_socket->async_connect(endpoints, ec);
         }
         catch (const std::exception& e)
@@ -84,7 +84,7 @@ namespace http_client
     {
         try
         {
-            m_ssl_socket->expires_after(std::chrono::milliseconds(m_timeoutInMilliseconds));
+            m_ssl_socket->expires_after(m_timeout);
             m_ssl_socket->write(req, ec);
         }
         catch (const std::exception& e)
@@ -99,7 +99,7 @@ namespace http_client
     {
         try
         {
-            m_ssl_socket->expires_after(std::chrono::milliseconds(m_timeoutInMilliseconds));
+            m_ssl_socket->expires_after(m_timeout);
             co_await m_ssl_socket->async_write(req, ec);
         }
         catch (const std::exception& e)
@@ -115,7 +115,7 @@ namespace http_client
         try
         {
             boost::beast::flat_buffer buffer;
-            m_ssl_socket->expires_after(std::chrono::milliseconds(m_timeoutInMilliseconds));
+            m_ssl_socket->expires_after(m_timeout);
             m_ssl_socket->read(buffer, res, ec);
         }
         catch (const std::exception& e)
@@ -131,7 +131,7 @@ namespace http_client
         try
         {
             boost::beast::flat_buffer buffer;
-            m_ssl_socket->expires_after(std::chrono::milliseconds(m_timeoutInMilliseconds));
+            m_ssl_socket->expires_after(m_timeout);
             co_await m_ssl_socket->async_read(buffer, res, ec);
         }
         catch (const std::exception& e)

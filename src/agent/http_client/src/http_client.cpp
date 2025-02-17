@@ -129,9 +129,9 @@ namespace http_client
                 socket->SetVerificationMode(params.Host, params.Verification_Mode);
             }
 
-            if (params.RequestTimeoutInMilliSeconds)
+            if (params.RequestTimeout)
             {
-                socket->SetTimeout(params.RequestTimeoutInMilliSeconds);
+                socket->SetTimeout(std::chrono::milliseconds(params.RequestTimeout));
             }
 
             boost::system::error_code ec;

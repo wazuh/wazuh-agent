@@ -26,7 +26,7 @@ namespace http_client
 
         /// @brief Sets the timeout for requests in milliseconds.
         /// @param timeout Timeout in milliseconds applied to all requests
-        virtual void SetTimeout(const time_t timeout) = 0;
+        virtual void SetTimeout(const std::chrono::milliseconds timeout) = 0;
 
         /// @brief Connects the socket to the given endpoints
         /// @param endpoints The endpoints to connect to

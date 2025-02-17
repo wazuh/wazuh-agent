@@ -22,7 +22,7 @@ namespace http_client
         , Token(std::move(token))
         , User_pass(std::move(userPass))
         , Body(std::move(body))
-        , RequestTimeoutInMilliSeconds(requestTimeoutInMilliSeconds)
+        , RequestTimeout(requestTimeoutInMilliSeconds)
     {
         const auto result = boost::urls::parse_uri(serverUrl);
 
@@ -56,6 +56,6 @@ namespace http_client
         return Method == other.Method && Host == other.Host && Port == other.Port && Endpoint == other.Endpoint &&
                User_agent == other.User_agent && Verification_Mode == other.Verification_Mode && Token == other.Token &&
                User_pass == other.User_pass && Body == other.Body && Use_Https == other.Use_Https &&
-               RequestTimeoutInMilliSeconds == other.RequestTimeoutInMilliSeconds;
+               RequestTimeout == other.RequestTimeout;
     }
 } // namespace http_client

@@ -62,4 +62,4 @@ set(QUEUE_STATUS_REFRESH_TIMER 100 CACHE STRING "Default Agent's queue refresh t
 
 set(QUEUE_DEFAULT_SIZE "\"10000B\"" CACHE STRING "Default Agent's queue size (10000)")
 
-set(DEFAULT_COMMANDS_REQUEST_TIMEOUT "\"60s\"" CACHE STRING "Default Agent's command request timeout (60s)")
+set(DEFAULT_COMMANDS_REQUEST_TIMEOUT "\"11m\"" CACHE STRING "Default Agent's command request timeout (11m)")

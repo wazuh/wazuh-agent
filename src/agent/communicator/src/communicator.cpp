@@ -42,6 +42,10 @@ namespace communicator
 {
     constexpr int TOKEN_PRE_EXPIRY_SECS = 2;
     constexpr int A_SECOND_IN_MILLIS = 1000;
+    // 10 seconds minimum command request timeout
+    constexpr time_t COMMANDS_REQUEST_TIMEOUT_MAX = static_cast<time_t>(10) * A_SECOND_IN_MILLIS;
+    // 15 minutes maximum command request timeout
+    constexpr time_t COMMANDS_REQUEST_TIMEOUT_MIN = static_cast<time_t>(15) * 60 * A_SECOND_IN_MILLIS;
 
     Communicator::Communicator(std::unique_ptr<http_client::IHttpClient> httpClient,
                                std::shared_ptr<configuration::ConfigurationParser> configurationParser,
@@ -90,10 +94,10 @@ namespace communicator
             m_verificationMode = config::agent::DEFAULT_VERIFICATION_MODE;
         }
 
-        m_timeoutCommandsInMilliSeconds =
+        m_timeoutCommands =
             configurationParser->GetTimeConfigInRangeOrDefault(config::agent::DEFAULT_COMMANDS_REQUEST_TIMEOUT,
-                                                               0,
-                                                               std::numeric_limits<time_t>::max(),
+                                                               COMMANDS_REQUEST_TIMEOUT_MIN,
+                                                               COMMANDS_REQUEST_TIMEOUT_MAX,
                                                                "agent",
                                                                "commands_request_timeout");
     }
@@ -263,7 +267,7 @@ namespace communicator
                                                               "",
                                                               "",
                                                               "",
-                                                              m_timeoutCommandsInMilliSeconds);
+                                                              m_timeoutCommands);
         co_await ExecuteRequestLoop(reqParams, {}, onSuccess);
     }
 

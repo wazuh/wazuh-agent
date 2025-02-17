@@ -37,7 +37,7 @@ namespace http_client
         std::string User_pass;
         std::string Body;
         bool Use_Https;
-        time_t RequestTimeoutInMilliSeconds;
+        time_t RequestTimeout;
 
         /// @brief Constructs HttpRequestParams with specified parameters
         /// @param method The HTTP method to use
