@@ -155,19 +155,17 @@ namespace communicator
                                                               "",
                                                               body);
 
-        const auto res = m_httpClient->PerformHttpRequest(reqParams);
-        const auto res_status = std::get<0>(res);
-        const auto res_message = std::get<1>(res);
+        const auto [statusCode, respondeBody] = m_httpClient->PerformHttpRequest(reqParams);
 
-        if (res_status < http_client::HTTP_CODE_OK || res_status >= http_client::HTTP_CODE_MULTIPLE_CHOICES)
+        if (statusCode < http_client::HTTP_CODE_OK || statusCode >= http_client::HTTP_CODE_MULTIPLE_CHOICES)
         {
-            if (res_status == http_client::HTTP_CODE_UNAUTHORIZED || res_status == http_client::HTTP_CODE_FORBIDDEN)
+            if (statusCode == http_client::HTTP_CODE_UNAUTHORIZED || statusCode == http_client::HTTP_CODE_FORBIDDEN)
             {
                 std::string message {};
 
                 try
                 {
-                    message = nlohmann::json::parse(res_message).at("message").get_ref<const std::string&>();
+                    message = nlohmann::json::parse(respondeBody).at("message").get_ref<const std::string&>();
                 }
                 catch (const std::exception& e)
                 {
@@ -179,13 +177,13 @@ namespace communicator
                     throw std::runtime_error(message);
                 }
             }
-            LogWarn("Error: {}.", res_status);
+            LogWarn("Error: {}.", statusCode);
             return std::nullopt;
         }
 
         try
         {
-            return nlohmann::json::parse(res_message).at("token").get_ref<const std::string&>();
+            return nlohmann::json::parse(respondeBody).at("token").get_ref<const std::string&>();
         }
         catch (const std::exception& e)
         {
@@ -331,23 +329,21 @@ namespace communicator
                                                                   m_verificationMode,
                                                                   *m_token);
 
-            const auto res = co_await m_httpClient->Co_PerformHttpRequest(reqParams);
-            const auto res_status = std::get<0>(res);
-            const auto res_message = std::get<1>(res);
+            const auto [statusCode, respondeBody] = co_await m_httpClient->Co_PerformHttpRequest(reqParams);
 
-            if (res_status >= http_client::HTTP_CODE_OK && res_status < http_client::HTTP_CODE_MULTIPLE_CHOICES)
+            if (statusCode >= http_client::HTTP_CODE_OK && statusCode < http_client::HTTP_CODE_MULTIPLE_CHOICES)
             {
                 std::ofstream file(dstFilePath, std::ios::binary);
                 if (file)
                 {
-                    file << res_message;
+                    file << respondeBody;
                     file.close();
                     downloaded = true;
                 }
             }
             else
             {
-                if (res_status == http_client::HTTP_CODE_UNAUTHORIZED || res_status == http_client::HTTP_CODE_FORBIDDEN)
+                if (statusCode == http_client::HTTP_CODE_UNAUTHORIZED || statusCode == http_client::HTTP_CODE_FORBIDDEN)
                 {
                     TryReAuthenticate();
                 }
@@ -399,26 +395,24 @@ namespace communicator
 
             reqParams.Token = *m_token;
 
-            const auto res = co_await m_httpClient->Co_PerformHttpRequest(reqParams);
-            const auto res_status = std::get<0>(res);
-            const auto res_message = std::get<1>(res);
+            const auto [statusCode, responseBody] = co_await m_httpClient->Co_PerformHttpRequest(reqParams);
 
             std::time_t timerSleep = A_SECOND_IN_MILLIS;
 
-            if (res_status >= http_client::HTTP_CODE_OK && res_status < http_client::HTTP_CODE_MULTIPLE_CHOICES)
+            if (statusCode >= http_client::HTTP_CODE_OK && statusCode < http_client::HTTP_CODE_MULTIPLE_CHOICES)
             {
                 if (onSuccess != nullptr)
                 {
-                    onSuccess(messagesCount, res_message);
+                    onSuccess(messagesCount, responseBody);
                 }
             }
             else
             {
-                if (res_status == http_client::HTTP_CODE_UNAUTHORIZED || res_status == http_client::HTTP_CODE_FORBIDDEN)
+                if (statusCode == http_client::HTTP_CODE_UNAUTHORIZED || statusCode == http_client::HTTP_CODE_FORBIDDEN)
                 {
                     TryReAuthenticate();
                 }
-                if (res_status != http_client::HTTP_CODE_TIMEOUT)
+                if (statusCode != http_client::HTTP_CODE_TIMEOUT)
                 {
                     timerSleep = m_retryInterval;
                 }
