@@ -64,12 +64,11 @@ namespace agent_registration
                                                               "",
                                                               m_agentInfo.GetMetadataInfo());
 
-        const auto res = m_httpClient->PerformHttpRequest(reqParams);
-        const auto res_status = std::get<0>(res);
+        const auto [statusCode, statusMessage] = m_httpClient->PerformHttpRequest(reqParams);
 
-        if (res_status != http_client::HTTP_CODE_CREATED)
+        if (statusCode != http_client::HTTP_CODE_CREATED)
         {
-            std::cout << "Registration error: " << res_status << ".\n";
+            std::cout << "Registration error: " << statusCode << ".\n";
             return false;
         }
 
@@ -87,19 +86,17 @@ namespace agent_registration
                                                               "",
                                                               m_user + ":" + m_password);
 
-        const auto res = m_httpClient->PerformHttpRequest(reqParams);
-        const auto res_status = std::get<0>(res);
-        const auto res_message = std::get<1>(res);
+        const auto [statusCode, statusMessage] = m_httpClient->PerformHttpRequest(reqParams);
 
-        if (res_status < http_client::HTTP_CODE_OK || res_status >= http_client::HTTP_CODE_MULTIPLE_CHOICES)
+        if (statusCode < http_client::HTTP_CODE_OK || statusCode >= http_client::HTTP_CODE_MULTIPLE_CHOICES)
         {
-            std::cout << "Error authenticating: " << res_status << ".\n";
+            std::cout << "Error authenticating: " << statusCode << ".\n";
             return std::nullopt;
         }
 
         try
         {
-            return nlohmann::json::parse(res_message).at("data").at("token").get_ref<const std::string&>();
+            return nlohmann::json::parse(statusMessage).at("data").at("token").get_ref<const std::string&>();
         }
         catch (const std::exception& e)
         {
