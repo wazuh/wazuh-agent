@@ -60,11 +60,10 @@ namespace restart_handler
 
     boost::asio::awaitable<module_command::CommandExecutionResult> RestartHandler::RestartAgent()
     {
-        LogInfo("Restarting wazuh agent");
-
-        if (UsingSystemctl())
+        LogInfo("Restarting Wazuh agent.");
+        if (RunningAsService())
         {
-            return RestartWithSystemd();
+            return RestartService();
         }
         else
         {

@@ -2,12 +2,12 @@
 
 namespace restart_handler
 {
-    bool UsingSystemctl()
+    bool RunningAsService()
     {
         // TODO: Implement this function for macOS
     }
 
-    boost::asio::awaitable<module_command::CommandExecutionResult> RestartWithSystemd()
+    boost::asio::awaitable<module_command::CommandExecutionResult> RestartService()
     {
         // TODO: Implement this function for macOS
     }

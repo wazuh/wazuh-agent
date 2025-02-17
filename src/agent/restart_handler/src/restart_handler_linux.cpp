@@ -4,12 +4,12 @@
 
 namespace restart_handler
 {
-    bool UsingSystemctl()
+    bool RunningAsService()
     {
         return (0 == std::system("which systemctl > /dev/null 2>&1") && nullptr != std::getenv("INVOCATION_ID"));
     }
 
-    boost::asio::awaitable<module_command::CommandExecutionResult> RestartWithSystemd()
+    boost::asio::awaitable<module_command::CommandExecutionResult> RestartService()
     {
         if (std::system("systemctl restart wazuh-agent") != 0)
         {
