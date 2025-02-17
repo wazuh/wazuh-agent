@@ -16,6 +16,7 @@ add_executable(sysinfo_unit_test
     ${SYSINFO_SRC})
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(sysinfo_unit_test PRIVATE
+        sysinfo
         GTest::gtest
         GTest::gmock
         GTest::gtest_main
@@ -24,10 +25,10 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         unofficial::sqlite3::sqlite3
         cjson
         utils
-        -static-libgcc
     )
 else()
     target_link_libraries(sysinfo_unit_test PRIVATE
+        sysinfo
         GTest::gtest
         GTest::gmock
         GTest::gtest_main

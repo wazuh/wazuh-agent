@@ -23,38 +23,28 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_options(Inventory PRIVATE /WX-)
 endif()
 
-target_include_directories(Inventory PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/../include
-    ${COMMON_FOLDER}
-    ${COMMON_FOLDER}/data_provider/src
-    ${COMMON_FOLDER}/data_provider/include
-    ${COMMON_FOLDER}/dbsync/include
-    ${COMMON_FOLDER}/error_messages/include
-    ${COMMON_FOLDER}/hashHelper/include
-    ${COMMON_FOLDER}/privsep_op/include
-    ${COMMON_FOLDER}/stringHelper/include
-    ${COMMON_FOLDER}/time_op/include
-    ${COMMON_FOLDER}/timeHelper/include)
+target_include_directories(Inventory PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(Inventory
     PUBLIC
-    dbsync
-    sysinfo
-    nlohmann_json::nlohmann_json
-    OpenSSL::SSL
-    OpenSSL::Crypto
-    utils
-    pthreads_op
+    ModuleManager
     ConfigurationParser
     MessageEntry
     CommandEntry
+    dbsync
+    sysinfo
+    hash_helper
+    string_helper
+    time_helper
+    utils
+    nlohmann_json::nlohmann_json
+    OpenSSL::SSL
+    OpenSSL::Crypto
     Boost::asio
     PRIVATE
     Config
     Logger
     cjson
-    pal
 )
 
 include(../../cmake/ConfigureTarget.cmake)

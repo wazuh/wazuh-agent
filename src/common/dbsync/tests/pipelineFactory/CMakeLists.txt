@@ -5,7 +5,6 @@ project(dbsyncPipelineFactory_unit_test)
 set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
 
 include_directories(${CMAKE_SOURCE_DIR}/src/)
-include_directories(${CMAKE_SOURCE_DIR}/utils/)
 link_directories(${CMAKE_BINARY_DIR}/lib)
 
 
@@ -24,6 +23,7 @@ add_executable(dbsyncPipelineFactory_unit_test
     ${PIPELINE_FACTORY_SRC})
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(dbsyncPipelineFactory_unit_test
+        dbsync
         GTest::gtest
         GTest::gmock
         GTest::gtest_main
@@ -32,10 +32,10 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         unofficial::sqlite3::sqlite3
         cjson
         utils
-        -static-libgcc
     )
 else()
     target_link_libraries(dbsyncPipelineFactory_unit_test
+        dbsync
         GTest::gtest
         GTest::gmock
         GTest::gtest_main

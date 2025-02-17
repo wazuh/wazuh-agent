@@ -111,7 +111,7 @@ if (UNIX)
     endif(NOT APPLE)
 endif(UNIX)
 
-if(UNIT_TEST)
+if(BUILD_TESTS)
   add_definitions(-DWAZUH_UNIT_TESTING)
   if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_link_libraries(wazuh-syscheckd -fprofile-arcs cmocka)

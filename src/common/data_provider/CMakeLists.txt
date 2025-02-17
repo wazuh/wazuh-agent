@@ -2,13 +2,15 @@ cmake_minimum_required(VERSION 3.22)
 
 project(sysinfo)
 
+include(../../cmake/CommonSettings.cmake)
+set_common_settings()
+
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-enable_testing()
-
 get_filename_component(SRC_FOLDER     ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
+get_filename_component(COMMON_FOLDER  ${CMAKE_CURRENT_SOURCE_DIR}/../ ABSOLUTE)
 
 if(COVERITY)
   add_definitions(-D__GNUC__=8)
@@ -86,35 +88,9 @@ find_package(unofficial-sqlite3 CONFIG REQUIRED)
 find_path(POPT_INCLUDE_DIR include/popt.h)
 include_directories(${POPT_INCLUDE_DIR})
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
-include_directories(${SRC_FOLDER}/headers/)
-include_directories(${SRC_FOLDER}/common/)
-include_directories(${SRC_FOLDER}/common/utils/)
-include_directories(${SRC_FOLDER}/common/byteArrayHelper/include/)
-include_directories(${SRC_FOLDER}/common/cmdHelper/include/)
-include_directories(${SRC_FOLDER}/common/globHelper/include/)
-include_directories(${SRC_FOLDER}/common/jsonHelper/include/)
-include_directories(${SRC_FOLDER}/common/linuxHelper/include/)
-include_directories(${SRC_FOLDER}/common/stringHelper/include/)
-include_directories(${SRC_FOLDER}/common/timeHelper/include/)
-include_directories(${SRC_FOLDER}/shared_modules/common/)
-include_directories(${SRC_FOLDER}/common/pal/include/)
-
-if(WIN32)
-  include_directories(${SRC_FOLDER}/common/time_op/include/)
-  include_directories(${SRC_FOLDER}/common/regex_op/include/)
-  include_directories(${SRC_FOLDER}/common/validate_op/include/)
-  include_directories(${SRC_FOLDER}/common/binaries_op/include/)
-  include_directories(${SRC_FOLDER}/common/randombytes/include/)
-  include_directories(${SRC_FOLDER}/common/error_messages/include/)
-  include_directories(${SRC_FOLDER}/common/registryHelper/include/)
-  include_directories(${SRC_FOLDER}/common/windowsHelper/include/)
-  include_directories(${SRC_FOLDER}/common/encodingHelper/include/)
-  include_directories(${SRC_FOLDER}/common/mem_op/include/)
-endif()
-
-get_filename_component(COMMON_FOLDER  ${CMAKE_CURRENT_SOURCE_DIR}/../ ABSOLUTE)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
+include_directories(${COMMON_FOLDER})
 
 link_directories(${SRC_FOLDER})
 
@@ -164,7 +140,25 @@ add_library(sysinfo STATIC
     ${SRC_FOLDER}/${RESOURCE_OBJ})
 
 target_include_directories(sysinfo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
-target_link_libraries(sysinfo PUBLIC FilesystemWrapper FileIO)
+
+target_link_libraries(sysinfo PUBLIC
+  byte_array_helper
+  cmd_helper
+  FilesystemWrapper
+  FileIO
+  glob_helper
+  json_helper
+  network_helper
+  sqlite_wrapper
+  string_helper
+  time_helper
+)
+
+if(WIN32)
+  target_link_libraries(sysinfo PUBLIC encoding_helper registry_helper windows_helper)
+elseif(NOT APPLE)
+  target_link_libraries(sysinfo PUBLIC linux_helper)
+endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   target_link_libraries(sysinfo PUBLIC psapi iphlpapi ws2_32)
@@ -178,20 +172,21 @@ elseif(APPLE)
     message(FATAL_ERROR "CoreFoundation library not found! Aborting...")
   endif()
 
-  target_link_libraries(sysinfo PUBLIC
-    unofficial::libplist::libplist
-    unofficial::libplist::libplist++
-    ${iokit_lib}
-    ${corefoundation_lib}
-    sqliteWrapper
-    LibArchive::LibArchive)
+target_link_libraries(sysinfo PUBLIC
+  unofficial::libplist::libplist
+  unofficial::libplist::libplist++
+  ${iokit_lib}
+  ${corefoundation_lib}
+  LibArchive::LibArchive)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
-target_link_libraries(sysinfo PUBLIC
-  pal
-  networkHelper
+target_link_libraries(sysinfo
+  PUBLIC
+  utils
   nlohmann_json::nlohmann_json
-  cjson)
+  cjson
+  PRIVATE
+  pal)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   find_library(POPT_LIBRARY libpopt.a)
@@ -210,22 +205,19 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
-target_link_libraries(sysinfo PUBLIC
+target_link_libraries(sysinfo PRIVATE
   unofficial::sqlite3::sqlite3)
 
 if(BUILD_TESTS)
   if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-      target_link_libraries(sysinfo PRIVATE -fprofile-arcs)
-    else()
-      target_link_libraries(sysinfo PRIVATE gcov)
-    endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-
+    enable_testing()
     add_subdirectory(tests)
   endif(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
-else()
+endif(BUILD_TESTS)
+
+if(NOT DEFINED COVERITY AND NOT DEFINED BUILD_TESTS)
   if(FSANITIZE)
       target_link_libraries(sysinfo PRIVATE gcov)
   endif(FSANITIZE)
   add_subdirectory(testtool)
-endif(BUILD_TESTS)
+endif(NOT DEFINED COVERITY AND NOT DEFINED BUILD_TESTS)

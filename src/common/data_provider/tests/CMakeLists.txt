@@ -23,11 +23,5 @@ if(HAS_FILESYSTEM OR CMAKE_SYSTEM_NAME STREQUAL "Windows")
   add_subdirectory(sysInfoPackages)
 endif()
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  string(APPEND CMAKE_EXE_LINKER_FLAGS " -fprofile-arcs ")
-else()
-  string(APPEND CMAKE_EXE_LINKER_FLAGS " -lgcov ")
-endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-
 add_subdirectory(sysInfo)
 add_subdirectory(sysInfoPorts)

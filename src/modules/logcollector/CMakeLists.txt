@@ -45,10 +45,6 @@ add_library(Logcollector ${LOGCOLLECTOR_SOURCES})
 
 target_include_directories(Logcollector PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/../include
-    ${COMMON_FOLDER}
-    ${COMMON_FOLDER}/stringHelper/include
-    ${COMMON_FOLDER}/timeHelper/include
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/file_reader/include
@@ -59,9 +55,12 @@ target_include_directories(Logcollector PUBLIC
 
 target_link_libraries(Logcollector
     PUBLIC
+    ModuleManager
     ConfigurationParser
     MessageEntry
     CommandEntry
+    string_helper
+    time_helper
     Boost::asio
     nlohmann_json::nlohmann_json
     PRIVATE
@@ -69,7 +68,6 @@ target_link_libraries(Logcollector
     $<$<PLATFORM_ID:Darwin>:OSLogStoreWrapper>
     $<$<PLATFORM_ID:Darwin>:fmt::fmt>
     Logger
-    pal
     $<$<PLATFORM_ID:Linux>:systemd>
 )
 

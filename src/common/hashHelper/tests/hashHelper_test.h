@@ -12,7 +12,6 @@
 #ifndef HASH_HELPER_TESTS_H
 #define HASH_HELPER_TESTS_H
 #include "gtest/gtest.h"
-#include "gmock/gmock.h"
 
 class HashHelperTest : public ::testing::Test
 {

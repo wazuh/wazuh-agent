@@ -18,15 +18,20 @@ void ThreadDispatcherTest::SetUp() {};
 
 void ThreadDispatcherTest::TearDown() {};
 
-using ::testing::_;
 using namespace Utils;
 
 // LCOV_EXCL_START
 class FunctorWrapper
 {
     public:
-        FunctorWrapper() {}
-        ~FunctorWrapper() {}
+        FunctorWrapper() = default;
+        ~FunctorWrapper() = default;
+
+        FunctorWrapper(const FunctorWrapper&) = delete;
+        FunctorWrapper(FunctorWrapper&&) = delete;
+        FunctorWrapper& operator=(const FunctorWrapper&) = delete;
+        FunctorWrapper& operator=(FunctorWrapper&&) = delete;
+
         MOCK_METHOD(void, Operator, (const int), ());
         void operator()(const int value)
         {
@@ -44,12 +49,12 @@ TEST_F(ThreadDispatcherTest, AsyncDispatcherPushAndRundown)
     };
     EXPECT_EQ(std::thread::hardware_concurrency(), dispatcher.numberOfThreads());
 
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 10; ++i) // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     {
         EXPECT_CALL(functor, Operator(i));
     }
 
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 10; ++i) // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     {
         dispatcher.push(i);
     }
@@ -69,7 +74,7 @@ TEST_F(ThreadDispatcherTest, AsyncDispatcherCancel)
     EXPECT_EQ(std::thread::hardware_concurrency(), dispatcher.numberOfThreads());
     dispatcher.cancel();
 
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 10; ++i) // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     {
         EXPECT_CALL(functor, Operator(i)).Times(0);
         dispatcher.push(i);
@@ -94,13 +99,13 @@ TEST_F(ThreadDispatcherTest, AsyncDispatcherQueue)
     {
         [&mutex, &condition, &firstCall](int)
         {
-            std::unique_lock<std::mutex> lock(mutex);
+            std::unique_lock<std::mutex> lock2(mutex);
             condition.notify_one();
 
             if (firstCall)
             {
                 firstCall = false;
-                condition.wait(lock);
+                condition.wait(lock2);
             }
         }
         , NUMBER_OF_THREADS

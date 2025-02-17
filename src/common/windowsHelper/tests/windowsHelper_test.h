@@ -12,7 +12,6 @@
 #ifndef WINDOWS_HELPER_TEST_H
 #define WINDOWS_HELPER_TEST_H
 #include "gtest/gtest.h"
-#include "gmock/gmock.h"
 
 class WindowsHelperTest : public ::testing::Test
 {

@@ -134,7 +134,7 @@ TEST_F(WindowsHelperTest, getSerialNumberFromSMBIOSRealData_TEST)
     std::string serialNumber;
 
     const auto smbios { reinterpret_cast<PRawSMBIOSData>(rawData.data()) };
-    serialNumber = Utils::getSerialNumberFromSmbios(smbios->SMBIOSTableData, size);
+    serialNumber = Utils::getSerialNumberFromSmbios(smbios->SMBIOSTableData, static_cast<DWORD>(size));
     EXPECT_EQ(SERIAL_NUMBER_DATA, serialNumber);
 }
 
@@ -145,7 +145,7 @@ TEST_F(WindowsHelperTest, getSerialNumberFromSMBIOSCorruptedData1_TEST)
     constexpr auto SERIAL_NUMBER_DATA { "" };
     std::string serialNumber;
 
-    serialNumber = Utils::getSerialNumberFromSmbios(rawData.data(), size);
+    serialNumber = Utils::getSerialNumberFromSmbios(rawData.data(), static_cast<DWORD>(size));
     EXPECT_EQ(SERIAL_NUMBER_DATA, serialNumber);
 }
 
@@ -157,7 +157,7 @@ TEST_F(WindowsHelperTest, getSerialNumberFromSMBIOSCorruptedData2_TEST)
     constexpr auto SERIAL_NUMBER_DATA { "" };
     std::string serialNumber;
 
-    serialNumber = Utils::getSerialNumberFromSmbios(rawData.data(), size);
+    serialNumber = Utils::getSerialNumberFromSmbios(rawData.data(), static_cast<DWORD>(size));
     EXPECT_EQ(SERIAL_NUMBER_DATA, serialNumber);
 }
 
@@ -169,7 +169,7 @@ TEST_F(WindowsHelperTest, getSerialNumberFromSMBIOSTablesNoEndDoubleNull_TEST)
     constexpr auto SERIAL_NUMBER_DATA { "" };
     std::string serialNumber;
 
-    serialNumber = Utils::getSerialNumberFromSmbios(rawData.data(), size);
+    serialNumber = Utils::getSerialNumberFromSmbios(rawData.data(), static_cast<DWORD>(size));
     EXPECT_EQ(SERIAL_NUMBER_DATA, serialNumber);
 }
 
@@ -180,7 +180,7 @@ TEST_F(WindowsHelperTest, getSerialNumberFromSMBIOSTables2NoEndDoubleNull_TEST)
     constexpr auto SERIAL_NUMBER_DATA { "Serial test" };
     std::string serialNumber;
 
-    serialNumber = Utils::getSerialNumberFromSmbios(rawData.data(), size);
+    serialNumber = Utils::getSerialNumberFromSmbios(rawData.data(), static_cast<DWORD>(size));
     EXPECT_EQ(SERIAL_NUMBER_DATA, serialNumber);
 }
 

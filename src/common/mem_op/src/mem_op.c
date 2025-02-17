@@ -11,7 +11,6 @@
 #include <string.h>
 #include "mem_op.h"
 #include "error_messages.h"
-#include "logger.hpp"
 #include "os_macros.h"
 
 /* Add pointer to array */
@@ -95,9 +94,6 @@ char *os_LoadString(char *at, const char *str)
 {
     if (at == NULL) {
         at = strdup(str);
-        if (!at) {
-            LogError(MEM_ERROR, errno, strerror(errno));
-        }
         return (at);
     } else { /* at is not null. Need to reallocate its memory and copy str to it */
         char *newat;
@@ -107,7 +103,6 @@ char *os_LoadString(char *at, const char *str)
         newat = (char *) realloc(at, finalsize * sizeof(char));
         if (newat == NULL) {
             free(at);
-            LogError(MEM_ERROR, errno, strerror(errno));
             return (NULL);
         }
         at = newat;

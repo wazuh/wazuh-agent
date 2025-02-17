@@ -17,7 +17,6 @@
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <cjson/cJSON.h>
-#include "pal.h"
 
 #ifdef WIN32
 #include <winsock2.h>

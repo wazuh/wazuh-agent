@@ -17,6 +17,7 @@ add_executable(dbsync_unit_test
     ${INTERFACE_UNITTEST_SRC} )
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(dbsync_unit_test
+        dbsync
         GTest::gtest
         GTest::gmock
         GTest::gtest_main
@@ -25,10 +26,10 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         cjson
         pthread
         utils
-        -static-libgcc
     )
 else()
     target_link_libraries(dbsync_unit_test
+        dbsync
         GTest::gtest
         GTest::gmock
         GTest::gtest_main

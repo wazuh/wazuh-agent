@@ -11,7 +11,6 @@
 #pragma once
 
 #include <stdlib.h>
-#include "pal.h"
 
 #if defined(__GNUC__) || defined(__clang__)
 

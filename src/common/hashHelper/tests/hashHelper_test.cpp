@@ -17,8 +17,6 @@ void HashHelperTest::SetUp() {};
 
 void HashHelperTest::TearDown() {};
 
-using ::testing::_;
-using ::testing::Return;
 using namespace Utils;
 
 // Path where the test files reside.
@@ -99,7 +97,7 @@ TEST_F(HashHelperTest, HashFile)
     const std::vector<unsigned char> expectedHash { 0x2e, 0x95, 0xd7, 0x58, 0x2c, 0x53, 0x58, 0x3f, 0xa8, 0xaf,
                                                     0xb5, 0x4e, 0x0f, 0xe7, 0xa2, 0x59, 0x7c, 0x92, 0xcb, 0xba};
 
-    EXPECT_EQ(Utils::hashFile(TEST_FILE), expectedHash);
+    EXPECT_EQ(Utils::hashFile(TEST_FILE.generic_string()), expectedHash);
 }
 
 /**
@@ -108,5 +106,5 @@ TEST_F(HashHelperTest, HashFile)
  */
 TEST_F(HashHelperTest, HashFileInexistantFile)
 {
-    EXPECT_THROW(Utils::hashFile(INPUT_FILES_DIR / "inexistant_file.xml"), std::runtime_error);
+    EXPECT_THROW(Utils::hashFile((INPUT_FILES_DIR / "inexistant_file.xml").generic_string()), std::runtime_error);
 }

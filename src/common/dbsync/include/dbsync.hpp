@@ -14,7 +14,6 @@
 
 #include <functional>
 #include <nlohmann/json.hpp>
-#include "db_exception.h"
 #include "commonDefs.h"
 #include "builder.hpp"
 

@@ -5,7 +5,7 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.22)
 
 list(APPEND md5_sha1_tests_names "test_md5_sha1_op")
 list(APPEND md5_sha1_tests_flags "-Wl,--wrap,fopen -Wl,--wrap,fclose -Wl,--wrap,fflush -Wl,--wrap,fread \

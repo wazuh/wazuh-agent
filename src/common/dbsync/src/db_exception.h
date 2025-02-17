@@ -13,7 +13,7 @@
 #define _DBSYNC_EXCEPTION_H
 #include <stdexcept>
 #include <string>
-#include "pal.h"
+#include <pal.h>
 
 using DBSyncExceptionType = const std::pair<int, std::string>;
 

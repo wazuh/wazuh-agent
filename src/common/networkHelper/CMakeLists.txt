@@ -1,5 +1,10 @@
-add_library(networkHelper INTERFACE)
+cmake_minimum_required(VERSION 3.22)
 
-target_include_directories(networkHelper INTERFACE include)
+project(network_helper)
 
-target_link_libraries(networkHelper INTERFACE utils)
+include(../../cmake/CommonSettings.cmake)
+set_common_settings()
+
+add_library(network_helper INTERFACE)
+
+target_include_directories(network_helper INTERFACE include)

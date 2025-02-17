@@ -20,6 +20,7 @@ add_executable(fim_integration_test
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(fim_integration_test
+        dbsync
         GTest::gtest
         GTest::gmock
         GTest::gtest_main
@@ -28,10 +29,10 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         unofficial::sqlite3::sqlite3
         pthread
         utils
-        -static-libgcc
     )
 else()
     target_link_libraries(fim_integration_test
+        dbsync
         GTest::gtest
         GTest::gmock
         GTest::gtest_main

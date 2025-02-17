@@ -4,7 +4,6 @@ project(sysinfo_test_tool)
 
 include_directories(${CMAKE_SOURCE_DIR}/include/)
 include_directories(${CMAKE_SOURCE_DIR}/src/)
-include_directories(${SRC_FOLDER}/shared_modules/common/)
 
 if(COVERITY)
   add_definitions(-D__GNUC__=8)

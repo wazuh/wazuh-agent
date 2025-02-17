@@ -12,7 +12,6 @@
  */
 
 #include "shared.h"
-#include "pal.h"
 #include "file_op.h"
 
 #include <zlib.h>

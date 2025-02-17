@@ -27,9 +27,6 @@
 #include "defs.h"
 #include "os_macros.h"
 #include "error_messages.h"
-#include "logger.hpp"
-#include "pal.h"
-
 
 #ifndef WIN32
 #include <sys/time.h>
