@@ -32,7 +32,7 @@ To install the Wazuh Agent, follow the steps below:
     git clone https://github.com/wazuh/wazuh-agent.git
     cd wazuh-agent
     ```
-2. Build and install the agent: see [BUILD.md](BUILD.md).
+2. Build and install the agent: see [build-sources.md](docs/dev/build-sources.md).
 
 For more detailed installation instructions, please refer to the Wazuh documentation.
 

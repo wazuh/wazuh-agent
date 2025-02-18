@@ -8,7 +8,7 @@ This folder contains the technical documentation for the Wazuh Agent. The docume
 
 ## Requirements
 
-To work with this documentation, you need **mdBook** installed. For installation instructions, refer to the [mdBook documentation](https://rust-lang.github.io/mdBook/).
+Working with this documentation requires **mdBook** to be installed. For installation instructions, refer to the [mdBook documentation](https://rust-lang.github.io/mdBook/).
 
 ## Usage
 
