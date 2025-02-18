@@ -5,12 +5,13 @@
 #include <boost/beast/http.hpp>
 #include <boost/system/error_code.hpp>
 
+#include <chrono>
 #include <string>
 
 namespace http_client
 {
-    /// @brief The socket timeout in milliseconds
-    constexpr int SOCKET_TIMEOUT_MSECS = 60000;
+    /// @brief The socket timeout
+    constexpr auto SOCKET_TIMEOUT = std::chrono::milliseconds {60 * 1000};
 
     /// @brief Interface for HTTP sockets
     class IHttpSocket
