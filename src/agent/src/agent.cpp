@@ -108,7 +108,6 @@ void Agent::Run()
 
     // Check if the server recognizes the agent
     m_communicator.SendAuthenticationRequest();
-    m_communicator.SendAgentStartupMessage();
 
     m_taskManager.EnqueueTask(m_communicator.WaitForTokenExpirationAndAuthenticate(), "Authenticate");
 

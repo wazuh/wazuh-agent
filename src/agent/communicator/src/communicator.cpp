@@ -422,17 +422,7 @@ namespace communicator
         } while (m_keepRunning.load());
     }
 
-    void Communicator::SendAgentStartupMessage()
-    {
-        SendAgentEventMessage("agent_startup");
-    }
-
     void Communicator::SendAgentShutdownMessage()
-    {
-        SendAgentEventMessage("agent_shutdown");
-    }
-
-    void Communicator::SendAgentEventMessage(const std::string& eventType)
     {
         if (!m_token || m_token->empty())
         {
@@ -458,8 +448,8 @@ namespace communicator
             }
         };
 
-        sendMessage("/api/v1/events/stateless", R"({"event_type":")" + eventType + "\"}");
-        sendMessage("/api/v1/events/stateful", R"({"event_type":")" + eventType + "\"}");
+        sendMessage("/api/v1/events/stateful", R"({"event_type":"agent_shutdown"})");
+        sendMessage("/api/v1/events/stateless", R"({"event_type":"agent_shutdown"})");
     }
 
     void Communicator::Stop()
