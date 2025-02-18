@@ -69,8 +69,8 @@ namespace macos_reader_tests
         boost::asio::post(ioContext,
                           [&macOSReader]() -> void
                           {
-                              std::this_thread::sleep_for(
-                                  std::chrono::seconds(1)); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+                              const auto sleepTime = std::chrono::seconds(1);
+                              std::this_thread::sleep_for(std::chrono::seconds(sleepTime));
                               macOSReader.Stop();
                           });
 
@@ -119,8 +119,7 @@ namespace macos_reader_tests
         boost::asio::post(ioContext,
                           [&macOSReader, &macOSReader2]() -> void
                           {
-                              std::this_thread::sleep_for(
-                                  std::chrono::seconds(1)); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+                              std::this_thread::sleep_for(std::chrono::seconds(1));
                               macOSReader.Stop();
                               macOSReader2.Stop();
                           });
