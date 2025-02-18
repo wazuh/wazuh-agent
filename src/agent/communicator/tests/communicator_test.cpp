@@ -213,8 +213,9 @@ TEST(CommunicatorTest, GetCommandsFromManager_CallsWithValidToken)
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
         .WillOnce(Invoke([communicatorPtr, &expectedResponse1]() -> intStringTuple { return expectedResponse1; }));
 
+    const auto timeout = static_cast<time_t>(11) * 60 * 1000;
     const auto reqParams = http_client::HttpRequestParams(
-        http_client::MethodType::GET, "https://localhost:27000", "/api/v1/commands", "", "none");
+        http_client::MethodType::GET, "https://localhost:27000", "/api/v1/commands", "", "none", "", "", "", timeout);
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     intStringTuple expectedResponse2 {200, "Dummy response"};
@@ -265,8 +266,9 @@ TEST(CommunicatorTest, GetCommandsFromManager_Failure)
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
         .WillOnce(Invoke([communicatorPtr, &expectedResponse1]() -> intStringTuple { return expectedResponse1; }));
 
+    const auto timeout = static_cast<time_t>(11) * 60 * 1000;
     const auto reqParams = http_client::HttpRequestParams(
-        http_client::MethodType::GET, "https://localhost:27000", "/api/v1/commands", "", "none");
+        http_client::MethodType::GET, "https://localhost:27000", "/api/v1/commands", "", "none", "", "", "", timeout);
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     intStringTuple expectedResponse2 {401, "Dummy response"};

@@ -9,8 +9,8 @@
 
 namespace http_client
 {
-    /// @brief The socket timeout in seconds
-    constexpr int SOCKET_TIMEOUT_SECS = 60;
+    /// @brief The socket timeout in milliseconds
+    constexpr int SOCKET_TIMEOUT_MSECS = 60000;
 
     /// @brief Interface for HTTP sockets
     class IHttpSocket
@@ -23,6 +23,10 @@ namespace http_client
         /// @param host The host name
         /// @param verificationMode The verification mode to set
         virtual void SetVerificationMode(const std::string& host, const std::string& verificationMode) = 0;
+
+        /// @brief Sets the timeout for requests in milliseconds.
+        /// @param timeout Timeout in milliseconds applied to all requests
+        virtual void SetTimeout(const std::chrono::milliseconds timeout) = 0;
 
         /// @brief Connects the socket to the given endpoints
         /// @param endpoints The endpoints to connect to

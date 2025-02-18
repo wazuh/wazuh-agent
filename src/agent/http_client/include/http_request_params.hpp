@@ -37,6 +37,7 @@ namespace http_client
         std::string User_pass;
         std::string Body;
         bool Use_Https;
+        time_t RequestTimeout;
 
         /// @brief Constructs HttpRequestParams with specified parameters
         /// @param method The HTTP method to use
@@ -47,6 +48,7 @@ namespace http_client
         /// @param token Optional token for authorization
         /// @param userPass Optional user credentials for basic authentication
         /// @param body Optional body for the request
+        /// @param requestTimeoutInMilliSeconds Optional request timeout in milliseconds
         HttpRequestParams(MethodType method,
                           const std::string& serverUrl,
                           std::string endpoint,
@@ -54,7 +56,8 @@ namespace http_client
                           std::string verificationMode = "none",
                           std::string token = "",
                           std::string userPass = "",
-                          std::string body = "");
+                          std::string body = "",
+                          const time_t requestTimeoutInMilliSeconds = 0);
 
         /// @brief Equality operator for comparing two HttpRequestParams objects
         /// @param other The other HttpRequestParams object to compare with

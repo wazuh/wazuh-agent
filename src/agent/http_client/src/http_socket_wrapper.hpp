@@ -27,9 +27,9 @@ namespace http_client
         { // No implementation for Http
         }
 
-        void expires_after(std::chrono::seconds seconds) override
+        void expires_after(std::chrono::milliseconds ms) override
         {
-            m_socket.expires_after(seconds);
+            m_socket.expires_after(ms);
         }
 
         void connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,

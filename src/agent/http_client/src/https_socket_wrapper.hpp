@@ -33,9 +33,9 @@ namespace http_client
             m_socket.set_verify_callback(vf);
         }
 
-        void expires_after(std::chrono::seconds seconds) override
+        void expires_after(std::chrono::milliseconds ms) override
         {
-            m_socket.next_layer().expires_after(seconds);
+            m_socket.next_layer().expires_after(ms);
         }
 
         void connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,

@@ -33,6 +33,10 @@ namespace http_client
         /// - "none": no verification is performed
         void SetVerificationMode(const std::string& host, const std::string& verificationMode) override;
 
+        /// @brief Sets the timeout for requests in milliseconds.
+        /// @param timeout Timeout in milliseconds applied to all requests
+        void SetTimeout(const std::chrono::milliseconds timeout) override;
+
         /// @brief Connects the socket to the given endpoints
         /// @param endpoints The endpoints to connect to
         /// @param ec The error code, if any occurred
@@ -78,5 +82,8 @@ namespace http_client
 
         /// @brief The SSL socket to use for the connection
         std::shared_ptr<ISocketWrapper> m_ssl_socket;
+
+        /// @brief Timeout in milliseconds used in every operation
+        std::chrono::milliseconds m_timeout {http_client::SOCKET_TIMEOUT_MSECS};
     };
 } // namespace http_client

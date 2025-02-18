@@ -9,7 +9,7 @@ public:
 
     MOCK_METHOD(void, set_verify_callback, (std::function<bool(bool, boost::asio::ssl::verify_context&)>), (override));
 
-    MOCK_METHOD(void, expires_after, (std::chrono::seconds), (override));
+    MOCK_METHOD(void, expires_after, (std::chrono::milliseconds), (override));
     MOCK_METHOD(void,
                 connect,
                 (const boost::asio::ip::tcp::resolver::results_type&, boost::system::error_code&),

@@ -19,12 +19,17 @@ namespace http_client
         // No functionality for HTTP sockets
     }
 
+    void HttpSocket::SetTimeout(const std::chrono::milliseconds timeout)
+    {
+        m_timeout = timeout;
+    }
+
     void HttpSocket::Connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
                              boost::system::error_code& ec)
     {
         try
         {
-            m_socket->expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+            m_socket->expires_after(m_timeout);
             m_socket->connect(endpoints, ec);
         }
         catch (const std::exception& e)
@@ -39,7 +44,7 @@ namespace http_client
     {
         try
         {
-            m_socket->expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+            m_socket->expires_after(m_timeout);
             co_await m_socket->async_connect(endpoints, ec);
         }
         catch (const std::exception& e)
@@ -54,7 +59,7 @@ namespace http_client
     {
         try
         {
-            m_socket->expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+            m_socket->expires_after(m_timeout);
             m_socket->write(req, ec);
         }
         catch (const std::exception& e)
@@ -69,7 +74,7 @@ namespace http_client
     {
         try
         {
-            m_socket->expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+            m_socket->expires_after(m_timeout);
             co_await m_socket->async_write(req, ec);
         }
         catch (const std::exception& e)
@@ -84,7 +89,7 @@ namespace http_client
     {
         try
         {
-            m_socket->expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+            m_socket->expires_after(m_timeout);
             boost::beast::flat_buffer buffer;
             m_socket->read(buffer, res, ec);
         }
@@ -100,7 +105,7 @@ namespace http_client
     {
         try
         {
-            m_socket->expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS));
+            m_socket->expires_after(m_timeout);
             boost::beast::flat_buffer buffer;
             co_await m_socket->async_read(buffer, res, ec);
         }

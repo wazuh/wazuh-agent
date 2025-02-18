@@ -129,6 +129,11 @@ namespace http_client
                 socket->SetVerificationMode(params.Host, params.Verification_Mode);
             }
 
+            if (params.RequestTimeout)
+            {
+                socket->SetTimeout(std::chrono::milliseconds(params.RequestTimeout));
+            }
+
             boost::system::error_code ec;
 
             co_await socket->AsyncConnect(results, ec);

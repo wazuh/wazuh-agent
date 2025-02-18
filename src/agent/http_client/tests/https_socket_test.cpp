@@ -312,7 +312,7 @@ TEST_F(HttpsSocketTest, ReadException)
     boost::beast::http::response<boost::beast::http::dynamic_body> res;
     res.result(boost::beast::http::status::ok);
 
-    EXPECT_CALL(*m_mockHelper, expires_after(_)).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(std::chrono::milliseconds(http_client::SOCKET_TIMEOUT_MSECS))).Times(1);
     EXPECT_CALL(*m_mockHelper, read(_, _, _))
         .WillOnce([](boost::beast::flat_buffer&,
                      boost::beast::http::response<boost::beast::http::dynamic_body>&,
@@ -329,7 +329,7 @@ TEST_F(HttpsSocketTest, AsyncReadSuccess)
     boost::beast::http::response<boost::beast::http::dynamic_body> res;
     res.result(boost::beast::http::status::ok);
 
-    EXPECT_CALL(*m_mockHelper, expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS))).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(std::chrono::milliseconds(http_client::SOCKET_TIMEOUT_MSECS))).Times(1);
     EXPECT_CALL(*m_mockHelper, async_read(testing::_, testing::_, testing::_))
         .WillOnce(
             [](boost::beast::flat_buffer&,
@@ -357,7 +357,7 @@ TEST_F(HttpsSocketTest, AsyncReadFailure)
     boost::beast::http::response<boost::beast::http::dynamic_body> res;
     res.result(boost::beast::http::status::ok);
 
-    EXPECT_CALL(*m_mockHelper, expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS))).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(std::chrono::milliseconds(http_client::SOCKET_TIMEOUT_MSECS))).Times(1);
     EXPECT_CALL(*m_mockHelper, async_read(testing::_, testing::_, testing::_))
         .WillOnce(
             [](boost::beast::flat_buffer&,
@@ -384,7 +384,7 @@ TEST_F(HttpsSocketTest, AsyncReadException)
     boost::beast::http::response<boost::beast::http::dynamic_body> res;
     res.result(boost::beast::http::status::ok);
 
-    EXPECT_CALL(*m_mockHelper, expires_after(std::chrono::seconds(http_client::SOCKET_TIMEOUT_SECS))).Times(1);
+    EXPECT_CALL(*m_mockHelper, expires_after(std::chrono::milliseconds(http_client::SOCKET_TIMEOUT_MSECS))).Times(1);
     EXPECT_CALL(*m_mockHelper, async_read(testing::_, testing::_, testing::_))
         .WillOnce([](boost::beast::flat_buffer&,
                      boost::beast::http::response<boost::beast::http::dynamic_body>&,

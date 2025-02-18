@@ -21,7 +21,7 @@ namespace http_client
 
         virtual void set_verify_callback(std::function<bool(bool, boost::asio::ssl::verify_context&)> vf) = 0;
 
-        virtual void expires_after(std::chrono::seconds seconds) = 0;
+        virtual void expires_after(std::chrono::milliseconds ms) = 0;
 
         virtual void connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
                              boost::system::error_code& ec) = 0;
