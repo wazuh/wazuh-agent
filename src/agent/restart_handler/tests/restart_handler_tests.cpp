@@ -100,18 +100,18 @@ TEST(StopAgentTest, ForceStop)
     }
     if (pid == 0)
     {
-        // Child process (Simulate agent running)
-        // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-        std::this_thread::sleep_for(std::chrono::seconds(60));
+        const auto sleepTime = std::chrono::seconds(60);
+        std::this_thread::sleep_for(sleepTime);
     }
 
     // Parent process
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    const auto sleepTime = std::chrono::seconds(1);
+    std::this_thread::sleep_for(std::chrono::seconds(sleepTime));
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    restart_handler::StopAgent(pid, 2);
+    const auto timeout = 2;
+    restart_handler::StopAgent(pid, timeout);
 
-    const std::string stdout_logs = testing::internal::GetCapturedStdout();
+    const auto stdout_logs = testing::internal::GetCapturedStdout();
     EXPECT_NE(stdout_logs.find("Timeout reached! Forcing agent process termination."), std::string::npos);
     EXPECT_NE(stdout_logs.find("Agent stopped"), std::string::npos);
 }

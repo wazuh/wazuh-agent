@@ -28,7 +28,6 @@ TEST_F(CommandStoreTest, StoreCommandTest)
 {
     m_commandStore->Clear();
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmd1(TESTID_5,
                                             "Module1",
                                             "{CommandTextHERE}",
@@ -38,7 +37,6 @@ TEST_F(CommandStoreTest, StoreCommandTest)
                                             module_command::Status::IN_PROGRESS);
     bool retVal = m_commandStore->StoreCommand(cmd1);
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmd2(TESTID_9,
                                             "Module2",
                                             R"({"Some"="thing"})",
@@ -49,7 +47,6 @@ TEST_F(CommandStoreTest, StoreCommandTest)
     retVal = m_commandStore->StoreCommand(cmd2);
     ASSERT_EQ(retVal, true);
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmd3(TESTID_5,
                                             "Module3",
                                             "{CommandTextHERE}",
@@ -67,7 +64,6 @@ TEST_F(CommandStoreTest, StoreCommandTestParameters)
 {
     m_commandStore->Clear();
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmd1(TESTID_5,
                                             "Module1",
                                             "{CommandTextHERE}",
@@ -80,8 +76,7 @@ TEST_F(CommandStoreTest, StoreCommandTestParameters)
 
     ASSERT_EQ(m_commandStore->GetCount(), 1);
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    std::optional<module_command::CommandEntry> retValue = m_commandStore->GetCommand(TESTID_5);
+    const auto retValue = m_commandStore->GetCommand(TESTID_5);
     if (retValue.has_value())
     {
         const module_command::CommandEntry& cmd = retValue.value();
@@ -104,7 +99,6 @@ TEST_F(CommandStoreTest, UpdateCommandTest)
 {
     m_commandStore->Clear();
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmd1(TESTID_5,
                                             "Module1",
                                             "{CommandTextHERE}",
@@ -113,7 +107,6 @@ TEST_F(CommandStoreTest, UpdateCommandTest)
                                             "Result1",
                                             module_command::Status::IN_PROGRESS);
     m_commandStore->StoreCommand(cmd1);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmd2(TESTID_9,
                                             "Module2",
                                             R"({"Some"="thing"})",
@@ -125,7 +118,6 @@ TEST_F(CommandStoreTest, UpdateCommandTest)
 
     ASSERT_EQ(m_commandStore->GetCount(), 2);
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmdUpdate(TESTID_9,
                                                  "Updated Module",
                                                  "Updated CommandEntry",
@@ -137,8 +129,7 @@ TEST_F(CommandStoreTest, UpdateCommandTest)
     bool retVal = m_commandStore->UpdateCommand(cmdUpdate);
     ASSERT_EQ(retVal, true);
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    std::optional<module_command::CommandEntry> retValue = m_commandStore->GetCommand(TESTID_9);
+    auto retValue = m_commandStore->GetCommand(TESTID_9);
     if (retValue.has_value())
     {
         const module_command::CommandEntry& cmd = retValue.value();
@@ -154,7 +145,6 @@ TEST_F(CommandStoreTest, UpdateCommandTest)
         FAIL();
     }
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmdUpdate2(TESTID_9,
                                                   "",
                                                   "",
@@ -166,7 +156,6 @@ TEST_F(CommandStoreTest, UpdateCommandTest)
     retVal = m_commandStore->UpdateCommand(cmdUpdate2);
     ASSERT_EQ(retVal, true);
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     retValue = m_commandStore->GetCommand(TESTID_9);
     if (retValue.has_value())
     {
@@ -189,7 +178,6 @@ TEST_F(CommandStoreTest, DeleteCommandTest)
 {
     const int initialCount = m_commandStore->GetCount();
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     m_commandStore->DeleteCommand(TESTID_9);
 
     ASSERT_EQ(m_commandStore->GetCount(), initialCount - 1);
@@ -199,7 +187,6 @@ TEST_F(CommandStoreTest, GetCommandTest)
 {
     m_commandStore->Clear();
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmd1(TESTID_5,
                                             "Module1",
                                             "{CommandTextHERE}",
@@ -208,7 +195,6 @@ TEST_F(CommandStoreTest, GetCommandTest)
                                             "Result1",
                                             module_command::Status::IN_PROGRESS);
     m_commandStore->StoreCommand(cmd1);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmd2(TESTID_9,
                                             "Module2",
                                             "TestValue9",
@@ -217,7 +203,6 @@ TEST_F(CommandStoreTest, GetCommandTest)
                                             "Result2",
                                             module_command::Status::IN_PROGRESS);
     m_commandStore->StoreCommand(cmd2);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmd3(TESTID_11,
                                             "Module3",
                                             "{CommandTextHERE}",
@@ -228,8 +213,7 @@ TEST_F(CommandStoreTest, GetCommandTest)
     m_commandStore->StoreCommand(cmd3);
     ASSERT_EQ(m_commandStore->GetCount(), 3);
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    std::optional<module_command::CommandEntry> retValue = m_commandStore->GetCommand(TESTID_9);
+    auto retValue = m_commandStore->GetCommand(TESTID_9);
     if (retValue.has_value())
     {
         const module_command::CommandEntry& cmd = retValue.value();
@@ -238,7 +222,6 @@ TEST_F(CommandStoreTest, GetCommandTest)
         ASSERT_EQ(cmd.Command, "TestValue9");
     }
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     retValue = m_commandStore->GetCommand(TESTID_11);
     if (retValue.has_value())
     {
@@ -253,7 +236,6 @@ TEST_F(CommandStoreTest, GetCommandByStatusTest)
 {
     m_commandStore->Clear();
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmd1(TESTID_5,
                                             "Module1",
                                             "{CommandTextHERE}",
@@ -262,7 +244,6 @@ TEST_F(CommandStoreTest, GetCommandByStatusTest)
                                             "Result1",
                                             module_command::Status::SUCCESS);
     m_commandStore->StoreCommand(cmd1);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmd2(TESTID_9,
                                             "Module2",
                                             "TestValue9",
@@ -271,7 +252,6 @@ TEST_F(CommandStoreTest, GetCommandByStatusTest)
                                             "Result2",
                                             module_command::Status::IN_PROGRESS);
     m_commandStore->StoreCommand(cmd2);
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmd3(TESTID_11,
                                             "Module3",
                                             "{CommandTextHERE}",

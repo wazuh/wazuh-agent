@@ -92,7 +92,8 @@ void ModuleManager::Start()
             break;
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(10)); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+        const auto sleepTime = std::chrono::milliseconds(10);
+        std::this_thread::sleep_for(sleepTime);
     }
 
     if (m_started.load() != static_cast<int>(m_modules.size()))

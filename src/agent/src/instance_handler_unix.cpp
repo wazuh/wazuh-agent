@@ -78,7 +78,7 @@ namespace instance_handler
 
         const std::string filename = fmt::format("{}/wazuh-agent.lock", m_lockFilePath);
 
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, cppcoreguidelines-avoid-magic-numbers)
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
         const int fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0644);
         if (fd == -1)
         {

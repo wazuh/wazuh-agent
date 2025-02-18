@@ -508,8 +508,7 @@ TEST_F(MultiTypeQueueTest, FifoOrderCheck)
         contentSize += dataContent.dump().size();
     }
 
-    auto messageReceivedVector =
-        multiTypeQueue.getNextBytes(messageType, contentSize); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    const auto messageReceivedVector = multiTypeQueue.getNextBytes(messageType, contentSize);
     EXPECT_EQ(messageReceivedVector.size(), 10);
 
     std::for_each(messageReceivedVector.begin(),
@@ -546,7 +545,7 @@ TEST_F(MultiTypeQueueTest, GetBySizeAboveMax)
     // Duplicate to surpass the maximun
     sizeAsked *= 2;
 
-    auto messagesReceived = multiTypeQueue.getNextBytes(MessageType::STATELESS, sizeAsked);
+    const auto messagesReceived = multiTypeQueue.getNextBytes(MessageType::STATELESS, sizeAsked);
     int i = 0;
     for (const auto& singleMessage : messagesReceived)
     {
@@ -571,6 +570,6 @@ TEST_F(MultiTypeQueueTest, GetByBelowMax)
     // Fetching less than a single message size
     sizeAsked -= 1;
 
-    auto messagesReceived = multiTypeQueue.getNextBytes(MessageType::STATELESS, sizeAsked);
+    const auto messagesReceived = multiTypeQueue.getNextBytes(MessageType::STATELESS, sizeAsked);
     EXPECT_EQ(1, messagesReceived.size());
 }
