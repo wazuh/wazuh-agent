@@ -75,8 +75,9 @@ namespace communicator
         boost::asio::awaitable<bool> GetGroupConfigurationFromManager(std::string groupName, std::string dstFilePath);
 
         /// @brief Sends a message to the manager signaling the agent has shut down
+        /// @param agentMetadata The agent's metadata
         /// @details This method sends both stateful and stateless messages
-        void SendAgentShutdownMessage();
+        void SendAgentShutdownMessage(const std::string& agentMetadata);
 
         /// @brief Stops the communication process
         void Stop();

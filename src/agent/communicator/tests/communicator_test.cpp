@@ -326,7 +326,7 @@ TEST_F(CommunicatorTest, SendAgentShutdownMessagesDoesNothingIfNotAuthenticated)
     SpawnCoroutine(
         [this]() -> boost::asio::awaitable<void>
         {
-            m_communicator->SendAgentShutdownMessage();
+            m_communicator->SendAgentShutdownMessage("");
             co_return;
         });
 }
@@ -340,33 +340,27 @@ TEST_F(CommunicatorTest, SendAgentShutdownMessageSendsStatelessMessage)
         .WillOnce(Invoke([token = m_mockedToken]() -> intStringTuple
                          { return {http_client::HTTP_CODE_OK, R"({"token":")" + token + R"("})"}; }));
 
-    const auto reqParams = http_client::HttpRequestParams(http_client::MethodType::POST,
-                                                          "https://localhost:27000",
-                                                          "/api/v1/events/stateless",
-                                                          "",
-                                                          "none",
-                                                          m_mockedToken,
-                                                          "",
-                                                          R"({"event_type":"agent_shutdown"})");
+    EXPECT_CALL(*m_mockHttpClientPtr,
+                PerformHttpRequest(testing::Truly(
+                    [](const http_client::HttpRequestParams& params) {
+                        return params.Endpoint == "/api/v1/events/stateless" &&
+                               params.Body.find("shutdown") != std::string::npos;
+                    })))
+        .WillOnce(testing::Return(expectedResponse));
 
-    EXPECT_CALL(*m_mockHttpClientPtr, PerformHttpRequest(reqParams)).WillOnce(testing::Return(expectedResponse));
-
-    const auto reqParams2 = http_client::HttpRequestParams(http_client::MethodType::POST,
-                                                           "https://localhost:27000",
-                                                           "/api/v1/events/stateful",
-                                                           "",
-                                                           "none",
-                                                           m_mockedToken,
-                                                           "",
-                                                           R"({"event_type":"agent_shutdown"})");
-
-    EXPECT_CALL(*m_mockHttpClientPtr, PerformHttpRequest(reqParams2)).WillOnce(testing::Return(expectedResponse));
+    EXPECT_CALL(*m_mockHttpClientPtr,
+                PerformHttpRequest(testing::Truly(
+                    [](const http_client::HttpRequestParams& params) {
+                        return params.Endpoint == "/api/v1/events/stateful" &&
+                               params.Body.find("shutdown") != std::string::npos;
+                    })))
+        .WillOnce(testing::Return(expectedResponse));
 
     SpawnCoroutine(
         [this]() -> boost::asio::awaitable<void>
         {
             m_communicator->SendAuthenticationRequest();
-            m_communicator->SendAgentShutdownMessage();
+            m_communicator->SendAgentShutdownMessage("");
             co_return;
         });
 }

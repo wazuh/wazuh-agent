@@ -420,7 +420,7 @@ namespace communicator
         } while (m_keepRunning.load());
     }
 
-    void Communicator::SendAgentShutdownMessage()
+    void Communicator::SendAgentShutdownMessage(const std::string& agentMetaData)
     {
         if (!m_token || m_token->empty())
         {
@@ -446,8 +446,17 @@ namespace communicator
             }
         };
 
-        sendMessage("/api/v1/events/stateful", R"({"event_type":"agent_shutdown"})");
-        sendMessage("/api/v1/events/stateless", R"({"event_type":"agent_shutdown"})");
+        const auto eventBody = [&agentMetaData]
+        {
+            const nlohmann::json eventHeader = {{"module", "agent"}, {"operation", "shutdown"}};
+            const nlohmann::json data = {
+                {"event", {{"original", "The agent is shutting down."}, {"created", Utils::getCurrentISO8601()}}}};
+
+            return agentMetaData + '\n' + eventHeader.dump() + "\n" + data.dump();
+        }();
+
+        sendMessage("/api/v1/events/stateful", eventBody);
+        sendMessage("/api/v1/events/stateless", eventBody);
     }
 
     void Communicator::Stop()
