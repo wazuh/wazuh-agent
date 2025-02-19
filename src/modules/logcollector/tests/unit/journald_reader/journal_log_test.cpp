@@ -35,10 +35,10 @@ TEST_F(JournalLogTests, FilterValidation)
         bool expectedValid;
     };
 
-    std::vector<TestCase> testCases = {{{"UNIT", "systemd-journald.service", true}, true},
-                                       {{"", "value", true}, false},
-                                       {{"field", "", true}, false},
-                                       {{"field", "value", false}, true}};
+    const std::vector<TestCase> testCases = {{{"UNIT", "systemd-journald.service", true}, true},
+                                             {{"", "value", true}, false},
+                                             {{"field", "", true}, false},
+                                             {{"field", "value", false}, true}};
 
     for (const auto& tc : testCases)
     {
@@ -56,11 +56,11 @@ TEST_F(JournalLogTests, FilterMatching)
         bool expectedMatch;
     };
 
-    std::vector<TestCase> testCases = {{{"UNIT", "test.service", true}, "test.service", true},
-                                       {{"UNIT", "test", false}, "test.service", true},
-                                       {{"UNIT", "service1|service2", true}, "service1", true},
-                                       {{"UNIT", "service1|service2", true}, "service3", false},
-                                       {{"UNIT", "sys|jour", false}, "system", true}};
+    const std::vector<TestCase> testCases = {{{"UNIT", "test.service", true}, "test.service", true},
+                                             {{"UNIT", "test", false}, "test.service", true},
+                                             {{"UNIT", "service1|service2", true}, "service1", true},
+                                             {{"UNIT", "service1|service2", true}, "service3", false},
+                                             {{"UNIT", "sys|jour", false}, "system", true}};
 
     for (const auto& tc : testCases)
     {
@@ -101,7 +101,7 @@ TEST_F(JournalLogTests, MessageProcessing)
     auto group = CreateBasicFilterGroup();
     journal->AddFilterGroup(group, true);
 
-    FilterSet filters {group};
+    const FilterSet filters {group};
     auto message = journal->GetNextFilteredMessage(filters, true);
 
     if (message)
@@ -115,6 +115,6 @@ TEST_F(JournalLogTests, ErrorHandling)
 {
     EXPECT_THROW(journal->GetData("NONEXISTENT_FIELD"), JournalLogException);
 
-    FilterGroup invalidGroup {{"", "value", true}};
+    const FilterGroup invalidGroup {{"", "value", true}};
     EXPECT_THROW(journal->AddFilterGroup(invalidGroup, false), JournalLogException);
 }

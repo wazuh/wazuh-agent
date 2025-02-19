@@ -66,7 +66,7 @@ namespace filesystem_wrapper
     void FileSystemWrapper::expand_absolute_path(const std::string& path, std::deque<std::string>& output) const
     {
         // Find the first * or ? from path.
-        std::array<char, 2> wildcards {'*', '?'};
+        const std::array<char, 2> wildcards {'*', '?'};
         size_t wildcardPos = std::string::npos;
 
         for (const auto& wildcard : wildcards)

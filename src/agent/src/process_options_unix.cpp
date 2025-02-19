@@ -13,7 +13,7 @@
 
 void StartAgent(const std::string& configFilePath)
 {
-    instance_handler::InstanceHandler instanceHandler = instance_handler::GetInstanceHandler(configFilePath);
+    const auto instanceHandler = instance_handler::GetInstanceHandler(configFilePath);
 
     if (!instanceHandler.isLockAcquired())
     {

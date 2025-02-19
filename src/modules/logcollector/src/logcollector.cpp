@@ -170,7 +170,7 @@ void Logcollector::CleanAllReaders()
     }
 
     {
-        std::lock_guard<std::mutex> lock(m_timersMutex);
+        const std::lock_guard<std::mutex> lock(m_timersMutex);
         for (const auto& timer : m_timers)
         {
             timer->cancel();

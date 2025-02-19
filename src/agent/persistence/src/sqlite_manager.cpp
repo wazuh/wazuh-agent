@@ -51,7 +51,7 @@ bool SQLiteManager::TableExists(const std::string& table)
 {
     try
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        const std::lock_guard<std::mutex> lock(m_mutex);
         SQLite::Statement query(*m_db, "SELECT name FROM sqlite_master WHERE type='table' AND name='" + table + "';");
         return query.executeStep();
     }
@@ -68,7 +68,7 @@ void SQLiteManager::CreateTable(const std::string& tableName, const Keys& cols)
     std::vector<std::string> fields;
     for (const auto& col : cols)
     {
-        std::string field = fmt::format(
+        const std::string field = fmt::format(
             "{} {}{}", col.Name, MAP_COL_TYPE_STRING.at(col.Type), (col.Attributes & NOT_NULL) ? " NOT NULL" : "");
         if (col.Attributes & PRIMARY_KEY)
         {
@@ -78,7 +78,7 @@ void SQLiteManager::CreateTable(const std::string& tableName, const Keys& cols)
     }
 
     std::string primaryKey = pk.empty() ? "" : fmt::format(", PRIMARY KEY({})", fmt::join(pk, ", "));
-    std::string queryString = fmt::format(
+    const std::string queryString = fmt::format(
         "CREATE TABLE IF NOT EXISTS {} ({}{})", tableName, fmt::format("{}", fmt::join(fields, ", ")), primaryKey);
 
     Execute(queryString);
@@ -103,7 +103,7 @@ void SQLiteManager::Insert(const std::string& tableName, const Row& cols)
         }
     }
 
-    std::string queryString =
+    const std::string queryString =
         fmt::format("INSERT INTO {} ({}) VALUES ({})", tableName, fmt::join(names, ", "), fmt::join(values, ", "));
 
     Execute(queryString);
@@ -154,7 +154,7 @@ void SQLiteManager::Update(const std::string& tableName,
         whereClause = fmt::format(" WHERE {}", fmt::join(conditions, fmt::format(" {} ", MAP_LOGOP_STRING.at(logOp))));
     }
 
-    std::string queryString = fmt::format("UPDATE {} SET {}{}", tableName, updateValues, whereClause);
+    const std::string queryString = fmt::format("UPDATE {} SET {}{}", tableName, updateValues, whereClause);
 
     Execute(queryString);
 }
@@ -180,14 +180,14 @@ void SQLiteManager::Remove(const std::string& tableName, const Criteria& selCrit
         whereClause = fmt::format(" WHERE {}", fmt::join(critFields, fmt::format(" {} ", MAP_LOGOP_STRING.at(logOp))));
     }
 
-    std::string queryString = fmt::format("DELETE FROM {}{}", tableName, whereClause);
+    const std::string queryString = fmt::format("DELETE FROM {}{}", tableName, whereClause);
 
     Execute(queryString);
 }
 
 void SQLiteManager::DropTable(const std::string& tableName)
 {
-    std::string queryString = fmt::format("DROP TABLE {}", tableName);
+    const std::string queryString = fmt::format("DROP TABLE {}", tableName);
 
     Execute(queryString);
 }
@@ -196,7 +196,7 @@ void SQLiteManager::Execute(const std::string& query)
 {
     try
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        const std::lock_guard<std::mutex> lock(m_mutex);
         m_db->exec(query);
     }
     catch (const std::exception& e)
@@ -267,17 +267,17 @@ std::vector<Row> SQLiteManager::Select(const std::string& tableName,
         condition += fmt::format(" LIMIT {}", limit);
     }
 
-    std::string queryString = fmt::format("SELECT {} FROM {} {}", selectedFields, tableName, condition);
+    const std::string queryString = fmt::format("SELECT {} FROM {} {}", selectedFields, tableName, condition);
 
     std::vector<Row> results;
     try
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        const std::lock_guard<std::mutex> lock(m_mutex);
         SQLite::Statement query(*m_db, queryString);
 
         while (query.executeStep())
         {
-            int nColumns = query.getColumnCount();
+            const int nColumns = query.getColumnCount();
             Row queryFields;
             queryFields.reserve(static_cast<size_t>(nColumns));
             for (int i = 0; i < nColumns; i++)
@@ -318,12 +318,12 @@ int SQLiteManager::GetCount(const std::string& tableName, const Criteria& selCri
         condition = fmt::format("WHERE {}", fmt::join(conditions, fmt::format(" {} ", MAP_LOGOP_STRING.at(logOp))));
     }
 
-    std::string queryString = fmt::format("SELECT COUNT(*) FROM {} {}", tableName, condition);
+    const std::string queryString = fmt::format("SELECT COUNT(*) FROM {} {}", tableName, condition);
 
     int count = 0;
     try
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        const std::lock_guard<std::mutex> lock(m_mutex);
         SQLite::Statement query(*m_db, queryString);
 
         if (query.executeStep())
@@ -383,13 +383,13 @@ size_t SQLiteManager::GetSize(const std::string& tableName,
         condition = fmt::format("WHERE {}", fmt::join(conditions, fmt::format(" {} ", MAP_LOGOP_STRING.at(logOp))));
     }
 
-    std::string queryString =
+    const std::string queryString =
         fmt::format("SELECT SUM({}) AS total_bytes FROM {} {}", selectedFields, tableName, condition);
 
     size_t count = 0;
     try
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        const std::lock_guard<std::mutex> lock(m_mutex);
         SQLite::Statement query(*m_db, queryString);
 
         if (query.executeStep())

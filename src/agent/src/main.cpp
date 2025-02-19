@@ -32,7 +32,7 @@ static const auto OPT_RUN_SERVICE {"run-service"};
 
 int main(int argc, char* argv[])
 {
-    Logger logger;
+    const Logger logger;
 
     SSL_library_init();
     SSL_load_error_strings();

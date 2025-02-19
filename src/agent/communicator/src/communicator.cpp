@@ -70,7 +70,7 @@ namespace communicator
 
         m_serverUrl = configurationParser->GetConfigOrDefault(config::agent::DEFAULT_SERVER_URL, "agent", "server_url");
 
-        if (boost::urls::url_view url(m_serverUrl); url.scheme() != "https")
+        if (const boost::urls::url_view url(m_serverUrl); url.scheme() != "https")
         {
             LogInfo("Using insecure connection.");
         }
@@ -299,7 +299,7 @@ namespace communicator
 
     void Communicator::TryReAuthenticate()
     {
-        std::unique_lock<std::mutex> lock(m_reAuthMutex, std::try_to_lock);
+        const std::unique_lock<std::mutex> lock(m_reAuthMutex, std::try_to_lock);
         if (lock.owns_lock() && !m_isReAuthenticating.exchange(true))
         {
             if (m_tokenExpTimer)

@@ -12,7 +12,7 @@ void FileReader::Reload(const std::function<void(Localfile&)>& callback)
 {
     glob_t globResult;
 
-    int ret = glob(m_filePattern.c_str(), 0, nullptr, &globResult);
+    const int ret = glob(m_filePattern.c_str(), 0, nullptr, &globResult);
 
     if (ret != 0)
     {

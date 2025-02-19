@@ -7,12 +7,12 @@ TEST(CommandHandlerTest, CommandHandlerConstructor)
 {
     auto configurationParser = std::make_shared<configuration::ConfigurationParser>();
 
-    EXPECT_NO_THROW(command_handler::CommandHandler cm(configurationParser));
+    EXPECT_NO_THROW(const command_handler::CommandHandler cm(configurationParser));
 }
 
 TEST(CommandHandlerTest, CommandHandlerConstructorNoConfigParser)
 {
-    EXPECT_THROW(command_handler::CommandHandler cm(nullptr), std::runtime_error);
+    EXPECT_THROW(const command_handler::CommandHandler cm(nullptr), std::runtime_error);
 }
 
 int main(int argc, char** argv)

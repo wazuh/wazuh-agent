@@ -35,7 +35,7 @@ ModuleManager::ModuleManager(const std::function<int(Message)>& pushMessage,
 void ModuleManager::AddModules()
 {
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        const std::lock_guard<std::mutex> lock(m_mutex);
 
 #ifdef ENABLE_INVENTORY
         Inventory& inventory = Inventory::Instance();
@@ -53,7 +53,7 @@ void ModuleManager::AddModules()
 
 std::shared_ptr<ModuleWrapper> ModuleManager::GetModule(const std::string& name)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    const std::lock_guard<std::mutex> lock(m_mutex);
     if (auto it = m_modules.find(name); it != m_modules.end())
     {
         return it->second;
@@ -63,7 +63,7 @@ std::shared_ptr<ModuleWrapper> ModuleManager::GetModule(const std::string& name)
 
 void ModuleManager::Start()
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    const std::lock_guard<std::mutex> lock(m_mutex);
 
     m_taskManager.Start(m_modules.size());
 
@@ -103,7 +103,7 @@ void ModuleManager::Start()
 
 void ModuleManager::Setup()
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    const std::lock_guard<std::mutex> lock(m_mutex);
 
     for (const auto& [_, module] : m_modules)
     {
@@ -113,7 +113,7 @@ void ModuleManager::Setup()
 
 void ModuleManager::Stop()
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    const std::lock_guard<std::mutex> lock(m_mutex);
 
     for (const auto& [_, module] : m_modules)
     {

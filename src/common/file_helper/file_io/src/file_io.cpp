@@ -49,7 +49,7 @@ namespace file_io
     std::string FileIO::getFileContent(const std::string& filePath) const
     {
         std::stringstream content;
-        std::ifstream file = create_ifstream(filePath);
+        const auto file = create_ifstream(filePath);
 
         if (is_open(file))
         {

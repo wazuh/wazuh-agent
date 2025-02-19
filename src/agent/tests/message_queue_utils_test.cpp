@@ -67,8 +67,8 @@ protected:
 
 TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTestBySize)
 {
-    std::vector<std::string> data {R"({"event":{"original":"Testing message!"}})"};
-    std::string metadata {R"({"module":"logcollector","type":"file"})"};
+    const std::vector<std::string> data {R"({"event":{"original":"Testing message!"}})"};
+    const std::string metadata {R"({"module":"logcollector","type":"file"})"};
     std::vector<Message> testMessages;
     testMessages.emplace_back(MessageType::STATELESS, data, "", "", metadata);
 
@@ -90,16 +90,16 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueTestBySize)
     const auto result = awaitableResult.get();
     const auto jsonResult = std::get<1>(result);
 
-    std::string expectedString = std::string("\n") + R"({"module":"logcollector","type":"file"})" + std::string("\n") +
-                                 R"(["{\"event\":{\"original\":\"Testing message!\"}}"])";
+    const std::string expectedString = std::string("\n") + R"({"module":"logcollector","type":"file"})" +
+                                       std::string("\n") + R"(["{\"event\":{\"original\":\"Testing message!\"}}"])";
 
     ASSERT_EQ(jsonResult, expectedString);
 }
 
 TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueMetadataTest)
 {
-    std::vector<std::string> data {R"({"event":{"original":"Testing message!"}})"};
-    std::string moduleMetadata {R"({"module":"logcollector","type":"file"})"};
+    const std::vector<std::string> data {R"({"event":{"original":"Testing message!"}})"};
+    const std::string moduleMetadata {R"({"module":"logcollector","type":"file"})"};
     std::vector<Message> testMessages;
     testMessages.emplace_back(MessageType::STATELESS, data, "", "", moduleMetadata);
 
@@ -127,17 +127,17 @@ TEST_F(MessageQueueUtilsTest, GetMessagesFromQueueMetadataTest)
     const auto result = awaitableResult.get();
     const auto jsonResult = std::get<1>(result);
 
-    std::string expectedString = R"({"agent":"test"})" + std::string("\n") +
-                                 R"({"module":"logcollector","type":"file"})" + std::string("\n") +
-                                 R"(["{\"event\":{\"original\":\"Testing message!\"}}"])";
+    const std::string expectedString = R"({"agent":"test"})" + std::string("\n") +
+                                       R"({"module":"logcollector","type":"file"})" + std::string("\n") +
+                                       R"(["{\"event\":{\"original\":\"Testing message!\"}}"])";
 
     ASSERT_EQ(jsonResult, expectedString);
 }
 
 TEST_F(MessageQueueUtilsTest, GetEmptyMessagesFromQueueTest)
 {
-    nlohmann::json data = nlohmann::json::object();
-    std::string moduleMetadata {R"({"operation":"delete"})"};
+    const nlohmann::json data = nlohmann::json::object();
+    const std::string moduleMetadata {R"({"operation":"delete"})"};
     std::vector<Message> testMessages;
     testMessages.emplace_back(MessageType::STATEFUL, data, "", "", moduleMetadata);
 
@@ -165,7 +165,7 @@ TEST_F(MessageQueueUtilsTest, GetEmptyMessagesFromQueueTest)
     const auto result = awaitableResult.get();
     const auto jsonResult = std::get<1>(result);
 
-    std::string expectedString = R"({"agent":"test"})" + std::string("\n") + R"({"operation":"delete"})";
+    const std::string expectedString = R"({"agent":"test"})" + std::string("\n") + R"({"operation":"delete"})";
 
     ASSERT_EQ(jsonResult, expectedString);
 }
@@ -211,7 +211,7 @@ TEST_F(MessageQueueUtilsTest, GetCommandFromQueueEmptyTest)
 
 TEST_F(MessageQueueUtilsTest, GetCommandFromQueueTest)
 {
-    Message testMessage {MessageType::COMMAND, BASE_DATA_CONTENT};
+    const Message testMessage {MessageType::COMMAND, BASE_DATA_CONTENT};
 
     EXPECT_CALL(*mockQueue, isEmpty(MessageType::COMMAND, "", "")).WillOnce(testing::Return(false));
 

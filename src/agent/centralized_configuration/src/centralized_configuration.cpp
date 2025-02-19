@@ -19,7 +19,7 @@ namespace
         std::random_device rd;
         std::mt19937 generator(rd());
         std::uniform_int_distribution<int> distribution(MIN_VALUE, MAX_VALUE);
-        int random = distribution(generator);
+        const int random = distribution(generator);
 
         auto now = std::chrono::high_resolution_clock::now();
         auto timestamp = now.time_since_epoch().count();

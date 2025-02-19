@@ -16,7 +16,7 @@ namespace https_socket_verify_utils
         }
         else if (mode == "full")
         {
-            boost::asio::ssl::rfc2818_verification verifier(host);
+            const boost::asio::ssl::rfc2818_verification verifier(host);
             return verifier(preverified, ctx);
         }
         return false;

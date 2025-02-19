@@ -30,7 +30,7 @@ TEST_F(TaskManagerTest, StartAndStop)
 
 TEST_F(TaskManagerTest, EnqueueFunctionTask)
 {
-    std::function<void()> task = [this]()
+    const std::function<void()> task = [this]()
     {
         taskExecuted = true;
         cv.notify_one();
@@ -76,7 +76,7 @@ TEST_F(TaskManagerTest, EnqueueFunctionTaskIncrementsCounter)
 {
     EXPECT_EQ(taskManager.GetNumEnqueuedThreads(), 0);
 
-    std::function<void()> task = [this]()
+    const std::function<void()> task = [this]()
     {
         EXPECT_EQ(taskManager.GetNumEnqueuedThreads(), 1);
         taskExecuted = true;

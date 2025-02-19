@@ -87,10 +87,10 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
                                                                              std::move(*m_agentInfo));
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    std::tuple<int, std::string> expectedResponse1 {200, R"({"data":{"token":"token"}})"};
+    const std::tuple<int, std::string> expectedResponse1 {200, R"({"data":{"token":"token"}})"};
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    std::tuple<int, std::string> expectedResponse2 {201, ""};
+    const std::tuple<int, std::string> expectedResponse2 {201, ""};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
         .Times(2)
@@ -121,7 +121,7 @@ TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
                                                                              std::move(*m_agentInfo));
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    std::tuple<int, std::string> expectedResponse {401, ""};
+    const std::tuple<int, std::string> expectedResponse {401, ""};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
@@ -146,10 +146,10 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
                                                                              std::move(*m_agentInfo));
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    std::tuple<int, std::string> expectedResponse1 {200, R"({"data":{"token":"token"}})"};
+    const std::tuple<int, std::string> expectedResponse1 {200, R"({"data":{"token":"token"}})"};
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    std::tuple<int, std::string> expectedResponse2 {400, ""};
+    const std::tuple<int, std::string> expectedResponse2 {400, ""};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
         .Times(2)
@@ -177,10 +177,10 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
                                                                              std::move(*m_agentInfo));
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    std::tuple<int, std::string> expectedResponse1 {200, R"({"data":{"token":"token"}})"};
+    const std::tuple<int, std::string> expectedResponse1 {200, R"({"data":{"token":"token"}})"};
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    std::tuple<int, std::string> expectedResponse2 {201, ""};
+    const std::tuple<int, std::string> expectedResponse2 {201, ""};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
         .Times(2)
@@ -197,7 +197,7 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
     EXPECT_CALL(*m_mockPersistence, Insert(testing::_, testing::_)).Times(1);
 
     // Mock for: m_persistence->SetName(m_name); m_persistence->SetKey(m_key); m_persistence->SetUUID(m_uuid);
-    testing::InSequence seq;
+    const testing::InSequence seq;
     EXPECT_CALL(*m_mockPersistence,
                 Update(testing::Eq("agent_info"),
                        testing::AllOf(
@@ -283,7 +283,7 @@ TEST_F(RegisterTest, AuthenticateWithUserPassword_Success)
                                                                              std::move(*m_agentInfo));
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    std::tuple<int, std::string> expectedResponse {200, R"({"data":{"token":"valid_token"}})"};
+    const std::tuple<int, std::string> expectedResponse {200, R"({"data":{"token":"valid_token"}})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
@@ -311,7 +311,7 @@ TEST_F(RegisterTest, AuthenticateWithUserPassword_Failure)
                                                                              std::move(*m_agentInfo));
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    std::tuple<int, std::string> expectedResponse {401, ""};
+    const std::tuple<int, std::string> expectedResponse {401, ""};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 

@@ -62,7 +62,7 @@ TEST(StopAgentTest, GracefullyStop)
     testing::internal::CaptureStdout();
     signal(SIGCHLD, SigchldHandler);
 
-    pid_t pid = fork();
+    const pid_t pid = fork();
 
     if (pid < 0)
     {
@@ -81,7 +81,7 @@ TEST(StopAgentTest, GracefullyStop)
     const int timeout = 10;
     restart_handler::StopAgent(pid, timeout);
 
-    std::string stdout_logs = testing::internal::GetCapturedStdout();
+    const std::string stdout_logs = testing::internal::GetCapturedStdout();
     EXPECT_EQ(stdout_logs.find("Timeout reached! Forcing agent process termination."), std::string::npos);
     EXPECT_NE(stdout_logs.find("Agent stopped"), std::string::npos);
 }
@@ -92,7 +92,7 @@ TEST(StopAgentTest, ForceStop)
     signal(SIGCHLD, SigchldHandler);
     signal(SIGTERM, SIG_IGN); // Ignore SIGTERM
 
-    pid_t pid = fork();
+    const pid_t pid = fork();
 
     if (pid < 0)
     {
@@ -111,7 +111,7 @@ TEST(StopAgentTest, ForceStop)
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     restart_handler::StopAgent(pid, 2);
 
-    std::string stdout_logs = testing::internal::GetCapturedStdout();
+    const std::string stdout_logs = testing::internal::GetCapturedStdout();
     EXPECT_NE(stdout_logs.find("Timeout reached! Forcing agent process termination."), std::string::npos);
     EXPECT_NE(stdout_logs.find("Agent stopped"), std::string::npos);
 }
@@ -120,7 +120,7 @@ TEST(RestartWithForkTest, ShouldRestartUsingFork)
 {
 
     testing::internal::CaptureStdout();
-    pid_t pid = fork();
+    const pid_t pid = fork();
 
     if (pid < 0)
     {
@@ -153,7 +153,7 @@ TEST(RestartWithForkTest, ShouldRestartUsingFork)
     int status {};
     waitpid(pid, &status, 0);
 
-    std::string stdout_logs = testing::internal::GetCapturedStdout();
+    const std::string stdout_logs = testing::internal::GetCapturedStdout();
     EXPECT_EQ(stdout_logs.find("Agent stopped"), std::string::npos);
     EXPECT_EQ(stdout_logs.find("Starting wazuh agent in a new process"), std::string::npos);
 }

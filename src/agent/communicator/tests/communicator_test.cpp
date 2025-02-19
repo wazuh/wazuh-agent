@@ -66,7 +66,7 @@ TEST(CommunicatorTest, CommunicatorConstructor)
 
     auto configurationParser = std::make_shared<configuration::ConfigurationParser>();
 
-    EXPECT_NO_THROW(communicator::Communicator communicator(
+    EXPECT_NO_THROW(const communicator::Communicator communicator(
         std::move(mockHttpClient), configurationParser, "uuid", "key", nullptr));
 }
 
@@ -74,7 +74,7 @@ TEST(CommunicatorTest, CommunicatorConstructorNoHttpClient)
 {
     auto configurationParser = std::make_shared<configuration::ConfigurationParser>();
 
-    EXPECT_THROW(communicator::Communicator communicator(nullptr, configurationParser, "uuid", "key", nullptr),
+    EXPECT_THROW(const communicator::Communicator communicator(nullptr, configurationParser, "uuid", "key", nullptr),
                  std::runtime_error);
 }
 
@@ -82,8 +82,9 @@ TEST(CommunicatorTest, CommunicatorConstructorNoConfigParser)
 {
     auto mockHttpClient = std::make_unique<MockHttpClient>();
 
-    EXPECT_THROW(communicator::Communicator communicator(std::move(mockHttpClient), nullptr, "uuid", "key", nullptr),
-                 std::runtime_error);
+    EXPECT_THROW(
+        const communicator::Communicator communicator(std::move(mockHttpClient), nullptr, "uuid", "key", nullptr),
+        std::runtime_error);
 }
 
 TEST(CommunicatorTest, StatelessMessageProcessingTask_FailedAuthenticationLeavesEmptyToken)
@@ -340,7 +341,7 @@ TEST(CommunicatorTest, GetGroupConfigurationFromManager_Success)
         [&]() -> boost::asio::awaitable<void>
         {
             communicatorPtr->SendAuthenticationRequest();
-            bool value = co_await communicatorPtr->GetGroupConfigurationFromManager(groupName, dstFilePath);
+            const bool value = co_await communicatorPtr->GetGroupConfigurationFromManager(groupName, dstFilePath);
             std::promise<bool> promise;
             promise.set_value(value);
             result = promise.get_future();
@@ -391,7 +392,7 @@ TEST(CommunicatorTest, GetGroupConfigurationFromManager_Error)
         [&]() -> boost::asio::awaitable<void>
         {
             communicatorPtr->SendAuthenticationRequest();
-            bool value = co_await communicatorPtr->GetGroupConfigurationFromManager(groupName, dstFilePath);
+            const bool value = co_await communicatorPtr->GetGroupConfigurationFromManager(groupName, dstFilePath);
             std::promise<bool> promise;
             promise.set_value(value);
             result = promise.get_future();
@@ -411,7 +412,7 @@ TEST(CommunicatorTest, AuthenticateWithUuidAndKey_Success)
         std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse {200, R"({"token":"valid_token"})"};
+    const intStringTuple expectedResponse {200, R"({"token":"valid_token"})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
@@ -432,7 +433,7 @@ TEST(CommunicatorTest, AuthenticateWithUuidAndKey_Failure)
         std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse {401, R"({"message":"Try again"})"};
+    const intStringTuple expectedResponse {401, R"({"message":"Try again"})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
@@ -450,7 +451,7 @@ TEST(CommunicatorTest, AuthenticateWithUuidAndKey_FailureThrowsException)
         std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse {401, R"({"message":"Invalid key"})"};
+    const intStringTuple expectedResponse {401, R"({"message":"Invalid key"})"};
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 

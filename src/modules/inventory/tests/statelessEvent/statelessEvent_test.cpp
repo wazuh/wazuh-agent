@@ -3,10 +3,9 @@
 
 TEST(PackageEventTest, CreatePackageEvent)
 {
-    nlohmann::json data = {{"package", {{"name", "nginx"}, {"version", "1.18.0"}}}};
-
-    PackageEvent event("create", "2024-01-16T00:00:00Z", data);
-    nlohmann::json result = event.generate();
+    const nlohmann::json data = {{"package", {{"name", "nginx"}, {"version", "1.18.0"}}}};
+    const PackageEvent event("create", "2024-01-16T00:00:00Z", data);
+    const nlohmann::json result = event.generate();
 
     EXPECT_EQ(result["event"]["action"], "package-installed");
     EXPECT_EQ(result["event"]["category"][0], "package");
@@ -15,10 +14,9 @@ TEST(PackageEventTest, CreatePackageEvent)
 
 TEST(NetworkEventTest, CreateNetworkEvent)
 {
-    nlohmann::json data = {{"observer", {{"ingress", {{"interface", {{"name", "eth0"}}}}}}}};
-
-    NetworkEvent event("create", "2024-01-16T00:00:00Z", data);
-    nlohmann::json result = event.generate();
+    const nlohmann::json data = {{"observer", {{"ingress", {{"interface", {{"name", "eth0"}}}}}}}};
+    const NetworkEvent event("create", "2024-01-16T00:00:00Z", data);
+    const nlohmann::json result = event.generate();
 
     EXPECT_EQ(result["event"]["action"], "network-interface-detected");
     EXPECT_EQ(result["event"]["category"][0], "network");
@@ -27,10 +25,9 @@ TEST(NetworkEventTest, CreateNetworkEvent)
 
 TEST(HotfixEventTest, RemoveHotfixEvent)
 {
-    nlohmann::json data = {{"package", {{"hotfix", {{"name", "KB123456"}}}}}};
-
-    HotfixEvent event("remove", "2024-01-16T00:00:00Z", data);
-    nlohmann::json result = event.generate();
+    const nlohmann::json data = {{"package", {{"hotfix", {{"name", "KB123456"}}}}}};
+    const HotfixEvent event("remove", "2024-01-16T00:00:00Z", data);
+    const nlohmann::json result = event.generate();
 
     EXPECT_EQ(result["event"]["action"], "hotfix-removed");
     EXPECT_EQ(result["event"]["category"][0], "hotfix");
@@ -39,15 +36,15 @@ TEST(HotfixEventTest, RemoveHotfixEvent)
 
 TEST(PortEventTest, UpdatePortEvent)
 {
-    nlohmann::json data = nlohmann::json::parse(R"(
+    const nlohmann::json data = nlohmann::json::parse(R"(
         {
             "source": { "port": 8080 },
             "destination": { "port": 443 }
         }
     )");
 
-    PortEvent event("update", "2024-01-16T00:00:00Z", data);
-    nlohmann::json result = event.generate();
+    const PortEvent event("update", "2024-01-16T00:00:00Z", data);
+    const nlohmann::json result = event.generate();
 
     EXPECT_EQ(result["event"]["action"], "port-updated");
     EXPECT_EQ(result["event"]["category"][0], "network");
@@ -57,10 +54,9 @@ TEST(PortEventTest, UpdatePortEvent)
 
 TEST(SystemEventTest, CreateSystemEvent)
 {
-    nlohmann::json data = {{"host", {{"hostname", "server01"}, {"os", {{"version", "Ubuntu 22.04"}}}}}};
-
-    SystemEvent event("create", "2024-01-16T00:00:00Z", data);
-    nlohmann::json result = event.generate();
+    const nlohmann::json data = {{"host", {{"hostname", "server01"}, {"os", {{"version", "Ubuntu 22.04"}}}}}};
+    const SystemEvent event("create", "2024-01-16T00:00:00Z", data);
+    const nlohmann::json result = event.generate();
 
     EXPECT_EQ(result["event"]["action"], "system-detected");
     EXPECT_EQ(result["event"]["category"][0], "host");

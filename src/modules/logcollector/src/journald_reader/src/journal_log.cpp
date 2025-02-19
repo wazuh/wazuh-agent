@@ -21,28 +21,28 @@ JournalLog::~JournalLog()
 
 void JournalLog::Open()
 {
-    int ret = sd_journal_open(&m_journal, SD_JOURNAL_LOCAL_ONLY);
+    const int ret = sd_journal_open(&m_journal, SD_JOURNAL_LOCAL_ONLY);
     ThrowIfError(ret, "open journal");
     LogInfo("Journal opened successfully");
 }
 
 bool JournalLog::Next()
 {
-    int ret = sd_journal_next(m_journal);
+    const int ret = sd_journal_next(m_journal);
     ThrowIfError(ret, "next entry");
     return ret > 0;
 }
 
 bool JournalLog::Previous()
 {
-    int ret = sd_journal_previous(m_journal);
+    const int ret = sd_journal_previous(m_journal);
     ThrowIfError(ret, "previous entry");
     return ret > 0;
 }
 
 bool JournalLog::SeekHead()
 {
-    int ret = sd_journal_seek_head(m_journal);
+    const int ret = sd_journal_seek_head(m_journal);
     ThrowIfError(ret, "seek head");
     return ret >= 0;
 }
@@ -65,7 +65,7 @@ bool JournalLog::SeekTail()
 
 bool JournalLog::SeekTimestamp(uint64_t timestamp)
 {
-    int ret = sd_journal_seek_realtime_usec(m_journal, timestamp);
+    const int ret = sd_journal_seek_realtime_usec(m_journal, timestamp);
     ThrowIfError(ret, "seek timestamp");
     return ret >= 0;
 }
@@ -74,7 +74,7 @@ std::string JournalLog::GetData(const std::string& field) const
 {
     const void* data = nullptr;
     size_t length = 0;
-    int ret = sd_journal_get_data(m_journal, field.c_str(), &data, &length);
+    const int ret = sd_journal_get_data(m_journal, field.c_str(), &data, &length);
     if (ret == -ENOENT)
     {
         throw JournalLogException("Field not present in current journal entry");
@@ -82,8 +82,8 @@ std::string JournalLog::GetData(const std::string& field) const
     ThrowIfError(ret, "get data");
 
     const char* str = static_cast<const char*>(data);
-    std::string_view full_str(str, length);
-    size_t prefix_len = field.length() + 1;
+    const std::string_view full_str(str, length);
+    const size_t prefix_len = field.length() + 1;
 
     return std::string(full_str.substr(prefix_len));
 }
@@ -91,7 +91,7 @@ std::string JournalLog::GetData(const std::string& field) const
 uint64_t JournalLog::GetTimestamp() const
 {
     uint64_t timestamp = 0;
-    int ret = sd_journal_get_realtime_usec(m_journal, &timestamp);
+    const int ret = sd_journal_get_realtime_usec(m_journal, &timestamp);
     ThrowIfError(ret, "get timestamp");
     return timestamp;
 }
@@ -99,7 +99,7 @@ uint64_t JournalLog::GetTimestamp() const
 uint64_t JournalLog::GetOldestTimestamp() const
 {
     uint64_t timestamp = 0;
-    int ret = sd_journal_get_cutoff_realtime_usec(m_journal, &timestamp, nullptr);
+    const int ret = sd_journal_get_cutoff_realtime_usec(m_journal, &timestamp, nullptr);
     ThrowIfError(ret, "get oldest timestamp");
     return timestamp;
 }
@@ -196,7 +196,7 @@ uint64_t JournalLog::GetEpochTime()
 std::string JournalLog::GetCursor() const
 {
     char* rawCursor = nullptr;
-    int ret = sd_journal_get_cursor(m_journal, &rawCursor);
+    const int ret = sd_journal_get_cursor(m_journal, &rawCursor);
     ThrowIfError(ret, "get cursor");
 
     if (!rawCursor)
@@ -210,7 +210,7 @@ std::string JournalLog::GetCursor() const
 
 bool JournalLog::SeekCursor(const std::string& cursor)
 {
-    int ret = sd_journal_seek_cursor(m_journal, cursor.c_str());
+    const int ret = sd_journal_seek_cursor(m_journal, cursor.c_str());
     if (ret < 0)
     {
         LogWarn("Failed to seek to cursor: {}", strerror(-ret));
@@ -221,7 +221,7 @@ bool JournalLog::SeekCursor(const std::string& cursor)
 
 bool JournalLog::CursorValid(const std::string& cursor) const
 {
-    int ret = sd_journal_test_cursor(m_journal, cursor.c_str());
+    const int ret = sd_journal_test_cursor(m_journal, cursor.c_str());
     return ret > 0;
 }
 
@@ -246,7 +246,7 @@ void JournalLog::AddFilterGroup(const FilterGroup& group, bool ignoreIfMissing)
             std::string match = filter.field + (filter.exact_match ? "=" : "~") + std::string(value);
             LogDebug("Adding journal match: {}", match);
 
-            int ret = sd_journal_add_match(m_journal, match.c_str(), 0);
+            const int ret = sd_journal_add_match(m_journal, match.c_str(), 0);
             if (ret < 0)
             {
                 if (!ignoreIfMissing)
@@ -287,7 +287,7 @@ bool JournalLog::ApplyFilterGroup(const FilterGroup& group, bool ignoreIfMissing
                        {
                            try
                            {
-                               std::string fieldValue = GetData(filter.field);
+                               const std::string fieldValue = GetData(filter.field);
                                return filter.Matches(fieldValue);
                            }
                            catch (const JournalLogException&)

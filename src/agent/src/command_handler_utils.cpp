@@ -123,6 +123,6 @@ void ReportCommandResult(const module_command::CommandEntry& commandEntry,
     resultJson["command"]["result"]["code"] = commandEntry.ExecutionResult.ErrorCode;
     resultJson["command"]["result"]["message"] = commandEntry.ExecutionResult.Message;
 
-    Message message {MessageType::STATEFUL, {resultJson}, metadata["module"], "", metadata.dump()};
+    const Message message {MessageType::STATEFUL, {resultJson}, metadata["module"], "", metadata.dump()};
     messageQueue->push(message);
 }

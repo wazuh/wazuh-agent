@@ -224,7 +224,7 @@ void AgentInfo::LoadEndpointInfo()
 {
     if (m_getOSInfo != nullptr)
     {
-        nlohmann::json osInfo = m_getOSInfo();
+        const nlohmann::json osInfo = m_getOSInfo();
         m_endpointInfo["hostname"] = osInfo.value("hostname", "Unknown");
         m_endpointInfo["architecture"] = osInfo.value("architecture", "Unknown");
         m_endpointInfo["os"] = nlohmann::json::object();
@@ -235,7 +235,7 @@ void AgentInfo::LoadEndpointInfo()
 
     if (m_getNetworksInfo != nullptr)
     {
-        nlohmann::json networksInfo = m_getNetworksInfo();
+        const nlohmann::json networksInfo = m_getNetworksInfo();
         m_endpointInfo["ip"] = GetActiveIPAddresses(networksInfo);
     }
 }

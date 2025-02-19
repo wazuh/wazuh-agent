@@ -19,7 +19,7 @@ void InvNormalizer::RemoveExcluded(const std::string& type, nlohmann::json& data
         {
             try
             {
-                std::regex pattern {exclusionItem["pattern"].get_ref<const std::string&>()};
+                const std::regex pattern {exclusionItem["pattern"].get_ref<const std::string&>()};
                 const auto& fieldName {exclusionItem["field_name"].get_ref<const std::string&>()};
 
                 if (data.is_array())
@@ -68,7 +68,7 @@ static void NormalizeItem(const nlohmann::json& dictionary, nlohmann::json& item
         if (itFindPattern != dictItem.end() && itFindField != dictItem.end())
         {
             const auto fieldIt {item.find(itFindField->get_ref<const std::string&>())};
-            std::regex pattern {itFindPattern->get_ref<const std::string&>()};
+            const std::regex pattern {itFindPattern->get_ref<const std::string&>()};
 
             if (fieldIt == item.end() || !std::regex_match(fieldIt->get_ref<const std::string&>(), pattern))
             {
@@ -88,7 +88,7 @@ static void NormalizeItem(const nlohmann::json& dictionary, nlohmann::json& item
 
         if (itReplacePattern != dictItem.end() && itReplaceField != dictItem.end() && itReplaceValue != dictItem.end())
         {
-            std::regex pattern {itReplacePattern->get_ref<const std::string&>()};
+            const std::regex pattern {itReplacePattern->get_ref<const std::string&>()};
             const auto fieldIt {item.find(itReplaceField->get_ref<const std::string&>())};
 
             if (fieldIt != item.end())
@@ -136,7 +136,6 @@ InvNormalizer::GetTypeValues(const std::string& configFile, const std::string& t
     try
     {
         std::ifstream config {configFile};
-        nlohmann::json data;
 
         if (config.is_open())
         {
