@@ -1,17 +1,14 @@
 #include <communicator.hpp>
+
 #include <config.h>
 #include <http_request_params.hpp>
+#include <logger.hpp>
 
 #include <boost/asio.hpp>
-
-#include <nlohmann/json.hpp>
-
+#include <boost/url.hpp>
 #include <jwt-cpp/jwt.h>
 #include <jwt-cpp/traits/nlohmann-json/traits.h>
-
-#include <boost/url.hpp>
-
-#include <logger.hpp>
+#include <nlohmann/json.hpp>
 
 #include <algorithm>
 #include <chrono>
