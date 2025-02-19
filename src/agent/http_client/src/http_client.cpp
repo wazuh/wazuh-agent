@@ -13,6 +13,7 @@
 
 #include <logger.hpp>
 
+#include <sstream>
 #include <string>
 
 namespace
@@ -213,6 +214,10 @@ namespace http_client
             }
 
             const auto req = CreateHttpRequest(params);
+
+            std::stringstream ss;
+            ss << req;
+            LogCritical("Request: {}", ss.str());
 
             socket->Write(req, ec);
             io_context.run();

@@ -24,6 +24,7 @@ namespace config
         constexpr auto DEFAULT_VERIFICATION_MODE = "@DEFAULT_VERIFICATION_MODE@";
         constexpr std::array<const char*, 3> VALID_VERIFICATION_MODES = {"full", "certificate", "none"};
         constexpr auto DEFAULT_COMMANDS_REQUEST_TIMEOUT = @DEFAULT_COMMANDS_REQUEST_TIMEOUT@;
+        constexpr auto DEFAULT_SHUTDOWN_NOTIFY_TIMEOUT = @DEFAULT_SHUTDOWN_NOTIFY_TIMEOUT@;
     }
 
     namespace logcollector

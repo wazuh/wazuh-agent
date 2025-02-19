@@ -98,6 +98,13 @@ namespace communicator
                                                                COMMANDS_REQUEST_TIMEOUT_MAX,
                                                                "agent",
                                                                "commands_request_timeout");
+
+        m_shutdownNotifyTimeout =
+            configurationParser->GetTimeConfigInRangeOrDefault(config::agent::DEFAULT_SHUTDOWN_NOTIFY_TIMEOUT,
+                                                               COMMANDS_REQUEST_TIMEOUT_MIN,
+                                                               COMMANDS_REQUEST_TIMEOUT_MAX,
+                                                               "agent",
+                                                               "shutdown_notify_timeout");
     }
 
     bool Communicator::SendAuthenticationRequest()
@@ -436,7 +443,8 @@ namespace communicator
                                                                   m_verificationMode,
                                                                   *m_token,
                                                                   "",
-                                                                  std::move(messageBody));
+                                                                  std::move(messageBody),
+                                                                  m_shutdownNotifyTimeout);
 
             const auto [errorCode, errorMessage] = m_httpClient->PerformHttpRequest(reqParams);
 

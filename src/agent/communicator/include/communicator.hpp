@@ -147,5 +147,8 @@ namespace communicator
 
         /// @brief Timeout for command requests to manager in millisecconds.
         std::time_t m_timeoutCommands;
+
+        /// @brief Timeout for shutdown notification in milliseconds.
+        std::time_t m_shutdownNotifyTimeout;
     };
 } // namespace communicator
