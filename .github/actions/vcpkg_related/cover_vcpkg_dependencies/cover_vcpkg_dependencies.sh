@@ -1,17 +1,12 @@
 #! /usr/bin/env bash
 # Copyright (C) 2024, Wazuh Inc.
 
-# Check vcpkg installation and run it if needed
-if [[ $(vcpkg --version 2>/dev/null) =~ [0-9] ]]; then
-    echo "vcpkg already installed."
-else
-    git clone --branch master --single-branch https://github.com/microsoft/vcpkg.git
-    cd vcpkg && ./bootstrap-vcpkg.sh
-    export VCPKG_ROOT=$(pwd)
-    export PATH=$VCPKG_ROOT:$PATH
+# Check mono installation and run it if needed
+if [ -z "$1" ]; then
+    echo "Missing TOKEN, provide it."
+    exit 1
 fi
 
-# Check mono installation and run it if needed
 if [[ $(mono --version 2>/dev/null) =~ [0-9] ]]; then
     echo "mono already installed."
 else
@@ -31,12 +26,14 @@ else
 fi
 
 # Set nuget as binary caching store
-mono `vcpkg fetch nuget | tail -n 1` \
+NUGET_PATH="/usr/local/bin/nuget"
+curl -o $NUGET_PATH https://dist.nuget.org/win-x86-commandline/v6.10.2/nuget.exe
+mono $NUGET_PATH \
     sources add \
     -source "https://nuget.pkg.github.com/wazuh/index.json" \
     -name "GitHub" \
     -username "wazuh" \
-    -password "$GH_TOKEN"
-mono `vcpkg fetch nuget | tail -n 1` \
-    setapikey "$GH_TOKEN" \
+    -password "$1"
+mono $NUGET_PATH \
+    setapikey "$1" \
     -source "https://nuget.pkg.github.com/wazuh/index.json"

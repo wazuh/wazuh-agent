@@ -61,5 +61,5 @@ mkdir build -Force
 $Env:CUSTOM_PACKAGE_NAME = $MSI_NAME
 $Env:CUSTOM_CMAKE_CONFIG = $CMAKE_CONFIG
 cmake src -B build -DBUILD_TESTS=$BUILD_TESTS -G "Visual Studio 17 2022" -A x64
-cmake --build build --config $CMAKE_CONFIG
+cmake --build build --config $CMAKE_CONFIG --parallel (Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors
 cd $originalDir

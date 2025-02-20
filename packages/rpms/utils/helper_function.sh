@@ -29,6 +29,7 @@ setup_build(){
     cd ${build_dir}/${BUILD_TARGET} && tar czf "${rpm_build_dir}/SOURCES/${package_name}.tar.gz" "${package_name}"
 }
 
+
 set_debug(){
     local debug="$1"
     if [[ "${debug}" == "no" ]]; then

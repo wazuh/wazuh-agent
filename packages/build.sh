@@ -23,7 +23,7 @@ build_directories() {
   else
     package_name="wazuh-${BUILD_TARGET}-${wazuh_version}"
     source_dir="${build_folder}/${package_name}"
-    cp -R $wazuh_dir "$source_dir"
+    cp -aR $wazuh_dir "$source_dir"
   fi
   echo "$source_dir"
 }

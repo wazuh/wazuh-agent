@@ -1,0 +1,27 @@
+name: 'Upload file to S3'
+
+inputs:
+  s3_uri: 
+    description: 'S3 URI'
+    required: true
+  uploaded_file_name: 
+    description: 'Name of the uploaded file'
+    required: true
+  uploaded_file_location: 
+    description: 'Location of the uploaded file'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Upload file to S3
+      run: |
+        if [ -s ${{ inputs.uploaded_file_location }}/${{ inputs.uploaded_file_name }} ]; then
+          aws s3 cp ${{ inputs.uploaded_file_location }}/${{ inputs.uploaded_file_name }} ${{ inputs.s3_uri }}/
+          s3uri="${{ inputs.s3_uri }}/${{ inputs.uploaded_file_name }}"
+          echo "S3 URI: ${s3uri}"
+        else
+          echo "File is empty or does not exist."
+          exit 1
+        fi
+      shell: bash

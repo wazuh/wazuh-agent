@@ -1,0 +1,53 @@
+name: 'Package Mac OS Binaries'
+description: 'Package Mac OS Binaries'
+inputs:
+  architecture:
+    description: 'Building architecture'
+    required: true
+  revision:
+    description: 'Package revision'
+    required: false
+  is_stage:
+    description: 'Stage package'
+    required: false
+  checksum:
+    description: 'Generate package checksum'
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Download wazuh-agent-binaries.zip
+      uses: actions/download-artifact@v4
+      with:
+        name: wazuh-agent-binaries-${{ inputs.architecture }}
+
+    - name: Set vars to build macOS package
+      shell: bash
+      run: |
+        FLAGS="-a ${{ inputs.architecture }} -j $(sysctl -n hw.ncpu) -r ${{ inputs.revision }} -s /tmp --verbose "
+        if [ "${{ inputs.is_stage }}" == "true" ]; then FLAGS+="--is_stage "; fi
+        if [ "${{ inputs.checksum }}" == "true" ]; then FLAGS+="--checksum "; fi
+        echo "FLAGS=$FLAGS" >> $GITHUB_ENV
+
+    - name: Build macOS package
+      shell: bash      
+      run: |
+        sudo unzip -o wazuh-agent-binaries-${{ inputs.architecture }}.zip -d /
+        bash packages/macos/generate_wazuh_packages.sh -i
+        echo 'generate_wazuh_packages.sh ${{ env.FLAGS }}'
+        sudo bash packages/macos/generate_wazuh_packages.sh ${{ env.FLAGS }}
+        PACKAGE_NAME=$(ls /tmp | grep "wazuh-agent.*pkg$") && echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
+
+    - name: Upload wazuh agent package
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.PACKAGE_NAME }}
+        path: /tmp/${{ env.PACKAGE_NAME }}
+
+    - name: Upload checksums to artifact
+      if: ${{ inputs.checksum == 'true'}}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.PACKAGE_NAME }}.sha512
+        path: /tmp/${{ env.PACKAGE_NAME }}.sha512
