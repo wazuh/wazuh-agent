@@ -2,17 +2,17 @@
 
 ## Introduction
 
-Logcollector is the agent module that adds the ability to collect system logs,
+**Logcollector** is the agent module that adds the ability to collect system logs,
 both by reading plain text files and by collecting messages from the operating
 system API.
 
-### Reference
+## Configuration
 
 | Mandatory | Option    | Description                | Default |
 | :-------: | --------- | -------------------------- | ------- |
 |           | `enabled` | Sets the module as enabled | yes     |
 
-#### File Collector
+### File Collector
 
 ```yaml
 logcollector:
@@ -31,13 +31,12 @@ The File collector handles plain-text log files. It needs a file path to work.
 |           | read_interval   | Time in milliseconds to recheck for available logs       | 500     |
 |     ✔️     | localfiles      | Vector of file paths to monitor                          |         |
 
-
 ```json
 {"collector":"file","module":"logcollector"}
 {"event":{"created":"2025-01-22T21:45:01.916Z","original":"2025-01-22T18:45:01.555243-03:00 box CRON[23505]: pam_unix(cron:session): session closed for user root"},"log":{"file":{"path":"/var/log/auth.log"}}}
 ```
 
-#### Journald Collector
+### Journald Collector
 
 ```yaml
 logcollector:
@@ -84,7 +83,7 @@ This collector gets logs from Journald on Linux. It needs a field and a value to
 |           | journald.ignore_if_missing | Boolean to ignore the filtering condition for logs without the specified field               | false   |
 |           | journald.conditions        | Vector of journald fields to filter to be applied simultaneously                             |         |
 
-#### Windows Collector
+### Windows Collector
 
 ```yaml
 logcollector:
@@ -110,7 +109,7 @@ This collector gets logs from the Windows Event Viewer. It needs a channel and a
 |     ✔️     | windows.channel | Channel name to be used for subscription          |         |
 |     ✔️     | windows.query   | Query to apply to the channel                     |         |
 
-#### macOS (ULS) Collector
+### macOS (ULS) Collector
 
 ```yaml
 logcollector:
@@ -144,72 +143,3 @@ This collector gets logs from macOS through the Unified Logging System. It needs
 |     ✔️     | macos.level   | Log verbosity level: debug, info, notice, error or fault                |         |
 |     ✔️     | macos.type    | Limits the log type; possible values (combinable): activity, log, trace |         |
 
-## Class Diagram
-
-```mermaid
-classDiagram
-    class ModuleWrapper
-    class Logcollector {
-        - context : io_context
-        - m_readers : MultiTypeQueue
-        + Start()
-        + Setup(ConfigurationParser)
-        + Stop()
-        + ExecuteCommand(CommandResult(string))
-        + SetPushMessageFunction(std::function)
-        + SendMessage()
-        + EnqueueTask()
-        + AddReader()
-        + Wait()
-    }
-    class IReader {
-        - logcollector
-        + Run()
-        + Stop()
-    }
-    class FileReader {
-        - pattern : string
-        - fileWait : int
-        - reloadInterval : int
-        + FileReader(pattern, fileWait, reloadInterval)
-        + Run()
-        + Stop()
-        - Reload()
-    }
-    class LocalFile {
-        - filename : string
-        + LocalFile(filename)
-    }
-    class JournaldReader {
-        - filters : list
-        - ignoreIfMissing : bool
-        - fileWait : int
-        + JournaldReader(filters, ignoreIfMissing, fileWait)
-        + Run()
-        + Stop()
-    }
-    class WindowsEventTracerReader {
-        - channel : string
-        - query : string
-        - refreshInterval : int
-        + WindowsEventTracerReader(channel, query, refreshInterval)
-        + Run()
-        + Stop()
-    }
-    class MacosReader {
-        - query : string
-        - logLevel : string
-        - logTypes : list
-        - fileWait : int
-        + MacosReader(query, logLevel, logTypes, fileWait)
-        + Run()
-        + Stop()
-    }
-    ModuleWrapper <-- Logcollector
-    Logcollector o-- IReader
-    IReader <|-- FileReader
-    IReader <|-- JournaldReader
-    IReader <|-- WindowsEventTracerReader
-    IReader <|-- MacosReader
-    FileReader o-- LocalFile
-```

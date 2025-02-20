@@ -102,7 +102,7 @@ logcollector:
       type: trace,activity,log
 ```
 
-  #### Global Configuration
+#### Global Configuration
 
 | Mandatory | Option            | Description                                        | Default |
 | :-------: | ----------------- | -------------------------------------------------- | ------- |
@@ -114,13 +114,13 @@ logcollector:
 |           | `windows`         | Configuration related to Windows event log readers | N/A     |
 |           | `macos`           | Configuration related to macOS log readers         | N/A     |
 
-  #### Localfiles Configuration
+#### Localfiles Configuration
 
 | Mandatory | Option     | Description              | Default |
 | :-------: | ---------  | ------------------------ | ------- |
 |    ✅     | `location` | Path to local log files  | N/A     |
 
-  #### Journald Configuration
+#### Journald Configuration
 
 | Mandatory | Option              | Description                      | Default         |
 | :-------: | ------------------- | -------------------------------- | --------------- |
@@ -129,14 +129,14 @@ logcollector:
 |           | `exact_match`       | Whether the match must be exact  | true            |
 |           | `ignore_if_missing` | Ignore entry if field is missing | false           |
 
-  #### Windows Configuration
+#### Windows Configuration
 
 | Mandatory | Option    | Description               | Default |
 | :-------: | --------- | ------------------------- | ------- |
 |    ✅     | `channel` | Windows event log channel | N/A     |
 |    ✅     | `query`   | Windows event log query   | N/A     |
 
-  #### macOS Configuration
+#### macOS Configuration
 
 | Mandatory | Option  | Description                                         | Default |
 | :-------: | ------- | --------------------------------------------------- | ------- |
