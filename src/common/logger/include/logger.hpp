@@ -55,17 +55,8 @@ class Logger
 public:
     Logger();
 
-    /// @brief Add a sink to the specified logger
-    static void AddStdErrSink()
-    {
-        std::shared_ptr<spdlog::logger> logger = spdlog::get(LOGGER_NAME);
-        if (logger != nullptr)
-        {
-            auto stdOutSink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
-            logger->sinks().clear();
-            logger->sinks().push_back(stdOutSink);
-        }
-    }
+    /// @brief Add platform-specific sinks to the logger.
+    static void AddPlatformSpecificSink();
 };
 
 #else

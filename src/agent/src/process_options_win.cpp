@@ -15,7 +15,7 @@ void StartAgent(const std::string& configFilePath)
 {
     try
     {
-        Logger::AddStdErrSink();
+        Logger::AddPlatformSpecificSink();
         instance_handler::InstanceHandler instanceHandler = instance_handler::GetInstanceHandler(configFilePath);
 
         if (!instanceHandler.isLockAcquired())
