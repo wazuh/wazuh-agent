@@ -6,32 +6,35 @@
 #include <process_options.hpp>
 #include <restart_handler.hpp>
 
-/// Command-line options
-static const auto OPT_HELP {"help"};
-static const auto OPT_HELP_DESC {"Display this help menu"};
-static const auto OPT_RUN {"run"};
-static const auto OPT_RUN_DESC {"Run agent in foreground (this is the default behavior)"};
-static const auto OPT_STATUS {"status"};
-static const auto OPT_STATUS_DESC {"Check if the agent is running (running or stopped)"};
-static const auto OPT_CONFIG_FILE {"config-file"};
-static const auto OPT_CONFIG_FILE_DESC {"Path to the Wazuh configuration file (optional)"};
-static const auto OPT_REGISTER_AGENT {"register-agent"};
-static const auto OPT_REGISTER_AGENT_DESC {"Use this option to register as a new agent"};
-static const auto OPT_URL {"url"};
-static const auto OPT_URL_DESC {"URL of the server management API"};
-static const auto OPT_USER {"user"};
-static const auto OPT_USER_DESC {"User to authenticate with the server management API"};
-static const auto OPT_PASS {"password"};
-static const auto OPT_PASS_DESC {"Password to authenticate with the server management API"};
-static const auto OPT_KEY {"key"};
-static const auto OPT_KEY_DESC {"Key to register the agent (optional)"};
-static const auto OPT_NAME {"name"};
-static const auto OPT_NAME_DESC {"Name to register the agent (optional)"};
-static const auto OPT_VERIFICATION_MODE {"verification-mode"};
-static const auto OPT_VERIFICATION_MODE_DESC {
-    "Verification mode to be applied on HTTPS connection to the server (optional)"};
-
 namespace program_options = boost::program_options;
+
+namespace
+{
+    /// Command-line options
+    const auto OPT_HELP {"help"};
+    const auto OPT_HELP_DESC {"Display this help menu"};
+    const auto OPT_RUN {"run"};
+    const auto OPT_RUN_DESC {"Run agent in foreground (this is the default behavior)"};
+    const auto OPT_STATUS {"status"};
+    const auto OPT_STATUS_DESC {"Check if the agent is running (running or stopped)"};
+    const auto OPT_CONFIG_FILE {"config-file"};
+    const auto OPT_CONFIG_FILE_DESC {"Path to the Wazuh configuration file (optional)"};
+    const auto OPT_REGISTER_AGENT {"register-agent"};
+    const auto OPT_REGISTER_AGENT_DESC {"Use this option to register as a new agent"};
+    const auto OPT_URL {"url"};
+    const auto OPT_URL_DESC {"URL of the server management API"};
+    const auto OPT_USER {"user"};
+    const auto OPT_USER_DESC {"User to authenticate with the server management API"};
+    const auto OPT_PASS {"password"};
+    const auto OPT_PASS_DESC {"Password to authenticate with the server management API"};
+    const auto OPT_KEY {"key"};
+    const auto OPT_KEY_DESC {"Key to register the agent (optional)"};
+    const auto OPT_NAME {"name"};
+    const auto OPT_NAME_DESC {"Name to register the agent (optional)"};
+    const auto OPT_VERIFICATION_MODE {"verification-mode"};
+    const auto OPT_VERIFICATION_MODE_DESC {
+        "Verification mode to be applied on HTTPS connection to the server (optional)"};
+} // namespace
 
 AgentRunner::AgentRunner(int argc, char* argv[])
 {
