@@ -23,6 +23,9 @@ private:
     /// @return 0 if the registration is successful, 1 otherwise.
     int RegisterAgent() const;
 
+    /// @brief Displays the current status of the agent.
+    void StatusAgent() const;
+
     boost::program_options::variables_map m_options;
     boost::program_options::options_description m_desc = {"Allowed options", 120};
 };

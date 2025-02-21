@@ -44,7 +44,6 @@ list(APPEND SOURCES
     src/agent_runner.cpp
     src/command_handler_utils.cpp
     src/message_queue_utils.cpp
-    src/process_options.cpp
     src/signal_handler.cpp
     src/instance_handler.cpp
 )

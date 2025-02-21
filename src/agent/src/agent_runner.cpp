@@ -4,9 +4,12 @@
 #include <config.h>
 #include <configuration_parser.hpp>
 #include <http_client.hpp>
+#include <instance_handler.hpp>
 #include <logger.hpp>
 #include <process_options.hpp>
 #include <restart_handler.hpp>
+
+#include <fmt/format.h>
 
 #include <iostream>
 #include <string>
@@ -78,7 +81,7 @@ int AgentRunner::Run() const
     }
     if (m_options.count(OPT_STATUS))
     {
-        StatusAgent(m_options[OPT_CONFIG_FILE].as<std::string>());
+        StatusAgent();
     }
     else if (const auto platformSpecificResult = HandlePlatformSpecificOptions(); platformSpecificResult.has_value())
     {
@@ -144,4 +147,11 @@ int AgentRunner::RegisterAgent() const
     }
 
     return 0;
+}
+
+void AgentRunner::StatusAgent() const
+{
+    const auto configFilePath = m_options[OPT_CONFIG_FILE].as<std::string>();
+    const auto status = instance_handler::GetAgentStatus(configFilePath);
+    std::cout << fmt::format("wazuh-agent status: {}\n", status);
 }

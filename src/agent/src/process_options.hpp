@@ -7,10 +7,6 @@
 /// @param configFilePath The file path to the configuration file used for starting the agent.
 void StartAgent(const std::string& configFilePath);
 
-/// @brief Displays the current status of the agent.
-/// @param configFilePath The file path to the configuration file used to get the status of the agent.
-void StatusAgent(const std::string& configFilePath);
-
 #ifdef _WIN32
 /// @brief Installs the agent as a service.
 /// @return True if the installation is successful, false otherwise.
