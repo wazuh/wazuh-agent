@@ -68,7 +68,7 @@ protected:
     }
 
     std::unique_ptr<AgentInfo> m_agentInfo;
-    std::unique_ptr<agent_registration::AgentRegistration> m_registration;
+    std::unique_ptr<agent_registration::AgentEnrollment> m_registration;
     MockPersistence* m_mockPersistence = nullptr;
 };
 
@@ -77,15 +77,15 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     const auto mockHttpClientPtr = mockHttpClient.get();
 
-    m_registration = std::make_unique<agent_registration::AgentRegistration>(std::move(mockHttpClient),
-                                                                             "https://localhost:55000",
-                                                                             "user",
-                                                                             "password",
-                                                                             "",
-                                                                             "",
-                                                                             ".",
-                                                                             "full",
-                                                                             std::move(*m_agentInfo));
+    m_registration = std::make_unique<agent_registration::AgentEnrollment>(std::move(mockHttpClient),
+                                                                           "https://localhost:55000",
+                                                                           "user",
+                                                                           "password",
+                                                                           "",
+                                                                           "",
+                                                                           ".",
+                                                                           "full",
+                                                                           std::move(*m_agentInfo));
 
     const std::tuple<int, std::string> expectedResponse1 {http_client::HTTP_CODE_OK, R"({"data":{"token":"token"}})"};
     const std::tuple<int, std::string> expectedResponse2 {http_client::HTTP_CODE_CREATED, ""};
@@ -106,15 +106,15 @@ TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     const auto mockHttpClientPtr = mockHttpClient.get();
 
-    m_registration = std::make_unique<agent_registration::AgentRegistration>(std::move(mockHttpClient),
-                                                                             "https://localhost:55000",
-                                                                             "user",
-                                                                             "password",
-                                                                             "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj",
-                                                                             "agent_name",
-                                                                             ".",
-                                                                             "certificate",
-                                                                             std::move(*m_agentInfo));
+    m_registration = std::make_unique<agent_registration::AgentEnrollment>(std::move(mockHttpClient),
+                                                                           "https://localhost:55000",
+                                                                           "user",
+                                                                           "password",
+                                                                           "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj",
+                                                                           "agent_name",
+                                                                           ".",
+                                                                           "certificate",
+                                                                           std::move(*m_agentInfo));
 
     const std::tuple<int, std::string> expectedResponse {http_client::HTTP_CODE_UNAUTHORIZED, ""};
 
@@ -129,15 +129,15 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     const auto mockHttpClientPtr = mockHttpClient.get();
 
-    m_registration = std::make_unique<agent_registration::AgentRegistration>(std::move(mockHttpClient),
-                                                                             "https://localhost:55000",
-                                                                             "user",
-                                                                             "password",
-                                                                             "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj",
-                                                                             "agent_name",
-                                                                             ".",
-                                                                             "none",
-                                                                             std::move(*m_agentInfo));
+    m_registration = std::make_unique<agent_registration::AgentEnrollment>(std::move(mockHttpClient),
+                                                                           "https://localhost:55000",
+                                                                           "user",
+                                                                           "password",
+                                                                           "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj",
+                                                                           "agent_name",
+                                                                           ".",
+                                                                           "none",
+                                                                           std::move(*m_agentInfo));
 
     const std::tuple<int, std::string> expectedResponse1 {http_client::HTTP_CODE_OK, R"({"data":{"token":"token"}})"};
     const std::tuple<int, std::string> expectedResponse2 {http_client::HTTP_CODE_BAD_REQUEST, ""};
@@ -156,15 +156,15 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     const auto mockHttpClientPtr = mockHttpClient.get();
 
-    m_registration = std::make_unique<agent_registration::AgentRegistration>(std::move(mockHttpClient),
-                                                                             "https://localhost:55000",
-                                                                             "user",
-                                                                             "password",
-                                                                             "",
-                                                                             "agent_name",
-                                                                             ".",
-                                                                             "full",
-                                                                             std::move(*m_agentInfo));
+    m_registration = std::make_unique<agent_registration::AgentEnrollment>(std::move(mockHttpClient),
+                                                                           "https://localhost:55000",
+                                                                           "user",
+                                                                           "password",
+                                                                           "",
+                                                                           "agent_name",
+                                                                           ".",
+                                                                           "full",
+                                                                           std::move(*m_agentInfo));
 
     const std::tuple<int, std::string> expectedResponse1 {http_client::HTTP_CODE_OK, R"({"data":{"token":"token"}})"};
     const std::tuple<int, std::string> expectedResponse2 {http_client::HTTP_CODE_CREATED, ""};
@@ -224,29 +224,29 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
 
 TEST_F(RegisterTest, RegistrationTestFailWithBadKey)
 {
-    ASSERT_THROW(agent_registration::AgentRegistration(std::make_unique<MockHttpClient>(),
-                                                       "https://localhost:55000",
-                                                       "user",
-                                                       "password",
-                                                       "badKey",
-                                                       "agent_name",
-                                                       ".",
-                                                       "full",
-                                                       std::move(*m_agentInfo)),
+    ASSERT_THROW(agent_registration::AgentEnrollment(std::make_unique<MockHttpClient>(),
+                                                     "https://localhost:55000",
+                                                     "user",
+                                                     "password",
+                                                     "badKey",
+                                                     "agent_name",
+                                                     ".",
+                                                     "full",
+                                                     std::move(*m_agentInfo)),
                  std::invalid_argument);
 }
 
 TEST_F(RegisterTest, RegistrationTestFailWithHttpClientError)
 {
-    ASSERT_THROW(agent_registration::AgentRegistration(nullptr,
-                                                       "https://localhost:55000",
-                                                       "user",
-                                                       "password",
-                                                       "",
-                                                       "agent_name",
-                                                       ".",
-                                                       "full",
-                                                       std::move(*m_agentInfo)),
+    ASSERT_THROW(agent_registration::AgentEnrollment(nullptr,
+                                                     "https://localhost:55000",
+                                                     "user",
+                                                     "password",
+                                                     "",
+                                                     "agent_name",
+                                                     ".",
+                                                     "full",
+                                                     std::move(*m_agentInfo)),
                  std::runtime_error);
 }
 
@@ -255,15 +255,15 @@ TEST_F(RegisterTest, AuthenticateWithUserPassword_Success)
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     const auto mockHttpClientPtr = mockHttpClient.get();
 
-    m_registration = std::make_unique<agent_registration::AgentRegistration>(std::move(mockHttpClient),
-                                                                             "https://localhost:55000",
-                                                                             "user",
-                                                                             "password",
-                                                                             "",
-                                                                             "",
-                                                                             ".",
-                                                                             "full",
-                                                                             std::move(*m_agentInfo));
+    m_registration = std::make_unique<agent_registration::AgentEnrollment>(std::move(mockHttpClient),
+                                                                           "https://localhost:55000",
+                                                                           "user",
+                                                                           "password",
+                                                                           "",
+                                                                           "",
+                                                                           ".",
+                                                                           "full",
+                                                                           std::move(*m_agentInfo));
 
     const std::tuple<int, std::string> expectedResponse {http_client::HTTP_CODE_OK,
                                                          R"({"data":{"token":"valid_token"}})"};
@@ -283,15 +283,15 @@ TEST_F(RegisterTest, AuthenticateWithUserPassword_Failure)
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     const auto mockHttpClientPtr = mockHttpClient.get();
 
-    m_registration = std::make_unique<agent_registration::AgentRegistration>(std::move(mockHttpClient),
-                                                                             "https://localhost:55000",
-                                                                             "user",
-                                                                             "password",
-                                                                             "",
-                                                                             "",
-                                                                             ".",
-                                                                             "full",
-                                                                             std::move(*m_agentInfo));
+    m_registration = std::make_unique<agent_registration::AgentEnrollment>(std::move(mockHttpClient),
+                                                                           "https://localhost:55000",
+                                                                           "user",
+                                                                           "password",
+                                                                           "",
+                                                                           "",
+                                                                           ".",
+                                                                           "full",
+                                                                           std::move(*m_agentInfo));
 
     const std::tuple<int, std::string> expectedResponse {http_client::HTTP_CODE_UNAUTHORIZED, ""};
 

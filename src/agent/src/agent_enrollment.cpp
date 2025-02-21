@@ -8,15 +8,15 @@
 
 namespace agent_registration
 {
-    AgentRegistration::AgentRegistration(std::unique_ptr<http_client::IHttpClient> httpClient,
-                                         std::string url,
-                                         std::string user,
-                                         std::string password,
-                                         const std::string& key,
-                                         const std::string& name,
-                                         const std::string& dbFolderPath,
-                                         std::string verificationMode,
-                                         std::optional<AgentInfo> agentInfo)
+    AgentEnrollment::AgentEnrollment(std::unique_ptr<http_client::IHttpClient> httpClient,
+                                     std::string url,
+                                     std::string user,
+                                     std::string password,
+                                     const std::string& key,
+                                     const std::string& name,
+                                     const std::string& dbFolderPath,
+                                     std::string verificationMode,
+                                     std::optional<AgentInfo> agentInfo)
         : m_httpClient(std::move(httpClient))
         , m_agentInfo(agentInfo.has_value() ? std::move(*agentInfo)
                                             : AgentInfo(
@@ -45,7 +45,7 @@ namespace agent_registration
         }
     }
 
-    bool AgentRegistration::Register()
+    bool AgentEnrollment::Register()
     {
         const auto token = AuthenticateWithUserPassword();
 
@@ -76,7 +76,7 @@ namespace agent_registration
         return true;
     }
 
-    std::optional<std::string> AgentRegistration::AuthenticateWithUserPassword()
+    std::optional<std::string> AgentEnrollment::AuthenticateWithUserPassword()
     {
         const auto reqParams = http_client::HttpRequestParams(http_client::MethodType::POST,
                                                               m_serverUrl,
