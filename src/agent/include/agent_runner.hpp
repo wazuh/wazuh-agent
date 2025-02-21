@@ -19,6 +19,8 @@ private:
 
     std::optional<int> HandlePlatformSpecificOptions() const;
 
+    int RegisterAgent() const;
+
     boost::program_options::variables_map validOptions;
     boost::program_options::options_description cmdParser = {"Allowed options"};
 };

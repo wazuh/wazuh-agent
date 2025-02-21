@@ -53,16 +53,9 @@ int AgentRunner::Run() const
 {
     if (validOptions.count(OPT_REGISTER_AGENT) > 0)
     {
-        RegisterAgent(validOptions.count(OPT_URL) ? validOptions[OPT_URL].as<std::string>() : "",
-                      validOptions.count(OPT_USER) ? validOptions[OPT_USER].as<std::string>() : "",
-                      validOptions.count(OPT_PASS) ? validOptions[OPT_PASS].as<std::string>() : "",
-                      validOptions.count(OPT_KEY) ? validOptions[OPT_KEY].as<std::string>() : "",
-                      validOptions.count(OPT_NAME) ? validOptions[OPT_NAME].as<std::string>() : "",
-                      validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "",
-                      validOptions.count(OPT_VERIFICATION_MODE) ? validOptions[OPT_VERIFICATION_MODE].as<std::string>()
-                                                                : config::agent::DEFAULT_VERIFICATION_MODE);
+        return RegisterAgent();
     }
-    else if (validOptions.count(OPT_STATUS) > 0)
+    if (validOptions.count(OPT_STATUS) > 0)
     {
         StatusAgent(validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
     }
@@ -78,6 +71,28 @@ int AgentRunner::Run() const
     {
         StartAgent(validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
     }
+
+    return 0;
+}
+
+int AgentRunner::RegisterAgent() const
+{
+    if (validOptions.count(OPT_URL) == 0 || validOptions.count(OPT_USER) == 0 || validOptions.count(OPT_PASS) == 0)
+    {
+        std::cout << "--url, --user and --password args are mandatory\n";
+        return 1;
+    }
+
+    std::cout << validOptions[OPT_PASS].as<std::string>() << '\n';
+
+    ::RegisterAgent(validOptions[OPT_URL].as<std::string>(),
+                    validOptions[OPT_USER].as<std::string>(),
+                    validOptions[OPT_PASS].as<std::string>(),
+                    validOptions.count(OPT_KEY) ? validOptions[OPT_KEY].as<std::string>() : "",
+                    validOptions.count(OPT_NAME) ? validOptions[OPT_NAME].as<std::string>() : "",
+                    validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "",
+                    validOptions.count(OPT_VERIFICATION_MODE) ? validOptions[OPT_VERIFICATION_MODE].as<std::string>()
+                                                              : config::agent::DEFAULT_VERIFICATION_MODE);
 
     return 0;
 }
