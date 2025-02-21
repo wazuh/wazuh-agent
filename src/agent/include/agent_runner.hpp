@@ -30,9 +30,9 @@ private:
     /// @return std::nullopt if there were no platform-specific options to handle, their exit code otherwise.
     std::optional<int> HandlePlatformSpecificOptions() const;
 
-    /// @brief Registers the agent with the provided command line arguments.
-    /// @return 0 if the registration is successful, 1 otherwise.
-    int RegisterAgent() const;
+    /// @brief Enrolls the agent with the provided command line arguments.
+    /// @return 0 if the enrollment is successful, 1 otherwise.
+    int EnrollAgent() const;
 
     /// @brief Displays the current status of the agent.
     void StatusAgent() const;

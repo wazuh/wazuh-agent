@@ -77,7 +77,7 @@ int AgentRunner::Run() const
 {
     if (m_options.count(OPT_REGISTER_AGENT))
     {
-        return RegisterAgent();
+        return EnrollAgent();
     }
     if (m_options.count(OPT_STATUS))
     {
@@ -99,7 +99,7 @@ int AgentRunner::Run() const
     return 0;
 }
 
-int AgentRunner::RegisterAgent() const
+int AgentRunner::EnrollAgent() const
 {
     for (const auto& option : {OPT_URL, OPT_USER, OPT_PASS})
     {
@@ -119,7 +119,7 @@ int AgentRunner::RegisterAgent() const
 
     try
     {
-        std::cout << "Starting wazuh-agent registration\n";
+        std::cout << "Starting wazuh-agent enrollment\n";
 
         agent_enrollment::AgentEnrollment reg(std::make_unique<http_client::HttpClient>(),
                                               m_options[OPT_URL].as<std::string>(),
@@ -132,11 +132,11 @@ int AgentRunner::RegisterAgent() const
 
         if (reg.Enroll())
         {
-            std::cout << "wazuh-agent registered\n";
+            std::cout << "wazuh-agent enrolled\n";
         }
         else
         {
-            std::cout << "wazuh-agent registration failed\n";
+            std::cout << "wazuh-agent enrollment failed\n";
             return 1;
         }
     }
