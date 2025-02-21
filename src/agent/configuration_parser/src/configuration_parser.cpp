@@ -63,7 +63,7 @@ namespace configuration
     {
         try
         {
-            YAML::Node mapToValidte = YAML::LoadFile(configFile.string());
+            const YAML::Node mapToValidte = YAML::LoadFile(configFile.string());
             if (!mapToValidte.IsMap() && !mapToValidte.IsSequence())
             {
                 throw std::runtime_error("The file does not contain a valid YAML structure.");
@@ -97,7 +97,7 @@ namespace configuration
 
                 LogDebug("Loading group configuration file: {}.", groupFile.string());
 
-                YAML::Node fileToAppend = YAML::LoadFile(groupFile.string());
+                const YAML::Node fileToAppend = YAML::LoadFile(groupFile.string());
 
                 if (!tmpConfig.IsDefined() || tmpConfig.IsNull())
                 {

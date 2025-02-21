@@ -52,12 +52,15 @@ protected:
 
     void SetUpAgentInfoInitialization()
     {
-        std::vector<column::Row> mockRowName = {{column::ColumnValue("name", column::ColumnType::TEXT, "name_test")}};
-        std::vector<column::Row> mockRowKey = {{column::ColumnValue("key", column::ColumnType::TEXT, "key_test")}};
-        std::vector<column::Row> mockRowUUID = {{column::ColumnValue("uuid", column::ColumnType::TEXT, "uuid_test")}};
-        std::vector<column::Row> mockRowGroup = {{}};
+        const std::vector<column::Row> mockRowName = {
+            {column::ColumnValue("name", column::ColumnType::TEXT, "name_test")}};
+        const std::vector<column::Row> mockRowKey = {
+            {column::ColumnValue("key", column::ColumnType::TEXT, "key_test")}};
+        const std::vector<column::Row> mockRowUUID = {
+            {column::ColumnValue("uuid", column::ColumnType::TEXT, "uuid_test")}};
+        const std::vector<column::Row> mockRowGroup = {{}};
 
-        testing::Sequence seq;
+        const testing::Sequence seq;
         EXPECT_CALL(*m_mockPersistence,
                     Select("agent_info", testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
             .InSequence(seq)

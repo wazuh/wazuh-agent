@@ -78,7 +78,7 @@ Agent::~Agent()
 
 void Agent::ReloadModules()
 {
-    std::lock_guard<std::mutex> lock(m_reloadMutex);
+    const std::lock_guard<std::mutex> lock(m_reloadMutex);
 
     if (m_running.load())
     {
@@ -168,14 +168,14 @@ void Agent::Run()
         "CommandsProcessing");
 
     {
-        std::unique_lock<std::mutex> lock(m_reloadMutex);
+        const std::unique_lock<std::mutex> lock(m_reloadMutex);
         m_running.store(true);
     }
 
     m_signalHandler->WaitForSignal();
 
     {
-        std::unique_lock<std::mutex> lock(m_reloadMutex);
+        const std::unique_lock<std::mutex> lock(m_reloadMutex);
         m_running.store(false);
     }
 

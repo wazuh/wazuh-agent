@@ -101,11 +101,12 @@ logcollector:
 
     void SetConstructorPersistenceExpectCalls()
     {
-        std::vector<column::Row> mockRowName = {{column::ColumnValue("name", column::ColumnType::TEXT, "agent_name")}};
-        std::vector<column::Row> mockRowKey = {
+        const std::vector<column::Row> mockRowName = {
+            {column::ColumnValue("name", column::ColumnType::TEXT, "agent_name")}};
+        const std::vector<column::Row> mockRowKey = {
             {column::ColumnValue("key", column::ColumnType::TEXT, "4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj")}};
-        std::vector<column::Row> mockRowUUID = {{}};
-        std::vector<column::Row> mockRowGroup = {{}};
+        const std::vector<column::Row> mockRowUUID = {{}};
+        const std::vector<column::Row> mockRowGroup = {{}};
 
         EXPECT_CALL(*m_mockPersistence, TableExists("agent_info")).WillOnce(testing::Return(true));
         EXPECT_CALL(*m_mockPersistence, TableExists("agent_group")).WillOnce(testing::Return(true));
@@ -114,7 +115,7 @@ logcollector:
             .WillOnce(testing::Return(0));
         EXPECT_CALL(*m_mockPersistence, Insert("agent_info", testing::_)).Times(1);
 
-        testing::Sequence seq;
+        const testing::Sequence seq;
         EXPECT_CALL(*m_mockPersistence,
                     Select("agent_info", testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
             .InSequence(seq)

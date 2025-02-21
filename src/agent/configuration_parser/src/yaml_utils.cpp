@@ -20,7 +20,7 @@ void MergeYamlNodes(YAML::Node& baseYaml, const YAML::Node& additionalYaml)
         for (auto it = additionalNode.begin(); it != additionalNode.end(); ++it)
         {
             const auto key = it->first.as<std::string>();
-            YAML::Node value = it->second;
+            const YAML::Node value = it->second;
 
             if (baseNode[key])
             {

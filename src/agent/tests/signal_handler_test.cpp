@@ -48,7 +48,7 @@ TEST_F(SignalHandlerTest, KeepRunningIsTheDefault)
 TEST_F(SignalHandlerTest, HandlesSignal)
 {
     std::promise<void> readyPromise;
-    std::future<void> readyFuture = readyPromise.get_future();
+    const std::future<void> readyFuture = readyPromise.get_future();
     std::thread signalThread(
         [&]()
         {

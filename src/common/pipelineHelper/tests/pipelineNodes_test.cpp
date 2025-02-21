@@ -126,8 +126,8 @@ TEST_F(PipelineNodesTest, ReadWriteNodeSync)
 
 TEST_F(PipelineNodesTest, ConnectInvalidPtrs1)
 {
-    std::shared_ptr<Utils::ReadNode<int>> spReadNode;
-    std::shared_ptr<Utils::ReadWriteNode<int, int, Utils::ReadNode<int>>> spReadWriteNode;
+    std::shared_ptr<Utils::ReadNode<int>> const spReadNode;
+    std::shared_ptr<Utils::ReadWriteNode<int, int, Utils::ReadNode<int>>> const spReadWriteNode;
     EXPECT_NO_THROW(Utils::connect(spReadWriteNode, spReadNode));
 }
 
@@ -137,13 +137,13 @@ TEST_F(PipelineNodesTest, ConnectInvalidPtrs2)
     {
         std::make_shared<Utils::ReadNode<int>>([](const int&) {})
     };
-    std::shared_ptr<Utils::ReadWriteNode<int, int, Utils::ReadNode<int>>> spReadWriteNode;
+    std::shared_ptr<Utils::ReadWriteNode<int, int, Utils::ReadNode<int>>> const spReadWriteNode;
     EXPECT_NO_THROW(Utils::connect(spReadWriteNode, spReadNode));
 }
 
 TEST_F(PipelineNodesTest, ConnectInvalidPtrs3)
 {
-    std::shared_ptr<Utils::ReadNode<int>> spReadNode;
+    std::shared_ptr<Utils::ReadNode<int>> const spReadNode;
     const auto spReadWriteNode
     {
         std::make_shared<Utils::ReadWriteNode<int, int, Utils::ReadNode<int>>>([](const int&)

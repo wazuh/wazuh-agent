@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 
 #include <communicator.hpp>
+#include <http_request_params.hpp>
 #include <ihttp_client.hpp>
 
 #include <jwt-cpp/jwt.h>
@@ -46,11 +47,6 @@ namespace
             .sign(jwt::algorithm::hs256 {"secret"});
     }
 
-    const auto MOCK_CONFIG_PARSER = std::make_shared<configuration::ConfigurationParser>(std::string(R"(
-        agent:
-          retry_interval: 1s
-    )"));
-
     const auto MOCK_CONFIG_PARSER_LOOP = std::make_shared<configuration::ConfigurationParser>(std::string(R"(
         agent:
           retry_interval: 5
@@ -58,364 +54,245 @@ namespace
         events:
           batch_size: 1
     )"));
+
+    void SpawnCoroutine(std::function<boost::asio::awaitable<void>()> func)
+    {
+        boost::asio::io_context ioContext;
+        boost::asio::co_spawn(ioContext, std::move(func), boost::asio::detached);
+        ioContext.run();
+    }
 } // namespace
 
-TEST(CommunicatorTest, CommunicatorConstructor)
+class CommunicatorTest : public ::testing::Test
 {
-    auto mockHttpClient = std::make_unique<MockHttpClient>();
+protected:
+    void SetUp() override
+    {
 
-    auto configurationParser = std::make_shared<configuration::ConfigurationParser>();
+        auto mockHttpClient = std::make_unique<MockHttpClient>();
+        m_mockHttpClientPtr = mockHttpClient.get();
+        testing::Mock::AllowLeak(m_mockHttpClientPtr);
+        m_mockedToken = CreateToken();
 
-    EXPECT_NO_THROW(communicator::Communicator communicator(
-        std::move(mockHttpClient), configurationParser, "uuid", "key", nullptr));
+        m_communicator = std::make_shared<communicator::Communicator>(
+            std::move(mockHttpClient), MOCK_CONFIG_PARSER_LOOP, "uuid", "key", nullptr);
+
+        EXPECT_CALL(*m_mockHttpClientPtr, PerformHttpRequest(testing::_))
+            .WillRepeatedly(Invoke([token = m_mockedToken]() -> intStringTuple
+                                   { return {http_client::HTTP_CODE_OK, R"({"token":")" + token + R"("})"}; }));
+    }
+
+    void TearDown() override
+    {
+        m_mockedToken.clear();
+        m_mockHttpClientPtr = nullptr;
+        m_communicator = nullptr;
+    }
+
+    std::shared_ptr<communicator::Communicator> m_communicator = nullptr;
+    MockHttpClient* m_mockHttpClientPtr = nullptr;
+    std::string m_mockedToken;
+};
+
+TEST_F(CommunicatorTest, CommunicatorConstructor)
+{
+    EXPECT_NO_THROW(
+        const communicator::Communicator communicator(std::make_unique<MockHttpClient>(),
+                                                      std::make_shared<configuration::ConfigurationParser>(),
+                                                      "uuid",
+                                                      "key",
+                                                      nullptr));
 }
 
-TEST(CommunicatorTest, CommunicatorConstructorNoHttpClient)
+TEST_F(CommunicatorTest, CommunicatorConstructorNoHttpClient)
 {
-    auto configurationParser = std::make_shared<configuration::ConfigurationParser>();
-
-    EXPECT_THROW(communicator::Communicator communicator(nullptr, configurationParser, "uuid", "key", nullptr),
+    EXPECT_THROW(const communicator::Communicator communicator(
+                     nullptr, std::make_shared<configuration::ConfigurationParser>(), "uuid", "key", nullptr),
                  std::runtime_error);
 }
 
-TEST(CommunicatorTest, CommunicatorConstructorNoConfigParser)
+TEST_F(CommunicatorTest, CommunicatorConstructorNoConfigParser)
 {
-    auto mockHttpClient = std::make_unique<MockHttpClient>();
-
-    EXPECT_THROW(communicator::Communicator communicator(std::move(mockHttpClient), nullptr, "uuid", "key", nullptr),
+    EXPECT_THROW(const communicator::Communicator communicator(
+                     std::make_unique<MockHttpClient>(), nullptr, "uuid", "key", nullptr),
                  std::runtime_error);
 }
 
-TEST(CommunicatorTest, StatelessMessageProcessingTask_FailedAuthenticationLeavesEmptyToken)
+TEST_F(CommunicatorTest, StatelessMessageProcessingTask_FailedAuthenticationLeavesEmptyToken)
 {
-    auto mockHttpClient = std::make_unique<MockHttpClient>();
-    auto mockHttpClientPtr = mockHttpClient.get();
-
-    // not really a leak, as its lifetime is managed by the Communicator
-    testing::Mock::AllowLeak(mockHttpClientPtr);
-
-    auto communicatorPtr = std::make_shared<communicator::Communicator>(
-        std::move(mockHttpClient), MOCK_CONFIG_PARSER_LOOP, "uuid", "key", nullptr);
-
-    // A failed authentication won't return a token
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse {401, R"({"message":"Try again"})"};
-
-    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
+    EXPECT_CALL(*m_mockHttpClientPtr, PerformHttpRequest(testing::_))
         .WillOnce(Invoke(
-            [communicatorPtr, &expectedResponse]() -> intStringTuple
+            [this]() -> intStringTuple
             {
-                communicatorPtr->Stop();
-                return expectedResponse;
+                m_communicator->Stop();
+
+                // A failed authentication won't return a token
+                return {http_client::HTTP_CODE_UNAUTHORIZED, R"({"message":"Try again"})"};
             }));
 
     auto getMessagesCalled = false;
     auto onSuccessCalled = false;
 
-    boost::asio::io_context ioContext;
-
-    boost::asio::co_spawn(
-        ioContext,
-        [communicatorPtr, &getMessagesCalled, &onSuccessCalled]() mutable -> boost::asio::awaitable<void>
+    SpawnCoroutine(
+        [this, &getMessagesCalled, &onSuccessCalled]() mutable -> boost::asio::awaitable<void>
         {
-            communicatorPtr->SendAuthenticationRequest();
-            co_await communicatorPtr->StatelessMessageProcessingTask(
+            m_communicator->SendAuthenticationRequest();
+            co_await m_communicator->StatelessMessageProcessingTask(
                 [&getMessagesCalled](const size_t) -> boost::asio::awaitable<intStringTuple>
                 {
                     getMessagesCalled = true;
                     co_return intStringTuple {1, std::string {"message"}};
                 },
                 [&onSuccessCalled](const int, const std::string&) { onSuccessCalled = true; });
-        }(),
-        boost::asio::detached);
-
-    ioContext.run();
+        });
 
     EXPECT_FALSE(getMessagesCalled);
     EXPECT_FALSE(onSuccessCalled);
 }
 
-TEST(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
+TEST_F(CommunicatorTest, StatelessMessageProcessingTask_CallsWithValidToken)
 {
-    auto mockHttpClient = std::make_unique<MockHttpClient>();
-    auto mockHttpClientPtr = mockHttpClient.get();
-
-    // not really a leak, as its lifetime is managed by the Communicator
-    testing::Mock::AllowLeak(mockHttpClientPtr);
-
-    auto communicatorPtr = std::make_shared<communicator::Communicator>(
-        std::move(mockHttpClient), MOCK_CONFIG_PARSER_LOOP, "uuid", "key", nullptr);
-
-    const auto mockedToken = CreateToken();
-
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse1 {200, R"({"token":")" + mockedToken + R"("})"};
-
-    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
-        .WillOnce(Invoke([communicatorPtr, &expectedResponse1]() -> intStringTuple { return expectedResponse1; }));
-
     const auto reqParams = http_client::HttpRequestParams(
         http_client::MethodType::POST, "https://localhost:27000", "/api/v1/events/stateless", "", "none");
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse2 {200, "Dummy response"};
-
-    EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(HttpRequestParamsCheck(reqParams, mockedToken, "message")))
+    EXPECT_CALL(*m_mockHttpClientPtr,
+                Co_PerformHttpRequest(HttpRequestParamsCheck(reqParams, m_mockedToken, "message")))
         .WillOnce(Invoke(
-            [communicatorPtr, &expectedResponse2]() -> boost::asio::awaitable<intStringTuple>
+            [this]() -> boost::asio::awaitable<intStringTuple>
             {
-                communicatorPtr->Stop();
-                co_return expectedResponse2;
+                m_communicator->Stop();
+                co_return intStringTuple {http_client::HTTP_CODE_OK, "Dummy response"};
             }));
 
     auto getMessagesCalled = false;
     auto onSuccessCalled = false;
 
-    boost::asio::io_context ioContext;
-
-    boost::asio::co_spawn(
-        ioContext,
-        [communicatorPtr, &getMessagesCalled, &onSuccessCalled]() mutable -> boost::asio::awaitable<void>
+    SpawnCoroutine(
+        [this, &getMessagesCalled, &onSuccessCalled]() mutable -> boost::asio::awaitable<void>
         {
-            communicatorPtr->SendAuthenticationRequest();
-            co_await communicatorPtr->StatelessMessageProcessingTask(
+            m_communicator->SendAuthenticationRequest();
+            co_await m_communicator->StatelessMessageProcessingTask(
                 [&getMessagesCalled](const size_t) -> boost::asio::awaitable<intStringTuple>
                 {
                     getMessagesCalled = true;
                     co_return intStringTuple {1, std::string {"message"}};
                 },
                 [&onSuccessCalled](const int, const std::string&) { onSuccessCalled = true; });
-        }(),
-        boost::asio::detached);
-
-    ioContext.run();
+        });
 
     EXPECT_TRUE(getMessagesCalled);
     EXPECT_TRUE(onSuccessCalled);
 }
 
-TEST(CommunicatorTest, GetCommandsFromManager_CallsWithValidToken)
+TEST_F(CommunicatorTest, GetCommandsFromManager_CallsWithValidToken)
 {
-    auto mockHttpClient = std::make_unique<MockHttpClient>();
-    auto mockHttpClientPtr = mockHttpClient.get();
-
-    // not really a leak, as its lifetime is managed by the Communicator
-    testing::Mock::AllowLeak(mockHttpClientPtr);
-
-    auto communicatorPtr = std::make_shared<communicator::Communicator>(
-        std::move(mockHttpClient), MOCK_CONFIG_PARSER_LOOP, "uuid", "key", nullptr);
-
-    const auto mockedToken = CreateToken();
-
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse1 {200, R"({"token":")" + mockedToken + R"("})"};
-
-    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
-        .WillOnce(Invoke([communicatorPtr, &expectedResponse1]() -> intStringTuple { return expectedResponse1; }));
-
     const auto timeout = static_cast<time_t>(11) * 60 * 1000;
     const auto reqParams = http_client::HttpRequestParams(
         http_client::MethodType::GET, "https://localhost:27000", "/api/v1/commands", "", "none", "", "", "", timeout);
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse2 {200, "Dummy response"};
-
-    EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(HttpRequestParamsCheck(reqParams, mockedToken, "")))
+    EXPECT_CALL(*m_mockHttpClientPtr, Co_PerformHttpRequest(HttpRequestParamsCheck(reqParams, m_mockedToken, "")))
         .WillOnce(Invoke(
-            [communicatorPtr, &expectedResponse2]() -> boost::asio::awaitable<intStringTuple>
+            [this]() -> boost::asio::awaitable<intStringTuple>
             {
-                communicatorPtr->Stop();
-                co_return expectedResponse2;
+                m_communicator->Stop();
+                co_return intStringTuple {http_client::HTTP_CODE_OK, "Dummy response"};
             }));
 
     auto onSuccessCalled = false;
 
-    boost::asio::io_context ioContext;
-
-    boost::asio::co_spawn(
-        ioContext,
-        [communicatorPtr, &onSuccessCalled]() mutable -> boost::asio::awaitable<void>
+    SpawnCoroutine(
+        [this, &onSuccessCalled]() mutable -> boost::asio::awaitable<void>
         {
-            communicatorPtr->SendAuthenticationRequest();
-            co_await communicatorPtr->GetCommandsFromManager([&onSuccessCalled](const int, const std::string&)
-                                                             { onSuccessCalled = true; });
-        }(),
-        boost::asio::detached);
-
-    ioContext.run();
+            m_communicator->SendAuthenticationRequest();
+            co_await m_communicator->GetCommandsFromManager([&onSuccessCalled](const int, const std::string&)
+                                                            { onSuccessCalled = true; });
+        });
 
     EXPECT_TRUE(onSuccessCalled);
 }
 
-TEST(CommunicatorTest, GetCommandsFromManager_Failure)
+TEST_F(CommunicatorTest, GetCommandsFromManager_Failure)
 {
-    auto mockHttpClient = std::make_unique<MockHttpClient>();
-    auto mockHttpClientPtr = mockHttpClient.get();
-
-    // not really a leak, as its lifetime is managed by the Communicator
-    testing::Mock::AllowLeak(mockHttpClientPtr);
-
-    auto communicatorPtr = std::make_shared<communicator::Communicator>(
-        std::move(mockHttpClient), MOCK_CONFIG_PARSER_LOOP, "uuid", "key", nullptr);
-
-    const auto mockedToken = CreateToken();
-
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse1 {200, R"({"token":")" + mockedToken + R"("})"};
-
-    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
-        .WillOnce(Invoke([communicatorPtr, &expectedResponse1]() -> intStringTuple { return expectedResponse1; }));
-
     const auto timeout = static_cast<time_t>(11) * 60 * 1000;
     const auto reqParams = http_client::HttpRequestParams(
         http_client::MethodType::GET, "https://localhost:27000", "/api/v1/commands", "", "none", "", "", "", timeout);
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse2 {401, "Dummy response"};
-
-    EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(HttpRequestParamsCheck(reqParams, mockedToken, "")))
+    EXPECT_CALL(*m_mockHttpClientPtr, Co_PerformHttpRequest(HttpRequestParamsCheck(reqParams, m_mockedToken, "")))
         .WillOnce(Invoke(
-            [communicatorPtr, &expectedResponse2]() -> boost::asio::awaitable<intStringTuple>
+            [this]() -> boost::asio::awaitable<intStringTuple>
             {
-                communicatorPtr->Stop();
-                co_return expectedResponse2;
+                m_communicator->Stop();
+                co_return intStringTuple {http_client::HTTP_CODE_UNAUTHORIZED, "Dummy response"};
             }));
 
     auto onSuccessCalled = false;
 
-    boost::asio::io_context ioContext;
-
-    boost::asio::co_spawn(
-        ioContext,
-        [communicatorPtr, &onSuccessCalled]() mutable -> boost::asio::awaitable<void>
+    SpawnCoroutine(
+        [this, &onSuccessCalled]() mutable -> boost::asio::awaitable<void>
         {
-            communicatorPtr->SendAuthenticationRequest();
-            co_await communicatorPtr->GetCommandsFromManager([&onSuccessCalled](const int, const std::string&)
-                                                             { onSuccessCalled = true; });
-        }(),
-        boost::asio::detached);
-
-    ioContext.run();
+            m_communicator->SendAuthenticationRequest();
+            co_await m_communicator->GetCommandsFromManager([&onSuccessCalled](const int, const std::string&)
+                                                            { onSuccessCalled = true; });
+        });
 
     EXPECT_FALSE(onSuccessCalled);
 }
 
-TEST(CommunicatorTest, GetGroupConfigurationFromManager_Success)
+TEST_F(CommunicatorTest, GetGroupConfigurationFromManager_Success)
 {
-    auto mockHttpClient = std::make_unique<MockHttpClient>();
-    auto mockHttpClientPtr = mockHttpClient.get();
-
-    // not really a leak, as its lifetime is managed by the Communicator
-    testing::Mock::AllowLeak(mockHttpClientPtr);
-
-    std::string groupName = "group1";
-    std::string dstFilePath = "./test-output";
-
-    auto communicatorPtr = std::make_shared<communicator::Communicator>(
-        std::move(mockHttpClient), MOCK_CONFIG_PARSER_LOOP, "uuid", "key", nullptr);
-
-    const auto mockedToken = CreateToken();
-
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse1 {200, R"({"token":")" + mockedToken + R"("})"};
-
-    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
-        .WillOnce(Invoke([communicatorPtr, &expectedResponse1]() -> intStringTuple { return expectedResponse1; }));
-
     const auto reqParams = http_client::HttpRequestParams(
         http_client::MethodType::GET, "https://localhost:27000", "/api/v1/files?file_name=group1.yml", "", "none");
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse2 {200, "Dummy response"};
+    EXPECT_CALL(*m_mockHttpClientPtr, Co_PerformHttpRequest(HttpRequestParamsCheck(reqParams, m_mockedToken, "")))
+        .WillOnce(Invoke([]() -> boost::asio::awaitable<intStringTuple>
+                         { co_return intStringTuple {http_client::HTTP_CODE_OK, "Dummy response"}; }));
 
-    EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(HttpRequestParamsCheck(reqParams, mockedToken, "")))
-        .WillOnce(Invoke([communicatorPtr, &expectedResponse2]() -> boost::asio::awaitable<intStringTuple>
-                         { co_return expectedResponse2; }));
+    auto result = false;
 
-    std::future<bool> result;
-
-    boost::asio::io_context ioContext;
-    boost::asio::co_spawn(
-        ioContext,
-        [&]() -> boost::asio::awaitable<void>
+    SpawnCoroutine(
+        [this, &result]() -> boost::asio::awaitable<void>
         {
-            communicatorPtr->SendAuthenticationRequest();
-            bool value = co_await communicatorPtr->GetGroupConfigurationFromManager(groupName, dstFilePath);
-            std::promise<bool> promise;
-            promise.set_value(value);
-            result = promise.get_future();
-        },
-        boost::asio::detached);
+            m_communicator->SendAuthenticationRequest();
 
-    ioContext.run();
-    EXPECT_TRUE(result.get());
+            const std::string groupName = "group1";
+            const std::string dstFilePath = "./test-output";
+            result = co_await m_communicator->GetGroupConfigurationFromManager(groupName, dstFilePath);
+        });
+
+    EXPECT_TRUE(result);
 }
 
-TEST(CommunicatorTest, GetGroupConfigurationFromManager_Error)
+TEST_F(CommunicatorTest, GetGroupConfigurationFromManager_Error)
 {
-    auto mockHttpClient = std::make_unique<MockHttpClient>();
-    auto mockHttpClientPtr = mockHttpClient.get();
-
-    // not really a leak, as its lifetime is managed by the Communicator
-    testing::Mock::AllowLeak(mockHttpClientPtr);
-
-    std::string groupName = "group1";
-    std::string dstFilePath = "dummy/non/existing/path";
-
-    auto communicatorPtr = std::make_shared<communicator::Communicator>(
-        std::move(mockHttpClient), MOCK_CONFIG_PARSER_LOOP, "uuid", "key", nullptr);
-
-    const auto mockedToken = CreateToken();
-
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse1 {200, R"({"token":")" + mockedToken + R"("})"};
-
-    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
-        .WillOnce(Invoke([communicatorPtr, &expectedResponse1]() -> intStringTuple { return expectedResponse1; }));
-
     const auto reqParams = http_client::HttpRequestParams(
         http_client::MethodType::GET, "https://localhost:27000", "/api/v1/files?file_name=group1.yml", "", "none");
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse2 {200, "Dummy response"};
+    EXPECT_CALL(*m_mockHttpClientPtr, Co_PerformHttpRequest(HttpRequestParamsCheck(reqParams, m_mockedToken, "")))
+        .WillOnce(Invoke([]() -> boost::asio::awaitable<intStringTuple>
+                         { co_return intStringTuple {http_client::HTTP_CODE_OK, "Dummy response"}; }));
 
-    EXPECT_CALL(*mockHttpClientPtr, Co_PerformHttpRequest(HttpRequestParamsCheck(reqParams, mockedToken, "")))
-        .WillOnce(Invoke([communicatorPtr, &expectedResponse2]() -> boost::asio::awaitable<intStringTuple>
-                         { co_return expectedResponse2; }));
+    auto result = false;
 
-    std::future<bool> result;
-
-    boost::asio::io_context ioContext;
-    boost::asio::co_spawn(
-        ioContext,
+    SpawnCoroutine(
         [&]() -> boost::asio::awaitable<void>
         {
-            communicatorPtr->SendAuthenticationRequest();
-            bool value = co_await communicatorPtr->GetGroupConfigurationFromManager(groupName, dstFilePath);
-            std::promise<bool> promise;
-            promise.set_value(value);
-            result = promise.get_future();
-        },
-        boost::asio::detached);
+            m_communicator->SendAuthenticationRequest();
 
-    ioContext.run();
-    EXPECT_FALSE(result.get());
+            const std::string groupName = "group1";
+            const std::string dstFilePath = "dummy/non/existing/path";
+            result = co_await m_communicator->GetGroupConfigurationFromManager(groupName, dstFilePath);
+        });
+
+    EXPECT_FALSE(result);
 }
 
-TEST(CommunicatorTest, AuthenticateWithUuidAndKey_Success)
+TEST_F(CommunicatorTest, AuthenticateWithUuidAndKey_Success)
 {
-    auto mockHttpClient = std::make_unique<MockHttpClient>();
-    auto mockHttpClientPtr = mockHttpClient.get();
+    const intStringTuple expectedResponse {http_client::HTTP_CODE_OK, R"({"token":"valid_token"})"};
 
-    auto communicatorPtr = std::make_shared<communicator::Communicator>(
-        std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
+    EXPECT_CALL(*m_mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse {200, R"({"token":"valid_token"})"};
-
-    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
-
-    const auto token = communicatorPtr->AuthenticateWithUuidAndKey();
+    const auto token = m_communicator->AuthenticateWithUuidAndKey();
 
     ASSERT_TRUE(token.has_value());
 
@@ -423,38 +300,24 @@ TEST(CommunicatorTest, AuthenticateWithUuidAndKey_Success)
     EXPECT_EQ(token.value(), "valid_token");
 }
 
-TEST(CommunicatorTest, AuthenticateWithUuidAndKey_Failure)
+TEST_F(CommunicatorTest, AuthenticateWithUuidAndKey_Failure)
 {
-    auto mockHttpClient = std::make_unique<MockHttpClient>();
-    auto mockHttpClientPtr = mockHttpClient.get();
+    const intStringTuple expectedResponse {http_client::HTTP_CODE_UNAUTHORIZED, R"({"message":"Try again"})"};
 
-    auto communicatorPtr = std::make_shared<communicator::Communicator>(
-        std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
+    EXPECT_CALL(*m_mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse {401, R"({"message":"Try again"})"};
-
-    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
-
-    const auto token = communicatorPtr->AuthenticateWithUuidAndKey();
+    const auto token = m_communicator->AuthenticateWithUuidAndKey();
 
     EXPECT_FALSE(token.has_value());
 }
 
-TEST(CommunicatorTest, AuthenticateWithUuidAndKey_FailureThrowsException)
+TEST_F(CommunicatorTest, AuthenticateWithUuidAndKey_FailureThrowsException)
 {
-    auto mockHttpClient = std::make_unique<MockHttpClient>();
-    auto mockHttpClientPtr = mockHttpClient.get();
+    const intStringTuple expectedResponse {http_client::HTTP_CODE_UNAUTHORIZED, R"({"message":"Invalid key"})"};
 
-    auto communicatorPtr = std::make_shared<communicator::Communicator>(
-        std::move(mockHttpClient), MOCK_CONFIG_PARSER, "uuid", "key", nullptr);
+    EXPECT_CALL(*m_mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    intStringTuple expectedResponse {401, R"({"message":"Invalid key"})"};
-
-    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
-
-    EXPECT_THROW(communicatorPtr->AuthenticateWithUuidAndKey(), std::runtime_error);
+    EXPECT_THROW(m_communicator->AuthenticateWithUuidAndKey(), std::runtime_error);
 }
 
 int main(int argc, char** argv)

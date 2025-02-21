@@ -54,13 +54,14 @@ TEST_F(JournaldReaderTests, FilterHandling)
         std::string expectedDesc;
     };
 
-    std::vector<TestCase> testCases = {{{}, "0 conditions"},
-                                       {{{"UNIT", "service1|service2", true}}, "1 conditions"},
-                                       {{{"UNIT", "service1", true}, {"PRIORITY", "3|4|5", true}}, "2 conditions"}};
+    const std::vector<TestCase> testCases = {
+        {{}, "0 conditions"},
+        {{{"UNIT", "service1|service2", true}}, "1 conditions"},
+        {{{"UNIT", "service1", true}, {"PRIORITY", "3|4|5", true}}, "2 conditions"}};
 
     for (const auto& tc : testCases)
     {
-        JournaldReader reader(logcollector, tc.filters, ignoreIfMissing, fileWait);
+        const JournaldReader reader(logcollector, tc.filters, ignoreIfMissing, fileWait);
         EXPECT_THAT(reader.GetFilterDescription(), ::testing::HasSubstr(tc.expectedDesc));
     }
 }

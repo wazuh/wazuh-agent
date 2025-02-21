@@ -15,7 +15,7 @@ TaskManager::~TaskManager()
 
 void TaskManager::Start(size_t numThreads)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    const std::lock_guard<std::mutex> lock(m_mutex);
 
     if (m_work || !m_threads.empty())
     {
@@ -34,7 +34,7 @@ void TaskManager::Start(size_t numThreads)
 
 void TaskManager::Stop()
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    const std::lock_guard<std::mutex> lock(m_mutex);
 
     if (m_work)
     {
@@ -64,7 +64,7 @@ void TaskManager::Stop()
 
 void TaskManager::EnqueueTask(std::function<void()> task, const std::string& taskID)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    const std::lock_guard<std::mutex> lock(m_mutex);
 
     if (++m_numEnqueuedThreads > m_threads.size())
     {
@@ -89,7 +89,7 @@ void TaskManager::EnqueueTask(std::function<void()> task, const std::string& tas
 
 void TaskManager::EnqueueTask(boost::asio::awaitable<void> task, const std::string& taskID)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    const std::lock_guard<std::mutex> lock(m_mutex);
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
     boost::asio::co_spawn(

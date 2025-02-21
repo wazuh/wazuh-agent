@@ -84,6 +84,6 @@ namespace http_client
         std::shared_ptr<ISocketWrapper> m_ssl_socket;
 
         /// @brief Timeout in milliseconds used in every operation
-        std::chrono::milliseconds m_timeout {http_client::SOCKET_TIMEOUT_MSECS};
+        std::chrono::milliseconds m_timeout {http_client::SOCKET_TIMEOUT};
     };
 } // namespace http_client

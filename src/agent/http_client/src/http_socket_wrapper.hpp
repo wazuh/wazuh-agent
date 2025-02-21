@@ -35,7 +35,7 @@ namespace http_client
         void connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
                      boost::system::error_code& ec) override
         {
-            m_socket.async_connect(endpoints, [&ec](boost::system::error_code const& code, auto const&) { ec = code; });
+            m_socket.async_connect(endpoints, [&ec](const boost::system::error_code& code, const auto&) { ec = code; });
         }
 
         boost::asio::awaitable<void> async_connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,

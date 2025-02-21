@@ -160,7 +160,7 @@ TEST_F(InventoryImpTest, intervalSeconds)
         .WillRepeatedly(Return(nlohmann::json::parse(
             R"({"iface":[{"IPv4":[{"address":"172.17.0.1","broadcast":"172.17.255.255","dhcp":"unknown","metric":"0","netmask":"255.255.0.0"}],"adapter":"","gateway":"","mac":"02:42:1c:26:13:65","mtu":1500,"name":"docker0","rx_bytes":0,"rx_dropped":0,"rx_errors":0,"rx_packets":0,"state":"down","tx_bytes":0,"tx_dropped":0,"tx_errors":0,"tx_packets":0,"type":"ethernet"}]})")));
 
-    std::string inventoryConfig = R"(
+    const std::string inventoryConfig = R"(
         inventory:
             enabled: true
             interval: 1
@@ -204,7 +204,7 @@ TEST_F(InventoryImpTest, noScanOnStart)
     EXPECT_CALL(*spInfoWrapper, ports()).Times(0);
     EXPECT_CALL(*spInfoWrapper, hotfixes()).Times(0);
 
-    std::string inventoryConfig = R"(
+    const std::string inventoryConfig = R"(
         inventory:
             enabled: true
             interval: 3600
@@ -292,7 +292,7 @@ TEST_F(InventoryImpTest, noHardware)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult6)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult7)).Times(1);
 
-    std::string inventoryConfig = R"(
+    const std::string inventoryConfig = R"(
         inventory:
             enabled: true
             interval: 3600
@@ -380,7 +380,7 @@ TEST_F(InventoryImpTest, noOs)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult5)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult7)).Times(1);
 
-    std::string inventoryConfig = R"(
+    const std::string inventoryConfig = R"(
         inventory:
             enabled: true
             interval: 3600
@@ -468,7 +468,7 @@ TEST_F(InventoryImpTest, noNetwork)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult5)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult6)).Times(1);
 
-    std::string inventoryConfig = R"(
+    const std::string inventoryConfig = R"(
         inventory:
             enabled: true
             interval: 3600
@@ -555,7 +555,7 @@ TEST_F(InventoryImpTest, noPackages)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult5)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult7)).Times(1);
 
-    std::string inventoryConfig = R"(
+    const std::string inventoryConfig = R"(
         inventory:
             enabled: true
             interval: 3600
@@ -643,7 +643,7 @@ TEST_F(InventoryImpTest, noPorts)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult5)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult7)).Times(1);
 
-    std::string inventoryConfig = R"(
+    const std::string inventoryConfig = R"(
         inventory:
             enabled: true
             interval: 5
@@ -739,7 +739,7 @@ TEST_F(InventoryImpTest, noPortsAll)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult7)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult8)).Times(1);
 
-    std::string inventoryConfig = R"(
+    const std::string inventoryConfig = R"(
         inventory:
             enabled: true
             interval: 3600
@@ -827,7 +827,7 @@ TEST_F(InventoryImpTest, noProcesses)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult5)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult7)).Times(1);
 
-    std::string inventoryConfig = R"(
+    const std::string inventoryConfig = R"(
         inventory:
             enabled: true
             interval: 3600
@@ -916,7 +916,7 @@ TEST_F(InventoryImpTest, noHotfixes)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult5)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult7)).Times(1);
 
-    std::string inventoryConfig = R"(
+    const std::string inventoryConfig = R"(
         inventory:
             enabled: true
             interval: 3600
@@ -974,7 +974,7 @@ TEST_F(InventoryImpTest, scanInvalidData)
         .WillRepeatedly(Return(nlohmann::json::parse(
             R"({"iface":[{"IPv4":[{"address":"172.17.0.1","broadcast":"172.17.255.255","dhcp":"unknown","metric":"0","netmask":"255.255.0.0"}],"adapter":"","gateway":"","mac":"02:42:1c:26:13:65","mtu":1500,"name":"docker0","rx_bytes":0,"rx_dropped":0,"rx_errors":0,"rx_packets":0,"state":"down","tx_bytes":0,"tx_dropped":0,"tx_errors":0,"tx_packets":0,"type":"ethernet"}]})")));
 
-    std::string inventoryConfig = R"(
+    const std::string inventoryConfig = R"(
         inventory:
             enabled: true
             interval: 60
@@ -1103,7 +1103,7 @@ TEST_F(InventoryImpTest, portAllEnable)
     EXPECT_CALL(wrapper, callbackMock(expectedResult3)).Times(1);
     EXPECT_CALL(wrapper, callbackMock(expectedResult4)).Times(1);
 
-    std::string inventoryConfig = R"(
+    const std::string inventoryConfig = R"(
         inventory:
             enabled: true
             interval: 3600
@@ -1229,7 +1229,7 @@ TEST_F(InventoryImpTest, portAllDisable)
     EXPECT_CALL(wrapper, callbackMock(expectedResult2)).Times(1);
     EXPECT_CALL(wrapper, callbackMock(expectedResult3)).Times(1);
 
-    std::string inventoryConfig = R"(
+    const std::string inventoryConfig = R"(
         inventory:
             enabled: true
             interval: 3600
@@ -1288,7 +1288,7 @@ TEST_F(InventoryImpTest, PackagesDuplicated)
 
     EXPECT_CALL(wrapper, callbackMock(expectedResult1)).Times(1);
 
-    std::string inventoryConfig = R"(
+    const std::string inventoryConfig = R"(
         inventory:
             enabled: true
             interval: 3600
@@ -1342,7 +1342,7 @@ TEST_F(InventoryImpTest, hashId)
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
 
-    std::string inventoryConfig = R"(
+    const std::string inventoryConfig = R"(
         inventory:
             enabled: true
             interval: 3600
@@ -1405,7 +1405,7 @@ TEST_F(InventoryImpTest, statelessMessage)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(1);
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(1);
 
-    std::string inventoryConfig = R"(
+    const std::string inventoryConfig = R"(
         inventory:
             enabled: true
             interval: 1

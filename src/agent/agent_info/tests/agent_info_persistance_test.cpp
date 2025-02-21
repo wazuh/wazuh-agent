@@ -36,7 +36,7 @@ TEST_F(AgentInfoPersistanceTest, TestConstruction)
 
 TEST_F(AgentInfoPersistanceTest, TestGetNameValue)
 {
-    std::vector<column::Row> mockRowName = {{column::ColumnValue("name", column::ColumnType::TEXT, "name_test")}};
+    const std::vector<column::Row> mockRowName = {{column::ColumnValue("name", column::ColumnType::TEXT, "name_test")}};
     EXPECT_CALL(*mockPersistence,
                 Select("agent_info", testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(mockRowName));
@@ -45,7 +45,7 @@ TEST_F(AgentInfoPersistanceTest, TestGetNameValue)
 
 TEST_F(AgentInfoPersistanceTest, TestGetNameNotValue)
 {
-    std::vector<column::Row> mockRowName = {};
+    const std::vector<column::Row> mockRowName = {};
     EXPECT_CALL(*mockPersistence,
                 Select("agent_info", testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(mockRowName));
@@ -62,7 +62,7 @@ TEST_F(AgentInfoPersistanceTest, TestGetNameCatch)
 
 TEST_F(AgentInfoPersistanceTest, TestGetKeyValue)
 {
-    std::vector<column::Row> mockRowKey = {{column::ColumnValue("key", column::ColumnType::TEXT, "key_test")}};
+    const std::vector<column::Row> mockRowKey = {{column::ColumnValue("key", column::ColumnType::TEXT, "key_test")}};
     EXPECT_CALL(*mockPersistence,
                 Select("agent_info", testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(mockRowKey));
@@ -71,7 +71,7 @@ TEST_F(AgentInfoPersistanceTest, TestGetKeyValue)
 
 TEST_F(AgentInfoPersistanceTest, TestGetKeyNotValue)
 {
-    std::vector<column::Row> mockRowKey = {};
+    const std::vector<column::Row> mockRowKey = {};
     EXPECT_CALL(*mockPersistence,
                 Select("agent_info", testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(mockRowKey));
@@ -88,7 +88,7 @@ TEST_F(AgentInfoPersistanceTest, TestGetKeyCatch)
 
 TEST_F(AgentInfoPersistanceTest, TestGetUUIDValue)
 {
-    std::vector<column::Row> mockRowUUID = {{column::ColumnValue("uuid", column::ColumnType::TEXT, "uuid_test")}};
+    const std::vector<column::Row> mockRowUUID = {{column::ColumnValue("uuid", column::ColumnType::TEXT, "uuid_test")}};
     EXPECT_CALL(*mockPersistence,
                 Select("agent_info", testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(mockRowUUID));
@@ -97,7 +97,7 @@ TEST_F(AgentInfoPersistanceTest, TestGetUUIDValue)
 
 TEST_F(AgentInfoPersistanceTest, TestGetUUIDNotValue)
 {
-    std::vector<column::Row> mockRowUUID = {};
+    const std::vector<column::Row> mockRowUUID = {};
     EXPECT_CALL(*mockPersistence,
                 Select("agent_info", testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(mockRowUUID));
@@ -114,24 +114,24 @@ TEST_F(AgentInfoPersistanceTest, TestGetUUIDCatch)
 
 TEST_F(AgentInfoPersistanceTest, TestGetGroupsValue)
 {
-    std::vector<column::Row> mockRowGroups = {{column::ColumnValue("name", column::ColumnType::TEXT, "group_1")},
-                                              {column::ColumnValue("name", column::ColumnType::TEXT, "group_2")}};
+    const std::vector<column::Row> mockRowGroups = {{column::ColumnValue("name", column::ColumnType::TEXT, "group_1")},
+                                                    {column::ColumnValue("name", column::ColumnType::TEXT, "group_2")}};
     EXPECT_CALL(*mockPersistence,
                 Select("agent_group", testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(mockRowGroups));
 
-    std::vector<std::string> expectedGroups = {"group_1", "group_2"};
+    const std::vector<std::string> expectedGroups = {"group_1", "group_2"};
     EXPECT_EQ(agentInfoPersistance->GetGroups(), expectedGroups);
 }
 
 TEST_F(AgentInfoPersistanceTest, TestGetGroupsNotValue)
 {
-    std::vector<column::Row> mockRowGroups = {};
+    const std::vector<column::Row> mockRowGroups = {};
     EXPECT_CALL(*mockPersistence,
                 Select("agent_group", testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(mockRowGroups));
 
-    std::vector<std::string> expectedGroups = {};
+    const std::vector<std::string> expectedGroups = {};
     EXPECT_EQ(agentInfoPersistance->GetGroups(), expectedGroups);
 }
 
@@ -141,14 +141,14 @@ TEST_F(AgentInfoPersistanceTest, TestGetGroupsCatch)
                 Select("agent_group", testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Throw(std::runtime_error("Error Select")));
 
-    std::vector<std::string> expectedGroups = {};
+    const std::vector<std::string> expectedGroups = {};
     EXPECT_EQ(agentInfoPersistance->GetGroups(), expectedGroups);
 }
 
 TEST_F(AgentInfoPersistanceTest, TestSetName)
 {
-    std::string expectedColumn = "name";
-    std::string newName = "new_name";
+    const std::string expectedColumn = "name";
+    const std::string newName = "new_name";
 
     EXPECT_CALL(*mockPersistence,
                 Update(testing::Eq("agent_info"),
@@ -164,8 +164,8 @@ TEST_F(AgentInfoPersistanceTest, TestSetName)
 
 TEST_F(AgentInfoPersistanceTest, TestSetNameCatch)
 {
-    std::string expectedColumn = "name";
-    std::string newName = "new_name";
+    const std::string expectedColumn = "name";
+    const std::string newName = "new_name";
 
     EXPECT_CALL(*mockPersistence,
                 Update(testing::Eq("agent_info"),
@@ -181,8 +181,8 @@ TEST_F(AgentInfoPersistanceTest, TestSetNameCatch)
 
 TEST_F(AgentInfoPersistanceTest, TestSetKey)
 {
-    std::string expectedColumn = "key";
-    std::string newKey = "new_key";
+    const std::string expectedColumn = "key";
+    const std::string newKey = "new_key";
 
     EXPECT_CALL(*mockPersistence,
                 Update(testing::Eq("agent_info"),
@@ -198,8 +198,8 @@ TEST_F(AgentInfoPersistanceTest, TestSetKey)
 
 TEST_F(AgentInfoPersistanceTest, TestSetKeyCatch)
 {
-    std::string expectedColumn = "key";
-    std::string newKey = "new_key";
+    const std::string expectedColumn = "key";
+    const std::string newKey = "new_key";
 
     EXPECT_CALL(*mockPersistence,
                 Update(testing::Eq("agent_info"),
@@ -215,8 +215,8 @@ TEST_F(AgentInfoPersistanceTest, TestSetKeyCatch)
 
 TEST_F(AgentInfoPersistanceTest, TestSetUUID)
 {
-    std::string expectedColumn = "uuid";
-    std::string newUUID = "new_uuid";
+    const std::string expectedColumn = "uuid";
+    const std::string newUUID = "new_uuid";
 
     EXPECT_CALL(*mockPersistence,
                 Update(testing::Eq("agent_info"),
@@ -232,8 +232,8 @@ TEST_F(AgentInfoPersistanceTest, TestSetUUID)
 
 TEST_F(AgentInfoPersistanceTest, TestSetUUIDCatch)
 {
-    std::string expectedColumn = "uuid";
-    std::string newUUID = "new_uuid";
+    const std::string expectedColumn = "uuid";
+    const std::string newUUID = "new_uuid";
 
     EXPECT_CALL(*mockPersistence,
                 Update(testing::Eq("agent_info"),
@@ -301,7 +301,7 @@ TEST_F(AgentInfoPersistanceTest, TestSetGroupsInsertFails2)
     EXPECT_CALL(*mockPersistence, BeginTransaction()).Times(1);
     EXPECT_CALL(*mockPersistence, Remove("agent_group", testing::_, testing::_)).Times(1);
 
-    testing::Sequence seq;
+    const testing::Sequence seq;
     EXPECT_CALL(*mockPersistence, Insert("agent_group", testing::_))
         .InSequence(seq)
         .WillOnce(testing::Return())

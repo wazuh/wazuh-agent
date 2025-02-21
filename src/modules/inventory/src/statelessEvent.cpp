@@ -13,12 +13,12 @@ StatelessEvent::StatelessEvent(std::string op, std::string time, nlohmann::json 
 
 nlohmann::json NetworkEvent::generate() const
 {
-    std::string interface = (data.contains("observer") && data["observer"].contains("ingress") &&
-                             data["observer"]["ingress"].contains("interface") &&
-                             data["observer"]["ingress"]["interface"].contains("name") &&
-                             !data["observer"]["ingress"]["interface"]["name"].is_null())
-                                ? data["observer"]["ingress"]["interface"]["name"].get<std::string>()
-                                : "";
+    const std::string interface = (data.contains("observer") && data["observer"].contains("ingress") &&
+                                   data["observer"]["ingress"].contains("interface") &&
+                                   data["observer"]["ingress"]["interface"].contains("name") &&
+                                   !data["observer"]["ingress"]["interface"]["name"].is_null())
+                                      ? data["observer"]["ingress"]["interface"]["name"].get<std::string>()
+                                      : "";
 
     std::string action, reason;
 
@@ -52,11 +52,11 @@ nlohmann::json NetworkEvent::generate() const
 nlohmann::json PackageEvent::generate() const
 {
 
-    std::string packageName =
+    const std::string packageName =
         (data.contains("package") && data["package"].contains("name") && !data["package"]["name"].is_null())
             ? data["package"]["name"].get<std::string>()
             : "";
-    std::string version =
+    const std::string version =
         (data.contains("package") && data["package"].contains("version") && !data["package"]["version"].is_null())
             ? data["package"]["version"].get<std::string>()
             : "";
@@ -92,10 +92,11 @@ nlohmann::json PackageEvent::generate() const
 
 nlohmann::json HotfixEvent::generate() const
 {
-    std::string hotfixID = (data.contains("package") && data["package"].contains("hotfix") &&
-                            data["package"]["hotfix"].contains("name") && !data["package"]["hotfix"]["name"].is_null())
-                               ? data["package"]["hotfix"]["name"].get<std::string>()
-                               : "";
+    const std::string hotfixID =
+        (data.contains("package") && data["package"].contains("hotfix") && data["package"]["hotfix"].contains("name") &&
+         !data["package"]["hotfix"]["name"].is_null())
+            ? data["package"]["hotfix"]["name"].get<std::string>()
+            : "";
 
     std::string action, reason;
 
@@ -126,10 +127,11 @@ nlohmann::json HotfixEvent::generate() const
 nlohmann::json PortEvent::generate() const
 {
 
-    int srcPort = (data.contains("source") && data["source"].contains("port") && !data["source"]["port"].is_null())
-                      ? data["source"]["port"].get<int>()
-                      : 0;
-    int destPort =
+    const int srcPort =
+        (data.contains("source") && data["source"].contains("port") && !data["source"]["port"].is_null())
+            ? data["source"]["port"].get<int>()
+            : 0;
+    const int destPort =
         (data.contains("destination") && data["destination"].contains("port") && !data["destination"]["port"].is_null())
             ? data["destination"]["port"].get<int>()
             : 0;
@@ -168,13 +170,14 @@ nlohmann::json PortEvent::generate() const
 
 nlohmann::json ProcessEvent::generate() const
 {
-    std::string processName =
+    const std::string processName =
         (data.contains("process") && data["process"].contains("name") && !data["process"]["name"].is_null())
             ? data["process"]["name"].get<std::string>()
             : "";
-    std::string pid = (data.contains("process") && data["process"].contains("pid") && !data["process"]["pid"].is_null())
-                          ? data["process"]["name"].get<std::string>()
-                          : "";
+    const std::string pid =
+        (data.contains("process") && data["process"].contains("pid") && !data["process"]["pid"].is_null())
+            ? data["process"]["name"].get<std::string>()
+            : "";
 
     std::string action, reason;
 
@@ -208,14 +211,14 @@ nlohmann::json ProcessEvent::generate() const
 nlohmann::json SystemEvent::generate() const
 {
 
-    std::string hostname =
+    const std::string hostname =
         (data.contains("host") && data["host"].contains("hostname") && !data["host"]["hostname"].is_null())
             ? data["host"]["hostname"].get<std::string>()
             : "";
-    std::string osVersion = (data.contains("host") && data["host"].contains("os") &&
-                             data["host"]["os"].contains("version") && !data["host"]["os"]["version"].is_null())
-                                ? data["host"]["os"]["version"].get<std::string>()
-                                : "";
+    const std::string osVersion = (data.contains("host") && data["host"].contains("os") &&
+                                   data["host"]["os"].contains("version") && !data["host"]["os"]["version"].is_null())
+                                      ? data["host"]["os"]["version"].get<std::string>()
+                                      : "";
 
     std::string action = (operation == "update") ? "system-updated" : "system-detected";
     std::string reason = "System " + hostname + " is running OS version " + osVersion;
@@ -231,18 +234,18 @@ nlohmann::json SystemEvent::generate() const
 nlohmann::json HardwareEvent::generate() const
 {
 
-    std::string cpuName = (data.contains("host") && data["host"].contains("cpu") &&
-                           data["host"]["cpu"].contains("name") && !data["host"]["cpu"]["name"].is_null())
-                              ? data["host"]["cpu"]["name"].get<std::string>()
-                              : "";
-    int memoryTotalGB = (data.contains("host") && data["host"].contains("memory") &&
-                         data["host"]["memory"].contains("total") && !data["host"]["memory"]["total"].is_null())
-                            ? data["host"]["memory"]["total"].get<int>() / BYTES_IN_MEGABYTE
-                            : 0;
-    std::string serialNumber = (data.contains("observer") && data["observer"].contains("serial_number") &&
-                                !data["observer"]["serial_number"].is_null())
-                                   ? data["observer"]["serial_number"].get<std::string>()
-                                   : "";
+    const std::string cpuName = (data.contains("host") && data["host"].contains("cpu") &&
+                                 data["host"]["cpu"].contains("name") && !data["host"]["cpu"]["name"].is_null())
+                                    ? data["host"]["cpu"]["name"].get<std::string>()
+                                    : "";
+    const int memoryTotalGB = (data.contains("host") && data["host"].contains("memory") &&
+                               data["host"]["memory"].contains("total") && !data["host"]["memory"]["total"].is_null())
+                                  ? data["host"]["memory"]["total"].get<int>() / BYTES_IN_MEGABYTE
+                                  : 0;
+    const std::string serialNumber = (data.contains("observer") && data["observer"].contains("serial_number") &&
+                                      !data["observer"]["serial_number"].is_null())
+                                         ? data["observer"]["serial_number"].get<std::string>()
+                                         : "";
 
     std::string action, reason;
 

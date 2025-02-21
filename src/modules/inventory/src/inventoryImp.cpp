@@ -261,8 +261,8 @@ std::string Inventory::GetPrimaryKeys([[maybe_unused]] const nlohmann::json& dat
 
 std::string Inventory::CalculateHashId(const nlohmann::json& data, const std::string& table)
 {
-    std::string primaryKey = GetPrimaryKeys(data, table);
-    std::string baseId = AgentUUID() + ":" + primaryKey;
+    const std::string primaryKey = GetPrimaryKeys(data, table);
+    const std::string baseId = AgentUUID() + ":" + primaryKey;
 
     Utils::HashData hash(Utils::HashType::Sha1);
     hash.update(baseId.c_str(), baseId.size());
@@ -337,7 +337,7 @@ void Inventory::NotifyEvent(ReturnTypeCallback result,
 {
     if (!isFirstScan)
     {
-        nlohmann::json oldData = (result == MODIFIED) ? EcsData(item["old"], table, false) : nlohmann::json {};
+        const nlohmann::json oldData = (result == MODIFIED) ? EcsData(item["old"], table, false) : nlohmann::json {};
 
         nlohmann::json stateless = GenerateStatelessEvent(OPERATION_MAP.at(result), table, msg["data"]);
         nlohmann::json eventWithChanges = msg["data"];
@@ -364,7 +364,7 @@ void Inventory::UpdateChanges(const std::string& table, const nlohmann::json& va
                              NotifyChange(result, data, table, isFirstScan);
                          }};
 
-    std::unique_lock<std::mutex> lock {m_mutex};
+    const std::unique_lock<std::mutex> lock {m_mutex};
     DBSyncTxn txn {m_spDBSync->handle(), nlohmann::json {table}, 0, QUEUE_SIZE, callback};
     nlohmann::json input;
     input["table"] = table;
@@ -446,7 +446,7 @@ void Inventory::Init(const std::shared_ptr<ISysInfo>& spInfo,
     m_reportDiffFunction = reportDiffFunction;
 
     {
-        std::unique_lock<std::mutex> lock {m_mutex};
+        const std::unique_lock<std::mutex> lock {m_mutex};
         m_stopping = false;
         m_spDBSync = std::make_unique<DBSync>(
             HostType::AGENT, DbEngineType::SQLITE3, dbPath, GetCreateStatement(), DbManagement::PERSISTENT);
@@ -787,7 +787,7 @@ void Inventory::ScanPackages()
                                  NotifyChange(result, data, PACKAGES_TABLE, !m_packagesFirstScan);
                              }};
 
-        std::unique_lock<std::mutex> lock {m_mutex};
+        const std::unique_lock<std::mutex> lock {m_mutex};
         DBSyncTxn txn {m_spDBSync->handle(), nlohmann::json {PACKAGES_TABLE}, 0, QUEUE_SIZE, callback};
         m_spInfo->packages(
             [this, &txn](nlohmann::json& rawData)
@@ -933,7 +933,7 @@ void Inventory::ScanProcesses()
                              {
                                  NotifyChange(result, data, PROCESSES_TABLE, !m_processesFirstScan);
                              }};
-        std::unique_lock<std::mutex> lock {m_mutex};
+        const std::unique_lock<std::mutex> lock {m_mutex};
         DBSyncTxn txn {m_spDBSync->handle(), nlohmann::json {PROCESSES_TABLE}, 0, QUEUE_SIZE, callback};
         m_spInfo->processes(std::function<void(nlohmann::json&)>(
             [this, &txn](nlohmann::json& rawData)
@@ -1000,7 +1000,7 @@ void Inventory::SyncLoop()
         }
         Scan();
     }
-    std::unique_lock<std::mutex> lock {m_mutex};
+    const std::unique_lock<std::mutex> lock {m_mutex};
     m_spDBSync.reset(nullptr);
 }
 
@@ -1013,7 +1013,7 @@ void Inventory::WriteMetadata(const std::string& key, const std::string& value)
 std::string Inventory::ReadMetadata(const std::string& key)
 {
     std::string result;
-    std::string filter = "WHERE key = '" + key + "'";
+    const std::string filter = "WHERE key = '" + key + "'";
     auto selectQuery = SelectQuery::builder().table(MD_TABLE).columnList({"key", "value"}).rowFilter(filter).build();
 
     auto callback = [&result](ReturnTypeCallback returnTypeCallback, const nlohmann::json& resultData)
@@ -1043,7 +1043,7 @@ void Inventory::CleanMetadata()
     try
     {
         {
-            std::unique_lock<std::mutex> lock {m_mutex};
+            const std::unique_lock<std::mutex> lock {m_mutex};
             m_spDBSync = std::make_unique<DBSync>(
                 HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, GetCreateStatement(), DbManagement::PERSISTENT);
             for (const auto& key : TABLE_TO_KEY_MAP)
@@ -1124,7 +1124,7 @@ void Inventory::SetJsonField(nlohmann::json& target,
 {
     if (createFields || source.contains(jsonKey))
     {
-        nlohmann::json::json_pointer pointer(keyPath);
+        const nlohmann::json::json_pointer pointer(keyPath);
         if (source.contains(jsonKey) && source[jsonKey] != EMPTY_VALUE)
         {
             target[pointer] = source[jsonKey];
@@ -1148,7 +1148,7 @@ void Inventory::SetJsonFieldArray(nlohmann::json& target,
 {
     if (createFields || source.contains(sourceKey))
     {
-        nlohmann::json::json_pointer destPointer(destPath);
+        const nlohmann::json::json_pointer destPointer(destPath);
         target[destPointer.parent_pointer()][destPointer.back()] = nlohmann::json::array();
         nlohmann::json& destArray = target[destPointer];
 

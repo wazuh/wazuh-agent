@@ -42,9 +42,9 @@ namespace logcollector
             else
             {
                 // Single condition case
-                FilterGroup filters {{config["field"].as<std::string>(),
-                                      config["value"].as<std::string>(),
-                                      config["exact_match"].as<bool>(true)}};
+                const FilterGroup filters {{config["field"].as<std::string>(),
+                                            config["value"].as<std::string>(),
+                                            config["exact_match"].as<bool>(true)}};
 
                 AddReader(std::make_shared<JournaldReader>(
                     *this, filters, config["ignore_if_missing"].as<bool>(false), fileWait));

@@ -119,14 +119,14 @@ TEST_F(StorageTest, RemoveMultipleMessagesWithModule)
 
 TEST_F(StorageTest, GetElementCount)
 {
-    nlohmann::json message = {{"key", "value"}};
+    const nlohmann::json message = {{"key", "value"}};
     EXPECT_EQ(storage->Store(message, tableName), 1);
     EXPECT_EQ(storage->GetElementCount(tableName), 1);
 }
 
 TEST_F(StorageTest, GetElementCountWithModule)
 {
-    nlohmann::json message = {{"key", "value"}};
+    const nlohmann::json message = {{"key", "value"}};
     EXPECT_EQ(storage->Store(message, tableName, moduleName), 1);
     EXPECT_EQ(storage->GetElementCount(tableName), 1);
     EXPECT_EQ(storage->GetElementCount(tableName, moduleName), 1);

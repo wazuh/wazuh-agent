@@ -130,7 +130,7 @@ TEST_F(ModuleManagerTest, StartModules)
             [&]()
             {
                 {
-                    std::lock_guard<std::mutex> lock(mtx);
+                    const std::lock_guard<std::mutex> lock(mtx);
                     taskExecuted = true;
                 }
                 cv.notify_one();
@@ -163,7 +163,7 @@ TEST_F(ModuleManagerTest, StartMultipleModules)
             [&]()
             {
                 {
-                    std::lock_guard<std::mutex> lock(mtx);
+                    const std::lock_guard<std::mutex> lock(mtx);
                     taskExecuted = true;
                 }
                 cv.notify_one();
@@ -174,7 +174,7 @@ TEST_F(ModuleManagerTest, StartMultipleModules)
             [&]()
             {
                 {
-                    std::lock_guard<std::mutex> lock(mtx);
+                    const std::lock_guard<std::mutex> lock(mtx);
                     taskExecuted = true;
                 }
                 cv.notify_one();

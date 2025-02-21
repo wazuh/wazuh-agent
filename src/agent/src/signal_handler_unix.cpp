@@ -2,7 +2,7 @@
 
 void SignalHandler::Initialize(const std::vector<int>& signalsToHandle)
 {
-    for (int signal : signalsToHandle)
+    for (const int signal : signalsToHandle)
     {
         std::signal(signal, SignalHandler::HandleSignal);
     }

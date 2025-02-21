@@ -32,6 +32,7 @@ InsertNewlineAtEOF: 'true'
 MaxEmptyLinesToKeep: 1
 NamespaceIndentation: All
 PointerAlignment: Left
+QualifierAlignment: Left
 SeparateDefinitionBlocks: 'Always'
 SortIncludes: 'true'
 SpaceAfterCStyleCast: 'false'

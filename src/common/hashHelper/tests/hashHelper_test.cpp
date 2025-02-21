@@ -27,7 +27,7 @@ const std::filesystem::path TEST_FILE {INPUT_FILES_DIR / "test_file.xyz"};
 
 TEST_F(HashHelperTest, UnsupportedHashType)
 {
-    EXPECT_THROW(HashData hash{static_cast<HashType>(15)}, std::runtime_error);
+    EXPECT_THROW(const HashData hash{static_cast<HashType>(15)}, std::runtime_error);
 }
 
 TEST_F(HashHelperTest, HashHelperHashBufferSha1)

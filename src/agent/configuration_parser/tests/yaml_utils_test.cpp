@@ -11,7 +11,7 @@ TEST(MergeYamlNodesTest, MergeSimpleMaps)
                         key1: value1
                         key2: value2
                         )");
-    YAML::Node additional = YAML::Load(R"(
+    const YAML::Node additional = YAML::Load(R"(
                         key3: value3
                         key4: value4
                         )");
@@ -31,7 +31,7 @@ TEST(MergeYamlNodesTest, OverrideScalarValue)
                         key1: value1
                         key2: value2
                         )");
-    YAML::Node additional = YAML::Load(R"(
+    const YAML::Node additional = YAML::Load(R"(
                         key2: new_value
                         )");
 
@@ -49,7 +49,7 @@ TEST(MergeYamlNodesTest, MergeNestedMaps)
                             child1: value1
                             child2: value2
                             )");
-    YAML::Node additional = YAML::Load(R"(
+    const YAML::Node additional = YAML::Load(R"(
                         parent:
                             child2: new_value
                             child3: value3
@@ -71,7 +71,7 @@ TEST(MergeYamlNodesTest, MergeSequences)
                             - item1
                             - item2
                             )");
-    YAML::Node additional = YAML::Load(R"(
+    const YAML::Node additional = YAML::Load(R"(
                         key:
                             - item2
                             - item3
@@ -93,7 +93,7 @@ TEST(MergeYamlNodesTest, AddNewKeysToNestedMap)
                         parent:
                             child1: value1
                             )");
-    YAML::Node additional = YAML::Load(R"(
+    const YAML::Node additional = YAML::Load(R"(
                         parent:
                             child2: value2
                             )");
@@ -109,7 +109,7 @@ TEST(MergeYamlNodesTest, AddNewKeysToNestedMap)
 TEST(MergeYamlNodesTest, BaseYamlEmpty)
 {
     YAML::Node base = YAML::Load("{}");
-    YAML::Node additional = YAML::Load(R"(
+    const YAML::Node additional = YAML::Load(R"(
                                 key1: value1
                                 key2: value2
                                 )");
@@ -127,7 +127,7 @@ TEST(MergeYamlNodesTest, AdditionalYamlEmpty)
                         key1: value1
                         key2: value2
                         )");
-    YAML::Node additional = YAML::Load("{}");
+    const YAML::Node additional = YAML::Load("{}");
 
     MergeYamlNodes(base, additional);
 
@@ -141,7 +141,7 @@ TEST(MergeYamlNodesTest, ScalarsOverwriteCorrectly)
     YAML::Node base = YAML::Load(R"(
                         key: old_value
                         )");
-    YAML::Node additional = YAML::Load(R"(
+    const YAML::Node additional = YAML::Load(R"(
                         key: new_value
                         )");
 

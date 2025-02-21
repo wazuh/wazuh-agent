@@ -38,7 +38,7 @@ namespace
 
 TEST(CentralizedConfiguration, Constructor)
 {
-    EXPECT_NO_THROW(CentralizedConfiguration centralizedConfiguration(
+    EXPECT_NO_THROW(const CentralizedConfiguration centralizedConfiguration(
         [](const std::vector<std::string>&) { return true; },
         []() { return std::vector<std::string> {}; },
         [](std::string, std::string) -> boost::asio::awaitable<bool> { co_return true; },
@@ -49,7 +49,7 @@ TEST(CentralizedConfiguration, Constructor)
 
 TEST(CentralizedConfiguration, ConstructorNoGetGroups)
 {
-    EXPECT_THROW(CentralizedConfiguration centralizedConfiguration(
+    EXPECT_THROW(const CentralizedConfiguration centralizedConfiguration(
                      nullptr,
                      []() { return std::vector<std::string> {}; },
                      [](std::string, std::string) -> boost::asio::awaitable<bool> { co_return true; },
@@ -61,7 +61,7 @@ TEST(CentralizedConfiguration, ConstructorNoGetGroups)
 
 TEST(CentralizedConfiguration, ConstructorNoSetGroups)
 {
-    EXPECT_THROW(CentralizedConfiguration centralizedConfiguration(
+    EXPECT_THROW(const CentralizedConfiguration centralizedConfiguration(
                      [](const std::vector<std::string>&) { return true; },
                      nullptr,
                      [](std::string, std::string) -> boost::asio::awaitable<bool> { co_return true; },
@@ -73,18 +73,19 @@ TEST(CentralizedConfiguration, ConstructorNoSetGroups)
 
 TEST(CentralizedConfiguration, ConstructorNoDownloadGroups)
 {
-    EXPECT_THROW(CentralizedConfiguration centralizedConfiguration([](const std::vector<std::string>&) { return true; },
-                                                                   []() { return std::vector<std::string> {}; },
-                                                                   nullptr,
-                                                                   [](const std::filesystem::path&) { return true; },
-                                                                   []() {},
-                                                                   nullptr),
-                 std::runtime_error);
+    EXPECT_THROW(
+        const CentralizedConfiguration centralizedConfiguration([](const std::vector<std::string>&) { return true; },
+                                                                []() { return std::vector<std::string> {}; },
+                                                                nullptr,
+                                                                [](const std::filesystem::path&) { return true; },
+                                                                []() {},
+                                                                nullptr),
+        std::runtime_error);
 }
 
 TEST(CentralizedConfiguration, ConstructorNoValidateGroups)
 {
-    EXPECT_THROW(CentralizedConfiguration centralizedConfiguration(
+    EXPECT_THROW(const CentralizedConfiguration centralizedConfiguration(
                      [](const std::vector<std::string>&) { return true; },
                      []() { return std::vector<std::string> {}; },
                      [](std::string, std::string) -> boost::asio::awaitable<bool> { co_return true; },
@@ -96,7 +97,7 @@ TEST(CentralizedConfiguration, ConstructorNoValidateGroups)
 
 TEST(CentralizedConfiguration, ConstructorNoReloadModules)
 {
-    EXPECT_THROW(CentralizedConfiguration centralizedConfiguration(
+    EXPECT_THROW(const CentralizedConfiguration centralizedConfiguration(
                      [](const std::vector<std::string>&) { return true; },
                      []() { return std::vector<std::string> {}; },
                      [](std::string, std::string) -> boost::asio::awaitable<bool> { co_return true; },

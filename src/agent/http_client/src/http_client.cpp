@@ -162,7 +162,7 @@ namespace http_client
             LogDebug("Request {}: Status {}", params.Endpoint, res.result_int());
             LogTrace("{}", ResponseToString(params.Endpoint, res));
         }
-        catch (std::exception const& e)
+        catch (const std::exception& e)
         {
             LogError("Error: {}. Endpoint: {}.", e.what(), params.Endpoint);
 
@@ -233,7 +233,7 @@ namespace http_client
             LogDebug("Request {}: Status {}", params.Endpoint, res.result_int());
             LogTrace("{}", ResponseToString(params.Endpoint, res));
         }
-        catch (std::exception const& e)
+        catch (const std::exception& e)
         {
             LogError("Error: {}. Endpoint: {}.", e.what(), params.Endpoint);
 

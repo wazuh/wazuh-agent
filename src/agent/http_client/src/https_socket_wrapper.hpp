@@ -42,7 +42,7 @@ namespace http_client
                      boost::system::error_code& ec) override
         {
             m_socket.next_layer().async_connect(endpoints,
-                                                [this, &ec](boost::system::error_code const& ecConnect, auto const&)
+                                                [this, &ec](const boost::system::error_code& ecConnect, const auto&)
                                                 {
                                                     ec = ecConnect;
                                                     if (ec)

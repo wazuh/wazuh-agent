@@ -56,30 +56,30 @@ protected:
 
 TEST_F(SQLiteManagerTest, CreateTableTest)
 {
-    ColumnKey col1 {"Id", ColumnType::INTEGER, NOT_NULL | PRIMARY_KEY | AUTO_INCREMENT};
-    ColumnKey col2 {"Name", ColumnType::TEXT, NOT_NULL};
-    ColumnKey col3 {"Status", ColumnType::TEXT, NOT_NULL};
-    ColumnKey col4 {"Module", ColumnType::TEXT};
-    ColumnKey col5 {"Orden", ColumnType::INTEGER};
-    ColumnKey col6 {"Amount", ColumnType::REAL};
+    const ColumnKey col1 {"Id", ColumnType::INTEGER, NOT_NULL | PRIMARY_KEY | AUTO_INCREMENT};
+    const ColumnKey col2 {"Name", ColumnType::TEXT, NOT_NULL};
+    const ColumnKey col3 {"Status", ColumnType::TEXT, NOT_NULL};
+    const ColumnKey col4 {"Module", ColumnType::TEXT};
+    const ColumnKey col5 {"Orden", ColumnType::INTEGER};
+    const ColumnKey col6 {"Amount", ColumnType::REAL};
     EXPECT_NO_THROW(m_db->CreateTable(m_tableName, {col1, col2, col3, col4, col5, col6}));
     EXPECT_TRUE(m_db->TableExists(m_tableName));
 
-    ColumnKey col21 {"Id", ColumnType::INTEGER, NOT_NULL | PRIMARY_KEY};
-    ColumnKey col212 {"Id2", ColumnType::INTEGER, NOT_NULL | PRIMARY_KEY};
-    ColumnKey col22 {"Name", ColumnType::TEXT, NOT_NULL | PRIMARY_KEY};
-    ColumnKey col23 {"Status", ColumnType::TEXT, NOT_NULL};
-    ColumnKey col24 {"Module", ColumnType::TEXT};
-    ColumnKey col25 {"Orden", ColumnType::INTEGER};
-    ColumnKey col26 {"Amount", ColumnType::REAL};
+    const ColumnKey col21 {"Id", ColumnType::INTEGER, NOT_NULL | PRIMARY_KEY};
+    const ColumnKey col212 {"Id2", ColumnType::INTEGER, NOT_NULL | PRIMARY_KEY};
+    const ColumnKey col22 {"Name", ColumnType::TEXT, NOT_NULL | PRIMARY_KEY};
+    const ColumnKey col23 {"Status", ColumnType::TEXT, NOT_NULL};
+    const ColumnKey col24 {"Module", ColumnType::TEXT};
+    const ColumnKey col25 {"Orden", ColumnType::INTEGER};
+    const ColumnKey col26 {"Amount", ColumnType::REAL};
     EXPECT_NO_THROW(m_db->CreateTable("TableTest2", {col21, col212, col22, col23, col24, col25, col26}));
     EXPECT_TRUE(m_db->TableExists("TableTest2"));
 }
 
 TEST_F(SQLiteManagerTest, InsertTest)
 {
-    ColumnValue col1 {"Name", ColumnType::TEXT, "ItemName1"};
-    ColumnValue col2 {"Status", ColumnType::TEXT, "ItemStatus1"};
+    const ColumnValue col1 {"Name", ColumnType::TEXT, "ItemName1"};
+    const ColumnValue col2 {"Status", ColumnType::TEXT, "ItemStatus1"};
 
     EXPECT_NO_THROW(m_db->Insert(m_tableName, {col1, col2}));
     EXPECT_NO_THROW(m_db->Insert(
@@ -110,8 +110,8 @@ TEST_F(SQLiteManagerTest, GetCountTest)
     int count = m_db->GetCount(m_tableName);
     EXPECT_EQ(count, 0);
 
-    ColumnValue col1 {"Name", ColumnType::TEXT, "ItemName1"};
-    ColumnValue col2 {"Status", ColumnType::TEXT, "ItemStatus1"};
+    const ColumnValue col1 {"Name", ColumnType::TEXT, "ItemName1"};
+    const ColumnValue col2 {"Status", ColumnType::TEXT, "ItemStatus1"};
     EXPECT_NO_THROW(m_db->Insert(m_tableName, {col1, col2}));
 
     count = m_db->GetCount(m_tableName);
@@ -126,11 +126,11 @@ TEST_F(SQLiteManagerTest, GetCountTest)
 TEST_F(SQLiteManagerTest, GetSizeTest)
 {
     EXPECT_NO_THROW(m_db->Remove(m_tableName));
-    int count = m_db->GetCount(m_tableName);
+    const int count = m_db->GetCount(m_tableName);
     EXPECT_EQ(count, 0);
 
-    ColumnValue col1 {"Name", ColumnType::TEXT, "ItemName1"};
-    ColumnValue col2 {"Status", ColumnType::TEXT, "ItemStatus1"};
+    const ColumnValue col1 {"Name", ColumnType::TEXT, "ItemName1"};
+    const ColumnValue col2 {"Status", ColumnType::TEXT, "ItemStatus1"};
     EXPECT_NO_THROW(m_db->Insert(m_tableName, {col1, col2}));
 
     size_t size = m_db->GetSize(m_tableName, {ColumnName("Name", ColumnType::TEXT)});
@@ -284,7 +284,7 @@ TEST_F(SQLiteManagerTest, RemoveTest)
 {
     AddTestData();
 
-    int initialCount = m_db->GetCount(m_tableName);
+    const int initialCount = m_db->GetCount(m_tableName);
 
     // Remove a single record
     EXPECT_NO_THROW(m_db->Remove(
@@ -381,11 +381,11 @@ TEST_F(SQLiteManagerTest, TransactionTest)
 
 TEST_F(SQLiteManagerTest, DropTableTest)
 {
-    ColumnKey col1 {"Id", ColumnType::INTEGER, NOT_NULL | PRIMARY_KEY | AUTO_INCREMENT};
-    ColumnKey col2 {"Name", ColumnType::TEXT, NOT_NULL};
-    ColumnKey col3 {"Status", ColumnType::TEXT, NOT_NULL};
-    ColumnKey col4 {"Module", ColumnType::TEXT};
-    ColumnKey col5 {"Orden", ColumnType::INTEGER};
+    const ColumnKey col1 {"Id", ColumnType::INTEGER, NOT_NULL | PRIMARY_KEY | AUTO_INCREMENT};
+    const ColumnKey col2 {"Name", ColumnType::TEXT, NOT_NULL};
+    const ColumnKey col3 {"Status", ColumnType::TEXT, NOT_NULL};
+    const ColumnKey col4 {"Module", ColumnType::TEXT};
+    const ColumnKey col5 {"Orden", ColumnType::INTEGER};
 
     EXPECT_NO_THROW(m_db->CreateTable("DropMe", {col1, col2, col3, col4, col5}));
     EXPECT_TRUE(m_db->TableExists("DropMe"));

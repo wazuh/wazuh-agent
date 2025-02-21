@@ -58,7 +58,7 @@ std::optional<module_command::CommandEntry> GetCommandFromQueue(std::shared_ptr<
         return std::nullopt;
     }
 
-    Message m = multiTypeQueue->getNext(MessageType::COMMAND);
+    const Message m = multiTypeQueue->getNext(MessageType::COMMAND);
     nlohmann::json jsonData = m.data;
 
     std::string id;

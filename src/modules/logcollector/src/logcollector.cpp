@@ -79,7 +79,7 @@ void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParse
 void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
 {
     const auto fileWait = configurationParser->GetTimeConfigOrDefault(
-        config::logcollector::DEFAULT_RELOAD_INTERVAL, "logcollector", "read_interval");
+        config::logcollector::DEFAULT_FILE_WAIT, "logcollector", "read_interval");
 
     const auto reloadInterval = configurationParser->GetTimeConfigOrDefault(
         config::logcollector::DEFAULT_RELOAD_INTERVAL, "logcollector", "reload_interval");
@@ -170,7 +170,7 @@ void Logcollector::CleanAllReaders()
     }
 
     {
-        std::lock_guard<std::mutex> lock(m_timersMutex);
+        const std::lock_guard<std::mutex> lock(m_timersMutex);
         for (const auto& timer : m_timers)
         {
             timer->cancel();

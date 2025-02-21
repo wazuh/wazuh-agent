@@ -89,7 +89,7 @@ protected:
 // NOLINTBEGIN(bugprone-unchecked-optional-access)
 TEST(ConfigurationParser, GetConfigOrDefaultString)
 {
-    std::string strConfig = R"(
+    const std::string strConfig = R"(
         agent:
           server_url: 192.168.0.11
           string_conf: string
@@ -101,7 +101,7 @@ TEST(ConfigurationParser, GetConfigOrDefaultString)
 
 TEST(ConfigurationParser, GetConfigOrDefaultArrayString)
 {
-    std::string strConfig = R"(
+    const std::string strConfig = R"(
         agent_array:
           array_manager_ip:
             - 192.168.0.0
@@ -116,7 +116,7 @@ TEST(ConfigurationParser, GetConfigOrDefaultArrayString)
 
 TEST(ConfigurationParser, GetConfigOrDefaultInt)
 {
-    std::string strConfig = R"(
+    const std::string strConfig = R"(
         agent_array:
           array_manager_ip:
             - 192.168.0.0
@@ -130,7 +130,7 @@ TEST(ConfigurationParser, GetConfigOrDefaultInt)
 
 TEST(ConfigurationParser, GetConfigOrDefaultMilliseconds)
 {
-    std::string strConfig = R"(
+    const std::string strConfig = R"(
         agent_array:
           array_manager_ip:
             - 192.168.0.0
@@ -144,7 +144,7 @@ TEST(ConfigurationParser, GetConfigOrDefaultMilliseconds)
 
 TEST(ConfigurationParser, GetConfigOrDefaultSeconds)
 {
-    std::string strConfig = R"(
+    const std::string strConfig = R"(
         agent_array:
           array_manager_ip:
             - 192.168.0.0
@@ -158,7 +158,7 @@ TEST(ConfigurationParser, GetConfigOrDefaultSeconds)
 
 TEST(ConfigurationParser, GetConfigOrDefaultMinutes)
 {
-    std::string strConfig = R"(
+    const std::string strConfig = R"(
         agent_array:
           array_manager_ip:
             - 192.168.0.0
@@ -172,7 +172,7 @@ TEST(ConfigurationParser, GetConfigOrDefaultMinutes)
 
 TEST(ConfigurationParser, GetConfigOrDefaultHours)
 {
-    std::string strConfig = R"(
+    const std::string strConfig = R"(
         agent_array:
           array_manager_ip:
             - 192.168.0.0
@@ -186,7 +186,7 @@ TEST(ConfigurationParser, GetConfigOrDefaultHours)
 
 TEST(ConfigurationParser, GetConfigOrDefaultDays)
 {
-    std::string strConfig = R"(
+    const std::string strConfig = R"(
         agent_array:
           array_manager_ip:
             - 192.168.0.0
@@ -200,7 +200,7 @@ TEST(ConfigurationParser, GetConfigOrDefaultDays)
 
 TEST(ConfigurationParser, GetConfigOrDefaultTimeInvalid)
 {
-    std::string strConfig = R"(
+    const std::string strConfig = R"(
         agent_array:
           array_manager_ip:
             - 192.168.0.0
@@ -213,7 +213,7 @@ TEST(ConfigurationParser, GetConfigOrDefaultTimeInvalid)
 
 TEST(ConfigurationParser, GetConfigOrDefaultFloat)
 {
-    std::string strConfig = R"(
+    const std::string strConfig = R"(
         agent_array:
           array_manager_ip:
             - 192.168.0.0
@@ -227,7 +227,7 @@ TEST(ConfigurationParser, GetConfigOrDefaultFloat)
 
 TEST(ConfigurationParser, GetConfigOrDefaultNoKey)
 {
-    std::string strConfig = R"(
+    const std::string strConfig = R"(
         agent_array:
           array_manager_ip:
             - 192.168.0.0
@@ -240,7 +240,7 @@ TEST(ConfigurationParser, GetConfigOrDefaultNoKey)
 
 TEST(ConfigurationParser, GetConfigOrDefaultIntSubTable)
 {
-    std::string strConfig = R"(
+    const std::string strConfig = R"(
         agent_array:
           array_manager_ip:
             - 192.168.0.0
@@ -256,7 +256,7 @@ TEST(ConfigurationParser, GetConfigOrDefaultIntSubTable)
 
 TEST(ConfigurationParser, GetConfigOrDefaultBoolSubTable)
 {
-    std::string strConfig = R"(
+    const std::string strConfig = R"(
         agent_array:
           array_manager_ip:
             - 192.168.0.0
@@ -273,7 +273,7 @@ TEST(ConfigurationParser, GetConfigOrDefaultBoolSubTable)
 
 TEST(ConfigurationParser, GetConfigOrDefaultArrayMap)
 {
-    std::string strConfig = R"(
+    const std::string strConfig = R"(
         agent_array:
           array_manager_ip:
             - 192.168.0.0
@@ -296,7 +296,7 @@ TEST(ConfigurationParser, GetConfigOrDefaultArrayMap)
 
 TEST(ConfigurationParser, GetConfigOrDefaultMap)
 {
-    std::string strConfig = R"(
+    const std::string strConfig = R"(
         map_string:
           string_conf_1: string_1
           string_conf_2: string_2
@@ -309,7 +309,7 @@ TEST(ConfigurationParser, GetConfigOrDefaultMap)
 
 TEST(ConfigurationParser, GetConfigOrDefaultBadCast)
 {
-    std::string strConfig = R"(
+    const std::string strConfig = R"(
         bad_cast_array:
           string_conf_1: string_1
           int_conf: 10
@@ -321,7 +321,7 @@ TEST(ConfigurationParser, GetConfigOrDefaultBadCast)
 
 TEST(ConfigurationParser, GetConfigOrDefaultMultiNode)
 {
-    std::string strConfig = R"(
+    const std::string strConfig = R"(
         agent_array:
           array_manager_ip:
             - 192.168.0.0
@@ -351,7 +351,7 @@ TEST(ConfigurationParser, GetConfigOrDefaultMultiNode)
 
 TEST(ConfigurationParser, ConfigurationParserStringMisaligned)
 {
-    std::string strConfig = R"(
+    const std::string strConfig = R"(
         users:
           - name: Alice
            - name: Bob
@@ -412,7 +412,7 @@ TEST_F(ConfigurationParserFileTest, isValidYamlFileValid)
 TEST(ConfigurationParser, GetConfigOrDefaultBytes)
 {
     // Config should contain batch_size string in order to apply parsing
-    std::string strConfig = R"(
+    const std::string strConfig = R"(
         batch_size:
           size_bytes: 500B
           size_KB: 45KB

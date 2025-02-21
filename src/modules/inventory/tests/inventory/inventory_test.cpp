@@ -22,8 +22,9 @@ TEST_F(InventoryTest, SendUpdateEvent_Stateful)
             [](const Message& msg)
             {
                 EXPECT_EQ(msg.type, MessageType::STATEFUL);
-                nlohmann::json expectedData = {{"key", "value"}};
-                nlohmann::json expectedMetadata = {{"collector", "hardware"}, {"operation", "update"}, {"id", "123"}};
+                const nlohmann::json expectedData = {{"key", "value"}};
+                const nlohmann::json expectedMetadata = {
+                    {"collector", "hardware"}, {"operation", "update"}, {"id", "123"}};
                 EXPECT_EQ(msg.data, expectedData);
                 EXPECT_EQ(nlohmann::json::parse(msg.metaData), expectedMetadata);
                 return 1;
@@ -51,8 +52,9 @@ TEST_F(InventoryTest, SendDeleteEvent_Stateful)
             [](const Message& msg)
             {
                 EXPECT_EQ(msg.type, MessageType::STATEFUL);
-                nlohmann::json expectedData = nlohmann::json::object();
-                nlohmann::json expectedMetadata = {{"collector", "hardware"}, {"operation", "delete"}, {"id", "123"}};
+                const auto expectedData = nlohmann::json::object();
+                const nlohmann::json expectedMetadata = {
+                    {"collector", "hardware"}, {"operation", "delete"}, {"id", "123"}};
                 EXPECT_EQ(msg.data, expectedData);
                 EXPECT_EQ(nlohmann::json::parse(msg.metaData), expectedMetadata);
                 return 1;
@@ -81,7 +83,7 @@ TEST_F(InventoryTest, SendUpdateEvent_WithStateless)
             [](const Message& msg)
             {
                 EXPECT_EQ(msg.type, MessageType::STATEFUL);
-                nlohmann::json expectedData = {{"key", "value"}};
+                const nlohmann::json expectedData = {{"key", "value"}};
                 EXPECT_EQ(msg.data, expectedData);
                 return 1;
             })
@@ -89,7 +91,7 @@ TEST_F(InventoryTest, SendUpdateEvent_WithStateless)
             [](const Message& msg)
             {
                 EXPECT_EQ(msg.type, MessageType::STATELESS);
-                nlohmann::json expectedData = {{"alert", "high"}};
+                const nlohmann::json expectedData = {{"alert", "high"}};
                 EXPECT_EQ(msg.data, expectedData);
                 return 1;
             });

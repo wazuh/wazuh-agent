@@ -27,10 +27,10 @@ namespace
 
         for (const auto& row : rows)
         {
-            std::string moduleNameString = row[0].Value;
-            std::string moduleTypeString = row[1].Value;
-            std::string metadataString = row[2].Value;
-            std::string dataString = row[3].Value;
+            const std::string moduleNameString = row[0].Value;
+            const std::string moduleTypeString = row[1].Value;
+            const std::string metadataString = row[2].Value;
+            const std::string dataString = row[3].Value;
 
             nlohmann::json outputJson = {{"moduleName", ""}, {"moduleType", ""}, {"metadata", ""}, {"data", {}}};
 
@@ -57,8 +57,8 @@ namespace
             messages.push_back(outputJson);
             if (maxSize)
             {
-                size_t messageSize = moduleNameString.size() + moduleTypeString.size() + metadataString.size() +
-                                     outputJson["data"].dump().size();
+                const size_t messageSize = moduleNameString.size() + moduleTypeString.size() + metadataString.size() +
+                                           outputJson["data"].dump().size();
                 if (sizeAccum + messageSize >= maxSize)
                 {
                     break;
@@ -144,7 +144,7 @@ int Storage::Store(const nlohmann::json& message,
 
     int result = 0;
 
-    std::unique_lock<std::mutex> lock(m_mutex);
+    const std::unique_lock<std::mutex> lock(m_mutex);
 
     auto transaction = m_db->BeginTransaction();
 
@@ -199,7 +199,7 @@ int Storage::RemoveMultiple(int n,
 
     int result = 0;
 
-    std::unique_lock<std::mutex> lock(m_mutex);
+    const std::unique_lock<std::mutex> lock(m_mutex);
 
     auto transaction = m_db->BeginTransaction();
 
