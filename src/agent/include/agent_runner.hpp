@@ -13,6 +13,7 @@ public:
 
 private:
     void ParseOptions(int argc, char* argv[]);
+    void AddPlatformSpecificOptions();
 
     boost::program_options::variables_map validOptions;
     boost::program_options::options_description cmdParser = {"Allowed options"};

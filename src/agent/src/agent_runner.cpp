@@ -18,11 +18,6 @@ static const auto OPT_PASS {"password"};
 static const auto OPT_KEY {"key"};
 static const auto OPT_NAME {"name"};
 static const auto OPT_VERIFICATION_MODE {"verification-mode"};
-#ifdef _WIN32
-static const auto OPT_INSTALL_SERVICE {"install-service"};
-static const auto OPT_REMOVE_SERVICE {"remove-service"};
-static const auto OPT_RUN_SERVICE {"run-service"};
-#endif
 
 namespace program_options = boost::program_options;
 
@@ -48,11 +43,7 @@ void AgentRunner::ParseOptions(int argc, char* argv[])
         program_options::value<std::string>(),
         "Verification mode to be applied on HTTPS connection to the server (optional)");
 
-#ifdef _WIN32
-    cmdParser.add_options()(OPT_INSTALL_SERVICE, "Use this option to install Wazuh as a Windows service")(
-        OPT_REMOVE_SERVICE, "Use this option to remove Wazuh Windows service")(
-        OPT_RUN_SERVICE, "Use this option to run Wazuh as a Windows service");
-#endif
+    AddPlatformSpecificOptions();
 
     program_options::store(program_options::parse_command_line(argc, argv, cmdParser), validOptions);
     program_options::notify(validOptions);
