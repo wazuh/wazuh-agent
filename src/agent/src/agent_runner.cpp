@@ -8,16 +8,28 @@
 
 /// Command-line options
 static const auto OPT_HELP {"help"};
+static const auto OPT_HELP_DESC {"Display this help menu"};
 static const auto OPT_RUN {"run"};
+static const auto OPT_RUN_DESC {"Run agent in foreground (this is the default behavior)"};
 static const auto OPT_STATUS {"status"};
+static const auto OPT_STATUS_DESC {"Check if the agent is running (running or stopped)"};
 static const auto OPT_CONFIG_FILE {"config-file"};
+static const auto OPT_CONFIG_FILE_DESC {"Path to the Wazuh configuration file (optional)"};
 static const auto OPT_REGISTER_AGENT {"register-agent"};
+static const auto OPT_REGISTER_AGENT_DESC {"Use this option to register as a new agent"};
 static const auto OPT_URL {"url"};
+static const auto OPT_URL_DESC {"URL of the server management API"};
 static const auto OPT_USER {"user"};
+static const auto OPT_USER_DESC {"User to authenticate with the server management API"};
 static const auto OPT_PASS {"password"};
+static const auto OPT_PASS_DESC {"Password to authenticate with the server management API"};
 static const auto OPT_KEY {"key"};
+static const auto OPT_KEY_DESC {"Key to register the agent (optional)"};
 static const auto OPT_NAME {"name"};
+static const auto OPT_NAME_DESC {"Name to register the agent (optional)"};
 static const auto OPT_VERIFICATION_MODE {"verification-mode"};
+static const auto OPT_VERIFICATION_MODE_DESC {
+    "Verification mode to be applied on HTTPS connection to the server (optional)"};
 
 namespace program_options = boost::program_options;
 
@@ -29,21 +41,20 @@ AgentRunner::AgentRunner(int argc, char* argv[])
 
 void AgentRunner::ParseOptions(int argc, char* argv[])
 {
-    cmdParser.add_options()(OPT_HELP, "Display this help menu")(
-        OPT_RUN, "Run agent in foreground (this is the default behavior)")(
-        OPT_STATUS, "Check if the agent is running (running or stopped)")(
-        OPT_CONFIG_FILE,
-        program_options::value<std::string>()->default_value(""),
-        "Path to the Wazuh configuration file (optional)")(OPT_REGISTER_AGENT,
-                                                           "Use this option to register as a new agent")(
-        OPT_URL, program_options::value<std::string>(), "URL of the server management API")(
-        OPT_USER, program_options::value<std::string>(), "User to authenticate with the server management API")(
-        OPT_PASS, program_options::value<std::string>(), "Password to authenticate with the server management API")(
-        OPT_KEY, program_options::value<std::string>()->default_value(""), "Key to register the agent (optional)")(
-        OPT_NAME, program_options::value<std::string>()->default_value(""), "Name to register the agent (optional)")(
-        OPT_VERIFICATION_MODE,
-        program_options::value<std::string>()->default_value(config::agent::DEFAULT_VERIFICATION_MODE),
-        "Verification mode to be applied on HTTPS connection to the server (optional)");
+    // clang-format off
+    cmdParser.add_options()
+        (OPT_HELP, OPT_HELP_DESC)
+        (OPT_RUN, OPT_RUN_DESC)
+        (OPT_STATUS, OPT_STATUS_DESC)
+        (OPT_CONFIG_FILE, program_options::value<std::string>()->default_value(""), OPT_CONFIG_FILE_DESC)
+        (OPT_REGISTER_AGENT, OPT_REGISTER_AGENT_DESC)
+        (OPT_URL, program_options::value<std::string>(), OPT_URL_DESC)
+        (OPT_USER, program_options::value<std::string>(), OPT_USER_DESC)
+        (OPT_PASS, program_options::value<std::string>(), OPT_PASS_DESC)
+        (OPT_KEY, program_options::value<std::string>()->default_value(""), OPT_KEY_DESC)
+        (OPT_NAME, program_options::value<std::string>()->default_value(""), OPT_NAME_DESC)
+        (OPT_VERIFICATION_MODE, program_options::value<std::string>()->default_value(config::agent::DEFAULT_VERIFICATION_MODE), OPT_VERIFICATION_MODE_DESC);
+    // clang-format on
 
     AddPlatformSpecificOptions();
 
