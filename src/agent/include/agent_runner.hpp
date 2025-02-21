@@ -21,6 +21,6 @@ private:
 
     int RegisterAgent() const;
 
-    boost::program_options::variables_map validOptions;
-    boost::program_options::options_description cmdParser = {"Allowed options", 120};
+    boost::program_options::variables_map m_options;
+    boost::program_options::options_description m_desc = {"Allowed options", 120};
 };

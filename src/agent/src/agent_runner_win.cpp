@@ -14,7 +14,7 @@ namespace
 void AgentRunner::AddPlatformSpecificOptions()
 {
     // clang-format off
-    cmdParser.add_options()
+    m_desc.add_options()
         (OPT_INSTALL_SERVICE, OPT_INSTALL_SERVICE_DESC)
         (OPT_REMOVE_SERVICE, OPT_REMOVE_SERVICE_DESC)
         (OPT_RUN_SERVICE, OPT_RUN_SERVICE_DESC);
@@ -23,21 +23,21 @@ void AgentRunner::AddPlatformSpecificOptions()
 
 std::optional<int> AgentRunner::HandlePlatformSpecificOptions() const
 {
-    if (validOptions.count(OPT_INSTALL_SERVICE))
+    if (m_options.count(OPT_INSTALL_SERVICE))
     {
         if (!InstallService())
         {
             return 1;
         }
     }
-    else if (validOptions.count(OPT_REMOVE_SERVICE))
+    else if (m_options.count(OPT_REMOVE_SERVICE))
     {
         if (!RemoveService())
         {
             return 1;
         }
     }
-    else if (validOptions.count(OPT_RUN_SERVICE))
+    else if (m_options.count(OPT_RUN_SERVICE))
     {
         SetDispatcherThread();
     }
