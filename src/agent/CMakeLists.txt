@@ -32,7 +32,6 @@ if(WIN32)
 elseif(UNIX)
     set(SOURCES
         src/agent_runner_unix.cpp
-        src/process_options_unix.cpp
         src/signal_handler_unix.cpp
         src/instance_handler_unix.cpp
     )

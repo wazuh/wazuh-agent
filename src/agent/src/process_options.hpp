@@ -1,12 +1,5 @@
 #pragma once
 
-#include <string>
-#include <vector>
-
-/// @brief Starts the agent using the specified configuration file.
-/// @param configFilePath The file path to the configuration file used for starting the agent.
-void StartAgent(const std::string& configFilePath);
-
 #ifdef _WIN32
 /// @brief Installs the agent as a service.
 /// @return True if the installation is successful, false otherwise.

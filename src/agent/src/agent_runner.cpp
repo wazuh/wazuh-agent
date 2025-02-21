@@ -1,5 +1,6 @@
 #include <agent_runner.hpp>
 
+#include <agent.hpp>
 #include <agent_registration.hpp>
 #include <config.h>
 #include <configuration_parser.hpp>
@@ -93,7 +94,7 @@ int AgentRunner::Run() const
     }
     else
     {
-        StartAgent(m_options[OPT_CONFIG_FILE].as<std::string>());
+        return StartAgent();
     }
 
     return 0;
@@ -154,4 +155,33 @@ void AgentRunner::StatusAgent() const
     const auto configFilePath = m_options[OPT_CONFIG_FILE].as<std::string>();
     const auto status = instance_handler::GetAgentStatus(configFilePath);
     std::cout << fmt::format("wazuh-agent status: {}\n", status);
+}
+
+int AgentRunner::StartAgent() const
+{
+    try
+    {
+        Logger::AddPlatformSpecificSink();
+
+        const auto configFilePath = m_options[OPT_CONFIG_FILE].as<std::string>();
+        const auto instanceHandler = instance_handler::GetInstanceHandler(configFilePath);
+
+        if (!instanceHandler.isLockAcquired())
+        {
+            std::cout << "wazuh-agent already running\n";
+            return 1;
+        }
+
+        LogInfo("Starting wazuh-agent");
+
+        Agent agent(configFilePath);
+        agent.Run();
+    }
+    catch (const std::exception& e)
+    {
+        LogError("Exception thrown in wazuh-agent: {}", e.what());
+        return 1;
+    }
+
+    return 0;
 }
