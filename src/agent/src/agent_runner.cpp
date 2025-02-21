@@ -66,22 +66,10 @@ int AgentRunner::Run() const
     {
         StatusAgent(validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
     }
-#ifdef _WIN32
-    else if (validOptions.count(OPT_INSTALL_SERVICE) > 0)
+    else if (const auto platformSpecificResult = HandlePlatformSpecificOptions(); platformSpecificResult.has_value())
     {
-        if (!InstallService())
-            return 1;
+        return platformSpecificResult.value();
     }
-    else if (validOptions.count(OPT_REMOVE_SERVICE) > 0)
-    {
-        if (!RemoveService())
-            return 1;
-    }
-    else if (validOptions.count(OPT_RUN_SERVICE) > 0)
-    {
-        SetDispatcherThread();
-    }
-#endif
     else if (validOptions.count(OPT_HELP) > 0)
     {
         std::cout << cmdParser << '\n';
