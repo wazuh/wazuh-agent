@@ -51,11 +51,11 @@ void AgentRunner::ParseOptions(int argc, char* argv[])
 
 int AgentRunner::Run() const
 {
-    if (validOptions.count(OPT_REGISTER_AGENT) > 0)
+    if (validOptions.count(OPT_REGISTER_AGENT))
     {
         return RegisterAgent();
     }
-    if (validOptions.count(OPT_STATUS) > 0)
+    if (validOptions.count(OPT_STATUS))
     {
         StatusAgent(validOptions.count(OPT_CONFIG_FILE) ? validOptions[OPT_CONFIG_FILE].as<std::string>() : "");
     }
@@ -63,7 +63,7 @@ int AgentRunner::Run() const
     {
         return platformSpecificResult.value();
     }
-    else if (validOptions.count(OPT_HELP) > 0)
+    else if (validOptions.count(OPT_HELP))
     {
         std::cout << cmdParser << '\n';
     }
@@ -77,13 +77,11 @@ int AgentRunner::Run() const
 
 int AgentRunner::RegisterAgent() const
 {
-    if (validOptions.count(OPT_URL) == 0 || validOptions.count(OPT_USER) == 0 || validOptions.count(OPT_PASS) == 0)
+    if (!validOptions.count(OPT_URL) || !validOptions.count(OPT_USER) || !validOptions.count(OPT_PASS))
     {
         std::cout << "--url, --user and --password args are mandatory\n";
         return 1;
     }
-
-    std::cout << validOptions[OPT_PASS].as<std::string>() << '\n';
 
     ::RegisterAgent(validOptions[OPT_URL].as<std::string>(),
                     validOptions[OPT_USER].as<std::string>(),

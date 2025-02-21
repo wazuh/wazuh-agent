@@ -14,21 +14,21 @@ void AgentRunner::AddPlatformSpecificOptions()
 
 std::optional<int> AgentRunner::HandlePlatformSpecificOptions() const
 {
-    if (validOptions.count(OPT_INSTALL_SERVICE) > 0)
+    if (validOptions.count(OPT_INSTALL_SERVICE))
     {
         if (!InstallService())
         {
             return 1;
         }
     }
-    else if (validOptions.count(OPT_REMOVE_SERVICE) > 0)
+    else if (validOptions.count(OPT_REMOVE_SERVICE))
     {
         if (!RemoveService())
         {
             return 1;
         }
     }
-    else if (validOptions.count(OPT_RUN_SERVICE) > 0)
+    else if (validOptions.count(OPT_RUN_SERVICE))
     {
         SetDispatcherThread();
     }
