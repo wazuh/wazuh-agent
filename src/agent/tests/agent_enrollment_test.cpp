@@ -17,7 +17,7 @@
 #include <optional>
 #include <string>
 
-class RegisterTest : public ::testing::Test
+class EnrollmentTest : public ::testing::Test
 {
 protected:
     void SetUp() override
@@ -72,7 +72,7 @@ protected:
     MockPersistence* m_mockPersistence = nullptr;
 };
 
-TEST_F(RegisterTest, RegistrationTestSuccess)
+TEST_F(EnrollmentTest, RegistrationTestSuccess)
 {
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     const auto mockHttpClientPtr = mockHttpClient.get();
@@ -101,7 +101,7 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
     ASSERT_TRUE(res);
 }
 
-TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
+TEST_F(EnrollmentTest, RegistrationFailsIfAuthenticationFails)
 {
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     const auto mockHttpClientPtr = mockHttpClient.get();
@@ -124,7 +124,7 @@ TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
     ASSERT_FALSE(res);
 }
 
-TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
+TEST_F(EnrollmentTest, RegistrationFailsIfServerResponseIsNotOk)
 {
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     const auto mockHttpClientPtr = mockHttpClient.get();
@@ -151,7 +151,7 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
     ASSERT_FALSE(res);
 }
 
-TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
+TEST_F(EnrollmentTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
 {
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     const auto mockHttpClientPtr = mockHttpClient.get();
@@ -222,7 +222,7 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
     ASSERT_TRUE(res);
 }
 
-TEST_F(RegisterTest, RegistrationTestFailWithBadKey)
+TEST_F(EnrollmentTest, RegistrationTestFailWithBadKey)
 {
     ASSERT_THROW(agent_enrollment::AgentEnrollment(std::make_unique<MockHttpClient>(),
                                                    "https://localhost:55000",
@@ -236,7 +236,7 @@ TEST_F(RegisterTest, RegistrationTestFailWithBadKey)
                  std::invalid_argument);
 }
 
-TEST_F(RegisterTest, RegistrationTestFailWithHttpClientError)
+TEST_F(EnrollmentTest, RegistrationTestFailWithHttpClientError)
 {
     ASSERT_THROW(agent_enrollment::AgentEnrollment(nullptr,
                                                    "https://localhost:55000",
@@ -250,7 +250,7 @@ TEST_F(RegisterTest, RegistrationTestFailWithHttpClientError)
                  std::runtime_error);
 }
 
-TEST_F(RegisterTest, AuthenticateWithUserPassword_Success)
+TEST_F(EnrollmentTest, AuthenticateWithUserPassword_Success)
 {
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     const auto mockHttpClientPtr = mockHttpClient.get();
@@ -278,7 +278,7 @@ TEST_F(RegisterTest, AuthenticateWithUserPassword_Success)
     EXPECT_EQ(token.value(), "valid_token");
 }
 
-TEST_F(RegisterTest, AuthenticateWithUserPassword_Failure)
+TEST_F(EnrollmentTest, AuthenticateWithUserPassword_Failure)
 {
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     const auto mockHttpClientPtr = mockHttpClient.get();
