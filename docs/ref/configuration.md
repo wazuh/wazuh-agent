@@ -32,12 +32,12 @@ This will start the `wazuh-agent` process with `debug` level logging, allowing f
 | `--run`               | Run agent in foreground (this is the default behavior)                                                 | N/A      |
 | `--status`            | Check if the agent is running (running or stopped)                                                     | N/A      |
 | `--config-file`       | Path to the Wazuh configuration file (optional)                                                        | N/A      |
-| `--register-agent`    | Use this option to register as a new agent                                                             | N/A      |
+| `--enroll-agent`      | Use this option to enroll as a new agent                                                               | N/A      |
 | `--url`               | URL of the server management API                                                                       | N/A      |
 | `--user`              | User to authenticate with the server management API                                                    | N/A      |
 | `--password`          | Password to authenticate with the server management API                                                | N/A      |
-| `--key`               | Key to register the agent (optional)                                                                   | N/A      |
-| `--name`              | Name to register the agent (optional)                                                                  | N/A      |
+| `--key`               | Key to enroll the agent (optional)                                                                     | N/A      |
+| `--name`              | Name to enroll the agent (optional)                                                                    | N/A      |
 | `--verification-mode` | Verification mode to be applied on HTTPS connection to the server (full, certificate, none) (optional) | N/A      |
 
 ## Configuration file

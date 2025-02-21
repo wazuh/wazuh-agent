@@ -36,9 +36,9 @@ namespace
     const auto OPT_PASS {"password"};
     const auto OPT_PASS_DESC {"Password to authenticate with the server management API"};
     const auto OPT_KEY {"key"};
-    const auto OPT_KEY_DESC {"Key to register the agent (optional)"};
+    const auto OPT_KEY_DESC {"Key to enroll the agent (optional)"};
     const auto OPT_NAME {"name"};
-    const auto OPT_NAME_DESC {"Name to register the agent (optional)"};
+    const auto OPT_NAME_DESC {"Name to enroll the agent (optional)"};
     const auto OPT_VERIFICATION_MODE {"verification-mode"};
     const auto OPT_VERIFICATION_MODE_DESC {
         "Verification mode to be applied on HTTPS connection to the server (optional)"};

@@ -1,6 +1,6 @@
 # Messages
 
-## Registration requests
+## Enrollment requests
 
 - **API**: Server Management
 
@@ -23,7 +23,7 @@ Example: `WazuhXDR/5.0.0 (Endpoint; x86_64; Linux)`
 
 - **Body**: _empty_
 
-### Registration
+### Enrollment
 
 - **Endpoint**: `/agents`
 
@@ -77,7 +77,7 @@ Example:
 }
 ```
 
-> **_NOTE:_** An agent will always register as new regardless of whether it has previously registered.
+> **_NOTE:_** An agent will always enroll as new regardless of whether it has previously enrolled.
 
 ## Communication requests
 

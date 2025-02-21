@@ -14,12 +14,12 @@ The agent supports three validation modes:
 
 ### Usage
 
-#### During Agent Registration
+#### During Agent Enrollment
 
-Use the `--verification-mode` flag when registering the agent:
+Use the `--verification-mode` flag when enrolling the agent:
 
 ```bash
-./wazuh-agent --register-agent --user wazuh --password wazuh --url https://server-ip:55000 --verification-mode certificate
+./wazuh-agent --enroll-agent --user wazuh --password wazuh --url https://server-ip:55000 --verification-mode certificate
 ```
 
 #### During Agent Connection

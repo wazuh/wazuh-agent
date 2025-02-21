@@ -55,10 +55,10 @@ Agent::Agent(const std::string& configFilePath,
           { return m_configurationParser->isValidYamlFile(fileToValidate); },
           [this]() { ReloadModules(); })
 {
-    // Check if agent is registered
+    // Check if agent is enrolled
     if (m_agentInfo.GetName().empty() || m_agentInfo.GetKey().empty() || m_agentInfo.GetUUID().empty())
     {
-        throw std::runtime_error("The agent is not registered");
+        throw std::runtime_error("The agent is not enrolled");
     }
 
     m_configurationParser->SetGetGroupIdsFunction([this]() { return m_agentInfo.GetGroups(); });
