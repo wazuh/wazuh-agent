@@ -72,7 +72,7 @@ protected:
     MockPersistence* m_mockPersistence = nullptr;
 };
 
-TEST_F(EnrollmentTest, RegistrationTestSuccess)
+TEST_F(EnrollmentTest, EnrollmentTestSuccess)
 {
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     const auto mockHttpClientPtr = mockHttpClient.get();
@@ -101,7 +101,7 @@ TEST_F(EnrollmentTest, RegistrationTestSuccess)
     ASSERT_TRUE(res);
 }
 
-TEST_F(EnrollmentTest, RegistrationFailsIfAuthenticationFails)
+TEST_F(EnrollmentTest, EnrollmentFailsIfAuthenticationFails)
 {
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     const auto mockHttpClientPtr = mockHttpClient.get();
@@ -124,7 +124,7 @@ TEST_F(EnrollmentTest, RegistrationFailsIfAuthenticationFails)
     ASSERT_FALSE(res);
 }
 
-TEST_F(EnrollmentTest, RegistrationFailsIfServerResponseIsNotOk)
+TEST_F(EnrollmentTest, EnrollmentFailsIfServerResponseIsNotOk)
 {
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     const auto mockHttpClientPtr = mockHttpClient.get();
@@ -151,7 +151,7 @@ TEST_F(EnrollmentTest, RegistrationFailsIfServerResponseIsNotOk)
     ASSERT_FALSE(res);
 }
 
-TEST_F(EnrollmentTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
+TEST_F(EnrollmentTest, EnrollmentWithoutAKeyGeneratesOneAutomatically)
 {
     auto mockHttpClient = std::make_unique<MockHttpClient>();
     const auto mockHttpClientPtr = mockHttpClient.get();
@@ -222,7 +222,7 @@ TEST_F(EnrollmentTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
     ASSERT_TRUE(res);
 }
 
-TEST_F(EnrollmentTest, RegistrationTestFailWithBadKey)
+TEST_F(EnrollmentTest, EnrollmentTestFailWithBadKey)
 {
     ASSERT_THROW(agent_enrollment::AgentEnrollment(std::make_unique<MockHttpClient>(),
                                                    "https://localhost:55000",
@@ -236,7 +236,7 @@ TEST_F(EnrollmentTest, RegistrationTestFailWithBadKey)
                  std::invalid_argument);
 }
 
-TEST_F(EnrollmentTest, RegistrationTestFailWithHttpClientError)
+TEST_F(EnrollmentTest, EnrollmentTestFailWithHttpClientError)
 {
     ASSERT_THROW(agent_enrollment::AgentEnrollment(nullptr,
                                                    "https://localhost:55000",

@@ -184,7 +184,7 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoNoSysInfo)
     EXPECT_FALSE(metadataInfo.contains("host"));
 }
 
-TEST_F(AgentInfoTest, TestLoadMetadataInfoRegistration)
+TEST_F(AgentInfoTest, TestLoadMetadataInfoEnrollment)
 {
     nlohmann::json os;
     nlohmann::json networks;
