@@ -1,4 +1,4 @@
-#include <agent_registration.hpp>
+#include <agent_enrollment.hpp>
 #include <http_request_params.hpp>
 
 #include <config.h>

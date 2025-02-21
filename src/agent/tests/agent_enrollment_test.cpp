@@ -1,9 +1,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <agent_enrollment.hpp>
 #include <agent_info.hpp>
 #include <agent_info_persistance.hpp>
-#include <agent_registration.hpp>
 #include <http_request_params.hpp>
 #include <ihttp_client.hpp>
 

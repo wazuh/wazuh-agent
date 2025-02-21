@@ -1,7 +1,7 @@
 #include <agent_runner.hpp>
 
 #include <agent.hpp>
-#include <agent_registration.hpp>
+#include <agent_enrollment.hpp>
 #include <config.h>
 #include <configuration_parser.hpp>
 #include <http_client.hpp>

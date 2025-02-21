@@ -12,14 +12,14 @@ if(NOT WIN32)
     add_test(NAME AgentTest COMMAND agent_test)
 endif()
 
-add_executable(agent_registration_test agent_registration_test.cpp)
-configure_target(agent_registration_test)
-target_include_directories(agent_registration_test PRIVATE
+add_executable(agent_enrollment_test agent_enrollment_test.cpp)
+configure_target(agent_enrollment_test)
+target_include_directories(agent_enrollment_test PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../src
     ${CMAKE_CURRENT_SOURCE_DIR}/../agent_info/src
     ${CMAKE_CURRENT_SOURCE_DIR}/../persistence/tests/mocks)
-target_link_libraries(agent_registration_test PRIVATE Agent Persistence GTest::gmock GTest::gtest)
-add_test(NAME AgentRegistrationTest COMMAND agent_registration_test)
+target_link_libraries(agent_enrollment_test PRIVATE Agent Persistence GTest::gmock GTest::gtest)
+add_test(NAME AgentEnrollmentTest COMMAND agent_enrollment_test)
 
 add_executable(signal_handler_test signal_handler_test.cpp)
 configure_target(signal_handler_test)
