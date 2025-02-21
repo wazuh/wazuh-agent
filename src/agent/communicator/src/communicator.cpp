@@ -212,7 +212,9 @@ namespace communicator
         {
             m_tokenExpTimer->expires_after(
                 std::chrono::milliseconds((remainingSecs - TOKEN_PRE_EXPIRY_SECS) * A_SECOND_IN_MILLIS));
-            co_await m_tokenExpTimer->async_wait(boost::asio::use_awaitable);
+
+            boost::system::error_code ec;
+            co_await m_tokenExpTimer->async_wait(boost::asio::redirect_error(boost::asio::use_awaitable, ec));
         }
 
         while (m_keepRunning.load())

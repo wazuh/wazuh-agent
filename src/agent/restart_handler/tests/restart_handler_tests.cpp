@@ -43,21 +43,21 @@ TEST(TestUsingSystemctl, ReturnsTrueWhenSystemctlIsAvailable)
     setenv("INVOCATION_ID", "testing", 1);
     if (0 == std::system("which systemctl > /dev/null 2>&1"))
     {
-        EXPECT_TRUE(restart_handler::UsingSystemctl());
+        EXPECT_TRUE(restart_handler::RunningAsService());
     }
     else
     {
-        EXPECT_FALSE(restart_handler::UsingSystemctl());
+        EXPECT_FALSE(restart_handler::RunningAsService());
     }
 }
 
 TEST(TestUsingSystemctl, ReturnsFalseWhenSystemctlIsNotAvailable)
 {
     unsetenv("INVOCATION_ID");
-    EXPECT_FALSE(restart_handler::UsingSystemctl());
+    EXPECT_FALSE(restart_handler::RunningAsService());
 }
 
-TEST(StopAgentTest, GratefullyStop)
+TEST(StopAgentTest, GracefullyStop)
 {
     testing::internal::CaptureStdout();
     signal(SIGCHLD, SigchldHandler);

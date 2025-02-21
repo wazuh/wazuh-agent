@@ -161,7 +161,7 @@ void Agent::Run()
                 else if (cmd.Module == module_command::RESTART_HANDLER_MODULE)
                 {
                     LogInfo("Restart: Initiating restart");
-                    return restart_handler::RestartHandler::RestartCommand();
+                    return restart_handler::RestartHandler::RestartAgent();
                 }
                 return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue);
             }),

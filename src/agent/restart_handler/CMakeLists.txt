@@ -9,8 +9,10 @@ find_package(Boost REQUIRED COMPONENTS asio)
 
 if(WIN32)
     set(SOURCES src/restart_handler_win.cpp)
+elseif(APPLE)
+    set(SOURCES src/restart_handler_unix.cpp src/restart_handler_mac.cpp)
 else()
-    set(SOURCES src/restart_handler_unix.cpp)
+    set(SOURCES src/restart_handler_unix.cpp src/restart_handler_lin.cpp)
 endif()
 
 add_library(RestartHandler ${SOURCES})

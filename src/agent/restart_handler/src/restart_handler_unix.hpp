@@ -7,12 +7,11 @@
 
 namespace restart_handler
 {
-
-    /// @brief Checks if systemctl is available and running as a systemd service.
+    /// @brief Checks if the Agent is running as a service
     ///
-    /// Determines if systemctl can be used in the current environment.
-    /// @return true if systemctl is available and running as a systemd service, otherwise returns false.
-    bool UsingSystemctl();
+    /// @details Looks for indications that the Agent was started by systemd, launchd or SCM
+    /// @return true if the Agent is running as a service, otherwise returns false.
+    bool RunningAsService();
 
     /// @brief Stops the agent by terminating its process.
     ///
@@ -31,12 +30,11 @@ namespace restart_handler
     /// @return A boost::asio::awaitable containing the result of the command execution.
     boost::asio::awaitable<module_command::CommandExecutionResult> RestartWithFork();
 
-    /// @brief Restarts the module using systemd service management.
+    /// @brief Restarts the module as a service
     ///
-    /// This function restarts the module via systemd, ensuring the module is properly restarted using
+    /// This function restarts the module, ensuring the module is properly restarted using
     /// system service management mechanisms.
     ///
     /// @return A boost::asio::awaitable containing the result of the command execution.
-    boost::asio::awaitable<module_command::CommandExecutionResult> RestartWithSystemd();
-
+    boost::asio::awaitable<module_command::CommandExecutionResult> RestartService();
 } // namespace restart_handler
