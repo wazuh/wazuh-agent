@@ -8,7 +8,7 @@
 #include <optional>
 #include <string>
 
-namespace agent_registration
+namespace agent_enrollment
 {
     /// @struct UserCredentials
     /// @brief Stores the user's credentials.
@@ -78,4 +78,4 @@ namespace agent_registration
         /// @brief The connection verification mode.
         std::string m_verificationMode;
     };
-} // namespace agent_registration
+} // namespace agent_enrollment

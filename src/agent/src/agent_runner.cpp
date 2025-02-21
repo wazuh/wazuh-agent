@@ -121,14 +121,14 @@ int AgentRunner::RegisterAgent() const
     {
         std::cout << "Starting wazuh-agent registration\n";
 
-        agent_registration::AgentEnrollment reg(std::make_unique<http_client::HttpClient>(),
-                                                m_options[OPT_URL].as<std::string>(),
-                                                m_options[OPT_USER].as<std::string>(),
-                                                m_options[OPT_PASS].as<std::string>(),
-                                                m_options[OPT_KEY].as<std::string>(),
-                                                m_options[OPT_NAME].as<std::string>(),
-                                                dbFolderPath,
-                                                m_options[OPT_VERIFICATION_MODE].as<std::string>());
+        agent_enrollment::AgentEnrollment reg(std::make_unique<http_client::HttpClient>(),
+                                              m_options[OPT_URL].as<std::string>(),
+                                              m_options[OPT_USER].as<std::string>(),
+                                              m_options[OPT_PASS].as<std::string>(),
+                                              m_options[OPT_KEY].as<std::string>(),
+                                              m_options[OPT_NAME].as<std::string>(),
+                                              dbFolderPath,
+                                              m_options[OPT_VERIFICATION_MODE].as<std::string>());
 
         if (reg.Register())
         {

@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-namespace agent_registration
+namespace agent_enrollment
 {
     AgentEnrollment::AgentEnrollment(std::unique_ptr<http_client::IHttpClient> httpClient,
                                      std::string url,
@@ -105,4 +105,4 @@ namespace agent_registration
 
         return std::nullopt;
     }
-} // namespace agent_registration
+} // namespace agent_enrollment
