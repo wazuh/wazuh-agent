@@ -46,15 +46,23 @@ namespace
         g_ServiceStatus.dwWaitHint = waitHint;
 
         if (currentState == SERVICE_START_PENDING)
+        {
             g_ServiceStatus.dwControlsAccepted = 0;
+        }
         else
+        {
             g_ServiceStatus.dwControlsAccepted =
                 SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN | SERVICE_ACCEPT_PARAMCHANGE;
+        }
 
         if ((currentState == SERVICE_RUNNING) || (currentState == SERVICE_STOPPED))
+        {
             g_ServiceStatus.dwCheckPoint = 0;
+        }
         else
+        {
             g_ServiceStatus.dwCheckPoint = dwCheckPoint++;
+        }
 
         if (!SetServiceStatus(g_StatusHandle, &g_ServiceStatus))
         {
@@ -268,7 +276,9 @@ namespace WindowsService
         ServiceHandle hSCManager;
 
         if (!GetService(hSCManager, hService, SERVICE_START))
+        {
             return;
+        }
 
         bool res;
         if (!configFilePath.empty())
