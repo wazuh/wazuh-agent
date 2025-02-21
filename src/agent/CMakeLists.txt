@@ -25,7 +25,6 @@ if(WIN32)
         src/agent_runner_win.cpp
         src/windows/windows_api_facade.cpp
         src/windows/windows_service.cpp
-        src/process_options_win.cpp
         src/signal_handler_win.cpp
         src/instance_handler_win.cpp
     )

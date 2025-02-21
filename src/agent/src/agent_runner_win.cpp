@@ -1,5 +1,7 @@
 #include <agent_runner.hpp>
 
+#include <windows_service.hpp>
+
 namespace
 {
     /// Command-line options
@@ -25,21 +27,17 @@ std::optional<int> AgentRunner::HandlePlatformSpecificOptions() const
 {
     if (m_options.count(OPT_INSTALL_SERVICE))
     {
-        if (!InstallService())
-        {
-            return 1;
-        }
+        windows_api_facade::WindowsApiFacade windowsApiFacade;
+        return static_cast<int>(WindowsService::InstallService(windowsApiFacade));
     }
     else if (m_options.count(OPT_REMOVE_SERVICE))
     {
-        if (!RemoveService())
-        {
-            return 1;
-        }
+        windows_api_facade::WindowsApiFacade windowsApiFacade;
+        return static_cast<int>(WindowsService::RemoveService(windowsApiFacade));
     }
     else if (m_options.count(OPT_RUN_SERVICE))
     {
-        SetDispatcherThread();
+        WindowsService::SetDispatcherThread();
     }
     else
     {

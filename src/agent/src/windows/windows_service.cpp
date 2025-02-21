@@ -1,6 +1,5 @@
 #include <windows_service.hpp>
 
-#include "process_options.hpp"
 #include <agent.hpp>
 #include <instance_handler.hpp>
 #include <logger.hpp>

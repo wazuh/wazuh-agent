@@ -7,7 +7,6 @@
 #include <http_client.hpp>
 #include <instance_handler.hpp>
 #include <logger.hpp>
-#include <process_options.hpp>
 #include <restart_handler.hpp>
 
 #include <fmt/format.h>
