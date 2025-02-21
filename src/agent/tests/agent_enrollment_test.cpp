@@ -97,7 +97,7 @@ TEST_F(RegisterTest, RegistrationTestSuccess)
 
     SetAgentInfoSaveExpectCalls();
 
-    const bool res = m_registration->Register();
+    const bool res = m_registration->Enroll();
     ASSERT_TRUE(res);
 }
 
@@ -120,7 +120,7 @@ TEST_F(RegisterTest, RegistrationFailsIfAuthenticationFails)
 
     EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
-    const bool res = m_registration->Register();
+    const bool res = m_registration->Enroll();
     ASSERT_FALSE(res);
 }
 
@@ -147,7 +147,7 @@ TEST_F(RegisterTest, RegistrationFailsIfServerResponseIsNotOk)
         .WillOnce(testing::Return(expectedResponse1))
         .WillOnce(testing::Return(expectedResponse2));
 
-    const bool res = m_registration->Register();
+    const bool res = m_registration->Enroll();
     ASSERT_FALSE(res);
 }
 
@@ -218,7 +218,7 @@ TEST_F(RegisterTest, RegisteringWithoutAKeyGeneratesOneAutomatically)
     EXPECT_CALL(*m_mockPersistence, Remove("agent_group", testing::_, testing::_)).Times(1);
     EXPECT_CALL(*m_mockPersistence, CommitTransaction(testing::_)).Times(1);
 
-    const bool res = m_registration->Register();
+    const bool res = m_registration->Enroll();
     ASSERT_TRUE(res);
 }
 

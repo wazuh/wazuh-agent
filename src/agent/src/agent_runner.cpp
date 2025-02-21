@@ -130,7 +130,7 @@ int AgentRunner::RegisterAgent() const
                                               dbFolderPath,
                                               m_options[OPT_VERIFICATION_MODE].as<std::string>());
 
-        if (reg.Register())
+        if (reg.Enroll())
         {
             std::cout << "wazuh-agent registered\n";
         }

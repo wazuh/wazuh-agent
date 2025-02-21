@@ -45,7 +45,7 @@ namespace agent_enrollment
         }
     }
 
-    bool AgentEnrollment::Register()
+    bool AgentEnrollment::Enroll()
     {
         const auto token = AuthenticateWithUserPassword();
 
@@ -68,7 +68,7 @@ namespace agent_enrollment
 
         if (statusCode != http_client::HTTP_CODE_CREATED)
         {
-            std::cout << "Registration error: " << statusCode << ".\n";
+            std::cout << "Enrollment error: " << statusCode << ".\n";
             return false;
         }
 

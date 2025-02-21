@@ -46,10 +46,10 @@ namespace agent_enrollment
                         std::string verificationMode,
                         std::optional<AgentInfo> agentInfo = std::nullopt);
 
-        /// @brief Registers the agent with the manager.
+        /// @brief Enrolls the agent with the manager.
         ///
-        /// @return True if the registration was successful, false otherwise.
-        bool Register();
+        /// @return True if the enrollment was successful, false otherwise.
+        bool Enroll();
 
         /// @brief Authenticates using username and password
         ///
