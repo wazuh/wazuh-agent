@@ -1,10 +1,15 @@
 #include <agent_runner.hpp>
 
+#include <agent_registration.hpp>
 #include <config.h>
-#include <iostream>
+#include <configuration_parser.hpp>
+#include <http_client.hpp>
 #include <logger.hpp>
 #include <process_options.hpp>
 #include <restart_handler.hpp>
+
+#include <iostream>
+#include <string>
 
 namespace program_options = boost::program_options;
 
@@ -93,19 +98,50 @@ int AgentRunner::Run() const
 
 int AgentRunner::RegisterAgent() const
 {
-    if (!m_options.count(OPT_URL) || !m_options.count(OPT_USER) || !m_options.count(OPT_PASS))
+    for (const auto& option : {OPT_URL, OPT_USER, OPT_PASS})
     {
-        std::cout << "--url, --user and --password args are mandatory\n";
-        return 1;
+        if (!m_options.count(option) || m_options[option].as<std::string>().empty())
+        {
+            std::cout << "--url, --user and --password args are mandatory\n";
+            return 1;
+        }
     }
 
-    ::RegisterAgent(m_options[OPT_URL].as<std::string>(),
-                    m_options[OPT_USER].as<std::string>(),
-                    m_options[OPT_PASS].as<std::string>(),
-                    m_options[OPT_KEY].as<std::string>(),
-                    m_options[OPT_NAME].as<std::string>(),
-                    m_options[OPT_CONFIG_FILE].as<std::string>(),
-                    m_options[OPT_VERIFICATION_MODE].as<std::string>());
+    const auto configurationParser =
+        m_options[OPT_CONFIG_FILE].as<std::string>().empty()
+            ? configuration::ConfigurationParser()
+            : configuration::ConfigurationParser(std::filesystem::path(m_options[OPT_CONFIG_FILE].as<std::string>()));
+
+    const auto dbFolderPath = configurationParser.GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data");
+
+    try
+    {
+        std::cout << "Starting wazuh-agent registration\n";
+
+        agent_registration::AgentRegistration reg(std::make_unique<http_client::HttpClient>(),
+                                                  m_options[OPT_URL].as<std::string>(),
+                                                  m_options[OPT_USER].as<std::string>(),
+                                                  m_options[OPT_PASS].as<std::string>(),
+                                                  m_options[OPT_KEY].as<std::string>(),
+                                                  m_options[OPT_NAME].as<std::string>(),
+                                                  dbFolderPath,
+                                                  m_options[OPT_VERIFICATION_MODE].as<std::string>());
+
+        if (reg.Register())
+        {
+            std::cout << "wazuh-agent registered\n";
+        }
+        else
+        {
+            std::cout << "wazuh-agent registration failed\n";
+            return 1;
+        }
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error: " << e.what() << '\n';
+        return 1;
+    }
 
     return 0;
 }

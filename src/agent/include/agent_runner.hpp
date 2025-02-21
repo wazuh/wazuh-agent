@@ -19,6 +19,8 @@ private:
 
     std::optional<int> HandlePlatformSpecificOptions() const;
 
+    /// @brief Registers the agent with the provided command line arguments.
+    /// @return 0 if the registration is successful, 1 otherwise.
     int RegisterAgent() const;
 
     boost::program_options::variables_map m_options;
