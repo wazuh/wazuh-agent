@@ -20,12 +20,12 @@ namespace
 AgentInfo::AgentInfo(const std::string& dbFolderPath,
                      std::function<nlohmann::json()> getOSInfo,
                      std::function<nlohmann::json()> getNetworksInfo,
-                     bool agentIsRegistering,
+                     bool agentIsEnrolling,
                      std::shared_ptr<AgentInfoPersistance> persistence)
-    : m_agentIsRegistering(agentIsRegistering)
+    : m_agentIsEnrolling(agentIsEnrolling)
     , m_persistence(persistence ? std::move(persistence) : std::make_shared<AgentInfoPersistance>(dbFolderPath))
 {
-    if (!m_agentIsRegistering)
+    if (!m_agentIsEnrolling)
     {
         m_name = m_persistence->GetName();
         m_key = m_persistence->GetKey();
@@ -158,7 +158,7 @@ std::string AgentInfo::GetHeaderInfo() const
 std::string AgentInfo::GetMetadataInfo() const
 {
     nlohmann::json agentMetadataInfo;
-    auto& target = m_agentIsRegistering ? agentMetadataInfo : agentMetadataInfo["agent"];
+    auto& target = m_agentIsEnrolling ? agentMetadataInfo : agentMetadataInfo["agent"];
 
     target["id"] = GetUUID();
     target["name"] = GetName();
@@ -170,7 +170,7 @@ std::string AgentInfo::GetMetadataInfo() const
         target["host"] = m_endpointInfo;
     }
 
-    if (m_agentIsRegistering)
+    if (m_agentIsEnrolling)
     {
         target["key"] = GetKey();
     }
