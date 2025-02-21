@@ -27,8 +27,8 @@ namespace
     const auto OPT_STATUS_DESC {"Check if the agent is running (running or stopped)"};
     const auto OPT_CONFIG_FILE {"config-file"};
     const auto OPT_CONFIG_FILE_DESC {"Path to the Wazuh configuration file (optional)"};
-    const auto OPT_REGISTER_AGENT {"register-agent"};
-    const auto OPT_REGISTER_AGENT_DESC {"Use this option to register as a new agent"};
+    const auto OPT_ENROLL_AGENT {"enroll-agent"};
+    const auto OPT_ENROLL_AGENT_DESC {"Use this option to enroll as a new agent"};
     const auto OPT_URL {"url"};
     const auto OPT_URL_DESC {"URL of the server management API"};
     const auto OPT_USER {"user"};
@@ -58,7 +58,7 @@ void AgentRunner::ParseOptions(int argc, char* argv[])
         (OPT_RUN, OPT_RUN_DESC)
         (OPT_STATUS, OPT_STATUS_DESC)
         (OPT_CONFIG_FILE, program_options::value<std::string>()->default_value(""), OPT_CONFIG_FILE_DESC)
-        (OPT_REGISTER_AGENT, OPT_REGISTER_AGENT_DESC)
+        (OPT_ENROLL_AGENT, OPT_ENROLL_AGENT_DESC)
         (OPT_URL, program_options::value<std::string>(), OPT_URL_DESC)
         (OPT_USER, program_options::value<std::string>(), OPT_USER_DESC)
         (OPT_PASS, program_options::value<std::string>(), OPT_PASS_DESC)
@@ -75,7 +75,7 @@ void AgentRunner::ParseOptions(int argc, char* argv[])
 
 int AgentRunner::Run() const
 {
-    if (m_options.count(OPT_REGISTER_AGENT))
+    if (m_options.count(OPT_ENROLL_AGENT))
     {
         return EnrollAgent();
     }
