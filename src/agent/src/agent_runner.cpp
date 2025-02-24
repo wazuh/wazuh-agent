@@ -29,8 +29,8 @@ namespace
     const auto OPT_CONFIG_FILE_DESC {"Path to the Wazuh configuration file (optional)"};
     const auto OPT_ENROLL_AGENT {"enroll-agent"};
     const auto OPT_ENROLL_AGENT_DESC {"Use this option to enroll as a new agent"};
-    const auto OPT_URL {"url"};
-    const auto OPT_URL_DESC {"URL of the server management API"};
+    const auto OPT_ENROLL_URL {"enroll-url"};
+    const auto OPT_ENROLL_URL_DESC {"URL of the server management API enrollment endpoint"};
     const auto OPT_USER {"user"};
     const auto OPT_USER_DESC {"User to authenticate with the server management API"};
     const auto OPT_PASS {"password"};
@@ -59,7 +59,7 @@ void AgentRunner::ParseOptions(int argc, char* argv[])
         (OPT_STATUS, OPT_STATUS_DESC)
         (OPT_CONFIG_FILE, program_options::value<std::string>()->default_value(""), OPT_CONFIG_FILE_DESC)
         (OPT_ENROLL_AGENT, OPT_ENROLL_AGENT_DESC)
-        (OPT_URL, program_options::value<std::string>(), OPT_URL_DESC)
+        (OPT_ENROLL_URL, program_options::value<std::string>(), OPT_ENROLL_URL_DESC)
         (OPT_USER, program_options::value<std::string>(), OPT_USER_DESC)
         (OPT_PASS, program_options::value<std::string>(), OPT_PASS_DESC)
         (OPT_KEY, program_options::value<std::string>()->default_value(""), OPT_KEY_DESC)
@@ -101,11 +101,11 @@ int AgentRunner::Run() const
 
 int AgentRunner::EnrollAgent() const
 {
-    for (const auto& option : {OPT_URL, OPT_USER, OPT_PASS})
+    for (const auto& option : {OPT_ENROLL_URL, OPT_USER, OPT_PASS})
     {
         if (!m_options.count(option) || m_options[option].as<std::string>().empty())
         {
-            std::cout << "--url, --user and --password args are mandatory\n";
+            std::cout << "--enroll-url, --user and --password args are mandatory\n";
             return 1;
         }
     }
@@ -122,7 +122,7 @@ int AgentRunner::EnrollAgent() const
         std::cout << "Starting wazuh-agent enrollment\n";
 
         agent_enrollment::AgentEnrollment reg(std::make_unique<http_client::HttpClient>(),
-                                              m_options[OPT_URL].as<std::string>(),
+                                              m_options[OPT_ENROLL_URL].as<std::string>(),
                                               m_options[OPT_USER].as<std::string>(),
                                               m_options[OPT_PASS].as<std::string>(),
                                               m_options[OPT_KEY].as<std::string>(),
