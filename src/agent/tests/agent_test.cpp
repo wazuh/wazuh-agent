@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 #include <isignal_handler.hpp>
 #include <mock_command_store.hpp>
+#include <mock_multitype_queue.hpp>
 #include <mocks_persistence.hpp>
 
 class MockSignalHandler : public ISignalHandler
@@ -138,6 +139,8 @@ TEST_F(AgentTests, AgentStopsWhenSignalReceived)
 
     auto mockCommandStore = std::make_unique<command_store::MockCommandStore>();
 
+    auto mockMultiTypeQueue = std::make_shared<MockMultiTypeQueue>();
+
     auto WaitForSignalCalled = false;
 
     EXPECT_CALL(*mockSignalHandlerPtr, WaitForSignal())
@@ -155,7 +158,8 @@ TEST_F(AgentTests, AgentStopsWhenSignalReceived)
                 std::move(mockSignalHandler),
                 std::move(mockHttpClient),
                 std::move(*m_agentInfo),
-                std::move(mockCommandStore));
+                std::move(mockCommandStore),
+                std::move(mockMultiTypeQueue));
 
     EXPECT_NO_THROW(agent.Run());
     EXPECT_TRUE(WaitForSignalCalled);

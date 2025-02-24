@@ -6,7 +6,8 @@ target_include_directories(agent_test PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../src
     ${CMAKE_CURRENT_SOURCE_DIR}/../agent_info/src
     ${CMAKE_CURRENT_SOURCE_DIR}/../persistence/tests/mocks
-    ${CMAKE_CURRENT_SOURCE_DIR}/../command_handler/tests/mocks)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../command_handler/tests/mocks
+    ${CMAKE_CURRENT_SOURCE_DIR}/../multitype_queue/tests/mocks)
 target_link_libraries(agent_test PRIVATE Agent Persistence GTest::gtest GTest::gmock)
 
 if(NOT WIN32)
@@ -30,7 +31,9 @@ add_test(NAME SignalHandlerTest COMMAND signal_handler_test)
 
 add_executable(message_queue_utils_test message_queue_utils_test.cpp)
 configure_target(message_queue_utils_test)
-target_include_directories(message_queue_utils_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+target_include_directories(message_queue_utils_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src
+    ${CMAKE_CURRENT_SOURCE_DIR}/../multitype_queue/tests/mocks)
 target_link_libraries(message_queue_utils_test PRIVATE Agent GTest::gtest GTest::gmock)
 add_test(NAME MessageQueueUtilsTest COMMAND message_queue_utils_test)
 

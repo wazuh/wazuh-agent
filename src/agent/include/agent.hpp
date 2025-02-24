@@ -32,13 +32,15 @@ public:
     /// @param httpClient Pointer to an IHttpClient implementation
     /// @param agentInfo Optional AgentInfo object
     /// @param commandStore Pointer to a custom ICommandStore implementation
+    /// @param messageQueue Pointer to a custom IMultiTypeQueue implementation
     /// @throws std::runtime_error If the Agent is not enrolled
     /// @throws Any exception propagated from dependencies used within the constructor
     Agent(const std::string& configFilePath,
           std::unique_ptr<ISignalHandler> signalHandler = std::make_unique<SignalHandler>(),
           std::unique_ptr<http_client::IHttpClient> httpClient = nullptr,
           std::optional<AgentInfo> agentInfo = std::nullopt,
-          std::unique_ptr<command_store::ICommandStore> commandStore = nullptr);
+          std::unique_ptr<command_store::ICommandStore> commandStore = nullptr,
+          std::shared_ptr<IMultiTypeQueue> messageQueue = nullptr);
 
     /// @brief Destructor
     ~Agent();
