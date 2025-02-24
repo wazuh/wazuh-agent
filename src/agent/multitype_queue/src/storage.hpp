@@ -1,5 +1,6 @@
 #pragma once
 
+#include <istorage.hpp>
 #include <persistence.hpp>
 
 #include <nlohmann/json.hpp>
@@ -8,13 +9,11 @@
 #include <mutex>
 #include <string>
 
-class Persistence;
-
 /// @brief Storage class.
 ///
 /// This class provides methods to store, retrieve, and remove JSON messages
 /// in a database.
-class Storage
+class Storage : public IStorage
 {
 public:
     /// @brief Constructor

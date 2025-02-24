@@ -6,6 +6,9 @@
 class MultiTypeQueueTest : public ::testing::Test
 {
 protected:
+    MockStorage* m_mockStorage = nullptr;
+    std::unique_ptr<MockStorage> m_mockStoragePtr;
+
     MultiTypeQueueTest() = default;
     virtual ~MultiTypeQueueTest() = default;
 

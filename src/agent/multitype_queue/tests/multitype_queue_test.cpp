@@ -10,13 +10,11 @@
 
 #include <boost/asio.hpp>
 
+#include <mock_storage.hpp>
 #include <multitype_queue.hpp>
-#include <storage.hpp>
 
 #include "multitype_queue_test.hpp"
 
-const std::string QUEUE_DB_NAME = "queue.db";
-constexpr size_t SMALL_QUEUE_CAPACITY = 1000;
 const nlohmann::json BASE_DATA_CONTENT = R"({{"data": "for STATELESS_0"}})";
 const nlohmann::json MULTIPLE_DATA_CONTENT = {"content 1", "content 2", "content 3"};
 
@@ -54,28 +52,9 @@ namespace
         return result;
     }
 
-    void CleanPersistence()
-    {
-        for (const auto& entry : std::filesystem::directory_iterator("."))
-        {
-            const auto fileFullPath = entry.path().string();
-            if (fileFullPath.find(QUEUE_DB_NAME) != std::string::npos)
-            {
-                std::error_code ec;
-                std::filesystem::remove(fileFullPath, ec);
-            }
-        }
-    }
-
     const auto MOCK_CONFIG_PARSER = std::make_shared<configuration::ConfigurationParser>(std::string(R"(
         agent:
           path.data: "."
-    )"));
-
-    const auto MOCK_CONFIG_PARSER_SMALL_SIZE = std::make_shared<configuration::ConfigurationParser>(std::string(R"(
-        agent:
-          path.data: "."
-          queue_size: 1000
     )"));
 } // namespace
 
@@ -83,7 +62,8 @@ namespace
 
 void MultiTypeQueueTest::SetUp()
 {
-    CleanPersistence();
+    m_mockStoragePtr = std::make_unique<MockStorage>();
+    m_mockStorage = m_mockStoragePtr.get();
 };
 
 void MultiTypeQueueTest::TearDown() {};
@@ -143,433 +123,672 @@ TEST_F(MultiTypeQueueTest, Constructor)
 {
     auto configurationParser = std::make_shared<configuration::ConfigurationParser>();
 
-    EXPECT_NO_THROW(const MultiTypeQueue multiTypeQueue(configurationParser));
+    auto mockStorage = std::make_unique<MockStorage>();
+
+    EXPECT_NO_THROW(const MultiTypeQueue multiTypeQueue(configurationParser, std::move(mockStorage)));
 }
 
 TEST_F(MultiTypeQueueTest, ConstructorNoConfigParser)
 {
-    EXPECT_THROW(const MultiTypeQueue multiTypeQueue(nullptr), std::runtime_error);
+    auto mockStorage = std::make_unique<MockStorage>();
+
+    EXPECT_THROW(const MultiTypeQueue multiTypeQueue(nullptr, std::move(mockStorage)), std::runtime_error);
 }
 
-// Push, get and check the queue is not empty
-TEST_F(MultiTypeQueueTest, SinglePushGetNotEmpty)
+TEST_F(MultiTypeQueueTest, PushGetNotQueue)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
-    const MessageType messageType {MessageType::STATELESS};
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {static_cast<MessageType>(10)};
     const Message messageToSend {messageType, BASE_DATA_CONTENT};
 
-    EXPECT_EQ(multiTypeQueue.push(messageToSend), 1);
-    auto messageResponse = multiTypeQueue.getNext(MessageType::STATELESS);
-
-    auto typeSend = messageToSend.type;
-    auto typeReceived = messageResponse.type;
-    EXPECT_TRUE(typeSend == typeReceived);
-
-    auto dataResponse = messageResponse.data;
-    EXPECT_EQ(dataResponse, BASE_DATA_CONTENT);
-
-    EXPECT_FALSE(multiTypeQueue.isEmpty(MessageType::STATELESS));
+    EXPECT_EQ(multiTypeQueue.push(messageToSend), 0);
 }
 
-// push and pop on a non-full queue
-TEST_F(MultiTypeQueueTest, SinglePushPopEmpty)
+TEST_F(MultiTypeQueueTest, PushNotSpaceAvailable)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, BASE_DATA_CONTENT};
+    int queueDefaultSize = 10000;
 
-    EXPECT_EQ(multiTypeQueue.push(messageToSend), 1);
-    auto messageResponse = multiTypeQueue.getNext(MessageType::STATELESS);
-    auto dataResponse = messageResponse.data;
-    EXPECT_EQ(dataResponse, BASE_DATA_CONTENT);
-    EXPECT_EQ(messageType, messageResponse.type);
+    EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_))
+        .WillOnce(testing::Return(queueDefaultSize));
 
-    auto messageResponseStateFul = multiTypeQueue.getNext(MessageType::STATEFUL);
-    // TODO: this behavior can be change to return an empty message (type and module empty)
-    EXPECT_EQ(messageResponseStateFul.type, MessageType::STATEFUL);
-    EXPECT_EQ(messageResponseStateFul.data, "{}"_json);
-
-    multiTypeQueue.pop(MessageType::STATELESS);
-    EXPECT_TRUE(multiTypeQueue.isEmpty(MessageType::STATELESS));
-
-    multiTypeQueue.pop(MessageType::STATELESS);
-    EXPECT_TRUE(multiTypeQueue.isEmpty(MessageType::STATELESS));
+    EXPECT_EQ(multiTypeQueue.push(messageToSend), 0);
 }
 
-TEST_F(MultiTypeQueueTest, SinglePushGetWithModule)
+TEST_F(MultiTypeQueueTest, PushStoreMessage)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
     const MessageType messageType {MessageType::STATELESS};
-    const std::string moduleFakeName = "fake-module";
-    const std::string moduleName = "module";
-    const Message messageToSend {messageType, BASE_DATA_CONTENT, moduleName};
+    const nlohmann::json sigleData = R"({"data": "for STATELESS_0"})";
+    const Message messageToSend {messageType, sigleData};
+
+    EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_)).WillOnce(testing::Return(0));
+
+    EXPECT_CALL(*m_mockStorage, Store(testing::_, testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::Return(1));
 
     EXPECT_EQ(multiTypeQueue.push(messageToSend), 1);
-    auto messageResponseWrongModule = multiTypeQueue.getNext(MessageType::STATELESS, moduleFakeName);
-
-    auto typeSend = messageToSend.type;
-    auto typeReceived = messageResponseWrongModule.type;
-    EXPECT_TRUE(typeSend == typeReceived);
-
-    EXPECT_EQ(messageResponseWrongModule.moduleName, moduleFakeName);
-    EXPECT_EQ(messageResponseWrongModule.data, "{}"_json);
-
-    auto messageResponseCorrectModule = multiTypeQueue.getNext(MessageType::STATELESS, moduleName);
-
-    auto dataResponse = messageResponseCorrectModule.data;
-    EXPECT_EQ(dataResponse, BASE_DATA_CONTENT);
-
-    EXPECT_EQ(moduleName, messageResponseCorrectModule.moduleName);
 }
 
-// Push, get and check while the queue is full
-TEST_F(MultiTypeQueueTest, SinglePushPopFullWithTimeout)
+TEST_F(MultiTypeQueueTest, PushStoreArray)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER_SMALL_SIZE);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {MessageType::STATELESS};
+    nlohmann::json arrayData = nlohmann::json::array();
+    arrayData.push_back({{"data1", "for STATELESS_0"}});
+    arrayData.push_back({{"data2", "for STATELESS_0"}});
 
-    // complete the queue with messages
-    const MessageType messageType {MessageType::COMMAND};
-    const int upperLimit = SMALL_QUEUE_CAPACITY + 1;
-    for (const int i : std::views::iota(1, upperLimit))
-    {
-        const nlohmann::json dataContent = R"({"Data" : "for COMMAND)" + std::to_string(i) + R"("})";
-        EXPECT_EQ(multiTypeQueue.push({messageType, dataContent}), 1);
-    }
+    const Message messageToSend {messageType, arrayData};
 
-    const nlohmann::json dataContent = R"({"Data" : "for COMMAND3"})";
-    const Message exampleMessage {messageType, dataContent};
-    EXPECT_EQ(multiTypeQueue.push({messageType, dataContent}, true), 0);
+    EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_)).WillOnce(testing::Return(0));
 
-    auto items = multiTypeQueue.storedItems(MessageType::COMMAND);
-    EXPECT_EQ(items, SMALL_QUEUE_CAPACITY);
-    EXPECT_TRUE(multiTypeQueue.isFull(MessageType::COMMAND));
-    EXPECT_TRUE(multiTypeQueue.isEmpty(MessageType::STATELESS));
+    EXPECT_CALL(*m_mockStorage, Store(testing::_, testing::_, testing::_, testing::_, testing::_))
+        .Times(2)
+        .WillRepeatedly(testing::Return(1));
 
-    multiTypeQueue.pop(MessageType::COMMAND);
-    items = multiTypeQueue.storedItems(MessageType::COMMAND);
-    EXPECT_NE(items, SMALL_QUEUE_CAPACITY);
+    EXPECT_EQ(multiTypeQueue.push(messageToSend), 2);
 }
 
-// Accesing different types of queues from several threads
-TEST_F(MultiTypeQueueTest, MultithreadDifferentType)
+TEST_F(MultiTypeQueueTest, PushStoreArrayFailFirst)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {MessageType::STATELESS};
+    nlohmann::json arrayData = nlohmann::json::array();
+    arrayData.push_back({{"data1", "for STATELESS_0"}});
+    arrayData.push_back({{"data2", "for STATELESS_0"}});
 
-    auto consumerStateLess = [&](const int& count)
-    {
-        for (int i = 0; i < count; ++i)
-        {
-            multiTypeQueue.pop(MessageType::STATELESS);
-        }
-    };
+    const Message messageToSend {messageType, arrayData};
 
-    auto consumerStateFull = [&](const int& count)
-    {
-        for (int i = 0; i < count; ++i)
-        {
-            multiTypeQueue.pop(MessageType::STATEFUL);
-        }
-    };
+    EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_)).WillOnce(testing::Return(0));
 
-    auto messageProducer = [&](const int& count)
-    {
-        for (int i = 0; i < count; ++i)
-        {
-            const nlohmann::json dataContent = R"({{"Data", "Number )" + std::to_string(i) + R"("}})";
-            EXPECT_EQ(multiTypeQueue.push(Message(MessageType::STATELESS, dataContent)), 1);
-            EXPECT_EQ(multiTypeQueue.push(Message(MessageType::STATEFUL, dataContent)), 1);
-        }
-    };
+    testing::Sequence seq;
+    EXPECT_CALL(*m_mockStorage, Store(testing::_, testing::_, testing::_, testing::_, testing::_))
+        .InSequence(seq)
+        .WillOnce(testing::Return(0))
+        .WillOnce(testing::Return(1));
 
-    const int itemsToInsert = 10;
-    const int itemsToConsume = 5;
-
-    messageProducer(itemsToInsert);
-
-    std::thread consumerThread1(consumerStateLess, std::ref(itemsToConsume));
-    std::thread consumerThread2(consumerStateFull, std::ref(itemsToConsume));
-
-    if (consumerThread1.joinable())
-    {
-        consumerThread1.join();
-    }
-
-    if (consumerThread2.joinable())
-    {
-        consumerThread2.join();
-    }
-
-    EXPECT_EQ(5, multiTypeQueue.storedItems(MessageType::STATELESS));
-    EXPECT_EQ(5, multiTypeQueue.storedItems(MessageType::STATEFUL));
-
-    // Consume the rest of the messages
-    std::thread consumerThread12(consumerStateLess, std::ref(itemsToConsume));
-    std::thread consumerThread22(consumerStateFull, std::ref(itemsToConsume));
-
-    if (consumerThread12.joinable())
-    {
-        consumerThread12.join();
-    }
-
-    if (consumerThread22.joinable())
-    {
-        consumerThread22.join();
-    }
-
-    EXPECT_TRUE(multiTypeQueue.isEmpty(MessageType::STATELESS));
-    EXPECT_TRUE(multiTypeQueue.isEmpty(MessageType::STATEFUL));
+    EXPECT_EQ(multiTypeQueue.push(messageToSend), 1);
 }
 
-// Accesing same queue from 2 different threads
-TEST_F(MultiTypeQueueTest, MultithreadSameType)
+TEST_F(MultiTypeQueueTest, PushStoreArrayNotSpaceAvailable)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
-    auto messageType = MessageType::COMMAND;
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    int queueDefaultSize = 10000;
+    const MessageType messageType {MessageType::STATELESS};
+    nlohmann::json arrayData = nlohmann::json::array();
+    arrayData.push_back({{"data1", "for STATELESS_0"}});
+    arrayData.push_back({{"data2", "for STATELESS_0"}});
 
-    auto consumerCommand1 = [&](const int& count)
-    {
-        for (int i = 0; i < count; ++i)
+    const Message messageToSend {messageType, arrayData};
+
+    EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_))
+        .WillOnce(testing::Return(queueDefaultSize - 1));
+
+    EXPECT_EQ(multiTypeQueue.push(messageToSend), 0);
+}
+
+TEST_F(MultiTypeQueueTest, PushAwaitableNotQueue)
+{
+    boost::asio::io_context ioContext;
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+
+    const MessageType messageType {static_cast<MessageType>(10)};
+    const Message messageToSend {messageType, BASE_DATA_CONTENT};
+
+    testing::MockFunction<void(int)> checkResult;
+    EXPECT_CALL(checkResult, Call(0));
+
+    boost::asio::co_spawn(
+        ioContext,
+        [&]() -> boost::asio::awaitable<void>
         {
-            multiTypeQueue.pop(messageType);
-        }
-    };
+            int result = co_await multiTypeQueue.pushAwaitable(messageToSend);
+            checkResult.Call(result);
+        },
+        boost::asio::detached);
 
-    auto consumerCommand2 = [&](const int& count)
-    {
-        for (int i = 0; i < count; ++i)
+    ioContext.run();
+}
+
+TEST_F(MultiTypeQueueTest, PushAwaitableNotSpaceAvailable)
+{
+    boost::asio::io_context ioContext;
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+
+    const MessageType messageType {MessageType::STATELESS};
+    const Message messageToSend {messageType, BASE_DATA_CONTENT};
+    const int queueDefaultSize = 10000;
+
+    testing::Sequence seq;
+    EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_))
+        .InSequence(seq)
+        .WillOnce(testing::Return(queueDefaultSize - 1))
+        .WillOnce(testing::Return(queueDefaultSize));
+
+    testing::MockFunction<void(int)> checkResult;
+    EXPECT_CALL(checkResult, Call(0));
+
+    boost::asio::co_spawn(
+        ioContext,
+        [&]() -> boost::asio::awaitable<void>
         {
-            multiTypeQueue.pop(messageType);
-        }
-    };
+            int result = co_await multiTypeQueue.pushAwaitable(messageToSend);
+            checkResult.Call(result);
+        },
+        boost::asio::detached);
 
-    auto messageProducer = [&](const int& count)
-    {
-        for (int i = 0; i < count; ++i)
+    ioContext.run();
+}
+
+TEST_F(MultiTypeQueueTest, PushAwaitableStoreMessage)
+{
+    boost::asio::io_context ioContext;
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {MessageType::STATELESS};
+    const nlohmann::json sigleData = R"({"data": "for STATELESS_0"})";
+    const Message messageToSend {messageType, sigleData};
+
+    EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_))
+        .Times(2)
+        .WillRepeatedly(testing::Return(0));
+
+    EXPECT_CALL(*m_mockStorage, Store(testing::_, testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::Return(1));
+
+    testing::MockFunction<void(int)> checkResult;
+    EXPECT_CALL(checkResult, Call(1));
+
+    boost::asio::co_spawn(
+        ioContext,
+        [&]() -> boost::asio::awaitable<void>
         {
-            const nlohmann::json dataContent = R"({{"Data": "for COMMAND)" + std::to_string(i) + R"("}})";
-            EXPECT_EQ(multiTypeQueue.push(Message(messageType, dataContent)), 1);
-        }
-    };
+            int result = co_await multiTypeQueue.pushAwaitable(messageToSend);
+            checkResult.Call(result);
+        },
+        boost::asio::detached);
 
-    const int itemsToInsert = 10;
-    const int itemsToConsume = 5;
+    ioContext.run();
+}
 
-    messageProducer(itemsToInsert);
+TEST_F(MultiTypeQueueTest, PushAwaitableStoreArray)
+{
+    boost::asio::io_context ioContext;
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {MessageType::STATELESS};
+    nlohmann::json arrayData = nlohmann::json::array();
+    arrayData.push_back({{"data1", "for STATELESS_0"}});
+    arrayData.push_back({{"data2", "for STATELESS_0"}});
 
-    EXPECT_EQ(itemsToInsert, multiTypeQueue.storedItems(messageType));
+    const Message messageToSend {messageType, arrayData};
 
-    std::thread consumerThread1(consumerCommand1, std::ref(itemsToConsume));
-    std::thread messageProducerThread1(consumerCommand2, std::ref(itemsToConsume));
+    EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_))
+        .Times(2)
+        .WillRepeatedly(testing::Return(0));
 
-    if (messageProducerThread1.joinable())
-    {
-        messageProducerThread1.join();
-    }
+    EXPECT_CALL(*m_mockStorage, Store(testing::_, testing::_, testing::_, testing::_, testing::_))
+        .Times(2)
+        .WillRepeatedly(testing::Return(1));
 
-    if (consumerThread1.joinable())
-    {
-        consumerThread1.join();
-    }
+    testing::MockFunction<void(int)> checkResult;
+    EXPECT_CALL(checkResult, Call(2));
+
+    boost::asio::co_spawn(
+        ioContext,
+        [&]() -> boost::asio::awaitable<void>
+        {
+            int result = co_await multiTypeQueue.pushAwaitable(messageToSend);
+            checkResult.Call(result);
+        },
+        boost::asio::detached);
+
+    ioContext.run();
+}
+
+TEST_F(MultiTypeQueueTest, PushAwaitableStoreArrayFailFirst)
+{
+    boost::asio::io_context ioContext;
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {MessageType::STATELESS};
+    nlohmann::json arrayData = nlohmann::json::array();
+    arrayData.push_back({{"data1", "for STATELESS_0"}});
+    arrayData.push_back({{"data2", "for STATELESS_0"}});
+
+    const Message messageToSend {messageType, arrayData};
+
+    EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_))
+        .Times(2)
+        .WillRepeatedly(testing::Return(0));
+
+    testing::Sequence seq;
+    EXPECT_CALL(*m_mockStorage, Store(testing::_, testing::_, testing::_, testing::_, testing::_))
+        .InSequence(seq)
+        .WillOnce(testing::Return(0))
+        .WillOnce(testing::Return(1));
+
+    testing::MockFunction<void(int)> checkResult;
+    EXPECT_CALL(checkResult, Call(1));
+
+    boost::asio::co_spawn(
+        ioContext,
+        [&]() -> boost::asio::awaitable<void>
+        {
+            int result = co_await multiTypeQueue.pushAwaitable(messageToSend);
+            checkResult.Call(result);
+        },
+        boost::asio::detached);
+
+    ioContext.run();
+}
+
+TEST_F(MultiTypeQueueTest, PushAwaitableStoreArrayNotSpaceAvailable)
+{
+    boost::asio::io_context ioContext;
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    int queueDefaultSize = 10000;
+    const MessageType messageType {MessageType::STATELESS};
+    nlohmann::json arrayData = nlohmann::json::array();
+    arrayData.push_back({{"data1", "for STATELESS_0"}});
+    arrayData.push_back({{"data2", "for STATELESS_0"}});
+
+    const Message messageToSend {messageType, arrayData};
+
+    EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_))
+        .Times(2)
+        .WillRepeatedly(testing::Return(queueDefaultSize - 1));
+
+    testing::MockFunction<void(int)> checkResult;
+    EXPECT_CALL(checkResult, Call(0));
+
+    boost::asio::co_spawn(
+        ioContext,
+        [&]() -> boost::asio::awaitable<void>
+        {
+            int result = co_await multiTypeQueue.pushAwaitable(messageToSend);
+            checkResult.Call(result);
+        },
+        boost::asio::detached);
+
+    ioContext.run();
+}
+
+TEST_F(MultiTypeQueueTest, PushVector)
+{
+    std::vector<Message> messages = {};
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {MessageType::STATELESS};
+    nlohmann::json arrayData = nlohmann::json::array();
+    arrayData.push_back({{"data1", "for STATELESS_0"}});
+    arrayData.push_back({{"data2", "for STATELESS_0"}});
+    const Message messageToSend {messageType, arrayData};
+
+    nlohmann::json arrayData2 = nlohmann::json::array();
+    arrayData2.push_back({{"data3", "for STATELESS_0"}});
+    arrayData2.push_back({{"data4", "for STATELESS_0"}});
+    const Message messageToSend2 {messageType, arrayData2};
+
+    messages.push_back(messageToSend);
+    messages.push_back(messageToSend2);
+
+    EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_))
+        .Times(2)
+        .WillRepeatedly(testing::Return(0));
+
+    EXPECT_CALL(*m_mockStorage, Store(testing::_, testing::_, testing::_, testing::_, testing::_))
+        .Times(4)
+        .WillRepeatedly(testing::Return(1));
+
+    EXPECT_EQ(multiTypeQueue.push(messages), 4);
+}
+
+TEST_F(MultiTypeQueueTest, GetNextBadQueue)
+{
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {static_cast<MessageType>(10)};
+
+    auto message = multiTypeQueue.getNext(messageType);
+
+    EXPECT_EQ(message.type, messageType);
+    EXPECT_EQ(message.data, "{}"_json);
+}
+
+TEST_F(MultiTypeQueueTest, GetNextEmpty)
+{
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+
+    nlohmann::json retrieveResult = nlohmann::json::array();
+    EXPECT_CALL(*m_mockStorage, RetrieveMultiple(testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::Return(retrieveResult));
+
+    auto message = multiTypeQueue.getNext(MessageType::STATELESS);
+
+    EXPECT_EQ(message.type, MessageType::STATELESS);
+    EXPECT_EQ(message.data, "{}"_json);
+}
+
+TEST_F(MultiTypeQueueTest, GetNextMessage)
+{
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+
+    const std::string moduleName = "TestModule";
+    const std::string moduleType = "TestType";
+
+    nlohmann::json retrieveResult = nlohmann::json::array();
+    nlohmann::json outputJson = {{"moduleName", "TestModule"},
+                                 {"moduleType", "TestType"},
+                                 {"metadata", "TestMetadata"},
+                                 {"data", BASE_DATA_CONTENT}};
+    retrieveResult.push_back(outputJson);
+    EXPECT_CALL(*m_mockStorage, RetrieveMultiple(testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::Return(retrieveResult));
+
+    auto message = multiTypeQueue.getNext(MessageType::STATELESS, moduleName, moduleType);
+
+    EXPECT_EQ(message.type, MessageType::STATELESS);
+    EXPECT_EQ(message.data, BASE_DATA_CONTENT);
+    EXPECT_EQ(message.moduleName, moduleName);
+    EXPECT_EQ(message.moduleType, moduleType);
+}
+
+TEST_F(MultiTypeQueueTest, GetNextBytesAwaitableBadQueue)
+{
+    boost::asio::io_context ioContext;
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+
+    const MessageType messageType {static_cast<MessageType>(10)};
+    const size_t messageQuantity = 5;
+    const std::string moduleName = "TestModule";
+    const std::string moduleType = "TestType";
+
+    testing::MockFunction<void(std::vector<Message>)> checkResult;
+    EXPECT_CALL(checkResult, Call(testing::IsEmpty()));
+
+    boost::asio::co_spawn(
+        ioContext,
+        [&]() -> boost::asio::awaitable<void>
+        {
+            auto result =
+                co_await multiTypeQueue.getNextBytesAwaitable(messageType, messageQuantity, moduleName, moduleType);
+            checkResult.Call(result);
+        },
+        boost::asio::detached);
+
+    ioContext.run();
+}
+
+TEST_F(MultiTypeQueueTest, GetNextBytesAwaitableSuccess)
+{
+    boost::asio::io_context ioContext;
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+
+    const MessageType messageType {MessageType::STATELESS};
+    const size_t messageQuantity = 3;
+
+    nlohmann::json retrievedMessages = nlohmann::json::array(
+        {{{"data", "msg1"}, {"moduleName", "mod1"}, {"moduleType", "type1"}, {"metadata", "meta1"}},
+         {{"data", "msg2"}, {"moduleName", "mod2"}, {"moduleType", "type2"}, {"metadata", "meta2"}},
+         {{"data", "msg3"}, {"moduleName", "mod3"}, {"moduleType", "type3"}, {"metadata", "meta3"}}});
+
+    const nlohmann::json msgData1 = "msg1";
+    const nlohmann::json msgData2 = "msg2";
+    const nlohmann::json msgData3 = "msg3";
+
+    std::vector<Message> expectedMessages = {{messageType, msgData1, "mod1", "type1", "meta1"},
+                                             {messageType, msgData2, "mod2", "type2", "meta2"},
+                                             {messageType, msgData3, "mod3", "type3", "meta3"}};
+
+    EXPECT_CALL(*m_mockStorage, GetElementsStoredSize(testing::_, testing::_, testing::_))
+        .WillRepeatedly(testing::Return(messageQuantity));
+
+    EXPECT_CALL(*m_mockStorage, RetrieveBySize(testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::Return(retrievedMessages));
+
+    testing::MockFunction<void(const std::vector<Message>&)> checkResult;
+    EXPECT_CALL(checkResult, Call(testing::ElementsAreArray(expectedMessages)));
+
+    boost::asio::co_spawn(
+        ioContext,
+        [&]() -> boost::asio::awaitable<void>
+        {
+            auto result = co_await multiTypeQueue.getNextBytesAwaitable(messageType, messageQuantity);
+            checkResult.Call(result);
+        },
+        boost::asio::detached);
+
+    ioContext.run();
+}
+
+TEST_F(MultiTypeQueueTest, GetNextBytesBadQueue)
+{
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {static_cast<MessageType>(10)};
+
+    size_t contentSize = 1;
+    auto messages = multiTypeQueue.getNextBytes(messageType, contentSize);
+
+    EXPECT_EQ(messages.size(), 0);
+}
+
+TEST_F(MultiTypeQueueTest, GetNextBytesEmpty)
+{
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {MessageType::STATELESS};
+
+    nlohmann::json retrieveResult = nlohmann::json::array();
+    EXPECT_CALL(*m_mockStorage, RetrieveBySize(testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::Return(retrieveResult));
+
+    size_t contentSize = 1;
+    auto messages = multiTypeQueue.getNextBytes(messageType, contentSize);
+
+    EXPECT_EQ(messages.size(), 0);
+}
+
+TEST_F(MultiTypeQueueTest, GetNextBytesMessage)
+{
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {MessageType::STATELESS};
+    const std::string moduleName = "TestModule";
+    const std::string moduleType = "TestType";
+
+    nlohmann::json retrievedMessages = nlohmann::json::array(
+        {{{"data", "msg1"}, {"moduleName", moduleName}, {"moduleType", moduleType}, {"metadata", "meta1"}},
+         {{"data", "msg2"}, {"moduleName", moduleName}, {"moduleType", moduleType}, {"metadata", "meta2"}},
+         {{"data", "msg3"}, {"moduleName", moduleName}, {"moduleType", moduleType}, {"metadata", "meta3"}}});
+
+    EXPECT_CALL(*m_mockStorage, RetrieveBySize(testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::Return(retrievedMessages));
+
+    size_t contentSize = 3;
+    auto messages = multiTypeQueue.getNextBytes(messageType, contentSize, moduleName, moduleType);
+
+    EXPECT_EQ(messages.size(), 3);
+    EXPECT_EQ(messages[0].type, MessageType::STATELESS);
+    EXPECT_EQ(messages[0].data, "msg1");
+    EXPECT_EQ(messages[0].moduleName, moduleName);
+    EXPECT_EQ(messages[0].moduleType, moduleType);
+    EXPECT_EQ(messages[1].type, MessageType::STATELESS);
+    EXPECT_EQ(messages[1].data, "msg2");
+    EXPECT_EQ(messages[1].moduleName, moduleName);
+    EXPECT_EQ(messages[1].moduleType, moduleType);
+    EXPECT_EQ(messages[2].type, MessageType::STATELESS);
+    EXPECT_EQ(messages[2].data, "msg3");
+    EXPECT_EQ(messages[2].moduleName, moduleName);
+    EXPECT_EQ(messages[2].moduleType, moduleType);
+}
+
+TEST_F(MultiTypeQueueTest, PopBadQueue)
+{
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {static_cast<MessageType>(10)};
+
+    EXPECT_FALSE(multiTypeQueue.pop(messageType));
+}
+
+TEST_F(MultiTypeQueueTest, PopEmpty)
+{
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {MessageType::STATELESS};
+
+    EXPECT_CALL(*m_mockStorage, RemoveMultiple(1, testing::_, testing::_, testing::_)).WillOnce(testing::Return(0));
+
+    EXPECT_FALSE(multiTypeQueue.pop(messageType));
+}
+
+TEST_F(MultiTypeQueueTest, PopSuccess)
+{
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {MessageType::STATELESS};
+
+    EXPECT_CALL(*m_mockStorage, RemoveMultiple(1, testing::_, testing::_, testing::_)).WillOnce(testing::Return(1));
+
+    EXPECT_TRUE(multiTypeQueue.pop(messageType));
+}
+
+TEST_F(MultiTypeQueueTest, PopNBadQueue)
+{
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {static_cast<MessageType>(10)};
+
+    const int messageQuantity = 3;
+    EXPECT_EQ(multiTypeQueue.popN(messageType, messageQuantity), 0);
+}
+
+TEST_F(MultiTypeQueueTest, PopNEmpty)
+{
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {MessageType::STATELESS};
+
+    const int messageQuantity = 3;
+    EXPECT_CALL(*m_mockStorage, RemoveMultiple(messageQuantity, testing::_, testing::_, testing::_))
+        .WillOnce(testing::Return(0));
+
+    EXPECT_EQ(multiTypeQueue.popN(messageType, messageQuantity), 0);
+}
+
+TEST_F(MultiTypeQueueTest, PopNSuccess)
+{
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {MessageType::STATELESS};
+
+    const int messageQuantity = 3;
+    EXPECT_CALL(*m_mockStorage, RemoveMultiple(messageQuantity, testing::_, testing::_, testing::_))
+        .WillOnce(testing::Return(messageQuantity));
+
+    EXPECT_EQ(multiTypeQueue.popN(messageType, messageQuantity), messageQuantity);
+}
+
+TEST_F(MultiTypeQueueTest, IsEmptyBadQueue)
+{
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {static_cast<MessageType>(10)};
+
+    EXPECT_FALSE(multiTypeQueue.isEmpty(messageType));
+}
+
+TEST_F(MultiTypeQueueTest, IsEmptyTrue)
+{
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {MessageType::STATELESS};
+
+    EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_)).WillOnce(testing::Return(0));
 
     EXPECT_TRUE(multiTypeQueue.isEmpty(messageType));
 }
 
-// Push Multiple with single message and data array,
-// several gets, checks and pops
-TEST_F(MultiTypeQueueTest, PushMultipleSeveralSingleGets)
+TEST_F(MultiTypeQueueTest, IsEmptyFalse)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
     const MessageType messageType {MessageType::STATELESS};
-    const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT};
 
-    EXPECT_EQ(3, multiTypeQueue.push(messageToSend));
+    EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_)).WillOnce(testing::Return(2));
 
-    for (const size_t i : {0u, 1u, 2u})
-    {
-        auto messageResponse = multiTypeQueue.getNext(MessageType::STATELESS);
-        auto responseData = messageResponse.data;
-        auto sentData = messageToSend.data[i].template get<std::string>();
-        EXPECT_EQ(responseData, sentData);
-        multiTypeQueue.pop(MessageType::STATELESS);
-    }
-
-    EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATELESS), 0);
+    EXPECT_FALSE(multiTypeQueue.isEmpty(messageType));
 }
 
-TEST_F(MultiTypeQueueTest, PushMultipleWithMessageVector)
+TEST_F(MultiTypeQueueTest, IsFullBadQueue)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {static_cast<MessageType>(10)};
 
-    std::vector<Message> messages;
+    EXPECT_FALSE(multiTypeQueue.isFull(messageType));
+}
+
+TEST_F(MultiTypeQueueTest, IsFullTrue)
+{
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
     const MessageType messageType {MessageType::STATELESS};
-    for (const std::string i : {"0", "1", "2"})
-    {
-        const nlohmann::json multipleDataContent = {"content " + i};
-        messages.emplace_back(messageType, multipleDataContent);
-    }
-    EXPECT_EQ(messages.size(), 3);
-    EXPECT_EQ(multiTypeQueue.push(messages), 3);
-    EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATELESS), 3);
+
+    int queueDefaultSize = 10000;
+    EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_))
+        .WillOnce(testing::Return(queueDefaultSize));
+
+    EXPECT_TRUE(multiTypeQueue.isFull(messageType));
 }
 
-// push message vector with a mutiple data element
-TEST_F(MultiTypeQueueTest, PushVectorWithAMultipleInside)
+TEST_F(MultiTypeQueueTest, IsFullFalse)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
-
-    std::vector<Message> messages;
-
-    // triple data content message
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
     const MessageType messageType {MessageType::STATELESS};
-    const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT};
-    messages.push_back(messageToSend);
 
-    // triple message vector
-    for (const std::string i : {"0", "1", "2"})
-    {
-        const nlohmann::json dataContent = {"content " + i};
-        messages.emplace_back(messageType, dataContent);
-    }
+    EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_)).WillOnce(testing::Return(2));
 
-    EXPECT_EQ(6, multiTypeQueue.push(messages));
+    EXPECT_FALSE(multiTypeQueue.isFull(messageType));
 }
 
-// Push Multiple, pop multiples
-TEST_F(MultiTypeQueueTest, PushMultipleGetMultiple)
+TEST_F(MultiTypeQueueTest, StoredItemsBadQueue)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {static_cast<MessageType>(10)};
+
+    EXPECT_EQ(multiTypeQueue.storedItems(messageType), 0);
+}
+
+TEST_F(MultiTypeQueueTest, StoredItemsEmpty)
+{
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
     const MessageType messageType {MessageType::STATELESS};
-    const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT};
 
-    EXPECT_EQ(3, multiTypeQueue.push(messageToSend));
-    EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATELESS), 3);
-    EXPECT_EQ(multiTypeQueue.popN(MessageType::STATELESS, 1), 1);
-    EXPECT_EQ(multiTypeQueue.popN(MessageType::STATELESS, 3), 2);
-    EXPECT_TRUE(multiTypeQueue.isEmpty(MessageType::STATELESS));
-    EXPECT_EQ(0, multiTypeQueue.storedItems(MessageType::STATELESS));
+    EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_)).WillOnce(testing::Return(0));
+
+    EXPECT_EQ(multiTypeQueue.storedItems(messageType), 0);
 }
 
-TEST_F(MultiTypeQueueTest, PushAwaitable)
+TEST_F(MultiTypeQueueTest, StoredItemsNotEmpty)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER_SMALL_SIZE);
-    boost::asio::io_context io_context;
-
-    const int upperLimit = SMALL_QUEUE_CAPACITY + 1;
-    for (const int i : std::views::iota(1, upperLimit))
-    {
-        const nlohmann::json dataContent = R"({"Data" : "for STATEFUL)" + std::to_string(i) + R"("})";
-        EXPECT_EQ(multiTypeQueue.push({MessageType::STATEFUL, dataContent}), 1);
-    }
-
-    EXPECT_TRUE(multiTypeQueue.isFull(MessageType::STATEFUL));
-    EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATEFUL), SMALL_QUEUE_CAPACITY);
-
-    // Coroutine that waits till there's space to push a new message
-    boost::asio::co_spawn(
-        io_context,
-        // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-        [&multiTypeQueue]() -> boost::asio::awaitable<void>
-        {
-            const nlohmann::json dataContent = {"content-1"};
-            const Message messageToSend {MessageType::STATEFUL, dataContent};
-            EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATEFUL), SMALL_QUEUE_CAPACITY);
-            auto messagesPushed = co_await multiTypeQueue.pushAwaitable(messageToSend);
-            EXPECT_EQ(messagesPushed, 1);
-            EXPECT_EQ(multiTypeQueue.storedItems(MessageType::STATEFUL), SMALL_QUEUE_CAPACITY);
-        },
-        boost::asio::detached);
-
-    // Simulate poping one message so there's space to push a new one
-    std::thread consumer(
-        [&multiTypeQueue]()
-        {
-            std::this_thread::sleep_for(std::chrono::seconds(2));
-            EXPECT_EQ(multiTypeQueue.popN(MessageType::STATEFUL, 1), 1);
-            // TODO: double check this behavior, is it mandatory to stop the context here?
-        });
-
-    io_context.run();
-    consumer.join();
-
-    EXPECT_TRUE(multiTypeQueue.isFull(MessageType::STATEFUL));
-}
-
-TEST_F(MultiTypeQueueTest, FifoOrderCheck)
-{
-    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
-
-    // complete the queue with messages
-    const MessageType messageType {MessageType::STATEFUL};
-    size_t contentSize = 0;
-    for (const int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
-    {
-        const nlohmann::json dataContent = {{"Data", "for STATEFUL" + std::to_string(i)}};
-        EXPECT_EQ(multiTypeQueue.push({messageType, dataContent}), 1);
-        contentSize += dataContent.dump().size();
-    }
-
-    const auto messageReceivedVector = multiTypeQueue.getNextBytes(messageType, contentSize);
-    EXPECT_EQ(messageReceivedVector.size(), 10);
-
-    std::for_each(messageReceivedVector.begin(),
-                  messageReceivedVector.end(),
-                  [i = 0](const auto& singleMessage) mutable {
-                      EXPECT_EQ(singleMessage.data, (nlohmann::json {{"Data", "for STATEFUL" + std::to_string(++i)}}));
-                  });
-
-    // Keep the order of the message: FIFO
-    for (const int i : {1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
-    {
-        auto messageReceived = multiTypeQueue.getNextBytes(messageType, 1);
-        EXPECT_EQ(messageReceived[0].data, (nlohmann::json {{"Data", "for STATEFUL" + std::to_string(i)}}));
-        EXPECT_TRUE(multiTypeQueue.pop(messageType));
-    }
-}
-
-TEST_F(MultiTypeQueueTest, GetBySizeAboveMax)
-{
-    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
     const MessageType messageType {MessageType::STATELESS};
-    const std::string moduleName = "testModule";
-    const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT, moduleName};
 
-    EXPECT_EQ(3, multiTypeQueue.push(messageToSend));
+    EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_)).WillOnce(testing::Return(2));
 
-    // Size request should contemplate data and module name string size
-    size_t sizeAsked = 0;
-    for (const auto& message : MULTIPLE_DATA_CONTENT)
-    {
-        sizeAsked += message.dump().size();
-        sizeAsked += moduleName.size();
-    }
-    // Duplicate to surpass the maximun
-    sizeAsked *= 2;
-
-    const auto messagesReceived = multiTypeQueue.getNextBytes(MessageType::STATELESS, sizeAsked);
-    int i = 0;
-    for (const auto& singleMessage : messagesReceived)
-    {
-        EXPECT_EQ("content " + std::to_string(++i), singleMessage.data.get<std::string>());
-    }
-
-    EXPECT_EQ(3, multiTypeQueue.storedItems(MessageType::STATELESS, moduleName));
+    EXPECT_EQ(multiTypeQueue.storedItems(messageType), 2);
 }
 
-TEST_F(MultiTypeQueueTest, GetByBelowMax)
+TEST_F(MultiTypeQueueTest, SizePerTypeBadQueue)
 {
-    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER);
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {static_cast<MessageType>(10)};
+
+    EXPECT_EQ(multiTypeQueue.sizePerType(messageType), 0);
+}
+
+TEST_F(MultiTypeQueueTest, SizePerTypeEmpty)
+{
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
     const MessageType messageType {MessageType::STATELESS};
-    const std::string moduleName = "testModule";
-    const Message messageToSend {messageType, MULTIPLE_DATA_CONTENT, moduleName};
 
-    EXPECT_EQ(3, multiTypeQueue.push(messageToSend));
+    EXPECT_CALL(*m_mockStorage, GetElementsStoredSize(testing::_, testing::_, testing::_)).WillOnce(testing::Return(0));
 
-    size_t sizeAsked = 0;
-    sizeAsked += MULTIPLE_DATA_CONTENT.at(0).dump().size();
-    sizeAsked += moduleName.size();
-    // Fetching less than a single message size
-    sizeAsked -= 1;
+    EXPECT_EQ(multiTypeQueue.sizePerType(messageType), 0);
+}
 
-    const auto messagesReceived = multiTypeQueue.getNextBytes(MessageType::STATELESS, sizeAsked);
-    EXPECT_EQ(1, messagesReceived.size());
+TEST_F(MultiTypeQueueTest, SizePerTypeNotEmpty)
+{
+    MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
+    const MessageType messageType {MessageType::STATELESS};
+
+    EXPECT_CALL(*m_mockStorage, GetElementsStoredSize(testing::_, testing::_, testing::_)).WillOnce(testing::Return(2));
+
+    EXPECT_EQ(multiTypeQueue.sizePerType(messageType), 2);
 }
