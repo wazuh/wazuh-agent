@@ -1,5 +1,32 @@
 # Run from Sources
 
+## Enroll the Agent
+
+To allow the agent to successfully connect to a Wazuh server, it must first enroll with the server. This is done using the --enroll-agent option.
+Ensure that the server is online and ready to accept enrollment requests before proceeding.
+
+### Enrollment Command
+
+```
+cd build/
+./wazuh-agent --enroll-agent --enroll-url https://localhost:55000 --user <username> --password <password> [--name <agent-name>]
+```
+
+Replace:
+
+* <username> with your Wazuh server username.
+* <password> with your corresponding password.
+* <agent-name> with the desired name for the agent (optional).
+
+### View Enrollment Help
+
+For additional options and details, use:
+
+```
+cd build/
+./wazuh-agent --enroll-agent --help
+```
+
 ## Run the Agent on Linux
 
 - **To run the agent in the foreground from the CLI**
