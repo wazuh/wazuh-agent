@@ -42,5 +42,7 @@ private:
     int StartAgent() const;
 
     boost::program_options::variables_map m_options;
-    boost::program_options::options_description m_desc = {"Allowed options", 120};
+    boost::program_options::options_description m_allOptions = {"Allowed options", 120};
+    boost::program_options::options_description m_generalOptions = {"General options", 120};
+    boost::program_options::options_description m_enrollmentOptions = {"Enrollment options", 120};
 };

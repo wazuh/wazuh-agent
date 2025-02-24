@@ -16,7 +16,7 @@ namespace
 void AgentRunner::AddPlatformSpecificOptions()
 {
     // clang-format off
-    m_desc.add_options()
+    m_generalOptions.add_options()
         (OPT_INSTALL_SERVICE, OPT_INSTALL_SERVICE_DESC)
         (OPT_REMOVE_SERVICE, OPT_REMOVE_SERVICE_DESC)
         (OPT_RUN_SERVICE, OPT_RUN_SERVICE_DESC);

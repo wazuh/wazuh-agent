@@ -20,6 +20,7 @@ namespace
 {
     /// Command-line options
     const auto OPT_HELP {"help"};
+    const auto OPT_HELP_H {"help,h"};
     const auto OPT_HELP_DESC {"Display this help menu"};
     const auto OPT_RUN {"run"};
     const auto OPT_RUN_DESC {"Run agent in foreground (this is the default behavior)"};
@@ -56,15 +57,18 @@ AgentRunner::AgentRunner(int argc, char* argv[])
 void AgentRunner::ParseOptions(int argc, char* argv[])
 {
     // clang-format off
-    m_desc.add_options()
-        (OPT_HELP, OPT_HELP_DESC)
+    m_generalOptions.add_options()
+        (OPT_HELP_H, OPT_HELP_DESC)
         (OPT_RUN, OPT_RUN_DESC)
         (OPT_STATUS, OPT_STATUS_DESC)
-        (OPT_CONFIG_FILE, program_options::value<std::string>()->default_value(""), OPT_CONFIG_FILE_DESC)
         (OPT_ENROLL_AGENT, OPT_ENROLL_AGENT_DESC)
+        (OPT_CONFIG_FILE, program_options::value<std::string>()->default_value(""), OPT_CONFIG_FILE_DESC);
+
+    m_enrollmentOptions.add_options()
         (OPT_ENROLL_URL, program_options::value<std::string>(), OPT_ENROLL_URL_DESC)
         (OPT_USER, program_options::value<std::string>(), OPT_USER_DESC)
         (OPT_PASS, program_options::value<std::string>(), OPT_PASS_DESC)
+        (OPT_CONNECT_URL, program_options::value<std::string>(), OPT_CONNECT_URL_DESC)
         (OPT_KEY, program_options::value<std::string>()->default_value(""), OPT_KEY_DESC)
         (OPT_NAME, program_options::value<std::string>()->default_value(""), OPT_NAME_DESC)
         (OPT_VERIFICATION_MODE, program_options::value<std::string>()->default_value(config::agent::DEFAULT_VERIFICATION_MODE), OPT_VERIFICATION_MODE_DESC);
@@ -72,27 +76,36 @@ void AgentRunner::ParseOptions(int argc, char* argv[])
 
     AddPlatformSpecificOptions();
 
-    program_options::store(program_options::parse_command_line(argc, argv, m_desc), m_options);
+    m_allOptions.add(m_generalOptions).add(m_enrollmentOptions);
+
+    program_options::store(program_options::parse_command_line(argc, argv, m_allOptions), m_options);
     program_options::notify(m_options);
 }
 
 int AgentRunner::Run() const
 {
-    if (m_options.count(OPT_ENROLL_AGENT))
+    if (m_options.count(OPT_HELP))
+    {
+        if (m_options.count(OPT_ENROLL_AGENT))
+        {
+            std::cout << m_enrollmentOptions << '\n';
+        }
+        else
+        {
+            std::cout << m_allOptions << '\n';
+        }
+    }
+    else if (m_options.count(OPT_ENROLL_AGENT))
     {
         return EnrollAgent();
     }
-    if (m_options.count(OPT_STATUS))
+    else if (m_options.count(OPT_STATUS))
     {
         StatusAgent();
     }
     else if (const auto platformSpecificResult = HandlePlatformSpecificOptions(); platformSpecificResult.has_value())
     {
         return platformSpecificResult.value();
-    }
-    else if (m_options.count(OPT_HELP))
-    {
-        std::cout << m_desc << '\n';
     }
     else
     {
@@ -108,7 +121,7 @@ int AgentRunner::EnrollAgent() const
     {
         if (!m_options.count(option) || m_options[option].as<std::string>().empty())
         {
-            std::cout << "--enroll-url, --user and --password args are mandatory\n";
+            std::cout << "--enroll-url, --user and --password args are mandatory. Use --help for more information.\n";
             return 1;
         }
     }
