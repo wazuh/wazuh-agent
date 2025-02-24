@@ -325,7 +325,7 @@ TEST_F(CommandHandlerTest, CommandsProcessingTaskCheckCommandInvalidCommand)
 TEST_F(CommandHandlerTest, CommandsProcessingTaskCheckCommandSetGroupEmptyParameters)
 {
     module_command::CommandEntry testCommand;
-    nlohmann::json parameters;
+    const nlohmann::json parameters;
     testCommand.Id = "command-id-1";
     testCommand.Command = module_command::SET_GROUP_COMMAND;
     testCommand.Parameters = parameters;
@@ -412,7 +412,7 @@ TEST_F(CommandHandlerTest, CommandsProcessingTaskCleanUpInProgressCommands)
     testCommand2.ExecutionResult = result;
 
     std::vector<module_command::CommandEntry> commands = {testCommand, testCommand2};
-    std::optional<std::vector<module_command::CommandEntry>> optionalCommands = commands;
+    const std::optional<std::vector<module_command::CommandEntry>> optionalCommands = commands;
 
     EXPECT_CALL(*m_mockCommandStore, GetCommandByStatus(_)).WillOnce(Return(optionalCommands));
 

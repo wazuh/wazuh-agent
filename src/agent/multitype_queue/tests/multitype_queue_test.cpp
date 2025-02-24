@@ -17,6 +17,9 @@
 
 const nlohmann::json BASE_DATA_CONTENT = R"({{"data": "for STATELESS_0"}})";
 const nlohmann::json MULTIPLE_DATA_CONTENT = {"content 1", "content 2", "content 3"};
+const int DEFAULT_QUEUE_SIZE = 10000;
+
+// NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines,cppcoreguidelines-avoid-reference-coroutine-parameters)
 
 namespace
 {
@@ -149,10 +152,9 @@ TEST_F(MultiTypeQueueTest, PushNotSpaceAvailable)
     MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, BASE_DATA_CONTENT};
-    int queueDefaultSize = 10000;
 
     EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_))
-        .WillOnce(testing::Return(queueDefaultSize));
+        .WillOnce(testing::Return(DEFAULT_QUEUE_SIZE));
 
     EXPECT_EQ(multiTypeQueue.push(messageToSend), 0);
 }
@@ -203,7 +205,7 @@ TEST_F(MultiTypeQueueTest, PushStoreArrayFailFirst)
 
     EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_)).WillOnce(testing::Return(0));
 
-    testing::Sequence seq;
+    const testing::Sequence seq;
     EXPECT_CALL(*m_mockStorage, Store(testing::_, testing::_, testing::_, testing::_, testing::_))
         .InSequence(seq)
         .WillOnce(testing::Return(0))
@@ -215,7 +217,6 @@ TEST_F(MultiTypeQueueTest, PushStoreArrayFailFirst)
 TEST_F(MultiTypeQueueTest, PushStoreArrayNotSpaceAvailable)
 {
     MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
-    int queueDefaultSize = 10000;
     const MessageType messageType {MessageType::STATELESS};
     nlohmann::json arrayData = nlohmann::json::array();
     arrayData.push_back({{"data1", "for STATELESS_0"}});
@@ -224,7 +225,7 @@ TEST_F(MultiTypeQueueTest, PushStoreArrayNotSpaceAvailable)
     const Message messageToSend {messageType, arrayData};
 
     EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_))
-        .WillOnce(testing::Return(queueDefaultSize - 1));
+        .WillOnce(testing::Return(DEFAULT_QUEUE_SIZE - 1));
 
     EXPECT_EQ(multiTypeQueue.push(messageToSend), 0);
 }
@@ -244,7 +245,7 @@ TEST_F(MultiTypeQueueTest, PushAwaitableNotQueue)
         ioContext,
         [&]() -> boost::asio::awaitable<void>
         {
-            int result = co_await multiTypeQueue.pushAwaitable(messageToSend);
+            const int result = co_await multiTypeQueue.pushAwaitable(messageToSend);
             checkResult.Call(result);
         },
         boost::asio::detached);
@@ -259,13 +260,12 @@ TEST_F(MultiTypeQueueTest, PushAwaitableNotSpaceAvailable)
 
     const MessageType messageType {MessageType::STATELESS};
     const Message messageToSend {messageType, BASE_DATA_CONTENT};
-    const int queueDefaultSize = 10000;
 
-    testing::Sequence seq;
+    const testing::Sequence seq;
     EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_))
         .InSequence(seq)
-        .WillOnce(testing::Return(queueDefaultSize - 1))
-        .WillOnce(testing::Return(queueDefaultSize));
+        .WillOnce(testing::Return(DEFAULT_QUEUE_SIZE - 1))
+        .WillOnce(testing::Return(DEFAULT_QUEUE_SIZE));
 
     testing::MockFunction<void(int)> checkResult;
     EXPECT_CALL(checkResult, Call(0));
@@ -274,7 +274,7 @@ TEST_F(MultiTypeQueueTest, PushAwaitableNotSpaceAvailable)
         ioContext,
         [&]() -> boost::asio::awaitable<void>
         {
-            int result = co_await multiTypeQueue.pushAwaitable(messageToSend);
+            const int result = co_await multiTypeQueue.pushAwaitable(messageToSend);
             checkResult.Call(result);
         },
         boost::asio::detached);
@@ -304,7 +304,7 @@ TEST_F(MultiTypeQueueTest, PushAwaitableStoreMessage)
         ioContext,
         [&]() -> boost::asio::awaitable<void>
         {
-            int result = co_await multiTypeQueue.pushAwaitable(messageToSend);
+            const int result = co_await multiTypeQueue.pushAwaitable(messageToSend);
             checkResult.Call(result);
         },
         boost::asio::detached);
@@ -338,7 +338,7 @@ TEST_F(MultiTypeQueueTest, PushAwaitableStoreArray)
         ioContext,
         [&]() -> boost::asio::awaitable<void>
         {
-            int result = co_await multiTypeQueue.pushAwaitable(messageToSend);
+            const int result = co_await multiTypeQueue.pushAwaitable(messageToSend);
             checkResult.Call(result);
         },
         boost::asio::detached);
@@ -361,7 +361,7 @@ TEST_F(MultiTypeQueueTest, PushAwaitableStoreArrayFailFirst)
         .Times(2)
         .WillRepeatedly(testing::Return(0));
 
-    testing::Sequence seq;
+    const testing::Sequence seq;
     EXPECT_CALL(*m_mockStorage, Store(testing::_, testing::_, testing::_, testing::_, testing::_))
         .InSequence(seq)
         .WillOnce(testing::Return(0))
@@ -374,7 +374,7 @@ TEST_F(MultiTypeQueueTest, PushAwaitableStoreArrayFailFirst)
         ioContext,
         [&]() -> boost::asio::awaitable<void>
         {
-            int result = co_await multiTypeQueue.pushAwaitable(messageToSend);
+            const int result = co_await multiTypeQueue.pushAwaitable(messageToSend);
             checkResult.Call(result);
         },
         boost::asio::detached);
@@ -386,7 +386,6 @@ TEST_F(MultiTypeQueueTest, PushAwaitableStoreArrayNotSpaceAvailable)
 {
     boost::asio::io_context ioContext;
     MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
-    int queueDefaultSize = 10000;
     const MessageType messageType {MessageType::STATELESS};
     nlohmann::json arrayData = nlohmann::json::array();
     arrayData.push_back({{"data1", "for STATELESS_0"}});
@@ -396,7 +395,7 @@ TEST_F(MultiTypeQueueTest, PushAwaitableStoreArrayNotSpaceAvailable)
 
     EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_))
         .Times(2)
-        .WillRepeatedly(testing::Return(queueDefaultSize - 1));
+        .WillRepeatedly(testing::Return(DEFAULT_QUEUE_SIZE - 1));
 
     testing::MockFunction<void(int)> checkResult;
     EXPECT_CALL(checkResult, Call(0));
@@ -405,7 +404,7 @@ TEST_F(MultiTypeQueueTest, PushAwaitableStoreArrayNotSpaceAvailable)
         ioContext,
         [&]() -> boost::asio::awaitable<void>
         {
-            int result = co_await multiTypeQueue.pushAwaitable(messageToSend);
+            const int result = co_await multiTypeQueue.pushAwaitable(messageToSend);
             checkResult.Call(result);
         },
         boost::asio::detached);
@@ -457,7 +456,7 @@ TEST_F(MultiTypeQueueTest, GetNextEmpty)
 {
     MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
 
-    nlohmann::json retrieveResult = nlohmann::json::array();
+    const nlohmann::json retrieveResult = nlohmann::json::array();
     EXPECT_CALL(*m_mockStorage, RetrieveMultiple(testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(retrieveResult));
 
@@ -475,10 +474,10 @@ TEST_F(MultiTypeQueueTest, GetNextMessage)
     const std::string moduleType = "TestType";
 
     nlohmann::json retrieveResult = nlohmann::json::array();
-    nlohmann::json outputJson = {{"moduleName", "TestModule"},
-                                 {"moduleType", "TestType"},
-                                 {"metadata", "TestMetadata"},
-                                 {"data", BASE_DATA_CONTENT}};
+    const nlohmann::json outputJson = {{"moduleName", "TestModule"},
+                                       {"moduleType", "TestType"},
+                                       {"metadata", "TestMetadata"},
+                                       {"data", BASE_DATA_CONTENT}};
     retrieveResult.push_back(outputJson);
     EXPECT_CALL(*m_mockStorage, RetrieveMultiple(testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(retrieveResult));
@@ -525,7 +524,7 @@ TEST_F(MultiTypeQueueTest, GetNextBytesAwaitableSuccess)
     const MessageType messageType {MessageType::STATELESS};
     const size_t messageQuantity = 3;
 
-    nlohmann::json retrievedMessages = nlohmann::json::array(
+    const nlohmann::json retrievedMessages = nlohmann::json::array(
         {{{"data", "msg1"}, {"moduleName", "mod1"}, {"moduleType", "type1"}, {"metadata", "meta1"}},
          {{"data", "msg2"}, {"moduleName", "mod2"}, {"moduleType", "type2"}, {"metadata", "meta2"}},
          {{"data", "msg3"}, {"moduleName", "mod3"}, {"moduleType", "type3"}, {"metadata", "meta3"}}});
@@ -534,9 +533,9 @@ TEST_F(MultiTypeQueueTest, GetNextBytesAwaitableSuccess)
     const nlohmann::json msgData2 = "msg2";
     const nlohmann::json msgData3 = "msg3";
 
-    std::vector<Message> expectedMessages = {{messageType, msgData1, "mod1", "type1", "meta1"},
-                                             {messageType, msgData2, "mod2", "type2", "meta2"},
-                                             {messageType, msgData3, "mod3", "type3", "meta3"}};
+    const std::vector<Message> expectedMessages = {{messageType, msgData1, "mod1", "type1", "meta1"},
+                                                   {messageType, msgData2, "mod2", "type2", "meta2"},
+                                                   {messageType, msgData3, "mod3", "type3", "meta3"}};
 
     EXPECT_CALL(*m_mockStorage, GetElementsStoredSize(testing::_, testing::_, testing::_))
         .WillRepeatedly(testing::Return(messageQuantity));
@@ -564,7 +563,7 @@ TEST_F(MultiTypeQueueTest, GetNextBytesBadQueue)
     MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
     const MessageType messageType {static_cast<MessageType>(10)};
 
-    size_t contentSize = 1;
+    const size_t contentSize = 1;
     auto messages = multiTypeQueue.getNextBytes(messageType, contentSize);
 
     EXPECT_EQ(messages.size(), 0);
@@ -575,11 +574,11 @@ TEST_F(MultiTypeQueueTest, GetNextBytesEmpty)
     MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
     const MessageType messageType {MessageType::STATELESS};
 
-    nlohmann::json retrieveResult = nlohmann::json::array();
+    const nlohmann::json retrieveResult = nlohmann::json::array();
     EXPECT_CALL(*m_mockStorage, RetrieveBySize(testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(retrieveResult));
 
-    size_t contentSize = 1;
+    const size_t contentSize = 1;
     auto messages = multiTypeQueue.getNextBytes(messageType, contentSize);
 
     EXPECT_EQ(messages.size(), 0);
@@ -592,7 +591,7 @@ TEST_F(MultiTypeQueueTest, GetNextBytesMessage)
     const std::string moduleName = "TestModule";
     const std::string moduleType = "TestType";
 
-    nlohmann::json retrievedMessages = nlohmann::json::array(
+    const nlohmann::json retrievedMessages = nlohmann::json::array(
         {{{"data", "msg1"}, {"moduleName", moduleName}, {"moduleType", moduleType}, {"metadata", "meta1"}},
          {{"data", "msg2"}, {"moduleName", moduleName}, {"moduleType", moduleType}, {"metadata", "meta2"}},
          {{"data", "msg3"}, {"moduleName", moduleName}, {"moduleType", moduleType}, {"metadata", "meta3"}}});
@@ -600,7 +599,7 @@ TEST_F(MultiTypeQueueTest, GetNextBytesMessage)
     EXPECT_CALL(*m_mockStorage, RetrieveBySize(testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(retrievedMessages));
 
-    size_t contentSize = 3;
+    const size_t contentSize = 3;
     auto messages = multiTypeQueue.getNextBytes(messageType, contentSize, moduleName, moduleType);
 
     EXPECT_EQ(messages.size(), 3);
@@ -720,9 +719,8 @@ TEST_F(MultiTypeQueueTest, IsFullTrue)
     MultiTypeQueue multiTypeQueue(MOCK_CONFIG_PARSER, std::move(m_mockStoragePtr));
     const MessageType messageType {MessageType::STATELESS};
 
-    int queueDefaultSize = 10000;
     EXPECT_CALL(*m_mockStorage, GetElementCount(testing::_, testing::_, testing::_))
-        .WillOnce(testing::Return(queueDefaultSize));
+        .WillOnce(testing::Return(DEFAULT_QUEUE_SIZE));
 
     EXPECT_TRUE(multiTypeQueue.isFull(messageType));
 }
@@ -792,3 +790,5 @@ TEST_F(MultiTypeQueueTest, SizePerTypeNotEmpty)
 
     EXPECT_EQ(multiTypeQueue.sizePerType(messageType), 2);
 }
+
+// NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines,cppcoreguidelines-avoid-reference-coroutine-parameters)

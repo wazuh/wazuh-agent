@@ -109,7 +109,7 @@ TEST_F(CommandStoreTest, ClearException)
 
 TEST_F(CommandStoreTest, GetCount)
 {
-    int expectedReturn = 1;
+    const int expectedReturn = 1;
 
     EXPECT_CALL(*mockPersistence, GetCount(COMMAND_STORE_TABLE_NAME, testing::_, testing::_))
         .WillOnce(testing::Return(expectedReturn));
@@ -119,7 +119,7 @@ TEST_F(CommandStoreTest, GetCount)
 
 TEST_F(CommandStoreTest, GetCountException)
 {
-    int expectedReturn = 0;
+    const int expectedReturn = 0;
 
     EXPECT_CALL(*mockPersistence, GetCount(COMMAND_STORE_TABLE_NAME, testing::_, testing::_))
         .WillOnce(testing::Throw(std::runtime_error("Error GetCount")));
@@ -130,13 +130,13 @@ TEST_F(CommandStoreTest, GetCountException)
 TEST_F(CommandStoreTest, StoreCommandTrue)
 {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    module_command::CommandEntry cmd1(TESTID_5,
-                                      "Module1",
-                                      "{CommandTextHERE}",
-                                      {"Parameter1"},
-                                      module_command::CommandExecutionMode::ASYNC,
-                                      "Result1",
-                                      module_command::Status::IN_PROGRESS);
+    const module_command::CommandEntry cmd1(TESTID_5,
+                                            "Module1",
+                                            "{CommandTextHERE}",
+                                            {"Parameter1"},
+                                            module_command::CommandExecutionMode::ASYNC,
+                                            "Result1",
+                                            module_command::Status::IN_PROGRESS);
 
     EXPECT_CALL(*mockPersistence, Insert(COMMAND_STORE_TABLE_NAME, testing::_)).Times(1);
 
@@ -146,13 +146,13 @@ TEST_F(CommandStoreTest, StoreCommandTrue)
 TEST_F(CommandStoreTest, StoreCommandFalse)
 {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    module_command::CommandEntry cmd1(TESTID_5,
-                                      "Module1",
-                                      "{CommandTextHERE}",
-                                      {"Parameter1"},
-                                      module_command::CommandExecutionMode::ASYNC,
-                                      "Result1",
-                                      module_command::Status::IN_PROGRESS);
+    const module_command::CommandEntry cmd1(TESTID_5,
+                                            "Module1",
+                                            "{CommandTextHERE}",
+                                            {"Parameter1"},
+                                            module_command::CommandExecutionMode::ASYNC,
+                                            "Result1",
+                                            module_command::Status::IN_PROGRESS);
 
     EXPECT_CALL(*mockPersistence, Insert(COMMAND_STORE_TABLE_NAME, testing::_))
         .WillOnce(testing::Throw(std::runtime_error("Error Insert")));
@@ -163,13 +163,13 @@ TEST_F(CommandStoreTest, StoreCommandFalse)
 TEST_F(CommandStoreTest, StoreCommandTrueCheckFields)
 {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    module_command::CommandEntry cmd1(TESTID_5,
-                                      "Module1",
-                                      "{CommandTextHERE}",
-                                      {"Parameter1"},
-                                      module_command::CommandExecutionMode::ASYNC,
-                                      "Result1",
-                                      module_command::Status::IN_PROGRESS);
+    const module_command::CommandEntry cmd1(TESTID_5,
+                                            "Module1",
+                                            "{CommandTextHERE}",
+                                            {"Parameter1"},
+                                            module_command::CommandExecutionMode::ASYNC,
+                                            "Result1",
+                                            module_command::Status::IN_PROGRESS);
 
     EXPECT_CALL(
         *mockPersistence,
@@ -242,7 +242,7 @@ TEST_F(CommandStoreTest, DeleteCommandTrueCheckFilters)
 
 TEST_F(CommandStoreTest, GetCommandEmpty)
 {
-    std::vector<column::Row> mockRow = {};
+    const std::vector<column::Row> mockRow = {};
     EXPECT_CALL(
         *mockPersistence,
         Select(COMMAND_STORE_TABLE_NAME, testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
@@ -255,7 +255,7 @@ TEST_F(CommandStoreTest, GetCommandEmpty)
 
 TEST_F(CommandStoreTest, GetCommandReturnCommand)
 {
-    std::vector<column::Row> mockRow = {
+    const std::vector<column::Row> mockRow = {
         {column::ColumnValue(COMMAND_STORE_ID_COLUMN_NAME, column::ColumnType::TEXT, TESTID_5),
          column::ColumnValue(COMMAND_STORE_MODULE_COLUMN_NAME, column::ColumnType::TEXT, "Module1"),
          column::ColumnValue(COMMAND_STORE_COMMAND_COLUMN_NAME, column::ColumnType::TEXT, "{CommandTextHERE}"),
@@ -301,7 +301,7 @@ TEST_F(CommandStoreTest, GetCommandEmptyException)
 
 TEST_F(CommandStoreTest, GetCommandByStatusEmpty)
 {
-    std::vector<column::Row> mockRow = {};
+    const std::vector<column::Row> mockRow = {};
     EXPECT_CALL(
         *mockPersistence,
         Select(COMMAND_STORE_TABLE_NAME, testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
@@ -314,7 +314,7 @@ TEST_F(CommandStoreTest, GetCommandByStatusEmpty)
 
 TEST_F(CommandStoreTest, GetCommandByStatusReturnCommand)
 {
-    std::vector<column::Row> mockRow = {
+    const std::vector<column::Row> mockRow = {
         {column::ColumnValue(COMMAND_STORE_ID_COLUMN_NAME, column::ColumnType::TEXT, TESTID_5),
          column::ColumnValue(COMMAND_STORE_MODULE_COLUMN_NAME, column::ColumnType::TEXT, "Module1"),
          column::ColumnValue(COMMAND_STORE_COMMAND_COLUMN_NAME, column::ColumnType::TEXT, "{CommandTextHERE}"),
@@ -349,7 +349,7 @@ TEST_F(CommandStoreTest, GetCommandByStatusReturnCommand)
 
 TEST_F(CommandStoreTest, GetCommandByStatusReturnCommands2)
 {
-    std::vector<column::Row> mockRow = {
+    const std::vector<column::Row> mockRow = {
         {column::ColumnValue(COMMAND_STORE_ID_COLUMN_NAME, column::ColumnType::TEXT, TESTID_5),
          column::ColumnValue(COMMAND_STORE_MODULE_COLUMN_NAME, column::ColumnType::TEXT, "Module1"),
          column::ColumnValue(COMMAND_STORE_COMMAND_COLUMN_NAME, column::ColumnType::TEXT, "{CommandTextHERE}"),
@@ -414,13 +414,13 @@ TEST_F(CommandStoreTest, GetCommandByStatusEmptyException)
 TEST_F(CommandStoreTest, UpdateCommandTrue)
 {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    module_command::CommandEntry cmd1(TESTID_5,
-                                      "Module1",
-                                      "{CommandTextHERE}",
-                                      {"Parameter1"},
-                                      module_command::CommandExecutionMode::ASYNC,
-                                      "Result1",
-                                      module_command::Status::IN_PROGRESS);
+    const module_command::CommandEntry cmd1(TESTID_5,
+                                            "Module1",
+                                            "{CommandTextHERE}",
+                                            {"Parameter1"},
+                                            module_command::CommandExecutionMode::ASYNC,
+                                            "Result1",
+                                            module_command::Status::IN_PROGRESS);
 
     EXPECT_CALL(*mockPersistence, Update(COMMAND_STORE_TABLE_NAME, testing::_, testing::_, testing::_)).Times(1);
 
@@ -430,13 +430,13 @@ TEST_F(CommandStoreTest, UpdateCommandTrue)
 TEST_F(CommandStoreTest, UpdateCommandFalse)
 {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    module_command::CommandEntry cmd1(TESTID_5,
-                                      "Module1",
-                                      "{CommandTextHERE}",
-                                      {"Parameter1"},
-                                      module_command::CommandExecutionMode::ASYNC,
-                                      "Result1",
-                                      module_command::Status::IN_PROGRESS);
+    const module_command::CommandEntry cmd1(TESTID_5,
+                                            "Module1",
+                                            "{CommandTextHERE}",
+                                            {"Parameter1"},
+                                            module_command::CommandExecutionMode::ASYNC,
+                                            "Result1",
+                                            module_command::Status::IN_PROGRESS);
 
     EXPECT_CALL(*mockPersistence, Update(COMMAND_STORE_TABLE_NAME, testing::_, testing::_, testing::_))
         .WillOnce(testing::Throw(std::runtime_error("Error Update")));
@@ -447,13 +447,13 @@ TEST_F(CommandStoreTest, UpdateCommandFalse)
 TEST_F(CommandStoreTest, UpdateCommandTrueCheckFields)
 {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    module_command::CommandEntry cmd1(TESTID_5,
-                                      "Module1",
-                                      "{CommandTextHERE}",
-                                      {"Parameter1"},
-                                      module_command::CommandExecutionMode::ASYNC,
-                                      "Result1",
-                                      module_command::Status::IN_PROGRESS);
+    const module_command::CommandEntry cmd1(TESTID_5,
+                                            "Module1",
+                                            "{CommandTextHERE}",
+                                            {"Parameter1"},
+                                            module_command::CommandExecutionMode::ASYNC,
+                                            "Result1",
+                                            module_command::Status::IN_PROGRESS);
 
     EXPECT_CALL(
         *mockPersistence,

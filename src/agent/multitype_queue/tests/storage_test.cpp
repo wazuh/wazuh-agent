@@ -207,7 +207,7 @@ TEST_F(StorageTest, StoreMultipleMessagesFailFirst)
 
     EXPECT_CALL(*m_mockPersistence, BeginTransaction()).Times(1);
 
-    testing::Sequence seq;
+    const testing::Sequence seq;
     EXPECT_CALL(*m_mockPersistence, Insert(tableName, testing::_))
         .InSequence(seq)
         .WillOnce(testing::Throw(std::runtime_error("Error Insert")))
@@ -225,7 +225,7 @@ TEST_F(StorageTest, StoreMultipleMessagesFailSecond)
 
     EXPECT_CALL(*m_mockPersistence, BeginTransaction()).Times(1);
 
-    testing::Sequence seq;
+    const testing::Sequence seq;
     EXPECT_CALL(*m_mockPersistence, Insert(tableName, testing::_))
         .InSequence(seq)
         .WillOnce(testing::Return())
@@ -243,7 +243,7 @@ TEST_F(StorageTest, StoreMultipleMessagesFailAll)
 
     EXPECT_CALL(*m_mockPersistence, BeginTransaction()).Times(1);
 
-    testing::Sequence seq;
+    const testing::Sequence seq;
     EXPECT_CALL(*m_mockPersistence, Insert(tableName, testing::_))
         .InSequence(seq)
         .WillOnce(testing::Throw(std::runtime_error("Error Insert")))
@@ -255,7 +255,7 @@ TEST_F(StorageTest, StoreMultipleMessagesFailAll)
 
 TEST_F(StorageTest, RetrieveMultipleMessages)
 {
-    std::vector<column::Row> mockRows = {
+    const std::vector<column::Row> mockRows = {
         {column::ColumnValue(MODULE_NAME_COLUMN_NAME, column::ColumnType::TEXT, "module1"),
          column::ColumnValue(MODULE_TYPE_COLUMN_NAME, column::ColumnType::TEXT, "type1"),
          column::ColumnValue(METADATA_COLUMN_NAME, column::ColumnType::TEXT, "metadata1"),
@@ -275,7 +275,7 @@ TEST_F(StorageTest, RetrieveMultipleMessages)
 
 TEST_F(StorageTest, RetrieveMultipleMessagesLessThanRequested)
 {
-    std::vector<column::Row> mockRows = {
+    const std::vector<column::Row> mockRows = {
         {column::ColumnValue(MODULE_NAME_COLUMN_NAME, column::ColumnType::TEXT, "module1"),
          column::ColumnValue(MODULE_TYPE_COLUMN_NAME, column::ColumnType::TEXT, "type1"),
          column::ColumnValue(METADATA_COLUMN_NAME, column::ColumnType::TEXT, "metadata1"),
@@ -295,7 +295,7 @@ TEST_F(StorageTest, RetrieveMultipleMessagesLessThanRequested)
 
 TEST_F(StorageTest, RetrieveMultipleMessagesWithModule)
 {
-    std::vector<column::Row> mockRows = {
+    const std::vector<column::Row> mockRows = {
         {column::ColumnValue(MODULE_NAME_COLUMN_NAME, column::ColumnType::TEXT, moduleName),
          column::ColumnValue(MODULE_TYPE_COLUMN_NAME, column::ColumnType::TEXT, "type1"),
          column::ColumnValue(METADATA_COLUMN_NAME, column::ColumnType::TEXT, "metadata1"),
@@ -340,7 +340,7 @@ TEST_F(StorageTest, RetrieveBySizeMessage1)
     const std::string metadataString = "metadata1";
     const std::string dataString = R"({"key":"value2"})";
 
-    std::vector<column::Row> mockRows = {
+    const std::vector<column::Row> mockRows = {
         {column::ColumnValue(MODULE_NAME_COLUMN_NAME, column::ColumnType::TEXT, moduleName),
          column::ColumnValue(MODULE_TYPE_COLUMN_NAME, column::ColumnType::TEXT, moduleTypeString),
          column::ColumnValue(METADATA_COLUMN_NAME, column::ColumnType::TEXT, metadataString),
@@ -354,7 +354,8 @@ TEST_F(StorageTest, RetrieveBySizeMessage1)
                 Select(tableName, testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(mockRows));
 
-    size_t sizeMessage1 = moduleNameString.size() + moduleTypeString.size() + metadataString.size() + dataString.size();
+    const size_t sizeMessage1 =
+        moduleNameString.size() + moduleTypeString.size() + metadataString.size() + dataString.size();
 
     const auto retrievedMessages = m_storage->RetrieveBySize(sizeMessage1, tableName, moduleName);
     EXPECT_EQ(retrievedMessages.size(), 1);
@@ -367,7 +368,7 @@ TEST_F(StorageTest, RetrieveBySizeHalfMessage1)
     const std::string metadataString = "metadata1";
     const std::string dataString = R"({"key":"value2"})";
 
-    std::vector<column::Row> mockRows = {
+    const std::vector<column::Row> mockRows = {
         {column::ColumnValue(MODULE_NAME_COLUMN_NAME, column::ColumnType::TEXT, moduleName),
          column::ColumnValue(MODULE_TYPE_COLUMN_NAME, column::ColumnType::TEXT, moduleTypeString),
          column::ColumnValue(METADATA_COLUMN_NAME, column::ColumnType::TEXT, metadataString),
@@ -381,7 +382,7 @@ TEST_F(StorageTest, RetrieveBySizeHalfMessage1)
                 Select(tableName, testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(mockRows));
 
-    size_t sizeHalfMessage1 = moduleNameString.size() + moduleTypeString.size();
+    const size_t sizeHalfMessage1 = moduleNameString.size() + moduleTypeString.size();
 
     const auto retrievedMessages = m_storage->RetrieveBySize(sizeHalfMessage1, tableName, moduleName);
     EXPECT_EQ(retrievedMessages.size(), 1);
@@ -394,7 +395,7 @@ TEST_F(StorageTest, RetrieveBySizeMessage1HalfMessage2)
     const std::string metadataString = "metadata1";
     const std::string dataString = R"({"key":"value2"})";
 
-    std::vector<column::Row> mockRows = {
+    const std::vector<column::Row> mockRows = {
         {column::ColumnValue(MODULE_NAME_COLUMN_NAME, column::ColumnType::TEXT, moduleName),
          column::ColumnValue(MODULE_TYPE_COLUMN_NAME, column::ColumnType::TEXT, moduleTypeString),
          column::ColumnValue(METADATA_COLUMN_NAME, column::ColumnType::TEXT, metadataString),
@@ -408,8 +409,8 @@ TEST_F(StorageTest, RetrieveBySizeMessage1HalfMessage2)
                 Select(tableName, testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(mockRows));
 
-    size_t sizeMessage = moduleNameString.size() + moduleTypeString.size() + metadataString.size() + dataString.size() +
-                         moduleNameString.size();
+    const size_t sizeMessage = moduleNameString.size() + moduleTypeString.size() + metadataString.size() +
+                               dataString.size() + moduleNameString.size();
 
     const auto retrievedMessages = m_storage->RetrieveBySize(sizeMessage, tableName, moduleName);
     EXPECT_EQ(retrievedMessages.size(), 2);
