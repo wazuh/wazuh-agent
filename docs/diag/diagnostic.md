@@ -39,7 +39,7 @@ To gather the configuration file, locate the following file:
 
 - /etc/wazuh-agent/wazuh-agent.yml
 
-Copy this filee for analysis.
+Copy this file for analysis.
 
 ####  macOS
 
@@ -47,7 +47,7 @@ To gather the configuration file, locate the following file:
 
 - /Library/Application Support/wazuh-agent/etc/wazuh-agent.yml
 
-Copy this filee for analysis.
+Copy this file for analysis.
 
 #### Windows
 
@@ -55,7 +55,7 @@ To gather the configuration file, locate the following file:
 
 - C:\\ProgramData\\wazuh-agent\\etc\\wazuh.yml
 
-Copy this filee for analysis.
+Copy this file for analysis.
 
 ### Logs
 

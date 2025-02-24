@@ -15,7 +15,7 @@ namespace logcollector
         std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
     {
         const auto refreshInterval = configurationParser->GetTimeConfigOrDefault(
-            config::logcollector::DEFAULT_CHANNEL_REFRESH_INTERVAL, "logcollector", "reload_interval");
+            config::logcollector::DEFAULT_RELOAD_INTERVAL, "logcollector", "reload_interval");
 
         const std::vector<std::map<std::string, std::string>> defaultWinOsConfig {};
 

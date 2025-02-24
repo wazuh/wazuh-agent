@@ -34,8 +34,6 @@ set(DEFAULT_FILE_WAIT "\"500ms\"" CACHE STRING "Default Logcollector file readin
 
 set(DEFAULT_RELOAD_INTERVAL "\"60000ms\"" CACHE STRING "Default Logcollector reload interval (1m)")
 
-set(DEFAULT_CHANNEL_REFRESH_INTERVAL "\"5000ms\"" CACHE STRING "Default Logcollector Windows eventchannel reconnect time (5000ms)")
-
 set(DEFAULT_INVENTORY_ENABLED true CACHE BOOL "Default inventory enabled")
 
 set(DEFAULT_INTERVAL "\"3600000ms\"" CACHE STRING "Default inventory interval (1h)")
