@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <fstream>
 #include <queue>
 #include <unordered_set>
 #include <utility>
@@ -56,6 +57,21 @@ namespace configuration
         {
             m_config = YAML::Node();
             LogWarn("Using default values due to error parsing wazuh-agent.yml file: {}", e.what());
+        }
+    }
+
+    void ConfigurationParser::SetServerURL(const std::string& value)
+    {
+        try
+        {
+            m_config["agent"]["server_url"] = value;
+            std::ofstream file(m_configFilePath);
+            file << m_config;
+            file.close();
+        }
+        catch (const std::exception& e)
+        {
+            LogWarn("Error setting server URL: {}", e.what());
         }
     }
 
