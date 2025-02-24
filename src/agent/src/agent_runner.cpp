@@ -31,6 +31,9 @@ namespace
     const auto OPT_ENROLL_AGENT_DESC {"Use this option to enroll as a new agent"};
     const auto OPT_ENROLL_URL {"enroll-url"};
     const auto OPT_ENROLL_URL_DESC {"URL of the server management API enrollment endpoint"};
+    const auto OPT_CONNECT_URL {"connect-url"};
+    const auto OPT_CONNECT_URL_DESC {"URL of the server. This option overwrites the server URL in the configuration "
+                                     "wazuh-agent.yaml file (optional)"};
     const auto OPT_USER {"user"};
     const auto OPT_USER_DESC {"User to authenticate with the server management API"};
     const auto OPT_PASS {"password"};
@@ -110,12 +113,17 @@ int AgentRunner::EnrollAgent() const
         }
     }
 
-    const auto configurationParser =
+    auto configurationParser =
         m_options[OPT_CONFIG_FILE].as<std::string>().empty()
             ? configuration::ConfigurationParser()
             : configuration::ConfigurationParser(std::filesystem::path(m_options[OPT_CONFIG_FILE].as<std::string>()));
 
     const auto dbFolderPath = configurationParser.GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data");
+
+    if (m_options.count(OPT_CONNECT_URL))
+    {
+        configurationParser.SetServerURL(m_options[OPT_CONNECT_URL].as<std::string>());
+    }
 
     try
     {
