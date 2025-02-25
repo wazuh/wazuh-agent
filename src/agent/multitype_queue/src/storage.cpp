@@ -71,13 +71,22 @@ namespace
     }
 } // namespace
 
-Storage::Storage(const std::string& dbFolderPath, const std::vector<std::string>& tableNames)
+Storage::Storage(const std::string& dbFolderPath,
+                 const std::vector<std::string>& tableNames,
+                 std::unique_ptr<Persistence> persistence)
 {
     const auto dbFilePath = dbFolderPath + "/" + QUEUE_DB_NAME;
 
     try
     {
-        m_db = PersistenceFactory::CreatePersistence(PersistenceFactory::PersistenceType::SQLITE3, dbFilePath);
+        if (persistence)
+        {
+            m_db = std::move(persistence);
+        }
+        else
+        {
+            m_db = PersistenceFactory::CreatePersistence(PersistenceFactory::PersistenceType::SQLITE3, dbFilePath);
+        }
 
         for (const auto& table : tableNames)
         {

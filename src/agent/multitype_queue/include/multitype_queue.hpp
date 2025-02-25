@@ -2,6 +2,7 @@
 
 #include <configuration_parser.hpp>
 #include <imultitype_queue.hpp>
+#include <istorage.hpp>
 
 #include <boost/asio/awaitable.hpp>
 
@@ -12,8 +13,6 @@
 #include <mutex>
 #include <string>
 #include <vector>
-
-class Storage;
 
 namespace
 {
@@ -44,8 +43,8 @@ private:
     /// @brief timeout in milliseconds for refreshing the queue status
     const std::chrono::milliseconds m_timeout;
 
-    /// @brief class for persistence implementation
-    std::unique_ptr<Storage> m_persistenceDest;
+    /// @brief Unique pointer to the Storage
+    std::unique_ptr<IStorage> m_persistenceDest;
 
     /// @brief mutex for protecting the queue access
     std::mutex m_mtx;
@@ -59,7 +58,8 @@ private:
 public:
     /// @brief Constructor
     /// @param configurationParser Pointer to the configuration parser
-    MultiTypeQueue(std::shared_ptr<configuration::ConfigurationParser> configurationParser);
+    MultiTypeQueue(std::shared_ptr<configuration::ConfigurationParser> configurationParser,
+                   std::unique_ptr<IStorage> persistenceDest = nullptr);
 
     /// @brief Delete copy constructor
     MultiTypeQueue(const MultiTypeQueue&) = delete;

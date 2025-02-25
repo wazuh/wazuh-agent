@@ -31,7 +31,8 @@ namespace
 
 namespace command_handler
 {
-    CommandHandler::CommandHandler(std::shared_ptr<configuration::ConfigurationParser> configurationParser)
+    CommandHandler::CommandHandler(std::shared_ptr<configuration::ConfigurationParser> configurationParser,
+                                   std::unique_ptr<command_store::ICommandStore> commandStore)
     {
         if (!configurationParser)
         {
@@ -43,7 +44,14 @@ namespace command_handler
 
         try
         {
-            m_commandStore = std::make_unique<command_store::CommandStore>(dbFolderPath);
+            if (commandStore)
+            {
+                m_commandStore = std::move(commandStore);
+            }
+            else
+            {
+                m_commandStore = std::make_unique<command_store::CommandStore>(dbFolderPath);
+            }
         }
         catch (const std::exception& e)
         {

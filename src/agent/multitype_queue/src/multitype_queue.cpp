@@ -14,7 +14,8 @@ namespace
     constexpr auto MAX_QUEUE_SIZE = 60 * 60 * 1000;
 } // namespace
 
-MultiTypeQueue::MultiTypeQueue(std::shared_ptr<configuration::ConfigurationParser> configurationParser)
+MultiTypeQueue::MultiTypeQueue(std::shared_ptr<configuration::ConfigurationParser> configurationParser,
+                               std::unique_ptr<IStorage> persistenceDest)
     : m_timeout(config::agent::QUEUE_STATUS_REFRESH_TIMER)
 {
     if (!configurationParser)
@@ -32,7 +33,14 @@ MultiTypeQueue::MultiTypeQueue(std::shared_ptr<configuration::ConfigurationParse
 
     try
     {
-        m_persistenceDest = std::make_unique<Storage>(dbFolderPath, m_vMessageTypeStrings);
+        if (persistenceDest)
+        {
+            m_persistenceDest = std::move(persistenceDest);
+        }
+        else
+        {
+            m_persistenceDest = std::make_unique<Storage>(dbFolderPath, m_vMessageTypeStrings);
+        }
     }
     catch (const std::exception& e)
     {

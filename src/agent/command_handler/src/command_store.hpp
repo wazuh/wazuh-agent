@@ -1,12 +1,12 @@
 #pragma once
 
 #include <command_entry.hpp>
+#include <icommand_store.hpp>
+#include <persistence.hpp>
 
 #include <memory>
 #include <optional>
 #include <string>
-
-class Persistence;
 
 namespace command_store
 {
@@ -15,7 +15,7 @@ namespace command_store
     /// This class provides methods for storing, retrieving, and deleting commands
     /// in the command store database. It uses a database to store the
     /// commands.
-    class CommandStore
+    class CommandStore : public ICommandStore
     {
     private:
         /// @brief Unique pointer to the persistence instance.
@@ -38,43 +38,44 @@ namespace command_store
     public:
         /// @brief CommandStore constructor
         /// @param dbFolderPath The path to the database folder
-        CommandStore(const std::string& dbFolderPath);
+        /// @param persistence Optional pointer to an existing persistence object.
+        CommandStore(const std::string& dbFolderPath, std::unique_ptr<Persistence> persistence = nullptr);
 
         /// @brief CommandStore destructor
         ~CommandStore();
 
         /// @brief Clears all commands from the database
         /// @return True if successful, false otherwise
-        bool Clear();
+        bool Clear() override;
 
         /// @brief Gets the count of commands in the database
         /// @return The number of commands in the database
-        int GetCount();
+        int GetCount() override;
 
         /// @brief Stores a command in the database
         /// @param cmd The command to store
         /// @return True if successful, false otherwise
-        bool StoreCommand(const module_command::CommandEntry& cmd);
+        bool StoreCommand(const module_command::CommandEntry& cmd) override;
 
         /// @brief Deletes a command from the database by ID
         /// @param id The ID of the command to delete
         /// @return True if successful, false otherwise
-        bool DeleteCommand(const std::string& id);
+        bool DeleteCommand(const std::string& id) override;
 
         /// @brief Retrieves a command from the database by ID
         /// @param id The ID of the command to retrieve
         /// @return An optional containing the command if found, or nullopt if not
-        std::optional<module_command::CommandEntry> GetCommand(const std::string& id);
+        std::optional<module_command::CommandEntry> GetCommand(const std::string& id) override;
 
         /// @brief Retrieves a vector of commands from the database by status
         /// @param status The status of the commands to retrieve
         /// @return An optional containing the commands if found, or nullopt if not
         std::optional<std::vector<module_command::CommandEntry>>
-        GetCommandByStatus(const module_command::Status& status);
+        GetCommandByStatus(const module_command::Status& status) override;
 
         /// @brief Updates an existing command in the database
         /// @param cmd The updated command data
         /// @return True if successful, false otherwise
-        bool UpdateCommand(const module_command::CommandEntry& cmd);
+        bool UpdateCommand(const module_command::CommandEntry& cmd) override;
     };
 } // namespace command_store
