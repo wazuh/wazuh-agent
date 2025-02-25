@@ -46,36 +46,36 @@ namespace command_store
 
         /// @brief Clears all commands from the database
         /// @return True if successful, false otherwise
-        bool Clear();
+        bool Clear() override;
 
         /// @brief Gets the count of commands in the database
         /// @return The number of commands in the database
-        int GetCount();
+        int GetCount() override;
 
         /// @brief Stores a command in the database
         /// @param cmd The command to store
         /// @return True if successful, false otherwise
-        bool StoreCommand(const module_command::CommandEntry& cmd);
+        bool StoreCommand(const module_command::CommandEntry& cmd) override;
 
         /// @brief Deletes a command from the database by ID
         /// @param id The ID of the command to delete
         /// @return True if successful, false otherwise
-        bool DeleteCommand(const std::string& id);
+        bool DeleteCommand(const std::string& id) override;
 
         /// @brief Retrieves a command from the database by ID
         /// @param id The ID of the command to retrieve
         /// @return An optional containing the command if found, or nullopt if not
-        std::optional<module_command::CommandEntry> GetCommand(const std::string& id);
+        std::optional<module_command::CommandEntry> GetCommand(const std::string& id) override;
 
         /// @brief Retrieves a vector of commands from the database by status
         /// @param status The status of the commands to retrieve
         /// @return An optional containing the commands if found, or nullopt if not
         std::optional<std::vector<module_command::CommandEntry>>
-        GetCommandByStatus(const module_command::Status& status);
+        GetCommandByStatus(const module_command::Status& status) override;
 
         /// @brief Updates an existing command in the database
         /// @param cmd The updated command data
         /// @return True if successful, false otherwise
-        bool UpdateCommand(const module_command::CommandEntry& cmd);
+        bool UpdateCommand(const module_command::CommandEntry& cmd) override;
     };
 } // namespace command_store

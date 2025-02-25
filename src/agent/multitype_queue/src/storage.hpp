@@ -42,7 +42,7 @@ public:
     /// @brief Clears all messages from the database
     /// @param tableNames A vector of table names
     /// @return True if successful, false otherwise
-    bool Clear(const std::vector<std::string>& tableNames);
+    bool Clear(const std::vector<std::string>& tableNames) override;
 
     /// @brief Store a JSON message in the storage.
     /// @param message The JSON message to store.
@@ -55,7 +55,7 @@ public:
               const std::string& tableName,
               const std::string& moduleName = "",
               const std::string& moduleType = "",
-              const std::string& metadata = "");
+              const std::string& metadata = "") override;
 
     /// @brief Remove multiple JSON messages.
     /// @param n The number of messages to remove.
@@ -66,7 +66,7 @@ public:
     int RemoveMultiple(int n,
                        const std::string& tableName,
                        const std::string& moduleName = "",
-                       const std::string& moduleType = "");
+                       const std::string& moduleType = "") override;
 
     /// @brief Retrieve multiple JSON messages.
     /// @param n The number of messages to retrieve.
@@ -77,7 +77,7 @@ public:
     nlohmann::json RetrieveMultiple(int n,
                                     const std::string& tableName,
                                     const std::string& moduleName = "",
-                                    const std::string& moduleType = "");
+                                    const std::string& moduleType = "") override;
 
     /// @brief Retrieve multiple JSON messages based on size from the specified queue.
     /// @param n size occupied by the messages to be retrieved.
@@ -88,7 +88,7 @@ public:
     nlohmann::json RetrieveBySize(size_t n,
                                   const std::string& tableName,
                                   const std::string& moduleName = "",
-                                  const std::string& moduleType = "");
+                                  const std::string& moduleType = "") override;
 
     /// @brief Get the number of elements in the table.
     /// @param tableName The name of the table to retrieve the message from.
@@ -97,7 +97,7 @@ public:
     /// @return The number of elements in the table.
     int GetElementCount(const std::string& tableName,
                         const std::string& moduleName = "",
-                        const std::string& moduleType = "");
+                        const std::string& moduleType = "") override;
 
     /// @brief Get the bytes occupied by elements stored in the specified queue.
     /// @param tableName  The name of the table.
@@ -106,7 +106,7 @@ public:
     /// @return size_t The bytes occupied by elements stored in the specified queue.
     size_t GetElementsStoredSize(const std::string& tableName,
                                  const std::string& moduleName = "",
-                                 const std::string& moduleType = "");
+                                 const std::string& moduleType = "") override;
 
 private:
     /// @brief Create a table in the database.
