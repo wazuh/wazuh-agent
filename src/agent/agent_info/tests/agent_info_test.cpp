@@ -22,14 +22,14 @@ protected:
 
     void InitializeAgentInfo(const std::function<nlohmann::json()>& osLambda = nullptr,
                              const std::function<nlohmann::json()>& networksLambda = nullptr,
-                             bool agentIsRegistering = false)
+                             bool agentIsEnrolling = false)
     {
         auto mockPersistencePtr = std::make_unique<MockPersistence>();
         m_mockPersistence = mockPersistencePtr.get();
 
         SetUpPersistenceMock();
 
-        if (!agentIsRegistering)
+        if (!agentIsEnrolling)
         {
             SetUpAgentInfoInitialization();
         }
@@ -39,7 +39,7 @@ protected:
         m_agentInfo = std::make_unique<AgentInfo>("db_path",
                                                   osLambda ? osLambda : nullptr,
                                                   networksLambda ? networksLambda : nullptr,
-                                                  agentIsRegistering,
+                                                  agentIsEnrolling,
                                                   std::move(m_agentPersistence));
     }
 
@@ -184,7 +184,7 @@ TEST_F(AgentInfoTest, TestLoadMetadataInfoNoSysInfo)
     EXPECT_FALSE(metadataInfo.contains("host"));
 }
 
-TEST_F(AgentInfoTest, TestLoadMetadataInfoRegistration)
+TEST_F(AgentInfoTest, TestLoadMetadataInfoEnrollment)
 {
     nlohmann::json os;
     nlohmann::json networks;

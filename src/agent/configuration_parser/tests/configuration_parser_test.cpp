@@ -87,6 +87,41 @@ protected:
 };
 
 // NOLINTBEGIN(bugprone-unchecked-optional-access)
+TEST_F(ConfigurationParserFileTest, SetConfigUpdatesTheKeyValueAndLeavesTheRestUnchanged)
+{
+    const auto parser = std::make_unique<configuration::ConfigurationParser>(m_tempConfigFilePath);
+
+    const auto expectedServerUrl = parser->GetConfigOrDefault(DEFAULT_STRING, "agent", "server_url");
+    EXPECT_EQ(expectedServerUrl, "https://myserver:28000");
+
+    parser->SetServerURL("https://myserver:28001");
+    EXPECT_EQ(parser->GetConfigOrDefault(DEFAULT_STRING, "agent", "server_url"), "https://myserver:28001");
+
+    // The other fields should remain unchanged
+    const auto expectedInventoryEnabled = parser->GetConfigOrDefault(true, "inventory", "enabled");
+    EXPECT_FALSE(expectedInventoryEnabled);
+
+    const auto expectedInventoryInterval = parser->GetConfigOrDefault(0, "inventory", "interval");
+    EXPECT_EQ(expectedInventoryInterval, 7200);
+
+    const auto expectedInventoryScanOnStart = parser->GetConfigOrDefault(true, "inventory", "scan_on_start");
+    EXPECT_FALSE(expectedInventoryScanOnStart);
+
+    const auto expectedLogCollectorEnabled = parser->GetConfigOrDefault(true, "logcollector", "enabled");
+    EXPECT_FALSE(expectedLogCollectorEnabled);
+
+    const auto expectedLogCollectorLocalFiles =
+        parser->GetConfigOrDefault<std::vector<std::string>>({}, "logcollector", "localfiles");
+    EXPECT_EQ(expectedLogCollectorLocalFiles.size(), 1);
+    EXPECT_EQ(expectedLogCollectorLocalFiles[0], "/var/log/other.log");
+
+    const auto expectedLogCollectorReloadInterval = parser->GetConfigOrDefault(0, "logcollector", "reload_interval");
+    EXPECT_EQ(expectedLogCollectorReloadInterval, 120);
+
+    const auto expectedLogCollectorReadInterval = parser->GetConfigOrDefault(0, "logcollector", "read_interval");
+    EXPECT_EQ(expectedLogCollectorReadInterval, 1000);
+}
+
 TEST(ConfigurationParser, GetConfigOrDefaultString)
 {
     const std::string strConfig = R"(

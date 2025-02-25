@@ -16,3 +16,15 @@ Logger::Logger()
     spdlog::set_level(spdlog::level::info);
     spdlog::cfg::load_env_levels();
 }
+
+void Logger::AddPlatformSpecificSink()
+{
+    std::shared_ptr<spdlog::logger> logger = spdlog::get(LOGGER_NAME);
+
+    if (logger)
+    {
+        auto stdOutSink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
+        logger->sinks().clear();
+        logger->sinks().push_back(stdOutSink);
+    }
+}

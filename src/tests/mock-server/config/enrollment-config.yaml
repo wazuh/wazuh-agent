@@ -1,9 +1,9 @@
-# register-config.yaml
+# enrollment-config.yaml
 ---
 plugin: rest
 resources:
 
-# Allow registration with name=dummy
+# Allow enrollment with name=dummy
 - path: "/agents"
   method: POST
   requestBody:
@@ -17,9 +17,9 @@ resources:
       operator: NotEqualTo
       value: null
   response:
-    scriptFile: register.groovy
+    scriptFile: enrollment.groovy
 
-# Deny registration with name != dummy
+# Deny enrollment with name != dummy
 - path: "/agents"
   method: POST
   requestBody:

@@ -5,6 +5,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include <string>
+
 namespace WindowsService
 {
     /// @brief Installs the Wazuh Agent Service.

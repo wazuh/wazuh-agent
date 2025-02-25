@@ -8,7 +8,7 @@
 #include <optional>
 #include <string>
 
-namespace agent_registration
+namespace agent_enrollment
 {
     /// @struct UserCredentials
     /// @brief Stores the user's credentials.
@@ -18,14 +18,14 @@ namespace agent_registration
         std::string password;
     };
 
-    /// @brief Registers an agent with a manager.
+    /// @brief Enrolls an agent with a manager.
     ///
-    /// This class provides methods for registering the agent and storing its
+    /// This class provides methods for enrolling the agent and storing its
     /// configuration.
-    class AgentRegistration
+    class AgentEnrollment
     {
     public:
-        ///@brief Constructor for the AgentRegistration class.
+        ///@brief Constructor for the AgentEnrollment class.
         ///
         /// @param httpClient The HTTP client to use for communication.
         /// @param url The server URL.
@@ -36,20 +36,20 @@ namespace agent_registration
         /// @param dbFolderPath The path to the database folder.
         /// @param verificationMode The connection verification mode.
         /// @param agentInfo Optional agent's information object.
-        AgentRegistration(std::unique_ptr<http_client::IHttpClient> httpClient,
-                          std::string url,
-                          std::string user,
-                          std::string password,
-                          const std::string& key,
-                          const std::string& name,
-                          const std::string& dbFolderPath,
-                          std::string verificationMode,
-                          std::optional<AgentInfo> agentInfo = std::nullopt);
+        AgentEnrollment(std::unique_ptr<http_client::IHttpClient> httpClient,
+                        std::string url,
+                        std::string user,
+                        std::string password,
+                        const std::string& key,
+                        const std::string& name,
+                        const std::string& dbFolderPath,
+                        std::string verificationMode,
+                        std::optional<AgentInfo> agentInfo = std::nullopt);
 
-        /// @brief Registers the agent with the manager.
+        /// @brief Enrolls the agent with the manager.
         ///
-        /// @return True if the registration was successful, false otherwise.
-        bool Register();
+        /// @return True if the enrollment was successful, false otherwise.
+        bool Enroll();
 
         /// @brief Authenticates using username and password
         ///
@@ -78,4 +78,4 @@ namespace agent_registration
         /// @brief The connection verification mode.
         std::string m_verificationMode;
     };
-} // namespace agent_registration
+} // namespace agent_enrollment

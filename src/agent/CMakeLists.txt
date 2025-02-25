@@ -22,15 +22,15 @@ find_package(fmt REQUIRED)
 
 if(WIN32)
     set(SOURCES
+        src/agent_runner_win.cpp
         src/windows/windows_api_facade.cpp
         src/windows/windows_service.cpp
-        src/process_options_win.cpp
         src/signal_handler_win.cpp
         src/instance_handler_win.cpp
     )
 elseif(UNIX)
     set(SOURCES
-        src/process_options_unix.cpp
+        src/agent_runner_unix.cpp
         src/signal_handler_unix.cpp
         src/instance_handler_unix.cpp
     )
@@ -38,10 +38,10 @@ endif()
 
 list(APPEND SOURCES
     src/agent.cpp
-    src/agent_registration.cpp
+    src/agent_enrollment.cpp
+    src/agent_runner.cpp
     src/command_handler_utils.cpp
     src/message_queue_utils.cpp
-    src/process_options.cpp
     src/signal_handler.cpp
     src/instance_handler.cpp
 )

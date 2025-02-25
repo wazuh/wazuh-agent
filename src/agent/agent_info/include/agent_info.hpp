@@ -26,12 +26,12 @@ public:
     /// @param dbFolderPath Path to the database folder.
     /// @param getOSInfo Function to retrieve OS information in JSON format.
     /// @param getNetworksInfo Function to retrieve network information in JSON format.
-    /// @param agentIsRegistering True if the agent is being registered, false otherwise.
+    /// @param agentIsEnrolling True if the agent is enrolling, false otherwise.
     /// @param persistence Optional pointer to an AgentInfoPersistance object.
     AgentInfo(const std::string& dbFolderPath,
               std::function<nlohmann::json()> getOSInfo = nullptr,
               std::function<nlohmann::json()> getNetworksInfo = nullptr,
-              bool agentIsRegistering = false,
+              bool agentIsEnrolling = false,
               std::shared_ptr<AgentInfoPersistance> persistence = nullptr);
 
     /// @brief Gets the agent's name.
@@ -140,8 +140,8 @@ private:
     /// @brief The networks information
     std::function<nlohmann::json()> m_getNetworksInfo;
 
-    /// @brief Specify if the agent is about to register.
-    bool m_agentIsRegistering;
+    /// @brief Specify if the agent is about to enroll.
+    bool m_agentIsEnrolling;
 
     /// @brief Pointer to the agent info persistence instance.
     std::shared_ptr<AgentInfoPersistance> m_persistence;

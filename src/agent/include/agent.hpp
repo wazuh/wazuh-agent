@@ -30,7 +30,7 @@ public:
     /// @param signalHandler Pointer to a custom ISignalHandler implementation
     /// @param httpClient Pointer to an IHttpClient implementation
     /// @param agentInfo Optional AgentInfo object
-    /// @throws std::runtime_error If the Agent is not registered
+    /// @throws std::runtime_error If the Agent is not enrolled
     /// @throws Any exception propagated from dependencies used within the constructor
     Agent(const std::string& configFilePath,
           std::unique_ptr<ISignalHandler> signalHandler = std::make_unique<SignalHandler>(),

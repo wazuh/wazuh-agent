@@ -151,6 +151,10 @@ namespace configuration
             return GetParsedConfigInRangeOrDefault(defaultValue, min, max, ParseSizeUnit, keys...);
         }
 
+        /// @brief Sets the server URL in the configuration and saves it to the configuration file.
+        /// @param value The new server URL to set in the configuration.
+        void SetServerURL(const std::string& value);
+
         /// @brief Checks if the specified YAML file is valid.
         ///
         /// This function attempts to load the YAML file located at the given path.

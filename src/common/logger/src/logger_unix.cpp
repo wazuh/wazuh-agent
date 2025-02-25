@@ -14,3 +14,7 @@ Logger::Logger()
     spdlog::set_level(spdlog::level::info);
     spdlog::cfg::load_env_levels();
 }
+
+void Logger::AddPlatformSpecificSink()
+{
+}
