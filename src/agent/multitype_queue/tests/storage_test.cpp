@@ -27,9 +27,8 @@ protected:
 TEST_F(StorageConstructorTest, TableExists)
 {
     const std::vector<std::string> tableName {"test_table.db"};
-    MockPersistence* mockPersistence = nullptr;
     auto mockPersistencePtr = std::make_unique<MockPersistence>();
-    mockPersistence = mockPersistencePtr.get();
+    auto mockPersistence = mockPersistencePtr.get();
     EXPECT_CALL(*mockPersistence, TableExists("test_table.db")).WillOnce(testing::Return(true));
 
     ASSERT_NO_THROW(std::make_unique<Storage>(".", tableName, std::move(mockPersistencePtr)));
@@ -38,9 +37,8 @@ TEST_F(StorageConstructorTest, TableExists)
 TEST_F(StorageConstructorTest, TableExistsException)
 {
     const std::vector<std::string> tableName {"test_table.db"};
-    MockPersistence* mockPersistence = nullptr;
     auto mockPersistencePtr = std::make_unique<MockPersistence>();
-    mockPersistence = mockPersistencePtr.get();
+    auto mockPersistence = mockPersistencePtr.get();
     EXPECT_CALL(*mockPersistence, TableExists("test_table.db"))
         .WillOnce(testing::Throw(std::runtime_error("Error TableExists")));
 
@@ -50,9 +48,8 @@ TEST_F(StorageConstructorTest, TableExistsException)
 TEST_F(StorageConstructorTest, CreateTable)
 {
     const std::vector<std::string> tableName {"test_table.db"};
-    MockPersistence* mockPersistence = nullptr;
     auto mockPersistencePtr = std::make_unique<MockPersistence>();
-    mockPersistence = mockPersistencePtr.get();
+    auto mockPersistence = mockPersistencePtr.get();
     EXPECT_CALL(*mockPersistence, TableExists("test_table.db")).WillOnce(testing::Return(false));
     EXPECT_CALL(*mockPersistence, CreateTable("test_table.db", testing::_)).Times(1);
 
@@ -62,9 +59,8 @@ TEST_F(StorageConstructorTest, CreateTable)
 TEST_F(StorageConstructorTest, CreateTableException)
 {
     const std::vector<std::string> tableName {"test_table.db"};
-    MockPersistence* mockPersistence = nullptr;
     auto mockPersistencePtr = std::make_unique<MockPersistence>();
-    mockPersistence = mockPersistencePtr.get();
+    auto mockPersistence = mockPersistencePtr.get();
     EXPECT_CALL(*mockPersistence, TableExists("test_table.db")).WillOnce(testing::Return(false));
     EXPECT_CALL(*mockPersistence, CreateTable("test_table.db", testing::_))
         .WillOnce(testing::Throw(std::runtime_error("Error CreateTable")));
@@ -75,9 +71,8 @@ TEST_F(StorageConstructorTest, CreateTableException)
 TEST_F(StorageConstructorTest, CreateTable2)
 {
     const std::vector<std::string> tableName {"test_table.db", "test_table2.db"};
-    MockPersistence* mockPersistence = nullptr;
     auto mockPersistencePtr = std::make_unique<MockPersistence>();
-    mockPersistence = mockPersistencePtr.get();
+    auto mockPersistence = mockPersistencePtr.get();
     EXPECT_CALL(*mockPersistence, TableExists("test_table.db")).WillOnce(testing::Return(false));
     EXPECT_CALL(*mockPersistence, CreateTable("test_table.db", testing::_)).Times(1);
 
