@@ -33,9 +33,8 @@ protected:
 
 TEST_F(CommandStoreConstructorTest, TableExists)
 {
-    MockPersistence* mockPersistence = nullptr;
     auto mockPersistencePtr = std::make_unique<MockPersistence>();
-    mockPersistence = mockPersistencePtr.get();
+    auto mockPersistence = mockPersistencePtr.get();
     EXPECT_CALL(*mockPersistence, TableExists(COMMAND_STORE_TABLE_NAME)).WillOnce(testing::Return(true));
 
     ASSERT_NO_THROW(std::make_unique<command_store::CommandStore>(".", std::move(mockPersistencePtr)));
@@ -43,9 +42,8 @@ TEST_F(CommandStoreConstructorTest, TableExists)
 
 TEST_F(CommandStoreConstructorTest, TableExistsException)
 {
-    MockPersistence* mockPersistence = nullptr;
     auto mockPersistencePtr = std::make_unique<MockPersistence>();
-    mockPersistence = mockPersistencePtr.get();
+    auto mockPersistence = mockPersistencePtr.get();
     EXPECT_CALL(*mockPersistence, TableExists(COMMAND_STORE_TABLE_NAME))
         .WillOnce(testing::Throw(std::runtime_error("Error TableExists")));
 
@@ -54,9 +52,8 @@ TEST_F(CommandStoreConstructorTest, TableExistsException)
 
 TEST_F(CommandStoreConstructorTest, CreateTable)
 {
-    MockPersistence* mockPersistence = nullptr;
     auto mockPersistencePtr = std::make_unique<MockPersistence>();
-    mockPersistence = mockPersistencePtr.get();
+    auto mockPersistence = mockPersistencePtr.get();
     EXPECT_CALL(*mockPersistence, TableExists(COMMAND_STORE_TABLE_NAME)).WillOnce(testing::Return(false));
     EXPECT_CALL(*mockPersistence, CreateTable(COMMAND_STORE_TABLE_NAME, testing::_)).Times(1);
 
@@ -65,9 +62,8 @@ TEST_F(CommandStoreConstructorTest, CreateTable)
 
 TEST_F(CommandStoreConstructorTest, CreateTableException)
 {
-    MockPersistence* mockPersistence = nullptr;
     auto mockPersistencePtr = std::make_unique<MockPersistence>();
-    mockPersistence = mockPersistencePtr.get();
+    auto mockPersistence = mockPersistencePtr.get();
     EXPECT_CALL(*mockPersistence, TableExists(COMMAND_STORE_TABLE_NAME)).WillOnce(testing::Return(false));
     EXPECT_CALL(*mockPersistence, CreateTable(COMMAND_STORE_TABLE_NAME, testing::_))
         .WillOnce(testing::Throw(std::runtime_error("Error CreateTable")));
@@ -129,7 +125,6 @@ TEST_F(CommandStoreTest, GetCountException)
 
 TEST_F(CommandStoreTest, StoreCommandTrue)
 {
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmd1(TESTID_5,
                                             "Module1",
                                             "{CommandTextHERE}",
@@ -145,7 +140,6 @@ TEST_F(CommandStoreTest, StoreCommandTrue)
 
 TEST_F(CommandStoreTest, StoreCommandFalse)
 {
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmd1(TESTID_5,
                                             "Module1",
                                             "{CommandTextHERE}",
@@ -162,7 +156,6 @@ TEST_F(CommandStoreTest, StoreCommandFalse)
 
 TEST_F(CommandStoreTest, StoreCommandTrueCheckFields)
 {
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmd1(TESTID_5,
                                             "Module1",
                                             "{CommandTextHERE}",
@@ -413,7 +406,6 @@ TEST_F(CommandStoreTest, GetCommandByStatusEmptyException)
 
 TEST_F(CommandStoreTest, UpdateCommandTrue)
 {
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmd1(TESTID_5,
                                             "Module1",
                                             "{CommandTextHERE}",
@@ -429,7 +421,6 @@ TEST_F(CommandStoreTest, UpdateCommandTrue)
 
 TEST_F(CommandStoreTest, UpdateCommandFalse)
 {
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmd1(TESTID_5,
                                             "Module1",
                                             "{CommandTextHERE}",
@@ -446,7 +437,6 @@ TEST_F(CommandStoreTest, UpdateCommandFalse)
 
 TEST_F(CommandStoreTest, UpdateCommandTrueCheckFields)
 {
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
     const module_command::CommandEntry cmd1(TESTID_5,
                                             "Module1",
                                             "{CommandTextHERE}",
