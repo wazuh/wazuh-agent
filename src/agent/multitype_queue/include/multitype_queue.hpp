@@ -14,8 +14,6 @@
 #include <string>
 #include <vector>
 
-class Storage;
-
 namespace
 {
     // table names
