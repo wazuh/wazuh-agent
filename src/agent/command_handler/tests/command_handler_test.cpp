@@ -73,6 +73,25 @@ protected:
 
     void TearDown() override {}
 
+    void RunCommandsProcessingTask()
+    {
+        boost::asio::io_context ioContext;
+        boost::asio::co_spawn(
+            ioContext,
+            m_commandHandler->CommandsProcessingTask(
+                m_mockGetCommandFromQueue, m_mockPopCommandFromQueue, m_mockReportCommandResult, m_mockDispatchCommand),
+            boost::asio::detached);
+        ioContext.run();
+    }
+
+    void ExpectDispatchCommandSuccess()
+    {
+        EXPECT_CALL(*m_mockCommandFunctions, DispatchCommand(_))
+            .WillOnce(
+                [](module_command::CommandEntry&) -> boost::asio::awaitable<module_command::CommandExecutionResult>
+                { co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS}; });
+    }
+
     command_store::MockCommandStore* m_mockCommandStore = nullptr;
     std::shared_ptr<configuration::ConfigurationParser> m_configurationParser;
     std::unique_ptr<command_handler::CommandHandler> m_commandHandler;
@@ -101,21 +120,11 @@ TEST_F(CommandHandlerTest, CommandsProcessingTaskProcessesCommandSetGroupSuccess
 
     EXPECT_CALL(*m_mockCommandFunctions, PopCommandFromQueue()).Times(1);
 
-    module_command::CommandExecutionResult result;
-    result.ErrorCode = module_command::Status::SUCCESS;
-    EXPECT_CALL(*m_mockCommandFunctions, DispatchCommand(_))
-        .WillOnce([](module_command::CommandEntry&) -> boost::asio::awaitable<module_command::CommandExecutionResult>
-                  { co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS}; });
+    ExpectDispatchCommandSuccess();
 
     EXPECT_CALL(*m_mockCommandStore, UpdateCommand(_)).WillOnce(Return(true));
 
-    boost::asio::io_context ioContext;
-    boost::asio::co_spawn(
-        ioContext,
-        m_commandHandler->CommandsProcessingTask(
-            m_mockGetCommandFromQueue, m_mockPopCommandFromQueue, m_mockReportCommandResult, m_mockDispatchCommand),
-        boost::asio::detached);
-    ioContext.run();
+    RunCommandsProcessingTask();
 }
 
 TEST_F(CommandHandlerTest, CommandsProcessingTaskProcessesCommandSetGroupSuccessfullyExtraParameter)
@@ -136,21 +145,11 @@ TEST_F(CommandHandlerTest, CommandsProcessingTaskProcessesCommandSetGroupSuccess
 
     EXPECT_CALL(*m_mockCommandFunctions, PopCommandFromQueue()).Times(1);
 
-    module_command::CommandExecutionResult result;
-    result.ErrorCode = module_command::Status::SUCCESS;
-    EXPECT_CALL(*m_mockCommandFunctions, DispatchCommand(_))
-        .WillOnce([](module_command::CommandEntry&) -> boost::asio::awaitable<module_command::CommandExecutionResult>
-                  { co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS}; });
+    ExpectDispatchCommandSuccess();
 
     EXPECT_CALL(*m_mockCommandStore, UpdateCommand(_)).WillOnce(Return(true));
 
-    boost::asio::io_context ioContext;
-    boost::asio::co_spawn(
-        ioContext,
-        m_commandHandler->CommandsProcessingTask(
-            m_mockGetCommandFromQueue, m_mockPopCommandFromQueue, m_mockReportCommandResult, m_mockDispatchCommand),
-        boost::asio::detached);
-    ioContext.run();
+    RunCommandsProcessingTask();
 }
 
 TEST_F(CommandHandlerTest, CommandsProcessingTaskProcessesCommandFetchConfigSuccessfully)
@@ -167,21 +166,11 @@ TEST_F(CommandHandlerTest, CommandsProcessingTaskProcessesCommandFetchConfigSucc
 
     EXPECT_CALL(*m_mockCommandFunctions, PopCommandFromQueue()).Times(1);
 
-    module_command::CommandExecutionResult result;
-    result.ErrorCode = module_command::Status::SUCCESS;
-    EXPECT_CALL(*m_mockCommandFunctions, DispatchCommand(_))
-        .WillOnce([](module_command::CommandEntry&) -> boost::asio::awaitable<module_command::CommandExecutionResult>
-                  { co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS}; });
+    ExpectDispatchCommandSuccess();
 
     EXPECT_CALL(*m_mockCommandStore, UpdateCommand(_)).WillOnce(Return(true));
 
-    boost::asio::io_context ioContext;
-    boost::asio::co_spawn(
-        ioContext,
-        m_commandHandler->CommandsProcessingTask(
-            m_mockGetCommandFromQueue, m_mockPopCommandFromQueue, m_mockReportCommandResult, m_mockDispatchCommand),
-        boost::asio::detached);
-    ioContext.run();
+    RunCommandsProcessingTask();
 }
 
 TEST_F(CommandHandlerTest, CommandsProcessingTaskProcessesCommandFetchConfigWithParameterSuccessfully)
@@ -201,21 +190,11 @@ TEST_F(CommandHandlerTest, CommandsProcessingTaskProcessesCommandFetchConfigWith
 
     EXPECT_CALL(*m_mockCommandFunctions, PopCommandFromQueue()).Times(1);
 
-    module_command::CommandExecutionResult result;
-    result.ErrorCode = module_command::Status::SUCCESS;
-    EXPECT_CALL(*m_mockCommandFunctions, DispatchCommand(_))
-        .WillOnce([](module_command::CommandEntry&) -> boost::asio::awaitable<module_command::CommandExecutionResult>
-                  { co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS}; });
+    ExpectDispatchCommandSuccess();
 
     EXPECT_CALL(*m_mockCommandStore, UpdateCommand(_)).WillOnce(Return(true));
 
-    boost::asio::io_context ioContext;
-    boost::asio::co_spawn(
-        ioContext,
-        m_commandHandler->CommandsProcessingTask(
-            m_mockGetCommandFromQueue, m_mockPopCommandFromQueue, m_mockReportCommandResult, m_mockDispatchCommand),
-        boost::asio::detached);
-    ioContext.run();
+    RunCommandsProcessingTask();
 }
 
 TEST_F(CommandHandlerTest, CommandsProcessingTaskProcessesCommandRestartSuccessfully)
@@ -232,21 +211,11 @@ TEST_F(CommandHandlerTest, CommandsProcessingTaskProcessesCommandRestartSuccessf
 
     EXPECT_CALL(*m_mockCommandFunctions, PopCommandFromQueue()).Times(1);
 
-    module_command::CommandExecutionResult result;
-    result.ErrorCode = module_command::Status::SUCCESS;
-    EXPECT_CALL(*m_mockCommandFunctions, DispatchCommand(_))
-        .WillOnce([](module_command::CommandEntry&) -> boost::asio::awaitable<module_command::CommandExecutionResult>
-                  { co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS}; });
+    ExpectDispatchCommandSuccess();
 
     EXPECT_CALL(*m_mockCommandStore, UpdateCommand(_)).WillOnce(Return(true));
 
-    boost::asio::io_context ioContext;
-    boost::asio::co_spawn(
-        ioContext,
-        m_commandHandler->CommandsProcessingTask(
-            m_mockGetCommandFromQueue, m_mockPopCommandFromQueue, m_mockReportCommandResult, m_mockDispatchCommand),
-        boost::asio::detached);
-    ioContext.run();
+    RunCommandsProcessingTask();
 }
 
 TEST_F(CommandHandlerTest, CommandsProcessingTaskProcessesCommandRestartWithParameterSuccessfully)
@@ -266,21 +235,11 @@ TEST_F(CommandHandlerTest, CommandsProcessingTaskProcessesCommandRestartWithPara
 
     EXPECT_CALL(*m_mockCommandFunctions, PopCommandFromQueue()).Times(1);
 
-    module_command::CommandExecutionResult result;
-    result.ErrorCode = module_command::Status::SUCCESS;
-    EXPECT_CALL(*m_mockCommandFunctions, DispatchCommand(_))
-        .WillOnce([](module_command::CommandEntry&) -> boost::asio::awaitable<module_command::CommandExecutionResult>
-                  { co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS}; });
+    ExpectDispatchCommandSuccess();
 
     EXPECT_CALL(*m_mockCommandStore, UpdateCommand(_)).WillOnce(Return(true));
 
-    boost::asio::io_context ioContext;
-    boost::asio::co_spawn(
-        ioContext,
-        m_commandHandler->CommandsProcessingTask(
-            m_mockGetCommandFromQueue, m_mockPopCommandFromQueue, m_mockReportCommandResult, m_mockDispatchCommand),
-        boost::asio::detached);
-    ioContext.run();
+    RunCommandsProcessingTask();
 }
 
 TEST_F(CommandHandlerTest, CommandsProcessingTaskNotCommand)
@@ -313,13 +272,7 @@ TEST_F(CommandHandlerTest, CommandsProcessingTaskCheckCommandInvalidCommand)
     EXPECT_CALL(*m_mockCommandFunctions, ReportCommandResult(_)).Times(1);
     EXPECT_CALL(*m_mockCommandFunctions, PopCommandFromQueue()).Times(1);
 
-    boost::asio::io_context ioContext;
-    boost::asio::co_spawn(
-        ioContext,
-        m_commandHandler->CommandsProcessingTask(
-            m_mockGetCommandFromQueue, m_mockPopCommandFromQueue, m_mockReportCommandResult, m_mockDispatchCommand),
-        boost::asio::detached);
-    ioContext.run();
+    RunCommandsProcessingTask();
 }
 
 TEST_F(CommandHandlerTest, CommandsProcessingTaskCheckCommandSetGroupEmptyParameters)
@@ -336,13 +289,7 @@ TEST_F(CommandHandlerTest, CommandsProcessingTaskCheckCommandSetGroupEmptyParame
     EXPECT_CALL(*m_mockCommandFunctions, ReportCommandResult(_)).Times(1);
     EXPECT_CALL(*m_mockCommandFunctions, PopCommandFromQueue()).Times(1);
 
-    boost::asio::io_context ioContext;
-    boost::asio::co_spawn(
-        ioContext,
-        m_commandHandler->CommandsProcessingTask(
-            m_mockGetCommandFromQueue, m_mockPopCommandFromQueue, m_mockReportCommandResult, m_mockDispatchCommand),
-        boost::asio::detached);
-    ioContext.run();
+    RunCommandsProcessingTask();
 }
 
 TEST_F(CommandHandlerTest, CommandsProcessingTaskCheckCommandSetGroupArgNoArray)
@@ -360,13 +307,7 @@ TEST_F(CommandHandlerTest, CommandsProcessingTaskCheckCommandSetGroupArgNoArray)
     EXPECT_CALL(*m_mockCommandFunctions, ReportCommandResult(_)).Times(1);
     EXPECT_CALL(*m_mockCommandFunctions, PopCommandFromQueue()).Times(1);
 
-    boost::asio::io_context ioContext;
-    boost::asio::co_spawn(
-        ioContext,
-        m_commandHandler->CommandsProcessingTask(
-            m_mockGetCommandFromQueue, m_mockPopCommandFromQueue, m_mockReportCommandResult, m_mockDispatchCommand),
-        boost::asio::detached);
-    ioContext.run();
+    RunCommandsProcessingTask();
 }
 
 TEST_F(CommandHandlerTest, CommandsProcessingTaskStoreCommandFail)
@@ -387,13 +328,7 @@ TEST_F(CommandHandlerTest, CommandsProcessingTaskStoreCommandFail)
     EXPECT_CALL(*m_mockCommandFunctions, ReportCommandResult(_)).Times(1);
     EXPECT_CALL(*m_mockCommandFunctions, PopCommandFromQueue()).Times(1);
 
-    boost::asio::io_context ioContext;
-    boost::asio::co_spawn(
-        ioContext,
-        m_commandHandler->CommandsProcessingTask(
-            m_mockGetCommandFromQueue, m_mockPopCommandFromQueue, m_mockReportCommandResult, m_mockDispatchCommand),
-        boost::asio::detached);
-    ioContext.run();
+    RunCommandsProcessingTask();
 }
 
 TEST_F(CommandHandlerTest, CommandsProcessingTaskCleanUpInProgressCommands)
@@ -421,13 +356,7 @@ TEST_F(CommandHandlerTest, CommandsProcessingTaskCleanUpInProgressCommands)
 
     EXPECT_CALL(*m_mockCommandFunctions, GetCommandFromQueue()).WillOnce(Return(std::nullopt));
 
-    boost::asio::io_context ioContext;
-    boost::asio::co_spawn(
-        ioContext,
-        m_commandHandler->CommandsProcessingTask(
-            m_mockGetCommandFromQueue, m_mockPopCommandFromQueue, m_mockReportCommandResult, m_mockDispatchCommand),
-        boost::asio::detached);
-    ioContext.run();
+    RunCommandsProcessingTask();
 }
 
 int main(int argc, char** argv)
