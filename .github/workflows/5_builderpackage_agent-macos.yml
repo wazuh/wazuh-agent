@@ -89,7 +89,7 @@ jobs:
           persist-credentials: false
 
       - name: Compile Mac OS Repository
-        uses: ./.github/actions/macos_compile_repository
+        uses: ./.github/actions/macos_compile_repository/4_builderpackage_agent.yml
         with:
           architecture: ${{ inputs.architecture }}
           gh_token: ${{ secrets.CI_WAZUH_AGENT_PACKAGES_CLASSIC }}
@@ -109,7 +109,7 @@ jobs:
           persist-credentials: false
 
       - name: Build Mac OS Package - ${{ inputs.architecture }}
-        uses: ./.github/actions/macos_package_binaries
+        uses: ./.github/actions/macos_package_binaries/4_builderpackage_binaries.yml
         with:
           architecture: ${{ inputs.architecture }}
           revision: ${{ inputs.revision }}
@@ -131,7 +131,7 @@ jobs:
           persist-credentials: false
       
       - name: Test Mac OS Package - ${{ inputs.architecture }}
-        uses: ./.github/actions/macos_test_package
+        uses: ./.github/actions/macos_test_package/4_testintegration_binaries.yml
         with:
           checksum: ${{ inputs.checksum }}
           upload_to_s3: 'false'

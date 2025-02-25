@@ -41,11 +41,11 @@ jobs:
       shell: bash
 
     - name: Set up Binary caching
-      uses: ./.github/actions/vcpkg_related/cover_vcpkg_dependencies
+      uses: ./.github/actions/vcpkg_related/cover_vcpkg_dependencies/4_builderpackage_vcpkg.yml
       with:
         gh_token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Run Compile Action
-      uses: ./.github/actions/compile
+      uses: ./.github/actions/compile/4_testintegration_agent.yml
       with:
         path: src/
