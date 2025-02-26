@@ -93,7 +93,9 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
     set(CPACK_GENERATOR "WIX")
     set(CPACK_PACKAGE_NAME "Wazuh Agent")
-    set(CPACK_PACKAGE_VERSION "5.0.0")
+
+    include(cmake/config.cmake)
+    set(CPACK_PACKAGE_VERSION ${VERSION})
 
     if(DEFINED ENV{CUSTOM_PACKAGE_NAME})
         set(CPACK_PACKAGE_FILE_NAME "$ENV{CUSTOM_PACKAGE_NAME}")
