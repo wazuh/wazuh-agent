@@ -18,7 +18,7 @@ runs:
   using: 'composite'
   steps:
     - name: Set ARCH, TAG and DOCKER_IMAGE_NAME
-      uses: ./4_docker_resolvable
+      uses: ./.github/actions/4_docker_resolvable
       with:
         system: rpm
         architecture: ${{ inputs.architecture }}
@@ -26,7 +26,7 @@ runs:
         source_reference: ${{ inputs.source_reference }}
 
     - name: Fetch needed Docker image
-      uses: ./4_docker_pull
+      uses: ./.github/actions/4_docker_pull
       with:
         gh_user: ${{ github.actor}}
         gh_token: ${{ inputs.gh_token}}
@@ -34,7 +34,7 @@ runs:
         docker_image_tag: ${{ env.TAG }}
 
     - name: Launch Docker container
-      uses: ./4_docker_run
+      uses: ./.github/actions/4_docker_run
       with:
         docker_image_name: ${{ env.DOCKER_IMAGE_NAME }}
         docker_image_tag: ${{ env.TAG }}
@@ -42,13 +42,13 @@ runs:
         container_name: builder_container
 
     - name: Configure binary caching inside Docker container
-      uses: ./4_docker_exec
+      uses: ./.github/actions/4_docker_exec
       with:
         container_name: builder_container
         commands: bash /wazuh-local-src/.github/actions/vcpkg_related/4_builderpackage_vcpkg/cover_vcpkg_dependencies.sh ${{ inputs.gh_token}}
           
     - name: Build binaries
-      uses: ./4_docker_exec
+      uses: ./.github/actions/4_docker_exec
       with:
         container_name: builder_container
         commands: cd /wazuh-local-src && cmake src -B src/build && cmake --build src/build --parallel $(nproc) && rm -rf src/build/_deps src/build/vcpkg*

@@ -22,7 +22,7 @@ runs:
         cp wazuh-agent*/wazuh-agent* /tmp
 
     - name: Test DEB package installation
-      uses: ./4_testintegration_package_linux
+      uses: ./.github/actions/4_testintegration_package_linux
       with:
         system: ${{ inputs.system }}
         tested_docker: ${{ inputs.tested_image }}
