@@ -12,7 +12,7 @@ runs:
   using: 'composite'
   steps:
     - name: Set up Binary caching
-      uses: ./.github/actions/vcpkg_related/cover_vcpkg_dependencies/4_builderpackage_vcpkg.yml
+      uses: ./.github/actions/vcpkg_related/cover_vcpkg_dependencies
       with:
         gh_token: ${{ inputs.gh_token }}
 

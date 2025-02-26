@@ -121,7 +121,7 @@ jobs:
           persist-credentials: false
 
       - name: Compile Linux Repository
-        uses: ./.github/actions/linux_compile_repository/4_builderpackage_agent.yml
+        uses: ./.github/actions/linux_compile_repository
         with:
           architecture: ${{ inputs.architecture }}
           docker_image_tag: ${{ inputs.docker_image_tag }}
@@ -144,7 +144,7 @@ jobs:
           persist-credentials: false
 
       - name: Build Linux DEB Package - ${{ inputs.architecture }}
-        uses: ./.github/actions/linux_package_binaries/4_builderpackage_binaries.yml
+        uses: ./.github/actions/linux_package_binaries
         with:
           architecture: ${{ inputs.architecture }}
           docker_image_tag: ${{ inputs.docker_image_tag }}
@@ -171,7 +171,7 @@ jobs:
           persist-credentials: false
 
       - name: Build Linux RPM Package - ${{ inputs.architecture }}
-        uses: ./.github/actions/linux_package_binaries/4_builderpackage_binaries.yml
+        uses: ./.github/actions/linux_package_binaries
         with:
           architecture: ${{ inputs.architecture }}
           docker_image_tag: ${{ inputs.docker_image_tag }}
@@ -201,7 +201,7 @@ jobs:
           persist-credentials: false
 
       - name: Test package on ${{ matrix.distro_name }}
-        uses: ./.github/actions/linux_test_package/4_testintegration_binaries.yml
+        uses: ./.github/actions/linux_test_package
         with:
           system: deb
           tested_image: ${{ matrix.distro_name }}
@@ -225,7 +225,7 @@ jobs:
           persist-credentials: false
 
       - name: Test package on ${{ matrix.distro_name }}
-        uses: ./.github/actions/linux_test_package/4_testintegration_binaries.yml
+        uses: ./.github/actions/linux_test_package
         with:
           system: rpm
           tested_image: ${{ matrix.distro_name }}
