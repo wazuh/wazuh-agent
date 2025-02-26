@@ -22,6 +22,6 @@ runs:
     - name: Build and push image to ghcr
       shell: bash
       run: |
-        sudo bash .github/actions/docker_build_and_push_image/build_and_push_image_to_ghcr.sh \
+        sudo bash .github/actions/4_docker_build_and_push/build_and_push_image_to_ghcr.sh \
           ${{ inputs.gh_token }} ${{ inputs.gh_user}} ${{ inputs.docker_image_name }} \
           ${{ inputs.build_context }} ${{ inputs.docker_image_tag }}
