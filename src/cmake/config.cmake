@@ -2,7 +2,12 @@
 set(PROJECT_NAME "Wazuh Agent")
 
 # Project version
-set(VERSION "v5.0.0" CACHE STRING "Agent version")
+file(READ "${CMAKE_SOURCE_DIR}/../VERSION.json" VERSION_JSON)
+string(JSON AGENT_VERSION GET "${VERSION_JSON}" version)
+set(VERSION "v${AGENT_VERSION}" CACHE STRING "Agent version")
+message(STATUS "Agent version: ${VERSION}")
+
+# Agent defaults
 
 set(DEFAULT_THREAD_COUNT 4 CACHE STRING "Default number of threads (4)")
 
