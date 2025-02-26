@@ -2,7 +2,7 @@
 set(PROJECT_NAME "Wazuh Agent")
 
 # Project version
-set(VERSION "0.1")
+set(VERSION "v5.0.0" CACHE STRING "Agent version")
 
 set(DEFAULT_THREAD_COUNT 4 CACHE STRING "Default number of threads (4)")
 
