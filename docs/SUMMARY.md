@@ -16,7 +16,7 @@
 
 - [Introduction](ref/README.md)
   - [Description](ref/introduction/description.md)
-  - [Architecture](ref/architecture.md)
+  - [Architecture](ref/introduction/architecture.md)
   - [Compatibility](ref/introduction/compatibility.md)
 - [Getting Started](ref/getting-started/README.md)
   - [Requirements](ref/getting-started/requirements.md)
