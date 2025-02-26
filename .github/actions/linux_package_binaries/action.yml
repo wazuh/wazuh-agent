@@ -41,7 +41,7 @@ runs:
         sudo unzip -o wazuh-agent-binaries-${{ inputs.architecture }}.zip -d /
 
     - name: Set ARCH, TAG and DOCKER_IMAGE_NAME
-      uses: ./.github/actions/docker_set_arch_tag_and_image_name/4_docker_resolvable.yml
+      uses: ./.github/actions/docker_set_arch_tag_and_image_name
       with:
         system: ${{ inputs.system }}
         architecture: ${{ inputs.architecture }}
@@ -49,7 +49,7 @@ runs:
         source_reference: ${{ inputs.source_reference }}
 
     - name: Fetch needed Docker image
-      uses: ./.github/actions/docker_pull_image/4_docker_pull.yml
+      uses: ./.github/actions/docker_pull_image
       with:
         gh_user: ${{ github.actor}}
         gh_token: ${{ inputs.gh_token }}
@@ -69,7 +69,7 @@ runs:
         echo "PACKAGE_NAME=$(find /tmp -maxdepth 1 -type f -name *agent*.${{ inputs.system }} -exec basename {} 2>/dev/null \;| grep -v -E "^(wazuh-agent-dbg|wazuh-agent-debuginfo)")" | tee -a $GITHUB_ENV
 
     - name: Test package installation
-      uses: ./.github/actions/test-install-components/4_testintegration_binaries_linux.yml
+      uses: ./.github/actions/test-install-components
       with:
         system: ${{ inputs.system }}
         tested_docker: ${{ inputs.system == 'deb' && 'ubuntu:22.04' || 'redhat/ubi9' }}
