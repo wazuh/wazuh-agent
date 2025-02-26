@@ -29,7 +29,7 @@ jobs:
       shell: bash
 
     - name: Set up Binary caching
-      uses: ./.github/actions/vcpkg_related/cover_vcpkg_dependencies
+      uses: ./vcpkg_related/4_builderpackage_vcpkg
       with:
         gh_token: ${{ secrets.GITHUB_TOKEN }}
 
