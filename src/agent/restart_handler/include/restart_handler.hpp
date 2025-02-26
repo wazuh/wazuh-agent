@@ -8,6 +8,27 @@
 
 namespace restart_handler
 {
+    /// @brief Checks if the Agent is running as a service
+    ///
+    /// @details Looks for indications that the Agent was started by systemd, launchd or SCM
+    /// @return true if the Agent is running as a service, otherwise returns false.
+    bool RunningAsService();
+
+    /// @brief Restarts the module by forking a new process.
+    ///
+    /// This function restarts the module by creating a new child process.
+    ///
+    /// @return A boost::asio::awaitable containing the result of the command execution.
+    boost::asio::awaitable<module_command::CommandExecutionResult> RestartForeground();
+
+    /// @brief Restarts the module as a service
+    ///
+    /// This function restarts the module, ensuring the module is properly restarted using
+    /// system service management mechanisms.
+    ///
+    /// @return A boost::asio::awaitable containing the result of the command execution.
+    boost::asio::awaitable<module_command::CommandExecutionResult> RestartService();
+
     /// @brief Class for handling service restarts.
     class RestartHandler
     {

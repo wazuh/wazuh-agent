@@ -33,7 +33,7 @@ namespace restart_handler
         }
     }
 
-    boost::asio::awaitable<module_command::CommandExecutionResult> RestartWithFork()
+    boost::asio::awaitable<module_command::CommandExecutionResult> RestartForeground()
     {
         pid_t pid = fork();
 
@@ -57,18 +57,4 @@ namespace restart_handler
         co_return module_command::CommandExecutionResult {module_command::Status::IN_PROGRESS,
                                                           "Pending restart execution"};
     }
-
-    boost::asio::awaitable<module_command::CommandExecutionResult> RestartHandler::RestartAgent()
-    {
-        LogInfo("Restarting Wazuh agent.");
-        if (RunningAsService())
-        {
-            return RestartService();
-        }
-        else
-        {
-            return RestartWithFork();
-        }
-    }
-
 } // namespace restart_handler

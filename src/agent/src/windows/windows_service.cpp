@@ -107,7 +107,7 @@ namespace
     }
 } // namespace
 
-namespace WindowsService
+namespace windows_service
 {
     bool InstallService(const windows_api_facade::IWindowsApiFacade& windowsApiFacade)
     {
@@ -300,4 +300,4 @@ namespace WindowsService
             LogInfo("Service {} started successfully.", AGENT_SERVICENAME.c_str());
         }
     }
-} // namespace WindowsService
+} // namespace windows_service

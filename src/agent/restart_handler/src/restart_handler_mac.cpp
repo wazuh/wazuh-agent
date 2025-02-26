@@ -1,4 +1,4 @@
-#include <restart_handler_unix.hpp>
+#include <restart_handler.hpp>
 
 #include <logger.hpp>
 

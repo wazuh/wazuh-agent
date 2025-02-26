@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace WindowsService
+namespace windows_service
 {
     /// @brief Installs the Wazuh Agent Service.
     /// @param windowsApiFacade The Windows API facade to use.
@@ -34,4 +34,4 @@ namespace WindowsService
     /// @brief Starts the Wazuh Agent Service.
     /// @param configFilePath The path to the configuration file.
     void ServiceStart(const std::string& configFilePath);
-} // namespace WindowsService
+} // namespace windows_service

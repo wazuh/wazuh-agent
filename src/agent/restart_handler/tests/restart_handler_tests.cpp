@@ -142,7 +142,7 @@ TEST(RestartWithForkTest, ShouldRestartUsingFork)
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
                 restart_handler::RestartHandler::SetCommandLineArguments(2, const_cast<char**>(args));
 
-                const auto result = co_await restart_handler::RestartWithFork();
+                const auto result = co_await restart_handler::RestartForeground();
             }(),
             boost::asio::detached);
 

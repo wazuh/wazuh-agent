@@ -36,7 +36,7 @@ TEST_F(WindowsServiceTest, InstallService_FailOpenSCM)
 {
     EXPECT_CALL(mockWindowsApiFacade, OpenSCM(SC_MANAGER_CREATE_SERVICE)).WillOnce(testing::Return(nullptr));
 
-    bool result = WindowsService::InstallService(mockWindowsApiFacade);
+    bool result = windows_service::InstallService(mockWindowsApiFacade);
 
     EXPECT_FALSE(result);
 }
@@ -47,7 +47,7 @@ TEST_F(WindowsServiceTest, InstallService_FailCreateSvc)
         .WillOnce(testing::Return(reinterpret_cast<SC_HANDLE>(1)));
     EXPECT_CALL(mockWindowsApiFacade, CreateSvc(testing::_, testing::_, testing::_)).WillOnce(testing::Return(nullptr));
 
-    bool result = WindowsService::InstallService(mockWindowsApiFacade);
+    bool result = windows_service::InstallService(mockWindowsApiFacade);
 
     EXPECT_FALSE(result);
 }
@@ -59,7 +59,7 @@ TEST_F(WindowsServiceTest, InstallService_Success)
     EXPECT_CALL(mockWindowsApiFacade, CreateSvc(testing::_, "Wazuh Agent", testing::_))
         .WillOnce(testing::Return(reinterpret_cast<SC_HANDLE>(1)));
 
-    bool result = WindowsService::InstallService(mockWindowsApiFacade);
+    bool result = windows_service::InstallService(mockWindowsApiFacade);
 
     EXPECT_TRUE(result);
 }
@@ -68,7 +68,7 @@ TEST_F(WindowsServiceTest, RemoveService_FailOpenSCM)
 {
     EXPECT_CALL(mockWindowsApiFacade, OpenSCM(SC_MANAGER_CREATE_SERVICE)).WillOnce(testing::Return(nullptr));
 
-    bool result = WindowsService::RemoveService(mockWindowsApiFacade);
+    bool result = windows_service::RemoveService(mockWindowsApiFacade);
 
     EXPECT_FALSE(result);
 }
@@ -79,7 +79,7 @@ TEST_F(WindowsServiceTest, RemoveService_FailOpenSvc)
         .WillOnce(testing::Return(reinterpret_cast<SC_HANDLE>(1)));
     EXPECT_CALL(mockWindowsApiFacade, OpenSvc(testing::_, testing::_, DELETE)).WillOnce(testing::Return(nullptr));
 
-    bool result = WindowsService::RemoveService(mockWindowsApiFacade);
+    bool result = windows_service::RemoveService(mockWindowsApiFacade);
 
     EXPECT_FALSE(result);
 }
@@ -92,7 +92,7 @@ TEST_F(WindowsServiceTest, RemoveService_FailDeleteSvc)
         .WillOnce(testing::Return(reinterpret_cast<SC_HANDLE>(1)));
     EXPECT_CALL(mockWindowsApiFacade, DeleteSvc(reinterpret_cast<SC_HANDLE>(1))).WillOnce(testing::Return(false));
 
-    bool result = WindowsService::RemoveService(mockWindowsApiFacade);
+    bool result = windows_service::RemoveService(mockWindowsApiFacade);
 
     EXPECT_FALSE(result);
 }
@@ -105,7 +105,7 @@ TEST_F(WindowsServiceTest, RemoveService_Success)
         .WillOnce(testing::Return(reinterpret_cast<SC_HANDLE>(1)));
     EXPECT_CALL(mockWindowsApiFacade, DeleteSvc(reinterpret_cast<SC_HANDLE>(1))).WillOnce(testing::Return(true));
 
-    bool result = WindowsService::RemoveService(mockWindowsApiFacade);
+    bool result = windows_service::RemoveService(mockWindowsApiFacade);
 
     EXPECT_TRUE(result);
 }
