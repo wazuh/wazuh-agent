@@ -3,7 +3,7 @@
 
 #include <agent_enrollment.hpp>
 #include <agent_info.hpp>
-#include <agent_info_persistance.hpp>
+#include <agent_info_persistence.hpp>
 #include <http_request_params.hpp>
 #include <ihttp_client.hpp>
 
@@ -33,7 +33,7 @@ protected:
             [sysInfo]() mutable { return sysInfo.os(); },
             [sysInfo]() mutable { return sysInfo.networks(); },
             true,
-            std::make_shared<AgentInfoPersistance>("db_path", std::move(mockPersistencePtr)));
+            std::make_shared<AgentInfoPersistence>("db_path", std::move(mockPersistencePtr)));
 
         m_agentInfo->SetKey("4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
         m_agentInfo->SetName("agent_name");

@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-class AgentInfoPersistance;
+class AgentInfoPersistence;
 
 /// @brief Stores and manages information about an agent.
 ///
@@ -27,12 +27,12 @@ public:
     /// @param getOSInfo Function to retrieve OS information in JSON format.
     /// @param getNetworksInfo Function to retrieve network information in JSON format.
     /// @param agentIsEnrolling True if the agent is enrolling, false otherwise.
-    /// @param persistence Optional pointer to an AgentInfoPersistance object.
+    /// @param persistence Optional pointer to an AgentInfoPersistence object.
     AgentInfo(const std::string& dbFolderPath,
               std::function<nlohmann::json()> getOSInfo = nullptr,
               std::function<nlohmann::json()> getNetworksInfo = nullptr,
               bool agentIsEnrolling = false,
-              std::shared_ptr<AgentInfoPersistance> persistence = nullptr);
+              std::shared_ptr<AgentInfoPersistence> persistence = nullptr);
 
     /// @brief Gets the agent's name.
     /// @return The agent's name.
@@ -144,5 +144,5 @@ private:
     bool m_agentIsEnrolling;
 
     /// @brief Pointer to the agent info persistence instance.
-    std::shared_ptr<AgentInfoPersistance> m_persistence;
+    std::shared_ptr<AgentInfoPersistence> m_persistence;
 };

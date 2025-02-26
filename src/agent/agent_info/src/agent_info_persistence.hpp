@@ -7,28 +7,28 @@
 #include <vector>
 
 /// @brief Manages persistence of agent information and groups in a database.
-class AgentInfoPersistance
+class AgentInfoPersistence
 {
 public:
     /// @brief Constructs the persistence manager for agent info, initializing the database and tables if necessary.
     /// @param dbFolderPath Path to the database folder.
     /// @param persistence Optional pointer to an existing persistence object.
-    explicit AgentInfoPersistance(const std::string& dbFolderPath, std::unique_ptr<Persistence> persistence = nullptr);
+    explicit AgentInfoPersistence(const std::string& dbFolderPath, std::unique_ptr<Persistence> persistence = nullptr);
 
-    /// @brief Destructor for AgentInfoPersistance.
-    ~AgentInfoPersistance();
+    /// @brief Destructor for AgentInfoPersistence.
+    ~AgentInfoPersistence();
 
     /// @brief Deleted copy constructor.
-    AgentInfoPersistance(const AgentInfoPersistance&) = delete;
+    AgentInfoPersistence(const AgentInfoPersistence&) = delete;
 
     /// @brief Deleted copy assignment operator.
-    AgentInfoPersistance& operator=(const AgentInfoPersistance&) = delete;
+    AgentInfoPersistence& operator=(const AgentInfoPersistence&) = delete;
 
     /// @brief Deleted move constructor.
-    AgentInfoPersistance(AgentInfoPersistance&&) = delete;
+    AgentInfoPersistence(AgentInfoPersistence&&) = delete;
 
     /// @brief Deleted move assignment operator.
-    AgentInfoPersistance& operator=(AgentInfoPersistance&&) = delete;
+    AgentInfoPersistence& operator=(AgentInfoPersistence&&) = delete;
 
     /// @brief Retrieves the agent's name from the database.
     /// @return The name of the agent as a string.

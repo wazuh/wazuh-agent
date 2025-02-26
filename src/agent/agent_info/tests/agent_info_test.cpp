@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <agent_info.hpp>
-#include <agent_info_persistance.hpp>
+#include <agent_info_persistence.hpp>
 #include <mocks_persistence.hpp>
 
 #include <memory>
@@ -12,7 +12,7 @@ class AgentInfoTest : public ::testing::Test
 {
 protected:
     MockPersistence* m_mockPersistence = nullptr;
-    std::shared_ptr<AgentInfoPersistance> m_agentPersistence;
+    std::shared_ptr<AgentInfoPersistence> m_agentPersistence;
     std::unique_ptr<AgentInfo> m_agentInfo;
 
     void SetUp() override
@@ -34,7 +34,7 @@ protected:
             SetUpAgentInfoInitialization();
         }
 
-        m_agentPersistence = std::make_shared<AgentInfoPersistance>("db_path", std::move(mockPersistencePtr));
+        m_agentPersistence = std::make_shared<AgentInfoPersistence>("db_path", std::move(mockPersistencePtr));
 
         m_agentInfo = std::make_unique<AgentInfo>("db_path",
                                                   osLambda ? osLambda : nullptr,

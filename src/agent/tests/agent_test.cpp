@@ -1,6 +1,6 @@
 #include "../http_client/tests/mocks/mock_http_client.hpp"
 #include <agent.hpp>
-#include <agent_info_persistance.hpp>
+#include <agent_info_persistence.hpp>
 #include <cstdio>
 #include <fstream>
 #include <gmock/gmock.h>
@@ -52,7 +52,7 @@ protected:
             [sysInfo]() mutable { return sysInfo.os(); },
             [sysInfo]() mutable { return sysInfo.networks(); },
             false,
-            std::make_shared<AgentInfoPersistance>("db_path", std::move(mockPersistencePtr)));
+            std::make_shared<AgentInfoPersistence>("db_path", std::move(mockPersistencePtr)));
 
         m_agentInfo->SetKey("4GhT7uFm1zQa9c2Vb7Lk8pYsX0WqZrNj");
         m_agentInfo->SetName("agent_name");

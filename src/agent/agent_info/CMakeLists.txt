@@ -8,7 +8,7 @@ set_common_settings()
 find_package(Boost REQUIRED COMPONENTS uuid)
 find_package(nlohmann_json CONFIG REQUIRED)
 
-add_library(AgentInfo src/agent_info.cpp src/agent_info_persistance.cpp)
+add_library(AgentInfo src/agent_info.cpp src/agent_info_persistence.cpp)
 target_include_directories(AgentInfo PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
