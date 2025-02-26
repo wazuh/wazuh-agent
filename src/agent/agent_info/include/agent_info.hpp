@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iagent_info_persistence.hpp>
+
 #include <nlohmann/json.hpp>
 
 #include <functional>
@@ -27,12 +29,12 @@ public:
     /// @param getOSInfo Function to retrieve OS information in JSON format.
     /// @param getNetworksInfo Function to retrieve network information in JSON format.
     /// @param agentIsEnrolling True if the agent is enrolling, false otherwise.
-    /// @param persistence Optional pointer to an AgentInfoPersistence object.
+    /// @param persistence Optional pointer to an IAgentInfoPersistence object.
     AgentInfo(const std::string& dbFolderPath,
               std::function<nlohmann::json()> getOSInfo = nullptr,
               std::function<nlohmann::json()> getNetworksInfo = nullptr,
               bool agentIsEnrolling = false,
-              std::shared_ptr<AgentInfoPersistence> persistence = nullptr);
+              std::shared_ptr<IAgentInfoPersistence> persistence = nullptr);
 
     /// @brief Gets the agent's name.
     /// @return The agent's name.
@@ -144,5 +146,5 @@ private:
     bool m_agentIsEnrolling;
 
     /// @brief Pointer to the agent info persistence instance.
-    std::shared_ptr<AgentInfoPersistence> m_persistence;
+    std::shared_ptr<IAgentInfoPersistence> m_persistence;
 };

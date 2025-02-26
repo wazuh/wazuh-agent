@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iagent_info_persistence.hpp>
 #include <persistence.hpp>
 
 #include <memory>
@@ -7,7 +8,7 @@
 #include <vector>
 
 /// @brief Manages persistence of agent information and groups in a database.
-class AgentInfoPersistence
+class AgentInfoPersistence : public IAgentInfoPersistence
 {
 public:
     /// @brief Constructs the persistence manager for agent info, initializing the database and tables if necessary.
@@ -32,43 +33,43 @@ public:
 
     /// @brief Retrieves the agent's name from the database.
     /// @return The name of the agent as a string.
-    std::string GetName() const;
+    std::string GetName() const override;
 
     /// @brief Retrieves the agent's key from the database.
     /// @return The key of the agent as a string.
-    std::string GetKey() const;
+    std::string GetKey() const override;
 
     /// @brief Retrieves the agent's UUID from the database.
     /// @return The UUID of the agent as a string.
-    std::string GetUUID() const;
+    std::string GetUUID() const override;
 
     /// @brief Retrieves the list of agent groups from the database.
     /// @return A vector of strings, each representing a group name.
-    std::vector<std::string> GetGroups() const;
+    std::vector<std::string> GetGroups() const override;
 
     /// @brief Sets the agent's name in the database.
     /// @param name The name to set.
     /// @return True if the operation was successful, false otherwise.
-    bool SetName(const std::string& name);
+    bool SetName(const std::string& name) override;
 
     /// @brief Sets the agent's key in the database.
     /// @param key The key to set.
     /// @return True if the operation was successful, false otherwise.
-    bool SetKey(const std::string& key);
+    bool SetKey(const std::string& key) override;
 
     /// @brief Sets the agent's UUID in the database.
     /// @param uuid The UUID to set.
     /// @return True if the operation was successful, false otherwise.
-    bool SetUUID(const std::string& uuid);
+    bool SetUUID(const std::string& uuid) override;
 
     /// @brief Sets the agent's group list in the database, replacing any existing groups.
     /// @param groupList A vector of strings, each representing a group name.
     /// @return True if the operation was successful, false otherwise.
-    bool SetGroups(const std::vector<std::string>& groupList);
+    bool SetGroups(const std::vector<std::string>& groupList) override;
 
     /// @brief Resets the database tables to default values, clearing all data.
     /// @return True if the reset was successful, false otherwise.
-    bool ResetToDefault();
+    bool ResetToDefault() override;
 
 private:
     /// @brief Checks if the agent info table is empty.
