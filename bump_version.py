@@ -215,11 +215,25 @@ def update_file_sources(executor: Executor, new_version: Optional[str] = None, n
     if not new_version and not new_stage:
         return
 
+    # Update Doxyfile
     patterns_doxyfile = {
         "version": (re.compile(fr'(PROJECT_NUMBER\s+=\s+"v)({PATTERN_VERSION})(-.+"$)', re.MULTILINE), fr'\g<1>{new_version}\g<3>' if new_version else None),
         "stage": (re.compile(fr'(PROJECT_NUMBER\s+=\s+"v{PATTERN_VERSION}-)(.+)("$)', re.MULTILINE), fr'\g<1>{new_stage}\g<3>' if new_stage else None)
     }
     update_file(executor, DIR_SRC / 'Doxyfile', patterns_doxyfile)
+
+    # Update vcpkg.json
+    vcpkg_json_path = DIR_SRC / "vcpkg.json"
+    if vcpkg_json_path.exists():
+        current = vcpkg_json_path.read_text()
+        vcpkg_data = json.loads(current)
+
+        if new_version:
+            vcpkg_data["version"] = new_version
+
+        to_write = json.dumps(vcpkg_data, indent=4) + "\n"
+        if current != to_write:
+            executor.add_command(Command(vcpkg_json_path, current, to_write))
 
 
 def update_file_packages(executor: Executor, new_version: str, new_stage: str, new_date: str) -> None:
