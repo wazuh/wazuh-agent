@@ -1,4 +1,3 @@
-#include "../http_client/tests/mocks/mock_http_client.hpp"
 #include <agent.hpp>
 #include <cstdio>
 #include <fstream>
@@ -7,6 +6,7 @@
 #include <isignal_handler.hpp>
 #include <mock_agent_info.hpp>
 #include <mock_command_store.hpp>
+#include <mock_http_client.hpp>
 #include <mock_multitype_queue.hpp>
 
 class MockSignalHandler : public ISignalHandler
