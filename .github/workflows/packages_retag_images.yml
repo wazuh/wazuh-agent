@@ -26,7 +26,7 @@ on:
       - '[0-9]+.[0-9]+.[0-9]+'
       - 'main'
     paths:
-      - 'src/VERSION'
+      - 'VERSION.json'
 
 jobs:
   Upload-package-building-images:
@@ -48,17 +48,17 @@ jobs:
             fetch-depth: 2
       - run: git checkout HEAD^
 
-      - name: Get old version from src/VERSION
+      - name: Get old version from VERSION.json
         run: |
-          VERSION=$(sed 's/^v\([0-9]*\.[0-9]*\.[0-9]*\)/\1/' $GITHUB_WORKSPACE/src/VERSION)
+          VERSION="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' $GITHUB_WORKSPACE/VERSION.json)"
           echo "OLD_VERSION=$VERSION" >> $GITHUB_ENV;
 
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Get new version from src/VERSION
+      - name: Get new version from VERSION.json
         run: |
-          VERSION=$(sed 's/^v\([0-9]*\.[0-9]*\.[0-9]*\)/\1/' $GITHUB_WORKSPACE/src/VERSION)
+          VERSION="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' $GITHUB_WORKSPACE/VERSION.json)"
           echo "NEW_VERSION=$VERSION" >> $GITHUB_ENV;
 
       - name: Run retag script
