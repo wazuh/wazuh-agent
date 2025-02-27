@@ -1,5 +1,6 @@
 #include <agent.hpp>
 
+#include <agent_info.hpp>
 #include <command_entry.hpp>
 #include <command_handler.hpp>
 #include <command_handler_utils.hpp>
