@@ -32,10 +32,14 @@ namespace
 ColumnType SQLiteManager::ColumnTypeFromSQLiteType(const int type) const
 {
     if (type == SQLite::INTEGER)
+    {
         return ColumnType::INTEGER;
+    }
 
     if (type == SQLite::FLOAT)
+    {
         return ColumnType::REAL;
+    }
 
     return ColumnType::TEXT;
 }

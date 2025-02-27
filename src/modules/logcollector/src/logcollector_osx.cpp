@@ -29,7 +29,9 @@ namespace
             item.erase(item.begin(), std::find_if(item.begin(), item.end(), isNotSpace));
             item.erase(std::find_if(item.rbegin(), item.rend(), isNotSpace).base(), item.end());
             if (!item.empty())
+            {
                 result.push_back(item);
+            }
         }
 
         return result;

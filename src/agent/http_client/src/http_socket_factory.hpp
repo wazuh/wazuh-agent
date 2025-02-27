@@ -22,7 +22,9 @@ namespace http_client
         std::unique_ptr<IHttpSocket> Create(const boost::asio::any_io_executor& executor, const bool use_https) override
         {
             if (use_https)
+            {
                 return std::make_unique<HttpsSocket>(executor);
+            }
 
             return std::make_unique<HttpSocket>(executor);
         }

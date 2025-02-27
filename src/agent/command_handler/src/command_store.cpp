@@ -323,17 +323,27 @@ namespace command_store
     {
         Row fields;
         if (!cmd.Module.empty())
+        {
             fields.emplace_back(COMMAND_STORE_MODULE_COLUMN_NAME, ColumnType::TEXT, cmd.Module);
+        }
         if (!cmd.Command.empty())
+        {
             fields.emplace_back(COMMAND_STORE_COMMAND_COLUMN_NAME, ColumnType::TEXT, cmd.Command);
+        }
         if (!cmd.Parameters.empty())
+        {
             fields.emplace_back(COMMAND_STORE_PARAMETERS_COLUMN_NAME, ColumnType::TEXT, cmd.Parameters.dump());
+        }
         if (!cmd.ExecutionResult.Message.empty())
+        {
             fields.emplace_back(COMMAND_STORE_RESULT_COLUMN_NAME, ColumnType::TEXT, cmd.ExecutionResult.Message);
+        }
         if (cmd.ExecutionResult.ErrorCode != module_command::Status::UNKNOWN)
+        {
             fields.emplace_back(COMMAND_STORE_STATUS_COLUMN_NAME,
                                 ColumnType::INTEGER,
                                 std::to_string(static_cast<int>(cmd.ExecutionResult.ErrorCode)));
+        }
 
         Criteria filters;
         filters.emplace_back(COMMAND_STORE_ID_COLUMN_NAME, ColumnType::TEXT, cmd.Id);

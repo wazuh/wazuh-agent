@@ -282,19 +282,33 @@ std::unique_ptr<StatelessEvent> CreateStatelessEvent(const std::string& type,
                                                      const nlohmann::json& data)
 {
     if (type == "networks")
+    {
         return std::make_unique<NetworkEvent>(operation, created, data);
+    }
     if (type == "packages")
+    {
         return std::make_unique<PackageEvent>(operation, created, data);
+    }
     if (type == "hotfixes")
+    {
         return std::make_unique<HotfixEvent>(operation, created, data);
+    }
     if (type == "ports")
+    {
         return std::make_unique<PortEvent>(operation, created, data);
+    }
     if (type == "processes")
+    {
         return std::make_unique<ProcessEvent>(operation, created, data);
+    }
     if (type == "system")
+    {
         return std::make_unique<SystemEvent>(operation, created, data);
+    }
     if (type == "hardware")
+    {
         return std::make_unique<HardwareEvent>(operation, created, data);
+    }
 
     return nullptr;
 }

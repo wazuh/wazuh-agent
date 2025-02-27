@@ -49,17 +49,23 @@ namespace https_socket_verify_utils
             m_certContextDeleter = [this](const CERT_CONTEXT* ctx)
             {
                 if (ctx)
+                {
                     m_certStoreUtils->FreeCertificateContext(ctx);
+                }
             };
             m_certStoreDeleter = [this](HCERTSTORE store)
             {
                 if (store)
+                {
                     m_certStoreUtils->CloseStore(store, 0);
+                }
             };
             m_chainContextDeleter = [this](const CERT_CHAIN_CONTEXT* ctx)
             {
                 if (ctx)
+                {
                     m_certStoreUtils->FreeCertificateChain(ctx);
+                }
             };
         }
 

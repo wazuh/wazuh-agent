@@ -163,47 +163,87 @@ cJSON* Inventory::Dump() const
 
     // System provider values
     if (m_enabled)
+    {
         cJSON_AddStringToObject(invJson, "enabled", "yes");
+    }
     else
+    {
         cJSON_AddStringToObject(invJson, "enabled", "no");
+    }
     if (m_scanOnStart)
+    {
         cJSON_AddStringToObject(invJson, "scan-on-start", "yes");
+    }
     else
+    {
         cJSON_AddStringToObject(invJson, "scan-on-start", "no");
+    }
     cJSON_AddNumberToObject(invJson, "interval", static_cast<double>(m_intervalValue));
     if (m_networks)
+    {
         cJSON_AddStringToObject(invJson, "networks", "yes");
+    }
     else
+    {
         cJSON_AddStringToObject(invJson, "networks", "no");
+    }
     if (m_system)
+    {
         cJSON_AddStringToObject(invJson, "system", "yes");
+    }
     else
+    {
         cJSON_AddStringToObject(invJson, "system", "no");
+    }
     if (m_hardware)
+    {
         cJSON_AddStringToObject(invJson, "hardware", "yes");
+    }
     else
+    {
         cJSON_AddStringToObject(invJson, "hardware", "no");
+    }
     if (m_packages)
+    {
         cJSON_AddStringToObject(invJson, "packages", "yes");
+    }
     else
+    {
         cJSON_AddStringToObject(invJson, "packages", "no");
+    }
     if (m_ports)
+    {
         cJSON_AddStringToObject(invJson, "ports", "yes");
+    }
     else
+    {
         cJSON_AddStringToObject(invJson, "ports", "no");
+    }
     if (m_portsAll)
+    {
         cJSON_AddStringToObject(invJson, "ports_all", "yes");
+    }
     else
+    {
         cJSON_AddStringToObject(invJson, "ports_all", "no");
+    }
     if (m_processes)
+    {
         cJSON_AddStringToObject(invJson, "processes", "yes");
+    }
     else
+    {
         cJSON_AddStringToObject(invJson, "processes", "no");
+    }
 #ifdef WIN32
     if (m_hotfixes)
+    {
         cJSON_AddStringToObject(invJson, "hotfixes", "yes");
+    }
     else
+    {
         cJSON_AddStringToObject(invJson, "hotfixes", "no");
+    }
 #endif
 
     cJSON_AddItemToObject(rootJson, "inventory", invJson);
