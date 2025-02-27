@@ -14,7 +14,7 @@ target_link_libraries(FilesystemWrapper PUBLIC utils)
 configure_target(FilesystemWrapper)
 
 # File io target
-add_library(FileIO STATIC ${CMAKE_CURRENT_SOURCE_DIR}/file_io/src/file_io.cpp)
+add_library(FileIO STATIC ${CMAKE_CURRENT_SOURCE_DIR}/file_io/src/file_io_utils.cpp ${CMAKE_CURRENT_SOURCE_DIR}/file_io/src/file_io_wrapper.cpp)
 target_include_directories(FileIO PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/file_io/include)
 configure_target(FileIO)
 
