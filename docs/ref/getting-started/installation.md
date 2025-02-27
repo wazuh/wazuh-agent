@@ -5,13 +5,13 @@
 - DEB
 
     ```bash
-    sudo dpkg -i wazuh-agent_5.0.0.deb
+    sudo dpkg -i wazuh-agent_x.y.z.deb
     ```
 
 - RPM
 
     ```bash
-    sudo rpm -i wazuh-agent_5.0.0.rpm
+    sudo rpm -i wazuh-agent_x.y.z.rpm
     ```
 
 ## Install the Agent on macOS
@@ -19,7 +19,7 @@
 - PKG
 
     ```bash
-    sudo installer -pkg wazuh-agent_5.0.0.pkg -target /
+    sudo installer -pkg wazuh-agent_x.y.z.pkg -target /
     ```
 
 ## Install the Agent on Windows
@@ -27,5 +27,5 @@
 - MSI
 
     ```bash
-    .\wazuh-agent_5.0.0.msi /q
+    .\wazuh-agent_x.y.z.msi /q
     ```
