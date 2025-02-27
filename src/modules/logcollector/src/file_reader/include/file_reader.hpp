@@ -83,10 +83,10 @@ namespace logcollector
 
         /// @brief Runs the file reader
         /// @return Awaitable result
-        Awaitable Run();
+        Awaitable Run() override;
 
         /// @brief Stops the file reader
-        void Stop();
+        void Stop() override;
 
         /// @brief Reloads the file list
         ///

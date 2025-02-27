@@ -19,6 +19,7 @@ function(configure_target target)
             -Wmissing-declarations
             -Wredundant-decls
             -Wpessimizing-move
+            -Wsuggest-override
         )
         target_compile_options(${target} PRIVATE ${common_warnings})
     else()
