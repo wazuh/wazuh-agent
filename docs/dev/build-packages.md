@@ -82,7 +82,7 @@ Where the JSON looks like this:
 
 ```json
 {
-    "ref":"5.0.0",
+    "ref":"x.y.z",
     "inputs":
         {
          "tag":"auto",
@@ -104,7 +104,7 @@ curl -L -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bear
 Where the JSON looks like this:
 ```json
 {
-    "ref":"5.0.0",
+    "ref":"x.y.z",
     "inputs":
         {
          "docker_image_tag":"auto",

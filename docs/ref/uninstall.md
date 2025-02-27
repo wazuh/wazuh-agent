@@ -23,6 +23,6 @@
 
 - MSI
     ```powershell
-    msiexec /x '.\wazuh-agent_5.0.0.msi' /l*v uninstall.log
+    msiexec /x '.\wazuh-agent_x.y.z.msi' /l*v uninstall.log
     ```
 **Note:** The package can also be uninstalled on Windows through the OS's "Add or Remove Programs" section.

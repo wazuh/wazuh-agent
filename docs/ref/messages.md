@@ -19,7 +19,7 @@
     - Architecture
     - OS type
 
-Example: `WazuhXDR/5.0.0 (Endpoint; x86_64; Linux)`
+Example: `WazuhXDR/x.y.z (Endpoint; x86_64; Linux)`
 
 - **Body**: _empty_
 
@@ -38,7 +38,7 @@ Example: `WazuhXDR/5.0.0 (Endpoint; x86_64; Linux)`
     - Architecture
     - OS type
 
-Example: `WazuhXDR/5.0.0 (Endpoint; x86_64; Linux)`
+Example: `WazuhXDR/x.y.z (Endpoint; x86_64; Linux)`
 
 - **Body**: _json_
   - **id**: Agent's UUID
@@ -63,7 +63,7 @@ Example:
     "name": "agent_name",
     "key": "eJdcN3mtVcLuyNwLj1Kx0NCvH53R16no",
     "type": "Endpoint",
-    "version": "5.0.0",
+    "version": "x.y.z",
     "host": {
         "architecture": "aarch64",
         "hostname": "desktop",
@@ -97,7 +97,7 @@ Example:
     - Architecture
     - OS type
 
-Example: `WazuhXDR/5.0.0 (Endpoint; x86_64; Linux)`
+Example: `WazuhXDR/x.y.z (Endpoint; x86_64; Linux)`
 
 - **Body**: _json_
   - **uuid**: Agent's UUID
@@ -127,7 +127,7 @@ Example:
     - Architecture
     - OS type
 
-Example: `WazuhXDR/5.0.0 (Endpoint; x86_64; Linux)`
+Example: `WazuhXDR/x.y.z (Endpoint; x86_64; Linux)`
 
 - **Body**: _json_
   - **id**: Agent's UUID
@@ -152,7 +152,7 @@ Example:
         "id": "0194857f-39b5-7bfb-a7bc-c5c6835f03d1",
         "name": "agent_name",
         "type": "Endpoint",
-        "version": "5.0.0",
+        "version": "x.y.z",
         "groups": [],
         "host": {
             "architecture": "aarch64",
@@ -183,6 +183,6 @@ Example:
     - Architecture
     - OS type
 
-Example: `WazuhXDR/5.0.0 (Endpoint; x86_64; Linux)`
+Example: `WazuhXDR/x.y.z (Endpoint; x86_64; Linux)`
 
 - **Body**: _empty_
