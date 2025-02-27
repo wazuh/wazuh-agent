@@ -18,7 +18,8 @@ add_executable(agent_enrollment_test agent_enrollment_test.cpp)
 configure_target(agent_enrollment_test)
 target_include_directories(agent_enrollment_test PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../src
-    ${CMAKE_CURRENT_SOURCE_DIR}/../agent_info/tests/mocks)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../agent_info/tests/mocks
+    ${CMAKE_CURRENT_SOURCE_DIR}/../http_client/tests/mocks)
 target_link_libraries(agent_enrollment_test PRIVATE Agent Persistence GTest::gmock GTest::gtest)
 add_test(NAME AgentEnrollmentTest COMMAND agent_enrollment_test)
 

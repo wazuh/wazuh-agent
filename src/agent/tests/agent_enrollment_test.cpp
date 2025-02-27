@@ -4,9 +4,8 @@
 #include <agent_enrollment.hpp>
 #include <http_request_params.hpp>
 #include <ihttp_client.hpp>
-
-#include "../http_client/tests/mocks/mock_http_client.hpp"
 #include <mock_agent_info.hpp>
+#include <mock_http_client.hpp>
 
 #include <memory>
 #include <string>
@@ -24,22 +23,24 @@ protected:
     {
         m_mockAgentInfo = std::make_unique<MockAgentInfo>();
         m_mockAgentInfoPtr = m_mockAgentInfo.get();
+
+        m_mockHttpClient = std::make_unique<MockHttpClient>();
+        m_mockHttpClientPtr = m_mockHttpClient.get();
     }
 
     std::unique_ptr<MockAgentInfo> m_mockAgentInfo;
     MockAgentInfo* m_mockAgentInfoPtr = nullptr;
+    std::unique_ptr<MockHttpClient> m_mockHttpClient;
+    MockHttpClient* m_mockHttpClientPtr = nullptr;
     std::unique_ptr<agent_enrollment::AgentEnrollment> m_enrollment;
 };
 
 TEST_F(EnrollmentTest, EnrollmentTestSuccess)
 {
-    auto mockHttpClient = std::make_unique<MockHttpClient>();
-    const auto mockHttpClientPtr = mockHttpClient.get();
-
     EXPECT_CALL(*m_mockAgentInfoPtr, SetKey(testing::_)).WillOnce(testing::Return(true));
     EXPECT_CALL(*m_mockAgentInfoPtr, SetName(testing::_)).WillOnce(testing::Return(true));
 
-    m_enrollment = std::make_unique<agent_enrollment::AgentEnrollment>(std::move(mockHttpClient),
+    m_enrollment = std::make_unique<agent_enrollment::AgentEnrollment>(std::move(m_mockHttpClient),
                                                                        "https://localhost:55000",
                                                                        "user",
                                                                        "password",
@@ -55,7 +56,7 @@ TEST_F(EnrollmentTest, EnrollmentTestSuccess)
     EXPECT_CALL(*m_mockAgentInfoPtr, GetHeaderInfo()).Times(2).WillRepeatedly(testing::Return("header_info"));
     EXPECT_CALL(*m_mockAgentInfoPtr, GetMetadataInfo()).WillOnce(testing::Return("metadata_info"));
 
-    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
+    EXPECT_CALL(*m_mockHttpClientPtr, PerformHttpRequest(testing::_))
         .Times(2)
         .WillOnce(testing::Return(expectedResponse1))
         .WillOnce(testing::Return(expectedResponse2));
@@ -68,13 +69,10 @@ TEST_F(EnrollmentTest, EnrollmentTestSuccess)
 
 TEST_F(EnrollmentTest, EnrollmentFailsIfAuthenticationFails)
 {
-    auto mockHttpClient = std::make_unique<MockHttpClient>();
-    const auto mockHttpClientPtr = mockHttpClient.get();
-
     EXPECT_CALL(*m_mockAgentInfoPtr, SetKey(AGENT_KEY)).WillOnce(testing::Return(true));
     EXPECT_CALL(*m_mockAgentInfoPtr, SetName(AGENT_NAME)).WillOnce(testing::Return(true));
 
-    m_enrollment = std::make_unique<agent_enrollment::AgentEnrollment>(std::move(mockHttpClient),
+    m_enrollment = std::make_unique<agent_enrollment::AgentEnrollment>(std::move(m_mockHttpClient),
                                                                        "https://localhost:55000",
                                                                        "user",
                                                                        "password",
@@ -88,7 +86,7 @@ TEST_F(EnrollmentTest, EnrollmentFailsIfAuthenticationFails)
 
     const std::tuple<int, std::string> expectedResponse {http_client::HTTP_CODE_UNAUTHORIZED, ""};
 
-    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
+    EXPECT_CALL(*m_mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
     const bool res = m_enrollment->Enroll();
     ASSERT_FALSE(res);
@@ -96,13 +94,10 @@ TEST_F(EnrollmentTest, EnrollmentFailsIfAuthenticationFails)
 
 TEST_F(EnrollmentTest, EnrollmentFailsIfServerResponseIsNotOk)
 {
-    auto mockHttpClient = std::make_unique<MockHttpClient>();
-    const auto mockHttpClientPtr = mockHttpClient.get();
-
     EXPECT_CALL(*m_mockAgentInfoPtr, SetKey(AGENT_KEY)).WillOnce(testing::Return(true));
     EXPECT_CALL(*m_mockAgentInfoPtr, SetName(AGENT_NAME)).WillOnce(testing::Return(true));
 
-    m_enrollment = std::make_unique<agent_enrollment::AgentEnrollment>(std::move(mockHttpClient),
+    m_enrollment = std::make_unique<agent_enrollment::AgentEnrollment>(std::move(m_mockHttpClient),
                                                                        "https://localhost:55000",
                                                                        "user",
                                                                        "password",
@@ -118,7 +113,7 @@ TEST_F(EnrollmentTest, EnrollmentFailsIfServerResponseIsNotOk)
     const std::tuple<int, std::string> expectedResponse1 {http_client::HTTP_CODE_OK, R"({"data":{"token":"token"}})"};
     const std::tuple<int, std::string> expectedResponse2 {http_client::HTTP_CODE_BAD_REQUEST, ""};
 
-    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
+    EXPECT_CALL(*m_mockHttpClientPtr, PerformHttpRequest(testing::_))
         .Times(2)
         .WillOnce(testing::Return(expectedResponse1))
         .WillOnce(testing::Return(expectedResponse2));
@@ -129,13 +124,10 @@ TEST_F(EnrollmentTest, EnrollmentFailsIfServerResponseIsNotOk)
 
 TEST_F(EnrollmentTest, EnrollmentWithoutAKeyGeneratesOneAutomatically)
 {
-    auto mockHttpClient = std::make_unique<MockHttpClient>();
-    const auto mockHttpClientPtr = mockHttpClient.get();
-
     EXPECT_CALL(*m_mockAgentInfoPtr, SetKey("")).WillOnce(testing::Return(true));
     EXPECT_CALL(*m_mockAgentInfoPtr, SetName(AGENT_NAME)).WillOnce(testing::Return(true));
 
-    m_enrollment = std::make_unique<agent_enrollment::AgentEnrollment>(std::move(mockHttpClient),
+    m_enrollment = std::make_unique<agent_enrollment::AgentEnrollment>(std::move(m_mockHttpClient),
                                                                        "https://localhost:55000",
                                                                        "user",
                                                                        "password",
@@ -151,7 +143,7 @@ TEST_F(EnrollmentTest, EnrollmentWithoutAKeyGeneratesOneAutomatically)
     const std::tuple<int, std::string> expectedResponse1 {http_client::HTTP_CODE_OK, R"({"data":{"token":"token"}})"};
     const std::tuple<int, std::string> expectedResponse2 {http_client::HTTP_CODE_CREATED, ""};
 
-    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_))
+    EXPECT_CALL(*m_mockHttpClientPtr, PerformHttpRequest(testing::_))
         .Times(2)
         .WillOnce(testing::Return(expectedResponse1))
         .WillOnce(testing::Return(expectedResponse2));
@@ -194,13 +186,10 @@ TEST_F(EnrollmentTest, EnrollmentTestFailWithHttpClientError)
 
 TEST_F(EnrollmentTest, AuthenticateWithUserPassword_Success)
 {
-    auto mockHttpClient = std::make_unique<MockHttpClient>();
-    const auto mockHttpClientPtr = mockHttpClient.get();
-
     EXPECT_CALL(*m_mockAgentInfoPtr, SetKey("")).WillOnce(testing::Return(true));
     EXPECT_CALL(*m_mockAgentInfoPtr, SetName("")).WillOnce(testing::Return(true));
 
-    m_enrollment = std::make_unique<agent_enrollment::AgentEnrollment>(std::move(mockHttpClient),
+    m_enrollment = std::make_unique<agent_enrollment::AgentEnrollment>(std::move(m_mockHttpClient),
                                                                        "https://localhost:55000",
                                                                        "user",
                                                                        "password",
@@ -215,7 +204,7 @@ TEST_F(EnrollmentTest, AuthenticateWithUserPassword_Success)
     const std::tuple<int, std::string> expectedResponse {http_client::HTTP_CODE_OK,
                                                          R"({"data":{"token":"valid_token"}})"};
 
-    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
+    EXPECT_CALL(*m_mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
     const auto token = m_enrollment->AuthenticateWithUserPassword();
 
@@ -227,13 +216,10 @@ TEST_F(EnrollmentTest, AuthenticateWithUserPassword_Success)
 
 TEST_F(EnrollmentTest, AuthenticateWithUserPassword_Failure)
 {
-    auto mockHttpClient = std::make_unique<MockHttpClient>();
-    const auto mockHttpClientPtr = mockHttpClient.get();
-
     EXPECT_CALL(*m_mockAgentInfoPtr, SetKey("")).WillOnce(testing::Return(true));
     EXPECT_CALL(*m_mockAgentInfoPtr, SetName("")).WillOnce(testing::Return(true));
 
-    m_enrollment = std::make_unique<agent_enrollment::AgentEnrollment>(std::move(mockHttpClient),
+    m_enrollment = std::make_unique<agent_enrollment::AgentEnrollment>(std::move(m_mockHttpClient),
                                                                        "https://localhost:55000",
                                                                        "user",
                                                                        "password",
@@ -247,7 +233,7 @@ TEST_F(EnrollmentTest, AuthenticateWithUserPassword_Failure)
 
     const std::tuple<int, std::string> expectedResponse {http_client::HTTP_CODE_UNAUTHORIZED, ""};
 
-    EXPECT_CALL(*mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
+    EXPECT_CALL(*m_mockHttpClientPtr, PerformHttpRequest(testing::_)).WillOnce(testing::Return(expectedResponse));
 
     const auto token = m_enrollment->AuthenticateWithUserPassword();
 
