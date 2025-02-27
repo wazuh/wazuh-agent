@@ -4,8 +4,7 @@ add_executable(agent_test agent_test.cpp)
 configure_target(agent_test)
 target_include_directories(agent_test PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../src
-    ${CMAKE_CURRENT_SOURCE_DIR}/../agent_info/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/../persistence/tests/mocks
+    ${CMAKE_CURRENT_SOURCE_DIR}/../agent_info/tests/mocks
     ${CMAKE_CURRENT_SOURCE_DIR}/../command_handler/tests/mocks
     ${CMAKE_CURRENT_SOURCE_DIR}/../multitype_queue/tests/mocks)
 target_link_libraries(agent_test PRIVATE Agent Persistence GTest::gtest GTest::gmock)

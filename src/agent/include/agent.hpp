@@ -30,7 +30,7 @@ public:
     /// @param configFilePath Path to the configuration file
     /// @param signalHandler Pointer to a custom ISignalHandler implementation
     /// @param httpClient Pointer to an IHttpClient implementation
-    /// @param agentInfo Optional AgentInfo object
+    /// @param agentInfo Pointer to a custom IAgentInfo implementation
     /// @param commandStore Pointer to a custom ICommandStore implementation
     /// @param messageQueue Pointer to a custom IMultiTypeQueue implementation
     /// @throws std::runtime_error If the Agent is not enrolled
@@ -38,7 +38,7 @@ public:
     Agent(const std::string& configFilePath,
           std::unique_ptr<ISignalHandler> signalHandler = std::make_unique<SignalHandler>(),
           std::unique_ptr<http_client::IHttpClient> httpClient = nullptr,
-          std::optional<AgentInfo> agentInfo = std::nullopt,
+          std::unique_ptr<IAgentInfo> agentInfo = nullptr,
           std::unique_ptr<command_store::ICommandStore> commandStore = nullptr,
           std::shared_ptr<IMultiTypeQueue> messageQueue = nullptr);
 
@@ -69,7 +69,7 @@ private:
     std::shared_ptr<configuration::ConfigurationParser> m_configurationParser;
 
     /// @brief Agent info
-    AgentInfo m_agentInfo;
+    std::unique_ptr<IAgentInfo> m_agentInfo;
 
     /// @brief Queue for storing messages
     std::shared_ptr<IMultiTypeQueue> m_messageQueue;
