@@ -1,11 +1,12 @@
 #include <agent.hpp>
+#include <boost/asio/awaitable.hpp>
 #include <cstdio>
 #include <fstream>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <isignal_handler.hpp>
 #include <mock_agent_info.hpp>
-#include <mock_command_store.hpp>
+#include <mock_command_handler.hpp>
 #include <mock_http_client.hpp>
 #include <mock_multitype_queue.hpp>
 
@@ -90,7 +91,8 @@ TEST_F(AgentTests, AgentStopsWhenSignalReceived)
 
     auto mockHttpClient = std::make_unique<MockHttpClient>();
 
-    auto mockCommandStore = std::make_unique<command_store::MockCommandStore>();
+    auto mockCommandHandler = std::make_unique<command_handler::MockCommandHandler>();
+    command_handler::MockCommandHandler* mockCommandHandlerPtr = mockCommandHandler.get();
 
     auto mockMultiTypeQueue = std::make_shared<MockMultiTypeQueue>();
 
@@ -115,13 +117,16 @@ TEST_F(AgentTests, AgentStopsWhenSignalReceived)
     EXPECT_CALL(*mockHttpClient, PerformHttpRequest(testing::_))
         .WillRepeatedly(testing::Invoke([&expectedResponse]() -> intStringTuple { return expectedResponse; }));
 
-    EXPECT_CALL(*mockCommandStore, GetCommandByStatus(testing::_)).WillOnce(testing::Return(std::nullopt));
+    EXPECT_CALL(*mockCommandHandlerPtr, CommandsProcessingTask(testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::Invoke([](auto, auto, auto, auto) -> boost::asio::awaitable<void> { co_return; }));
+
+    EXPECT_CALL(*mockCommandHandlerPtr, Stop()).Times(1);
 
     Agent agent(AGENT_CONFIG_PATH,
                 std::move(mockSignalHandler),
                 std::move(mockHttpClient),
                 std::move(mockAgentInfo),
-                std::move(mockCommandStore),
+                std::move(mockCommandHandler),
                 std::move(mockMultiTypeQueue));
 
     EXPECT_NO_THROW(agent.Run());

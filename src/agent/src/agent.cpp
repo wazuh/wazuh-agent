@@ -1,6 +1,7 @@
 #include <agent.hpp>
 
 #include <command_entry.hpp>
+#include <command_handler.hpp>
 #include <command_handler_utils.hpp>
 #include <config.h>
 #include <http_client.hpp>
@@ -18,7 +19,7 @@ Agent::Agent(const std::string& configFilePath,
              std::unique_ptr<ISignalHandler> signalHandler,
              std::unique_ptr<http_client::IHttpClient> httpClient,
              std::unique_ptr<IAgentInfo> agentInfo,
-             std::unique_ptr<command_store::ICommandStore> commandStore,
+             std::unique_ptr<command_handler::ICommandHandler> commandHandler,
              std::shared_ptr<IMultiTypeQueue> messageQueue)
     : m_signalHandler(std::move(signalHandler))
     , m_configurationParser(configFilePath.empty() ? std::make_shared<configuration::ConfigurationParser>()
@@ -39,7 +40,8 @@ Agent::Agent(const std::string& configFilePath,
     , m_moduleManager([this](Message message) -> int { return m_messageQueue->push(std::move(message)); },
                       m_configurationParser,
                       m_agentInfo->GetUUID())
-    , m_commandHandler(m_configurationParser, commandStore ? std::move(commandStore) : nullptr)
+    , m_commandHandler(commandHandler ? std::move(commandHandler)
+                                      : std::make_unique<command_handler::CommandHandler>(m_configurationParser))
     , m_centralizedConfiguration(
           [this](const std::vector<std::string>& groups)
           {
@@ -145,7 +147,7 @@ void Agent::Run()
     m_moduleManager.Start();
 
     m_taskManager.EnqueueTask(
-        m_commandHandler.CommandsProcessingTask(
+        m_commandHandler->CommandsProcessingTask(
             [this]() { return GetCommandFromQueue(m_messageQueue); },
             [this]() { return PopCommandFromQueue(m_messageQueue); },
             [this](const module_command::CommandEntry& cmd) { return ReportCommandResult(cmd, m_messageQueue); },
@@ -181,7 +183,7 @@ void Agent::Run()
         m_running.store(false);
     }
 
-    m_commandHandler.Stop();
+    m_commandHandler->Stop();
     m_communicator.Stop();
     m_moduleManager.Stop();
 }

@@ -2,10 +2,9 @@
 
 #include <agent_info.hpp>
 #include <centralized_configuration.hpp>
-#include <command_handler.hpp>
 #include <communicator.hpp>
 #include <configuration_parser.hpp>
-#include <icommand_store.hpp>
+#include <icommand_handler.hpp>
 #include <ihttp_client.hpp>
 #include <imultitype_queue.hpp>
 #include <isignal_handler.hpp>
@@ -31,7 +30,7 @@ public:
     /// @param signalHandler Pointer to a custom ISignalHandler implementation
     /// @param httpClient Pointer to an IHttpClient implementation
     /// @param agentInfo Pointer to a custom IAgentInfo implementation
-    /// @param commandStore Pointer to a custom ICommandStore implementation
+    /// @param commandHandler Pointer to a custom ICommandHandler implementation
     /// @param messageQueue Pointer to a custom IMultiTypeQueue implementation
     /// @throws std::runtime_error If the Agent is not enrolled
     /// @throws Any exception propagated from dependencies used within the constructor
@@ -39,7 +38,7 @@ public:
           std::unique_ptr<ISignalHandler> signalHandler = std::make_unique<SignalHandler>(),
           std::unique_ptr<http_client::IHttpClient> httpClient = nullptr,
           std::unique_ptr<IAgentInfo> agentInfo = nullptr,
-          std::unique_ptr<command_store::ICommandStore> commandStore = nullptr,
+          std::unique_ptr<command_handler::ICommandHandler> commandHandler = nullptr,
           std::shared_ptr<IMultiTypeQueue> messageQueue = nullptr);
 
     /// @brief Destructor
@@ -81,7 +80,7 @@ private:
     ModuleManager m_moduleManager;
 
     /// @brief Command handler
-    command_handler::CommandHandler m_commandHandler;
+    std::unique_ptr<command_handler::ICommandHandler> m_commandHandler;
 
     /// @brief Centralized configuration
     centralized_configuration::CentralizedConfiguration m_centralizedConfiguration;
