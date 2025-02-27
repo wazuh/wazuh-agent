@@ -1,43 +1,31 @@
-#include <file_io.hpp>
+#include <file_io_utils.hpp>
+#include <file_io_wrapper.hpp>
 
 #include <fstream>
 #include <sstream>
 
 namespace file_io
 {
-    std::ifstream FileIO::create_ifstream(const std::string& filePath, std::ios_base::openmode mode) const
+    FileIOUtils::FileIOUtils(std::shared_ptr<IFileIOWrapper> fileIOWrapper)
+    : m_fileIOWrapper(fileIOWrapper ? std::move(fileIOWrapper)
+                                    : std::make_shared<FileIOWrapper>())
     {
-        return std::ifstream(filePath, mode);
+
     }
 
-    std::streambuf* FileIO::get_rdbuf(const std::ifstream& file) const
-    {
-        return file.rdbuf();
-    }
-
-    bool FileIO::is_open(const std::ifstream& file) const
-    {
-        return file.is_open();
-    }
-
-    bool FileIO::get_line(std::istream& file, std::string& line) const
-    {
-        return static_cast<bool>(std::getline(file, line));
-    }
-
-    void FileIO::readLineByLine(const std::filesystem::path& filePath,
+    void FileIOUtils::readLineByLine(const std::filesystem::path& filePath,
                                 const std::function<bool(const std::string&)>& callback) const
     {
-        std::ifstream file = create_ifstream(filePath.string());
+        std::ifstream file = m_fileIOWrapper->create_ifstream(filePath.string());
 
-        if (!is_open(file))
+        if (!m_fileIOWrapper->is_open(file))
         {
             throw std::runtime_error("Could not open file");
         }
 
         std::string line;
 
-        while (get_line(file, line))
+        while (m_fileIOWrapper->get_line(file, line))
         {
             if (!callback(line))
             {
@@ -46,20 +34,20 @@ namespace file_io
         }
     }
 
-    std::string FileIO::getFileContent(const std::string& filePath) const
+    std::string FileIOUtils::getFileContent(const std::string& filePath) const
     {
         std::stringstream content;
-        const auto file = create_ifstream(filePath);
+        const auto file = m_fileIOWrapper->create_ifstream(filePath);
 
-        if (is_open(file))
+        if (m_fileIOWrapper->is_open(file))
         {
-            content << get_rdbuf(file);
+            content << m_fileIOWrapper->get_rdbuf(file);
         }
 
         return content.str();
     }
 
-    std::vector<char> FileIO::getBinaryContent(const std::string& filePath) const
+    std::vector<char> FileIOUtils::getBinaryContent(const std::string& filePath) const
     {
         std::streamoff size {0};
         std::unique_ptr<char[]> spBuffer;
