@@ -15,7 +15,7 @@ build_directories() {
   local future="$3"
 
   mkdir -p "${build_folder}"
-  wazuh_version="$(cat wazuh*/src/VERSION| cut -d 'v' -f 2)"
+  wazuh_version="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' wazuh*/VERSION.json)"
 
   if [[ "$future" == "yes" ]]; then
     wazuh_version="$(future_version "$build_folder" "$wazuh_dir" $wazuh_version)"
@@ -34,7 +34,7 @@ future_version() {
   local wazuh_dir="$2"
   local base_version="$3"
 
-  specs_path="$(find $wazuh_dir -name SPECS|grep $SYSTEM)"
+  specs_path="$(find $wazuh_dir -name SPECS | grep $SYSTEM)"
 
   local major=$(echo "$base_version" | cut -dv -f2 | cut -d. -f1)
   local minor=$(echo "$base_version" | cut -d. -f2)
@@ -46,8 +46,7 @@ future_version() {
   cp -R ${wazuh_dir} "$new_wazuh_dir"
   find "$new_wazuh_dir" "${specs_path}" \( -name "*VERSION*" -o -name "*changelog*" \
         -o -name "*.spec" \) -exec sed -i "s/${base_version}/${version}/g" {} \;
-  sed -i "s/\$(VERSION)/${major}.${minor}/g" "$new_wazuh_dir/src/Makefile"
-  sed -i "s/${base_version}/${version}/g" $new_wazuh_dir/src/init/wazuh-{server,client,local}.sh
+  sed -i 's/\("version"[[:space:]]*:[[:space:]]*"\)[^"]*\("\)/\1'"${major}.30.0"'\2/' "$new_wazuh_dir/VERSION.json"
   echo "$version"
 }
 
@@ -81,7 +80,7 @@ set_vcpkg_remote_binary_cache(){
         -password "$vcpkg_token"
     mono $NUGET_PATH \
         setapikey "$vcpkg_token" \
-        -source "https://nuget.pkg.github.com/wazuh/index.json"  
+        -source "https://nuget.pkg.github.com/wazuh/index.json"
   else
     echo "mono in not installed, remote binary caching not being enabled"
   fi
@@ -117,12 +116,12 @@ fi
 # Build directories
 source_dir=$(build_directories "$build_dir/${BUILD_TARGET}" "wazuh*" $future)
 
-wazuh_version="$(cat wazuh*/src/VERSION| cut -d 'v' -f 2)"
+wazuh_version="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' wazuh*/VERSION.json)"
 # TODO: Improve how we handle package_name
 # Changing the "-" to "_" between target and version breaks the convention for RPM or DEB packages.
 # For now, I added extra code that fixes it.
 package_name="wazuh-${BUILD_TARGET}-${wazuh_version}"
-specs_path="$(find $source_dir/packages -name SPECS|grep $SYSTEM)"
+specs_path="$(find $source_dir/packages -name SPECS | grep $SYSTEM)"
 
 setup_build "$source_dir" "$specs_path" "$build_dir" "$package_name" "$debug"
 
