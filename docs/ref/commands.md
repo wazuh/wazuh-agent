@@ -25,7 +25,7 @@ The execution of this command triggers the download of the configuration files f
             ],
         },
         "name": "set-group",
-        "version": "5.0.0"
+        "version": "x.y.z"
     },
     "source": "Users/Services",
     "document_id": "A8-62pMBBmC6Jrvqj9kW",
@@ -51,7 +51,7 @@ Executing this command triggers a reload of the configuration and modules to ens
         "args":
         {},
         "name": "fetch-config",
-        "version": "5.0.0"
+        "version": "x.y.z"
     },
     "source": "Users/Services",
     "document_id": "A8-62pMBBmC6Jrvqj9kW",
@@ -80,7 +80,7 @@ Executing this command triggers a restart, which can be processed in two ways:
         "args":
         {},
         "name": "restart",
-        "version": "5.0.0"
+        "version": "x.y.z"
     },
     "source": "Users/Services",
     "document_id": "A8-62pMBBmC6Jrvqj9kW",
