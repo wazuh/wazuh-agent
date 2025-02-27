@@ -28,7 +28,7 @@ runs:
     - name: Set PKG_NAME
       shell: bash
       run: |
-        VERSION=$(curl -s "https://raw.githubusercontent.com/wazuh/wazuh-agent/${{ inputs.source_reference }}/src/VERSION" | sed 's/.*\([0-9]\.[0-9]*\.[0-9]*\).*/\1/')
+        VERSION=$(curl -s "https://raw.githubusercontent.com/wazuh/wazuh-agent/${{ inputs.source_reference }}/VERSION.json" | sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
         COMMIT_HASH="$(curl -s "https://api.github.com/repos/wazuh/wazuh-agent/branches/${{ inputs.source_reference }}" | grep '"sha"' | head -1 | sed 's/.*: "\(.*\)",/\1/' | cut -c1-7)"
         if [ "${{ inputs.is_stage }}" == "true" ]; then
           echo "PKG_NAME=wazuh-agent-${VERSION}-${{ inputs.revision }}" >> $GITHUB_ENV
@@ -39,13 +39,13 @@ runs:
 
     - name: Fetch debug symbols tool
       shell: pwsh
-      run: | 
+      run: |
         $url = "https://github.com/rainers/cv2pdb/releases/download/v0.53/cv2pdb-0.53.zip"
         $zipFile = "C:\tmp\cv2pdb-0.53.zip"
         $extractPath = "C:\tmp\cv2pdb"
         New-Item -ItemType Directory -Path (Split-Path -Path $zipFile) -Force
         Invoke-WebRequest -Uri $url -OutFile $zipFile
-        Expand-Archive -Path $zipFile -DestinationPath $extractPath -Force          
+        Expand-Archive -Path $zipFile -DestinationPath $extractPath -Force
 
     - name: Build MSI for Windows package
       shell: pwsh
@@ -54,7 +54,7 @@ runs:
         ./packages/windows/generate_wazuh_msi.ps1 -MSI_NAME "${{ env.PKG_NAME }}" -CMAKE_CONFIG RelWithDebInfo -DEBUG yes -CV2PDB_PATH C:\tmp\cv2pdb | Out-File -FilePath "C:\tmp\generate_msi.log"
 
     - name: Check MSI for Windows package
-      shell: pwsh      
+      shell: pwsh
       run: |
         Get-Content "C:\tmp\generate_msi.log"
         $errorCount = (Select-String -Path "C:\tmp\generate_msi.log" -Pattern "SignTool Error").Count
