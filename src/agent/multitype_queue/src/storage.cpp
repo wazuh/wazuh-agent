@@ -202,9 +202,13 @@ int Storage::RemoveMultiple(int n,
 {
     Criteria filters;
     if (!moduleName.empty())
+    {
         filters.emplace_back(MODULE_NAME_COLUMN_NAME, ColumnType::TEXT, moduleName);
+    }
     if (!moduleType.empty())
+    {
         filters.emplace_back(MODULE_TYPE_COLUMN_NAME, ColumnType::TEXT, moduleType);
+    }
 
     int result = 0;
 
@@ -266,9 +270,13 @@ nlohmann::json Storage::RetrieveMultiple(int n,
 
     Criteria filters;
     if (!moduleName.empty())
+    {
         filters.emplace_back(MODULE_NAME_COLUMN_NAME, ColumnType::TEXT, moduleName);
+    }
     if (!moduleType.empty())
+    {
         filters.emplace_back(MODULE_TYPE_COLUMN_NAME, ColumnType::TEXT, moduleType);
+    }
 
     Names orderColumns;
     orderColumns.emplace_back(ROW_ID_COLUMN_NAME, ColumnType::INTEGER);
@@ -300,9 +308,13 @@ nlohmann::json Storage::RetrieveBySize(size_t n,
 
     Criteria filters;
     if (!moduleName.empty())
+    {
         filters.emplace_back(MODULE_NAME_COLUMN_NAME, ColumnType::TEXT, moduleName);
+    }
     if (!moduleType.empty())
+    {
         filters.emplace_back(MODULE_TYPE_COLUMN_NAME, ColumnType::TEXT, moduleType);
+    }
 
     Names orderColumns;
     orderColumns.emplace_back(ROW_ID_COLUMN_NAME, ColumnType::INTEGER);
@@ -325,9 +337,13 @@ int Storage::GetElementCount(const std::string& tableName, const std::string& mo
 {
     Criteria filters;
     if (!moduleName.empty())
+    {
         filters.emplace_back(MODULE_NAME_COLUMN_NAME, ColumnType::TEXT, moduleName);
+    }
     if (!moduleType.empty())
+    {
         filters.emplace_back(MODULE_TYPE_COLUMN_NAME, ColumnType::TEXT, moduleType);
+    }
 
     int count = 0;
 
@@ -349,9 +365,13 @@ size_t Storage::GetElementsStoredSize(const std::string& tableName,
 {
     Criteria filters;
     if (!moduleName.empty())
+    {
         filters.emplace_back(MODULE_NAME_COLUMN_NAME, ColumnType::TEXT, moduleName);
+    }
     if (!moduleType.empty())
+    {
         filters.emplace_back(MODULE_TYPE_COLUMN_NAME, ColumnType::TEXT, moduleType);
+    }
 
     size_t count = 0;
 

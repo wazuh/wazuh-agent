@@ -26,15 +26,15 @@ class SysInfo: public ISysInfo
         // LCOV_EXCL_START
         virtual ~SysInfo() = default;
         // LCOV_EXCL_STOP
-        nlohmann::json hardware();
-        nlohmann::json packages();
-        nlohmann::json os();
-        nlohmann::json processes();
-        nlohmann::json networks();
-        nlohmann::json ports();
-        void packages(std::function<void(nlohmann::json&)>);
-        void processes(std::function<void(nlohmann::json&)>);
-        nlohmann::json hotfixes();
+        nlohmann::json hardware() override;
+        nlohmann::json packages() override;
+        nlohmann::json os() override;
+        nlohmann::json processes() override;
+        nlohmann::json networks() override;
+        nlohmann::json ports() override;
+        void packages(std::function<void(nlohmann::json&)>) override;
+        void processes(std::function<void(nlohmann::json&)>) override;
+        nlohmann::json hotfixes() override;
     private:
         virtual nlohmann::json getHardware() const;
         virtual nlohmann::json getPackages() const;

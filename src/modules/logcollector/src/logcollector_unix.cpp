@@ -19,7 +19,9 @@ namespace logcollector
         for (const auto& config : journaldConfigs)
         {
             if (!config.IsMap())
+            {
                 continue;
+            }
 
             if (config["conditions"])
             {

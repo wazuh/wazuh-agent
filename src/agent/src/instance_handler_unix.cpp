@@ -55,7 +55,9 @@ namespace instance_handler
     void InstanceHandler::releaseInstanceLock() const
     {
         if (!m_lockAcquired)
+        {
             return;
+        }
 
         const std::string filePath = fmt::format("{}/wazuh-agent.lock", m_lockFilePath);
         try

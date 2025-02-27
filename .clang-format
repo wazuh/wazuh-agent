@@ -28,6 +28,7 @@ FixNamespaceComments: 'true'
 IncludeBlocks: Preserve
 IndentCaseLabels: 'true'
 IndentWidth: '4'
+InsertBraces: 'true'
 InsertNewlineAtEOF: 'true'
 MaxEmptyLinesToKeep: 1
 NamespaceIndentation: All
