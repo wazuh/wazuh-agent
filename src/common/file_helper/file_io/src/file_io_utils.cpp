@@ -1,31 +1,18 @@
-#include <file_io.hpp>
+#include <file_io_utils.hpp>
 
 #include <fstream>
 #include <sstream>
 
 namespace file_io
 {
-    std::ifstream FileIO::create_ifstream(const std::string& filePath, std::ios_base::openmode mode) const
+    FileIOUtils::FileIOUtils(std::shared_ptr<IFileIOWrapper> fileIOWrapper) 
+    : m_fileIOWrapper(fileIOWrapper ? fileIOWrapper 
+                                    : std::make_shared<IFileIOWrapper>())
     {
-        return std::ifstream(filePath, mode);
+
     }
 
-    std::streambuf* FileIO::get_rdbuf(const std::ifstream& file) const
-    {
-        return file.rdbuf();
-    }
-
-    bool FileIO::is_open(const std::ifstream& file) const
-    {
-        return file.is_open();
-    }
-
-    bool FileIO::get_line(std::istream& file, std::string& line) const
-    {
-        return static_cast<bool>(std::getline(file, line));
-    }
-
-    void FileIO::readLineByLine(const std::filesystem::path& filePath,
+    void FileIOUtils::readLineByLine(const std::filesystem::path& filePath,
                                 const std::function<bool(const std::string&)>& callback) const
     {
         std::ifstream file = create_ifstream(filePath.string());
@@ -46,7 +33,7 @@ namespace file_io
         }
     }
 
-    std::string FileIO::getFileContent(const std::string& filePath) const
+    std::string FileIOUtils::getFileContent(const std::string& filePath) const
     {
         std::stringstream content;
         const auto file = create_ifstream(filePath);
@@ -59,7 +46,7 @@ namespace file_io
         return content.str();
     }
 
-    std::vector<char> FileIO::getBinaryContent(const std::string& filePath) const
+    std::vector<char> FileIOUtils::getBinaryContent(const std::string& filePath) const
     {
         std::streamoff size {0};
         std::unique_ptr<char[]> spBuffer;
