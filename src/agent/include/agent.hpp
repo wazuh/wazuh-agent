@@ -1,9 +1,9 @@
 #pragma once
 
-#include <agent_info.hpp>
 #include <centralized_configuration.hpp>
 #include <communicator.hpp>
 #include <configuration_parser.hpp>
+#include <iagent_info.hpp>
 #include <icommand_handler.hpp>
 #include <ihttp_client.hpp>
 #include <imultitype_queue.hpp>

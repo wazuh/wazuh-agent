@@ -2,9 +2,13 @@
 
 #include <gmock/gmock.h>
 
+#include <command_entry.hpp>
 #include <icommand_handler.hpp>
 
 #include <boost/asio/awaitable.hpp>
+
+#include <functional>
+#include <optional>
 
 namespace command_handler
 {
