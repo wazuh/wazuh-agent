@@ -1,6 +1,6 @@
 #pragma once
 
-#include <agent_info.hpp>
+#include <iagent_info.hpp>
 #include <ihttp_client.hpp>
 
 #include <sysInfo.hpp>
@@ -35,7 +35,7 @@ namespace agent_enrollment
         /// @param name The agent's name.
         /// @param dbFolderPath The path to the database folder.
         /// @param verificationMode The connection verification mode.
-        /// @param agentInfo Optional agent's information object.
+        /// @param agentInfo Pointer to a custom IAgentInfo implementation.
         AgentEnrollment(std::unique_ptr<http_client::IHttpClient> httpClient,
                         std::string url,
                         std::string user,
@@ -44,7 +44,7 @@ namespace agent_enrollment
                         const std::string& name,
                         const std::string& dbFolderPath,
                         std::string verificationMode,
-                        std::optional<AgentInfo> agentInfo = std::nullopt);
+                        std::unique_ptr<IAgentInfo> agentInfo = nullptr);
 
         /// @brief Enrolls the agent with the manager.
         ///
@@ -64,7 +64,7 @@ namespace agent_enrollment
         SysInfo m_sysInfo;
 
         /// @brief The agent's information.
-        AgentInfo m_agentInfo;
+        std::unique_ptr<IAgentInfo> m_agentInfo;
 
         /// @brief The URL of the manager.
         std::string m_serverUrl;

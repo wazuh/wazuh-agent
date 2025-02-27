@@ -1,6 +1,8 @@
 #include <agent.hpp>
 
+#include <agent_info.hpp>
 #include <command_entry.hpp>
+#include <command_handler.hpp>
 #include <command_handler_utils.hpp>
 #include <config.h>
 #include <http_client.hpp>
@@ -17,36 +19,37 @@
 Agent::Agent(const std::string& configFilePath,
              std::unique_ptr<ISignalHandler> signalHandler,
              std::unique_ptr<http_client::IHttpClient> httpClient,
-             std::optional<AgentInfo> agentInfo,
-             std::unique_ptr<command_store::ICommandStore> commandStore,
+             std::unique_ptr<IAgentInfo> agentInfo,
+             std::unique_ptr<command_handler::ICommandHandler> commandHandler,
              std::shared_ptr<IMultiTypeQueue> messageQueue)
     : m_signalHandler(std::move(signalHandler))
     , m_configurationParser(configFilePath.empty() ? std::make_shared<configuration::ConfigurationParser>()
                                                    : std::make_shared<configuration::ConfigurationParser>(
                                                          std::filesystem::path(configFilePath)))
-    , m_agentInfo(agentInfo.has_value()
-                      ? std::move(*agentInfo)
-                      : AgentInfo(
+    , m_agentInfo(agentInfo
+                      ? std::move(agentInfo)
+                      : std::make_unique<AgentInfo>(
                             m_configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data"),
                             [this]() { return m_sysInfo.os(); },
                             [this]() { return m_sysInfo.networks(); }))
     , m_messageQueue(messageQueue ? std::move(messageQueue) : std::make_shared<MultiTypeQueue>(m_configurationParser))
     , m_communicator(httpClient ? std::move(httpClient) : std::make_unique<http_client::HttpClient>(),
                      m_configurationParser,
-                     m_agentInfo.GetUUID(),
-                     m_agentInfo.GetKey(),
-                     [this]() { return m_agentInfo.GetHeaderInfo(); })
+                     m_agentInfo->GetUUID(),
+                     m_agentInfo->GetKey(),
+                     [this]() { return m_agentInfo->GetHeaderInfo(); })
     , m_moduleManager([this](Message message) -> int { return m_messageQueue->push(std::move(message)); },
                       m_configurationParser,
-                      m_agentInfo.GetUUID())
-    , m_commandHandler(m_configurationParser, commandStore ? std::move(commandStore) : nullptr)
+                      m_agentInfo->GetUUID())
+    , m_commandHandler(commandHandler ? std::move(commandHandler)
+                                      : std::make_unique<command_handler::CommandHandler>(m_configurationParser))
     , m_centralizedConfiguration(
           [this](const std::vector<std::string>& groups)
           {
-              m_agentInfo.SetGroups(groups);
-              return m_agentInfo.SaveGroups();
+              m_agentInfo->SetGroups(groups);
+              return m_agentInfo->SaveGroups();
           },
-          [this]() { return m_agentInfo.GetGroups(); },
+          [this]() { return m_agentInfo->GetGroups(); },
           // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
           [this](std::string groupId, std::string destinationPath) -> boost::asio::awaitable<bool> {
               co_return co_await m_communicator.GetGroupConfigurationFromManager(std::move(groupId),
@@ -58,12 +61,12 @@ Agent::Agent(const std::string& configFilePath,
           [this]() { ReloadModules(); })
 {
     // Check if agent is enrolled
-    if (m_agentInfo.GetName().empty() || m_agentInfo.GetKey().empty() || m_agentInfo.GetUUID().empty())
+    if (m_agentInfo->GetName().empty() || m_agentInfo->GetKey().empty() || m_agentInfo->GetUUID().empty())
     {
         throw std::runtime_error("The agent is not enrolled");
     }
 
-    m_configurationParser->SetGetGroupIdsFunction([this]() { return m_agentInfo.GetGroups(); });
+    m_configurationParser->SetGetGroupIdsFunction([this]() { return m_agentInfo->GetGroups(); });
 
     m_agentThreadCount =
         m_configurationParser->GetConfigInRangeOrDefault<size_t>(config::DEFAULT_THREAD_COUNT,
@@ -123,7 +126,7 @@ void Agent::Run()
                                       return GetMessagesFromQueue(m_messageQueue,
                                                                   MessageType::STATEFUL,
                                                                   numMessages,
-                                                                  [this]() { return m_agentInfo.GetMetadataInfo(); });
+                                                                  [this]() { return m_agentInfo->GetMetadataInfo(); });
                                   },
                                   [this]([[maybe_unused]] const int messageCount, const std::string&)
                                   { PopMessagesFromQueue(m_messageQueue, MessageType::STATEFUL, messageCount); }),
@@ -135,7 +138,7 @@ void Agent::Run()
                                       return GetMessagesFromQueue(m_messageQueue,
                                                                   MessageType::STATELESS,
                                                                   numMessages,
-                                                                  [this]() { return m_agentInfo.GetMetadataInfo(); });
+                                                                  [this]() { return m_agentInfo->GetMetadataInfo(); });
                                   },
                                   [this]([[maybe_unused]] const int messageCount, const std::string&)
                                   { PopMessagesFromQueue(m_messageQueue, MessageType::STATELESS, messageCount); }),
@@ -145,7 +148,7 @@ void Agent::Run()
     m_moduleManager.Start();
 
     m_taskManager.EnqueueTask(
-        m_commandHandler.CommandsProcessingTask(
+        m_commandHandler->CommandsProcessingTask(
             [this]() { return GetCommandFromQueue(m_messageQueue); },
             [this]() { return PopCommandFromQueue(m_messageQueue); },
             [this](const module_command::CommandEntry& cmd) { return ReportCommandResult(cmd, m_messageQueue); },
@@ -181,7 +184,7 @@ void Agent::Run()
         m_running.store(false);
     }
 
-    m_commandHandler.Stop();
+    m_commandHandler->Stop();
     m_communicator.Stop();
     m_moduleManager.Stop();
 }

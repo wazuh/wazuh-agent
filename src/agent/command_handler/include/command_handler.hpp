@@ -2,6 +2,7 @@
 
 #include <command_entry.hpp>
 #include <configuration_parser.hpp>
+#include <icommand_handler.hpp>
 #include <icommand_store.hpp>
 
 #include <boost/asio/awaitable.hpp>
@@ -20,7 +21,7 @@ namespace command_handler
     /// This class is responsible for executing commands retrieved from the command
     /// store. It provides a way to dispatch commands to the corresponding
     /// command handlers and manage the command execution results.
-    class CommandHandler
+    class CommandHandler : public ICommandHandler
     {
     public:
         /// @brief CommandHandler constructor
@@ -45,10 +46,10 @@ namespace command_handler
                                const std::function<void()> popCommandFromQueue,
                                const std::function<void(module_command::CommandEntry&)> reportCommandResult,
                                const std::function<boost::asio::awaitable<module_command::CommandExecutionResult>(
-                                   module_command::CommandEntry&)> dispatchCommand);
+                                   module_command::CommandEntry&)> dispatchCommand) override;
 
         /// @brief Stops the command handler
-        void Stop();
+        void Stop() override;
 
     private:
         /// @brief Clean up commands that are in progress when the agent is stopped

@@ -1,8 +1,9 @@
-#include <agent_info_persistance.hpp>
+#include <agent_info_persistence.hpp>
 
 #include <logger.hpp>
 
 #include <column.hpp>
+#include <persistence.hpp>
 #include <persistence_factory.hpp>
 
 using namespace column;
@@ -24,7 +25,7 @@ namespace
     const std::string AGENT_GROUP_NAME_COLUMN_NAME = "name";
 } // namespace
 
-AgentInfoPersistance::AgentInfoPersistance(const std::string& dbFolderPath, std::unique_ptr<Persistence> persistence)
+AgentInfoPersistence::AgentInfoPersistence(const std::string& dbFolderPath, std::unique_ptr<Persistence> persistence)
 {
     const auto dbFilePath = dbFolderPath + "/" + AGENT_INFO_DB_NAME;
 
@@ -60,9 +61,9 @@ AgentInfoPersistance::AgentInfoPersistance(const std::string& dbFolderPath, std:
     }
 }
 
-AgentInfoPersistance::~AgentInfoPersistance() = default;
+AgentInfoPersistence::~AgentInfoPersistence() = default;
 
-bool AgentInfoPersistance::AgentInfoIsEmpty() const
+bool AgentInfoPersistence::AgentInfoIsEmpty() const
 {
     try
     {
@@ -76,7 +77,7 @@ bool AgentInfoPersistance::AgentInfoIsEmpty() const
     return false;
 }
 
-void AgentInfoPersistance::CreateAgentInfoTable()
+void AgentInfoPersistence::CreateAgentInfoTable()
 {
     try
     {
@@ -93,7 +94,7 @@ void AgentInfoPersistance::CreateAgentInfoTable()
     }
 }
 
-void AgentInfoPersistance::CreateAgentGroupTable()
+void AgentInfoPersistence::CreateAgentGroupTable()
 {
     try
     {
@@ -110,7 +111,7 @@ void AgentInfoPersistance::CreateAgentGroupTable()
     }
 }
 
-void AgentInfoPersistance::InsertDefaultAgentInfo()
+void AgentInfoPersistence::InsertDefaultAgentInfo()
 {
     try
     {
@@ -132,7 +133,7 @@ void AgentInfoPersistance::InsertDefaultAgentInfo()
     }
 }
 
-bool AgentInfoPersistance::SetAgentInfoValue(const std::string& column, const std::string& value)
+bool AgentInfoPersistence::SetAgentInfoValue(const std::string& column, const std::string& value)
 {
     try
     {
@@ -148,7 +149,7 @@ bool AgentInfoPersistance::SetAgentInfoValue(const std::string& column, const st
     return false;
 }
 
-std::string AgentInfoPersistance::GetAgentInfoValue(const std::string& column) const
+std::string AgentInfoPersistence::GetAgentInfoValue(const std::string& column) const
 {
     std::string value;
 
@@ -170,22 +171,22 @@ std::string AgentInfoPersistance::GetAgentInfoValue(const std::string& column) c
     return value;
 }
 
-std::string AgentInfoPersistance::GetName() const
+std::string AgentInfoPersistence::GetName() const
 {
     return GetAgentInfoValue(AGENT_INFO_NAME_COLUMN_NAME);
 }
 
-std::string AgentInfoPersistance::GetKey() const
+std::string AgentInfoPersistence::GetKey() const
 {
     return GetAgentInfoValue(AGENT_INFO_KEY_COLUMN_NAME);
 }
 
-std::string AgentInfoPersistance::GetUUID() const
+std::string AgentInfoPersistence::GetUUID() const
 {
     return GetAgentInfoValue(AGENT_INFO_UUID_COLUMN_NAME);
 }
 
-std::vector<std::string> AgentInfoPersistance::GetGroups() const
+std::vector<std::string> AgentInfoPersistence::GetGroups() const
 {
     std::vector<std::string> groupList;
 
@@ -210,22 +211,22 @@ std::vector<std::string> AgentInfoPersistance::GetGroups() const
     return groupList;
 }
 
-bool AgentInfoPersistance::SetName(const std::string& name)
+bool AgentInfoPersistence::SetName(const std::string& name)
 {
     return SetAgentInfoValue(AGENT_INFO_NAME_COLUMN_NAME, name);
 }
 
-bool AgentInfoPersistance::SetKey(const std::string& key)
+bool AgentInfoPersistence::SetKey(const std::string& key)
 {
     return SetAgentInfoValue(AGENT_INFO_KEY_COLUMN_NAME, key);
 }
 
-bool AgentInfoPersistance::SetUUID(const std::string& uuid)
+bool AgentInfoPersistence::SetUUID(const std::string& uuid)
 {
     return SetAgentInfoValue(AGENT_INFO_UUID_COLUMN_NAME, uuid);
 }
 
-bool AgentInfoPersistance::SetGroups(const std::vector<std::string>& groupList)
+bool AgentInfoPersistence::SetGroups(const std::vector<std::string>& groupList)
 {
     TransactionId transaction = 0;
 
@@ -270,7 +271,7 @@ bool AgentInfoPersistance::SetGroups(const std::vector<std::string>& groupList)
     return true;
 }
 
-bool AgentInfoPersistance::ResetToDefault()
+bool AgentInfoPersistence::ResetToDefault()
 {
     try
     {
