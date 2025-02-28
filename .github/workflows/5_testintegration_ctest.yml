@@ -47,4 +47,4 @@ jobs:
         uses: ./.github/actions/4_testintegration_ctest
         with:
           path: ./files/
-    
+
