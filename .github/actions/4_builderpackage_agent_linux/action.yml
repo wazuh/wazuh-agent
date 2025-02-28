@@ -52,7 +52,8 @@ runs:
       with:
         container_name: builder_container
         commands: cd /wazuh-local-src && cmake src -B src/build && cmake --build src/build --parallel $(nproc) && rm -rf src/build/_deps src/build/vcpkg*
-
+        message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE})
+        
     - name: Zip repository
       shell: bash
       run: |

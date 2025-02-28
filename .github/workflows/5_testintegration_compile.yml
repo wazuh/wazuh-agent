@@ -1,4 +1,4 @@
-name: Compile and Run Tests
+name: Compile and Test
 
 on:
     pull_request:
@@ -46,6 +46,12 @@ jobs:
         gh_token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Run Compile Action
-      uses: ./.github/actions/4_testintegration_compile_and_test
+      uses: ./.github/actions/4_testintegration_compile
       with:
         path: src/
+        build_path: build-${{ matrix.os }}/
+
+    - name: Run Tests
+      uses: ./.github/actions/4_testintegration_ctest
+      with:
+        path: build-${{ matrix.os }}/

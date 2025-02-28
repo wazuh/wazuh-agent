@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Doxygen Documentation Generation
-        uses: ./.github/actions/doxygen
+        uses: ./.github/actions/5_codelinter_doxygen
         with:
           path: ./
           doxygen_config: ./Doxyfile
