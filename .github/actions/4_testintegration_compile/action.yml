@@ -32,23 +32,9 @@ runs:
           cmake --build . --config RelWithDebInfo -j $(nproc)
         shell: bash
       
-      - name: Zip artifact for testing
-        if: ${{ inputs.upload_to_s3 }}
-        run: zip build.zip $(pwd)/* -
-
-      - name: Set up AWS CLI
-        if: ${{ inputs.upload_to_s3 }}
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
         with:
-          aws-access-key-id: ${{ secrets.CI_INTERNAL_DEVELOPMENT_BUCKET_USER_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.CI_INTERNAL_DEVELOPMENT_BUCKET_USER_SECRET_KEY }}
-          aws-region: ${{ secrets.CI_AWS_REGION }}
-
-      - name: Upload files to S3
-        if: ${{ inputs.upload_to_s3 }}
-        uses: ./.github/actions/4_s3_upload
-        with:
-          s3_uri: "s3://packages-dev.internal.wazuh.com/development/wazuh/5.x/main/packages"
-          uploaded_file_name: build.zip
-          uploaded_file_location: "/tmp"
-
+          name: build-artifact
+          path: build/
+        shell: bash
