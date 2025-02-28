@@ -4,11 +4,10 @@
 #include <communicator.hpp>
 #include <http_request_params.hpp>
 #include <ihttp_client.hpp>
+#include <mock_http_client.hpp>
 
 #include <jwt-cpp/jwt.h>
 #include <jwt-cpp/traits/nlohmann-json/traits.h>
-
-#include "../../http_client/tests/mocks/mock_http_client.hpp"
 
 #include <boost/asio.hpp>
 

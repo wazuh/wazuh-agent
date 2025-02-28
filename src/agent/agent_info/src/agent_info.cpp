@@ -1,6 +1,6 @@
 #include <agent_info.hpp>
 
-#include <agent_info_persistance.hpp>
+#include <agent_info_persistence.hpp>
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -21,9 +21,9 @@ AgentInfo::AgentInfo(const std::string& dbFolderPath,
                      std::function<nlohmann::json()> getOSInfo,
                      std::function<nlohmann::json()> getNetworksInfo,
                      bool agentIsEnrolling,
-                     std::shared_ptr<AgentInfoPersistance> persistence)
+                     std::shared_ptr<IAgentInfoPersistence> persistence)
     : m_agentIsEnrolling(agentIsEnrolling)
-    , m_persistence(persistence ? std::move(persistence) : std::make_shared<AgentInfoPersistance>(dbFolderPath))
+    , m_persistence(persistence ? std::move(persistence) : std::make_shared<AgentInfoPersistence>(dbFolderPath))
 {
     if (!m_agentIsEnrolling)
     {

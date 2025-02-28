@@ -1,8 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <agent_info.hpp>
-#include <agent_info_persistance.hpp>
-#include <mocks_persistence.hpp>
+#include <mock_agent_info_persistence.hpp>
 
 #include <memory>
 #include <string>
@@ -11,8 +10,7 @@
 class AgentInfoTest : public ::testing::Test
 {
 protected:
-    MockPersistence* m_mockPersistence = nullptr;
-    std::shared_ptr<AgentInfoPersistance> m_agentPersistence;
+    std::shared_ptr<MockAgentInfoPersistence> m_agentPersistence;
     std::unique_ptr<AgentInfo> m_agentInfo;
 
     void SetUp() override
@@ -24,52 +22,31 @@ protected:
                              const std::function<nlohmann::json()>& networksLambda = nullptr,
                              bool agentIsEnrolling = false)
     {
-        auto mockPersistencePtr = std::make_unique<MockPersistence>();
-        m_mockPersistence = mockPersistencePtr.get();
-
-        SetUpPersistenceMock();
+        m_agentPersistence = std::make_shared<MockAgentInfoPersistence>();
 
         if (!agentIsEnrolling)
         {
             SetUpAgentInfoInitialization();
         }
 
-        m_agentPersistence = std::make_shared<AgentInfoPersistance>("db_path", std::move(mockPersistencePtr));
-
         m_agentInfo = std::make_unique<AgentInfo>("db_path",
                                                   osLambda ? osLambda : nullptr,
                                                   networksLambda ? networksLambda : nullptr,
                                                   agentIsEnrolling,
-                                                  std::move(m_agentPersistence));
-    }
-
-    void SetUpPersistenceMock()
-    {
-        EXPECT_CALL(*m_mockPersistence, TableExists("agent_info")).WillOnce(testing::Return(true));
-        EXPECT_CALL(*m_mockPersistence, TableExists("agent_group")).WillOnce(testing::Return(true));
-        EXPECT_CALL(*m_mockPersistence, GetCount("agent_info", testing::_, testing::_)).WillOnce(testing::Return(1));
+                                                  m_agentPersistence);
     }
 
     void SetUpAgentInfoInitialization()
     {
-        const std::vector<column::Row> mockRowName = {
-            {column::ColumnValue("name", column::ColumnType::TEXT, "name_test")}};
-        const std::vector<column::Row> mockRowKey = {
-            {column::ColumnValue("key", column::ColumnType::TEXT, "key_test")}};
-        const std::vector<column::Row> mockRowUUID = {
-            {column::ColumnValue("uuid", column::ColumnType::TEXT, "uuid_test")}};
-        const std::vector<column::Row> mockRowGroup = {{}};
+        const std::string mockName = "name_test";
+        const std::string mockKey = "key_test";
+        const std::string mockUUID = "uuid_test";
+        const std::vector<std::string> mockGroup = {};
 
-        const testing::Sequence seq;
-        EXPECT_CALL(*m_mockPersistence,
-                    Select("agent_info", testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
-            .InSequence(seq)
-            .WillOnce(testing::Return(mockRowName))
-            .WillOnce(testing::Return(mockRowKey))
-            .WillOnce(testing::Return(mockRowUUID));
-        EXPECT_CALL(*m_mockPersistence,
-                    Select("agent_group", testing::_, testing::_, testing::_, testing::_, testing::_, testing::_))
-            .WillOnce(testing::Return(mockRowGroup));
+        EXPECT_CALL(*m_agentPersistence, GetName()).WillOnce(testing::Return(mockName));
+        EXPECT_CALL(*m_agentPersistence, GetKey()).WillOnce(testing::Return(mockKey));
+        EXPECT_CALL(*m_agentPersistence, GetUUID()).WillOnce(testing::Return(mockUUID));
+        EXPECT_CALL(*m_agentPersistence, GetGroups()).WillOnce(testing::Return(mockGroup));
     }
 };
 
@@ -131,36 +108,28 @@ TEST_F(AgentInfoTest, TestSetGroups)
     EXPECT_EQ(m_agentInfo->GetGroups(), newGroups);
 }
 
+TEST_F(AgentInfoTest, TestSaveGroupsFail)
+{
+    EXPECT_CALL(*m_agentPersistence, SetGroups(testing::_)).WillOnce(testing::Return(false));
+
+    EXPECT_FALSE(m_agentInfo->SaveGroups());
+}
+
 TEST_F(AgentInfoTest, TestSaveGroups)
 {
-    const std::vector<std::string> newGroups = {"t_group_1", "t_group_2"};
+    EXPECT_CALL(*m_agentPersistence, SetGroups(testing::_)).WillOnce(testing::Return(true));
 
-    EXPECT_CALL(*m_mockPersistence, BeginTransaction()).Times(1);
-    EXPECT_CALL(*m_mockPersistence, Remove("agent_group", testing::_, testing::_)).Times(1);
-    EXPECT_CALL(*m_mockPersistence, Insert("agent_group", testing::_)).Times(2);
-    EXPECT_CALL(*m_mockPersistence, CommitTransaction(testing::_)).Times(1);
-
-    m_agentInfo->SetGroups(newGroups);
     EXPECT_TRUE(m_agentInfo->SaveGroups());
-    EXPECT_EQ(m_agentInfo->GetGroups(), newGroups);
 }
 
 TEST_F(AgentInfoTest, TestSave)
 {
-    // Mock for: m_persistence->ResetToDefault();
-    EXPECT_CALL(*m_mockPersistence, DropTable("agent_info")).Times(1);
-    EXPECT_CALL(*m_mockPersistence, DropTable("agent_group")).Times(1);
-    EXPECT_CALL(*m_mockPersistence, CreateTable(testing::_, testing::_)).Times(2);
-    EXPECT_CALL(*m_mockPersistence, GetCount("agent_info", testing::_, testing::_)).WillOnce(testing::Return(0));
-    EXPECT_CALL(*m_mockPersistence, Insert(testing::_, testing::_)).Times(1);
+    EXPECT_CALL(*m_agentPersistence, ResetToDefault()).Times(1);
+    EXPECT_CALL(*m_agentPersistence, SetName(testing::_)).Times(1);
+    EXPECT_CALL(*m_agentPersistence, SetKey(testing::_)).Times(1);
+    EXPECT_CALL(*m_agentPersistence, SetUUID(testing::_)).Times(1);
+    EXPECT_CALL(*m_agentPersistence, SetGroups(testing::_)).Times(1);
 
-    // Mock for: m_persistence->SetName(m_name); m_persistence->SetKey(m_key); m_persistence->SetUUID(m_uuid);
-    EXPECT_CALL(*m_mockPersistence, Update("agent_info", testing::_, testing::_, testing::_)).Times(3);
-
-    // Mock for: m_persistence->SetGroups(m_groups);
-    EXPECT_CALL(*m_mockPersistence, BeginTransaction()).Times(1);
-    EXPECT_CALL(*m_mockPersistence, Remove("agent_group", testing::_, testing::_)).Times(1);
-    EXPECT_CALL(*m_mockPersistence, CommitTransaction(testing::_)).Times(1);
     m_agentInfo->Save();
 }
 
