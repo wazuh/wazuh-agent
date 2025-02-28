@@ -46,6 +46,6 @@ jobs:
         gh_token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Run Compile Action
-      uses: ./.github/actions/5_testintegration_compile
+      uses: ./.github/actions/4_testintegration_compile
       with:
         path: src/
