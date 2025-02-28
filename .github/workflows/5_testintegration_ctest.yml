@@ -1,0 +1,50 @@
+name: Run ctest
+
+on:
+    pull_request:
+      types:
+        - opened
+        - synchronize
+        - reopened
+
+jobs:
+  download:
+    runs-on: ${{ matrix.os }}
+    continue-on-error: false
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        #os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Set up AWS CLI
+        if: ${{ inputs.upload_to_s3}}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.CI_INTERNAL_DEVELOPMENT_BUCKET_USER_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.CI_INTERNAL_DEVELOPMENT_BUCKET_USER_SECRET_KEY }}
+          aws-region: ${{ secrets.CI_AWS_REGION }}
+
+      - name: Download file from S3
+        run: |
+          aws s3 cp packages-dev.internal.wazuh.com/development/wazuh/5.x/main/packages/tmp ./build.zip
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          
+      - name: Upload package to S3
+        if: ${{ inputs.upload_to_s3 }}
+        uses: ./.github/actions/upload_file_to_s3
+        with:
+          s3_uri: "s3://packages-dev.internal.wazuh.com/development/wazuh/5.x/main/packages"
+          uploaded_file_name: ${{ env.PACKAGE_NAME }}
+          uploaded_file_location: "/tmp"
+
+      - name: Extract files
+        run: 7z x build.zip -o./files
+
+      - name: Run ctest
+        uses: ./.github/actions/4_testintegration_ctest
+        with:
+          path: ./files/
+    
