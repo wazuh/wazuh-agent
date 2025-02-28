@@ -1,0 +1,34 @@
+name: Run Tests
+
+on:
+  pull_request:
+      types:
+        - opened
+        - synchronize
+        - reopened
+        
+  workflow_run:
+      workflows: ["Compile"]
+      types:
+        - completed
+
+jobs:
+  ctest:
+    continue-on-error: false
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact
+
+      - name: Run Tests
+        uses: ./.github/actions/4_testintegration_ctest
+        with:
+          path: build-${{ matrix.os }}/
+        
