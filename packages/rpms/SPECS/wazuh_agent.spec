@@ -257,6 +257,7 @@ rm -fr %{buildroot}
 %dir %attr(770, root, wazuh) %{_localstatedir}etc/wazuh-agent
 %dir %attr(750, root, wazuh) %{_localstatedir}var/lib/wazuh-agent
 %attr(750, root, wazuh) %{_localstatedir}etc/wazuh-agent/wazuh-agent.yml
+%attr(440, wazuh, wazuh) %{_localstatedir}etc/wazuh-agent/VERSION.json
 
 %changelog
 * Wed Jul 10 2024 support <info@wazuh.com> - 4.9.0

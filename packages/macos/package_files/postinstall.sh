@@ -46,6 +46,9 @@ chown "${USER}":"${GROUP}" "${CONF_DIR}"
 sudo chown root:wheel "$SERVICE_FILE"
 sudo chmod 644 "$SERVICE_FILE"
 
+chown "${USER}":"${GROUP}" "${CONF_DIR}"/VERSION.json
+chmod 440 "${CONF_DIR}"/VERSION.json
+
 # Remove old ossec user and group if exists and change ownwership of files
 if [[ $(dscl . -read /Groups/ossec) ]]; then
     echo "Changing group from Ossec to Wazuh"
