@@ -19,25 +19,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, ]
-        #os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: build-artifact
-        
-      - name: Use build artifact
-        run: |
-          ls -la build/
-          # Add steps to use the build artifact here
-        shell: bash
 
       - name: Run Tests
         continue-on-error: false
         run: |
           set +e
-          cd build/
+          cd build-${{ matrix.os }}/
           ctest -C RelWithDebInfo --output-on-failure
         shell: bash

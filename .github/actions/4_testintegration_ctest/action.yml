@@ -13,6 +13,6 @@ runs:
         continue-on-error: false
         run: |
           set +e
-          cd ${{ inputs.path }}/build
+          cd ${{ inputs.path }}/
           ctest -C RelWithDebInfo --output-on-failure
         shell: bash
