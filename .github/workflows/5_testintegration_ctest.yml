@@ -1,6 +1,12 @@
 name: Run Tests
 
 on:
+  pull_request:
+      types:
+        - opened
+        - synchronize
+        - reopened
+        
   workflow_run:
       workflows: [Compile]
       types: [completed]
