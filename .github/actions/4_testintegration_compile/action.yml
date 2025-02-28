@@ -37,4 +37,3 @@ runs:
         with:
           name: build-artifact
           path: build/
-        shell: bash

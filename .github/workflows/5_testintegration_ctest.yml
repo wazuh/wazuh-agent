@@ -3,8 +3,7 @@ name: Run Tests
 on:
   workflow_run:
       workflows: [Compile]
-      types: 
-        - completed
+      types: [completed]
 
 jobs:
   ctest:
