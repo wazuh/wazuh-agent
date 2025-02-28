@@ -69,7 +69,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     install(CODE "file(MAKE_DIRECTORY \"${CONFIG_INSTALL_DIR}\")")
     install(FILES ${CONFIG_FOLDER}/wazuh-agent.yml
             DESTINATION ${CONFIG_INSTALL_DIR})
-    install(FILES "${CMAKE_BINARY_DIR}/VERSION.json" DESTINATION ${CONFIG_INSTALL_DIR})
+    install(FILES "${CMAKE_BINARY_DIR}/VERSION.json" DESTINATION ${PARENT_DIR})
     install(TARGETS wazuh-agent
             DESTINATION ${BIN_INSTALL_DIR})
 
@@ -98,8 +98,6 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
     set(CPACK_GENERATOR "WIX")
     set(CPACK_PACKAGE_NAME "Wazuh Agent")
-
-    include(cmake/config.cmake)
     set(CPACK_PACKAGE_VERSION ${CLEAN_VERSION})
 
     if(DEFINED ENV{CUSTOM_PACKAGE_NAME})
