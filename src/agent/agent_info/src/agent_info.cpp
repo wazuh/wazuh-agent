@@ -1,6 +1,7 @@
 #include <agent_info.hpp>
 
 #include <agent_info_persistence.hpp>
+#include <config.h>
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -13,7 +14,6 @@ namespace
 {
     constexpr size_t KEY_LENGTH = 32;
     const std::string AGENT_TYPE = "Endpoint";
-    const std::string AGENT_VERSION = "5.0.0";
     const std::string PRODUCT_NAME = "WazuhXDR";
 } // namespace
 
@@ -147,7 +147,7 @@ std::string AgentInfo::GetType() const
 
 std::string AgentInfo::GetVersion() const
 {
-    return AGENT_VERSION;
+    return config::VERSION;
 }
 
 std::string AgentInfo::GetHeaderInfo() const

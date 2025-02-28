@@ -148,7 +148,7 @@ function build_package() {
 
     short_commit_hash="$(cd "${WAZUH_PATH}" && git rev-parse --short HEAD)"
     WAZUH_PACKAGES_PATH="${WAZUH_PATH}/packages/macos"
-    VERSION=$(cat ${WAZUH_PATH}/src/VERSION | cut -d 'v' -f 2)
+    VERSION="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' ${WAZUH_PATH}/VERSION.json)"
 
     # Define output package name
     if [ $IS_STAGE == "no" ]; then

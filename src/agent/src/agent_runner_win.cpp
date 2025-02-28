@@ -28,20 +28,16 @@ std::optional<int> AgentRunner::HandlePlatformSpecificOptions() const
     if (m_options.count(OPT_INSTALL_SERVICE))
     {
         windows_api_facade::WindowsApiFacade windowsApiFacade;
-        return static_cast<int>(windows_service::InstallService(windowsApiFacade));
+        return windows_service::InstallService(windowsApiFacade) ? 0 : 1;
     }
     else if (m_options.count(OPT_REMOVE_SERVICE))
     {
         windows_api_facade::WindowsApiFacade windowsApiFacade;
-        return static_cast<int>(windows_service::RemoveService(windowsApiFacade));
+        return windows_service::RemoveService(windowsApiFacade) ? 0 : 1;
     }
     else if (m_options.count(OPT_RUN_SERVICE))
     {
         windows_service::SetDispatcherThread();
     }
-    else
-    {
-        return std::nullopt;
-    }
-    return 0;
+    return std::nullopt;
 }

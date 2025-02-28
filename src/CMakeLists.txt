@@ -57,6 +57,9 @@ endif()
 include(cmake/ConfigureTarget.cmake)
 configure_target(wazuh-agent)
 
+include(cmake/config.cmake)
+include(cmake/PrepareVersionFileForInstallation.cmake)
+
 # Installation
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set(CMAKE_INSTALL_PREFIX "" CACHE PATH "Root directory for installation")
@@ -66,6 +69,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     install(CODE "file(MAKE_DIRECTORY \"${CONFIG_INSTALL_DIR}\")")
     install(FILES ${CONFIG_FOLDER}/wazuh-agent.yml
             DESTINATION ${CONFIG_INSTALL_DIR})
+    install(FILES "${CMAKE_BINARY_DIR}/VERSION.json" DESTINATION ${PARENT_DIR})
     install(TARGETS wazuh-agent
             DESTINATION ${BIN_INSTALL_DIR})
 
@@ -90,10 +94,11 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     install(FILES ${CONFIG_FOLDER}/wazuh-agent.yml DESTINATION .)
     install(FILES ${WINDOWS_FOLDER}/postinstall.ps1 DESTINATION .)
     install(FILES ${WINDOWS_FOLDER}/cleanup.ps1 DESTINATION .)
+    install(FILES "${CMAKE_BINARY_DIR}/VERSION.json" DESTINATION .)
 
     set(CPACK_GENERATOR "WIX")
     set(CPACK_PACKAGE_NAME "Wazuh Agent")
-    set(CPACK_PACKAGE_VERSION "5.0.0")
+    set(CPACK_PACKAGE_VERSION ${CLEAN_VERSION})
 
     if(DEFINED ENV{CUSTOM_PACKAGE_NAME})
         set(CPACK_PACKAGE_FILE_NAME "$ENV{CUSTOM_PACKAGE_NAME}")

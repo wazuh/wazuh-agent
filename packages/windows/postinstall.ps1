@@ -59,18 +59,13 @@ $wazuhagent = "$PSScriptRoot\wazuh-agent.exe"
 Write-Host "Installing service $serviceName."
 if (-not (Get-Service -Name $serviceName -ErrorAction SilentlyContinue)) {
     & $wazuhagent --install-service
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Error wazuh-agent installing service. Error code: $LASTEXITCODE."
+        exit 1
+    }
     Write-Host "Service $serviceName installed successfully."
 } else {
     Write-Host "Service $serviceName already installed."
-}
-
-# Start Wazuh agent
-Write-Host "Starting agent."
-& $wazuhagent
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Error executing wazuh-agent.exe. Error code: $LASTEXITCODE."
-    exit 1
 }
 
 Write-Host "postinstall.ps1 script completed."
