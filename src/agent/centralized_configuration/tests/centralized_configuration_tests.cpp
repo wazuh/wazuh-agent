@@ -3,6 +3,8 @@
 
 #include <centralized_configuration.hpp>
 
+#include <mock_filesystem.hpp>
+
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -10,11 +12,9 @@
 
 #include <nlohmann/json.hpp>
 
+#include <filesystem>
 #include <string>
 #include <vector>
-
-#include "../../../common/file_helper/filesystem/tests/mocks/mock_filesystem.hpp"
-#include <filesystem>
 
 using centralized_configuration::CentralizedConfiguration;
 using namespace testing;
