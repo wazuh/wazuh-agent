@@ -8,6 +8,7 @@ on:
 
 jobs:
   ctest:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ${{ matrix.os }}
     continue-on-error: false
     strategy:
