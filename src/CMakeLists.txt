@@ -57,6 +57,7 @@ endif()
 include(cmake/ConfigureTarget.cmake)
 configure_target(wazuh-agent)
 
+include(cmake/config.cmake)
 include(cmake/PrepareVersionFileForInstallation.cmake)
 
 # Installation
