@@ -22,7 +22,7 @@ runs:
     - name: Retag images from ghcr
       shell: bash
       run: |
-        sudo bash .github/actions/docker_retag_image/retag_image.sh \
+        sudo bash .github/actions/4_docker_retag/retag_image.sh \
           ${{ inputs.gh_token }} ${{ inputs.gh_user}} \
           ${{ inputs.docker_image_old_tag }} ${{ inputs.docker_image_new_tag }} \
           ${{ inputs.docker_image_name }}
