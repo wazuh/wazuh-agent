@@ -51,7 +51,7 @@ jobs:
         path: src/
         build_path: build-${{ matrix.os }}/
 
-    - name: Run Tests
-      uses: ./.github/actions/4_testintegration_ctest
-      with:
-        path: build-${{ matrix.os }}/
+#    - name: Run Tests
+#      uses: ./.github/actions/4_testintegration_ctest
+#      with:
+#        path: build-${{ matrix.os }}/

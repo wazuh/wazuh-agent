@@ -9,28 +9,26 @@ on:
         
   workflow_run:
       workflows: [Compile]
-      types: [completed]
+      types:
+        - completed
 
 jobs:
   ctest:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    runs-on: ${{ matrix.os }}
     continue-on-error: false
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-
+    
     steps:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: build-artifact
-
+          
       - name: Run Tests
-        continue-on-error: false
-        run: |
-          set +e
-          cd build-${{ matrix.os }}/
-          ctest -C RelWithDebInfo --output-on-failure
-        shell: bash
+        uses: ./.github/actions/4_testintegration_ctest
+        with:
+          path: build-${{ matrix.os }}/
+        
