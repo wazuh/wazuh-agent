@@ -52,7 +52,6 @@ This project uses the following third-party software:
 | [Boost Uuid](https://www.boost.org/doc/libs/release/libs/uuid/)                       | Provides support for universally unique identifiers (UUIDs)      | Boost Software License 1.0     | 1.85.0  |
 | [Boost Url](https://www.boost.org/doc/libs/release/libs/url/)                         | Provides containers and algorithms which model a URL             | Boost Software License 1.0     | 1.85.0  |
 | [cjson](https://github.com/DaveGamble/cJSON)                                          | Ultralightweight JSON parser in ANSI C                           | MIT License                    | 1.7.17  |
-| [curl](https://curl.se/)                                                              | A library for transferring data with URLs                        | curl AND ISC AND BSD-3-Clause  | 8.5.0   |
 | [fmt](https://fmt.dev/)                                                               | A formatting library for C++                                     | MIT License                    | 10.2.1  |
 | [gtest](https://github.com/google/googletest)                                         | Google's C++ testing framework                                   | BSD-3-Clause                   | 1.15.2  |
 | [jwt-cpp](https://github.com/Thalhammer/jwt-cpp)                                      | C++ library for handling JSON Web Tokens (JWT)                   | MIT License                    | 0.7.0   |
@@ -68,7 +67,6 @@ This project uses the following third-party software:
 | [sqlite3](https://sqlite.org/)                                                        | Self-contained SQL database engine                               | Public Domain (no restrictions) | 3.45.0#0 |
 | [SQLiteCpp](https://github.com/SRombauts/SQLiteCpp)                                   | C++ wrapper around the SQLite database library                   | MIT License                    | 3.3.2   |
 | [yaml-cpp](https://github.com/jbeder/yaml-cpp)                                        | YAML parser and emitter for C++                                  | MIT License                    | 0.8.0   |
-| [zlib](https://www.zlib.net/)                                                         | A compression library                                            | Zlib                           | 1.3.1   |
 
 ## License
 

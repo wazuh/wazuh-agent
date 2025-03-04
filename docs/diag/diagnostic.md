@@ -5,13 +5,10 @@
 3. **Logs**
 4. **System resource usage**
 
-### Agent Version and Status
+### Agent Status
 
 #### Linux
 
-```
-/usr/share/wazuh-agent/bin/wazuh-agent -v
-```
 ```
 systemctl status wazuh-agent
 ```
@@ -19,14 +16,11 @@ systemctl status wazuh-agent
 #### macOS
 
 ```
-/Library/Application Support/wazuh-agent/bin/wazuh-agent -v
+sudo launchctl print system/com.wazuh.agent
 ```
 
 #### Windows
 
-```
-"C:\\Program Files\\wazuh-agent\\wazuh-agent.exe" -v
-```
 ```
 Get-Service -Name wazuh-agent
 ```
@@ -37,7 +31,7 @@ Get-Service -Name wazuh-agent
 
 To gather the configuration file, locate the following file:
 
-- /etc/wazuh-agent/wazuh-agent.yml
+- `/etc/wazuh-agent/wazuh-agent.yml`
 
 Copy this file for analysis.
 
@@ -45,7 +39,7 @@ Copy this file for analysis.
 
 To gather the configuration file, locate the following file:
 
-- /Library/Application Support/wazuh-agent/etc/wazuh-agent.yml
+- `/Library/Application Support/Wazuh agent.app/etc/wazuh-agent.yml`
 
 Copy this file for analysis.
 
@@ -53,7 +47,7 @@ Copy this file for analysis.
 
 To gather the configuration file, locate the following file:
 
-- C:\\ProgramData\\wazuh-agent\\etc\\wazuh.yml
+- `C:\ProgramData\wazuh-agent\config\wazuh-agent.yml`
 
 Copy this file for analysis.
 
@@ -96,9 +90,9 @@ Collect system resource usage data to understand the agent's performance impact.
    - Use the `top` or `htop` command to monitor CPU and RAM usage for `wazuh-agent`.
 2. **Disk usage:**
    - Use the `df -h` command to check the disk usage of the file system where Wazuh is installed.
-   - Use the `du -h` command to check the disk usage of the Wazuh agent installation (usually _/usr/share/wazuh-agent_).
+   - Use the `du -h` command to check the disk usage of the Wazuh agent installation (usually _/var/lib/wazuh-agent_).
 3. **Network usage:**
-   - Use the `netstat` or `ss` command to monitor connections to ports 1514 and 1515.
+   - Use the `netstat` or `ss` command to monitor connections to ports 55000 and 27000.
    - Alternatively, use tools like `iftop` or `nload` to measure real-time network usage.
 
 ##### Example commands
@@ -106,7 +100,6 @@ Collect system resource usage data to understand the agent's performance impact.
 1. **CPU and RAM usage:**
    ```bash
    top -p $(pgrep -d',' wazuh-agent)
-   top -p $(pgrep -d',' wazuh-modulesd)
    ```
 2. **Disk usage:**
    ```bash
@@ -115,7 +108,7 @@ Collect system resource usage data to understand the agent's performance impact.
    ```
 3. **Network usage:**
    ```bash
-   netstat -an | grep ':1514\|:1515'
+   netstat -an | grep ':55000\|:27000'
    ```
 
 #### Windows
@@ -134,7 +127,7 @@ Collect system resource usage data to understand the agent's performance impact.
    - Use the `dir` command to check the disk usage of the directory where Wazuh is installed.
    - Alternatively, use the Disk Management tool or the `Get-PSDrive` PowerShell cmdlet.
 3. **Network usage:**
-   - Use the `netstat` command to monitor connections to ports 1514 and 1515.
+   - Use the `netstat` command to monitor connections to ports 55000 and 27000.
    - Alternatively, use tools like Resource Monitor or PowerShell cmdlets such as `Get-NetTCPConnection`.
 
 ##### Example commands
@@ -148,7 +141,7 @@ Collect system resource usage data to understand the agent's performance impact.
 2. **Disk usage:**
    - Command prompt:
      ```cmd
-     dir "C:\\Program Files\\wazuh-agent" /s
+     dir "C:\ProgramData\wazuh-agent\" /s
      ```
    - PowerShell:
      ```powershell
@@ -157,9 +150,9 @@ Collect system resource usage data to understand the agent's performance impact.
 3. **Network usage:**
    - Command prompt:
      ```cmd
-     netstat -an | findstr ":1514" | findstr ":1515"
+     netstat -an | findstr ":55000" | findstr ":27000"
      ```
    - PowerShell:
      ```powershell
-     Get-NetTCPConnection -LocalPort 1514,1515
+     Get-NetTCPConnection -LocalPort 55000,27000
      ```

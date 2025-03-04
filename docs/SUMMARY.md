@@ -15,9 +15,9 @@
 # Reference Manual
 
 - [Introduction](ref/README.md)
-  - [Description](ref/description.md)
-  - [Architecture](ref/architecture.md)
-  - [Compatibility](ref/compatibility.md)
+  - [Description](ref/introduction/description.md)
+  - [Architecture](ref/introduction/architecture.md)
+  - [Compatibility](ref/introduction/compatibility.md)
 - [Getting Started](ref/getting-started/README.md)
   - [Requirements](ref/getting-started/requirements.md)
   - [Packages](ref/getting-started/packages.md)
