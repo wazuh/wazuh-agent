@@ -1,11 +1,11 @@
 #include "gmock/gmock.h"
 #include <gtest/gtest.h>
 
-#include "file_io.hpp"
+#include "file_io_utils.hpp"
 
 using namespace testing;
 
-class MockFileIOLocal : public file_io::FileIO
+class MockFileIOLocal : public file_io::FileIOUtils
 {
 public:
     MockFileIOLocal() = default;
