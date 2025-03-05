@@ -1,6 +1,6 @@
 #include <gmock/gmock.h>
 
-#include <ifile_io.hpp>
+#include <ifile_io_wrapper.hpp>
 
 class MockFileIO : public IFileIO
 {
