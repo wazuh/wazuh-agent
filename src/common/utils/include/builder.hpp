@@ -19,7 +19,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable: 4505)
+#pragma warning(disable : 4505)
 #endif
 
 namespace Utils
@@ -30,31 +30,31 @@ namespace Utils
      * @tparam T Type of the object to be built.
      * @tparam Ts Arguments.
      */
-    template <typename T, class... Ts>
+    template<typename T, class... Ts>
     class Builder
     {
-        public:
-            /**
-             * @brief This method is used to build an object.
-             *
-             * @param args Arguments.
-             * @return T Object built.
-             */
-            static T builder(Ts... args)
-            {
-                return T(args...); // Default constructor
-            }
+    public:
+        /**
+         * @brief This method is used to build an object.
+         *
+         * @param args Arguments.
+         * @return T Object built.
+         */
+        static T builder(Ts... args)
+        {
+            return T(args...); // Default constructor
+        }
 
-            /**
-             * @brief This method returns a reference to the object.
-             * @return T Reference to the object.
-             */
-            T & build()
-            {
-                return static_cast<T&>(*this); // Return reference to self
-            }
+        /**
+         * @brief This method returns a reference to the object.
+         * @return T Reference to the object.
+         */
+        T& build()
+        {
+            return static_cast<T&>(*this); // Return reference to self
+        }
     };
-}
+} // namespace Utils
 
 #ifdef __GNUC__
 #pragma GCC diagnostic pop

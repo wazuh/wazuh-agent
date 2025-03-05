@@ -12,25 +12,25 @@
 #ifndef _PYPITEST_HPP
 #define _PYPITEST_HPP
 
-#include "gtest/gtest.h"
-#include "../../../file_helper/filesystem/tests/mocks/mock_filesystem.hpp"
 #include "../../../file_helper/file_io/tests/mocks/MockFileIO.hpp"
+#include "../../../file_helper/filesystem/tests/mocks/mock_filesystem.hpp"
 #include "packagesPYPI.hpp"
+#include "gtest/gtest.h"
 
 class PYPITest : public ::testing::Test
 {
-    protected:
-        std::unique_ptr<PYPI<MockFileSystem, MockFileIO>> pypi;
+protected:
+    std::unique_ptr<PYPI<MockFileSystem, MockFileIO>> pypi;
 
-        void SetUp() override
-        {
-            pypi = std::make_unique<PYPI<MockFileSystem, MockFileIO>>();
-        }
+    void SetUp() override
+    {
+        pypi = std::make_unique<PYPI<MockFileSystem, MockFileIO>>();
+    }
 
-        void TearDown() override
-        {
-            pypi.reset();
-        }
+    void TearDown() override
+    {
+        pypi.reset();
+    }
 };
 
 #endif // _PYPITEST_HPP

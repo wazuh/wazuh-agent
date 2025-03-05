@@ -11,17 +11,18 @@
 
 #ifndef _PKGWRAPPER_TEST_H
 #define _PKGWRAPPER_TEST_H
-#include "gtest/gtest.h"
+
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 class PKGWrapperTest : public ::testing::Test
 {
-    protected:
-        PKGWrapperTest() = default;
-        virtual ~PKGWrapperTest() = default;
+protected:
+    PKGWrapperTest() = default;
+    virtual ~PKGWrapperTest() = default;
 
-        void SetUp() override;
-        void TearDown() override;
+    void SetUp() override;
+    void TearDown() override;
 };
 
 #endif //_PKGWRAPPER_TEST_H
