@@ -35,7 +35,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         unofficial::sqlite3::sqlite3
         cjson
         pthread
-        utils
     )
 else()
     target_link_libraries(dbengine_unit_test
@@ -48,7 +47,6 @@ else()
         cjson
         pthread
         dl
-        utils
     )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 

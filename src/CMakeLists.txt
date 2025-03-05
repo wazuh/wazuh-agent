@@ -40,7 +40,6 @@ else()
     add_subdirectory(common/file_helper)
     add_subdirectory(common/logger)
     add_subdirectory(common/pal)
-    add_subdirectory(common/utils)
 endif()
 
 add_subdirectory(modules)
