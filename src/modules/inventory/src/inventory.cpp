@@ -1,7 +1,6 @@
 #include <inventory.hpp>
 
 #include <config.h>
-#include <defs.h>
 #include <logger.hpp>
 #include <sysInfo.hpp>
 
@@ -29,8 +28,14 @@ void Inventory::Start()
             std::make_shared<SysInfo>(),
             [this](const std::string& diff) { this->SendDeltaEvent(diff); },
             m_dbFilePath,
-            INVENTORY_NORM_CONFIG_DISK_PATH,
-            INVENTORY_NORM_TYPE);
+            m_normConfigPath,
+#if defined(__linux__)
+            "linux");
+#elif defined(__APPLE__)
+            "macos");
+#else
+            "windows");
+#endif
     }
     catch (const std::exception& ex)
     {
@@ -52,6 +57,8 @@ void Inventory::Setup(std::shared_ptr<const configuration::ConfigurationParser> 
     m_enabled = configurationParser->GetConfigOrDefault(config::inventory::DEFAULT_ENABLED, "inventory", "enabled");
     m_dbFilePath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
                    INVENTORY_DB_DISK_NAME;
+    m_normConfigPath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
+                       INVENTORY_NORM_CONFIG_NAME;
     m_intervalValue =
         configurationParser->GetTimeConfigOrDefault(config::inventory::DEFAULT_INTERVAL, "inventory", "interval");
     m_scanOnStart =

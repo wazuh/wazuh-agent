@@ -160,8 +160,6 @@ extern const char *__local_name;
 
 #include "os_macros.h"
 
-#include "wrapper_macros.h"
-
 // Calculate the number of elements within an array.
 // Only static arrays allowed.
 #define array_size(array) (sizeof(array)/sizeof(array[0]))
