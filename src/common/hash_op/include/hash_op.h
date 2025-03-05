@@ -12,6 +12,7 @@
 
 #ifndef OS_HASHOP
 #define OS_HASHOP
+
 #include <pthread.h>
 
 /* Node structure */

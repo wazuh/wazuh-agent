@@ -14,145 +14,145 @@
 
 #include "file_io_utils.hpp"
 #include "filesystem_wrapper.hpp"
-#include <nlohmann/json.hpp>
 #include "sharedDefs.h"
 #include "stringHelper.h"
 #include <iostream>
+#include <nlohmann/json.hpp>
 #include <set>
 
 const static std::map<std::string, std::string> FILE_MAPPING_PYPI {{"egg-info", "PKG-INFO"}, {"dist-info", "METADATA"}};
 
-template<typename TFileSystem = filesystem_wrapper::FileSystemWrapper, typename TFileIOUtils = file_io::FileIOUtils>
-class PYPI final : public TFileSystem, public TFileIOUtils
+template<typename TFileSystem = filesystem_wrapper::FileSystemWrapper, typename TFileIO = file_io::FileIOUtils>
+class PYPI final
+    : public TFileSystem
+    , public TFileIO
 {
-        void parseMetadata(const std::filesystem::path& path, std::function<void(nlohmann::json&)>& callback)
+    void parseMetadata(const std::filesystem::path& path, std::function<void(nlohmann::json&)>& callback)
+    {
+        // Map to match fields
+        static const std::map<std::string, std::string> PYPI_FIELDS {{"Name: ", "name"},
+                                                                     {"Version: ", "version"},
+                                                                     {"Summary: ", "description"},
+                                                                     {"Home-page: ", "source"},
+                                                                     {"Author: ", "vendor"}};
+
+        // Parse the METADATA file
+        nlohmann::json packageInfo;
+
+        packageInfo["groups"] = UNKNOWN_VALUE;
+        packageInfo["description"] = UNKNOWN_VALUE;
+        packageInfo["architecture"] = EMPTY_VALUE;
+        packageInfo["format"] = "pypi";
+        packageInfo["source"] = UNKNOWN_VALUE;
+        packageInfo["location"] = path.string();
+        packageInfo["priority"] = UNKNOWN_VALUE;
+        packageInfo["size"] = UNKNOWN_VALUE;
+        packageInfo["vendor"] = UNKNOWN_VALUE;
+        packageInfo["install_time"] = UNKNOWN_VALUE;
+        // The multiarch field won't have a default value
+
+        TFileIO::readLineByLine(path,
+                                [&packageInfo](const std::string& line) -> bool
+                                {
+                                    const auto it {std::find_if(PYPI_FIELDS.begin(),
+                                                                PYPI_FIELDS.end(),
+                                                                [&line](const auto& element)
+                                                                { return Utils::startsWith(line, element.first); })};
+
+                                    if (PYPI_FIELDS.end() != it)
+                                    {
+                                        const auto& [key, value] {*it};
+
+                                        if (!packageInfo.contains(value))
+                                        {
+                                            packageInfo[value] = Utils::trim(line.substr(key.length()), "\r");
+                                        }
+                                    }
+                                    return true;
+                                });
+
+        // Check if we have a name and version
+        if (packageInfo.contains("name") && packageInfo.contains("version"))
         {
-            // Map to match fields
-            static const std::map<std::string, std::string> PYPI_FIELDS {{"Name: ", "name"},
-                {"Version: ", "version"},
-                {"Summary: ", "description"},
-                {"Home-page: ", "source"},
-                {"Author: ", "vendor"}};
+            callback(packageInfo);
+        }
+    }
 
-            // Parse the METADATA file
-            nlohmann::json packageInfo;
+    void findCorrectPath(const std::filesystem::path& path, std::function<void(nlohmann::json&)> callback)
+    {
+        try
+        {
+            const auto filename = path.filename().string();
 
-            packageInfo["groups"] = UNKNOWN_VALUE;
-            packageInfo["description"] = UNKNOWN_VALUE;
-            packageInfo["architecture"] = EMPTY_VALUE;
-            packageInfo["format"] = "pypi";
-            packageInfo["source"] = UNKNOWN_VALUE;
-            packageInfo["location"] = path.string();
-            packageInfo["priority"] = UNKNOWN_VALUE;
-            packageInfo["size"] = UNKNOWN_VALUE;
-            packageInfo["vendor"] = UNKNOWN_VALUE;
-            packageInfo["install_time"] = UNKNOWN_VALUE;
-            // The multiarch field won't have a default value
-
-            TFileIOUtils::readLineByLine(path,
-                                    [&packageInfo](const std::string & line) -> bool
+            for (const auto& [key, value] : FILE_MAPPING_PYPI)
             {
-                const auto it {
-                    std::find_if(PYPI_FIELDS.begin(),
-                                 PYPI_FIELDS.end(),
-                                 [&line](const auto & element)
-                    {
-                        return Utils::startsWith(line, element.first);
-                    })};
-
-                if (PYPI_FIELDS.end() != it)
+                if (filename.find(key) != std::string::npos)
                 {
-                    const auto& [key, value] {*it};
-
-                    if (!packageInfo.contains(value))
+                    if (TFileSystem::is_regular_file(path))
                     {
-                        packageInfo[value] = Utils::trim(line.substr(key.length()), "\r");
+                        parseMetadata(path, callback);
+                    }
+                    else if (TFileSystem::is_directory(path))
+                    {
+                        parseMetadata(path / value, callback);
+                    }
+                    else
+                    {
+                        // Do nothing
                     }
                 }
-                return true;
-            });
-
-            // Check if we have a name and version
-            if (packageInfo.contains("name") && packageInfo.contains("version"))
-            {
-                callback(packageInfo);
             }
         }
+        catch (const std::exception& e)
+        {
+            std::cerr << "Error parsing PYPI package: " << path.string() << ", " << e.what() << std::endl;
+        }
+    }
 
-        void findCorrectPath(const std::filesystem::path& path, std::function<void(nlohmann::json&)> callback)
+    void exploreExpandedPaths(const std::deque<std::string>& expandedPaths,
+                              std::function<void(nlohmann::json&)> callback)
+    {
+        for (const auto& expandedPath : expandedPaths)
         {
             try
             {
-                const auto filename = path.filename().string();
-
-                for (const auto& [key, value] : FILE_MAPPING_PYPI)
+                // Exist and is a directory
+                if (TFileSystem::exists(expandedPath) && TFileSystem::is_directory(expandedPath))
                 {
-                    if (filename.find(key) != std::string::npos)
+                    for (const std::filesystem::path& path : TFileSystem::list_directory(expandedPath))
                     {
-                        if (TFileSystem::is_regular_file(path))
-                        {
-                            parseMetadata(path, callback);
-                        }
-                        else if (TFileSystem::is_directory(path))
-                        {
-                            parseMetadata(path / value, callback);
-                        }
-                        else
-                        {
-                            // Do nothing
-                        }
+                        findCorrectPath(path, callback);
                     }
                 }
             }
-            catch (const std::exception& e)
+            catch (const std::exception&)
             {
-                std::cerr << "Error parsing PYPI package: " << path.string() << ", " << e.what() << std::endl;
+                // Do nothing, continue with the next path
             }
         }
-        void exploreExpandedPaths(const std::deque<std::string>& expandedPaths,
-                                  std::function<void(nlohmann::json&)> callback)
+    }
+
+public:
+    void getPackages(const std::set<std::string>& osRootFolders, std::function<void(nlohmann::json&)> callback)
+    {
+
+        for (const auto& osFolder : osRootFolders)
         {
-            for (const auto& expandedPath : expandedPaths)
+            std::deque<std::string> expandedPaths;
+
+            try
             {
-                try
-                {
-                    // Exist and is a directory
-                    if (TFileSystem::exists(expandedPath) && TFileSystem::is_directory(expandedPath))
-                    {
-                        for (const std::filesystem::path& path : TFileSystem::list_directory(expandedPath))
-                        {
-                            findCorrectPath(path, callback);
-                        }
-                    }
-                }
-                catch (const std::exception&)
-                {
-                    // Do nothing, continue with the next path
-                }
+                // Expand paths
+                TFileSystem::expand_absolute_path(osFolder, expandedPaths);
+                // Explore expanded paths
+                exploreExpandedPaths(expandedPaths, callback);
+            }
+            catch (const std::exception&)
+            {
+                // Do nothing, continue with the next path
             }
         }
-
-    public:
-        void getPackages(const std::set<std::string>& osRootFolders, std::function<void(nlohmann::json&)> callback)
-        {
-
-            for (const auto& osFolder : osRootFolders)
-            {
-                std::deque<std::string> expandedPaths;
-
-                try
-                {
-                    // Expand paths
-                    TFileSystem::expand_absolute_path(osFolder, expandedPaths);
-                    // Explore expanded paths
-                    exploreExpandedPaths(expandedPaths, callback);
-                }
-                catch (const std::exception&)
-                {
-                    // Do nothing, continue with the next path
-                }
-            }
-        }
+    }
 };
 
 #endif // _PACKAGES_PYPI_HPP

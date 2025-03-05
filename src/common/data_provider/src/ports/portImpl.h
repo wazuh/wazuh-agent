@@ -18,28 +18,32 @@
 
 class PortImpl final : public IOSPort
 {
-    private:
-        std::shared_ptr<IPortWrapper> m_spPortRawData;
-    public:
-        explicit PortImpl(const std::shared_ptr<IPortWrapper>& portRawData)
-            : m_spPortRawData(portRawData)
-        { }
-        // LCOV_EXCL_START
-        ~PortImpl() = default;
-        // LCOV_EXCL_STOP
-        void buildPortData(nlohmann::json& port) override
-        {
-            m_spPortRawData->protocol(port);
-            m_spPortRawData->localIp(port);
-            m_spPortRawData->localPort(port);
-            m_spPortRawData->remoteIP(port);
-            m_spPortRawData->remotePort(port);
-            m_spPortRawData->txQueue(port);
-            m_spPortRawData->rxQueue(port);
-            m_spPortRawData->inode(port);
-            m_spPortRawData->state(port);
-            m_spPortRawData->pid(port);
-            m_spPortRawData->processName(port);
-        }
+private:
+    std::shared_ptr<IPortWrapper> m_spPortRawData;
+
+public:
+    explicit PortImpl(const std::shared_ptr<IPortWrapper>& portRawData)
+        : m_spPortRawData(portRawData)
+    {
+    }
+
+    // LCOV_EXCL_START
+    ~PortImpl() = default;
+
+    // LCOV_EXCL_STOP
+    void buildPortData(nlohmann::json& port) override
+    {
+        m_spPortRawData->protocol(port);
+        m_spPortRawData->localIp(port);
+        m_spPortRawData->localPort(port);
+        m_spPortRawData->remoteIP(port);
+        m_spPortRawData->remotePort(port);
+        m_spPortRawData->txQueue(port);
+        m_spPortRawData->rxQueue(port);
+        m_spPortRawData->inode(port);
+        m_spPortRawData->state(port);
+        m_spPortRawData->pid(port);
+        m_spPortRawData->processName(port);
+    }
 };
 #endif // _PORT_IMPL_H

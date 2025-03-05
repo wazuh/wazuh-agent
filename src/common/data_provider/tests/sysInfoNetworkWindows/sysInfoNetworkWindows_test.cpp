@@ -9,10 +9,10 @@
  * Foundation.
  */
 
-#include "windowsHelper.h"
 #include "sysInfoNetworkWindows_test.h"
-#include "network/networkInterfaceWindows.h"
 #include "network/networkFamilyDataAFactory.h"
+#include "network/networkInterfaceWindows.h"
+#include "windowsHelper.h"
 
 void SysInfoNetworkWindowsTest::SetUp() {};
 
@@ -21,34 +21,34 @@ void SysInfoNetworkWindowsTest::TearDown() {};
 using ::testing::_;
 using ::testing::Return;
 
-class SysInfoNetworkWindowsWrapperMock: public INetworkInterfaceWrapper
+class SysInfoNetworkWindowsWrapperMock : public INetworkInterfaceWrapper
 {
-    public:
-        SysInfoNetworkWindowsWrapperMock() = default;
-        virtual ~SysInfoNetworkWindowsWrapperMock() = default;
-        MOCK_METHOD(int, family, (), (const override));
-        MOCK_METHOD(std::string, name, (), (const override));
-        MOCK_METHOD(void, adapter, (nlohmann::json&), (const override));
-        MOCK_METHOD(std::string, address, (), (const override));
-        MOCK_METHOD(std::string, netmask, (), (const override));
-        MOCK_METHOD(void, broadcast, (nlohmann::json&), (const override));
-        MOCK_METHOD(std::string, addressV6, (), (const override));
-        MOCK_METHOD(std::string, netmaskV6, (), (const override));
-        MOCK_METHOD(void, broadcastV6, (nlohmann::json&), (const override));
-        MOCK_METHOD(void, gateway, (nlohmann::json&), (const override));
-        MOCK_METHOD(void, metrics, (nlohmann::json&), (const override));
-        MOCK_METHOD(void, metricsV6, (nlohmann::json&), (const override));
-        MOCK_METHOD(void, dhcp, (nlohmann::json&), (const override));
-        MOCK_METHOD(void, mtu, (nlohmann::json&), (const override));
-        MOCK_METHOD(LinkStats, stats, (), (const override));
-        MOCK_METHOD(void, type, (nlohmann::json&), (const override));
-        MOCK_METHOD(void, state, (nlohmann::json&), (const override));
-        MOCK_METHOD(void, MAC, (nlohmann::json&), (const override));
+public:
+    SysInfoNetworkWindowsWrapperMock() = default;
+    virtual ~SysInfoNetworkWindowsWrapperMock() = default;
+    MOCK_METHOD(int, family, (), (const override));
+    MOCK_METHOD(std::string, name, (), (const override));
+    MOCK_METHOD(void, adapter, (nlohmann::json&), (const override));
+    MOCK_METHOD(std::string, address, (), (const override));
+    MOCK_METHOD(std::string, netmask, (), (const override));
+    MOCK_METHOD(void, broadcast, (nlohmann::json&), (const override));
+    MOCK_METHOD(std::string, addressV6, (), (const override));
+    MOCK_METHOD(std::string, netmaskV6, (), (const override));
+    MOCK_METHOD(void, broadcastV6, (nlohmann::json&), (const override));
+    MOCK_METHOD(void, gateway, (nlohmann::json&), (const override));
+    MOCK_METHOD(void, metrics, (nlohmann::json&), (const override));
+    MOCK_METHOD(void, metricsV6, (nlohmann::json&), (const override));
+    MOCK_METHOD(void, dhcp, (nlohmann::json&), (const override));
+    MOCK_METHOD(void, mtu, (nlohmann::json&), (const override));
+    MOCK_METHOD(LinkStats, stats, (), (const override));
+    MOCK_METHOD(void, type, (nlohmann::json&), (const override));
+    MOCK_METHOD(void, state, (nlohmann::json&), (const override));
+    MOCK_METHOD(void, MAC, (nlohmann::json&), (const override));
 };
 
 TEST_F(SysInfoNetworkWindowsTest, Test_IPV4_THROW)
 {
-    auto mock { std::make_shared<SysInfoNetworkWindowsWrapperMock>() };
+    auto mock {std::make_shared<SysInfoNetworkWindowsWrapperMock>()};
     nlohmann::json networkInfo {};
     EXPECT_CALL(*mock, family()).Times(1).WillOnce(Return(Utils::NetworkWindowsHelper::IPV4));
     EXPECT_CALL(*mock, address()).Times(1).WillOnce(Return(""));
@@ -57,7 +57,7 @@ TEST_F(SysInfoNetworkWindowsTest, Test_IPV4_THROW)
 
 TEST_F(SysInfoNetworkWindowsTest, Test_IPV6_THROW)
 {
-    auto mock { std::make_shared<SysInfoNetworkWindowsWrapperMock>() };
+    auto mock {std::make_shared<SysInfoNetworkWindowsWrapperMock>()};
     nlohmann::json networkInfo {};
     EXPECT_CALL(*mock, family()).Times(1).WillOnce(Return(Utils::NetworkWindowsHelper::IPV6));
     EXPECT_CALL(*mock, addressV6()).Times(1).WillOnce(Return(""));
@@ -67,36 +67,31 @@ TEST_F(SysInfoNetworkWindowsTest, Test_IPV6_THROW)
 TEST_F(SysInfoNetworkWindowsTest, Test_AF_UNSPEC_THROW_NULLPTR)
 {
     nlohmann::json networkInfo {};
-    EXPECT_ANY_THROW(FactoryNetworkFamilyCreator<OSPlatformType::WINDOWS>::create(nullptr)->buildNetworkData(networkInfo));
+    EXPECT_ANY_THROW(
+        FactoryNetworkFamilyCreator<OSPlatformType::WINDOWS>::create(nullptr)->buildNetworkData(networkInfo));
 }
 
 TEST_F(SysInfoNetworkWindowsTest, Test_IPV4)
 {
-    auto mock { std::make_shared<SysInfoNetworkWindowsWrapperMock>() };
+    auto mock {std::make_shared<SysInfoNetworkWindowsWrapperMock>()};
     nlohmann::json networkInfo {};
-    const std::string address   { "192.168.0.1" };
-    const std::string netmask   { "255.255.255.0" };
-    const std::string broadcast { "192.168.0.255" };
-    const std::string dhcp      { "8.8.8.8" };
-    const std::string metrics   { "25" };
+    const std::string address {"192.168.0.1"};
+    const std::string netmask {"255.255.255.0"};
+    const std::string broadcast {"192.168.0.255"};
+    const std::string dhcp {"8.8.8.8"};
+    const std::string metrics {"25"};
     EXPECT_CALL(*mock, family()).Times(1).WillOnce(Return(Utils::NetworkWindowsHelper::IPV4));
     EXPECT_CALL(*mock, address()).Times(1).WillOnce(Return(address));
     EXPECT_CALL(*mock, netmask()).Times(1).WillOnce(Return(netmask));
     EXPECT_CALL(*mock, broadcast(_))
-                .Times(1)
-                .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) {
-                    jsonOut["broadcast"] = broadcast;
-                }));
+        .Times(1)
+        .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) { jsonOut["broadcast"] = broadcast; }));
     EXPECT_CALL(*mock, dhcp(_))
-                .Times(1)
-                .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) {
-                    jsonOut["dhcp"] = dhcp;
-                }));
+        .Times(1)
+        .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) { jsonOut["dhcp"] = dhcp; }));
     EXPECT_CALL(*mock, metrics(_))
-                .Times(1)
-                .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) {
-                    jsonOut["metric"] = metrics;
-                }));
+        .Times(1)
+        .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) { jsonOut["metric"] = metrics; }));
     EXPECT_NO_THROW(FactoryNetworkFamilyCreator<OSPlatformType::WINDOWS>::create(mock)->buildNetworkData(networkInfo));
 
     for (auto& element : networkInfo.at("IPv4"))
@@ -111,31 +106,25 @@ TEST_F(SysInfoNetworkWindowsTest, Test_IPV4)
 
 TEST_F(SysInfoNetworkWindowsTest, Test_IPV6)
 {
-    auto mock { std::make_shared<SysInfoNetworkWindowsWrapperMock>() };
+    auto mock {std::make_shared<SysInfoNetworkWindowsWrapperMock>()};
     nlohmann::json networkInfo {};
-    const std::string address   { "2001:db8:85a3:8d3:1319:8a2e:370:7348" };
-    const std::string netmask   { "2001:db8:abcd:0012:ffff:ffff:ffff:ffff" };
-    const std::string broadcast { "2001:db8:85a3:8d3:1319:8a2e:370:0000" };
-    const std::string dhcp      { "8.8.8.8" };
-    const std::string metrics   { "25" };
+    const std::string address {"2001:db8:85a3:8d3:1319:8a2e:370:7348"};
+    const std::string netmask {"2001:db8:abcd:0012:ffff:ffff:ffff:ffff"};
+    const std::string broadcast {"2001:db8:85a3:8d3:1319:8a2e:370:0000"};
+    const std::string dhcp {"8.8.8.8"};
+    const std::string metrics {"25"};
     EXPECT_CALL(*mock, family()).Times(1).WillOnce(Return(Utils::NetworkWindowsHelper::IPV6));
     EXPECT_CALL(*mock, addressV6()).Times(1).WillOnce(Return(address));
     EXPECT_CALL(*mock, netmaskV6()).Times(1).WillOnce(Return(netmask));
     EXPECT_CALL(*mock, broadcastV6(_))
-                .Times(1)
-                .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) {
-                    jsonOut["broadcast"] = broadcast;
-                }));
+        .Times(1)
+        .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) { jsonOut["broadcast"] = broadcast; }));
     EXPECT_CALL(*mock, dhcp(_))
-                .Times(1)
-                .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) {
-                    jsonOut["dhcp"] = dhcp;
-                }));
+        .Times(1)
+        .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) { jsonOut["dhcp"] = dhcp; }));
     EXPECT_CALL(*mock, metricsV6(_))
-                .Times(1)
-                .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) {
-                    jsonOut["metric"] = metrics;
-                }));
+        .Times(1)
+        .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) { jsonOut["metric"] = metrics; }));
     EXPECT_NO_THROW(FactoryNetworkFamilyCreator<OSPlatformType::WINDOWS>::create(mock)->buildNetworkData(networkInfo));
 
     for (auto& element : networkInfo.at("IPv6"))
@@ -150,42 +139,32 @@ TEST_F(SysInfoNetworkWindowsTest, Test_IPV6)
 
 TEST_F(SysInfoNetworkWindowsTest, Test_COMMON_DATA)
 {
-    auto mock { std::make_shared<SysInfoNetworkWindowsWrapperMock>() };
+    auto mock {std::make_shared<SysInfoNetworkWindowsWrapperMock>()};
     nlohmann::json networkInfo {};
-    const std::string name      { "eth01" };
-    const std::string type      { "2001:db8:abcd:0012:ffff:ffff:ffff:ffff" };
-    const std::string state     { "up" };
-    const std::string MAC       { "00:A0:C9:14:C8:29" };
-    const uint32_t mtu          { 1500 };
-    const std::string gateway   { "10.2.2.50" };
+    const std::string name {"eth01"};
+    const std::string type {"2001:db8:abcd:0012:ffff:ffff:ffff:ffff"};
+    const std::string state {"up"};
+    const std::string MAC {"00:A0:C9:14:C8:29"};
+    const uint32_t mtu {1500};
+    const std::string gateway {"10.2.2.50"};
     EXPECT_CALL(*mock, family()).Times(1).WillOnce(Return(Utils::NetworkWindowsHelper::COMMON_DATA));
     EXPECT_CALL(*mock, name()).Times(1).WillOnce(Return(name));
     EXPECT_CALL(*mock, type(_))
-                .Times(1)
-                .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) {
-                            jsonOut["type"] = type;
-                }));
+        .Times(1)
+        .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) { jsonOut["type"] = type; }));
     EXPECT_CALL(*mock, state(_))
-                .Times(1)
-                .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) {
-                            jsonOut["state"] = state;
-                }));
+        .Times(1)
+        .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) { jsonOut["state"] = state; }));
     EXPECT_CALL(*mock, MAC(_))
-                .Times(1)
-                .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) {
-                            jsonOut["mac"] = MAC;
-                }));
-    EXPECT_CALL(*mock, stats()).Times(1).WillOnce(Return(LinkStats{0, 1, 2, 3, 4, 5, 6, 7}));
+        .Times(1)
+        .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) { jsonOut["mac"] = MAC; }));
+    EXPECT_CALL(*mock, stats()).Times(1).WillOnce(Return(LinkStats {0, 1, 2, 3, 4, 5, 6, 7}));
     EXPECT_CALL(*mock, mtu(_))
-                .Times(1)
-                .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) {
-                            jsonOut["mtu"] = mtu;
-                }));
+        .Times(1)
+        .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) { jsonOut["mtu"] = mtu; }));
     EXPECT_CALL(*mock, gateway(_))
-                .Times(1)
-                .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) {
-                            jsonOut["gateway"] = gateway;
-                }));
+        .Times(1)
+        .WillOnce(testing::Invoke([&](nlohmann::json& jsonOut) { jsonOut["gateway"] = gateway; }));
 
     EXPECT_NO_THROW(FactoryNetworkFamilyCreator<OSPlatformType::WINDOWS>::create(mock)->buildNetworkData(networkInfo));
 

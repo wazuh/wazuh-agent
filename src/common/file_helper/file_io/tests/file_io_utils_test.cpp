@@ -11,7 +11,7 @@ TEST(FileIOTest, ReadLineByLine_CallsCallbackForEachLine)
 {
     auto mockFileIOWrapper = std::make_shared<MockFileIOWrapper>();
     auto mockFileIO = std::make_unique<file_io::FileIOUtils>(mockFileIOWrapper);
-    std::string const filePath = "fakepath.txt";
+    const std::string filePath = "fakepath.txt";
     std::unique_ptr<std::ifstream> fakeStream = std::make_unique<std::ifstream>();
 
     EXPECT_CALL(*mockFileIOWrapper, create_ifstream(filePath, std::ios_base::in))
@@ -37,11 +37,10 @@ TEST(FileIOTest, ReadLineByLine_CreateIfstreamFails_ThrowsException)
 {
     auto mockFileIOWrapper = std::make_shared<MockFileIOWrapper>();
     auto mockFileIO = std::make_unique<file_io::FileIOUtils>(mockFileIOWrapper);
-    std::string const filePath = "fakepath.txt";
+    const std::string filePath = "fakepath.txt";
     const std::unique_ptr<std::ifstream> fakeStream = std::make_unique<std::ifstream>();
 
-    EXPECT_CALL(*mockFileIOWrapper, create_ifstream(filePath, std::ios_base::in))
-        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*mockFileIOWrapper, create_ifstream(filePath, std::ios_base::in)).WillOnce(Return(nullptr));
 
     EXPECT_THROW(
         { mockFileIO->readLineByLine(filePath, [](const std::string& /*line*/) { return true; }); },
@@ -52,7 +51,7 @@ TEST(FileIOTest, ReadLineByLine_FileNotOpen_ThrowsException)
 {
     auto mockFileIOWrapper = std::make_shared<MockFileIOWrapper>();
     auto mockFileIO = std::make_unique<file_io::FileIOUtils>(mockFileIOWrapper);
-    std::string const filePath = "fakepath.txt";
+    const std::string filePath = "fakepath.txt";
     std::unique_ptr<std::ifstream> fakeStream = std::make_unique<std::ifstream>();
 
     EXPECT_CALL(*mockFileIOWrapper, create_ifstream(filePath, std::ios_base::in))
@@ -68,7 +67,7 @@ TEST(FileIOTest, ReadLineByLine_EmptyFile_NoCallbackCalled)
 {
     auto mockFileIOWrapper = std::make_shared<MockFileIOWrapper>();
     auto mockFileIO = std::make_unique<file_io::FileIOUtils>(mockFileIOWrapper);
-    std::string const filePath = "fakepath.txt";
+    const std::string filePath = "fakepath.txt";
     std::unique_ptr<std::ifstream> fakeStream = std::make_unique<std::ifstream>();
 
     EXPECT_CALL(*mockFileIOWrapper, create_ifstream(filePath, std::ios_base::in))
@@ -91,13 +90,12 @@ TEST(FileIOTest, GetFileContent_CreateIfstreamFails_ReturnsEmptyString)
 {
     auto mockFileIOWrapper = std::make_shared<MockFileIOWrapper>();
     auto mockFileIO = std::make_unique<file_io::FileIOUtils>(mockFileIOWrapper);
-    std::string const filePath = "fakepath.txt";
+    const std::string filePath = "fakepath.txt";
     const std::unique_ptr<std::ifstream> fakeStream = std::make_unique<std::ifstream>();
 
-    EXPECT_CALL(*mockFileIOWrapper, create_ifstream(filePath, std::ios_base::in))
-        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*mockFileIOWrapper, create_ifstream(filePath, std::ios_base::in)).WillOnce(Return(nullptr));
 
-    std::string const content = mockFileIO->getFileContent(filePath);
+    const std::string content = mockFileIO->getFileContent(filePath);
     EXPECT_EQ(content, "");
 }
 
@@ -105,13 +103,13 @@ TEST(FileIOTest, GetFileContent_FileNotOpen_ReturnsEmptyString)
 {
     auto mockFileIOWrapper = std::make_shared<MockFileIOWrapper>();
     auto mockFileIO = std::make_unique<file_io::FileIOUtils>(mockFileIOWrapper);
-    std::string const filePath = "fakepath.txt";
+    const std::string filePath = "fakepath.txt";
     std::unique_ptr<std::ifstream> fakeStream = std::make_unique<std::ifstream>();
 
     EXPECT_CALL(*mockFileIOWrapper, create_ifstream(filePath, std::ios_base::in))
         .WillOnce(Return(ByMove(std::move(fakeStream))));
     EXPECT_CALL(*mockFileIOWrapper, is_open(testing::_)).WillOnce(Return(false));
-    std::string const content = mockFileIO->getFileContent(filePath);
+    const std::string content = mockFileIO->getFileContent(filePath);
     EXPECT_EQ(content, "");
 }
 
@@ -119,19 +117,20 @@ TEST(FileIOTest, GetFileContent_FileIsOpen_ReturnsContent)
 {
     auto mockFileIOWrapper = std::make_shared<MockFileIOWrapper>();
     auto mockFileIO = std::make_unique<file_io::FileIOUtils>(mockFileIOWrapper);
-    std::string const filePath = "fakepath.txt";
-    std::string const fakeData = "fakepath content";
+    const std::string filePath = "fakepath.txt";
+    const std::string fakeData = "fakepath content";
 
     std::unique_ptr<std::ifstream> fakeStream = std::make_unique<std::ifstream>();
 
-    EXPECT_CALL(*mockFileIOWrapper, create_ifstream(filePath, testing::_)).WillOnce(Return(ByMove(std::move(fakeStream))));
+    EXPECT_CALL(*mockFileIOWrapper, create_ifstream(filePath, testing::_))
+        .WillOnce(Return(ByMove(std::move(fakeStream))));
     EXPECT_CALL(*mockFileIOWrapper, is_open(testing::_)).WillOnce(Return(true));
 
-    std::istringstream const iss(fakeData);
+    const std::istringstream iss(fakeData);
     std::streambuf* fakeBuf = iss.rdbuf();
     EXPECT_CALL(*mockFileIOWrapper, get_rdbuf(testing::_)).WillOnce(Return(fakeBuf));
 
-    std::string const content = mockFileIO->getFileContent(filePath);
+    const std::string content = mockFileIO->getFileContent(filePath);
     EXPECT_EQ(content, fakeData);
 }
 
@@ -139,10 +138,11 @@ TEST(FileIOTest, GetBinaryContent_FileIsNotOpen_ReturnsEmptyVector)
 {
     auto mockFileIOWrapper = std::make_shared<MockFileIOWrapper>();
     auto mockFileIO = std::make_unique<file_io::FileIOUtils>(mockFileIOWrapper);
-    std::string const filePath = "fakepath.txt";
+    const std::string filePath = "fakepath.txt";
     std::unique_ptr<std::ifstream> fakeStream = std::make_unique<std::ifstream>();
 
-    EXPECT_CALL(*mockFileIOWrapper, create_ifstream(filePath, testing::_)).WillOnce(Return(ByMove(std::move(fakeStream))));
+    EXPECT_CALL(*mockFileIOWrapper, create_ifstream(filePath, testing::_))
+        .WillOnce(Return(ByMove(std::move(fakeStream))));
     EXPECT_CALL(*mockFileIOWrapper, is_open(testing::_)).WillOnce(Return(false));
 
     const std::vector<char> content = mockFileIO->getBinaryContent(filePath);
@@ -153,7 +153,7 @@ TEST(FileIOTest, GetBinaryContent_CreateIfstreamFails_ReturnsEmptyVector)
 {
     auto mockFileIOWrapper = std::make_shared<MockFileIOWrapper>();
     auto mockFileIO = std::make_unique<file_io::FileIOUtils>(mockFileIOWrapper);
-    std::string const filePath = "fakepath.txt";
+    const std::string filePath = "fakepath.txt";
     const std::unique_ptr<std::ifstream> fakeStream = std::make_unique<std::ifstream>();
 
     EXPECT_CALL(*mockFileIOWrapper, create_ifstream(filePath, testing::_)).WillOnce(Return(nullptr));
@@ -166,10 +166,11 @@ TEST(FileIOTest, GetBinaryContent_FileIsOpen_BufferIsNull_ReturnsEmptyVector)
 {
     auto mockFileIOWrapper = std::make_shared<MockFileIOWrapper>();
     auto mockFileIO = std::make_unique<file_io::FileIOUtils>(mockFileIOWrapper);
-    std::string const filePath = "fakepath.txt";
+    const std::string filePath = "fakepath.txt";
     std::unique_ptr<std::ifstream> fakeStream = std::make_unique<std::ifstream>();
 
-    EXPECT_CALL(*mockFileIOWrapper, create_ifstream(filePath, testing::_)).WillOnce(Return(ByMove(std::move(fakeStream))));
+    EXPECT_CALL(*mockFileIOWrapper, create_ifstream(filePath, testing::_))
+        .WillOnce(Return(ByMove(std::move(fakeStream))));
     EXPECT_CALL(*mockFileIOWrapper, is_open(testing::_)).WillOnce(Return(true));
     EXPECT_CALL(*mockFileIOWrapper, get_rdbuf(testing::_)).WillOnce(Return(nullptr));
 
@@ -181,14 +182,15 @@ TEST(FileIOTest, GetBinaryContent_FileIsOpen_BufferIsNotNull_ReturnsContent)
 {
     auto mockFileIOWrapper = std::make_shared<MockFileIOWrapper>();
     auto mockFileIO = std::make_unique<file_io::FileIOUtils>(mockFileIOWrapper);
-    std::string const filePath = "fakepath.txt";
-    std::string const fakeData = "fakepath content";
+    const std::string filePath = "fakepath.txt";
+    const std::string fakeData = "fakepath content";
     std::unique_ptr<std::ifstream> fakeStream = std::make_unique<std::ifstream>();
 
-    std::istringstream const iss(fakeData);
+    const std::istringstream iss(fakeData);
     std::streambuf* fakeBuf = iss.rdbuf();
 
-    EXPECT_CALL(*mockFileIOWrapper, create_ifstream(filePath, testing::_)).WillOnce(Return(ByMove(std::move(fakeStream))));
+    EXPECT_CALL(*mockFileIOWrapper, create_ifstream(filePath, testing::_))
+        .WillOnce(Return(ByMove(std::move(fakeStream))));
     EXPECT_CALL(*mockFileIOWrapper, is_open(testing::_)).WillOnce(Return(true));
     EXPECT_CALL(*mockFileIOWrapper, get_rdbuf(testing::_)).WillOnce(Return(fakeBuf));
 

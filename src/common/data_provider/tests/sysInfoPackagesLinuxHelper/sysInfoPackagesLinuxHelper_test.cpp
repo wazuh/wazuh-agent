@@ -24,12 +24,11 @@ void SysInfoPackagesLinuxHelperTest::TearDown() {};
 
 TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformation)
 {
-    constexpr auto RPM_PACKAGE_CENTOS
-    {
-        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t4111222333\t3\t24.el5\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
-    };
+    constexpr auto RPM_PACKAGE_CENTOS {
+        "mktemp\tx86_64\tA small utility for safely making /tmp "
+        "files.\t4111222333\t3\t24.el5\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"};
 
-    const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS) };
+    const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS)};
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
     EXPECT_EQ(4111222333, jsPackageInfo["size"]);
@@ -56,7 +55,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationLibRpm)
     input.epoch = 3;
     input.release = "24.el5";
 
-    const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(input) };
+    const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(input)};
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
     EXPECT_EQ(4111222333, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
@@ -70,12 +69,10 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationLibRpm)
 
 TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationGPG)
 {
-    constexpr auto RPM_PACKAGE_CENTOS
-    {
-        "gpg-pubkey\tx86_64\tA small utility for safely making /tmp files.\t15432\t3\t24.el5\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
-    };
+    constexpr auto RPM_PACKAGE_CENTOS {"gpg-pubkey\tx86_64\tA small utility for safely making /tmp "
+                                       "files.\t15432\t3\t24.el5\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"};
 
-    const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS) };
+    const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS)};
     EXPECT_TRUE(jsPackageInfo.empty());
 }
 
@@ -84,18 +81,15 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationGPGLibRPM)
     RpmPackageManager::Package input;
     input.name = "gpg-pubkey";
 
-    const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(input) };
+    const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(input)};
     EXPECT_TRUE(jsPackageInfo.empty());
 }
 
 TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationUnknownInEmpty)
 {
-    constexpr auto RPM_PACKAGE_CENTOS
-    {
-        "curl\t\t\t\t\t\t\t\t\t\t"
-    };
+    constexpr auto RPM_PACKAGE_CENTOS {"curl\t\t\t\t\t\t\t\t\t\t"};
 
-    const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS) };
+    const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS)};
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("curl", jsPackageInfo["name"]);
     EXPECT_EQ(0, jsPackageInfo["size"]);
@@ -108,15 +102,13 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationUnknownInEmpty)
     EXPECT_EQ(UNKNOWN_VALUE, jsPackageInfo["description"]);
 }
 
-
 TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonEpoch)
 {
-    constexpr auto RPM_PACKAGE_CENTOS
-    {
-        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t4111222333\t\t24.el5\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
-    };
+    constexpr auto RPM_PACKAGE_CENTOS {
+        "mktemp\tx86_64\tA small utility for safely making /tmp "
+        "files.\t4111222333\t\t24.el5\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"};
 
-    const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS) };
+    const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS)};
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
     EXPECT_EQ(4111222333, jsPackageInfo["size"]);
@@ -141,7 +133,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmNoEpochNoReleaseLibRpm)
     input.vendor = "CentOS";
     input.description = "A small utility for safely making /tmp files.";
 
-    const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(input) };
+    const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(input)};
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
     EXPECT_EQ(4111222333, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
@@ -166,7 +158,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmNoEpochLibRpm)
     input.description = "A small utility for safely making /tmp files.";
     input.epoch = 1;
 
-    const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(input) };
+    const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(input)};
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
     EXPECT_EQ(4111222333, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
@@ -180,12 +172,10 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmNoEpochLibRpm)
 
 TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonEpochNonRelease)
 {
-    constexpr auto RPM_PACKAGE_CENTOS
-    {
-        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t4111222333\t\t\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
-    };
+    constexpr auto RPM_PACKAGE_CENTOS {"mktemp\tx86_64\tA small utility for safely making /tmp "
+                                       "files.\t4111222333\t\t\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"};
 
-    const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS) };
+    const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS)};
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
     EXPECT_EQ(4111222333, jsPackageInfo["size"]);
@@ -200,12 +190,10 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonEpochNonRelease)
 
 TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonRelease)
 {
-    constexpr auto RPM_PACKAGE_CENTOS
-    {
-        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t4111222333\t3\t\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
-    };
+    constexpr auto RPM_PACKAGE_CENTOS {"mktemp\tx86_64\tA small utility for safely making /tmp "
+                                       "files.\t4111222333\t3\t\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"};
 
-    const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS) };
+    const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS)};
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
     EXPECT_EQ(4111222333, jsPackageInfo["size"]);
@@ -220,12 +208,11 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonRelease)
 
 TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonEpochWithNone)
 {
-    constexpr auto RPM_PACKAGE_CENTOS
-    {
-        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t4111222333\t(none)\t24.el5\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
-    };
+    constexpr auto RPM_PACKAGE_CENTOS {
+        "mktemp\tx86_64\tA small utility for safely making /tmp "
+        "files.\t4111222333\t(none)\t24.el5\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"};
 
-    const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS) };
+    const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS)};
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
     EXPECT_EQ(4111222333, jsPackageInfo["size"]);
@@ -240,12 +227,11 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonEpochWithNone)
 
 TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonReleaseWithNone)
 {
-    constexpr auto RPM_PACKAGE_CENTOS
-    {
-        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t4111222333\t3\t(none)\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
-    };
+    constexpr auto RPM_PACKAGE_CENTOS {
+        "mktemp\tx86_64\tA small utility for safely making /tmp "
+        "files.\t4111222333\t3\t(none)\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"};
 
-    const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS) };
+    const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS)};
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
     EXPECT_EQ(4111222333, jsPackageInfo["size"]);
@@ -260,12 +246,11 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonReleaseWithNone)
 
 TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonEpochNonReleaseWithNone)
 {
-    constexpr auto RPM_PACKAGE_CENTOS
-    {
-        "mktemp\tx86_64\tA small utility for safely making /tmp files.\t4111222333\t(none)\t(none)\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"
-    };
+    constexpr auto RPM_PACKAGE_CENTOS {
+        "mktemp\tx86_64\tA small utility for safely making /tmp "
+        "files.\t4111222333\t(none)\t(none)\t1.5\tCentOS\t1425472738\tSystem Environment/Base\t"};
 
-    const auto& jsPackageInfo { PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS) };
+    const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS)};
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
     EXPECT_EQ(4111222333, jsPackageInfo["size"]);
@@ -280,23 +265,20 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonEpochNonReleaseWith
 
 TEST_F(SysInfoPackagesLinuxHelperTest, parseDpkgInformation)
 {
-    constexpr auto PACKAGE_INFO     {"Package: zlib1g-dev"};
-    constexpr auto STATUS_INFO      {"Status: install ok installed"};
-    constexpr auto PRIORITY_INFO    {"Priority: optional"};
-    constexpr auto SECTION_INFO     {"Section: libdevel"};
-    constexpr auto SIZE_INFO        {"Installed-Size: 4014865"};
-    constexpr auto VENDOR_INFO      {"Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>"};
-    constexpr auto ARCH_INFO        {"Architecture: amd64"};
-    constexpr auto MULTIARCH_INFO   {"Multi-Arch: same"};
-    constexpr auto SOURCE_INFO      {"Source: zlib"};
-    constexpr auto VERSION_INFO     {"Version: 1:1.2.11.dfsg-2ubuntu1.2"};
-    constexpr auto DESCRIPTION_INFO
-    {
-        "Description: compression library - development\n\
+    constexpr auto PACKAGE_INFO {"Package: zlib1g-dev"};
+    constexpr auto STATUS_INFO {"Status: install ok installed"};
+    constexpr auto PRIORITY_INFO {"Priority: optional"};
+    constexpr auto SECTION_INFO {"Section: libdevel"};
+    constexpr auto SIZE_INFO {"Installed-Size: 4014865"};
+    constexpr auto VENDOR_INFO {"Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>"};
+    constexpr auto ARCH_INFO {"Architecture: amd64"};
+    constexpr auto MULTIARCH_INFO {"Multi-Arch: same"};
+    constexpr auto SOURCE_INFO {"Source: zlib"};
+    constexpr auto VERSION_INFO {"Version: 1:1.2.11.dfsg-2ubuntu1.2"};
+    constexpr auto DESCRIPTION_INFO {"Description: compression library - development\n\
          zlib is a library implementing the deflate compression method found\n\
          in gzip and PKZIP.  This package includes the development support\n\
-         files."
-    };
+         files."};
     std::vector<std::string> packagesList;
     packagesList.push_back(PACKAGE_INFO);
     packagesList.push_back(STATUS_INFO);
@@ -309,7 +291,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseDpkgInformation)
     packagesList.push_back(SOURCE_INFO);
     packagesList.push_back(VERSION_INFO);
     packagesList.push_back(DESCRIPTION_INFO);
-    const auto& jsPackageInfo { PackageLinuxHelper::parseDpkg(packagesList) };
+    const auto& jsPackageInfo {PackageLinuxHelper::parseDpkg(packagesList)};
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("zlib1g-dev", jsPackageInfo["name"]);
     EXPECT_EQ("optional", jsPackageInfo["priority"]);
@@ -326,7 +308,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseDpkgInformation)
 
 TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapCorrectMapping)
 {
-    const auto& jsPackageInfo { PackageLinuxHelper::parseSnap( R"(
+    const auto& jsPackageInfo {PackageLinuxHelper::parseSnap(R"(
             {
             "id": "rw36mkAjdIKl13dzfwyxP87cejpyIcct",
             "title": "gnome-3-38-2004",
@@ -364,7 +346,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapCorrectMapping)
             ],
             "install-date": "2022-11-23T20:33:59.025662696-03:00"
             }
-        )"_json) };
+        )"_json)};
 
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("gnome-3-38-2004", jsPackageInfo["name"]);
@@ -380,7 +362,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapCorrectMapping)
 
 TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapInvalidInputName)
 {
-    const auto& jsPackageInfo { PackageLinuxHelper::parseSnap( R"(
+    const auto& jsPackageInfo {PackageLinuxHelper::parseSnap(R"(
             {
             "id": "rw36mkAjdIKl13dzfwyxP87cejpyIcct",
             "title": "gnome-3-38-2004",
@@ -417,14 +399,14 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapInvalidInputName)
             ],
             "install-date": "2022-11-23T20:33:59.025662696-03:00"
             }
-        )"_json) };
+        )"_json)};
 
     EXPECT_TRUE(jsPackageInfo.empty());
 }
 
 TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapInvalidInputVersion)
 {
-    const auto& jsPackageInfo { PackageLinuxHelper::parseSnap( R"(
+    const auto& jsPackageInfo {PackageLinuxHelper::parseSnap(R"(
             {
             "id": "rw36mkAjdIKl13dzfwyxP87cejpyIcct",
             "title": "gnome-3-38-2004",
@@ -461,14 +443,14 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapInvalidInputVersion)
             ],
             "install-date": "2022-11-23T20:33:59.025662696-03:00"
             }
-        )"_json) };
+        )"_json)};
 
     EXPECT_TRUE(jsPackageInfo.empty());
 }
 
 TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapValidSizeAsString)
 {
-    const auto& jsPackageInfo { PackageLinuxHelper::parseSnap( R"(
+    const auto& jsPackageInfo {PackageLinuxHelper::parseSnap(R"(
             {
             "id": "rw36mkAjdIKl13dzfwyxP87cejpyIcct",
             "title": "gnome-3-38-2004",
@@ -506,7 +488,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapValidSizeAsString)
             ],
             "install-date": "2022-11-23T20:33:59.025662696-03:00"
             }
-        )"_json) };
+        )"_json)};
 
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ(4111222333, jsPackageInfo["size"]);
@@ -514,17 +496,15 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapValidSizeAsString)
 
 TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapEmptyJSON)
 {
-    const auto& jsPackageInfo { PackageLinuxHelper::parseSnap( R"({})"_json) };
+    const auto& jsPackageInfo {PackageLinuxHelper::parseSnap(R"({})"_json)};
 
     EXPECT_TRUE(jsPackageInfo.empty());
 }
 
 TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapWrongJSON)
 {
-    EXPECT_NO_THROW(
-    {
-        const auto& jsPackageInfo { PackageLinuxHelper::parseSnap( R"(curl: (7) Couldn't connect to server)") };
+    EXPECT_NO_THROW({
+        const auto& jsPackageInfo {PackageLinuxHelper::parseSnap(R"(curl: (7) Couldn't connect to server)")};
         EXPECT_TRUE(jsPackageInfo.empty());
     });
 }
-

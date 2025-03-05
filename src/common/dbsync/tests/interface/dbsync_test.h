@@ -12,25 +12,24 @@
 #ifndef _DBYSNC_TEST_H
 #define _DBYSNC_TEST_H
 
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
 #include "commonDefs.h"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 class DBSyncTest : public ::testing::Test
 {
-    protected:
+protected:
+    DBSyncTest() = default;
+    virtual ~DBSyncTest() = default;
 
-        DBSyncTest() = default;
-        virtual ~DBSyncTest() = default;
-
-        void SetUp() override;
-        void TearDown() override;
+    void SetUp() override;
+    void TearDown() override;
 };
 
 struct DummyContext
 {
     DBSYNC_HANDLE handle;
-    TXN_HANDLE    txnContext;
+    TXN_HANDLE txnContext;
 };
 
 #endif // _DBYSNC_TEST_H

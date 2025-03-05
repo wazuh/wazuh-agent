@@ -12,9 +12,9 @@
 #ifndef _PACKAGE_LINUX_RPM_PARSER_HELPER_H
 #define _PACKAGE_LINUX_RPM_PARSER_HELPER_H
 
-#include <nlohmann/json.hpp>
 #include "rpmPackageManager.h"
 #include "sharedDefs.h"
+#include <nlohmann/json.hpp>
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -23,7 +23,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable: 4505)
+#pragma warning(disable : 4505)
 #endif
 
 namespace PackageLinuxHelper
@@ -31,7 +31,7 @@ namespace PackageLinuxHelper
     static nlohmann::json parseRpm(const RpmPackageManager::Package& package)
     {
         nlohmann::json ret;
-        auto version { package.version };
+        auto version {package.version};
 
         if (package.epoch)
         {
@@ -45,25 +45,25 @@ namespace PackageLinuxHelper
 
         if (package.name.compare("gpg-pubkey") != 0 && !package.name.empty())
         {
-            ret["name"]         = package.name;
-            ret["size"]         = package.size;
+            ret["name"] = package.name;
+            ret["size"] = package.size;
             ret["install_time"] = package.installTime;
-            ret["location"]     = EMPTY_VALUE;
-            ret["groups"]       = package.group;
-            ret["version"]      = version;
-            ret["priority"]     = UNKNOWN_VALUE;
+            ret["location"] = EMPTY_VALUE;
+            ret["groups"] = package.group;
+            ret["version"] = version;
+            ret["priority"] = UNKNOWN_VALUE;
             ret["architecture"] = package.architecture;
-            ret["source"]       = UNKNOWN_VALUE;
-            ret["format"]       = "rpm";
-            ret["vendor"]       = package.vendor.empty() ? UNKNOWN_VALUE : package.vendor;
-            ret["description"]  = package.description;
+            ret["source"] = UNKNOWN_VALUE;
+            ret["format"] = "rpm";
+            ret["vendor"] = package.vendor.empty() ? UNKNOWN_VALUE : package.vendor;
+            ret["description"] = package.description;
             // The multiarch field won't have a default value
         }
 
         return ret;
     }
 
-};
+}; // namespace PackageLinuxHelper
 
 #ifdef __GNUC__
 #pragma GCC diagnostic pop

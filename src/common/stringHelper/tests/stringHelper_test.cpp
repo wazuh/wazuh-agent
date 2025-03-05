@@ -198,7 +198,7 @@ TEST_F(StringUtilsTest, SplitDelimiterNullTerminated)
 
 TEST_F(StringUtilsTest, SplitMapKeyValue)
 {
-    std::string const buffer("PRETTY_NAME=\"Ubuntu 22.04.1 LTS\"\n\
+    const std::string buffer("PRETTY_NAME=\"Ubuntu 22.04.1 LTS\"\n\
 NAME=\"Ubuntu\"\n\
 VERSION_ID=\"22.04\"\n\
 VERSION=\"22.04.1 LTS (Jammy Jellyfish)\"\n\
@@ -296,7 +296,7 @@ TEST_F(StringUtilsTest, substrOnFirstOccurrenceCorrectEscapeCharacterEmptyResult
 
 TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimple)
 {
-    std::string const stringBase {"hello:world"};
+    const std::string stringBase {"hello:world"};
     const auto retVal {Utils::splitKeyValueNonEscapedDelimiter(stringBase, ':', '\\')};
     EXPECT_EQ(retVal.first, "hello");
     EXPECT_EQ(retVal.second, "world");
@@ -304,7 +304,7 @@ TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimple)
 
 TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimpleEnd)
 {
-    std::string const stringBase {"hello:"};
+    const std::string stringBase {"hello:"};
     const auto retVal {Utils::splitKeyValueNonEscapedDelimiter(stringBase, ':', '\\')};
     EXPECT_EQ(retVal.first, "hello");
     EXPECT_EQ(retVal.second, "");
@@ -312,7 +312,7 @@ TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimpleEnd)
 
 TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimpleDoubleDelimiterEnd)
 {
-    std::string const stringBase {"hello:world:"};
+    const std::string stringBase {"hello:world:"};
     const auto retVal {Utils::splitKeyValueNonEscapedDelimiter(stringBase, ':', '\\')};
     EXPECT_EQ(retVal.first, "hello");
     EXPECT_EQ(retVal.second, "world:");
@@ -320,7 +320,7 @@ TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimpleDoubleDelimiterEnd)
 
 TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimpleDoubleEnd)
 {
-    std::string const stringBase {"hello::"};
+    const std::string stringBase {"hello::"};
     const auto retVal {Utils::splitKeyValueNonEscapedDelimiter(stringBase, ':', '\\')};
     EXPECT_EQ(retVal.first, "hello");
     EXPECT_EQ(retVal.second, ":");
@@ -328,7 +328,7 @@ TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimpleDoubleEnd)
 
 TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimpleEmptyDoubleEnd)
 {
-    std::string const stringBase {"::"};
+    const std::string stringBase {"::"};
     const auto retVal {Utils::splitKeyValueNonEscapedDelimiter(stringBase, ':', '\\')};
     EXPECT_EQ(retVal.first, "");
     EXPECT_EQ(retVal.second, ":");
@@ -336,7 +336,7 @@ TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimpleEmptyDoubleEnd)
 
 TEST_F(StringUtilsTest, splitKeyValueNonEscapedComplex)
 {
-    std::string const stringBase {"he\\:llo:world"};
+    const std::string stringBase {"he\\:llo:world"};
     const auto retVal {Utils::splitKeyValueNonEscapedDelimiter(stringBase, ':', '\\')};
     EXPECT_EQ(retVal.first, "he\\:llo");
     EXPECT_EQ(retVal.second, "world");
@@ -344,7 +344,7 @@ TEST_F(StringUtilsTest, splitKeyValueNonEscapedComplex)
 
 TEST_F(StringUtilsTest, splitKeyValueNonEscapedComplexEnd)
 {
-    std::string const stringBase {"he\\:llo:"};
+    const std::string stringBase {"he\\:llo:"};
     const auto retVal {Utils::splitKeyValueNonEscapedDelimiter(stringBase, ':', '\\')};
     EXPECT_EQ(retVal.first, "he\\:llo");
     EXPECT_EQ(retVal.second, "");
@@ -588,4 +588,3 @@ TEST_F(StringUtilsTest, haveUpperCaseCharacters)
     EXPECT_FALSE(Utils::haveUpperCaseCharacters("test"));
     EXPECT_FALSE(Utils::haveUpperCaseCharacters(""));
 }
-

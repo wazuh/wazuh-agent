@@ -7,14 +7,12 @@
 namespace file_io
 {
     FileIOUtils::FileIOUtils(std::shared_ptr<IFileIOWrapper> fileIOWrapper)
-    : m_fileIOWrapper(fileIOWrapper ? std::move(fileIOWrapper)
-                                    : std::make_shared<FileIOWrapper>())
+        : m_fileIOWrapper(fileIOWrapper ? std::move(fileIOWrapper) : std::make_shared<FileIOWrapper>())
     {
-
     }
 
     void FileIOUtils::readLineByLine(const std::filesystem::path& filePath,
-                                const std::function<bool(const std::string&)>& callback) const
+                                     const std::function<bool(const std::string&)>& callback) const
     {
         auto file = m_fileIOWrapper->create_ifstream(filePath.string());
 

@@ -7,11 +7,12 @@
 #endif
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-struct tm *localtime_r(const time_t *timer, struct tm *result);
-struct tm *gmtime_r(const time_t* timep, struct tm* result);
+    struct tm* localtime_r(const time_t* timer, struct tm* result);
+    struct tm* gmtime_r(const time_t* timep, struct tm* result);
 
 #ifdef __cplusplus
 }

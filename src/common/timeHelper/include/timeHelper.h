@@ -16,9 +16,9 @@
 #include <chrono>
 #include <ctime>
 #include <iomanip>
+#include <pal.h>
 #include <sstream>
 #include <string>
-#include <pal.h>
 
 namespace Utils
 {
@@ -30,7 +30,7 @@ namespace Utils
 
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable: 4505)
+#pragma warning(disable : 4505)
 #endif
 
     static std::string getTimestamp(const std::time_t& time, const bool utc = true)
@@ -62,6 +62,7 @@ namespace Utils
         ss << std::setfill('0') << std::setw(2) << std::to_string(localTime->tm_sec);
         return ss.str();
     }
+
     static std::string getCurrentTimestamp()
     {
         return getTimestamp(std::time(nullptr));
@@ -80,7 +81,7 @@ namespace Utils
         struct tm buf;
 
         // gmtime: result expressed as a UTC time
-        tm const* localTime {utc ? gmtime_r(&time, &buf) : localtime_r(&time, &buf)};
+        const tm* localTime {utc ? gmtime_r(&time, &buf) : localtime_r(&time, &buf)};
 
         if (localTime == nullptr)
         {

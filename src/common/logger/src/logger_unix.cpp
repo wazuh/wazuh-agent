@@ -22,8 +22,6 @@ Logger::Logger()
 /**
  * @brief Add Unix-specific sinks to the logger.
  */
-void Logger::AddPlatformSpecificSink()
-{
-}
+void Logger::AddPlatformSpecificSink() {}
 
 /// \endcond

@@ -7,6 +7,8 @@
  * Foundation
  */
 
+#ifndef PEM_WRAPPERS_H
+#define PEM_WRAPPERS_H
 
 #include <openssl/pem.h>
 #include <openssl/x509.h>
@@ -22,3 +24,5 @@ int __wrap_PEM_write_PrivateKey(FILE *out,
                                 void *u);
 
 int __wrap_PEM_write_X509(FILE *out, const X509 *x);
+
+#endif

@@ -10,22 +10,25 @@
  */
 #ifndef DBSYNC_PIPELINE_FACTORY_TESTS_H
 #define DBSYNC_PIPELINE_FACTORY_TESTS_H
-#include "gtest/gtest.h"
+
+#include "dbsyncPipelineFactory.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 class DBSyncPipelineFactoryTest : public ::testing::Test
 {
-    protected:
+protected:
+    DBSyncPipelineFactoryTest()
+        : m_pipelineFactory {DbSync::PipelineFactory::instance()}
+        , m_dbHandle {nullptr}
+    {
+    }
 
-        DBSyncPipelineFactoryTest()
-            : m_pipelineFactory{DbSync::PipelineFactory::instance()}
-            , m_dbHandle{ nullptr }
-        {}
-        virtual ~DBSyncPipelineFactoryTest() = default;
+    virtual ~DBSyncPipelineFactoryTest() = default;
 
-        void SetUp() override;
-        void TearDown() override;
-        DbSync::PipelineFactory& m_pipelineFactory;
-        DBSYNC_HANDLE m_dbHandle;
+    void SetUp() override;
+    void TearDown() override;
+    DbSync::PipelineFactory& m_pipelineFactory;
+    DBSYNC_HANDLE m_dbHandle;
 };
-#endif //DBSYNC_PIPELINE_FACTORY_TESTS_H
+#endif // DBSYNC_PIPELINE_FACTORY_TESTS_H

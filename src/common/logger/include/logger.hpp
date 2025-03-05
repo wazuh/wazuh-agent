@@ -5,8 +5,8 @@
 
 // Extract file name from path (inline function for C++ and macro for C)
 #ifdef __cplusplus
-#include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 
 inline const char* GetFileName(const char* path)
 {
@@ -20,17 +20,18 @@ inline const char* GetFileName(const char* path)
 #define LOG_FILE_NAME GetFileName(__FILE__)
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #define LOG_BUFFER_SIZE 1024 // Buffer size for formatted log messages
 
-void LogTrace_C(const char* file, int line, const char* func, const char* message, ...);
-void LogDebug_C(const char* file, int line, const char* func, const char* message, ...);
-void LogInfo_C(const char* file, int line, const char* func, const char* message, ...);
-void LogWarn_C(const char* file, int line, const char* func, const char* message, ...);
-void LogError_C(const char* file, int line, const char* func, const char* message, ...);
-void LogCritical_C(const char* file, int line, const char* func, const char* message, ...);
+    void LogTrace_C(const char* file, int line, const char* func, const char* message, ...);
+    void LogDebug_C(const char* file, int line, const char* func, const char* message, ...);
+    void LogInfo_C(const char* file, int line, const char* func, const char* message, ...);
+    void LogWarn_C(const char* file, int line, const char* func, const char* message, ...);
+    void LogError_C(const char* file, int line, const char* func, const char* message, ...);
+    void LogCritical_C(const char* file, int line, const char* func, const char* message, ...);
 
 #ifdef __cplusplus
 }
@@ -38,12 +39,18 @@ void LogCritical_C(const char* file, int line, const char* func, const char* mes
 
 #ifdef __cplusplus
 
-#define LogTrace(message, ...) spdlog::trace("[TRACE] [{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
-#define LogDebug(message, ...) spdlog::debug("[DEBUG] [{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
-#define LogInfo(message, ...)  spdlog::info("[INFO] [{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
-#define LogWarn(message, ...)  spdlog::warn("[WARN] [{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
-#define LogError(message, ...) spdlog::error("[ERROR] [{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
-#define LogCritical(message, ...) spdlog::critical("[CRITICAL] [{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
+#define LogTrace(message, ...)                                                                                         \
+    spdlog::trace("[TRACE] [{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
+#define LogDebug(message, ...)                                                                                         \
+    spdlog::debug("[DEBUG] [{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
+#define LogInfo(message, ...)                                                                                          \
+    spdlog::info("[INFO] [{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
+#define LogWarn(message, ...)                                                                                          \
+    spdlog::warn("[WARN] [{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
+#define LogError(message, ...)                                                                                         \
+    spdlog::error("[ERROR] [{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
+#define LogCritical(message, ...)                                                                                      \
+    spdlog::critical("[CRITICAL] [{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
 
 namespace
 {
@@ -62,14 +69,13 @@ public:
 
 #else
 
-#define LogTrace(message, ...) LogTrace_C(LOG_FILE_NAME, __LINE__, __func__, message, ##__VA_ARGS__)
-#define LogDebug(message, ...) LogDebug_C(LOG_FILE_NAME, __LINE__, __func__, message, ##__VA_ARGS__)
-#define LogInfo(message, ...)  LogInfo_C(LOG_FILE_NAME, __LINE__, __func__, message, ##__VA_ARGS__)
-#define LogWarn(message, ...)  LogWarn_C(LOG_FILE_NAME, __LINE__, __func__, message, ##__VA_ARGS__)
-#define LogError(message, ...) LogError_C(LOG_FILE_NAME, __LINE__, __func__, message, ##__VA_ARGS__)
+#define LogTrace(message, ...)    LogTrace_C(LOG_FILE_NAME, __LINE__, __func__, message, ##__VA_ARGS__)
+#define LogDebug(message, ...)    LogDebug_C(LOG_FILE_NAME, __LINE__, __func__, message, ##__VA_ARGS__)
+#define LogInfo(message, ...)     LogInfo_C(LOG_FILE_NAME, __LINE__, __func__, message, ##__VA_ARGS__)
+#define LogWarn(message, ...)     LogWarn_C(LOG_FILE_NAME, __LINE__, __func__, message, ##__VA_ARGS__)
+#define LogError(message, ...)    LogError_C(LOG_FILE_NAME, __LINE__, __func__, message, ##__VA_ARGS__)
 #define LogCritical(message, ...) LogCritical_C(LOG_FILE_NAME, __LINE__, __func__, message, ##__VA_ARGS__)
 
 #endif
 
 #define LOG_FILE_NAME GetFileName(__FILE__)
-

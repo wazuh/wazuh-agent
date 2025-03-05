@@ -5,4 +5,4 @@
 #endif
 
 #define strtok_r strtok_s
-char **OS_StrBreak(char match, const char *_str, size_t size);
+char** OS_StrBreak(char match, const char* _str, size_t size);
