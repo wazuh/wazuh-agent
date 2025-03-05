@@ -23,16 +23,16 @@ namespace Utils
 
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable: 4505)
+#pragma warning(disable : 4505)
 #endif
 
     static bool patternMatch(const std::string& entryName, const std::string& pattern)
     {
-        auto match { true };
+        auto match {true};
         // Match the glob pattern without regex
-        auto patternPos { 0u };
+        auto patternPos {0u};
 
-        for (auto i { 0u }; i < entryName.size(); ++i)
+        for (auto i {0u}; i < entryName.size(); ++i)
         {
             if (patternPos < pattern.size())
             {
@@ -102,6 +102,6 @@ namespace Utils
 #pragma warning(pop)
 #endif
 
-}
+} // namespace Utils
 
 #endif // _GLOB_HELPER_H

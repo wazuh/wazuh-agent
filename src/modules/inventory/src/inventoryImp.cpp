@@ -2,7 +2,6 @@
 
 #include <commonDefs.h>
 #include <config.h>
-#include <defs.h>
 #include <hashHelper.h>
 #include <inventory.hpp>
 #include <iostream>
@@ -399,6 +398,7 @@ void Inventory::TryCatchTask(const std::function<void()>& task) const
 Inventory::Inventory()
     : m_enabled {true}
     , m_dbFilePath {std::string(config::DEFAULT_DATA_PATH) + "/" + INVENTORY_DB_DISK_NAME}
+    , m_normConfigPath {std::string(config::DEFAULT_DATA_PATH) + "/" + INVENTORY_NORM_CONFIG_NAME}
     , m_intervalValue {INVENTORY_DEFAULT_INTERVAL}
     , m_scanOnStart {true}
     , m_hardware {true}

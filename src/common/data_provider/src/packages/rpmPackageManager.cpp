@@ -12,10 +12,10 @@
 #include "rpmPackageManager.h"
 
 #include <exception>
+#include <iostream>
 #include <map>
 #include <stdexcept>
 #include <vector>
-#include <iostream>
 
 // For O_RDONLY
 #include <fcntl.h>
@@ -23,7 +23,7 @@
 bool RpmPackageManager::ms_instantiated = false;
 
 RpmPackageManager::RpmPackageManager(std::shared_ptr<IRpmLibWrapper>&& wrapper)
-    : m_rpmlib{wrapper}
+    : m_rpmlib {wrapper}
 {
     if (ms_instantiated)
     {
@@ -73,18 +73,17 @@ uint64_t RpmPackageManager::Iterator::getAttributeNumber(rpmTag tag) const
     return retval;
 }
 
-const RpmPackageManager::Iterator RpmPackageManager::END_ITERATOR{};
+const RpmPackageManager::Iterator RpmPackageManager::END_ITERATOR {};
 
 RpmPackageManager::Iterator::Iterator()
-    : m_end{true}
+    : m_end {true}
 {
-
 }
 
 RpmPackageManager::Iterator::Iterator(std::shared_ptr<IRpmLibWrapper>& rpmlib)
-    : m_end{false},
-      m_rpmlib{rpmlib},
-      m_transactionSet{rpmlib->rpmtsCreate()}
+    : m_end {false}
+    , m_rpmlib {rpmlib}
+    , m_transactionSet {rpmlib->rpmtsCreate()}
 {
     if (!m_transactionSet)
     {

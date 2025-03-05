@@ -24,7 +24,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         pthread
         unofficial::sqlite3::sqlite3
         cjson
-        utils
+        deleter_helper
     )
 else()
     target_link_libraries(sysinfo_unit_test PRIVATE
@@ -36,7 +36,7 @@ else()
         pthread
         unofficial::sqlite3::sqlite3
         cjson
-        utils
+        deleter_helper
         dl
     )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")

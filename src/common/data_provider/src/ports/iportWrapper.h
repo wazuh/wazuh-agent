@@ -11,6 +11,7 @@
 
 #ifndef _PORT_WRAPPER_H
 #define _PORT_WRAPPER_H
+
 #include "iportInterface.h"
 
 enum LinuxPortsFieldsData
@@ -28,23 +29,22 @@ enum LinuxPortsFieldsData
     SIZE_LINUX_PORT_FIELDS
 };
 
-
 class IPortWrapper
 {
-    public:
-        // LCOV_EXCL_START
-        virtual ~IPortWrapper() = default;
-        // LCOV_EXCL_STOP
-        virtual void protocol(nlohmann::json&) const = 0;
-        virtual void localIp(nlohmann::json&) const = 0;
-        virtual void localPort(nlohmann::json&) const = 0;
-        virtual void remoteIP(nlohmann::json&) const = 0;
-        virtual void remotePort(nlohmann::json&) const = 0;
-        virtual void txQueue(nlohmann::json&) const = 0;
-        virtual void rxQueue(nlohmann::json&) const = 0;
-        virtual void inode(nlohmann::json&) const = 0;
-        virtual void state(nlohmann::json&) const = 0;
-        virtual void pid(nlohmann::json&) const = 0;
-        virtual void processName(nlohmann::json&) const = 0;
+public:
+    // LCOV_EXCL_START
+    virtual ~IPortWrapper() = default;
+    // LCOV_EXCL_STOP
+    virtual void protocol(nlohmann::json&) const = 0;
+    virtual void localIp(nlohmann::json&) const = 0;
+    virtual void localPort(nlohmann::json&) const = 0;
+    virtual void remoteIP(nlohmann::json&) const = 0;
+    virtual void remotePort(nlohmann::json&) const = 0;
+    virtual void txQueue(nlohmann::json&) const = 0;
+    virtual void rxQueue(nlohmann::json&) const = 0;
+    virtual void inode(nlohmann::json&) const = 0;
+    virtual void state(nlohmann::json&) const = 0;
+    virtual void pid(nlohmann::json&) const = 0;
+    virtual void processName(nlohmann::json&) const = 0;
 };
 #endif // _PORT_WRAPPER_H

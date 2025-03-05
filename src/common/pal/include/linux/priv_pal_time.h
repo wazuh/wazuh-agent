@@ -5,4 +5,4 @@
 #endif
 
 #define localtime_r localtime_r
-#define gmtime_r gmtime_r
+#define gmtime_r    gmtime_r

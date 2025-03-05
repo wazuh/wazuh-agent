@@ -11,14 +11,14 @@
 
 #ifndef _DBENGINE_TEST_H
 #define _DBENGINE_TEST_H
+
 #include "gtest/gtest.h"
 
 class DBEngineTest : public ::testing::Test
 {
-    protected:
-
-        DBEngineTest() = default;
-        virtual ~DBEngineTest() = default;
+protected:
+    DBEngineTest() = default;
+    virtual ~DBEngineTest() = default;
 };
 
 #endif //_DBENGINE_TEST_H

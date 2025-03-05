@@ -14,16 +14,16 @@
 
 #include <stdexcept>
 
-#include <sys/socket.h>
 #include <net/if.h>
-#include <unistd.h>
 #include <stropts.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 class UtilsWrapperUnix
 {
-    public:
-        static int createSocket(int domain, int type, int protocol);
-        static int ioctl(int fd, unsigned long request, char* argp);
+public:
+    static int createSocket(int domain, int type, int protocol);
+    static int ioctl(int fd, unsigned long request, char* argp);
 };
 
 #endif // _UTILS_WRAPPER_UNIX_H

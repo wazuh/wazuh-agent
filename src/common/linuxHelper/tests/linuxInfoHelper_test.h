@@ -11,16 +11,16 @@
 
 #ifndef LINUXINFO_HELPER_TESTS_H
 #define LINUXINFO_HELPER_TESTS_H
+
 #include "gtest/gtest.h"
 
 class LinuxInfoHelperTest : public ::testing::Test
 {
-    protected:
+protected:
+    LinuxInfoHelperTest() = default;
+    virtual ~LinuxInfoHelperTest() = default;
 
-        LinuxInfoHelperTest() = default;
-        virtual ~LinuxInfoHelperTest() = default;
-
-        void SetUp() override;
-        void TearDown() override;
+    void SetUp() override;
+    void TearDown() override;
 };
 #endif // LINUXINFO_HELPER_TESTS_H

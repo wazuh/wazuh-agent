@@ -23,6 +23,9 @@
 class Inventory
 {
 public:
+    const std::string INVENTORY_DB_DISK_NAME = "local.db";
+    const std::string INVENTORY_NORM_CONFIG_NAME = "norm_config.json";
+
     static Inventory& Instance()
     {
         static Inventory s_instance;
@@ -134,18 +137,19 @@ private:
     std::string m_agentUUID {""}; // Agent UUID
     std::shared_ptr<ISysInfo> m_spInfo;
     std::function<void(const std::string&)> m_reportDiffFunction;
-    bool m_enabled;              // Main switch
-    std::string m_dbFilePath;    // Database path
-    std::time_t m_intervalValue; // Scan interval
-    bool m_scanOnStart;          // Scan always on start
-    bool m_hardware;             // Hardware inventory
-    bool m_system;               // System inventory
-    bool m_networks;             // Networks inventory
-    bool m_packages;             // Installed packages inventory
-    bool m_ports;                // Opened ports inventory
-    bool m_portsAll;             // Scan only listening ports or all
-    bool m_processes;            // Running processes inventory
-    bool m_hotfixes;             // Windows hotfixes installed
+    bool m_enabled;               // Main switch
+    std::string m_dbFilePath;     // Database path
+    std::string m_normConfigPath; // Normalizer JSON path
+    std::time_t m_intervalValue;  // Scan interval
+    bool m_scanOnStart;           // Scan always on start
+    bool m_hardware;              // Hardware inventory
+    bool m_system;                // System inventory
+    bool m_networks;              // Networks inventory
+    bool m_packages;              // Installed packages inventory
+    bool m_ports;                 // Opened ports inventory
+    bool m_portsAll;              // Scan only listening ports or all
+    bool m_processes;             // Running processes inventory
+    bool m_hotfixes;              // Windows hotfixes installed
     std::atomic<bool> m_stopping;
     bool m_notify;
     std::unique_ptr<DBSync> m_spDBSync;

@@ -11,19 +11,19 @@
 
 #ifndef _SYSINFO_MAC_PACKAGES_TEST_H
 #define _SYSINFO_MAC_PACKAGES_TEST_H
-#include "gtest/gtest.h"
+
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 class SysInfoMacPackagesTest : public ::testing::Test
 {
 
-    protected:
+protected:
+    SysInfoMacPackagesTest() = default;
+    virtual ~SysInfoMacPackagesTest() = default;
 
-        SysInfoMacPackagesTest() = default;
-        virtual ~SysInfoMacPackagesTest() = default;
-
-        void SetUp() override;
-        void TearDown() override;
+    void SetUp() override;
+    void TearDown() override;
 };
 
 #endif //_SYSINFO_MAC_PACKAGES_TEST_H

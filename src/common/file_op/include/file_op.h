@@ -10,7 +10,8 @@
 
 /* Functions to handle operation with files */
 
-#pragma once
+#ifndef FILE_OP_H
+#define FILE_OP_H
 
 #include <stdint.h>
 #include <time.h>
@@ -625,3 +626,4 @@ int w_is_compressed_bz2_file(const char * path);
  */
 char *w_homedir(char *arg);
 
+#endif // _FILE_OP_H

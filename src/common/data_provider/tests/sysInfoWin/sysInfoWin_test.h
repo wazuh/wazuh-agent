@@ -12,18 +12,17 @@
 #ifndef _SYSINFO_WIN_TEST_H
 #define _SYSINFO_WIN_TEST_H
 
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 class SysInfoWinTest : public ::testing::Test
 {
-    protected:
+protected:
+    SysInfoWinTest() = default;
+    virtual ~SysInfoWinTest() = default;
 
-        SysInfoWinTest() = default;
-        virtual ~SysInfoWinTest() = default;
-
-        void SetUp() override;
-        void TearDown() override;
+    void SetUp() override;
+    void TearDown() override;
 };
 
 #endif //_SYSINFO_WIN_TEST_H
