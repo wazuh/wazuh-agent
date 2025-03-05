@@ -102,17 +102,11 @@ public:
             << "\t--ports \tPrints the current Operating System ports information.\n"
             << "\t--os \t\tPrints the current Operating System information.\n"
             << "\t--hotfixes \tPrints the current Operating System hotfixes information.\n"
-            << "\nExamples:"
-            << "\n\t./sysinfo_test_tool"
-            << "\n\t./sysinfo_test_tool --hardware"
-            << "\n\t./sysinfo_test_tool --networks"
-            << "\n\t./sysinfo_test_tool --packages"
-            << "\n\t./sysinfo_test_tool --processes"
-            << "\n\t./sysinfo_test_tool --ports"
-            << "\n\t./sysinfo_test_tool --os"
-            << "\n\t./sysinfo_test_tool --hotfixes"
-            << "\n\t./sysinfo_test_tool --processes-cb"
-            << "\n\t./sysinfo_test_tool --packages-cb" << std::endl;
+            << "\nExamples:" << "\n\t./sysinfo_test_tool" << "\n\t./sysinfo_test_tool --hardware"
+            << "\n\t./sysinfo_test_tool --networks" << "\n\t./sysinfo_test_tool --packages"
+            << "\n\t./sysinfo_test_tool --processes" << "\n\t./sysinfo_test_tool --ports"
+            << "\n\t./sysinfo_test_tool --os" << "\n\t./sysinfo_test_tool --hotfixes"
+            << "\n\t./sysinfo_test_tool --processes-cb" << "\n\t./sysinfo_test_tool --packages-cb" << std::endl;
     }
 
 private:
