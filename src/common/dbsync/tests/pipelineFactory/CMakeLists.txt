@@ -30,7 +30,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         GTest::gmock_main
         unofficial::sqlite3::sqlite3
         cjson
-        utils
     )
 else()
     target_link_libraries(dbsyncPipelineFactory_unit_test
@@ -43,7 +42,6 @@ else()
         unofficial::sqlite3::sqlite3
         cjson
         dl
-        utils
     )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 

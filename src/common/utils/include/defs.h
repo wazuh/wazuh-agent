@@ -191,29 +191,6 @@ https://www.gnu.org/licenses/gpl.html\n"
 /* Default group name */
 #define DEFAULT_GROUP "default"
 
-/* Inventory normalization configs */
-#ifdef WAZUH_UNIT_TESTING
-#ifdef WIN32
-#define INVENTORY_NORM_CONFIG_DISK_PATH    ".\\norm_config.json"
-#else
-#define INVENTORY_NORM_CONFIG_DISK_PATH    "./norm_config.json"
-#endif // WIN32
-#else
-#define INVENTORY_NORM_CONFIG_DISK_PATH "queue/inventory/norm_config.json"
-#endif // WAZUH_UNIT_TESTING
-
-#if defined(__MACH__)
-#define INVENTORY_NORM_TYPE "macos"
-#elif defined(WIN32)
-#define INVENTORY_NORM_TYPE "windows"
-#else
-#define INVENTORY_NORM_TYPE "linux"
-#endif // __MACH__
-
-
-/* Inventory db directory */
-#define INVENTORY_DB_DISK_NAME    "local.db"
-
 /* Wazuh Database */
 #define WDB_DIR                "var/db"
 #define WDB2_DIR               "queue/db"

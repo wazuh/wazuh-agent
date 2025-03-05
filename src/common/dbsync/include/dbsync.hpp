@@ -218,7 +218,7 @@ private:
 };
 
 template<typename T>
-class Query : public Utils::Builder<T>
+class Query : public Builder<T>
 {
 protected:
     nlohmann::json m_jsQuery;

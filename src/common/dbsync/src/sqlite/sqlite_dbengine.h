@@ -125,7 +125,7 @@ public:
     void syncTableRowData(const nlohmann::json& jsInput,
                           const DbSync::ResultCallback callback,
                           const bool inTransaction,
-                          Utils::ILocking& mutex) override;
+                          ILocking& mutex) override;
 
     void setMaxRows(const std::string& table, const int64_t maxRows) override;
 

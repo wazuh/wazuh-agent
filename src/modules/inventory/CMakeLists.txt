@@ -36,7 +36,6 @@ target_link_libraries(Inventory
     hash_helper
     string_helper
     time_helper
-    utils
     nlohmann_json::nlohmann_json
     OpenSSL::SSL
     OpenSSL::Crypto

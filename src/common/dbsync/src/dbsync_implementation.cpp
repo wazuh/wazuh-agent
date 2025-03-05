@@ -54,7 +54,7 @@ void DBSyncImplementation::syncRowData(const DBSYNC_HANDLE handle,
                                        const ResultCallback callback)
 {
     const auto ctx {dbEngineContext(handle)};
-    Utils::ExclusiveLocking lock {ctx->m_syncMutex};
+    ExclusiveLocking lock {ctx->m_syncMutex};
 
     ctx->m_dbEngine->syncTableRowData(json, callback, false, lock);
 }
@@ -72,7 +72,7 @@ void DBSyncImplementation::syncRowData(const DBSYNC_HANDLE handle,
         throw dbsync_error {INVALID_TABLE};
     }
 
-    Utils::SharedLocking lock {ctx->m_syncMutex};
+    SharedLocking lock {ctx->m_syncMutex};
     ctx->m_dbEngine->syncTableRowData(json, callback, true, lock);
 }
 

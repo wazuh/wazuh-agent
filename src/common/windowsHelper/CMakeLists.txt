@@ -6,8 +6,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     include(../../cmake/CommonSettings.cmake)
     set_common_settings()
 
-    add_definitions(-DPROMISE_TYPE=PromiseType::NORMAL)
-
     add_library(windows_helper INTERFACE)
 
     target_include_directories(windows_helper INTERFACE include)

@@ -10,7 +10,6 @@
  */
 
 #include "cmdHelper.h"
-#include "defs.h"
 #include "encodingWindowsHelper.h"
 #include "network/networkFamilyDataAFactory.h"
 #include "network/networkWindowsWrapper.h"
@@ -44,6 +43,9 @@ constexpr auto CENTRAL_PROCESSOR_REGISTRY {"HARDWARE\\DESCRIPTION\\System\\Centr
 const std::string UNINSTALL_REGISTRY {"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"};
 constexpr auto SYSTEM_IDLE_PROCESS_NAME {"System Idle Process"};
 constexpr auto SYSTEM_PROCESS_NAME {"System"};
+
+constexpr auto OS_MAXSTR {65536};
+constexpr auto OS_MAXSTR_HALF {32768};
 
 static const std::map<std::string, DWORD> gs_firmwareTableProviderSignature {
     {"ACPI", 0x41435049}, {"FIRM", 0x4649524D}, {"RSMB", 0x52534D42}};
@@ -203,12 +205,12 @@ private:
         if (logicalDrives.size() != ret.size())
         {
             // We avoid using OS_MAXSTR on Windows XP
-            const auto spPhysicalDevices {std::make_unique<char[]>(OS_SIZE_32768)};
+            const auto spPhysicalDevices {std::make_unique<char[]>(OS_MAXSTR_HALF)};
 
-            if (QueryDosDevice(nullptr, spPhysicalDevices.get(), OS_SIZE_32768))
+            if (QueryDosDevice(nullptr, spPhysicalDevices.get(), OS_MAXSTR_HALF))
             {
                 const auto tokens = Utils::splitNullTerminatedStrings(spPhysicalDevices.get());
-                const auto spDosDevice {std::make_unique<char[]>(OS_SIZE_32768)};
+                const auto spDosDevice {std::make_unique<char[]>(OS_MAXSTR_HALF)};
 
                 for (const auto& token : tokens)
                 {
@@ -226,7 +228,7 @@ private:
                         continue;
                     }
 
-                    res = QueryDosDevice(token.c_str(), spDosDevice.get(), OS_SIZE_32768);
+                    res = QueryDosDevice(token.c_str(), spDosDevice.get(), OS_MAXSTR_HALF);
 
                     if (res && ret.find(spDosDevice.get()) == ret.end())
                     {

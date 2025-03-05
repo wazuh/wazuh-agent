@@ -11,7 +11,7 @@ add_library(pipeline_helper INTERFACE)
 
 target_include_directories(pipeline_helper INTERFACE include)
 
-target_link_libraries(pipeline_helper INTERFACE utils thread_dispatcher)
+target_link_libraries(pipeline_helper INTERFACE thread_dispatcher)
 
 if(BUILD_TESTS)
     enable_testing()

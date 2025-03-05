@@ -147,7 +147,7 @@ void SQLiteDBEngine::refreshTableData(const nlohmann::json& data,
 void SQLiteDBEngine::syncTableRowData(const nlohmann::json& jsInput,
                                       const DbSync::ResultCallback callback,
                                       const bool inTransaction,
-                                      Utils::ILocking& lock)
+                                      ILocking& lock)
 {
     const auto& table {jsInput.at("table")};
     const auto& data {jsInput.at("data")};

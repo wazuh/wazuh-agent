@@ -492,7 +492,7 @@ TEST_F(DBEngineTest, syncTableRowDataWithoutMetadataShouldThrow)
 {
     std::unique_ptr<SQLiteDBEngine> spEngine;
     std::shared_timed_mutex mutex;
-    Utils::ExclusiveLocking lock(mutex);
+    ExclusiveLocking lock(mutex);
 
     initNoMetaDataMocks(spEngine);
     // Due to the no metadata this should throw
