@@ -9,9 +9,9 @@
  * Foundation.
  */
 
-#include <ifaddrs.h>
 #include "networkInterfaceBSD.h"
 #include "networkBSDWrapper.h"
+#include <ifaddrs.h>
 
 std::shared_ptr<IOSNetwork> FactoryBSDNetwork::create(const std::shared_ptr<INetworkInterfaceWrapper>& interfaceWrapper)
 {
@@ -19,7 +19,7 @@ std::shared_ptr<IOSNetwork> FactoryBSDNetwork::create(const std::shared_ptr<INet
 
     if (interfaceWrapper)
     {
-        const auto family { interfaceWrapper->family() };
+        const auto family {interfaceWrapper->family()};
 
         if (AF_INET == family)
         {
@@ -38,17 +38,17 @@ std::shared_ptr<IOSNetwork> FactoryBSDNetwork::create(const std::shared_ptr<INet
     }
     else
     {
-        throw std::runtime_error { "Error nullptr interfaceWrapper instance." };
+        throw std::runtime_error {"Error nullptr interfaceWrapper instance."};
     }
 
     return ret;
 }
 
-template <>
+template<>
 void BSDNetworkImpl<AF_INET>::buildNetworkData(nlohmann::json& network)
 {
     // Get IPv4 address
-    const auto address { m_interfaceAddress->address() };
+    const auto address {m_interfaceAddress->address()};
 
     if (!address.empty())
     {
@@ -63,13 +63,14 @@ void BSDNetworkImpl<AF_INET>::buildNetworkData(nlohmann::json& network)
     }
     else
     {
-        throw std::runtime_error { "Invalid IpV4 address." };
+        throw std::runtime_error {"Invalid IpV4 address."};
     }
 }
-template <>
+
+template<>
 void BSDNetworkImpl<AF_INET6>::buildNetworkData(nlohmann::json& network)
 {
-    const auto address { m_interfaceAddress->addressV6() };
+    const auto address {m_interfaceAddress->addressV6()};
 
     if (!address.empty())
     {
@@ -84,10 +85,11 @@ void BSDNetworkImpl<AF_INET6>::buildNetworkData(nlohmann::json& network)
     }
     else
     {
-        throw std::runtime_error { "Invalid IpV4 address." };
+        throw std::runtime_error {"Invalid IpV4 address."};
     }
 }
-template <>
+
+template<>
 void BSDNetworkImpl<AF_LINK>::buildNetworkData(nlohmann::json& network)
 {
     /* Get stats of interface */
@@ -98,7 +100,7 @@ void BSDNetworkImpl<AF_LINK>::buildNetworkData(nlohmann::json& network)
     m_interfaceAddress->type(network);
     m_interfaceAddress->MAC(network);
 
-    const auto stats { m_interfaceAddress->stats() };
+    const auto stats {m_interfaceAddress->stats()};
 
     network["tx_packets"] = stats.txPackets;
     network["rx_packets"] = stats.rxPackets;

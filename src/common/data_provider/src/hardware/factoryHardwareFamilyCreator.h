@@ -12,34 +12,31 @@
 #ifndef _FACTORY_HARDWARE_FAMILY_CREATOR_H
 #define _FACTORY_HARDWARE_FAMILY_CREATOR_H
 
-#include <memory>
-#include <nlohmann/json.hpp>
+#include "hardwareImplMac.h"
 #include "hardwareInterface.h"
 #include "hardwareWrapperInterface.h"
-#include "hardwareImplMac.h"
 #include "sharedDefs.h"
+#include <memory>
+#include <nlohmann/json.hpp>
 
-template <OSPlatformType osType>
+template<OSPlatformType osType>
 class FactoryHardwareFamilyCreator final
 {
-    public:
-        static std::shared_ptr<IOSHardware> create(const std::shared_ptr<IOSHardwareWrapper>& /*wrapperInterface*/)
-        {
-            throw std::runtime_error
-            {
-                "Error creating network data retriever."
-            };
-        }
+public:
+    static std::shared_ptr<IOSHardware> create(const std::shared_ptr<IOSHardwareWrapper>& /*wrapperInterface*/)
+    {
+        throw std::runtime_error {"Error creating network data retriever."};
+    }
 };
 
-template <>
+template<>
 class FactoryHardwareFamilyCreator<OSPlatformType::BSDBASED> final
 {
-    public:
-        static std::shared_ptr<IOSHardware> create(const std::shared_ptr<IOSHardwareWrapper>& wrapperInterface)
-        {
-            return FactoryBSDHardware::create(wrapperInterface);
-        }
+public:
+    static std::shared_ptr<IOSHardware> create(const std::shared_ptr<IOSHardwareWrapper>& wrapperInterface)
+    {
+        return FactoryBSDHardware::create(wrapperInterface);
+    }
 };
 
 #endif // _FACTORY_HARDWARE_FAMILY_CREATOR_H

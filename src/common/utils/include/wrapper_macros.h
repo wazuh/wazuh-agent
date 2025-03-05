@@ -1,4 +1,5 @@
-#pragma once
+#ifndef WRAPPER_MACROS_H
+#define WRAPPER_MACROS_H
 
 #include "os_macros.h"
 
@@ -9,3 +10,5 @@
 #define sqlite_strdup(x,y) ({ if (x) { os_strdup(x, y); } else (void)0; })
 
 #define w_strlen(x) ((x)? strlen(x) : 0)
+
+#endif // WRAPPER_MACROS_H

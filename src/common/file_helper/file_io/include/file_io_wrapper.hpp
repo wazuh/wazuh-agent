@@ -15,7 +15,7 @@ namespace file_io
 
         /// @copydoc IFileIO::create_ifstream
         std::unique_ptr<std::ifstream> create_ifstream(const std::string& filePath,
-                                      std::ios_base::openmode mode = std::ios_base::in) const override;
+                                                       std::ios_base::openmode mode = std::ios_base::in) const override;
 
         /// @copydoc IFileIO::get_rdbuf
         std::streambuf* get_rdbuf(const std::ifstream& file) const override;

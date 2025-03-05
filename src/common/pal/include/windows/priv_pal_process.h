@@ -5,12 +5,13 @@
 #endif
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include <stdio.h>
 
-#define popen _popen
+#define popen  _popen
 #define pclose _pclose
 
 #ifdef __cplusplus

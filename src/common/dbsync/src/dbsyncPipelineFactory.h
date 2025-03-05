@@ -10,17 +10,19 @@
  */
 #ifndef PIPE_LINE_FACTORY_H
 #define PIPE_LINE_FACTORY_H
-#include <map>
-#include <mutex>
-#include <memory>
-#include <functional>
-#include "dbengine.h"
+
 #include "commonDefs.h"
+#include "dbengine.h"
+#include <functional>
+#include <map>
+#include <memory>
+#include <mutex>
 
 namespace DbSync
 {
     using TxnContext = void*;
     using PipelineCtxHandle = void*;
+
     struct IPipeline
     {
         // LCOV_EXCL_START
@@ -32,25 +34,26 @@ namespace DbSync
 
     class PipelineFactory final
     {
-        public:
-            static PipelineFactory& instance() noexcept;
-            void release() noexcept;
-            PipelineCtxHandle create(const DBSYNC_HANDLE    handle,
-                                     const nlohmann::json&  tables,
-                                     const unsigned int     threadNumber,
-                                     const unsigned int     maxQueueSize,
-                                     const ResultCallback   callback);
-            const std::shared_ptr<IPipeline>& pipeline(const PipelineCtxHandle handle);
-            void destroy(const PipelineCtxHandle handle);
-        private:
-            PipelineFactory(const PipelineFactory&) = delete;
-            PipelineFactory& operator=(const PipelineFactory&) = delete;
-            PipelineFactory() = default;
-            ~PipelineFactory() = default;
-            std::map<PipelineCtxHandle, std::shared_ptr<IPipeline>> m_contexts;
-            std::mutex m_contextsMutex;
+    public:
+        static PipelineFactory& instance() noexcept;
+        void release() noexcept;
+        PipelineCtxHandle create(const DBSYNC_HANDLE handle,
+                                 const nlohmann::json& tables,
+                                 const unsigned int threadNumber,
+                                 const unsigned int maxQueueSize,
+                                 const ResultCallback callback);
+        const std::shared_ptr<IPipeline>& pipeline(const PipelineCtxHandle handle);
+        void destroy(const PipelineCtxHandle handle);
+
+    private:
+        PipelineFactory(const PipelineFactory&) = delete;
+        PipelineFactory& operator=(const PipelineFactory&) = delete;
+        PipelineFactory() = default;
+        ~PipelineFactory() = default;
+        std::map<PipelineCtxHandle, std::shared_ptr<IPipeline>> m_contexts;
+        std::mutex m_contextsMutex;
     };
 
-}// namespace DbSync
+} // namespace DbSync
 
-#endif //PIPE_LINE_FACTORY_H
+#endif // PIPE_LINE_FACTORY_H

@@ -11,16 +11,16 @@
 
 #ifndef CMD_HELPER_TESTS_H
 #define CMD_HELPER_TESTS_H
+
 #include <gtest/gtest.h>
 
 class CmdUtilsTest : public ::testing::Test
 {
-    protected:
+protected:
+    CmdUtilsTest() = default;
+    virtual ~CmdUtilsTest() = default;
 
-        CmdUtilsTest() = default;
-        virtual ~CmdUtilsTest() = default;
-
-        void SetUp() override;
-        void TearDown() override;
+    void SetUp() override;
+    void TearDown() override;
 };
-#endif //CMD_HELPER_TESTS_H
+#endif // CMD_HELPER_TESTS_H

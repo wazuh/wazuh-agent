@@ -13,37 +13,31 @@
 
 void SysOsInfoTest::SetUp() {};
 
-void SysOsInfoTest::TearDown()
-{
-};
+void SysOsInfoTest::TearDown() {};
 using ::testing::_;
 using ::testing::Return;
 
 class SysOsInfoProviderWrapper : public ISysOsInfoProvider
 {
-    public:
-        SysOsInfoProviderWrapper() = default;
-        ~SysOsInfoProviderWrapper() = default;
-        MOCK_METHOD(std::string, name, (), (const override));
-        MOCK_METHOD(std::string, version, (), (const override));
-        MOCK_METHOD(std::string, majorVersion, (), (const override));
-        MOCK_METHOD(std::string, minorVersion, (), (const override));
-        MOCK_METHOD(std::string, build, (), (const override));
-        MOCK_METHOD(std::string, release, (), (const override));
-        MOCK_METHOD(std::string, displayVersion, (), (const override));
-        MOCK_METHOD(std::string, machine, (), (const override));
-        MOCK_METHOD(std::string, nodeName, (), (const override));
+public:
+    SysOsInfoProviderWrapper() = default;
+    ~SysOsInfoProviderWrapper() = default;
+    MOCK_METHOD(std::string, name, (), (const override));
+    MOCK_METHOD(std::string, version, (), (const override));
+    MOCK_METHOD(std::string, majorVersion, (), (const override));
+    MOCK_METHOD(std::string, minorVersion, (), (const override));
+    MOCK_METHOD(std::string, build, (), (const override));
+    MOCK_METHOD(std::string, release, (), (const override));
+    MOCK_METHOD(std::string, displayVersion, (), (const override));
+    MOCK_METHOD(std::string, machine, (), (const override));
+    MOCK_METHOD(std::string, nodeName, (), (const override));
 };
-
 
 TEST_F(SysOsInfoTest, setOsInfoSchema)
 {
     nlohmann::json output;
-    const auto pOsInfoProvider{new SysOsInfoProviderWrapper};
-    const std::shared_ptr<ISysOsInfoProvider> spOsInfoProvider
-    {
-        pOsInfoProvider
-    };
+    const auto pOsInfoProvider {new SysOsInfoProviderWrapper};
+    const std::shared_ptr<ISysOsInfoProvider> spOsInfoProvider {pOsInfoProvider};
     EXPECT_CALL(*pOsInfoProvider, name()).WillOnce(Return("Microsoft Windows 10 Home"));
     EXPECT_CALL(*pOsInfoProvider, version()).WillOnce(Return("10.0.18362"));
     EXPECT_CALL(*pOsInfoProvider, majorVersion()).WillOnce(Return("10"));
