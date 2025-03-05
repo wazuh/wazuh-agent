@@ -1,22 +1,22 @@
 #include "gmock/gmock.h"
 #include <gtest/gtest.h>
 
-#include "file_io.hpp"
+#include "file_io_utils.hpp"
 
 using namespace testing;
 
-class MockFileIOLocal : public file_io::FileIO
-{
-public:
-    MockFileIOLocal() = default;
-    MOCK_METHOD(std::ifstream,
-                create_ifstream,
-                (const std::string& filePath, std::ios_base::openmode mode),
-                (const, override));
-    MOCK_METHOD(std::streambuf*, get_rdbuf, (const std::ifstream& file), (const, override));
-    MOCK_METHOD(bool, is_open, (const std::ifstream& file), (const, override));
-    MOCK_METHOD(bool, get_line, (std::istream & file, std::string& line), (const, override));
-};
+// class MockFileIOLocal : public file_io::FileIO
+// {
+// public:
+//     MockFileIOLocal() = default;
+//     MOCK_METHOD(std::ifstream,
+//                 create_ifstream,
+//                 (const std::string& filePath, std::ios_base::openmode mode),
+//                 (const, override));
+//     MOCK_METHOD(std::streambuf*, get_rdbuf, (const std::ifstream& file), (const, override));
+//     MOCK_METHOD(bool, is_open, (const std::ifstream& file), (const, override));
+//     MOCK_METHOD(bool, get_line, (std::istream & file, std::string& line), (const, override));
+// };
 
 TEST(FileIOTest, ReadLineByLine_CallsCallbackForEachLine)
 
