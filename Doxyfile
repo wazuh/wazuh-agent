@@ -534,7 +534,7 @@ EXTRACT_LOCAL_METHODS  = YES
 # are hidden.
 # The default value is: NO.
 
-EXTRACT_ANON_NSPACES   = YES
+EXTRACT_ANON_NSPACES   = NO
 
 # If this flag is set to YES, the name of an unnamed parameter in a declaration
 # will be determined by the corresponding definition. By default unnamed
