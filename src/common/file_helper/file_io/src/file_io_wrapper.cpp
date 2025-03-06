@@ -2,9 +2,9 @@
 
 namespace file_io
 {
-    std::ifstream FileIOWrapper::create_ifstream(const std::string& filePath, std::ios_base::openmode mode) const
+    std::unique_ptr<std::ifstream> FileIOWrapper::create_ifstream(const std::string& filePath, std::ios_base::openmode mode) const
     {
-        return std::ifstream(filePath, mode);
+        return std::make_unique<std::ifstream>(filePath, mode);
     }
 
     std::streambuf* FileIOWrapper::get_rdbuf(const std::ifstream& file) const

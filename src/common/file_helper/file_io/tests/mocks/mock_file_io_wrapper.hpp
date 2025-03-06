@@ -5,7 +5,7 @@
 class MockFileIOWrapper : public IFileIOWrapper
 {
 public:
-    MOCK_METHOD(std::ifstream,
+    MOCK_METHOD(std::unique_ptr<std::ifstream>,
                 create_ifstream,
                 (const std::string& filePath, std::ios_base::openmode mode),
                 (const, override));

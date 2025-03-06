@@ -14,7 +14,7 @@ namespace file_io
         bool get_line(std::istream& file, std::string& line) const override;
 
         /// @copydoc IFileIO::create_ifstream
-        std::ifstream create_ifstream(const std::string& filePath,
+        std::unique_ptr<std::ifstream> create_ifstream(const std::string& filePath,
                                       std::ios_base::openmode mode = std::ios_base::in) const override;
 
         /// @copydoc IFileIO::get_rdbuf

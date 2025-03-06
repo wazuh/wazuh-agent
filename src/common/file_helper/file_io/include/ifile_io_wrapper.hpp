@@ -20,7 +20,7 @@ public:
     /// @param filePath The path to the file.
     /// @param mode The mode to open the file.
     /// @return An ifstream for the file.
-    virtual std::ifstream create_ifstream(const std::string& filePath,
+    virtual std::unique_ptr<std::ifstream> create_ifstream(const std::string& filePath,
                                           std::ios_base::openmode mode = std::ios_base::in) const = 0;
 
     /// @brief Gets the stream buffer for a file.
