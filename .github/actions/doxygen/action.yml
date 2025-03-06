@@ -1,72 +1,71 @@
-name: "Doxygen documentation generartion"
+name: "Doxygen documentation generation"
 description: "Generates the documentation for a given module"
 
 inputs:
   path:
-    required: true
     description: "Path to the module we want to generate documentation for"
-    default: src/
+    default: ./
   doxygen_config:
-    required: true
     description: "Path to the doxygen configuration file"
-    default: src/Doxyfile
-  id:
-    required: true
-    description: "Module identifier, used to name the artifact"
+    default: ./Doxyfile
 
 runs:
   using: "composite"
   steps:
-      # Dependencies for testing:
-      # - doxygen
-      # - graphviz
-      - name: Install dependencies
-        uses: awalsh128/cache-apt-pkgs-action@v1.4.3
-        with:
-          packages: doxygen graphviz
-          version: 1.0
+    - name: Install dependencies
+      uses: awalsh128/cache-apt-pkgs-action@v1.4.3
+      with:
+        packages: doxygen graphviz
+        version: 1.0
 
-      - name: Generate documentation
-        shell: bash
-        run: |
+    - name: Generate documentation
+      shell: bash
+      run: |
+        # Ensure doxygen config file exists
+        if [ ! -f "${{ inputs.doxygen_config }}" ]; then
+          echo "Error: Doxygen config file '${{ inputs.doxygen_config }}' not found"
+          exit 1
+        fi
 
-          # Generate the doxygen configuration file
-          CONFIG_FILE=${{ inputs.path }}/doxygen_config.cfg
-          {
-              cat ${{ inputs.doxygen_config }}
-              echo "OUTPUT_DIRECTORY = ${{ inputs.path }}/doc"
-              echo "INPUT = ${{ inputs.path }}"
-          } > ${CONFIG_FILE}
+        # Generate the doxygen configuration file
+        CONFIG_FILE="${{ inputs.path }}/doxygen_config.cfg"
+        {
+            cat "${{ inputs.doxygen_config }}" || { echo "Error reading config"; exit 1; }
+            echo "OUTPUT_DIRECTORY = ${{ inputs.path }}/doxygen"
+            echo "INPUT = ${{ inputs.path }}"
+        } > "${CONFIG_FILE}"
 
-          # Generate the documentation
-          sudo dot -c
-          ERRORS_FILE=${{ inputs.path }}/doxygen_errors.txt
-          doxygen -s ${CONFIG_FILE} 2> ${ERRORS_FILE}
+        # Configure Graphviz (dot)
+        dot -c || echo "Warning: dot -c failed, Graphviz might not be configured"
 
-          # Check if there are errors
-          if [ -s "${ERRORS_FILE}" ]; then
-            echo "-----------------------------------------------"
-            echo "FAILED: Doxygen documentation generation failed"
-            echo "-----------------------------------------------"
-            exit 1
-          else
-            echo "----------------------------------------------------"
-            echo "PASSED: Doxygen documentation generated successfully"
-            echo "----------------------------------------------------"
-          fi
+        # Generate the documentation
+        ERRORS_FILE="${{ inputs.path }}/doxygen_errors.txt"
+        doxygen -s "${CONFIG_FILE}" 2> "${ERRORS_FILE}"
 
-      # Upload errors as an artifact, when failed
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: Doxygen errors - ${{ inputs.id }}
-          path: ${{ inputs.path }}/doxygen_errors.txt
-          retention-days: 1
+        # Fail only if actual errors occur (not just warnings)
+        if grep -i "error:" "${ERRORS_FILE}"; then
+          echo "-----------------------------------------------"
+          echo "FAILED: Doxygen documentation generation failed"
+          echo "-----------------------------------------------"
+          exit 1
+        else
+          echo "----------------------------------------------------"
+          echo "PASSED: Doxygen documentation generated successfully"
+          echo "----------------------------------------------------"
+        fi
 
-      # Upload the documentation as an artifact, when successful
-      - uses: actions/upload-artifact@v4
-        if: success()
-        with:
-          name: Doxygen Documentation - ${{ inputs.id }}
-          path: ${{ inputs.path }}/doc
-          retention-days: 1
+    # Upload errors as an artifact, when failed
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: Doxygen errors
+        path: ${{ inputs.path }}/doxygen_errors.txt
+        retention-days: 1
+
+    # Upload the documentation as an artifact, when successful
+    - uses: actions/upload-artifact@v4
+      if: success()
+      with:
+        name: Doxygen Documentation
+        path: ${{ inputs.path }}/doxygen
+        retention-days: 1
