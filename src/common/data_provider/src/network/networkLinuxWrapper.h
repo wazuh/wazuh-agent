@@ -210,7 +210,7 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
                 {
                     throw std::runtime_error
                     {
-                        "Cannot get socket address information, Code: " + result
+                        "Cannot get socket address information, Code: " + std::to_string(result)
                     };
                 }
             }
