@@ -54,7 +54,8 @@ extern "C" {
  * @param log_callback Callback to perform logging operations.
  * @param file_limit Maximum number of files to be monitored.
  * @param value_limit Maximum number of registry values to be monitored.
- * @param sync_registry_enable Flag to enable the registry synchronization.
+ * @param sync_registry_enabled Flag to enable the registry synchronization.
+ * @param sync_thread_pool Number of threads to be used in the synchronization process.
  * @param sync_queue_size Number to define the size of the queue to be synchronized.
  * @param dbsync_log_function Logging function for dbsync module.
  * @param rsync_log_function Logging function for rsync module.
@@ -166,12 +167,12 @@ EXPORTED FIMDBErrorCode fim_sync_push_msg(const char* msg);
  */
 EXPORTED FIMDBErrorCode fim_run_integrity();
 
-/*
+/**
  * @brief Function that starts a new DBSync transaction.
  *
  * @param table Database table that will be used in the DBSync transaction.
  * @param row_callback Callback that is going to be executed for each insertion or modification.
- * param user_data Context that will be used in the callback.
+ * @param user_data Context that will be used in the callback.
  *
  * @return TXN_HANDLE Transaction handler.
  */
@@ -197,6 +198,7 @@ EXPORTED FIMDBErrorCode fim_db_transaction_sync_row(TXN_HANDLE txn_handler,
  *
  * @param txn_handler Handler to an active transaction.
  * @param callback Function to be executed for each deleted entry.
+ * @param txn_ctx Context to be used in the callback.
  *
  * @retval FIMDB_OK on success.
  * @retval FIMDB_FULL if the table limit was reached.

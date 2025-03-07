@@ -222,6 +222,7 @@ int MergeAppendFile(FILE *finalfp, const char *files, int path_offset) ATTR_NONN
  * @param finalpath Path of the merged file.
  * @param optdir Path of the folder to unmerge the files. If not specified, the files will be unmerged in the current working directory.
  * @param mode Indicates if the merged file must be readed as a binary file  or not. Use `#OS_TEXT`, `#OS_BINARY`.
+ * @param unmerged_files Pointer to the array of unmerged files.
  * @return 1 if the file was unmerged, 0 on error.
  */
 int UnmergeFiles(const char *finalpath, const char *optdir, int mode, char ***unmerged_files) ATTR_NONNULL_ONE;
@@ -452,7 +453,7 @@ int w_fseek(FILE *x, int64_t pos, int mode);
 /**
  * @brief Prevent children processes from inheriting a file pointer.
  *
- * @param File pointer.
+ * @param fp File pointer.
  */
 void w_file_cloexec(FILE * fp);
 
@@ -460,7 +461,7 @@ void w_file_cloexec(FILE * fp);
 /**
  * @brief Prevent children processes from inheriting a file descriptor.
  *
- * @param File descriptor.
+ * @param fd File descriptor.
  */
 void w_descriptor_cloexec(int fd);
 

@@ -99,7 +99,7 @@ int dbsync_close_txn(const TXN_HANDLE txn);
  * @brief Synchronizes the \p js_input data using the \p txn current
  *  database transaction.
  *
- * @param txn      Database transaction to be used for \ref js_input data sync.
+ * @param txn      Database transaction to be used for \p js_input data sync.
  * @param js_input JSON information to be synchronized.
  *
  * @return 0 if succeeded,
@@ -150,7 +150,7 @@ int dbsync_set_table_max_rows(const DBSYNC_HANDLE handle,
  * @brief Inserts (or modifies) a database record.
  *
  * @param handle         Handle instance assigned as part of the \ref dbsync_create method().
- * @param input          JSON information used to add/modified a database record.
+ * @param js_input       JSON information used to add/modified a database record.
  * @param callback_data  This struct contains the result callback that will be called for each result
  *                       and user data space returned in each callback call.
  *

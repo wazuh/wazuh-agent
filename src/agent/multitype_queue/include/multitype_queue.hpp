@@ -58,6 +58,7 @@ private:
 public:
     /// @brief Constructor
     /// @param configurationParser Pointer to the configuration parser
+    /// @param persistenceDest Unique pointer to the storage
     MultiTypeQueue(std::shared_ptr<configuration::ConfigurationParser> configurationParser,
                    std::unique_ptr<IStorage> persistenceDest = nullptr);
 
