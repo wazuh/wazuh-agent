@@ -10,17 +10,17 @@ namespace file_io
     class FileIOWrapper : public IFileIOWrapper
     {
     public:
-        /// @copydoc IFileIO::get_line
+        /// @copydoc IFileIOWrapper::get_line
         bool get_line(std::istream& file, std::string& line) const override;
 
-        /// @copydoc IFileIO::create_ifstream
+        /// @copydoc IFileIOWrapper::create_ifstream
         std::unique_ptr<std::ifstream> create_ifstream(const std::string& filePath,
                                       std::ios_base::openmode mode = std::ios_base::in) const override;
 
-        /// @copydoc IFileIO::get_rdbuf
+        /// @copydoc IFileIOWrapper::get_rdbuf
         std::streambuf* get_rdbuf(const std::ifstream& file) const override;
 
-        /// @copydoc IFileIO::is_open
+        /// @copydoc IFileIOWrapper::is_open
         bool is_open(const std::ifstream& file) const override;
     };
 } // namespace file_io

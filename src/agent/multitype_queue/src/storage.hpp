@@ -39,71 +39,40 @@ public:
     /// @brief Destructor
     ~Storage();
 
-    /// @brief Clears all messages from the database
-    /// @param tableNames A vector of table names
-    /// @return True if successful, false otherwise
+    /// @copydoc IStorage::Clear
     bool Clear(const std::vector<std::string>& tableNames) override;
 
-    /// @brief Store a JSON message in the storage.
-    /// @param message The JSON message to store.
-    /// @param tableName The name of the table to store the message in.
-    /// @param moduleName The name of the module that created the message.
-    /// @param moduleType The type of the module that created the message.
-    /// @param metadata The metadata message to store.
-    /// @return The number of stored elements.
+    /// @copydoc IStorage::Store
     int Store(const nlohmann::json& message,
               const std::string& tableName,
               const std::string& moduleName = "",
               const std::string& moduleType = "",
               const std::string& metadata = "") override;
 
-    /// @brief Remove multiple JSON messages.
-    /// @param n The number of messages to remove.
-    /// @param tableName The name of the table to remove the message from.
-    /// @param moduleName The name of the module that created the message.
-    /// @param moduleType The module type that created the message.
-    /// @return The number of removed elements.
+    /// @copydoc IStorage::RemoveMultiple
     int RemoveMultiple(int n,
                        const std::string& tableName,
                        const std::string& moduleName = "",
                        const std::string& moduleType = "") override;
 
-    /// @brief Retrieve multiple JSON messages.
-    /// @param n The number of messages to retrieve.
-    /// @param tableName The name of the table to retrieve the message from.
-    /// @param moduleName The name of the module that created the message.
-    /// @param moduleType The module type that created the message.
-    /// @return A vector of retrieved JSON messages.
+    /// @copydoc IStorage::RetrieveMultiple
     nlohmann::json RetrieveMultiple(int n,
                                     const std::string& tableName,
                                     const std::string& moduleName = "",
                                     const std::string& moduleType = "") override;
 
-    /// @brief Retrieve multiple JSON messages based on size from the specified queue.
-    /// @param n size occupied by the messages to be retrieved.
-    /// @param tableName The name of the table to retrieve the message from.
-    /// @param moduleName The name of the module.
-    /// @param moduleType The type of the module.
-    /// @return nlohmann::json The retrieved JSON messages.
+    /// @copydoc IStorage::RetrieveBySize
     nlohmann::json RetrieveBySize(size_t n,
                                   const std::string& tableName,
                                   const std::string& moduleName = "",
                                   const std::string& moduleType = "") override;
 
-    /// @brief Get the number of elements in the table.
-    /// @param tableName The name of the table to retrieve the message from.
-    /// @param moduleName The name of the module that created the message.
-    /// @param moduleType The module type that created the message.
-    /// @return The number of elements in the table.
+    /// @copydoc IStorage::GetElementCount
     int GetElementCount(const std::string& tableName,
                         const std::string& moduleName = "",
                         const std::string& moduleType = "") override;
 
-    /// @brief Get the bytes occupied by elements stored in the specified queue.
-    /// @param tableName  The name of the table.
-    /// @param moduleName The name of the module.
-    /// @param moduleType The type of the module.
-    /// @return size_t The bytes occupied by elements stored in the specified queue.
+    /// @copydoc IStorage::GetElementsStoredSize
     size_t GetElementsStoredSize(const std::string& tableName,
                                  const std::string& moduleName = "",
                                  const std::string& moduleType = "") override;

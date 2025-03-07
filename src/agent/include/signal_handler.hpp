@@ -16,7 +16,7 @@ public:
     /// @param signalsToHandle The signals to be handled by this class
     SignalHandler(const std::vector<int>& signalsToHandle = {SIGINT, SIGTERM});
 
-    /// @brief Waits for a signal to be received
+    /// @copydoc ISignalHandler::WaitForSignal
     void WaitForSignal() override;
 
     /// @brief Handles the given signal

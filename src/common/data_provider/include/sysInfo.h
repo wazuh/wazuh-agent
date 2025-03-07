@@ -84,7 +84,7 @@ void sysinfo_free_result(cJSON** js_data);
 /**
  * @brief Obtains the processes information from the current OS being analyzed.
  *
- * @param callback Resulting single process data where the specific information will be stored.
+ * @param cb Resulting single process data where the specific information will be stored.
  *
  * return 0 on success, -1 otherwhise.
  */
@@ -93,7 +93,7 @@ int sysinfo_processes_cb(callback_data_t cb);
 /**
  * @brief Obtains the packages information from the current OS being analyzed.
  *
- * @param callback Resulting single package data where the specific information will be stored.
+ * @param cb Resulting single package data where the specific information will be stored.
  *
  * return 0 on success, -1 otherwhise.
  */

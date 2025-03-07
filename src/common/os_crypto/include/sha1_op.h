@@ -30,16 +30,16 @@ int OS_SHA1_Str2(const char *str, ssize_t length, os_sha1 output) __attribute((n
 /**
  * @brief Get the SHA-1 digest from a list of strings.
  *
- * @param output[out] Output string.
- * @param ...   [in] List of strings to calculate the SHA-1.
+ * @param output [out] Output string.
+ * @param ...    [in] List of strings to calculate the SHA-1.
  */
 int OS_SHA1_strings(os_sha1 output, ...);
 
 /**
  * @brief Get the hexadecimal result of a SHA-1 digest
  *
- * @param digest[in] Binary SHA-1 digest.
- * @param output[out] Output string.
+ * @param digest [in] Binary SHA-1 digest.
+ * @param output [out] Output string.
  */
 void OS_SHA1_Hexdigest(const unsigned char * digest, os_sha1 output);
 
@@ -48,10 +48,11 @@ void OS_SHA1_Hexdigest(const unsigned char * digest, os_sha1 output);
  * The context is not created, it is only reset, so the function that calls this function must previously do the creation of the context.
  * Saved context must be freed after use.
  *
- * @param fname[in] File name to calculate SHA1.
- * @param c[out] EVP_MD_CTX context.
- * @param output[out] Output string.
- * @param nbytes[in] Number of bytes to read.
+ * @param fname [in] File name to calculate SHA1.
+ * @param c [out] EVP_MD_CTX context.
+ * @param output [out] Output string.
+ * @param mode [in] Mode to open the file.
+ * @param nbytes [in] Number of bytes to read.
  * @return 0 on success.
  * @return -1 when failure opening file.
  * @retval -2 When fp does not correspond to the `fname` file.
@@ -67,6 +68,7 @@ int OS_SHA1_File_Nbytes(const char *fname, EVP_MD_CTX **c, os_sha1 output, int m
  * @param[in] fname File name to calculate SHA1.
  * @param[out] c EVP_MD_CTX context.
  * @param[out] output Output string.
+ * @param[in] mode Mode to open the file.
  * @param[in] nbytes Number of bytes to read.
  * @param[in] fd_check File serial number, Is checked against `fname`
  * @retval 0 on success
@@ -84,9 +86,9 @@ int OS_SHA1_File_Nbytes_with_fp_check(const char * fname, EVP_MD_CTX ** c, os_sh
 /**
  * @brief update the context and calculates the SHA1, the context can not be null.
  *
- * @param c[out] EVP_MD_CTX context.
- * @param output[out] Output string.
- * @param buf[in] String to update the SHA1 context
+ * @param c [out] EVP_MD_CTX context.
+ * @param output [out] Output string.
+ * @param buf [in] String to update the SHA1 context
  */
 void OS_SHA1_Stream(EVP_MD_CTX *c, os_sha1 output, char * buf);
 
