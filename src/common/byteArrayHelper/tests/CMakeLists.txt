@@ -9,7 +9,6 @@ add_executable(byte_array_helper_tests
     ${UTIL_CXX_UNITTEST_COMMON_SRC}
 )
 
-include(../../../cmake/ConfigureTarget.cmake)
 configure_target(byte_array_helper_tests)
 
 target_include_directories(byte_array_helper_tests PRIVATE

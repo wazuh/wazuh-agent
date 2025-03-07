@@ -1,16 +1,5 @@
-/*
- * Wazuh shared modules utils
- * Copyright (C) 2015, Wazuh Inc.
- * March 16, 2021.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#include "byteArrayHelper_test.h"
-#include "byteArrayHelper.h"
+#include "byteArrayHelper_test.hpp"
+#include "byteArrayHelper.hpp"
 
 void ByteArrayHelperTest::SetUp() {};
 
