@@ -17,7 +17,7 @@
 #include <string>
 #include <unistd.h>
 
-#include "file_io.hpp"
+#include "file_io_utils.hpp"
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -45,7 +45,7 @@ namespace Utils
             if (0UL == btime)
             {
                 const std::string key {"btime "};
-                const auto fileIoWrapper = std::make_unique<file_io::FileIO>();
+                const auto fileIoWrapper = std::make_unique<file_io::FileIOUtils>();
                 const auto file { fileIoWrapper->getFileContent("/proc/stat") };
 
                 btime = std::stoull(file.substr(file.find(key) + key.length()));

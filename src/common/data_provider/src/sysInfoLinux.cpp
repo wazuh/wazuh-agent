@@ -15,6 +15,7 @@
 #include "packages/modernPackageDataRetriever.hpp"
 #include "sharedDefs.h"
 #include "stringHelper.h"
+#include <file_io_utils.hpp>
 #include <filesystem_wrapper.hpp>
 #include "cmdHelper.h"
 #include "osinfo/sysOsParsers.h"
@@ -420,7 +421,7 @@ ProcessInfo portProcessInfo(const std::string& procPath, const std::deque<int64_
     {
         // Get stat file content.
         std::string processInfo { EMPTY_VALUE };
-        const auto fileIoWrapper = std::make_unique<file_io::FileIO>();
+        const auto fileIoWrapper = std::make_unique<file_io::FileIOUtils>();
         const std::string statContent {fileIoWrapper->getFileContent(filePath)};
 
         const auto openParenthesisPos {statContent.find("(")};
@@ -519,7 +520,7 @@ nlohmann::json SysInfo::getPorts() const
 
     for (const auto& portType : PORTS_TYPE)
     {
-        const auto fileIoWrapper = std::make_unique<file_io::FileIO>();
+        const auto fileIoWrapper = std::make_unique<file_io::FileIOUtils>();
         const auto fileContent { fileIoWrapper->getFileContent(WM_SYS_NET_DIR + portType.second) };
         auto rows { Utils::split(fileContent, '\n') };
         auto fileBody { false };

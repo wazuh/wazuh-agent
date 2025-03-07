@@ -12,7 +12,7 @@
 #ifndef _PACKAGES_PYPI_HPP
 #define _PACKAGES_PYPI_HPP
 
-#include "file_io.hpp"
+#include "file_io_utils.hpp"
 #include "filesystem_wrapper.hpp"
 #include <nlohmann/json.hpp>
 #include "sharedDefs.h"
@@ -22,8 +22,8 @@
 
 const static std::map<std::string, std::string> FILE_MAPPING_PYPI {{"egg-info", "PKG-INFO"}, {"dist-info", "METADATA"}};
 
-template<typename TFileSystem = filesystem_wrapper::FileSystemWrapper, typename TFileIO = file_io::FileIO>
-class PYPI final : public TFileSystem, public TFileIO
+template<typename TFileSystem = filesystem_wrapper::FileSystemWrapper, typename TFileIOUtils = file_io::FileIOUtils>
+class PYPI final : public TFileSystem, public TFileIOUtils
 {
         void parseMetadata(const std::filesystem::path& path, std::function<void(nlohmann::json&)>& callback)
         {
@@ -49,7 +49,7 @@ class PYPI final : public TFileSystem, public TFileIO
             packageInfo["install_time"] = UNKNOWN_VALUE;
             // The multiarch field won't have a default value
 
-            TFileIO::readLineByLine(path,
+            TFileIOUtils::readLineByLine(path,
                                     [&packageInfo](const std::string & line) -> bool
             {
                 const auto it {
