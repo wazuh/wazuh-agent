@@ -23,6 +23,10 @@ namespace http_client
         /// @brief Sets the verification mode for the host
         /// @param host The host name
         /// @param verificationMode The verification mode to set
+        /// @details The verification modes supported are:
+        /// - "full": verifies the identity of the server, including the hostname
+        /// - "certificate": only verifies the identity of the server, without checking the hostname
+        /// - "none": no verification is performed
         virtual void SetVerificationMode(const std::string& host, const std::string& verificationMode) = 0;
 
         /// @brief Sets the timeout for requests in milliseconds.

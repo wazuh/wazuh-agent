@@ -76,49 +76,48 @@ public:
     /// @brief Destructor
     ~MultiTypeQueue() override;
 
-    /// @copydoc IMultiTypeQueue::push(Message, bool)
+    /// @copydoc IMultiTypeQueue::push
     int push(Message message, bool shouldWait = false) override;
 
-    /// @copydoc IMultiTypeQueue::pushAwaitable(Message)
+    /// @copydoc IMultiTypeQueue::pushAwaitable
     boost::asio::awaitable<int> pushAwaitable(Message message) override;
 
-    /// @copydoc IMultiTypeQueue::push(std::vector<Message>)
+    /// @copydoc IMultiTypeQueue::push
     int push(std::vector<Message> messages) override;
 
-    /// @copydoc IMultiTypeQueue::getNext(MessageType, const std::string, const std::string)
+    /// @copydoc IMultiTypeQueue::getNext
     Message getNext(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
-    /// @copydoc IMultiTypeQueue::getNextBytesAwaitable(MessageType type, const size_t
-    /// messageQuantity, const std::string moduleName, const std::string moduleType)
+    /// @copydoc IMultiTypeQueue::getNextBytesAwaitable
     boost::asio::awaitable<std::vector<Message>> getNextBytesAwaitable(MessageType type,
                                                                        const size_t messageQuantity,
                                                                        const std::string moduleName = "",
                                                                        const std::string moduleType = "") override;
 
-    /// @copydoc IMultiTypeQueue::getNextBytes(MessageType, size_t, const std::string, const std::string)
+    /// @copydoc IMultiTypeQueue::getNextBytes
     std::vector<Message> getNextBytes(MessageType type,
                                       const size_t messageQuantity,
                                       const std::string moduleName = "",
                                       const std::string moduleType = "") override;
 
-    /// @copydoc IMultiTypeQueue::pop(MessageType, const std::string, const std::string)
+    /// @copydoc IMultiTypeQueue::pop
     bool pop(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
-    /// @copydoc IMultiTypeQueue::popN(MessageType, int, const std::string, const std::string)
+    /// @copydoc IMultiTypeQueue::popN
     int popN(MessageType type,
              int messageQuantity,
              const std::string moduleName = "",
              const std::string moduleType = "") override;
 
-    /// @copydoc IMultiTypeQueue::isEmpty(MessageType, const std::string, const std::string)
+    /// @copydoc IMultiTypeQueue::isEmpty
     bool isEmpty(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
-    /// @copydoc IMultiTypeQueue::isFull(MessageType, const std::string, const std::string)
+    /// @copydoc IMultiTypeQueue::isFull
     bool isFull(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
-    /// @copydoc IMultiTypeQueue::storedItems(MessageType, const std::string, const std::string)
+    /// @copydoc IMultiTypeQueue::storedItems
     int storedItems(MessageType type, const std::string moduleName = "", const std::string moduleType = "") override;
 
-    /// @copydoc IMultiTypeQueue::sizePerType(MessageType type)
+    /// @copydoc IMultiTypeQueue::sizePerType
     size_t sizePerType(MessageType type) override;
 };

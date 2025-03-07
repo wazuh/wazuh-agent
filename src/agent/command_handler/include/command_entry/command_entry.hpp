@@ -6,19 +6,19 @@
 
 namespace module_command
 {
-    /// @brief Commands
+    // Commands
     const std::string SET_GROUP_COMMAND = "set-group";
     const std::string FETCH_CONFIG_COMMAND = "fetch-config";
     const std::string RESTART_COMMAND = "restart";
 
-    /// @brief Commands arguments
+    // Commands arguments
     const std::string GROUPS_ARG = "groups";
 
-    /// @brief Modules
+    // Modules
     const std::string CENTRALIZED_CONFIGURATION_MODULE = "CentralizedConfiguration";
     const std::string RESTART_HANDLER_MODULE = "RestartHandler";
 
-    /// @enum Status of a command execution
+    /// @brief Status of a command execution
     enum class Status
     {
         SUCCESS,
@@ -28,14 +28,14 @@ namespace module_command
         UNKNOWN
     };
 
-    /// @enum Execution mode of a command
+    /// @brief Execution mode of a command
     enum class CommandExecutionMode
     {
         SYNC,
         ASYNC
     };
 
-    /// @struct Result of a command execution
+    /// @brief Result of a command execution
     struct CommandExecutionResult
     {
         Status ErrorCode = Status::UNKNOWN;
@@ -67,6 +67,7 @@ namespace module_command
         /// @param module The module of the command
         /// @param command The command to be executed
         /// @param parameters The parameters for the command
+        /// @param executionMode The execution mode of the command
         /// @param result The result of the command execution
         /// @param status The status of the command execution
         CommandEntry(std::string id,

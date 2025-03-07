@@ -33,11 +33,10 @@ namespace logcollector::winevt
                                  const std::time_t channelRefreshInterval,
                                  std::shared_ptr<IWinAPIWrapper> winAPI = nullptr);
 
-        /// @brief Runs the event reader.
-        /// @return Awaitable result.
+        /// @copydoc IReader::Run
         Awaitable Run() override;
 
-        //@brief Stops the event reader.
+        /// @copydoc IReader::Stop
         void Stop() override;
 
     private:

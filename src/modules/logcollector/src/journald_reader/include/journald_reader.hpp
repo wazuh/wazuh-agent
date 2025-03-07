@@ -24,11 +24,10 @@ namespace logcollector
         /// @param fileWait Time to wait between reads in milliseconds
         JournaldReader(Logcollector& logcollector, FilterGroup filters, bool ignoreIfMissing, std::time_t fileWait);
 
-        /// @brief Runs the journal reader
-        /// @return Awaitable for asynchronous operation
+        /// @copydoc IReader::Run
         Awaitable Run() override;
 
-        /// @brief Stops the journal reader
+        /// @copydoc IReader::Stop
         void Stop() override;
 
         /// @brief Gets human-readable description of current filters

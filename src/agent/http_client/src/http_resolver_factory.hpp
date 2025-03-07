@@ -14,9 +14,7 @@ namespace http_client
     class HttpResolverFactory : public IHttpResolverFactory
     {
     public:
-        /// @brief Creates a new IHttpResolver
-        /// @param executor The executor to use for the resolver
-        /// @return The created IHttpResolver
+        /// @copydoc IHttpResolverFactory::Create
         std::unique_ptr<IHttpResolver> Create(const boost::asio::any_io_executor& executor) override
         {
             return std::make_unique<HttpResolver>(executor);
