@@ -182,8 +182,9 @@ void check_max_fps();
  *
  * @param [in] path Path of the file to check
  * @param [in] evt_data Information associated to the triggered event
- * @param [in] configuration Configuration block associated with a previous event.
+ * @param [in] parent_configuration Configuration block associated with a previous event.
  * @param [in] dbsync_txn Handle to an active dbsync transaction.
+ * @param [in] ctx fim_txn_context_t transaction context.
  */
 void fim_checker(const char *path,
                  event_data_t *evt_data,
@@ -197,7 +198,8 @@ void fim_checker(const char *path,
  * @param [in] dir
  * @param [in] evt_data Information associated to the triggered event
  * @param [in] configuration Configuration block associated with the directory.
- * @param [in] txn_handle DBSync transaction handler. Can be NULL.
+ * @param [in] dbsync_txn DBSync transaction handler. Can be NULL.
+ * @param [in] ctx fim_txn_context_t transaction context.
  *
  * @return 0 on success, -1 on failure
  */
@@ -721,7 +723,7 @@ int fim_check_restrict(const char *file_name, OSMatch *restriction);
  * @brief Thread that creates a socket for communication with the API
  * Com request thread dispatcher
  *
- * @param Argument to be passed to the thread
+ * @param arg to be passed to the thread
  */
 void *syscom_main(void *arg);
 #endif

@@ -30,7 +30,6 @@ int OS_SHA256_File(const char *fname, os_sha256 output, int mode) __attribute((n
  *
  * @param [in] str String to calculate the SHA256.
  * @param [out] output Buffer where the hash will be written. Must be at least sizeof(os_sha256).
- * @return 0 o success.
  */
 void OS_SHA256_String(const char *str, os_sha256 output);
 
@@ -40,7 +39,6 @@ void OS_SHA256_String(const char *str, os_sha256 output);
  * @param [in] str String to calculate the SHA256.
  * @param [out] output Buffer where the hash will be written. Must be at least size+1 length.
  * @param [in] size Size to chop the calculated hash.
- * @return 0 o success.
  */
 void OS_SHA256_String_sized(const char *str, char* output, size_t size);
 

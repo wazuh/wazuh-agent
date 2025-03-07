@@ -61,6 +61,7 @@ int wm_gcp_pubsub_read(xml_node **nodes, wmodule *module);
 
 /**
  * @brief Read the configuration for a Google Cloud bucket
+ * @param xml Pointer to the OS_XML object
  * @param nodes XML nodes to analyze
  * @param module Wazuh module to initialize
  */

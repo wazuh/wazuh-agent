@@ -5,6 +5,10 @@
 
 #include <memory>
 
+/// \cond UNIX
+/**
+ * @brief Constructor for Logger.
+ */
 Logger::Logger()
 {
     auto console_sink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
@@ -15,6 +19,11 @@ Logger::Logger()
     spdlog::cfg::load_env_levels();
 }
 
+/**
+ * @brief Add Unix-specific sinks to the logger.
+ */
 void Logger::AddPlatformSpecificSink()
 {
 }
+
+/// \endcond

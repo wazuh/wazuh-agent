@@ -16,7 +16,7 @@ namespace https_socket_verify_utils
     {
     public:
         /// @copydoc ICertificateX509Utils::GetCertChain
-        STACK_OF(X509) * GetCertChain(X509_STORE_CTX* ctx) const override
+        CertChain* GetCertChain(X509_STORE_CTX* ctx) const override
         {
             return X509_STORE_CTX_get_chain(ctx);
         }

@@ -58,6 +58,7 @@ private:
 public:
     /// @brief Constructor
     /// @param configurationParser Pointer to the configuration parser
+    /// @param persistenceDest Unique pointer to the storage
     MultiTypeQueue(std::shared_ptr<configuration::ConfigurationParser> configurationParser,
                    std::unique_ptr<IStorage> persistenceDest = nullptr);
 
@@ -82,7 +83,7 @@ public:
     /// @copydoc IMultiTypeQueue::pushAwaitable
     boost::asio::awaitable<int> pushAwaitable(Message message) override;
 
-    /// @copydoc IMultiTypeQueue::push
+    /// @copydoc IMultiTypeQueue::push(std::vector<Message>)
     int push(std::vector<Message> messages) override;
 
     /// @copydoc IMultiTypeQueue::getNext
