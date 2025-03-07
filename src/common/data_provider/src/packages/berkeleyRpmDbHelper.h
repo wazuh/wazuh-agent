@@ -13,7 +13,7 @@
 #define _BERKELEY_RPM_DB_HELPER_H
 
 #include "berkeleyDbWrapper.h"
-#include "byteArrayHelper.h"
+#include "byteArrayHelper.hpp"
 #include <algorithm>
 #include <map>
 #include <memory>
