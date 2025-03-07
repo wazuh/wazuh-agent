@@ -10,19 +10,19 @@
  */
 #ifndef _SYSINFO_PORT_TEST_H
 #define _SYSINFO_PORT_TEST_H
-#include "gtest/gtest.h"
+
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 class SysInfoPortTest : public ::testing::Test
 {
 
-    protected:
+protected:
+    SysInfoPortTest() = default;
+    virtual ~SysInfoPortTest() = default;
 
-        SysInfoPortTest() = default;
-        virtual ~SysInfoPortTest() = default;
-
-        void SetUp() override;
-        void TearDown() override;
+    void SetUp() override;
+    void TearDown() override;
 };
 
 #endif //_SYSINFO_PORT_TEST_H

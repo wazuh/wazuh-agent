@@ -11,6 +11,7 @@
 
 #ifndef THREAD_SAFE_QUEUE_H
 #define THREAD_SAFE_QUEUE_H
+
 #include <atomic>
 #include <condition_variable>
 #include <iostream>
@@ -30,18 +31,22 @@ namespace Utils
             : m_canceled {false}
         {
         }
+
         TSafeQueue& operator=(const TSafeQueue&) = delete;
+
         TSafeQueue(TSafeQueue& other)
             : TSafeQueue {}
         {
             std::lock_guard<std::mutex> lock {other.m_mutex};
             m_queue = other.m_queue;
         }
+
         explicit TSafeQueue(Tq&& queue)
             : m_queue {std::move(queue)}
             , m_canceled {false}
         {
         }
+
         ~TSafeQueue()
         {
             cancel();

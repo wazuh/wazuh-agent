@@ -10,19 +10,19 @@
  */
 #ifndef _SQLITE_TEST_H
 #define _SQLITE_TEST_H
-#include "gtest/gtest.h"
+
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 class SQLiteTest : public ::testing::Test
 {
 
-    protected:
+protected:
+    SQLiteTest() = default;
+    virtual ~SQLiteTest() = default;
 
-        SQLiteTest() = default;
-        virtual ~SQLiteTest() = default;
-
-        void SetUp() override;
-        void TearDown() override;
+    void SetUp() override;
+    void TearDown() override;
 };
 
 #endif //_SQLITE_TEST_H

@@ -12,17 +12,17 @@
 #ifndef _SYSINFO_HARDWARE_WRAPPER_ARM_MAC_TEST_H
 #define _SYSINFO_HARDWARE_WRAPPER_ARM_MAC_TEST_H
 
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 class SysInfoHardwareWrapperARMMacTest : public ::testing::Test
 {
-    protected:
-        SysInfoHardwareWrapperARMMacTest() = default;
-        virtual ~SysInfoHardwareWrapperARMMacTest() = default;
+protected:
+    SysInfoHardwareWrapperARMMacTest() = default;
+    virtual ~SysInfoHardwareWrapperARMMacTest() = default;
 
-        void SetUp() override;
-        void TearDown() override;
+    void SetUp() override;
+    void TearDown() override;
 };
 
 #endif //_SYSINFO_HARDWARE_WRAPPER_ARM_MAC_TEST_H

@@ -9,14 +9,15 @@
  * Foundation.
  */
 
-#pragma once
+#ifndef _CMD_HELPER_H
+#define _CMD_HELPER_H
 
-#include <string>
-#include <iostream>
 #include <cstdio>
+#include <iostream>
 #include <memory>
-#include <vector>
 #include <pal.h>
+#include <string>
+#include <vector>
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -25,7 +26,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable: 4505)
+#pragma warning(disable : 4505)
 #endif
 
 namespace Utils
@@ -37,9 +38,10 @@ namespace Utils
             pclose(file);
         }
     };
+
     static std::string exec(const std::string& cmd, const size_t bufferSize = 128)
     {
-        const std::unique_ptr<FILE, FileSmartDeleter> file{popen(cmd.c_str(), "r")};
+        const std::unique_ptr<FILE, FileSmartDeleter> file {popen(cmd.c_str(), "r")};
         std::vector<char> buffer(bufferSize);
         std::string result;
 
@@ -53,7 +55,7 @@ namespace Utils
 
         return result;
     }
-}
+} // namespace Utils
 
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
@@ -62,3 +64,5 @@ namespace Utils
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
+
+#endif // _CMD_HELPER_H

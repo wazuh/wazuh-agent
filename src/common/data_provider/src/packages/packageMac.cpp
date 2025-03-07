@@ -10,10 +10,10 @@
  */
 
 #include "packageMac.h"
-#include "sharedDefs.h"
 #include "brewWrapper.h"
-#include "pkgWrapper.h"
 #include "macportsWrapper.h"
+#include "pkgWrapper.h"
+#include "sharedDefs.h"
 
 std::shared_ptr<IPackage> FactoryBSDPackage::create(const std::pair<PackageContext, int>& ctx)
 {
@@ -29,7 +29,7 @@ std::shared_ptr<IPackage> FactoryBSDPackage::create(const std::pair<PackageConte
     }
     else
     {
-        throw std::runtime_error { "Error creating BSD package data retriever." };
+        throw std::runtime_error {"Error creating BSD package data retriever."};
     }
 
     return ret;
@@ -45,7 +45,7 @@ std::shared_ptr<IPackage> FactoryBSDPackage::create(const std::pair<SQLiteLegacy
     }
     else
     {
-        throw std::runtime_error { "Error creating BSD package data retriever." };
+        throw std::runtime_error {"Error creating BSD package data retriever."};
     }
 
     return ret;
@@ -53,7 +53,8 @@ std::shared_ptr<IPackage> FactoryBSDPackage::create(const std::pair<SQLiteLegacy
 
 BSDPackageImpl::BSDPackageImpl(const std::shared_ptr<IPackageWrapper>& packageWrapper)
     : m_packageWrapper(packageWrapper)
-{ }
+{
+}
 
 void BSDPackageImpl::buildPackageData(nlohmann::json& package)
 {
