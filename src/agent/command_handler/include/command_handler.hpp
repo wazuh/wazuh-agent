@@ -26,21 +26,14 @@ namespace command_handler
     public:
         /// @brief CommandHandler constructor
         /// @param configurationParser Pointer to the configuration parser
+        /// @param commandStore Unique pointer to the command store
         CommandHandler(std::shared_ptr<configuration::ConfigurationParser> configurationParser,
                        std::unique_ptr<command_store::ICommandStore> commandStore = nullptr);
 
         /// @brief CommandHandler destructor
         ~CommandHandler();
 
-        /// @brief Processes commands asynchronously
-        ///
-        /// This task retrieves commands from the queue and dispatches them for execution.
-        /// If no command is available, it waits for a specified duration before retrying.
-        ///
-        /// @param getCommandFromQueue Function to retrieve a command from the queue
-        /// @param popCommandFromQueue Function to remove a command from the queue
-        /// @param reportCommandResult Function to report a command result
-        /// @param dispatchCommand Function to dispatch the command for execution
+        /// @copydoc ICommandHandler::CommandsProcessingTask
         boost::asio::awaitable<void>
         CommandsProcessingTask(const std::function<std::optional<module_command::CommandEntry>()> getCommandFromQueue,
                                const std::function<void()> popCommandFromQueue,
@@ -48,7 +41,7 @@ namespace command_handler
                                const std::function<boost::asio::awaitable<module_command::CommandExecutionResult>(
                                    module_command::CommandEntry&)> dispatchCommand) override;
 
-        /// @brief Stops the command handler
+        /// @copydoc ICommandHandler::Stop
         void Stop() override;
 
     private:

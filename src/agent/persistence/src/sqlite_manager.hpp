@@ -39,52 +39,30 @@ public:
     /// @brief Destructor.
     ~SQLiteManager() override;
 
-    /// @brief Checks if a specified table exists in the database.
-    /// @param tableName The name of the table to check.
-    /// @return True if the table exists, false otherwise.
+    /// @copydoc Persistence::TableExists
     bool TableExists(const std::string& tableName) override;
 
-    /// @brief Creates a new table with specified keys if it doesn't already exist.
-    /// @param tableName The name of the table to create.
-    /// @param cols Keys specifying the table schema.
+    /// @copydoc Persistence::CreateTable
     void CreateTable(const std::string& tableName, const column::Keys& cols) override;
 
-    /// @brief Inserts data into a specified table.
-    /// @param tableName The name of the table where data is inserted.
-    /// @param cols Row with values to insert.
+    /// @copydoc Persistence::Insert
     void Insert(const std::string& tableName, const column::Row& cols) override;
 
-    /// @brief Updates rows in a specified table with optional criteria.
-    /// @param tableName The name of the table to update.
-    /// @param fields Row with new values to set.
-    /// @param selCriteria Optional criteria to filter rows to update.
-    /// @param logOp Logical operator to combine selection criteria.
+    /// @copydoc Persistence::Update
     void Update(const std::string& tableName,
                 const column::Row& fields,
                 const column::Criteria& selCriteria = {},
                 column::LogicalOperator logOp = column::LogicalOperator::AND) override;
 
-    /// @brief Removes rows from a specified table with optional criteria.
-    /// @param tableName The name of the table to delete from.
-    /// @param selCriteria Optional criteria to filter rows to delete.
-    /// @param logOp Logical operator to combine selection criteria.
+    /// @copydoc Persistence::Remove
     void Remove(const std::string& tableName,
                 const column::Criteria& selCriteria = {},
                 column::LogicalOperator logOp = column::LogicalOperator::AND) override;
 
-    /// @brief Drops a specified table from the database.
-    /// @param tableName The name of the table to drop.
+    /// @copydoc Persistence::DropTable
     void DropTable(const std::string& tableName) override;
 
-    /// @brief Selects rows from a specified table with optional criteria.
-    /// @param tableName The name of the table to select from.
-    /// @param fields Names to retrieve.
-    /// @param selCriteria Optional selection criteria to filter rows.
-    /// @param logOp Logical operator to combine selection criteria (AND/OR).
-    /// @param orderBy Names to order the results by.
-    /// @param orderType The order type (ASC or DESC).
-    /// @param limit The maximum number of rows to retrieve.
-    /// @return A vector of rows matching the criteria.
+    /// @copydoc Persistence::Select
     std::vector<column::Row> Select(const std::string& tableName,
                                     const column::Names& fields,
                                     const column::Criteria& selCriteria = {},
@@ -93,36 +71,24 @@ public:
                                     column::OrderType orderType = column::OrderType::ASC,
                                     int limit = 0) override;
 
-    /// @brief Retrieves the number of rows in a specified table.
-    /// @param tableName The name of the table to count rows in.
-    /// @param selCriteria Optional selection criteria to filter rows.
-    /// @param logOp Logical operator to combine selection criteria (AND/OR).
-    /// @return The number of rows in the table.
+    /// @copydoc Persistence::GetCount
     int GetCount(const std::string& tableName,
                  const column::Criteria& selCriteria = {},
                  column::LogicalOperator logOp = column::LogicalOperator::AND) override;
 
-    /// @brief Retrieves the size in bytes of rows in a specified table.
-    /// @param tableName The name of the table to count rows in.
-    /// @param fields Names to retrieve.
-    /// @param selCriteria Optional selection criteria to filter rows.
-    /// @param logOp Logical operator to combine selection criteria (AND/OR).
-    /// @return The size in bytes of the rows in the table.
+    /// @copydoc Persistence::GetSize
     size_t GetSize(const std::string& tableName,
                    const column::Names& fields,
                    const column::Criteria& selCriteria = {},
                    column::LogicalOperator logOp = column::LogicalOperator::AND) override;
 
-    /// @brief Begins a transaction in the SQLite database.
-    /// @return The transaction ID.
+    /// @copydoc Persistence::BeginTransaction
     TransactionId BeginTransaction() override;
 
-    /// @brief Commits a transaction in the SQLite database.
-    /// @param transactionId The transaction to commit.
+    /// @copydoc Persistence::CommitTransaction
     void CommitTransaction(TransactionId transactionId) override;
 
-    /// @brief Rolls back a transaction in the SQLite database.
-    /// @param transactionId The transaction to rollback.
+    /// @copydoc Persistence::RollbackTransaction
     void RollbackTransaction(TransactionId transactionId) override;
 
 private:

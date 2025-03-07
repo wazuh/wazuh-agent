@@ -22,10 +22,7 @@ namespace http_client
         {
         }
 
-        /// @brief Resolves a host and port to a list of endpoints
-        /// @param host The host to resolve
-        /// @param port The port to resolve
-        /// @return Resolved endpoints
+        /// @copydoc IHttpResolver::Resolve
         boost::asio::ip::tcp::resolver::results_type Resolve(const std::string& host, const std::string& port) override
         {
             try
@@ -48,10 +45,7 @@ namespace http_client
             }
         }
 
-        /// @brief Asynchronously resolves a host and port to a list of endpoints
-        /// @param host The host to resolve
-        /// @param port The port to resolve
-        /// @return Awaitable resolved endpoints
+        /// @copydoc IHttpResolver::AsyncResolve
         boost::asio::awaitable<boost::asio::ip::tcp::resolver::results_type>
         AsyncResolve(const std::string& host, const std::string& port) override
         {
