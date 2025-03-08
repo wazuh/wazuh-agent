@@ -62,7 +62,7 @@ include(cmake/PrepareVersionFileForInstallation.cmake)
 
 # Installation
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(CMAKE_INSTALL_PREFIX "" CACHE PATH "Root directory for installation")
+    set(CMAKE_INSTALL_PREFIX "" CACHE PATH "Root directory for installation" FORCE)
 
     install(DIRECTORY DESTINATION "${DATA_INSTALL_DIR}")
 
