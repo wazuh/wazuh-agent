@@ -39,12 +39,12 @@ void sched_scan_free(sched_scan_config *scan_config);
  * @brief Reads an array of xml nodes and overrides scheduling configuration
  *
  * Expected xml nodes:
- * ´´´
+ * @code
  * <day></day>
  * <wday></wday>
  * <time></time>
  * <interval></interval>
- * ´´´
+ * @endcode
  * */
 int sched_scan_read(sched_scan_config *scan_config, xml_node **nodes, const char *MODULE_NAME);
 
@@ -77,8 +77,8 @@ void check_daylight(sched_scan_config *config, time_t * next_scan_time, bool tes
 /**
  * @brief Get time in seconds to the specified hour in hh:mm
  *
- * @param hourtime of the day hh:mm format
- * @param num_weeks number of days interval
+ * @param hour of the day hh:mm format
+ * @param num_days number of days interval
  * @param first_time if it the next time we need to obtain or we respect the interval number of days
  * @return amount of time in seconds
 */

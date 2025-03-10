@@ -6,7 +6,7 @@
 
 namespace instance_handler
 {
-    /// @class InstanceHandler class
+    /// @class InstanceHandler
     /// @brief Handles the acquisition and release of instance locks to prevent multiple instances of wazuh agent
     /// running
     class InstanceHandler

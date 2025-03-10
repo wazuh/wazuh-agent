@@ -351,7 +351,7 @@ static void rb_balance_delete(rb_tree * tree, rb_node * node, rb_node * parent) 
  *
  * @param node Pointer to a red-black tree node.
  * @param array Pointer to the target string array.
- * @param size[in,out] Pointer to the current size of the array.
+ * @param size [in,out] Pointer to the current size of the array.
  * @pre array is expected to be size cells long.
  * @post array is reallocated to size+2 cells long.
  * @post array is no longer valid after calling this function.
@@ -380,7 +380,7 @@ static char ** rb_keys(rb_node * node, char ** array, unsigned * size) {
  * @param min Minimum key.
  * @param max Maximum key.
  * @param array Pointer to the target string array.
- * @param size[in,out] Pointer to the current size of the array.
+ * @param size [in,out] Pointer to the current size of the array.
  * @pre array is expected to be size cells long.
  * @post array is reallocated to size+2 cells long.
  * @post array is no longer valid after calling this function.

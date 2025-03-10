@@ -37,7 +37,7 @@ struct passwd *w_getpwnam(const char *name, struct passwd *pwd, char *buf, size_
  *
  * This is a wrapper of getpwid_r().
  *
- * @param name Name of the user.
+ * @param uid uid of the user.
  * @param pwd Destination password structure.
  * @param buf Context buffer.
  * @param buflen Length of buffer.
@@ -45,7 +45,7 @@ struct passwd *w_getpwnam(const char *name, struct passwd *pwd, char *buf, size_
  * @retval NULL on failure.
  * @post errno is set on failure.
  */
-struct passwd *w_getpwuid(uid_t  uid, struct  passwd  *pwd, char *buf, int  buflen);
+struct passwd *w_getpwuid(uid_t uid, struct  passwd  *pwd, char *buf, int  buflen);
 
 /**
  * @brief Find a group by name
@@ -67,7 +67,7 @@ struct group  *w_getgrnam(const char *name, struct group *grp, char *buf, int bu
  *
  * This is a wrapper of getgrid_r().
  *
- * @param name Name of the group.
+ * @param gid id of the group.
  * @param grp Destination group structure.
  * @param buf Context buffer.
  * @param buflen Length of buffer.

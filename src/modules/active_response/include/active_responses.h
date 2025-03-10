@@ -119,7 +119,7 @@ void splitStrFromCharDelimiter(const char * output_buf, const char delimiter, ch
  * @param str_pattern_1 pattern to match
  * @param str_pattern_2 pattern to match
  * @return 1 or 0
- * @example output_buf -> "... Status:    Disabled ..."
+ * @details output_buf -> "... Status:    Disabled ..."
  *          isEnabledFromPattern(output_buf, "Status: ", "Enabled")
  *            if it matches pattern 1 look for pattern 2 and if found, it returns 1
  *          isEnabledFromPattern(output_buf, "Status: ", NULL)

@@ -21,21 +21,16 @@ public:
 
     ~TaskManager() override;
 
-    /// @brief Starts the task manager
-    /// @param numThreads The number of threads to start
+    /// @copydoc ITaskManager::Start
     void Start(size_t numThreads) override;
 
-    /// @brief Stops the task manager
+    /// @copydoc ITaskManager::Stop
     void Stop() override;
 
-    /// @brief Enqueues a task to be executed
-    /// @param task The task to enqueue
-    /// @param taskID The ID of the task
+    /// @copydoc ITaskManager::EnqueueTask
     void EnqueueTask(std::function<void()> task, const std::string& taskID = "") override;
 
-    /// @brief Enqueues a coroutine task to be executed
-    /// @param task The coroutine task to enqueue
-    /// @param taskID The ID of the task
+    /// @copydoc ITaskManager::EnqueueTask
     void EnqueueTask(boost::asio::awaitable<void> task, const std::string& taskID = "") override;
 
     /// @brief Returns the number of enqueued threads

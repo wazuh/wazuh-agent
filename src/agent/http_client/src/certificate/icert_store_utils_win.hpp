@@ -86,7 +86,6 @@ namespace https_socket_verify_utils
 
         /// @brief Frees a certificate chain context.
         /// @param pChainContext A pointer to the certificate chain context to be freed.
-        /// @return TRUE if the chain context was successfully freed, FALSE otherwise.
         virtual void FreeCertificateChain(PCCERT_CHAIN_CONTEXT pChainContext) const = 0;
 
         /// @brief Closes a certificate store handle.

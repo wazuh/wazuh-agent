@@ -27,15 +27,11 @@ namespace http_client
         HttpClient(std::shared_ptr<IHttpResolverFactory> resolverFactory = nullptr,
                    std::shared_ptr<IHttpSocketFactory> socketFactory = nullptr);
 
-        /// @brief Performs an asynchronous HTTP request
-        /// @param params Parameters for the request
-        /// @return An awaitable tuple containing the response status code and body
+        /// @copydoc IHttpClient::Co_PerformHttpRequest
         boost::asio::awaitable<std::tuple<int, std::string>>
         Co_PerformHttpRequest(const HttpRequestParams params) override;
 
-        /// @brief Performs a synchronous HTTP request
-        /// @param params Parameters for the request
-        /// @return A tuple containing the response status code and body
+        /// @copydoc IHttpClient::PerformHttpRequest
         std::tuple<int, std::string> PerformHttpRequest(const HttpRequestParams& params) override;
 
     private:
