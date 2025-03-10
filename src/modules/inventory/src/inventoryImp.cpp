@@ -2,7 +2,7 @@
 
 #include <commonDefs.h>
 #include <config.h>
-#include <hashHelper.h>
+#include <hashHelper.hpp>
 #include <inventory.hpp>
 #include <iostream>
 #include <nlohmann/json.hpp>
