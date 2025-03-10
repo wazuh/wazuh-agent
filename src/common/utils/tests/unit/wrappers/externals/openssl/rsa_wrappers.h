@@ -7,6 +7,8 @@
  * Foundation
  */
 
+#ifndef RSA_WRAPPERS_H
+#define RSA_WRAPPERS_H
 
 #include <openssl/rsa.h>
 
@@ -21,3 +23,5 @@ int __wrap_RSA_generate_key_ex(RSA *rsa, int bits, BIGNUM *e_value, BN_GENCB *cb
 RSA * __wrap_RSA_new(void);
 
 extern RSA *__real_RSA_new(void);
+
+#endif

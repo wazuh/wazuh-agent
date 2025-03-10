@@ -11,19 +11,18 @@
 #ifndef _SYSINFO_TEST_H
 #define _SYSINFO_TEST_H
 
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 class SysInfoTest : public ::testing::Test
 {
 
-    protected:
+protected:
+    SysInfoTest() = default;
+    virtual ~SysInfoTest() = default;
 
-        SysInfoTest() = default;
-        virtual ~SysInfoTest() = default;
-
-        void SetUp() override;
-        void TearDown() override;
+    void SetUp() override;
+    void TearDown() override;
 };
 
 #endif //_SYSINFO_TEST_H

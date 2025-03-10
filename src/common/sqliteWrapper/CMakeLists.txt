@@ -9,4 +9,4 @@ add_library(sqlite_wrapper INTERFACE)
 
 target_include_directories(sqlite_wrapper INTERFACE include)
 
-target_link_libraries(sqlite_wrapper INTERFACE pal)
+target_link_libraries(sqlite_wrapper INTERFACE deleter_helper pal)

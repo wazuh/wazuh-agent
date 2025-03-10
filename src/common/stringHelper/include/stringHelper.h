@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <iomanip>
+#include <map>
 #include <memory>
 #include <regex>
 #include <sstream>
@@ -27,7 +28,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable: 4505)
+#pragma warning(disable : 4505)
 #endif
 
 // Time values for conversion
@@ -220,7 +221,6 @@ namespace Utils
         {
             ret = ss.str();
         }
-        // LCOV_EXCL_START
         else
         {
             const auto size {asciiData.size() * 2};
@@ -236,7 +236,6 @@ namespace Utils
             ret = std::string {buffer.get(), size};
         }
 
-        // LCOV_EXCL_STOP
         return ret;
     }
 
@@ -378,7 +377,10 @@ namespace Utils
     {
         std::string::const_iterator it = str.begin();
 
-        while (it != str.end() && std::isdigit(*it)) ++it;
+        while (it != str.end() && std::isdigit(*it))
+        {
+            ++it;
+        }
 
         return !str.empty() && it == str.end();
     }
@@ -435,6 +437,7 @@ namespace Utils
             return -1;
         }
     }
+
     /**
      * @brief Add size padding to a string.
      *

@@ -13,7 +13,8 @@
  * @date October 4, 2017
  */
 
-#pragma once
+#ifndef _TIME_OP_H
+#define _TIME_OP_H
 
 #include <time.h>
 
@@ -86,3 +87,5 @@ long long int get_windows_file_time_epoch(FILETIME ft);
  * @return Boolean indicating whether the year is leap.
  */
 bool is_leap_year(int year);
+
+#endif // _TIME_OP_H

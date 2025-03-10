@@ -28,7 +28,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         cjson
         unofficial::sqlite3::sqlite3
         pthread
-        utils
+        deleter_helper
     )
 else()
     target_link_libraries(fim_integration_test
@@ -41,7 +41,7 @@ else()
         unofficial::sqlite3::sqlite3
         pthread
         dl
-        utils
+        deleter_helper
     )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 add_test(NAME fim_integration_test

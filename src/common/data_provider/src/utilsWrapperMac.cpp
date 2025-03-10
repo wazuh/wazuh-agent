@@ -10,9 +10,9 @@
  */
 
 #include "utilsWrapperMac.hpp"
-#include "cmdHelper.h"
+#include "cmdHelper.hpp"
 
 std::string UtilsWrapperMac::exec(const std::string& cmd, const size_t bufferSize)
 {
-    return Utils::exec(cmd, bufferSize);
+    return Utils::Exec(cmd, bufferSize);
 }

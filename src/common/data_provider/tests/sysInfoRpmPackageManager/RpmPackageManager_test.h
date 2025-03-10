@@ -11,18 +11,17 @@
 #ifndef _SYSINFO_PACKAGES_BERKELEY_DB_TEST_H
 #define _SYSINFO_PACKAGES_BERKELEY_DB_TEST_H
 
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 class RpmLibTest : public ::testing::Test
 {
-    protected:
+protected:
+    RpmLibTest() = default;
+    virtual ~RpmLibTest() = default;
 
-        RpmLibTest() = default;
-        virtual ~RpmLibTest() = default;
-
-        void SetUp() override;
-        void TearDown() override;
+    void SetUp() override;
+    void TearDown() override;
 };
 
 #endif //_SYSINFO_PACKAGES_BERKELEY_DB_TEST_H

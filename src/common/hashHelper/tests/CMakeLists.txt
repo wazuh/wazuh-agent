@@ -11,7 +11,6 @@ add_executable(hash_helper_tests
     ${UTIL_CXX_UNITTEST_COMMON_SRC}
 )
 
-include(../../../cmake/ConfigureTarget.cmake)
 configure_target(hash_helper_tests)
 
 target_include_directories(hash_helper_tests PRIVATE

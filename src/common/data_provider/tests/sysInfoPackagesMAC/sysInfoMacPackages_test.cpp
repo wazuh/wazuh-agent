@@ -10,44 +10,44 @@
  */
 
 #include "sysInfoMacPackages_test.h"
-#include "packages/packageMac.h"
 #include "packages/macportsWrapper.h"
-#include "sqliteWrapperTempMock.h"
+#include "packages/packageMac.h"
 #include "sqliteWrapperTemp.h"
+#include "sqliteWrapperTempMock.h"
 
 void SysInfoMacPackagesTest::SetUp() {};
 
 void SysInfoMacPackagesTest::TearDown() {};
 
 using ::testing::_;
-using ::testing::Return;
 using ::testing::An;
 using ::testing::ByMove;
+using ::testing::Return;
 
-class SysInfoMacPackagesWrapperMock: public IPackageWrapper
+class SysInfoMacPackagesWrapperMock : public IPackageWrapper
 {
-    public:
-        SysInfoMacPackagesWrapperMock() = default;
-        virtual ~SysInfoMacPackagesWrapperMock() = default;
-        MOCK_METHOD(void, name, (nlohmann::json& package), (const override));
-        MOCK_METHOD(void, version, (nlohmann::json& package), (const override));
-        MOCK_METHOD(void, groups, (nlohmann::json& package), (const override));
-        MOCK_METHOD(void, description, (nlohmann::json& package), (const override));
-        MOCK_METHOD(void, architecture, (nlohmann::json& package), (const override));
-        MOCK_METHOD(void, format, (nlohmann::json& package), (const override));
-        MOCK_METHOD(void, osPatch, (nlohmann::json& package), (const override));
-        MOCK_METHOD(void, source, (nlohmann::json& package), (const override));
-        MOCK_METHOD(void, location, (nlohmann::json& package), (const override));
-        MOCK_METHOD(void, priority, (nlohmann::json& package), (const override));
-        MOCK_METHOD(void, size, (nlohmann::json& package), (const override));
-        MOCK_METHOD(void, vendor, (nlohmann::json& package), (const override));
-        MOCK_METHOD(void, install_time, (nlohmann::json& package), (const override));
-        MOCK_METHOD(void, multiarch, (nlohmann::json& package), (const override));
+public:
+    SysInfoMacPackagesWrapperMock() = default;
+    virtual ~SysInfoMacPackagesWrapperMock() = default;
+    MOCK_METHOD(void, name, (nlohmann::json & package), (const override));
+    MOCK_METHOD(void, version, (nlohmann::json & package), (const override));
+    MOCK_METHOD(void, groups, (nlohmann::json & package), (const override));
+    MOCK_METHOD(void, description, (nlohmann::json & package), (const override));
+    MOCK_METHOD(void, architecture, (nlohmann::json & package), (const override));
+    MOCK_METHOD(void, format, (nlohmann::json & package), (const override));
+    MOCK_METHOD(void, osPatch, (nlohmann::json & package), (const override));
+    MOCK_METHOD(void, source, (nlohmann::json & package), (const override));
+    MOCK_METHOD(void, location, (nlohmann::json & package), (const override));
+    MOCK_METHOD(void, priority, (nlohmann::json & package), (const override));
+    MOCK_METHOD(void, size, (nlohmann::json & package), (const override));
+    MOCK_METHOD(void, vendor, (nlohmann::json & package), (const override));
+    MOCK_METHOD(void, install_time, (nlohmann::json & package), (const override));
+    MOCK_METHOD(void, multiarch, (nlohmann::json & package), (const override));
 };
 
 TEST_F(SysInfoMacPackagesTest, Test_SPEC_Data)
 {
-    auto mock { std::make_shared<SysInfoMacPackagesWrapperMock>() };
+    auto mock {std::make_shared<SysInfoMacPackagesWrapperMock>()};
     nlohmann::json packages {};
     EXPECT_CALL(*mock, name(_)).WillOnce([](nlohmann::json& package) { package["name"] = "1"; });
     EXPECT_CALL(*mock, version(_)).WillOnce([](nlohmann::json& package) { package["version"] = "2"; });
@@ -81,24 +81,20 @@ TEST_F(SysInfoMacPackagesTest, Test_SPEC_Data)
 
 TEST_F(SysInfoMacPackagesTest, macPortsValidData)
 {
-    auto mockStatement { std::make_unique<MockStatement>() };
+    auto mockStatement {std::make_unique<MockStatement>()};
     EXPECT_CALL(*mockStatement, columnsCount()).WillOnce(Return(5));
 
-    auto mockColumn_1 { std::make_unique<MockColumn>() };
-    EXPECT_CALL(*mockColumn_1, value(An<const std::string&>()))
-    .WillOnce(Return("neovim"));
-    auto mockColumn_2 { std::make_unique<MockColumn>() };
-    EXPECT_CALL(*mockColumn_2, value(An<const std::string&>()))
-    .WillOnce(Return("0.8.1"));
-    auto mockColumn_3 { std::make_unique<MockColumn>() };
-    EXPECT_CALL(*mockColumn_3, value(An<const int64_t&>()))
-    .WillOnce(Return(1690831043));
-    auto mockColumn_4 { std::make_unique<MockColumn>() };
+    auto mockColumn_1 {std::make_unique<MockColumn>()};
+    EXPECT_CALL(*mockColumn_1, value(An<const std::string&>())).WillOnce(Return("neovim"));
+    auto mockColumn_2 {std::make_unique<MockColumn>()};
+    EXPECT_CALL(*mockColumn_2, value(An<const std::string&>())).WillOnce(Return("0.8.1"));
+    auto mockColumn_3 {std::make_unique<MockColumn>()};
+    EXPECT_CALL(*mockColumn_3, value(An<const int64_t&>())).WillOnce(Return(1690831043));
+    auto mockColumn_4 {std::make_unique<MockColumn>()};
     EXPECT_CALL(*mockColumn_4, value(An<const std::string&>()))
-    .WillOnce(Return("/opt/local/var/macports/software/neovim/neovim-0.8.1.tgz"));
-    auto mockColumn_5 {std::make_unique<MockColumn>() };
-    EXPECT_CALL(*mockColumn_5, value(An<const std::string&>()))
-    .WillOnce(Return("x86_64"));
+        .WillOnce(Return("/opt/local/var/macports/software/neovim/neovim-0.8.1.tgz"));
+    auto mockColumn_5 {std::make_unique<MockColumn>()};
+    EXPECT_CALL(*mockColumn_5, value(An<const std::string&>())).WillOnce(Return("x86_64"));
 
     EXPECT_CALL(*mockColumn_1, hasValue()).WillOnce(Return(true));
     EXPECT_CALL(*mockColumn_2, hasValue()).WillOnce(Return(true));
@@ -130,24 +126,19 @@ TEST_F(SysInfoMacPackagesTest, macPortsValidData)
 
 TEST_F(SysInfoMacPackagesTest, macPortsValidDataEmptyFields)
 {
-    auto mockStatement { std::make_unique<MockStatement>() };
+    auto mockStatement {std::make_unique<MockStatement>()};
     EXPECT_CALL(*mockStatement, columnsCount()).WillOnce(Return(5));
 
-    auto mockColumn_1 { std::make_unique<MockColumn>() };
-    EXPECT_CALL(*mockColumn_1, value(An<const std::string&>()))
-    .WillOnce(Return("neovim"));
-    auto mockColumn_2 { std::make_unique<MockColumn>() };
-    EXPECT_CALL(*mockColumn_2, value(An<const std::string&>()))
-    .WillOnce(Return(""));
-    auto mockColumn_3 { std::make_unique<MockColumn>() };
-    EXPECT_CALL(*mockColumn_3, value(An<const int64_t&>()))
-    .WillOnce(Return(0));
-    auto mockColumn_4 { std::make_unique<MockColumn>() };
-    EXPECT_CALL(*mockColumn_4, value(An<const std::string&>()))
-    .WillOnce(Return(""));
-    auto mockColumn_5 {std::make_unique<MockColumn>() };
-    EXPECT_CALL(*mockColumn_5, value(An<const std::string&>()))
-    .WillOnce(Return(""));
+    auto mockColumn_1 {std::make_unique<MockColumn>()};
+    EXPECT_CALL(*mockColumn_1, value(An<const std::string&>())).WillOnce(Return("neovim"));
+    auto mockColumn_2 {std::make_unique<MockColumn>()};
+    EXPECT_CALL(*mockColumn_2, value(An<const std::string&>())).WillOnce(Return(""));
+    auto mockColumn_3 {std::make_unique<MockColumn>()};
+    EXPECT_CALL(*mockColumn_3, value(An<const int64_t&>())).WillOnce(Return(0));
+    auto mockColumn_4 {std::make_unique<MockColumn>()};
+    EXPECT_CALL(*mockColumn_4, value(An<const std::string&>())).WillOnce(Return(""));
+    auto mockColumn_5 {std::make_unique<MockColumn>()};
+    EXPECT_CALL(*mockColumn_5, value(An<const std::string&>())).WillOnce(Return(""));
 
     EXPECT_CALL(*mockColumn_1, hasValue()).WillOnce(Return(true));
     EXPECT_CALL(*mockColumn_2, hasValue()).WillOnce(Return(true));
@@ -180,24 +171,20 @@ TEST_F(SysInfoMacPackagesTest, macPortsValidDataEmptyFields)
 
 TEST_F(SysInfoMacPackagesTest, macPortsValidDataEmptyName)
 {
-    auto mockStatement { std::make_unique<MockStatement>() };
+    auto mockStatement {std::make_unique<MockStatement>()};
     EXPECT_CALL(*mockStatement, columnsCount()).WillOnce(Return(5));
 
-    auto mockColumn_1 { std::make_unique<MockColumn>() };
-    EXPECT_CALL(*mockColumn_1, value(An<const std::string&>()))
-    .WillOnce(Return(""));
-    auto mockColumn_2 { std::make_unique<MockColumn>() };
-    EXPECT_CALL(*mockColumn_2, value(An<const std::string&>()))
-    .WillOnce(Return("0.8.1"));
-    auto mockColumn_3 { std::make_unique<MockColumn>() };
-    EXPECT_CALL(*mockColumn_3, value(An<const int64_t&>()))
-    .WillOnce(Return(1690831043));
-    auto mockColumn_4 { std::make_unique<MockColumn>() };
+    auto mockColumn_1 {std::make_unique<MockColumn>()};
+    EXPECT_CALL(*mockColumn_1, value(An<const std::string&>())).WillOnce(Return(""));
+    auto mockColumn_2 {std::make_unique<MockColumn>()};
+    EXPECT_CALL(*mockColumn_2, value(An<const std::string&>())).WillOnce(Return("0.8.1"));
+    auto mockColumn_3 {std::make_unique<MockColumn>()};
+    EXPECT_CALL(*mockColumn_3, value(An<const int64_t&>())).WillOnce(Return(1690831043));
+    auto mockColumn_4 {std::make_unique<MockColumn>()};
     EXPECT_CALL(*mockColumn_4, value(An<const std::string&>()))
-    .WillOnce(Return("/opt/local/var/macports/software/neovim/neovim-0.8.1.tgz"));
-    auto mockColumn_5 {std::make_unique<MockColumn>() };
-    EXPECT_CALL(*mockColumn_5, value(An<const std::string&>()))
-    .WillOnce(Return("x86_64"));
+        .WillOnce(Return("/opt/local/var/macports/software/neovim/neovim-0.8.1.tgz"));
+    auto mockColumn_5 {std::make_unique<MockColumn>()};
+    EXPECT_CALL(*mockColumn_5, value(An<const std::string&>())).WillOnce(Return("x86_64"));
 
     EXPECT_CALL(*mockColumn_1, hasValue()).WillOnce(Return(true));
     EXPECT_CALL(*mockColumn_2, hasValue()).WillOnce(Return(true));

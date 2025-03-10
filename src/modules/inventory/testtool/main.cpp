@@ -1,5 +1,4 @@
 #include <chrono>
-#include <defs.h>
 #include <fstream>
 #include <inventory.hpp>
 #include <iostream>

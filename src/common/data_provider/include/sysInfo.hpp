@@ -14,37 +14,35 @@
 
 #include "sysInfoInterface.hpp"
 
-constexpr auto KByte
-{
-    1024
-};
+constexpr auto KByte {1024};
 
-class SysInfo: public ISysInfo
+class SysInfo : public ISysInfo
 {
-    public:
-        SysInfo() = default;
-        // LCOV_EXCL_START
-        virtual ~SysInfo() = default;
-        // LCOV_EXCL_STOP
-        nlohmann::json hardware() override;
-        nlohmann::json packages() override;
-        nlohmann::json os() override;
-        nlohmann::json processes() override;
-        nlohmann::json networks() override;
-        nlohmann::json ports() override;
-        void packages(std::function<void(nlohmann::json&)>) override;
-        void processes(std::function<void(nlohmann::json&)>) override;
-        nlohmann::json hotfixes() override;
-    private:
-        virtual nlohmann::json getHardware() const;
-        virtual nlohmann::json getPackages() const;
-        virtual nlohmann::json getOsInfo() const;
-        virtual nlohmann::json getProcessesInfo() const;
-        virtual nlohmann::json getNetworks() const;
-        virtual nlohmann::json getPorts() const;
-        virtual nlohmann::json getHotfixes() const;
-        virtual void getPackages(std::function<void(nlohmann::json&)>) const;
-        virtual void getProcessesInfo(std::function<void(nlohmann::json&)>) const;
+public:
+    SysInfo() = default;
+    // LCOV_EXCL_START
+    virtual ~SysInfo() = default;
+    // LCOV_EXCL_STOP
+    nlohmann::json hardware() override;
+    nlohmann::json packages() override;
+    nlohmann::json os() override;
+    nlohmann::json processes() override;
+    nlohmann::json networks() override;
+    nlohmann::json ports() override;
+    void packages(std::function<void(nlohmann::json&)>) override;
+    void processes(std::function<void(nlohmann::json&)>) override;
+    nlohmann::json hotfixes() override;
+
+private:
+    virtual nlohmann::json getHardware() const;
+    virtual nlohmann::json getPackages() const;
+    virtual nlohmann::json getOsInfo() const;
+    virtual nlohmann::json getProcessesInfo() const;
+    virtual nlohmann::json getNetworks() const;
+    virtual nlohmann::json getPorts() const;
+    virtual nlohmann::json getHotfixes() const;
+    virtual void getPackages(std::function<void(nlohmann::json&)>) const;
+    virtual void getProcessesInfo(std::function<void(nlohmann::json&)>) const;
 };
 
 #endif //_SYS_INFO_HPP
