@@ -9,7 +9,7 @@
  * Foundation.
  */
 
-#include "cmdHelper.h"
+#include "cmdHelper.hpp"
 #include "encodingWindowsHelper.h"
 #include "network/networkFamilyDataAFactory.h"
 #include "network/networkWindowsWrapper.h"
@@ -490,7 +490,7 @@ static std::string getSerialNumber()
     }
     else
     {
-        const auto rawData {Utils::exec("wmic baseboard get SerialNumber")};
+        const auto rawData {Utils::Exec("wmic baseboard get SerialNumber")};
         const auto pos {rawData.find("\r\n")};
 
         if (pos != std::string::npos)

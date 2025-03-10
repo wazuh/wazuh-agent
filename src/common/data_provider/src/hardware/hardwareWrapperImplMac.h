@@ -12,7 +12,6 @@
 #ifndef _HARDWARE_WRAPPER_IMPL_MAC_H
 #define _HARDWARE_WRAPPER_IMPL_MAC_H
 
-#include "cmdHelper.h"
 #include "defer.hpp"
 #include "hardwareWrapperInterface.h"
 #include "osPrimitivesInterfaceMac.h"

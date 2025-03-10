@@ -8,7 +8,6 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation.
  */
-#include "cmdHelper.h"
 #include "network/networkBSDWrapper.h"
 #include "network/networkFamilyDataAFactory.h"
 #include "networkUnixHelper.h"
