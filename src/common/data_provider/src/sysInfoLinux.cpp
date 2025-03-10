@@ -8,7 +8,7 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation.
  */
-#include "linuxInfoHelper.h"
+#include "linuxInfoHelper.hpp"
 #include "network/networkFamilyDataAFactory.h"
 #include "network/networkLinuxWrapper.h"
 #include "networkHelper.h"

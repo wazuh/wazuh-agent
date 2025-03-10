@@ -6,11 +6,14 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     include(../../cmake/CommonSettings.cmake)
     set_common_settings()
 
-    add_library(linux_helper INTERFACE)
+    add_library(linux_helper src/linuxInfoHelper.cpp)
 
-    target_include_directories(linux_helper INTERFACE include)
+    target_include_directories(linux_helper PUBLIC include)
 
-    target_link_libraries(linux_helper INTERFACE cmd_helper FileIO string_helper)
+    target_link_libraries(linux_helper PRIVATE FileIO)
+
+    include(../../cmake/ConfigureTarget.cmake)
+    configure_target(linux_helper)
 
     if(BUILD_TESTS)
         enable_testing()
