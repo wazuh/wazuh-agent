@@ -34,10 +34,10 @@ TEST_F(SysInfoWinTest, test_extract_HFValue_7618)
 TEST_F(SysInfoWinTest, testHF_Valids_Format)
 {
     std::set<std::string> ret;
-    constexpr auto KB_FORMAT_REGEX_OK { "(KB+[0-9]{6,})"};
-    constexpr auto KB_ONLY_FORMAT_REGEX { "(KB)"};
-    constexpr auto KB_NO_NUMBERS_FORMAT_REGEX { "(KB+[a-z])"};
-    constexpr auto KB_WITH_NUMBERS_AND_LETTERS_FORMAT_REGEX { "(KB+[0-9]{6,}+[aA-zZ])"};
+    constexpr auto KB_FORMAT_REGEX_OK { R"(KB[0-9]{6,})" };
+    constexpr auto KB_ONLY_FORMAT_REGEX { R"(KB)" };
+    constexpr auto KB_NO_NUMBERS_FORMAT_REGEX { R"(KB[a-z])" };
+    constexpr auto KB_WITH_NUMBERS_AND_LETTERS_FORMAT_REGEX { R"(KB[0-9]{6,}[a-zA-Z])" };
     PackageWindowsHelper::getHotFixFromReg(HKEY_LOCAL_MACHINE, PackageWindowsHelper::WIN_REG_HOTFIX, ret);
 
     for (const auto& hf : ret)
@@ -70,10 +70,10 @@ TEST_F(SysInfoWinTest, testHF_NT_Valids_Format)
 TEST_F(SysInfoWinTest, testHF_WOW_Valids_Format)
 {
     std::set<std::string> ret;
-    constexpr auto KB_FORMAT_REGEX_OK { "(KB+[0-9]{6,})"};
-    constexpr auto KB_ONLY_FORMAT_REGEX { "(KB)"};
-    constexpr auto KB_NO_NUMBERS_FORMAT_REGEX { "(KB+[a-z])"};
-    constexpr auto KB_WITH_NUMBERS_AND_LETTERS_FORMAT_REGEX { "(KB+[0-9]{6,}+[aA-zZ])"};
+    constexpr auto KB_FORMAT_REGEX_OK { R"(KB[0-9]{6,})" };
+    constexpr auto KB_ONLY_FORMAT_REGEX { R"(KB)" };
+    constexpr auto KB_NO_NUMBERS_FORMAT_REGEX { R"(KB[a-z])" };
+    constexpr auto KB_WITH_NUMBERS_AND_LETTERS_FORMAT_REGEX { R"(KB[0-9]{6,}[a-zA-Z])" };
     PackageWindowsHelper::getHotFixFromRegWOW(HKEY_LOCAL_MACHINE, PackageWindowsHelper::WIN_REG_WOW_HOTFIX, ret);
 
     for (const auto& hf : ret)
