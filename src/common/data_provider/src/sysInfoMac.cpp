@@ -8,7 +8,7 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation.
  */
-#include "cmdHelper.h"
+#include "cmdHelper.hpp"
 #include "hardware/factoryHardwareFamilyCreator.h"
 #include "hardware/hardwareWrapperImplMac.h"
 #include "osPrimitivesImplMac.h"
@@ -280,10 +280,10 @@ nlohmann::json SysInfo::getOsInfo() const
     };
 
     MacOsParser parser;
-    parser.parseSwVersion(Utils::exec("sw_vers"), ret);
-    parser.parseUname(Utils::exec("uname -r"), ret);
+    parser.parseSwVersion(Utils::Exec("sw_vers"), ret);
+    parser.parseUname(Utils::Exec("uname -r"), ret);
 
-    if (!parser.parseSystemProfiler(Utils::exec("system_profiler SPSoftwareDataType"), ret))
+    if (!parser.parseSystemProfiler(Utils::Exec("system_profiler SPSoftwareDataType"), ret))
     {
         ret["os_name"] = "macOS";
     }
