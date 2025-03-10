@@ -31,7 +31,7 @@
 #include <WTypesbase.h>
 // clang-format on
 
-#include "encodingWindowsHelper.h"
+#include "encodingWindowsHelper.hpp"
 #include "stringHelper.h"
 #include "timeHelper.h"
 
@@ -436,7 +436,7 @@ namespace Utils
 
         static std::string getAdapterNameStr(const std::wstring& adapterName)
         {
-            return Utils::EncodingWindowsHelper::wstringToStringUTF8(adapterName);
+            return Utils::wstringToStringUTF8(adapterName);
         }
 
         static void getAdapters(std::unique_ptr<IP_ADAPTER_ADDRESSES, IPAddressSmartDeleter>& interfacesAddress)

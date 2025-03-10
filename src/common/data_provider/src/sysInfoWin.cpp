@@ -10,7 +10,7 @@
  */
 
 #include "cmdHelper.hpp"
-#include "encodingWindowsHelper.h"
+#include "encodingWindowsHelper.hpp"
 #include "network/networkFamilyDataAFactory.h"
 #include "network/networkWindowsWrapper.h"
 #include "osinfo/sysOsInfoWin.h"
@@ -322,9 +322,8 @@ static nlohmann::json getProcessInfo(const PROCESSENTRY32& processEntry)
         SysInfoProcess process(pId, processHandle);
 
         // Current process information
-        jsProcessInfo["name"] = Utils::EncodingWindowsHelper::stringAnsiToStringUTF8(processName(processEntry));
-        jsProcessInfo["cmd"] =
-            Utils::EncodingWindowsHelper::stringAnsiToStringUTF8((isSystemProcess(pId)) ? "none" : process.cmd());
+        jsProcessInfo["name"] = Utils::stringAnsiToStringUTF8(processName(processEntry));
+        jsProcessInfo["cmd"] = Utils::stringAnsiToStringUTF8((isSystemProcess(pId)) ? "none" : process.cmd());
         jsProcessInfo["stime"] = process.kernelModeTime();
         jsProcessInfo["size"] = process.pageFileUsage();
         jsProcessInfo["ppid"] = processEntry.th32ParentProcessID;

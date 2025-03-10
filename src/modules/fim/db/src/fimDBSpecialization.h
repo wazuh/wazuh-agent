@@ -14,7 +14,7 @@
 
 #include "fimDB.hpp"
 #include "fimCommonDefs.h"
-#include "encodingWindowsHelper.h"
+#include "encodingWindowsHelper.hpp"
 #include "fimDBSpecializationWindows.hpp"
 
 static auto fileSyncConfig
