@@ -4,6 +4,8 @@ project(fim_integration_test)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
 
+add_definitions(-DTEST_DB_INPUTS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../include/)
 link_directories(${CMAKE_BINARY_DIR}/lib)
 
@@ -27,7 +29,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         GTest::gmock_main
         cjson
         unofficial::sqlite3::sqlite3
-        pthread
         utils
     )
 else()
