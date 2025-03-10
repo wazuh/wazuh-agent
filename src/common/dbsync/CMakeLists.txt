@@ -76,11 +76,9 @@ target_link_libraries(dbsync PUBLIC
 target_link_libraries(dbsync PUBLIC utils nlohmann_json::nlohmann_json cjson pal PRIVATE unofficial::sqlite3::sqlite3)
 
 if(BUILD_TESTS)
-  if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
     enable_testing()
     add_subdirectory(tests)
     add_subdirectory(integrationTests)
-  endif(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
 endif(BUILD_TESTS)
 
 if(NOT DEFINED COVERITY AND NOT DEFINED BUILD_TESTS)

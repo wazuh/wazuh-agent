@@ -12,9 +12,9 @@
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
+#include <sstream>
 #include "dbsync.h"
 #include "fimIntegrationTest.h"
-#include "fimDbDump.h"
 #include "cjsonSmartDeleter.hpp"
 using ::testing::_;
 
@@ -45,8 +45,28 @@ static void logFunction(const char* msg)
     }
 }
 
+static std::string loadDBQueriesDump() {
+    const std::string inputFile = std::string(TEST_DB_INPUTS_DIR) + "/" + "fim_sql_db_dump.sql";
+    std::ifstream file(inputFile);
+    if (!file.is_open()) {
+        return "";
+    }
+
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    std::string content = buffer.str();
+
+    // Remove the blank lines at the end so that dbsync_create does not fail.
+    size_t pos = content.find_last_not_of("\n\r");
+    if (pos != std::string::npos) {
+        content = content.substr(0, pos + 1);
+    }
+
+    return content;
+}
+
 DBSyncFimIntegrationTest::DBSyncFimIntegrationTest()
-    : m_dbHandle{ dbsync_create(HostType::AGENT, DbEngineType::SQLITE3, DATABASE_TEMP, FIM_SQL_DB_DUMP) }
+    : m_dbHandle{ dbsync_create(HostType::AGENT, DbEngineType::SQLITE3, DATABASE_TEMP, loadDBQueriesDump().c_str()) }
 {
     dbsync_initialize(&logFunction);
 }

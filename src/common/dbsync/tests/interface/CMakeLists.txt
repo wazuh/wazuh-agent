@@ -4,6 +4,8 @@ project(dbsync_unit_test)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
 
+add_definitions(-DTEST_INPUTS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../include/)
 link_directories(${CMAKE_BINARY_DIR}/lib)
 
@@ -24,7 +26,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         GTest::gmock_main
         unofficial::sqlite3::sqlite3
         cjson
-        pthread
         utils
     )
 else()

@@ -34,7 +34,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         GTest::gmock_main
         unofficial::sqlite3::sqlite3
         cjson
-        pthread
         utils
     )
 else()
