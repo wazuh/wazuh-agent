@@ -1,7 +1,7 @@
 #include <filesystem>
 #include <filesystem_wrapper.hpp>
 
-#include "../../../globHelper/include/globHelper.h" //fix
+#include "globHelper.hpp"
 
 #include <array>
 

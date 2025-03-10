@@ -24,7 +24,7 @@
 // clang-format on
 
 #include "encodingWindowsHelper.hpp"
-#include "globHelper.h"
+#include "globHelper.hpp"
 #include "stringHelper.h"
 #include "windowsHelper.h"
 

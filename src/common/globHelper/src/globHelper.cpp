@@ -1,32 +1,10 @@
-/*
- * Wazuh shared modules utils
- * Copyright (C) 2015, Wazuh Inc.
- * Agoust 11, 2023.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _GLOB_HELPER_H
-#define _GLOB_HELPER_H
+#include "globHelper.hpp"
 
 #include <string>
 
 namespace Utils
 {
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-#endif
-
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4505)
-#endif
-
-    static bool patternMatch(const std::string& entryName, const std::string& pattern)
+    bool patternMatch(const std::string& entryName, const std::string& pattern)
     {
         auto match {true};
         // Match the glob pattern without regex
@@ -36,8 +14,8 @@ namespace Utils
         {
             if (patternPos < pattern.size())
             {
-                // 'x' matches 'x'
-                if (entryName.at(i) == pattern.at(patternPos))
+                // 'x' matches 'x', '?' matches any single character
+                if ((entryName.at(i) == pattern.at(patternPos)) || pattern.at(patternPos) == '?')
                 {
                     ++patternPos;
                 }
@@ -55,11 +33,6 @@ namespace Utils
                     {
                         break;
                     }
-                }
-                // '?' matches any single character
-                else if (pattern.at(patternPos) == '?')
-                {
-                    ++patternPos;
                 }
                 // No match
                 else
@@ -93,15 +66,4 @@ namespace Utils
 
         return match;
     }
-
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
-
 } // namespace Utils
-
-#endif // _GLOB_HELPER_H

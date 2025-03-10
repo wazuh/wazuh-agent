@@ -10,6 +10,7 @@ include(../../cmake/ConfigureTarget.cmake)
 # FilesystemWrapper target
 add_library(FilesystemWrapper STATIC ${CMAKE_CURRENT_SOURCE_DIR}/filesystem/src/filesystem_wrapper.cpp)
 target_include_directories(FilesystemWrapper PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/filesystem/include)
+target_link_libraries(FilesystemWrapper PRIVATE glob_helper)
 configure_target(FilesystemWrapper)
 
 # File io target
