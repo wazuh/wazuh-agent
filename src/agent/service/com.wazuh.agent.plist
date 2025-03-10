@@ -7,7 +7,7 @@
 
          <key>ProgramArguments</key>
          <array>
-             <string>WAZUH_HOME/wazuh-agent</string>
+             <string>WAZUH_HOME/wazuh-agent --config-file WAZUH_CONFIG_FILE</string>
          </array>
 
         <key>WorkingDirectory</key>

@@ -62,7 +62,6 @@ include(cmake/PrepareVersionFileForInstallation.cmake)
 
 # Installation
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(CMAKE_INSTALL_PREFIX "" CACHE PATH "Root directory for installation")
 
     install(DIRECTORY DESTINATION "${DATA_INSTALL_DIR}")
 
@@ -75,17 +74,15 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 
     message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 
+    add_custom_target(generate_service_file ALL
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/configureServiceFile.cmake
+        DEPENDS ${CMAKE_BINARY_DIR}/configureServiceFile.cmake
+    )
+
     get_filename_component(SERVICE_FILENAME "${SERVICE_FILE}" NAME)
-    set(SOURCE_FILE "${CMAKE_SOURCE_DIR}/agent/service/${SERVICE_FILENAME}")
-    set(OUTPUT_FILE "${CMAKE_BINARY_DIR}/${SERVICE_FILENAME}")
-
-    file(READ "${SOURCE_FILE}" FILE_CONTENTS)
-    string(REPLACE "WAZUH_HOME" "${BIN_INSTALL_DIR}" FILE_CONTENTS "${FILE_CONTENTS}")
-    file(WRITE "${OUTPUT_FILE}" "${FILE_CONTENTS}")
-
-    add_custom_target(generate_service_file ALL DEPENDS "${OUTPUT_FILE}")
-    install(FILES "${OUTPUT_FILE}"
-        DESTINATION "${SERVICE_INSTALL_DIR}")
+    configure_file(${CMAKE_SOURCE_DIR}/cmake/configureServiceFile.cmake.in ${CMAKE_BINARY_DIR}/configureServiceFile.cmake @ONLY)
+    install(SCRIPT ${CMAKE_BINARY_DIR}/configureServiceFile.cmake)
+    install(FILES "${CMAKE_BINARY_DIR}/${SERVICE_FILENAME}" DESTINATION "${SERVICE_INSTALL_DIR}")
 
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION .)
