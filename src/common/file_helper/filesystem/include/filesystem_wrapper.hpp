@@ -14,58 +14,37 @@ namespace filesystem_wrapper
     class FileSystemWrapper : public IFileSystem
     {
     public:
-        /// @brief Checks if the specified path exists in the file system.
-        /// @param path The path to check.
-        /// @return Returns true if the path exists, otherwise false.
+        /// @copydoc IFileSystem::exists
         bool exists(const std::filesystem::path& path) const override;
 
-        /// @brief Checks if the specified path is a directory.
-        /// @param path The path to check.
-        /// @return Returns true if the path is a directory, otherwise false.
+        /// @copydoc IFileSystem::is_directory
         bool is_directory(const std::filesystem::path& path) const override;
 
-        /// @brief Checks if the specified path is a regular file.
-        /// @param path The path to check.
-        /// @return Returns true if the path is a regular file, otherwise false.
+        /// @copydoc IFileSystem::is_regular_file
         bool is_regular_file(const std::filesystem::path& path) const override;
 
-        /// @brief Checks if the specified path is a socket.
-        /// @param path The path to check.
-        /// @return Returns true if the path is a socket, otherwise false.
+        /// @copydoc IFileSystem::is_socket
         bool is_socket(const std::filesystem::path& path) const override;
 
-        /// @brief Removes all files and subdirectories in the specified directory.
-        /// @param path The directory path to remove.
-        /// @return Returns the number of files and directories removed.
+        /// @copydoc IFileSystem::remove_all
         std::uintmax_t remove_all(const std::filesystem::path& path) const override;
 
-        /// @brief Retrieves the system's temporary directory path.
-        /// @return Returns the path of the system's temporary directory.
+        /// @copydoc IFileSystem::temp_directory_path
         std::filesystem::path temp_directory_path() const override;
 
-        /// @brief Creates a new directory at the specified path.
-        /// @param path The path of the directory to create.
-        /// @return Returns true if the directory was successfully created, otherwise false.
+        /// @copydoc IFileSystem::create_directories
         bool create_directories(const std::filesystem::path& path) const override;
 
-        /// @brief Returns a vector containing the elements of a directory
-        /// @param path Path to the directory
-        /// @return The vector containing the elements of the directory
+        /// @copydoc IFileSystem::list_directory
         std::vector<std::filesystem::path> list_directory(const std::filesystem::path& path) const override;
 
-        /// @brief Renames a file or directory from the 'from' path to the 'to' path.
-        /// @param from The current path of the file or directory.
-        /// @param to The new path for the file or directory.
+        /// @copydoc IFileSystem::rename
         void rename(const std::filesystem::path& from, const std::filesystem::path& to) const override;
 
-        /// @brief Removes the specified file or directory.
-        /// @param path The file or directory to remove.
-        /// @return Returns true if the file or directory was successfully removed, otherwise false.
+        /// @copydoc IFileSystem::remove
         bool remove(const std::filesystem::path& path) const override;
 
-        /// @brief Expands the absolute path of a file or directory.
-        /// @param path The path to expand.
-        /// @param output The deque to store the expanded path.
+        /// @copydoc IFileSystem::expand_absolute_path
         void expand_absolute_path(const std::string& path, std::deque<std::string>& output) const override;
     };
 } // namespace filesystem_wrapper

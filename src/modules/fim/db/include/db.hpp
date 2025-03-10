@@ -75,8 +75,8 @@ class EXPORTED DB final
         *
         * @param storage Storage type.
         * @param syncInterval Sync sync interval.
-        * @param sync_max_interval Maximum interval allowed for the synchronization process.
-        * @param sync_response_timeout Minimum interval for the synchronization process.
+        * @param syncMaxInterval Maximum interval allowed for the synchronization process.
+        * @param syncResponseTimeout Minimum interval for the synchronization process.
         * @param callbackSyncFileWrapper Callback sync file values.
         * @param callbackSyncRegistryWrapper Callback sync registry values.
         * @param callbackLogWrapper Callback to log lines.
@@ -164,7 +164,7 @@ class EXPORTED DB final
         *
         * @param file File entry/data to update/insert.
         * @param ctx Context struct with data related to the fim_entry.
-        * @param callback Callback to send the fim message.
+        * @param callbackPrimitive Callback to send the fim message.
         */
         void updateFile(const nlohmann::json& file,
                         create_json_event_ctx* ctx,
@@ -173,7 +173,7 @@ class EXPORTED DB final
         /**
         * @brief searchFiles Search files in the database.
         *
-        * @param searchData parameter to search information.
+        * @param data parameter to search information.
         * @param callback Callback return the file data.
         */
         void searchFile(const SearchData& data,

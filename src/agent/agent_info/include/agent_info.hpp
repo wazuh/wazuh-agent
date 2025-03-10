@@ -35,61 +35,46 @@ public:
               bool agentIsEnrolling = false,
               std::shared_ptr<IAgentInfoPersistence> persistence = nullptr);
 
-    /// @brief Gets the agent's name.
-    /// @return The agent's name.
+    /// @copydoc IAgentInfo::GetName
     std::string GetName() const override;
 
-    /// @brief Gets the agent's key.
-    /// @return The agent's key.
+    /// @copydoc IAgentInfo::GetKey
     std::string GetKey() const override;
 
-    /// @brief Gets the agent's UUID.
-    /// @return The agent's UUID.
+    /// @copydoc IAgentInfo::GetUUID
     std::string GetUUID() const override;
 
-    /// @brief Gets the agent's groups.
-    /// @return A vector of the agent's groups.
+    /// @copydoc IAgentInfo::GetGroups
     std::vector<std::string> GetGroups() const override;
 
-    /// @brief Sets the agent's name. The change is not saved to the database until `Save` is called.
-    /// @param name The agent's new name.
-    /// @return True if the name was successfully set, false otherwise.
+    /// @copydoc IAgentInfo::SetName
     bool SetName(const std::string& name) override;
 
-    /// @brief Sets the agent's key. The change is not saved to the database until `Save` is called.
-    /// @param key The agent's new key.
-    /// @return True if the key was successfully set, false otherwise.
+    /// @copydoc IAgentInfo::SetKey
     bool SetKey(const std::string& key) override;
 
-    /// @brief Sets the agent's UUID. The change is not saved to the database until `Save` is called.
-    /// @param uuid The agent's new UUID.
+    /// @copydoc IAgentInfo::SetUUID
     void SetUUID(const std::string& uuid) override;
 
-    /// @brief Sets the agent's groups. The change is not saved to the database until `Save` is called.
-    /// @param groupList A vector of the agent's new groups.
+    /// @copydoc IAgentInfo::SetGroups
     void SetGroups(const std::vector<std::string>& groupList) override;
 
-    /// @brief Gets the agent's type.
-    /// @return The agent's type.
+    /// @copydoc IAgentInfo::GetType
     std::string GetType() const override;
 
-    /// @brief Gets the agent's version.
-    /// @return The agent's version.
+    /// @copydoc IAgentInfo::GetVersion
     std::string GetVersion() const override;
 
-    /// @brief Gets the agent information for the request header.
-    /// @return A string with the information for the request header.
+    /// @copydoc IAgentInfo::GetHeaderInfo
     std::string GetHeaderInfo() const override;
 
-    /// @brief Gets all the information about the agent.
-    /// @return A string with all information about the agent.
+    /// @copydoc IAgentInfo::GetMetadataInfo
     std::string GetMetadataInfo() const override;
 
-    /// @brief Restores and saves the agent's information to the database.
+    /// @copydoc IAgentInfo::Save
     void Save() const override;
 
-    /// @brief Saves the agent's group information to the database.
-    /// @return True if the operation was successful, false otherwise.
+    /// @copydoc IAgentInfo::SaveGroups
     bool SaveGroups() const override;
 
 private:
@@ -102,8 +87,7 @@ private:
 
     /// @brief Validates a given key.
     /// @param key The key to validate.
-    /// @return True if the key is valid (32 alphanumeric characters), false
-    /// otherwise.
+    /// @return True if the key is valid (32 alphanumeric characters), false otherwise.
     bool ValidateKey(const std::string& key) const;
 
     /// @brief Loads the endpoint information into `m_endpointInfo`.

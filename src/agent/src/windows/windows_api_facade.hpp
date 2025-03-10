@@ -8,28 +8,16 @@ namespace windows_api_facade
     class WindowsApiFacade : public IWindowsApiFacade
     {
     public:
-        /// @brief Opens a handle to the service control manager.
-        /// @param desiredAccess The access permission to the service control manager.
-        /// @return A handle to the service control manager, or NULL if the function fails.
+        /// @copydoc IWindowsApiFacade::OpenSCM
         void* OpenSCM(unsigned int desiredAccess) const override;
 
-        /// @brief Opens a handle to the specified service.
-        /// @param serviceHandle A handle to the service control manager.
-        /// @param serviceName The name of the service to open.
-        /// @param desiredAccess The access permission to the service.
-        /// @return A handle to the service, or NULL if the function fails.
+        /// @copydoc IWindowsApiFacade::OpenSvc
         void* OpenSvc(void* serviceHandle, const std::string& serviceName, unsigned int desiredAccess) const override;
 
-        /// @brief Creates a new service.
-        /// @param serviceHandle A handle to the service control manager.
-        /// @param serviceName The name of the new service.
-        /// @param exePath The path to the executable file for the new service.
-        /// @return A handle to the new service, or NULL if the function fails.
+        /// @copydoc IWindowsApiFacade::CreateSvc
         void* CreateSvc(void* serviceHandle, const std::string& serviceName, const std::string& exePath) const override;
 
-        /// @brief Deletes the service.
-        /// @param serviceHandle A handle to the service to delete.
-        /// @return TRUE if the function succeeds, FALSE if it fails.
+        /// @copydoc IWindowsApiFacade::DeleteSvc
         bool DeleteSvc(void* serviceHandle) const override;
     };
 } // namespace windows_api_facade

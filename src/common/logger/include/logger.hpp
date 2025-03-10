@@ -53,6 +53,7 @@ namespace
 class Logger
 {
 public:
+    /// @brief Constructor for Logger.
     Logger();
 
     /// @brief Add platform-specific sinks to the logger.

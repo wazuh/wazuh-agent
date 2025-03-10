@@ -17,79 +17,50 @@ namespace https_socket_verify_utils
     class CertificateStoreUtilsWrapperMac : public ICertificateStoreUtilsMac
     {
     public:
-        /// @brief Creates a SecCertificateRef from the provided certificate data.
-        ///
-        /// @param certData The raw certificate data in CFDataRef format.
-        /// @return A SecCertificateRef object created from the data.
+        /// @copydoc ICertificateStoreUtilsMac::CreateCertificate
         SecCertificateRef CreateCertificate(CFDataRef certData) const override
         {
             return SecCertificateCreateWithData(nullptr, certData);
         }
 
-        /// @brief Creates a SecTrustRef object with the provided certificates and policy.
-        ///
-        /// @param certs The array of certificates in CFArrayRef format.
-        /// @param policy The policy defining how the trust is evaluated.
-        /// @param trust The resulting SecTrustRef object.
-        /// @return An OSStatus indicating the success or failure of the trust object creation.
+        /// @copydoc ICertificateStoreUtilsMac::CreateTrustObject
         OSStatus CreateTrustObject(CFArrayRef certs, SecPolicyRef policy, SecTrustRef* trust) const override
         {
             return SecTrustCreateWithCertificates(certs, policy, trust);
         }
 
-        /// @brief Evaluates the trust status of a SecTrustRef object.
-        ///
-        /// @param trust The SecTrustRef object to evaluate.
-        /// @param error A pointer to a CFErrorRef to capture any error during the evaluation.
-        /// @return `true` if the trust evaluation succeeded, otherwise `false`.
+        /// @copydoc ICertificateStoreUtilsMac::EvaluateTrust
         bool EvaluateTrust(SecTrustRef trust, CFErrorRef* error) const override
         {
             return SecTrustEvaluateWithError(trust, error);
         }
 
-        /// @brief Creates a CFDataRef from the raw certificate data.
-        ///
-        /// @param certData The raw certificate data as a byte array.
-        /// @param certLen The length of the certificate data.
-        /// @return A CFDataRef object containing the certificate data.
+        /// @copydoc ICertificateStoreUtilsMac::CreateCFData
         CFDataRef CreateCFData(const unsigned char* certData, int certLen) const override
         {
             return CFDataCreate(kCFAllocatorDefault, certData, certLen);
         }
 
-        /// @brief Creates a CFArrayRef from an array of certificate values.
-        ///
-        /// @param certArrayValues The array of certificate values.
-        /// @param count The number of elements in the array.
-        /// @return A CFArrayRef object containing the certificates.
+        /// @copydoc ICertificateStoreUtilsMac::CreateCertArray
         CFArrayRef CreateCertArray(const void* certArrayValues[], size_t count) const override
         {
             return CFArrayCreate(
                 kCFAllocatorDefault, certArrayValues, static_cast<CFIndex>(count), &kCFTypeArrayCallBacks);
         }
 
-        /// @brief Copies the error description from a CFErrorRef.
-        ///
-        /// @param error The CFErrorRef object containing the error.
-        /// @return A CFStringRef containing the error description.
+        /// @copydoc ICertificateStoreUtilsMac::CopyErrorDescription
         CFStringRef CopyErrorDescription(CFErrorRef error) const override
         {
             return CFErrorCopyDescription(error);
         }
 
-        /// @brief Retrieves the subject summary (e.g., SAN or CN) of the given certificate.
-        ///
-        /// @param cert The SecCertificateRef object representing the certificate.
-        /// @return A CFStringRef containing the subject summary of the certificate.
+        /// @copydoc ICertificateStoreUtilsMac::CopySubjectSummary
         CFStringRef CopySubjectSummary(SecCertificateRef cert) const override
         {
             return SecCertificateCopySubjectSummary(cert);
         }
 
-        /// @brief Converts a CFStringRef to a std::string.
-        ///
-        /// @param cfString The CFStringRef to convert to std::string.
-        /// @return A std::string containing the UTF-8 encoded string.
+        /// @copydoc ICertificateStoreUtilsMac::GetStringCFString
         std::string GetStringCFString(CFStringRef cfString) const override
         {
             if (!cfString)
@@ -113,10 +84,7 @@ namespace https_socket_verify_utils
             return ""; // If the conversion fails, return an empty string
         }
 
-        /// @brief Releases a CFTypeRef object.
-        ///
-        /// @param cfObject The CFTypeRef object to release.
-        /// @return void
+        /// @copydoc ICertificateStoreUtilsMac::ReleaseCFObject
         void ReleaseCFObject(CFTypeRef cfObject) const override
         {
             if (cfObject)
@@ -125,11 +93,7 @@ namespace https_socket_verify_utils
             }
         }
 
-        /// @brief Creates an SSL policy for the specified hostname.
-        ///
-        /// @param server A boolean indicating whether the policy is for a server (true) or a client (false).
-        /// @param hostname The hostname to associate with the policy. If empty, no hostname is used.
-        /// @return A SecPolicyRef representing the SSL policy for the specified hostname.
+        /// @copydoc ICertificateStoreUtilsMac::CreateSSLPolicy
         SecPolicyRef CreateSSLPolicy(bool server, const std::string& hostname) const override
         {
             // Convert std::string to CFStringRef

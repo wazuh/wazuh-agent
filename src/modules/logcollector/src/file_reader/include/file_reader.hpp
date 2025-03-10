@@ -81,11 +81,10 @@ namespace logcollector
         /// @param reloadInterval Reload interval in milliseconds
         FileReader(Logcollector& logcollector, std::string pattern, std::time_t fileWait, std::time_t reloadInterval);
 
-        /// @brief Runs the file reader
-        /// @return Awaitable result
+        /// @copydoc IReader::Run
         Awaitable Run() override;
 
-        /// @brief Stops the file reader
+        /// @copydoc IReader::Stop
         void Stop() override;
 
         /// @brief Reloads the file list

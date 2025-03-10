@@ -310,7 +310,7 @@ class DeleteQuery final : public Query<DeleteQuery>
         /**
          * @brief Set data to be deleted.
          *
-         * @param filter Filter to be applied in the query.
+         * @param data Data to be deleted.
          *
          */
         DeleteQuery& data(const nlohmann::json& data);

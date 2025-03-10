@@ -55,11 +55,10 @@ namespace logcollector
         /// @brief Destructor for `MacOSReader`.
         ~MacOSReader() override = default;
 
-        /// @brief Runs the log reader asynchronously.
-        /// @return An `Awaitable` object representing the asynchronous operation.
+        /// @copydoc IReader::Run
         Awaitable Run() override;
 
-        /// @brief Stops the log reader.
+        /// @copydoc IReader::Stop
         void Stop() override;
 
     private:

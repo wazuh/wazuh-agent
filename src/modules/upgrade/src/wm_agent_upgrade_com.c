@@ -100,7 +100,7 @@ STATIC char* wm_agent_upgrade_command_ack(int error_code, const char* message);
 
 /**
  * Process a command that opens a file
- * @param json_obj expected json format parameters
+ * @param json_object expected json format parameters
  * {
  *    "file":    "file_path",
  *    "mode":    "wb|w"
@@ -110,7 +110,7 @@ STATIC char* wm_agent_upgrade_com_open(const cJSON* json_object) __attribute__((
 
 /**
  * Process a command that writes on an already opened file
- * @param json_obj expected json format
+ * @param json_object expected json format
  * {
  *    "file":    "file_path",
  *    "buffer" : "base64_data",
@@ -121,7 +121,7 @@ STATIC char * wm_agent_upgrade_com_write(const cJSON* json_object) __attribute__
 
 /**
  * Process a command the close an already opened file
- * @param json_obj expected json format
+ * @param json_object expected json format
  * {
  *    "file" : "file_path"
  * }
@@ -130,7 +130,7 @@ STATIC char * wm_agent_upgrade_com_close(const cJSON* json_object) __attribute__
 
 /**
  * Process a command that calculates the sha1 already opened file
- * @param json_obj expected json format
+ * @param json_object expected json format
  * {
  *    "file" : "file_path"
  * }
@@ -139,7 +139,7 @@ STATIC char * wm_agent_upgrade_com_sha1(const cJSON* json_object) __attribute__(
 
 /**
  * Process a command that executes an upgrade script
- * @param json_obj expected json format
+ * @param json_object expected json format
  * {
  *    "file" : "file_path",
  *    "installer" : "installer_path"

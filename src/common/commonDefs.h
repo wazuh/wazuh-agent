@@ -81,7 +81,7 @@ typedef void* RSYNC_HANDLE;
  *
  * @details Callback called for each obtained result, after evaluating changes between two snapshots.
  */
-typedef void((*result_callback_t)(ReturnTypeCallback result_type, const cJSON* result_json, void* user_data));
+typedef void(*result_callback_t)(ReturnTypeCallback result_type, const cJSON* result_json, void* user_data);
 
 /**
  * @brief Callback function for agent-manager sync.
@@ -92,7 +92,7 @@ typedef void((*result_callback_t)(ReturnTypeCallback result_type, const cJSON* r
  *
  * @details Callback called for each obtained result, after evaluating changes between two snapshots.
  */
-typedef void((*sync_id_callback_t)(const void* buffer, size_t buffer_size, void* user_data));
+typedef void(*sync_id_callback_t)(const void* buffer, size_t buffer_size, void* user_data);
 
 /**
  *  @struct callback_data_t
@@ -129,7 +129,7 @@ typedef struct
  *
  * @details Useful to get deeper information during the dbsync interaction.
  */
-typedef void((*log_fnc_t)(const char* msg));
+typedef void(*log_fnc_t)(const char* msg);
 
 /**
  * @brief Callback function for user defined logging but adding a tag, the file name,
@@ -143,7 +143,7 @@ typedef void((*log_fnc_t)(const char* msg));
  * @param msg      Message to be logged.
  * @param args     Variable list args.
  */
-typedef void ((*full_log_fnc_t)(int level, const char* tag, const char* file, int line, const char* func, const char* msg, va_list args));
+typedef void (*full_log_fnc_t)(int level, const char* tag, const char* file, int line, const char* func, const char* msg, va_list args);
 
 /**
 * @brief Definition to indicate the unlimited queue.

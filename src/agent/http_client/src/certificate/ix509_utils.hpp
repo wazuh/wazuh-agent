@@ -4,6 +4,8 @@
 
 #include <string>
 
+using CertChain = STACK_OF(X509);
+
 namespace https_socket_verify_utils
 {
     /// @brief Interface for certificate utility functions.
@@ -20,7 +22,7 @@ namespace https_socket_verify_utils
         ///
         /// @param ctx The X509_STORE_CTX context from which to extract the certificate chain.
         /// @return A STACK_OF(X509) object containing the certificate chain.
-        virtual STACK_OF(X509) * GetCertChain(X509_STORE_CTX* ctx) const = 0;
+        virtual CertChain* GetCertChain(X509_STORE_CTX* ctx) const = 0;
 
         /// @brief Retrieves a certificate from the given certificate chain at the specified index.
         ///

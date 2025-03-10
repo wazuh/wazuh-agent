@@ -49,7 +49,7 @@ char *w_get_timestamp(const time_t time);
 /**
  * @brief Takes sleeps of 1 second until the input time is reached
  *
- * @param time time until which the thread will sleep
+ * @param abs_time time until which the thread will sleep
  * */
 void w_sleep_until(time_t abs_time);
 
