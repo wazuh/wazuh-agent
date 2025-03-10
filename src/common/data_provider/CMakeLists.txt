@@ -209,10 +209,8 @@ target_link_libraries(sysinfo PRIVATE
   unofficial::sqlite3::sqlite3)
 
 if(BUILD_TESTS)
-  if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    enable_testing()
-    add_subdirectory(tests)
-  endif(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  enable_testing()
+  add_subdirectory(tests)
 endif(BUILD_TESTS)
 
 if(NOT DEFINED COVERITY AND NOT DEFINED BUILD_TESTS)
