@@ -21,7 +21,8 @@
 #include <nlohmann/json.hpp>
 #include <set>
 
-template<typename TFileSystem = filesystem_wrapper::FileSystemWrapper, typename TJsonReader = JsonIO<nlohmann::json>>
+template<typename TFileSystem = filesystem_wrapper::FileSystemWrapper,
+         typename TJsonReader = Utils::JsonIO<nlohmann::json>>
 class NPM final
     : public TFileSystem
     , public TJsonReader
