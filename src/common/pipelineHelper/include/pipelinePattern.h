@@ -62,10 +62,8 @@ namespace Utils
         }
 
     public:
-        // LCOV_EXCL_START
         virtual ~IPipelineWriter() = default;
 
-        // LCOV_EXCL_STOP
         /**
          * @brief Adds a reader to the chain.
          *

@@ -221,7 +221,6 @@ namespace Utils
         {
             ret = ss.str();
         }
-        // LCOV_EXCL_START
         else
         {
             const auto size {asciiData.size() * 2};
@@ -237,7 +236,6 @@ namespace Utils
             ret = std::string {buffer.get(), size};
         }
 
-        // LCOV_EXCL_STOP
         return ret;
     }
 

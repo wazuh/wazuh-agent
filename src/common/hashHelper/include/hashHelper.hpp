@@ -1,34 +1,10 @@
-/*
- * Wazuh shared modules utils
- * Copyright (C) 2015, Wazuh Inc.
- * Sep 8, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
+#pragma once
 
-#ifndef _HASH_HELPER_H
-#define _HASH_HELPER_H
-
-#include "openssl/evp.h"
-#include <array>
-#include <fstream>
 #include <memory>
+#include <openssl/evp.h>
 #include <stdexcept>
 #include <string>
 #include <vector>
-
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-#endif
-
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4505)
-#endif
 
 namespace Utils
 {
@@ -47,21 +23,16 @@ namespace Utils
             initializeContext(hashType, m_spCtx);
         }
 
-        // LCOV_EXCL_START
         ~HashData() = default;
 
-        // LCOV_EXCL_STOP
         void update(const void* data, const size_t size)
         {
             const auto ret {EVP_DigestUpdate(m_spCtx.get(), data, size)};
 
-            // LCOV_EXCL_START
             if (!ret)
             {
                 throw std::runtime_error {"Error getting digest final."};
             }
-
-            // LCOV_EXCL_STOP
         }
 
         std::vector<unsigned char> hash()
@@ -70,13 +41,11 @@ namespace Utils
             unsigned int digestSize {0};
             const auto ret {EVP_DigestFinal_ex(m_spCtx.get(), digest, &digestSize)};
 
-            // LCOV_EXCL_START
             if (!ret)
             {
                 throw std::runtime_error {"Error getting digest final."};
             }
 
-            // LCOV_EXCL_STOP
             return {digest, digest + digestSize};
         }
 
@@ -93,13 +62,11 @@ namespace Utils
         {
             auto ctx {EVP_MD_CTX_create()};
 
-            // LCOV_EXCL_START
             if (!ctx)
             {
                 throw std::runtime_error {"Error creating EVP_MD_CTX."};
             }
 
-            // LCOV_EXCL_STOP
             return ctx;
         }
 
@@ -133,40 +100,8 @@ namespace Utils
         std::unique_ptr<EVP_MD_CTX, EvpContextDeleter> m_spCtx;
     };
 
-    /**
-     * @brief Function to calculate the hash of a file.
-     *
-     * @param filepath Path to the file.
-     * @return std::vector<unsigned char> Digest vector.
-     */
-    static std::vector<unsigned char> hashFile(const std::string& filepath)
-    {
-        std::ifstream inputFile(filepath, std::fstream::in);
-        if (inputFile.good())
-        {
-            constexpr int BUFFER_SIZE {4096};
-            std::array<char, BUFFER_SIZE> buffer {};
-
-            HashData hash;
-            while (inputFile.read(buffer.data(), buffer.size()))
-            {
-                hash.update(buffer.data(), static_cast<size_t>(inputFile.gcount()));
-            }
-            hash.update(buffer.data(), static_cast<size_t>(inputFile.gcount()));
-
-            return hash.hash();
-        }
-
-        throw std::runtime_error {"Unable to open '" + filepath + "' for hashing."};
-    };
+    /// @brief Function to calculate the hash of a file.
+    /// @param filepath Path to the file.
+    /// @return std::vector<unsigned char> Digest vector.
+    std::vector<unsigned char> hashFile(const std::string& filepath);
 } // namespace Utils
-
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
-
-#endif // _HASH_HELPER_H

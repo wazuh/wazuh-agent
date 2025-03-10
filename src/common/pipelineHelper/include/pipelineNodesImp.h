@@ -34,10 +34,8 @@ namespace Utils
         {
         }
 
-        // LCOV_EXCL_START
         ~ReadNode() = default;
 
-        // LCOV_EXCL_STOP
         void receive(const Input& data)
         {
             DispatcherType::push(data);
@@ -72,10 +70,8 @@ namespace Utils
         {
         }
 
-        // LCOV_EXCL_START
         ~ReadWriteNode() = default;
 
-        // LCOV_EXCL_STOP
         void receive(const Input& data)
         {
             DispatcherType::push(data);

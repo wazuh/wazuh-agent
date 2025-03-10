@@ -129,9 +129,7 @@ namespace SQLiteLegacy
     class IConnection
     {
     public:
-        // LCOV_EXCL_START
         virtual ~IConnection() = default;
-        // LCOV_EXCL_STOP
         virtual void close() = 0;
         virtual void execute(const std::string& query) = 0;
         virtual int64_t changes() const = 0;
@@ -141,9 +139,7 @@ namespace SQLiteLegacy
     class ITransaction
     {
     public:
-        // LCOV_EXCL_START
         virtual ~ITransaction() = default;
-        // LCOV_EXCL_STOP
         virtual void commit() = 0;
         virtual void rollback() = 0;
     };
@@ -151,9 +147,7 @@ namespace SQLiteLegacy
     class IColumn
     {
     public:
-        // LCOV_EXCL_START
         virtual ~IColumn() = default;
-        // LCOV_EXCL_STOP
         virtual int32_t type() const = 0;
         virtual std::string name() const = 0;
         virtual bool hasValue() const = 0;
@@ -167,9 +161,7 @@ namespace SQLiteLegacy
     class IStatement
     {
     public:
-        // LCOV_EXCL_START
         virtual ~IStatement() = default;
-        // LCOV_EXCL_STOP
         virtual int32_t step() = 0;
         virtual void bind(const int32_t index, const int32_t value) = 0;
         virtual void bind(const int32_t index, const uint64_t value) = 0;
@@ -293,12 +285,9 @@ namespace SQLiteLegacy
                 }
             }
             // dtor should never throw
-            //  LCOV_EXCL_START
             catch (...)
             {
             }
-
-            // LCOV_EXCL_STOP
         }
 
         explicit Transaction(std::shared_ptr<IConnection>& connection)
@@ -329,12 +318,9 @@ namespace SQLiteLegacy
                 }
             }
             // rollback can be called in a catch statement to unwind things so it shouldn't throw
-            //  LCOV_EXCL_START
             catch (...)
             {
             }
-
-            // LCOV_EXCL_STOP
         }
 
         bool isCommited() const
@@ -485,13 +471,10 @@ namespace SQLiteLegacy
             ++m_bindParametersIndex;
         }
 
-        // LCOV_EXCL_START
         std::string expand()
         {
             return ExpandedSQLPtr(sqlite3_expanded_sql(m_stmt.get())).get();
         }
-
-        // LCOV_EXCL_STOP
 
         std::unique_ptr<IColumn> column(const int32_t index)
         {

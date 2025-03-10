@@ -51,12 +51,9 @@ namespace Utils
                 btime = std::stoull(file.substr(file.find(key) + key.length()));
             }
         }
-        // LCOV_EXCL_START
         catch (...)
         {
         }
-
-        // LCOV_EXCL_STOP
 
         return btime;
     }

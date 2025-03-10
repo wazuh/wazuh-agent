@@ -1,16 +1,5 @@
-/*
- * Wazuh shared modules utils
- * Copyright (C) 2015, Wazuh Inc.
- * Sep 8, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#include "hashHelper_test.h"
-#include "hashHelper.h"
+#include "hashHelper_test.hpp"
+#include "hashHelper.hpp"
 #include <filesystem>
 
 void HashHelperTest::SetUp() {};
@@ -90,10 +79,7 @@ TEST_F(HashHelperTest, HashHelperHashIterativeSha256)
     EXPECT_TRUE(!memcmp(expected, result.data(), result.size()));
 }
 
-/**
- * @brief Test the hashing of a file.
- *
- */
+/// @brief Test the hashing of a file.
 TEST_F(HashHelperTest, HashFile)
 {
     const std::vector<unsigned char> expectedHash {0x2e, 0x95, 0xd7, 0x58, 0x2c, 0x53, 0x58, 0x3f, 0xa8, 0xaf,
@@ -102,11 +88,8 @@ TEST_F(HashHelperTest, HashFile)
     EXPECT_EQ(Utils::hashFile(TEST_FILE.generic_string()), expectedHash);
 }
 
-/**
- * @brief Test the hashing of an inexistant file.
- *
- */
-TEST_F(HashHelperTest, HashFileInexistantFile)
+/// @brief Test the hashing of an inexistent file.
+TEST_F(HashHelperTest, HashFileInexistentFile)
 {
-    EXPECT_THROW(Utils::hashFile((INPUT_FILES_DIR / "inexistant_file.xml").generic_string()), std::runtime_error);
+    EXPECT_THROW(Utils::hashFile((INPUT_FILES_DIR / "inexistent_file.xml").generic_string()), std::runtime_error);
 }
