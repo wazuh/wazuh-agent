@@ -6,11 +6,12 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     include(../../cmake/CommonSettings.cmake)
     set_common_settings()
 
-    add_library(encoding_helper INTERFACE)
+    add_library(encoding_helper src/encodingWindowsHelper.cpp)
 
-    target_include_directories(encoding_helper INTERFACE include)
+    target_include_directories(encoding_helper PUBLIC include)
 
-    target_link_libraries(encoding_helper INTERFACE)
+    include(../../cmake/ConfigureTarget.cmake)
+    configure_target(encoding_helper)
 
     if(BUILD_TESTS)
         enable_testing()

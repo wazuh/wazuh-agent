@@ -23,7 +23,7 @@
 #include <memory>
 // clang-format on
 
-#include "encodingWindowsHelper.h"
+#include "encodingWindowsHelper.hpp"
 #include "globHelper.h"
 #include "stringHelper.h"
 #include "windowsHelper.h"
@@ -282,7 +282,7 @@ namespace Utils
 
             try
             {
-                value = EncodingWindowsHelper::stringAnsiToStringUTF8(this->string(valueName));
+                value = stringAnsiToStringUTF8(this->string(valueName));
             }
             catch (...)
             {

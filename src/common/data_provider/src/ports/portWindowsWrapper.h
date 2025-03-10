@@ -195,7 +195,7 @@ public:
 
     void processName(nlohmann::json& port) const override
     {
-        port["process"] = Utils::EncodingWindowsHelper::stringAnsiToStringUTF8(m_processName);
+        port["process"] = Utils::stringAnsiToStringUTF8(m_processName);
     }
 };
 

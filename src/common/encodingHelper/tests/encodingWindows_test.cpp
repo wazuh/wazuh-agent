@@ -1,17 +1,9 @@
-/*
- * Wazuh shared modules utils
- * Copyright (C) 2015, Wazuh Inc.
- * February 17, 2021.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-#ifdef WIN32
-#include "encodingWindows_test.h"
-#include "encodingWindowsHelper.h"
+#include "encodingWindows_test.hpp"
+#include "encodingWindowsHelper.hpp"
 #include <nlohmann/json.hpp>
+
+#include <string>
+#include <windows.h>
 
 void EncodingWindowsHelperTest::SetUp() {};
 
@@ -24,13 +16,11 @@ TEST_F(EncodingWindowsHelperTest, NoExceptConversion)
     int bufferSize = WideCharToMultiByte(CP_UTF8, 0, wideString.c_str(), -1, nullptr, 0, nullptr, nullptr);
     std::string multibyteString(bufferSize, 0);
     WideCharToMultiByte(CP_UTF8, 0, wideString.c_str(), -1, &multibyteString[0], bufferSize, nullptr, nullptr);
-    test["correct"] = Utils::EncodingWindowsHelper::stringAnsiToStringUTF8(multibyteString);
+    test["correct"] = Utils::stringAnsiToStringUTF8(multibyteString);
     EXPECT_NO_THROW(test.dump());
 }
 
 TEST_F(EncodingWindowsHelperTest, ReturnValueEmptyConversion)
 {
-    EXPECT_EQ(Utils::EncodingWindowsHelper::stringAnsiToStringUTF8(""), "");
+    EXPECT_EQ(Utils::stringAnsiToStringUTF8(""), "");
 }
-
-#endif

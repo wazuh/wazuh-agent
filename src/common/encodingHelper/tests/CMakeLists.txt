@@ -13,7 +13,6 @@ add_executable(encoding_helper_tests
     ${UTIL_CXX_UNITTEST_WINDOWS_SRC}
 )
 
-include(../../../cmake/ConfigureTarget.cmake)
 configure_target(encoding_helper_tests)
 
 target_include_directories(encoding_helper_tests PRIVATE
