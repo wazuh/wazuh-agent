@@ -10,22 +10,18 @@ file(GLOB sysinfo_UNIT_TEST_SRC
 file(GLOB SYSINFO_SRC
     "${CMAKE_SOURCE_DIR}/src/network/networkInterfaceWindows.cpp")
 
+find_package(GTest CONFIG REQUIRED)
+
 add_executable(sysInfoNetworkWindows_unit_test
     ${sysinfo_UNIT_TEST_SRC}
     ${SYSINFO_SRC})
 
 target_link_libraries(sysInfoNetworkWindows_unit_test
     sysinfo
-    debug gtestd
-    debug gmockd
-    debug gtest_maind
-    debug gmock_maind
-    optimized gtest
-    optimized gmock
-    optimized gtest_main
-    optimized gmock_main
-    pthread
-    sqlite3
+    GTest::gtest
+    GTest::gtest_main
+    GTest::gmock
+    GTest::gmock_main
     cjson
 )
 

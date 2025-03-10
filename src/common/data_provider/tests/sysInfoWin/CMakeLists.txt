@@ -7,21 +7,17 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
 file(GLOB sysinfo_UNIT_TEST_SRC
     "*.cpp")
 
-    add_executable(sysInfoWindows_unit_test
+find_package(GTest CONFIG REQUIRED)
+
+add_executable(sysInfoWindows_unit_test
     ${sysinfo_UNIT_TEST_SRC})
 
 target_link_libraries(sysInfoWindows_unit_test
     sysinfo
-    debug gtestd
-    debug gmockd
-    debug gtest_maind
-    debug gmock_maind
-    optimized gtest
-    optimized gmock
-    optimized gtest_main
-    optimized gmock_main
-    pthread
-    sqlite3
+    GTest::gtest
+    GTest::gtest_main
+    GTest::gmock
+    GTest::gmock_main
     cjson
 )
 

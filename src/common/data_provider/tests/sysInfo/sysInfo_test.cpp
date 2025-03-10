@@ -249,7 +249,7 @@ TEST_F(SysInfoTest, packages_cb_c_interface)
 
 TEST_F(SysInfoTest, packages_cb_c_interface_test_empty_callback)
 {
-    callback_data_t cb_data = { .callback = NULL, .user_data = NULL };
+    callback_data_t cb_data = { NULL, NULL };
     EXPECT_EQ(-1, sysinfo_packages_cb(cb_data));
 }
 
@@ -271,7 +271,7 @@ TEST_F(SysInfoTest, processes_cb_c_interface)
 
 TEST_F(SysInfoTest, processes_cb_c_interface_test_empty_callback)
 {
-    callback_data_t cb_data = { .callback = NULL, .user_data = NULL };
+    callback_data_t cb_data = { NULL, NULL };
     EXPECT_EQ(-1, sysinfo_processes_cb(cb_data));
 }
 
