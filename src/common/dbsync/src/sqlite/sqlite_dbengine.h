@@ -14,7 +14,7 @@
 
 #include "dbengine.h"
 #include "isqlite_wrapper.h"
-#include "mapWrapperSafe.h"
+#include "mapWrapperSafe.hpp"
 #include "sqlite_wrapper_factory.h"
 #include <iostream>
 #include <mutex>

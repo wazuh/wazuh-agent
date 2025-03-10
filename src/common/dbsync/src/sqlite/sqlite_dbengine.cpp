@@ -12,7 +12,7 @@
 #include "sqlite_dbengine.h"
 #include "commonDefs.h"
 #include "db_exception.h"
-#include "mapWrapperSafe.h"
+#include "mapWrapperSafe.hpp"
 #include "sqlite/isqlite_wrapper.h"
 #include "stringHelper.h"
 #include <fstream>

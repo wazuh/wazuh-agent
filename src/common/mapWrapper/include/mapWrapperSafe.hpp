@@ -1,21 +1,11 @@
-/*
- * Wazuh shared modules utils
- * Copyright (C) 2015, Wazuh Inc.
- * September 18, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-#ifndef _MAP_WRAPPER_SAFE_H_
-#define _MAP_WRAPPER_SAFE_H_
+#pragma once
 
 #include <map>
 #include <mutex>
 
 namespace Utils
 {
+    /// @brief Safe map
     template<typename Key, typename Value>
     class MapWrapperSafe final
     {
@@ -23,14 +13,21 @@ namespace Utils
         std::mutex m_mutex;
 
     public:
+        /// @brief Default constructor
         MapWrapperSafe() = default;
 
+        /// @brief Insert a key-value pair
+        /// @param key The key
+        /// @param value The value
         void insert(const Key& key, const Value& value)
         {
             std::lock_guard<std::mutex> lock(m_mutex);
             m_map.emplace(key, value);
         }
 
+        /// @brief Get the value associated with the key
+        /// @param key The key
+        /// @return The value associated with the key
         Value operator[](const Key& key)
         {
             std::lock_guard<std::mutex> lock(m_mutex);
@@ -38,12 +35,12 @@ namespace Utils
             return m_map.end() != it ? it->second : Value();
         }
 
+        /// @brief Erase the key-value pair
+        /// @param key The key
         void erase(const Key& key)
         {
             std::lock_guard<std::mutex> lock(m_mutex);
             m_map.erase(key);
         }
     };
-}; // namespace Utils
-
-#endif //_MAP_WRAPPER_SAFE_H_
+} // namespace Utils
