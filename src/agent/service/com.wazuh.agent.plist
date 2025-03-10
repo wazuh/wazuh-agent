@@ -8,6 +8,8 @@
          <key>ProgramArguments</key>
          <array>
              <string>WAZUH_HOME/wazuh-agent</string>
+             <string>--config-file</string>
+             <string>WAZUH_CONFIG_FILE</string>
          </array>
 
         <key>WorkingDirectory</key>
