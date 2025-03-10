@@ -9,7 +9,7 @@ add_library(cmd_helper src/cmdHelper.cpp)
 
 target_include_directories(cmd_helper PUBLIC include)
 
-target_link_libraries(cmd_helper PRIVATE pal)
+target_link_libraries(cmd_helper PRIVATE deleter_helper)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(cmd_helper)

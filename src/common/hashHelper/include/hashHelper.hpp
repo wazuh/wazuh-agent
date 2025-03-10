@@ -8,23 +8,31 @@
 
 namespace Utils
 {
+    /// @brief Hash type
     enum class HashType
     {
         Sha1,
         Sha256,
     };
 
+    /// @brief Class to calculate hash
     class HashData final
     {
     public:
+        /// @brief Constructor
+        /// @param hashType Hash type
         HashData(const HashType hashType = HashType::Sha1)
             : m_spCtx {createContext()}
         {
             initializeContext(hashType, m_spCtx);
         }
 
+        /// @brief Destructor
         ~HashData() = default;
 
+        /// @brief Update hash
+        /// @param data Data to update
+        /// @param size Size of data
         void update(const void* data, const size_t size)
         {
             const auto ret {EVP_DigestUpdate(m_spCtx.get(), data, size)};
@@ -35,6 +43,8 @@ namespace Utils
             }
         }
 
+        /// @brief Get hash
+        /// @return Digest vector
         std::vector<unsigned char> hash()
         {
             unsigned char digest[EVP_MAX_MD_SIZE] {0};
@@ -50,6 +60,7 @@ namespace Utils
         }
 
     private:
+        /// @brief Deleter for EVP_MD_CTX
         struct EvpContextDeleter final
         {
             void operator()(EVP_MD_CTX* ctx)
@@ -58,6 +69,8 @@ namespace Utils
             }
         };
 
+        /// @brief Create EVP_MD_CTX
+        /// @return EVP_MD_CTX
         static EVP_MD_CTX* createContext()
         {
             auto ctx {EVP_MD_CTX_create()};
@@ -70,6 +83,9 @@ namespace Utils
             return ctx;
         }
 
+        /// @brief Initialize EVP_MD_CTX
+        /// @param hashType Hash type
+        /// @param spCtx EVP_MD_CTX
         static void initializeContext(const HashType hashType, std::unique_ptr<EVP_MD_CTX, EvpContextDeleter>& spCtx)
         {
             static auto cryptoInitialized {false};
