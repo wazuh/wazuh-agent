@@ -8,11 +8,11 @@
 | Processes | [Stateful](#Processes-Linux-Stateful) [Stateless](#Processes-Linux-Stateless) |  [Stateful](#Processes-Windows-Stateful) [Stateless](#Processes-Windows-Stateless)  |  [Stateful](#Processes-Macos-Stateful) [Stateless](#Processes-Macos-Stateless) |
 | Networks | [Stateful](#Networks-Linux-Stateful) [Stateless](#Networks-Linux-Stateless) |  [Stateful](#Networks-Windows-Stateful) [Stateless](#Networks-Windows-Stateless)  |  [Stateful](#Networks-Macos-Stateful) [Stateless](#Networks-Macos-Stateless) |
 | Ports | [Stateful](#Ports-Linux-Stateful) [Stateless](#Ports-Linux-Stateless) |  [Stateful](#Ports-Windows-Stateful) [Stateless](#Ports-Windows-Stateless)  |  [Stateful](#Ports-Macos-StatefulMacos-Stateful) [Stateless](#Ports-Macos-Stateless) |
-
+| Hotfix |  | [Stateful](#Hotfix-Windows-Stateful) [Stateless](#Hotfix-Windows-Stateless)  |  |
 
 ## System
 
-### Linux Windows(Ubuntu 22.04)
+### Linux (Ubuntu 22.04)
 
 <a name="System-Linux-Stateful"></a>Stateful
 
@@ -2978,5 +2978,104 @@
   "sort": [
     1739549121000
   ]
+}
+```
+
+## Hotfixes
+* taken directly from the server (not the indexer)
+
+### Windows (Windows 10)
+
+<a name="Hotfix-Windows-Stateful"></a>Stateful
+
+```json
+{
+    "agent": {
+        "groups": [],
+        "host": {
+            "architecture": "x86_64",
+            "hostname": "WIN-D75P8GSAED8",
+            "ip": [
+                "192.168.0.246",
+                "fe80::3f18:94ee:b0d8:a0b9",
+                "127.0.0.1",
+                "::1"
+            ],
+            "os": {
+                "name": "Microsoft Windows Server 2022 Datacenter Evaluation",
+                "type": "Unknown",
+                "version": "10.0.20348.2762"
+            }
+        },
+        "id": "2fcc3b59-9873-44dd-832a-1e35ab02ea99",
+        "name": "dummy",
+        "type": "Endpoint",
+        "version": "v5.0.0"
+    }
+}
+{
+    "collector": "hotfixes",
+    "module": "inventory"
+}
+{
+    "event": {
+        "action": "hotfix-installed",
+        "category": [
+            "hotfix"
+        ],
+        "created": "2025-03-11T13:47:02.669Z",
+        "reason": "Hotfix KB5049617 was installed",
+        "type": [
+            "installation"
+        ]
+    },
+    "package": {
+        "hotfix": {
+            "name": "KB5049617"
+        }
+    }
+}
+```
+
+<a name="Hotfix-Windows-Stateless"></a>Stateless
+
+```json
+{
+    "agent": {
+        "groups": [],
+        "host": {
+            "architecture": "x86_64",
+            "hostname": "WIN-D75P8GSAED8",
+            "ip": [
+                "192.168.0.246",
+                "fe80::3f18:94ee:b0d8:a0b9",
+                "127.0.0.1",
+                "::1"
+            ],
+            "os": {
+                "name": "Microsoft Windows Server 2022 Datacenter Evaluation",
+                "type": "Unknown",
+                "version": "10.0.20348.2762"
+            }
+        },
+        "id": "2fcc3b59-9873-44dd-832a-1e35ab02ea99",
+        "name": "dummy",
+        "type": "Endpoint",
+        "version": "v5.0.0"
+    }
+}
+{
+    "collector": "hotfixes",
+    "id": "012b05f27f5fb61830f2c2217e73b3d7ac2356e5",
+    "module": "inventory",
+    "operation": "create"
+}
+{
+    "@timestamp": "2025-03-11T13:50:35.235Z",
+    "package": {
+        "hotfix": {
+            "name": "KB5051979"
+        }
+    }
 }
 ```
