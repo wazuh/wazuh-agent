@@ -1,41 +1,40 @@
-/*
- * Wazuh shared modules utils
- * Copyright (C) 2015, Wazuh Inc.
- * July 14, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
+#pragma once
 
-#ifndef PIPELINE_NODES_IMP_H
-#define PIPELINE_NODES_IMP_H
-
-#include "pipelinePattern.h"
+#include "pipelinePattern.hpp"
 #include "threadDispatcher.h"
 #include <functional>
 
 namespace Utils
 {
+    /// @brief Read Node class template
+    /// @tparam Input Message type
+    /// @tparam Functor Entity that processes the messages
     template<typename Input,
              typename Functor = std::function<void(const Input&)>,
              template<class, class> class Dispatcher = SyncDispatcher>
     class ReadNode : public Dispatcher<Input, Functor>
     {
     public:
+        /// @brief Constructor
+        /// @param functor Entity that processes the messages
         ReadNode(Functor functor)
             : DispatcherType {functor}
         {
         }
 
+        /// @brief Constructor
+        /// @param functor Entity that processes the messages
+        /// @param numberOfThreads Number of threads
         ReadNode(Functor functor, const unsigned int numberOfThreads)
             : DispatcherType {functor, numberOfThreads, UNLIMITED_QUEUE_SIZE}
         {
         }
 
+        /// @brief Destructor
         ~ReadNode() = default;
 
+        /// @brief Receive a message
+        /// @param data Message
         void receive(const Input& data)
         {
             DispatcherType::push(data);
@@ -46,6 +45,9 @@ namespace Utils
         using ReadNodeType = ReadNode<Input, Functor, Dispatcher>;
     };
 
+    /// @brief Read Write Node class template
+    /// @tparam Input Message type
+    /// @tparam Output Message type
     template<typename Input,
              typename Output,
              typename Reader,
@@ -56,12 +58,17 @@ namespace Utils
         , public Dispatcher<Input, std::function<void(const Input&)>>
     {
     public:
+        /// @brief Constructor
+        /// @param functor Entity that processes the messages
         ReadWriteNode(Functor functor)
             : DispatcherType {std::bind(&RWNodeType::doTheWork, this, std::placeholders::_1)}
             , m_functor {functor}
         {
         }
 
+        /// @brief Constructor
+        /// @param functor Entity that processes the messages
+        /// @param numberOfThreads Number of threads
         ReadWriteNode(Functor functor, const unsigned int numberOfThreads)
             : DispatcherType {std::bind(&RWNodeType::doTheWork, this, std::placeholders::_1),
                               numberOfThreads,
@@ -70,8 +77,11 @@ namespace Utils
         {
         }
 
+        /// @brief Destructor
         ~ReadWriteNode() = default;
 
+        /// @brief Receive a message
+        /// @param data Message
         void receive(const Input& data)
         {
             DispatcherType::push(data);
@@ -82,6 +92,8 @@ namespace Utils
         using RWNodeType = ReadWriteNode<Input, Output, Reader, Functor, Dispatcher>;
         using WriterType = Utils::IPipelineWriter<Output, Reader>;
 
+        /// @brief Does the work of the node
+        /// @param data Message
         void doTheWork(const Input& data)
         {
             WriterType::send(m_functor(data));
@@ -90,5 +102,3 @@ namespace Utils
         Functor m_functor;
     };
 } // namespace Utils
-
-#endif // PIPELINE_NODES_IMP_H

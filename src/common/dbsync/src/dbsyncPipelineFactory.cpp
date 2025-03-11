@@ -12,7 +12,7 @@
 #include "dbsyncPipelineFactory.h"
 #include "db_exception.h"
 #include "dbsync_implementation.h"
-#include "pipelineNodesImp.h"
+#include "pipelineNodesImp.hpp"
 #include <utility>
 
 namespace DbSync
