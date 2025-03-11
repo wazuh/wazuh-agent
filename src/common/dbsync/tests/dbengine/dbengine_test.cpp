@@ -78,10 +78,10 @@ TEST_F(DBEngineTest, Initialization)
     EXPECT_CALL(*mockConnection, execute("PRAGMA synchronous = OFF;")).Times(1);
     EXPECT_CALL(*mockConnection, execute("PRAGMA user_version = 1;")).Times(1);
 
-    EXPECT_NO_THROW(std::make_unique<SQLiteDBEngine>(
+    EXPECT_NO_THROW({ [[maybe_unused]] auto dbEngine = std::make_unique<SQLiteDBEngine>(
                         mockFactory,
                         "1",
-                        "NNN"));
+                        "NNN"); });
 }
 
 TEST_F(DBEngineTest, InitializationSQLError)
@@ -101,10 +101,10 @@ TEST_F(DBEngineTest, InitializationSQLError)
     EXPECT_CALL(*mockConnection, execute("PRAGMA synchronous = OFF;")).Times(1);
     EXPECT_CALL(*mockConnection, execute("PRAGMA user_version = 1;")).Times(1);
 
-    EXPECT_THROW(std::make_unique<SQLiteDBEngine>(
-                     mockFactory,
-                     "1",
-                     "NNN"), dbengine_error);
+    EXPECT_THROW({ [[maybe_unused]] auto dbEngine = std::make_unique<SQLiteDBEngine>(
+                    mockFactory,
+                    "1",
+                    "NNN"); }, dbengine_error);
 }
 
 TEST_F(DBEngineTest, InitializationEmptyQuery)
@@ -122,18 +122,18 @@ TEST_F(DBEngineTest, InitializationEmptyQuery)
     EXPECT_CALL(*mockConnection, execute("PRAGMA synchronous = OFF;")).Times(1);
     EXPECT_CALL(*mockConnection, execute("PRAGMA user_version = 1;")).Times(1);
 
-    EXPECT_NO_THROW(std::make_unique<SQLiteDBEngine>(
+    EXPECT_NO_THROW({ [[maybe_unused]] auto dbEngine = std::make_unique<SQLiteDBEngine>(
                         mockFactory,
                         "1",
-                        ""));
+                        ""); });
 }
 
 TEST_F(DBEngineTest, InitializationEmptyFileName)
 {
-    EXPECT_THROW(std::make_unique<SQLiteDBEngine>(
-                     nullptr,
-                     "",
-                     "NNN"), dbengine_error);
+    EXPECT_THROW({ [[maybe_unused]] auto dbEngine = std::make_unique<SQLiteDBEngine>(
+                    nullptr,
+                    "",
+                    "NNN"); }, dbengine_error);
 }
 
 TEST_F(DBEngineTest, InitializeStatusField)

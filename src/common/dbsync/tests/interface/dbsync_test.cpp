@@ -10,11 +10,11 @@
  */
 
 #include <iostream>
+#include <fstream>
 #include <nlohmann/json.hpp>
 #include "dbsync_test.h"
 #include "dbsync.h"
 #include "dbsync.hpp"
-#include "test_inputs.h"
 #include "cjsonSmartDeleter.hpp"
 
 constexpr auto DATABASE_TEMP {"TEMP.db"};
@@ -366,7 +366,8 @@ TEST_F(DBSyncTest, InsertDataInvalidHandle)
 
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsInsert{ cJSON_Parse(insertionSqlStmt) };
 
-    EXPECT_NE(0, dbsync_insert_data(reinterpret_cast<void*>(0xffffffff), jsInsert.get()));
+    uintptr_t invalidHandle = 0xffffffff;
+    EXPECT_NE(0, dbsync_insert_data(reinterpret_cast<void*>(invalidHandle), jsInsert.get()));
 }
 
 TEST_F(DBSyncTest, GetDeletedRowsInvalidInput)
@@ -478,7 +479,8 @@ TEST_F(DBSyncTest, UpdateDataBadInputs)
     cJSON* jsResponse { nullptr };
 
     // Failure cases
-    EXPECT_NE(0, dbsync_update_with_snapshot(reinterpret_cast<void*>(0xffffffff), jsInsert.get(), nullptr));
+    uintptr_t invalidHandle = 0xffffffff;
+    EXPECT_NE(0, dbsync_update_with_snapshot(reinterpret_cast<void*>(invalidHandle), jsInsert.get(), nullptr));
     EXPECT_NE(0, dbsync_update_with_snapshot(handle, jsInsertWithoutTable.get(), &jsResponse));
     EXPECT_NE(0, dbsync_update_with_snapshot(nullptr, jsInsertWithoutTable.get(), nullptr));
     EXPECT_NE(0, dbsync_update_with_snapshot(handle, nullptr, nullptr));
@@ -515,7 +517,8 @@ TEST_F(DBSyncTest, UpdateDataCbBadInputs)
     callback_data_t callbackData { nullptr, nullptr };
 
     // Failure cases
-    EXPECT_NE(0, dbsync_update_with_snapshot_cb(reinterpret_cast<void*>(0xffffffff), jsInsert.get(), callbackData));
+    uintptr_t invalidHandle = 0xffffffff;
+    EXPECT_NE(0, dbsync_update_with_snapshot_cb(reinterpret_cast<void*>(invalidHandle), jsInsert.get(), callbackData));
     EXPECT_NE(0, dbsync_update_with_snapshot_cb(handle, nullptr, callbackData));
     EXPECT_NE(0, dbsync_update_with_snapshot_cb(handle, jsInsert.get(), callbackData));
 }
@@ -685,7 +688,9 @@ TEST_F(DBSyncTest, SetMaxRowsBadData)
     const auto sql{ "CREATE TABLE processes(`pid` BIGINT, `name` TEXT, PRIMARY KEY (`pid`)) WITHOUT ROWID;"};
     const auto handle { dbsync_create(HostType::AGENT, DbEngineType::SQLITE3, DATABASE_TEMP, sql) };
     ASSERT_NE(nullptr, handle);
-    EXPECT_NE(0, dbsync_set_table_max_rows(reinterpret_cast<void*>(0xffffffff), "dummy", 100));
+
+    uintptr_t invalidHandle = 0xffffffff;
+    EXPECT_NE(0, dbsync_set_table_max_rows(reinterpret_cast<void*>(invalidHandle), "dummy", 100));
     EXPECT_NE(0, dbsync_set_table_max_rows(handle, "dummy", 100));
 }
 
@@ -826,7 +831,9 @@ TEST_F(DBSyncTest, syncRowInvalidData)
 
     EXPECT_NE(0, dbsync_sync_row(handle, jsInputNoData.get(), callbackData));
     EXPECT_NE(0, dbsync_sync_row(handle, jsInputNoTable.get(), callbackData));
-    EXPECT_NE(0, dbsync_sync_row(reinterpret_cast<void*>(0xffffffff), jsInputNoTable.get(), callbackData));
+
+    uintptr_t invalidHandle = 0xffffffff;
+    EXPECT_NE(0, dbsync_sync_row(reinterpret_cast<void*>(invalidHandle), jsInputNoTable.get(), callbackData));
 }
 
 TEST_F(DBSyncTest, selectRowsDataAllNoFilter)
@@ -1323,7 +1330,8 @@ TEST_F(DBSyncTest, selectRowsDataNameTidOnlyPid)
     EXPECT_EQ(0, dbsync_insert_data(handle, jsInsert.get()));
     EXPECT_EQ(0, dbsync_select_rows(handle, jsSelectData.get(), callbackData));
     // Failure cases
-    EXPECT_NE(0, dbsync_select_rows(reinterpret_cast<void*>(0xffffffff), jsSelectData.get(), callbackData));
+    uintptr_t invalidHandle = 0xffffffff;
+    EXPECT_NE(0, dbsync_select_rows(reinterpret_cast<void*>(invalidHandle), jsSelectData.get(), callbackData));
     EXPECT_NE(0, dbsync_select_rows(handle, jsSelectDataWithoutTable.get(), callbackData));
     EXPECT_NE(0, dbsync_select_rows(nullptr, jsSelectData.get(), callbackData));
     EXPECT_NE(0, dbsync_select_rows(handle, nullptr, callbackData));
@@ -1394,7 +1402,9 @@ TEST_F(DBSyncTest, deleteSingleAndComposedData)
     EXPECT_NE(0, dbsync_delete_rows(nullptr, jsSingleDeletion.get()));
     EXPECT_NE(0, dbsync_delete_rows(handle, nullptr));
     EXPECT_NE(0, dbsync_delete_rows(handle, jsWithoutTable.get()));
-    EXPECT_NE(0, dbsync_delete_rows(reinterpret_cast<void*>(0xffffffff), jsSingleDeletion.get()));
+
+    uintptr_t invalidHandle = 0xffffffff;
+    EXPECT_NE(0, dbsync_delete_rows(reinterpret_cast<void*>(invalidHandle), jsSingleDeletion.get()));
 }
 
 TEST_F(DBSyncTest, deleteSingleDataByCompoundPK)
@@ -1774,9 +1784,22 @@ TEST_F(DBSyncTest, createTxnCPP1)
     std::unique_ptr<DBSync> dbSync;
 
     EXPECT_NO_THROW(dbSync = std::make_unique<DBSync>(HostType::AGENT, DbEngineType::SQLITE3, DATABASE_TEMP, sql));
-    const auto& data1{nlohmann::json::parse(input1)};
-    const auto& data2{nlohmann::json::parse(input2)};
-    const auto& diffData{nlohmann::json::parse(diffResult)};
+
+    const std::string inputFile1 = std::string(TEST_INPUTS_DIR) + "/" + "input1.json";
+    const std::string inputFile2 = std::string(TEST_INPUTS_DIR) + "/" + "input2.json";
+    const std::string diffResultFile = std::string(TEST_INPUTS_DIR) + "/" + "diffResult.json";
+
+    std::ifstream file1(inputFile1);
+    std::ifstream file2(inputFile2);
+    std::ifstream fileDiff(diffResultFile);
+
+    if (!file1.is_open() || !file2.is_open() || !fileDiff.is_open()) {
+        throw std::runtime_error("Can't open data input files.");
+    }
+    nlohmann::json data1, data2, diffData;
+    file1 >> data1;
+    file2 >> data2;
+    fileDiff >> diffData;
     nlohmann::json insertionSqlStmt1;
     insertionSqlStmt1["table"] = "processes";
     insertionSqlStmt1["data"] = data1;
