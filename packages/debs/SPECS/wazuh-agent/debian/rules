@@ -46,6 +46,10 @@ override_dh_install:
 		cmake --build $(shell pwd)/src/build --parallel $(JOBS); \
 		cmake --install $(shell pwd)/src/build --prefix ${TARGET_DIR}$(INSTALLATION_DIR); \
 	fi
+	install -D /usr/lib/systemd/system/wazuh-agent.service \
+		${TARGET_DIR}$(INSTALLATION_DIR)/usr/lib/systemd/system/wazuh-agent.service
+	sed -i "s|${TARGET_DIR}$(INSTALLATION_DIR)/|/|g" \
+		${TARGET_DIR}$(INSTALLATION_DIR)/usr/lib/systemd/system/wazuh-agent.service
 
 override_dh_auto_clean:
 	make -C src clean
