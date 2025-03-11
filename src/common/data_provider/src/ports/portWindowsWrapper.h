@@ -15,7 +15,7 @@
 #include "iportWrapper.h"
 #include "sharedDefs.h"
 #include "stringHelper.hpp"
-#include "windowsHelper.h"
+#include "windowsHelper.hpp"
 #include <pal.h>
 #include <ws2ipdef.h>
 
@@ -60,7 +60,7 @@ class WindowsPortWrapper final : public IPortWrapper
     {
         in_addr ipaddress;
         ipaddress.S_un.S_addr = addr;
-        return Utils::NetworkWindowsHelper::IAddressToString(AF_INET, ipaddress);
+        return Utils::IAddressToString(AF_INET, ipaddress);
     }
 
     static std::string getProcessName(const std::map<pid_t, std::string> processDataList, const pid_t pid)
@@ -104,9 +104,9 @@ public:
     WindowsPortWrapper(const _MIB_TCP6ROW_OWNER_PID& data, const std::map<pid_t, std::string>& processDataList)
         : m_protocol {"tcp6"}
         , m_localPort {static_cast<int32_t>(ntohs(static_cast<u_short>(data.dwLocalPort)))}
-        , m_localIpAddress {Utils::NetworkWindowsHelper::getIpV6Address(data.ucLocalAddr)}
+        , m_localIpAddress {Utils::getIpV6Address(data.ucLocalAddr)}
         , m_remotePort {static_cast<int32_t>(ntohs(static_cast<u_short>(data.dwRemotePort)))}
-        , m_remoteIpAddress {Utils::NetworkWindowsHelper::getIpV6Address(data.ucRemoteAddr)}
+        , m_remoteIpAddress {Utils::getIpV6Address(data.ucRemoteAddr)}
         , m_state {data.dwState}
         , m_pid {data.dwOwningPid}
         , m_processName {getProcessName(processDataList, data.dwOwningPid)}
@@ -127,7 +127,7 @@ public:
     WindowsPortWrapper(const _MIB_UDP6ROW_OWNER_PID& data, const std::map<pid_t, std::string>& processDataList)
         : m_protocol("udp6")
         , m_localPort {static_cast<int32_t>(ntohs(static_cast<u_short>(data.dwLocalPort)))}
-        , m_localIpAddress {Utils::NetworkWindowsHelper::getIpV6Address(data.ucLocalAddr)}
+        , m_localIpAddress {Utils::getIpV6Address(data.ucLocalAddr)}
         , m_remotePort {0}
         , m_state {0}
         , m_pid {data.dwOwningPid}

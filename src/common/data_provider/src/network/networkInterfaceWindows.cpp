@@ -10,8 +10,8 @@
  */
 
 #include "networkInterfaceWindows.h"
+#include "networkWindowsHelper.hpp"
 #include "networkWindowsWrapper.h"
-#include "windowsHelper.h"
 #include <ws2tcpip.h>
 
 std::shared_ptr<IOSNetwork>
@@ -23,17 +23,17 @@ FactoryWindowsNetwork::create(const std::shared_ptr<INetworkInterfaceWrapper>& i
     {
         const auto family {interfaceWrapper->family()};
 
-        if (Utils::NetworkWindowsHelper::IPV4 == family)
+        if (Utils::IPV4 == family)
         {
-            ret = std::make_shared<WindowsNetworkImpl<Utils::NetworkWindowsHelper::IPV4>>(interfaceWrapper);
+            ret = std::make_shared<WindowsNetworkImpl<Utils::IPV4>>(interfaceWrapper);
         }
-        else if (Utils::NetworkWindowsHelper::IPV6 == family)
+        else if (Utils::IPV6 == family)
         {
-            ret = std::make_shared<WindowsNetworkImpl<Utils::NetworkWindowsHelper::IPV6>>(interfaceWrapper);
+            ret = std::make_shared<WindowsNetworkImpl<Utils::IPV6>>(interfaceWrapper);
         }
-        else if (Utils::NetworkWindowsHelper::COMMON_DATA == family)
+        else if (Utils::COMMON_DATA == family)
         {
-            ret = std::make_shared<WindowsNetworkImpl<Utils::NetworkWindowsHelper::COMMON_DATA>>(interfaceWrapper);
+            ret = std::make_shared<WindowsNetworkImpl<Utils::COMMON_DATA>>(interfaceWrapper);
         }
 
         // else: The current interface family is not supported
@@ -47,13 +47,13 @@ FactoryWindowsNetwork::create(const std::shared_ptr<INetworkInterfaceWrapper>& i
 }
 
 template<>
-void WindowsNetworkImpl<Utils::NetworkWindowsHelper::UNDEF>::buildNetworkData(nlohmann::json& /*network*/)
+void WindowsNetworkImpl<Utils::UNDEF>::buildNetworkData(nlohmann::json& /*network*/)
 {
     throw std::runtime_error {"Invalid network adapter family."};
 }
 
 template<>
-void WindowsNetworkImpl<Utils::NetworkWindowsHelper::IPV4>::buildNetworkData(nlohmann::json& networkV4)
+void WindowsNetworkImpl<Utils::IPV4>::buildNetworkData(nlohmann::json& networkV4)
 {
     // Get IPv4 address
     const auto address {m_interfaceAddress->address()};
@@ -76,7 +76,7 @@ void WindowsNetworkImpl<Utils::NetworkWindowsHelper::IPV4>::buildNetworkData(nlo
 }
 
 template<>
-void WindowsNetworkImpl<Utils::NetworkWindowsHelper::IPV6>::buildNetworkData(nlohmann::json& networkV6)
+void WindowsNetworkImpl<Utils::IPV6>::buildNetworkData(nlohmann::json& networkV6)
 {
     const auto address {m_interfaceAddress->addressV6()};
 
@@ -98,7 +98,7 @@ void WindowsNetworkImpl<Utils::NetworkWindowsHelper::IPV6>::buildNetworkData(nlo
 }
 
 template<>
-void WindowsNetworkImpl<Utils::NetworkWindowsHelper::COMMON_DATA>::buildNetworkData(nlohmann::json& networkCommon)
+void WindowsNetworkImpl<Utils::COMMON_DATA>::buildNetworkData(nlohmann::json& networkCommon)
 {
     // Extraction of common adapter data
     networkCommon["name"] = m_interfaceAddress->name();

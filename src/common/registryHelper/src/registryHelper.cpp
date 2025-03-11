@@ -2,7 +2,10 @@
 
 #include "encodingWindowsHelper.hpp"
 #include "globHelper.hpp"
-#include "windowsHelper.h"
+#include "windowsHelper.hpp"
+#include <array>
+#include <memory>
+#include <system_error>
 
 namespace Utils
 {

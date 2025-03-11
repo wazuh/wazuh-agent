@@ -15,7 +15,7 @@
 #include "registryHelper.hpp"
 #include "sharedDefs.h"
 #include "stringHelper.hpp"
-#include "windowsHelper.h"
+#include "windowsHelper.hpp"
 #include <algorithm>
 #include <ctime>
 #include <set>

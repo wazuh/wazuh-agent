@@ -13,7 +13,6 @@ add_executable(windows_helper_tests
     ${UTIL_CXX_UNITTEST_WINDOWS_SRC}
 )
 
-include(../../../cmake/ConfigureTarget.cmake)
 configure_target(windows_helper_tests)
 
 target_include_directories(windows_helper_tests PRIVATE

@@ -13,8 +13,9 @@
 #define _NETWORK_WINDOWS_WRAPPER_H
 
 #include "inetworkWrapper.h"
+#include "networkWindowsHelper.hpp"
 #include "sharedDefs.h"
-#include "windowsHelper.h"
+#include "windowsHelper.hpp"
 #include <ifdef.h>
 #include <iomanip>
 #include <iptypes.h>
@@ -45,7 +46,7 @@ static const std::map<IF_OPER_STATUS, std::string> NETWORK_OPERATIONAL_STATUS = 
 class NetworkWindowsInterface final : public INetworkInterfaceWrapper
 {
 public:
-    explicit NetworkWindowsInterface(Utils::NetworkWindowsHelper::NetworkFamilyTypes family,
+    explicit NetworkWindowsInterface(Utils::NetworkFamilyTypes family,
                                      const PIP_ADAPTER_ADDRESSES& addrs,
                                      const PIP_ADAPTER_UNICAST_ADDRESS& unicastAddress,
                                      const PIP_ADAPTER_INFO& adapterInfo)
@@ -59,7 +60,7 @@ public:
             throw std::runtime_error {"Nullptr instance of network interface"};
         }
 
-        if (Utils::NetworkWindowsHelper::NetworkFamilyTypes::UNDEF == family)
+        if (Utils::NetworkFamilyTypes::UNDEF == family)
         {
             throw std::runtime_error {"Undefined network instance family value"};
         }
@@ -86,7 +87,7 @@ public:
 
         if (m_currentUnicastAddress)
         {
-            retVal = Utils::NetworkWindowsHelper::IAddressToString(
+            retVal = Utils::IAddressToString(
                 this->adapterFamily(),
                 (reinterpret_cast<sockaddr_in*>(m_currentUnicastAddress->Address.lpSockaddr))->sin_addr);
         }
@@ -102,7 +103,7 @@ public:
         {
             if (Utils::isVistaOrLater())
             {
-                retVal = Utils::NetworkWindowsHelper::IAddressToString(
+                retVal = Utils::IAddressToString(
                     this->adapterFamily(),
                     (reinterpret_cast<sockaddr_in6*>(m_currentUnicastAddress->Address.lpSockaddr))->sin6_addr);
             }
@@ -110,7 +111,7 @@ public:
             {
                 // Windows XP
                 const auto ipv6Address {reinterpret_cast<sockaddr_in6*>(m_currentUnicastAddress->Address.lpSockaddr)};
-                retVal = Utils::NetworkWindowsHelper::getIpV6Address(ipv6Address->sin6_addr.u.Byte);
+                retVal = Utils::getIpV6Address(ipv6Address->sin6_addr.u.Byte);
             }
         }
 
@@ -131,8 +132,7 @@ public:
                 if (m_currentUnicastAddress &&
                     !pfnGetConvertLengthToIpv4Mask(m_currentUnicastAddress->OnLinkPrefixLength, &mask))
                 {
-                    retVal = Utils::NetworkWindowsHelper::IAddressToString(this->adapterFamily(),
-                                                                           *(reinterpret_cast<in_addr*>(&mask)));
+                    retVal = Utils::IAddressToString(this->adapterFamily(), *(reinterpret_cast<in_addr*>(&mask)));
                 }
             }
         }
@@ -158,7 +158,7 @@ public:
         if (m_currentUnicastAddress && Utils::isVistaOrLater())
         {
             // Get ipv6Netmask based on current OnLinkPrefixLength value
-            retVal = Utils::NetworkWindowsHelper::ipv6Netmask(m_currentUnicastAddress->OnLinkPrefixLength);
+            retVal = Utils::ipv6Netmask(m_currentUnicastAddress->OnLinkPrefixLength);
         }
 
         // Windows XP netmask IPv6 is not supported
@@ -173,7 +173,7 @@ public:
 
         if (address.size() && netmask.size())
         {
-            const auto broadcast {Utils::NetworkWindowsHelper::broadcastAddress(address, netmask)};
+            const auto broadcast {Utils::broadcastAddress(address, netmask)};
             if (!broadcast.empty())
             {
                 network["broadcast"] = broadcast;
@@ -202,14 +202,14 @@ public:
 
                 if (AF_INET == gatewayFamily)
                 {
-                    retVal += Utils::NetworkWindowsHelper::IAddressToString(
-                        gatewayFamily, (reinterpret_cast<sockaddr_in*>(sockAddress))->sin_addr);
+                    retVal +=
+                        Utils::IAddressToString(gatewayFamily, (reinterpret_cast<sockaddr_in*>(sockAddress))->sin_addr);
                     retVal += GATEWAY_SEPARATOR;
                 }
                 else if (AF_INET6 == gatewayFamily)
                 {
-                    retVal += Utils::NetworkWindowsHelper::IAddressToString(
-                        gatewayFamily, (reinterpret_cast<sockaddr_in6*>(sockAddress))->sin6_addr);
+                    retVal += Utils::IAddressToString(gatewayFamily,
+                                                      (reinterpret_cast<sockaddr_in6*>(sockAddress))->sin6_addr);
                     retVal += GATEWAY_SEPARATOR;
                 }
 
@@ -357,7 +357,7 @@ public:
 private:
     std::string getAdapterEncodedUTF8(const std::wstring& name) const
     {
-        return Utils::NetworkWindowsHelper::getAdapterNameStr(name);
+        return Utils::getAdapterNameStr(name);
     }
 
     int adapterFamily() const
@@ -476,7 +476,7 @@ private:
         return retVal;
     }
 
-    Utils::NetworkWindowsHelper::NetworkFamilyTypes m_interfaceFamily;
+    Utils::NetworkFamilyTypes m_interfaceFamily;
     PIP_ADAPTER_ADDRESSES m_interfaceAddress;
     PIP_ADAPTER_UNICAST_ADDRESS m_currentUnicastAddress;
     PIP_ADAPTER_INFO m_adapterInfo; // XP needed structure

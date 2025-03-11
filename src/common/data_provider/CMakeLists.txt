@@ -149,6 +149,7 @@ target_link_libraries(sysinfo PUBLIC
   FileIO
   glob_helper
   json_helper
+  network_helper
   sqlite_wrapper
   string_helper
   time_helper
@@ -156,10 +157,8 @@ target_link_libraries(sysinfo PUBLIC
 
 if(WIN32)
   target_link_libraries(sysinfo PUBLIC encoding_helper registry_helper windows_helper)
-elseif(APPLE)
-  target_link_libraries(sysinfo PUBLIC network_helper)
-else()
-  target_link_libraries(sysinfo PUBLIC linux_helper network_helper)
+elseif(NOT APPLE)
+  target_link_libraries(sysinfo PUBLIC linux_helper)
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")

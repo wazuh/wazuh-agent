@@ -12,7 +12,7 @@
 #include "sysInfoNetworkWindows_test.h"
 #include "network/networkFamilyDataAFactory.h"
 #include "network/networkInterfaceWindows.h"
-#include "windowsHelper.h"
+#include "networkWindowsHelper.hpp"
 
 void SysInfoNetworkWindowsTest::SetUp() {};
 
@@ -50,7 +50,7 @@ TEST_F(SysInfoNetworkWindowsTest, Test_IPV4_THROW)
 {
     auto mock {std::make_shared<SysInfoNetworkWindowsWrapperMock>()};
     nlohmann::json networkInfo {};
-    EXPECT_CALL(*mock, family()).Times(1).WillOnce(Return(Utils::NetworkWindowsHelper::IPV4));
+    EXPECT_CALL(*mock, family()).Times(1).WillOnce(Return(Utils::IPV4));
     EXPECT_CALL(*mock, address()).Times(1).WillOnce(Return(""));
     EXPECT_ANY_THROW(FactoryNetworkFamilyCreator<OSPlatformType::WINDOWS>::create(mock)->buildNetworkData(networkInfo));
 }
@@ -59,7 +59,7 @@ TEST_F(SysInfoNetworkWindowsTest, Test_IPV6_THROW)
 {
     auto mock {std::make_shared<SysInfoNetworkWindowsWrapperMock>()};
     nlohmann::json networkInfo {};
-    EXPECT_CALL(*mock, family()).Times(1).WillOnce(Return(Utils::NetworkWindowsHelper::IPV6));
+    EXPECT_CALL(*mock, family()).Times(1).WillOnce(Return(Utils::IPV6));
     EXPECT_CALL(*mock, addressV6()).Times(1).WillOnce(Return(""));
     EXPECT_ANY_THROW(FactoryNetworkFamilyCreator<OSPlatformType::WINDOWS>::create(mock)->buildNetworkData(networkInfo));
 }
@@ -80,7 +80,7 @@ TEST_F(SysInfoNetworkWindowsTest, Test_IPV4)
     const std::string broadcast {"192.168.0.255"};
     const std::string dhcp {"8.8.8.8"};
     const std::string metrics {"25"};
-    EXPECT_CALL(*mock, family()).Times(1).WillOnce(Return(Utils::NetworkWindowsHelper::IPV4));
+    EXPECT_CALL(*mock, family()).Times(1).WillOnce(Return(Utils::IPV4));
     EXPECT_CALL(*mock, address()).Times(1).WillOnce(Return(address));
     EXPECT_CALL(*mock, netmask()).Times(1).WillOnce(Return(netmask));
     EXPECT_CALL(*mock, broadcast(_))
@@ -113,7 +113,7 @@ TEST_F(SysInfoNetworkWindowsTest, Test_IPV6)
     const std::string broadcast {"2001:db8:85a3:8d3:1319:8a2e:370:0000"};
     const std::string dhcp {"8.8.8.8"};
     const std::string metrics {"25"};
-    EXPECT_CALL(*mock, family()).Times(1).WillOnce(Return(Utils::NetworkWindowsHelper::IPV6));
+    EXPECT_CALL(*mock, family()).Times(1).WillOnce(Return(Utils::IPV6));
     EXPECT_CALL(*mock, addressV6()).Times(1).WillOnce(Return(address));
     EXPECT_CALL(*mock, netmaskV6()).Times(1).WillOnce(Return(netmask));
     EXPECT_CALL(*mock, broadcastV6(_))
@@ -147,7 +147,7 @@ TEST_F(SysInfoNetworkWindowsTest, Test_COMMON_DATA)
     const std::string MAC {"00:A0:C9:14:C8:29"};
     const uint32_t mtu {1500};
     const std::string gateway {"10.2.2.50"};
-    EXPECT_CALL(*mock, family()).Times(1).WillOnce(Return(Utils::NetworkWindowsHelper::COMMON_DATA));
+    EXPECT_CALL(*mock, family()).Times(1).WillOnce(Return(Utils::COMMON_DATA));
     EXPECT_CALL(*mock, name()).Times(1).WillOnce(Return(name));
     EXPECT_CALL(*mock, type(_))
         .Times(1)
