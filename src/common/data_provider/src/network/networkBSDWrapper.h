@@ -15,7 +15,7 @@
 #include "inetworkWrapper.h"
 #include "networkHelper.hpp"
 #include "sharedDefs.h"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include <ifaddrs.h>
 #include <iomanip>
 #include <net/if.h>

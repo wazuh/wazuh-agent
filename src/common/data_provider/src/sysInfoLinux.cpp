@@ -20,7 +20,7 @@
 #include "ports/portImpl.h"
 #include "ports/portLinuxWrapper.h"
 #include "sharedDefs.h"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include "sysInfo.hpp"
 #include <file_io_utils.hpp>
 #include <filesystem_wrapper.hpp>
@@ -56,8 +56,8 @@ static void parseLineAndFillMap(const std::string& line,
 
     if (pos != std::string::npos)
     {
-        const auto key {Utils::trim(line.substr(0, pos), " \t\"")};
-        const auto value {Utils::trim(line.substr(pos + 1), " \t\"")};
+        const auto key {Utils::Trim(line.substr(0, pos), " \t\"")};
+        const auto value {Utils::Trim(line.substr(pos + 1), " \t\"")};
         systemInfo[key] = value;
     }
 }
@@ -533,7 +533,7 @@ nlohmann::json SysInfo::getPorts() const
             {
                 if (fileBody)
                 {
-                    row = Utils::trim(row);
+                    row = Utils::Trim(row);
                     Utils::replaceAll(row, "\t", " ");
                     Utils::replaceAll(row, "  ", " ");
                     std::make_unique<PortImpl>(std::make_shared<LinuxPortWrapper>(portType.first, row))

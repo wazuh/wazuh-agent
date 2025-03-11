@@ -1,18 +1,7 @@
-/*
- * Wazuh shared modules utils
- * Copyright (C) 2015, Wazuh Inc.
- * June 11, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _STRING_HELPER_H
-#define _STRING_HELPER_H
+#include "stringHelper.hpp"
 
 #include <algorithm>
+#include <format>
 #include <iomanip>
 #include <map>
 #include <memory>
@@ -21,25 +10,18 @@
 #include <string>
 #include <vector>
 
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-#endif
-
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4505)
-#endif
-
-// Time values for conversion
-#define W_WEEK_SECONDS   604800
-#define W_DAY_SECONDS    86400
-#define W_HOUR_SECONDS   3600
-#define W_MINUTE_SECONDS 60
-
 namespace Utils
 {
-    static void ISO8859ToUTF8(std::string& data)
+    /// @brief Time values for conversion
+    enum TimeConstants
+    {
+        W_WEEK_SECONDS = 604800,
+        W_DAY_SECONDS = 86400,
+        W_HOUR_SECONDS = 3600,
+        W_MINUTE_SECONDS = 60
+    };
+
+    void ISO8859ToUTF8(std::string& data)
     {
         // Convert from ISO-8859-1 to UTF-8
         std::string strOut;
@@ -52,9 +34,9 @@ namespace Utils
         // 0x3f is 00111111 in binary, used to mask the last 6 bits of the character of a 2-byte sequence
         constexpr auto UTF8_2BYTE_MASK {0x3f};
 
-        for (auto it = data.begin(); it != data.end(); ++it)
+        for (auto it : data)
         {
-            const uint8_t ch = static_cast<uint8_t>(static_cast<unsigned char>(*it));
+            const auto ch = static_cast<uint8_t>(static_cast<unsigned char>(it));
 
             // ASCII character
             if (ch < UTF8_2BYTE_FIRST_CODE_VALUE)
@@ -75,7 +57,7 @@ namespace Utils
         data = strOut;
     }
 
-    static bool replaceAll(std::string& data, const std::string& toSearch, const std::string& toReplace)
+    bool replaceAll(std::string& data, const std::string& toSearch, const std::string& toReplace)
     {
         auto pos {data.find(toSearch)};
         const auto ret {std::string::npos != pos};
@@ -89,7 +71,7 @@ namespace Utils
         return ret;
     }
 
-    static bool replaceFirst(std::string& data, const std::string& toSearch, const std::string& toReplace)
+    bool replaceFirst(std::string& data, const std::string& toSearch, const std::string& toReplace)
     {
         auto pos {data.find(toSearch)};
         auto ret {false};
@@ -103,7 +85,7 @@ namespace Utils
         return ret;
     }
 
-    static std::string leftTrim(const std::string& str, const std::string& args = " ")
+    std::string LeftTrim(const std::string& str, const std::string& args)
     {
         const auto pos {str.find_first_not_of(args)};
 
@@ -115,7 +97,7 @@ namespace Utils
         return "";
     }
 
-    static std::string rightTrim(const std::string& str, const std::string& args = " ")
+    std::string RightTrim(const std::string& str, const std::string& args)
     {
         const auto pos {str.find_last_not_of(args)};
 
@@ -127,12 +109,12 @@ namespace Utils
         return "";
     }
 
-    static std::string trim(const std::string& str, const std::string& args = " ")
+    std::string Trim(const std::string& str, const std::string& args)
     {
-        return leftTrim(rightTrim(str, args), args);
+        return LeftTrim(RightTrim(str, args), args);
     }
 
-    static std::vector<std::string> split(const std::string& str, const char delimiter)
+    std::vector<std::string> split(const std::string& str, const char delimiter)
     {
         std::vector<std::string> tokens;
         std::string token;
@@ -146,7 +128,7 @@ namespace Utils
         return tokens;
     }
 
-    static std::string splitIndex(const std::string& str, const char delimiter, const size_t index)
+    std::string splitIndex(const std::string& str, const char delimiter, const size_t index)
     {
         std::string retVal;
         const auto& splitResult {split(str, delimiter)};
@@ -163,11 +145,12 @@ namespace Utils
         return retVal;
     }
 
-    static std::vector<std::string> splitNullTerminatedStrings(const char* buffer)
+    std::vector<std::string> splitNullTerminatedStrings(const char* buffer)
     {
         constexpr auto NULL_TERMINATED_DELIMITER {'\0'};
         std::vector<std::string> ret;
 
+        // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         while (buffer[0] != NULL_TERMINATED_DELIMITER)
         {
             const std::string token(buffer);
@@ -179,35 +162,34 @@ namespace Utils
 
             buffer += token.size() + 1;
         }
+        // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
         return ret;
     }
 
-    static void
-    splitMapKeyValue(const std::string& str, const char delimiter, std::map<std::string, std::string>& mapResult)
+    void splitMapKeyValue(const std::string& str, const char delimiter, std::map<std::string, std::string>& mapResult)
     {
         constexpr auto NEWLINE_DELIMITER {'\n'};
         std::string line;
-        std::vector<std::string> lineKeyValue;
         std::istringstream strStream {str};
 
         mapResult.clear();
 
         while (std::getline(strStream, line, NEWLINE_DELIMITER))
         {
-            size_t delimiterPos = line.find_first_of(delimiter);
+            const size_t delimiterPos = line.find_first_of(delimiter);
 
             if (delimiterPos == std::string::npos)
             {
                 continue;
             }
 
-            mapResult.insert(std::pair<std::string, std::string>(trim(line.substr(0, delimiterPos), " \"\t"),
-                                                                 trim(line.substr(delimiterPos + 1), " \"\t")));
+            mapResult.insert(std::pair<std::string, std::string>(Trim(line.substr(0, delimiterPos), " \"\t"),
+                                                                 Trim(line.substr(delimiterPos + 1), " \"\t")));
         }
     }
 
-    static std::string asciiToHex(const std::vector<unsigned char>& asciiData)
+    std::string asciiToHex(const std::vector<unsigned char>& asciiData)
     {
         std::string ret;
         std::stringstream ss;
@@ -223,23 +205,16 @@ namespace Utils
         }
         else
         {
-            const auto size {asciiData.size() * 2};
-            const auto buffer {std::make_unique<char[]>(size + 1)};
-            char* output {buffer.get()};
-
             for (const auto& value : asciiData)
             {
-                snprintf(output, 3, "%02x", value);
-                output += 2;
+                ret += std::format("{:02x}", static_cast<int>(value));
             }
-
-            ret = std::string {buffer.get(), size};
         }
 
         return ret;
     }
 
-    static std::string toUpperCase(const std::string& str)
+    std::string toUpperCase(const std::string& str)
     {
         std::string temp {str};
         std::transform(std::begin(temp),
@@ -249,7 +224,7 @@ namespace Utils
         return temp;
     }
 
-    static std::string toLowerCase(const std::string& str)
+    std::string toLowerCase(const std::string& str)
     {
         std::string temp {str};
         std::transform(std::begin(temp),
@@ -259,13 +234,13 @@ namespace Utils
         return temp;
     }
 
-    static bool haveUpperCaseCharacters(const std::string& str)
+    bool haveUpperCaseCharacters(const std::string& str)
     {
         return std::any_of(
             std::begin(str), std::end(str), [](std::string::value_type character) { return std::isupper(character); });
     }
 
-    static std::string toSentenceCase(const std::string& str)
+    std::string toSentenceCase(const std::string& str)
     {
         std::string temp;
         if (!str.empty())
@@ -276,7 +251,7 @@ namespace Utils
         return temp;
     }
 
-    static bool startsWith(const std::string& str, const std::string& start)
+    bool startsWith(const std::string& str, const std::string& start)
     {
         if (!str.empty() && str.length() >= start.length())
         {
@@ -286,7 +261,7 @@ namespace Utils
         return false;
     }
 
-    static bool endsWith(const std::string& str, const std::string& ending)
+    bool endsWith(const std::string& str, const std::string& ending)
     {
         if (!str.empty() && str.length() >= ending.length())
         {
@@ -298,7 +273,7 @@ namespace Utils
         return false;
     }
 
-    static std::string substrOnFirstOccurrence(const std::string& str, const std::string& args = " ")
+    std::string substrOnFirstOccurrence(const std::string& str, const std::string& args)
     {
         const auto pos {str.find(args)};
 
@@ -310,7 +285,7 @@ namespace Utils
         return str;
     }
 
-    static std::pair<std::string, std::string>
+    std::pair<std::string, std::string>
     splitKeyValueNonEscapedDelimiter(const std::string& str, const char delimiter, const char escapeChar)
     {
         std::pair<std::string, std::string> retVal {std::make_pair(str, "")};
@@ -332,11 +307,11 @@ namespace Utils
         return retVal;
     }
 
-    static bool findRegexInString(const std::string& in,
-                                  std::string& match,
-                                  const std::regex& pattern,
-                                  const size_t matchIndex = 0,
-                                  const std::string& start = "")
+    bool FindRegexInString(const std::string& in,
+                           std::string& match,
+                           const std::regex& pattern,
+                           const size_t matchIndex,
+                           const std::string& start)
     {
         bool ret {false};
 
@@ -354,15 +329,7 @@ namespace Utils
         return ret;
     }
 
-    /**
-     * @brief Checks that the string is alphanumeric and contains all of the special characters passed as argument.
-     *
-     * @param str Original string.
-     * @param specialCharacters Special characters string.
-     * @return true
-     * @return false
-     */
-    static bool isAlphaNumericWithSpecialCharacters(const std::string& str, const std::string& specialCharacters)
+    bool isAlphaNumericWithSpecialCharacters(const std::string& str, const std::string& specialCharacters)
     {
         return str.compare("") != 0 ? std::all_of(std::begin(str),
                                                   std::end(str),
@@ -373,7 +340,7 @@ namespace Utils
                                     : false;
     }
 
-    static bool isNumber(const std::string& str)
+    bool isNumber(const std::string& str)
     {
         std::string::const_iterator it = str.begin();
 
@@ -385,7 +352,7 @@ namespace Utils
         return !str.empty() && it == str.end();
     }
 
-    static bool parseStrToBool(const std::string& str)
+    bool parseStrToBool(const std::string& str)
     {
         if (str.compare("yes") == 0)
         {
@@ -401,9 +368,9 @@ namespace Utils
         }
     }
 
-    static long parseStrToTime(const std::string& str)
+    long parseStrToTime(const std::string& str)
     {
-        std::size_t pos;
+        std::size_t pos = 0;
         try
         {
             auto seconds {std::stol(str, &pos)};
@@ -438,15 +405,7 @@ namespace Utils
         }
     }
 
-    /**
-     * @brief Add size padding to a string.
-     *
-     * @param str Original string.
-     * @param padCharacter Character to use for padding.
-     * @param minSize Minimum size of the string.
-     * @return std::string Padded string.
-     */
-    static std::string padString(const std::string& str, const char padCharacter, const int64_t minSize)
+    std::string padString(const std::string& str, const char padCharacter, const int64_t minSize)
     {
         std::string out;
         const auto strLength = minSize - static_cast<int64_t>(str.length());
@@ -460,13 +419,3 @@ namespace Utils
     }
 
 } // namespace Utils
-
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
-
-#endif // _STRING_HELPER_H

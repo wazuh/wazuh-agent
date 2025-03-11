@@ -16,7 +16,7 @@
 #include "hardwareWrapperInterface.h"
 #include "osPrimitivesInterfaceMac.h"
 #include "sharedDefs.h"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include "sysInfo.hpp"
 #include "utilsWrapperMac.hpp"
 #include <sys/sysctl.h>
@@ -41,7 +41,7 @@ public:
 
         if (!rawData.empty())
         {
-            ret = Utils::trim(rawData.substr(rawData.find(":")), " :\t\r\n");
+            ret = Utils::Trim(rawData.substr(rawData.find(":")), " :\t\r\n");
         }
 
         return ret;

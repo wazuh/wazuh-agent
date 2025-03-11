@@ -15,7 +15,7 @@
 #include "file_io_utils.hpp"
 #include "ipackageWrapper.h"
 #include "sharedDefs.h"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 
 class BrewWrapper final : public IPackageWrapper
 {
@@ -40,7 +40,7 @@ public:
 
         for (const auto& row : rows)
         {
-            auto rowParsed {Utils::trim(row)};
+            auto rowParsed {Utils::Trim(row)};
 
             if (Utils::startsWith(rowParsed, "desc "))
             {

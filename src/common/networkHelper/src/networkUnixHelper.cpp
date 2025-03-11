@@ -1,6 +1,6 @@
 #include "networkUnixHelper.hpp"
 
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include <ifaddrs.h>
 #include <map>
 #include <memory>

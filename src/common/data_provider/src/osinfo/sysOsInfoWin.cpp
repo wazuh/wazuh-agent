@@ -20,7 +20,7 @@
 #include "sysOsInfoWin.h"
 #include "registryHelper.hpp"
 #include "sharedDefs.h"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include "sysOsInfoWin.h"
 
 #ifdef _MSC_VER
@@ -171,7 +171,7 @@ static std::string getRelease(const std::string& build)
         {
             if (Utils::startsWith(sp, SERVICE_PACK_PREFIX))
             {
-                release = "sp" + Utils::trim(sp.substr(SERVICE_PACK_PREFIX.size()));
+                release = "sp" + Utils::Trim(sp.substr(SERVICE_PACK_PREFIX.size()));
             }
         }
         else
@@ -183,7 +183,7 @@ static std::string getRelease(const std::string& build)
             {
                 if (Utils::startsWith(sp, SERVICE_PACK_PREFIX))
                 {
-                    release = "sp" + Utils::trim(sp.substr(SERVICE_PACK_PREFIX.size()));
+                    release = "sp" + Utils::Trim(sp.substr(SERVICE_PACK_PREFIX.size()));
                 }
             }
         }

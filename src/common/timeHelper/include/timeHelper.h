@@ -12,7 +12,7 @@
 #ifndef _TIME_HELPER_H
 #define _TIME_HELPER_H
 
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include <chrono>
 #include <ctime>
 #include <iomanip>

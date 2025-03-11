@@ -23,7 +23,7 @@
 #include "ports/portImpl.h"
 #include "ports/portWindowsWrapper.h"
 #include "registryHelper.hpp"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include "sysInfo.hpp"
 #include "sysinfoapi.h"
 #include "windowsHelper.h"
@@ -494,7 +494,7 @@ static std::string getSerialNumber()
 
         if (pos != std::string::npos)
         {
-            ret = Utils::trim(rawData.substr(pos), " \t\r\n");
+            ret = Utils::Trim(rawData.substr(pos), " \t\r\n");
         }
         else
         {

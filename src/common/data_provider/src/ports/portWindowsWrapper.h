@@ -14,7 +14,7 @@
 
 #include "iportWrapper.h"
 #include "sharedDefs.h"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include "windowsHelper.h"
 #include <pal.h>
 #include <ws2ipdef.h>

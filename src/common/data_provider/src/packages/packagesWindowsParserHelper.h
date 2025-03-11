@@ -13,7 +13,7 @@
 #define _PACKAGES_WINDOWS_PARSER_HELPER_H
 
 #include "registryHelper.hpp"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include <nlohmann/json.hpp>
 #include <regex>
 

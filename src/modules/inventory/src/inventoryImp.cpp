@@ -6,7 +6,7 @@
 #include <inventory.hpp>
 #include <iostream>
 #include <nlohmann/json.hpp>
-#include <stringHelper.h>
+#include <stringHelper.hpp>
 #include <timeHelper.h>
 
 constexpr auto EMPTY_VALUE {""};

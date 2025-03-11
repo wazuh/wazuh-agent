@@ -19,7 +19,7 @@
 
 #include "iportWrapper.h"
 #include "sharedDefs.h"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 
 static const std::map<int32_t, std::string> PORTS_TYPE = {{SOCKINFO_TCP, "tcp"}, {SOCKINFO_IN, "udp"}};
 

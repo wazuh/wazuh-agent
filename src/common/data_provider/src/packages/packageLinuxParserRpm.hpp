@@ -20,7 +20,7 @@
 #include "packageLinuxRpmParserHelperLegacy.h"
 #include "rpmlib.h"
 #include "sharedDefs.h"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include "utilsWrapperLinux.hpp"
 
 template<typename TFileSystem = filesystem_wrapper::FileSystemWrapper>

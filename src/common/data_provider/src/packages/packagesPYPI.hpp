@@ -15,7 +15,7 @@
 #include "file_io_utils.hpp"
 #include "filesystem_wrapper.hpp"
 #include "sharedDefs.h"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <set>
@@ -65,7 +65,7 @@ class PYPI final
 
                                         if (!packageInfo.contains(value))
                                         {
-                                            packageInfo[value] = Utils::trim(line.substr(key.length()), "\r");
+                                            packageInfo[value] = Utils::Trim(line.substr(key.length()), "\r");
                                         }
                                     }
                                     return true;

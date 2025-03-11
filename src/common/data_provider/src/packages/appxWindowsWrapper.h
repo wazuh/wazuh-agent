@@ -14,7 +14,7 @@
 #include "ipackageWrapper.h"
 #include "registryHelper.hpp"
 #include "sharedDefs.h"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include "windowsHelper.h"
 #include <algorithm>
 #include <ctime>

@@ -15,11 +15,14 @@
 #include "file_io_utils.hpp"
 #include "ipackageWrapper.h"
 #include "sharedDefs.h"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include <fstream>
 #include <istream>
 #include <plist/plist.h>
 #include <regex>
+#include <set>
+#include <sstream>
+#include <string>
 
 static const std::string APP_INFO_PATH {"Contents/Info.plist"};
 static const std::string PLIST_BINARY_START {"bplist00"};
@@ -154,7 +157,7 @@ private:
 
                 while (std::getline(data, line))
                 {
-                    line = Utils::trim(line, " \t");
+                    line = Utils::Trim(line, " \t");
 
                     if (line == "<key>CFBundleName</key>" && std::getline(data, line))
                     {
@@ -186,7 +189,7 @@ private:
                             m_description = description;
                             std::string vendor;
 
-                            if (Utils::findRegexInString(m_description, vendor, bundleIdRegex, 1))
+                            if (Utils::FindRegexInString(m_description, vendor, bundleIdRegex, 1))
                             {
                                 m_vendor = vendor;
                             }
@@ -255,7 +258,7 @@ private:
 
                                       while (std::getline(data, line))
                                       {
-                                          line = Utils::trim(line, " \t");
+                                          line = Utils::Trim(line, " \t");
 
                                           if (line == "<key>PackageIdentifier</key>" && std::getline(data, line))
                                           {

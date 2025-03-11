@@ -32,7 +32,7 @@
 // clang-format on
 
 #include "encodingWindowsHelper.hpp"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include "timeHelper.h"
 
 #ifdef _MSC_VER

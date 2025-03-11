@@ -15,7 +15,7 @@
 #include "inetworkWrapper.h"
 #include "networkHelper.hpp"
 #include "sharedDefs.h"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include <file_io_utils.hpp>
 #include <ifaddrs.h>
 #include <net/if_arp.h>
@@ -265,7 +265,7 @@ public:
 
                 for (auto& line : lines)
                 {
-                    line = Utils::rightTrim(line);
+                    line = Utils::RightTrim(line);
                     Utils::replaceAll(line, "\t", " ");
                     Utils::replaceAll(line, "  ", " ");
                     const auto fields {Utils::split(line, ' ')};
@@ -479,7 +479,7 @@ public:
 
                 for (auto& line : lines)
                 {
-                    line = Utils::trim(line);
+                    line = Utils::Trim(line);
                     Utils::replaceAll(line, "\t", " ");
                     Utils::replaceAll(line, "  ", " ");
                     Utils::replaceAll(line, ": ", " ");

@@ -11,7 +11,7 @@
 #include "network/networkBSDWrapper.h"
 #include "network/networkFamilyDataAFactory.h"
 #include "networkUnixHelper.hpp"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include "sysInfo.hpp"
 #include <sys/sysctl.h>
 #include <sys/types.h>

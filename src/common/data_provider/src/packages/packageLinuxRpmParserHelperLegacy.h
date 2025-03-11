@@ -13,7 +13,7 @@
 #define _PACKAGE_LINUX_RPM_PARSER_LEGACY_HELPER_H
 
 #include "sharedDefs.h"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include <nlohmann/json.hpp>
 
 #ifdef __GNUC__

@@ -13,7 +13,7 @@
 #define _PACKAGE_LINUX_PARSER_HELPER_H
 
 #include "sharedDefs.h"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include "timeHelper.h"
 #include <nlohmann/json.hpp>
 
@@ -44,8 +44,8 @@ namespace PackageLinuxHelper
 
             if (pos != std::string::npos)
             {
-                const auto key {Utils::trim(entry.substr(0, pos))};
-                const auto value {Utils::trim(entry.substr(pos + 1), " \n")};
+                const auto key {Utils::Trim(entry.substr(0, pos))};
+                const auto value {Utils::Trim(entry.substr(pos + 1), " \n")};
                 info[key] = value;
             }
         }

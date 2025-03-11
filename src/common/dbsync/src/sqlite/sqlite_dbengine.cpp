@@ -14,7 +14,7 @@
 #include "db_exception.h"
 #include "mapWrapperSafe.hpp"
 #include "sqlite/isqlite_wrapper.h"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include <fstream>
 #include <thread>
 
