@@ -18,7 +18,7 @@
 #include "packages/packageMac.h"
 #include "ports/portBSDWrapper.h"
 #include "ports/portImpl.h"
-#include "sqliteWrapperTemp.h"
+#include "sqliteWrapperTemp.hpp"
 #include "stringHelper.h"
 #include "sysInfo.hpp"
 #include <filesystem_wrapper.hpp>

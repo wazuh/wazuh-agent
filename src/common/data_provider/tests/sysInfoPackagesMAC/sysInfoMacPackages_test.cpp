@@ -12,7 +12,7 @@
 #include "sysInfoMacPackages_test.h"
 #include "packages/macportsWrapper.h"
 #include "packages/packageMac.h"
-#include "sqliteWrapperTemp.h"
+#include "sqliteWrapperTemp.hpp"
 #include "sqliteWrapperTempMock.h"
 
 void SysInfoMacPackagesTest::SetUp() {};

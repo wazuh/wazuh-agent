@@ -14,7 +14,7 @@
 
 #include "ipackageWrapper.h"
 #include "sharedDefs.h"
-#include "sqliteWrapperTemp.h"
+#include "sqliteWrapperTemp.hpp"
 
 const std::map<std::string, int> columnIndexes {
     {"name", 0}, {"version", 1}, {"date", 2}, {"location", 3}, {"archs", 4}};

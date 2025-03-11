@@ -12,7 +12,7 @@
 #ifndef _SQLITEWRAPPERMOCK_H
 #define _SQLITEWRAPPERMOCK_H
 
-#include "sqliteWrapperTemp.h"
+#include "sqliteWrapperTemp.hpp"
 #include <gmock/gmock.h>
 #include <string>
 
