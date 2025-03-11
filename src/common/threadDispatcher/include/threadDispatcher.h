@@ -13,7 +13,7 @@
 #define THREAD_DISPATCHER_H
 
 #include "commonDefs.h"
-#include "promiseFactory.h"
+#include "promiseFactory.hpp"
 #include "threadSafeQueue.h"
 #include <atomic>
 #include <functional>
