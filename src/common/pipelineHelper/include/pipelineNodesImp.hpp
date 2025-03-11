@@ -1,7 +1,7 @@
 #pragma once
 
 #include "pipelinePattern.hpp"
-#include "threadDispatcher.h"
+#include "threadDispatcher.hpp"
 #include <functional>
 
 namespace Utils

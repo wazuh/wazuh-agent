@@ -1,16 +1,4 @@
-/*
- * Wazuh shared modules utils
- * Copyright (C) 2015, Wazuh Inc.
- * July 14, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef THREAD_SAFE_QUEUE_H
-#define THREAD_SAFE_QUEUE_H
+#pragma once
 
 #include <atomic>
 #include <condition_variable>
@@ -22,18 +10,22 @@
 
 namespace Utils
 {
-
+    /// @brief TSafeQueue class
     template<typename T, typename U, typename Tq = std::queue<T>>
     class TSafeQueue
     {
     public:
+        /// @brief Constructor
         TSafeQueue()
             : m_canceled {false}
         {
         }
 
+        /// @brief Delete copy assignment operator
         TSafeQueue& operator=(const TSafeQueue&) = delete;
 
+        /// @brief Copy constructor
+        /// @param other object
         TSafeQueue(TSafeQueue& other)
             : TSafeQueue {}
         {
@@ -41,17 +33,22 @@ namespace Utils
             m_queue = other.m_queue;
         }
 
+        /// @brief Move constructor
+        /// @param queue the queue
         explicit TSafeQueue(Tq&& queue)
             : m_queue {std::move(queue)}
             , m_canceled {false}
         {
         }
 
+        /// @brief Destructor
         ~TSafeQueue()
         {
             cancel();
         }
 
+        /// @brief Push an element to the queue
+        /// @param value the value
         void push(const T& value)
         {
             std::lock_guard<std::mutex> lock {m_mutex};
@@ -63,6 +60,10 @@ namespace Utils
             }
         }
 
+        /// @brief Pops an element from the queue
+        /// @param value the value
+        /// @param wait wait for an element
+        /// @return true if an element was popped
         bool pop(U& value, const bool wait = true)
         {
             std::unique_lock<std::mutex> lock {m_mutex};
@@ -83,6 +84,9 @@ namespace Utils
             return ret;
         }
 
+        /// @brief Pops an element from the queue and returns it
+        /// @param wait wait for an element
+        /// @return the element
         std::shared_ptr<U> pop(const bool wait = true)
         {
             std::unique_lock<std::mutex> lock {m_mutex};
@@ -104,6 +108,10 @@ namespace Utils
             return nullptr;
         }
 
+        /// @brief Gets a bulk of elements from the queue
+        /// @param elementsQuantity the number of elements to get
+        /// @param timeout the timeout for the wait
+        /// @return the bulk
         std::queue<U> getBulk(const uint64_t elementsQuantity,
                               const std::chrono::seconds& timeout = std::chrono::seconds(5))
         {
@@ -135,6 +143,8 @@ namespace Utils
             return bulkQueue;
         }
 
+        /// @brief Pops a bulk of elements from the queue
+        /// @param elementsQuantity the number of elements to pop
         void popBulk(const uint64_t elementsQuantity)
         {
             std::lock_guard<std::mutex> lock {m_mutex};
@@ -144,18 +154,23 @@ namespace Utils
             }
         }
 
+        /// @brief Checks if the queue is empty
+        /// @return true if the queue is empty
         bool empty() const
         {
             std::lock_guard<std::mutex> lock {m_mutex};
             return m_queue.empty();
         }
 
+        /// @brief Gets the size of the queue
+        /// @return the size
         size_t size() const
         {
             std::lock_guard<std::mutex> lock {m_mutex};
             return m_queue.size();
         }
 
+        /// @brief Cancel the queue
         void cancel()
         {
             std::lock_guard<std::mutex> lock {m_mutex};
@@ -163,6 +178,8 @@ namespace Utils
             m_cv.notify_all();
         }
 
+        /// @brief Checks if the queue is canceled
+        /// @return true if the queue is canceled
         bool cancelled() const
         {
             std::lock_guard<std::mutex> lock {m_mutex};
@@ -179,5 +196,3 @@ namespace Utils
     template<typename T, typename Tq = std::queue<T>>
     using SafeQueue = TSafeQueue<T, T, Tq>;
 } // namespace Utils
-
-#endif // THREAD_SAFE_QUEUE_H

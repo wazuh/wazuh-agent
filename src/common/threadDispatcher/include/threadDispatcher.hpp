@@ -1,20 +1,8 @@
-/*
- * Wazuh shared modules utils
- * Copyright (C) 2015, Wazuh Inc.
- * July 14, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef THREAD_DISPATCHER_H
-#define THREAD_DISPATCHER_H
+#pragma once
 
 #include "commonDefs.h"
 #include "promiseFactory.hpp"
-#include "threadSafeQueue.h"
+#include "threadSafeQueue.hpp"
 #include <atomic>
 #include <functional>
 #include <future>
@@ -24,47 +12,15 @@
 
 namespace Utils
 {
-    // *
-    //  * @brief Minimal Dispatcher interface
-    //  * @details Handle dispatching of messages of type Type
-    //  * to be processed by calling Functor.
-    //  *
-    //  * @tparam Type Messages types.
-    //  * @tparam Functor Entity that processes the messages.
-
-    // template <typename Type, typename Functor>
-    // class DispatcherInterface
-    // {
-    // public:
-    //  /**
-    //   * @brief Ctor
-    //   *
-    //   * @param functor Callable entity.
-    //   * @param int Maximun number of threads to be used by the dispatcher.
-    //   */
-    //  DispatcherInterface(Functor functor, const unsigned int numberOfThreads);
-    //  *
-    //   * @brief Pushes a message to be processed by the functor.
-    //   * @details The implementation decides whether the processing is sync or async.
-    //   *
-    //   * @param data Message value.
-
-    //  void push(const Type& data);
-    //  /**
-    //   * @brief Rundowns the pending messages until reaches 0.
-    //   * @details It should be a blocking call.
-    //   */
-    //  void rundown();
-    //  /**
-    //   * @brief Cancels the dispatching.
-    //   */
-    //  void cancel();
-    // };
-
+    /// @brief AsyncDispatcher class
     template<typename Type, typename Functor>
     class AsyncDispatcher
     {
     public:
+        /// @brief Constructor
+        /// @param functor functor
+        /// @param numberOfThreads number of threads
+        /// @param maxQueueSize max queue size
         AsyncDispatcher(Functor functor,
                         const unsigned int numberOfThreads = std::thread::hardware_concurrency(),
                         const size_t maxQueueSize = UNLIMITED_QUEUE_SIZE)
@@ -81,14 +37,20 @@ namespace Utils
             }
         }
 
+        /// @brief Delete copy assignment operator
         AsyncDispatcher& operator=(const AsyncDispatcher&) = delete;
+
+        /// @brief Delete copy constructor
         AsyncDispatcher(AsyncDispatcher& other) = delete;
 
+        /// @brief Destructor
         ~AsyncDispatcher()
         {
             cancel();
         }
 
+        /// @brief Push an element to the queue
+        /// @param value the value
         void push(const Type& value)
         {
             if (m_running)
@@ -100,6 +62,7 @@ namespace Utils
             }
         }
 
+        /// @brief Rundown the dispatcher
         void rundown()
         {
             if (m_running)
@@ -111,6 +74,7 @@ namespace Utils
             }
         }
 
+        /// @brief Cancel the dispatcher
         void cancel()
         {
             m_running = false;
@@ -118,22 +82,29 @@ namespace Utils
             joinThreads();
         }
 
+        /// @brief Checks if the dispatcher is canceled
+        /// @return true if the dispatcher is canceled
         bool cancelled() const
         {
             return !m_running;
         }
 
+        /// @brief Get the number of threads
+        /// @return number of threads
         unsigned int numberOfThreads() const
         {
             return m_numberOfThreads;
         }
 
+        /// @brief Get the size of the queue
+        /// @return the size of the queue
         size_t size() const
         {
             return m_queue.size();
         }
 
     private:
+        /// @brief Dispatch handler
         void dispatch()
         {
             try
@@ -154,6 +125,7 @@ namespace Utils
             }
         }
 
+        /// @brief Join the threads
         void joinThreads()
         {
             for (auto& thread : m_threads)
@@ -173,10 +145,13 @@ namespace Utils
         const size_t m_maxQueueSize;
     };
 
+    /// @brief SyncDispatcher class
     template<typename Input, typename Functor>
     class SyncDispatcher
     {
     public:
+        /// @brief Constructor
+        /// @param functor functor
         SyncDispatcher(Functor functor,
                        const unsigned int /*numberOfThreads = std::thread::hardware_concurrency()*/,
                        const size_t /*maxQueueSize = UNLIMITED_QUEUE_SIZE*/)
@@ -185,12 +160,16 @@ namespace Utils
         {
         }
 
+        /// @brief Constructor
+        /// @param functor functor
         SyncDispatcher(Functor functor)
             : m_functor {functor}
             , m_running {true}
         {
         }
 
+        /// @brief Push an element to the queue
+        /// @param data the data
         void push(const Input& data)
         {
             if (m_running)
@@ -199,31 +178,40 @@ namespace Utils
             }
         }
 
+        /// @brief Get the size of the queue
+        /// @return the size of the queue
         size_t size() const
         {
             return 0;
         }
 
+        /// @brief Rundown the dispatcher
         void rundown()
         {
             cancel();
         }
 
+        /// @brief Cancel the dispatcher
         void cancel()
         {
             m_running = false;
         }
 
+        /// @brief Checks if the dispatcher is canceled
+        /// @return true if the dispatcher is canceled
         bool cancelled() const
         {
             return !m_running;
         }
 
+        /// @brief Get the number of threads
+        /// @return number of threads
         unsigned int numberOfThreads() const
         {
             return 0;
         }
 
+        /// @brief Destructor
         ~SyncDispatcher() = default;
 
     private:
@@ -231,4 +219,3 @@ namespace Utils
         bool m_running;
     };
 } // namespace Utils
-#endif // THREAD_DISPATCHER_H
