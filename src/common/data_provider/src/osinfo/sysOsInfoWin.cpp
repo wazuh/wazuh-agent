@@ -18,7 +18,7 @@
 // clang-format on
 
 #include "sysOsInfoWin.h"
-#include "registryHelper.h"
+#include "registryHelper.hpp"
 #include "sharedDefs.h"
 #include "stringHelper.h"
 #include "sysOsInfoWin.h"

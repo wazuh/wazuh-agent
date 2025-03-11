@@ -1,16 +1,5 @@
-/*
- * Wazuh shared modules utils
- * Copyright (C) 2015, Wazuh Inc.
- * October 19, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-#ifdef WIN32
-#include "registryHelper_test.h"
-#include "registryHelper.h"
+#include "registryHelper_test.hpp"
+#include "registryHelper.hpp"
 
 constexpr auto CENTRAL_PROCESSOR_REGISTRY {"HARDWARE\\DESCRIPTION\\System\\CentralProcessor"};
 constexpr auto CENTRAL_PROCESSOR_REGISTRY_0 {"HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0"};
@@ -112,5 +101,3 @@ TEST_F(RegistryUtilsTest, RegistryEnumerateNoThrow)
     reg.enumerate(values);
     EXPECT_EQ(0u, values.size());
 }
-
-#endif

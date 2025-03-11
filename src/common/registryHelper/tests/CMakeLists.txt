@@ -13,7 +13,6 @@ add_executable(registry_helper_tests
     ${UTIL_CXX_UNITTEST_WINDOWS_SRC}
 )
 
-include(../../../cmake/ConfigureTarget.cmake)
 configure_target(registry_helper_tests)
 
 target_include_directories(registry_helper_tests PRIVATE

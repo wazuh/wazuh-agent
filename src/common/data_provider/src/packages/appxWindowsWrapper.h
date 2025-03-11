@@ -12,7 +12,7 @@
 #define _APPX_WINDOWS_WRAPPER_H
 
 #include "ipackageWrapper.h"
-#include "registryHelper.h"
+#include "registryHelper.hpp"
 #include "sharedDefs.h"
 #include "stringHelper.h"
 #include "windowsHelper.h"

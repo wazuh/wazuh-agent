@@ -22,7 +22,7 @@
 #include "packages/packagesWindowsParserHelper.h"
 #include "ports/portImpl.h"
 #include "ports/portWindowsWrapper.h"
-#include "registryHelper.h"
+#include "registryHelper.hpp"
 #include "stringHelper.h"
 #include "sysInfo.hpp"
 #include "sysinfoapi.h"
