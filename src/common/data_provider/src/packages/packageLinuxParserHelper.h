@@ -14,7 +14,7 @@
 
 #include "sharedDefs.h"
 #include "stringHelper.hpp"
-#include "timeHelper.h"
+#include "timeHelper.hpp"
 #include <nlohmann/json.hpp>
 
 #ifdef __GNUC__

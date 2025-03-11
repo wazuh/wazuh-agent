@@ -1,16 +1,4 @@
-/*
- * Wazuh shared modules utils
- * Copyright (C) 2015, Wazuh Inc.
- * December 28, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _TIME_HELPER_H
-#define _TIME_HELPER_H
+#include "timeHelper.hpp"
 
 #include "stringHelper.hpp"
 #include <chrono>
@@ -22,21 +10,16 @@
 
 namespace Utils
 {
+    constexpr int NINETEEN_HUNDRED_YEAR = 1900;
+    constexpr int MILLIS_IN_SECOND = 1000;
 
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-#endif
-
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4505)
-#endif
-
-    static std::string getTimestamp(const std::time_t& time, const bool utc = true)
+    std::string GetTimestamp(const std::time_t& time, const bool utc)
     {
         std::stringstream ss;
-        struct tm buf;
+
+        struct tm buf
+        {
+        };
 
         // gmtime: result expressed as a UTC time
         tm* localTime {utc ? gmtime_r(&time, &buf) : localtime_r(&time, &buf)};
@@ -48,7 +31,7 @@ namespace Utils
 
         // Final timestamp: "YYYY/MM/DD hh:mm:ss"
         // Date
-        ss << std::setfill('0') << std::setw(4) << std::to_string(localTime->tm_year + 1900);
+        ss << std::setfill('0') << std::setw(4) << std::to_string(localTime->tm_year + NINETEEN_HUNDRED_YEAR);
         ss << "/";
         ss << std::setfill('0') << std::setw(2) << std::to_string(localTime->tm_mon + 1);
         ss << "/";
@@ -63,22 +46,18 @@ namespace Utils
         return ss.str();
     }
 
-    static std::string getCurrentTimestamp()
+    std::string getCurrentTimestamp()
     {
-        return getTimestamp(std::time(nullptr));
+        return GetTimestamp(std::time(nullptr));
     }
 
-    /**
-     * @brief Get a compact timestamp.
-     *
-     * @param time Time to convert.
-     * @param utc If true, the time will be expressed as a UTC time.
-     * @return std::string Compact timestamp. Format: "YYYYMMDDhhmmss".
-     */
-    static std::string getCompactTimestamp(const std::time_t& time, const bool utc = true)
+    std::string GetCompactTimestamp(const std::time_t& time, const bool utc)
     {
         std::stringstream ss;
-        struct tm buf;
+
+        struct tm buf
+        {
+        };
 
         // gmtime: result expressed as a UTC time
         const tm* localTime {utc ? gmtime_r(&time, &buf) : localtime_r(&time, &buf)};
@@ -89,7 +68,7 @@ namespace Utils
         }
 
         // Date
-        ss << std::setfill('0') << std::setw(4) << std::to_string(localTime->tm_year + 1900);
+        ss << std::setfill('0') << std::setw(4) << std::to_string(localTime->tm_year + NINETEEN_HUNDRED_YEAR);
         ss << std::setfill('0') << std::setw(2) << std::to_string(localTime->tm_mon + 1);
         ss << std::setfill('0') << std::setw(2) << std::to_string(localTime->tm_mday);
         // Time
@@ -99,14 +78,18 @@ namespace Utils
         return ss.str();
     }
 
-    static std::string getCurrentISO8601()
+    std::string getCurrentISO8601()
     {
         // Get local time in UTC
         auto now = std::chrono::system_clock::now();
         auto itt = std::chrono::system_clock::to_time_t(now);
 
         std::ostringstream ss;
-        struct tm buf;
+
+        struct tm buf
+        {
+        };
+
         tm* localTime = gmtime_r(&itt, &buf);
 
         if (localTime == nullptr)
@@ -118,7 +101,7 @@ namespace Utils
 
         // Get milliseconds from the current time
         auto milliseconds =
-            std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() % 1000;
+            std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() % MILLIS_IN_SECOND;
 
         // ISO 8601
         ss << '.' << std::setfill('0') << std::setw(3) << milliseconds << 'Z';
@@ -126,7 +109,7 @@ namespace Utils
         return ss.str();
     }
 
-    static std::string timestampToISO8601(const std::string& timestamp)
+    std::string timestampToISO8601(const std::string& timestamp)
     {
         std::tm tm {};
         std::istringstream ss(timestamp);
@@ -135,7 +118,7 @@ namespace Utils
         {
             return "";
         }
-        std::time_t time = std::mktime(&tm);
+        const std::time_t time = std::mktime(&tm);
 
         auto itt = std::chrono::system_clock::from_time_t(time);
 
@@ -151,7 +134,7 @@ namespace Utils
 
         // Get milliseconds from the current time
         auto milliseconds =
-            std::chrono::duration_cast<std::chrono::milliseconds>(itt.time_since_epoch()).count() % 1000;
+            std::chrono::duration_cast<std::chrono::milliseconds>(itt.time_since_epoch()).count() % MILLIS_IN_SECOND;
 
         // ISO 8601
         output << '.' << std::setfill('0') << std::setw(3) << milliseconds << 'Z';
@@ -159,18 +142,22 @@ namespace Utils
         return output.str();
     }
 
-    static std::string rawTimestampToISO8601(const std::string& timestamp)
+    std::string rawTimestampToISO8601(const std::string& timestamp)
     {
         if (timestamp.empty() || !Utils::isNumber(timestamp))
         {
             return "";
         }
 
-        std::time_t time = std::stoi(timestamp);
+        const std::time_t time = std::stoi(timestamp);
         auto itt = std::chrono::system_clock::from_time_t(time);
 
         std::ostringstream output;
-        struct tm buf;
+
+        struct tm buf
+        {
+        };
+
         tm* localTime = gmtime_r(&time, &buf);
 
         if (localTime == nullptr)
@@ -182,7 +169,7 @@ namespace Utils
 
         // Get milliseconds from the current time
         auto milliseconds =
-            std::chrono::duration_cast<std::chrono::milliseconds>(itt.time_since_epoch()).count() % 1000;
+            std::chrono::duration_cast<std::chrono::milliseconds>(itt.time_since_epoch()).count() % MILLIS_IN_SECOND;
 
         // ISO 8601
         output << '.' << std::setfill('0') << std::setw(3) << milliseconds << 'Z';
@@ -190,29 +177,14 @@ namespace Utils
         return output.str();
     }
 
-    static std::chrono::seconds secondsSinceEpoch()
+    std::chrono::seconds secondsSinceEpoch()
     {
         return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
     }
 
-    /**
-     * @brief Get seconds from epoch, since 1970-01-01 00:00:00 UTC.
-     * @return seconds from epoch.
-     */
-    static int64_t getSecondsFromEpoch()
+    int64_t getSecondsFromEpoch()
     {
         return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch())
             .count();
     };
-
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
-
 } // namespace Utils
-
-#endif // _TIME_HELPER_H

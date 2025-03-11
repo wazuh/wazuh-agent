@@ -1,7 +1,7 @@
 #include "event_reader_win.hpp"
 
 #include <config.h>
-#include <timeHelper.h>
+#include <timeHelper.hpp>
 
 #include <chrono>
 #include <map>

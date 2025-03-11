@@ -26,6 +26,7 @@
 #include "stringHelper.hpp"
 #include "sysInfo.hpp"
 #include "sysinfoapi.h"
+#include "timeHelper.hpp"
 #include "windowsHelper.h"
 #include <iphlpapi.h>
 #include <list>

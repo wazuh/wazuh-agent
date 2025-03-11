@@ -33,7 +33,7 @@
 
 #include "encodingWindowsHelper.hpp"
 #include "stringHelper.hpp"
-#include "timeHelper.h"
+#include "timeHelper.hpp"
 
 #ifdef _MSC_VER
 #pragma warning(push)

@@ -11,7 +11,7 @@
 #include "osinfo/sysOsParsers.h"
 #include "sharedDefs.h"
 #include "sysInfo.hpp"
-#include "timeHelper.h"
+#include "timeHelper.hpp"
 #include <fstream>
 #include <sys/utsname.h>
 

@@ -7,7 +7,7 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <stringHelper.hpp>
-#include <timeHelper.h>
+#include <timeHelper.hpp>
 
 constexpr auto EMPTY_VALUE {""};
 
