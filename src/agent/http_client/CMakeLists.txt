@@ -20,6 +20,10 @@ endif()
 
 add_library(HttpClient src/http_client.cpp src/http_request_params.cpp src/http_socket.cpp src/https_socket.cpp ${VERIFY_UTILS_FILE})
 
+if(MSVC)
+    target_compile_options(HttpClient PRIVATE /bigobj)
+endif()
+
 target_include_directories(HttpClient
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
