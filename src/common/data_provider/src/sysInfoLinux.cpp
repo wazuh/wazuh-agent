@@ -11,8 +11,8 @@
 #include "linuxInfoHelper.hpp"
 #include "network/networkFamilyDataAFactory.h"
 #include "network/networkLinuxWrapper.h"
-#include "networkHelper.h"
-#include "networkUnixHelper.h"
+#include "networkHelper.hpp"
+#include "networkUnixHelper.hpp"
 #include "osinfo/sysOsParsers.h"
 #include "packages/berkeleyRpmDbHelper.h"
 #include "packages/modernPackageDataRetriever.hpp"
@@ -388,7 +388,7 @@ nlohmann::json SysInfo::getNetworks() const
 
     std::unique_ptr<ifaddrs, Utils::IfAddressSmartDeleter> interfacesAddress;
     std::map<std::string, std::vector<ifaddrs*>> networkInterfaces;
-    Utils::NetworkUnixHelper::getNetworks(interfacesAddress, networkInterfaces);
+    Utils::getNetworks(interfacesAddress, networkInterfaces);
 
     for (const auto& interface : networkInterfaces)
     {

@@ -10,7 +10,7 @@
  */
 #include "network/networkBSDWrapper.h"
 #include "network/networkFamilyDataAFactory.h"
-#include "networkUnixHelper.h"
+#include "networkUnixHelper.hpp"
 #include "stringHelper.h"
 #include "sysInfo.hpp"
 #include <sys/sysctl.h>
@@ -22,7 +22,7 @@ nlohmann::json SysInfo::getNetworks() const
 
     std::unique_ptr<ifaddrs, Utils::IfAddressSmartDeleter> interfacesAddress;
     std::map<std::string, std::vector<ifaddrs*>> networkInterfaces;
-    Utils::NetworkUnixHelper::getNetworks(interfacesAddress, networkInterfaces);
+    Utils::getNetworks(interfacesAddress, networkInterfaces);
 
     for (const auto& interface : networkInterfaces)
     {

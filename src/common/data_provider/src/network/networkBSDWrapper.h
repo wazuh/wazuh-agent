@@ -13,7 +13,7 @@
 #define _NETWORK_BSD_WRAPPER_H
 
 #include "inetworkWrapper.h"
-#include "networkHelper.h"
+#include "networkHelper.hpp"
 #include "sharedDefs.h"
 #include "stringHelper.h"
 #include <ifaddrs.h>
@@ -70,15 +70,15 @@ public:
     std::string address() const override
     {
         return m_interfaceAddress->ifa_addr
-                   ? Utils::NetworkHelper::IAddressToBinary(
-                         this->family(), &(reinterpret_cast<sockaddr_in*>(m_interfaceAddress->ifa_addr))->sin_addr)
+                   ? Utils::IAddressToBinary(this->family(),
+                                             &(reinterpret_cast<sockaddr_in*>(m_interfaceAddress->ifa_addr))->sin_addr)
                    : "";
     }
 
     std::string netmask() const override
     {
         return m_interfaceAddress->ifa_netmask
-                   ? Utils::NetworkHelper::IAddressToBinary(
+                   ? Utils::IAddressToBinary(
                          m_interfaceAddress->ifa_netmask->sa_family,
                          &(reinterpret_cast<sockaddr_in*>(m_interfaceAddress->ifa_netmask))->sin_addr)
                    : "";
@@ -86,17 +86,17 @@ public:
 
     void broadcast(nlohmann::json& network) const override
     {
-        network["broadcast"] = m_interfaceAddress->ifa_dstaddr
-                                   ? Utils::NetworkHelper::IAddressToBinary(
-                                         m_interfaceAddress->ifa_dstaddr->sa_family,
-                                         &(reinterpret_cast<sockaddr_in*>(m_interfaceAddress->ifa_dstaddr))->sin_addr)
-                                   : EMPTY_VALUE;
+        network["broadcast"] =
+            m_interfaceAddress->ifa_dstaddr
+                ? Utils::IAddressToBinary(m_interfaceAddress->ifa_dstaddr->sa_family,
+                                          &(reinterpret_cast<sockaddr_in*>(m_interfaceAddress->ifa_dstaddr))->sin_addr)
+                : EMPTY_VALUE;
     }
 
     std::string addressV6() const override
     {
         return m_interfaceAddress->ifa_addr
-                   ? Utils::NetworkHelper::IAddressToBinary(
+                   ? Utils::IAddressToBinary(
                          m_interfaceAddress->ifa_addr->sa_family,
                          &(reinterpret_cast<sockaddr_in6*>(m_interfaceAddress->ifa_addr))->sin6_addr)
                    : "";
@@ -105,7 +105,7 @@ public:
     std::string netmaskV6() const override
     {
         return m_interfaceAddress->ifa_netmask
-                   ? Utils::NetworkHelper::IAddressToBinary(
+                   ? Utils::IAddressToBinary(
                          m_interfaceAddress->ifa_netmask->sa_family,
                          &(reinterpret_cast<sockaddr_in6*>(m_interfaceAddress->ifa_netmask))->sin6_addr)
                    : "";
@@ -114,7 +114,7 @@ public:
     void broadcastV6(nlohmann::json& network) const override
     {
         network["broadcast"] = m_interfaceAddress->ifa_dstaddr
-                                   ? Utils::NetworkHelper::IAddressToBinary(
+                                   ? Utils::IAddressToBinary(
                                          m_interfaceAddress->ifa_dstaddr->sa_family,
                                          &(reinterpret_cast<sockaddr_in6*>(m_interfaceAddress->ifa_dstaddr))->sin6_addr)
                                    : EMPTY_VALUE;
@@ -146,8 +146,8 @@ public:
 
                         if (sock && AF_INET == sock->sa_family)
                         {
-                            network["gateway"] = Utils::NetworkHelper::IAddressToBinary(
-                                AF_INET, &reinterpret_cast<sockaddr_in*>(sock)->sin_addr);
+                            network["gateway"] =
+                                Utils::IAddressToBinary(AF_INET, &reinterpret_cast<sockaddr_in*>(sock)->sin_addr);
                         }
 
                         break;
@@ -209,7 +209,7 @@ public:
         if (m_interfaceAddress->ifa_addr)
         {
             auto sdl {reinterpret_cast<struct sockaddr_dl*>(m_interfaceAddress->ifa_addr)};
-            const auto type {Utils::NetworkHelper::getNetworkTypeStringCode(sdl->sdl_type, NETWORK_INTERFACE_TYPE)};
+            const auto type {Utils::getNetworkTypeStringCode(sdl->sdl_type, NETWORK_INTERFACE_TYPE)};
             if (!type.empty())
             {
                 network["type"] = type;

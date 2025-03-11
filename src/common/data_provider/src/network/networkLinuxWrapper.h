@@ -13,7 +13,7 @@
 #define _NETWORK_LINUX_WRAPPER_H
 
 #include "inetworkWrapper.h"
-#include "networkHelper.h"
+#include "networkHelper.hpp"
 #include "sharedDefs.h"
 #include "stringHelper.h"
 #include <file_io_utils.hpp>
@@ -278,8 +278,7 @@ public:
 
                         if (address)
                         {
-                            m_gateway =
-                                Utils::NetworkHelper::IAddressToBinary(AF_INET, reinterpret_cast<in_addr*>(&address));
+                            m_gateway = Utils::IAddressToBinary(AF_INET, reinterpret_cast<in_addr*>(&address));
                             break;
                         }
                     }
@@ -332,7 +331,7 @@ public:
 
             if (address.size() && netmask.size())
             {
-                const auto broadcast {Utils::NetworkHelper::getBroadcast(address, netmask)};
+                const auto broadcast {Utils::getBroadcast(address, netmask)};
                 if (!broadcast.empty())
                 {
                     network["broadcast"] = broadcast;
@@ -520,8 +519,7 @@ public:
 
         if (!networkTypeCode.empty())
         {
-            network["type"] =
-                Utils::NetworkHelper::getNetworkTypeStringCode(std::stoi(networkTypeCode), NETWORK_INTERFACE_TYPE);
+            network["type"] = Utils::getNetworkTypeStringCode(std::stoi(networkTypeCode), NETWORK_INTERFACE_TYPE);
         }
     }
 

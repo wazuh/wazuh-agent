@@ -68,7 +68,7 @@ class LinuxPortWrapper final : public IPortWrapper
         in_addr addr;
         ss << std::hex << hexRawAddress;
         ss >> addr.s_addr;
-        return Utils::NetworkHelper::IAddressToBinary(AF_INET, &addr);
+        return Utils::IAddressToBinary(AF_INET, &addr);
     }
 
     static std::string IPv6Address(const std::string& hexRawAddress)
@@ -90,7 +90,7 @@ class LinuxPortWrapper final : public IPortWrapper
                 ++index;
             }
 
-            retVal = Utils::NetworkHelper::IAddressToBinary(AF_INET6, &sin6);
+            retVal = Utils::IAddressToBinary(AF_INET6, &sin6);
         }
 
         return retVal;
