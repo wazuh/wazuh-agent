@@ -46,6 +46,8 @@ fi
 # Clean BUILDROOT
 rm -fr %{buildroot}
 cmake --install "$(pwd)/src/build" --prefix %{buildroot}%{_localstatedir}
+install -D /usr/lib/systemd/system/wazuh-agent.service %{buildroot}%{_localstatedir}usr/lib/systemd/system/wazuh-agent.service
+sed -i "s|%{buildroot}%{_localstatedir}|/|g" %{buildroot}%{_localstatedir}usr/lib/systemd/system/wazuh-agent.service
 exit 0
 
 %pre

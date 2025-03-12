@@ -47,6 +47,8 @@ cd build/
     cmake --install build --prefix /
     ```
 
+    > Note: The agent can be installed in any directory, as long as the `path.data` parameter in `wazuh-config.yml` is configured correctly. For more information, see [configuration.md](../ref/configuration.md#agent).
+
     Enable the service:
 
     ```bash
@@ -81,6 +83,8 @@ cd build/
     ```bash
     sudo cmake --install build --prefix /
     ```
+
+    > Note: The agent can be installed in any directory, as long as the `path.data` parameter in `wazuh-config.yml` is configured correctly. For more information, see [configuration.md](../ref/configuration.md#agent).
 
     Load the service:
 
