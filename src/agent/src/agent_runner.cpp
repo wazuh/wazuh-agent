@@ -28,7 +28,7 @@ namespace
     const auto OPT_STATUS_DESC {"Check if the agent is running (running or stopped)"};
     const auto OPT_CONFIG_FILE {"config-file"};
     const auto OPT_CONFIG_FILE_DESC {"Path to the Wazuh configuration file (optional)"};
-    const auto OPT_ENROLL_AGENT {"enroll-agent"};
+    const auto OPT_ENROLL_AGENT {"enroll"};
     const auto OPT_ENROLL_AGENT_DESC {"Use this option to enroll as a new agent"};
     const auto OPT_ENROLL_URL {"enroll-url"};
     const auto OPT_ENROLL_URL_DESC {"URL of the server management API enrollment endpoint"};
