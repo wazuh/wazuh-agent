@@ -6,9 +6,8 @@
 #include <memory>
 
 /// \cond WINDOWS
-/**
- * @brief Constructor for Logger.
- */
+
+/// @brief Constructor for Logger.
 Logger::Logger()
 {
     auto sink = std::make_shared<spdlog::sinks::win_eventlog_sink_mt>("Wazuh-Agent");
@@ -21,9 +20,7 @@ Logger::Logger()
     spdlog::cfg::load_env_levels();
 }
 
-/**
- * @brief Add Windows-specific sinks to the logger.
- */
+/// @brief Add Windows-specific sinks to the logger.
 void Logger::AddPlatformSpecificSink()
 {
     std::shared_ptr<spdlog::logger> logger = spdlog::get(LOGGER_NAME);
