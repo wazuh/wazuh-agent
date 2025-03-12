@@ -1,18 +1,6 @@
-/*
- * Wazuh DBSYNC
- * Copyright (C) 2015, Wazuh Inc.
- * June 16, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
+#pragma once
 
-#ifndef _MOCKSQLITEWRAPPER_TEST_H
-#define _MOCKSQLITEWRAPPER_TEST_H
-
-#include "sqlite/isqlite_wrapper.h"
+#include "isqliteWrapper.hpp"
 #include <gmock/gmock.h>
 #include <string>
 
@@ -66,5 +54,3 @@ public:
     MOCK_METHOD(void, reset, (), (override));
     MOCK_METHOD(int, columnsCount, (), (const override));
 };
-
-#endif //_MOCKSQLITEWRAPPER_TEST_H

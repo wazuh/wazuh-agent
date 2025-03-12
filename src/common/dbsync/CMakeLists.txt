@@ -70,6 +70,7 @@ target_link_libraries(dbsync PUBLIC
   deleter_helper
   map_wrapper
   pipeline_helper
+  sqlite_wrapper
   string_helper
   thread_dispatcher
 )

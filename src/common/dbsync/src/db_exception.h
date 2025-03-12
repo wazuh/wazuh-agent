@@ -21,7 +21,6 @@ using DBSyncExceptionType = const std::pair<int, std::string>;
 DBSyncExceptionType FACTORY_INSTANTATION {std::make_pair(1, "Unspecified type during factory instantiation")};
 DBSyncExceptionType INVALID_HANDLE {std::make_pair(2, "Invalid handle value.")};
 DBSyncExceptionType INVALID_TRANSACTION {std::make_pair(3, "Invalid transaction value.")};
-DBSyncExceptionType SQLITE_CONNECTION_ERROR {std::make_pair(4, "No connection available for executions.")};
 DBSyncExceptionType EMPTY_DATABASE_PATH {std::make_pair(5, "Empty database store path.")};
 DBSyncExceptionType EMPTY_TABLE_METADATA {std::make_pair(6, "Empty table metadata.")};
 DBSyncExceptionType INVALID_PARAMETERS {std::make_pair(7, "Invalid parameters.")};

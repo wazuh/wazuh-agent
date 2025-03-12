@@ -21,9 +21,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         GTest::gmock
         GTest::gtest_main
         GTest::gmock_main
-        unofficial::sqlite3::sqlite3
         cjson
-        deleter_helper
     )
 else()
     target_link_libraries(sysinfo_unit_test PRIVATE
@@ -33,9 +31,7 @@ else()
         GTest::gtest_main
         GTest::gmock_main
         pthread
-        unofficial::sqlite3::sqlite3
         cjson
-        deleter_helper
         dl
     )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")

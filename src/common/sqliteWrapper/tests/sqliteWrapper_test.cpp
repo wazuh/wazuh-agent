@@ -1,16 +1,6 @@
-/*
- * Wazuh DBSYNC
- * Copyright (C) 2015, Wazuh Inc.
- * June 20, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-#include "sqlite_test.h"
-#include "db_exception.h"
-#include "sqlite_wrapper.h"
+#include "sqliteWrapper_test.hpp"
+#include "sqliteWrapper.hpp"
+#include <sqlite3.h>
 
 constexpr auto TEMP_TEST_DB_PATH {"temp_test.db"};
 constexpr auto TEMP_DB_PATH {"temp.db"};
@@ -23,27 +13,23 @@ void SQLiteTest::TearDown()
     std::remove(TEMP_DB_PATH);
 };
 
-using ::testing::_;
 using ::testing::Return;
 using namespace SQLiteLegacy;
-using namespace DbSync;
 
 class ConnectionWrapper : public IConnection
 {
 public:
-    ConnectionWrapper() = default;
-    ~ConnectionWrapper() = default;
     MOCK_METHOD(void, execute, (const std::string&), (override));
     MOCK_METHOD(void, close, (), (override));
-    MOCK_METHOD(int64_t, changes, (), (const override));
-    MOCK_METHOD((const std::shared_ptr<sqlite3>&), db, (), (const override));
+    MOCK_METHOD(int64_t, changes, (), (const, override));
+    MOCK_METHOD((const std::shared_ptr<sqlite3>&), db, (), (const, override));
 };
 
 TEST_F(SQLiteTest, ConnectionCtor)
 {
-    Connection connectionDefault;
+    const Connection connectionDefault;
     EXPECT_NE(nullptr, connectionDefault.db().get());
-    Connection connectionPath {TEMP_TEST_DB_PATH};
+    const Connection connectionPath {TEMP_TEST_DB_PATH};
     EXPECT_NE(nullptr, connectionPath.db().get());
 }
 
@@ -69,7 +55,7 @@ TEST_F(SQLiteTest, TransactionCtorDtorSuccess)
     std::shared_ptr<IConnection> spConnection {pConnection};
     EXPECT_CALL(*pConnection, execute("BEGIN TRANSACTION"));
     EXPECT_CALL(*pConnection, execute("ROLLBACK TRANSACTION"));
-    Transaction transaction {spConnection};
+    const Transaction transaction {spConnection};
     EXPECT_FALSE(transaction.isCommited());
     EXPECT_FALSE(transaction.isRolledBack());
 }
@@ -129,13 +115,13 @@ TEST_F(SQLiteTest, TransactionCantCommitAfterRollBack)
 TEST_F(SQLiteTest, StatementCtorSuccess)
 {
     std::shared_ptr<IConnection> spConnection {new Connection};
-    Statement stmt {spConnection, "CREATE TABLE test_table (Colum1 INTEGER, Colum2 TEXT);"};
+    const Statement stmt {spConnection, "CREATE TABLE test_table (Colum1 INTEGER, Colum2 TEXT);"};
 }
 
 TEST_F(SQLiteTest, StatementCtorFailure)
 {
     std::shared_ptr<IConnection> spConnection {new Connection};
-    EXPECT_THROW(Statement stmt(spConnection, "WRONG STATEMENT"), sqlite_error);
+    EXPECT_THROW(const Statement stmt(spConnection, "WRONG STATEMENT"), sqlite_error);
 }
 
 TEST_F(SQLiteTest, StatementStep)
@@ -167,7 +153,7 @@ TEST_F(SQLiteTest, StatementBindInt)
     EXPECT_NO_THROW(insertStmt.bind(2, "2"));
     EXPECT_NO_THROW(insertStmt.bind(3, int64_t {2l}));
     EXPECT_NO_THROW(insertStmt.bind(4, uint64_t {2lu}));
-    EXPECT_NO_THROW(insertStmt.bind(5, double_t {2.0}));
+    EXPECT_NO_THROW(insertStmt.bind(5, double_t {2.0})); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     EXPECT_TRUE(insertStmt.step());
 }
 
@@ -247,7 +233,7 @@ TEST_F(SQLiteTest, StatementExpandBind)
     Statement insertStmt {spConnection,
                           R"(INSERT INTO test_table (Colum1, Colum2, Colum3, Colum4, Colum5) VALUES (?,?,?,?,?);)"};
     insertStmt.bind(2, "bar");
-    insertStmt.bind(3, 1000);
+    insertStmt.bind(3, 1000); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     const auto expectedStringStmt {insertStmt.expand()};
     EXPECT_EQ(expectedStringStmt,
               "INSERT INTO test_table (Colum1, Colum2, Colum3, Colum4, Colum5) VALUES (NULL,'bar',1000,NULL,NULL);");

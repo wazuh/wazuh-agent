@@ -12,8 +12,8 @@
 #ifndef _PYPITEST_HPP
 #define _PYPITEST_HPP
 
-#include "../../../file_helper/file_io/tests/mocks/mock_file_io_utils.hpp"
-#include "../../../file_helper/filesystem/tests/mocks/mock_filesystem.hpp"
+#include "mock_file_io_utils.hpp"
+#include "mock_filesystem.hpp"
 #include "packagesPYPI.hpp"
 #include "gtest/gtest.h"
 

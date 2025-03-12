@@ -12,10 +12,11 @@
 #ifndef _SQLITE_DBENGINE_H
 #define _SQLITE_DBENGINE_H
 
+#include "db_exception.h"
 #include "dbengine.h"
-#include "isqlite_wrapper.h"
+#include "isqliteWrapper.hpp"
 #include "mapWrapperSafe.hpp"
-#include "sqlite_wrapper_factory.h"
+#include "sqliteWrapperFactory.hpp"
 #include <iostream>
 #include <mutex>
 #include <queue>
@@ -109,7 +110,7 @@ struct MaxRows final
 class SQLiteDBEngine final : public DbSync::IDbEngine
 {
 public:
-    SQLiteDBEngine(const std::shared_ptr<ISQLiteFactory>& sqliteFactory,
+    SQLiteDBEngine(const std::shared_ptr<SQLiteLegacy::ISQLiteFactory>& sqliteFactory,
                    const std::string& path,
                    const std::string& tableStmtCreation,
                    const DbManagement dbManagement = DbManagement::VOLATILE,
@@ -292,7 +293,7 @@ private:
 
     Utils::MapWrapperSafe<std::string, TableColumns> m_tableFields;
     std::deque<std::pair<std::string, std::shared_ptr<SQLiteLegacy::IStatement>>> m_statementsCache;
-    const std::shared_ptr<ISQLiteFactory> m_sqliteFactory;
+    const std::shared_ptr<SQLiteLegacy::ISQLiteFactory> m_sqliteFactory;
     std::shared_ptr<SQLiteLegacy::IConnection> m_sqliteConnection;
     std::mutex m_stmtMutex;
     std::unique_ptr<SQLiteLegacy::ITransaction> m_transaction;

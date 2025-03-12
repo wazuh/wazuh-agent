@@ -18,13 +18,14 @@
 #include "packages/packageMac.h"
 #include "ports/portBSDWrapper.h"
 #include "ports/portImpl.h"
-#include "sqliteWrapperTemp.hpp"
+#include "sqliteWrapper.hpp"
 #include "stringHelper.hpp"
 #include "sysInfo.hpp"
 #include <filesystem_wrapper.hpp>
 #include <grp.h>
 #include <libproc.h>
 #include <pwd.h>
+#include <sqlite3.h>
 #include <sys/proc.h>
 #include <sys/proc_info.h>
 #include <sys/sysctl.h>

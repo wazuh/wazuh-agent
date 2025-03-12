@@ -11,7 +11,7 @@
 #ifndef _SYSINFO_PACKAGES_LINUX_PARSER_RPM_TEST_H
 #define _SYSINFO_PACKAGES_LINUX_PARSER_RPM_TEST_H
 
-#include "../../../file_helper/filesystem/tests/mocks/mock_filesystem.hpp"
+#include "mock_filesystem.hpp"
 #include "packages/packageLinuxDataRetriever.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"

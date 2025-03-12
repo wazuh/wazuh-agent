@@ -12,16 +12,17 @@
 #include "sqlite_dbengine.h"
 #include "commonDefs.h"
 #include "db_exception.h"
+#include "isqliteWrapper.hpp"
 #include "mapWrapperSafe.hpp"
-#include "sqlite/isqlite_wrapper.h"
 #include "stringHelper.hpp"
 #include <fstream>
+#include <sqlite3.h>
 #include <thread>
 
 using namespace std::chrono_literals;
 auto constexpr MAX_TRIES = 5;
 
-SQLiteDBEngine::SQLiteDBEngine(const std::shared_ptr<ISQLiteFactory>& sqliteFactory,
+SQLiteDBEngine::SQLiteDBEngine(const std::shared_ptr<SQLiteLegacy::ISQLiteFactory>& sqliteFactory,
                                const std::string& path,
                                const std::string& tableStmtCreation,
                                const DbManagement dbManagement,

@@ -14,7 +14,7 @@
 
 #include "ipackageInterface.h"
 #include "ipackageWrapper.h"
-#include "sqliteWrapperTemp.hpp"
+#include "isqliteWrapper.hpp"
 
 struct PackageContext
 {

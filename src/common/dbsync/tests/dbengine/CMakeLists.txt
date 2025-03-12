@@ -12,7 +12,7 @@ else()
   set(CMAKE_CXX_FLAGS "/W4 /permissive- /std:c++14 /MT /EHsc")
 endif()
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../include/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../include/ ${CMAKE_CURRENT_SOURCE_DIR}/../../../sqliteWrapper/tests/mocks)
 link_directories(${CMAKE_BINARY_DIR}/lib)
 
 file(GLOB DBENGINE_UNITTEST_SRC
@@ -32,7 +32,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         GTest::gmock
         GTest::gtest_main
         GTest::gmock_main
-        unofficial::sqlite3::sqlite3
         cjson
     )
 else()
@@ -42,7 +41,6 @@ else()
         GTest::gmock
         GTest::gtest_main
         GTest::gmock_main
-        unofficial::sqlite3::sqlite3
         cjson
         pthread
         dl

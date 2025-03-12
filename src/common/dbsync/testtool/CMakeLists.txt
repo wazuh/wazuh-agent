@@ -25,12 +25,10 @@ add_executable(dbsync_test_tool
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	target_link_libraries(dbsync_test_tool
 	    dbsync
-		deleter_helper
 	)
 else()
 	target_link_libraries(dbsync_test_tool
 	    dbsync
-		deleter_helper
 	    pthread
 	    dl
 	)

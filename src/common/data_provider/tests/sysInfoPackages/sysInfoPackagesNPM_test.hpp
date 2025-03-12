@@ -12,8 +12,8 @@
 #ifndef _NPMTEST_HPP
 #define _NPMTEST_HPP
 
-#include "../../../file_helper/filesystem/tests/mocks/mock_filesystem.hpp"
 #include "MockJsonIO.hpp"
+#include "mock_filesystem.hpp"
 #include "packagesNPM.hpp"
 #include "gtest/gtest.h"
 

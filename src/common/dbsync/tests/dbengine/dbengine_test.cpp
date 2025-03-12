@@ -10,11 +10,12 @@
  */
 
 #include "dbengine_test.h"
-#include "../mocks/sqlitefactory_mock.h"
-#include "../mocks/sqlitewrapper_mock.h"
+#include "MockSqliteFactory.hpp"
+#include "MockSqliteWrapper.hpp"
 #include "abstractLocking.hpp"
 #include "sqlite_dbengine.h"
 #include <iostream>
+#include <sqlite3.h>
 #include <string>
 
 using ::testing::_;

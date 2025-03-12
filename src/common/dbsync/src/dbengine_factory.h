@@ -15,7 +15,7 @@
 #include "commonDefs.h"
 #include "db_exception.h"
 #include "sqlite/sqlite_dbengine.h"
-#include "sqlite/sqlite_wrapper_factory.h"
+#include "sqliteWrapperFactory.hpp"
 #include <iostream>
 
 namespace DbSync
@@ -31,8 +31,11 @@ namespace DbSync
         {
             if (SQLITE3 == dbType)
             {
-                return std::make_unique<SQLiteDBEngine>(
-                    std::make_shared<SQLiteFactory>(), path, sqlStatement, dbManagement, upgradeStatements);
+                return std::make_unique<SQLiteDBEngine>(std::make_shared<SQLiteLegacy::SQLiteFactory>(),
+                                                        path,
+                                                        sqlStatement,
+                                                        dbManagement,
+                                                        upgradeStatements);
             }
 
             throw dbsync_error {FACTORY_INSTANTATION};

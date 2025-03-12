@@ -8,3 +8,8 @@ set_common_settings()
 add_library(json_helper INTERFACE)
 
 target_include_directories(json_helper INTERFACE include)
+
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

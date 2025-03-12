@@ -10,10 +10,9 @@
  */
 
 #include "sysInfoMacPackages_test.h"
+#include "MockSqliteWrapper.hpp"
 #include "packages/macportsWrapper.h"
 #include "packages/packageMac.h"
-#include "sqliteWrapperTemp.hpp"
-#include "sqliteWrapperTempMock.h"
 
 void SysInfoMacPackagesTest::SetUp() {};
 
