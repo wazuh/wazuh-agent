@@ -11,8 +11,13 @@ $ExceptionPaths = $Exceptions | ForEach-Object { Join-Path -Path $CleanPath -Chi
 # Remove Wazuh data folder
 Get-ChildItem -Path $CleanPath -Recurse -File | ForEach-Object {
     if ($_.FullName -notin $ExceptionPaths) {
-        Write-Host "Removing file: $($_.FullName)"
-        Remove-Item -Path $_.FullName -Force
+        try {
+            Write-Host "Removing file: $($_.FullName)"
+            Remove-Item -Path $_.FullName -Force
+        } catch {
+            Write-Host "Failed to remove file: $_"
+            exit 1
+        }
     } else {
         Write-Host "Skipping file (exception): $($_.FullName)"
     }
@@ -20,14 +25,24 @@ Get-ChildItem -Path $CleanPath -Recurse -File | ForEach-Object {
 
 Get-ChildItem -Path $CleanPath -Recurse -Directory | Sort-Object -Property FullName -Descending | ForEach-Object {
     if (-not (Get-ChildItem -Path $_.FullName -Recurse)) {
-        Write-Host "Removing empty directory: $($_.FullName)"
-        Remove-Item -Path $_.FullName -Force
+        try {
+            Write-Host "Removing empty directory: $($_.FullName)"
+            Remove-Item -Path $_.FullName -Force
+        } catch {
+            Write-Host "Failed to remove empty directory: $_"
+            exit 1
+        }
     }
 }
 
 if (-not (Get-ChildItem -Path $CleanPath -Recurse)) {
-    Write-Host "Removing root directory: $CleanPath"
-    Remove-Item -Path $CleanPath -Force
+    try {
+        Write-Host "Removing root directory: $CleanPath"
+        Remove-Item -Path $CleanPath -Force
+    } catch {
+        Write-Host "Failed to remove root directory: $_"
+        exit 1
+    }
 }
 
 

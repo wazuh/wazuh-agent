@@ -1,7 +1,9 @@
 <CPackWiXPatch>
   <CPackWiXFragment Id="#PRODUCT">
-    <Property
-        Id="WixQuietExecCmdLine"
+    <!-- PostInstall Custom Action -->
+    <CustomAction
+        Id="SetPostInstallCmdLine"
+        Property="WixQuietExecCmdLine"
         Value="&quot;powershell.exe&quot; -ExecutionPolicy Bypass -File &quot;[INSTALL_ROOT]postinstall.ps1&quot;"
     />
     <CustomAction
@@ -10,8 +12,9 @@
         DllEntry="WixQuietExec"
         Return="check"
         Execute="deferred"
-        Impersonate="yes"
+        Impersonate="no"
     />
+    <!-- CleanupScript Custom Action -->
     <CustomAction
         Id="SetCleanupCmdLine"
         Property="WixQuietExecCmdLine"
@@ -23,10 +26,12 @@
         DllEntry="WixQuietExec"
         Return="check"
         Execute="deferred"
-        Impersonate="yes"
+        Impersonate="no"
     />
+    <!-- Schedule Custom Actions -->
     <InstallExecuteSequence>
-      <Custom Action="PostInstall" After="InstallFinalize">NOT Installed</Custom>
+      <Custom Action="SetPostInstallCmdLine" Before="PostInstall">NOT Installed</Custom>
+      <Custom Action="PostInstall" Before="InstallFinalize">NOT Installed</Custom>
       <Custom Action="SetCleanupCmdLine" Before="CleanupScript">REMOVE="ALL"</Custom>
       <Custom Action="CleanupScript" Before="InstallFinalize">REMOVE="ALL"</Custom>
     </InstallExecuteSequence>
