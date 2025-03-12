@@ -2,14 +2,14 @@
 
 ## Enroll the Agent
 
-To allow the agent to successfully connect to a Wazuh server, it must first enroll with the server. This is done using the --enroll-agent option.
+To allow the agent to successfully connect to a Wazuh server, it must first enroll with the server. This is done using the --enroll option.
 Ensure that the server is online and ready to accept enrollment requests before proceeding.
 
 ### Enrollment Command
 
 ```
 cd build/
-./wazuh-agent --enroll-agent --enroll-url https://localhost:55000 --user <username> --password <password> [--name <agent-name>]
+./wazuh-agent --enroll --enroll-url https://localhost:55000 --user <username> --password <password> [--name <agent-name>]
 ```
 
 Replace:
@@ -24,7 +24,7 @@ For additional options and details, use:
 
 ```
 cd build/
-./wazuh-agent --enroll-agent --help
+./wazuh-agent --enroll --help
 ```
 
 ## Run the Agent on Linux
