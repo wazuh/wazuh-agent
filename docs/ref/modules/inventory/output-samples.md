@@ -1,4 +1,4 @@
-## Index:
+## Index
 
 | Type | Stateful | Stateless |
 | --- | ---  | ---  |
@@ -12,7 +12,7 @@
 
 ## System
 
-<a name="System-Windows-Stateful"></a>Stateful
+### Stateful {#System-Windows-Stateful}
 
 ```json
 {
@@ -62,7 +62,7 @@
 }
 ```
 
-<a name="System-Windows-Stateless"></a>Stateless
+### Stateless {#System-Windows-Stateless}
 
 ```json
 {
@@ -125,7 +125,7 @@
 
 ## Hardware
 
-<a name="Hardware-Windows-Stateful"></a>Stateful
+### Stateful {#Hardware-Windows-Stateful}
 
 ```json
 {
@@ -183,7 +183,7 @@
 
 ```
 
-<a name="Hardware-Windows-Stateless"></a>Stateless
+### Stateless {#Hardware-Windows-Stateless}
 
 ```json
 {
@@ -258,7 +258,7 @@
 
 ## Packages
 
-<a name="Packages-Windows-Stateful"></a>Stateful
+### Stateful {#Packages-Windows-Stateful}
 
 ```json
 {
@@ -344,7 +344,7 @@
 }
 ```
 
-<a name="Packages-Windows-Stateless"></a>Stateless
+### Stateless {#Packages-Windows-Stateless}
 
 ```json
 {
@@ -409,7 +409,7 @@
 
 ## Processes
 
-<a name="Processes-Windows-Stateful"></a>Stateful
+### Stateful {#Processes-Windows-Stateful}
 
 ```json
 {
@@ -574,7 +574,7 @@
 
 ```
 
-<a name="Processes-Windows-Stateless"></a>Stateless
+### Stateless {#Processes-Windows-Stateless}
 
 ```json
 {
@@ -713,7 +713,7 @@
 ## Networks
 
 
-<a name="Networks-Windows-Stateful"></a>Stateful
+### Stateful {#Networks-Windows-Stateful}
 
 ```json
 {
@@ -821,7 +821,7 @@
 
 ```
 
-<a name="Networks-Windows-Stateless"></a>Stateless
+### Stateless {#Networks-Windows-Stateless}
 
 ```json
 {
@@ -932,7 +932,7 @@
 
 ## Ports
 
-<a name="Ports-Windows-Stateful"></a>Stateful
+### Stateful {#Ports-Windows-Stateful}
 
 ```json
 {
@@ -1049,7 +1049,7 @@
 }
 ```
 
-<a name="Ports-Windows-Stateless"></a>Stateless
+### Stateless {#Ports-Windows-Stateless}
 
 ```json
 {
@@ -1146,7 +1146,7 @@
 
 ## Hotfixes
 
-<a name="Hotfix-Windows-Stateful"></a>Stateful
+### Stateful {#Hotfix-Windows-Stateful}
 
 ```json
 {
@@ -1197,7 +1197,7 @@
 }
 ```
 
-<a name="Hotfix-Windows-Stateless"></a>Stateless
+### Stateless {#Hotfix-Windows-Stateless}
 
 ```json
 {

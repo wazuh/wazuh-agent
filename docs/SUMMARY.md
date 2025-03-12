@@ -32,6 +32,7 @@
   - [Inventory](ref/modules/inventory/README.md)
     - [Architecture](ref/modules/inventory/architecture.md)
     - [API Reference](ref/modules/inventory/api-reference.md)
+    - [Output Samples](ref/modules/inventory/output-samples.md)
   - [Logcollector](ref/modules/logcollector/README.md)
     - [Architecture](ref/modules/logcollector/architecture.md)
     - [API Reference](ref/modules/logcollector/api-reference.md)
