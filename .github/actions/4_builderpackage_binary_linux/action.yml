@@ -41,7 +41,7 @@ runs:
         sudo unzip -o wazuh-agent-binaries-${{ inputs.architecture }}.zip -d /
 
     - name: Set ARCH, TAG and DOCKER_IMAGE_NAME
-      uses: ./.github/actions/4_docker_resolvable
+      uses: ./.github/actions/4_builderpackage_docker_resolvable
       with:
         system: ${{ inputs.system }}
         architecture: ${{ inputs.architecture }}
@@ -49,7 +49,7 @@ runs:
         source_reference: ${{ inputs.source_reference }}
 
     - name: Fetch needed Docker image
-      uses: ./.github/actions/4_docker_pull
+      uses: ./.github/actions/4_builderpackage_docker_pull
       with:
         gh_user: ${{ github.actor}}
         gh_token: ${{ inputs.gh_token }}

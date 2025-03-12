@@ -1,4 +1,4 @@
-name: Compile and Test
+name: Compile and Run Tests
 
 on:
     pull_request:

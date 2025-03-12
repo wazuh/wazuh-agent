@@ -19,6 +19,6 @@ runs:
     - name: Pull image from ghcr
       shell: bash
       run: |
-        sudo bash .github/actions/4_docker_pull/pull_image_from_ghcr.sh \
+        sudo bash .github/actions/4_builderpackage_docker_pull/pull_image_from_ghcr.sh \
           ${{ inputs.gh_token }} ${{ inputs.gh_user}} \
           ${{ inputs.docker_image_name }} ${{ inputs.docker_image_tag }}

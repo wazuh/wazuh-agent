@@ -77,5 +77,5 @@ jobs:
 
       - name: Build and push image ${{ env.CONTAINER_NAME }} with tag ${{ env.TAG }} to Github Container Registry
         run:
-          bash ./.github/actions/4_docker_build_and_push/build_and_push_image_to_ghcr.sh ${{ secrets.CI_WAZUH_AGENT_PACKAGES_CLASSIC }} ${{ github.actor}} ${{ env.CONTAINER_NAME }} ${{ env.DOCKERFILE_PATH }} ${{ env.TAG }}
+          bash ./.github/actions/4_builderpackage_docker_onpush/build_and_push_image_to_ghcr.sh ${{ secrets.CI_WAZUH_AGENT_PACKAGES_CLASSIC }} ${{ github.actor}} ${{ env.CONTAINER_NAME }} ${{ env.DOCKERFILE_PATH }} ${{ env.TAG }}
 

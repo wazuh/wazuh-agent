@@ -70,4 +70,4 @@ jobs:
             new_version=${{ env.NEW_VERSION }}
             old_version=${{ env.OLD_VERSION }}
           fi
-          bash $GITHUB_WORKSPACE/.github/actions/ghcr_pull_and_push/retag_image.sh ${{ secrets.CI_WAZUH_AGENT_PACKAGES_CLASSIC }} ${{ github.actor}} $old_version $new_version ${{ inputs.single_docker_image }}
+          bash $GITHUB_WORKSPACE/.github/actions//home/aubuntu/Desktop/wazuh-agent/.github/actions/4_builderpackage_docker_retag/retag_image.sh ${{ secrets.CI_WAZUH_AGENT_PACKAGES_CLASSIC }} ${{ github.actor}} $old_version $new_version ${{ inputs.single_docker_image }}
