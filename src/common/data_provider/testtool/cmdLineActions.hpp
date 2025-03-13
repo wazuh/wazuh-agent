@@ -1,18 +1,7 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * September 13, 2021
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
+#pragma once
 
-#ifndef _CMD_LINE_ACTIONS_H_
-#define _CMD_LINE_ACTIONS_H_
-
-#include <string.h>
+#include <iostream>
+#include <string>
 
 constexpr auto HARDWARE_ACTION {"--hardware"};
 constexpr auto NETWORKS_ACTION {"--networks"};
@@ -120,5 +109,3 @@ private:
     const bool m_processesCallback;
     const bool m_packagesCallback;
 };
-
-#endif // _CMD_LINE_ACTIONS_H_

@@ -10,7 +10,7 @@ if(COVERITY)
 endif(COVERITY)
 
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wshadow -Wnon-virtual-dtor -Woverloaded-virtual -Wunused -Wcast-align -Wformat=2 -std=c++14")
+  set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++14")
   if(FSANITIZE)
     set(CMAKE_CXX_FLAGS_DEBUG "-pthread -fsanitize=address,leak,undefined")
   endif(FSANITIZE)
