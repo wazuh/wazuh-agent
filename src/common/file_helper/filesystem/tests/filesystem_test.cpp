@@ -22,6 +22,7 @@ constexpr auto PATH_TO_EXPAND_3 {"/tmp/wazuh_test/prefix_*_data/prefix*"};
 constexpr auto PATH_TO_EXPAND_4 {"/tmp/wazuh_test/prefix_*_data/*_1"};
 constexpr auto PATH_TO_EXPAND_5 {"/tmp/wazuh_test/prefix_?_data/*_1"};
 constexpr auto PATH_TO_EXPAND_6 {"/tmp/wazuh_test/prefix_*_data/prefix?*1"};
+constexpr auto PATH_TO_EXPAND_7 {"/tmp/wazuh_test/*/*1"};
 constexpr auto TMP_PATH {"/tmp"};
 constexpr auto ROOT_PATH {"/tmp/wazuh_test"};
 constexpr auto ROOT_PATH_1 {"/tmp/wazuh_test/prefix_1_data"};
@@ -41,6 +42,7 @@ constexpr auto PATH_TO_EXPAND_3 {"C:\\tmp\\wazuh_test\\prefix_*_data\\prefix*"};
 constexpr auto PATH_TO_EXPAND_4 {"C:\\tmp\\wazuh_test\\prefix_*_data\\*_1"};
 constexpr auto PATH_TO_EXPAND_5 {"C:\\tmp\\wazuh_test\\prefix_?_data\\*_1"};
 constexpr auto PATH_TO_EXPAND_6 {"C:\\tmp\\wazuh_test\\prefix_*_data\\prefix?*1"};
+constexpr auto PATH_TO_EXPAND_7 {"C:\\tmp\\wazuh_test\\*\\*1"};
 constexpr auto TMP_PATH {"C:\\tmp"};
 constexpr auto ROOT_PATH {"C:\\tmp\\wazuh_test"};
 constexpr auto ROOT_PATH_1 {"C:\\tmp\\wazuh_test\\prefix_1_data"};
@@ -215,6 +217,25 @@ TEST_F(FileSystemTest, FilesystemExpandWildcardWithPrefix)
     EXPECT_TRUE(outputMap.at(EXPAND_PATH_2) == 1);
     EXPECT_TRUE(outputMap.at(EXPAND_PATH_3) == 1);
     EXPECT_TRUE(outputMap.at(EXPAND_PATH_4) == 1);
+    EXPECT_EQ(output.size(), PATH_MATCH_SIZE);
+}
+
+TEST_F(FileSystemTest, FilesystemExpandWildcardWithPrefixFull)
+{
+    constexpr auto PATH_MATCH_SIZE {2u};
+    std::deque<std::string> output;
+    std::unordered_map<std::string, uint32_t> outputMap;
+
+    const auto fsWrapper = std::make_unique<filesystem_wrapper::FileSystemWrapper>();
+    fsWrapper->expand_absolute_path(PATH_TO_EXPAND_7, output);
+
+    for (const auto& item : output)
+    {
+        outputMap[item]++;
+    }
+
+    EXPECT_TRUE(outputMap.at(EXPAND_PATH_1) == 1);
+    EXPECT_TRUE(outputMap.at(EXPAND_PATH_3) == 1);
     EXPECT_EQ(output.size(), PATH_MATCH_SIZE);
 }
 
