@@ -121,20 +121,27 @@ namespace filesystem_wrapper
 
             if (exists(baseDir))
             {
-                for (const auto& entry : list_directory(baseDir))
+                if(is_directory(baseDir))
                 {
-                    const auto entryName {entry.filename().string()};
-
-                    if (Utils::patternMatch(entryName, pattern))
+                    for (const auto& entry : list_directory(baseDir))
                     {
-                        std::string nextPath;
-                        nextPath += baseDir;
-                        nextPath += std::filesystem::path::preferred_separator;
-                        nextPath += entryName;
-                        nextPath += nextDirectoryPos == std::string::npos ? "" : path.substr(nextDirectoryPos);
+                        const auto entryName {entry.filename().string()};
 
-                        expand_absolute_path(nextPath, output);
+                        if (Utils::patternMatch(entryName, pattern))
+                        {
+                            std::string nextPath;
+                            nextPath += baseDir;
+                            nextPath += std::filesystem::path::preferred_separator;
+                            nextPath += entryName;
+                            nextPath += nextDirectoryPos == std::string::npos ? "" : path.substr(nextDirectoryPos);
+
+                            expand_absolute_path(nextPath, output);
+                        }
                     }
+                }
+                else if (Utils::patternMatch(baseDir, pattern))
+                {
+                    output.push_back(baseDir);
                 }
             }
         }
