@@ -5,12 +5,11 @@ project(inventory_test_tool)
 if(COVERITY)
   add_definitions(-D__GNUC__=8)
 endif(COVERITY)
-add_definitions(-DWAZUH_UNIT_TESTING)
 
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -Wshadow -Wnon-virtual-dtor -Woverloaded-virtual -Wunused -Wcast-align -Wformat=2 -std=c++14 -pthread")
+  set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -std=c++14")
   if(FSANITIZE)
-    set(CMAKE_CXX_FLAGS_DEBUG "-fsanitize=address,leak,undefined")
+    set(CMAKE_CXX_FLAGS_DEBUG "-pthread -fsanitize=address,leak,undefined")
   endif(FSANITIZE)
 else()
   set(CMAKE_CXX_FLAGS "/Zi /W4 /permissive- /std:c++14 /MT /EHsc")
@@ -39,6 +38,7 @@ else()
         dbsync
         sysinfo
         Inventory
+        pthread
         dl
     )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
