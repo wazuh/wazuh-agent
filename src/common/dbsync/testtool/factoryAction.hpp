@@ -1,16 +1,4 @@
-/*
- * Wazuh DBSYNC
- * Copyright (C) 2015, Wazuh Inc.
- * July 21, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _FACTORY_ACTION_H
-#define _FACTORY_ACTION_H
+#pragma once
 
 #include <iostream>
 #include <memory>
@@ -112,5 +100,3 @@ public:
         }
     }
 };
-
-#endif //_FACTORY_ACTION_H

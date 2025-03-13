@@ -1,21 +1,13 @@
-/*
- * Wazuh DBSYNC
- * Copyright (C) 2015, Wazuh Inc.
- * July 21, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _ACTION_H
-#define _ACTION_H
+#pragma once
 
 #include "cjsonSmartDeleter.hpp"
+#include "db_exception.h"
 #include "dbsync.h"
+#include "testContext.hpp"
+#include <fstream>
 #include <mutex>
 #include <nlohmann/json.hpp>
+#include <sstream>
 
 namespace TestDeleters
 {
@@ -723,5 +715,3 @@ struct SelectRowsActionCPP final : public IAction
         outputFile << jsonResult.dump() << std::endl;
     }
 };
-
-#endif // _ACTION_H
