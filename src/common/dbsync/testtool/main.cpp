@@ -1,19 +1,8 @@
-/*
- * Wazuh DBSYNC
- * Copyright (C) 2015, Wazuh Inc.
- * July 02, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#include "action.h"
-#include "cmdArgsHelper.h"
+#include "action.hpp"
+#include "cmdArgsHelper.hpp"
 #include "dbsync.h"
-#include "factoryAction.h"
-#include "testContext.h"
+#include "factoryAction.hpp"
+#include "testContext.hpp"
 #include <fstream>
 #include <memory>
 #include <nlohmann/json.hpp>

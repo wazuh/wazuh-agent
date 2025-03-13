@@ -11,12 +11,12 @@ if(COVERITY)
 endif(COVERITY)
 
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++14 -pthread")
+  set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++14")
+  if(FSANITIZE)
+    set(CMAKE_CXX_FLAGS_DEBUG "-pthread -fsanitize=address,leak,undefined")
+  endif(FSANITIZE)
 else()
   set(CMAKE_CXX_FLAGS "/W4 /permissive- /std:c++14 /MT /EHsc")
-  if(FSANITIZE)
-    set(CMAKE_CXX_FLAGS_DEBUG "-fsanitize=address,leak,undefined")
-  endif(FSANITIZE)
 endif()
 
 add_executable(dbsync_test_tool
