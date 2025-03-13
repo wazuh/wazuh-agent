@@ -147,7 +147,6 @@ target_link_libraries(sysinfo PUBLIC
   deleter_helper
   FilesystemWrapper
   FileIO
-  glob_helper
   json_helper
   network_helper
   sqlite_wrapper
