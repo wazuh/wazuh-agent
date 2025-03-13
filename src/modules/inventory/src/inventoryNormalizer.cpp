@@ -44,7 +44,6 @@ void InvNormalizer::RemoveExcluded(const std::string& type, nlohmann::json& data
                     }
                 }
             }
-            // LCOV_EXCL_START
             catch (const std::exception& ex)
             {
                 std::cout << "Exception caught in RemoveExcluded: " << ex.what() << '\n';
@@ -53,7 +52,6 @@ void InvNormalizer::RemoveExcluded(const std::string& type, nlohmann::json& data
             {
                 std::cout << "Unknown exception caught in RemoveExcluded." << '\n';
             }
-            // LCOV_EXCL_STOP
         }
     }
 }

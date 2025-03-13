@@ -17,14 +17,12 @@ constexpr size_t MAX_ID_SIZE = 512;
 constexpr auto QUEUE_SIZE {4096};
 
 static const std::map<ReturnTypeCallback, std::string> OPERATION_MAP {
-    // LCOV_EXCL_START
     {MODIFIED, "update"},
     {DELETED, "delete"},
     {INSERTED, "create"},
     {MAX_ROWS, "max_rows"},
     {DB_ERROR, "db_error"},
     {SELECTED, "selected"},
-    // LCOV_EXCL_STOP
 };
 
 constexpr auto SYSTEM_SQL_STATEMENT {
