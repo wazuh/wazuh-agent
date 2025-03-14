@@ -19,8 +19,8 @@ namespace DbSync
         virtual ~IPipeline() = default;
 
         /// @brief Syncs a row
-        /// @param syncJson Sync JSON
-        virtual void syncRow(const nlohmann::json& syncJson) = 0;
+        /// @param value value JSON
+        virtual void syncRow(const nlohmann::json& value) = 0;
 
         /// @brief Gets deleted rows
         /// @param callback callback

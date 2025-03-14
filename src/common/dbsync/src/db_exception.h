@@ -36,23 +36,32 @@ namespace DbSync
     class dbsync_error : public std::exception
     {
     public:
+        /// @brief Returns the error message
+        /// @returns the error message
         ATTR_RET_NONNULL
         const char* what() const noexcept override
         {
             return m_error.what();
         }
 
+        /// @brief Returns the error id
+        /// @return the error id
         int id() const noexcept
         {
             return m_id;
         }
 
+        /// @brief Constructor
+        /// @param id id of the error
+        /// @param whatArg message of the error
         dbsync_error(const int id, const std::string& whatArg)
             : m_id {id}
             , m_error {whatArg}
         {
         }
 
+        /// @brief Constructor
+        /// @param exceptionInfo error information
         explicit dbsync_error(const std::pair<int, std::string>& exceptionInfo)
             : m_id {exceptionInfo.first}
             , m_error {exceptionInfo.second}
@@ -69,12 +78,16 @@ namespace DbSync
     class max_rows_error : public std::exception
     {
     public:
+        /// @brief Returns the error message
+        /// @returns the error message
         ATTR_RET_NONNULL
         const char* what() const noexcept override
         {
             return m_error.what();
         }
 
+        /// @brief Constructor
+        /// @param whatArg message of the error
         explicit max_rows_error(const std::string& whatArg)
             : m_error {whatArg}
         {
