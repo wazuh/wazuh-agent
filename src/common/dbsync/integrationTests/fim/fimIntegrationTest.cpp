@@ -6,7 +6,7 @@
 #include <nlohmann/json.hpp>
 #include <sstream>
 
-using ::testing::_;
+using ::testing::_; // NOLINT(bugprone-reserved-identifier)
 
 constexpr auto DATABASE_TEMP {"FIM_TEMP.db"};
 
@@ -14,26 +14,25 @@ class CallbackMock
 {
 public:
     CallbackMock() = default;
-    ~CallbackMock() = default;
     MOCK_METHOD(void, callbackMock, (ReturnTypeCallback result_type, const nlohmann::json&), ());
 };
 
-static void callback(const ReturnTypeCallback type, const cJSON* json, void* ctx)
+static void Callback(const ReturnTypeCallback type, const cJSON* json, void* ctx)
 {
-    CallbackMock* wrapper {reinterpret_cast<CallbackMock*>(ctx)};
+    CallbackMock* wrapper {static_cast<CallbackMock*>(ctx)};
     const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_PrintUnformatted(json)};
     wrapper->callbackMock(type, nlohmann::json::parse(spJsonBytes.get()));
 }
 
-static void logFunction(const char* msg)
+static void LogFunction(const char* msg)
 {
     if (msg)
     {
-        std::cout << msg << std::endl;
+        std::cout << msg << '\n';
     }
 }
 
-static std::string loadDBQueriesDump()
+static std::string LoadDbQueriesDump()
 {
     const std::string inputFile = std::string(TEST_DB_INPUTS_DIR) + "/" + "fim_sql_db_dump.sql";
     std::ifstream file(inputFile);
@@ -47,7 +46,7 @@ static std::string loadDBQueriesDump()
     std::string content = buffer.str();
 
     // Remove the blank lines at the end so that dbsync_create does not fail.
-    size_t pos = content.find_last_not_of("\n\r");
+    const size_t pos = content.find_last_not_of("\n\r");
     if (pos != std::string::npos)
     {
         content = content.substr(0, pos + 1);
@@ -57,10 +56,10 @@ static std::string loadDBQueriesDump()
 }
 
 DBSyncFimIntegrationTest::DBSyncFimIntegrationTest()
-    : m_dbHandle {dbsync_create(HostType::AGENT, DbEngineType::SQLITE3, DATABASE_TEMP, loadDBQueriesDump().c_str())}
+    : m_dbHandle {dbsync_create(HostType::AGENT, DbEngineType::SQLITE3, DATABASE_TEMP, LoadDbQueriesDump().c_str())}
 
 {
-    dbsync_initialize(&logFunction);
+    dbsync_initialize(&LogFunction);
 }
 
 DBSyncFimIntegrationTest::~DBSyncFimIntegrationTest()
@@ -106,7 +105,7 @@ TEST_F(DBSyncFimIntegrationTest, FIMDB_STMT_GET_PATH)
            "count_opt":100}})"};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsSelect {cJSON_Parse(selectSql)};
     CallbackMock wrapper;
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(expectedResult))).Times(1);
     EXPECT_EQ(0, dbsync_select_rows(m_dbHandle, jsSelect.get(), callbackData));
 }
@@ -123,7 +122,7 @@ TEST_F(DBSyncFimIntegrationTest, FIMDB_STMT_GET_LAST_PATH)
            "count_opt":1}})"};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsSelect {cJSON_Parse(selectSql)};
     CallbackMock wrapper;
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(expectedResult))).Times(1);
     EXPECT_EQ(0, dbsync_select_rows(m_dbHandle, jsSelect.get(), callbackData));
 }
@@ -140,7 +139,7 @@ TEST_F(DBSyncFimIntegrationTest, FIMDB_STMT_GET_FIRST_PATH)
            "count_opt":1}})"};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsSelect {cJSON_Parse(selectSql)};
     CallbackMock wrapper;
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(expectedResult))).Times(1);
     EXPECT_EQ(0, dbsync_select_rows(m_dbHandle, jsSelect.get(), callbackData));
 }
@@ -175,8 +174,8 @@ TEST_F(DBSyncFimIntegrationTest, FIMDB_STMT_GET_ALL_ENTRIES)
            "order_by_opt":"path ASC"}})"};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsSelect {cJSON_Parse(selectSql)};
     CallbackMock wrapper;
-    callback_data_t callbackData {callback, &wrapper};
-    EXPECT_CALL(wrapper, callbackMock(SELECTED, _)).Times(1904);
+    const callback_data_t callbackData {Callback, &wrapper};
+    EXPECT_CALL(wrapper, callbackMock(SELECTED, _)).Times(1904); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     EXPECT_EQ(0, dbsync_select_rows(m_dbHandle, jsSelect.get(), callbackData));
 }
 
@@ -191,7 +190,7 @@ TEST_F(DBSyncFimIntegrationTest, FIMDB_STMT_GET_COUNT_RANGE)
            "order_by_opt":""}})"};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsSelect {cJSON_Parse(selectSql)};
     CallbackMock wrapper;
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(expectedResult))).Times(1);
     EXPECT_EQ(0, dbsync_select_rows(m_dbHandle, jsSelect.get(), callbackData));
 }
@@ -253,7 +252,7 @@ TEST_F(DBSyncFimIntegrationTest, FIMDB_STMT_GET_PATH_RANGE)
            "order_by_opt":""}})"};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsSelect {cJSON_Parse(selectSql)};
     CallbackMock wrapper;
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(expectedResult1))).Times(1);
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(expectedResult2))).Times(1);
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(expectedResult3))).Times(1);
@@ -271,7 +270,7 @@ TEST_F(DBSyncFimIntegrationTest, FIMDB_STMT_GET_PATHS_INODE)
            "order_by_opt":""}})"};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsSelect {cJSON_Parse(selectSql)};
     CallbackMock wrapper;
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(expectedResult))).Times(1);
     EXPECT_EQ(0, dbsync_select_rows(m_dbHandle, jsSelect.get(), callbackData));
 }
@@ -287,7 +286,7 @@ TEST_F(DBSyncFimIntegrationTest, FIMDB_STMT_GET_PATHS_INODE_COUNT)
            "order_by_opt":""}})"};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsSelect {cJSON_Parse(selectSql)};
     CallbackMock wrapper;
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(expectedResult))).Times(1);
     EXPECT_EQ(0, dbsync_select_rows(m_dbHandle, jsSelect.get(), callbackData));
 }
@@ -303,7 +302,7 @@ TEST_F(DBSyncFimIntegrationTest, FIMDB_STMT_GET_COUNT_PATH)
            "order_by_opt":""}})"};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsSelect {cJSON_Parse(selectSql)};
     CallbackMock wrapper;
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(expectedResult))).Times(1);
     EXPECT_EQ(0, dbsync_select_rows(m_dbHandle, jsSelect.get(), callbackData));
 }

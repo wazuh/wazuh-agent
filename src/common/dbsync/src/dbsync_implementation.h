@@ -30,7 +30,7 @@ namespace DbSync
         /// @param handle Handle assigned as part of the \ref dbsync_create method().
         /// @param json   JSON information with values to be inserted.
         /// @param callback callback
-        void syncRowData(const DBSYNC_HANDLE handle, const nlohmann::json& json, const ResultCallback callback);
+        void syncRowData(const DBSYNC_HANDLE handle, const nlohmann::json& json, const ResultCallback& callback);
 
         /// @brief Synchronize the row data in the database.
         /// @param handle Handle assigned as part of the \ref dbsync_create method().
@@ -40,7 +40,7 @@ namespace DbSync
         void syncRowData(const DBSYNC_HANDLE handle,
                          const TXN_HANDLE txnHandle,
                          const nlohmann::json& json,
-                         const ResultCallback callback);
+                         const ResultCallback& callback);
 
         /// @brief Delete the row data in the database.
         /// @param handle Handle assigned as part of the \ref dbsync_create method().
@@ -51,7 +51,7 @@ namespace DbSync
         /// @param handle Handle assigned as part of the \ref dbsync_create method().
         /// @param json   JSON information with values to be inserted.
         /// @param callback callback
-        void updateSnapshotData(const DBSYNC_HANDLE handle, const nlohmann::json& json, const ResultCallback callback);
+        void updateSnapshotData(const DBSYNC_HANDLE handle, const nlohmann::json& json, const ResultCallback& callback);
 
         /// @brief Initialize DBSync.
         /// @param hostType Dynamic library host type to be used.
@@ -89,7 +89,7 @@ namespace DbSync
         /// @param handle Handle assigned as part of the \ref dbsync_create method().
         /// @param txnHandle Database transaction to be used.
         /// @param callback callback
-        void getDeleted(const DBSYNC_HANDLE handle, const TXN_HANDLE txnHandle, const ResultCallback callback);
+        void getDeleted(const DBSYNC_HANDLE handle, const TXN_HANDLE txnHandle, const ResultCallback& callback);
 
         /// @brief Select data from the database.
         /// @param handle Handle assigned as part of the \ref dbsync_create method().
@@ -143,7 +143,7 @@ namespace DbSync
             /// @return Transaction context
             const std::shared_ptr<DBSyncImplementation::TransactionContext> transactionContext(const TXN_HANDLE handle)
             {
-                std::lock_guard<std::mutex> lock {m_mutex};
+                const std::lock_guard<std::mutex> lock {m_mutex};
                 const auto it {m_transactionContexts.find(handle)};
 
                 if (m_transactionContexts.end() == it)
@@ -159,7 +159,7 @@ namespace DbSync
             void addTransactionContext(
                 const std::shared_ptr<DbSync::DBSyncImplementation::TransactionContext>& spTransactionContext)
             {
-                std::lock_guard<std::mutex> lock {m_mutex};
+                const std::lock_guard<std::mutex> lock {m_mutex};
                 m_transactionContexts[spTransactionContext.get()] = spTransactionContext;
             }
 
@@ -167,7 +167,7 @@ namespace DbSync
             /// @param txnHandle Handle assigned as part of the \ref dbsync_create method().
             void deleteTransactionContext(const TXN_HANDLE txnHandle)
             {
-                std::lock_guard<std::mutex> lock {m_mutex};
+                const std::lock_guard<std::mutex> lock {m_mutex};
                 m_transactionContexts.erase(txnHandle);
             }
 

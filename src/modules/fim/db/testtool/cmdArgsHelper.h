@@ -51,7 +51,7 @@ class CmdLineArgs
                       << "\t-o OUTPUT_FOLDER\tSpecifies the output folder path where the results will be generated.\n"
                       << "\nExample:"
                       << "\n\t./fimdb_test_tool -c config.json -a input1.json,input2.json,input3.json -o ./output\n"
-                      << std::endl;
+                      << '\n';
         }
 
     private:

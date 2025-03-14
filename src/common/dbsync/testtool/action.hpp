@@ -41,7 +41,7 @@ struct InsertDataAction final : public IAction
 
         std::ofstream outputFile {outputFileName};
         const nlohmann::json jsonResult = {{"dbsync_insert_data", retVal}};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -63,7 +63,7 @@ struct UpdateWithSnapshotAction final : public IAction
 
             std::ofstream outputFile {outputFileName};
             const std::unique_ptr<char, CJsonSmartFree> snapshotDiff {cJSON_Print(snapshotLambdaPtr.get())};
-            outputFile << snapshotDiff.get() << std::endl;
+            outputFile << snapshotDiff.get() << '\n';
         }
     }
 };
@@ -87,7 +87,7 @@ static void txnCallback(ReturnTypeCallback type, const cJSON* json, void* user_d
         jsonResult.push_back({{"result", type}});
 
         std::ofstream outputFile {outputFileName, std::ofstream::app};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 }
 
@@ -108,7 +108,7 @@ struct CreateTransactionAction final : public IAction
 
         std::ofstream outputFile {outputFileName};
         const nlohmann::json jsonResult = {{"txn_context", nullptr != ctx->txnContext}};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -125,7 +125,7 @@ struct CloseTransactionAction final : public IAction
 
         std::ofstream outputFile {outputFileName};
         const nlohmann::json jsonResult = {{"txn_context", retVal}};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -143,7 +143,7 @@ struct SetMaxRowsAction final : public IAction
 
         std::ofstream outputFile {outputFileName};
         const nlohmann::json jsonResult = {{"dbsync_set_table_max_rows", retVal}};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -173,7 +173,7 @@ static void getCallbackCtx(ReturnTypeCallback /*type*/, const cJSON* json, void*
     jsonResult.push_back(newJson);
 
     std::ofstream outputFile {loggerContext->m_fileName};
-    outputFile << jsonResult.dump() << std::endl;
+    outputFile << jsonResult.dump() << '\n';
 };
 
 struct GetDeletedRowsAction final : public IAction
@@ -192,7 +192,7 @@ struct GetDeletedRowsAction final : public IAction
 
         std::ofstream outputFile {outputFileName};
         const nlohmann::json& jsonResult {{"dbsync_get_deleted_rows", retVal}};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -212,7 +212,7 @@ struct SyncRowAction final : public IAction
 
         std::ofstream outputFile {outputFileName};
         const nlohmann::json jsonResult = {{"dbsync_sync_row", retVal}};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -230,7 +230,7 @@ struct SyncTxnRowsAction final : public IAction
 
         std::ofstream outputFile {outputFileName};
         const nlohmann::json jsonResult = {{"dbsync_sync_txn_row", retVal}};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -248,7 +248,7 @@ struct DeleteRowsAction final : public IAction
 
         std::ofstream outputFile {outputFileName};
         const nlohmann::json jsonResult = {{"dbsync_delete_rows", retVal}};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -269,7 +269,7 @@ struct SelectRowsAction final : public IAction
         const auto retVal {dbsync_select_rows(ctx->handle, jsInput.get(), callbackData)};
         std::ofstream outputFile {outputFileName};
         const nlohmann::json jsonResult = {{"dbsync_select_rows", retVal}};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -286,7 +286,7 @@ struct AddTableRelationship final : public IAction
         const auto retVal {dbsync_add_table_relationship(ctx->handle, jsInput.get())};
         std::ofstream outputFile {outputFileName};
         const nlohmann::json jsonResult = {{"dbsync_add_table_relationship", retVal}};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -313,14 +313,14 @@ struct InsertDataCPP final : public IAction
         {
             retVal = ex.id();
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
             retVal = -1;
         }
 
         std::ofstream outputFile {outputFileName};
         const nlohmann::json jsonResult = {{"insertData", retVal}};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -348,7 +348,7 @@ struct UpdateWithSnapshotActionCPP final : public IAction
         {
             retVal = ex.id();
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
             retVal = -1;
         }
@@ -356,7 +356,7 @@ struct UpdateWithSnapshotActionCPP final : public IAction
         snapshotLambda.push_back({"updateWithSnapshot", retVal});
 
         std::ofstream outputFile {outputFileName};
-        outputFile << snapshotLambda.dump() << std::endl;
+        outputFile << snapshotLambda.dump() << '\n';
     }
 };
 
@@ -380,7 +380,7 @@ struct CreateTransactionActionCPP final : public IAction
             jsonResult.push_back({{"result", type}});
 
             std::ofstream outputFile {outputFileName, std::ofstream::app};
-            outputFile << jsonResult.dump() << std::endl;
+            outputFile << jsonResult.dump() << '\n';
         };
 
         try
@@ -399,7 +399,7 @@ struct CreateTransactionActionCPP final : public IAction
         {
             retVal = ex.id();
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
             retVal = -1;
         }
@@ -410,7 +410,7 @@ struct CreateTransactionActionCPP final : public IAction
 
         std::ofstream outputFile {outputFileName};
         const nlohmann::json jsonResult = {{"createTransaction", nullptr != ctx->txnContext && 0 == retVal}};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -436,7 +436,7 @@ struct SetMaxRowsActionCPP final : public IAction
         {
             retVal = ex.id();
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
             retVal = -1;
         }
@@ -447,7 +447,7 @@ struct SetMaxRowsActionCPP final : public IAction
 
         std::ofstream outputFile {outputFileName};
         const nlohmann::json jsonResult = {{"SetMaxRowsAction", retVal}};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -474,14 +474,14 @@ struct AddTableRelationshipCPP final : public IAction
         {
             retVal = ex.id();
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
             retVal = -1;
         }
 
         std::ofstream outputFile {outputFileName};
         const nlohmann::json jsonResult = {{"addTableRelationship", retVal}};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -510,7 +510,7 @@ struct GetDeletedRowsActionCPP final : public IAction
                                  jsonResult.push_back(json);
 
                                  std::ofstream outputFile {loggerContext->m_fileName};
-                                 outputFile << jsonResult.dump() << std::endl;
+                                 outputFile << jsonResult.dump() << '\n';
                              }};
 
         int retVal {0};
@@ -528,7 +528,7 @@ struct GetDeletedRowsActionCPP final : public IAction
         {
             retVal = ex.id();
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
             retVal = -1;
         }
@@ -536,7 +536,7 @@ struct GetDeletedRowsActionCPP final : public IAction
         const auto& outputFileName {ctx->outputPath + "/" + oFileName.str()};
         std::ofstream outputFile {outputFileName};
         const nlohmann::json& jsonResult {{"getDeletedRows", retVal}};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -564,7 +564,7 @@ struct SyncRowActionCPP final : public IAction
                                jsonResult.push_back(json);
 
                                std::ofstream outputFile {loggerContext->m_fileName};
-                               outputFile << jsonResult.dump() << std::endl;
+                               outputFile << jsonResult.dump() << '\n';
                            }};
 
         int retVal {0};
@@ -582,7 +582,7 @@ struct SyncRowActionCPP final : public IAction
         {
             retVal = ex.id();
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
             retVal = -1;
         }
@@ -591,7 +591,7 @@ struct SyncRowActionCPP final : public IAction
 
         std::ofstream outputFile {outputFileName};
         const nlohmann::json jsonResult = {{"syncRow", retVal}};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -614,7 +614,7 @@ struct SyncTxnRowsActionCPP final : public IAction
         {
             retVal = ex.id();
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
             retVal = -1;
         }
@@ -625,7 +625,7 @@ struct SyncTxnRowsActionCPP final : public IAction
 
         std::ofstream outputFile {outputFileName};
         const nlohmann::json jsonResult = {{"syncTxnRow", retVal}};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -648,7 +648,7 @@ struct DeleteRowsActionCPP final : public IAction
         {
             retVal = ex.id();
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
             retVal = -1;
         }
@@ -659,7 +659,7 @@ struct DeleteRowsActionCPP final : public IAction
 
         std::ofstream outputFile {outputFileName};
         const nlohmann::json jsonResult = {{"deleteRows", retVal}};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -687,7 +687,7 @@ struct SelectRowsActionCPP final : public IAction
                                  jsonResult.push_back(json);
 
                                  std::ofstream outputFile {loggerContext->m_fileName};
-                                 outputFile << jsonResult.dump() << std::endl;
+                                 outputFile << jsonResult.dump() << '\n';
                              }};
 
         int retVal {0};
@@ -705,13 +705,13 @@ struct SelectRowsActionCPP final : public IAction
         {
             retVal = ex.id();
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
             retVal = -1;
         }
 
         std::ofstream outputFile {ctx->outputPath + "/" + oFileName.str()};
         const nlohmann::json jsonResult = {{"selectRows", retVal}};
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };

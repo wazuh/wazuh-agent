@@ -111,7 +111,7 @@ private:
         }
         catch (const std::exception& e)
         {
-            std::cerr << "Error reading NPM package: " << path.string() << ", " << e.what() << std::endl;
+            std::cerr << "Error reading NPM package: " << path.string() << ", " << e.what() << '\n';
         }
     }
 

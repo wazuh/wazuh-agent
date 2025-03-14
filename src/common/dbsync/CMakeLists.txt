@@ -56,6 +56,9 @@ target_link_libraries(dbsync PUBLIC nlohmann_json::nlohmann_json cjson pal PRIVA
 add_subdirectory(example)
 add_subdirectory(testtool)
 
+include(../../cmake/ConfigureTarget.cmake)
+configure_target(dbsync)
+
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)

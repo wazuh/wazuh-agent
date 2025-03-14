@@ -18,6 +18,8 @@ add_executable(fim_integration_test
     ${INTERFACE_UNITTEST_SRC}
     ${DBSYNC_IMP_SRC})
 
+configure_target(fim_integration_test)
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(fim_integration_test
         dbsync
