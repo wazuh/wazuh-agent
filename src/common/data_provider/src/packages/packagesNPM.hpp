@@ -9,23 +9,59 @@
  * Foundation.
  */
 
-#ifndef _PACKAGES_NPM_HPP
-#define _PACKAGES_NPM_HPP
+#pragma once
 
+#include "filesystem_utils.hpp"
+#include "ifilesystem_utils.hpp"
 #include "filesystem_wrapper.hpp"
+
 #include <nlohmann/json.hpp>
 #include "jsonIO.hpp"
 #include "sharedDefs.h"
+
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <set>
 
-template<typename TFileSystem = filesystem_wrapper::FileSystemWrapper, typename TJsonReader = JsonIO<nlohmann::json>>
+template<typename TFileSystem = filesystem::FileSystemWrapper, typename TJsonReader = JsonIO<nlohmann::json>>
 class NPM final
     : public TFileSystem
     , public TJsonReader
 {
+    public:
+        /// @brief NPM constructor
+        NPM(std::shared_ptr<IFileSystemUtils> fsUtils = nullptr)
+        : m_fsUtils(fsUtils ? fsUtils : std::make_shared<filesystem::FileSystemUtils>()) {}
+
+        ~NPM() = default;
+
+        void getPackages(const std::set<std::string>& osRootFolders, std::function<void(nlohmann::json&)> callback)
+        {
+
+            // Iterate over node_modules folders
+            for (const auto& osRootFolder : osRootFolders)
+            {
+                try
+                {
+                    std::deque<std::string> expandedPaths;
+
+                    // Expand paths
+                    m_fsUtils->expand_absolute_path(osRootFolder, expandedPaths);
+                    // Explore expanded paths
+                    exploreExpandedPaths(expandedPaths, callback);
+                }
+                catch (const std::exception& e)
+                {
+                    // Ignore exception, continue with next folder
+                    (void)e;
+                }
+            }
+        }
+
+    private:
+
         void parsePackage(const std::filesystem::path& folderPath, std::function<void(nlohmann::json&)>& callback)
         {
             // Map to match fields
@@ -108,32 +144,6 @@ class NPM final
             }
         }
 
-    public:
-        NPM() = default;
-        ~NPM() = default;
-
-        void getPackages(const std::set<std::string>& osRootFolders, std::function<void(nlohmann::json&)> callback)
-        {
-
-            // Iterate over node_modules folders
-            for (const auto& osRootFolder : osRootFolders)
-            {
-                try
-                {
-                    std::deque<std::string> expandedPaths;
-
-                    // Expand paths
-                    TFileSystem::expand_absolute_path(osRootFolder, expandedPaths);
-                    // Explore expanded paths
-                    exploreExpandedPaths(expandedPaths, callback);
-                }
-                catch (const std::exception& e)
-                {
-                    // Ignore exception, continue with next folder
-                    (void)e;
-                }
-            }
-        }
+        /// @brief Pointer to the file system utils
+        std::shared_ptr<IFileSystemUtils> m_fsUtils;
 };
-
-#endif // _PACKAGES_NPM_HPP

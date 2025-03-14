@@ -4,11 +4,10 @@
 
 namespace instance_handler
 {
-    InstanceHandler::InstanceHandler(std::string lockFilePath, std::shared_ptr<IFileSystem> fileSystemWrapper)
+    InstanceHandler::InstanceHandler(std::string lockFilePath, std::shared_ptr<IFileSystemWrapper> fileSystemWrapper)
         : m_lockFilePath(std::move(lockFilePath))
         , m_errno(0)
-        , m_fileSystemWrapper(fileSystemWrapper ? fileSystemWrapper
-                                                : std::make_shared<filesystem_wrapper::FileSystemWrapper>())
+        , m_fileSystemWrapper(fileSystemWrapper ? fileSystemWrapper : std::make_shared<filesystem::FileSystemWrapper>())
         , m_lockAcquired(getInstanceLock())
     {
     }
