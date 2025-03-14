@@ -22,11 +22,13 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           use-mermaid: true
-      - run: mdbook build
+      - run: |
+          cd ./docs
+          mdbook build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './book'
+          path: './docs/book'
 
   deploy:
     needs: build
