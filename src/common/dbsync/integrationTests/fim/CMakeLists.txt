@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.22)
 
 project(fim_integration_test)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
-
 add_definitions(-DTEST_DB_INPUTS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../include/)
@@ -19,6 +17,8 @@ file(GLOB DBSYNC_IMP_SRC
 add_executable(fim_integration_test
     ${INTERFACE_UNITTEST_SRC}
     ${DBSYNC_IMP_SRC})
+
+configure_target(fim_integration_test)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(fim_integration_test

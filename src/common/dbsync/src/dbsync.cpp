@@ -1,14 +1,3 @@
-/*
- * Wazuh DBSYNC
- * Copyright (C) 2015, Wazuh Inc.
- * June 11, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
 #include "dbsync.h"
 #include "cjsonSmartDeleter.hpp"
 #include "dbsync.hpp"
@@ -24,80 +13,77 @@ extern "C"
 
     using namespace DbSync;
 
-    static std::function<void(const std::string&)> gs_logFunction;
+    static std::function<void(const std::string&)> GS_LOG_FUNCTION;
 
-    static void log_message(const std::string& msg)
+    static void LogMessage(const std::string& msg)
     {
-        if (!msg.empty() && gs_logFunction)
+        if (!msg.empty() && GS_LOG_FUNCTION)
         {
-            gs_logFunction(msg);
+            GS_LOG_FUNCTION(msg);
         }
     }
 
-    void dbsync_initialize(log_fnc_t log_function)
+    void dbsync_initialize(log_fnc_t logFunction)
     {
-        DBSync::initialize([log_function](const std::string& msg) { log_function(msg.c_str()); });
+        DBSync::initialize([logFunction](const std::string& msg) { logFunction(msg.c_str()); });
     }
 
-    DBSYNC_HANDLE dbsync_create_(const HostType host_type,
-                                 const DbEngineType db_type,
+    DBSYNC_HANDLE _dbsync_create(const HostType hostType,
+                                 const DbEngineType dbType,
                                  const char* path,
-                                 const char* sql_statement,
-                                 const DbManagement db_management,
-                                 const char** upgrade_statements)
+                                 const char* sqlStatement,
+                                 const DbManagement dbManagement,
+                                 const char** upgradeStatements)
     {
         DBSYNC_HANDLE retVal {nullptr};
         std::string errorMessage;
 
-        if (!path || !sql_statement)
+        if (!path || !sqlStatement)
         {
-            errorMessage += "Invalid path or sql_statement.";
+            errorMessage += "Invalid path or sqlStatement.";
         }
         else
         {
             try
             {
-                auto upgradeStatements = std::vector<std::string>();
+                auto upgrade_statements = std::vector<std::string>();
 
-                while (upgrade_statements && *upgrade_statements)
+                while (upgradeStatements && *upgradeStatements)
                 {
-                    upgradeStatements.emplace_back(*upgrade_statements);
-                    upgrade_statements++;
+                    upgrade_statements.emplace_back(*upgradeStatements);
+                    upgradeStatements++; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                 }
 
                 retVal = DBSyncImplementation::instance().initialize(
-                    host_type, db_type, path, sql_statement, db_management, upgradeStatements);
+                    hostType, dbType, path, sqlStatement, dbManagement, upgrade_statements);
             }
             catch (const DbSync::dbsync_error& ex)
             {
                 errorMessage += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
             }
-            // LCOV_EXCL_START
-            catch (...)
+            catch (...) // NOLINT(bugprone-empty-catch) // NOLINT(bugprone-empty-catch)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
-        log_message(errorMessage);
+        LogMessage(errorMessage);
         return retVal;
     }
 
     DBSYNC_HANDLE
-    dbsync_create(const HostType host_type, const DbEngineType db_type, const char* path, const char* sql_statement)
+    dbsync_create(const HostType hostType, const DbEngineType dbType, const char* path, const char* sqlStatement)
     {
-        return dbsync_create_(host_type, db_type, path, sql_statement, DbManagement::VOLATILE, nullptr);
+        return _dbsync_create(hostType, dbType, path, sqlStatement, DbManagement::VOLATILE, nullptr);
     }
 
-    DBSYNC_HANDLE dbsync_create_persistent(const HostType host_type,
-                                           const DbEngineType db_type,
+    DBSYNC_HANDLE dbsync_create_persistent(const HostType hostType,
+                                           const DbEngineType dbType,
                                            const char* path,
-                                           const char* sql_statement,
-                                           const char** upgrade_statements)
+                                           const char* sqlStatement,
+                                           const char** upgradeStatements)
     {
-        return dbsync_create_(host_type, db_type, path, sql_statement, DbManagement::PERSISTENT, upgrade_statements);
+        return _dbsync_create(hostType, dbType, path, sqlStatement, DbManagement::PERSISTENT, upgradeStatements);
     }
 
     void dbsync_teardown(void)
@@ -108,14 +94,14 @@ extern "C"
 
     TXN_HANDLE dbsync_create_txn(const DBSYNC_HANDLE handle,
                                  const cJSON* tables,
-                                 const unsigned int thread_number,
-                                 const unsigned int max_queue_size,
-                                 callback_data_t callback_data)
+                                 const unsigned int threadNumber,
+                                 const unsigned int maxQueueSize,
+                                 callback_data_t callbackData)
     {
         std::string errorMessage;
         TXN_HANDLE txn {nullptr};
 
-        if (!handle || !tables || !max_queue_size || !callback_data.callback)
+        if (!handle || !tables || !maxQueueSize || !callbackData.callback)
         {
             errorMessage += "Invalid parameters.";
         }
@@ -124,29 +110,26 @@ extern "C"
             try
             {
                 const auto callbackWrapper {
-                    [callback_data](ReturnTypeCallback result, const nlohmann::json& jsonResult)
+                    [callbackData](ReturnTypeCallback result, const nlohmann::json& jsonResult)
                     {
                         const std::unique_ptr<cJSON, CJsonSmartDeleter> spJson {cJSON_Parse(jsonResult.dump().c_str())};
-                        callback_data.callback(result, spJson.get(), callback_data.user_data);
+                        callbackData.callback(result, spJson.get(), callbackData.user_data);
                     }};
                 const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_Print(tables)};
                 txn = PipelineFactory::instance().create(
-                    handle, nlohmann::json::parse(spJsonBytes.get()), thread_number, max_queue_size, callbackWrapper);
+                    handle, nlohmann::json::parse(spJsonBytes.get()), threadNumber, maxQueueSize, callbackWrapper);
             }
             catch (const DbSync::dbsync_error& ex)
             {
                 errorMessage += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
             }
-            // LCOV_EXCL_START
-            catch (...)
+            catch (...) // NOLINT(bugprone-empty-catch)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
-        log_message(errorMessage);
+        LogMessage(errorMessage);
         return txn;
     }
 
@@ -171,25 +154,22 @@ extern "C"
                 errorMessage += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
                 retVal = ex.id();
             }
-            // LCOV_EXCL_START
-            catch (...)
+            catch (...) // NOLINT(bugprone-empty-catch)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
-        log_message(errorMessage);
+        LogMessage(errorMessage);
         return retVal;
     }
 
-    int dbsync_sync_txn_row(const TXN_HANDLE txn, const cJSON* js_input)
+    int dbsync_sync_txn_row(const TXN_HANDLE txn, const cJSON* jsInput)
     {
         auto retVal {-1};
         std::string error_message;
 
-        if (!txn || !js_input)
+        if (!txn || !jsInput)
         {
             error_message += "Invalid txn or json.";
         }
@@ -197,7 +177,7 @@ extern "C"
         {
             try
             {
-                const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_PrintUnformatted(js_input)};
+                const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_PrintUnformatted(jsInput)};
                 PipelineFactory::instance().pipeline(txn)->syncRow(nlohmann::json::parse(spJsonBytes.get()));
                 retVal = 0;
             }
@@ -206,25 +186,22 @@ extern "C"
                 error_message += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
                 retVal = ex.id();
             }
-            // LCOV_EXCL_START
-            catch (...)
+            catch (...) // NOLINT(bugprone-empty-catch)
             {
                 error_message += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
-        log_message(error_message);
+        LogMessage(error_message);
         return retVal;
     }
 
-    int dbsync_add_table_relationship(const DBSYNC_HANDLE handle, const cJSON* js_input)
+    int dbsync_add_table_relationship(const DBSYNC_HANDLE handle, const cJSON* jsInput)
     {
         auto retVal {-1};
         std::string errorMessage;
 
-        if (!handle || !js_input)
+        if (!handle || !jsInput)
         {
             errorMessage += "Invalid parameters.";
         }
@@ -232,7 +209,7 @@ extern "C"
         {
             try
             {
-                const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_Print(js_input)};
+                const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_Print(jsInput)};
                 DBSyncImplementation::instance().addTableRelationship(handle, nlohmann::json::parse(spJsonBytes.get()));
                 retVal = 0;
             }
@@ -246,23 +223,23 @@ extern "C"
                 errorMessage += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
                 retVal = ex.id();
             }
-            catch (...)
+            catch (...) // NOLINT(bugprone-empty-catch)
             {
                 errorMessage += "Unrecognized error.";
             }
         }
 
-        log_message(errorMessage);
+        LogMessage(errorMessage);
 
         return retVal;
     }
 
-    int dbsync_insert_data(const DBSYNC_HANDLE handle, const cJSON* js_insert)
+    int dbsync_insert_data(const DBSYNC_HANDLE handle, const cJSON* jsInsert)
     {
         auto retVal {-1};
         std::string errorMessage;
 
-        if (!handle || !js_insert)
+        if (!handle || !jsInsert)
         {
             errorMessage += "Invalid handle or json.";
         }
@@ -270,7 +247,7 @@ extern "C"
         {
             try
             {
-                const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_Print(js_insert)};
+                const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_Print(jsInsert)};
                 DBSyncImplementation::instance().insertBulkData(handle, nlohmann::json::parse(spJsonBytes.get()));
                 retVal = 0;
             }
@@ -289,21 +266,18 @@ extern "C"
                 errorMessage += "DB error, ";
                 errorMessage += ex.what();
             }
-            // LCOV_EXCL_START
-            catch (...)
+            catch (...) // NOLINT(bugprone-empty-catch)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
-        log_message(errorMessage);
+        LogMessage(errorMessage);
 
         return retVal;
     }
 
-    int dbsync_set_table_max_rows(const DBSYNC_HANDLE handle, const char* table, const long long max_rows)
+    int dbsync_set_table_max_rows(const DBSYNC_HANDLE handle, const char* table, const long long maxRows)
     {
         auto retVal {-1};
         std::string errorMessage;
@@ -316,7 +290,7 @@ extern "C"
         {
             try
             {
-                DBSyncImplementation::instance().setMaxRows(handle, table, max_rows);
+                DBSyncImplementation::instance().setMaxRows(handle, table, maxRows);
                 retVal = 0;
             }
             catch (const DbSync::dbsync_error& ex)
@@ -324,26 +298,23 @@ extern "C"
                 errorMessage += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
                 retVal = ex.id();
             }
-            // LCOV_EXCL_START
-            catch (...)
+            catch (...) // NOLINT(bugprone-empty-catch)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
-        log_message(errorMessage);
+        LogMessage(errorMessage);
 
         return retVal;
     }
 
-    int dbsync_sync_row(const DBSYNC_HANDLE handle, const cJSON* js_input, callback_data_t callback_data)
+    int dbsync_sync_row(const DBSYNC_HANDLE handle, const cJSON* jsInput, callback_data_t callbackData)
     {
         auto retVal {-1};
         std::string errorMessage;
 
-        if (!handle || !js_input || !callback_data.callback)
+        if (!handle || !jsInput || !callbackData.callback)
         {
             errorMessage += "Invalid input parameters.";
         }
@@ -352,12 +323,12 @@ extern "C"
             try
             {
                 const auto callbackWrapper {
-                    [callback_data](ReturnTypeCallback result, const nlohmann::json& jsonResult)
+                    [callbackData](ReturnTypeCallback result, const nlohmann::json& jsonResult)
                     {
                         const std::unique_ptr<cJSON, CJsonSmartDeleter> spJson {cJSON_Parse(jsonResult.dump().c_str())};
-                        callback_data.callback(result, spJson.get(), callback_data.user_data);
+                        callbackData.callback(result, spJson.get(), callbackData.user_data);
                     }};
-                const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_PrintUnformatted(js_input)};
+                const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_PrintUnformatted(jsInput)};
                 DBSyncImplementation::instance().syncRowData(
                     handle, nlohmann::json::parse(spJsonBytes.get()), callbackWrapper);
                 retVal = 0;
@@ -372,25 +343,22 @@ extern "C"
                 errorMessage += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
                 retVal = ex.id();
             }
-            // LCOV_EXCL_START
-            catch (...)
+            catch (...) // NOLINT(bugprone-empty-catch)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
-        log_message(errorMessage);
+        LogMessage(errorMessage);
         return retVal;
     }
 
-    int dbsync_select_rows(const DBSYNC_HANDLE handle, const cJSON* js_data_input, callback_data_t callback_data)
+    int dbsync_select_rows(const DBSYNC_HANDLE handle, const cJSON* jsDataInput, callback_data_t callbackData)
     {
         auto retVal {-1};
         std::string errorMessage;
 
-        if (!handle || !js_data_input || !callback_data.callback)
+        if (!handle || !jsDataInput || !callbackData.callback)
         {
             errorMessage += "Invalid input parameters.";
         }
@@ -399,12 +367,12 @@ extern "C"
             try
             {
                 const auto callbackWrapper {
-                    [callback_data](ReturnTypeCallback result, const nlohmann::json& jsonResult)
+                    [callbackData](ReturnTypeCallback result, const nlohmann::json& jsonResult)
                     {
                         const std::unique_ptr<cJSON, CJsonSmartDeleter> spJson {cJSON_Parse(jsonResult.dump().c_str())};
-                        callback_data.callback(result, spJson.get(), callback_data.user_data);
+                        callbackData.callback(result, spJson.get(), callbackData.user_data);
                     }};
-                const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_PrintUnformatted(js_data_input)};
+                const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_PrintUnformatted(jsDataInput)};
                 DBSyncImplementation::instance().selectData(
                     handle, nlohmann::json::parse(spJsonBytes.get()), callbackWrapper);
                 retVal = 0;
@@ -419,25 +387,22 @@ extern "C"
                 errorMessage += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
                 retVal = ex.id();
             }
-            // LCOV_EXCL_START
-            catch (...)
+            catch (...) // NOLINT(bugprone-empty-catch)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
-        log_message(errorMessage);
+        LogMessage(errorMessage);
         return retVal;
     }
 
-    int dbsync_delete_rows(const DBSYNC_HANDLE handle, const cJSON* js_key_values)
+    int dbsync_delete_rows(const DBSYNC_HANDLE handle, const cJSON* jsKeyValues)
     {
         auto retVal {-1};
         std::string errorMessage;
 
-        if (!handle || !js_key_values)
+        if (!handle || !jsKeyValues)
         {
             errorMessage += "Invalid input parameters.";
         }
@@ -445,7 +410,7 @@ extern "C"
         {
             try
             {
-                const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_PrintUnformatted(js_key_values)};
+                const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_PrintUnformatted(jsKeyValues)};
                 DBSyncImplementation::instance().deleteRowsData(handle, nlohmann::json::parse(spJsonBytes.get()));
                 retVal = 0;
             }
@@ -459,25 +424,22 @@ extern "C"
                 errorMessage += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
                 retVal = ex.id();
             }
-            // LCOV_EXCL_START
-            catch (...)
+            catch (...) // NOLINT(bugprone-empty-catch)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
-        log_message(errorMessage);
+        LogMessage(errorMessage);
         return retVal;
     }
 
-    int dbsync_get_deleted_rows(const TXN_HANDLE txn, callback_data_t callback_data)
+    int dbsync_get_deleted_rows(const TXN_HANDLE txn, callback_data_t callbackData)
     {
         auto retVal {-1};
         std::string error_message;
 
-        if (!txn || !callback_data.callback)
+        if (!txn || !callbackData.callback)
         {
             error_message += "Invalid txn or callback.";
         }
@@ -486,10 +448,10 @@ extern "C"
             try
             {
                 const auto callbackWrapper {
-                    [callback_data](ReturnTypeCallback result, const nlohmann::json& jsonResult)
+                    [callbackData](ReturnTypeCallback result, const nlohmann::json& jsonResult)
                     {
                         const std::unique_ptr<cJSON, CJsonSmartDeleter> spJson {cJSON_Parse(jsonResult.dump().c_str())};
-                        callback_data.callback(result, spJson.get(), callback_data.user_data);
+                        callbackData.callback(result, spJson.get(), callbackData.user_data);
                     }};
                 PipelineFactory::instance().pipeline(txn)->getDeleted(callbackWrapper);
                 retVal = 0;
@@ -499,26 +461,23 @@ extern "C"
                 error_message += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
                 retVal = ex.id();
             }
-            // LCOV_EXCL_START
-            catch (...)
+            catch (...) // NOLINT(bugprone-empty-catch)
             {
                 error_message += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
-        log_message(error_message);
+        LogMessage(error_message);
 
         return retVal;
     }
 
-    int dbsync_update_with_snapshot(const DBSYNC_HANDLE handle, const cJSON* js_snapshot, cJSON** js_result)
+    int dbsync_update_with_snapshot(const DBSYNC_HANDLE handle, const cJSON* jsSnapshot, cJSON** jsResult)
     {
         auto retVal {-1};
         std::string errorMessage;
 
-        if (!handle || !js_snapshot || !js_result)
+        if (!handle || !jsSnapshot || !jsResult)
         {
             errorMessage += "Invalid input parameter.";
         }
@@ -527,21 +486,17 @@ extern "C"
             try
             {
                 nlohmann::json result;
-                const auto callbackWrapper {[&result](ReturnTypeCallback resultType, const nlohmann::json& jsonResult)
-                                            {
-                                                static std::map<ReturnTypeCallback, std::string> s_opMap {
-                                                    // LCOV_EXCL_START
-                                                    {MODIFIED, "modified"},
-                                                    {DELETED, "deleted"},
-                                                    {INSERTED, "inserted"}
-                                                    // LCOV_EXCL_STOP
-                                                };
-                                                result[s_opMap.at(resultType)].push_back(jsonResult);
-                                            }};
-                const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_PrintUnformatted(js_snapshot)};
+                const auto callbackWrapper {
+                    [&result](ReturnTypeCallback resultType, const nlohmann::json& jsonResult)
+                    {
+                        static std::map<ReturnTypeCallback, std::string> s_opMap {
+                            {MODIFIED, "modified"}, {DELETED, "deleted"}, {INSERTED, "inserted"}};
+                        result[s_opMap.at(resultType)].push_back(jsonResult);
+                    }};
+                const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_PrintUnformatted(jsSnapshot)};
                 DBSyncImplementation::instance().updateSnapshotData(
                     handle, nlohmann::json::parse(spJsonBytes.get()), callbackWrapper);
-                *js_result = cJSON_Parse(result.dump().c_str());
+                *jsResult = cJSON_Parse(result.dump().c_str());
                 retVal = 0;
             }
             catch (const nlohmann::detail::exception& ex)
@@ -559,26 +514,23 @@ extern "C"
                 errorMessage += "DB error, ";
                 errorMessage += ex.what();
             }
-            // LCOV_EXCL_START
-            catch (...)
+            catch (...) // NOLINT(bugprone-empty-catch)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
-        log_message(errorMessage);
+        LogMessage(errorMessage);
         return retVal;
     }
 
     int
-    dbsync_update_with_snapshot_cb(const DBSYNC_HANDLE handle, const cJSON* js_snapshot, callback_data_t callback_data)
+    dbsync_update_with_snapshot_cb(const DBSYNC_HANDLE handle, const cJSON* jsSnapshot, callback_data_t callbackData)
     {
         auto retVal {-1};
         std::string errorMessage;
 
-        if (!handle || !js_snapshot || !callback_data.callback)
+        if (!handle || !jsSnapshot || !callbackData.callback)
         {
             errorMessage += "Invalid input parameters.";
         }
@@ -587,12 +539,12 @@ extern "C"
             try
             {
                 const auto callbackWrapper {
-                    [callback_data](ReturnTypeCallback result, const nlohmann::json& jsonResult)
+                    [callbackData](ReturnTypeCallback result, const nlohmann::json& jsonResult)
                     {
                         const std::unique_ptr<cJSON, CJsonSmartDeleter> spJson {cJSON_Parse(jsonResult.dump().c_str())};
-                        callback_data.callback(result, spJson.get(), callback_data.user_data);
+                        callbackData.callback(result, spJson.get(), callbackData.user_data);
                     }};
-                const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_PrintUnformatted(js_snapshot)};
+                const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_PrintUnformatted(jsSnapshot)};
                 DBSyncImplementation::instance().updateSnapshotData(
                     handle, nlohmann::json::parse(spJsonBytes.get()), callbackWrapper);
                 retVal = 0;
@@ -607,24 +559,21 @@ extern "C"
                 errorMessage += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
                 retVal = ex.id();
             }
-            // LCOV_EXCL_START
-            catch (...)
+            catch (...) // NOLINT(bugprone-empty-catch)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
-        log_message(errorMessage);
+        LogMessage(errorMessage);
         return retVal;
     }
 
-    void dbsync_free_result(cJSON** js_data)
+    void dbsync_free_result(cJSON** jsData)
     {
-        if (*js_data)
+        if (*jsData)
         {
-            cJSON_Delete(*js_data);
+            cJSON_Delete(*jsData);
         }
     }
 
@@ -634,9 +583,9 @@ extern "C"
 
 void DBSync::initialize(std::function<void(const std::string&)> logFunction)
 {
-    if (!gs_logFunction)
+    if (!GS_LOG_FUNCTION)
     {
-        gs_logFunction = logFunction;
+        GS_LOG_FUNCTION = std::move(logFunction);
     }
 }
 
@@ -687,7 +636,7 @@ void DBSync::setTableMaxRow(const std::string& table, const long long maxRows)
     DBSyncImplementation::instance().setMaxRows(m_dbsyncHandle, table, maxRows);
 }
 
-void DBSync::syncRow(const nlohmann::json& jsInput, ResultCallbackData callbackData)
+void DBSync::syncRow(const nlohmann::json& jsInput, ResultCallbackData& callbackData)
 {
     const auto callbackWrapper {[callbackData](ReturnTypeCallback result, const nlohmann::json& jsonResult)
                                 {
@@ -696,7 +645,7 @@ void DBSync::syncRow(const nlohmann::json& jsInput, ResultCallbackData callbackD
     DBSyncImplementation::instance().syncRowData(m_dbsyncHandle, jsInput, callbackWrapper);
 }
 
-void DBSync::selectRows(const nlohmann::json& jsInput, ResultCallbackData callbackData)
+void DBSync::selectRows(const nlohmann::json& jsInput, ResultCallbackData& callbackData)
 {
     const auto callbackWrapper {[callbackData](ReturnTypeCallback result, const nlohmann::json& jsonResult)
                                 {
@@ -715,18 +664,13 @@ void DBSync::updateWithSnapshot(const nlohmann::json& jsInput, nlohmann::json& j
     const auto callbackWrapper {[&jsResult](ReturnTypeCallback resultType, const nlohmann::json& jsonResult)
                                 {
                                     static std::map<ReturnTypeCallback, std::string> s_opMap {
-                                        // LCOV_EXCL_START
-                                        {MODIFIED, "modified"},
-                                        {DELETED, "deleted"},
-                                        {INSERTED, "inserted"}
-                                        // LCOV_EXCL_STOP
-                                    };
+                                        {MODIFIED, "modified"}, {DELETED, "deleted"}, {INSERTED, "inserted"}};
                                     jsResult[s_opMap.at(resultType)].push_back(jsonResult);
                                 }};
     DBSyncImplementation::instance().updateSnapshotData(m_dbsyncHandle, jsInput, callbackWrapper);
 }
 
-void DBSync::updateWithSnapshot(const nlohmann::json& jsInput, ResultCallbackData callbackData)
+void DBSync::updateWithSnapshot(const nlohmann::json& jsInput, ResultCallbackData& callbackData)
 {
     const auto callbackWrapper {[callbackData](ReturnTypeCallback result, const nlohmann::json& jsonResult)
                                 {
@@ -739,7 +683,7 @@ DBSyncTxn::DBSyncTxn(const DBSYNC_HANDLE handle,
                      const nlohmann::json& tables,
                      const unsigned int threadNumber,
                      const unsigned int maxQueueSize,
-                     ResultCallbackData callbackData)
+                     ResultCallbackData& callbackData)
     : m_shouldBeRemoved {true}
 {
     const auto callbackWrapper {[callbackData](ReturnTypeCallback result, const nlohmann::json& jsonResult)
@@ -765,7 +709,7 @@ DBSyncTxn::~DBSyncTxn()
         }
         catch (const DbSync::dbsync_error& ex)
         {
-            log_message(ex.what());
+            LogMessage(ex.what());
         }
     }
 }
@@ -775,7 +719,7 @@ void DBSyncTxn::syncTxnRow(const nlohmann::json& jsInput)
     PipelineFactory::instance().pipeline(m_txn)->syncRow(jsInput);
 }
 
-void DBSyncTxn::getDeletedRows(ResultCallbackData callbackData)
+void DBSyncTxn::getDeletedRows(ResultCallbackData& callbackData)
 {
     const auto callbackWrapper {[&callbackData](ReturnTypeCallback result, const nlohmann::json& jsonResult)
                                 {

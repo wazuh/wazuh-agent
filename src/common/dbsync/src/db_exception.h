@@ -1,16 +1,4 @@
-/*
- * Wazuh DBSYNC
- * Copyright (C) 2015, Wazuh Inc.
- * June 11, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _DBSYNC_EXCEPTION_H
-#define _DBSYNC_EXCEPTION_H
+#pragma once
 
 #include <pal.h>
 #include <stdexcept>
@@ -44,29 +32,36 @@ DBSyncExceptionType STEP_ERROR_UPDATE_STMT {std::make_pair(23, "Error upgrading 
 
 namespace DbSync
 {
-    /**
-     *   This class should be used by concrete types to report errors.
-     */
+    /// @brief Base class for all exceptions
     class dbsync_error : public std::exception
     {
     public:
+        /// @brief Returns the error message
+        /// @returns the error message
         ATTR_RET_NONNULL
         const char* what() const noexcept override
         {
             return m_error.what();
         }
 
+        /// @brief Returns the error id
+        /// @return the error id
         int id() const noexcept
         {
             return m_id;
         }
 
+        /// @brief Constructor
+        /// @param id id of the error
+        /// @param whatArg message of the error
         dbsync_error(const int id, const std::string& whatArg)
             : m_id {id}
             , m_error {whatArg}
         {
         }
 
+        /// @brief Constructor
+        /// @param exceptionInfo error information
         explicit dbsync_error(const std::pair<int, std::string>& exceptionInfo)
             : m_id {exceptionInfo.first}
             , m_error {exceptionInfo.second}
@@ -79,18 +74,20 @@ namespace DbSync
         std::runtime_error m_error;
     };
 
-    /**
-     *   This class should be used by concrete types to report errors.
-     */
+    /// @brief Base class for all exceptions
     class max_rows_error : public std::exception
     {
     public:
+        /// @brief Returns the error message
+        /// @returns the error message
         ATTR_RET_NONNULL
         const char* what() const noexcept override
         {
             return m_error.what();
         }
 
+        /// @brief Constructor
+        /// @param whatArg message of the error
         explicit max_rows_error(const std::string& whatArg)
             : m_error {whatArg}
         {
@@ -101,5 +98,3 @@ namespace DbSync
         std::runtime_error m_error;
     };
 } // namespace DbSync
-
-#endif // _DBSYNC_EXCEPTION_H

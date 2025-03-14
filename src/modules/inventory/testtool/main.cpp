@@ -1,9 +1,9 @@
 #include <chrono>
+#include <cstdio>
 #include <fstream>
 #include <inventory.hpp>
 #include <iostream>
 #include <memory>
-#include <stdio.h>
 
 constexpr int DEFAULT_SLEEP_TIME {60};
 
@@ -16,7 +16,8 @@ int main(int argc, const char* argv[])
     if (2 == argc)
     {
         timedMainLoop = true;
-        std::string firstArgument {argv[1]};
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        const std::string firstArgument {argv[1]};
 
         sleepTime = firstArgument.find_first_not_of("0123456789") == std::string::npos ? std::stoi(firstArgument)
                                                                                        : DEFAULT_SLEEP_TIME;
@@ -54,7 +55,7 @@ int main(int argc, const char* argv[])
     }
     catch (const std::exception& ex)
     {
-        std::cout << ex.what() << std::endl;
+        std::cout << ex.what() << '\n';
     }
 
     return 0;

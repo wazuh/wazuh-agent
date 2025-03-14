@@ -2,20 +2,6 @@ cmake_minimum_required(VERSION 3.22)
 
 project(inventory_test_tool)
 
-if(COVERITY)
-  add_definitions(-D__GNUC__=8)
-endif(COVERITY)
-add_definitions(-DWAZUH_UNIT_TESTING)
-
-if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -Wshadow -Wnon-virtual-dtor -Woverloaded-virtual -Wunused -Wcast-align -Wformat=2 -std=c++14 -pthread")
-  if(FSANITIZE)
-    set(CMAKE_CXX_FLAGS_DEBUG "-fsanitize=address,leak,undefined")
-  endif(FSANITIZE)
-else()
-  set(CMAKE_CXX_FLAGS "/Zi /W4 /permissive- /std:c++14 /MT /EHsc")
-endif()
-
 file(GLOB INVENTORY_TESTTOOL_SRC
         "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
         )
@@ -39,6 +25,10 @@ else()
         dbsync
         sysinfo
         Inventory
+        pthread
         dl
     )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+
+include(../../../cmake/ConfigureTarget.cmake)
+configure_target(inventory_test_tool)

@@ -27,7 +27,7 @@ static void syncCallback(const char* tag, const char* msg)
 
 static void loggerFunction(modules_log_level_t level, const char* msg)
 {
-    std::cout << "Level:" << level << " Msg: " << msg << std::endl;
+    std::cout << "Level:" << level << " Msg: " << msg << '\n';
 }
 
 int main(int argc, const char* argv[])
@@ -38,7 +38,7 @@ int main(int argc, const char* argv[])
 
         const auto actions { cmdLineArgs.actions() };
 
-        std::cout << "Actions: " << actions.size() << std::endl;
+        std::cout << "Actions: " << actions.size() << '\n';
 
         std::ifstream configFile{ cmdLineArgs.configFile() };
 
@@ -103,7 +103,7 @@ int main(int argc, const char* argv[])
                     testContext->currentId = idx;
                     const std::string inputFile{ actions[idx] };
                     std::ifstream actionsIdxFile{ inputFile };
-                    std::cout << "Processing file: " << inputFile << std::endl;
+                    std::cout << "Processing file: " << inputFile << '\n';
                     const auto& jsonAction { nlohmann::json::parse(actionsIdxFile) };
                     auto action { FactoryAction::create(jsonAction.at("action").get<std::string>()) };
                     action->execute(testContext, jsonAction.at("body"));
@@ -111,13 +111,13 @@ int main(int argc, const char* argv[])
 
                 DB::instance().teardown();
                 std::cout << "Resulting files are located in the "
-                          << cmdLineArgs.outputFolder() << " folder" << std::endl;
+                          << cmdLineArgs.outputFolder() << " folder" << '\n';
             }
             catch (const std::exception& e)
             {
-                std::cerr << std::endl
+                std::cerr << '\n'
                           << "Something went wrong configuring the database. Please, check the config file data, "
-                          << e.what() << std::endl;
+                          << e.what() << '\n';
             }
         }
         else
@@ -127,7 +127,7 @@ int main(int argc, const char* argv[])
     }
     catch (const std::exception& ex)
     {
-        std::cerr << ex.what() << std::endl;
+        std::cerr << ex.what() << '\n';
         CmdLineArgs::showHelp();
     }
 

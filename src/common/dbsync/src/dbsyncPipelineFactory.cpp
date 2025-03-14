@@ -1,14 +1,3 @@
-/*
- * Wazuh DBSYNC
- * Copyright (C) 2015, Wazuh Inc.
- * July 15, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
 #include "dbsyncPipelineFactory.h"
 #include "db_exception.h"
 #include "dbsync_implementation.h"
@@ -20,16 +9,23 @@ namespace DbSync
     class Pipeline final : public IPipeline
     {
     public:
+        /// @brief Constructor
+        /// @param handle Handle assigned as part of the \ref dbsync_create method().
+        /// @param tables Tables to be created in the transaction.
+        /// @param threadNumber   Number of worker threads for processing data. If 0 hardware concurrency
+        ///                       value will be used.
+        /// @param maxQueueSize   Max data number to hold/queue to be processed.
+        /// @param callback callback
         Pipeline(const DBSYNC_HANDLE handle,
                  const nlohmann::json& tables,
                  const unsigned int threadNumber,
                  const unsigned int maxQueueSize,
-                 const ResultCallback callback)
+                 ResultCallback callback)
             : m_handle {handle}
             , m_txnContext {DBSyncImplementation::instance().createTransaction(handle, tables)}
             , m_maxQueueSize {maxQueueSize}
-            , m_callback {callback}
-            , m_spDispatchNode {maxQueueSize ? getDispatchNode(threadNumber) : nullptr}
+            , m_callback {std::move(callback)}
+            , m_spDispatchNode {maxQueueSize ? GetDispatchNode(threadNumber) : nullptr}
         {
             if (!m_callback || !m_handle || !m_txnContext)
             {
@@ -37,7 +33,8 @@ namespace DbSync
             }
         }
 
-        ~Pipeline()
+        /// @brief Destructor
+        ~Pipeline() override
         {
             if (m_spDispatchNode)
             {
@@ -45,7 +42,7 @@ namespace DbSync
                 {
                     m_spDispatchNode->rundown();
                 }
-                catch (...)
+                catch (...) // NOLINT(bugprone-empty-catch)
                 {
                 }
             }
@@ -54,11 +51,24 @@ namespace DbSync
             {
                 DBSyncImplementation::instance().closeTransaction(m_handle, m_txnContext);
             }
-            catch (...)
+            catch (...) // NOLINT(bugprone-empty-catch)
             {
             }
         }
 
+        /// @brief Default copy constructor
+        Pipeline(const Pipeline&) = default;
+
+        /// @brief Default copy operator
+        Pipeline& operator=(const Pipeline&) = default;
+
+        /// @brief Default move constructor
+        Pipeline(Pipeline&&) = default;
+
+        /// @brief Default move operator
+        Pipeline& operator=(Pipeline&&) = default;
+
+        /// @copydoc IPipeline::syncRow
         void syncRow(const nlohmann::json& value) override
         {
             try
@@ -68,11 +78,11 @@ namespace DbSync
                     m_txnContext,
                     value,
                     [this](ReturnTypeCallback resType, const nlohmann::json& resValue)
-                    { this->pushResult(SyncResult {resType, resValue}); });
+                    { this->PushResult(SyncResult {resType, resValue}); });
             }
             catch (const DbSync::max_rows_error&)
             {
-                pushResult(SyncResult {MAX_ROWS, value});
+                PushResult(SyncResult {MAX_ROWS, value});
             }
             catch (const std::exception& ex)
             {
@@ -80,11 +90,12 @@ namespace DbSync
                 result.first = DB_ERROR;
                 result.second = value;
                 result.second["exception"] = ex.what();
-                pushResult(result);
+                PushResult(result);
             }
         }
 
-        void getDeleted(ResultCallback callback) override
+        /// @copydoc IPipeline::getDeleted
+        void getDeleted(const ResultCallback& callback) override
         {
             if (m_spDispatchNode)
             {
@@ -98,14 +109,19 @@ namespace DbSync
         using SyncResult = std::pair<ReturnTypeCallback, nlohmann::json>;
         using DispatchCallbackNode = Utils::ReadNode<SyncResult>;
 
-        std::shared_ptr<DispatchCallbackNode> getDispatchNode(const int threadNumber)
+        /// @brief Gets the dispatch node
+        /// @param threadNumber Number of threads
+        /// @return std::shared_ptr<DispatchCallbackNode>
+        std::shared_ptr<DispatchCallbackNode> GetDispatchNode(const unsigned int threadNumber)
         {
             return std::make_shared<DispatchCallbackNode>(
-                std::bind(&Pipeline::dispatchResult, this, std::placeholders::_1),
+                [this](auto&& pH1) { DispatchResult(std::forward<decltype(pH1)>(pH1)); },
                 threadNumber ? threadNumber : std::thread::hardware_concurrency());
         }
 
-        void pushResult(const SyncResult& result)
+        /// @brief Pushes the result
+        /// @param result
+        void PushResult(const SyncResult& result)
         {
             const auto async {m_spDispatchNode && m_spDispatchNode->size() < m_maxQueueSize};
 
@@ -115,11 +131,13 @@ namespace DbSync
             }
             else
             {
-                dispatchResult(result);
+                DispatchResult(result);
             }
         }
 
-        void dispatchResult(const SyncResult& result)
+        /// @brief Dispatches the result
+        /// @param result
+        void DispatchResult(const SyncResult& result)
         {
             const auto& value {result.second};
 
@@ -129,14 +147,13 @@ namespace DbSync
             }
         }
 
-        const DBSYNC_HANDLE m_handle;
-        const TXN_HANDLE m_txnContext;
-        const unsigned int m_maxQueueSize;
-        const ResultCallback m_callback;
-        const std::shared_ptr<DispatchCallbackNode> m_spDispatchNode;
+        DBSYNC_HANDLE m_handle;
+        TXN_HANDLE m_txnContext;
+        unsigned int m_maxQueueSize;
+        ResultCallback m_callback;
+        std::shared_ptr<DispatchCallbackNode> m_spDispatchNode;
     };
 
-    //----------------------------------------------------------------------------------------
     PipelineFactory& PipelineFactory::instance() noexcept
     {
         static PipelineFactory s_instance;
@@ -145,7 +162,7 @@ namespace DbSync
 
     void PipelineFactory::release() noexcept
     {
-        std::lock_guard<std::mutex> lock {m_contextsMutex};
+        const std::lock_guard<std::mutex> lock {m_contextsMutex};
         m_contexts.clear();
     }
 
@@ -153,18 +170,18 @@ namespace DbSync
                                               const nlohmann::json& tables,
                                               const unsigned int threadNumber,
                                               const unsigned int maxQueueSize,
-                                              const ResultCallback callback)
+                                              const ResultCallback& callback)
     {
         const auto spContext {std::make_shared<Pipeline>(handle, tables, threadNumber, maxQueueSize, callback)};
         const auto ret {spContext.get()};
-        std::lock_guard<std::mutex> lock {m_contextsMutex};
+        const std::lock_guard<std::mutex> lock {m_contextsMutex};
         m_contexts.emplace(ret, spContext);
         return ret;
     }
 
     const std::shared_ptr<IPipeline>& PipelineFactory::pipeline(const PipelineCtxHandle handle)
     {
-        std::lock_guard<std::mutex> lock {m_contextsMutex};
+        const std::lock_guard<std::mutex> lock {m_contextsMutex};
         const auto& it {m_contexts.find(handle)};
 
         if (it == m_contexts.end())
@@ -177,7 +194,7 @@ namespace DbSync
 
     void PipelineFactory::destroy(const PipelineCtxHandle handle)
     {
-        std::lock_guard<std::mutex> lock {m_contextsMutex};
+        const std::lock_guard<std::mutex> lock {m_contextsMutex};
         const auto& it {m_contexts.find(handle)};
 
         if (it == m_contexts.end())

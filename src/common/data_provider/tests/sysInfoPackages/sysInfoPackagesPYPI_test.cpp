@@ -441,6 +441,6 @@ TEST_F(PYPITest, getPackages_InvalidPackageTest_MissingVersion)
 
     pypi->getPackages(folders, callback);
 
-    std::cout << capturedJson.dump(4) << std::endl;
+    std::cout << capturedJson.dump(4) << '\n';
     EXPECT_TRUE(capturedJson.empty());
 }

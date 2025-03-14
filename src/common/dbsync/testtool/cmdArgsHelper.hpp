@@ -1,16 +1,4 @@
-/*
- * Wazuh DBSYNC
- * Copyright (C) 2015, Wazuh Inc.
- * July 02, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _CMD_LINE_ARGS_HELPER_H_
-#define _CMD_LINE_ARGS_HELPER_H_
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -52,7 +40,7 @@ public:
                   << "\t-o OUTPUT_FOLDER\tSpecifies the output folder path where the results will be generated.\n"
                   << "\nExample:"
                   << "\n\t./dbsync_test_tool -c config.json -a input1.json,input2.json,input3.json -o ./output\n"
-                  << std::endl;
+                  << '\n';
     }
 
 private:
@@ -91,5 +79,3 @@ private:
     const std::string m_outputFolder;
     const std::vector<std::string> m_actions;
 };
-
-#endif // _CMD_LINE_ARGS_HELPER_H_

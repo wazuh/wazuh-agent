@@ -501,7 +501,7 @@ ProcessInfo portProcessInfo(const std::string& procPath, const std::deque<int64_
                             }
                             catch (const std::exception& e)
                             {
-                                std::cerr << "Error: " << e.what() << std::endl;
+                                std::cerr << "Error: " << e.what() << '\n';
                             }
                         }
                     }
@@ -546,7 +546,7 @@ nlohmann::json SysInfo::getPorts() const
             }
             catch (const std::exception& e)
             {
-                std::cerr << "Error while parsing port: " << e.what() << std::endl;
+                std::cerr << "Error while parsing port: " << e.what() << '\n';
             }
         }
     }
@@ -570,7 +570,7 @@ nlohmann::json SysInfo::getPorts() const
             }
             catch (const std::exception& e)
             {
-                std::cerr << "Error while parsing pid and process from ports: " << e.what() << std::endl;
+                std::cerr << "Error while parsing pid and process from ports: " << e.what() << '\n';
             }
         }
     }
