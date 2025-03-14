@@ -2,11 +2,8 @@ cmake_minimum_required(VERSION 3.22)
 
 project(dbsyncPipelineFactory_unit_test)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
-
 include_directories(${CMAKE_SOURCE_DIR}/src/)
 link_directories(${CMAKE_BINARY_DIR}/lib)
-
 
 file(GLOB PIPELINE_FACTORY_UNITTEST_SRC
     "*.cpp")

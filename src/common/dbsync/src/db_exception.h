@@ -1,16 +1,4 @@
-/*
- * Wazuh DBSYNC
- * Copyright (C) 2015, Wazuh Inc.
- * June 11, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _DBSYNC_EXCEPTION_H
-#define _DBSYNC_EXCEPTION_H
+#pragma once
 
 #include <pal.h>
 #include <stdexcept>
@@ -44,9 +32,7 @@ DBSyncExceptionType STEP_ERROR_UPDATE_STMT {std::make_pair(23, "Error upgrading 
 
 namespace DbSync
 {
-    /**
-     *   This class should be used by concrete types to report errors.
-     */
+    /// @brief Base class for all exceptions
     class dbsync_error : public std::exception
     {
     public:
@@ -79,9 +65,7 @@ namespace DbSync
         std::runtime_error m_error;
     };
 
-    /**
-     *   This class should be used by concrete types to report errors.
-     */
+    /// @brief Base class for all exceptions
     class max_rows_error : public std::exception
     {
     public:
@@ -101,5 +85,3 @@ namespace DbSync
         std::runtime_error m_error;
     };
 } // namespace DbSync
-
-#endif // _DBSYNC_EXCEPTION_H

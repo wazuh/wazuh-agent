@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.22)
 
 project(RpmPackageManager_unit_test)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
-
 file(GLOB RPM_UNIT_TEST_SRC "*.cpp")
 file(GLOB RPM_SRC "${CMAKE_SOURCE_DIR}/src/packages/rpm*.cpp")
 

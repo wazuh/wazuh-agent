@@ -1,5 +1,5 @@
-#ifndef _TEST_CONFIG_H
-#define _TEST_CONFIG_H
+#pragma once
+
 constexpr auto TEST_CONFIG_FILE_CONTENT {
     R"DELIMITER({
     "exclusions": [
@@ -158,5 +158,3 @@ constexpr auto TEST_CONFIG_FILE_CONTENT {
     })DELIMITER"};
 
 constexpr auto TEST_CONFIG_FILE_NAME {"test_config.json"};
-
-#endif //_TEST_CONFIG_H

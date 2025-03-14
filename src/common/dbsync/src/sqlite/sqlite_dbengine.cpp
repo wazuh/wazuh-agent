@@ -1,14 +1,3 @@
-/*
- * Wazuh DBSYNC
- * Copyright (C) 2015, Wazuh Inc.
- * June 11, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
 #include "sqlite_dbengine.h"
 #include "commonDefs.h"
 #include "db_exception.h"
@@ -114,34 +103,25 @@ void SQLiteDBEngine::refreshTableData(const nlohmann::json& data,
             {
                 if (!removeNotExistsRows(table, primaryKeyList, callback, lock))
                 {
-                    // LCOV_EXCL_START
                     std::cout << "Error during the delete rows update " << __LINE__ << " - " << __FILE__ << std::endl;
-                    // LCOV_EXCL_STOP
                 }
 
                 if (!changeModifiedRows(table, primaryKeyList, callback, lock))
                 {
-                    // LCOV_EXCL_START
                     std::cout << "Error during the change of modified rows " << __LINE__ << " - " << __FILE__
                               << std::endl;
-                    // LCOV_EXCL_STOP
                 }
 
                 if (!insertNewRows(table, primaryKeyList, callback, lock))
                 {
-                    // LCOV_EXCL_START
                     std::cout << "Error during the insert rows update " << __LINE__ << " - " << __FILE__ << std::endl;
-                    // LCOV_EXCL_STOP
                 }
             }
         }
-        // LCOV_EXCL_START
         else
         {
             throw dbengine_error {EMPTY_TABLE_METADATA};
         }
-
-        // LCOV_EXCL_STOP
     }
 }
 
@@ -259,15 +239,12 @@ void SQLiteDBEngine::syncTableRowData(const nlohmann::json& jsInput,
                                   entry,
                                   [&]()
                                   {
-                                      // LCOV_EXCL_START
                                       if (callback)
                                       {
                                           lock.unlock();
                                           callback(INSERTED, entry);
                                           lock.lock();
                                       }
-
-                                      // LCOV_EXCL_STOP
                                   });
                 }
             }
@@ -299,24 +276,18 @@ void SQLiteDBEngine::initializeStatusField(const nlohmann::json& tableNames)
                 const auto stmtAdd {getStatement("ALTER TABLE " + table + " ADD COLUMN " + STATUS_FIELD_NAME + " " +
                                                  STATUS_FIELD_TYPE + " DEFAULT 1;")};
 
-                // LCOV_EXCL_START
                 if (SQLITE_ERROR == stmtAdd->step())
                 {
                     throw dbengine_error {STEP_ERROR_UPDATE_STATUS_FIELD};
                 }
-
-                // LCOV_EXCL_STOP
             }
 
             const auto& stmtInit {getStatement("UPDATE " + table + " SET " + STATUS_FIELD_NAME + "=0;")};
 
-            // LCOV_EXCL_START
             if (SQLITE_ERROR == stmtInit->step())
             {
                 throw dbengine_error {STEP_ERROR_ADD_STATUS_FIELD};
             }
-
-            // LCOV_EXCL_STOP
         }
         else
         {
@@ -335,13 +306,10 @@ void SQLiteDBEngine::deleteRowsByStatusField(const nlohmann::json& tableNames)
         {
             const auto stmt {getStatement("DELETE FROM " + table + " WHERE " + STATUS_FIELD_NAME + "=0;")};
 
-            // LCOV_EXCL_START
             if (SQLITE_ERROR == stmt->step())
             {
                 throw dbengine_error {STEP_ERROR_DELETE_STATUS_FIELD};
             }
-
-            // LCOV_EXCL_STOP
 
             updateTableRowCounter(table, m_sqliteConnection->changes() * -1ll);
         }
@@ -437,10 +405,7 @@ void SQLiteDBEngine::selectData(const std::string& table,
 
                         case SQLITE_FLOAT: object[name] = column->value(double_t {}); break;
 
-                        // LCOV_EXCL_START
-                        default:
-                            throw dbengine_error {INVALID_COLUMN_TYPE};
-                            // LCOV_EXCL_STOP
+                        default: throw dbengine_error {INVALID_COLUMN_TYPE};
                     }
                 }
             }
@@ -649,14 +614,12 @@ void SQLiteDBEngine::insertElement(const std::string& table,
 
     updateTableRowCounter(table, 1ll);
 
-    // LCOV_EXCL_START
     if (SQLITE_ERROR == stmt->step())
     {
         updateTableRowCounter(table, -1ll);
         throw dbengine_error {BIND_FIELDS_DOES_NOT_MATCH};
     }
 
-    // LCOV_EXCL_STOP
     if (callback)
     {
         callback();
@@ -715,13 +678,10 @@ std::string SQLiteDBEngine::buildInsertDataSqlQuery(const std::string& table, co
         // Complete the statement
         sql.append(binds);
     }
-    // LCOV_EXCL_START
     else
     {
         throw dbengine_error {SQL_STMT_ERROR};
     }
-
-    // LCOV_EXCL_STOP
 
     return sql;
 }
@@ -871,13 +831,10 @@ void SQLiteDBEngine::deleteTempTable(const std::string& table)
         m_sqliteConnection->execute("DELETE FROM " + table + TEMP_TABLE_SUBFIX + ";");
     }
     // if the table doesn't exist we don't care.
-    //  LCOV_EXCL_START
     catch (const std::exception& ex)
     {
         (void)ex;
     }
-
-    // LCOV_EXCL_STOP
 }
 
 bool SQLiteDBEngine::getTableCreateQuery(const std::string& table, std::string& resultQuery)
@@ -1099,13 +1056,11 @@ std::string SQLiteDBEngine::buildDeleteBulkDataSqlQuery(const std::string& table
         sql = sql.substr(0, sql.size() - 5);
         sql.append(";");
     }
-    // LCOV_EXCL_START
     else
     {
         throw dbengine_error {SQL_STMT_ERROR};
     }
 
-    // LCOV_EXCL_STOP
     return sql;
 }
 
@@ -1130,7 +1085,6 @@ bool SQLiteDBEngine::deleteRows(const std::string& table,
                 ++index;
             }
 
-            // LCOV_EXCL_START
             if (SQLITE_ERROR == stmt->step())
             {
                 throw dbengine_error {BIND_FIELDS_DOES_NOT_MATCH};
@@ -1138,19 +1092,16 @@ bool SQLiteDBEngine::deleteRows(const std::string& table,
 
             updateTableRowCounter(table, m_sqliteConnection->changes() * -1ll);
 
-            // LCOV_EXCL_STOP
             stmt->reset();
         }
 
         ret = true;
     }
-    // LCOV_EXCL_START
     else
     {
         throw dbengine_error {SQL_STMT_ERROR};
     }
 
-    // LCOV_EXCL_STOP
     return ret;
 }
 
@@ -1183,7 +1134,6 @@ void SQLiteDBEngine::deleteRowsbyPK(const std::string& table, const nlohmann::js
                 }
             }
 
-            // LCOV_EXCL_START
             if (SQLITE_ERROR == stmt->step())
             {
                 throw dbengine_error {BIND_FIELDS_DOES_NOT_MATCH};
@@ -1191,7 +1141,6 @@ void SQLiteDBEngine::deleteRowsbyPK(const std::string& table, const nlohmann::js
 
             updateTableRowCounter(table, m_sqliteConnection->changes() * -1ll);
 
-            // LCOV_EXCL_STOP
             stmt->reset();
         }
     }
@@ -1519,7 +1468,6 @@ void SQLiteDBEngine::bulkInsert(const std::string& table, const std::vector<Row>
 
         updateTableRowCounter(table, 1ll);
 
-        // LCOV_EXCL_START
         if (SQLITE_ERROR == stmt->step())
         {
 
@@ -1527,7 +1475,6 @@ void SQLiteDBEngine::bulkInsert(const std::string& table, const std::vector<Row>
             throw dbengine_error {BIND_FIELDS_DOES_NOT_MATCH};
         }
 
-        // LCOV_EXCL_STOP
         stmt->reset();
     }
 }
@@ -1601,13 +1548,11 @@ std::string SQLiteDBEngine::buildUpdatePartialDataSqlQuery(const std::string& ta
         sql = sql.substr(0, sql.size() - 5); // Remove the last " AND "
         sql.append(";");
     }
-    // LCOV_EXCL_START
     else
     {
         throw dbengine_error {SQL_STMT_ERROR};
     }
 
-    // LCOV_EXCL_STOP
     return sql;
 }
 
@@ -1630,13 +1575,11 @@ std::string SQLiteDBEngine::buildSelectMatchingPKsSqlQuery(const std::string& ta
         sql = sql.substr(0, sql.size() - 5); // Remove the last " AND "
         sql.append(";");
     }
-    // LCOV_EXCL_START
     else
     {
         throw dbengine_error {SQL_STMT_ERROR};
     }
 
-    // LCOV_EXCL_STOP
     return sql;
 }
 
@@ -1681,13 +1624,11 @@ std::string SQLiteDBEngine::buildUpdateDataSqlQuery(const std::string& table,
             sql.append(";");
         }
     }
-    // LCOV_EXCL_START
     else
     {
         throw dbengine_error {SQL_STMT_ERROR};
     }
 
-    // LCOV_EXCL_STOP
     return sql;
 }
 
@@ -1806,13 +1747,11 @@ bool SQLiteDBEngine::getRowsToModify(const std::string& table,
 
         ret = true;
     }
-    // LCOV_EXCL_START
     else
     {
         throw dbengine_error {SQL_STMT_ERROR};
     }
 
-    // LCOV_EXCL_STOP
     return ret;
 }
 
@@ -1864,13 +1803,11 @@ void SQLiteDBEngine::updateSingleRow(const std::string& table, const nlohmann::j
             }
         }
 
-        // LCOV_EXCL_START
         if (SQLITE_ERROR == stmt->step())
         {
             throw dbengine_error {BIND_FIELDS_DOES_NOT_MATCH};
         }
 
-        // LCOV_EXCL_STOP
         stmt->reset();
     }
 }

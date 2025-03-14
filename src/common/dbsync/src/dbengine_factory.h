@@ -1,16 +1,4 @@
-/*
- * Wazuh DBSYNC
- * Copyright (C) 2015, Wazuh Inc.
- * June 11, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _DBENGINE_FACTORY_H
-#define _DBENGINE_FACTORY_H
+#pragma once
 
 #include "commonDefs.h"
 #include "db_exception.h"
@@ -20,9 +8,17 @@
 
 namespace DbSync
 {
+    /// @brief Factory class for creating DbEngines
     class FactoryDbEngine
     {
     public:
+        /// @brief Creates a new DbEngine instance.
+        /// @param dbType Database type to be used (currently only supported SQLITE3)
+        /// @param path Path where the local database will be created.
+        /// @param sqlStatement SQL sentence to create tables in a SQL engine.
+        /// @param dbManagement Database management type to be used at startup.
+        /// @param upgradeStatements SQL sentences to be executed when upgrading the database.
+        /// @return Handle instance to be used for common sql operations (cannot be used by more than 1 thread).
         static std::unique_ptr<IDbEngine> create(const DbEngineType dbType,
                                                  const std::string& path,
                                                  const std::string& sqlStatement,
@@ -42,5 +38,3 @@ namespace DbSync
         }
     };
 } // namespace DbSync
-
-#endif // _DBENGINE_FACTORY_H

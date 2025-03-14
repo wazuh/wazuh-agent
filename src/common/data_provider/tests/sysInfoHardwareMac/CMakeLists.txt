@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.22)
 
 project(sysInfoHardwareMac_unit_test)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
-
 file(GLOB sysinfo_UNIT_TEST_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/../../src/hardware/*X86_64Mac.cpp"
     "sysInfoHardwareMac_test.cpp"

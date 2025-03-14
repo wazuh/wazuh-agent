@@ -1,14 +1,3 @@
-/*
- * Wazuh DBSYNC
- * Copyright (C) 2015, Wazuh Inc.
- * June 11, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
 #include "dbsync.h"
 #include "cjsonSmartDeleter.hpp"
 #include "dbsync.hpp"
@@ -72,13 +61,10 @@ extern "C"
             {
                 errorMessage += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
             }
-            // LCOV_EXCL_START
             catch (...)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
         log_message(errorMessage);
@@ -137,13 +123,10 @@ extern "C"
             {
                 errorMessage += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
             }
-            // LCOV_EXCL_START
             catch (...)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
         log_message(errorMessage);
@@ -171,13 +154,10 @@ extern "C"
                 errorMessage += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
                 retVal = ex.id();
             }
-            // LCOV_EXCL_START
             catch (...)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
         log_message(errorMessage);
@@ -206,13 +186,10 @@ extern "C"
                 error_message += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
                 retVal = ex.id();
             }
-            // LCOV_EXCL_START
             catch (...)
             {
                 error_message += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
         log_message(error_message);
@@ -289,13 +266,10 @@ extern "C"
                 errorMessage += "DB error, ";
                 errorMessage += ex.what();
             }
-            // LCOV_EXCL_START
             catch (...)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
         log_message(errorMessage);
@@ -324,13 +298,10 @@ extern "C"
                 errorMessage += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
                 retVal = ex.id();
             }
-            // LCOV_EXCL_START
             catch (...)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
         log_message(errorMessage);
@@ -372,13 +343,10 @@ extern "C"
                 errorMessage += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
                 retVal = ex.id();
             }
-            // LCOV_EXCL_START
             catch (...)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
         log_message(errorMessage);
@@ -419,13 +387,10 @@ extern "C"
                 errorMessage += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
                 retVal = ex.id();
             }
-            // LCOV_EXCL_START
             catch (...)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
         log_message(errorMessage);
@@ -459,13 +424,10 @@ extern "C"
                 errorMessage += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
                 retVal = ex.id();
             }
-            // LCOV_EXCL_START
             catch (...)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
         log_message(errorMessage);
@@ -499,13 +461,10 @@ extern "C"
                 error_message += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
                 retVal = ex.id();
             }
-            // LCOV_EXCL_START
             catch (...)
             {
                 error_message += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
         log_message(error_message);
@@ -527,17 +486,13 @@ extern "C"
             try
             {
                 nlohmann::json result;
-                const auto callbackWrapper {[&result](ReturnTypeCallback resultType, const nlohmann::json& jsonResult)
-                                            {
-                                                static std::map<ReturnTypeCallback, std::string> s_opMap {
-                                                    // LCOV_EXCL_START
-                                                    {MODIFIED, "modified"},
-                                                    {DELETED, "deleted"},
-                                                    {INSERTED, "inserted"}
-                                                    // LCOV_EXCL_STOP
-                                                };
-                                                result[s_opMap.at(resultType)].push_back(jsonResult);
-                                            }};
+                const auto callbackWrapper {
+                    [&result](ReturnTypeCallback resultType, const nlohmann::json& jsonResult)
+                    {
+                        static std::map<ReturnTypeCallback, std::string> s_opMap {
+                            {MODIFIED, "modified"}, {DELETED, "deleted"}, {INSERTED, "inserted"}};
+                        result[s_opMap.at(resultType)].push_back(jsonResult);
+                    }};
                 const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_PrintUnformatted(js_snapshot)};
                 DBSyncImplementation::instance().updateSnapshotData(
                     handle, nlohmann::json::parse(spJsonBytes.get()), callbackWrapper);
@@ -559,13 +514,10 @@ extern "C"
                 errorMessage += "DB error, ";
                 errorMessage += ex.what();
             }
-            // LCOV_EXCL_START
             catch (...)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
         log_message(errorMessage);
@@ -607,13 +559,10 @@ extern "C"
                 errorMessage += "DB error, id: " + std::to_string(ex.id()) + ". " + ex.what();
                 retVal = ex.id();
             }
-            // LCOV_EXCL_START
             catch (...)
             {
                 errorMessage += "Unrecognized error.";
             }
-
-            // LCOV_EXCL_STOP
         }
 
         log_message(errorMessage);
@@ -715,12 +664,7 @@ void DBSync::updateWithSnapshot(const nlohmann::json& jsInput, nlohmann::json& j
     const auto callbackWrapper {[&jsResult](ReturnTypeCallback resultType, const nlohmann::json& jsonResult)
                                 {
                                     static std::map<ReturnTypeCallback, std::string> s_opMap {
-                                        // LCOV_EXCL_START
-                                        {MODIFIED, "modified"},
-                                        {DELETED, "deleted"},
-                                        {INSERTED, "inserted"}
-                                        // LCOV_EXCL_STOP
-                                    };
+                                        {MODIFIED, "modified"}, {DELETED, "deleted"}, {INSERTED, "inserted"}};
                                     jsResult[s_opMap.at(resultType)].push_back(jsonResult);
                                 }};
     DBSyncImplementation::instance().updateSnapshotData(m_dbsyncHandle, jsInput, callbackWrapper);

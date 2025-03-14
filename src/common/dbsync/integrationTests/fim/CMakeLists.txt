@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.22)
 
 project(fim_integration_test)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
-
 add_definitions(-DTEST_DB_INPUTS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../include/)
