@@ -9,8 +9,8 @@
 
 namespace DbSync
 {
-    using TxnContext = void*;
-    using PipelineCtxHandle = void*;
+    using TxnContext = const void*;
+    using PipelineCtxHandle = const void*;
 
     /// @brief Pipeline interface
     struct IPipeline
@@ -24,7 +24,7 @@ namespace DbSync
 
         /// @brief Gets deleted rows
         /// @param callback callback
-        virtual void getDeleted(const ResultCallback callback) = 0;
+        virtual void getDeleted(const ResultCallback& callback) = 0;
     };
 
     /// @brief Pipeline factory
@@ -49,7 +49,7 @@ namespace DbSync
                                  const nlohmann::json& tables,
                                  const unsigned int threadNumber,
                                  const unsigned int maxQueueSize,
-                                 const ResultCallback callback);
+                                 const ResultCallback& callback);
 
         /// @brief Gets the pipeline
         /// @param handle PipelineCtxHandle

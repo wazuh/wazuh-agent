@@ -37,13 +37,13 @@ typedef enum
 } ReturnTypeCallback;
 
 /// @brief Represents the handle associated with database creation.
-typedef void* DBSYNC_HANDLE;
+typedef const void* DBSYNC_HANDLE;
 
 /// @brief Represents the transaction handle associated with a database instance.
-typedef void* TXN_HANDLE;
+typedef const void* TXN_HANDLE;
 
 /// @brief Represents the handle associated with the remote synch.
-typedef void* RSYNC_HANDLE;
+typedef const void* RSYNC_HANDLE;
 
 /// @brief Callback function for results
 /// @param result_type Enumeration value indicating what action was taken.

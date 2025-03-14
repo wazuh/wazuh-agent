@@ -15,6 +15,9 @@ file(GLOB SQLITE_ENGINE_SRC
 add_executable(dbengine_unit_test
     ${DBENGINE_UNITTEST_SRC}
     ${SQLITE_ENGINE_SRC})
+
+configure_target(dbengine_unit_test)
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(dbengine_unit_test
         dbsync

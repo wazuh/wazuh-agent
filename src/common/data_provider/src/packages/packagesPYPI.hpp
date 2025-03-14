@@ -105,7 +105,7 @@ class PYPI final
         }
         catch (const std::exception& e)
         {
-            std::cerr << "Error parsing PYPI package: " << path.string() << ", " << e.what() << std::endl;
+            std::cerr << "Error parsing PYPI package: " << path.string() << ", " << e.what() << '\n';
         }
     }
 

@@ -13,7 +13,10 @@ file(GLOB INTERFACE_UNITTEST_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/../../src/sqlite/*.cpp")
 
 add_executable(dbsync_unit_test
-    ${INTERFACE_UNITTEST_SRC} )
+    ${INTERFACE_UNITTEST_SRC})
+
+configure_target(dbsync_unit_test)
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(dbsync_unit_test
         dbsync

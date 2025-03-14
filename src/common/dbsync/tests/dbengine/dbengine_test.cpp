@@ -7,12 +7,12 @@
 #include <sqlite3.h>
 #include <string>
 
-using ::testing::_;
+using ::testing::_; // NOLINT(bugprone-reserved-identifier)
 using ::testing::An;
 using ::testing::ByMove;
 using ::testing::Return;
 
-static void initNoMetaDataMocks(std::unique_ptr<SQLiteDBEngine>& spEngine)
+static void InitNoMetaDataMocks(std::unique_ptr<SQLiteDBEngine>& spEngine)
 {
     const auto& mockFactory {std::make_shared<MockSQLiteFactory>()};
     const auto& mockConnection {std::make_shared<MockConnection>()};
@@ -484,7 +484,7 @@ TEST_F(DBEngineTest, syncTableRowDataWithoutMetadataShouldThrow)
     std::shared_timed_mutex mutex;
     ExclusiveLocking lock(mutex);
 
-    initNoMetaDataMocks(spEngine);
+    InitNoMetaDataMocks(spEngine);
     // Due to the no metadata this should throw
     EXPECT_THROW(spEngine->syncTableRowData({{"table", "dummy"}, {"data", {}}}, nullptr, false, lock), dbengine_error);
 }
@@ -492,7 +492,7 @@ TEST_F(DBEngineTest, syncTableRowDataWithoutMetadataShouldThrow)
 TEST_F(DBEngineTest, deleteTableRowsDataWithoutMetadataShouldThrow)
 {
     std::unique_ptr<SQLiteDBEngine> spEngine;
-    initNoMetaDataMocks(spEngine);
+    InitNoMetaDataMocks(spEngine);
 
     // Due to the no metadata this should throw
     EXPECT_THROW(spEngine->deleteTableRowsData("dummy", {}), dbengine_error);
@@ -501,7 +501,7 @@ TEST_F(DBEngineTest, deleteTableRowsDataWithoutMetadataShouldThrow)
 TEST_F(DBEngineTest, selectDataWithoutMetadataShouldThrow)
 {
     std::unique_ptr<SQLiteDBEngine> spEngine;
-    initNoMetaDataMocks(spEngine);
+    InitNoMetaDataMocks(spEngine);
 
     // Due to the no metadata this should throw
     std::shared_timed_mutex mutex;
@@ -512,7 +512,7 @@ TEST_F(DBEngineTest, selectDataWithoutMetadataShouldThrow)
 TEST_F(DBEngineTest, bulkInsertWithoutMetadataShouldThrow)
 {
     std::unique_ptr<SQLiteDBEngine> spEngine;
-    initNoMetaDataMocks(spEngine);
+    InitNoMetaDataMocks(spEngine);
 
     // Due to the no metadata this should throw
     EXPECT_THROW(spEngine->bulkInsert("dummy", nullptr), dbengine_error);

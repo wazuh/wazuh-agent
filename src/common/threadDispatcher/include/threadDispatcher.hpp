@@ -121,7 +121,7 @@ namespace Utils
             }
             catch (const std::exception& ex)
             {
-                std::cerr << "Dispatch handler error, " << ex.what() << std::endl;
+                std::cerr << "Dispatch handler error, " << ex.what() << '\n';
             }
         }
 

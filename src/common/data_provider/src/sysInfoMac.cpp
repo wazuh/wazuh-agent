@@ -132,13 +132,13 @@ getPackagesFromPath(const std::string& pkgDirectory, const int pkgType, std::fun
                     }
                     catch (const std::exception& e)
                     {
-                        std::cerr << e.what() << std::endl;
+                        std::cerr << e.what() << '\n';
                     }
                 }
             }
             catch (const std::exception& e)
             {
-                std::cerr << e.what() << std::endl;
+                std::cerr << e.what() << '\n';
             }
         }
     }
@@ -172,7 +172,7 @@ getPackagesFromPath(const std::string& pkgDirectory, const int pkgType, std::fun
                 }
                 catch (const std::exception& e)
                 {
-                    std::cerr << e.what() << std::endl;
+                    std::cerr << e.what() << '\n';
                 }
             }
             else if (BREW == pkgType)
@@ -207,7 +207,7 @@ getPackagesFromPath(const std::string& pkgDirectory, const int pkgType, std::fun
                             }
                             catch (const std::exception& e)
                             {
-                                std::cerr << e.what() << std::endl;
+                                std::cerr << e.what() << '\n';
                             }
                         }
                     }

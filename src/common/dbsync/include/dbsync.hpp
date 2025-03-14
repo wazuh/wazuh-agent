@@ -52,12 +52,12 @@ public:
     /// @brief Inserts (or modifies) a database record.
     /// @param jsInput        JSON information used to add/modified a database record.
     /// @param callbackData   Result callback(std::function) will be called for each result.
-    virtual void syncRow(const nlohmann::json& jsInput, ResultCallbackData callbackData);
+    virtual void syncRow(const nlohmann::json& jsInput, ResultCallbackData& callbackData);
 
     /// @brief Select data, based in \p jsInput data, from the database table.
     /// @param jsInput         JSON with table name, fields and filters to apply in the query.
     /// @param callbackData    Result callback(std::function) will be called for each result.
-    virtual void selectRows(const nlohmann::json& jsInput, ResultCallbackData callbackData);
+    virtual void selectRows(const nlohmann::json& jsInput, ResultCallbackData& callbackData);
 
     /// @brief Deletes a database table record and its relationships based on \p jsInput value.
     /// @param jsInput JSON information to be applied/deleted in the database.
@@ -72,7 +72,7 @@ public:
     /// @brief Update data table, based on json_raw_snapshot bulk data based on json string.
     /// @param jsInput       JSON with snapshot values.
     /// @param callbackData  Result callback(std::function) will be called for each result.
-    virtual void updateWithSnapshot(const nlohmann::json& jsInput, ResultCallbackData callbackData);
+    virtual void updateWithSnapshot(const nlohmann::json& jsInput, ResultCallbackData& callbackData);
 
     /// @brief Turns off the services provided by the shared library.
     static void teardown();
@@ -104,7 +104,7 @@ public:
                        const nlohmann::json& tables,
                        const unsigned int threadNumber,
                        const unsigned int maxQueueSize,
-                       ResultCallbackData callbackData);
+                       ResultCallbackData& callbackData);
 
     /// @brief DBSync transaction Constructor.
     /// @param handle     handle to point another dbsync transaction instance.
@@ -119,7 +119,7 @@ public:
 
     /// @brief Gets the deleted rows (diff) from the database.
     /// @param callbackData    Result callback(std::function) will be called for each result.
-    virtual void getDeletedRows(ResultCallbackData callbackData);
+    virtual void getDeletedRows(ResultCallbackData& callbackData);
 
     /// @brief Get current dbsync transaction handle in the instance.
     /// @return TXN_HANDLE to be used in all internal calls.

@@ -9,33 +9,33 @@
 constexpr auto DATABASE_TEMP {"TEMP.db"};
 constexpr auto DATABASE_MEMORY {":memory:"};
 constexpr auto DATABASE_PERMISSIONS {0640u};
+constexpr auto DEFAULT_MAX_QUEUE_SIZE {100u};
 
 class CallbackMock
 {
 public:
     CallbackMock() = default;
-    ~CallbackMock() = default;
     MOCK_METHOD(void, callbackMock, (ReturnTypeCallback result_type, const nlohmann::json&), ());
 };
 
-static void callback(const ReturnTypeCallback type, const cJSON* json, void* ctx)
+static void Callback(const ReturnTypeCallback type, const cJSON* json, void* ctx)
 {
-    CallbackMock* wrapper {reinterpret_cast<CallbackMock*>(ctx)};
+    CallbackMock* wrapper {static_cast<CallbackMock*>(ctx)};
     const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_PrintUnformatted(json)};
     wrapper->callbackMock(type, nlohmann::json::parse(spJsonBytes.get()));
 }
 
-static void logFunction(const char* msg)
+static void LogFunction(const char* msg)
 {
     if (msg)
     {
-        std::cout << msg << std::endl;
+        std::cout << msg << '\n';
     }
 }
 
 void DBSyncTest::SetUp()
 {
-    dbsync_initialize(&logFunction);
+    dbsync_initialize(&LogFunction);
 };
 
 void DBSyncTest::TearDown()
@@ -94,7 +94,7 @@ TEST_F(DBSyncTest, createTxn)
 
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsonTables {cJSON_Parse(tables)};
 
-    callback_data_t callbackData {callback, dummyCtx.get()};
+    const callback_data_t callbackData {Callback, dummyCtx.get()};
 
     EXPECT_NO_THROW(dummyCtx->txnContext = dbsync_create_txn(handle, jsonTables.get(), 0, 100, callbackData));
     ASSERT_NE(nullptr, dummyCtx->txnContext);
@@ -108,8 +108,8 @@ TEST_F(DBSyncTest, createTxnNullptr)
     const auto handle {dbsync_create(HostType::AGENT, DbEngineType::SQLITE3, DATABASE_TEMP, sql)};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsonTables {cJSON_Parse(tables)};
 
-    callback_data_t callbackData {callback, dummyCtx.get()};
-    callback_data_t callbackDataNullptr {callback, nullptr};
+    const callback_data_t callbackData {Callback, dummyCtx.get()};
+    const callback_data_t callbackDataNullptr {Callback, nullptr};
 
     ASSERT_NE(nullptr, handle);
     ASSERT_EQ(nullptr, dbsync_create_txn(nullptr, jsonTables.get(), 0, 100, callbackData));
@@ -358,14 +358,13 @@ TEST_F(DBSyncTest, InsertDataInvalidHandle)
 
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsInsert {cJSON_Parse(insertionSqlStmt)};
 
-    uintptr_t invalidHandle = 0xffffffff;
-    EXPECT_NE(0, dbsync_insert_data(reinterpret_cast<void*>(invalidHandle), jsInsert.get()));
+    EXPECT_NE(0, dbsync_insert_data(nullptr, jsInsert.get()));
 }
 
 TEST_F(DBSyncTest, GetDeletedRowsInvalidInput)
 {
     CallbackMock wrapper;
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
     EXPECT_NE(0, dbsync_get_deleted_rows(nullptr, callbackData));
 }
 
@@ -388,7 +387,7 @@ TEST_F(DBSyncTest, GetDeletedRowsOnlyPKs)
     const std::unique_ptr<DummyContext> dummyCtx {std::make_unique<DummyContext>()};
 
     CallbackMock wrapper;
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
 
     EXPECT_CALL(wrapper, callbackMock(INSERTED, nlohmann::json::parse(R"({"name":"System","pid":4,"euser":"wazuh"})")))
         .Times(1);
@@ -429,7 +428,7 @@ TEST_F(DBSyncTest, GetDeletedRowsAllAttributes)
     const std::unique_ptr<DummyContext> dummyCtx {std::make_unique<DummyContext>()};
 
     CallbackMock wrapper;
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
 
     EXPECT_CALL(wrapper, callbackMock(INSERTED, nlohmann::json::parse(R"({"name":"System","pid":4,"euser":"wazuh"})")))
         .Times(1);
@@ -443,7 +442,8 @@ TEST_F(DBSyncTest, GetDeletedRowsAllAttributes)
 
     EXPECT_EQ(0, dbsync_sync_row(dummyCtx->handle, jsSync1.get(), callbackData));
 
-    dummyCtx->txnContext = dbsync_create_txn(dummyCtx->handle, jsonTables.get(), 0, 100, callbackData);
+    dummyCtx->txnContext =
+        dbsync_create_txn(dummyCtx->handle, jsonTables.get(), 0, DEFAULT_MAX_QUEUE_SIZE, callbackData);
     ASSERT_NE(nullptr, dummyCtx->handle);
 
     EXPECT_EQ(0, dbsync_sync_txn_row(dummyCtx->txnContext, jsSync2.get()));
@@ -483,8 +483,7 @@ TEST_F(DBSyncTest, UpdateDataBadInputs)
     cJSON* jsResponse {nullptr};
 
     // Failure cases
-    uintptr_t invalidHandle = 0xffffffff;
-    EXPECT_NE(0, dbsync_update_with_snapshot(reinterpret_cast<void*>(invalidHandle), jsInsert.get(), nullptr));
+    EXPECT_NE(0, dbsync_update_with_snapshot(nullptr, jsInsert.get(), nullptr));
     EXPECT_NE(0, dbsync_update_with_snapshot(handle, jsInsertWithoutTable.get(), &jsResponse));
     EXPECT_NE(0, dbsync_update_with_snapshot(nullptr, jsInsertWithoutTable.get(), nullptr));
     EXPECT_NE(0, dbsync_update_with_snapshot(handle, nullptr, nullptr));
@@ -503,7 +502,7 @@ TEST_F(DBSyncTest, UpdateDataCb)
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsInsert {cJSON_Parse(insertionSqlStmt)};
 
     CallbackMock wrapper;
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
 
     EXPECT_EQ(0, dbsync_update_with_snapshot_cb(handle, jsInsert.get(), callbackData));
 }
@@ -518,11 +517,10 @@ TEST_F(DBSyncTest, UpdateDataCbBadInputs)
 
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsInsert {cJSON_Parse(insertionSqlStmt)};
 
-    callback_data_t callbackData {nullptr, nullptr};
+    const callback_data_t callbackData {nullptr, nullptr};
 
     // Failure cases
-    uintptr_t invalidHandle = 0xffffffff;
-    EXPECT_NE(0, dbsync_update_with_snapshot_cb(reinterpret_cast<void*>(invalidHandle), jsInsert.get(), callbackData));
+    EXPECT_NE(0, dbsync_update_with_snapshot_cb(nullptr, jsInsert.get(), callbackData));
     EXPECT_NE(0, dbsync_update_with_snapshot_cb(handle, nullptr, callbackData));
     EXPECT_NE(0, dbsync_update_with_snapshot_cb(handle, jsInsert.get(), callbackData));
 }
@@ -538,7 +536,7 @@ TEST_F(DBSyncTest, UpdateDataCbEmptyInputs)
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsInsert {cJSON_Parse(insertionSqlStmt)};
 
     CallbackMock wrapper;
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
 
     // Failure cases
     EXPECT_NE(0, dbsync_update_with_snapshot_cb(handle, jsInsert.get(), callbackData));
@@ -694,8 +692,7 @@ TEST_F(DBSyncTest, SetMaxRowsBadData)
     const auto handle {dbsync_create(HostType::AGENT, DbEngineType::SQLITE3, DATABASE_TEMP, sql)};
     ASSERT_NE(nullptr, handle);
 
-    uintptr_t invalidHandle = 0xffffffff;
-    EXPECT_NE(0, dbsync_set_table_max_rows(reinterpret_cast<void*>(invalidHandle), "dummy", 100));
+    EXPECT_NE(0, dbsync_set_table_max_rows(nullptr, "dummy", 100));
     EXPECT_NE(0, dbsync_set_table_max_rows(handle, "dummy", 100));
 }
 
@@ -731,8 +728,8 @@ TEST_F(DBSyncTest, syncRowInsertAndModified)
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsUpdate2 {cJSON_Parse(updateSqlStmt2)};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsInsert2 {cJSON_Parse(insertSqlStmt3)};
 
-    callback_data_t callbackData {callback, &wrapper};
-    callback_data_t callbackEmpty {nullptr, nullptr};
+    const callback_data_t callbackData {Callback, &wrapper};
+    const callback_data_t callbackEmpty {nullptr, nullptr};
 
     EXPECT_EQ(0, dbsync_sync_row(handle, jsInsert1.get(), callbackData)); // Expect an insert event
     EXPECT_EQ(0, dbsync_sync_row(handle, jsUpdate1.get(), callbackData)); // Expect a modified event
@@ -753,7 +750,7 @@ TEST_F(DBSyncTest, syncRowInsertAndModifiedWithOldData)
     ASSERT_NE(nullptr, handle);
 
     CallbackMock wrapper;
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
 
     EXPECT_CALL(wrapper, callbackMock(INSERTED, nlohmann::json::parse(R"({"pid":4,"name":"System","tid":100})")))
         .Times(1);
@@ -828,7 +825,7 @@ TEST_F(DBSyncTest, syncRowIgnoreFields)
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsUpdate3 {cJSON_Parse(updateQuery3.query().dump().c_str())};
 
     CallbackMock wrapper;
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
 
     EXPECT_CALL(wrapper, callbackMock(INSERTED, nlohmann::json::parse(R"({"pid":4,"name":"System","tid":100})")))
         .Times(1);
@@ -859,13 +856,12 @@ TEST_F(DBSyncTest, syncRowInvalidData)
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsInputNoData {cJSON_Parse(inputNoData)};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsInputNoTable {cJSON_Parse(inputNoTable)};
 
-    callback_data_t callbackData {callback, nullptr};
+    const callback_data_t callbackData {Callback, nullptr};
 
     EXPECT_NE(0, dbsync_sync_row(handle, jsInputNoData.get(), callbackData));
     EXPECT_NE(0, dbsync_sync_row(handle, jsInputNoTable.get(), callbackData));
 
-    uintptr_t invalidHandle = 0xffffffff;
-    EXPECT_NE(0, dbsync_sync_row(reinterpret_cast<void*>(invalidHandle), jsInputNoTable.get(), callbackData));
+    EXPECT_NE(0, dbsync_sync_row(nullptr, jsInputNoTable.get(), callbackData));
 }
 
 TEST_F(DBSyncTest, selectRowsDataAllNoFilter)
@@ -920,7 +916,7 @@ TEST_F(DBSyncTest, selectRowsDataAllNoFilter)
                      nlohmann::json::parse(R"({"pid":300,"name":"System5", "tid":102, "cpu_percentage":30.5})")))
         .Times(1);
 
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
 
     EXPECT_EQ(0, dbsync_insert_data(handle, jsInsert.get()));
     EXPECT_EQ(0, dbsync_select_rows(handle, jsSelectData.get(), callbackData));
@@ -957,7 +953,7 @@ TEST_F(DBSyncTest, selectRowsDataAllFilterPid)
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(R"({"pid":300,"name":"System5", "tid":102})")))
         .Times(1);
 
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
 
     EXPECT_EQ(0, dbsync_insert_data(handle, jsInsert.get()));
     EXPECT_EQ(0, dbsync_select_rows(handle, jsSelectData.get(), callbackData));
@@ -994,7 +990,7 @@ TEST_F(DBSyncTest, selectRowsDataAllFilterPidOr)
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(R"({"pid":300,"name":"System5", "tid":102})")))
         .Times(1);
 
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
 
     EXPECT_EQ(0, dbsync_insert_data(handle, jsInsert.get()));
     EXPECT_EQ(0, dbsync_select_rows(handle, jsSelectData.get(), callbackData));
@@ -1033,7 +1029,7 @@ TEST_F(DBSyncTest, selectRowsDataAllFilterPidBetween)
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(R"({"pid":300,"name":"System5", "tid":102})")))
         .Times(1);
 
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
 
     EXPECT_EQ(0, dbsync_insert_data(handle, jsInsert.get()));
     EXPECT_EQ(0, dbsync_select_rows(handle, jsSelectData.get(), callbackData));
@@ -1067,7 +1063,7 @@ TEST_F(DBSyncTest, selectCount)
 
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(R"({"count":5})"))).Times(1);
 
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
 
     EXPECT_EQ(0, dbsync_insert_data(handle, jsInsert.get()));
     EXPECT_EQ(0, dbsync_select_rows(handle, jsSelectData.get(), callbackData));
@@ -1110,7 +1106,7 @@ TEST_F(DBSyncTest, selectInnerJoin)
                          R"({"pid":115,"name":"System2", "fid":101, "path":"/usr/bin/System2", "size":654321})")))
         .Times(1);
 
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
 
     EXPECT_EQ(0, dbsync_insert_data(handle, jsInsertPids.get()));
     EXPECT_EQ(0, dbsync_insert_data(handle, jsInsertFiles.get()));
@@ -1146,7 +1142,7 @@ TEST_F(DBSyncTest, selectRowsDataAllFilterPid1)
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(R"({"pid":125,"name":"System3", "tid":102})")))
         .Times(1);
 
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
 
     EXPECT_EQ(0, dbsync_insert_data(handle, jsInsert.get()));
     EXPECT_EQ(0, dbsync_select_rows(handle, jsSelectData.get(), callbackData));
@@ -1183,7 +1179,7 @@ TEST_F(DBSyncTest, selectRowsDataAllFilterPidTid)
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(R"({"pid":300,"name":"System5", "tid":102})")))
         .Times(1);
 
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
 
     EXPECT_EQ(0, dbsync_insert_data(handle, jsInsert.get()));
     EXPECT_EQ(0, dbsync_select_rows(handle, jsSelectData.get(), callbackData));
@@ -1218,7 +1214,7 @@ TEST_F(DBSyncTest, selectRowsDataNameOnlyFilterPidTid)
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(R"({"name":"System3"})"))).Times(1);
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(R"({"name":"System5"})"))).Times(1);
 
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
 
     EXPECT_EQ(0, dbsync_insert_data(handle, jsInsert.get()));
     EXPECT_EQ(0, dbsync_select_rows(handle, jsSelectData.get(), callbackData));
@@ -1255,7 +1251,7 @@ TEST_F(DBSyncTest, selectRowsDataNameOnly)
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(R"({"name":"System3"})"))).Times(2);
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(R"({"name":"System5"})"))).Times(1);
 
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
 
     EXPECT_EQ(0, dbsync_insert_data(handle, jsInsert.get()));
     EXPECT_EQ(0, dbsync_select_rows(handle, jsSelectData.get(), callbackData));
@@ -1290,7 +1286,7 @@ TEST_F(DBSyncTest, selectRowsDataNameOnlyFilterPid)
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(R"({"name":"System1"})"))).Times(1);
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(R"({"name":"System2"})"))).Times(1);
 
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
 
     EXPECT_EQ(0, dbsync_insert_data(handle, jsInsert.get()));
     EXPECT_EQ(0, dbsync_select_rows(handle, jsSelectData.get(), callbackData));
@@ -1328,7 +1324,7 @@ TEST_F(DBSyncTest, selectRowsDataNameTidOnly)
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(R"({"name":"System3","tid":102})"))).Times(1);
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(R"({"name":"System5","tid":102})"))).Times(1);
 
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
 
     EXPECT_EQ(0, dbsync_insert_data(handle, jsInsert.get()));
     EXPECT_EQ(0, dbsync_select_rows(handle, jsSelectData.get(), callbackData));
@@ -1373,14 +1369,13 @@ TEST_F(DBSyncTest, selectRowsDataNameTidOnlyPid)
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(R"({"name":"System3","tid":102})"))).Times(1);
     EXPECT_CALL(wrapper, callbackMock(SELECTED, nlohmann::json::parse(R"({"name":"System5","tid":102})"))).Times(1);
 
-    callback_data_t callbackData {callback, &wrapper};
-    callback_data_t callbackEmpty {nullptr, nullptr};
+    const callback_data_t callbackData {Callback, &wrapper};
+    const callback_data_t callbackEmpty {nullptr, nullptr};
 
     EXPECT_EQ(0, dbsync_insert_data(handle, jsInsert.get()));
     EXPECT_EQ(0, dbsync_select_rows(handle, jsSelectData.get(), callbackData));
     // Failure cases
-    uintptr_t invalidHandle = 0xffffffff;
-    EXPECT_NE(0, dbsync_select_rows(reinterpret_cast<void*>(invalidHandle), jsSelectData.get(), callbackData));
+    EXPECT_NE(0, dbsync_select_rows(nullptr, jsSelectData.get(), callbackData));
     EXPECT_NE(0, dbsync_select_rows(handle, jsSelectDataWithoutTable.get(), callbackData));
     EXPECT_NE(0, dbsync_select_rows(nullptr, jsSelectData.get(), callbackData));
     EXPECT_NE(0, dbsync_select_rows(handle, nullptr, callbackData));
@@ -1433,7 +1428,7 @@ TEST_F(DBSyncTest, deleteSingleAndComposedData)
         R"({"query":{"data":[{"pid":9,"name":"Systemmm", "tid":101}],
            "where_filter_opt":""})"};
 
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsInitialData {cJSON_Parse(initialData)};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsSingleDeletion {cJSON_Parse(singleRowToDelete)};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsComposedDeletion {cJSON_Parse(composedRowsToDelete)};
@@ -1450,8 +1445,7 @@ TEST_F(DBSyncTest, deleteSingleAndComposedData)
     EXPECT_NE(0, dbsync_delete_rows(handle, nullptr));
     EXPECT_NE(0, dbsync_delete_rows(handle, jsWithoutTable.get()));
 
-    uintptr_t invalidHandle = 0xffffffff;
-    EXPECT_NE(0, dbsync_delete_rows(reinterpret_cast<void*>(invalidHandle), jsSingleDeletion.get()));
+    EXPECT_NE(0, dbsync_delete_rows(nullptr, jsSingleDeletion.get()));
 }
 
 TEST_F(DBSyncTest, deleteSingleDataByCompoundPK)
@@ -1488,7 +1482,7 @@ TEST_F(DBSyncTest, deleteSingleDataByCompoundPK)
            "query":{"data":[{"tid":101}],
                     "where_filter_opt":""}})"};
 
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsInitialData {cJSON_Parse(initialData)};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsSingleDeletion {cJSON_Parse(singleRowToDelete)};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsMissingPKPID {cJSON_Parse(singleRowWithoutCompleteCompoundPK)};
@@ -1538,7 +1532,7 @@ TEST_F(DBSyncTest, deleteRowsByFilter)
            "query":{"data":[],
            "where_filter_opt":"name LIKE '%User2%'"}})"};
 
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsInitialData {cJSON_Parse(initialData)};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsrowDeleteByPIDFilter {cJSON_Parse(rowDeleteByPIDFilter)};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsrowDeleteByTIDFilter {cJSON_Parse(rowDeleteByTIDFilter)};
@@ -1590,7 +1584,7 @@ TEST_F(DBSyncTest, deleteRowsWithDataMorePriorityThanFilter)
            "query":{"data":[{"pid":8,"name":"User4", "tid":104}],
            "where_filter_opt":"name LIKE '%User2%'"}})"};
 
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsInitialData {cJSON_Parse(initialData)};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsRowDeletePID4 {cJSON_Parse(rowDeletePID4)};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsRowDeletePID6 {cJSON_Parse(rowDeletePID6)};
@@ -1632,7 +1626,7 @@ TEST_F(DBSyncTest, deleteRowsWithNoDataAndFilterShouldFail)
            "query":{"data":[],
            "where_filter_opt":""}})"};
 
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsInitialData {cJSON_Parse(initialData)};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsRowEmpty {cJSON_Parse(rowEmpty)};
 
@@ -1675,7 +1669,7 @@ TEST_F(DBSyncTest, deleteRowsWithWhereInFilterShouldFail)
            "query":{"data":[],
            "where_filter_opt":" "}})"};
 
-    callback_data_t callbackData {callback, &wrapper};
+    const callback_data_t callbackData {Callback, &wrapper};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsInitialData {cJSON_Parse(initialData)};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsRowWithWhere {cJSON_Parse(rowWithWhere)};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsRowWithSpace {cJSON_Parse(rowWithSpace)};
@@ -2138,12 +2132,12 @@ TEST_F(DBSyncTest, txnDestructorOwnsHandle)
     const auto sql {"CREATE TABLE processes(`pid` BIGINT, `name` TEXT, PRIMARY KEY (`pid`)) WITHOUT ROWID;"};
     const auto tables {R"({"table": "processes"})"};
     auto handle {dbsync_create(HostType::AGENT, DbEngineType::SQLITE3, DATABASE_TEMP, sql)};
-    ResultCallbackData callback {[](ReturnTypeCallback, const nlohmann::json&) {
+    ResultCallbackData Callback {[](ReturnTypeCallback, const nlohmann::json&) {
     }};
     TXN_HANDLE txHandle = nullptr;
     {
         // Use the overload that creates TXN_HANDLE from within and as such, has ownership of it.
-        DBSyncTxn tx(handle, nlohmann::json::parse(tables), 1, 100, callback);
+        DBSyncTxn tx(handle, nlohmann::json::parse(tables), 1, DEFAULT_MAX_QUEUE_SIZE, Callback);
         tx = tx.handle();
     }
     EXPECT_NE(dbsync_close_txn(txHandle), 0);
@@ -2156,8 +2150,8 @@ TEST_F(DBSyncTest, txnDestructorDoesNotOwnHandle)
     const std::unique_ptr<DummyContext> dummyCtx {std::make_unique<DummyContext>()};
     auto handle {dbsync_create(HostType::AGENT, DbEngineType::SQLITE3, DATABASE_TEMP, sql)};
     const std::unique_ptr<cJSON, CJsonSmartDeleter> jsonTables {cJSON_Parse(tables)};
-    callback_data_t callbackData {callback, dummyCtx.get()};
-    TXN_HANDLE txHandle = dbsync_create_txn(handle, jsonTables.get(), 1, 100, callbackData);
+    const callback_data_t callbackData {Callback, dummyCtx.get()};
+    TXN_HANDLE txHandle = dbsync_create_txn(handle, jsonTables.get(), 1, DEFAULT_MAX_QUEUE_SIZE, callbackData);
     {
         // Use the overload that only takes a TXN_HANDLE and sets up the destructor to NOT release the handle.
         DBSyncTxn tx(txHandle);
@@ -2173,6 +2167,7 @@ TEST_F(DBSyncTest, teardown)
 
 TEST(QueryBuilder, selectInsertDeleteQuery)
 {
+    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
     CallbackMock wrapper;
     const auto sql {"CREATE TABLE processes(`pid` BIGINT, `name` TEXT, PRIMARY KEY (`pid`)) WITHOUT ROWID;"};
 
@@ -2219,6 +2214,7 @@ TEST(QueryBuilder, selectInsertDeleteQuery)
     insertQuery.data({{"pid", 5}, {"name", "System2"}});
     EXPECT_NO_THROW(dbSync->insertData(insertQuery.query()));
     EXPECT_NO_THROW(dbSync->selectRows(selectQuery.query(), selectCallbackData));
+    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 }
 
 TEST_F(DBSyncTest, TryInvalidValuesOnSetMaxRowsCPP)
@@ -2372,7 +2368,7 @@ TEST_F(DBSyncTest, InitializationCPP)
 TEST_F(DBSyncTest, TestVolatileMode)
 {
     const auto sql {"CREATE TABLE simple_test(`name` TEXT, `value` BIGINT, PRIMARY KEY (`name`));"};
-    std::vector<std::string> updates;
+    const std::vector<std::string> updates;
 
     auto dbSync = std::make_unique<DBSync>(
         HostType::AGENT, DbEngineType::SQLITE3, DATABASE_TEMP, sql, DbManagement::VOLATILE, updates);
@@ -2409,7 +2405,7 @@ TEST_F(DBSyncTest, TestVolatileMode)
 TEST_F(DBSyncTest, TestPersistentMode)
 {
     const auto sql {"CREATE TABLE simple_test(`name` TEXT, `value` BIGINT, PRIMARY KEY (`name`));"};
-    std::vector<std::string> updates;
+    const std::vector<std::string> updates;
 
     auto dbSync = std::make_unique<DBSync>(
         HostType::AGENT, DbEngineType::SQLITE3, DATABASE_TEMP, sql, DbManagement::PERSISTENT, updates);
@@ -2453,7 +2449,7 @@ TEST_F(DBSyncTest, TestUpgrade)
 
     // After the re-initialization, we expect the upgrades to run
     const auto update1 {"ALTER TABLE simple_test ADD COLUMN `new_column` TEXT;"};
-    updates.push_back(update1);
+    updates.emplace_back(update1);
 
     dbSync.reset();
     dbSync = std::make_unique<DBSync>(

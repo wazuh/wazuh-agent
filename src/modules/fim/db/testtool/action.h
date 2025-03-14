@@ -42,7 +42,7 @@ struct RemoveFileAction final : public IAction
         catch (const std::exception &e)
         {
             std::cout << "Error removing file: "
-                << value.at("file_path").get_ref<const std::string&>() << std::endl;
+                << value.at("file_path").get_ref<const std::string&>() << '\n';
         }
 
         std::stringstream oFileName;
@@ -54,7 +54,7 @@ struct RemoveFileAction final : public IAction
                 { "result", retVal },
                 { "action", "RemoveFile" }
             };
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -75,7 +75,7 @@ struct GetFileAction final : public IAction
         catch (const std::exception &e)
         {
             std::cout << "Error getting file: "
-                << value.at("file_path").get_ref<const std::string&>() << std::endl;
+                << value.at("file_path").get_ref<const std::string&>() << '\n';
         }
         std::stringstream oFileName;
         oFileName << "action_" << ctx->currentId << ".json";
@@ -87,7 +87,7 @@ struct GetFileAction final : public IAction
                 { "value", jsonReturn },
                 { "action", "GetFile" }
             };
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -110,7 +110,7 @@ struct CountEntriesAction final : public IAction
         catch (const std::exception &e)
         {
             std::cout << "Error counting entries: "
-                << value.at("filter_type").get<int32_t>() << ", " << e.what() << std::endl;
+                << value.at("filter_type").get<int32_t>() << ", " << e.what() << '\n';
         }
         std::stringstream oFileName;
         oFileName << "action_" << ctx->currentId << ".json";
@@ -122,7 +122,7 @@ struct CountEntriesAction final : public IAction
                 {"value", count},
                 {"action", "CountEntries"}
             };
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -156,7 +156,7 @@ struct UpdateFileAction final : public IAction
         catch (const std::exception &e)
         {
             std::cout << "Error updating file: "
-                << value.at("data").get_ref<const std::string&>() << std::endl;
+                << value.at("data").get_ref<const std::string&>() << '\n';
         }
         std::stringstream oFileName;
         oFileName << "action_" << ctx->currentId << ".json";
@@ -168,7 +168,7 @@ struct UpdateFileAction final : public IAction
                 {"jsonEvent", jsonEvent },
                 {"action", "UpdateFile" }
             };
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -197,7 +197,7 @@ struct SearchFileAction final : public IAction
         catch (const std::exception &e)
         {
             std::cout << "Error searching files: "
-                << value["file"].get_ref<const std::string&>() << std::endl;
+                << value["file"].get_ref<const std::string&>() << '\n';
         }
         std::stringstream oFileName;
         oFileName << "action_" << ctx->currentId << ".json";
@@ -209,7 +209,7 @@ struct SearchFileAction final : public IAction
                 {"value", jsonReturn },
                 {"action", "SearchFile" }
             };
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -225,7 +225,7 @@ struct RunIntegrityAction final : public IAction
         }
         catch (const std::exception &e)
         {
-            std::cout << "Error running integrity: " << e.what() << std::endl;
+            std::cout << "Error running integrity: " << e.what() << '\n';
         }
         std::stringstream oFileName;
         oFileName << "action_" << ctx->currentId << ".json";
@@ -236,7 +236,7 @@ struct RunIntegrityAction final : public IAction
                 {"result", retVal },
                 {"action", "RunIntegrity" }
             };
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -253,7 +253,7 @@ struct PushMessageAction final : public IAction
         }
         catch (const std::exception &e)
         {
-            std::cout << "Error pushing message: " << e.what() << std::endl;
+            std::cout << "Error pushing message: " << e.what() << '\n';
         }
         std::stringstream oFileName;
         oFileName << "action_" << ctx->currentId << ".json";
@@ -264,7 +264,7 @@ struct PushMessageAction final : public IAction
                 {"result", retVal },
                 {"action", "PushMessage" }
             };
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -301,7 +301,7 @@ struct StartTransactionAction final : public IAction
                     } );
 
                 std::ofstream outputFile{ outputFileName };
-                outputFile << jsonResult.dump(4) << std::endl;
+                outputFile << jsonResult.dump(4) << '\n';
             };
             ctx->txn.reset();
             ctx->txn = std::make_unique<DBSyncTxn>(ctx->handle,
@@ -314,7 +314,7 @@ struct StartTransactionAction final : public IAction
         }
         catch (const std::exception &e)
         {
-            std::cout << "Error starting transaction: " << e.what() << std::endl;
+            std::cout << "Error starting transaction: " << e.what() << '\n';
         }
         std::stringstream oFileName;
         oFileName << "action_" << ctx->currentId << ".json";
@@ -325,7 +325,7 @@ struct StartTransactionAction final : public IAction
                 {"result", retVal },
                 {"action", "StartTransaction" }
             };
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -342,7 +342,7 @@ struct SyncTxnRowsAction final : public IAction
         }
         catch (const std::exception& e)
         {
-            std::cout << "Error in SyncTxnRow: " << e.what() << std::endl;
+            std::cout << "Error in SyncTxnRow: " << e.what() << '\n';
         }
 
         std::stringstream oFileName;
@@ -355,7 +355,7 @@ struct SyncTxnRowsAction final : public IAction
                 {"action", "SyncTxnRows" }
             };
 
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 
@@ -385,7 +385,7 @@ struct GetDeletedRowsAction final : public IAction
                     } );
 
                 std::ofstream outputFile{ txnOutputFileName };
-                outputFile << jsonResult.dump() << std::endl;
+                outputFile << jsonResult.dump() << '\n';
             }
         };
 
@@ -397,7 +397,7 @@ struct GetDeletedRowsAction final : public IAction
         }
         catch (const std::exception& ex)
         {
-            std::cerr << "Error in GetDeletedRows: " << ex.what() << std::endl;
+            std::cerr << "Error in GetDeletedRows: " << ex.what() << '\n';
         }
 
         std::stringstream oFileName;
@@ -408,7 +408,7 @@ struct GetDeletedRowsAction final : public IAction
                 {"result", retVal },
                 {"action", "GetDeletedRows" }
             };
-        outputFile << jsonResult.dump() << std::endl;
+        outputFile << jsonResult.dump() << '\n';
     }
 };
 

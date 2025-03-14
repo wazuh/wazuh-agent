@@ -108,13 +108,13 @@ public:
     void bulkInsert(const std::string& table, const nlohmann::json& data) override;
 
     void refreshTableData(const nlohmann::json& data,
-                          const DbSync::ResultCallback callback,
+                          const DbSync::ResultCallback& callback,
                           std::unique_lock<std::shared_timed_mutex>& lock) override;
 
     void syncTableRowData(const nlohmann::json& jsInput,
-                          const DbSync::ResultCallback callback,
+                          const DbSync::ResultCallback& callback,
                           const bool inTransaction,
-                          ILocking& mutex) override;
+                          ILocking& lock) override;
 
     void setMaxRows(const std::string& table, const int64_t maxRows) override;
 
@@ -123,7 +123,7 @@ public:
     void deleteRowsByStatusField(const nlohmann::json& tableNames) override;
 
     void returnRowsMarkedForDelete(const nlohmann::json& tableNames,
-                                   const DbSync::ResultCallback callback,
+                                   const DbSync::ResultCallback& callback,
                                    std::unique_lock<std::shared_timed_mutex>& lock) override;
 
     void selectData(const std::string& table,
@@ -160,7 +160,7 @@ private:
     bool bindJsonData(const std::shared_ptr<SQLiteLegacy::IStatement> stmt,
                       const ColumnData& cd,
                       const nlohmann::json::value_type& valueType,
-                      const unsigned int cid);
+                      const int32_t cid);
 
     bool createCopyTempTable(const std::string& table);
 
@@ -170,7 +170,7 @@ private:
 
     bool removeNotExistsRows(const std::string& table,
                              const std::vector<std::string>& primaryKeyList,
-                             const DbSync::ResultCallback callback,
+                             const DbSync::ResultCallback& callback,
                              std::unique_lock<std::shared_timed_mutex>& lock);
 
     bool getRowDiff(const std::vector<std::string>& primaryKeyList,
@@ -182,7 +182,7 @@ private:
 
     bool insertNewRows(const std::string& table,
                        const std::vector<std::string>& primaryKeyList,
-                       const DbSync::ResultCallback callback,
+                       const DbSync::ResultCallback& callback,
                        std::unique_lock<std::shared_timed_mutex>& lock);
 
     bool deleteRows(const std::string& table,
@@ -229,7 +229,7 @@ private:
 
     int changeModifiedRows(const std::string& table,
                            const std::vector<std::string>& primaryKeyList,
-                           const DbSync::ResultCallback callback,
+                           const DbSync::ResultCallback& callback,
                            std::unique_lock<std::shared_timed_mutex>& lock);
 
     std::string buildSelectMatchingPKsSqlQuery(const std::string& table,
@@ -262,7 +262,7 @@ private:
 
     SQLiteDBEngine& operator=(const SQLiteDBEngine&) = delete;
 
-    const std::shared_ptr<SQLiteLegacy::IStatement> getStatement(const std::string& sql);
+    std::shared_ptr<SQLiteLegacy::IStatement> getStatement(const std::string& sql);
 
     std::string getSelectAllQuery(const std::string& table, const TableColumns& tableFields) const;
 
@@ -274,10 +274,10 @@ private:
 
     void updateTableRowCounter(const std::string& table, const long long rowModifyCount);
 
-    void insertElement(const std::string& table,
+    void InsertElement(const std::string& table,
                        const TableColumns& tableColumns,
                        const nlohmann::json& element,
-                       const std::function<void()> callback = {});
+                       const std::function<void()>& callback = {});
 
     Utils::MapWrapperSafe<std::string, TableColumns> m_tableFields;
     std::deque<std::pair<std::string, std::shared_ptr<SQLiteLegacy::IStatement>>> m_statementsCache;

@@ -53,6 +53,6 @@ void getSnapInfo(std::function<void(nlohmann::json&)> callback)
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error retrieving packages using snap unix-socket: " << e.what() << std::endl;
+        std::cerr << "Error retrieving packages using snap unix-socket: " << e.what() << '\n';
     }
 }

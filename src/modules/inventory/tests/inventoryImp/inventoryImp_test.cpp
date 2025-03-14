@@ -55,7 +55,7 @@ public:
 
 void ReportFunction(const std::string& /*payload*/)
 {
-    // std::cout << payload << std::endl;
+    // std::cout << payload << '\n';
 }
 
 TEST_F(InventoryImpTest, defaultCtor)

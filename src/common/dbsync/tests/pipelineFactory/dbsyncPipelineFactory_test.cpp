@@ -25,7 +25,6 @@ class CallbackWrapper
 {
 public:
     CallbackWrapper() = default;
-    ~CallbackWrapper() = default;
     MOCK_METHOD(void, callback, (ReturnTypeCallback result_type, const nlohmann::json&), ());
 };
 

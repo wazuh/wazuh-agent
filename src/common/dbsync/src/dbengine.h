@@ -30,18 +30,18 @@ namespace DbSync
         /// @param callback callback
         /// @param lock lock
         virtual void refreshTableData(const nlohmann::json& data,
-                                      const ResultCallback callback,
+                                      const ResultCallback& callback,
                                       std::unique_lock<std::shared_timed_mutex>& lock) = 0;
 
         /// @brief Syncs table row data
         /// @param jsInput JSON input
         /// @param callback callback
         /// @param inTransaction transaction
-        /// @param mutex mutex
+        /// @param lock mutex
         virtual void syncTableRowData(const nlohmann::json& jsInput,
-                                      const ResultCallback callback,
+                                      const ResultCallback& callback,
                                       const bool inTransaction,
-                                      ILocking& mutex) = 0;
+                                      ILocking& lock) = 0;
 
         /// @brief Sets the maximum number of rows for a table
         /// @param table table name
@@ -61,7 +61,7 @@ namespace DbSync
         /// @param callback callback
         /// @param lock lock
         virtual void returnRowsMarkedForDelete(const nlohmann::json& tableNames,
-                                               const DbSync::ResultCallback callback,
+                                               const ResultCallback& callback,
                                                std::unique_lock<std::shared_timed_mutex>& lock) = 0;
 
         /// @brief Selects data from a table
