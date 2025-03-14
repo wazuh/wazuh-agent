@@ -27,9 +27,9 @@ TEST_F(NPMTest, getPackages_ValidPackagesTest)
     nlohmann::json fakePackageJson2 = {{"name", "TestPackage2"}, {"version", "2.0.0"}};
 
     EXPECT_CALL(*npm, readJson(std::filesystem::path("/fake/node_modules/package1/package.json")))
-    .WillOnce(Return(fakePackageJson1));
+        .WillOnce(Return(fakePackageJson1));
     EXPECT_CALL(*npm, readJson(std::filesystem::path("/fake/node_modules/package2/package.json")))
-    .WillOnce(Return(fakePackageJson2));
+        .WillOnce(Return(fakePackageJson2));
 
     bool foundPackage1 = false;
     bool foundPackage2 = false;
@@ -37,11 +37,9 @@ TEST_F(NPMTest, getPackages_ValidPackagesTest)
     std::set<std::string> folders = {"/fake"};
 
     EXPECT_CALL(*npm, expand_absolute_path(_, _))
-        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base);
-        });
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    auto callback = [&](nlohmann::json & json)
+    auto callback = [&](nlohmann::json& json)
     {
         if (json.at("name") == "TestPackage1" && json.at("version") == "1.0.0")
         {
@@ -70,10 +68,7 @@ TEST_F(NPMTest, getPackages_NoPackagesFoundTest)
 
     std::set<std::string> folders = {"/fake"};
 
-    npm->getPackages(folders, [&](nlohmann::json&)
-    {
-        callbackCalled = true;
-    });
+    npm->getPackages(folders, [&](nlohmann::json&) { callbackCalled = true; });
 
     EXPECT_FALSE(callbackCalled);
 }
@@ -87,21 +82,16 @@ TEST_F(NPMTest, getPackages_NoPackageJsonTest)
     EXPECT_CALL(*npm, list_directory(_)).WillRepeatedly(Return(fakePackages));
 
     EXPECT_CALL(*npm, readJson(std::filesystem::path("/fake/node_modules/package1/package.json")))
-    .WillOnce(Return(nlohmann::json()));
+        .WillOnce(Return(nlohmann::json()));
 
     bool callbackCalled = false;
 
     std::set<std::string> folders = {"/fake"};
 
     EXPECT_CALL(*npm, expand_absolute_path(_, _))
-        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base);
-        });
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    npm->getPackages(folders, [&](nlohmann::json&)
-    {
-        callbackCalled = true;
-    });
+    npm->getPackages(folders, [&](nlohmann::json&) { callbackCalled = true; });
 
     EXPECT_FALSE(callbackCalled);
 }
@@ -115,21 +105,16 @@ TEST_F(NPMTest, getPackages_InvalidPackageJsonNameTest)
     EXPECT_CALL(*npm, list_directory(_)).WillRepeatedly(Return(fakePackages));
 
     EXPECT_CALL(*npm, readJson(std::filesystem::path("/fake/node_modules/package1/package.json")))
-    .WillOnce(Return(nlohmann::json::parse(R"({"name": 1})")));
+        .WillOnce(Return(nlohmann::json::parse(R"({"name": 1})")));
 
     bool callbackCalled = false;
 
     std::set<std::string> folders = {"/fake"};
 
     EXPECT_CALL(*npm, expand_absolute_path(_, _))
-        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base);
-        });
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    npm->getPackages(folders, [&](nlohmann::json&)
-    {
-        callbackCalled = true;
-    });
+    npm->getPackages(folders, [&](nlohmann::json&) { callbackCalled = true; });
 
     EXPECT_FALSE(callbackCalled);
 }
@@ -143,21 +128,16 @@ TEST_F(NPMTest, getPackages_InvalidPackageJsonVersionTest)
     EXPECT_CALL(*npm, list_directory(_)).WillRepeatedly(Return(fakePackages));
 
     EXPECT_CALL(*npm, readJson(std::filesystem::path("/fake/node_modules/package1/package.json")))
-    .WillOnce(Return(nlohmann::json::parse(R"({"name": "TestPackage1", "version": 1})")));
+        .WillOnce(Return(nlohmann::json::parse(R"({"name": "TestPackage1", "version": 1})")));
 
     bool callbackCalled = false;
 
     std::set<std::string> folders = {"/fake"};
 
     EXPECT_CALL(*npm, expand_absolute_path(_, _))
-        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base);
-        });
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    npm->getPackages(folders, [&](nlohmann::json&)
-    {
-        callbackCalled = true;
-    });
+    npm->getPackages(folders, [&](nlohmann::json&) { callbackCalled = true; });
 
     EXPECT_FALSE(callbackCalled);
 }
@@ -171,10 +151,10 @@ TEST_F(NPMTest, getPackages_ValidPackageJson2Test)
     EXPECT_CALL(*npm, list_directory(_)).WillOnce(Return(fakePackages));
 
     EXPECT_CALL(*npm, readJson(std::filesystem::path("/fake/node_modules/package1/package.json")))
-    .WillOnce(Return(nlohmann::json::parse(R"({"name": "TestPackage1", "version": "1.0.0"})")));
+        .WillOnce(Return(nlohmann::json::parse(R"({"name": "TestPackage1", "version": "1.0.0"})")));
 
     EXPECT_CALL(*npm, readJson(std::filesystem::path("/fake/node_modules/package2/package.json")))
-    .WillOnce(Return(nlohmann::json::parse(R"({"name": "TestPackage2", "version": "1.0.0"})")));
+        .WillOnce(Return(nlohmann::json::parse(R"({"name": "TestPackage2", "version": "1.0.0"})")));
 
     bool callbackCalledFirst = false;
     bool callbackCalledSecond = false;
@@ -182,26 +162,24 @@ TEST_F(NPMTest, getPackages_ValidPackageJson2Test)
     std::set<std::string> folders = {"/fake"};
 
     EXPECT_CALL(*npm, expand_absolute_path(_, _))
-        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
-            out.push_back(base);
-        });
+        .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
     npm->getPackages(folders,
-                     [&](nlohmann::json & j)
-    {
-        if (j.at("name") == "TestPackage1" && j.at("version") == "1.0.0")
-        {
-            callbackCalledFirst = true;
-        }
-        else if (j.at("name") == "TestPackage2" && j.at("version") == "1.0.0")
-        {
-            callbackCalledSecond = true;
-        }
-        else
-        {
-            FAIL();
-        }
-    });
+                     [&](nlohmann::json& j)
+                     {
+                         if (j.at("name") == "TestPackage1" && j.at("version") == "1.0.0")
+                         {
+                             callbackCalledFirst = true;
+                         }
+                         else if (j.at("name") == "TestPackage2" && j.at("version") == "1.0.0")
+                         {
+                             callbackCalledSecond = true;
+                         }
+                         else
+                         {
+                             FAIL();
+                         }
+                     });
 
     EXPECT_TRUE(callbackCalledFirst);
     EXPECT_TRUE(callbackCalledSecond);

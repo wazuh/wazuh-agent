@@ -9,7 +9,6 @@ add_executable(cmd_helper_tests
     ${UTIL_CXX_UNITTEST_COMMON_SRC}
 )
 
-include(../../../cmake/ConfigureTarget.cmake)
 configure_target(cmd_helper_tests)
 
 target_include_directories(cmd_helper_tests PRIVATE

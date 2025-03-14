@@ -12,8 +12,8 @@
 #include "pkgWrapper_test.h"
 #include "packages/packageMac.h"
 #include "packages/pkgWrapper.h"
-#include <unistd.h>
 #include <iostream>
+#include <unistd.h>
 
 void PKGWrapperTest::SetUp() {};
 
@@ -27,12 +27,13 @@ TEST_F(PKGWrapperTest, LongVersion)
     std::string inputPath;
     inputPath += getwd(NULL);
     inputPath += "/input_files";
-    std::string package { "PKGWrapperTest_LongVersion.app" };
+    std::string package {"PKGWrapperTest_LongVersion.app"};
 
     struct PackageContext ctx
     {
         inputPath, package, ""
     };
+
     std::shared_ptr<PKGWrapper> wrapper;
     EXPECT_NO_THROW(wrapper = std::make_shared<PKGWrapper>(ctx));
     nlohmann::json packageJson;
@@ -71,12 +72,13 @@ TEST_F(PKGWrapperTest, ShortVersion)
     std::string inputPath;
     inputPath += getwd(NULL);
     inputPath += "/input_files";
-    std::string package { "PKGWrapperTest_ShortVersion.app" };
+    std::string package {"PKGWrapperTest_ShortVersion.app"};
 
     struct PackageContext ctx
     {
         inputPath, package, ""
     };
+
     std::shared_ptr<PKGWrapper> wrapper;
     EXPECT_NO_THROW(wrapper = std::make_shared<PKGWrapper>(ctx));
     nlohmann::json packageJson;
@@ -115,12 +117,13 @@ TEST_F(PKGWrapperTest, NoName)
     std::string inputPath;
     inputPath += getwd(NULL);
     inputPath += "/input_files";
-    std::string package { "PKGWrapperTest_NoName.app" };
+    std::string package {"PKGWrapperTest_NoName.app"};
 
     struct PackageContext ctx
     {
         inputPath, package, ""
     };
+
     std::shared_ptr<PKGWrapper> wrapper;
     EXPECT_NO_THROW(wrapper = std::make_shared<PKGWrapper>(ctx));
     nlohmann::json packageJson;
@@ -159,12 +162,13 @@ TEST_F(PKGWrapperTest, NoVersion)
     std::string inputPath;
     inputPath += getwd(NULL);
     inputPath += "/input_files";
-    std::string package { "PKGWrapperTest_NoVersion.app" };
+    std::string package {"PKGWrapperTest_NoVersion.app"};
 
     struct PackageContext ctx
     {
         inputPath, package, ""
     };
+
     std::shared_ptr<PKGWrapper> wrapper;
     EXPECT_NO_THROW(wrapper = std::make_shared<PKGWrapper>(ctx));
     nlohmann::json packageJson;
@@ -203,12 +207,13 @@ TEST_F(PKGWrapperTest, NoGroups)
     std::string inputPath;
     inputPath += getwd(NULL);
     inputPath += "/input_files";
-    std::string package { "PKGWrapperTest_NoGroups.app" };
+    std::string package {"PKGWrapperTest_NoGroups.app"};
 
     struct PackageContext ctx
     {
         inputPath, package, ""
     };
+
     std::shared_ptr<PKGWrapper> wrapper;
     EXPECT_NO_THROW(wrapper = std::make_shared<PKGWrapper>(ctx));
     nlohmann::json packageJson;
@@ -247,12 +252,13 @@ TEST_F(PKGWrapperTest, NoDescription)
     std::string inputPath;
     inputPath += getwd(NULL);
     inputPath += "/input_files";
-    std::string package { "PKGWrapperTest_NoDescription.app" };
+    std::string package {"PKGWrapperTest_NoDescription.app"};
 
     struct PackageContext ctx
     {
         inputPath, package, ""
     };
+
     std::shared_ptr<PKGWrapper> wrapper;
     EXPECT_NO_THROW(wrapper = std::make_shared<PKGWrapper>(ctx));
     nlohmann::json packageJson;
@@ -291,12 +297,13 @@ TEST_F(PKGWrapperTest, NoVendor)
     std::string inputPath;
     inputPath += getwd(NULL);
     inputPath += "/input_files";
-    std::string package { "PKGWrapperTest_NoVendor.app" };
+    std::string package {"PKGWrapperTest_NoVendor.app"};
 
     struct PackageContext ctx
     {
         inputPath, package, ""
     };
+
     std::shared_ptr<PKGWrapper> wrapper;
     EXPECT_NO_THROW(wrapper = std::make_shared<PKGWrapper>(ctx));
     nlohmann::json packageJson;
@@ -335,12 +342,13 @@ TEST_F(PKGWrapperTest, pkgVersionXML)
     std::string inputPath;
     inputPath += getwd(NULL);
     inputPath += "/input_files";
-    std::string package { "com.wazuh.pkg.wazuh-agent.plist" };
+    std::string package {"com.wazuh.pkg.wazuh-agent.plist"};
 
     struct PackageContext ctx
     {
         inputPath, package, ""
     };
+
     std::shared_ptr<PKGWrapper> wrapper;
     EXPECT_NO_THROW(wrapper = std::make_shared<PKGWrapper>(ctx));
     nlohmann::json packageJson;
@@ -379,12 +387,13 @@ TEST_F(PKGWrapperTest, pkgVersionBin)
     std::string inputPath;
     inputPath += getwd(NULL);
     inputPath += "/input_files";
-    std::string package { "us.zoom.pkg.videomeeting.plist" };
+    std::string package {"us.zoom.pkg.videomeeting.plist"};
 
     struct PackageContext ctx
     {
         inputPath, package, ""
     };
+
     std::shared_ptr<PKGWrapper> wrapper;
     EXPECT_NO_THROW(wrapper = std::make_shared<PKGWrapper>(ctx));
     nlohmann::json packageJson;
@@ -423,12 +432,13 @@ TEST_F(PKGWrapperTest, pkgVersionLong)
     std::string inputPath;
     inputPath += getwd(NULL);
     inputPath += "/input_files";
-    std::string package { "org.R-project.x86_64.R.GUI.pkg.plist" };
+    std::string package {"org.R-project.x86_64.R.GUI.pkg.plist"};
 
     struct PackageContext ctx
     {
         inputPath, package, ""
     };
+
     std::shared_ptr<PKGWrapper> wrapper;
     EXPECT_NO_THROW(wrapper = std::make_shared<PKGWrapper>(ctx));
     nlohmann::json packageJson;

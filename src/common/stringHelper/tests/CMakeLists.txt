@@ -9,7 +9,6 @@ add_executable(string_helper_tests
     ${UTIL_CXX_UNITTEST_COMMON_SRC}
 )
 
-include(../../../cmake/ConfigureTarget.cmake)
 configure_target(string_helper_tests)
 
 target_include_directories(string_helper_tests PRIVATE

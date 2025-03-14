@@ -24,7 +24,7 @@ endif()
 
 add_library(Logger ${SOURCES})
 target_include_directories(Logger PUBLIC include)
-target_link_libraries(Logger PUBLIC ${LIBRARIES} utils)
+target_link_libraries(Logger PUBLIC ${LIBRARIES})
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(Logger)

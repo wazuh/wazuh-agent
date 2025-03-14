@@ -2,13 +2,12 @@
 
 #include <commonDefs.h>
 #include <config.h>
-#include <defs.h>
-#include <hashHelper.h>
+#include <hashHelper.hpp>
 #include <inventory.hpp>
 #include <iostream>
 #include <nlohmann/json.hpp>
-#include <stringHelper.h>
-#include <timeHelper.h>
+#include <stringHelper.hpp>
+#include <timeHelper.hpp>
 
 constexpr auto EMPTY_VALUE {""};
 
@@ -18,14 +17,12 @@ constexpr size_t MAX_ID_SIZE = 512;
 constexpr auto QUEUE_SIZE {4096};
 
 static const std::map<ReturnTypeCallback, std::string> OPERATION_MAP {
-    // LCOV_EXCL_START
     {MODIFIED, "update"},
     {DELETED, "delete"},
     {INSERTED, "create"},
     {MAX_ROWS, "max_rows"},
     {DB_ERROR, "db_error"},
     {SELECTED, "selected"},
-    // LCOV_EXCL_STOP
 };
 
 constexpr auto SYSTEM_SQL_STATEMENT {
@@ -399,6 +396,7 @@ void Inventory::TryCatchTask(const std::function<void()>& task) const
 Inventory::Inventory()
     : m_enabled {true}
     , m_dbFilePath {std::string(config::DEFAULT_DATA_PATH) + "/" + INVENTORY_DB_DISK_NAME}
+    , m_normConfigPath {std::string(config::DEFAULT_DATA_PATH) + "/" + INVENTORY_NORM_CONFIG_NAME}
     , m_intervalValue {INVENTORY_DEFAULT_INTERVAL}
     , m_scanOnStart {true}
     , m_hardware {true}

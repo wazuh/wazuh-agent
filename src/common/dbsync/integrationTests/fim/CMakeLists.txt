@@ -28,8 +28,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         GTest::gtest_main
         GTest::gmock_main
         cjson
-        unofficial::sqlite3::sqlite3
-        utils
     )
 else()
     target_link_libraries(fim_integration_test
@@ -39,10 +37,8 @@ else()
         GTest::gtest_main
         GTest::gmock_main
         cjson
-        unofficial::sqlite3::sqlite3
         pthread
         dl
-        utils
     )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 add_test(NAME fim_integration_test

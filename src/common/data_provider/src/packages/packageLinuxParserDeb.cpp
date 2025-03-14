@@ -9,13 +9,13 @@
  * Foundation.
  */
 
-#include "sharedDefs.h"
 #include "packageLinuxParserHelper.h"
+#include "sharedDefs.h"
 #include <fstream>
 
 void getDpkgInfo(const std::string& fileName, std::function<void(nlohmann::json&)> callback)
 {
-    std::fstream file{fileName, std::ios_base::in};
+    std::fstream file {fileName, std::ios_base::in};
 
     if (file.is_open())
     {
@@ -28,7 +28,7 @@ void getDpkgInfo(const std::string& fileName, std::function<void(nlohmann::json&
             {
                 std::getline(file, line);
 
-                if (line.front() == ' ') //additional info
+                if (line.front() == ' ') // additional info
                 {
                     data.back() = data.back() + line + "\n";
                 }
@@ -36,8 +36,7 @@ void getDpkgInfo(const std::string& fileName, std::function<void(nlohmann::json&
                 {
                     data.push_back(line + "\n");
                 }
-            }
-            while (!line.empty()); //end of package item info
+            } while (!line.empty()); // end of package item info
 
             auto packageInfo = PackageLinuxHelper::parseDpkg(data);
 

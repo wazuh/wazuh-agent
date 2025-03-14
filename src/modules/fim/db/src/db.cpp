@@ -20,7 +20,7 @@
 #include "dbRegistryKey.hpp"
 #include "dbRegistryValue.hpp"
 #include "fimDBSpecialization.h"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include "cjsonSmartDeleter.hpp"
 
 void DB::init(const int storage,

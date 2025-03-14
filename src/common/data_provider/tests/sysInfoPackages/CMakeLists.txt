@@ -5,7 +5,9 @@ project(sysInfoPackages_unit_test)
 set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../src/packages)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../mocks)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../file_helper/filesystem/tests/mocks)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../file_helper/file_io/tests/mocks)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../jsonHelper/tests/mocks)
 
 file(GLOB sysinfo_UNIT_TEST_SRC
     "*.cpp")

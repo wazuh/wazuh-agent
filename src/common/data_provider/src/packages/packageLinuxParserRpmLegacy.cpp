@@ -7,11 +7,11 @@
  * Foundation
  */
 
-#include "packageLinuxDataRetriever.h"
-#include "iberkeleyDbWrapper.h"
-#include "sharedDefs.h"
 #include "berkeleyRpmDbHelper.h"
+#include "iberkeleyDbWrapper.h"
+#include "packageLinuxDataRetriever.h"
 #include "packageLinuxRpmParserHelperLegacy.h"
+#include "sharedDefs.h"
 
 void getRpmInfoLegacy(std::function<void(nlohmann::json&)> callback)
 {

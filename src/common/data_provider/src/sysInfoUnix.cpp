@@ -8,13 +8,12 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation.
  */
+#include "osinfo/sysOsParsers.h"
+#include "sharedDefs.h"
+#include "sysInfo.hpp"
+#include "timeHelper.hpp"
 #include <fstream>
 #include <sys/utsname.h>
-#include "osinfo/sysOsParsers.h"
-#include "sysInfo.hpp"
-#include "cmdHelper.h"
-#include "timeHelper.h"
-#include "sharedDefs.h"
 
 static void getOsInfoFromUname(nlohmann::json& info)
 {
@@ -22,7 +21,6 @@ static void getOsInfoFromUname(nlohmann::json& info)
     info["os_platform"] = "Unix";
     info["os_version"] = UNKNOWN_VALUE;
 }
-
 
 static std::string getSerialNumber()
 {
@@ -44,10 +42,7 @@ static int getCpuCores()
     return 0;
 }
 
-static void getMemory(nlohmann::json& /*info*/)
-{
-
-}
+static void getMemory(nlohmann::json& /*info*/) {}
 
 nlohmann::json SysInfo::getHardware() const
 {
@@ -64,10 +59,15 @@ nlohmann::json SysInfo::getPackages() const
 {
     return nlohmann::json {};
 }
+
 nlohmann::json SysInfo::getOsInfo() const
 {
     nlohmann::json ret;
-    struct utsname uts {};
+
+    struct utsname uts
+    {
+    };
+
     getOsInfoFromUname(ret);
 
     if (uname(&uts) >= 0)
@@ -81,18 +81,22 @@ nlohmann::json SysInfo::getOsInfo() const
 
     return ret;
 }
+
 nlohmann::json SysInfo::getProcessesInfo() const
 {
     return nlohmann::json();
 }
+
 nlohmann::json SysInfo::getNetworks() const
 {
     return nlohmann::json();
 }
+
 nlohmann::json SysInfo::getPorts() const
 {
     return nlohmann::json();
 }
+
 void SysInfo::getProcessesInfo(std::function<void(nlohmann::json&)> /*callback*/) const
 {
     // TODO

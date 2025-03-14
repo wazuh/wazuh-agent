@@ -1,7 +1,7 @@
 #pragma once
 
-#include <memory>
 #include <fstream>
+#include <memory>
 #include <string>
 
 /// @brief Wrapper Interface for file IO operations.
@@ -21,7 +21,7 @@ public:
     /// @param mode The mode to open the file.
     /// @return An ifstream for the file.
     virtual std::unique_ptr<std::ifstream> create_ifstream(const std::string& filePath,
-                                          std::ios_base::openmode mode = std::ios_base::in) const = 0;
+                                                           std::ios_base::openmode mode = std::ios_base::in) const = 0;
 
     /// @brief Gets the stream buffer for a file.
     /// @param file The file to get the stream buffer for.

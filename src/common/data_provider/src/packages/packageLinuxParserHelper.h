@@ -13,10 +13,9 @@
 #define _PACKAGE_LINUX_PARSER_HELPER_H
 
 #include "sharedDefs.h"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
+#include "timeHelper.hpp"
 #include <nlohmann/json.hpp>
-#include "timeHelper.h"
-#include "sharedDefs.h"
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -25,7 +24,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable: 4505)
+#pragma warning(disable : 4505)
 #endif
 
 #include <sstream>
@@ -41,12 +40,12 @@ namespace PackageLinuxHelper
 
         for (const auto& entry : entries)
         {
-            const auto pos{entry.find(":")};
+            const auto pos {entry.find(":")};
 
             if (pos != std::string::npos)
             {
-                const auto key{Utils::trim(entry.substr(0, pos))};
-                const auto value{Utils::trim(entry.substr(pos + 1), " \n")};
+                const auto key {Utils::Trim(entry.substr(0, pos))};
+                const auto value {Utils::Trim(entry.substr(pos + 1), " \n")};
                 info[key] = value;
             }
         }
@@ -78,9 +77,9 @@ namespace PackageLinuxHelper
             nlohmann::json version = EMPTY_VALUE;
             nlohmann::json vendor = UNKNOWN_VALUE;
             nlohmann::json description = UNKNOWN_VALUE;
-            int64_t size { 0 };
+            int64_t size {0};
 
-            auto it{info.find("Priority")};
+            auto it {info.find("Priority")};
 
             if (it != info.end())
             {
@@ -143,18 +142,18 @@ namespace PackageLinuxHelper
                 description = Utils::substrOnFirstOccurrence(it->second, "\n");
             }
 
-            ret["priority"]     = priority;
-            ret["groups"]       = groups;
-            ret["size"]         = size;
-            ret["multiarch"]    = multiarch;
+            ret["priority"] = priority;
+            ret["groups"] = groups;
+            ret["size"] = size;
+            ret["multiarch"] = multiarch;
             ret["architecture"] = architecture;
-            ret["source"]       = source;
-            ret["version"]      = version;
-            ret["format"]       = "deb";
-            ret["location"]     = EMPTY_VALUE;
-            ret["vendor"]       = vendor;
+            ret["source"] = source;
+            ret["version"] = version;
+            ret["format"] = "deb";
+            ret["location"] = EMPTY_VALUE;
+            ret["vendor"] = vendor;
             ret["install_time"] = UNKNOWN_VALUE;
-            ret["description"]  = description;
+            ret["description"] = description;
         }
 
         return ret;
@@ -169,9 +168,9 @@ namespace PackageLinuxHelper
         nlohmann::json vendor = UNKNOWN_VALUE;
         nlohmann::json install_time = UNKNOWN_VALUE;
         nlohmann::json description = UNKNOWN_VALUE;
-        int64_t     size         { 0 };
-        bool        hasName      { false };
-        bool        hasVersion   { false };
+        int64_t size {0};
+        bool hasName {false};
+        bool hasVersion {false};
 
         if (info.contains("name"))
         {
@@ -240,7 +239,7 @@ namespace PackageLinuxHelper
                 {
                     try
                     {
-                        size = std::stoll( stringData );
+                        size = std::stoll(stringData);
                     }
                     catch (const std::exception& e)
                     {
@@ -250,26 +249,25 @@ namespace PackageLinuxHelper
             }
         }
 
-        ret["name"]             = name;
-        ret["location"]         = "/snap/" + name;
-        ret["version"]          = version;
-        ret["vendor"]           = vendor;
-        ret["install_time"]     = install_time;
-        ret["description"]      = description;
-        ret["size"]             = size;
-        ret["source"]           = "snapcraft";
-        ret["format"]           = "snap";
+        ret["name"] = name;
+        ret["location"] = "/snap/" + name;
+        ret["version"] = version;
+        ret["vendor"] = vendor;
+        ret["install_time"] = install_time;
+        ret["description"] = description;
+        ret["size"] = size;
+        ret["source"] = "snapcraft";
+        ret["format"] = "snap";
 
-        ret["priority"]         = UNKNOWN_VALUE;
-        ret["multiarch"]        = UNKNOWN_VALUE;
-        ret["architecture"]     = EMPTY_VALUE;
-        ret["groups"]           = UNKNOWN_VALUE;
+        ret["priority"] = UNKNOWN_VALUE;
+        ret["multiarch"] = UNKNOWN_VALUE;
+        ret["architecture"] = EMPTY_VALUE;
+        ret["groups"] = UNKNOWN_VALUE;
 
         return ret;
     }
 
-
-};
+}; // namespace PackageLinuxHelper
 
 #ifdef __GNUC__
 #pragma GCC diagnostic pop

@@ -13,7 +13,7 @@ add_executable(sysInfoPackageLinuxParserRPM_unit_test
     ${RPM_SRC}
     ${PARSER_SRC})
 
-target_include_directories(sysInfoPackageLinuxParserRPM_unit_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../mocks)
+target_include_directories(sysInfoPackageLinuxParserRPM_unit_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../file_helper/filesystem/tests/mocks)
 
 set_property(TARGET sysInfoPackageLinuxParserRPM_unit_test PROPERTY COMPILE_FLAGS "-Wno-unused-parameter")
 

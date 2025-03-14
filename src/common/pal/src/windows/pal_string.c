@@ -1,42 +1,46 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* Split a string into multiples pieces, divided by a char "match".
  * Returns a NULL terminated array on success or NULL on error.
  */
-char **OS_StrBreak(char match, const char *_str, size_t size)
+char** OS_StrBreak(char match, const char* _str, size_t size)
 {
     size_t count = 0;
     size_t i = 0;
-    char *dup_str;
-    char *str;
-    char *tmp_str;
-    char **ret;
-    char *str_ant = NULL;
-    char *aux_str = NULL;
+    char* dup_str;
+    char* str;
+    char* tmp_str;
+    char** ret;
+    char* str_ant = NULL;
+    char* aux_str = NULL;
 
     /* We can't do anything if str is null */
-    if (_str == NULL) {
+    if (_str == NULL)
+    {
         return (NULL);
     }
 
     dup_str = strdup(_str);
 
-    if(dup_str == NULL) {
+    if (dup_str == NULL)
+    {
         return (NULL);
     }
 
-    ret = (char **)calloc(size + 1, sizeof(char *));
+    ret = (char**)calloc(size + 1, sizeof(char*));
 
-    if (ret == NULL) {
+    if (ret == NULL)
+    {
         /* Memory error. Should provide a better way to detect it */
         free(dup_str);
         return (NULL);
     }
 
     /* Allocate memory to null */
-    while (i <= size) {
+    while (i <= size)
+    {
         ret[i] = NULL;
         i++;
     }
@@ -44,32 +48,36 @@ char **OS_StrBreak(char match, const char *_str, size_t size)
     tmp_str = str = dup_str;
     i = 0;
 
-    while (*str != '\0') {
+    while (*str != '\0')
+    {
         i++;
 
         /* If before match value exists backslash, skip it. */
-        if((count < size - 1) && (*str == match) &&
-           (str_ant && *str_ant == '\\')) {
+        if ((count < size - 1) && (*str == match) && (str_ant && *str_ant == '\\'))
+        {
 
-            aux_str = calloc(strlen(tmp_str)+1, sizeof(char));
-            if (aux_str == NULL) {
+            aux_str = calloc(strlen(tmp_str) + 1, sizeof(char));
+            if (aux_str == NULL)
+            {
                 goto error;
             }
-            strncpy(aux_str, tmp_str, i-2);
+            strncpy(aux_str, tmp_str, i - 2);
             strcat(aux_str, str);
             strcpy(tmp_str, aux_str);
-            str_ant = tmp_str+i-2;
-            str = tmp_str+i-1;
+            str_ant = tmp_str + i - 2;
+            str = tmp_str + i - 1;
             i--;
             free(aux_str);
             continue;
         }
 
-        if ((count < size - 1) && (*str == match)) {
+        if ((count < size - 1) && (*str == match))
+        {
 
-            ret[count] = (char *)calloc(i, sizeof(char));
+            ret[count] = (char*)calloc(i, sizeof(char));
 
-            if (ret[count] == NULL) {
+            if (ret[count] == NULL)
+            {
                 goto error;
             }
 
@@ -77,7 +85,7 @@ char **OS_StrBreak(char match, const char *_str, size_t size)
             ret[count][i - 1] = '\0';
             strncpy(ret[count], tmp_str, i - 1);
 
-            tmp_str = str+1;
+            tmp_str = str + 1;
             count++;
             i = 0;
         }
@@ -87,10 +95,12 @@ char **OS_StrBreak(char match, const char *_str, size_t size)
     } /* leave from here when *str == \0 */
 
     /* Just do it if count < size */
-    if (count < size) {
-        ret[count] = (char *)calloc(i + 1, sizeof(char));
+    if (count < size)
+    {
+        ret[count] = (char*)calloc(i + 1, sizeof(char));
 
-        if (ret[count] == NULL) {
+        if (ret[count] == NULL)
+        {
             goto error;
         }
 
@@ -114,7 +124,8 @@ char **OS_StrBreak(char match, const char *_str, size_t size)
 error:
     i = 0;
 
-    while (i < count) {
+    while (i < count)
+    {
         free(ret[i]);
         i++;
     }
@@ -122,5 +133,4 @@ error:
     free(ret);
     free(dup_str);
     return (NULL);
-
 }

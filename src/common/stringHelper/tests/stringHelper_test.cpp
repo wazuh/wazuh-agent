@@ -1,16 +1,5 @@
-/*
- * Wazuh shared modules utils
- * Copyright (C) 2015, Wazuh Inc.
- * July 14, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#include "stringHelper_test.h"
-#include "stringHelper.h"
+#include "stringHelper_test.hpp"
+#include "stringHelper.hpp"
 #include <sstream>
 
 void StringUtilsTest::SetUp() {};
@@ -92,43 +81,43 @@ TEST_F(StringUtilsTest, CheckNotFirstReplacement)
 
 TEST_F(StringUtilsTest, RightTrim)
 {
-    EXPECT_EQ("Hello", Utils::rightTrim("Hello"));
-    EXPECT_EQ("Hello", Utils::rightTrim("Hello "));
-    EXPECT_EQ("Hello", Utils::rightTrim("Hello  "));
-    EXPECT_EQ("Hello", Utils::rightTrim("Hello            "));
-    EXPECT_EQ(" Hello", Utils::rightTrim(" Hello"));
-    EXPECT_EQ("\tHello", Utils::rightTrim("\tHello\t", "\t"));
-    EXPECT_EQ(" \t\nHello", Utils::rightTrim(" \t\nHello \t\n ", "\t\n "));
-    EXPECT_EQ(" \t\nHello \t\n", Utils::rightTrim(" \t\nHello \t\n "));
-    EXPECT_EQ("", Utils::rightTrim(""));
-    EXPECT_EQ("", Utils::rightTrim(" "));
-    EXPECT_EQ("", Utils::rightTrim("           "));
+    EXPECT_EQ("Hello", Utils::RightTrim("Hello"));
+    EXPECT_EQ("Hello", Utils::RightTrim("Hello "));
+    EXPECT_EQ("Hello", Utils::RightTrim("Hello  "));
+    EXPECT_EQ("Hello", Utils::RightTrim("Hello            "));
+    EXPECT_EQ(" Hello", Utils::RightTrim(" Hello"));
+    EXPECT_EQ("\tHello", Utils::RightTrim("\tHello\t", "\t"));
+    EXPECT_EQ(" \t\nHello", Utils::RightTrim(" \t\nHello \t\n ", "\t\n "));
+    EXPECT_EQ(" \t\nHello \t\n", Utils::RightTrim(" \t\nHello \t\n "));
+    EXPECT_EQ("", Utils::RightTrim(""));
+    EXPECT_EQ("", Utils::RightTrim(" "));
+    EXPECT_EQ("", Utils::RightTrim("           "));
 }
 
 TEST_F(StringUtilsTest, LeftTrim)
 {
-    EXPECT_EQ("Hello", Utils::leftTrim("Hello"));
-    EXPECT_EQ("Hello", Utils::leftTrim(" Hello"));
-    EXPECT_EQ("Hello", Utils::leftTrim(" Hello"));
-    EXPECT_EQ("Hello", Utils::leftTrim("          Hello"));
-    EXPECT_EQ("Hello\t ", Utils::leftTrim(" \tHello\t ", " \t"));
-    EXPECT_EQ("Hello\t\n ", Utils::leftTrim(" \t\nHello\t\n ", " \t\n"));
-    EXPECT_EQ("\t\nHello\t\n ", Utils::leftTrim(" \t\nHello\t\n "));
-    EXPECT_EQ("", Utils::leftTrim(""));
-    EXPECT_EQ("", Utils::leftTrim(" "));
-    EXPECT_EQ("", Utils::leftTrim("           "));
+    EXPECT_EQ("Hello", Utils::LeftTrim("Hello"));
+    EXPECT_EQ("Hello", Utils::LeftTrim(" Hello"));
+    EXPECT_EQ("Hello", Utils::LeftTrim(" Hello"));
+    EXPECT_EQ("Hello", Utils::LeftTrim("          Hello"));
+    EXPECT_EQ("Hello\t ", Utils::LeftTrim(" \tHello\t ", " \t"));
+    EXPECT_EQ("Hello\t\n ", Utils::LeftTrim(" \t\nHello\t\n ", " \t\n"));
+    EXPECT_EQ("\t\nHello\t\n ", Utils::LeftTrim(" \t\nHello\t\n "));
+    EXPECT_EQ("", Utils::LeftTrim(""));
+    EXPECT_EQ("", Utils::LeftTrim(" "));
+    EXPECT_EQ("", Utils::LeftTrim("           "));
 }
 
 TEST_F(StringUtilsTest, Trim)
 {
-    EXPECT_EQ("Hello", Utils::trim("Hello"));
-    EXPECT_EQ("Hello", Utils::trim(" Hello "));
-    EXPECT_EQ("Hello", Utils::trim(" Hello "));
-    EXPECT_EQ("Hello", Utils::trim("          Hello      "));
-    EXPECT_EQ("Hello", Utils::trim(" \tHello\t ", " \t"));
-    EXPECT_EQ("Hello", Utils::trim(" \t\nHello\t\n ", " \t\n"));
-    EXPECT_EQ("", Utils::trim(" "));
-    EXPECT_EQ("", Utils::trim("   "));
+    EXPECT_EQ("Hello", Utils::Trim("Hello"));
+    EXPECT_EQ("Hello", Utils::Trim(" Hello "));
+    EXPECT_EQ("Hello", Utils::Trim(" Hello "));
+    EXPECT_EQ("Hello", Utils::Trim("          Hello      "));
+    EXPECT_EQ("Hello", Utils::Trim(" \tHello\t ", " \t"));
+    EXPECT_EQ("Hello", Utils::Trim(" \t\nHello\t\n ", " \t\n"));
+    EXPECT_EQ("", Utils::Trim(" "));
+    EXPECT_EQ("", Utils::Trim("   "));
 }
 
 TEST_F(StringUtilsTest, ToUpperCase)
@@ -198,7 +187,7 @@ TEST_F(StringUtilsTest, SplitDelimiterNullTerminated)
 
 TEST_F(StringUtilsTest, SplitMapKeyValue)
 {
-    std::string const buffer("PRETTY_NAME=\"Ubuntu 22.04.1 LTS\"\n\
+    const std::string buffer("PRETTY_NAME=\"Ubuntu 22.04.1 LTS\"\n\
 NAME=\"Ubuntu\"\n\
 VERSION_ID=\"22.04\"\n\
 VERSION=\"22.04.1 LTS (Jammy Jellyfish)\"\n\
@@ -296,7 +285,7 @@ TEST_F(StringUtilsTest, substrOnFirstOccurrenceCorrectEscapeCharacterEmptyResult
 
 TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimple)
 {
-    std::string const stringBase {"hello:world"};
+    const std::string stringBase {"hello:world"};
     const auto retVal {Utils::splitKeyValueNonEscapedDelimiter(stringBase, ':', '\\')};
     EXPECT_EQ(retVal.first, "hello");
     EXPECT_EQ(retVal.second, "world");
@@ -304,7 +293,7 @@ TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimple)
 
 TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimpleEnd)
 {
-    std::string const stringBase {"hello:"};
+    const std::string stringBase {"hello:"};
     const auto retVal {Utils::splitKeyValueNonEscapedDelimiter(stringBase, ':', '\\')};
     EXPECT_EQ(retVal.first, "hello");
     EXPECT_EQ(retVal.second, "");
@@ -312,7 +301,7 @@ TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimpleEnd)
 
 TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimpleDoubleDelimiterEnd)
 {
-    std::string const stringBase {"hello:world:"};
+    const std::string stringBase {"hello:world:"};
     const auto retVal {Utils::splitKeyValueNonEscapedDelimiter(stringBase, ':', '\\')};
     EXPECT_EQ(retVal.first, "hello");
     EXPECT_EQ(retVal.second, "world:");
@@ -320,7 +309,7 @@ TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimpleDoubleDelimiterEnd)
 
 TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimpleDoubleEnd)
 {
-    std::string const stringBase {"hello::"};
+    const std::string stringBase {"hello::"};
     const auto retVal {Utils::splitKeyValueNonEscapedDelimiter(stringBase, ':', '\\')};
     EXPECT_EQ(retVal.first, "hello");
     EXPECT_EQ(retVal.second, ":");
@@ -328,7 +317,7 @@ TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimpleDoubleEnd)
 
 TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimpleEmptyDoubleEnd)
 {
-    std::string const stringBase {"::"};
+    const std::string stringBase {"::"};
     const auto retVal {Utils::splitKeyValueNonEscapedDelimiter(stringBase, ':', '\\')};
     EXPECT_EQ(retVal.first, "");
     EXPECT_EQ(retVal.second, ":");
@@ -336,7 +325,7 @@ TEST_F(StringUtilsTest, splitKeyValueNonEscapedSimpleEmptyDoubleEnd)
 
 TEST_F(StringUtilsTest, splitKeyValueNonEscapedComplex)
 {
-    std::string const stringBase {"he\\:llo:world"};
+    const std::string stringBase {"he\\:llo:world"};
     const auto retVal {Utils::splitKeyValueNonEscapedDelimiter(stringBase, ':', '\\')};
     EXPECT_EQ(retVal.first, "he\\:llo");
     EXPECT_EQ(retVal.second, "world");
@@ -344,7 +333,7 @@ TEST_F(StringUtilsTest, splitKeyValueNonEscapedComplex)
 
 TEST_F(StringUtilsTest, splitKeyValueNonEscapedComplexEnd)
 {
-    std::string const stringBase {"he\\:llo:"};
+    const std::string stringBase {"he\\:llo:"};
     const auto retVal {Utils::splitKeyValueNonEscapedDelimiter(stringBase, ':', '\\')};
     EXPECT_EQ(retVal.first, "he\\:llo");
     EXPECT_EQ(retVal.second, "");
@@ -355,7 +344,7 @@ TEST_F(StringUtilsTest, findRegexInStringNotStartWith)
     std::string matchedValue;
     const auto valueToCheck {"PREFIX Some random content"};
     const auto regex {std::regex(R"(PREFIX Some random content)")};
-    EXPECT_FALSE(Utils::findRegexInString(valueToCheck, matchedValue, regex, 0, "OTHERPREFIX"));
+    EXPECT_FALSE(Utils::FindRegexInString(valueToCheck, matchedValue, regex, 0, "OTHERPREFIX"));
     EXPECT_TRUE(matchedValue.empty());
 }
 
@@ -364,7 +353,7 @@ TEST_F(StringUtilsTest, findRegexInStringStartWith)
     std::string matchedValue;
     const auto valueToCheck {"PREFIX Some random content"};
     const auto regex {std::regex(R"(PREFIX Some random content)")};
-    EXPECT_TRUE(Utils::findRegexInString(valueToCheck, matchedValue, regex, 0, "PREFIX"));
+    EXPECT_TRUE(Utils::FindRegexInString(valueToCheck, matchedValue, regex, 0, "PREFIX"));
     EXPECT_EQ(matchedValue, valueToCheck);
 }
 
@@ -373,7 +362,7 @@ TEST_F(StringUtilsTest, findRegexInStringMatchingRegexWithoutGroup)
     std::string matchedValue;
     const auto valueToCheck {"This string should not be extracted"};
     const auto regex {std::regex(R"(^This string should not be extracted$)")};
-    EXPECT_TRUE(Utils::findRegexInString(valueToCheck, matchedValue, regex));
+    EXPECT_TRUE(Utils::FindRegexInString(valueToCheck, matchedValue, regex));
     EXPECT_EQ(matchedValue, valueToCheck);
 }
 
@@ -382,7 +371,7 @@ TEST_F(StringUtilsTest, findRegexInStringNoExtractingFirstGroup)
     std::string matchedValue;
     const auto valueToCheck {"This string should be extracted"};
     const auto regex {std::regex(R"(^This (\S+) should be (\S+)$)")};
-    EXPECT_TRUE(Utils::findRegexInString(valueToCheck, matchedValue, regex));
+    EXPECT_TRUE(Utils::FindRegexInString(valueToCheck, matchedValue, regex));
     EXPECT_EQ(matchedValue, valueToCheck);
 }
 
@@ -391,7 +380,7 @@ TEST_F(StringUtilsTest, findRegexInStringExtractingFirstGroup)
     std::string matchedValue;
     const auto valueToCheck {"This string should be extracted"};
     const auto regex {std::regex(R"(^This (\S+) should be (\S+)$)")};
-    EXPECT_TRUE(Utils::findRegexInString(valueToCheck, matchedValue, regex, 1));
+    EXPECT_TRUE(Utils::FindRegexInString(valueToCheck, matchedValue, regex, 1));
     EXPECT_EQ(matchedValue, "string");
 }
 
@@ -400,7 +389,7 @@ TEST_F(StringUtilsTest, findRegexInStringExtractingSecondGroup)
     std::string matchedValue;
     const auto valueToCheck {"This string should be extracted"};
     const auto regex {std::regex(R"(^This (\S+) should be (\S+)$)")};
-    EXPECT_TRUE(Utils::findRegexInString(valueToCheck, matchedValue, regex, 2));
+    EXPECT_TRUE(Utils::FindRegexInString(valueToCheck, matchedValue, regex, 2));
     EXPECT_EQ(matchedValue, "extracted");
 }
 
@@ -551,14 +540,6 @@ TEST_F(StringUtilsTest, parseStrToTimeOneSarasa)
     EXPECT_EQ(Utils::parseStrToTime("1invalid"), -1);
 }
 
-/*
- * isAlphaNumericWithSpecialCharacters() tests
- */
-
-/**
- * @brief Validates the string is alphanumeric and contains all of the special characters passed as argument.
- *
- */
 TEST_F(StringUtilsTest, IsAlphaNumericWithSpecialCharacters)
 {
     const std::string stringBase1 {"random_string"};
@@ -588,4 +569,3 @@ TEST_F(StringUtilsTest, haveUpperCaseCharacters)
     EXPECT_FALSE(Utils::haveUpperCaseCharacters("test"));
     EXPECT_FALSE(Utils::haveUpperCaseCharacters(""));
 }
-

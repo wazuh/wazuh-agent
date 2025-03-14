@@ -67,13 +67,15 @@ add_library(dbsync STATIC
 target_include_directories(dbsync PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
 
 target_link_libraries(dbsync PUBLIC
+  deleter_helper
   map_wrapper
   pipeline_helper
+  sqlite_wrapper
   string_helper
   thread_dispatcher
 )
 
-target_link_libraries(dbsync PUBLIC utils nlohmann_json::nlohmann_json cjson pal PRIVATE unofficial::sqlite3::sqlite3)
+target_link_libraries(dbsync PUBLIC nlohmann_json::nlohmann_json cjson pal PRIVATE unofficial::sqlite3::sqlite3)
 
 if(BUILD_TESTS)
     enable_testing()

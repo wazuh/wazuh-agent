@@ -10,19 +10,19 @@
  */
 #ifndef _SYSINFO_NETWORK_LINUX_TEST_H
 #define _SYSINFO_NETWORK_LINUX_TEST_H
-#include "gtest/gtest.h"
+
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 class SysInfoNetworkLinuxTest : public ::testing::Test
 {
 
-    protected:
+protected:
+    SysInfoNetworkLinuxTest() = default;
+    virtual ~SysInfoNetworkLinuxTest() = default;
 
-        SysInfoNetworkLinuxTest() = default;
-        virtual ~SysInfoNetworkLinuxTest() = default;
-
-        void SetUp() override;
-        void TearDown() override;
+    void SetUp() override;
+    void TearDown() override;
 };
 
 #endif //_SYSINFO_NETWORK_LINUX_TEST_H

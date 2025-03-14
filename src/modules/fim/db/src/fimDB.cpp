@@ -11,7 +11,7 @@
 
 #include "fimDB.hpp"
 #include "fimDBSpecialization.h"
-#include "promiseFactory.h"
+#include "promiseFactory.hpp"
 #include <future>
 
 

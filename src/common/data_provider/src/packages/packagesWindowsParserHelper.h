@@ -12,23 +12,23 @@
 #ifndef _PACKAGES_WINDOWS_PARSER_HELPER_H
 #define _PACKAGES_WINDOWS_PARSER_HELPER_H
 
-#include <regex>
+#include "registryHelper.hpp"
+#include "stringHelper.hpp"
 #include <nlohmann/json.hpp>
-#include "registryHelper.h"
-#include "stringHelper.h"
-
+#include <regex>
 
 namespace PackageWindowsHelper
 {
     constexpr auto WIN_REG_HOTFIX {"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing\\Packages"};
     constexpr auto VISTA_REG_HOTFIX {"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\HotFix"};
-    constexpr auto WIN_REG_PRODUCT_HOTFIX {"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Installer\\UserData\\S-1-5-18\\Products"};
+    constexpr auto WIN_REG_PRODUCT_HOTFIX {
+        "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Installer\\UserData\\S-1-5-18\\Products"};
     constexpr auto WIN_REG_WOW_HOTFIX {"SOFTWARE\\WOW6432Node\\Microsoft\\Updates"};
 
     static std::string extractHFValue(std::string input)
     {
-        constexpr auto KB_FORMAT_REGEX_STR { "(KB+[0-9]{6,})"};
-        static std::regex rex{KB_FORMAT_REGEX_STR};
+        constexpr auto KB_FORMAT_REGEX_STR {"(KB+[0-9]{6,})"};
+        static std::regex rex {KB_FORMAT_REGEX_STR};
         std::string ret;
         input = Utils::toUpperCase(input);
         std::smatch match;
@@ -46,14 +46,13 @@ namespace PackageWindowsHelper
     {
         try
         {
-            Utils::Registry root{key, subKey, KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
-            const auto callback
-            {
-                [&key, &subKey, &hotfixes](const std::string & package)
+            Utils::Registry root {key, subKey, KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
+            const auto callback {
+                [&key, &subKey, &hotfixes](const std::string& package)
                 {
                     if (Utils::startsWith(package, "Package_"))
                     {
-                        auto hfValue { extractHFValue(package) };
+                        auto hfValue {extractHFValue(package)};
 
                         if (!hfValue.empty())
                         {
@@ -62,11 +61,11 @@ namespace PackageWindowsHelper
                         else if (package.find("RollupFix") != std::string::npos)
                         {
                             std::string value;
-                            Utils::Registry packageReg{key, subKey + "\\" + package, KEY_WOW64_64KEY | KEY_READ};
+                            Utils::Registry packageReg {key, subKey + "\\" + package, KEY_WOW64_64KEY | KEY_READ};
 
                             if (packageReg.string("InstallLocation", value))
                             {
-                                auto rollUpValue { extractHFValue(value) };
+                                auto rollUpValue {extractHFValue(value)};
 
                                 if (!rollUpValue.empty())
                                 {
@@ -75,8 +74,7 @@ namespace PackageWindowsHelper
                             }
                         }
                     }
-                }
-            };
+                }};
             root.enumerate(callback);
         }
         catch (...)
@@ -88,21 +86,17 @@ namespace PackageWindowsHelper
     {
         try
         {
-            const auto callback
-            {
-                [&key, &subKey, &hotfixes](const std::string & package)
-                {
-                    auto hfValue { extractHFValue(package) };
+            const auto callback {[&key, &subKey, &hotfixes](const std::string& package)
+                                 {
+                                     auto hfValue {extractHFValue(package)};
 
-                    if (!hfValue.empty())
-                    {
-                        hotfixes.insert(std::move(hfValue));
-                    }
-                }
-            };
-            Utils::Registry root{key, subKey, KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
+                                     if (!hfValue.empty())
+                                     {
+                                         hotfixes.insert(std::move(hfValue));
+                                     }
+                                 }};
+            Utils::Registry root {key, subKey, KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
             root.enumerate(callback);
-
         }
         catch (...)
         {
@@ -113,57 +107,51 @@ namespace PackageWindowsHelper
     {
         try
         {
-            const auto callback
-            {
-                [&key, &subKey, &hotfixes](const std::string & packageKey)
+            const auto callback {
+                [&key, &subKey, &hotfixes](const std::string& packageKey)
                 {
-                    const auto callbackKey
-                    {
-                        [&key, &subKey, &packageKey, &hotfixes](const std::string & package)
-                        {
-                            auto hfValue { extractHFValue(package) };
+                    const auto callbackKey {[&key, &subKey, &packageKey, &hotfixes](const std::string& package)
+                                            {
+                                                auto hfValue {extractHFValue(package)};
 
-                            if (!hfValue.empty())
-                            {
-                                hotfixes.insert(std::move(hfValue));
-                            }
-                        }
-                    };
-                    Utils::Registry packageReg{key, subKey + "\\" + packageKey, KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
+                                                if (!hfValue.empty())
+                                                {
+                                                    hotfixes.insert(std::move(hfValue));
+                                                }
+                                            }};
+                    Utils::Registry packageReg {
+                        key, subKey + "\\" + packageKey, KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
                     packageReg.enumerate(callbackKey);
-                }
-            };
-            Utils::Registry root{key, subKey, KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
+                }};
+            Utils::Registry root {key, subKey, KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
             root.enumerate(callback);
         }
         catch (...)
         {
         }
-
     }
 
     static void getHotFixFromRegProduct(const HKEY key, const std::string& subKey, std::set<std::string>& hotfixes)
     {
         try
         {
-            const auto callback
-            {
-                [&key, &subKey, &hotfixes](const std::string & packageKey)
+            const auto callback {
+                [&key, &subKey, &hotfixes](const std::string& packageKey)
                 {
-                    const auto callbackKey
-                    {
-                        [&key, &subKey, &packageKey, &hotfixes](const std::string & package)
+                    const auto callbackKey {
+                        [&key, &subKey, &packageKey, &hotfixes](const std::string& package)
                         {
-
                             if (Utils::startsWith(package, "InstallProperties"))
                             {
 
-                                Utils::Registry packageReg{key, subKey + "\\" + packageKey + "\\" + package, KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
+                                Utils::Registry packageReg {key,
+                                                            subKey + "\\" + packageKey + "\\" + package,
+                                                            KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
                                 std::string value;
 
                                 if (packageReg.string("DisplayName", value))
                                 {
-                                    auto hfValue { extractHFValue(value) };
+                                    auto hfValue {extractHFValue(value)};
 
                                     if (!hfValue.empty())
                                     {
@@ -173,44 +161,42 @@ namespace PackageWindowsHelper
                             }
                             else if (Utils::startsWith(package, "Patches"))
                             {
-                                const auto callbackPatch
-                                {
-                                    [&key, &subKey, &packageKey, &package, &hotfixes](const std::string & packagePatch)
+                                const auto callbackPatch {
+                                    [&key, &subKey, &packageKey, &package, &hotfixes](const std::string& packagePatch)
                                     {
-
-                                        Utils::Registry packageReg{key, subKey + "\\" + packageKey + "\\" + package + "\\" + packagePatch, KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
+                                        Utils::Registry packageReg {
+                                            key,
+                                            subKey + "\\" + packageKey + "\\" + package + "\\" + packagePatch,
+                                            KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
                                         std::string value;
 
                                         if (packageReg.string("DisplayName", value))
                                         {
-                                            auto hfValue { extractHFValue(value) };
+                                            auto hfValue {extractHFValue(value)};
 
                                             if (!hfValue.empty())
                                             {
                                                 hotfixes.insert(std::move(hfValue));
                                             }
                                         }
-                                    }
-                                };
-                                Utils::Registry rootPatch{key, subKey + "\\" + packageKey + "\\" + package, KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
+                                    }};
+                                Utils::Registry rootPatch {key,
+                                                           subKey + "\\" + packageKey + "\\" + package,
+                                                           KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
                                 rootPatch.enumerate(callbackPatch);
-
                             }
-                        }
-                    };
-                    Utils::Registry rootKey{key, subKey + "\\" + packageKey, KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
+                        }};
+                    Utils::Registry rootKey {
+                        key, subKey + "\\" + packageKey, KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
                     rootKey.enumerate(callbackKey);
-                }
-            };
-            Utils::Registry root{key, subKey, KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
+                }};
+            Utils::Registry root {key, subKey, KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
             root.enumerate(callback);
-
         }
         catch (...)
         {
         }
-
     }
-};
+}; // namespace PackageWindowsHelper
 
 #endif // _PACKAGES_WINDOWS_PARSER_HELPER_H

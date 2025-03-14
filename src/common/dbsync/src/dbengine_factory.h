@@ -12,34 +12,35 @@
 #ifndef _DBENGINE_FACTORY_H
 #define _DBENGINE_FACTORY_H
 
+#include "commonDefs.h"
 #include "db_exception.h"
 #include "sqlite/sqlite_dbengine.h"
-#include "sqlite/sqlite_wrapper_factory.h"
-#include "commonDefs.h"
+#include "sqliteWrapperFactory.hpp"
 #include <iostream>
 
 namespace DbSync
 {
     class FactoryDbEngine
     {
-        public:
-            static std::unique_ptr<IDbEngine> create(const DbEngineType              dbType,
-                                                     const std::string&              path,
-                                                     const std::string&              sqlStatement,
-                                                     const DbManagement              dbManagement,
-                                                     const std::vector<std::string>& upgradeStatements)
+    public:
+        static std::unique_ptr<IDbEngine> create(const DbEngineType dbType,
+                                                 const std::string& path,
+                                                 const std::string& sqlStatement,
+                                                 const DbManagement dbManagement,
+                                                 const std::vector<std::string>& upgradeStatements)
+        {
+            if (SQLITE3 == dbType)
             {
-                if (SQLITE3 == dbType)
-                {
-                    return std::make_unique<SQLiteDBEngine>(std::make_shared<SQLiteFactory>(), path, sqlStatement, dbManagement, upgradeStatements);
-                }
-
-                throw dbsync_error
-                {
-                    FACTORY_INSTANTATION
-                };
+                return std::make_unique<SQLiteDBEngine>(std::make_shared<SQLiteLegacy::SQLiteFactory>(),
+                                                        path,
+                                                        sqlStatement,
+                                                        dbManagement,
+                                                        upgradeStatements);
             }
+
+            throw dbsync_error {FACTORY_INSTANTATION};
+        }
     };
-}// namespace DbSync
+} // namespace DbSync
 
 #endif // _DBENGINE_FACTORY_H

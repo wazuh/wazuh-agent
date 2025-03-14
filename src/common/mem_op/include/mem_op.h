@@ -8,7 +8,8 @@
  * Foundation
  */
 
-#pragma once
+#ifndef _MEM_OP_H
+#define _MEM_OP_H
 
 #include <stdlib.h>
 
@@ -28,3 +29,4 @@ int    os_IsStrOnArray(const char *str, char **array);
 char  *os_LoadString(char *at, const char *str) ATTR_NONNULL_TWO;
 void  *memset_secure(void *v, int c, size_t n) ATTR_NONNULL;
 
+#endif // _MEM_OP_H

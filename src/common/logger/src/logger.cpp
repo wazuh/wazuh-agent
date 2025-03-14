@@ -1,6 +1,5 @@
 #include <logger.hpp>
 
-
 void LogTrace_C(const char* file, int line, const char* func, const char* message, ...)
 {
     char buffer[LOG_BUFFER_SIZE];

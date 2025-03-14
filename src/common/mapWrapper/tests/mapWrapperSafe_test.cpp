@@ -1,19 +1,7 @@
-/*
- * Wazuh shared modules utils
- * Copyright (C) 2015, Wazuh Inc.
- * Sep 15, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#include <thread>
+#include "mapWrapperSafe_test.hpp"
+#include "mapWrapperSafe.hpp"
 #include <chrono>
-#include "mapWrapperSafe_test.h"
-#include "mapWrapperSafe.h"
-
+#include <thread>
 
 void MapWrapperSafeTest::SetUp() {};
 
@@ -33,4 +21,3 @@ TEST_F(MapWrapperSafeTest, eraseTest)
     EXPECT_NO_THROW(mapSafe.erase(1));
     EXPECT_EQ(0, mapSafe[1]);
 }
-

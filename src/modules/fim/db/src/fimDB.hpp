@@ -13,7 +13,7 @@
 #define _FIMDB_HPP
 #include "dbsync.hpp"
 #include "rsync.hpp"
-#include "stringHelper.h"
+#include "stringHelper.hpp"
 #include <condition_variable>
 #include <mutex>
 #include <thread>

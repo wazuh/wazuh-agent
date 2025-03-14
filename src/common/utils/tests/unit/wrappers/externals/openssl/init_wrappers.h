@@ -7,7 +7,6 @@
  * Foundation
  */
 
-
 #ifndef INIT_WRAPPERS_H
 #define INIT_WRAPPERS_H
 

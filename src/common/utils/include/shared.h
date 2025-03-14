@@ -13,7 +13,8 @@
  *  Reference: http://gcc.gnu.org/onlinedocs/gcc-4.1.2/cpp.pdf
  */
 
-#pragma once
+#ifndef _SHARED_H
+#define _SHARED_H
 
 #if defined(__GNUC__) && (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 1) && (__GNUC_PATCHLEVEL__ >= 2)) || \
                           ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 2)) || \
@@ -159,8 +160,6 @@ extern const char *__local_name;
 
 #include "os_macros.h"
 
-#include "wrapper_macros.h"
-
 // Calculate the number of elements within an array.
 // Only static arrays allowed.
 #define array_size(array) (sizeof(array)/sizeof(array[0]))
@@ -169,3 +168,4 @@ extern const char *__local_name;
 #define FOREVER() 1
 #endif
 
+#endif // _SHARED_H

@@ -17,11 +17,11 @@
 
 int UtilsWrapperUnix::createSocket(int domain, int type, int protocol)
 {
-    auto fd { socket(domain, type, protocol) };
+    auto fd {socket(domain, type, protocol)};
 
     if (-1 == fd)
     {
-        throw std::system_error{errno, std::system_category(), std::strerror(errno)};
+        throw std::system_error {errno, std::system_category(), std::strerror(errno)};
     }
 
     return fd;
@@ -29,11 +29,11 @@ int UtilsWrapperUnix::createSocket(int domain, int type, int protocol)
 
 int UtilsWrapperUnix::ioctl(int fd, unsigned long request, char* argp)
 {
-    const auto retVal { ::ioctl(fd, request, argp) };
+    const auto retVal {::ioctl(fd, request, argp)};
 
     if (-1 == retVal)
     {
-        throw std::system_error{errno, std::system_category(), std::strerror(errno)};
+        throw std::system_error {errno, std::system_category(), std::strerror(errno)};
     }
 
     return retVal;

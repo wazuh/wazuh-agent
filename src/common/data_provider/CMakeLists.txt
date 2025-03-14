@@ -144,9 +144,9 @@ target_include_directories(sysinfo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
 target_link_libraries(sysinfo PUBLIC
   byte_array_helper
   cmd_helper
+  deleter_helper
   FilesystemWrapper
   FileIO
-  glob_helper
   json_helper
   network_helper
   sqlite_wrapper
@@ -182,7 +182,6 @@ endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
 target_link_libraries(sysinfo
   PUBLIC
-  utils
   nlohmann_json::nlohmann_json
   cjson
   PRIVATE

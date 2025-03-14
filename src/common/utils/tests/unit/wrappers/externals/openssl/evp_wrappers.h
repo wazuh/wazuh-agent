@@ -7,8 +7,12 @@
  * Foundation
  */
 
+#ifndef EVP_WRAPPERS_H
+#define EVP_WRAPPERS_H
 
 #include <openssl/evp.h>
 
 EVP_PKEY * __wrap_EVP_PKEY_new(void);
 extern EVP_PKEY * __real_EVP_PKEY_new(void);
+
+#endif

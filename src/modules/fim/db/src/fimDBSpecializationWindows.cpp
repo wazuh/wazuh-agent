@@ -12,7 +12,7 @@
 #include "fimDBSpecializationWindows.hpp"
 #include <map>
 #include <windows.h>
-#include "encodingWindowsHelper.h"
+#include "encodingWindowsHelper.hpp"
 
 #define REG_UNKNOWN 0x0000000C
 
@@ -40,5 +40,5 @@ const std::string WindowsSpecialization::registryTypeToText(const int type)
 void WindowsSpecialization::encodeString(std::string& str)
 {
 
-    str = Utils::EncodingWindowsHelper::stringAnsiToStringUTF8(str);
+    str = Utils::stringAnsiToStringUTF8(str);
 }

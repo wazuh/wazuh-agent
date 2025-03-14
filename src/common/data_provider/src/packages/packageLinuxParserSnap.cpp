@@ -8,8 +8,8 @@
  * Foundation.
  */
 
-#include "sharedDefs.h"
 #include "packageLinuxParserHelper.h"
+#include "sharedDefs.h"
 
 #include <boost/asio.hpp>
 #include <boost/beast/core.hpp>
@@ -20,8 +20,8 @@ namespace http = boost::beast::http;
 
 void getSnapInfo(std::function<void(nlohmann::json&)> callback)
 {
-   try
-   {
+    try
+    {
         boost::asio::io_context io_context;
         boost::asio::local::stream_protocol::socket socket(io_context);
 
@@ -38,7 +38,7 @@ void getSnapInfo(std::function<void(nlohmann::json&)> callback)
         auto feed = nlohmann::json::parse(res.body(), nullptr, false);
         if (feed.is_discarded() && !feed.contains("result") && feed.at("result").is_array())
         {
-            throw std::runtime_error { "Invalid JSON." };
+            throw std::runtime_error {"Invalid JSON."};
         }
 
         auto result = feed.at("result");
@@ -50,11 +50,9 @@ void getSnapInfo(std::function<void(nlohmann::json&)> callback)
                 callback(mapping);
             }
         }
-
     }
     catch (const std::exception& e)
     {
         std::cerr << "Error retrieving packages using snap unix-socket: " << e.what() << std::endl;
     }
 }
-

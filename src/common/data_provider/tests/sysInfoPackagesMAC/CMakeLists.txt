@@ -7,7 +7,7 @@ file(COPY input_files DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../mocks)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../sqliteWrapper/tests/mocks)
 
 file(GLOB sysinfo_UNIT_TEST_SRC
     "*.cpp")
