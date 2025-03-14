@@ -1,9 +1,8 @@
 #pragma once
 
-#include <filesystem>
-#include <ifilesystem.hpp>
+#include <ifilesystem_wrapper.hpp>
 
-namespace filesystem_wrapper
+namespace filesystem
 {
     /// @brief A wrapper class for file system operations, implementing the IFileSystem interface.
     ///
@@ -11,40 +10,37 @@ namespace filesystem_wrapper
     /// removing directories, creating directories, and renaming files, among others. It is designed
     /// to be used as a concrete implementation of the IFileSystem interface, encapsulating the actual
     /// file system operations.
-    class FileSystemWrapper : public IFileSystem
+    class FileSystemWrapper : public IFileSystemWrapper
     {
     public:
-        /// @copydoc IFileSystem::exists
+        /// @copydoc IFileSystemWrapper::exists
         bool exists(const std::filesystem::path& path) const override;
 
-        /// @copydoc IFileSystem::is_directory
+        /// @copydoc IFileSystemWrapper::is_directory
         bool is_directory(const std::filesystem::path& path) const override;
 
-        /// @copydoc IFileSystem::is_regular_file
+        /// @copydoc IFileSystemWrapper::is_regular_file
         bool is_regular_file(const std::filesystem::path& path) const override;
 
-        /// @copydoc IFileSystem::is_socket
+        /// @copydoc IFileSystemWrapper::is_socket
         bool is_socket(const std::filesystem::path& path) const override;
 
-        /// @copydoc IFileSystem::remove_all
+        /// @copydoc IFileSystemWrapper::remove_all
         std::uintmax_t remove_all(const std::filesystem::path& path) const override;
 
-        /// @copydoc IFileSystem::temp_directory_path
+        /// @copydoc IFileSystemWrapper::temp_directory_path
         std::filesystem::path temp_directory_path() const override;
 
-        /// @copydoc IFileSystem::create_directories
+        /// @copydoc IFileSystemWrapper::create_directories
         bool create_directories(const std::filesystem::path& path) const override;
 
-        /// @copydoc IFileSystem::list_directory
+        /// @copydoc IFileSystemWrapper::list_directory
         std::vector<std::filesystem::path> list_directory(const std::filesystem::path& path) const override;
 
-        /// @copydoc IFileSystem::rename
+        /// @copydoc IFileSystemWrapper::rename
         void rename(const std::filesystem::path& from, const std::filesystem::path& to) const override;
 
-        /// @copydoc IFileSystem::remove
+        /// @copydoc IFileSystemWrapper::remove
         bool remove(const std::filesystem::path& path) const override;
-
-        /// @copydoc IFileSystem::expand_absolute_path
-        void expand_absolute_path(const std::string& path, std::deque<std::string>& output) const override;
     };
 } // namespace filesystem_wrapper
