@@ -19,7 +19,7 @@ namespace filesystem
         /// @brief Constructor for the FileSystemUtils class.
         FileSystemUtils(std::shared_ptr<IFileSystemWrapper> fsWrapper = nullptr);
 
-        /// @copydoc IFileSystem::expand_absolute_path
+        /// @copydoc IFileSystemUtils::expand_absolute_path
         void expand_absolute_path(const std::string& path, std::deque<std::string>& output) const override;
 
     private:
