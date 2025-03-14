@@ -5,16 +5,6 @@ project(dbsync_example)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
 link_directories(${CMAKE_BINARY_DIR}/lib)
 
-if(COVERITY)
-  add_definitions(-D__GNUC__=8)
-endif(COVERITY)
-
-if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++14")
-else()
-  set(CMAKE_CXX_FLAGS "/W4 /permissive- /std:c++14 /MT")
-endif()
-
 add_executable(dbsync_example
     "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp" )
 
@@ -29,3 +19,6 @@ else()
         dl
     )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+
+include(../../../cmake/ConfigureTarget.cmake)
+configure_target(dbsync_example)

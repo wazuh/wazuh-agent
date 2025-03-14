@@ -1,5 +1,5 @@
-#ifndef _TEST_INPUT_H
-#define _TEST_INPUT_H
+#pragma once
+
 constexpr auto TEST_INPUT_DATA {
     R"([
         {
@@ -254,5 +254,3 @@ constexpr auto TEST_INPUT_DATA {
             "version": "1.0"
         }
     ])"};
-
-#endif //_TEST_INPUT_H

@@ -1,15 +1,4 @@
-/*
- * Wazuh DBSYNC
- * Copyright (C) 2015, Wazuh Inc.
- * July 11, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#include "dbsync_test.h"
+#include "dbsync_test.hpp"
 #include "cjsonSmartDeleter.hpp"
 #include "dbsync.h"
 #include "dbsync.hpp"

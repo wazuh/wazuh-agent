@@ -10,52 +10,52 @@ class SysInfoPrinter final
 public:
     SysInfoPrinter() = default;
 
-    void printHardwareInfo()
+    void PrintHardwareInfo()
     {
         m_data["hw"] = m_sysinfo.hardware();
     }
 
-    void printNetworksInfo()
+    void PrintNetworksInfo()
     {
         m_data["networks"] = m_sysinfo.networks();
     }
 
-    void printOSInfo()
+    void PrintOSInfo()
     {
         m_data["os"] = m_sysinfo.os();
     }
 
-    void printPackagesInfo()
+    void PrintPackagesInfo()
     {
         m_data["packages"] = m_sysinfo.packages();
     }
 
-    void printProcessesInfo()
+    void PrintProcessesInfo()
     {
         m_data["processes"] = m_sysinfo.processes();
     }
 
-    void printPortsInfo()
+    void PrintPortsInfo()
     {
         m_data["ports"] = m_sysinfo.ports();
     }
 
-    void printHotfixes()
+    void PrintHotfixes()
     {
         m_data["hotfixes"] = m_sysinfo.hotfixes();
     }
 
-    void printData()
+    void PrintData()
     {
-        std::cout << m_data.dump(JSON_PRETTY_SPACES) << std::endl;
+        std::cout << m_data.dump(JSON_PRETTY_SPACES) << '\n';
     }
 
-    void printProcessesInfoCallback()
+    void PrintProcessesInfoCallback()
     {
         m_sysinfo.processes([this](nlohmann::json& process) { m_data["processes_cb"].push_back(process); });
     }
 
-    void printPackagesInfoCallback()
+    void PrintPackagesInfoCallback()
     {
         m_sysinfo.packages([this](nlohmann::json& package) { m_data["packages_cb"].push_back(package); });
     }
@@ -74,63 +74,64 @@ int main(int argc, const char* argv[])
         if (argc == 1)
         {
             // Calling testtool without parameters - default all
-            printer.printHardwareInfo();
-            printer.printNetworksInfo();
-            printer.printOSInfo();
-            printer.printPackagesInfo();
-            printer.printProcessesInfo();
-            printer.printPortsInfo();
-            printer.printHotfixes();
-            printer.printData();
-            printer.printPackagesInfoCallback();
-            printer.printProcessesInfoCallback();
+            printer.PrintHardwareInfo();
+            printer.PrintNetworksInfo();
+            printer.PrintOSInfo();
+            printer.PrintPackagesInfo();
+            printer.PrintProcessesInfo();
+            printer.PrintPortsInfo();
+            printer.PrintHotfixes();
+            printer.PrintData();
+            printer.PrintPackagesInfoCallback();
+            printer.PrintProcessesInfoCallback();
         }
         else if (argc == 2)
         {
-            CmdLineActions cmdLineArgs(argv);
+            const CmdLineActions cmdLineArgs(argv);
 
             if (cmdLineArgs.hardwareArg())
             {
-                printer.printHardwareInfo();
+                printer.PrintHardwareInfo();
             }
             else if (cmdLineArgs.networksArg())
             {
-                printer.printNetworksInfo();
+                printer.PrintNetworksInfo();
             }
             else if (cmdLineArgs.osArg())
             {
-                printer.printOSInfo();
+                printer.PrintOSInfo();
             }
             else if (cmdLineArgs.packagesArg())
             {
-                printer.printPackagesInfo();
+                printer.PrintPackagesInfo();
             }
             else if (cmdLineArgs.processesArg())
             {
-                printer.printProcessesInfo();
+                printer.PrintProcessesInfo();
             }
             else if (cmdLineArgs.portsArg())
             {
-                printer.printPortsInfo();
+                printer.PrintPortsInfo();
             }
             else if (cmdLineArgs.hotfixesArg())
             {
-                printer.printHotfixes();
+                printer.PrintHotfixes();
             }
             else if (cmdLineArgs.packagesCallbackArg())
             {
-                printer.printPackagesInfoCallback();
+                printer.PrintPackagesInfoCallback();
             }
             else if (cmdLineArgs.processesCallbackArg())
             {
-                printer.printProcessesInfoCallback();
+                printer.PrintProcessesInfoCallback();
             }
             else
             {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                 throw std::runtime_error {"Action value: " + std::string(argv[1]) + " not found."};
             }
 
-            printer.printData();
+            printer.PrintData();
         }
         else
         {
@@ -139,7 +140,7 @@ int main(int argc, const char* argv[])
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error getting system information: " << e.what() << std::endl;
+        std::cerr << "Error getting system information: " << e.what() << '\n';
         CmdLineActions::showHelp();
     }
 }

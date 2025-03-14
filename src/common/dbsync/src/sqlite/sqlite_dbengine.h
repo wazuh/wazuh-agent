@@ -1,16 +1,4 @@
-/*
- * Wazuh DBSYNC
- * Copyright (C) 2015, Wazuh Inc.
- * June 11, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _SQLITE_DBENGINE_H
-#define _SQLITE_DBENGINE_H
+#pragma once
 
 #include "db_exception.h"
 #include "dbengine.h"
@@ -300,5 +288,3 @@ private:
     std::mutex m_maxRowsMutex;
     std::map<std::string, MaxRows> m_maxRows;
 };
-
-#endif // _SQLITE_DBENGINE_H
