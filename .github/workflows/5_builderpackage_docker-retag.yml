@@ -1,11 +1,5 @@
 name: Package - Retag Docker images
 on:
-  pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
-      
   workflow_dispatch:
     inputs:
       old_version:
