@@ -1,0 +1,22 @@
+name: Generate Doxygen Documentation
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+  workflow_dispatch:
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Doxygen Documentation Generation
+        uses: ./.github/actions/5_codelinter_doxygen
+        with:
+          path: ./
+          doxygen_config: ./Doxyfile

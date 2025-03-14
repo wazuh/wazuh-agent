@@ -1,0 +1,18 @@
+name: "Run ctest"
+description: "Executes ctest."
+
+inputs:
+  path:
+    required: true
+    description: "Path to test"
+
+runs:
+  using: "composite"
+  steps:      
+      - name: Run Tests
+        continue-on-error: false
+        run: |
+          set +e
+          cd ${{ inputs.path }}/
+          ctest -C RelWithDebInfo --output-on-failure
+        shell: bash
