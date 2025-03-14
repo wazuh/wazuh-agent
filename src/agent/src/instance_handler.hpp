@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ifilesystem.hpp>
+#include <ifilesystem_wrapper.hpp>
 
 #include <string>
 
@@ -19,7 +19,8 @@ namespace instance_handler
         /// "".
         /// @param fileSystemWrapper An optional filesystem wrapper. If nullptr, it will use FileSystemWrapper. Unused
         /// in Windows.
-        explicit InstanceHandler(std::string lockFilePath, std::shared_ptr<IFileSystem> fileSystemWrapper = nullptr);
+        explicit InstanceHandler(std::string lockFilePath,
+                                 std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr);
 
         /// @brief Destructor
         /// @details Removes lock file if it was created on construction (linux/macOS only). Windows implementation uses
@@ -48,7 +49,7 @@ namespace instance_handler
         int m_errno;
 
         /// @brief Member to interact with the file system.
-        std::shared_ptr<IFileSystem> m_fileSystemWrapper;
+        std::shared_ptr<IFileSystemWrapper> m_fileSystemWrapper;
 
         /// @brief Indicates the lock has been acquired by this instance of the InstanceHandler
         bool m_lockAcquired;

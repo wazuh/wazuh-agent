@@ -3,7 +3,7 @@
 
 #include <centralized_configuration.hpp>
 
-#include <mock_filesystem.hpp>
+#include <mock_filesystem_wrapper.hpp>
 
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/co_spawn.hpp>
@@ -183,7 +183,7 @@ TEST(CentralizedConfiguration, ExecuteCommandHandlesRecognizedCommands)
         io_context,
         []() -> boost::asio::awaitable<void>
         {
-            auto mockFileSystem = std::make_shared<MockFileSystem>();
+            auto mockFileSystem = std::make_shared<MockFileSystemWrapper>();
 
             EXPECT_CALL(*mockFileSystem, exists(_)).WillRepeatedly(Return(false));
             EXPECT_CALL(*mockFileSystem, is_directory(_)).WillRepeatedly(Return(true));
@@ -235,7 +235,7 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForS
         io_context,
         []() -> boost::asio::awaitable<void>
         {
-            auto mockFileSystem = std::make_shared<MockFileSystem>();
+            auto mockFileSystem = std::make_shared<MockFileSystemWrapper>();
 
             EXPECT_CALL(*mockFileSystem, exists(_)).WillRepeatedly(Return(false));
             EXPECT_CALL(*mockFileSystem, is_directory(_)).WillRepeatedly(Return(true));
@@ -294,7 +294,7 @@ TEST(CentralizedConfiguration, SetFunctionsAreCalledAndReturnsCorrectResultsForU
         io_context,
         []() -> boost::asio::awaitable<void>
         {
-            auto mockFileSystem = std::make_shared<MockFileSystem>();
+            auto mockFileSystem = std::make_shared<MockFileSystemWrapper>();
 
             EXPECT_CALL(*mockFileSystem, exists(_)).WillRepeatedly(Return(false));
             EXPECT_CALL(*mockFileSystem, is_directory(_)).WillRepeatedly(Return(true));

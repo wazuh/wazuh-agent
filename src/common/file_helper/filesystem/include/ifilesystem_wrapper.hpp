@@ -1,23 +1,21 @@
 #pragma once
 
-#include <deque>
 #include <filesystem>
-#include <string>
 #include <vector>
 
 /// @brief Interface for file system operations.
 ///
-/// This interface defines a set of file system operations such as checking if a file exists,
+/// This interface is a wrapper for a set of file system operations such as checking if a file exists,
 /// removing files or directories, creating directories, and renaming files. Any concrete class
 /// that implements this interface will be expected to provide the actual functionality for these
 /// operations. This allows for abstraction and easier testing or swapping of file system implementations.
-class IFileSystem
+class IFileSystemWrapper
 {
 public:
-    /// @brief Virtual destructor for IFileSystem.
+    /// @brief Virtual destructor for IFileSystemWrapper.
     ///
     /// Ensures that any derived classes with their own resources are correctly cleaned up.
-    virtual ~IFileSystem() = default;
+    virtual ~IFileSystemWrapper() = default;
 
     /// @brief Checks if the specified path exists in the file system.
     /// @param path The path to check.
@@ -67,9 +65,4 @@ public:
     /// @param path The file or directory to remove.
     /// @return Returns true if the file or directory was successfully removed, otherwise false.
     virtual bool remove(const std::filesystem::path& path) const = 0;
-
-    /// @brief Expands the absolute path of a file or directory.
-    /// @param path The path to expand.
-    /// @param output The deque to store the expanded path.
-    virtual void expand_absolute_path(const std::string& path, std::deque<std::string>& output) const = 0;
 };

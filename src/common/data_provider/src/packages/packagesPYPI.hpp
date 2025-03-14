@@ -9,22 +9,52 @@
  * Foundation.
  */
 
-#ifndef _PACKAGES_PYPI_HPP
-#define _PACKAGES_PYPI_HPP
+#pragma once
 
 #include "file_io_utils.hpp"
+#include "filesystem_utils.hpp"
 #include "filesystem_wrapper.hpp"
+
 #include <nlohmann/json.hpp>
 #include "sharedDefs.h"
 #include "stringHelper.h"
+
 #include <iostream>
+#include <memory>
 #include <set>
 
 const static std::map<std::string, std::string> FILE_MAPPING_PYPI {{"egg-info", "PKG-INFO"}, {"dist-info", "METADATA"}};
 
-template<typename TFileSystem = filesystem_wrapper::FileSystemWrapper, typename TFileIOUtils = file_io::FileIOUtils>
+template<typename TFileSystem = filesystem::FileSystemWrapper, typename TFileIOUtils = file_io::FileIOUtils>
 class PYPI final : public TFileSystem, public TFileIOUtils
 {
+    public:
+        /// @brief PYPI constructor
+        PYPI(std::shared_ptr<IFileSystemUtils> fsUtils = nullptr)
+        : m_fsUtils(fsUtils ? fsUtils : std::make_shared<filesystem::FileSystemUtils>()) {}
+
+        void getPackages(const std::set<std::string>& osRootFolders, std::function<void(nlohmann::json&)> callback)
+        {
+
+            for (const auto& osFolder : osRootFolders)
+            {
+                std::deque<std::string> expandedPaths;
+
+                try
+                {
+                    // Expand paths
+                    m_fsUtils->expand_absolute_path(osFolder, expandedPaths);
+                    // Explore expanded paths
+                    exploreExpandedPaths(expandedPaths, callback);
+                }
+                catch (const std::exception&)
+                {
+                    // Do nothing, continue with the next path
+                }
+            }
+        }
+
+    private:
         void parseMetadata(const std::filesystem::path& path, std::function<void(nlohmann::json&)>& callback)
         {
             // Map to match fields
@@ -132,27 +162,6 @@ class PYPI final : public TFileSystem, public TFileIOUtils
             }
         }
 
-    public:
-        void getPackages(const std::set<std::string>& osRootFolders, std::function<void(nlohmann::json&)> callback)
-        {
-
-            for (const auto& osFolder : osRootFolders)
-            {
-                std::deque<std::string> expandedPaths;
-
-                try
-                {
-                    // Expand paths
-                    TFileSystem::expand_absolute_path(osFolder, expandedPaths);
-                    // Explore expanded paths
-                    exploreExpandedPaths(expandedPaths, callback);
-                }
-                catch (const std::exception&)
-                {
-                    // Do nothing, continue with the next path
-                }
-            }
-        }
+        /// @brief Pointer to the file system utils
+        std::shared_ptr<IFileSystemUtils> m_fsUtils;
 };
-
-#endif // _PACKAGES_PYPI_HPP

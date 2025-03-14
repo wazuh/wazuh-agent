@@ -25,7 +25,7 @@ namespace
     /// @param path The path for the lock file
     /// @param fileSystemWrapper The filesystem wrapper
     /// @return True if the directory is created, false otherwise
-    bool CreateDirectory(const std::string& path, std::shared_ptr<IFileSystem> fileSystemWrapper)
+    bool CreateDirectory(const std::string& path, std::shared_ptr<IFileSystemWrapper> fileSystemWrapper)
     {
         try
         {

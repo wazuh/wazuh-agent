@@ -1,8 +1,8 @@
 #include <gmock/gmock.h>
 
-#include <ifilesystem.hpp>
+#include <ifilesystem_wrapper.hpp>
 
-class MockFileSystem : public IFileSystem
+class MockFileSystemWrapper : public IFileSystemWrapper
 {
 public:
     MOCK_METHOD(bool, exists, (const std::filesystem::path& path), (const, override));
@@ -18,8 +18,4 @@ public:
                 (const, override));
     MOCK_METHOD(void, rename, (const std::filesystem::path& from, const std::filesystem::path& to), (const, override));
     MOCK_METHOD(bool, remove, (const std::filesystem::path& path), (const, override));
-    MOCK_METHOD(void,
-                expand_absolute_path,
-                (const std::string& path, std::deque<std::string>& output),
-                (const, override));
 };

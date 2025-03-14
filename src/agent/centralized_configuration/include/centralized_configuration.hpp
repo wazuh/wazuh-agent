@@ -1,7 +1,7 @@
 #pragma once
 
 #include <command_entry.hpp>
-#include <ifilesystem.hpp>
+#include <ifilesystem_wrapper.hpp>
 
 #include <boost/asio/awaitable.hpp>
 #include <nlohmann/json.hpp>
@@ -36,7 +36,7 @@ namespace centralized_configuration
                                           DownloadGroupFilesFunctionType downloadGroupFilesFunction,
                                           ValidateFileFunctionType validateFileFunction,
                                           ReloadModulesFunctionType reloadModulesFunction,
-                                          std::shared_ptr<IFileSystem> fileSystemWrapper = nullptr);
+                                          std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr);
 
         /// @brief Executes a command for the centralized configuration system.
         /// @param command A string containing a JSON command to execute.
@@ -62,6 +62,6 @@ namespace centralized_configuration
         ReloadModulesFunctionType m_reloadModulesFunction;
 
         /// @brief Member to interact with the file system.
-        std::shared_ptr<IFileSystem> m_fileSystemWrapper;
+        std::shared_ptr<IFileSystemWrapper> m_fileSystemWrapper;
     };
 } // namespace centralized_configuration
