@@ -36,7 +36,7 @@ TEST_F(NPMTest, getPackages_ValidPackagesTest)
 
     std::set<std::string> folders = {"/fake"};
 
-    EXPECT_CALL(*npm, expand_absolute_path(_, _))
+    EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
             out.push_back(base);
         });
@@ -93,7 +93,7 @@ TEST_F(NPMTest, getPackages_NoPackageJsonTest)
 
     std::set<std::string> folders = {"/fake"};
 
-    EXPECT_CALL(*npm, expand_absolute_path(_, _))
+    EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
             out.push_back(base);
         });
@@ -121,7 +121,7 @@ TEST_F(NPMTest, getPackages_InvalidPackageJsonNameTest)
 
     std::set<std::string> folders = {"/fake"};
 
-    EXPECT_CALL(*npm, expand_absolute_path(_, _))
+    EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
             out.push_back(base);
         });
@@ -149,7 +149,7 @@ TEST_F(NPMTest, getPackages_InvalidPackageJsonVersionTest)
 
     std::set<std::string> folders = {"/fake"};
 
-    EXPECT_CALL(*npm, expand_absolute_path(_, _))
+    EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
             out.push_back(base);
         });
@@ -181,7 +181,7 @@ TEST_F(NPMTest, getPackages_ValidPackageJson2Test)
 
     std::set<std::string> folders = {"/fake"};
 
-    EXPECT_CALL(*npm, expand_absolute_path(_, _))
+    EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) {
             out.push_back(base);
         });

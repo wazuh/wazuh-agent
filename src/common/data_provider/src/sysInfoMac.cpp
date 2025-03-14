@@ -107,7 +107,7 @@ static void getPackagesFromPath(const std::string& pkgDirectory, const int pkgTy
 {
     if (MACPORTS == pkgType)
     {
-        const auto fsWrapper = std::make_unique<filesystem_wrapper::FileSystemWrapper>();
+        const auto fsWrapper = std::make_unique<filesystem::FileSystemWrapper>();
         if (fsWrapper->exists(pkgDirectory + "/" + MACPORTS_DB_NAME)
             && fsWrapper->is_regular_file(pkgDirectory + "/" + MACPORTS_DB_NAME))
         {
@@ -150,7 +150,7 @@ static void getPackagesFromPath(const std::string& pkgDirectory, const int pkgTy
     }
     else
     {
-        const auto fsWrapper = std::make_unique<filesystem_wrapper::FileSystemWrapper>();
+        const auto fsWrapper = std::make_unique<filesystem::FileSystemWrapper>();
         std::vector<std::filesystem::path> packages;
         if(fsWrapper->exists(pkgDirectory) && fsWrapper->is_directory(pkgDirectory))
         {
@@ -434,7 +434,7 @@ void SysInfo::getProcessesInfo(std::function<void(nlohmann::json&)> callback) co
 
 void SysInfo::getPackages(std::function<void(nlohmann::json&)> callback) const
 {
-    const auto fsWrapper = std::make_unique<filesystem_wrapper::FileSystemWrapper>();
+    const auto fsWrapper = std::make_unique<filesystem::FileSystemWrapper>();
     for (const auto& packageDirectory : s_mapPackagesDirectories)
     {
         const auto pkgDirectory { packageDirectory.first };
