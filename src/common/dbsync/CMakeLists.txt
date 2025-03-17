@@ -10,7 +10,7 @@ get_filename_component(COMMON_FOLDER  ${CMAKE_CURRENT_SOURCE_DIR}/../ ABSOLUTE)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+if(WIN32)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 else()
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -42,7 +42,8 @@ add_library(dbsync STATIC
 
 target_include_directories(dbsync PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
 
-target_link_libraries(dbsync PUBLIC
+target_link_libraries(dbsync
+    PUBLIC
     deleter_helper
     map_wrapper
     pipeline_helper
@@ -51,7 +52,14 @@ target_link_libraries(dbsync PUBLIC
     thread_dispatcher
 )
 
-target_link_libraries(dbsync PUBLIC nlohmann_json::nlohmann_json cjson pal PRIVATE unofficial::sqlite3::sqlite3)
+target_link_libraries(dbsync
+    PUBLIC
+    nlohmann_json::nlohmann_json
+    cjson
+    PRIVATE
+    pal
+    unofficial::sqlite3::sqlite3
+)
 
 add_subdirectory(example)
 add_subdirectory(testtool)

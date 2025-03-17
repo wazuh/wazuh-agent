@@ -12,42 +12,16 @@
 #ifndef _MODERN_PACKAGE_DATA_RETRIEVER_HPP
 #define _MODERN_PACKAGE_DATA_RETRIEVER_HPP
 
+#include "packages/packagesNPM.hpp"
+#include "packages/packagesPYPI.hpp"
 #include "sharedDefs.h"
 #include <functional>
 #include <map>
 #include <nlohmann/json.hpp>
 
-#if defined(HAS_STDFILESYSTEM) && HAS_STDFILESYSTEM == true
-#include "packages/packagesNPM.hpp"
-#include "packages/packagesPYPI.hpp"
-#else
-class PYPI
-{
-public:
-    void getPackages(const std::set<std::string>& /*paths*/, std::function<void(nlohmann::json&)> /*callback*/);
-};
-
-class NPM
-{
-public:
-    void getPackages(const std::set<std::string>& /*paths*/, std::function<void(nlohmann::json&)> /*callback*/);
-};
-#endif
-
-template<bool>
-class ModernFactoryPackagesCreator final
-{
-public:
-    static void getPackages(const std::map<std::string, std::set<std::string>>& /*paths*/,
-                            std::function<void(nlohmann::json&)> /*callback*/)
-    {
-    }
-};
-
 // Standard template to extract package information in fully compatible Linux
 // systems
-template<>
-class ModernFactoryPackagesCreator<true> final
+class ModernFactoryPackagesCreator final
 {
 public:
     static void getPackages(const std::map<std::string, std::set<std::string>>& paths,

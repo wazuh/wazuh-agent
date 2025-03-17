@@ -17,11 +17,8 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   add_subdirectory(sysInfoWin)
   add_subdirectory(sysInfoNetworkWindows)
-endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-
-if(HAS_FILESYSTEM OR CMAKE_SYSTEM_NAME STREQUAL "Windows")
-  add_subdirectory(sysInfoPackages)
 endif()
 
 add_subdirectory(sysInfo)
+add_subdirectory(sysInfoPackages)
 add_subdirectory(sysInfoPorts)

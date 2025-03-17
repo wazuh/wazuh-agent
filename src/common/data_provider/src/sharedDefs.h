@@ -46,12 +46,6 @@ enum OSPlatformType
     WINDOWS,
 };
 
-enum LinuxType
-{
-    STANDARD,
-    LEGACY
-};
-
 enum PortType
 {
     UDP_IPV4,

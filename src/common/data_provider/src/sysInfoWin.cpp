@@ -880,7 +880,7 @@ void SysInfo::getPackages(std::function<void(nlohmann::json&)> callback) const
     const std::map<std::string, std::set<std::string>> searchPaths = {{"PYPI", getPythonDirectories()},
                                                                       {"NPM", getNodeDirectories()}};
 
-    ModernFactoryPackagesCreator<HAS_STDFILESYSTEM>::getPackages(searchPaths, callback);
+    ModernFactoryPackagesCreator::getPackages(searchPaths, callback);
 }
 
 nlohmann::json SysInfo::getHotfixes() const
