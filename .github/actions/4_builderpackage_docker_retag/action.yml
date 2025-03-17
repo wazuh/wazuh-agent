@@ -5,13 +5,13 @@ inputs:
     description: 'User to access ghcr repositoy'
     required: true
   gh_token:
-    description: 'User's token'
+    description: "User's token"
     required: true
   docker_image_old_tag:
-    description: 'Retagged image's old tag'
+    description: "Retagged image's old tag"
     required: true
   docker_image_new_tag:
-    description: 'Retagged image's new tag'
+    description: "Retagged image's new tag"
     required: true
   docker_image_name:
     description: 'Single retagged image name'
@@ -22,7 +22,7 @@ runs:
     - name: Retag images from ghcr
       shell: bash
       run: |
-        sudo bash .github/actions/4_docker_retag/retag_image.sh \
+        sudo bash .github/actions/4_builderpackage_docker_onpush/retag_image.sh \
           ${{ inputs.gh_token }} ${{ inputs.gh_user}} \
           ${{ inputs.docker_image_old_tag }} ${{ inputs.docker_image_new_tag }} \
           ${{ inputs.docker_image_name }}
