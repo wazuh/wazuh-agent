@@ -1,38 +1,67 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * December 14, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _PACKAGE_INTERFACE_WRAPPER_H
-#define _PACKAGE_INTERFACE_WRAPPER_H
+#pragma once
 
 #include "ipackageInterface.h"
 
+/// @brief Interface for package information
 class IPackageWrapper
 {
 public:
-    // LCOV_EXCL_START
+    /// @brief Default destructor
     virtual ~IPackageWrapper() = default;
-    // LCOV_EXCL_STOP
-    virtual void name(nlohmann::json&) const = 0;
-    virtual void version(nlohmann::json&) const = 0;
-    virtual void groups(nlohmann::json&) const = 0;
-    virtual void description(nlohmann::json&) const = 0;
-    virtual void architecture(nlohmann::json&) const = 0;
-    virtual void format(nlohmann::json&) const = 0;
-    virtual void osPatch(nlohmann::json&) const = 0;
-    virtual void source(nlohmann::json&) const = 0;
-    virtual void location(nlohmann::json&) const = 0;
-    virtual void priority(nlohmann::json&) const = 0;
-    virtual void size(nlohmann::json&) const = 0;
-    virtual void vendor(nlohmann::json&) const = 0;
-    virtual void install_time(nlohmann::json&) const = 0;
-    virtual void multiarch(nlohmann::json&) const = 0;
+
+    /// @brief Returns the package name
+    /// @param package Package
+    virtual void name(nlohmann::json& package) const = 0;
+
+    /// @brief Returns the package version
+    /// @param package Package
+    virtual void version(nlohmann::json& package) const = 0;
+
+    /// @brief Returns the package groups
+    /// @param package Package
+    virtual void groups(nlohmann::json& package) const = 0;
+
+    /// @brief Returns the package description
+    /// @param package Package
+    virtual void description(nlohmann::json& package) const = 0;
+
+    /// @brief Returns the package architecture
+    /// @param package Package
+    virtual void architecture(nlohmann::json& package) const = 0;
+
+    /// @brief Returns the package format
+    /// @param package Package
+    virtual void format(nlohmann::json& package) const = 0;
+
+    /// @brief Returns the package os patch
+    /// @param package Package
+    virtual void osPatch(nlohmann::json& package) const = 0;
+
+    /// @brief Returns the package source
+    /// @param package Package
+    virtual void source(nlohmann::json& package) const = 0;
+
+    /// @brief Returns the package location
+    /// @param package Package
+    virtual void location(nlohmann::json& package) const = 0;
+
+    /// @brief Returns the package priority
+    /// @param package Package
+    virtual void priority(nlohmann::json& package) const = 0;
+
+    /// @brief Returns the package size
+    /// @param package Package
+    virtual void size(nlohmann::json& package) const = 0;
+
+    /// @brief Returns the package vendor
+    /// @param package Package
+    virtual void vendor(nlohmann::json& package) const = 0;
+
+    /// @brief Returns the package install time
+    /// @param package Package
+    virtual void install_time(nlohmann::json& package) const = 0;
+
+    /// @brief Returns the package multiarch
+    /// @param package Package
+    virtual void multiarch(nlohmann::json& package) const = 0;
 };
-#endif // _PACKAGE_INTERFACE_WRAPPER_H

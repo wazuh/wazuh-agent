@@ -1,36 +1,27 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * November 3, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _PORT_IMPL_H
-#define _PORT_IMPL_H
+#pragma once
 
 #include "iportInterface.h"
 #include "iportWrapper.h"
 #include "sharedDefs.h"
 
+/// @brief Port implementation
 class PortImpl final : public IOSPort
 {
 private:
     std::shared_ptr<IPortWrapper> m_spPortRawData;
 
 public:
+    /// @brief Constructor
+    /// @param portRawData port raw data
     explicit PortImpl(const std::shared_ptr<IPortWrapper>& portRawData)
         : m_spPortRawData(portRawData)
     {
     }
 
-    // LCOV_EXCL_START
+    /// @brief Destructor
     ~PortImpl() = default;
 
-    // LCOV_EXCL_STOP
+    /// @copydoc IOSPort::buildPortData
     void buildPortData(nlohmann::json& port) override
     {
         m_spPortRawData->protocol(port);
@@ -46,4 +37,3 @@ public:
         m_spPortRawData->processName(port);
     }
 };
-#endif // _PORT_IMPL_H

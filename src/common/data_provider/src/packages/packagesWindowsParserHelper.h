@@ -1,16 +1,4 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * February 25, 2021.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _PACKAGES_WINDOWS_PARSER_HELPER_H
-#define _PACKAGES_WINDOWS_PARSER_HELPER_H
+#pragma once
 
 #include "registryHelper.hpp"
 #include "stringHelper.hpp"
@@ -25,6 +13,9 @@ namespace PackageWindowsHelper
         "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Installer\\UserData\\S-1-5-18\\Products"};
     constexpr auto WIN_REG_WOW_HOTFIX {"SOFTWARE\\WOW6432Node\\Microsoft\\Updates"};
 
+    /// @brief Extract hotfix value
+    /// @param input Input string
+    /// @return Hotfix value
     static std::string extractHFValue(std::string input)
     {
         constexpr auto KB_FORMAT_REGEX_STR {"(KB+[0-9]{6,})"};
@@ -42,6 +33,10 @@ namespace PackageWindowsHelper
         return ret;
     }
 
+    /// @brief Get hotfix from registry
+    /// @param key Registry key
+    /// @param subKey Subkey of the registry
+    /// @param hotfixes Set of hotfixes
     static void getHotFixFromReg(const HKEY key, const std::string& subKey, std::set<std::string>& hotfixes)
     {
         try
@@ -82,6 +77,10 @@ namespace PackageWindowsHelper
         }
     }
 
+    /// @brief Get hotfix from registry for Windows NT
+    /// @param key Registry key
+    /// @param subKey Subkey of the registry
+    /// @param hotfixes Set of hotfixes
     static void getHotFixFromRegNT(const HKEY key, const std::string& subKey, std::set<std::string>& hotfixes)
     {
         try
@@ -103,6 +102,10 @@ namespace PackageWindowsHelper
         }
     }
 
+    /// @brief Get hotfix from registry WOW
+    /// @param key Registry key
+    /// @param subKey Subkey of the registry
+    /// @param hotfixes Set of hotfixes
     static void getHotFixFromRegWOW(const HKEY key, const std::string& subKey, std::set<std::string>& hotfixes)
     {
         try
@@ -131,6 +134,10 @@ namespace PackageWindowsHelper
         }
     }
 
+    /// @brief Get hotfix from registry product
+    /// @param key Registry key
+    /// @param subKey Subkey of the registry
+    /// @param hotfixes Set of hotfixes
     static void getHotFixFromRegProduct(const HKEY key, const std::string& subKey, std::set<std::string>& hotfixes)
     {
         try
@@ -198,5 +205,3 @@ namespace PackageWindowsHelper
         }
     }
 }; // namespace PackageWindowsHelper
-
-#endif // _PACKAGES_WINDOWS_PARSER_HELPER_H

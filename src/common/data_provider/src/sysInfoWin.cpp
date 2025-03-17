@@ -1,14 +1,3 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * October 7, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
 #include "cmdHelper.hpp"
 #include "encodingWindowsHelper.hpp"
 #include "network/networkFamilyDataAFactory.h"
@@ -52,9 +41,13 @@ constexpr auto OS_MAXSTR_HALF {32768};
 static const std::map<std::string, DWORD> gs_firmwareTableProviderSignature {
     {"ACPI", 0x41435049}, {"FIRM", 0x4649524D}, {"RSMB", 0x52534D42}};
 
+/// @brief Windows process information
 class SysInfoProcess final
 {
 public:
+    /// @brief Constructor
+    /// @param pId Process ID
+    /// @param processHandle Process handle
     SysInfoProcess(const DWORD pId, const HANDLE processHandle)
         : m_pId {pId}
         , m_hProcess {processHandle}
@@ -68,8 +61,11 @@ public:
         setProcessMemInfo();
     }
 
+    /// @brief Default destructor
     ~SysInfoProcess() = default;
 
+    /// @brief Returns the executable path
+    /// @return Executable path
     std::string cmd()
     {
         std::string ret;
@@ -87,32 +83,44 @@ public:
         return ret;
     }
 
+    /// @brief Returns the creation time
+    /// @return Creation time
     ULONGLONG creationTime() const
     {
         // convert Win32 Epoch(1 January 1601 00:00:00) to Unix Epoch(1 January 1970 00:00:00)
         return m_creationTime.QuadPart - WINDOWS_UNIX_EPOCH_DIFF_SECONDS;
     }
 
+    /// @brief Returns the kernel mode time
+    /// @return Kernel mode time
     ULONGLONG kernelModeTime() const
     {
         return m_kernelModeTime.QuadPart;
     }
 
+    /// @brief Returns the user mode time
+    /// @return User mode time
     ULONGLONG userModeTime() const
     {
         return m_userModeTime.QuadPart;
     }
 
+    /// @brief Returns the page file usage
+    /// @return Page file usage
     DWORD pageFileUsage() const
     {
         return m_pageFileUsage;
     }
 
+    /// @brief Returns the virtual size
+    /// @return Virtual size
     DWORD virtualSize() const
     {
         return m_virtualSize;
     }
 
+    /// @brief Returns the session ID
+    /// @return Session ID
     DWORD sessionId() const
     {
         DWORD ret {};
@@ -128,6 +136,7 @@ public:
 private:
     using SystemDrivesMap = std::map<std::string, std::string>;
 
+    /// @brief Sets the process times
     void setProcessTimes()
     {
         constexpr auto TO_SECONDS_VALUE {10000000ULL};
@@ -157,6 +166,7 @@ private:
         // else: Unable to retrieve kernel mode and user mode times from current process.
     }
 
+    /// @brief Sets the process memory info
     void setProcessMemInfo()
     {
         PROCESS_MEMORY_COUNTERS pMemCounters {};
@@ -172,6 +182,8 @@ private:
         // else: Unable to retrieve page file usage from current process
     }
 
+    /// @brief Returns the logical drives map
+    /// @return Logical drives map
     static SystemDrivesMap getNtWin32DrivesMap()
     {
         SystemDrivesMap ret;
@@ -248,6 +260,11 @@ private:
         return ret;
     }
 
+    /// @brief Fills the output buffer with the DOS path
+    /// @param drivesMap Logical drives map
+    /// @param ntPath NT Path
+    /// @param outbuf Output buffer
+    /// @return True if the output buffer was filled
     bool fillOutput(const SystemDrivesMap& drivesMap, const std::string& ntPath, std::string& outbuf)
     {
         const auto it {std::find_if(drivesMap.begin(),
@@ -265,6 +282,9 @@ private:
         return ret;
     }
 
+    /// @brief Converts NT Path to Win32 Path
+    /// @param ntPath NT Path
+    /// @param outbuf Output buffer
     void ntPath2Win32Path(const std::string& ntPath, std::string& outbuf)
     {
         static SystemDrivesMap s_drivesMap {getNtWin32DrivesMap()};

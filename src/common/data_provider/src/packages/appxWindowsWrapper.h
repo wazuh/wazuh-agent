@@ -1,15 +1,4 @@
-/* * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * January 23, 2022.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _APPX_WINDOWS_WRAPPER_H
-#define _APPX_WINDOWS_WRAPPER_H
+#pragma once
 
 #include "ipackageWrapper.h"
 #include "registryHelper.hpp"
@@ -34,9 +23,15 @@ constexpr auto CACHE_NAME_REGISTRY {"SOFTWARE\\Classes\\Local Settings\\MrtCache
 constexpr auto STORE_APPLICATION_DATABASE {"C:\\Program Files\\WindowsApps"};
 constexpr auto PREFIX_LOCALIZATION {"@{"};
 
+/// @class AppxWindowsWrapper class
 class AppxWindowsWrapper final : public IPackageWrapper
 {
 public:
+    /// @brief Constructor
+    /// @param key Registry key
+    /// @param userId User id
+    /// @param appName Application name
+    /// @param cacheRegistry Cache registry
     explicit AppxWindowsWrapper(const HKEY key,
                                 const std::string& userId,
                                 const std::string& appName,
@@ -50,73 +45,88 @@ public:
         getInformationPackages();
     }
 
+    /// @brief Destructor
     ~AppxWindowsWrapper() = default;
 
+    /// @copydoc IPackageWrapper::name
     void name(nlohmann::json& package) const override
     {
         package["name"] = m_name;
     }
 
+    /// @copydoc IPackageWrapper::version
     void version(nlohmann::json& package) const override
     {
         package["version"] = m_version;
     }
 
+    /// @copydoc IPackageWrapper::groups
     void groups(nlohmann::json& package) const override
     {
         package["groups"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::description
     void description(nlohmann::json& package) const override
     {
         package["description"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::architecture
     void architecture(nlohmann::json& package) const override
     {
         package["architecture"] = m_architecture;
     }
 
+    /// @copydoc IPackageWrapper::format
     void format(nlohmann::json& package) const override
     {
         package["format"] = m_format;
     }
 
+    /// @copydoc IPackageWrapper::osPatch
     void osPatch(nlohmann::json& package) const override
     {
         package["os_patch"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::source
     void source(nlohmann::json& package) const override
     {
         package["source"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::location
     void location(nlohmann::json& package) const override
     {
         package["location"] = m_location;
     }
 
+    /// @copydoc IPackageWrapper::priority
     void priority(nlohmann::json& package) const override
     {
         package["priority"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::size
     void size(nlohmann::json& package) const override
     {
         package["size"] = 0;
     }
 
+    /// @copydoc IPackageWrapper::vendor
     void vendor(nlohmann::json& package) const override
     {
         package["vendor"] = m_vendor;
     }
 
+    /// @copydoc IPackageWrapper::install_time
     void install_time(nlohmann::json& package) const override
     {
         package["install_time"] = m_installTime;
     }
 
+    /// @copydoc IPackageWrapper::multiarch
     void multiarch(nlohmann::json& package) const override
     {
         package["multiarch"] = std::string();
@@ -135,6 +145,8 @@ private:
     std::string m_installTime;
     std::set<std::string> m_cacheReg;
 
+    /// @brief Check if the registry is valid
+    /// @return True if the registry is valid
     bool isRegistryValid()
     {
         Utils::Registry registry(
@@ -143,6 +155,7 @@ private:
         return registry.enumerate().size() != 0;
     }
 
+    /// @brief Get information about the packages
     void getInformationPackages()
     {
         if (isRegistryValid())
@@ -188,17 +201,14 @@ private:
         }
     }
 
-    /*
-     * @brief Gets packages architecture.
-     *
-     * @param[in] field Field where the architecture type is.
-     *
-     * Type are:
-     *          - x64
-     *          - x86
-     *
-     * @return Return app architecture.
-     */
+    /// @brief Gets packages architecture.
+    /// @param[in] field Field where the architecture type is.
+    ///
+    /// Type are:
+    ///          - x64
+    ///          - x86
+    ///
+    /// @return Return app architecture.
     const std::string getArchitecture(const std::string& field)
     {
         std::string architecture {EMPTY_VALUE};
@@ -215,13 +225,9 @@ private:
         return architecture;
     }
 
-    /*
-     * Get the path where the application was installed.
-     *
-     * @param[in] registry  Registry object pointing to where the data is.
-     *
-     * @return Return package location.
-     */
+    /// @brief Get the path where the application was installed.
+    /// @param[in] registry Registry object pointing to where the data is.
+    /// @return Return package location.
     const std::string getLocation(const Utils::Registry& registry)
     {
         std::string location;
@@ -229,6 +235,10 @@ private:
         return registry.string("PackageRootFolder", location) ? location : EMPTY_VALUE;
     }
 
+    /// @brief Get application install time.
+    /// @param[in] name Name of the application.
+    /// @param[in] uuid UUID of the application.
+    /// @return Return install time.
     const std::string getInstallTime(const std::string& name, const std::string& uuid)
     {
         std::string installTime {EMPTY_VALUE};
@@ -254,14 +264,10 @@ private:
         return installTime;
     }
 
-    /*
-     * @brief Get application name.
-     *
-     * @param[in] fullName Full application name.
-     * @param[in] registry Registry object pointing to where the data is located.
-     *
-     * @return Return name application.
-     */
+    /// @brief Get application name.
+    /// @param[in] fullName Full application name.
+    /// @param[in] registry Registry object pointing to where the data is located.
+    /// @return Return name application.
     const std::string getName(const std::string& fullName, const Utils::Registry& registry)
     {
         std::string name;
@@ -307,14 +313,10 @@ private:
         return name;
     }
 
-    /*
-     * @brief Get application vendor name.
-     *
-     * @param[in] registry Registry object that points to where the sub-registries with the names of the registry with
-     * the data are located.
-     *
-     * @return Returns the vendor name
-     */
+    /// @brief Get application vendor name.
+    /// @param[in] registry Registry object that points to where the sub-registries with the names of the registry with
+    /// the data are located.
+    /// @return Returns the vendor name
     const std::string getVendor(const Utils::Registry& registry)
     {
         std::string vendor;
@@ -352,14 +354,10 @@ private:
         return vendor;
     }
 
-    /*
-     * @brief Search the name application in the cache registry.
-     *
-     * @param[in] appName Abbreviation of the name application to look for in the cache registry.
-     * @param[in] nameKey Name key where is the name application
-     *
-     * @return Return the name application.
-     */
+    /// @brief Search the name application in the cache registry.
+    /// @param[in] appName Abbreviation of the name application to look for in the cache registry.
+    /// @param[in] nameKey Name key where is the name application
+    /// @return Return the name application.
     const std::string searchNameFromCacheRegistry(const std::string& appName, const std::string& nameKey)
     {
         std::string registry;
@@ -385,14 +383,10 @@ private:
         return Utils::startsWith(name, PREFIX_LOCALIZATION) ? "" : name;
     }
 
-    /*
-     * @brief Search the key on the registry and sub-registries.
-     *
-     * @param[in] path Start path where you want to search.
-     * @param[in] key Name key to look for
-     *
-     * @return Return the value of the key.
-     */
+    /// @brief Search the key on the registry and sub-registries.
+    /// @param[in] path Start path where you want to search.
+    /// @param[in] key Name key to look for
+    /// @return Return the value of the key.
     const std::string searchKeyOnSubRegistries(const std::string& path, const std::string& key)
     {
         std::string value;
@@ -415,13 +409,9 @@ private:
         return value;
     }
 
-    /*
-     * @brief Search the publisher name in a registry.
-     *
-     * @param[in] registry Registry object used to obtain the information.
-     *
-     * @return Returns the publisher name found.
-     */
+    /// @brief Search the publisher name in a registry.
+    /// @param[in] registry Registry object used to obtain the information.
+    /// @return Returns the publisher name found.
     const std::string searchPublisher(const Utils::Registry& registry)
     {
         std::string publisher;
@@ -448,5 +438,3 @@ private:
         return publisher;
     }
 };
-
-#endif //_APPX_WINDOWS_WRAPPER_H

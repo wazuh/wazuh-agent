@@ -1,16 +1,4 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * December 22, 2021.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation
- */
-
-#ifndef _PACKAGES_LINUX_PARSER_RPM__HPP
-#define _PACKAGES_LINUX_PARSER_RPM__HPP
+#pragma once
 
 #include "berkeleyRpmDbHelper.h"
 #include "filesystem_wrapper.hpp"
@@ -21,22 +9,21 @@
 #include "rpmlib.h"
 #include "sharedDefs.h"
 #include "stringHelper.hpp"
-#include "utilsWrapperLinux.hpp"
+#include "utilsWrapper.hpp"
 
+/// @brief RPM parser
 template<typename TFileSystem = file_system::FileSystemWrapper>
 class RPM final : public TFileSystem
 {
 public:
-    /**
-     * @brief Fills a JSON object with all available rpm-related information
-     * @param callback Callback to be called for every single element being found
-     */
+    /// @brief Fills a JSON object with all available rpm-related information
+    /// @param callback Callback to be called for every single element being found
     void getRpmInfo(std::function<void(nlohmann::json&)> callback)
     {
 
         const auto rpmDefaultQuery {[](std::function<void(nlohmann::json&)> cb)
                                     {
-                                        const auto rawRpmPackagesInfo {UtilsWrapperLinux::exec(
+                                        const auto rawRpmPackagesInfo {UtilsWrapper::exec(
                                             "rpm -qa --qf "
                                             "'%{name}\t%{arch}\t%{summary}\t%{size}\t%{epoch}\t%{release}\t%{version}"
                                             "\t%{vendor}\t%{installtime:date}\t%{group}\t\n'")};
@@ -106,5 +93,3 @@ public:
         }
     }
 };
-
-#endif // _PACKAGES_LINUX_PARSER_RPM__HPP

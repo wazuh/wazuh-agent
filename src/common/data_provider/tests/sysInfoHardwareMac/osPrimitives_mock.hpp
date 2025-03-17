@@ -1,16 +1,4 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * May 18, 2023.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _OS_PRIMITIVES_MOCK_H
-#define _OS_PRIMITIVES_MOCK_H
+#pragma once
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -23,7 +11,7 @@ public:
 
 static UtilsMock* gs_utils_mock = NULL;
 
-std::string UtilsWrapperMac::exec(const std::string& cmd, const size_t bufferSize)
+std::string UtilsWrapper::exec(const std::string& cmd, const size_t bufferSize)
 {
     return gs_utils_mock->exec(cmd, bufferSize);
 }
@@ -69,5 +57,3 @@ public:
     MOCK_METHOD(CFRange, CFRangeMake, (CFIndex loc, CFIndex len), (const override));
     MOCK_METHOD(void, CFRelease, (CFTypeRef cf), (const override));
 };
-
-#endif //_OS_PRIMITIVES_MOCK_H

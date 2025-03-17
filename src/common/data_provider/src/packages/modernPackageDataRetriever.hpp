@@ -1,16 +1,4 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * July 29, 2023.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _MODERN_PACKAGE_DATA_RETRIEVER_HPP
-#define _MODERN_PACKAGE_DATA_RETRIEVER_HPP
+#pragma once
 
 #include "packages/packagesNPM.hpp"
 #include "packages/packagesPYPI.hpp"
@@ -19,11 +7,13 @@
 #include <map>
 #include <nlohmann/json.hpp>
 
-// Standard template to extract package information in fully compatible Linux
-// systems
+/// @brief Factory for modern package information
 class ModernFactoryPackagesCreator final
 {
 public:
+    /// @brief  Retrieves the modern packages information
+    /// @param paths Paths to search for packages
+    /// @param callback Callback function
     static void getPackages(const std::map<std::string, std::set<std::string>>& paths,
                             std::function<void(nlohmann::json&)> callback)
     {
@@ -31,5 +21,3 @@ public:
         NPM().getPackages(paths.at("NPM"), callback);
     }
 };
-
-#endif // _MODERN_PACKAGE_DATA_RETRIEVER_HPP

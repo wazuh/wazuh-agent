@@ -1,13 +1,3 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * October 7, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
 #include "sysInfo.hpp"
 #include "cjsonSmartDeleter.hpp"
 #include "sysInfo.h"
@@ -75,12 +65,9 @@ extern "C"
                 retVal = 0;
             }
         }
-        // LCOV_EXCL_START
         catch (...)
         {
         }
-
-        // LCOV_EXCL_STOP
 
         return retVal;
     }
@@ -99,12 +86,9 @@ extern "C"
                 retVal = 0;
             }
         }
-        // LCOV_EXCL_START
         catch (...)
         {
         }
-
-        // LCOV_EXCL_STOP
 
         return retVal;
     }
@@ -123,12 +107,9 @@ extern "C"
                 retVal = 0;
             }
         }
-        // LCOV_EXCL_START
         catch (...)
         {
         }
-
-        // LCOV_EXCL_STOP
 
         return retVal;
     }
@@ -147,12 +128,9 @@ extern "C"
                 retVal = 0;
             }
         }
-        // LCOV_EXCL_START
         catch (...)
         {
         }
-
-        // LCOV_EXCL_STOP
 
         return retVal;
     }
@@ -171,12 +149,9 @@ extern "C"
                 retVal = 0;
             }
         }
-        // LCOV_EXCL_START
         catch (...)
         {
         }
-
-        // LCOV_EXCL_STOP
 
         return retVal;
     }
@@ -195,12 +170,9 @@ extern "C"
                 retVal = 0;
             }
         }
-        // LCOV_EXCL_START
         catch (...)
         {
         }
-
-        // LCOV_EXCL_STOP
 
         return retVal;
     }
@@ -227,19 +199,15 @@ extern "C"
                         const std::unique_ptr<cJSON, CJsonSmartDeleter> spJson {cJSON_Parse(jsonResult.dump().c_str())};
                         callback_data.callback(GENERIC, spJson.get(), callback_data.user_data);
                     }};
-                // LCOV_EXCL_START
+
                 SysInfo info;
-                // LCOV_EXCL_STOP
                 info.packages(callbackWrapper);
                 retVal = 0;
             }
         }
-        // LCOV_EXCL_START
         catch (...)
         {
         }
-
-        // LCOV_EXCL_STOP
 
         return retVal;
     }
@@ -258,19 +226,15 @@ extern "C"
                         const std::unique_ptr<cJSON, CJsonSmartDeleter> spJson {cJSON_Parse(jsonResult.dump().c_str())};
                         callback_data.callback(GENERIC, spJson.get(), callback_data.user_data);
                     }};
-                // LCOV_EXCL_START
+
                 SysInfo info;
-                // LCOV_EXCL_STOP
                 info.processes(callbackWrapper);
                 retVal = 0;
             }
         }
-        // LCOV_EXCL_START
         catch (...)
         {
         }
-
-        // LCOV_EXCL_STOP
 
         return retVal;
     }
@@ -289,12 +253,9 @@ extern "C"
                 retVal = 0;
             }
         }
-        // LCOV_EXCL_START
         catch (...)
         {
         }
-
-        // LCOV_EXCL_STOP
 
         return retVal;
     }

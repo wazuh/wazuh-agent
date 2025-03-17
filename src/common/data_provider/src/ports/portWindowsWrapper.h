@@ -1,16 +1,4 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * November 3, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _PORT_WINDOWS_WRAPPER_H
-#define _PORT_WINDOWS_WRAPPER_H
+#pragma once
 
 #include "iportWrapper.h"
 #include "sharedDefs.h"
@@ -37,6 +25,7 @@ static const std::map<pid_t, std::string> SYSTEM_PROCESSES = {
     {4, "System"},
 };
 
+/// @brief Windows port tables
 struct PortTables
 {
     std::unique_ptr<MIB_TCPTABLE_OWNER_PID[]> tcp;
@@ -45,6 +34,7 @@ struct PortTables
     std::unique_ptr<MIB_UDP6TABLE_OWNER_PID[]> udp6;
 };
 
+/// @brief Windows port wrapper
 class WindowsPortWrapper final : public IPortWrapper
 {
     const std::string m_protocol;
@@ -56,6 +46,9 @@ class WindowsPortWrapper final : public IPortWrapper
     const uint32_t m_pid;
     const std::string m_processName;
 
+    /// @brief Convert ipv4 address to string
+    /// @param addr ipv4 address
+    /// @return ipv4 address
     static std::string getIpV4Address(const DWORD addr)
     {
         in_addr ipaddress;
@@ -63,6 +56,10 @@ class WindowsPortWrapper final : public IPortWrapper
         return Utils::IAddressToString(AF_INET, ipaddress);
     }
 
+    /// @brief Get process name
+    /// @param processDataList process data list
+    /// @param pid process id
+    /// @return process name
     static std::string getProcessName(const std::map<pid_t, std::string> processDataList, const pid_t pid)
     {
         std::string retVal {EMPTY_VALUE};
@@ -86,9 +83,13 @@ class WindowsPortWrapper final : public IPortWrapper
         return retVal;
     }
 
+    /// @brief Delete default constructor
     WindowsPortWrapper() = delete;
 
 public:
+    /// @brief Constructor
+    /// @param data port data ipv4
+    /// @param processDataList process data list
     WindowsPortWrapper(const _MIB_TCPROW_OWNER_PID& data, const std::map<pid_t, std::string>& processDataList)
         : m_protocol {"tcp"}
         , m_localPort {static_cast<int32_t>(ntohs(static_cast<u_short>(data.dwLocalPort)))}
@@ -101,6 +102,9 @@ public:
     {
     }
 
+    /// @brief Constructor
+    /// @param data port data ipv6
+    /// @param processDataList process data list
     WindowsPortWrapper(const _MIB_TCP6ROW_OWNER_PID& data, const std::map<pid_t, std::string>& processDataList)
         : m_protocol {"tcp6"}
         , m_localPort {static_cast<int32_t>(ntohs(static_cast<u_short>(data.dwLocalPort)))}
@@ -113,6 +117,9 @@ public:
     {
     }
 
+    /// @brief Constructor
+    /// @param data port data udp
+    /// @param processDataList process data list
     WindowsPortWrapper(const _MIB_UDPROW_OWNER_PID& data, const std::map<pid_t, std::string>& processDataList)
         : m_protocol {"udp"}
         , m_localPort {static_cast<int32_t>(ntohs(static_cast<u_short>(data.dwLocalPort)))}
@@ -124,6 +131,9 @@ public:
     {
     }
 
+    /// @brief Constructor
+    /// @param data port data udp6
+    /// @param processDataList process data list
     WindowsPortWrapper(const _MIB_UDP6ROW_OWNER_PID& data, const std::map<pid_t, std::string>& processDataList)
         : m_protocol("udp6")
         , m_localPort {static_cast<int32_t>(ntohs(static_cast<u_short>(data.dwLocalPort)))}
@@ -135,48 +145,58 @@ public:
     {
     }
 
+    /// @brief Default destructor
     ~WindowsPortWrapper() = default;
 
+    /// @copydoc IPortWrapper::protocol
     void protocol(nlohmann::json& port) const override
     {
         port["protocol"] = m_protocol;
     }
 
+    /// @copydoc IPortWrapper::localIp
     void localIp(nlohmann::json& port) const override
     {
         port["local_ip"] = m_localIpAddress;
     }
 
+    /// @copydoc IPortWrapper::localPort
     void localPort(nlohmann::json& port) const override
     {
         port["local_port"] = m_localPort;
     }
 
+    /// @copydoc IPortWrapper::remoteIP
     void remoteIP(nlohmann::json& port) const override
     {
         port["remote_ip"] = m_remoteIpAddress;
     }
 
+    /// @copydoc IPortWrapper::remotePort
     void remotePort(nlohmann::json& port) const override
     {
         port["remote_port"] = m_remotePort;
     }
 
+    /// @copydoc IPortWrapper::txQueue
     void txQueue(nlohmann::json& port) const override
     {
         port["tx_queue"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPortWrapper::rxQueue
     void rxQueue(nlohmann::json& port) const override
     {
         port["rx_queue"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPortWrapper::inode
     void inode(nlohmann::json& port) const override
     {
         port["inode"] = 0;
     }
 
+    /// @copydoc IPortWrapper::state
     void state(nlohmann::json& port) const override
     {
         port["state"] = UNKNOWN_VALUE;
@@ -188,15 +208,15 @@ public:
         }
     }
 
+    /// @copydoc IPortWrapper::pid
     void pid(nlohmann::json& port) const override
     {
         port["pid"] = m_pid;
     }
 
+    /// @copydoc IPortWrapper::processName
     void processName(nlohmann::json& port) const override
     {
         port["process"] = Utils::stringAnsiToStringUTF8(m_processName);
     }
 };
-
-#endif //_PORT_WINDOWS_WRAPPER_H

@@ -1,16 +1,4 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * May 4, 2023.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _HARDWARE_WRAPPER_IMPL_MAC_H
-#define _HARDWARE_WRAPPER_IMPL_MAC_H
+#pragma once
 
 #include "defer.hpp"
 #include "hardwareWrapperInterface.h"
@@ -18,26 +6,29 @@
 #include "sharedDefs.h"
 #include "stringHelper.hpp"
 #include "sysInfo.hpp"
-#include "utilsWrapperMac.hpp"
+#include "utilsWrapper.hpp"
 #include <sys/sysctl.h>
 
+/// @brief Get the mhz of the cpu
+/// @param osPrimitives OS primitives
+/// @return mhz
 int getMhz(IOsPrimitivesMac* osPrimitives = nullptr);
 
+/// @brief MacOS hardware data wrapper
 template<class TOsPrimitivesMac>
 class OSHardwareWrapperMac final
     : public IOSHardwareWrapper
     , public TOsPrimitivesMac
 {
 public:
-    // LCOV_EXCL_START
+    /// @brief Default destructor
     virtual ~OSHardwareWrapperMac() = default;
 
-    // LCOV_EXCL_STOP
-
+    /// @copydoc IOSHardwareWrapper::boardSerial
     std::string boardSerial() const
     {
         std::string ret {EMPTY_VALUE};
-        const auto rawData {UtilsWrapperMac::exec("system_profiler SPHardwareDataType | grep Serial")};
+        const auto rawData {UtilsWrapper::exec("system_profiler SPHardwareDataType | grep Serial")};
 
         if (!rawData.empty())
         {
@@ -47,6 +38,7 @@ public:
         return ret;
     }
 
+    /// @copydoc IOSHardwareWrapper::cpuName
     std::string cpuName() const
     {
         size_t len {0};
@@ -75,6 +67,7 @@ public:
         return std::string {reinterpret_cast<const char*>(spBuff.get())};
     }
 
+    /// @copydoc IOSHardwareWrapper::cpuCores
     int cpuCores() const
     {
         int cores {0};
@@ -90,11 +83,13 @@ public:
         return cores;
     }
 
+    /// @copydoc IOSHardwareWrapper::cpuMhz
     int cpuMhz()
     {
         return getMhz(static_cast<IOsPrimitivesMac*>(this));
     }
 
+    /// @copydoc IOSHardwareWrapper::ramTotal
     uint64_t ramTotal() const
     {
         uint64_t ramTotal {0};
@@ -109,6 +104,7 @@ public:
         return ramTotal / KByte;
     }
 
+    /// @copydoc IOSHardwareWrapper::ramFree
     uint64_t ramFree() const
     {
         u_int pageSize {0};
@@ -132,6 +128,7 @@ public:
         return (freePages * pageSize) / KByte;
     }
 
+    /// @copydoc IOSHardwareWrapper::ramUsage
     uint64_t ramUsage() const
     {
         uint64_t ret {0};
@@ -145,5 +142,3 @@ public:
         return ret;
     }
 };
-
-#endif // _HARDWARE_WRAPPER_IMPL_MAC_H

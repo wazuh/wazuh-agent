@@ -1,14 +1,3 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * December 22, 2021.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation
- */
-
 #include "sysInfoPackageLinuxParserRPM_test.hpp"
 #include "packages/berkeleyRpmDbHelper.h"
 #include <db.h>
@@ -31,7 +20,7 @@ public:
 
 static UtilsMock* gs_utils_mock = NULL;
 
-std::string UtilsWrapperLinux::exec(const std::string& cmd, const size_t bufferSize)
+std::string UtilsWrapper::exec(const std::string& cmd, const size_t bufferSize)
 {
     return gs_utils_mock->exec(cmd, bufferSize);
 }

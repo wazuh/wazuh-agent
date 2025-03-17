@@ -1,33 +1,15 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * January 28, 2021.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _PACKAGE_LINUX_RPM_PARSER_HELPER_H
-#define _PACKAGE_LINUX_RPM_PARSER_HELPER_H
+#pragma once
 
 #include "rpmPackageManager.h"
 #include "sharedDefs.h"
 #include <nlohmann/json.hpp>
 
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-#endif
-
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4505)
-#endif
-
+// Parse helpers for standard Linux packaging systems (rpm, dpkg, ...)
 namespace PackageLinuxHelper
 {
+    /// @brief Parse a rpm database entry
+    /// @param package Package to parse
+    /// @return Parsed package
     static nlohmann::json parseRpm(const RpmPackageManager::Package& package)
     {
         nlohmann::json ret;
@@ -64,13 +46,3 @@ namespace PackageLinuxHelper
     }
 
 }; // namespace PackageLinuxHelper
-
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
-
-#endif // _PACKAGE_LINUX_RPM_PARSER_HELPER_H

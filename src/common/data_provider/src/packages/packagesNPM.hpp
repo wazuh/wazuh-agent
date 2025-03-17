@@ -1,16 +1,4 @@
-/*
- * Wazuh data provider.
- * Copyright (C) 2015, Wazuh Inc.
- * July 11, 2023.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _PACKAGES_NPM_HPP
-#define _PACKAGES_NPM_HPP
+#pragma once
 
 #include "filesystem_utils.hpp"
 #include "filesystem_wrapper.hpp"
@@ -25,6 +13,7 @@
 #include <memory>
 #include <set>
 
+/// @brief NPM parser
 template<typename TFileSystem = file_system::FileSystemWrapper, typename TJsonReader = Utils::JsonIO<nlohmann::json>>
 class NPM final
     : public TFileSystem
@@ -37,11 +26,14 @@ public:
     {
     }
 
+    /// @brief NPM destructor
     ~NPM() = default;
 
+    /// @brief Retrieves the NPM packages information
+    /// @param osRootFolders Paths to search for packages
+    /// @param callback Callback function
     void getPackages(const std::set<std::string>& osRootFolders, std::function<void(nlohmann::json&)> callback)
     {
-
         // Iterate over node_modules folders
         for (const auto& osRootFolder : osRootFolders)
         {
@@ -63,6 +55,9 @@ public:
     }
 
 private:
+    /// @brief Parse NPM package
+    /// @param folderPath Path to package folder
+    /// @param callback Callback function
     void parsePackage(const std::filesystem::path& folderPath, std::function<void(nlohmann::json&)>& callback)
     {
         // Map to match fields
@@ -115,6 +110,9 @@ private:
         }
     }
 
+    /// @brief Explore expanded paths
+    /// @param expandedPaths Paths to explore
+    /// @param callback Callback function
     void exploreExpandedPaths(const std::deque<std::string>& expandedPaths,
                               std::function<void(nlohmann::json&)> callback)
     {
@@ -147,4 +145,3 @@ private:
     /// @brief Pointer to the file system utils
     std::shared_ptr<IFileSystemUtils> m_fsUtils;
 };
-#endif // _PACKAGES_NPM_HPP

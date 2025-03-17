@@ -1,44 +1,66 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * November 3, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _SYS_OS_INFO_INTERFACE_H
-#define _SYS_OS_INFO_INTERFACE_H
+#pragma once
 
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <string>
 
+/// @brief Interface for OS information
 class ISysOsInfoProvider
 {
 public:
-    // LCOV_EXCL_START
+    /// @brief Default destructor
     virtual ~ISysOsInfoProvider() = default;
+
+    /// @brief Returns the OS name
+    /// @return OS name
     virtual std::string name() const = 0;
+
+    /// @brief Returns the OS version
+    /// @return OS version
     virtual std::string version() const = 0;
+
+    /// @brief Returns the OS major version
+    /// @return OS major version
     virtual std::string majorVersion() const = 0;
+
+    /// @brief Returns the OS minor version
+    /// @return OS minor version
     virtual std::string minorVersion() const = 0;
+
+    /// @brief Returns the OS build
+    /// @return OS build
     virtual std::string build() const = 0;
+
+    /// @brief Returns the OS release
+    /// @return OS release
     virtual std::string release() const = 0;
+
+    /// @brief Returns the OS display version
+    /// @return OS display version
     virtual std::string displayVersion() const = 0;
+
+    /// @brief Returns the OS machine
+    /// @return OS machine
     virtual std::string machine() const = 0;
+
+    /// @brief Returns the OS node name
+    /// @return OS node name
     virtual std::string nodeName() const = 0;
-    // LCOV_EXCL_STOP
 };
 
+/// @brief Class for OS information
 class SysOsInfo
 {
 public:
+    /// @brief Default constructor
     SysOsInfo() = default;
+
+    /// @brief Default destructor
     ~SysOsInfo() = default;
 
+    /// @brief Sets the OS information
+    /// @param osInfoProvider OS information provider
+    /// @param output Output
     static void setOsInfo(const std::shared_ptr<ISysOsInfoProvider>& osInfoProvider, nlohmann::json& output)
     {
         output["os_name"] = osInfoProvider->name();
@@ -53,5 +75,3 @@ public:
         output["os_platform"] = "windows";
     }
 };
-
-#endif //_SYS_OS_INFO_INTERFACE_H

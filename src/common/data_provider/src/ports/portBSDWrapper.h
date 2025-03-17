@@ -1,16 +1,4 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * November 3, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _PORT_BSD_WRAPPER_H
-#define _PORT_BSD_WRAPPER_H
+#pragma once
 
 #include <netdb.h>
 #include <sys/proc_info.h>
@@ -35,6 +23,7 @@ static const std::map<int32_t, std::string> STATE_TYPE = {{TSI_S_ESTABLISHED, "e
                                                           {TSI_S_LISTEN, "listening"},
                                                           {TSI_S_CLOSING, "closing"}};
 
+/// @brief BSD process information
 struct ProcessInfo
 {
     int32_t pid;
@@ -46,12 +35,16 @@ struct ProcessInfo
     }
 };
 
+/// @brief BSD port wrapper
 class BSDPortWrapper final : public IPortWrapper
 {
     ProcessInfo m_processInformation;
     std::shared_ptr<socket_fdinfo> m_spSocketInfo;
 
 public:
+    /// @brief Constructor
+    /// @param processInformation process information
+    /// @param socketInfo socket information
     explicit BSDPortWrapper(const ProcessInfo& processInformation, const std::shared_ptr<socket_fdinfo>& socketInfo)
         : m_processInformation {processInformation}
         , m_spSocketInfo {socketInfo}
@@ -62,8 +55,10 @@ public:
         }
     };
 
+    /// @brief Destructor
     ~BSDPortWrapper() = default;
 
+    /// @copydoc IPortWrapper::protocol
     void protocol(nlohmann::json& port) const override
     {
         port["protocol"] = EMPTY_VALUE;
@@ -75,6 +70,7 @@ public:
         }
     }
 
+    /// @copydoc IPortWrapper::localIp
     void localIp(nlohmann::json& port) const override
     {
         char ipAddress[NI_MAXHOST] {0};
@@ -110,11 +106,13 @@ public:
         port["local_ip"] = Utils::substrOnFirstOccurrence(ipAddress, "%");
     }
 
+    /// @copydoc IPortWrapper::localPort
     void localPort(nlohmann::json& port) const override
     {
         port["local_port"] = ntohs(m_spSocketInfo->psi.soi_proto.pri_in.insi_lport);
     }
 
+    /// @copydoc IPortWrapper::remoteIP
     void remoteIP(nlohmann::json& port) const override
     {
         char ipAddress[NI_MAXHOST] {0};
@@ -151,26 +149,31 @@ public:
         port["remote_ip"] = Utils::substrOnFirstOccurrence(ipAddress, "%");
     }
 
+    /// @copydoc IPortWrapper::remotePort
     void remotePort(nlohmann::json& port) const override
     {
         port["remote_port"] = ntohs(m_spSocketInfo->psi.soi_proto.pri_in.insi_fport);
     }
 
+    /// @copydoc IPortWrapper::txQueue
     void txQueue(nlohmann::json& port) const override
     {
         port["tx_queue"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPortWrapper::rxQueue
     void rxQueue(nlohmann::json& port) const override
     {
         port["rx_queue"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPortWrapper::inode
     void inode(nlohmann::json& port) const override
     {
         port["inode"] = 0;
     }
 
+    /// @copydoc IPortWrapper::state
     void state(nlohmann::json& port) const override
     {
         port["state"] = UNKNOWN_VALUE;
@@ -188,15 +191,15 @@ public:
         }
     }
 
+    /// @copydoc IPortWrapper::pid
     void pid(nlohmann::json& port) const override
     {
         port["pid"] = m_processInformation.pid;
     }
 
+    /// @copydoc IPortWrapper::processName
     void processName(nlohmann::json& port) const override
     {
         port["process"] = m_processInformation.processName;
     }
 };
-
-#endif //_PORT_BSD_WRAPPER_H

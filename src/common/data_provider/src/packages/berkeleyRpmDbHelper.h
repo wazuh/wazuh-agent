@@ -1,16 +1,4 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * March 15, 2021.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _BERKELEY_RPM_DB_HELPER_H
-#define _BERKELEY_RPM_DB_HELPER_H
+#pragma once
 
 #include "berkeleyDbWrapper.h"
 #include "byteArrayHelper.hpp"
@@ -42,6 +30,7 @@ constexpr int STRING_VECTOR_TYPE {9};
 // This constant is defined with this value in the RPM source code (header.c)
 constexpr int HEADER_TAGS_MAX {65535};
 
+/// @brief Structure for a header entry
 struct BerkeleyHeaderEntry final
 {
     std::string tag;
@@ -61,12 +50,16 @@ const std::vector<std::pair<int32_t, std::string>> TAG_NAMES = {{std::make_pair(
                                                                 {std::make_pair(TAG_ITIME, "install_time")},
                                                                 {std::make_pair(TAG_GROUP, "group")}};
 
+/// @brief Class for reading a rpm database
 class BerkeleyRpmDBReader final
 {
 private:
     bool m_firstIteration;
     std::shared_ptr<IBerkeleyDbWrapper> m_dbWrapper;
 
+    /// @brief Parse header
+    /// @param data Data to parse
+    /// @return Parsed header
     std::vector<BerkeleyHeaderEntry> parseHeader(const DBT& data)
     {
         auto bytes {reinterpret_cast<uint8_t*>(data.data)};
@@ -122,6 +115,10 @@ private:
         return retVal;
     }
 
+    /// @brief Parse body
+    /// @param header Header to parse
+    /// @param data Data to parse
+    /// @return Parsed body
     std::string parseBody(const std::vector<BerkeleyHeaderEntry>& header, const DBT& data)
     {
         std::string retVal;
@@ -165,6 +162,8 @@ private:
     }
 
 public:
+    /// @brief Get next entry
+    /// @return Next entry
     std::string getNext()
     {
         std::string retVal;
@@ -187,12 +186,14 @@ public:
         return retVal;
     }
 
+    /// @brief Default constructor
+    /// @param dbWrapper Database wrapper
     explicit BerkeleyRpmDBReader(std::shared_ptr<IBerkeleyDbWrapper> dbWrapper)
         : m_firstIteration {true}
         , m_dbWrapper {dbWrapper}
     {
     }
 
+    /// @brief Default destructor
     ~BerkeleyRpmDBReader() {}
 };
-#endif // _BERKELEY_RPM_DB_HELPER_H

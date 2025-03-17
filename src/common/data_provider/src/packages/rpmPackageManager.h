@@ -1,16 +1,4 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * December 22, 2021.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation
- */
-
-#ifndef _RPM_PACKAGE_MANAGER_H
-#define _RPM_PACKAGE_MANAGER_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -23,15 +11,18 @@
 
 #include "rpmlibWrapper.h"
 
-// Provides an iterable abstraction for retrieving installed RPM packages.
+/// @brief RPM package manager
 class RpmPackageManager final
 {
 public:
+    /// @brief Constructor
+    /// @param wrapper rpmlib wrapper
     explicit RpmPackageManager(std::shared_ptr<IRpmLibWrapper>&& wrapper);
-    // LCOV_EXCL_START
+
+    /// @brief Destructor
     ~RpmPackageManager();
 
-    // LCOV_EXCL_STOP
+    /// @brief Package information
     struct Package
     {
         std::string name;
@@ -48,6 +39,7 @@ public:
         std::string description;
     };
 
+    /// @brief Iterator for packages
     struct Iterator final
     {
         bool operator!=(const Iterator& other)
@@ -77,11 +69,13 @@ public:
 
     static const Iterator END_ITERATOR;
 
+    /// @brief Iterator for packages starting from the beginning
     Iterator begin()
     {
         return Iterator {m_rpmlib};
     }
 
+    /// @brief Iterator for packages at the end
     const Iterator& end() const
     {
         return END_ITERATOR;
@@ -91,5 +85,3 @@ private:
     static bool ms_instantiated;
     std::shared_ptr<IRpmLibWrapper> m_rpmlib;
 };
-
-#endif // _RPM_PACKAGE_MANAGER_H

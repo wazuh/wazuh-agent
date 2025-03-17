@@ -1,25 +1,16 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * December 14, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _BREW_WRAPPER_H
-#define _BREW_WRAPPER_H
+#pragma once
 
 #include "file_io_utils.hpp"
 #include "ipackageWrapper.h"
 #include "sharedDefs.h"
 #include "stringHelper.hpp"
 
+/// @class BrewWrapper class
 class BrewWrapper final : public IPackageWrapper
 {
 public:
+    /// @brief Constructor
+    /// @param ctx Context
     explicit BrewWrapper(const PackageContext& ctx)
         : m_name {ctx.package}
         , m_version {Utils::splitIndex(ctx.version, '_', 0)}
@@ -65,73 +56,88 @@ public:
         }
     }
 
+    /// @brief Default destructor
     ~BrewWrapper() = default;
 
+    /// @copydoc IPackageWrapper::name
     void name(nlohmann::json& package) const override
     {
         package["name"] = m_name;
     }
 
+    /// @copydoc IPackageWrapper::version
     void version(nlohmann::json& package) const override
     {
         package["version"] = m_version;
     }
 
+    /// @copydoc IPackageWrapper::groups
     void groups(nlohmann::json& package) const override
     {
         package["groups"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::description
     void description(nlohmann::json& package) const override
     {
         package["description"] = m_description;
     }
 
+    /// @copydoc IPackageWrapper::architecture
     void architecture(nlohmann::json& package) const override
     {
         package["architecture"] = EMPTY_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::format
     void format(nlohmann::json& package) const override
     {
         package["format"] = m_format;
     }
 
+    /// @copydoc IPackageWrapper::osPatch
     void osPatch(nlohmann::json& package) const override
     {
         package["os_patch"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::source
     void source(nlohmann::json& package) const override
     {
         package["source"] = m_source;
     }
 
+    /// @copydoc IPackageWrapper::location
     void location(nlohmann::json& package) const override
     {
         package["location"] = m_location;
     }
 
+    /// @copydoc IPackageWrapper::vendor
     void vendor(nlohmann::json& package) const override
     {
         package["vendor"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::priority
     void priority(nlohmann::json& package) const override
     {
         package["priority"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::size
     void size(nlohmann::json& package) const override
     {
         package["size"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::install_time
     void install_time(nlohmann::json& package) const override
     {
         package["install_time"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::multiarch
     void multiarch(nlohmann::json& package) const override
     {
         package["multiarch"] = UNKNOWN_VALUE;
@@ -152,5 +158,3 @@ private:
     std::string m_installTime;
     std::string m_multiarch;
 };
-
-#endif //_BREW_WRAPPER_H

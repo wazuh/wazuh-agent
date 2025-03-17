@@ -1,16 +1,4 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * October 24, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _NETWORK_LINUX_WRAPPER_H
-#define _NETWORK_LINUX_WRAPPER_H
+#pragma once
 
 #include "inetworkWrapper.h"
 #include "networkHelper.hpp"
@@ -187,12 +175,17 @@ namespace NetDevFileFields
     };
 }
 
+/// @brief Class to work with network interface
 class NetworkLinuxInterface final : public INetworkInterfaceWrapper
 {
     ifaddrs* m_interfaceAddress;
     std::string m_gateway;
     std::string m_metrics;
 
+    /// @brief Get network interface name
+    /// @param inputData interface address
+    /// @param socketLen socket length
+    /// @return the name
     static std::string getNameInfo(const sockaddr* inputData, const socklen_t socketLen)
     {
         auto retVal {std::make_unique<char[]>(NI_MAXHOST)};
@@ -210,6 +203,9 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
         return retVal.get();
     }
 
+    /// @brief Get DHCP status from redhat
+    /// @param fields interface configuration
+    /// @return the status
     static std::string getRedHatDHCPStatus(const std::vector<std::string>& fields)
     {
         std::string retVal {"enabled"};
@@ -225,6 +221,10 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
         return retVal;
     }
 
+    /// @brief Get DHCP status from debian
+    /// @param family interface family
+    /// @param fields interface configuration
+    /// @return the status
     static std::string getDebianDHCPStatus(const std::string& family, const std::vector<std::string>& fields)
     {
         std::string retVal {"enabled"};
@@ -245,6 +245,8 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
     }
 
 public:
+    /// @brief Constructor
+    /// @param addrs interface address
     explicit NetworkLinuxInterface(ifaddrs* addrs)
         : m_interfaceAddress {addrs}
         , m_gateway {}
@@ -287,28 +289,33 @@ public:
         }
     }
 
+    /// @copydoc INetworkInterfaceWrapper::name
     std::string name() const override
     {
         return m_interfaceAddress->ifa_name ? Utils::substrOnFirstOccurrence(m_interfaceAddress->ifa_name, ":")
                                             : EMPTY_VALUE;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::adapter
     void adapter(nlohmann::json& network) const override
     {
         network["adapter"] = EMPTY_VALUE;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::family
     int family() const override
     {
         return m_interfaceAddress->ifa_addr ? m_interfaceAddress->ifa_addr->sa_family : AF_PACKET;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::address
     std::string address() const override
     {
         return m_interfaceAddress->ifa_addr ? getNameInfo(m_interfaceAddress->ifa_addr, sizeof(struct sockaddr_in))
                                             : EMPTY_VALUE;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::netmask
     std::string netmask() const override
     {
         return m_interfaceAddress->ifa_netmask
@@ -316,6 +323,7 @@ public:
                    : EMPTY_VALUE;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::broadcast
     void broadcast(nlohmann::json& network) const override
     {
         network["broadcast"] = UNKNOWN_VALUE;
@@ -340,6 +348,7 @@ public:
         }
     }
 
+    /// @copydoc INetworkInterfaceWrapper::addressV6
     std::string addressV6() const override
     {
         return m_interfaceAddress->ifa_addr
@@ -347,6 +356,7 @@ public:
                    : EMPTY_VALUE;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::netmaskV6
     std::string netmaskV6() const override
     {
         return m_interfaceAddress->ifa_netmask
@@ -354,6 +364,7 @@ public:
                    : EMPTY_VALUE;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::broadcastV6
     void broadcastV6(nlohmann::json& network) const override
     {
         m_interfaceAddress->ifa_ifu.ifu_broadaddr
@@ -361,21 +372,25 @@ public:
             : network["broadcast"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::gateway
     void gateway(nlohmann::json& network) const override
     {
         network["gateway"] = m_gateway;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::metrics
     void metrics(nlohmann::json& network) const override
     {
         network["metric"] = m_metrics;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::metricsV6
     void metricsV6(nlohmann::json& network) const override
     {
         network["metric"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::dhcp
     void dhcp(nlohmann::json& network) const override
     {
         const auto fileIoWrapper = std::make_unique<file_io::FileIOUtils>();
@@ -449,6 +464,7 @@ public:
         }
     }
 
+    /// @copydoc INetworkInterfaceWrapper::mtu
     void mtu(nlohmann::json& network) const override
     {
         network["mtu"] = UNKNOWN_VALUE;
@@ -462,6 +478,7 @@ public:
         }
     }
 
+    /// @copydoc INetworkInterfaceWrapper::stats
     LinkStats stats() const override
     {
         LinkStats retVal {};
@@ -510,6 +527,7 @@ public:
         return retVal;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::type
     void type(nlohmann::json& network) const override
     {
         network["type"] = EMPTY_VALUE;
@@ -523,6 +541,7 @@ public:
         }
     }
 
+    /// @copydoc INetworkInterfaceWrapper::state
     void state(nlohmann::json& network) const override
     {
         network["state"] = UNKNOWN_VALUE;
@@ -536,6 +555,7 @@ public:
         }
     }
 
+    /// @copydoc INetworkInterfaceWrapper::MAC
     void MAC(nlohmann::json& network) const override
     {
         network["mac"] = UNKNOWN_VALUE;
@@ -549,5 +569,3 @@ public:
         }
     }
 };
-
-#endif // _NETWORK_LINUX_WRAPPER_H

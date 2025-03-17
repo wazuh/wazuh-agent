@@ -1,15 +1,4 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * December 14, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#include "sysInfoMacPackages_test.h"
+#include "sysInfoMacPackages_test.hpp"
 #include "MockSqliteWrapper.hpp"
 #include "packages/macportsWrapper.h"
 #include "packages/packageMac.h"

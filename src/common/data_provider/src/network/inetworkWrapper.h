@@ -1,43 +1,84 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * October 26, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _NETWORK_INTERFACE_WRAPPER_H
-#define _NETWORK_INTERFACE_WRAPPER_H
+#pragma once
 
 #include "inetworkInterface.h"
 #include <optional>
 
+/// @brief Interface for network data wrappers
 class INetworkInterfaceWrapper
 {
 public:
-    // LCOV_EXCL_START
+    /// @brief Default destructor
     virtual ~INetworkInterfaceWrapper() = default;
-    // LCOV_EXCL_STOP
+
+    /// @brief Returns the network family
+    /// @return Network family
     virtual int family() const = 0;
+
+    /// @brief Returns the network name
+    /// @return Network name
     virtual std::string name() const = 0;
-    virtual void adapter(nlohmann::json&) const = 0;
+
+    /// @brief Returns the network adapter
+    /// @param network Network
+    virtual void adapter(nlohmann::json& network) const = 0;
+
+    /// @brief Returns the network address
+    /// @return Network address
     virtual std::string address() const = 0;
+
+    /// @brief Returns the network netmask
+    /// @return Network netmask
     virtual std::string netmask() const = 0;
-    virtual void broadcast(nlohmann::json&) const = 0;
+
+    /// @brief Returns the network broadcast
+    /// @param network Network
+    virtual void broadcast(nlohmann::json& network) const = 0;
+
+    /// @brief Returns the network address v6
+    /// @return Network address v6
     virtual std::string addressV6() const = 0;
+
+    /// @brief Returns the network netmask v6
+    /// @return Network netmask v6
     virtual std::string netmaskV6() const = 0;
-    virtual void broadcastV6(nlohmann::json&) const = 0;
-    virtual void gateway(nlohmann::json&) const = 0;
-    virtual void metrics(nlohmann::json&) const = 0;
-    virtual void metricsV6(nlohmann::json&) const = 0;
-    virtual void dhcp(nlohmann::json&) const = 0;
-    virtual void mtu(nlohmann::json&) const = 0;
+
+    /// @brief Returns the network broadcast v6
+    /// @param network Network
+    virtual void broadcastV6(nlohmann::json& network) const = 0;
+
+    /// @brief Returns the network gateway
+    /// @param network Network
+    virtual void gateway(nlohmann::json& network) const = 0;
+
+    /// @brief Returns the network metrics
+    /// @param network Network
+    virtual void metrics(nlohmann::json& network) const = 0;
+
+    /// @brief Returns the network metrics v6
+    /// @param network Network
+    virtual void metricsV6(nlohmann::json& network) const = 0;
+
+    /// @brief Returns the network dhcp
+    /// @param network Network
+    virtual void dhcp(nlohmann::json& network) const = 0;
+
+    /// @brief Returns the network mtu
+    /// @param network Network
+    virtual void mtu(nlohmann::json& network) const = 0;
+
+    /// @brief Returns the network stats
+    /// @return Network stats
     virtual LinkStats stats() const = 0;
-    virtual void type(nlohmann::json&) const = 0;
-    virtual void state(nlohmann::json&) const = 0;
-    virtual void MAC(nlohmann::json&) const = 0;
+
+    /// @brief Returns the network type
+    /// @param network Network
+    virtual void type(nlohmann::json& network) const = 0;
+
+    /// @brief Returns the network state
+    /// @param network Network
+    virtual void state(nlohmann::json& network) const = 0;
+
+    /// @brief Returns the network MAC
+    /// @param network Network
+    virtual void MAC(nlohmann::json& network) const = 0;
 };
-#endif // _NETWORK_INTERFACE_WRAPPER_H

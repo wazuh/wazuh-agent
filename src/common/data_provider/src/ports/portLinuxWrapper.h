@@ -1,16 +1,4 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * November 3, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _PORT_LINUX_WRAPPER_H
-#define _PORT_LINUX_WRAPPER_H
+#pragma once
 
 #include "bits/stdc++.h"
 #include "iportWrapper.h"
@@ -19,6 +7,7 @@
 
 constexpr int IPV6_ADDRESS_HEX_SIZE {32};
 
+/// @brief Address fields for Linux ports
 enum AddressField
 {
     IP,
@@ -26,6 +15,7 @@ enum AddressField
     ADDRESS_FIELD_SIZE
 };
 
+/// @brief Queue fields for Linux ports
 enum QueueField
 {
     TX,
@@ -54,6 +44,7 @@ static const std::map<int32_t, std::string> STATE_TYPE = {{TCP_ESTABLISHED, "est
                                                           {TCP_LISTEN, "listening"},
                                                           {TCP_CLOSING, "closing"}};
 
+/// @brief Linux port wrapper
 class LinuxPortWrapper final : public IPortWrapper
 {
     std::vector<std::string> m_fields;
@@ -62,6 +53,9 @@ class LinuxPortWrapper final : public IPortWrapper
     std::vector<std::string> m_localAddresses;
     std::vector<std::string> m_queue;
 
+    /// @brief Convert raw ipv4 address to string
+    /// @param hexRawAddress Raw ipv4 address
+    /// @return Converted ipv4 address
     static std::string IPv4Address(const std::string& hexRawAddress)
     {
         std::stringstream ss;
@@ -71,6 +65,9 @@ class LinuxPortWrapper final : public IPortWrapper
         return Utils::IAddressToBinary(AF_INET, &addr);
     }
 
+    /// @brief Convert raw ipv6 address to string
+    /// @param hexRawAddress Raw ipv6 address
+    /// @return Converted ipv6 address
     static std::string IPv6Address(const std::string& hexRawAddress)
     {
         std::string retVal;
@@ -97,6 +94,9 @@ class LinuxPortWrapper final : public IPortWrapper
     }
 
 public:
+    /// @brief Linux port wrapper constructor
+    /// @param type Port type
+    /// @param row Port raw data
     explicit LinuxPortWrapper(const PortType type, const std::string& row)
         : m_fields {Utils::split(row, ' ')}
         , m_type {type}
@@ -106,8 +106,10 @@ public:
     {
     }
 
+    /// @brief Linux port wrapper destructor
     ~LinuxPortWrapper() = default;
 
+    /// @copydoc IPortWrapper::protocol
     void protocol(nlohmann::json& port) const override
     {
         const auto it {PORTS_TYPE.find(m_type)};
@@ -122,6 +124,7 @@ public:
         }
     }
 
+    /// @copydoc IPortWrapper::localIp
     void localIp(nlohmann::json& port) const override
     {
         port["local_ip"] = EMPTY_VALUE;
@@ -139,6 +142,7 @@ public:
         }
     }
 
+    /// @copydoc IPortWrapper::localPort
     void localPort(nlohmann::json& port) const override
     {
         int32_t retVal;
@@ -156,6 +160,7 @@ public:
         }
     }
 
+    /// @copydoc IPortWrapper::remoteIP
     void remoteIP(nlohmann::json& port) const override
     {
         port["remote_ip"] = UNKNOWN_VALUE;
@@ -173,6 +178,7 @@ public:
         }
     }
 
+    /// @copydoc IPortWrapper::remotePort
     void remotePort(nlohmann::json& port) const override
     {
         int32_t retVal;
@@ -190,6 +196,7 @@ public:
         }
     }
 
+    /// @copydoc IPortWrapper::txQueue
     void txQueue(nlohmann::json& port) const override
     {
         int32_t retVal;
@@ -207,6 +214,7 @@ public:
         }
     }
 
+    /// @copydoc IPortWrapper::rxQueue
     void rxQueue(nlohmann::json& port) const override
     {
         int32_t retVal;
@@ -224,6 +232,7 @@ public:
         }
     }
 
+    /// @copydoc IPortWrapper::inode
     void inode(nlohmann::json& port) const override
     {
         int64_t retVal;
@@ -239,6 +248,7 @@ public:
         }
     }
 
+    /// @copydoc IPortWrapper::state
     void state(nlohmann::json& port) const override
     {
         port["state"] = UNKNOWN_VALUE;
@@ -260,15 +270,15 @@ public:
         }
     }
 
+    /// @copydoc IPortWrapper::processName
     void processName(nlohmann::json& port) const override
     {
         port["process"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPortWrapper::pid
     void pid(nlohmann::json& port) const override
     {
         port["pid"] = UNKNOWN_VALUE;
     }
 };
-
-#endif //_PORT_LINUX_WRAPPER_H

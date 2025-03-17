@@ -1,26 +1,15 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * May 4, 2023.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _HARDWARE_INTERFACE_H
-#define _HARDWARE_INTERFACE_H
+#pragma once
 
 #include <nlohmann/json.hpp>
 
+/// @brief Interface for hardware data retrievers
 class IOSHardware
 {
 public:
-    // LCOV_EXCL_START
+    /// @brief Default destructor
     virtual ~IOSHardware() = default;
-    // LCOV_EXCL_STOP
+
+    /// @brief Fills the hardware information
+    /// @param hardware hardware information
     virtual void buildHardwareData(nlohmann::json& hardware) = 0;
 };
-
-#endif // _HARDWARE_INTERFACE_H

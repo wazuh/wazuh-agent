@@ -1,14 +1,4 @@
-/*
- * Wazuh SysOsInfo
- * Copyright (C) 2015, Wazuh Inc.
- * November 5, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-#include "sysOsInfo_test.h"
+#include "sysOsInfo_test.hpp"
 #include "osinfo/sysOsInfoWin.h"
 
 void SysOsInfoTest::SetUp() {};

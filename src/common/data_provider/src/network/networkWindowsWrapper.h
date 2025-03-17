@@ -1,16 +1,4 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * November 5, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _NETWORK_WINDOWS_WRAPPER_H
-#define _NETWORK_WINDOWS_WRAPPER_H
+#pragma once
 
 #include "inetworkWrapper.h"
 #include "networkWindowsHelper.hpp"
@@ -43,9 +31,15 @@ static const std::map<IF_OPER_STATUS, std::string> NETWORK_OPERATIONAL_STATUS = 
     {IfOperStatusLowerLayerDown, "lowerlayerdown"}, // This interface depends on a lower layer interface which is down
 };
 
+/// @brief Windows network interface
 class NetworkWindowsInterface final : public INetworkInterfaceWrapper
 {
 public:
+    /// @brief Constructor
+    /// @param family interface family
+    /// @param addrs interface address
+    /// @param unicastAddress unicast address
+    /// @param adapterInfo adapter info
     explicit NetworkWindowsInterface(Utils::NetworkFamilyTypes family,
                                      const PIP_ADAPTER_ADDRESSES& addrs,
                                      const PIP_ADAPTER_UNICAST_ADDRESS& unicastAddress,
@@ -66,21 +60,25 @@ public:
         }
     }
 
+    /// @copydoc INetworkInterfaceWrapper::name
     std::string name() const override
     {
         return getAdapterEncodedUTF8(m_interfaceAddress->FriendlyName);
     }
 
+    /// @copydoc INetworkInterfaceWrapper::adapter
     void adapter(nlohmann::json& network) const override
     {
         network["adapter"] = getAdapterEncodedUTF8(m_interfaceAddress->Description);
     }
 
+    /// @copydoc INetworkInterfaceWrapper::family
     int family() const override
     {
         return m_interfaceFamily;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::address
     std::string address() const override
     {
         std::string retVal;
@@ -95,6 +93,7 @@ public:
         return retVal;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::addressV6
     std::string addressV6() const override
     {
         std::string retVal;
@@ -118,6 +117,7 @@ public:
         return retVal;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::netmask
     std::string netmask() const override
     {
         std::string retVal;
@@ -151,6 +151,7 @@ public:
         return retVal;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::netmaskV6
     std::string netmaskV6() const override
     {
         std::string retVal;
@@ -165,6 +166,7 @@ public:
         return retVal;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::broadcast
     void broadcast(nlohmann::json& network) const override
     {
         network["broadcast"] = UNKNOWN_VALUE;
@@ -181,11 +183,13 @@ public:
         }
     }
 
+    /// @copydoc INetworkInterfaceWrapper::broadcastV6
     void broadcastV6(nlohmann::json& network) const override
     {
         network["broadcast"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::gateway
     void gateway(nlohmann::json& network) const override
     {
         std::string retVal;
@@ -259,6 +263,7 @@ public:
         }
     }
 
+    /// @copydoc INetworkInterfaceWrapper::metrics
     void metrics(nlohmann::json& network) const override
     {
         network["metric"] = UNKNOWN_VALUE;
@@ -269,6 +274,7 @@ public:
         }
     }
 
+    /// @copydoc INetworkInterfaceWrapper::metricsV6
     void metricsV6(nlohmann::json& network) const override
     {
         network["metric"] = UNKNOWN_VALUE;
@@ -279,6 +285,7 @@ public:
         }
     }
 
+    /// @copydoc INetworkInterfaceWrapper::dhcp
     void dhcp(nlohmann::json& network) const override
     {
         network["dhcp"] = UNKNOWN_VALUE;
@@ -298,16 +305,19 @@ public:
         }
     }
 
+    /// @copydoc INetworkInterfaceWrapper::mtu
     void mtu(nlohmann::json& network) const override
     {
         network["mtu"] = m_interfaceAddress->Mtu;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::stats
     LinkStats stats() const override
     {
         return Utils::isVistaOrLater() ? statsVistaOrLater() : statsXP();
     }
 
+    /// @copydoc INetworkInterfaceWrapper::type
     void type(nlohmann::json& network) const override
     {
         network["type"] = EMPTY_VALUE;
@@ -319,6 +329,7 @@ public:
         }
     }
 
+    /// @copydoc INetworkInterfaceWrapper::state
     void state(nlohmann::json& network) const override
     {
         network["state"] = UNKNOWN_VALUE;
@@ -330,6 +341,7 @@ public:
         }
     }
 
+    /// @copydoc INetworkInterfaceWrapper::MAC
     void MAC(nlohmann::json& network) const override
     {
         network["mac"] = UNKNOWN_VALUE;
@@ -355,16 +367,24 @@ public:
     }
 
 private:
+    /// @brief Returns UTF-8 encoded adapter name
+    /// @param name Adapter name
+    /// @return UTF-8 encoded adapter name
     std::string getAdapterEncodedUTF8(const std::wstring& name) const
     {
         return Utils::getAdapterNameStr(name);
     }
 
+    /// @brief Returns interface family
+    /// @return Interface family
     int adapterFamily() const
     {
         return m_currentUnicastAddress ? m_currentUnicastAddress->Address.lpSockaddr->sa_family : AF_UNSPEC;
     }
 
+    /// @brief Find interface match
+    /// @param address IPv4 address
+    /// @return Interface address
     PIP_ADDR_STRING findInterfaceMatch(const std::string& address) const
     {
         PIP_ADDR_STRING currentInterfaceAddr {nullptr};
@@ -401,6 +421,8 @@ private:
         return currentInterfaceAddr;
     }
 
+    /// @brief Returns link stats for Vista or later
+    /// @return Link stats
     LinkStats statsVistaOrLater() const
     {
         LinkStats retVal {};
@@ -441,6 +463,8 @@ private:
         return retVal;
     }
 
+    /// @brief Returns link stats for XP or earlier
+    /// @return Link stats
     LinkStats statsXP() const
     {
         LinkStats retVal {};
@@ -481,5 +505,3 @@ private:
     PIP_ADAPTER_UNICAST_ADDRESS m_currentUnicastAddress;
     PIP_ADAPTER_INFO m_adapterInfo; // XP needed structure
 };
-
-#endif //_NETWORK_WINDOWS_WRAPPER_H

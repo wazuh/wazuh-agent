@@ -1,33 +1,40 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * May 4, 2023.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _HARDWARE_WRAPPER_INTERFACE_H
-#define _HARDWARE_WRAPPER_INTERFACE_H
+#pragma once
 
 #include <cstdint>
 #include <string>
 
+/// @brief Interface for hardware data wrappers
 class IOSHardwareWrapper
 {
 public:
-    // LCOV_EXCL_START
+    /// @brief Default destructor
     virtual ~IOSHardwareWrapper() = default;
-    // LCOV_EXCL_STOP
 
+    /// @brief Returns the board serial
+    /// @return Board serial
     virtual std::string boardSerial() const = 0;
+
+    /// @brief Returns the CPU name
+    /// @return CPU name
     virtual std::string cpuName() const = 0;
+
+    /// @brief Returns the number of CPU cores
+    /// @return Number of CPU cores
     virtual int cpuCores() const = 0;
+
+    /// @brief Returns the CPU MHz
+    /// @return CPU MHz
     virtual int cpuMhz() = 0;
+
+    /// @brief Returns the total RAM
+    /// @return Total RAM
     virtual uint64_t ramTotal() const = 0;
+
+    /// @brief Returns the free RAM
+    /// @return Free RAM
     virtual uint64_t ramFree() const = 0;
+
+    /// @brief Returns the RAM usage
+    /// @return RAM usage
     virtual uint64_t ramUsage() const = 0;
 };
-#endif // _HARDWARE_WRAPPER_INTERFACE_H

@@ -1,16 +1,4 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * May 4, 2023.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _FACTORY_HARDWARE_FAMILY_CREATOR_H
-#define _FACTORY_HARDWARE_FAMILY_CREATOR_H
+#pragma once
 
 #include "hardwareImplMac.h"
 #include "hardwareInterface.h"
@@ -19,24 +7,29 @@
 #include <memory>
 #include <nlohmann/json.hpp>
 
+/// @brief Factory for creating hardware data retrievers
 template<OSPlatformType osType>
 class FactoryHardwareFamilyCreator final
 {
 public:
+    /// @brief Create hardware data retriever
+    /// @return hardware data retriever
     static std::shared_ptr<IOSHardware> create(const std::shared_ptr<IOSHardwareWrapper>& /*wrapperInterface*/)
     {
         throw std::runtime_error {"Error creating network data retriever."};
     }
 };
 
+/// @brief Factory for creating hardware data retrievers for BSD based systems
 template<>
 class FactoryHardwareFamilyCreator<OSPlatformType::BSDBASED> final
 {
 public:
+    /// @brief Create hardware data retriever for BSD based systems
+    /// @param wrapperInterface hardware wrapper interface
+    /// @return hardware data retriever
     static std::shared_ptr<IOSHardware> create(const std::shared_ptr<IOSHardwareWrapper>& wrapperInterface)
     {
         return FactoryBSDHardware::create(wrapperInterface);
     }
 };
-
-#endif // _FACTORY_HARDWARE_FAMILY_CREATOR_H
