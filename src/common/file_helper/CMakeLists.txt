@@ -8,7 +8,7 @@ set_common_settings()
 include(../../cmake/ConfigureTarget.cmake)
 
 # FilesystemWrapper target
-add_library(FilesystemWrapper STATIC ${CMAKE_CURRENT_SOURCE_DIR}/filesystem/src/filesystem_wrapper.cpp)
+add_library(FilesystemWrapper STATIC ${CMAKE_CURRENT_SOURCE_DIR}/filesystem/src/filesystem_wrapper.cpp  ${CMAKE_CURRENT_SOURCE_DIR}/filesystem/src/filesystem_utils.cpp)
 target_include_directories(FilesystemWrapper PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/filesystem/include)
 target_link_libraries(FilesystemWrapper PRIVATE glob_helper)
 configure_target(FilesystemWrapper)

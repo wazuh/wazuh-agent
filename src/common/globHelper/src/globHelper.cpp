@@ -1,69 +1,50 @@
 #include "globHelper.hpp"
 
 #include <string>
+#include <vector>
 
 namespace Utils
 {
     bool patternMatch(const std::string& entryName, const std::string& pattern)
     {
-        auto match {true};
-        // Match the glob pattern without regex
-        auto patternPos {0u};
+        const std::string_view entry(entryName);
+        const std::string_view pat(pattern);
 
-        for (auto i {0u}; i < entryName.size(); ++i)
+        // Dynamic programming approach - create a table for memoization
+        // dp[i][j] is true if the first i characters of entry match the first j characters of pattern
+        std::vector<std::vector<bool>> dp(entry.size() + 1, std::vector<bool>(pat.size() + 1, false));
+
+        // Empty pattern matches empty string
+        dp[0][0] = true;
+
+        // Handle patterns like "*", "*a", "a*b*" etc. where '*' can match empty strings
+        for (size_t j = 1; j <= pat.size(); ++j)
         {
-            if (patternPos < pattern.size())
+            if (pat[j - 1] == '*')
             {
-                // 'x' matches 'x', '?' matches any single character
-                if ((entryName.at(i) == pattern.at(patternPos)) || pattern.at(patternPos) == '?')
-                {
-                    ++patternPos;
-                }
-                // '*' matches any number of characters
-                else if (pattern.at(patternPos) == '*')
-                {
-                    // '*' matches zero characters
-                    if (patternPos + 1 < pattern.size() && pattern.at(patternPos + 1) == entryName.at(i))
-                    {
-                        ++patternPos;
-                        --i;
-                    }
-                    // '*' matches one or more characters
-                    else if (patternPos + 1 == pattern.size())
-                    {
-                        break;
-                    }
-                }
-                // No match
-                else
-                {
-                    match = false;
-                    break;
-                }
-            }
-            else
-            {
-                match = false;
-                break;
+                dp[0][j] = dp[0][j - 1];
             }
         }
 
-        // if the pattern is not fully matched, check if the remaining characters are '*'
-        // and if so, the match is successful.
-        while (match && patternPos < pattern.size())
+        // Fill the dp table
+        for (size_t i = 1; i <= entry.size(); ++i)
         {
-            // '*' matches zero characters
-            if (pattern.at(patternPos) == '*')
+            for (size_t j = 1; j <= pat.size(); ++j)
             {
-                ++patternPos;
-            }
-            // No match
-            else
-            {
-                match = false;
+                if (pat[j - 1] == '*')
+                {
+                    // '*' can match 0 or more characters
+                    // Either ignore '*' (dp[i][j-1]) or use '*' to match current character (dp[i-1][j])
+                    dp[i][j] = dp[i][j - 1] || dp[i - 1][j];
+                }
+                else if (pat[j - 1] == '?' || entry[i - 1] == pat[j - 1])
+                {
+                    // '?' matches any single character, or exact character match
+                    dp[i][j] = dp[i - 1][j - 1];
+                }
             }
         }
 
-        return match;
+        return dp[entry.size()][pat.size()];
     }
 } // namespace Utils

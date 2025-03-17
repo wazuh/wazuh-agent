@@ -54,6 +54,7 @@ TEST_F(GlobHelperTest, patternMatchWithWildcard2Characters)
 TEST_F(GlobHelperTest, patternMatchWithInvalidPostfix)
 {
     EXPECT_FALSE(Utils::patternMatch("12", "*t"));
+    EXPECT_TRUE(Utils::patternMatch("12t", "*t"));
 }
 
 TEST_F(GlobHelperTest, patternMatchWithInvalidPostfix2)

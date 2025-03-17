@@ -13,20 +13,53 @@
 #define _PACKAGES_PYPI_HPP
 
 #include "file_io_utils.hpp"
+#include "filesystem_utils.hpp"
 #include "filesystem_wrapper.hpp"
+
 #include "sharedDefs.h"
 #include "stringHelper.hpp"
-#include <iostream>
 #include <nlohmann/json.hpp>
+
+#include <iostream>
+#include <memory>
 #include <set>
 
 const static std::map<std::string, std::string> FILE_MAPPING_PYPI {{"egg-info", "PKG-INFO"}, {"dist-info", "METADATA"}};
 
-template<typename TFileSystem = filesystem_wrapper::FileSystemWrapper, typename TFileIO = file_io::FileIOUtils>
+template<typename TFileSystem = file_system::FileSystemWrapper, typename TFileIOUtils = file_io::FileIOUtils>
 class PYPI final
     : public TFileSystem
-    , public TFileIO
+    , public TFileIOUtils
 {
+public:
+    /// @brief PYPI constructor
+    PYPI(std::shared_ptr<IFileSystemUtils> fsUtils = nullptr)
+        : m_fsUtils(fsUtils ? fsUtils : std::make_shared<file_system::FileSystemUtils>())
+    {
+    }
+
+    void getPackages(const std::set<std::string>& osRootFolders, std::function<void(nlohmann::json&)> callback)
+    {
+
+        for (const auto& osFolder : osRootFolders)
+        {
+            std::deque<std::string> expandedPaths;
+
+            try
+            {
+                // Expand paths
+                m_fsUtils->expand_absolute_path(osFolder, expandedPaths);
+                // Explore expanded paths
+                exploreExpandedPaths(expandedPaths, callback);
+            }
+            catch (const std::exception&)
+            {
+                // Do nothing, continue with the next path
+            }
+        }
+    }
+
+private:
     void parseMetadata(const std::filesystem::path& path, std::function<void(nlohmann::json&)>& callback)
     {
         // Map to match fields
@@ -51,25 +84,26 @@ class PYPI final
         packageInfo["install_time"] = UNKNOWN_VALUE;
         // The multiarch field won't have a default value
 
-        TFileIO::readLineByLine(path,
-                                [&packageInfo](const std::string& line) -> bool
-                                {
-                                    const auto it {std::find_if(PYPI_FIELDS.begin(),
-                                                                PYPI_FIELDS.end(),
-                                                                [&line](const auto& element)
-                                                                { return Utils::startsWith(line, element.first); })};
+        TFileIOUtils::readLineByLine(path,
+                                     [&packageInfo](const std::string& line) -> bool
+                                     {
+                                         const auto it {std::find_if(PYPI_FIELDS.begin(),
+                                                                     PYPI_FIELDS.end(),
+                                                                     [&line](const auto& element) {
+                                                                         return Utils::startsWith(line, element.first);
+                                                                     })};
 
-                                    if (PYPI_FIELDS.end() != it)
-                                    {
-                                        const auto& [key, value] {*it};
+                                         if (PYPI_FIELDS.end() != it)
+                                         {
+                                             const auto& [key, value] {*it};
 
-                                        if (!packageInfo.contains(value))
-                                        {
-                                            packageInfo[value] = Utils::Trim(line.substr(key.length()), "\r");
-                                        }
-                                    }
-                                    return true;
-                                });
+                                             if (!packageInfo.contains(value))
+                                             {
+                                                 packageInfo[value] = Utils::Trim(line.substr(key.length()), "\r");
+                                             }
+                                         }
+                                         return true;
+                                     });
 
         // Check if we have a name and version
         if (packageInfo.contains("name") && packageInfo.contains("version"))
@@ -132,27 +166,7 @@ class PYPI final
         }
     }
 
-public:
-    void getPackages(const std::set<std::string>& osRootFolders, std::function<void(nlohmann::json&)> callback)
-    {
-
-        for (const auto& osFolder : osRootFolders)
-        {
-            std::deque<std::string> expandedPaths;
-
-            try
-            {
-                // Expand paths
-                TFileSystem::expand_absolute_path(osFolder, expandedPaths);
-                // Explore expanded paths
-                exploreExpandedPaths(expandedPaths, callback);
-            }
-            catch (const std::exception&)
-            {
-                // Do nothing, continue with the next path
-            }
-        }
-    }
+    /// @brief Pointer to the file system utils
+    std::shared_ptr<IFileSystemUtils> m_fsUtils;
 };
-
 #endif // _PACKAGES_PYPI_HPP
