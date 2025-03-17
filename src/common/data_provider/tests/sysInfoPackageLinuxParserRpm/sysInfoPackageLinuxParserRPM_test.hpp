@@ -11,21 +11,21 @@
 #ifndef _SYSINFO_PACKAGES_LINUX_PARSER_RPM_TEST_H
 #define _SYSINFO_PACKAGES_LINUX_PARSER_RPM_TEST_H
 
-#include "mock_filesystem.hpp"
 #include "packages/packageLinuxDataRetriever.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <mock_filesystem_wrapper.hpp>
 
 class SysInfoPackagesLinuxParserRPMTest : public ::testing::Test
 {
 protected:
     SysInfoPackagesLinuxParserRPMTest() = default;
     virtual ~SysInfoPackagesLinuxParserRPMTest() = default;
-    std::unique_ptr<RPM<MockFileSystem>> rpm;
+    std::unique_ptr<RPM<MockFileSystemWrapper>> rpm;
 
     void SetUp() override
     {
-        rpm = std::make_unique<RPM<MockFileSystem>>();
+        rpm = std::make_unique<RPM<MockFileSystemWrapper>>();
     }
 
     void TearDown() override

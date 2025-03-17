@@ -23,7 +23,7 @@
 #include "stringHelper.hpp"
 #include "utilsWrapperLinux.hpp"
 
-template<typename TFileSystem = filesystem_wrapper::FileSystemWrapper>
+template<typename TFileSystem = file_system::FileSystemWrapper>
 class RPM final : public TFileSystem
 {
 public:

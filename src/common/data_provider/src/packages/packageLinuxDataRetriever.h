@@ -56,7 +56,7 @@ class FactoryPackagesCreator<LinuxType::STANDARD> final
 public:
     static void getPackages(std::function<void(nlohmann::json&)> callback)
     {
-        const auto fsWrapper = std::make_unique<filesystem_wrapper::FileSystemWrapper>();
+        const auto fsWrapper = std::make_unique<file_system::FileSystemWrapper>();
         if (fsWrapper->exists(DPKG_PATH) && fsWrapper->is_directory(DPKG_PATH))
         {
             getDpkgInfo(DPKG_STATUS_PATH, callback);
@@ -81,7 +81,7 @@ class FactoryPackagesCreator<LinuxType::LEGACY> final
 public:
     static void getPackages(std::function<void(nlohmann::json&)> callback)
     {
-        const auto fsWrapper = std::make_unique<filesystem_wrapper::FileSystemWrapper>();
+        const auto fsWrapper = std::make_unique<file_system::FileSystemWrapper>();
         if (fsWrapper->exists(RPM_PATH) && fsWrapper->is_directory(RPM_PATH))
         {
             getRpmInfoLegacy(callback);
