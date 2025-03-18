@@ -13,6 +13,8 @@ file(GLOB sysinfo_UNIT_TEST_SRC
 add_executable(sysInfoPackages_unit_test
     ${sysinfo_UNIT_TEST_SRC})
 
+configure_target(sysInfoPackages_unit_test)
+
 target_link_libraries(sysInfoPackages_unit_test PRIVATE
     sysinfo
     GTest::gtest

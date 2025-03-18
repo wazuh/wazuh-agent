@@ -21,7 +21,6 @@
 #include <sys/sysctl.h>
 #include <sys/utsname.h>
 
-const std::string MAC_APPS_PATH {"/Applications"};
 const std::string MAC_UTILITIES_PATH {"/Applications/Utilities"};
 const std::string MACPORTS_DB_NAME {"registry.db"};
 const std::string MACPORTS_QUERY {"SELECT name, version, date, location, archs FROM ports WHERE state = 'installed';"};
@@ -41,7 +40,7 @@ static const std::map<std::string, int> s_mapPackagesDirectories = {{"/Applicati
                                                                     {"/usr/local/Cellar", BREW},
                                                                     {"/opt/local/var/macports/registry", MACPORTS}};
 
-static nlohmann::json getProcessInfo(const ProcessTaskInfo& taskInfo, const pid_t pid)
+static nlohmann::json GetProcessInfo(const ProcessTaskInfo& taskInfo, const pid_t pid)
 {
     nlohmann::json jsProcessInfo {};
     jsProcessInfo["pid"] = std::to_string(pid);
@@ -303,12 +302,12 @@ static void getProcessesSocketFD(std::map<ProcessInfo, std::vector<std::shared_p
 
     if (!sysctlbyname("kern.maxproc", &maxProcess, &maxProcessLen, nullptr, 0))
     {
-        auto pids {std::make_unique<pid_t[]>(maxProcess)};
+        auto pids {std::make_unique<pid_t[]>(static_cast<size_t>(maxProcess))};
         const auto processesCount {proc_listallpids(pids.get(), maxProcess)};
 
         for (auto i = 0; i < processesCount; ++i)
         {
-            const auto pid {pids[i]};
+            const auto pid {static_cast<pid_t>(pids[static_cast<size_t>(i)])};
 
             proc_bsdinfo processInformation {};
 
@@ -321,14 +320,15 @@ static void getProcessesSocketFD(std::map<ProcessInfo, std::vector<std::shared_p
 
                 if (processFDBufferSize != -1)
                 {
-                    auto processFDInformationBuffer {std::make_unique<char[]>(processFDBufferSize)};
+                    auto processFDInformationBuffer {
+                        std::make_unique<char[]>(static_cast<size_t>(processFDBufferSize))};
 
                     if (proc_pidinfo(pid, PROC_PIDLISTFDS, 0, processFDInformationBuffer.get(), processFDBufferSize) !=
                         -1)
                     {
                         auto processFDInformation {reinterpret_cast<proc_fdinfo*>(processFDInformationBuffer.get())};
 
-                        for (auto j = 0ul; j < processFDBufferSize / PROC_PIDLISTFD_SIZE; ++j)
+                        for (auto j = 0ul; j < static_cast<size_t>(processFDBufferSize) / PROC_PIDLISTFD_SIZE; ++j)
                         {
                             if (PROX_FDTYPE_SOCKET == processFDInformation[j].proc_fdtype)
                             {
@@ -385,7 +385,7 @@ nlohmann::json SysInfo::getPorts() const
     return ports;
 }
 
-void SysInfo::getProcessesInfo(std::function<void(nlohmann::json&)> callback) const
+void SysInfo::getProcessesInfo(const std::function<void(nlohmann::json&)>& callback) const
 {
     int32_t maxProc {};
     size_t len {sizeof(maxProc)};
@@ -396,7 +396,7 @@ void SysInfo::getProcessesInfo(std::function<void(nlohmann::json&)> callback) co
         throw std::system_error {ret, std::system_category(), "Error reading kernel max processes."};
     }
 
-    const auto spPids {std::make_unique<pid_t[]>(maxProc)};
+    const auto spPids {std::make_unique<pid_t[]>(static_cast<size_t>(maxProc))};
     const auto processesCount {proc_listallpids(spPids.get(), maxProc)};
 
     for (int index = 0; index < processesCount; ++index)
@@ -407,13 +407,13 @@ void SysInfo::getProcessesInfo(std::function<void(nlohmann::json&)> callback) co
 
         if (PROC_PIDTASKALLINFO_SIZE == sizeTask)
         {
-            auto processInfo = getProcessInfo(taskInfo, pid);
+            auto processInfo = GetProcessInfo(taskInfo, pid);
             callback(processInfo);
         }
     }
 }
 
-void SysInfo::getPackages(std::function<void(nlohmann::json&)> callback) const
+void SysInfo::getPackages(const std::function<void(nlohmann::json&)>& callback) const
 {
     const auto fsWrapper = std::make_unique<file_system::FileSystemWrapper>();
     for (const auto& packageDirectory : s_mapPackagesDirectories)

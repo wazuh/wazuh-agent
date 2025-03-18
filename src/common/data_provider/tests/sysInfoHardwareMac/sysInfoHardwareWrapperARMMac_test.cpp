@@ -5,7 +5,7 @@
 #include "osPrimitivesInterfaceMac.h"
 #include "osPrimitives_mock.hpp"
 
-using ::testing::_;
+using ::testing::_; // NOLINT(bugprone-reserved-identifier)
 using ::testing::Return;
 
 void SysInfoHardwareWrapperARMMacTest::SetUp() {};

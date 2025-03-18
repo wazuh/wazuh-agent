@@ -12,7 +12,7 @@ namespace PackageLinuxHelper
     /// @brief Parse a dpkg database entry
     /// @param entries Vector of entries to parse
     /// @return Parsed information
-    static nlohmann::json parseDpkg(const std::vector<std::string>& entries)
+    [[maybe_unused]] static nlohmann::json parseDpkg(const std::vector<std::string>& entries)
     {
         std::map<std::string, std::string> info;
         nlohmann::json ret;
@@ -141,7 +141,7 @@ namespace PackageLinuxHelper
     /// @brief Parse a snap package
     /// @param info Information to parse
     /// @return Parsed information
-    static nlohmann::json parseSnap(const nlohmann::json& info)
+    [[maybe_unused]] static nlohmann::json ParseSnap(const nlohmann::json& info)
     {
         nlohmann::json ret;
 

@@ -5,29 +5,34 @@ void SysInfoPortTest::SetUp() {};
 
 void SysInfoPortTest::TearDown() {};
 
-using ::testing::_;
+using ::testing::_; // NOLINT(bugprone-reserved-identifier)
 using ::testing::Return;
 
 class SysInfoPortWrapperMock : public IPortWrapper
 {
 public:
     SysInfoPortWrapperMock() = default;
-    virtual ~SysInfoPortWrapperMock() = default;
-    MOCK_METHOD(void, protocol, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, localIp, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, localPort, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, remoteIP, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, remotePort, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, txQueue, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, rxQueue, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, inode, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, state, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, pid, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, processName, (nlohmann::json&), (const override));
+    ~SysInfoPortWrapperMock() override = default;
+    SysInfoPortWrapperMock(const SysInfoPortWrapperMock&) = delete;
+    SysInfoPortWrapperMock& operator=(const SysInfoPortWrapperMock&) = delete;
+    SysInfoPortWrapperMock(SysInfoPortWrapperMock&&) = delete;
+    SysInfoPortWrapperMock& operator=(SysInfoPortWrapperMock&&) = delete;
+    MOCK_METHOD(void, protocol, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, localIp, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, localPort, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, remoteIP, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, remotePort, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, txQueue, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, rxQueue, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, inode, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, state, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, pid, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, processName, (nlohmann::json&), (const, override));
 };
 
 TEST_F(SysInfoPortTest, Test_SPEC_Data)
 {
+    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
     auto mock {std::make_shared<SysInfoPortWrapperMock>()};
     nlohmann::json port {};
     EXPECT_CALL(*mock, protocol(_)).Times(1).WillOnce([](nlohmann::json& p) { p["protocol"] = "1"; });
@@ -54,4 +59,5 @@ TEST_F(SysInfoPortTest, Test_SPEC_Data)
     EXPECT_EQ("9", port.at("state").get_ref<const std::string&>());
     EXPECT_EQ(10, port.at("pid").get<int32_t>());
     EXPECT_EQ("11", port.at("process").get_ref<const std::string&>());
+    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 }

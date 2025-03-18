@@ -25,7 +25,7 @@ public:
     virtual ~OSHardwareWrapperMac() = default;
 
     /// @copydoc IOSHardwareWrapper::boardSerial
-    std::string boardSerial() const
+    std::string boardSerial() const override
     {
         std::string ret {EMPTY_VALUE};
         const auto rawData {UtilsWrapper::exec("system_profiler SPHardwareDataType | grep Serial")};
@@ -39,7 +39,7 @@ public:
     }
 
     /// @copydoc IOSHardwareWrapper::cpuName
-    std::string cpuName() const
+    std::string cpuName() const override
     {
         size_t len {0};
         auto ret {this->sysctlbyname("machdep.cpu.brand_string", nullptr, &len, nullptr, 0)};
@@ -68,12 +68,13 @@ public:
     }
 
     /// @copydoc IOSHardwareWrapper::cpuCores
-    int cpuCores() const
+    int cpuCores() const override
     {
         int cores {0};
         size_t len {sizeof(cores)};
         const std::vector<int> mib {CTL_HW, HW_NCPU};
-        const auto ret {this->sysctl(const_cast<int*>(mib.data()), mib.size(), &cores, &len, nullptr, 0)};
+        const auto ret {
+            this->sysctl(const_cast<int*>(mib.data()), static_cast<u_int>(mib.size()), &cores, &len, nullptr, 0)};
 
         if (ret)
         {
@@ -84,13 +85,13 @@ public:
     }
 
     /// @copydoc IOSHardwareWrapper::cpuMhz
-    int cpuMhz()
+    int cpuMhz() override
     {
         return getMhz(static_cast<IOsPrimitivesMac*>(this));
     }
 
     /// @copydoc IOSHardwareWrapper::ramTotal
-    uint64_t ramTotal() const
+    uint64_t ramTotal() const override
     {
         uint64_t ramTotal {0};
         size_t len {sizeof(ramTotal)};
@@ -105,7 +106,7 @@ public:
     }
 
     /// @copydoc IOSHardwareWrapper::ramFree
-    uint64_t ramFree() const
+    uint64_t ramFree() const override
     {
         u_int pageSize {0};
         size_t len {sizeof(pageSize)};
@@ -129,7 +130,7 @@ public:
     }
 
     /// @copydoc IOSHardwareWrapper::ramUsage
-    uint64_t ramUsage() const
+    uint64_t ramUsage() const override
     {
         uint64_t ret {0};
         const auto ramTotal {this->ramTotal()};

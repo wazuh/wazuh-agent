@@ -1,7 +1,6 @@
 #include "dbsyncPipelineFactory_test.hpp"
 #include "db_exception.h"
 #include "dbsync_implementation.h"
-#include <iostream>
 
 constexpr auto DATABASE_TEMP {"TEMP.db"};
 

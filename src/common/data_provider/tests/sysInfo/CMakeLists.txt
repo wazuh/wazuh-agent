@@ -12,6 +12,9 @@ file(GLOB SYSINFO_SRC
 add_executable(sysinfo_unit_test
     ${sysinfo_UNIT_TEST_SRC}
     ${SYSINFO_SRC})
+
+configure_target(sysinfo_unit_test)
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(sysinfo_unit_test PRIVATE
         sysinfo

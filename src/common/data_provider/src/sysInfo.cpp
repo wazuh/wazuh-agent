@@ -51,153 +51,153 @@ nlohmann::json SysInfo::hotfixes()
 extern "C"
 {
 #endif
-    int sysinfo_hardware(cJSON** js_result)
+    int sysinfo_hardware(cJSON** jsResult)
     {
         auto retVal {-1};
 
         try
         {
-            if (js_result)
+            if (jsResult)
             {
                 SysInfo info;
                 const auto& hw {info.hardware()};
-                *js_result = cJSON_Parse(hw.dump().c_str());
+                *jsResult = cJSON_Parse(hw.dump().c_str());
                 retVal = 0;
             }
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
         }
 
         return retVal;
     }
 
-    int sysinfo_packages(cJSON** js_result)
+    int sysinfo_packages(cJSON** jsResult)
     {
         auto retVal {-1};
 
         try
         {
-            if (js_result)
+            if (jsResult)
             {
                 SysInfo info;
                 const auto& packages {info.packages()};
-                *js_result = cJSON_Parse(packages.dump().c_str());
+                *jsResult = cJSON_Parse(packages.dump().c_str());
                 retVal = 0;
             }
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
         }
 
         return retVal;
     }
 
-    int sysinfo_os(cJSON** js_result)
+    int sysinfo_os(cJSON** jsResult)
     {
         auto retVal {-1};
 
         try
         {
-            if (js_result)
+            if (jsResult)
             {
                 SysInfo info;
                 const auto& os {info.os()};
-                *js_result = cJSON_Parse(os.dump().c_str());
+                *jsResult = cJSON_Parse(os.dump().c_str());
                 retVal = 0;
             }
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
         }
 
         return retVal;
     }
 
-    int sysinfo_processes(cJSON** js_result)
+    int sysinfo_processes(cJSON** jsResult)
     {
         auto retVal {-1};
 
         try
         {
-            if (js_result)
+            if (jsResult)
             {
                 SysInfo info;
                 const auto& processes {info.processes()};
-                *js_result = cJSON_Parse(processes.dump().c_str());
+                *jsResult = cJSON_Parse(processes.dump().c_str());
                 retVal = 0;
             }
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
         }
 
         return retVal;
     }
 
-    int sysinfo_networks(cJSON** js_result)
+    int sysinfo_networks(cJSON** jsResult)
     {
         auto retVal {-1};
 
         try
         {
-            if (js_result)
+            if (jsResult)
             {
                 SysInfo info;
                 const auto& networks {info.networks()};
-                *js_result = cJSON_Parse(networks.dump().c_str());
+                *jsResult = cJSON_Parse(networks.dump().c_str());
                 retVal = 0;
             }
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
         }
 
         return retVal;
     }
 
-    int sysinfo_ports(cJSON** js_result)
+    int sysinfo_ports(cJSON** jsResult)
     {
         auto retVal {-1};
 
         try
         {
-            if (js_result)
+            if (jsResult)
             {
                 SysInfo info;
                 const auto& ports {info.ports()};
-                *js_result = cJSON_Parse(ports.dump().c_str());
+                *jsResult = cJSON_Parse(ports.dump().c_str());
                 retVal = 0;
             }
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
         }
 
         return retVal;
     }
 
-    void sysinfo_free_result(cJSON** js_data)
+    void sysinfo_free_result(cJSON** jsData)
     {
-        if (*js_data)
+        if (*jsData)
         {
-            cJSON_Delete(*js_data);
+            cJSON_Delete(*jsData);
         }
     }
 
-    int sysinfo_packages_cb(callback_data_t callback_data)
+    int sysinfo_packages_cb(callback_data_t callbackData)
     {
         auto retVal {-1};
 
         try
         {
-            if (callback_data.callback)
+            if (callbackData.callback)
             {
                 const auto callbackWrapper {
-                    [callback_data](nlohmann::json& jsonResult)
+                    [callbackData](nlohmann::json& jsonResult)
                     {
                         const std::unique_ptr<cJSON, CJsonSmartDeleter> spJson {cJSON_Parse(jsonResult.dump().c_str())};
-                        callback_data.callback(GENERIC, spJson.get(), callback_data.user_data);
+                        callbackData.callback(GENERIC, spJson.get(), callbackData.user_data);
                     }};
 
                 SysInfo info;
@@ -205,26 +205,26 @@ extern "C"
                 retVal = 0;
             }
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
         }
 
         return retVal;
     }
 
-    int sysinfo_processes_cb(callback_data_t callback_data)
+    int sysinfo_processes_cb(callback_data_t callbackData)
     {
         auto retVal {-1};
 
         try
         {
-            if (callback_data.callback)
+            if (callbackData.callback)
             {
                 const auto callbackWrapper {
-                    [callback_data](nlohmann::json& jsonResult)
+                    [callbackData](nlohmann::json& jsonResult)
                     {
                         const std::unique_ptr<cJSON, CJsonSmartDeleter> spJson {cJSON_Parse(jsonResult.dump().c_str())};
-                        callback_data.callback(GENERIC, spJson.get(), callback_data.user_data);
+                        callbackData.callback(GENERIC, spJson.get(), callbackData.user_data);
                     }};
 
                 SysInfo info;
@@ -232,28 +232,28 @@ extern "C"
                 retVal = 0;
             }
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
         }
 
         return retVal;
     }
 
-    int sysinfo_hotfixes(cJSON** js_result)
+    int sysinfo_hotfixes(cJSON** jsResult)
     {
         auto retVal {-1};
 
         try
         {
-            if (js_result)
+            if (jsResult)
             {
                 SysInfo info;
                 const auto& hotfixes {info.hotfixes()};
-                *js_result = cJSON_Parse(hotfixes.dump().c_str());
+                *jsResult = cJSON_Parse(hotfixes.dump().c_str());
                 retVal = 0;
             }
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
         }
 

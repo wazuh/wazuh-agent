@@ -68,9 +68,9 @@ private:
 
         if (data.size >= FIRST_ENTRY_OFFSET)
         {
-            const auto indexSize {Utils::toInt32BE(bytes)};
+            const auto indexSize {static_cast<size_t>(Utils::toInt32BE(bytes))};
 
-            const auto dataSize {Utils::toInt32BE(bytes + BYTE_SIZE_INT32)};
+            const auto dataSize {static_cast<size_t>(Utils::toInt32BE(bytes + BYTE_SIZE_INT32))};
 
             const auto estimatedHeaderTagSize {FIRST_ENTRY_OFFSET + indexSize * ENTRY_SIZE + dataSize};
 
@@ -83,7 +83,7 @@ private:
                 auto ucp {reinterpret_cast<uint8_t*>(bytes)};
 
                 // Read all indexes
-                for (auto i = 0; i < indexSize; ++i)
+                for (size_t i = 0; i < indexSize; ++i)
                 {
                     const auto tag {Utils::toInt32BE(ucp)};
                     ucp += BYTE_SIZE_INT32;

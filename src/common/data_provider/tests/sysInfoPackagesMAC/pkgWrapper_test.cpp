@@ -1,14 +1,13 @@
 #include "pkgWrapper_test.hpp"
 #include "packages/packageMac.h"
 #include "packages/pkgWrapper.h"
-#include <iostream>
 #include <unistd.h>
 
 void PKGWrapperTest::SetUp() {};
 
 void PKGWrapperTest::TearDown() {};
 
-using ::testing::_;
+using ::testing::_; // NOLINT(bugprone-reserved-identifier)
 using ::testing::Return;
 
 TEST_F(PKGWrapperTest, LongVersion)

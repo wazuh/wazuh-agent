@@ -11,6 +11,8 @@ add_executable(sysInfoPackageLinuxParserRPM_unit_test
     ${RPM_SRC}
     ${PARSER_SRC})
 
+configure_target(sysInfoPackageLinuxParserRPM_unit_test)
+
 target_include_directories(sysInfoPackageLinuxParserRPM_unit_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../file_helper/filesystem/tests/mocks)
 
 target_link_libraries(sysInfoPackageLinuxParserRPM_unit_test PRIVATE

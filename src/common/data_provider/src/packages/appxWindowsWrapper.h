@@ -257,7 +257,7 @@ private:
                 installTime = Utils::buildTimestamp(value);
             }
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
         }
 
@@ -305,7 +305,7 @@ private:
                 name = searchNameFromCacheRegistry(keyName, name);
             }
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
             name.clear();
         }
@@ -346,7 +346,7 @@ private:
                 }
             }
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
             vendor.clear();
         }

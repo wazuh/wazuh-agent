@@ -149,6 +149,9 @@ target_link_libraries(sysinfo
 
 add_subdirectory(testtool)
 
+include(../../cmake/ConfigureTarget.cmake)
+configure_target(sysinfo)
+
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)

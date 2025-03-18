@@ -77,7 +77,7 @@ class LinuxPortWrapper final : public IPortWrapper
         if (hexAddressLength == IPV6_ADDRESS_HEX_SIZE)
         {
             in6_addr sin6 {};
-            auto index {0l};
+            auto index {0ul};
 
             for (auto i = 0ull; i < hexAddressLength; i += CHAR_BIT)
             {
@@ -100,9 +100,9 @@ public:
     explicit LinuxPortWrapper(const PortType type, const std::string& row)
         : m_fields {Utils::split(row, ' ')}
         , m_type {type}
-        , m_remoteAddresses {std::move(Utils::split(m_fields.at(REMOTE_ADDRESS), ':'))}
-        , m_localAddresses {std::move(Utils::split(m_fields.at(LOCAL_ADDRESS), ':'))}
-        , m_queue {std::move(Utils::split(m_fields.at(QUEUE), ':'))}
+        , m_remoteAddresses {Utils::split(m_fields.at(REMOTE_ADDRESS), ':')}
+        , m_localAddresses {Utils::split(m_fields.at(LOCAL_ADDRESS), ':')}
+        , m_queue {Utils::split(m_fields.at(QUEUE), ':')}
     {
     }
 
@@ -242,7 +242,7 @@ public:
             retVal = static_cast<int64_t>(std::stoll(m_fields.at(INODE)));
             port["inode"] = retVal;
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
             port["inode"] = 0;
         }

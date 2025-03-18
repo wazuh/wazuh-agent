@@ -4,7 +4,6 @@
 #include "db_exception.h"
 #include "sqlite/sqlite_dbengine.h"
 #include "sqliteWrapperFactory.hpp"
-#include <iostream>
 
 namespace DbSync
 {

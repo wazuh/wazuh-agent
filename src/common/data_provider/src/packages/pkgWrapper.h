@@ -343,7 +343,7 @@ private:
         // const auto xmlContent { dataFromBin->ToXml() };
 
         // Content binary file to plist representation
-        plist_from_bin(binaryContent.data(), binaryContent.size(), &rootNode);
+        plist_from_bin(binaryContent.data(), static_cast<uint32_t>(binaryContent.size()), &rootNode);
 
         if (nullptr != rootNode)
         {

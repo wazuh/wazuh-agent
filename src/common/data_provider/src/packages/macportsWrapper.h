@@ -123,7 +123,7 @@ private:
     /// @param stmt Statement
     void getPkgData(SQLiteLegacy::IStatement& stmt)
     {
-        const int& columnsNumber = columnIndexes.size();
+        const int& columnsNumber = static_cast<int>(columnIndexes.size());
 
         if (stmt.columnsCount() == columnsNumber)
         {

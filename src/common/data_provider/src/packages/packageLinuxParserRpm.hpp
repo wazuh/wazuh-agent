@@ -61,7 +61,7 @@ public:
                     }
                 }
             }
-            catch (...)
+            catch (...) // NOLINT(bugprone-empty-catch)
             {
                 rpmDefaultQuery(callback);
             }
@@ -86,7 +86,7 @@ public:
                     row = db.getNext();
                 }
             }
-            catch (...)
+            catch (...) // NOLINT(bugprone-empty-catch)
             {
                 rpmDefaultQuery(callback);
             }

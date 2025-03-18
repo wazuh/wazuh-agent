@@ -1,8 +1,9 @@
+#include "packageLinuxDataRetriever.h"
 #include "packageLinuxParserHelper.h"
 #include "sharedDefs.h"
 #include <fstream>
 
-void getDpkgInfo(const std::string& fileName, std::function<void(nlohmann::json&)> callback)
+void GetDpkgInfo(const std::string& fileName, const std::function<void(nlohmann::json&)>& callback)
 {
     std::fstream file {fileName, std::ios_base::in};
 

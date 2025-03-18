@@ -1,6 +1,5 @@
 #include "dbsync_implementation.h"
 #include "abstractLocking.hpp"
-#include <iostream>
 
 using namespace DbSync;
 

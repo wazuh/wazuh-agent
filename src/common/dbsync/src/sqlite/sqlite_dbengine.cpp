@@ -5,6 +5,7 @@
 #include "mapWrapperSafe.hpp"
 #include "stringHelper.hpp"
 #include <fstream>
+#include <iostream>
 #include <sqlite3.h>
 #include <thread>
 

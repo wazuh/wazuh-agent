@@ -1,7 +1,6 @@
 #include "rpmPackageManager.h"
 
 #include <exception>
-#include <iostream>
 #include <map>
 #include <stdexcept>
 #include <vector>
@@ -12,7 +11,7 @@
 bool RpmPackageManager::ms_instantiated = false;
 
 RpmPackageManager::RpmPackageManager(std::shared_ptr<IRpmLibWrapper>&& wrapper)
-    : m_rpmlib {wrapper}
+    : m_rpmlib(std::move(wrapper))
 {
     if (ms_instantiated)
     {
@@ -70,8 +69,7 @@ RpmPackageManager::Iterator::Iterator()
 }
 
 RpmPackageManager::Iterator::Iterator(std::shared_ptr<IRpmLibWrapper>& rpmlib)
-    : m_end {false}
-    , m_rpmlib {rpmlib}
+    : m_rpmlib {rpmlib}
     , m_transactionSet {rpmlib->rpmtsCreate()}
 {
     if (!m_transactionSet)

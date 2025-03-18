@@ -12,5 +12,5 @@ int getMhz(IOsPrimitivesMac* osPrimitives)
         throw std::system_error {ret, std::system_category(), "Error reading cpu frequency."};
     }
 
-    return cpuHz / MHz;
+    return static_cast<int>(cpuHz / MHz);
 }

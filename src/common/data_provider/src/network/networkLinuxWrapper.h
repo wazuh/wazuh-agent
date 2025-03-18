@@ -506,21 +506,29 @@ public:
                     {
                         if (fields.at(NetDevFileFields::Iface).compare(this->name()) == 0)
                         {
-                            retVal.rxBytes = std::stoul(fields.at(NetDevFileFields::RxBytes));
-                            retVal.txBytes = std::stoul(fields.at(NetDevFileFields::TxBytes));
-                            retVal.rxPackets = std::stoul(fields.at(NetDevFileFields::RxPackets));
-                            retVal.txPackets = std::stoul(fields.at(NetDevFileFields::TxPackets));
-                            retVal.rxErrors = std::stoul(fields.at(NetDevFileFields::RxErrors));
-                            retVal.txErrors = std::stoul(fields.at(NetDevFileFields::TxErrors));
-                            retVal.rxDropped = std::stoul(fields.at(NetDevFileFields::RxDropped));
-                            retVal.txDropped = std::stoul(fields.at(NetDevFileFields::TxDropped));
+                            retVal.rxBytes =
+                                static_cast<unsigned int>(std::stoul(fields.at(NetDevFileFields::RxBytes)));
+                            retVal.txBytes =
+                                static_cast<unsigned int>(std::stoul(fields.at(NetDevFileFields::TxBytes)));
+                            retVal.rxPackets =
+                                static_cast<unsigned int>(std::stoul(fields.at(NetDevFileFields::RxPackets)));
+                            retVal.txPackets =
+                                static_cast<unsigned int>(std::stoul(fields.at(NetDevFileFields::TxPackets)));
+                            retVal.rxErrors =
+                                static_cast<unsigned int>(std::stoul(fields.at(NetDevFileFields::RxErrors)));
+                            retVal.txErrors =
+                                static_cast<unsigned int>(std::stoul(fields.at(NetDevFileFields::TxErrors)));
+                            retVal.rxDropped =
+                                static_cast<unsigned int>(std::stoul(fields.at(NetDevFileFields::RxDropped)));
+                            retVal.txDropped =
+                                static_cast<unsigned int>(std::stoul(fields.at(NetDevFileFields::TxDropped)));
                             break;
                         }
                     }
                 }
             }
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
         }
 

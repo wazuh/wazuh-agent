@@ -10,6 +10,8 @@ find_package(GTest CONFIG REQUIRED)
 add_executable(sysInfoWindows_unit_test
     ${sysinfo_UNIT_TEST_SRC})
 
+configure_target(sysInfoWindows_unit_test)
+
 target_link_libraries(sysInfoWindows_unit_test
     sysinfo
     GTest::gtest

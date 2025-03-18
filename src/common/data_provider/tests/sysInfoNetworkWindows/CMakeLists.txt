@@ -14,6 +14,8 @@ add_executable(sysInfoNetworkWindows_unit_test
     ${sysinfo_UNIT_TEST_SRC}
     ${SYSINFO_SRC})
 
+configure_target(sysInfoNetworkWindows_unit_test)
+
 target_link_libraries(sysInfoNetworkWindows_unit_test
     sysinfo
     GTest::gtest

@@ -12,6 +12,8 @@ add_executable(sysInfoPort_unit_test
     ${sysinfo_UNIT_TEST_SRC}
     ${SYSINFO_SRC})
 
+configure_target(sysInfoPort_unit_test)
+
 target_link_libraries(sysInfoPort_unit_test PRIVATE
     sysinfo
     GTest::gtest

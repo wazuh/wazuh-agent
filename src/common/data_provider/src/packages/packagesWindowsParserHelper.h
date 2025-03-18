@@ -72,7 +72,7 @@ namespace PackageWindowsHelper
                 }};
             root.enumerate(callback);
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
         }
     }
@@ -97,7 +97,7 @@ namespace PackageWindowsHelper
             Utils::Registry root {key, subKey, KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
             root.enumerate(callback);
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
         }
     }
@@ -129,7 +129,7 @@ namespace PackageWindowsHelper
             Utils::Registry root {key, subKey, KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
             root.enumerate(callback);
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
         }
     }
@@ -200,7 +200,7 @@ namespace PackageWindowsHelper
             Utils::Registry root {key, subKey, KEY_WOW64_64KEY | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
             root.enumerate(callback);
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
         }
     }

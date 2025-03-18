@@ -1,3 +1,4 @@
+#include "packageLinuxDataRetriever.h"
 #include "packageLinuxParserHelper.h"
 #include "sharedDefs.h"
 
@@ -8,7 +9,9 @@
 
 namespace http = boost::beast::http;
 
-void getSnapInfo(std::function<void(nlohmann::json&)> callback)
+constexpr auto SNAP_REQ_NUMBER = 11;
+
+void GetSnapInfo(const std::function<void(nlohmann::json&)>& callback)
 {
     try
     {
@@ -16,7 +19,7 @@ void getSnapInfo(std::function<void(nlohmann::json&)> callback)
         boost::asio::local::stream_protocol::socket socket(io_context);
 
         socket.connect("/run/snapd.socket");
-        http::request<http::string_body> req(http::verb::get, "/v2/snaps", 11);
+        http::request<http::string_body> req(http::verb::get, "/v2/snaps", SNAP_REQ_NUMBER);
         req.set(http::field::host, "localhost");
         req.set(http::field::connection, "close");
 
@@ -34,7 +37,7 @@ void getSnapInfo(std::function<void(nlohmann::json&)> callback)
         auto result = feed.at("result");
         for (const auto& entry : result)
         {
-            nlohmann::json mapping = PackageLinuxHelper::parseSnap(entry);
+            nlohmann::json mapping = PackageLinuxHelper::ParseSnap(entry);
             if (!mapping.empty())
             {
                 callback(mapping);

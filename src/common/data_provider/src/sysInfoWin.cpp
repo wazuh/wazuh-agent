@@ -333,7 +333,7 @@ static std::string processName(const PROCESSENTRY32& processEntry)
     return ret;
 }
 
-static nlohmann::json getProcessInfo(const PROCESSENTRY32& processEntry)
+static nlohmann::json GetProcessInfo(const PROCESSENTRY32& processEntry)
 {
     nlohmann::json jsProcessInfo {};
     const auto pId {processEntry.th32ProcessID};
@@ -439,7 +439,7 @@ static void getPackagesFromReg(const HKEY key,
         Utils::Registry root {key, subKey, access | KEY_ENUMERATE_SUB_KEYS | KEY_READ};
         root.enumerate(callback);
     }
-    catch (...)
+    catch (...) // NOLINT(bugprone-empty-catch)
     {
     }
 }
@@ -474,12 +474,12 @@ getStorePackages(const HKEY key, const std::string& user, std::function<void(nlo
         Utils::Registry root(key, user + "\\" + APPLICATION_STORE_REGISTRY, KEY_READ | KEY_ENUMERATE_SUB_KEYS);
         root.enumerate(callback);
     }
-    catch (...)
+    catch (...) // NOLINT(bugprone-empty-catch)
     {
     }
 }
 
-static std::string getSerialNumber()
+static std::string GetSerialNumber()
 {
     std::string ret;
 
@@ -527,26 +527,26 @@ static std::string getSerialNumber()
     return ret;
 }
 
-static std::string getCpuName()
+static std::string GetCpuName()
 {
     Utils::Registry reg(HKEY_LOCAL_MACHINE, CENTRAL_PROCESSOR_REGISTRY);
     return reg.string("ProcessorNameString");
 }
 
-static int getCpuMHz()
+static int GetCpuMHz()
 {
     Utils::Registry reg(HKEY_LOCAL_MACHINE, CENTRAL_PROCESSOR_REGISTRY);
     return reg.dword("~MHz");
 }
 
-static int getCpuCores()
+static int GetCpuCores()
 {
     SYSTEM_INFO siSysInfo {};
     GetSystemInfo(&siSysInfo);
     return siSysInfo.dwNumberOfProcessors;
 }
 
-static void getMemory(nlohmann::json& info)
+static void GetMemory(nlohmann::json& info)
 {
     MEMORYSTATUSEX statex;
     statex.dwLength = sizeof(statex);
@@ -567,11 +567,11 @@ static void getMemory(nlohmann::json& info)
 nlohmann::json SysInfo::getHardware() const
 {
     nlohmann::json hardware;
-    hardware["board_serial"] = getSerialNumber();
-    hardware["cpu_name"] = getCpuName();
-    hardware["cpu_cores"] = getCpuCores();
-    hardware["cpu_mhz"] = getCpuMHz();
-    getMemory(hardware);
+    hardware["board_serial"] = GetSerialNumber();
+    hardware["cpu_name"] = GetCpuName();
+    hardware["cpu_cores"] = GetCpuCores();
+    hardware["cpu_mhz"] = GetCpuMHz();
+    GetMemory(hardware);
     return hardware;
 }
 
@@ -783,12 +783,12 @@ nlohmann::json SysInfo::getPorts() const
     return ports;
 }
 
-void SysInfo::getProcessesInfo(std::function<void(nlohmann::json&)> callback) const
+void SysInfo::getProcessesInfo(const std::function<void(nlohmann::json&)>& callback) const
 {
     fillProcessesData(
         [&callback](const auto& processEntry)
         {
-            auto processInfo = getProcessInfo(processEntry);
+            auto processInfo = GetProcessInfo(processEntry);
 
             if (!processInfo.empty())
             {
@@ -872,7 +872,7 @@ const std::set<std::string> getNodeDirectories()
     return nodeDirList;
 }
 
-void SysInfo::getPackages(std::function<void(nlohmann::json&)> callback) const
+void SysInfo::getPackages(const std::function<void(nlohmann::json&)>& callback) const
 {
     std::set<std::string> set;
 

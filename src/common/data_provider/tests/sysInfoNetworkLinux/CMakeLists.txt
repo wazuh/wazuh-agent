@@ -12,6 +12,8 @@ add_executable(sysInfoNetworkLinux_unit_test
     ${sysinfo_UNIT_TEST_SRC}
     ${SYSINFO_SRC})
 
+configure_target(sysInfoNetworkLinux_unit_test)
+
 target_link_libraries(sysInfoNetworkLinux_unit_test PRIVATE
     sysinfo
     GTest::gtest

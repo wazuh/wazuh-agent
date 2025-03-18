@@ -70,8 +70,8 @@ private:
     virtual nlohmann::json getHotfixes() const;
 
     /// @brief Fills the packages information using a callback
-    virtual void getPackages(std::function<void(nlohmann::json&)>) const;
+    virtual void getPackages(const std::function<void(nlohmann::json&)>&) const;
 
     /// @brief Fills the processes information using a callback
-    virtual void getProcessesInfo(std::function<void(nlohmann::json&)>) const;
+    virtual void getProcessesInfo(const std::function<void(nlohmann::json&)>&) const;
 };

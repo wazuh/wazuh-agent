@@ -5,7 +5,6 @@
 #include "isqliteWrapper.hpp"
 #include "mapWrapperSafe.hpp"
 #include "sqliteWrapperFactory.hpp"
-#include <iostream>
 #include <mutex>
 #include <queue>
 #include <tuple>

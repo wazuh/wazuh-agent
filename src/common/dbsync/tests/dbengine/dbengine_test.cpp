@@ -3,7 +3,6 @@
 #include "MockSqliteWrapper.hpp"
 #include "abstractLocking.hpp"
 #include "sqlite_dbengine.h"
-#include <iostream>
 #include <sqlite3.h>
 #include <string>
 

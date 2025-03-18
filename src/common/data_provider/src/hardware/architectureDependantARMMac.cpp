@@ -79,18 +79,18 @@ int getMhz(IOsPrimitivesMac* osPrimitives)
                 0, std::system_category(), "CF type id of p_cores_freq_property is not Data type id."};
         }
 
-        size_t length = osPrimitives->CFDataGetLength(p_cores_freq_property);
+        size_t length = static_cast<size_t>(osPrimitives->CFDataGetLength(p_cores_freq_property));
 
         // The frequencies are in hz, saved in an array as little endian 4 byte integers
         for (size_t i = 0; i < length - 3; i += sizeof(uint32_t))
         {
             uint32_t cur_freq = 0;
             osPrimitives->CFDataGetBytes(p_cores_freq_property,
-                                         osPrimitives->CFRangeMake(i, sizeof(uint32_t)),
+                                         osPrimitives->CFRangeMake(static_cast<CFIndex>(i), sizeof(uint32_t)),
                                          reinterpret_cast<UInt8*>(&cur_freq));
             cpuHz = std::max(cpuHz, static_cast<uint64_t>(cur_freq));
         }
     }
 
-    return cpuHz / MHz;
+    return static_cast<int>(cpuHz / MHz);
 }

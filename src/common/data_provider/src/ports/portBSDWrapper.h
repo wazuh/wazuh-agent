@@ -78,7 +78,7 @@ public:
         if (AF_INET6 == m_spSocketInfo->psi.soi_family)
         {
             sockaddr_in6 socketAddressIn6 {};
-            socketAddressIn6.sin6_family = m_spSocketInfo->psi.soi_family;
+            socketAddressIn6.sin6_family = static_cast<sa_family_t>(m_spSocketInfo->psi.soi_family);
             socketAddressIn6.sin6_addr = static_cast<in6_addr>(m_spSocketInfo->psi.soi_proto.pri_in.insi_laddr.ina_6);
             getnameinfo(reinterpret_cast<sockaddr*>(&socketAddressIn6),
                         sizeof(socketAddressIn6),
@@ -91,7 +91,7 @@ public:
         else if (AF_INET == m_spSocketInfo->psi.soi_family)
         {
             sockaddr_in socketAddressIn {};
-            socketAddressIn.sin_family = m_spSocketInfo->psi.soi_family;
+            socketAddressIn.sin_family = static_cast<sa_family_t>(m_spSocketInfo->psi.soi_family);
             socketAddressIn.sin_addr =
                 static_cast<in_addr>(m_spSocketInfo->psi.soi_proto.pri_in.insi_laddr.ina_46.i46a_addr4);
             getnameinfo(reinterpret_cast<sockaddr*>(&socketAddressIn),
@@ -121,7 +121,7 @@ public:
 
         {
             sockaddr_in6 socketAddressIn6 {};
-            socketAddressIn6.sin6_family = m_spSocketInfo->psi.soi_family;
+            socketAddressIn6.sin6_family = static_cast<sa_family_t>(m_spSocketInfo->psi.soi_family);
             socketAddressIn6.sin6_addr = static_cast<in6_addr>(m_spSocketInfo->psi.soi_proto.pri_in.insi_faddr.ina_6);
             getnameinfo(reinterpret_cast<sockaddr*>(&socketAddressIn6),
                         sizeof(socketAddressIn6),
@@ -134,7 +134,7 @@ public:
         else if (AF_INET == m_spSocketInfo->psi.soi_family)
         {
             sockaddr_in socketAddressIn {};
-            socketAddressIn.sin_family = m_spSocketInfo->psi.soi_family;
+            socketAddressIn.sin_family = static_cast<sa_family_t>(m_spSocketInfo->psi.soi_family);
             socketAddressIn.sin_addr =
                 static_cast<in_addr>(m_spSocketInfo->psi.soi_proto.pri_in.insi_faddr.ina_46.i46a_addr4);
             getnameinfo(reinterpret_cast<sockaddr*>(&socketAddressIn),

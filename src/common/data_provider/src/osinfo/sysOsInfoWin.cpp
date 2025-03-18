@@ -228,7 +228,7 @@ static std::string getName()
                 }
             }
         }
-        catch (...)
+        catch (...) // NOLINT(bugprone-empty-catch)
         {
         }
     }
