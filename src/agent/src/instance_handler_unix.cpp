@@ -102,7 +102,8 @@ namespace instance_handler
         return true;
     }
 
-    InstanceHandler GetInstanceHandler(const std::string& configFilePath)
+    InstanceHandler GetInstanceHandler(const std::string& configFilePath,
+                                       std::shared_ptr<IFileSystemWrapper> fileSystemWrapper)
     {
         const auto configurationParser =
             configFilePath.empty() ? configuration::ConfigurationParser()
@@ -110,12 +111,12 @@ namespace instance_handler
 
         const auto lockFilePath = configurationParser.GetConfigOrDefault(config::DEFAULT_RUN_PATH, "agent", "path.run");
 
-        return {InstanceHandler(lockFilePath)};
+        return {InstanceHandler(lockFilePath, fileSystemWrapper)};
     }
 
-    std::string GetAgentStatus(const std::string& configFilePath)
+    std::string GetAgentStatus(const std::string& configFilePath, std::shared_ptr<IFileSystemWrapper> fileSystemWrapper)
     {
-        const InstanceHandler instanceHandler = GetInstanceHandler(configFilePath);
+        const InstanceHandler instanceHandler = GetInstanceHandler(configFilePath, fileSystemWrapper);
 
         if (!instanceHandler.isLockAcquired())
         {
