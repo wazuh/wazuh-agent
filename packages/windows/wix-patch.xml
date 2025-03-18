@@ -1,10 +1,11 @@
 <CPackWiXPatch>
   <CPackWiXFragment Id="#PRODUCT">
     <!-- PostInstall Custom Action -->
-    <CustomAction
-        Id="SetPostInstallCmdLine"
-        Property="WixQuietExecCmdLine"
+    <SetProperty
+        Id="PostInstall"
         Value="&quot;powershell.exe&quot; -ExecutionPolicy Bypass -File &quot;[INSTALL_ROOT]postinstall.ps1&quot;"
+        Sequence="execute"
+        Before="PostInstall"
     />
     <CustomAction
         Id="PostInstall"
@@ -15,10 +16,11 @@
         Impersonate="no"
     />
     <!-- CleanupScript Custom Action -->
-    <CustomAction
-        Id="SetCleanupCmdLine"
-        Property="WixQuietExecCmdLine"
+    <SetProperty
+        Id="CleanupScript"
         Value="&quot;powershell.exe&quot; -ExecutionPolicy Bypass -File &quot;[INSTALL_ROOT]cleanup.ps1&quot;"
+        Sequence="execute"
+        Before="CleanupScript"
     />
     <CustomAction
         Id="CleanupScript"
@@ -30,10 +32,8 @@
     />
     <!-- Schedule Custom Actions -->
     <InstallExecuteSequence>
-      <Custom Action="SetPostInstallCmdLine" Before="PostInstall">NOT Installed</Custom>
       <Custom Action="PostInstall" Before="InstallFinalize">NOT Installed</Custom>
-      <Custom Action="SetCleanupCmdLine" Before="CleanupScript">REMOVE="ALL"</Custom>
-      <Custom Action="CleanupScript" Before="InstallFinalize">REMOVE="ALL"</Custom>
+      <Custom Action="CleanupScript" Before="RemoveFiles">Installed AND REMOVE~="ALL"</Custom>
     </InstallExecuteSequence>
   </CPackWiXFragment>
 </CPackWiXPatch>
