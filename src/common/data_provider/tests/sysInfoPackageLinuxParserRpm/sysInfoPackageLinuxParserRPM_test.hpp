@@ -10,15 +10,16 @@ class SysInfoPackagesLinuxParserRPMTest : public ::testing::Test
 protected:
     SysInfoPackagesLinuxParserRPMTest() = default;
     virtual ~SysInfoPackagesLinuxParserRPMTest() = default;
-    std::unique_ptr<RPM<MockFileSystemWrapper>> rpm;
+
+    std::shared_ptr<MockFileSystemWrapper> fsw;
 
     void SetUp() override
     {
-        rpm = std::make_unique<RPM<MockFileSystemWrapper>>();
+        fsw = std::make_shared<MockFileSystemWrapper>();
     }
 
     void TearDown() override
     {
-        rpm.reset();
+        fsw.reset();
     }
 };
