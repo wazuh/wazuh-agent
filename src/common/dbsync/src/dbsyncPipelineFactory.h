@@ -1,15 +1,4 @@
-/*
- * Wazuh DBSYNC
- * Copyright (C) 2015, Wazuh Inc.
- * July 15, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-#ifndef PIPE_LINE_FACTORY_H
-#define PIPE_LINE_FACTORY_H
+#pragma once
 
 #include "commonDefs.h"
 #include "dbengine.h"
@@ -20,40 +9,72 @@
 
 namespace DbSync
 {
-    using TxnContext = void*;
-    using PipelineCtxHandle = void*;
+    using TxnContext = const void*;
+    using PipelineCtxHandle = const void*;
 
+    /// @brief Pipeline interface
     struct IPipeline
     {
-        // LCOV_EXCL_START
+        /// @brief Default destructor
         virtual ~IPipeline() = default;
-        // LCOV_EXCL_STOP
-        virtual void syncRow(const nlohmann::json& syncJson) = 0;
-        virtual void getDeleted(const ResultCallback callback) = 0;
+
+        /// @brief Syncs a row
+        /// @param value value JSON
+        virtual void syncRow(const nlohmann::json& value) = 0;
+
+        /// @brief Gets deleted rows
+        /// @param callback callback
+        virtual void getDeleted(const ResultCallback& callback) = 0;
     };
 
+    /// @brief Pipeline factory
     class PipelineFactory final
     {
     public:
+        /// @brief Singleton
         static PipelineFactory& instance() noexcept;
+
+        /// @brief Releases all the pipelines
         void release() noexcept;
+
+        /// @brief Creates a pipeline
+        /// @param handle Handle assigned as part of the \ref dbsync_create method().
+        /// @param tables Tables to be created in the transaction.
+        /// @param threadNumber   Number of worker threads for processing data. If 0 hardware concurrency
+        ///                       value will be used.
+        /// @param maxQueueSize   Max data number to hold/queue to be processed.
+        /// @param callback callback
+        /// @return PipelineCtxHandle
         PipelineCtxHandle create(const DBSYNC_HANDLE handle,
                                  const nlohmann::json& tables,
                                  const unsigned int threadNumber,
                                  const unsigned int maxQueueSize,
-                                 const ResultCallback callback);
+                                 const ResultCallback& callback);
+
+        /// @brief Gets the pipeline
+        /// @param handle PipelineCtxHandle
+        /// @return std::shared_ptr<IPipeline>
         const std::shared_ptr<IPipeline>& pipeline(const PipelineCtxHandle handle);
+
+        /// @brief Destroys the pipeline
+        /// @param handle PipelineCtxHandle
         void destroy(const PipelineCtxHandle handle);
 
     private:
+        /// @brief Delete copy constructor
         PipelineFactory(const PipelineFactory&) = delete;
+
+        /// @brief Delete copy operator
         PipelineFactory& operator=(const PipelineFactory&) = delete;
+
+        /// @brief Default constructor
         PipelineFactory() = default;
+
+        /// @brief Default destructor
         ~PipelineFactory() = default;
+
         std::map<PipelineCtxHandle, std::shared_ptr<IPipeline>> m_contexts;
         std::mutex m_contextsMutex;
     };
 
 } // namespace DbSync
-
-#endif // PIPE_LINE_FACTORY_H

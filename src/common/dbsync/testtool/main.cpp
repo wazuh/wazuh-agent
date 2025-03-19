@@ -1,36 +1,25 @@
-/*
- * Wazuh DBSYNC
- * Copyright (C) 2015, Wazuh Inc.
- * July 02, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#include "action.h"
-#include "cmdArgsHelper.h"
+#include "action.hpp"
+#include "cmdArgsHelper.hpp"
 #include "dbsync.h"
-#include "factoryAction.h"
-#include "testContext.h"
+#include "factoryAction.hpp"
+#include "testContext.hpp"
+#include <cstdio>
 #include <fstream>
 #include <memory>
 #include <nlohmann/json.hpp>
-#include <stdio.h>
 
-static void loggerFunction(const char* msg)
+static void LoggerFunction(const char* msg)
 {
-    std::cout << "Msg: " << msg << std::endl;
+    std::cout << "Msg: " << msg << '\n';
 }
 
 int main(int argc, const char* argv[])
 {
     try
     {
-        CmdLineArgs cmdLineArgs(argc, argv);
+        const CmdLineArgs cmdLineArgs(argc, argv);
 
-        const auto actions {cmdLineArgs.actions()};
+        const auto& actions {cmdLineArgs.actions()};
 
         // dbsync configuration data
         std::ifstream configFile {cmdLineArgs.configFile()};
@@ -41,9 +30,9 @@ int main(int argc, const char* argv[])
         const std::string persistance {jsonConfigFile.at("persistance").get_ref<const std::string&>()};
         const std::string sqlStmt {jsonConfigFile.at("sql_statement").get_ref<const std::string&>()};
 
-        dbsync_initialize(loggerFunction);
+        dbsync_initialize(LoggerFunction);
 
-        DBSYNC_HANDLE handle {0};
+        DBSYNC_HANDLE handle {nullptr};
 
         if (persistance.compare("1") == 0)
         {
@@ -62,7 +51,7 @@ int main(int argc, const char* argv[])
                                    sqlStmt.c_str());
         }
 
-        if (0 != handle)
+        if (nullptr != handle)
         {
             std::unique_ptr<TestContext> testContext {std::make_unique<TestContext>()};
             testContext->handle = handle;
@@ -72,27 +61,26 @@ int main(int argc, const char* argv[])
             for (size_t idx = 0; idx < actions.size(); ++idx)
             {
                 testContext->currentId = idx;
-                const std::string inputFile {actions[idx]};
+                const std::string& inputFile {actions[idx]};
                 std::ifstream actionsIdxFile {inputFile};
-                std::cout << "Processing file: " << inputFile << std::endl;
+                std::cout << "Processing file: " << inputFile << '\n';
                 const auto& jsonAction {nlohmann::json::parse(actionsIdxFile)};
                 auto action {FactoryAction::create(jsonAction["action"].get<std::string>())};
                 action->execute(testContext, jsonAction);
             }
 
             dbsync_teardown();
-            std::cout << "Resulting files are located in the " << cmdLineArgs.outputFolder() << " folder" << std::endl;
+            std::cout << "Resulting files are located in the " << cmdLineArgs.outputFolder() << " folder" << '\n';
         }
         else
         {
-            std::cout << std::endl
-                      << "Something went wrong configuring the database. Please, check the config file data"
-                      << std::endl;
+            std::cout << '\n'
+                      << "Something went wrong configuring the database. Please, check the config file data" << '\n';
         }
     }
     catch (const std::exception& ex)
     {
-        std::cerr << ex.what() << std::endl;
+        std::cerr << ex.what() << '\n';
         CmdLineArgs::showHelp();
     }
 

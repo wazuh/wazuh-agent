@@ -1,30 +1,20 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * July 16, 2023.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
 #include "sysInfoPackagesNPM_test.hpp"
 
-using testing::_;
+using testing::_; // NOLINT(bugprone-reserved-identifier)
 using testing::Return;
 using testing::ReturnRef;
 
 TEST_F(NPMTest, getPackages_ValidPackagesTest)
 {
-    std::vector<std::filesystem::path> fakePackages = {"/fake/node_modules/package1", "/fake/node_modules/package2"};
+    const std::vector<std::filesystem::path> fakePackages = {"/fake/node_modules/package1",
+                                                             "/fake/node_modules/package2"};
 
     EXPECT_CALL(*npm, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*npm, is_directory(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*npm, list_directory(_)).WillRepeatedly(Return((fakePackages)));
 
-    nlohmann::json fakePackageJson1 = {{"name", "TestPackage1"}, {"version", "1.0.0"}};
-    nlohmann::json fakePackageJson2 = {{"name", "TestPackage2"}, {"version", "2.0.0"}};
+    const nlohmann::json fakePackageJson1 = {{"name", "TestPackage1"}, {"version", "1.0.0"}};
+    const nlohmann::json fakePackageJson2 = {{"name", "TestPackage2"}, {"version", "2.0.0"}};
 
     EXPECT_CALL(*npm, readJson(std::filesystem::path("/fake/node_modules/package1/package.json")))
         .WillOnce(Return(fakePackageJson1));
@@ -34,7 +24,7 @@ TEST_F(NPMTest, getPackages_ValidPackagesTest)
     bool foundPackage1 = false;
     bool foundPackage2 = false;
 
-    std::set<std::string> folders = {"/fake"};
+    const std::set<std::string> folders = {"/fake"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
@@ -59,14 +49,14 @@ TEST_F(NPMTest, getPackages_ValidPackagesTest)
 
 TEST_F(NPMTest, getPackages_NoPackagesFoundTest)
 {
-    std::vector<std::filesystem::path> fakePackages = {};
+    const std::vector<std::filesystem::path> fakePackages = {};
 
     EXPECT_CALL(*npm, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*npm, list_directory(_)).WillRepeatedly(Return(fakePackages));
 
     bool callbackCalled = false;
 
-    std::set<std::string> folders = {"/fake"};
+    const std::set<std::string> folders = {"/fake"};
 
     npm->getPackages(folders, [&](nlohmann::json&) { callbackCalled = true; });
 
@@ -75,7 +65,7 @@ TEST_F(NPMTest, getPackages_NoPackagesFoundTest)
 
 TEST_F(NPMTest, getPackages_NoPackageJsonTest)
 {
-    std::vector<std::filesystem::path> fakePackages = {"/fake/node_modules/package1"};
+    const std::vector<std::filesystem::path> fakePackages = {"/fake/node_modules/package1"};
 
     EXPECT_CALL(*npm, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*npm, is_directory(_)).WillRepeatedly(Return(true));
@@ -86,7 +76,7 @@ TEST_F(NPMTest, getPackages_NoPackageJsonTest)
 
     bool callbackCalled = false;
 
-    std::set<std::string> folders = {"/fake"};
+    const std::set<std::string> folders = {"/fake"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
@@ -98,7 +88,7 @@ TEST_F(NPMTest, getPackages_NoPackageJsonTest)
 
 TEST_F(NPMTest, getPackages_InvalidPackageJsonNameTest)
 {
-    std::vector<std::filesystem::path> fakePackages = {"/fake/node_modules/package1"};
+    const std::vector<std::filesystem::path> fakePackages = {"/fake/node_modules/package1"};
 
     EXPECT_CALL(*npm, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*npm, is_directory(_)).WillRepeatedly(Return(true));
@@ -109,7 +99,7 @@ TEST_F(NPMTest, getPackages_InvalidPackageJsonNameTest)
 
     bool callbackCalled = false;
 
-    std::set<std::string> folders = {"/fake"};
+    const std::set<std::string> folders = {"/fake"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
@@ -121,7 +111,7 @@ TEST_F(NPMTest, getPackages_InvalidPackageJsonNameTest)
 
 TEST_F(NPMTest, getPackages_InvalidPackageJsonVersionTest)
 {
-    std::vector<std::filesystem::path> fakePackages = {"/fake/node_modules/package1"};
+    const std::vector<std::filesystem::path> fakePackages = {"/fake/node_modules/package1"};
 
     EXPECT_CALL(*npm, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*npm, is_directory(_)).WillRepeatedly(Return(true));
@@ -132,7 +122,7 @@ TEST_F(NPMTest, getPackages_InvalidPackageJsonVersionTest)
 
     bool callbackCalled = false;
 
-    std::set<std::string> folders = {"/fake"};
+    const std::set<std::string> folders = {"/fake"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
@@ -144,7 +134,8 @@ TEST_F(NPMTest, getPackages_InvalidPackageJsonVersionTest)
 
 TEST_F(NPMTest, getPackages_ValidPackageJson2Test)
 {
-    std::vector<std::filesystem::path> fakePackages = {"/fake/node_modules/package1", "/fake/node_modules/package2"};
+    const std::vector<std::filesystem::path> fakePackages = {"/fake/node_modules/package1",
+                                                             "/fake/node_modules/package2"};
 
     EXPECT_CALL(*npm, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*npm, is_directory(_)).WillRepeatedly(Return(true));
@@ -159,7 +150,7 @@ TEST_F(NPMTest, getPackages_ValidPackageJson2Test)
     bool callbackCalledFirst = false;
     bool callbackCalledSecond = false;
 
-    std::set<std::string> folders = {"/fake"};
+    const std::set<std::string> folders = {"/fake"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });

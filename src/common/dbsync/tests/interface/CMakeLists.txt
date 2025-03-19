@@ -2,13 +2,10 @@ cmake_minimum_required(VERSION 3.22)
 
 project(dbsync_unit_test)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
-
 add_definitions(-DTEST_INPUTS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../include/)
 link_directories(${CMAKE_BINARY_DIR}/lib)
-
 
 file(GLOB INTERFACE_UNITTEST_SRC
     "*.cpp"
@@ -16,7 +13,10 @@ file(GLOB INTERFACE_UNITTEST_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/../../src/sqlite/*.cpp")
 
 add_executable(dbsync_unit_test
-    ${INTERFACE_UNITTEST_SRC} )
+    ${INTERFACE_UNITTEST_SRC})
+
+configure_target(dbsync_unit_test)
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(dbsync_unit_test
         dbsync

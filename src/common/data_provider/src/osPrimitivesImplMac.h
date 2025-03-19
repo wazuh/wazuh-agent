@@ -1,111 +1,114 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * May 11, 2023.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _OSPRIMITIVES_IMPL_MAC_H
-#define _OSPRIMITIVES_IMPL_MAC_H
+#pragma once
 
 #include "osPrimitivesInterfaceMac.h"
 
 class OsPrimitivesMac : public IOsPrimitivesMac
 {
 public:
+    /// @brief Default constructor
     OsPrimitivesMac() = default;
-    // LCOV_EXCL_START
+
+    /// @brief Default destructor
     virtual ~OsPrimitivesMac() = default;
 
-    // LCOV_EXCL_STOP
-
-    int sysctl(int* name, u_int namelen, void* oldp, size_t* oldlenp, void* newp, size_t newlen) const
+    /// @copydoc IOsPrimitivesMac::sysctl
+    int sysctl(int* name, u_int namelen, void* oldp, size_t* oldlenp, void* newp, size_t newlen) const override
     {
         return ::sysctl(name, namelen, oldp, oldlenp, newp, newlen);
     }
 
-    int sysctlbyname(const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen) const
+    /// @copydoc IOsPrimitivesMac::sysctlbyname
+    int sysctlbyname(const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen) const override
     {
         return ::sysctlbyname(name, oldp, oldlenp, newp, newlen);
     }
 
-    CFMutableDictionaryRef IOServiceMatching(const char* name) const
+    /// @copydoc IOsPrimitivesMac::IOServiceMatching
+    CFMutableDictionaryRef IOServiceMatching(const char* name) const override
     {
         return ::IOServiceMatching(name);
     }
 
+    /// @copydoc IOsPrimitivesMac::IOServiceGetMatchingServices
     kern_return_t
-    IOServiceGetMatchingServices(mach_port_t mainPort, CFDictionaryRef matching, io_iterator_t* existing) const
+    IOServiceGetMatchingServices(mach_port_t mainPort, CFDictionaryRef matching, io_iterator_t* existing) const override
     {
         return ::IOServiceGetMatchingServices(mainPort, matching, existing);
     }
 
-    io_object_t IOIteratorNext(io_iterator_t iterator) const
+    /// @copydoc IOsPrimitivesMac::IOIteratorNext
+    io_object_t IOIteratorNext(io_iterator_t iterator) const override
     {
         return ::IOIteratorNext(iterator);
     }
 
-    kern_return_t IORegistryEntryGetName(io_registry_entry_t entry, io_name_t name) const
+    /// @copydoc IOsPrimitivesMac::IORegistryEntryGetName
+    kern_return_t IORegistryEntryGetName(io_registry_entry_t entry, io_name_t name) const override
     {
         return ::IORegistryEntryGetName(entry, name);
     }
 
+    /// @copydoc IOsPrimitivesMac::IORegistryEntryCreateCFProperties
     kern_return_t IORegistryEntryCreateCFProperties(io_registry_entry_t entry,
                                                     CFMutableDictionaryRef* properties,
                                                     CFAllocatorRef allocator,
-                                                    IOOptionBits options) const
+                                                    IOOptionBits options) const override
     {
         return ::IORegistryEntryCreateCFProperties(entry, properties, allocator, options);
     }
 
-    kern_return_t IOObjectRelease(io_object_t object) const
+    /// @copydoc IOsPrimitivesMac::IOObjectRelease
+    kern_return_t IOObjectRelease(io_object_t object) const override
     {
         return ::IOObjectRelease(object);
     }
 
-    CFStringRef CFStringCreateWithCString(CFAllocatorRef alloc, const char* cStr, CFStringEncoding encoding) const
+    /// @copydoc IOsPrimitivesMac::CFStringCreateWithCString
+    CFStringRef
+    CFStringCreateWithCString(CFAllocatorRef alloc, const char* cStr, CFStringEncoding encoding) const override
     {
         return ::CFStringCreateWithCString(alloc, cStr, encoding);
     }
 
-    const void* CFDictionaryGetValue(CFDictionaryRef theDict, const void* key) const
+    /// @copydoc IOsPrimitivesMac::CFDictionaryGetValue
+    const void* CFDictionaryGetValue(CFDictionaryRef theDict, const void* key) const override
     {
         return ::CFDictionaryGetValue(theDict, key);
     }
 
-    CFTypeID CFGetTypeID(CFTypeRef cf) const
+    /// @copydoc IOsPrimitivesMac::CFGetTypeID
+    CFTypeID CFGetTypeID(CFTypeRef cf) const override
     {
         return ::CFGetTypeID(cf);
     }
 
-    CFTypeID CFDataGetTypeID(void) const
+    /// @copydoc IOsPrimitivesMac::CFDataGetTypeID
+    CFTypeID CFDataGetTypeID(void) const override
     {
         return ::CFDataGetTypeID();
     }
 
-    CFIndex CFDataGetLength(CFDataRef theData) const
+    /// @copydoc IOsPrimitivesMac::CFDataGetLength
+    CFIndex CFDataGetLength(CFDataRef theData) const override
     {
         return ::CFDataGetLength(theData);
     }
 
-    void CFDataGetBytes(CFDataRef theData, CFRange range, UInt8* buffer) const
+    /// @copydoc IOsPrimitivesMac::CFDataGetBytes
+    void CFDataGetBytes(CFDataRef theData, CFRange range, UInt8* buffer) const override
     {
         return ::CFDataGetBytes(theData, range, buffer);
     }
 
-    CFRange CFRangeMake(CFIndex loc, CFIndex len) const
+    /// @copydoc IOsPrimitivesMac::CFRangeMake
+    CFRange CFRangeMake(CFIndex loc, CFIndex len) const override
     {
         return ::CFRangeMake(loc, len);
     }
 
-    void CFRelease(CFTypeRef cf) const
+    /// @copydoc IOsPrimitivesMac::CFRelease
+    void CFRelease(CFTypeRef cf) const override
     {
         ::CFRelease(cf);
     }
 };
-
-#endif // _OSPRIMITIVES_IMPL_MAC_H

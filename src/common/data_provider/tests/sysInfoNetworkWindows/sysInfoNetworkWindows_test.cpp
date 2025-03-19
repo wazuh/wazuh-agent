@@ -1,15 +1,4 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * October 19, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#include "sysInfoNetworkWindows_test.h"
+#include "sysInfoNetworkWindows_test.hpp"
 #include "network/networkFamilyDataAFactory.h"
 #include "network/networkInterfaceWindows.h"
 #include "networkWindowsHelper.hpp"
@@ -18,32 +7,36 @@ void SysInfoNetworkWindowsTest::SetUp() {};
 
 void SysInfoNetworkWindowsTest::TearDown() {};
 
-using ::testing::_;
+using ::testing::_; // NOLINT(bugprone-reserved-identifier)
 using ::testing::Return;
 
 class SysInfoNetworkWindowsWrapperMock : public INetworkInterfaceWrapper
 {
 public:
     SysInfoNetworkWindowsWrapperMock() = default;
-    virtual ~SysInfoNetworkWindowsWrapperMock() = default;
-    MOCK_METHOD(int, family, (), (const override));
-    MOCK_METHOD(std::string, name, (), (const override));
-    MOCK_METHOD(void, adapter, (nlohmann::json&), (const override));
-    MOCK_METHOD(std::string, address, (), (const override));
-    MOCK_METHOD(std::string, netmask, (), (const override));
-    MOCK_METHOD(void, broadcast, (nlohmann::json&), (const override));
-    MOCK_METHOD(std::string, addressV6, (), (const override));
-    MOCK_METHOD(std::string, netmaskV6, (), (const override));
-    MOCK_METHOD(void, broadcastV6, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, gateway, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, metrics, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, metricsV6, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, dhcp, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, mtu, (nlohmann::json&), (const override));
-    MOCK_METHOD(LinkStats, stats, (), (const override));
-    MOCK_METHOD(void, type, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, state, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, MAC, (nlohmann::json&), (const override));
+    ~SysInfoNetworkWindowsWrapperMock() override = default;
+    SysInfoNetworkWindowsWrapperMock(const SysInfoNetworkWindowsWrapperMock&) = delete;
+    SysInfoNetworkWindowsWrapperMock& operator=(const SysInfoNetworkWindowsWrapperMock&) = delete;
+    SysInfoNetworkWindowsWrapperMock(SysInfoNetworkWindowsWrapperMock&&) = delete;
+    SysInfoNetworkWindowsWrapperMock& operator=(SysInfoNetworkWindowsWrapperMock&&) = delete;
+    MOCK_METHOD(int, family, (), (const, override));
+    MOCK_METHOD(std::string, name, (), (const, override));
+    MOCK_METHOD(void, adapter, (nlohmann::json&), (const, override));
+    MOCK_METHOD(std::string, address, (), (const, override));
+    MOCK_METHOD(std::string, netmask, (), (const, override));
+    MOCK_METHOD(void, broadcast, (nlohmann::json&), (const, override));
+    MOCK_METHOD(std::string, addressV6, (), (const, override));
+    MOCK_METHOD(std::string, netmaskV6, (), (const, override));
+    MOCK_METHOD(void, broadcastV6, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, gateway, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, metrics, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, metricsV6, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, dhcp, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, mtu, (nlohmann::json&), (const, override));
+    MOCK_METHOD(LinkStats, stats, (), (const, override));
+    MOCK_METHOD(void, type, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, state, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, MAC, (nlohmann::json&), (const, override));
 };
 
 TEST_F(SysInfoNetworkWindowsTest, Test_IPV4_THROW)

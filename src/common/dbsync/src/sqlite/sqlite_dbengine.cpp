@@ -1,14 +1,3 @@
-/*
- * Wazuh DBSYNC
- * Copyright (C) 2015, Wazuh Inc.
- * June 11, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
 #include "sqlite_dbengine.h"
 #include "commonDefs.h"
 #include "db_exception.h"
@@ -16,11 +5,13 @@
 #include "mapWrapperSafe.hpp"
 #include "stringHelper.hpp"
 #include <fstream>
+#include <iostream>
 #include <sqlite3.h>
 #include <thread>
 
 using namespace std::chrono_literals;
 auto constexpr MAX_TRIES = 5;
+auto constexpr COND_AND_SIZE = 5;
 
 SQLiteDBEngine::SQLiteDBEngine(const std::shared_ptr<SQLiteLegacy::ISQLiteFactory>& sqliteFactory,
                                const std::string& path,
@@ -34,7 +25,7 @@ SQLiteDBEngine::SQLiteDBEngine(const std::shared_ptr<SQLiteLegacy::ISQLiteFactor
 
 SQLiteDBEngine::~SQLiteDBEngine()
 {
-    std::lock_guard<std::mutex> lock(m_stmtMutex);
+    const std::lock_guard<std::mutex> lock(m_stmtMutex);
     m_statementsCache.clear();
 
     if (m_transaction)
@@ -47,7 +38,7 @@ void SQLiteDBEngine::setMaxRows(const std::string& table, const int64_t maxRows)
 {
     if (0 != loadTableData(table))
     {
-        std::lock_guard<std::mutex> lock(m_maxRowsMutex);
+        const std::lock_guard<std::mutex> lock(m_maxRowsMutex);
 
         if (maxRows < 0)
         {
@@ -87,7 +78,7 @@ void SQLiteDBEngine::bulkInsert(const std::string& table, const nlohmann::json& 
 
         for (const auto& element : data)
         {
-            insertElement(table, tableFieldsMetaData, element);
+            InsertElement(table, tableFieldsMetaData, element);
         }
     }
     else
@@ -97,7 +88,7 @@ void SQLiteDBEngine::bulkInsert(const std::string& table, const nlohmann::json& 
 }
 
 void SQLiteDBEngine::refreshTableData(const nlohmann::json& data,
-                                      const DbSync::ResultCallback callback,
+                                      const DbSync::ResultCallback& callback,
                                       std::unique_lock<std::shared_timed_mutex>& lock)
 {
     const std::string table {data.at("table").is_string() ? data.at("table").get_ref<const std::string&>() : ""};
@@ -114,39 +105,29 @@ void SQLiteDBEngine::refreshTableData(const nlohmann::json& data,
             {
                 if (!removeNotExistsRows(table, primaryKeyList, callback, lock))
                 {
-                    // LCOV_EXCL_START
-                    std::cout << "Error during the delete rows update " << __LINE__ << " - " << __FILE__ << std::endl;
-                    // LCOV_EXCL_STOP
+                    std::cout << "Error during the delete rows update " << __LINE__ << " - " << __FILE__ << '\n';
                 }
 
                 if (!changeModifiedRows(table, primaryKeyList, callback, lock))
                 {
-                    // LCOV_EXCL_START
-                    std::cout << "Error during the change of modified rows " << __LINE__ << " - " << __FILE__
-                              << std::endl;
-                    // LCOV_EXCL_STOP
+                    std::cout << "Error during the change of modified rows " << __LINE__ << " - " << __FILE__ << '\n';
                 }
 
                 if (!insertNewRows(table, primaryKeyList, callback, lock))
                 {
-                    // LCOV_EXCL_START
-                    std::cout << "Error during the insert rows update " << __LINE__ << " - " << __FILE__ << std::endl;
-                    // LCOV_EXCL_STOP
+                    std::cout << "Error during the insert rows update " << __LINE__ << " - " << __FILE__ << '\n';
                 }
             }
         }
-        // LCOV_EXCL_START
         else
         {
             throw dbengine_error {EMPTY_TABLE_METADATA};
         }
-
-        // LCOV_EXCL_STOP
     }
 }
 
 void SQLiteDBEngine::syncTableRowData(const nlohmann::json& jsInput,
-                                      const DbSync::ResultCallback callback,
+                                      const DbSync::ResultCallback& callback,
                                       const bool inTransaction,
                                       ILocking& lock)
 {
@@ -254,20 +235,17 @@ void SQLiteDBEngine::syncTableRowData(const nlohmann::json& jsInput,
                 }
                 else
                 {
-                    insertElement(table,
+                    InsertElement(table,
                                   m_tableFields[table],
                                   entry,
                                   [&]()
                                   {
-                                      // LCOV_EXCL_START
                                       if (callback)
                                       {
                                           lock.unlock();
                                           callback(INSERTED, entry);
                                           lock.lock();
                                       }
-
-                                      // LCOV_EXCL_STOP
                                   });
                 }
             }
@@ -299,24 +277,18 @@ void SQLiteDBEngine::initializeStatusField(const nlohmann::json& tableNames)
                 const auto stmtAdd {getStatement("ALTER TABLE " + table + " ADD COLUMN " + STATUS_FIELD_NAME + " " +
                                                  STATUS_FIELD_TYPE + " DEFAULT 1;")};
 
-                // LCOV_EXCL_START
                 if (SQLITE_ERROR == stmtAdd->step())
                 {
                     throw dbengine_error {STEP_ERROR_UPDATE_STATUS_FIELD};
                 }
-
-                // LCOV_EXCL_STOP
             }
 
             const auto& stmtInit {getStatement("UPDATE " + table + " SET " + STATUS_FIELD_NAME + "=0;")};
 
-            // LCOV_EXCL_START
             if (SQLITE_ERROR == stmtInit->step())
             {
                 throw dbengine_error {STEP_ERROR_ADD_STATUS_FIELD};
             }
-
-            // LCOV_EXCL_STOP
         }
         else
         {
@@ -335,13 +307,10 @@ void SQLiteDBEngine::deleteRowsByStatusField(const nlohmann::json& tableNames)
         {
             const auto stmt {getStatement("DELETE FROM " + table + " WHERE " + STATUS_FIELD_NAME + "=0;")};
 
-            // LCOV_EXCL_START
             if (SQLITE_ERROR == stmt->step())
             {
                 throw dbengine_error {STEP_ERROR_DELETE_STATUS_FIELD};
             }
-
-            // LCOV_EXCL_STOP
 
             updateTableRowCounter(table, m_sqliteConnection->changes() * -1ll);
         }
@@ -353,7 +322,7 @@ void SQLiteDBEngine::deleteRowsByStatusField(const nlohmann::json& tableNames)
 }
 
 void SQLiteDBEngine::returnRowsMarkedForDelete(const nlohmann::json& tableNames,
-                                               const DbSync::ResultCallback callback,
+                                               const DbSync::ResultCallback& callback,
                                                std::unique_lock<std::shared_timed_mutex>& lock)
 {
     if (m_transaction)
@@ -437,10 +406,7 @@ void SQLiteDBEngine::selectData(const std::string& table,
 
                         case SQLITE_FLOAT: object[name] = column->value(double_t {}); break;
 
-                        // LCOV_EXCL_START
-                        default:
-                            throw dbengine_error {INVALID_COLUMN_TYPE};
-                            // LCOV_EXCL_STOP
+                        default: throw dbengine_error {INVALID_COLUMN_TYPE};
                     }
                 }
             }
@@ -466,7 +432,7 @@ void SQLiteDBEngine::deleteTableRowsData(const std::string& table, const nlohman
         const auto& itData {jsDeletionData.find("data")};
         const auto& itFilter {jsDeletionData.find("where_filter_opt")};
 
-        if (itData != jsDeletionData.end() && itData->size() > 0)
+        if (itData != jsDeletionData.end() && !itData->empty())
         {
             // Deletion via primary keys on "data" json field.
             deleteRowsbyPK(table, itData.value());
@@ -625,21 +591,21 @@ size_t SQLiteDBEngine::getDbVersion()
 
     if (SQLITE_ROW == stmt->step())
     {
-        version = stmt->column(0)->value(int32_t {});
+        version = stmt->column(0)->value(uint64_t {});
     }
 
     return version;
 }
 
-void SQLiteDBEngine::insertElement(const std::string& table,
-                                   const TableColumns& tableFieldsMetaData,
+void SQLiteDBEngine::InsertElement(const std::string& table,
+                                   const TableColumns& tableColumns,
                                    const nlohmann::json& element,
-                                   const std::function<void()> callback)
+                                   const std::function<void()>& callback)
 {
     const auto stmt {getStatement(buildInsertDataSqlQuery(table, element))};
     int32_t index {1l};
 
-    for (const auto& field : tableFieldsMetaData)
+    for (const auto& field : tableColumns)
     {
         if (bindJsonData(stmt, field, element, index))
         {
@@ -649,14 +615,12 @@ void SQLiteDBEngine::insertElement(const std::string& table,
 
     updateTableRowCounter(table, 1ll);
 
-    // LCOV_EXCL_START
     if (SQLITE_ERROR == stmt->step())
     {
         updateTableRowCounter(table, -1ll);
         throw dbengine_error {BIND_FIELDS_DOES_NOT_MATCH};
     }
 
-    // LCOV_EXCL_STOP
     if (callback)
     {
         callback();
@@ -668,7 +632,7 @@ size_t SQLiteDBEngine::loadTableData(const std::string& table)
     size_t fieldsNumber {0ull};
     const auto& tableFields {m_tableFields[table]};
 
-    if (0 == tableFields.size())
+    if (tableFields.empty())
     {
         if (loadFieldData(table))
         {
@@ -715,19 +679,17 @@ std::string SQLiteDBEngine::buildInsertDataSqlQuery(const std::string& table, co
         // Complete the statement
         sql.append(binds);
     }
-    // LCOV_EXCL_START
     else
     {
         throw dbengine_error {SQL_STMT_ERROR};
     }
-
-    // LCOV_EXCL_STOP
 
     return sql;
 }
 
 bool SQLiteDBEngine::loadFieldData(const std::string& table)
 {
+    constexpr auto WITHOUT_ROW_ID_POSITION {5};
     const auto ret {!table.empty()};
     const std::string sql {"PRAGMA table_info(" + table + ");"};
 
@@ -739,11 +701,11 @@ bool SQLiteDBEngine::loadFieldData(const std::string& table)
         while (SQLITE_ROW == stmt->step())
         {
             const auto& fieldName {stmt->column(1)->value(std::string {})};
-            fieldList.push_back(
+            fieldList.emplace_back(
                 std::make_tuple(stmt->column(0)->value(int32_t {}),
                                 fieldName,
                                 columnTypeName(stmt->column(2)->value(std::string {})),
-                                0 != stmt->column(5)->value(int32_t {}),
+                                0 != stmt->column(WITHOUT_ROW_ID_POSITION)->value(int32_t {}),
                                 InternalColumnNames.end() !=
                                     std::find(InternalColumnNames.begin(), InternalColumnNames.end(), fieldName)));
         }
@@ -772,7 +734,7 @@ ColumnType SQLiteDBEngine::columnTypeName(const std::string& type)
 bool SQLiteDBEngine::bindJsonData(const std::shared_ptr<SQLiteLegacy::IStatement> stmt,
                                   const ColumnData& cd,
                                   const nlohmann::json::value_type& valueType,
-                                  const unsigned int cid)
+                                  const int32_t cid)
 {
     bool retVal {true};
     const auto type {std::get<TableHeader::Type>(cd)};
@@ -797,39 +759,39 @@ bool SQLiteDBEngine::bindJsonData(const std::shared_ptr<SQLiteLegacy::IStatement
         }
         else if (ColumnType::BigInt == type)
         {
-            int64_t value {jsData.is_number() ? jsData.get<int64_t>()
-                           : jsData.is_string() && jsData.get_ref<const std::string&>().size()
-                               ? std::stoll(jsData.get_ref<const std::string&>())
-                               : 0};
+            const int64_t value {jsData.is_number() ? jsData.get<int64_t>()
+                                 : jsData.is_string() && !jsData.get_ref<const std::string&>().empty()
+                                     ? std::stoll(jsData.get_ref<const std::string&>())
+                                     : 0};
             stmt->bind(cid, value);
         }
         else if (ColumnType::UnsignedBigInt == type)
         {
-            uint64_t value {jsData.is_number_unsigned() ? jsData.get<uint64_t>()
-                            : jsData.is_string() && jsData.get_ref<const std::string&>().size()
-                                ? std::stoull(jsData.get_ref<const std::string&>())
-                                : 0};
+            const uint64_t value {jsData.is_number_unsigned() ? jsData.get<uint64_t>()
+                                  : jsData.is_string() && !jsData.get_ref<const std::string&>().empty()
+                                      ? std::stoull(jsData.get_ref<const std::string&>())
+                                      : 0};
             stmt->bind(cid, value);
         }
         else if (ColumnType::Integer == type)
         {
-            int32_t value {jsData.is_number() ? jsData.get<int32_t>()
-                           : jsData.is_string() && jsData.get_ref<const std::string&>().size()
-                               ? std::stoi(jsData.get_ref<const std::string&>())
-                               : 0};
+            const int32_t value {jsData.is_number() ? jsData.get<int32_t>()
+                                 : jsData.is_string() && !jsData.get_ref<const std::string&>().empty()
+                                     ? std::stoi(jsData.get_ref<const std::string&>())
+                                     : 0};
             stmt->bind(cid, value);
         }
         else if (ColumnType::Text == type)
         {
-            std::string value {jsData.is_string() ? jsData.get_ref<const std::string&>() : ""};
+            const std::string value {jsData.is_string() ? jsData.get_ref<const std::string&>() : ""};
             stmt->bind(cid, value);
         }
         else if (ColumnType::Double == type)
         {
-            double_t value {jsData.is_number_float() ? jsData.get<double>()
-                            : jsData.is_string() && jsData.get_ref<const std::string&>().size()
-                                ? std::stod(jsData.get_ref<const std::string&>())
-                                : .0f};
+            const double_t value {jsData.is_number_float() ? jsData.get<double>()
+                                  : jsData.is_string() && !jsData.get_ref<const std::string&>().empty()
+                                      ? std::stod(jsData.get_ref<const std::string&>())
+                                      : .0f};
             stmt->bind(cid, value);
         }
         else
@@ -871,13 +833,10 @@ void SQLiteDBEngine::deleteTempTable(const std::string& table)
         m_sqliteConnection->execute("DELETE FROM " + table + TEMP_TABLE_SUBFIX + ";");
     }
     // if the table doesn't exist we don't care.
-    //  LCOV_EXCL_START
     catch (const std::exception& ex)
     {
         (void)ex;
     }
-
-    // LCOV_EXCL_STOP
 }
 
 bool SQLiteDBEngine::getTableCreateQuery(const std::string& table, std::string& resultQuery)
@@ -892,7 +851,7 @@ bool SQLiteDBEngine::getTableCreateQuery(const std::string& table, std::string& 
 
         while (SQLITE_ROW == stmt->step())
         {
-            resultQuery.append(std::move(stmt->column(0)->value(std::string {})));
+            resultQuery.append(stmt->column(0)->value(std::string {}));
             resultQuery.append(";");
             ret = true;
         }
@@ -903,7 +862,7 @@ bool SQLiteDBEngine::getTableCreateQuery(const std::string& table, std::string& 
 
 bool SQLiteDBEngine::removeNotExistsRows(const std::string& table,
                                          const std::vector<std::string>& primaryKeyList,
-                                         const DbSync::ResultCallback callback,
+                                         const DbSync::ResultCallback& callback,
                                          std::unique_lock<std::shared_timed_mutex>& lock)
 {
     auto ret {true};
@@ -1088,7 +1047,7 @@ std::string SQLiteDBEngine::buildDeleteBulkDataSqlQuery(const std::string& table
     sql.append(table);
     sql.append(" WHERE ");
 
-    if (0 != primaryKeyList.size())
+    if (!primaryKeyList.empty())
     {
         for (const auto& value : primaryKeyList)
         {
@@ -1096,16 +1055,14 @@ std::string SQLiteDBEngine::buildDeleteBulkDataSqlQuery(const std::string& table
             sql.append("=? AND ");
         }
 
-        sql = sql.substr(0, sql.size() - 5);
+        sql = sql.substr(0, sql.size() - COND_AND_SIZE); // Remove the last " AND "
         sql.append(";");
     }
-    // LCOV_EXCL_START
     else
     {
         throw dbengine_error {SQL_STMT_ERROR};
     }
 
-    // LCOV_EXCL_STOP
     return sql;
 }
 
@@ -1122,7 +1079,7 @@ bool SQLiteDBEngine::deleteRows(const std::string& table,
 
         for (const auto& row : rowsToRemove)
         {
-            auto index {1l};
+            int32_t index {1l};
 
             for (const auto& value : primaryKeyList)
             {
@@ -1130,7 +1087,6 @@ bool SQLiteDBEngine::deleteRows(const std::string& table,
                 ++index;
             }
 
-            // LCOV_EXCL_START
             if (SQLITE_ERROR == stmt->step())
             {
                 throw dbengine_error {BIND_FIELDS_DOES_NOT_MATCH};
@@ -1138,19 +1094,16 @@ bool SQLiteDBEngine::deleteRows(const std::string& table,
 
             updateTableRowCounter(table, m_sqliteConnection->changes() * -1ll);
 
-            // LCOV_EXCL_STOP
             stmt->reset();
         }
 
         ret = true;
     }
-    // LCOV_EXCL_START
     else
     {
         throw dbengine_error {SQL_STMT_ERROR};
     }
 
-    // LCOV_EXCL_STOP
     return ret;
 }
 
@@ -1183,7 +1136,6 @@ void SQLiteDBEngine::deleteRowsbyPK(const std::string& table, const nlohmann::js
                 }
             }
 
-            // LCOV_EXCL_START
             if (SQLITE_ERROR == stmt->step())
             {
                 throw dbengine_error {BIND_FIELDS_DOES_NOT_MATCH};
@@ -1191,7 +1143,6 @@ void SQLiteDBEngine::deleteRowsbyPK(const std::string& table, const nlohmann::js
 
             updateTableRowCounter(table, m_sqliteConnection->changes() * -1ll);
 
-            // LCOV_EXCL_STOP
             stmt->reset();
         }
     }
@@ -1332,7 +1283,8 @@ std::string SQLiteDBEngine::buildLeftOnlyQuery(const std::string& t1,
             fieldsList.append("t1." + value + ",");
         }
 
-        onMatchList.append("t1." + value + "= t2." + value + " AND ");
+        onMatchList.append("t1." + value);
+        onMatchList.append("= t2." + value + " AND ");
         nullFilterList.append("t2." + value + " IS NULL AND ");
     }
 
@@ -1345,8 +1297,8 @@ std::string SQLiteDBEngine::buildLeftOnlyQuery(const std::string& t1,
         fieldsList.append("*");
     }
 
-    onMatchList = onMatchList.substr(0, onMatchList.size() - 5);
-    nullFilterList = nullFilterList.substr(0, nullFilterList.size() - 5);
+    onMatchList = onMatchList.substr(0, onMatchList.size() - COND_AND_SIZE);          // Remove the last " AND "
+    nullFilterList = nullFilterList.substr(0, nullFilterList.size() - COND_AND_SIZE); // Remove the last " AND "
 
     return "SELECT " + fieldsList + " FROM " + t1 + " t1 LEFT JOIN " + t2 + " t2 ON " + onMatchList + " WHERE " +
            nullFilterList + ";";
@@ -1468,7 +1420,7 @@ bool SQLiteDBEngine::getRowDiff(const std::vector<std::string>& primaryKeyList,
 
 bool SQLiteDBEngine::insertNewRows(const std::string& table,
                                    const std::vector<std::string>& primaryKeyList,
-                                   const DbSync::ResultCallback callback,
+                                   const DbSync::ResultCallback& callback,
                                    std::unique_lock<std::shared_timed_mutex>& lock)
 {
     auto ret {true};
@@ -1519,7 +1471,6 @@ void SQLiteDBEngine::bulkInsert(const std::string& table, const std::vector<Row>
 
         updateTableRowCounter(table, 1ll);
 
-        // LCOV_EXCL_START
         if (SQLITE_ERROR == stmt->step())
         {
 
@@ -1527,14 +1478,13 @@ void SQLiteDBEngine::bulkInsert(const std::string& table, const std::vector<Row>
             throw dbengine_error {BIND_FIELDS_DOES_NOT_MATCH};
         }
 
-        // LCOV_EXCL_STOP
         stmt->reset();
     }
 }
 
 int SQLiteDBEngine::changeModifiedRows(const std::string& table,
                                        const std::vector<std::string>& primaryKeyList,
-                                       const DbSync::ResultCallback callback,
+                                       const DbSync::ResultCallback& callback,
                                        std::unique_lock<std::shared_timed_mutex>& lock)
 {
     auto ret {true};
@@ -1577,7 +1527,7 @@ std::string SQLiteDBEngine::buildUpdatePartialDataSqlQuery(const std::string& ta
 {
     std::string sql {"UPDATE " + table + " SET "};
 
-    if (0 != primaryKeyList.size())
+    if (!primaryKeyList.empty())
     {
         for (auto it = data.begin(); it != data.end(); ++it)
         {
@@ -1598,16 +1548,14 @@ std::string SQLiteDBEngine::buildUpdatePartialDataSqlQuery(const std::string& ta
             }
         }
 
-        sql = sql.substr(0, sql.size() - 5); // Remove the last " AND "
+        sql = sql.substr(0, sql.size() - COND_AND_SIZE); // Remove the last " AND "
         sql.append(";");
     }
-    // LCOV_EXCL_START
     else
     {
         throw dbengine_error {SQL_STMT_ERROR};
     }
 
-    // LCOV_EXCL_STOP
     return sql;
 }
 
@@ -1619,7 +1567,7 @@ std::string SQLiteDBEngine::buildSelectMatchingPKsSqlQuery(const std::string& ta
     sql.append(table);
     sql.append(" WHERE ");
 
-    if (0 != primaryKeyList.size())
+    if (!primaryKeyList.empty())
     {
         for (const auto& value : primaryKeyList)
         {
@@ -1627,16 +1575,14 @@ std::string SQLiteDBEngine::buildSelectMatchingPKsSqlQuery(const std::string& ta
             sql.append("=? AND ");
         }
 
-        sql = sql.substr(0, sql.size() - 5); // Remove the last " AND "
+        sql = sql.substr(0, sql.size() - COND_AND_SIZE); // Remove the last " AND "
         sql.append(";");
     }
-    // LCOV_EXCL_START
     else
     {
         throw dbengine_error {SQL_STMT_ERROR};
     }
 
-    // LCOV_EXCL_STOP
     return sql;
 }
 
@@ -1653,7 +1599,7 @@ std::string SQLiteDBEngine::buildUpdateDataSqlQuery(const std::string& table,
     getFieldValueFromTuple(field, sql, true);
     sql.append(" WHERE ");
 
-    if (0 != primaryKeyList.size())
+    if (!primaryKeyList.empty())
     {
         for (const auto& value : primaryKeyList)
         {
@@ -1674,20 +1620,18 @@ std::string SQLiteDBEngine::buildUpdateDataSqlQuery(const std::string& table,
             sql.append(" AND ");
         }
 
-        sql = sql.substr(0, sql.length() - 5);
+        sql = sql.substr(0, sql.length() - COND_AND_SIZE); // Remove the last " AND "
 
-        if (sql.length() > 0)
+        if (!sql.empty())
         {
             sql.append(";");
         }
     }
-    // LCOV_EXCL_START
     else
     {
         throw dbengine_error {SQL_STMT_ERROR};
     }
 
-    // LCOV_EXCL_STOP
     return sql;
 }
 
@@ -1701,7 +1645,8 @@ std::string SQLiteDBEngine::buildModifiedRowsQuery(const std::string& t1,
     for (const auto& value : primaryKeyList)
     {
         fieldsList.append("t1." + value + ",");
-        onMatchList.append("t1." + value + "=t2." + value + " AND ");
+        onMatchList.append("t1." + value);
+        onMatchList.append("=t2." + value + " AND ");
     }
 
     const auto tableFields {m_tableFields[t1]};
@@ -1721,7 +1666,7 @@ std::string SQLiteDBEngine::buildModifiedRowsQuery(const std::string& t1,
     }
 
     fieldsList = fieldsList.substr(0, fieldsList.size() - 1);
-    onMatchList = onMatchList.substr(0, onMatchList.size() - 5);
+    onMatchList = onMatchList.substr(0, onMatchList.size() - COND_AND_SIZE); // Remove the last " AND "
     std::string ret {"SELECT "};
     ret.append(fieldsList);
     ret.append(" FROM (select *,'");
@@ -1806,13 +1751,11 @@ bool SQLiteDBEngine::getRowsToModify(const std::string& table,
 
         ret = true;
     }
-    // LCOV_EXCL_START
     else
     {
         throw dbengine_error {SQL_STMT_ERROR};
     }
 
-    // LCOV_EXCL_STOP
     return ret;
 }
 
@@ -1864,13 +1807,11 @@ void SQLiteDBEngine::updateSingleRow(const std::string& table, const nlohmann::j
             }
         }
 
-        // LCOV_EXCL_START
         if (SQLITE_ERROR == stmt->step())
         {
             throw dbengine_error {BIND_FIELDS_DOES_NOT_MATCH};
         }
 
-        // LCOV_EXCL_STOP
         stmt->reset();
     }
 }
@@ -1979,9 +1920,9 @@ void SQLiteDBEngine::getFieldValueFromTuple(const Field& value, std::string& res
     }
 }
 
-const std::shared_ptr<SQLiteLegacy::IStatement> SQLiteDBEngine::getStatement(const std::string& sql)
+std::shared_ptr<SQLiteLegacy::IStatement> SQLiteDBEngine::getStatement(const std::string& sql)
 {
-    std::lock_guard<std::mutex> lock(m_stmtMutex);
+    const std::lock_guard<std::mutex> lock(m_stmtMutex);
     const auto it {std::find_if(m_statementsCache.begin(),
                                 m_statementsCache.end(),
                                 [sql](const std::pair<std::string, std::shared_ptr<SQLiteLegacy::IStatement>>& pair)
@@ -2055,7 +1996,7 @@ std::string SQLiteDBEngine::buildDeleteRelationTrigger(const nlohmann::json& dat
             sqlDelete.append(" AND ");
         }
 
-        sqlDelete = sqlDelete.substr(0, sqlDelete.size() - 5);
+        sqlDelete = sqlDelete.substr(0, sqlDelete.size() - COND_AND_SIZE); // Remove the last " AND "
         sqlDelete.append(";");
     }
 
@@ -2103,7 +2044,7 @@ std::string SQLiteDBEngine::buildUpdateRelationTrigger(const nlohmann::json& dat
         }
 
         sqlUpdate = sqlUpdate.substr(0, sqlUpdate.size() - 1);
-        sqlUpdateWhere = sqlUpdateWhere.substr(0, sqlUpdateWhere.size() - 5);
+        sqlUpdateWhere = sqlUpdateWhere.substr(0, sqlUpdateWhere.size() - COND_AND_SIZE); // Remove the last " AND "
         sqlUpdate.append(sqlUpdateWhere);
         sqlUpdate.append(";");
     }
@@ -2114,7 +2055,7 @@ std::string SQLiteDBEngine::buildUpdateRelationTrigger(const nlohmann::json& dat
 
 void SQLiteDBEngine::updateTableRowCounter(const std::string& table, const long long rowModifyCount)
 {
-    std::lock_guard<std::mutex> lock(m_maxRowsMutex);
+    const std::lock_guard<std::mutex> lock(m_maxRowsMutex);
     auto it {m_maxRows.find(table)};
 
     if (it != m_maxRows.end())

@@ -1,27 +1,16 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * November 3, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _PORT_INTERFACE_H
-#define _PORT_INTERFACE_H
+#pragma once
 
 #include <memory>
 #include <nlohmann/json.hpp>
 
+/// @brief Interface for ports
 class IOSPort
 {
 public:
-    // LCOV_EXCL_START
+    /// @brief Default destructor
     virtual ~IOSPort() = default;
-    // LCOV_EXCL_STOP
+
+    /// @brief Fills the port information
+    /// @param port port information
     virtual void buildPortData(nlohmann::json& port) = 0;
 };
-
-#endif // _PORT_INTERFACE_H

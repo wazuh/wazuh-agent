@@ -1,16 +1,4 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * February 06, 2023.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _MACPORTS_WRAPPER_H
-#define _MACPORTS_WRAPPER_H
+#pragma once
 
 #include "ipackageWrapper.h"
 #include "isqliteWrapper.hpp"
@@ -21,9 +9,12 @@ const std::map<std::string, int> columnIndexes {
 
 #define DATE_STR_SIZE 20
 
+/// @brief Wrapper for Macports
 class MacportsWrapper final : public IPackageWrapper
 {
 public:
+    /// @brief Constructor
+    /// @param stmt Statement
     explicit MacportsWrapper(SQLiteLegacy::IStatement& stmt)
         : m_version {EMPTY_VALUE}
         , m_groups {EMPTY_VALUE}
@@ -40,82 +31,99 @@ public:
         getPkgData(stmt);
     }
 
+    /// @brief Destructor
     ~MacportsWrapper() = default;
 
+    /// @copydoc IPackageWrapper::name
     void name(nlohmann::json& package) const override
     {
         package["name"] = m_name;
     }
 
+    /// @copydoc IPackageWrapper::version
     void version(nlohmann::json& package) const override
     {
         package["version"] = m_version;
     }
 
+    /// @copydoc IPackageWrapper::groups
     void groups(nlohmann::json& package) const override
     {
         package["groups"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::description
     void description(nlohmann::json& package) const override
     {
         package["description"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::architecture
     void architecture(nlohmann::json& package) const override
     {
         package["architecture"] = m_architecture;
     }
 
+    /// @copydoc IPackageWrapper::format
     void format(nlohmann::json& package) const override
     {
         package["format"] = m_format;
     }
 
+    /// @copydoc IPackageWrapper::osPatch
     void osPatch(nlohmann::json& package) const override
     {
         package["os_patch"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::source
     void source(nlohmann::json& package) const override
     {
         package["source"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::location
     void location(nlohmann::json& package) const override
     {
         package["location"] = m_location;
     }
 
+    /// @copydoc IPackageWrapper::vendor
     void vendor(nlohmann::json& package) const override
     {
         package["vendor"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::priority
     void priority(nlohmann::json& package) const override
     {
         package["priority"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::size
     void size(nlohmann::json& package) const override
     {
         package["size"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::install_time
     void install_time(nlohmann::json& package) const override
     {
         package["install_time"] = m_installTime;
     }
 
+    /// @copydoc IPackageWrapper::multiarch
     void multiarch(nlohmann::json& package) const override
     {
         package["multiarch"] = UNKNOWN_VALUE;
     }
 
 private:
+    /// @brief Get package data
+    /// @param stmt Statement
     void getPkgData(SQLiteLegacy::IStatement& stmt)
     {
-        const int& columnsNumber = columnIndexes.size();
+        const int& columnsNumber = static_cast<int>(columnIndexes.size());
 
         if (stmt.columnsCount() == columnsNumber)
         {
@@ -184,5 +192,3 @@ private:
     std::string m_vendor;
     std::string m_installTime;
 };
-
-#endif // _MACPORTS_WRAPPER_H

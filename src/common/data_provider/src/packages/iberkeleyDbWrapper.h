@@ -1,29 +1,22 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * March 16, 2021.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _IBERKELEY_DB_WRAPPER_H
-#define _IBERKELEY_DB_WRAPPER_H
+#pragma once
 
 #include "db.h"
 #include <cstring>
 #include <memory>
 
+/// @brief Interface for Berkeley DB
 class IBerkeleyDbWrapper
 {
 public:
+    /// @brief Gets a row from the database
+    /// @param key Key of the row
+    /// @param data Data of the row
+    /// @return Row number
     virtual int32_t getRow(DBT& key, DBT& data) = 0;
-    // LCOV_EXCL_START
+
+    /// @brief Default destructor
     virtual ~IBerkeleyDbWrapper() = default;
-    // LCOV_EXCL_STOP
+
+    /// @brief Default constructor
     IBerkeleyDbWrapper() = default;
 };
-
-#endif // _IBERKELEY_DB_WRAPPER_H

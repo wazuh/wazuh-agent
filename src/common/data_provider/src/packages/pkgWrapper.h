@@ -1,16 +1,4 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * December 14, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _PKG_WRAPPER_H
-#define _PKG_WRAPPER_H
+#pragma once
 
 #include "file_io_utils.hpp"
 #include "ipackageWrapper.h"
@@ -29,9 +17,12 @@ static const std::string PLIST_BINARY_START {"bplist00"};
 static const std::string UTILITIES_FOLDER {"/Utilities"};
 const std::set<std::string> excludedCategories = {"pkg", "x86_64", "arm64"};
 
+/// @brief Pkg wrapper class
 class PKGWrapper final : public IPackageWrapper
 {
 public:
+    /// @brief Constructor
+    /// @param ctx package context
     explicit PKGWrapper(const PackageContext& ctx)
         : m_version {EMPTY_VALUE}
         , m_groups {EMPTY_VALUE}
@@ -55,79 +46,96 @@ public:
         }
     }
 
+    /// @brief Default destructor
     ~PKGWrapper() = default;
 
+    /// @copydoc IPackageWrapper::name
     void name(nlohmann::json& package) const override
     {
         package["name"] = m_name;
     }
 
+    /// @copydoc IPackageWrapper::version
     void version(nlohmann::json& package) const override
     {
         package["version"] = m_version;
     }
 
+    /// @copydoc IPackageWrapper::groups
     void groups(nlohmann::json& package) const override
     {
         package["groups"] = m_groups;
     }
 
+    /// @copydoc IPackageWrapper::description
     void description(nlohmann::json& package) const override
     {
         package["description"] = m_description;
     }
 
+    /// @copydoc IPackageWrapper::architecture
     void architecture(nlohmann::json& package) const override
     {
         package["architecture"] = EMPTY_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::format
     void format(nlohmann::json& package) const override
     {
         package["format"] = m_format;
     }
 
+    /// @copydoc IPackageWrapper::osPatch
     void osPatch(nlohmann::json& package) const override
     {
         package["os_patch"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::source
     void source(nlohmann::json& package) const override
     {
         package["source"] = m_source;
     }
 
+    /// @copydoc IPackageWrapper::location
     void location(nlohmann::json& package) const override
     {
         package["location"] = m_location;
     }
 
+    /// @copydoc IPackageWrapper::vendor
     void vendor(nlohmann::json& package) const override
     {
         package["vendor"] = m_vendor;
     }
 
+    /// @copydoc IPackageWrapper::priority
     void priority(nlohmann::json& package) const override
     {
         package["priority"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::size
     void size(nlohmann::json& package) const override
     {
         package["size"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc IPackageWrapper::install_time
     void install_time(nlohmann::json& package) const override
     {
         package["install_time"] = m_installTime;
     }
 
+    /// @copydoc IPackageWrapper::multiarch
     void multiarch(nlohmann::json& package) const override
     {
         package["multiarch"] = UNKNOWN_VALUE;
     }
 
 private:
+    /// @brief Get package data
+    /// @param filePath File path
     void getPkgData(const std::string& filePath)
     {
         const auto isBinaryFnc {[&filePath]()
@@ -234,6 +242,8 @@ private:
         }
     }
 
+    /// @brief Get package data for rcp
+    /// @param filePath File path
     void getPkgDataRcp(const std::string& filePath)
     {
         const auto isBinaryFnc {[&filePath]()
@@ -318,6 +328,9 @@ private:
         }
     }
 
+    /// @brief Convert binary plist file to XML
+    /// @param filePath File path
+    /// @return XML content
     std::stringstream binaryToXML(const std::string& filePath)
     {
         std::string xmlContent;
@@ -330,7 +343,7 @@ private:
         // const auto xmlContent { dataFromBin->ToXml() };
 
         // Content binary file to plist representation
-        plist_from_bin(binaryContent.data(), binaryContent.size(), &rootNode);
+        plist_from_bin(binaryContent.data(), static_cast<uint32_t>(binaryContent.size()), &rootNode);
 
         if (nullptr != rootNode)
         {
@@ -365,5 +378,3 @@ private:
     std::string m_vendor;
     std::string m_installTime;
 };
-
-#endif //_PKG_WRAPPER_H

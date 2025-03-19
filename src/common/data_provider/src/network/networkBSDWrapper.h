@@ -1,16 +1,4 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * October 26, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _NETWORK_BSD_WRAPPER_H
-#define _NETWORK_BSD_WRAPPER_H
+#pragma once
 
 #include "inetworkWrapper.h"
 #include "networkHelper.hpp"
@@ -37,12 +25,15 @@ static const std::map<std::pair<int, int>, std::string> NETWORK_INTERFACE_TYPE =
     {std::make_pair(IFT_ATM, IFT_ATM), "ATM"},
 };
 
+/// @brief NetworkBSD interface
 class NetworkBSDInterface final : public INetworkInterfaceWrapper
 {
     ifaddrs* m_interfaceAddress;
     const std::string m_scanTime;
 
 public:
+    /// @brief NetworkBSD interface
+    /// @param addrs interface address
     explicit NetworkBSDInterface(ifaddrs* addrs)
         : m_interfaceAddress {addrs}
     {
@@ -52,21 +43,25 @@ public:
         }
     }
 
+    /// @copydoc INetworkInterfaceWrapper::name
     std::string name() const override
     {
         return m_interfaceAddress->ifa_name ? Utils::substrOnFirstOccurrence(m_interfaceAddress->ifa_name, ":") : "";
     }
 
+    /// @copydoc INetworkInterfaceWrapper::adapter
     void adapter(nlohmann::json& network) const override
     {
         network["adapter"] = EMPTY_VALUE;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::family
     int family() const override
     {
         return m_interfaceAddress->ifa_addr ? m_interfaceAddress->ifa_addr->sa_family : AF_UNSPEC;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::address
     std::string address() const override
     {
         return m_interfaceAddress->ifa_addr
@@ -75,6 +70,7 @@ public:
                    : "";
     }
 
+    /// @copydoc INetworkInterfaceWrapper::netmask
     std::string netmask() const override
     {
         return m_interfaceAddress->ifa_netmask
@@ -84,6 +80,7 @@ public:
                    : "";
     }
 
+    /// @copydoc INetworkInterfaceWrapper::broadcast
     void broadcast(nlohmann::json& network) const override
     {
         network["broadcast"] =
@@ -93,6 +90,7 @@ public:
                 : EMPTY_VALUE;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::addressV6
     std::string addressV6() const override
     {
         return m_interfaceAddress->ifa_addr
@@ -102,6 +100,7 @@ public:
                    : "";
     }
 
+    /// @copydoc INetworkInterfaceWrapper::netmaskV6
     std::string netmaskV6() const override
     {
         return m_interfaceAddress->ifa_netmask
@@ -111,6 +110,7 @@ public:
                    : "";
     }
 
+    /// @copydoc INetworkInterfaceWrapper::broadcastV6
     void broadcastV6(nlohmann::json& network) const override
     {
         network["broadcast"] = m_interfaceAddress->ifa_dstaddr
@@ -120,6 +120,7 @@ public:
                                    : EMPTY_VALUE;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::gateway
     void gateway(nlohmann::json& network) const override
     {
         network["gateway"] = UNKNOWN_VALUE;
@@ -159,21 +160,25 @@ public:
         }
     }
 
+    /// @copydoc INetworkInterfaceWrapper::metrics
     void metrics(nlohmann::json& network) const override
     {
         network["metric"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::metricsV6
     void metricsV6(nlohmann::json& network) const override
     {
         network["metric"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::dhcp
     void dhcp(nlohmann::json& network) const override
     {
         network["dhcp"] = UNKNOWN_VALUE;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::mtu
     void mtu(nlohmann::json& network) const override
     {
         network["mtu"] = UNKNOWN_VALUE;
@@ -183,6 +188,7 @@ public:
         }
     }
 
+    /// @copydoc INetworkInterfaceWrapper::stats
     LinkStats stats() const override
     {
         const auto stats {reinterpret_cast<if_data*>(m_interfaceAddress->ifa_data)};
@@ -202,6 +208,7 @@ public:
         return retVal;
     }
 
+    /// @copydoc INetworkInterfaceWrapper::type
     void type(nlohmann::json& network) const override
     {
         network["type"] = EMPTY_VALUE;
@@ -217,11 +224,13 @@ public:
         }
     }
 
+    /// @copydoc INetworkInterfaceWrapper::state
     void state(nlohmann::json& network) const override
     {
         network["state"] = m_interfaceAddress->ifa_flags & IFF_UP ? "up" : "down";
     }
 
+    /// @copydoc INetworkInterfaceWrapper::MAC
     void MAC(nlohmann::json& network) const override
     {
         network["mac"] = UNKNOWN_VALUE;
@@ -250,5 +259,3 @@ public:
         }
     }
 };
-
-#endif //_NETWORK_BSD_WRAPPER_H

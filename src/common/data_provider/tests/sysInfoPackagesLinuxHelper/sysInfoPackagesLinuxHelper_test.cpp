@@ -1,26 +1,18 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * January 28, 2021.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#include "sysInfoPackagesLinuxHelper_test.h"
+#include "sysInfoPackagesLinuxHelper_test.hpp"
 #include "packages/packageLinuxParserHelper.h"
 #include "packages/packageLinuxRpmParserHelper.h"
 #include "packages/packageLinuxRpmParserHelperLegacy.h"
 #include "packages/rpmPackageManager.h"
 #include "sharedDefs.h"
 
-using ::testing::_;
+using ::testing::_; // NOLINT(bugprone-reserved-identifier)
 using ::testing::Return;
 
 void SysInfoPackagesLinuxHelperTest::SetUp() {};
 void SysInfoPackagesLinuxHelperTest::TearDown() {};
+
+constexpr auto TEST_SIZE {4111222333};
+constexpr auto TEST_SIZE_2 {4111221760};
 
 TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformation)
 {
@@ -31,7 +23,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformation)
     const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS)};
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
+    EXPECT_EQ(TEST_SIZE, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("3:1.5-24.el5", jsPackageInfo["version"]);
@@ -45,7 +37,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationLibRpm)
 {
     RpmPackageManager::Package input;
     input.name = "mktemp";
-    input.size = 4111222333;
+    input.size = TEST_SIZE;
     input.installTime = "1425472738";
     input.group = "System Environment/Base";
     input.version = "1.5";
@@ -57,7 +49,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationLibRpm)
 
     const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(input)};
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
+    EXPECT_EQ(TEST_SIZE, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("3:1.5-24.el5", jsPackageInfo["version"]);
@@ -111,7 +103,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonEpoch)
     const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS)};
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
+    EXPECT_EQ(TEST_SIZE, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("1.5-24.el5", jsPackageInfo["version"]);
@@ -125,7 +117,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmNoEpochNoReleaseLibRpm)
 {
     RpmPackageManager::Package input;
     input.name = "mktemp";
-    input.size = 4111222333;
+    input.size = TEST_SIZE;
     input.installTime = "1425472738";
     input.group = "System Environment/Base";
     input.version = "4.16";
@@ -135,7 +127,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmNoEpochNoReleaseLibRpm)
 
     const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(input)};
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
+    EXPECT_EQ(TEST_SIZE, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("4.16", jsPackageInfo["version"]);
@@ -149,7 +141,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmNoEpochLibRpm)
 {
     RpmPackageManager::Package input;
     input.name = "mktemp";
-    input.size = 4111222333;
+    input.size = TEST_SIZE;
     input.installTime = "1425472738";
     input.group = "System Environment/Base";
     input.version = "4.16";
@@ -160,7 +152,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmNoEpochLibRpm)
 
     const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(input)};
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
+    EXPECT_EQ(TEST_SIZE, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("1:4.16", jsPackageInfo["version"]);
@@ -178,7 +170,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonEpochNonRelease)
     const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS)};
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
+    EXPECT_EQ(TEST_SIZE, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("1.5", jsPackageInfo["version"]);
@@ -196,7 +188,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonRelease)
     const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS)};
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
+    EXPECT_EQ(TEST_SIZE, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("3:1.5", jsPackageInfo["version"]);
@@ -215,7 +207,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonEpochWithNone)
     const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS)};
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
+    EXPECT_EQ(TEST_SIZE, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("1.5-24.el5", jsPackageInfo["version"]);
@@ -234,7 +226,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonReleaseWithNone)
     const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS)};
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
+    EXPECT_EQ(TEST_SIZE, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("3:1.5", jsPackageInfo["version"]);
@@ -253,7 +245,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseRpmInformationNonEpochNonReleaseWith
     const auto& jsPackageInfo {PackageLinuxHelper::parseRpm(RPM_PACKAGE_CENTOS)};
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("mktemp", jsPackageInfo["name"]);
-    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
+    EXPECT_EQ(TEST_SIZE, jsPackageInfo["size"]);
     EXPECT_EQ("1425472738", jsPackageInfo["install_time"]);
     EXPECT_EQ("System Environment/Base", jsPackageInfo["groups"]);
     EXPECT_EQ("1.5", jsPackageInfo["version"]);
@@ -280,22 +272,22 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseDpkgInformation)
          in gzip and PKZIP.  This package includes the development support\n\
          files."};
     std::vector<std::string> packagesList;
-    packagesList.push_back(PACKAGE_INFO);
-    packagesList.push_back(STATUS_INFO);
-    packagesList.push_back(PRIORITY_INFO);
-    packagesList.push_back(SECTION_INFO);
-    packagesList.push_back(SIZE_INFO);
-    packagesList.push_back(VENDOR_INFO);
-    packagesList.push_back(ARCH_INFO);
-    packagesList.push_back(MULTIARCH_INFO);
-    packagesList.push_back(SOURCE_INFO);
-    packagesList.push_back(VERSION_INFO);
-    packagesList.push_back(DESCRIPTION_INFO);
+    packagesList.emplace_back(PACKAGE_INFO);
+    packagesList.emplace_back(STATUS_INFO);
+    packagesList.emplace_back(PRIORITY_INFO);
+    packagesList.emplace_back(SECTION_INFO);
+    packagesList.emplace_back(SIZE_INFO);
+    packagesList.emplace_back(VENDOR_INFO);
+    packagesList.emplace_back(ARCH_INFO);
+    packagesList.emplace_back(MULTIARCH_INFO);
+    packagesList.emplace_back(SOURCE_INFO);
+    packagesList.emplace_back(VERSION_INFO);
+    packagesList.emplace_back(DESCRIPTION_INFO);
     const auto& jsPackageInfo {PackageLinuxHelper::parseDpkg(packagesList)};
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("zlib1g-dev", jsPackageInfo["name"]);
     EXPECT_EQ("optional", jsPackageInfo["priority"]);
-    EXPECT_EQ(4111221760, jsPackageInfo["size"]);
+    EXPECT_EQ(TEST_SIZE_2, jsPackageInfo["size"]);
     EXPECT_EQ("libdevel", jsPackageInfo["groups"]);
     EXPECT_EQ("same", jsPackageInfo["multiarch"]);
     EXPECT_EQ("1:1.2.11.dfsg-2ubuntu1.2", jsPackageInfo["version"]);
@@ -306,9 +298,9 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseDpkgInformation)
     EXPECT_EQ("zlib", jsPackageInfo["source"]);
 }
 
-TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapCorrectMapping)
+TEST_F(SysInfoPackagesLinuxHelperTest, ParseSnapCorrectMapping)
 {
-    const auto& jsPackageInfo {PackageLinuxHelper::parseSnap(R"(
+    const auto& jsPackageInfo {PackageLinuxHelper::ParseSnap(R"(
             {
             "id": "rw36mkAjdIKl13dzfwyxP87cejpyIcct",
             "title": "gnome-3-38-2004",
@@ -350,7 +342,7 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapCorrectMapping)
 
     EXPECT_FALSE(jsPackageInfo.empty());
     EXPECT_EQ("gnome-3-38-2004", jsPackageInfo["name"]);
-    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
+    EXPECT_EQ(TEST_SIZE, jsPackageInfo["size"]);
     EXPECT_EQ("2022/11/23 20:33:59", jsPackageInfo["install_time"]);
     EXPECT_TRUE(jsPackageInfo["groups"].is_null());
     EXPECT_EQ("0+git.6f39565", jsPackageInfo["version"]);
@@ -360,9 +352,9 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapCorrectMapping)
     EXPECT_EQ("Shared GNOME 3.38 Ubuntu stack", jsPackageInfo["description"]);
 }
 
-TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapInvalidInputName)
+TEST_F(SysInfoPackagesLinuxHelperTest, ParseSnapInvalidInputName)
 {
-    const auto& jsPackageInfo {PackageLinuxHelper::parseSnap(R"(
+    const auto& jsPackageInfo {PackageLinuxHelper::ParseSnap(R"(
             {
             "id": "rw36mkAjdIKl13dzfwyxP87cejpyIcct",
             "title": "gnome-3-38-2004",
@@ -404,9 +396,9 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapInvalidInputName)
     EXPECT_TRUE(jsPackageInfo.empty());
 }
 
-TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapInvalidInputVersion)
+TEST_F(SysInfoPackagesLinuxHelperTest, ParseSnapInvalidInputVersion)
 {
-    const auto& jsPackageInfo {PackageLinuxHelper::parseSnap(R"(
+    const auto& jsPackageInfo {PackageLinuxHelper::ParseSnap(R"(
             {
             "id": "rw36mkAjdIKl13dzfwyxP87cejpyIcct",
             "title": "gnome-3-38-2004",
@@ -448,9 +440,9 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapInvalidInputVersion)
     EXPECT_TRUE(jsPackageInfo.empty());
 }
 
-TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapValidSizeAsString)
+TEST_F(SysInfoPackagesLinuxHelperTest, ParseSnapValidSizeAsString)
 {
-    const auto& jsPackageInfo {PackageLinuxHelper::parseSnap(R"(
+    const auto& jsPackageInfo {PackageLinuxHelper::ParseSnap(R"(
             {
             "id": "rw36mkAjdIKl13dzfwyxP87cejpyIcct",
             "title": "gnome-3-38-2004",
@@ -491,20 +483,20 @@ TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapValidSizeAsString)
         )"_json)};
 
     EXPECT_FALSE(jsPackageInfo.empty());
-    EXPECT_EQ(4111222333, jsPackageInfo["size"]);
+    EXPECT_EQ(TEST_SIZE, jsPackageInfo["size"]);
 }
 
-TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapEmptyJSON)
+TEST_F(SysInfoPackagesLinuxHelperTest, ParseSnapEmptyJSON)
 {
-    const auto& jsPackageInfo {PackageLinuxHelper::parseSnap(R"({})"_json)};
+    const auto& jsPackageInfo {PackageLinuxHelper::ParseSnap(R"({})"_json)};
 
     EXPECT_TRUE(jsPackageInfo.empty());
 }
 
-TEST_F(SysInfoPackagesLinuxHelperTest, parseSnapWrongJSON)
+TEST_F(SysInfoPackagesLinuxHelperTest, ParseSnapWrongJSON)
 {
     EXPECT_NO_THROW({
-        const auto& jsPackageInfo {PackageLinuxHelper::parseSnap(R"(curl: (7) Couldn't connect to server)")};
+        const auto& jsPackageInfo {PackageLinuxHelper::ParseSnap(R"(curl: (7) Couldn't connect to server)")};
         EXPECT_TRUE(jsPackageInfo.empty());
     });
 }

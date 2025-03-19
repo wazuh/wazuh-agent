@@ -1,16 +1,4 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * May 4, 2023.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _HARDWARE_WRAPPER_IMPL_MAC_H
-#define _HARDWARE_WRAPPER_IMPL_MAC_H
+#pragma once
 
 #include "defer.hpp"
 #include "hardwareWrapperInterface.h"
@@ -18,26 +6,29 @@
 #include "sharedDefs.h"
 #include "stringHelper.hpp"
 #include "sysInfo.hpp"
-#include "utilsWrapperMac.hpp"
+#include "utilsWrapper.hpp"
 #include <sys/sysctl.h>
 
+/// @brief Get the mhz of the cpu
+/// @param osPrimitives OS primitives
+/// @return mhz
 int getMhz(IOsPrimitivesMac* osPrimitives = nullptr);
 
+/// @brief MacOS hardware data wrapper
 template<class TOsPrimitivesMac>
 class OSHardwareWrapperMac final
     : public IOSHardwareWrapper
     , public TOsPrimitivesMac
 {
 public:
-    // LCOV_EXCL_START
+    /// @brief Default destructor
     virtual ~OSHardwareWrapperMac() = default;
 
-    // LCOV_EXCL_STOP
-
-    std::string boardSerial() const
+    /// @copydoc IOSHardwareWrapper::boardSerial
+    std::string boardSerial() const override
     {
         std::string ret {EMPTY_VALUE};
-        const auto rawData {UtilsWrapperMac::exec("system_profiler SPHardwareDataType | grep Serial")};
+        const auto rawData {UtilsWrapper::exec("system_profiler SPHardwareDataType | grep Serial")};
 
         if (!rawData.empty())
         {
@@ -47,7 +38,8 @@ public:
         return ret;
     }
 
-    std::string cpuName() const
+    /// @copydoc IOSHardwareWrapper::cpuName
+    std::string cpuName() const override
     {
         size_t len {0};
         auto ret {this->sysctlbyname("machdep.cpu.brand_string", nullptr, &len, nullptr, 0)};
@@ -75,12 +67,14 @@ public:
         return std::string {reinterpret_cast<const char*>(spBuff.get())};
     }
 
-    int cpuCores() const
+    /// @copydoc IOSHardwareWrapper::cpuCores
+    int cpuCores() const override
     {
         int cores {0};
         size_t len {sizeof(cores)};
         const std::vector<int> mib {CTL_HW, HW_NCPU};
-        const auto ret {this->sysctl(const_cast<int*>(mib.data()), mib.size(), &cores, &len, nullptr, 0)};
+        const auto ret {
+            this->sysctl(const_cast<int*>(mib.data()), static_cast<u_int>(mib.size()), &cores, &len, nullptr, 0)};
 
         if (ret)
         {
@@ -90,12 +84,14 @@ public:
         return cores;
     }
 
-    int cpuMhz()
+    /// @copydoc IOSHardwareWrapper::cpuMhz
+    int cpuMhz() override
     {
         return getMhz(static_cast<IOsPrimitivesMac*>(this));
     }
 
-    uint64_t ramTotal() const
+    /// @copydoc IOSHardwareWrapper::ramTotal
+    uint64_t ramTotal() const override
     {
         uint64_t ramTotal {0};
         size_t len {sizeof(ramTotal)};
@@ -109,7 +105,8 @@ public:
         return ramTotal / KByte;
     }
 
-    uint64_t ramFree() const
+    /// @copydoc IOSHardwareWrapper::ramFree
+    uint64_t ramFree() const override
     {
         u_int pageSize {0};
         size_t len {sizeof(pageSize)};
@@ -132,7 +129,8 @@ public:
         return (freePages * pageSize) / KByte;
     }
 
-    uint64_t ramUsage() const
+    /// @copydoc IOSHardwareWrapper::ramUsage
+    uint64_t ramUsage() const override
     {
         uint64_t ret {0};
         const auto ramTotal {this->ramTotal()};
@@ -145,5 +143,3 @@ public:
         return ret;
     }
 };
-
-#endif // _HARDWARE_WRAPPER_IMPL_MAC_H

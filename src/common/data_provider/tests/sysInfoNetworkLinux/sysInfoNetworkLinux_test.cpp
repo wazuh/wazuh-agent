@@ -1,14 +1,4 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * October 19, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-#include "sysInfoNetworkLinux_test.h"
+#include "sysInfoNetworkLinux_test.hpp"
 #include "network/networkFamilyDataAFactory.h"
 #include "network/networkInterfaceLinux.h"
 #include <ifaddrs.h>
@@ -17,32 +7,36 @@ void SysInfoNetworkLinuxTest::SetUp() {};
 
 void SysInfoNetworkLinuxTest::TearDown() {};
 
-using ::testing::_;
+using ::testing::_; // NOLINT(bugprone-reserved-identifier)
 using ::testing::Return;
 
 class SysInfoNetworkLinuxWrapperMock : public INetworkInterfaceWrapper
 {
 public:
     SysInfoNetworkLinuxWrapperMock() = default;
-    virtual ~SysInfoNetworkLinuxWrapperMock() = default;
-    MOCK_METHOD(int, family, (), (const override));
-    MOCK_METHOD(std::string, name, (), (const override));
-    MOCK_METHOD(std::string, address, (), (const override));
-    MOCK_METHOD(std::string, netmask, (), (const override));
-    MOCK_METHOD(void, broadcast, (nlohmann::json&), (const override));
-    MOCK_METHOD(std::string, addressV6, (), (const override));
-    MOCK_METHOD(std::string, netmaskV6, (), (const override));
-    MOCK_METHOD(void, broadcastV6, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, gateway, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, metrics, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, metricsV6, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, dhcp, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, mtu, (nlohmann::json&), (const override));
-    MOCK_METHOD(LinkStats, stats, (), (const override));
-    MOCK_METHOD(void, type, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, state, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, MAC, (nlohmann::json&), (const override));
-    MOCK_METHOD(void, adapter, (nlohmann::json&), (const override));
+    ~SysInfoNetworkLinuxWrapperMock() override = default;
+    SysInfoNetworkLinuxWrapperMock(const SysInfoNetworkLinuxWrapperMock&) = delete;
+    SysInfoNetworkLinuxWrapperMock& operator=(const SysInfoNetworkLinuxWrapperMock&) = delete;
+    SysInfoNetworkLinuxWrapperMock(SysInfoNetworkLinuxWrapperMock&&) = delete;
+    SysInfoNetworkLinuxWrapperMock& operator=(SysInfoNetworkLinuxWrapperMock&&) = delete;
+    MOCK_METHOD(int, family, (), (const, override));
+    MOCK_METHOD(std::string, name, (), (const, override));
+    MOCK_METHOD(std::string, address, (), (const, override));
+    MOCK_METHOD(std::string, netmask, (), (const, override));
+    MOCK_METHOD(void, broadcast, (nlohmann::json&), (const, override));
+    MOCK_METHOD(std::string, addressV6, (), (const, override));
+    MOCK_METHOD(std::string, netmaskV6, (), (const, override));
+    MOCK_METHOD(void, broadcastV6, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, gateway, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, metrics, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, metricsV6, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, dhcp, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, mtu, (nlohmann::json&), (const, override));
+    MOCK_METHOD(LinkStats, stats, (), (const, override));
+    MOCK_METHOD(void, type, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, state, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, MAC, (nlohmann::json&), (const, override));
+    MOCK_METHOD(void, adapter, (nlohmann::json&), (const, override));
 };
 
 TEST_F(SysInfoNetworkLinuxTest, Test_AF_INET_THROW)
@@ -111,6 +105,7 @@ TEST_F(SysInfoNetworkLinuxTest, Test_AF_INET6)
     }
 }
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
 TEST_F(SysInfoNetworkLinuxTest, Test_AF_PACKET)
 {
     auto mock {std::make_shared<SysInfoNetworkLinuxWrapperMock>()};
@@ -187,3 +182,5 @@ TEST_F(SysInfoNetworkLinuxTest, Test_Gateway_7546)
     EXPECT_EQ(1500, ifaddr.at("mtu").get<int32_t>());
     EXPECT_EQ("A12BA8C0", ifaddr.at("gateway").get_ref<const std::string&>());
 }
+
+// NOLINTEND(cppcoreguidelines-avoid-magic-numbers)

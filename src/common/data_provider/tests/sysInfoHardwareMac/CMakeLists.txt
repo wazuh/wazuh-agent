@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.22)
 
 project(sysInfoHardwareMac_unit_test)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
-
 file(GLOB sysinfo_UNIT_TEST_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/../../src/hardware/*X86_64Mac.cpp"
     "sysInfoHardwareMac_test.cpp"
@@ -12,6 +10,8 @@ file(GLOB sysinfo_UNIT_TEST_SRC
 
 add_executable(sysInfoHardwareMac_unit_test
     ${sysinfo_UNIT_TEST_SRC})
+
+configure_target(sysInfoHardwareMac_unit_test)
 
 target_link_libraries(sysInfoHardwareMac_unit_test PRIVATE
     sysinfo
@@ -32,6 +32,8 @@ if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "arm64.*|ARM64.*")
 
     add_executable(sysInfoHardwareARMMac_unit_test
         ${sysinfo_ARM_UNIT_TEST_SRC})
+
+    configure_target(sysInfoHardwareARMMac_unit_test)
 
     find_library(iokit_lib IOKit)
     if(NOT iokit_lib)

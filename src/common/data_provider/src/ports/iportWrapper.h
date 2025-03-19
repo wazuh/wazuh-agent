@@ -1,19 +1,8 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * November 3, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _PORT_WRAPPER_H
-#define _PORT_WRAPPER_H
+#pragma once
 
 #include "iportInterface.h"
 
+/// @brief Fields for Linux ports
 enum LinuxPortsFieldsData
 {
     ENTRY,
@@ -29,22 +18,54 @@ enum LinuxPortsFieldsData
     SIZE_LINUX_PORT_FIELDS
 };
 
+/// @brief Interface for Linux ports
 class IPortWrapper
 {
 public:
-    // LCOV_EXCL_START
+    /// @brief Default destructor
     virtual ~IPortWrapper() = default;
-    // LCOV_EXCL_STOP
-    virtual void protocol(nlohmann::json&) const = 0;
-    virtual void localIp(nlohmann::json&) const = 0;
-    virtual void localPort(nlohmann::json&) const = 0;
-    virtual void remoteIP(nlohmann::json&) const = 0;
-    virtual void remotePort(nlohmann::json&) const = 0;
-    virtual void txQueue(nlohmann::json&) const = 0;
-    virtual void rxQueue(nlohmann::json&) const = 0;
-    virtual void inode(nlohmann::json&) const = 0;
-    virtual void state(nlohmann::json&) const = 0;
-    virtual void pid(nlohmann::json&) const = 0;
-    virtual void processName(nlohmann::json&) const = 0;
+
+    /// @brief Fills the protocol
+    /// @param port port
+    virtual void protocol(nlohmann::json& port) const = 0;
+
+    /// @brief Fills the local ip
+    /// @param port port
+    virtual void localIp(nlohmann::json& port) const = 0;
+
+    /// @brief Fills the local port
+    /// @param port port
+    virtual void localPort(nlohmann::json& port) const = 0;
+
+    /// @brief Fills the remote ip
+    /// @param port port
+    virtual void remoteIP(nlohmann::json& port) const = 0;
+
+    /// @brief Fills the remote port
+    /// @param port port
+    virtual void remotePort(nlohmann::json& port) const = 0;
+
+    /// @brief Fills the tx queue
+    /// @param port port
+    virtual void txQueue(nlohmann::json& port) const = 0;
+
+    /// @brief Fills the rx queue
+    /// @param port port
+    virtual void rxQueue(nlohmann::json& port) const = 0;
+
+    /// @brief Fills the inode
+    /// @param port port
+    virtual void inode(nlohmann::json& port) const = 0;
+
+    /// @brief Fills the state
+    /// @param port port
+    virtual void state(nlohmann::json& port) const = 0;
+
+    /// @brief Fills the pid
+    /// @param port port
+    virtual void pid(nlohmann::json& port) const = 0;
+
+    /// @brief Fills the process name
+    /// @param port port
+    virtual void processName(nlohmann::json& port) const = 0;
 };
-#endif // _PORT_WRAPPER_H

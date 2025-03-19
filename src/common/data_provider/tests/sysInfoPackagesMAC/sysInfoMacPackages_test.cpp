@@ -1,15 +1,4 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * December 14, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#include "sysInfoMacPackages_test.h"
+#include "sysInfoMacPackages_test.hpp"
 #include "MockSqliteWrapper.hpp"
 #include "packages/macportsWrapper.h"
 #include "packages/packageMac.h"
@@ -18,7 +7,7 @@ void SysInfoMacPackagesTest::SetUp() {};
 
 void SysInfoMacPackagesTest::TearDown() {};
 
-using ::testing::_;
+using ::testing::_; // NOLINT(bugprone-reserved-identifier)
 using ::testing::An;
 using ::testing::ByMove;
 using ::testing::Return;
@@ -27,21 +16,25 @@ class SysInfoMacPackagesWrapperMock : public IPackageWrapper
 {
 public:
     SysInfoMacPackagesWrapperMock() = default;
-    virtual ~SysInfoMacPackagesWrapperMock() = default;
-    MOCK_METHOD(void, name, (nlohmann::json & package), (const override));
-    MOCK_METHOD(void, version, (nlohmann::json & package), (const override));
-    MOCK_METHOD(void, groups, (nlohmann::json & package), (const override));
-    MOCK_METHOD(void, description, (nlohmann::json & package), (const override));
-    MOCK_METHOD(void, architecture, (nlohmann::json & package), (const override));
-    MOCK_METHOD(void, format, (nlohmann::json & package), (const override));
-    MOCK_METHOD(void, osPatch, (nlohmann::json & package), (const override));
-    MOCK_METHOD(void, source, (nlohmann::json & package), (const override));
-    MOCK_METHOD(void, location, (nlohmann::json & package), (const override));
-    MOCK_METHOD(void, priority, (nlohmann::json & package), (const override));
-    MOCK_METHOD(void, size, (nlohmann::json & package), (const override));
-    MOCK_METHOD(void, vendor, (nlohmann::json & package), (const override));
-    MOCK_METHOD(void, install_time, (nlohmann::json & package), (const override));
-    MOCK_METHOD(void, multiarch, (nlohmann::json & package), (const override));
+    ~SysInfoMacPackagesWrapperMock() override = default;
+    SysInfoMacPackagesWrapperMock(const SysInfoMacPackagesWrapperMock&) = delete;
+    SysInfoMacPackagesWrapperMock& operator=(const SysInfoMacPackagesWrapperMock&) = delete;
+    SysInfoMacPackagesWrapperMock(SysInfoMacPackagesWrapperMock&&) = delete;
+    SysInfoMacPackagesWrapperMock& operator=(SysInfoMacPackagesWrapperMock&&) = delete;
+    MOCK_METHOD(void, name, (nlohmann::json & package), (const, override));
+    MOCK_METHOD(void, version, (nlohmann::json & package), (const, override));
+    MOCK_METHOD(void, groups, (nlohmann::json & package), (const, override));
+    MOCK_METHOD(void, description, (nlohmann::json & package), (const, override));
+    MOCK_METHOD(void, architecture, (nlohmann::json & package), (const, override));
+    MOCK_METHOD(void, format, (nlohmann::json & package), (const, override));
+    MOCK_METHOD(void, osPatch, (nlohmann::json & package), (const, override));
+    MOCK_METHOD(void, source, (nlohmann::json & package), (const, override));
+    MOCK_METHOD(void, location, (nlohmann::json & package), (const, override));
+    MOCK_METHOD(void, priority, (nlohmann::json & package), (const, override));
+    MOCK_METHOD(void, size, (nlohmann::json & package), (const, override));
+    MOCK_METHOD(void, vendor, (nlohmann::json & package), (const, override));
+    MOCK_METHOD(void, install_time, (nlohmann::json & package), (const, override));
+    MOCK_METHOD(void, multiarch, (nlohmann::json & package), (const, override));
 };
 
 TEST_F(SysInfoMacPackagesTest, Test_SPEC_Data)

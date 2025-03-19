@@ -1,22 +1,11 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * May 18, 2023.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#include "sysInfoHardwareWrapperARMMac_test.h"
+#include "sysInfoHardwareWrapperARMMac_test.hpp"
 #include "CoreFoundation/CFBase.h"
 #include "IOKit/IOKitLib.h"
 #include "hardware/hardwareWrapperImplMac.h"
 #include "osPrimitivesInterfaceMac.h"
-#include "osPrimitives_mock.h"
+#include "osPrimitives_mock.hpp"
 
-using ::testing::_;
+using ::testing::_; // NOLINT(bugprone-reserved-identifier)
 using ::testing::Return;
 
 void SysInfoHardwareWrapperARMMacTest::SetUp() {};

@@ -1,15 +1,4 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * May 18, 2023.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#include "sysInfoHardwareMac_test.h"
+#include "sysInfoHardwareMac_test.hpp"
 #include "hardware/factoryHardwareFamilyCreator.h"
 #include "hardware/hardwareWrapperInterface.h"
 #include <nlohmann/json.hpp>
@@ -24,14 +13,18 @@ class OSHardwareWrapperMacMock : public IOSHardwareWrapper
 {
 public:
     OSHardwareWrapperMacMock() = default;
-    virtual ~OSHardwareWrapperMacMock() = default;
-    MOCK_METHOD(std::string, boardSerial, (), (const override));
-    MOCK_METHOD(std::string, cpuName, (), (const override));
-    MOCK_METHOD(int, cpuCores, (), (const override));
+    ~OSHardwareWrapperMacMock() override = default;
+    OSHardwareWrapperMacMock(const OSHardwareWrapperMacMock&) = delete;
+    OSHardwareWrapperMacMock& operator=(const OSHardwareWrapperMacMock&) = delete;
+    OSHardwareWrapperMacMock(OSHardwareWrapperMacMock&&) = delete;
+    OSHardwareWrapperMacMock& operator=(OSHardwareWrapperMacMock&&) = delete;
+    MOCK_METHOD(std::string, boardSerial, (), (const, override));
+    MOCK_METHOD(std::string, cpuName, (), (const, override));
+    MOCK_METHOD(int, cpuCores, (), (const, override));
     MOCK_METHOD(int, cpuMhz, (), (override));
-    MOCK_METHOD(uint64_t, ramTotal, (), (const override));
-    MOCK_METHOD(uint64_t, ramFree, (), (const override));
-    MOCK_METHOD(uint64_t, ramUsage, (), (const override));
+    MOCK_METHOD(uint64_t, ramTotal, (), (const, override));
+    MOCK_METHOD(uint64_t, ramFree, (), (const, override));
+    MOCK_METHOD(uint64_t, ramUsage, (), (const, override));
 };
 
 TEST_F(SysInfoHardwareMacTest, Test_BuildHardwareData_Succeed)
@@ -49,9 +42,9 @@ TEST_F(SysInfoHardwareMacTest, Test_BuildHardwareData_Succeed)
 
     EXPECT_EQ("H2WH91N3Q6NY", hardware.at("board_serial").get_ref<nlohmann::json::string_t&>());
     EXPECT_EQ("Macmini9,1", hardware.at("cpu_name").get_ref<nlohmann::json::string_t&>());
-    EXPECT_EQ((int)8, hardware.at("cpu_cores").get_ref<nlohmann::json::number_integer_t&>());
-    EXPECT_EQ((int)3204, hardware.at("cpu_mhz").get_ref<nlohmann::json::number_integer_t&>());
-    EXPECT_EQ((uint64_t)16777216, hardware.at("ram_total").get_ref<nlohmann::json::number_unsigned_t&>());
-    EXPECT_EQ((uint64_t)8388608, hardware.at("ram_free").get_ref<nlohmann::json::number_unsigned_t&>());
-    EXPECT_EQ((uint64_t)50, hardware.at("ram_usage").get_ref<nlohmann::json::number_unsigned_t&>());
+    EXPECT_EQ(static_cast<int>(8), hardware.at("cpu_cores").get_ref<nlohmann::json::number_integer_t&>());
+    EXPECT_EQ(static_cast<int>(3204), hardware.at("cpu_mhz").get_ref<nlohmann::json::number_integer_t&>());
+    EXPECT_EQ(static_cast<uint64_t>(16777216), hardware.at("ram_total").get_ref<nlohmann::json::number_unsigned_t&>());
+    EXPECT_EQ(static_cast<uint64_t>(8388608), hardware.at("ram_free").get_ref<nlohmann::json::number_unsigned_t&>());
+    EXPECT_EQ(static_cast<uint64_t>(50), hardware.at("ram_usage").get_ref<nlohmann::json::number_unsigned_t&>());
 }

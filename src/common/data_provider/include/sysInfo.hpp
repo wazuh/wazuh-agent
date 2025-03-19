@@ -1,16 +1,4 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * October 8, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _SYS_INFO_HPP
-#define _SYS_INFO_HPP
+#pragma once
 
 #include "sysInfoInterface.hpp"
 
@@ -19,10 +7,11 @@ constexpr auto KByte {1024};
 class SysInfo : public ISysInfo
 {
 public:
+    /// @brief Default constructor
     SysInfo() = default;
-    // LCOV_EXCL_START
+
+    /// @brief Default destructor
     virtual ~SysInfo() = default;
-    // LCOV_EXCL_STOP
 
     /// @copydoc ISysInfo::hardware
     nlohmann::json hardware() override;
@@ -42,25 +31,47 @@ public:
     /// @copydoc ISysInfo::ports
     nlohmann::json ports() override;
 
-    /// @copydoc ISysInfo::packages
-    void packages(std::function<void(nlohmann::json&)>) override;
-
-    /// @copydoc ISysInfo::processes
-    void processes(std::function<void(nlohmann::json&)>) override;
-
     /// @copydoc ISysInfo::hotfixes
     nlohmann::json hotfixes() override;
 
-private:
-    virtual nlohmann::json getHardware() const;
-    virtual nlohmann::json getPackages() const;
-    virtual nlohmann::json getOsInfo() const;
-    virtual nlohmann::json getProcessesInfo() const;
-    virtual nlohmann::json getNetworks() const;
-    virtual nlohmann::json getPorts() const;
-    virtual nlohmann::json getHotfixes() const;
-    virtual void getPackages(std::function<void(nlohmann::json&)>) const;
-    virtual void getProcessesInfo(std::function<void(nlohmann::json&)>) const;
-};
+    /// @brief Fills the packages information using a callback
+    void packages(std::function<void(nlohmann::json&)>) override;
 
-#endif //_SYS_INFO_HPP
+    /// @brief Fills the processes information using a callback
+    void processes(std::function<void(nlohmann::json&)>) override;
+
+private:
+    /// @brief Returns the hardware information
+    /// @return Hardware information
+    virtual nlohmann::json getHardware() const;
+
+    /// @brief Returns the installed packages information
+    /// @return Installed packages information
+    virtual nlohmann::json getPackages() const;
+
+    /// @brief Returns the Operating System information
+    /// @return Operating System information
+    virtual nlohmann::json getOsInfo() const;
+
+    /// @brief Returns the processes information
+    /// @return Processes information
+    virtual nlohmann::json getProcessesInfo() const;
+
+    /// @brief Returns the network information
+    /// @return Network information
+    virtual nlohmann::json getNetworks() const;
+
+    /// @brief Returns the ports information
+    /// @return Ports information
+    virtual nlohmann::json getPorts() const;
+
+    /// @brief Returns the hotfixes information
+    /// @return Hotfixes information
+    virtual nlohmann::json getHotfixes() const;
+
+    /// @brief Fills the packages information using a callback
+    virtual void getPackages(const std::function<void(nlohmann::json&)>&) const;
+
+    /// @brief Fills the processes information using a callback
+    virtual void getProcessesInfo(const std::function<void(nlohmann::json&)>&) const;
+};

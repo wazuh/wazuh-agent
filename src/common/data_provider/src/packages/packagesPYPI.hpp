@@ -1,16 +1,4 @@
-/*
- * Wazuh data provider.
- * Copyright (C) 2015, Wazuh Inc.
- * July 11, 2023.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _PACKAGES_PYPI_HPP
-#define _PACKAGES_PYPI_HPP
+#pragma once
 
 #include "file_io_utils.hpp"
 #include "filesystem_utils.hpp"
@@ -26,6 +14,7 @@
 
 const static std::map<std::string, std::string> FILE_MAPPING_PYPI {{"egg-info", "PKG-INFO"}, {"dist-info", "METADATA"}};
 
+/// @brief PYPI parser
 template<typename TFileSystem = file_system::FileSystemWrapper, typename TFileIOUtils = file_io::FileIOUtils>
 class PYPI final
     : public TFileSystem
@@ -38,6 +27,12 @@ public:
     {
     }
 
+    /// @brief PYPI destructor
+    ~PYPI() = default;
+
+    /// @brief Retrieves the PYPI packages information
+    /// @param osRootFolders Paths to search for packages
+    /// @param callback Callback function
     void getPackages(const std::set<std::string>& osRootFolders, std::function<void(nlohmann::json&)> callback)
     {
 
@@ -60,6 +55,9 @@ public:
     }
 
 private:
+    /// @brief Parse the METADATA file
+    /// @param path Path to the METADATA file
+    /// @param callback Callback function
     void parseMetadata(const std::filesystem::path& path, std::function<void(nlohmann::json&)>& callback)
     {
         // Map to match fields
@@ -112,6 +110,9 @@ private:
         }
     }
 
+    /// @brief Find the correct path to the METADATA file
+    /// @param path Path to the package folder
+    /// @param callback Callback function
     void findCorrectPath(const std::filesystem::path& path, std::function<void(nlohmann::json&)> callback)
     {
         try
@@ -139,10 +140,13 @@ private:
         }
         catch (const std::exception& e)
         {
-            std::cerr << "Error parsing PYPI package: " << path.string() << ", " << e.what() << std::endl;
+            std::cerr << "Error parsing PYPI package: " << path.string() << ", " << e.what() << '\n';
         }
     }
 
+    /// @brief Explore expanded paths
+    /// @param expandedPaths Paths to explore
+    /// @param callback Callback function
     void exploreExpandedPaths(const std::deque<std::string>& expandedPaths,
                               std::function<void(nlohmann::json&)> callback)
     {
@@ -169,4 +173,3 @@ private:
     /// @brief Pointer to the file system utils
     std::shared_ptr<IFileSystemUtils> m_fsUtils;
 };
-#endif // _PACKAGES_PYPI_HPP

@@ -1,20 +1,9 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * March 16, 2021.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _BERKELEY_DB_WRAPPER_H
-#define _BERKELEY_DB_WRAPPER_H
+#pragma once
 
 #include "iberkeleyDbWrapper.h"
 #include <stdexcept>
 
+/// @brief Deleter for Berkeley DB
 struct BerkeleyRpmDbDeleter final
 {
     void operator()(DB* db)
@@ -28,6 +17,7 @@ struct BerkeleyRpmDbDeleter final
     }
 };
 
+/// @brief Wrapper for Berkeley DB
 class BerkeleyDbWrapper final : public IBerkeleyDbWrapper
 {
 private:
@@ -35,6 +25,7 @@ private:
     std::unique_ptr<DBC, BerkeleyRpmDbDeleter> m_cursor;
 
 public:
+    /// @copydoc IBerkeleyDbWrapper::getRow
     int32_t getRow(DBT& key, DBT& data) override
     {
         std::memset(&key, 0, sizeof(DBT));
@@ -42,10 +33,11 @@ public:
         return m_cursor->c_get(m_cursor.get(), &key, &data, DB_NEXT);
     }
 
-    // LCOV_EXCL_START
+    /// @brief Default destructor
     ~BerkeleyDbWrapper() = default;
 
-    // LCOV_EXCL_STOP
+    /// @brief Default constructor
+    /// @param directory Directory to open
     explicit BerkeleyDbWrapper(const std::string& directory)
     {
         int ret;
@@ -75,5 +67,3 @@ public:
         m_cursor = std::unique_ptr<DBC, BerkeleyRpmDbDeleter>(cursor);
     }
 };
-
-#endif // _BERKELEY_DB_WRAPPER_H

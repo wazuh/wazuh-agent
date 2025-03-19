@@ -1,45 +1,38 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * October 24, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _NETWORK_LINUX_H
-#define _NETWORK_LINUX_H
+#pragma once
 
 #include "inetworkInterface.h"
 #include "inetworkWrapper.h"
 
+/// @brief Linux network data retriever
 class FactoryLinuxNetwork
 {
 public:
+    /// @brief Create Linux network data retriever
+    /// @param interfaceWrapper interface to retrieve network data from
+    /// @return network data retriever
     static std::shared_ptr<IOSNetwork> create(const std::shared_ptr<INetworkInterfaceWrapper>& interfaceWrapper);
 };
 
+/// @brief Linux network data retriever implementation
 template<unsigned short osNetworkType>
 class LinuxNetworkImpl final : public IOSNetwork
 {
     std::shared_ptr<INetworkInterfaceWrapper> m_interfaceAddress;
 
 public:
+    /// @brief Constructor
+    /// @param interfaceAddress interface to retrieve network data from
     explicit LinuxNetworkImpl(const std::shared_ptr<INetworkInterfaceWrapper>& interfaceAddress)
         : m_interfaceAddress(interfaceAddress)
     {
     }
 
-    // LCOV_EXCL_START
+    /// @brief Destructor
     ~LinuxNetworkImpl() = default;
 
-    // LCOV_EXCL_STOP
+    /// @brief Fills the network information
     void buildNetworkData(nlohmann::json& /*network*/) override
     {
         throw std::runtime_error {"Non implemented specialization."};
     }
 };
-
-#endif // _NETWORK_LINUX_H

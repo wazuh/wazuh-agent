@@ -2,14 +2,14 @@ cmake_minimum_required(VERSION 3.22)
 
 project(RpmPackageManager_unit_test)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
-
 file(GLOB RPM_UNIT_TEST_SRC "*.cpp")
 file(GLOB RPM_SRC "${CMAKE_SOURCE_DIR}/src/packages/rpm*.cpp")
 
-add_executable(Rpm_unit_test ${RPM_UNIT_TEST_SRC} ${RPM_SRC})
+add_executable(sysInfoRpm_unit_test ${RPM_UNIT_TEST_SRC} ${RPM_SRC})
 
-target_link_libraries(Rpm_unit_test PRIVATE
+configure_target(sysInfoRpm_unit_test)
+
+target_link_libraries(sysInfoRpm_unit_test PRIVATE
     sysinfo
     GTest::gtest
     GTest::gmock
@@ -17,5 +17,5 @@ target_link_libraries(Rpm_unit_test PRIVATE
     GTest::gmock_main
 )
 
-add_test(NAME Rpm_unit_test
-         COMMAND Rpm_unit_test)
+add_test(NAME sysInfoRpm_unit_test
+         COMMAND sysInfoRpm_unit_test)

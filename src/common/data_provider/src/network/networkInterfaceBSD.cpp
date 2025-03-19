@@ -1,14 +1,3 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * October 24, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
 #include "networkInterfaceBSD.h"
 #include "networkBSDWrapper.h"
 #include <ifaddrs.h>
@@ -93,7 +82,6 @@ template<>
 void BSDNetworkImpl<AF_LINK>::buildNetworkData(nlohmann::json& network)
 {
     /* Get stats of interface */
-
     network["name"] = m_interfaceAddress->name();
     m_interfaceAddress->adapter(network);
     m_interfaceAddress->state(network);

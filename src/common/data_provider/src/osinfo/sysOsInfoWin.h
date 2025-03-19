@@ -1,32 +1,42 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * November 3, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _SYS_OS_INFO_WINDOWS_H
-#define _SYS_OS_INFO_WINDOWS_H
+#pragma once
 
 #include "sysOsInfoInterface.h"
 
+/// @brief Class for Windows OS information
 class SysOsInfoProviderWindows final : public ISysOsInfoProvider
 {
 public:
+    /// @brief Constructor
     SysOsInfoProviderWindows();
+
+    /// @brief Default destructor
     ~SysOsInfoProviderWindows() = default;
+
+    /// @copydoc ISysOsInfoProvider::name
     std::string name() const override;
+
+    /// @copydoc ISysOsInfoProvider::version
     std::string version() const override;
+
+    /// @copydoc ISysOsInfoProvider::majorVersion
     std::string majorVersion() const override;
+
+    /// @copydoc ISysOsInfoProvider::minorVersion
     std::string minorVersion() const override;
+
+    /// @copydoc ISysOsInfoProvider::build
     std::string build() const override;
+
+    /// @copydoc ISysOsInfoProvider::release
     std::string release() const override;
+
+    /// @copydoc ISysOsInfoProvider::displayVersion
     std::string displayVersion() const override;
+
+    /// @copydoc ISysOsInfoProvider::machine
     std::string machine() const override;
+
+    /// @copydoc ISysOsInfoProvider::nodeName
     std::string nodeName() const override;
 
 private:
@@ -41,5 +51,3 @@ private:
     const std::string m_machine;
     const std::string m_nodeName;
 };
-
-#endif //_SYS_OS_INFO_WINDOWS_H

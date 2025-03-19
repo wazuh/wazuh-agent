@@ -2,10 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 
 project(sysInfoMacPackage_unit_test)
 
-# Copy input files to the build directory
 file(COPY input_files DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
-set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../sqliteWrapper/tests/mocks)
 
@@ -18,6 +15,8 @@ file(GLOB SYSINFO_SRC
 add_executable(sysInfoMacPackage_unit_test
     ${sysinfo_UNIT_TEST_SRC}
     ${SYSINFO_SRC})
+
+configure_target(sysInfoMacPackage_unit_test)
 
 target_link_libraries(sysInfoMacPackage_unit_test PRIVATE
     sysinfo

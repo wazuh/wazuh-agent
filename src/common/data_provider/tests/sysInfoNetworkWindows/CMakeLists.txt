@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.22)
 
 project(sysInfoNetworkWindows_unit_test)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
-
 file(GLOB sysinfo_UNIT_TEST_SRC
     "*.cpp")
 
@@ -15,6 +13,8 @@ find_package(GTest CONFIG REQUIRED)
 add_executable(sysInfoNetworkWindows_unit_test
     ${sysinfo_UNIT_TEST_SRC}
     ${SYSINFO_SRC})
+
+configure_target(sysInfoNetworkWindows_unit_test)
 
 target_link_libraries(sysInfoNetworkWindows_unit_test
     sysinfo

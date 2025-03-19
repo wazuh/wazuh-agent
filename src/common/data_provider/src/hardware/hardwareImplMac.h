@@ -1,35 +1,25 @@
-/*
- * Wazuh SYSINFO
- * Copyright (C) 2015, Wazuh Inc.
- * May 4, 2023.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _HARDWARE_IMPL_MAC_H
-#define _HARDWARE_IMPL_MAC_H
+#pragma once
 
 #include "hardwareInterface.h"
 #include "hardwareWrapperInterface.h"
 
+/// @brief MacOS hardware data retriever
 class OSHardwareMac final : public IOSHardware
 {
     std::shared_ptr<IOSHardwareWrapper> m_wrapper;
 
 public:
+    /// @brief Constructor
+    /// @param wrapper hardware wrapper
     explicit OSHardwareMac(const std::shared_ptr<IOSHardwareWrapper>& wrapper)
         : m_wrapper(wrapper)
     {
     }
 
-    // LCOV_EXCL_START
+    /// @brief Default destructor
     ~OSHardwareMac() = default;
 
-    // LCOV_EXCL_STOP
-
+    /// @copydoc IOSHardware::buildHardwareData
     void buildHardwareData(nlohmann::json& hardware) override
     {
         hardware["board_serial"] = m_wrapper->boardSerial();
@@ -42,13 +32,15 @@ public:
     }
 };
 
+/// @brief Factory for creating MacOS hardware data retrievers
 class FactoryBSDHardware final
 {
 public:
+    /// @brief Create MacOS hardware data retriever
+    /// @param wrapper hardware wrapper
+    /// @return hardware data retriever
     static std::shared_ptr<IOSHardware> create(const std::shared_ptr<IOSHardwareWrapper>& wrapper)
     {
         return std::make_shared<OSHardwareMac>(wrapper);
     }
 };
-
-#endif // _HARDWARE_IMPL_MAC_H

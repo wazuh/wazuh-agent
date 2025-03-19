@@ -1,25 +1,14 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * May 18, 2023.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#include "sysInfoHardwareWrapperMac_test.h"
+#include "sysInfoHardwareWrapperMac_test.hpp"
 #include "hardware/hardwareWrapperImplMac.h"
 #include "osPrimitivesInterfaceMac.h"
-#include "osPrimitives_mock.h"
+#include "osPrimitives_mock.hpp"
 #include <cstring>
 
 void SysInfoHardwareWrapperMacTest::SetUp() {};
 
 void SysInfoHardwareWrapperMacTest::TearDown() {};
 
-using ::testing::_;
+using ::testing::_; // NOLINT(bugprone-reserved-identifier)
 using ::testing::Return;
 
 TEST_F(SysInfoHardwareWrapperMacTest, Test_CpuName_Succeed)
@@ -186,7 +175,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamTotal_Succeed)
             });
     uint64_t ret = 0;
     EXPECT_NO_THROW(ret = wrapper->ramTotal());
-    EXPECT_EQ(ret, (uint64_t)17179869184 / 1024);
+    EXPECT_EQ(ret, static_cast<uint64_t>(17179869184 / 1024));
 }
 
 TEST_F(SysInfoHardwareWrapperMacTest, Test_RamTotal_Failed_Sysctlbyname)
@@ -233,7 +222,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamFree_Succeed)
             });
     uint64_t ret = 0;
     EXPECT_NO_THROW(ret = wrapper->ramFree());
-    EXPECT_EQ(ret, (uint64_t)(16384) * 342319 / 1024);
+    EXPECT_EQ(ret, static_cast<uint64_t>(16384) * 342319 / 1024);
 }
 
 TEST_F(SysInfoHardwareWrapperMacTest, Test_RamFree_Failed_Sysctlbyname1)
@@ -319,7 +308,9 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamUsage_Succeed)
             });
     uint64_t ret = 0;
     EXPECT_NO_THROW(ret = wrapper->ramUsage());
-    EXPECT_EQ(ret, (uint64_t)(100 - (100 * ((uint64_t)16384 * 342319 / 1024) / ((uint64_t)17179869184 / 1024))));
+    EXPECT_EQ(
+        ret,
+        static_cast<uint64_t>((100 - (100 * (static_cast<uint64_t>(16384) * 342319 / 1024) / (17179869184 / 1024)))));
 }
 
 TEST_F(SysInfoHardwareWrapperMacTest, Test_RamUsage_Succeed_TotalRamZero)
@@ -338,7 +329,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamUsage_Succeed_TotalRamZero)
             });
     uint64_t ret = 0;
     EXPECT_NO_THROW(ret = wrapper->ramUsage());
-    EXPECT_EQ(ret, (uint64_t)0);
+    EXPECT_EQ(ret, static_cast<uint64_t>(0));
 }
 
 TEST_F(SysInfoHardwareWrapperMacTest, Test_RamUsage_Failed_Sysctlbyname1)
@@ -428,7 +419,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamUsage_Failed_Sysctlbyname3)
 TEST_F(SysInfoHardwareWrapperMacTest, Test_BoardSerial_Succeed)
 {
     auto utils_mock {std::make_shared<UtilsMock>()};
-    gs_utils_mock = utils_mock.get();
+    GetGsUtilsMock() = utils_mock.get();
 
     auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
     EXPECT_CALL(*utils_mock, exec(_, _)).Times(1).WillOnce(Return("      Serial Number (system): H2WH91N3Q6NY\n"));
@@ -441,7 +432,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_BoardSerial_Succeed)
 TEST_F(SysInfoHardwareWrapperMacTest, Test_BoardSerial_Failed_UnknowValue)
 {
     auto utils_mock {std::make_shared<UtilsMock>()};
-    gs_utils_mock = utils_mock.get();
+    GetGsUtilsMock() = utils_mock.get();
 
     auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
     EXPECT_CALL(*utils_mock, exec(_, _)).Times(1).WillOnce(Return(""));

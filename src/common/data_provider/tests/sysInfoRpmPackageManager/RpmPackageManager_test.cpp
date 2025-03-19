@@ -1,22 +1,11 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * December 22, 2021.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#include "RpmPackageManager_test.h"
+#include "RpmPackageManager_test.hpp"
 #include "packages/rpmPackageManager.h"
 #include "packages/rpmlibWrapper.h"
 #include <rpm/rpmtag.h>
 
 #include <fcntl.h>
 
-using ::testing::_;
+using ::testing::_; // NOLINT(bugprone-reserved-identifier)
 using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::SetArgReferee;
@@ -31,7 +20,11 @@ class RpmLibMock : public IRpmLibWrapper
 {
 public:
     RpmLibMock() = default;
-    virtual ~RpmLibMock() override {};
+    ~RpmLibMock() override = default;
+    RpmLibMock(const RpmLibMock&) = delete;
+    RpmLibMock& operator=(const RpmLibMock&) = delete;
+    RpmLibMock(RpmLibMock&&) = delete;
+    RpmLibMock& operator=(RpmLibMock&&) = delete;
     MOCK_METHOD(int, rpmReadConfigFiles, (const char* file, const char* target), (override));
     MOCK_METHOD(void, rpmFreeRpmrc, (), (override));
     MOCK_METHOD(rpmtd, rpmtdNew, (), (override));
@@ -46,7 +39,7 @@ public:
     MOCK_METHOD(int, rpmtsRun, (rpmts ts, rpmps okProbs, rpmprobFilterFlags ignoreSet), (override));
     MOCK_METHOD(rpmdbMatchIterator,
                 rpmtsInitIterator,
-                (const rpmts ts, rpmDbiTagVal rpmtag, const void* keypointer, size_t keylen),
+                (rpmts ts, rpmDbiTagVal rpmtag, const void* keypointer, size_t keylen),
                 (override));
     MOCK_METHOD(Header, rpmdbNextIterator, (rpmdbMatchIterator mi), (override));
     MOCK_METHOD(rpmdbMatchIterator, rpmdbFreeIterator, (rpmdbMatchIterator mi), (override));
@@ -60,7 +53,7 @@ TEST(RpmLibTest, MissingConfFiles)
         {
             try
             {
-                RpmPackageManager rpm {mock};
+                const RpmPackageManager rpm {mock};
             }
             catch (const std::runtime_error& e)
             {
@@ -74,12 +67,12 @@ TEST(RpmLibTest, MissingConfFiles)
 TEST(RpmLibTest, MultipleInstances)
 {
     auto mock {std::make_shared<NiceMock<RpmLibMock>>()};
-    RpmPackageManager otherRpm {mock};
+    const RpmPackageManager otherRpm {mock};
     EXPECT_THROW(
         {
             try
             {
-                RpmPackageManager rpm {mock};
+                const RpmPackageManager rpm {mock};
             }
             catch (const std::runtime_error& e)
             {
@@ -96,14 +89,14 @@ TEST(RpmLibTest, RAII)
     EXPECT_CALL(*mock, rpmReadConfigFiles(_, _)).WillOnce(Return(0));
     EXPECT_CALL(*mock, rpmFreeRpmrc());
     {
-        RpmPackageManager rpm {mock};
+        const RpmPackageManager rpm {mock};
     }
 }
 
 TEST(RpmLibTest, TransactionSetCreateFailure)
 {
     auto mock {std::make_shared<NiceMock<RpmLibMock>>()};
-    std::vector<RpmPackageManager::Package> packages;
+    const std::vector<RpmPackageManager::Package> packages;
     EXPECT_CALL(*mock, rpmtsCreate()).WillOnce(Return(nullptr));
 
     EXPECT_THROW(
@@ -125,11 +118,12 @@ TEST(RpmLibTest, TransactionSetCreateFailure)
         std::runtime_error);
 }
 
+// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-magic-numbers)
 TEST(RpmLibTest, OpenDatabaseFailure)
 {
     const auto tsMock = reinterpret_cast<rpmts>(0x45);
     auto mock {std::make_shared<NiceMock<RpmLibMock>>()};
-    std::vector<RpmPackageManager::Package> packages;
+    const std::vector<RpmPackageManager::Package> packages;
     EXPECT_CALL(*mock, rpmtsCreate()).WillOnce(Return(tsMock));
     EXPECT_CALL(*mock, rpmtsOpenDB(tsMock, _)).WillOnce(Return(-1));
 
@@ -157,7 +151,7 @@ TEST(RpmLibTest, TransactionSetRunFailure)
 {
     const auto tsMock = reinterpret_cast<rpmts>(0x45);
     auto mock {std::make_shared<NiceMock<RpmLibMock>>()};
-    std::vector<RpmPackageManager::Package> packages;
+    const std::vector<RpmPackageManager::Package> packages;
     EXPECT_CALL(*mock, rpmtsCreate()).WillOnce(Return(tsMock));
     EXPECT_CALL(*mock, rpmtsOpenDB(tsMock, _)).WillOnce(Return(0));
     EXPECT_CALL(*mock, rpmtsRun(tsMock, nullptr, _)).WillOnce(Return(-1));
@@ -185,7 +179,7 @@ TEST(RpmLibTest, TagDataContainerCreateFailure)
 {
     const auto tsMock = reinterpret_cast<rpmts>(0x45);
     auto mock {std::make_shared<NiceMock<RpmLibMock>>()};
-    std::vector<RpmPackageManager::Package> packages;
+    const std::vector<RpmPackageManager::Package> packages;
     EXPECT_CALL(*mock, rpmtsCreate()).WillOnce(Return(tsMock));
     EXPECT_CALL(*mock, rpmtsOpenDB(tsMock, _)).WillOnce(Return(0));
     EXPECT_CALL(*mock, rpmtsRun(tsMock, nullptr, _)).WillOnce(Return(0));
@@ -215,7 +209,7 @@ TEST(RpmLibTest, IteratorInitFailure)
     const auto tsMock = reinterpret_cast<rpmts>(0x45);
     const auto tdMock = reinterpret_cast<rpmtd>(0x4D);
     auto mock {std::make_shared<NiceMock<RpmLibMock>>()};
-    std::vector<RpmPackageManager::Package> packages;
+    const std::vector<RpmPackageManager::Package> packages;
     EXPECT_CALL(*mock, rpmtsCreate()).WillOnce(Return(tsMock));
     EXPECT_CALL(*mock, rpmtsOpenDB(tsMock, _)).WillOnce(Return(0));
     EXPECT_CALL(*mock, rpmtsRun(tsMock, nullptr, _)).WillOnce(Return(0));
@@ -247,7 +241,7 @@ TEST(RpmLibTest, NoPackages)
     const auto tdMock = reinterpret_cast<rpmtd>(0x4D);
     const auto tsIteratorMock = reinterpret_cast<rpmdbMatchIterator>(0x41);
     auto mock {std::make_shared<NiceMock<RpmLibMock>>()};
-    std::vector<RpmPackageManager::Package> packages;
+    const std::vector<RpmPackageManager::Package> packages;
     EXPECT_CALL(*mock, rpmtsCreate()).WillOnce(Return(tsMock));
     EXPECT_CALL(*mock, rpmtsOpenDB(tsMock, O_RDONLY)).WillOnce(Return(0));
     EXPECT_CALL(*mock, rpmtsRun(tsMock, nullptr, _)).WillOnce(Return(0));
@@ -301,7 +295,7 @@ TEST(RpmLibTest, SinglePackage)
         .WillOnce(Return(20))  // installtime
         .WillOnce(Return(20)); // size
 
-    std::vector<RpmPackageManager::Package> packages;
+    const std::vector<RpmPackageManager::Package> packages;
     {
         RpmPackageManager rpm {mock};
 
@@ -369,7 +363,7 @@ TEST(RpmLibTest, TwoPackages)
         .WillOnce(Return(20))  // installtime
         .WillOnce(Return(20)); // size
 
-    std::vector<RpmPackageManager::Package> packages;
+    const std::vector<RpmPackageManager::Package> packages;
     RpmPackageManager rpm {mock};
     auto count {0};
 
@@ -391,3 +385,5 @@ TEST(RpmLibTest, TwoPackages)
 
     EXPECT_EQ(count, 2);
 }
+
+// NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-magic-numbers)

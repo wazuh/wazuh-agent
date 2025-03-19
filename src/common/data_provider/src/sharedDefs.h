@@ -1,16 +1,4 @@
-/*
- * Wazuh SysInfo
- * Copyright (C) 2015, Wazuh Inc.
- * October 24, 2020.
- *
- * This program is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public
- * License (version 2) as published by the FSF - Free Software
- * Foundation.
- */
-
-#ifndef _SHARED_DEFS_H
-#define _SHARED_DEFS_H
+#pragma once
 
 #include <set>
 #include <string>
@@ -39,6 +27,7 @@ constexpr auto MAC_ADDRESS_COUNT_SEGMENTS {6ull};
 
 #define ROUNDUP(a) ((a) > 0 ? (1 + (((a) - 1) | (sizeof(long) - 1))) : sizeof(long))
 
+/// @brief List of supported OS platforms
 enum OSPlatformType
 {
     LINUX,
@@ -46,12 +35,7 @@ enum OSPlatformType
     WINDOWS,
 };
 
-enum LinuxType
-{
-    STANDARD,
-    LEGACY
-};
-
+/// @brief List of supported port types
 enum PortType
 {
     UDP_IPV4,
@@ -61,6 +45,7 @@ enum PortType
     SIZE_PORT_TYPE
 };
 
+/// @brief List of supported protocols
 enum Protocol
 {
     TCP,
@@ -68,6 +53,7 @@ enum Protocol
     PROTOCOL_SIZE
 };
 
+/// @brief List of supported IP versions
 enum IPVersion
 {
     IPV4,
@@ -75,6 +61,7 @@ enum IPVersion
     IPVERSION_SIZE
 };
 
+/// @brief List of supported package types
 enum MacOsPackageTypes
 {
     PKG,
@@ -83,6 +70,7 @@ enum MacOsPackageTypes
     RCP
 };
 
+/// @brief List of supported rpm fields
 enum RPMFields
 {
     RPM_FIELDS_NAME,
@@ -98,6 +86,7 @@ enum RPMFields
     RPM_FIELDS_SIZE
 };
 
+/// @brief List of supported macos architectures
 enum MacOSArchitecture
 {
     X86_64,
@@ -126,5 +115,3 @@ static const std::set<std::string> UNIX_NPM_DEFAULT_BASE_DIRS {"/usr/local/lib",
                                                                "/opt/local/lib",
                                                                "/Users/*/.nvm/versions/node/v*/lib",
                                                                "/private/var/root/.nvm/versions/node/v*/lib"};
-
-#endif //_SHARED_DEFS_H

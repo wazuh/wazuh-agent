@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cjson/cJSON.h>
-#include <stdarg.h>
 
 /// @brief Represents the different host types to be used.
 typedef enum
@@ -37,13 +36,10 @@ typedef enum
 } ReturnTypeCallback;
 
 /// @brief Represents the handle associated with database creation.
-typedef void* DBSYNC_HANDLE;
+typedef const void* DBSYNC_HANDLE;
 
 /// @brief Represents the transaction handle associated with a database instance.
-typedef void* TXN_HANDLE;
-
-/// @brief Represents the handle associated with the remote synch.
-typedef void* RSYNC_HANDLE;
+typedef const void* TXN_HANDLE;
 
 /// @brief Callback function for results
 /// @param result_type Enumeration value indicating what action was taken.
@@ -51,13 +47,6 @@ typedef void* RSYNC_HANDLE;
 /// @param user_data   User data space returned.
 /// @details Callback called for each obtained result, after evaluating changes between two snapshots.
 typedef void (*result_callback_t)(ReturnTypeCallback result_type, const cJSON* result_json, void* user_data);
-
-/// @brief Callback function for agent-manager sync.
-/// @param buffer      Buffer used to sync between agent and manager.
-/// @param buffer_size Buffer's size.
-/// @param user_data   User data space returned.
-/// @details Callback called for each obtained result, after evaluating changes between two snapshots.
-typedef void (*sync_id_callback_t)(const void* buffer, size_t buffer_size, void* user_data);
 
 /// @struct callback_data_t
 /// This struct contains the result callback will be called for each result
@@ -69,33 +58,10 @@ typedef struct
     void* user_data;            /*< User data space returned in each callback. */
 } callback_data_t;
 
-/// @struct sync_callback_data_t
-/// This struct contains a callback used to synchronize the information between agent and manager
-/// and user data space returned in each callback call.
-/// The instance of this structure lives in the library's consumer ecosystem.
-typedef struct
-{
-    sync_id_callback_t callback; /*< Sync ID callback. */
-    void* user_data;             /*< User data space returned in each callback. */
-} sync_callback_data_t;
-
 /// @brief Callback function for user defined logging.
 /// @param msg Message to be logged.
 /// @details Useful to get deeper information during the dbsync interaction.
 typedef void (*log_fnc_t)(const char* msg);
-
-/// @brief Callback function for user defined logging but adding a tag, the file name,
-/// the line number and the name of the function where the log was generated.
-///
-/// @param level    Level of the log.
-/// @param tag      Tag to identify the log.
-/// @param file     File name where the log is generated.
-/// @param line     Line number where the log is generated.
-/// @param func     Function name where the log is generated.
-/// @param msg      Message to be logged.
-/// @param args     Variable list args.
-typedef void (*full_log_fnc_t)(
-    int level, const char* tag, const char* file, int line, const char* func, const char* msg, va_list args);
 
 /// @brief Definition to indicate the unlimited queue.
 /// @details It's used to define the unlimited queue size.

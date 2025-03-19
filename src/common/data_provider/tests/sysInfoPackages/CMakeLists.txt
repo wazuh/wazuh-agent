@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.22)
 
 project(sysInfoPackages_unit_test)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g --coverage")
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../src/packages)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../file_helper/filesystem/tests/mocks)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../file_helper/file_io/tests/mocks)
@@ -14,6 +12,8 @@ file(GLOB sysinfo_UNIT_TEST_SRC
 
 add_executable(sysInfoPackages_unit_test
     ${sysinfo_UNIT_TEST_SRC})
+
+configure_target(sysInfoPackages_unit_test)
 
 target_link_libraries(sysInfoPackages_unit_test PRIVATE
     sysinfo
