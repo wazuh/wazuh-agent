@@ -6,7 +6,7 @@
 file(READ "${CMAKE_SOURCE_DIR}/../VERSION.json" VERSION_JSON)
 
 execute_process(
-    COMMAND git rev-parse --short HEAD
+    COMMAND git rev-parse --short=7 HEAD
     OUTPUT_VARIABLE GIT_SHORT_COMMIT
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
