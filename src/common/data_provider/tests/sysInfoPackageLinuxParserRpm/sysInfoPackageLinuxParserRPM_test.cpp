@@ -222,8 +222,8 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFromBerkleyDB)
     cursor.c_get = DbCGet;
     cursor.c_close = DbCClose;
 
-    EXPECT_CALL(*rpm, exists(_)).Times(1).WillOnce(Return(true));
-    EXPECT_CALL(*rpm, is_regular_file(_)).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(*fsw, exists(_)).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(*fsw, is_regular_file(_)).Times(1).WillOnce(Return(true));
     EXPECT_CALL(*libdb_mock, db_create(_, _, _)).Times(1).WillOnce(DoAll(SetArgPointee<0>(&db), Return(0)));
     EXPECT_CALL(*libdb_mock, set_lorder(_, _)).Times(1).WillOnce(Return(0));
     EXPECT_CALL(*libdb_mock, open(_, _, _, _, _, _, _)).Times(1).WillOnce(Return(0));
@@ -336,7 +336,7 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFromBerkleyDB)
 
     EXPECT_CALL(wrapper, callbackMock(expectedPackage1)).Times(1);
 
-    rpm->getRpmInfo([&wrapper](nlohmann::json& packageInfo) { wrapper.callbackMock(packageInfo); });
+    GetRpmInfo([&wrapper](nlohmann::json& packageInfo) { wrapper.callbackMock(packageInfo); }, fsw);
     // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-magic-numbers,
     // cppcoreguidelines-pro-bounds-pointer-arithmetic)
 }
@@ -359,7 +359,7 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFromLibRPM)
     const auto mi = reinterpret_cast<rpmdbMatchIterator>(0x123);
     const auto header = reinterpret_cast<Header>(0x123);
 
-    EXPECT_CALL(*rpm, exists(_)).Times(1).WillOnce(Return(false));
+    EXPECT_CALL(*fsw, exists(_)).Times(1).WillOnce(Return(false));
     EXPECT_CALL(*rpm_mock, rpmReadConfigFiles(_, _)).Times(1).WillOnce(Return(0));
     EXPECT_CALL(*rpm_mock, rpmtsCreate()).Times(1).WillOnce(Return(ts));
 
@@ -390,7 +390,7 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFromLibRPM)
 
     EXPECT_CALL(wrapper, callbackMock(expectedPackage1)).Times(1);
 
-    rpm->getRpmInfo([&wrapper](nlohmann::json& data) { wrapper.callbackMock(data); });
+    GetRpmInfo([&wrapper](nlohmann::json& packageInfo) { wrapper.callbackMock(packageInfo); }, fsw);
     // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-magic-numbers)
 }
 
@@ -409,7 +409,7 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromLibRPM)
     GetGsUtilsMock() = utils_mock.get();
     GetRpmLibMock() = rpm_mock.get();
 
-    EXPECT_CALL(*rpm, exists(_)).Times(1).WillOnce(Return(false));
+    EXPECT_CALL(*fsw, exists(_)).Times(1).WillOnce(Return(false));
     EXPECT_CALL(*rpm_mock, rpmReadConfigFiles(_, _)).Times(1).WillOnce(Return(1));
     EXPECT_CALL(*utils_mock, exec(_, _))
         .Times(1)
@@ -417,7 +417,7 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromLibRPM)
     EXPECT_CALL(wrapper, callbackMock(expectedPackage1)).Times(1);
     EXPECT_CALL(wrapper, callbackMock(expectedPackage2)).Times(1);
 
-    rpm->getRpmInfo([&wrapper](nlohmann::json& data) { wrapper.callbackMock(data); });
+    GetRpmInfo([&wrapper](nlohmann::json& packageInfo) { wrapper.callbackMock(packageInfo); }, fsw);
 }
 
 TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBConfigError)
@@ -435,8 +435,8 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBConfigError)
     GetGsUtilsMock() = utils_mock.get();
     GetLibDBMock() = libdb_mock.get();
 
-    EXPECT_CALL(*rpm, exists(_)).Times(1).WillOnce(Return(true));
-    EXPECT_CALL(*rpm, is_regular_file(_)).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(*fsw, exists(_)).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(*fsw, is_regular_file(_)).Times(1).WillOnce(Return(true));
     EXPECT_CALL(*libdb_mock, db_create(_, _, _)).Times(1).WillOnce(Return(1));
     EXPECT_CALL(*libdb_mock, db_strerror(_))
         .Times(1)
@@ -447,7 +447,7 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBConfigError)
     EXPECT_CALL(wrapper, callbackMock(expectedPackage1)).Times(1);
     EXPECT_CALL(wrapper, callbackMock(expectedPackage2)).Times(1);
 
-    rpm->getRpmInfo([&wrapper](nlohmann::json& data) { wrapper.callbackMock(data); });
+    GetRpmInfo([&wrapper](nlohmann::json& packageInfo) { wrapper.callbackMock(packageInfo); }, fsw);
 }
 
 TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBOpenError)
@@ -471,8 +471,8 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBOpenError)
     db.open = DbOpen;
     db.close = DbClose;
 
-    EXPECT_CALL(*rpm, exists(_)).Times(1).WillOnce(Return(true));
-    EXPECT_CALL(*rpm, is_regular_file(_)).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(*fsw, exists(_)).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(*fsw, is_regular_file(_)).Times(1).WillOnce(Return(true));
     EXPECT_CALL(*libdb_mock, db_create(_, _, _)).Times(1).WillOnce(DoAll(SetArgPointee<0>(&db), Return(0)));
     EXPECT_CALL(*libdb_mock, set_lorder(_, _)).Times(1).WillOnce(Return(0));
     EXPECT_CALL(*libdb_mock, open(_, _, _, _, _, _, _)).Times(1).WillOnce(Return(1));
@@ -486,7 +486,7 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBOpenError)
     EXPECT_CALL(wrapper, callbackMock(expectedPackage1)).Times(1);
     EXPECT_CALL(wrapper, callbackMock(expectedPackage2)).Times(1);
 
-    rpm->getRpmInfo([&wrapper](nlohmann::json& data) { wrapper.callbackMock(data); });
+    GetRpmInfo([&wrapper](nlohmann::json& packageInfo) { wrapper.callbackMock(packageInfo); }, fsw);
 }
 
 TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBCursorError)
@@ -511,8 +511,8 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBCursorError)
     db.close = DbClose;
     db.cursor = DbCursor;
 
-    EXPECT_CALL(*rpm, exists(_)).Times(1).WillOnce(Return(true));
-    EXPECT_CALL(*rpm, is_regular_file(_)).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(*fsw, exists(_)).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(*fsw, is_regular_file(_)).Times(1).WillOnce(Return(true));
     EXPECT_CALL(*libdb_mock, db_create(_, _, _)).Times(1).WillOnce(DoAll(SetArgPointee<0>(&db), Return(0)));
     EXPECT_CALL(*libdb_mock, set_lorder(_, _)).Times(1).WillOnce(Return(0));
     EXPECT_CALL(*libdb_mock, open(_, _, _, _, _, _, _)).Times(1).WillOnce(Return(0));
@@ -527,7 +527,7 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, rpmFallbackFromBerkleyDBCursorError)
     EXPECT_CALL(wrapper, callbackMock(expectedPackage1)).Times(1);
     EXPECT_CALL(wrapper, callbackMock(expectedPackage2)).Times(1);
 
-    rpm->getRpmInfo([&wrapper](nlohmann::json& data) { wrapper.callbackMock(data); });
+    GetRpmInfo([&wrapper](nlohmann::json& packageInfo) { wrapper.callbackMock(packageInfo); }, fsw);
 }
 
 TEST_F(SysInfoPackagesLinuxParserRPMTest, emptyRpmFallback)
@@ -540,12 +540,12 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, emptyRpmFallback)
     GetGsUtilsMock() = utils_mock.get();
     GetRpmLibMock() = rpm_mock.get();
 
-    EXPECT_CALL(*rpm, exists(_)).Times(1).WillOnce(Return(false));
+    EXPECT_CALL(*fsw, exists(_)).Times(1).WillOnce(Return(false));
     EXPECT_CALL(*rpm_mock, rpmReadConfigFiles(_, _)).Times(1).WillOnce(Return(1));
     EXPECT_CALL(*utils_mock, exec(_, _)).Times(1).WillOnce(Return(""));
     EXPECT_CALL(wrapper, callbackMock(_)).Times(0);
 
-    rpm->getRpmInfo([&wrapper](nlohmann::json& data) { wrapper.callbackMock(data); });
+    GetRpmInfo([&wrapper](nlohmann::json& packageInfo) { wrapper.callbackMock(packageInfo); }, fsw);
 }
 
 TEST_F(SysInfoPackagesLinuxParserRPMTest, invalidPackageParsingRpmFallback)
@@ -559,10 +559,10 @@ TEST_F(SysInfoPackagesLinuxParserRPMTest, invalidPackageParsingRpmFallback)
     GetGsUtilsMock() = utils_mock.get();
     GetRpmLibMock() = rpm_mock.get();
 
-    EXPECT_CALL(*rpm, exists(_)).Times(1).WillOnce(Return(false));
+    EXPECT_CALL(*fsw, exists(_)).Times(1).WillOnce(Return(false));
     EXPECT_CALL(*rpm_mock, rpmReadConfigFiles(_, _)).Times(1).WillOnce(Return(1));
     EXPECT_CALL(*utils_mock, exec(_, _)).Times(1).WillOnce(Return("this is not a valid rpm -qa output"));
     EXPECT_CALL(wrapper, callbackMock(_)).Times(0);
 
-    rpm->getRpmInfo([&wrapper](nlohmann::json& data) { wrapper.callbackMock(data); });
+    GetRpmInfo([&wrapper](nlohmann::json& packageInfo) { wrapper.callbackMock(packageInfo); }, fsw);
 }
