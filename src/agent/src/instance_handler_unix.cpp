@@ -8,16 +8,8 @@
 #include <cerrno>
 #include <fmt/format.h>
 #include <fstream>
-#include <sys/file.h>
-#include <unistd.h>
 
-#if defined(__linux__)
-#include <unistd.h>
-#elif defined(__APPLE__)
-#include <mach-o/dyld.h>
-#else
-#error "Unsupported platform"
-#endif
+#include <fcntl.h>
 
 namespace
 {
@@ -80,8 +72,7 @@ namespace instance_handler
 
         const std::string filename = fmt::format("{}/wazuh-agent.lock", m_lockFilePath);
 
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
-        const int fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0644);
+        const int fd = m_fileSystemWrapper->open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0644);
         if (fd == -1)
         {
             m_errno = errno;
@@ -89,11 +80,11 @@ namespace instance_handler
             return false;
         }
 
-        if (flock(fd, LOCK_EX | LOCK_NB) == -1)
+        if (m_fileSystemWrapper->flock(fd, LOCK_EX | LOCK_NB) == -1)
         {
             m_errno = errno;
             LogDebug("Unable to lock lock file: {}. Error: {} ({})", filename.c_str(), m_errno, std::strerror(m_errno));
-            close(fd);
+            m_fileSystemWrapper->close(fd);
             return false;
         }
 

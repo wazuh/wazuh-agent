@@ -65,4 +65,22 @@ public:
     /// @param path The file or directory to remove.
     /// @return Returns true if the file or directory was successfully removed, otherwise false.
     virtual bool remove(const std::filesystem::path& path) const = 0;
+
+    /// @brief Opens a file
+    /// @param path The file to open
+    /// @param flags Flags to use when opening the file
+    /// @param mode Mode to use when opening the file
+    /// @return File descriptor or -1 on error
+    virtual int open(const char* path, int flags, int mode) const = 0;
+
+    /// @brief Applies or removes a lock on an open file descriptor
+    /// @param fd File descriptor
+    /// @param operation Lock operation
+    /// @return 0 on success, -1 on error
+    virtual int flock(int fd, int operation) const = 0;
+
+    /// @brief Closes a file descriptor
+    /// @param fd File descriptor
+    /// @return 0 on success, -1 on error
+    virtual int close(int fd) const = 0;
 };

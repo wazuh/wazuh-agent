@@ -42,5 +42,14 @@ namespace file_system
 
         /// @copydoc IFileSystemWrapper::remove
         bool remove(const std::filesystem::path& path) const override;
+
+        /// @copydoc IFileSystemWrapper::open
+        int open(const char* path, int flags, int mode) const override;
+
+        /// @copydoc IFileSystemWrapper::flock
+        int flock(int fd, int operation) const override;
+
+        /// @copydoc IFileSystemWrapper::close
+        int close(int fd) const override;
     };
 } // namespace file_system
