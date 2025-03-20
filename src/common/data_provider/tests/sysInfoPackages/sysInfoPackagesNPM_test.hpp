@@ -10,12 +10,14 @@ class NPMTest : public ::testing::Test
 {
 protected:
     std::shared_ptr<MockFileSystemUtils> mockFileSystemUtils;
-    std::unique_ptr<NPM<MockFileSystemWrapper, MockJsonIO>> npm;
+    std::shared_ptr<MockFileSystemWrapper> fileSystemWrapper;
+    std::unique_ptr<NPM<MockJsonIO>> npm;
 
     void SetUp() override
     {
         mockFileSystemUtils = std::make_shared<MockFileSystemUtils>();
-        npm = std::make_unique<NPM<MockFileSystemWrapper, MockJsonIO>>(mockFileSystemUtils);
+        fileSystemWrapper = std::make_shared<MockFileSystemWrapper>();
+        npm = std::make_unique<NPM<MockJsonIO>>(mockFileSystemUtils, fileSystemWrapper);
     }
 
     void TearDown() override
