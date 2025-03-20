@@ -57,11 +57,15 @@ namespace instance_handler
 
     /// @brief Gets the status of the daemon
     /// @param configFilePath The path to the configuration file
+    /// @param fileSystemWrapper An optional filesystem wrapper to allow for a mock to be passed in unit tests
     /// @return A string indicating whether the daemon is "running" or "stopped"
-    std::string GetAgentStatus(const std::string& configFilePath);
+    std::string GetAgentStatus(const std::string& configFilePath,
+                               std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr);
 
     /// @brief Generates an instance handler for the daemon
     /// @param configFilePath The path to the configuration file
+    /// @param fileSystemWrapper An optional filesystem wrapper to allow for a mock to be passed in unit tests
     /// @return An InstanceHandler object
-    InstanceHandler GetInstanceHandler(const std::string& configFilePath);
+    InstanceHandler GetInstanceHandler(const std::string& configFilePath,
+                                       std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr);
 } // namespace instance_handler

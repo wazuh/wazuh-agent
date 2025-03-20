@@ -48,14 +48,16 @@ namespace instance_handler
         return true;
     }
 
-    InstanceHandler GetInstanceHandler([[maybe_unused]] const std::string& configFilePath)
+    InstanceHandler GetInstanceHandler([[maybe_unused]] const std::string& configFilePath,
+                                       [[maybe_unused]] std::shared_ptr<IFileSystemWrapper> fileSystemWrapper)
     {
         return {InstanceHandler("")};
     }
 
     void InstanceHandler::releaseInstanceLock() const {}
 
-    std::string GetAgentStatus(const std::string& configFilePath)
+    std::string GetAgentStatus(const std::string& configFilePath,
+                               [[maybe_unused]] std::shared_ptr<IFileSystemWrapper> fileSystemWrapper)
     {
         InstanceHandler instanceHandler = GetInstanceHandler(configFilePath);
 

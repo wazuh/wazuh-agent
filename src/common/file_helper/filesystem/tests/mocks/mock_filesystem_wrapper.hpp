@@ -18,4 +18,7 @@ public:
                 (const, override));
     MOCK_METHOD(void, rename, (const std::filesystem::path& from, const std::filesystem::path& to), (const, override));
     MOCK_METHOD(bool, remove, (const std::filesystem::path& path), (const, override));
+    MOCK_METHOD(int, open, (const char* path, int flags, int mode), (const, override));
+    MOCK_METHOD(int, flock, (int fd, int operation), (const, override));
+    MOCK_METHOD(int, close, (int fd), (const, override));
 };

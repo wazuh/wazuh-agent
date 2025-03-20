@@ -40,8 +40,10 @@ add_test(NAME MessageQueueUtilsTest COMMAND message_queue_utils_test)
 if(UNIX)
     add_executable(instance_handler_test instance_handler_test.cpp)
     configure_target(instance_handler_test)
-    target_include_directories(instance_handler_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
-    target_link_libraries(instance_handler_test PRIVATE Agent GTest::gtest)
+    target_include_directories(instance_handler_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../common/file_helper/filesystem/tests/mocks/)
+    target_link_libraries(instance_handler_test PRIVATE Agent GTest::gtest GTest::gmock)
     add_test(NAME InstanceHandlerTest COMMAND instance_handler_test)
 endif()
 

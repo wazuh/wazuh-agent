@@ -22,66 +22,30 @@ protected:
     std::string AGENT_CONFIG_PATH;
     std::string AGENT_PATH;
 
-    void SetUp() override
-    {
-#ifdef WIN32
-        char* tmpPath = nullptr;
-        size_t len = 0;
-
-        _dupenv_s(&tmpPath, &len, "TMP");
-        std::string tempFolder = std::string(tmpPath);
-        AGENT_CONFIG_PATH = tempFolder + "wazuh-agent.yml";
-        AGENT_PATH = tempFolder;
-#else
-        AGENT_CONFIG_PATH = "/tmp/wazuh-agent.yml";
-        AGENT_PATH = "/tmp";
-#endif
-
-        CreateTempConfigFile();
-    }
-
-    void TearDown() override
-    {
-        CleanUpTempFiles();
-    }
-
-    void CreateTempConfigFile()
-    {
-        CleanUpTempFiles();
-
-        std::ofstream configFilePath(AGENT_CONFIG_PATH);
-        configFilePath << R"(
-agent:
-  server_url: https://localhost:27000
-  path.data: )" << AGENT_PATH
-                       << R"(
-  retry_interval: 30s
-inventory:
-  enabled: false
-  interval: 1h
-  scan_on_start: true
-  hardware: true
-  os: true
-  network: true
-  packages: true
-  ports: true
-  ports_all: true
-  processes: true
-  hotfixes: true
-logcollector:
-  enabled: false
-  localfiles:
-    - /var/log/auth.log
-  reload_interval: 1m
-  read_interval: 500ms
-)";
-        configFilePath.close();
-    }
-
-    void CleanUpTempFiles()
-    {
-        std::remove(AGENT_CONFIG_PATH.c_str());
-    }
+    const std::string m_configString = R"(
+        agent:
+          server_url: https://localhost:27000
+          path.data: )" + AGENT_PATH + R"(
+          retry_interval: 30s
+        inventory:
+          enabled: false
+          interval: 1h
+          scan_on_start: true
+          hardware: true
+          os: true
+          network: true
+          packages: true
+          ports: true
+          ports_all: true
+          processes: true
+          hotfixes: true
+        logcollector:
+          enabled: false
+          localfiles:
+            - /var/log/auth.log
+          reload_interval: 1m
+          read_interval: 500ms
+        )";
 };
 
 TEST_F(AgentTests, AgentStopsWhenSignalReceived)
@@ -122,7 +86,7 @@ TEST_F(AgentTests, AgentStopsWhenSignalReceived)
 
     EXPECT_CALL(*mockCommandHandlerPtr, Stop()).Times(1);
 
-    Agent agent(AGENT_CONFIG_PATH,
+    Agent agent(std::make_unique<configuration::ConfigurationParser>(m_configString),
                 std::move(mockSignalHandler),
                 std::move(mockHttpClient),
                 std::move(mockAgentInfo),

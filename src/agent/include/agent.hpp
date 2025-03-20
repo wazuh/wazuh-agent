@@ -26,7 +26,7 @@ class Agent
 {
 public:
     /// @brief Constructor
-    /// @param configFilePath Path to the configuration file
+    /// @param configurationParser Pointer to ConfigurationParser instance
     /// @param signalHandler Pointer to a custom ISignalHandler implementation
     /// @param httpClient Pointer to an IHttpClient implementation
     /// @param agentInfo Pointer to a custom IAgentInfo implementation
@@ -34,7 +34,8 @@ public:
     /// @param messageQueue Pointer to a custom IMultiTypeQueue implementation
     /// @throws std::runtime_error If the Agent is not enrolled
     /// @throws Any exception propagated from dependencies used within the constructor
-    Agent(const std::string& configFilePath,
+    Agent(std::unique_ptr<configuration::ConfigurationParser> configurationParser =
+              std::make_unique<configuration::ConfigurationParser>(),
           std::unique_ptr<ISignalHandler> signalHandler = std::make_unique<SignalHandler>(),
           std::unique_ptr<http_client::IHttpClient> httpClient = nullptr,
           std::unique_ptr<IAgentInfo> agentInfo = nullptr,
