@@ -32,12 +32,12 @@ public:
     ~PYPI() = default;
 
     /// @brief Retrieves the PYPI packages information
-    /// @param osRootFolders Paths to search for packages
+    /// @param osRootDirectories Paths to search for packages
     /// @param callback Callback function
-    void getPackages(const std::set<std::string>& osRootFolders, std::function<void(nlohmann::json&)> callback)
+    void getPackages(const std::set<std::string>& osRootDirectories, std::function<void(nlohmann::json&)> callback)
     {
 
-        for (const auto& osFolder : osRootFolders)
+        for (const auto& osFolder : osRootDirectories)
         {
             std::deque<std::string> expandedPaths;
 

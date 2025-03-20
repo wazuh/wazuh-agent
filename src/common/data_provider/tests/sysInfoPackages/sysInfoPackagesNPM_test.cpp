@@ -24,7 +24,7 @@ TEST_F(NPMTest, getPackages_ValidPackagesTest)
     bool foundPackage1 = false;
     bool foundPackage2 = false;
 
-    const std::set<std::string> folders = {"/fake"};
+    const std::set<std::string> directories = {"/fake"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
@@ -41,7 +41,7 @@ TEST_F(NPMTest, getPackages_ValidPackagesTest)
         }
     };
 
-    npm->getPackages(folders, callback);
+    npm->getPackages(directories, callback);
 
     EXPECT_TRUE(foundPackage1);
     EXPECT_TRUE(foundPackage2);
@@ -56,9 +56,9 @@ TEST_F(NPMTest, getPackages_NoPackagesFoundTest)
 
     bool callbackCalled = false;
 
-    const std::set<std::string> folders = {"/fake"};
+    const std::set<std::string> directories = {"/fake"};
 
-    npm->getPackages(folders, [&](nlohmann::json&) { callbackCalled = true; });
+    npm->getPackages(directories, [&](nlohmann::json&) { callbackCalled = true; });
 
     EXPECT_FALSE(callbackCalled);
 }
@@ -76,12 +76,12 @@ TEST_F(NPMTest, getPackages_NoPackageJsonTest)
 
     bool callbackCalled = false;
 
-    const std::set<std::string> folders = {"/fake"};
+    const std::set<std::string> directories = {"/fake"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    npm->getPackages(folders, [&](nlohmann::json&) { callbackCalled = true; });
+    npm->getPackages(directories, [&](nlohmann::json&) { callbackCalled = true; });
 
     EXPECT_FALSE(callbackCalled);
 }
@@ -99,12 +99,12 @@ TEST_F(NPMTest, getPackages_InvalidPackageJsonNameTest)
 
     bool callbackCalled = false;
 
-    const std::set<std::string> folders = {"/fake"};
+    const std::set<std::string> directories = {"/fake"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    npm->getPackages(folders, [&](nlohmann::json&) { callbackCalled = true; });
+    npm->getPackages(directories, [&](nlohmann::json&) { callbackCalled = true; });
 
     EXPECT_FALSE(callbackCalled);
 }
@@ -122,12 +122,12 @@ TEST_F(NPMTest, getPackages_InvalidPackageJsonVersionTest)
 
     bool callbackCalled = false;
 
-    const std::set<std::string> folders = {"/fake"};
+    const std::set<std::string> directories = {"/fake"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    npm->getPackages(folders, [&](nlohmann::json&) { callbackCalled = true; });
+    npm->getPackages(directories, [&](nlohmann::json&) { callbackCalled = true; });
 
     EXPECT_FALSE(callbackCalled);
 }
@@ -150,12 +150,12 @@ TEST_F(NPMTest, getPackages_ValidPackageJson2Test)
     bool callbackCalledFirst = false;
     bool callbackCalledSecond = false;
 
-    const std::set<std::string> folders = {"/fake"};
+    const std::set<std::string> directories = {"/fake"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    npm->getPackages(folders,
+    npm->getPackages(directories,
                      [&](nlohmann::json& j)
                      {
                          if (j.at("name") == "TestPackage1" && j.at("version") == "1.0.0")
