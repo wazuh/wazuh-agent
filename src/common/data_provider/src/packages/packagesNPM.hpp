@@ -13,8 +13,6 @@
 #include <memory>
 #include <set>
 
-// TODO: should move nlohmann outside template to create a separated cpp file
-
 /// @brief NPM parser
 template<typename TJsonReader = Utils::JsonIO<nlohmann::json>>
 class NPM final : public TJsonReader
@@ -33,19 +31,19 @@ public:
     ~NPM() = default;
 
     /// @brief Retrieves the NPM packages information
-    /// @param osRootFolders Paths to search for packages //TODO: rename to directories
+    /// @param osRootDirectories Paths to search for packages
     /// @param callback Callback function
-    void getPackages(const std::set<std::string>& osRootFolders, std::function<void(nlohmann::json&)> callback)
+    void getPackages(const std::set<std::string>& osRootDirectories, std::function<void(nlohmann::json&)> callback)
     {
-        // Iterate over node_modules folders
-        for (const auto& osRootFolder : osRootFolders)
+        // Iterate over node_modules directories
+        for (const auto& osRootDirectory : osRootDirectories)
         {
             try
             {
                 std::deque<std::string> expandedPaths;
 
                 // Expand paths
-                m_fsUtils->expand_absolute_path(osRootFolder, expandedPaths);
+                m_fsUtils->expand_absolute_path(osRootDirectory, expandedPaths);
                 // Explore expanded paths
                 exploreExpandedPaths(expandedPaths, callback);
             }

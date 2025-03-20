@@ -19,12 +19,12 @@ TEST_F(PYPITest, getPackagesTest)
         capturedJson = j;
     };
 
-    const std::set<std::string> folders = {"/usr/local/lib/python3.9/site-packages"};
+    const std::set<std::string> directories = {"/usr/local/lib/python3.9/site-packages"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    pypi->getPackages(folders, callback);
+    pypi->getPackages(directories, callback);
 
     EXPECT_TRUE(capturedJson.empty());
 }
@@ -43,12 +43,12 @@ TEST_F(PYPITest, getPackages_NoFilesInDirectoryTest)
         capturedJson = j;
     };
 
-    const std::set<std::string> folders = {"/usr/local/lib/python3.9/site-packages"};
+    const std::set<std::string> directories = {"/usr/local/lib/python3.9/site-packages"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    pypi->getPackages(folders, callback);
+    pypi->getPackages(directories, callback);
 
     EXPECT_TRUE(capturedJson.empty());
 }
@@ -58,7 +58,7 @@ TEST_F(PYPITest, getPackages_NonDirectoryPathTest)
     EXPECT_CALL(*fileSystemWrapper, exists(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*fileSystemWrapper, is_directory(_)).WillRepeatedly(Return(false));
 
-    const std::set<std::string> folders = {"/usr/local/lib/python3.9/site-packages"};
+    const std::set<std::string> directories = {"/usr/local/lib/python3.9/site-packages"};
     nlohmann::json capturedJson;
     auto callback = [&](nlohmann::json& j)
     {
@@ -68,7 +68,7 @@ TEST_F(PYPITest, getPackages_NonDirectoryPathTest)
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    pypi->getPackages(folders, callback);
+    pypi->getPackages(directories, callback);
 
     EXPECT_TRUE(capturedJson.empty());
 }
@@ -99,12 +99,12 @@ TEST_F(PYPITest, getPackages_OneValidPackageTestEggInfo)
         capturedJson = j;
     };
 
-    const std::set<std::string> folders = {"/usr/local/lib/python3.9/site-packages"};
+    const std::set<std::string> directories = {"/usr/local/lib/python3.9/site-packages"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    pypi->getPackages(folders, callback);
+    pypi->getPackages(directories, callback);
 
     EXPECT_EQ(capturedJson.at("name"), "TestPackage");
     EXPECT_EQ(capturedJson.at("version"), "1.0.0");
@@ -136,12 +136,12 @@ TEST_F(PYPITest, getPackages_OneValidPackageTestNoRegularFileDistInfo)
         capturedJson = j;
     };
 
-    const std::set<std::string> folders = {"/usr/local/lib/python3.9/site-packages"};
+    const std::set<std::string> directories = {"/usr/local/lib/python3.9/site-packages"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    pypi->getPackages(folders, callback);
+    pypi->getPackages(directories, callback);
 
     EXPECT_EQ(capturedJson.at("name"), "TestPackage");
     EXPECT_EQ(capturedJson.at("version"), "1.0.0");
@@ -173,12 +173,12 @@ TEST_F(PYPITest, getPackages_OneValidPackageTestDistInfo)
         capturedJson = j;
     };
 
-    const std::set<std::string> folders = {"/usr/local/lib/python3.9/site-packages"};
+    const std::set<std::string> directories = {"/usr/local/lib/python3.9/site-packages"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    pypi->getPackages(folders, callback);
+    pypi->getPackages(directories, callback);
 
     EXPECT_EQ(capturedJson.at("name"), "TestPackage");
     EXPECT_EQ(capturedJson.at("version"), "1.0.0");
@@ -210,12 +210,12 @@ TEST_F(PYPITest, getPackages_OneValidPackageTestNoRegularFileEggInfo)
         capturedJson = j;
     };
 
-    const std::set<std::string> folders = {"/usr/local/lib/python3.9/site-packages"};
+    const std::set<std::string> directories = {"/usr/local/lib/python3.9/site-packages"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    pypi->getPackages(folders, callback);
+    pypi->getPackages(directories, callback);
 
     EXPECT_EQ(capturedJson.at("name"), "TestPackage");
     EXPECT_EQ(capturedJson.at("version"), "1.0.0");
@@ -269,12 +269,12 @@ TEST_F(PYPITest, getPackages_MultipleValidPackagesTest)
         }
     };
 
-    const std::set<std::string> folders = {"/usr/local/lib/python3.9/site-packages"};
+    const std::set<std::string> directories = {"/usr/local/lib/python3.9/site-packages"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    pypi->getPackages(folders, callback);
+    pypi->getPackages(directories, callback);
 
     EXPECT_TRUE(foundPackage1);
     EXPECT_TRUE(foundPackage2);
@@ -307,12 +307,12 @@ TEST_F(PYPITest, getPackages_InvalidPackageTest_NoLines)
         capturedJson = j;
     };
 
-    const std::set<std::string> folders = {"/usr/local/lib/python3.9/site-packages"};
+    const std::set<std::string> directories = {"/usr/local/lib/python3.9/site-packages"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    pypi->getPackages(folders, callback);
+    pypi->getPackages(directories, callback);
 
     EXPECT_TRUE(capturedJson.empty());
 }
@@ -344,12 +344,12 @@ TEST_F(PYPITest, getPackages_InvalidPackageTest_InvalidLines)
         capturedJson = j;
     };
 
-    const std::set<std::string> folders = {"/usr/local/lib/python3.9/site-packages"};
+    const std::set<std::string> directories = {"/usr/local/lib/python3.9/site-packages"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    pypi->getPackages(folders, callback);
+    pypi->getPackages(directories, callback);
 
     EXPECT_TRUE(capturedJson.empty());
 }
@@ -381,12 +381,12 @@ TEST_F(PYPITest, getPackages_InvalidPackageTest_MissingName)
         capturedJson = j;
     };
 
-    const std::set<std::string> folders = {"/usr/local/lib/python3.9/site-packages"};
+    const std::set<std::string> directories = {"/usr/local/lib/python3.9/site-packages"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    pypi->getPackages(folders, callback);
+    pypi->getPackages(directories, callback);
 
     EXPECT_TRUE(capturedJson.empty());
 }
@@ -418,12 +418,12 @@ TEST_F(PYPITest, getPackages_InvalidPackageTest_MissingVersion)
         capturedJson = j;
     };
 
-    const std::set<std::string> folders = {"/usr/local/lib/python3.9/site-packages"};
+    const std::set<std::string> directories = {"/usr/local/lib/python3.9/site-packages"};
 
     EXPECT_CALL(*mockFileSystemUtils, expand_absolute_path(_, _))
         .WillRepeatedly([](const std::string& base, std::deque<std::string>& out) { out.push_back(base); });
 
-    pypi->getPackages(folders, callback);
+    pypi->getPackages(directories, callback);
 
     std::cout << capturedJson.dump(4) << '\n';
     EXPECT_TRUE(capturedJson.empty());
