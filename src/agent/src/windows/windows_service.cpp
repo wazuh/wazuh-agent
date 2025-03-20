@@ -238,7 +238,7 @@ namespace windows_service
 
             LogInfo("Starting Wazuh Agent.");
 
-            Agent agent(configFilePath);
+            Agent agent(std::make_unique<configuration::ConfigurationParser>(std::filesystem::path(configFilePath)));
             agent.Run();
         }
         catch (const std::exception& e)

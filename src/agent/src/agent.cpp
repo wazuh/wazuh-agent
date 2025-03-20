@@ -13,19 +13,16 @@
 
 #include <nlohmann/json.hpp>
 
-#include <filesystem>
 #include <memory>
 
-Agent::Agent(const std::string& configFilePath,
+Agent::Agent(std::unique_ptr<configuration::ConfigurationParser> configurationParser,
              std::unique_ptr<ISignalHandler> signalHandler,
              std::unique_ptr<http_client::IHttpClient> httpClient,
              std::unique_ptr<IAgentInfo> agentInfo,
              std::unique_ptr<command_handler::ICommandHandler> commandHandler,
              std::shared_ptr<IMultiTypeQueue> messageQueue)
     : m_signalHandler(std::move(signalHandler))
-    , m_configurationParser(configFilePath.empty() ? std::make_shared<configuration::ConfigurationParser>()
-                                                   : std::make_shared<configuration::ConfigurationParser>(
-                                                         std::filesystem::path(configFilePath)))
+    , m_configurationParser(std::move(configurationParser))
     , m_agentInfo(agentInfo
                       ? std::move(agentInfo)
                       : std::make_unique<AgentInfo>(
