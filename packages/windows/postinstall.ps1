@@ -45,8 +45,13 @@ if (Test-Path $destinationPath) {
 
 ## Move the new configuration file
 if (Test-Path $sourcePath) {
-    Move-Item -Path $sourcePath -Destination $destinationPath -Force
-    Write-Host "Config file moved successfully."
+    try {
+        Move-Item -Path $sourcePath -Destination $destinationPath -Force
+        Write-Host "Config file moved successfully."
+    } catch {
+        Write-Host "Failed to move config file: $_"
+        exit 1
+    }
 } else {
     Write-Host "Source file not found: $sourcePath"
 }
