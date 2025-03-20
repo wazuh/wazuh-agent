@@ -23,10 +23,10 @@ public:
     /// @brief NPM constructor
     NPM(std::shared_ptr<IFileSystemUtils> fsUtils = nullptr,
         std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
+        : m_fsUtils(fsUtils ? fsUtils : std::make_shared<file_system::FileSystemUtils>())
+        , m_fileSystemWrapper(fileSystemWrapper ? fileSystemWrapper
+                                                : std::make_shared<file_system::FileSystemWrapper>())
     {
-        m_fsUtils = fsUtils ? fsUtils : std::make_shared<file_system::FileSystemUtils>();
-        m_fileSystemWrapper =
-            fileSystemWrapper ? fileSystemWrapper : std::make_shared<file_system::FileSystemWrapper>();
     }
 
     /// @brief NPM destructor
