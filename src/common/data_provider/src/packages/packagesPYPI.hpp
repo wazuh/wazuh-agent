@@ -15,15 +15,16 @@
 const static std::map<std::string, std::string> FILE_MAPPING_PYPI {{"egg-info", "PKG-INFO"}, {"dist-info", "METADATA"}};
 
 /// @brief PYPI parser
-template<typename TFileSystem = file_system::FileSystemWrapper, typename TFileIOUtils = file_io::FileIOUtils>
-class PYPI final
-    : public TFileSystem
-    , public TFileIOUtils
+template<typename TFileIOUtils = file_io::FileIOUtils>
+class PYPI final : public TFileIOUtils
 {
 public:
     /// @brief PYPI constructor
-    PYPI(std::shared_ptr<IFileSystemUtils> fsUtils = nullptr)
+    PYPI(std::shared_ptr<IFileSystemUtils> fsUtils = nullptr,
+         std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
         : m_fsUtils(fsUtils ? fsUtils : std::make_shared<file_system::FileSystemUtils>())
+        , m_fileSystemWrapper(fileSystemWrapper ? fileSystemWrapper
+                                                : std::make_shared<file_system::FileSystemWrapper>())
     {
     }
 
@@ -123,11 +124,11 @@ private:
             {
                 if (filename.find(key) != std::string::npos)
                 {
-                    if (TFileSystem::is_regular_file(path))
+                    if (m_fileSystemWrapper->is_regular_file(path))
                     {
                         parseMetadata(path, callback);
                     }
-                    else if (TFileSystem::is_directory(path))
+                    else if (m_fileSystemWrapper->is_directory(path))
                     {
                         parseMetadata(path / value, callback);
                     }
@@ -155,9 +156,9 @@ private:
             try
             {
                 // Exist and is a directory
-                if (TFileSystem::exists(expandedPath) && TFileSystem::is_directory(expandedPath))
+                if (m_fileSystemWrapper->exists(expandedPath) && m_fileSystemWrapper->is_directory(expandedPath))
                 {
-                    for (const std::filesystem::path& path : TFileSystem::list_directory(expandedPath))
+                    for (const std::filesystem::path& path : m_fileSystemWrapper->list_directory(expandedPath))
                     {
                         findCorrectPath(path, callback);
                     }
@@ -172,4 +173,7 @@ private:
 
     /// @brief Pointer to the file system utils
     std::shared_ptr<IFileSystemUtils> m_fsUtils;
+
+    /// @brief Member to interact with the file system.
+    std::shared_ptr<IFileSystemWrapper> m_fileSystemWrapper;
 };

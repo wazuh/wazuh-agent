@@ -11,12 +11,14 @@ class PYPITest : public ::testing::Test
 {
 protected:
     std::shared_ptr<MockFileSystemUtils> mockFileSystemUtils;
-    std::unique_ptr<PYPI<MockFileSystemWrapper, MockFileIOUtils>> pypi;
+    std::shared_ptr<MockFileSystemWrapper> fileSystemWrapper;
+    std::unique_ptr<PYPI<MockFileIOUtils>> pypi;
 
     void SetUp() override
     {
         mockFileSystemUtils = std::make_shared<MockFileSystemUtils>();
-        pypi = std::make_unique<PYPI<MockFileSystemWrapper, MockFileIOUtils>>(mockFileSystemUtils);
+        fileSystemWrapper = std::make_shared<MockFileSystemWrapper>();
+        pypi = std::make_unique<PYPI<MockFileIOUtils>>(mockFileSystemUtils, fileSystemWrapper);
     }
 
     void TearDown() override
