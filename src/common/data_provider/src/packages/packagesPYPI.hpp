@@ -15,15 +15,17 @@
 const static std::map<std::string, std::string> FILE_MAPPING_PYPI {{"egg-info", "PKG-INFO"}, {"dist-info", "METADATA"}};
 
 /// @brief PYPI parser
-template<typename TFileSystem = file_system::FileSystemWrapper, typename TFileIOUtils = file_io::FileIOUtils>
 class PYPI final
-    : public TFileSystem
-    , public TFileIOUtils
 {
 public:
     /// @brief PYPI constructor
-    PYPI(std::shared_ptr<IFileSystemUtils> fsUtils = nullptr)
-        : m_fsUtils(fsUtils ? fsUtils : std::make_shared<file_system::FileSystemUtils>())
+    PYPI(std::unique_ptr<IFileSystemUtils> fsUtils = nullptr,
+         std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr,
+         std::unique_ptr<IFileIOUtils> fileIOWrapper = nullptr)
+        : m_fsUtils(fsUtils ? std::move(fsUtils) : std::make_unique<file_system::FileSystemUtils>())
+        , m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
+                                                : std::make_unique<file_system::FileSystemWrapper>())
+        , m_fileIoWrapper(fileIOWrapper ? std::move(fileIOWrapper) : std::make_unique<file_io::FileIOUtils>())
     {
     }
 
@@ -31,12 +33,12 @@ public:
     ~PYPI() = default;
 
     /// @brief Retrieves the PYPI packages information
-    /// @param osRootFolders Paths to search for packages
+    /// @param osRootDirectories Paths to search for packages
     /// @param callback Callback function
-    void getPackages(const std::set<std::string>& osRootFolders, std::function<void(nlohmann::json&)> callback)
+    void getPackages(const std::set<std::string>& osRootDirectories, std::function<void(nlohmann::json&)> callback)
     {
 
-        for (const auto& osFolder : osRootFolders)
+        for (const auto& osFolder : osRootDirectories)
         {
             std::deque<std::string> expandedPaths;
 
@@ -82,26 +84,26 @@ private:
         packageInfo["install_time"] = UNKNOWN_VALUE;
         // The multiarch field won't have a default value
 
-        TFileIOUtils::readLineByLine(path,
-                                     [&packageInfo](const std::string& line) -> bool
-                                     {
-                                         const auto it {std::find_if(PYPI_FIELDS.begin(),
-                                                                     PYPI_FIELDS.end(),
-                                                                     [&line](const auto& element) {
-                                                                         return Utils::startsWith(line, element.first);
-                                                                     })};
+        m_fileIoWrapper->readLineByLine(path,
+                                        [&packageInfo](const std::string& line) -> bool
+                                        {
+                                            const auto it {
+                                                std::find_if(PYPI_FIELDS.begin(),
+                                                             PYPI_FIELDS.end(),
+                                                             [&line](const auto& element)
+                                                             { return Utils::startsWith(line, element.first); })};
 
-                                         if (PYPI_FIELDS.end() != it)
-                                         {
-                                             const auto& [key, value] {*it};
+                                            if (PYPI_FIELDS.end() != it)
+                                            {
+                                                const auto& [key, value] {*it};
 
-                                             if (!packageInfo.contains(value))
-                                             {
-                                                 packageInfo[value] = Utils::Trim(line.substr(key.length()), "\r");
-                                             }
-                                         }
-                                         return true;
-                                     });
+                                                if (!packageInfo.contains(value))
+                                                {
+                                                    packageInfo[value] = Utils::Trim(line.substr(key.length()), "\r");
+                                                }
+                                            }
+                                            return true;
+                                        });
 
         // Check if we have a name and version
         if (packageInfo.contains("name") && packageInfo.contains("version"))
@@ -123,11 +125,11 @@ private:
             {
                 if (filename.find(key) != std::string::npos)
                 {
-                    if (TFileSystem::is_regular_file(path))
+                    if (m_fileSystemWrapper->is_regular_file(path))
                     {
                         parseMetadata(path, callback);
                     }
-                    else if (TFileSystem::is_directory(path))
+                    else if (m_fileSystemWrapper->is_directory(path))
                     {
                         parseMetadata(path / value, callback);
                     }
@@ -155,9 +157,9 @@ private:
             try
             {
                 // Exist and is a directory
-                if (TFileSystem::exists(expandedPath) && TFileSystem::is_directory(expandedPath))
+                if (m_fileSystemWrapper->exists(expandedPath) && m_fileSystemWrapper->is_directory(expandedPath))
                 {
-                    for (const std::filesystem::path& path : TFileSystem::list_directory(expandedPath))
+                    for (const std::filesystem::path& path : m_fileSystemWrapper->list_directory(expandedPath))
                     {
                         findCorrectPath(path, callback);
                     }
@@ -171,5 +173,11 @@ private:
     }
 
     /// @brief Pointer to the file system utils
-    std::shared_ptr<IFileSystemUtils> m_fsUtils;
+    std::unique_ptr<IFileSystemUtils> m_fsUtils;
+
+    /// @brief Member to interact with the file system.
+    std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper;
+
+    /// @brief Member to interact with the file IO Utils.
+    std::unique_ptr<IFileIOUtils> m_fileIoWrapper;
 };

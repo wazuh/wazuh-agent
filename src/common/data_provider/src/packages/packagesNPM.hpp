@@ -14,15 +14,16 @@
 #include <set>
 
 /// @brief NPM parser
-template<typename TFileSystem = file_system::FileSystemWrapper, typename TJsonReader = Utils::JsonIO<nlohmann::json>>
-class NPM final
-    : public TFileSystem
-    , public TJsonReader
+template<typename TJsonReader = Utils::JsonIO<nlohmann::json>>
+class NPM final : public TJsonReader
 {
 public:
     /// @brief NPM constructor
-    NPM(std::shared_ptr<IFileSystemUtils> fsUtils = nullptr)
-        : m_fsUtils(fsUtils ? fsUtils : std::make_shared<file_system::FileSystemUtils>())
+    NPM(std::unique_ptr<IFileSystemUtils> fsUtils = nullptr,
+        std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
+        : m_fsUtils(fsUtils ? std::move(fsUtils) : std::make_unique<file_system::FileSystemUtils>())
+        , m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
+                                                : std::make_unique<file_system::FileSystemWrapper>())
     {
     }
 
@@ -30,19 +31,19 @@ public:
     ~NPM() = default;
 
     /// @brief Retrieves the NPM packages information
-    /// @param osRootFolders Paths to search for packages
+    /// @param osRootDirectories Paths to search for packages
     /// @param callback Callback function
-    void getPackages(const std::set<std::string>& osRootFolders, std::function<void(nlohmann::json&)> callback)
+    void getPackages(const std::set<std::string>& osRootDirectories, std::function<void(nlohmann::json&)> callback)
     {
-        // Iterate over node_modules folders
-        for (const auto& osRootFolder : osRootFolders)
+        // Iterate over node_modules directories
+        for (const auto& osRootDirectory : osRootDirectories)
         {
             try
             {
                 std::deque<std::string> expandedPaths;
 
                 // Expand paths
-                m_fsUtils->expand_absolute_path(osRootFolder, expandedPaths);
+                m_fsUtils->expand_absolute_path(osRootDirectory, expandedPaths);
                 // Explore expanded paths
                 exploreExpandedPaths(expandedPaths, callback);
             }
@@ -71,7 +72,7 @@ private:
 
         try
         {
-            if (TFileSystem::exists(path))
+            if (m_fileSystemWrapper->exists(path))
             {
                 // Read json from filesystem path.
                 const auto packageJson = TJsonReader::readJson(path);
@@ -123,11 +124,11 @@ private:
                 // Exist and is a directory
                 const auto nodeModulesFolder {std::filesystem::path(expandedPath) / "node_modules"};
 
-                if (TFileSystem::exists(nodeModulesFolder))
+                if (m_fileSystemWrapper->exists(nodeModulesFolder))
                 {
-                    for (const auto& packageFolder : TFileSystem::list_directory(nodeModulesFolder))
+                    for (const auto& packageFolder : m_fileSystemWrapper->list_directory(nodeModulesFolder))
                     {
-                        if (TFileSystem::is_directory(packageFolder))
+                        if (m_fileSystemWrapper->is_directory(packageFolder))
                         {
                             parsePackage(packageFolder, callback);
                         }
@@ -143,5 +144,8 @@ private:
     }
 
     /// @brief Pointer to the file system utils
-    std::shared_ptr<IFileSystemUtils> m_fsUtils;
+    std::unique_ptr<IFileSystemUtils> m_fsUtils;
+
+    /// @brief Member to interact with the file system.
+    std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper;
 };
