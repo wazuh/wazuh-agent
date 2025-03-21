@@ -34,10 +34,10 @@ on:
         description: |
           Branch from wazuh/wazuh-agent repository to use.
         required: true
-      
+
 jobs:
   Upload-package-building-images:
-    runs-on: ${{ (inputs.architecture == 'arm64' || inputs.architecture == 'aarch64') && 'wz-linux-arm64' || 'ubuntu-latest' }}    
+    runs-on: ${{ (inputs.architecture == 'arm64' || inputs.architecture == 'aarch64') && 'wz-linux-arm64' || 'ubuntu-latest' }}
     name: Package - Upload pkg_${{ inputs.system }}_agent_builder_${{ inputs.architecture }} with tag ${{ inputs.docker_image_tag }}
     timeout-minutes: 240
 
@@ -77,5 +77,4 @@ jobs:
 
       - name: Build and push image ${{ env.CONTAINER_NAME }} with tag ${{ env.TAG }} to Github Container Registry
         run:
-          bash ./.github/actions/5_builderpackage_docker_onpush/build_and_push_image_to_ghcr.sh ${{ secrets.CI_WAZUH_AGENT_PACKAGES_CLASSIC }} ${{ github.actor}} ${{ env.CONTAINER_NAME }} ${{ env.DOCKERFILE_PATH }} ${{ env.TAG }}
-
+          bash ./.github/actions/5_builderpackage_docker_images/build_and_push_image_to_ghcr.sh ${{ secrets.CI_WAZUH_AGENT_PACKAGES_CLASSIC }} ${{ github.actor}} ${{ env.CONTAINER_NAME }} ${{ env.DOCKERFILE_PATH }} ${{ env.TAG }}
