@@ -1,7 +1,7 @@
 #include "stringHelper.hpp"
 
 #include <algorithm>
-#include <format>
+#include <fmt/format.h>
 #include <iomanip>
 #include <map>
 #include <memory>
@@ -207,7 +207,7 @@ namespace Utils
         {
             for (const auto& value : asciiData)
             {
-                ret += std::format("{:02x}", static_cast<int>(value));
+                ret += fmt::format("{:02x}", static_cast<int>(value));
             }
         }
 
