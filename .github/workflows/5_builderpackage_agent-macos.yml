@@ -129,9 +129,9 @@ jobs:
           repository: wazuh/wazuh-agent
           ref: ${{ inputs.source_reference }}
           persist-credentials: false
-      
+
       - name: Test Mac OS Package - ${{ inputs.architecture }}
-        uses: ./.github/actions/5_testintegration_binary_macos
+        uses: ./.github/actions/5_testcomponent_install_macos
         with:
           checksum: ${{ inputs.checksum }}
           upload_to_s3: 'false'
