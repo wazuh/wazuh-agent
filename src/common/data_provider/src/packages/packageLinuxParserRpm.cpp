@@ -10,7 +10,7 @@
 #include "utilsWrapper.hpp"
 
 void GetRpmInfo(const std::function<void(nlohmann::json&)>& callback,
-                std::shared_ptr<IFileSystemWrapper> fileSystemWrapper)
+                std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
 {
     const auto rpmDefaultQuery {[](const std::function<void(nlohmann::json&)>& cb)
                                 {
@@ -35,10 +35,12 @@ void GetRpmInfo(const std::function<void(nlohmann::json&)>& callback,
                                     }
                                 }};
 
-    auto ptrFileSystemWrapper =
-        fileSystemWrapper ? fileSystemWrapper : std::make_shared<file_system::FileSystemWrapper>();
+    if (!fileSystemWrapper)
+    {
+        fileSystemWrapper = std::make_unique<file_system::FileSystemWrapper>();
+    }
 
-    if (!(ptrFileSystemWrapper->exists(RPM_DATABASE) && ptrFileSystemWrapper->is_regular_file(RPM_DATABASE)))
+    if (!(fileSystemWrapper->exists(RPM_DATABASE) && fileSystemWrapper->is_regular_file(RPM_DATABASE)))
     {
         // We are probably using RPM >= 4.16 – get the packages from librpm.
         try

@@ -15,16 +15,17 @@
 const static std::map<std::string, std::string> FILE_MAPPING_PYPI {{"egg-info", "PKG-INFO"}, {"dist-info", "METADATA"}};
 
 /// @brief PYPI parser
-template<typename TFileIOUtils = file_io::FileIOUtils>
-class PYPI final : public TFileIOUtils
+class PYPI final
 {
 public:
     /// @brief PYPI constructor
-    PYPI(std::shared_ptr<IFileSystemUtils> fsUtils = nullptr,
-         std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
-        : m_fsUtils(fsUtils ? fsUtils : std::make_shared<file_system::FileSystemUtils>())
-        , m_fileSystemWrapper(fileSystemWrapper ? fileSystemWrapper
-                                                : std::make_shared<file_system::FileSystemWrapper>())
+    PYPI(std::unique_ptr<IFileSystemUtils> fsUtils = nullptr,
+         std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr,
+         std::unique_ptr<IFileIOUtils> fileIOWrapper = nullptr)
+        : m_fsUtils(fsUtils ? std::move(fsUtils) : std::make_unique<file_system::FileSystemUtils>())
+        , m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
+                                                : std::make_unique<file_system::FileSystemWrapper>())
+        , m_fileIoWrapper(fileIOWrapper ? std::move(fileIOWrapper) : std::make_unique<file_io::FileIOUtils>())
     {
     }
 
@@ -83,26 +84,26 @@ private:
         packageInfo["install_time"] = UNKNOWN_VALUE;
         // The multiarch field won't have a default value
 
-        TFileIOUtils::readLineByLine(path,
-                                     [&packageInfo](const std::string& line) -> bool
-                                     {
-                                         const auto it {std::find_if(PYPI_FIELDS.begin(),
-                                                                     PYPI_FIELDS.end(),
-                                                                     [&line](const auto& element) {
-                                                                         return Utils::startsWith(line, element.first);
-                                                                     })};
+        m_fileIoWrapper->readLineByLine(path,
+                                        [&packageInfo](const std::string& line) -> bool
+                                        {
+                                            const auto it {
+                                                std::find_if(PYPI_FIELDS.begin(),
+                                                             PYPI_FIELDS.end(),
+                                                             [&line](const auto& element)
+                                                             { return Utils::startsWith(line, element.first); })};
 
-                                         if (PYPI_FIELDS.end() != it)
-                                         {
-                                             const auto& [key, value] {*it};
+                                            if (PYPI_FIELDS.end() != it)
+                                            {
+                                                const auto& [key, value] {*it};
 
-                                             if (!packageInfo.contains(value))
-                                             {
-                                                 packageInfo[value] = Utils::Trim(line.substr(key.length()), "\r");
-                                             }
-                                         }
-                                         return true;
-                                     });
+                                                if (!packageInfo.contains(value))
+                                                {
+                                                    packageInfo[value] = Utils::Trim(line.substr(key.length()), "\r");
+                                                }
+                                            }
+                                            return true;
+                                        });
 
         // Check if we have a name and version
         if (packageInfo.contains("name") && packageInfo.contains("version"))
@@ -172,8 +173,11 @@ private:
     }
 
     /// @brief Pointer to the file system utils
-    std::shared_ptr<IFileSystemUtils> m_fsUtils;
+    std::unique_ptr<IFileSystemUtils> m_fsUtils;
 
     /// @brief Member to interact with the file system.
-    std::shared_ptr<IFileSystemWrapper> m_fileSystemWrapper;
+    std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper;
+
+    /// @brief Member to interact with the file IO Utils.
+    std::unique_ptr<IFileIOUtils> m_fileIoWrapper;
 };

@@ -11,11 +11,11 @@ protected:
     SysInfoPackagesLinuxParserRPMTest() = default;
     virtual ~SysInfoPackagesLinuxParserRPMTest() = default;
 
-    std::shared_ptr<MockFileSystemWrapper> fsw;
+    std::unique_ptr<MockFileSystemWrapper> fsw;
 
     void SetUp() override
     {
-        fsw = std::make_shared<MockFileSystemWrapper>();
+        fsw = std::make_unique<MockFileSystemWrapper>();
     }
 
     void TearDown() override

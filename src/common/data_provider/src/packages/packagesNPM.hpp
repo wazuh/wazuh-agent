@@ -19,11 +19,11 @@ class NPM final : public TJsonReader
 {
 public:
     /// @brief NPM constructor
-    NPM(std::shared_ptr<IFileSystemUtils> fsUtils = nullptr,
-        std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
-        : m_fsUtils(fsUtils ? fsUtils : std::make_shared<file_system::FileSystemUtils>())
-        , m_fileSystemWrapper(fileSystemWrapper ? fileSystemWrapper
-                                                : std::make_shared<file_system::FileSystemWrapper>())
+    NPM(std::unique_ptr<IFileSystemUtils> fsUtils = nullptr,
+        std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
+        : m_fsUtils(fsUtils ? std::move(fsUtils) : std::make_unique<file_system::FileSystemUtils>())
+        , m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
+                                                : std::make_unique<file_system::FileSystemWrapper>())
     {
     }
 
@@ -144,8 +144,8 @@ private:
     }
 
     /// @brief Pointer to the file system utils
-    std::shared_ptr<IFileSystemUtils> m_fsUtils;
+    std::unique_ptr<IFileSystemUtils> m_fsUtils;
 
     /// @brief Member to interact with the file system.
-    std::shared_ptr<IFileSystemWrapper> m_fileSystemWrapper;
+    std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper;
 };

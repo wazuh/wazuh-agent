@@ -21,7 +21,7 @@ void GetSnapInfo(const std::function<void(nlohmann::json&)>& callback);
  * @param fileSystemWrapper An optional filesystem wrapper. If nullptr, it will use FileSystemWrapper.
  */
 void GetRpmInfo(const std::function<void(nlohmann::json&)>& callback,
-                std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr);
+                std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr);
 
 class FactoryPackagesCreator final
 {
