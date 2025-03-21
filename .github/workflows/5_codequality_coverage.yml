@@ -1,0 +1,66 @@
+name: Coverage Check
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+env:
+  VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
+
+jobs:
+  coverage:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Set up dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake llvm gcovr autopoint libltdl-dev \
+          libtool zlib1g-dev libgcrypt20-dev libmagic-dev libpopt-dev \
+          libsqlite3-dev liblua5.4-dev gettext libarchive-dev libsystemd-dev
+      shell: bash
+
+    - name: Set up Binary caching
+      uses: ./.github/actions/vcpkg_related/5_builderpackage_vcpkg
+      with:
+        gh_token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Generate CMake project
+      run: |
+        mkdir -p build && cd build
+        cmake -DCMAKE_CXX_COMPILER=clang++-16 -DCMAKE_C_COMPILER=clang-16 ../src -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=1 -DCOVERAGE=1 -DENABLE_CLANG_TIDY=OFF -G "Unix Makefiles"
+      shell: bash
+
+    - name: Compile
+      run: |
+        cd build
+        cmake --build . --config Debug -j $(nproc)
+      shell: bash
+
+    - name: Generate and Check Coverage
+      run: |
+        cd build
+        cmake --build . --target coverage -j $(nproc)
+      shell: bash
+
+    - name: Zip Coverage Files
+      if: always()
+      run: |
+        cd build
+        zip -r coverage.zip coverage*
+      shell: bash
+
+    - name: Upload Coverage Artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: build/coverage.zip

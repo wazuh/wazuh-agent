@@ -1,0 +1,88 @@
+name: 'Package Linux Binaries'
+description: 'Package Linux Binaries'
+inputs:
+  architecture:
+    description: 'Linux image architecture'
+    required: true
+  docker_image_tag:
+    description: 'Requested Docker image tag'
+    required: false
+    default: 'auto'
+  source_reference:
+    description: 'Branch from wazuh/wazuh-agent repository to use.'
+    required: true
+  system:
+    description: 'Package system [deb,rpm]'
+    required: true
+  revision:
+    description: 'Package revision'
+    required: false
+  is_stage:
+    description: 'Stage package'
+    required: false
+  checksum:
+    description: 'Generate package checksum'
+    required: false
+  gh_token:
+    description: 'Used token to fetch Docker images'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Download wazuh-agent-binaries-${{ inputs.architecture }}.zip
+      uses: actions/download-artifact@v4
+      with:
+        name: wazuh-agent-binaries-${{ inputs.architecture }}
+
+    - name: Unzip precompiled repository
+      shell: bash
+      run: |
+        sudo unzip -o wazuh-agent-binaries-${{ inputs.architecture }}.zip -d /
+
+    - name: Set ARCH, TAG and DOCKER_IMAGE_NAME
+      uses: ./.github/actions/5_builderpackage_docker_resolvable
+      with:
+        system: ${{ inputs.system }}
+        architecture: ${{ inputs.architecture }}
+        docker_image_tag: ${{ inputs.docker_image_tag }}
+        source_reference: ${{ inputs.source_reference }}
+
+    - name: Fetch needed Docker image
+      uses: ./.github/actions/5_builderpackage_docker_pull
+      with:
+        gh_user: ${{ github.actor}}
+        gh_token: ${{ inputs.gh_token }}
+        docker_image_name: ${{ env.DOCKER_IMAGE_NAME }}
+        docker_image_tag: ${{ env.TAG }}
+
+    - name: Build ${{ inputs.system }} wazuh-agent on ${{ env.ARCH }}
+      shell: bash      
+      run: |
+        REVISION=${{ inputs.revision }}
+        FLAGS="--verbose -s /tmp --dont-build-docker -j $(nproc) "
+        if [ -z "$REVISION" ]; then FLAGS+="-r 0 "; else FLAGS+="-r $REVISION "; fi
+        if [ "${{ inputs.is_stage }}" == "true" ]; then FLAGS+="--is_stage "; fi
+        if [ "${{ inputs.checksum }}" == "true" ]; then FLAGS+="--checksum "; fi
+        echo "generate_package.sh -a ${{ env.ARCH }} --tag ${{ env.TAG }} --system ${{ inputs.system }} $FLAGS"
+        sudo bash packages/generate_package.sh -a ${{ env.ARCH }} --tag ${{ env.TAG }} --system ${{ inputs.system }} $FLAGS
+        echo "PACKAGE_NAME=$(find /tmp -maxdepth 1 -type f -name *agent*.${{ inputs.system }} -exec basename {} 2>/dev/null \;| grep -v -E "^(wazuh-agent-dbg|wazuh-agent-debuginfo)")" | tee -a $GITHUB_ENV
+
+    - name: Test package installation
+      uses: ./.github/actions/5_testintegration_package_linux
+      with:
+        system: ${{ inputs.system }}
+        tested_docker: ${{ inputs.system == 'deb' && 'ubuntu:22.04' || 'redhat/ubi9' }}
+
+    - name: Upload package to artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.PACKAGE_NAME }}
+        path: /tmp/${{ env.PACKAGE_NAME }}
+
+    - name: Upload checksums to artifact
+      if: ${{ inputs.checksum == 'true'}}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.PACKAGE_NAME }}.sha512
+        path: /tmp/${{ env.PACKAGE_NAME }}.sha512

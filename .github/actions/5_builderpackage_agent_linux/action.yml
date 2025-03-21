@@ -1,0 +1,65 @@
+name: 'Compile Linux Repository'
+description: 'Compile Linux Repository'
+inputs:
+  architecture:
+    description: 'Linux image architecture'
+    required: true
+  docker_image_tag:
+    description: 'Requested Docker image tag'
+    required: true
+  source_reference:
+    description: 'Branch from wazuh/wazuh-agent repository to use.'
+    required: true
+  gh_token:
+    description: 'Used token to fetch Docker images'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set ARCH, TAG and DOCKER_IMAGE_NAME
+      uses: ./.github/actions/5_builderpackage_docker_resolvable
+      with:
+        system: rpm
+        architecture: ${{ inputs.architecture }}
+        docker_image_tag: ${{ inputs.docker_image_tag }}
+        source_reference: ${{ inputs.source_reference }}
+
+    - name: Fetch needed Docker image
+      uses: ./.github/actions/5_builderpackage_docker_pull
+      with:
+        gh_user: ${{ github.actor}}
+        gh_token: ${{ inputs.gh_token}}
+        docker_image_name: ${{ env.DOCKER_IMAGE_NAME }}
+        docker_image_tag: ${{ env.TAG }}
+
+    - name: Launch Docker container
+      uses: ./.github/actions/5_builderpackage_docker_run
+      with:
+        docker_image_name: ${{ env.DOCKER_IMAGE_NAME }}
+        docker_image_tag: ${{ env.TAG }}
+        arguments: -dit -v $(pwd):/wazuh-local-src:rw -e VCPKG_BINARY_SOURCES="clear;nuget,GitHub,readwrite"  ${{ env.ARCH == 'arm64' && '-e VCPKG_FORCE_SYSTEM_BINARIES=1' || '' }}
+        container_name: builder_container
+
+    - name: Configure binary caching inside Docker container
+      uses: ./.github/actions/5_builderpackage_docker_exec
+      with:
+        container_name: builder_container
+        commands: bash /wazuh-local-src/.github/actions/vcpkg_related/5_builderpackage_vcpkg/cover_vcpkg_dependencies.sh ${{ inputs.gh_token}}
+          
+    - name: Build binaries
+      uses: ./.github/actions/5_builderpackage_docker_exec
+      with:
+        container_name: builder_container
+        commands: cd /wazuh-local-src && cmake src -B src/build && cmake --build src/build --parallel $(nproc) && rm -rf src/build/_deps src/build/vcpkg*
+
+    - name: Zip repository
+      shell: bash
+      run: |
+        zip -r ${{ github.workspace }}/wazuh-agent-binaries-${{ inputs.architecture }}.zip ${{ github.workspace }}/
+
+    - name: Upload wazuh-agent-binaries.zip
+      uses: actions/upload-artifact@v4
+      with:
+        name: wazuh-agent-binaries-${{ inputs.architecture }}
+        path: ${{ github.workspace }}/wazuh-agent-binaries-${{ inputs.architecture }}.zip

@@ -1,0 +1,30 @@
+name: 'Compile Mac OS Repository'
+description: 'Compile Mac OS Repository'
+inputs:
+  architecture:
+    description: 'Building architecture'
+    required: true
+  gh_token:
+    description: 'Used token to fetch dependencies'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Binary caching
+      uses: ./.github/actions/vcpkg_related/5_builderpackage_vcpkg
+      with:
+        gh_token: ${{ inputs.gh_token }}
+
+    - name: Build repository
+      shell: bash
+      run: |
+        mkdir -p src/build && cd src/build && cmake .. && make -j $(sysctl -n hw.ncpu)
+        sudo rm -rf _deps vcpkg_installed
+        zip -r ${{ github.workspace }}/wazuh-agent-binaries-${{ inputs.architecture }}.zip ${{ github.workspace }}/
+
+    - name: Upload wazuh-agent-binaries.zip
+      uses: actions/upload-artifact@v4
+      with:
+        name: wazuh-agent-binaries-${{ inputs.architecture }}
+        path: ${{ github.workspace }}/wazuh-agent-binaries-${{ inputs.architecture }}.zip
