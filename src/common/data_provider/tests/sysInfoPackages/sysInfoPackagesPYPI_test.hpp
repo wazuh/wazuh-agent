@@ -10,15 +10,25 @@
 class PYPITest : public ::testing::Test
 {
 protected:
-    std::shared_ptr<MockFileSystemUtils> mockFileSystemUtils;
-    std::shared_ptr<MockFileSystemWrapper> fileSystemWrapper;
-    std::unique_ptr<PYPI<MockFileIOUtils>> pypi;
+    std::unique_ptr<MockFileSystemUtils> mockFileSystemUtils;
+    std::unique_ptr<MockFileSystemWrapper> fileSystemWrapper;
+    std::unique_ptr<MockFileIOUtils> mockedFileIOUtils;
+    // Raw pointer to the mock object (Workaround for unique pointer usage)
+    MockFileSystemUtils* rawMockFileSystemUtils;
+    MockFileSystemWrapper* rawFileSystemWrapper;
+    MockFileIOUtils* rawMockedFileIOUtils;
+    std::unique_ptr<PYPI> pypi;
 
     void SetUp() override
     {
-        mockFileSystemUtils = std::make_shared<MockFileSystemUtils>();
-        fileSystemWrapper = std::make_shared<MockFileSystemWrapper>();
-        pypi = std::make_unique<PYPI<MockFileIOUtils>>(mockFileSystemUtils, fileSystemWrapper);
+        mockFileSystemUtils = std::make_unique<MockFileSystemUtils>();
+        fileSystemWrapper = std::make_unique<MockFileSystemWrapper>();
+        mockedFileIOUtils = std::make_unique<MockFileIOUtils>();
+        rawFileSystemWrapper = fileSystemWrapper.get();
+        rawMockFileSystemUtils = mockFileSystemUtils.get();
+        rawMockedFileIOUtils = mockedFileIOUtils.get();
+        pypi = std::make_unique<PYPI>(
+            std::move(mockFileSystemUtils), std::move(fileSystemWrapper), std::move(mockedFileIOUtils));
     }
 
     void TearDown() override
