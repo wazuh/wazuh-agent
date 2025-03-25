@@ -1,7 +1,6 @@
 #pragma once
 
 #include "filesystem_wrapper.hpp"
-#include "packageLinuxParserRpm.hpp"
 #include "sharedDefs.h"
 #include "utilsWrapper.hpp"
 #include <memory>
@@ -16,7 +15,14 @@ void GetDpkgInfo(const std::string& fileName, const std::function<void(nlohmann:
 /// @param callback Callback to be called for every single element being found
 void GetSnapInfo(const std::function<void(nlohmann::json&)>& callback);
 
-/// @brief Factory for Linux package information
+/**
+ * @brief Fills a JSON object with all available rpm-related information
+ * @param callback Callback to be called for every single element being found
+ * @param fileSystemWrapper An optional filesystem wrapper. If nullptr, it will use FileSystemWrapper.
+ */
+void GetRpmInfo(const std::function<void(nlohmann::json&)>& callback,
+                std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr);
+
 class FactoryPackagesCreator final
 {
 public:
@@ -32,7 +38,7 @@ public:
 
         if (fsWrapper->exists(RPM_PATH) && fsWrapper->is_directory(RPM_PATH))
         {
-            RPM<>().getRpmInfo(callback);
+            GetRpmInfo(callback);
         }
 
         if (fsWrapper->exists(SNAP_PATH) && fsWrapper->is_directory(SNAP_PATH))
