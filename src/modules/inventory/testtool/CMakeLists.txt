@@ -2,15 +2,15 @@ cmake_minimum_required(VERSION 3.22)
 
 project(inventory_test_tool)
 
-file(GLOB INVENTORY_TESTTOOL_SRC
-        "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
-        )
-
 add_executable(inventory_test_tool
-               ${INVENTORY_TESTTOOL_SRC}
-               )
+               ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+target_include_directories(inventory_test_tool PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include/
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/
+)
+
+if(WIN32)
     target_link_libraries(inventory_test_tool
         dbsync
         sysinfo
@@ -25,10 +25,8 @@ else()
         dbsync
         sysinfo
         Inventory
-        pthread
-        dl
     )
-endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+endif()
 
 include(../../../cmake/ConfigureTarget.cmake)
 configure_target(inventory_test_tool)

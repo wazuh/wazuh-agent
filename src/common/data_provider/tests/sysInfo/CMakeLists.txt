@@ -15,27 +15,14 @@ target_include_directories(sysinfo_unit_test PRIVATE
 
 configure_target(sysinfo_unit_test)
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    target_link_libraries(sysinfo_unit_test PRIVATE
-        sysinfo
-        GTest::gtest
-        GTest::gmock
-        GTest::gtest_main
-        GTest::gmock_main
-        cjson
-    )
-else()
-    target_link_libraries(sysinfo_unit_test PRIVATE
-        sysinfo
-        GTest::gtest
-        GTest::gmock
-        GTest::gtest_main
-        GTest::gmock_main
-        pthread
-        cjson
-        dl
-    )
-endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+target_link_libraries(sysinfo_unit_test PRIVATE
+    sysinfo
+    GTest::gtest
+    GTest::gmock
+    GTest::gtest_main
+    GTest::gmock_main
+    cjson
+)
 
 add_test(NAME sysinfo_unit_test
          COMMAND sysinfo_unit_test)

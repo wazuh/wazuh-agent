@@ -1,5 +1,3 @@
-find_package(GTest CONFIG REQUIRED)
-
 if(UNIX AND NOT APPLE)
 	find_package(PkgConfig REQUIRED)
 	pkg_check_modules(SYSTEMD REQUIRED libsystemd)

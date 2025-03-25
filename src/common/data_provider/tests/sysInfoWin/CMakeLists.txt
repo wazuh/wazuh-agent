@@ -15,13 +15,12 @@ target_include_directories(sysInfoWindows_unit_test PRIVATE
 
 configure_target(sysInfoWindows_unit_test)
 
-target_link_libraries(sysInfoWindows_unit_test
+target_link_libraries(sysInfoWindows_unit_test PRIVATE
     sysinfo
     GTest::gtest
-    GTest::gtest_main
     GTest::gmock
+    GTest::gtest_main
     GTest::gmock_main
-    cjson
 )
 
 add_test(NAME sysInfoWindows_unit_test
