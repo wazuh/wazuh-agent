@@ -45,7 +45,7 @@ namespace http_client
                    boost::beast::http::response<boost::beast::http::dynamic_body>& res,
                    boost::system::error_code& ec) = 0;
 
-        virtual void close() = 0;
+        virtual void shutdown(boost::system::error_code& ec) = 0;
     };
 
 } // namespace http_client

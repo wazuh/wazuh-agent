@@ -54,8 +54,8 @@ namespace http_client
         boost::asio::awaitable<void> AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
                                                boost::system::error_code& ec) override;
 
-        /// @copydoc IHttpSocket::Close
-        void Close() override;
+        /// @copydoc IHttpSocket::Shutdown
+        void Shutdown(boost::system::error_code& ec) override;
 
     private:
         /// @brief The SSL context to use for the socket

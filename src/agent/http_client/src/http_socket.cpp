@@ -116,15 +116,15 @@ namespace http_client
         }
     }
 
-    void HttpSocket::Close()
+    void HttpSocket::Shutdown(boost::system::error_code& ec)
     {
         try
         {
-            m_socket->close();
+            m_socket->shutdown(ec);
         }
         catch (const std::exception& e)
         {
-            LogDebug("Exception thrown on socket closing: {}", e.what());
+            LogDebug("Exception thrown on socket shutdown: {}", e.what());
         }
     }
 } // namespace http_client

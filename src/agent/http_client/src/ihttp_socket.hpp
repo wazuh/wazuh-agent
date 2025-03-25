@@ -71,7 +71,7 @@ namespace http_client
         AsyncRead(boost::beast::http::response<boost::beast::http::dynamic_body>& res,
                   boost::system::error_code& ec) = 0;
 
-        /// @brief Closes the socket
-        virtual void Close() = 0;
+        /// @brief Shuts down the socket
+        virtual void Shutdown(boost::system::error_code& ec) = 0;
     };
 } // namespace http_client

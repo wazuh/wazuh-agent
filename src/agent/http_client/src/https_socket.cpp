@@ -141,15 +141,15 @@ namespace http_client
         }
     }
 
-    void HttpsSocket::Close()
+    void HttpsSocket::Shutdown(boost::system::error_code& ec)
     {
         try
         {
-            m_ssl_socket->close();
+            m_ssl_socket->shutdown(ec);
         }
         catch (const std::exception& e)
         {
-            LogDebug("Exception thrown on socket closing: {}", e.what());
+            LogDebug("Exception thrown on socket shutdown: {}", e.what());
         }
     }
 
