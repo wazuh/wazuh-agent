@@ -5,12 +5,13 @@ project(sysInfoNetworkLinux_unit_test)
 file(GLOB sysinfo_UNIT_TEST_SRC
     "*.cpp")
 
-file(GLOB SYSINFO_SRC
-    "${CMAKE_SOURCE_DIR}/src/network/networkInterfaceLinux.cpp")
-
 add_executable(sysInfoNetworkLinux_unit_test
-    ${sysinfo_UNIT_TEST_SRC}
-    ${SYSINFO_SRC})
+    ${sysinfo_UNIT_TEST_SRC})
+
+target_include_directories(sysInfoNetworkLinux_unit_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/network
+)
 
 configure_target(sysInfoNetworkLinux_unit_test)
 

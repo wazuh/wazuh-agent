@@ -1,6 +1,4 @@
 #include "sysInfoHardwareWrapperARMMac_test.hpp"
-#include "CoreFoundation/CFBase.h"
-#include "IOKit/IOKitLib.h"
 #include "hardware/hardwareWrapperImplMac.h"
 #include "osPrimitivesInterfaceMac.h"
 #include "osPrimitives_mock.hpp"

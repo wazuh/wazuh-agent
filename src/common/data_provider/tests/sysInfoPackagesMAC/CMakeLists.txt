@@ -4,17 +4,17 @@ project(sysInfoMacPackage_unit_test)
 
 file(COPY input_files DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../sqliteWrapper/tests/mocks)
-
 file(GLOB sysinfo_UNIT_TEST_SRC
     "*.cpp")
 
-file(GLOB SYSINFO_SRC
-    "${CMAKE_CURRENT_SOURCE_DIR}/../../src/packages/packageMac.cpp")
-
 add_executable(sysInfoMacPackage_unit_test
-    ${sysinfo_UNIT_TEST_SRC}
-    ${SYSINFO_SRC})
+    ${sysinfo_UNIT_TEST_SRC})
+
+target_include_directories(sysInfoMacPackage_unit_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/packages
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../sqliteWrapper/tests/mocks
+)
 
 configure_target(sysInfoMacPackage_unit_test)
 

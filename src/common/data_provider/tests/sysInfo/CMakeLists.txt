@@ -5,13 +5,13 @@ project(sysinfo_unit_test)
 file(GLOB sysinfo_UNIT_TEST_SRC
     "*.cpp")
 
-file(GLOB SYSINFO_SRC
-    "${CMAKE_CURRENT_SOURCE_DIR}/../../src/sysInfo.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../../src/osinfo/sysOsParsers.cpp")
-
 add_executable(sysinfo_unit_test
-    ${sysinfo_UNIT_TEST_SRC}
-    ${SYSINFO_SRC})
+    ${sysinfo_UNIT_TEST_SRC})
+
+target_include_directories(sysinfo_unit_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/osinfo
+)
 
 configure_target(sysinfo_unit_test)
 

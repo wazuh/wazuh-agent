@@ -5,10 +5,13 @@ project(sysInfoWindows_unit_test)
 file(GLOB sysinfo_UNIT_TEST_SRC
     "*.cpp")
 
-find_package(GTest CONFIG REQUIRED)
-
 add_executable(sysInfoWindows_unit_test
     ${sysinfo_UNIT_TEST_SRC})
+
+target_include_directories(sysInfoWindows_unit_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/osinfo
+)
 
 configure_target(sysInfoWindows_unit_test)
 

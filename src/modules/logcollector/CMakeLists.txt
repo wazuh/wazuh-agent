@@ -7,9 +7,6 @@ set_common_settings()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-get_filename_component(SRC_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
-get_filename_component(COMMON_FOLDER ${SRC_FOLDER}/common/ ABSOLUTE)
-
 if(APPLE)
     find_package(fmt REQUIRED)
     add_subdirectory(src/macos_reader/oslogstore)

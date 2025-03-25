@@ -8,6 +8,11 @@ file(GLOB sysinfo_UNIT_TEST_SRC
 add_executable(sysInfoPackagesLinuxHelper_unit_test
     ${sysinfo_UNIT_TEST_SRC})
 
+target_include_directories(sysInfoPackagesLinuxHelper_unit_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/packages
+)
+
 configure_target(sysInfoPackagesLinuxHelper_unit_test)
 
 target_link_libraries(sysInfoPackagesLinuxHelper_unit_test PRIVATE

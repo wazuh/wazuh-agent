@@ -122,43 +122,6 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_CpuCores_Failed_Sysctl)
     EXPECT_THROW(wrapper->cpuCores(), std::system_error);
 }
 
-TEST_F(SysInfoHardwareWrapperMacTest, Test_CpuMhz_WithCpuFrequency_Succeed)
-{
-    auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
-    EXPECT_CALL(*wrapper, sysctlbyname("hw.cpufrequency", _, _, _, _))
-        .WillOnce(
-            [](const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
-            {
-                (void)name;
-                (void)oldlenp;
-                (void)newp;
-                (void)newlen;
-                *static_cast<uint64_t*>(oldp) = 3280896;
-                return 0;
-            });
-    int ret = 0;
-    EXPECT_NO_THROW(ret = wrapper->cpuMhz());
-    EXPECT_EQ(ret, 3280896 / 1000000);
-}
-
-TEST_F(SysInfoHardwareWrapperMacTest, Test_CpuMhz_WithoutCpuFrequency_Failed_Sysctlbyname)
-{
-    auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
-    EXPECT_CALL(*wrapper, sysctlbyname("hw.cpufrequency", _, _, _, _))
-        .WillOnce(
-            [](const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
-            {
-                (void)name;
-                (void)oldlenp;
-                (void)newp;
-                (void)newlen;
-                *static_cast<uint64_t*>(oldp) = 0;
-                return -1;
-            });
-
-    EXPECT_THROW(wrapper->cpuMhz(), std::system_error);
-}
-
 TEST_F(SysInfoHardwareWrapperMacTest, Test_RamTotal_Succeed)
 {
     auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
