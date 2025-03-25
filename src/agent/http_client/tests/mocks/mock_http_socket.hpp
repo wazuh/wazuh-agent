@@ -39,5 +39,5 @@ public:
                 (boost::beast::http::response<boost::beast::http::dynamic_body> & res, boost::system::error_code& ec),
                 (override));
 
-    MOCK_METHOD(void, ShutDown, (boost::beast::error_code & ec), (override));
+    MOCK_METHOD(void, Shutdown, (boost::system::error_code & ec), (override));
 };
