@@ -225,7 +225,7 @@ jobs:
           persist-credentials: false
 
       - name: Test package on ${{ matrix.distro_name }}
-        uses: .github/actions/5_testcomponent_install_linux
+        uses: ./.github/actions/5_testcomponent_install_linux
         with:
           system: rpm
           tested_image: ${{ matrix.distro_name }}
