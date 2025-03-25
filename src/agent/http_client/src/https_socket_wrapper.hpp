@@ -114,9 +114,9 @@ namespace http_client
                 m_socket, buffer, res, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
         }
 
-        void close() override
+        void shutdown(boost::system::error_code& ec) override
         {
-            m_socket.shutdown();
+            m_socket.next_layer().socket().shutdown(boost::asio::socket_base::shutdown_type::shutdown_both, ec);
         }
 
     private:

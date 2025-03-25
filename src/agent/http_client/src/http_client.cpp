@@ -161,6 +161,12 @@ namespace http_client
 
             LogDebug("Request {}: Status {}", params.Endpoint, res.result_int());
             LogTrace("{}", ResponseToString(params.Endpoint, res));
+
+            socket->Shutdown(ec);
+            if (ec)
+            {
+                throw std::runtime_error("Error shutting down socket: " + ec.message());
+            }
         }
         catch (const std::exception& e)
         {
@@ -232,6 +238,12 @@ namespace http_client
 
             LogDebug("Request {}: Status {}", params.Endpoint, res.result_int());
             LogTrace("{}", ResponseToString(params.Endpoint, res));
+
+            socket->Shutdown(ec);
+            if (ec)
+            {
+                throw std::runtime_error("Error shutting down socket: " + ec.message());
+            }
         }
         catch (const std::exception& e)
         {
