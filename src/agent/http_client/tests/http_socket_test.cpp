@@ -406,11 +406,11 @@ TEST_F(HttpSocketTest, CloseSocket)
 {
     EXPECT_CALL(*m_mockHelper, expires_after(_)).Times(1);
     EXPECT_CALL(*m_mockHelper, connect(_, _)).Times(1);
-    EXPECT_CALL(*m_mockHelper, close()).Times(1);
+    EXPECT_CALL(*m_mockHelper, shutdown(_)).Times(1);
 
     boost::system::error_code ec;
     m_socket->Connect(dummyResults, ec);
-    EXPECT_NO_THROW(m_socket->Close());
+    EXPECT_NO_THROW(m_socket->Shutdown(ec));
 }
 
 int main(int argc, char** argv)
