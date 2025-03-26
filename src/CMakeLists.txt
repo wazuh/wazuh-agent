@@ -70,8 +70,15 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     install(DIRECTORY DESTINATION "${DATA_INSTALL_DIR}")
 
     install(CODE "file(MAKE_DIRECTORY \"${CONFIG_INSTALL_DIR}\")")
-    install(FILES ${CONFIG_FOLDER}/wazuh-agent.yml
-            DESTINATION ${CONFIG_INSTALL_DIR})
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        install(FILES ${CONFIG_FOLDER}/wazuh_agent_linux.yml
+                DESTINATION ${CONFIG_INSTALL_DIR})
+        file(COPY_FILE ${CONFIG_FOLDER}/wazuh_agent_linux.yml ${CONFIG_FOLDER}/wazuh-agent.yml)
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+        install(FILES ${CONFIG_FOLDER}/wazuh_agent_macos.yml
+                DESTINATION ${CONFIG_INSTALL_DIR})
+        file(COPY_FILE ${CONFIG_FOLDER}/wazuh_agent_macos.yml ${CONFIG_FOLDER}/wazuh-agent.yml)
+    endif()
     install(FILES "${CMAKE_BINARY_DIR}/VERSION.json" DESTINATION ${PARENT_DIR})
     install(TARGETS wazuh-agent
             DESTINATION ${BIN_INSTALL_DIR})
@@ -92,7 +99,8 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION .)
     include(InstallRequiredSystemLibraries)
     install(DIRECTORY ${CMAKE_BINARY_DIR}/$ENV{CUSTOM_CMAKE_CONFIG}/ DESTINATION .)
-    install(FILES ${CONFIG_FOLDER}/wazuh-agent.yml DESTINATION .)
+    install(FILES ${CONFIG_FOLDER}/wazuh_agent_windows.yml DESTINATION .)
+    file(COPY_FILE ${CONFIG_FOLDER}/wazuh_agent_windows.yml ${CONFIG_FOLDER}/wazuh-agent.yml)
     install(FILES ${WINDOWS_FOLDER}/postinstall.ps1 DESTINATION .)
     install(FILES ${WINDOWS_FOLDER}/cleanup.ps1 DESTINATION .)
     install(FILES "${CMAKE_BINARY_DIR}/VERSION.json" DESTINATION .)

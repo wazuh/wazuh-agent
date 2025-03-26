@@ -1,0 +1,37 @@
+agent:
+  thread_count: 4
+  server_url: https://localhost:27000
+  retry_interval: 30s
+  verification_mode: none
+  queue_size: 10000
+events:
+  batch_interval: 10s
+  batch_size: 1MB
+inventory:
+  enabled: true
+  interval: 1h
+  scan_on_start: true
+  hardware: true
+  system: true
+  networks: true
+  packages: true
+  ports: true
+  ports_all: false
+  processes: false
+  hotfixes: true
+logcollector:
+  enabled: true
+  reload_interval: 1m
+  read_interval: 500ms
+  windows:
+    - channel: Application
+      query: "*"
+    - channel: Security
+      query: Event/System[EventID != 5145 and EventID != 5156 and EventID != 5447 and
+      EventID != 4656 and EventID != 4658 and EventID != 4663 and EventID != 4660 and
+      EventID != 4670 and EventID != 4690 and EventID != 4703 and EventID != 4907 and
+      EventID != 5152 and EventID != 5157]
+    - channel: System
+      query: "*"
+
+

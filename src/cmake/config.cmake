@@ -69,7 +69,11 @@ set(DEFAULT_PORTS_ALL false CACHE BOOL "Default inventory ports all")
 
 set(DEFAULT_PROCESSES false CACHE BOOL "Default inventory processes")
 
-set(DEFAULT_HOTFIXES true CACHE BOOL "Default inventory hotfixes")
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(DEFAULT_HOTFIXES true CACHE BOOL "Default inventory hotfixes")
+else()
+    set(DEFAULT_HOTFIXES false CACHE BOOL "Default inventory hotfixes")
+endif()
 
 set(QUEUE_STATUS_REFRESH_TIMER 100 CACHE STRING "Default Agent's queue refresh timer (100ms)")
 
