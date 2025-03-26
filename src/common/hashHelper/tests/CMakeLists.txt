@@ -17,6 +17,6 @@ target_include_directories(hash_helper_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
 )
 
-target_link_libraries(hash_helper_tests PRIVATE hash_helper GTest::gtest OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(hash_helper_tests PRIVATE hash_helper GTest::gtest)
 
 add_test(NAME hashHelperTests COMMAND hash_helper_tests)
