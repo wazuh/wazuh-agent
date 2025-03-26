@@ -1,0 +1,26 @@
+agent:
+  thread_count: 4
+  server_url: https://localhost:27000
+  retry_interval: 30s
+  verification_mode: none
+  queue_size: 10000
+events:
+  batch_interval: 10s
+  batch_size: 1MB
+inventory:
+  enabled: true
+  interval: 1h
+  scan_on_start: true
+  hardware: true
+  system: true
+  networks: true
+  packages: true
+  ports: true
+  ports_all: false
+  processes: false
+logcollector:
+  enabled: true
+  localfiles:
+    - /var/log/auth.log
+  reload_interval: 1m
+  read_interval: 500ms
