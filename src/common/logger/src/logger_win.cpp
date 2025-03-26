@@ -5,12 +5,14 @@
 
 #include <memory>
 
+#define EVENT_ID 1000
+
 /// \cond WINDOWS
 
 /// @brief Constructor for Logger.
 Logger::Logger()
 {
-    auto sink = std::make_shared<spdlog::sinks::win_eventlog_sink_mt>("Wazuh-Agent");
+    auto sink = std::make_shared<spdlog::sinks::win_eventlog_sink_mt>("wazuh-agent", EVENT_ID);
     auto logger = std::make_shared<spdlog::logger>(LOGGER_NAME, sink);
 
     spdlog::register_logger(logger);
