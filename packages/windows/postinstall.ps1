@@ -18,7 +18,6 @@ foreach ($dir in $directoriesToCreate) {
 }
 Write-Host "Directories created successfully."
 
-
 # Handle Wazuh config file
 $destinationDir = Join-Path -Path $programData -ChildPath "wazuh-agent\config"
 $sourcePath = "$PSScriptRoot\wazuh-agent.yml"
@@ -56,7 +55,6 @@ if (Test-Path $sourcePath) {
     Write-Host "Source file not found: $sourcePath"
 }
 
-
 # Install Wazuh service
 $serviceName = "Wazuh Agent"
 $wazuhagent = "$PSScriptRoot\wazuh-agent.exe"
@@ -74,3 +72,8 @@ if (-not (Get-Service -Name $serviceName -ErrorAction SilentlyContinue)) {
 }
 
 Write-Host "postinstall.ps1 script completed."
+
+# Delete script after execution
+$scriptPath = "$PSScriptRoot\postinstall.ps1"
+Write-Host "Deleting script: $scriptPath"
+Remove-Item -Path $scriptPath -Force
