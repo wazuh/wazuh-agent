@@ -3,7 +3,16 @@ cmake_minimum_required(VERSION 3.22)
 project(sysinfo_unit_test)
 
 file(GLOB sysinfo_UNIT_TEST_SRC
-    "*.cpp")
+    "sysInfo_test.cpp"
+    "main.cpp")
+
+if(WIN32)
+    list(APPEND sysinfo_UNIT_TEST_SRC
+    "sysOsInfo_test.cpp")
+else()
+    list(APPEND sysinfo_UNIT_TEST_SRC
+    "sysInfoParsers_test.cpp")
+endif()
 
 add_executable(sysinfo_unit_test
     ${sysinfo_UNIT_TEST_SRC})
