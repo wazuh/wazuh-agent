@@ -93,6 +93,10 @@ function(set_common_settings)
         set(CMAKE_CXX_FLAGS "-g3" PARENT_SCOPE)
     endif()
 
+    if(APPLE)
+        add_link_options("-Wl,-no_warn_duplicate_libraries")
+    endif()
+
     if(ENABLE_INVENTORY)
         add_definitions(-DENABLE_INVENTORY)
     endif()
