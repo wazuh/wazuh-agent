@@ -28,7 +28,9 @@ if(ENABLE_LOGCOLLECTOR)
     target_link_libraries(ModuleManager PUBLIC Logcollector)
 endif()
 
-target_link_libraries(ModuleManager PUBLIC Boost::asio nlohmann_json::nlohmann_json TaskManager ConfigurationParser MessageEntry CommandEntry PRIVATE Logger)
+add_subdirectory(sca)
+
+target_link_libraries(ModuleManager PUBLIC Boost::asio nlohmann_json::nlohmann_json TaskManager ConfigurationParser MessageEntry CommandEntry SCA PRIVATE Logger)
 
 include(../cmake/ConfigureTarget.cmake)
 configure_target(ModuleManager)

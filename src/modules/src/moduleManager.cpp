@@ -9,6 +9,8 @@
 using logcollector::Logcollector;
 #endif
 
+#include <sca.hpp>
+
 namespace
 {
     constexpr int MODULES_START_WAIT_SECS = 60;
@@ -47,6 +49,9 @@ void ModuleManager::AddModules()
         AddModule(Logcollector::Instance());
 #endif
     }
+
+    m_sca = std::make_unique<SecurityConfigurationAssessment>(m_configurationParser);
+    AddModule(*m_sca);
 
     Setup();
 }
