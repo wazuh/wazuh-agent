@@ -34,9 +34,3 @@ runs:
         fi
         cmake --build . --config RelWithDebInfo -j $(nproc)
       shell: bash
-
-    - name: Upload build artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-artifact
-        path: ${{ inputs.build_path }}
