@@ -56,7 +56,7 @@ TEST_F(WindowsServiceTest, InstallService_Success)
 {
     EXPECT_CALL(mockWindowsApiFacade, OpenSCM(SC_MANAGER_CREATE_SERVICE))
         .WillOnce(testing::Return(reinterpret_cast<SC_HANDLE>(1)));
-    EXPECT_CALL(mockWindowsApiFacade, CreateSvc(testing::_, "Wazuh Agent", testing::_))
+    EXPECT_CALL(mockWindowsApiFacade, CreateSvc(testing::_, "wazuh-agent", testing::_))
         .WillOnce(testing::Return(reinterpret_cast<SC_HANDLE>(1)));
 
     bool result = windows_service::InstallService(mockWindowsApiFacade);

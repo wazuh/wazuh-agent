@@ -14,7 +14,7 @@ namespace
     SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;
     HANDLE g_ServiceStopEvent = INVALID_HANDLE_VALUE;
     SERVICE_DESCRIPTION g_serviceDescription;
-    const std::string AGENT_SERVICENAME = "Wazuh Agent";
+    const std::string AGENT_SERVICENAME = "wazuh-agent";
     const std::string AGENT_SERVICEDESCRIPTION = "Wazuh Windows Agent";
 
     struct ServiceHandleDeleter
@@ -136,7 +136,7 @@ namespace windows_service
         CloseServiceHandle(schService);
         CloseServiceHandle(schSCManager);
 
-        LogInfo("Wazuh Agent Service successfully installed.");
+        LogInfo("{} service successfully installed.", AGENT_SERVICENAME.c_str());
 
         return true;
     }
@@ -170,7 +170,7 @@ namespace windows_service
         CloseServiceHandle(schService);
         CloseServiceHandle(schSCManager);
 
-        LogInfo("Wazuh Agent Service successfully removed.");
+        LogInfo("{} service successfully removed.", AGENT_SERVICENAME.c_str());
 
         return true;
     }
@@ -231,19 +231,20 @@ namespace windows_service
 
             if (!instanceHandler.isLockAcquired())
             {
-                LogError("Wazuh Agent cannot start. Wazuh Agent is already running");
+                LogError(
+                    "{} cannot start. {} is already running", AGENT_SERVICENAME.c_str(), AGENT_SERVICENAME.c_str());
                 ReportServiceStatus(SERVICE_STOPPED, NO_ERROR, 0);
                 return;
             }
 
-            LogInfo("Starting Wazuh Agent.");
+            LogInfo("Starting {}.", AGENT_SERVICENAME.c_str());
 
             Agent agent(std::make_unique<configuration::ConfigurationParser>(std::filesystem::path(configFilePath)));
             agent.Run();
         }
         catch (const std::exception& e)
         {
-            LogError("Exception thrown in wazuh-agent: {}", e.what());
+            LogError("Exception thrown in {}: {}", AGENT_SERVICENAME.c_str(), e.what());
             error = ERROR_EXCEPTION_IN_SERVICE;
         }
 
@@ -258,7 +259,7 @@ namespace windows_service
         switch (ctrlCode)
         {
             case SERVICE_CONTROL_STOP:
-                HandleStopSignal("Wazuh Agent is stopping. Performing cleanup.", ctrlCode);
+                HandleStopSignal("wazuh-agent is stopping. Performing cleanup.", ctrlCode);
                 break;
             case SERVICE_CONTROL_SHUTDOWN:
                 HandleStopSignal("System is shutting down. Performing cleanup.", ctrlCode);

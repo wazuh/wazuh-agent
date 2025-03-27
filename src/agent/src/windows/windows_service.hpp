@@ -9,12 +9,12 @@
 
 namespace windows_service
 {
-    /// @brief Installs the Wazuh Agent Service.
+    /// @brief Installs the wazuh-agent service.
     /// @param windowsApiFacade The Windows API facade to use.
     /// @return True if the installation is successful, false otherwise.
     bool InstallService(const windows_api_facade::IWindowsApiFacade& windowsApiFacade);
 
-    /// @brief Removes the Wazuh Agent Service.
+    /// @brief Removes the wazuh-agent service.
     /// @param windowsApiFacade The Windows API facade to use.
     /// @return True if the removal is successful, false otherwise.
     bool RemoveService(const windows_api_facade::IWindowsApiFacade& windowsApiFacade);
@@ -31,7 +31,7 @@ namespace windows_service
     /// @param ctrlCode The control code.
     void WINAPI ServiceCtrlHandler(DWORD ctrlCode);
 
-    /// @brief Starts the Wazuh Agent Service.
+    /// @brief Starts the wazuh-agent service.
     /// @param configFilePath The path to the configuration file.
     void ServiceStart(const std::string& configFilePath);
 } // namespace windows_service
