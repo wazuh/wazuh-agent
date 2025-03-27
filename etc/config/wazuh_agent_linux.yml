@@ -24,3 +24,8 @@ logcollector:
     - /var/log/auth.log
   reload_interval: 1m
   read_interval: 500ms
+  journald:
+    - field: "SYSLOG_IDENTIFIER"
+      value: "systemd"
+      exact_match: false
+      ignore_if_missing: true

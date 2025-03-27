@@ -64,21 +64,32 @@ configure_target(wazuh-agent)
 include(cmake/config.cmake)
 include(cmake/PrepareVersionFileForInstallation.cmake)
 
+set(OUTPUT_CONFIG ${CONFIG_FOLDER}/wazuh-agent.yml)
+
+# Platform specific config file
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(SOURCE_CONFIG ${CONFIG_FOLDER}/wazuh_agent_linux.yml)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(SOURCE_CONFIG ${CONFIG_FOLDER}/wazuh_agent_macos.yml)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(SOURCE_CONFIG ${CONFIG_FOLDER}/wazuh_agent_windows.yml)
+endif()
+
+# Replace propper config in the generic placement
+add_custom_command(OUTPUT ${OUTPUT_CONFIG}
+    COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_CONFIG} ${OUTPUT_CONFIG}
+    DEPENDS ${SOURCE_CONFIG}
+    COMMENT "Creating ${OUTPUT_CONFIG} from ${SOURCE_CONFIG}")
+
+add_custom_target(generate_config ALL DEPENDS ${OUTPUT_CONFIG})
+
 # Installation
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 
     install(DIRECTORY DESTINATION "${DATA_INSTALL_DIR}")
 
     install(CODE "file(MAKE_DIRECTORY \"${CONFIG_INSTALL_DIR}\")")
-    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-        install(FILES ${CONFIG_FOLDER}/wazuh_agent_linux.yml
-                DESTINATION ${CONFIG_INSTALL_DIR})
-        file(COPY_FILE ${CONFIG_FOLDER}/wazuh_agent_linux.yml ${CONFIG_FOLDER}/wazuh-agent.yml)
-    elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-        install(FILES ${CONFIG_FOLDER}/wazuh_agent_macos.yml
-                DESTINATION ${CONFIG_INSTALL_DIR})
-        file(COPY_FILE ${CONFIG_FOLDER}/wazuh_agent_macos.yml ${CONFIG_FOLDER}/wazuh-agent.yml)
-    endif()
+    install(FILES ${OUTPUT_CONFIG} DESTINATION ${CONFIG_INSTALL_DIR})
     install(FILES "${CMAKE_BINARY_DIR}/VERSION.json" DESTINATION ${PARENT_DIR})
     install(TARGETS wazuh-agent
             DESTINATION ${BIN_INSTALL_DIR})
@@ -99,8 +110,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION .)
     include(InstallRequiredSystemLibraries)
     install(DIRECTORY ${CMAKE_BINARY_DIR}/$ENV{CUSTOM_CMAKE_CONFIG}/ DESTINATION .)
-    install(FILES ${CONFIG_FOLDER}/wazuh_agent_windows.yml DESTINATION .)
-    file(COPY_FILE ${CONFIG_FOLDER}/wazuh_agent_windows.yml ${CONFIG_FOLDER}/wazuh-agent.yml)
+    install(FILES ${OUTPUT_CONFIG} DESTINATION .)
     install(FILES ${WINDOWS_FOLDER}/postinstall.ps1 DESTINATION .)
     install(FILES ${WINDOWS_FOLDER}/cleanup.ps1 DESTINATION .)
     install(FILES "${CMAKE_BINARY_DIR}/VERSION.json" DESTINATION .)

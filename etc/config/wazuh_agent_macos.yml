@@ -22,8 +22,6 @@ logcollector:
   enabled: true
   reload_interval: 1m
   read_interval: 500ms
-  localfiles:
-    - /var/log/secure.log #TODO: double check if this has sense
   macos:
     - query: process == "sshd" OR message CONTAINS "invalid"
       level: info
