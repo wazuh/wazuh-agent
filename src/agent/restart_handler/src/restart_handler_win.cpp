@@ -41,7 +41,7 @@ namespace restart_handler
             CloseHandle(pi.hProcess);
             CloseHandle(pi.hThread);
         }
-        LogInfo("Exiting Wazuh Agent now");
+        LogInfo("Exiting wazuh-agent now");
         GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0);
         co_return module_command::CommandExecutionResult {module_command::Status::IN_PROGRESS,
                                                           "Pending restart execution"};
@@ -92,7 +92,7 @@ namespace restart_handler
 
         const std::string pwrShell = GetPowerShellPath();
 
-        const std::string cmd = pwrShell + " -Command \"Restart-Service -Name 'Wazuh Agent' -Force\"";
+        const std::string cmd = pwrShell + " -Command \"Restart-Service -Name 'wazuh-agent' -Force\"";
 
         if (CreateProcess(NULL,
                           (LPSTR)cmd.c_str(),

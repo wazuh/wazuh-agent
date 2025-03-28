@@ -58,7 +58,7 @@ if (Test-Path $sourcePath) {
 
 
 # Install Wazuh service
-$serviceName = "Wazuh Agent"
+$serviceName = "wazuh-agent"
 $wazuhagent = "$PSScriptRoot\wazuh-agent.exe"
 
 Write-Host "Installing service $serviceName."

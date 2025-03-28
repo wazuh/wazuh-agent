@@ -51,7 +51,7 @@ not recommended for moving an agent from one endpoint to another.
 
 1. Stop the Wazuh Agent service:
    ```sh
-   net stop "Wazuh Agent"
+   net stop "wazuh-agent"
    ```
 
 2. Preparing the backup:
@@ -118,5 +118,5 @@ not recommended for moving an agent from one endpoint to another.
 
 3. Start the service:
    ```sh
-   net start "Wazuh Agent"
+   net start "wazuh-agent"
    ```

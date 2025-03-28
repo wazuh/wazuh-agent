@@ -129,8 +129,8 @@ cd build/
     The agent service can be started, stopped, or restarted from the CLI:
 
     ```bash
-    net start "Wazuh Agent"
-    net stop "Wazuh Agent"
+    net start "wazuh-agent"
+    net stop "wazuh-agent"
     ```
 
     > This can also be done using Windows SCM.
