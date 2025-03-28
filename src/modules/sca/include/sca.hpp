@@ -17,13 +17,26 @@
 class SecurityConfigurationAssessment : public ISecurityConfigurationAssessment
 {
 public:
-    /// @brief Get the instance of the SecurityConfigurationAssessment
-    /// @return The instance of the SecurityConfigurationAssessment
-    static SecurityConfigurationAssessment& Instance()
+    SecurityConfigurationAssessment(
+        std::unique_ptr<DBSync> dbSync = nullptr,
+        std::shared_ptr<const configuration::ConfigurationParser> configurationParser = nullptr)
     {
-        static SecurityConfigurationAssessment s_instance;
-        return s_instance;
+        Setup(configurationParser);
+
+        if (dbSync)
+        {
+            m_dBSync = std::move(dbSync);
+        }
+        else
+        {
+            m_dBSync = std::make_unique<DBSync>(
+                HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, "", DbManagement::PERSISTENT);
+        }
     }
+
+    ~SecurityConfigurationAssessment() = default;
+    SecurityConfigurationAssessment(const SecurityConfigurationAssessment&) = delete;
+    SecurityConfigurationAssessment& operator=(const SecurityConfigurationAssessment&) = delete;
 
     /// @copydoc ISecurityConfigurationAssessment::~ISecurityConfigurationAssessment
 
@@ -69,18 +82,9 @@ public:
     void SetPushMessageFunction(const std::function<int(Message)>&) override {}
 
     /// @copydoc ISecurityConfigurationAssessment::InitDb
-    void InitDb() override
-    {
-        m_dBSync = std::make_unique<DBSync>(
-            HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, "", DbManagement::PERSISTENT);
-    }
+    void InitDb() override {}
 
 private:
-    SecurityConfigurationAssessment() = default;
-    ~SecurityConfigurationAssessment() = default;
-    SecurityConfigurationAssessment(const SecurityConfigurationAssessment&) = delete;
-    SecurityConfigurationAssessment& operator=(const SecurityConfigurationAssessment&) = delete;
-
     std::string m_name = "SCA";
     std::unique_ptr<DBSync> m_dBSync;
     std::string m_dbFilePath;

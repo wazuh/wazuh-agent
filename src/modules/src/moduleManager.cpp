@@ -50,8 +50,8 @@ void ModuleManager::AddModules()
 #endif
     }
 
-    SecurityConfigurationAssessment& sca = SecurityConfigurationAssessment::Instance();
-    AddModule(sca);
+    m_sca = std::make_unique<SecurityConfigurationAssessment>();
+    AddModule(*m_sca);
 
     Setup();
 }
