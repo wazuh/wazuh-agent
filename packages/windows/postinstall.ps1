@@ -73,4 +73,23 @@ if (-not (Get-Service -Name $serviceName -ErrorAction SilentlyContinue)) {
     Write-Host "Service $serviceName already installed."
 }
 
+# Register "wazuh-agent" as an Event Log source if not already present
+$logName = "Application"
+$sourceName = "wazuh-agent"
+
+$eventLogExists = [System.Diagnostics.EventLog]::SourceExists($sourceName)
+
+if (-not $eventLogExists) {
+    try {
+        Write-Host "Registering event log source: $sourceName"
+        New-EventLog -LogName $logName -Source $sourceName
+        Write-Host "Event log source registered successfully."
+    } catch {
+        Write-Host "Failed to register event log source: $_"
+        exit 1
+    }
+} else {
+    Write-Host "Event log source '$sourceName' is already registered."
+}
+
 Write-Host "postinstall.ps1 script completed."

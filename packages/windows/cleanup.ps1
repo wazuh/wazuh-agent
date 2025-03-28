@@ -58,4 +58,20 @@ if (Get-Service -Name $serviceName -ErrorAction SilentlyContinue) {
     Write-Host "Service $serviceName not found."
 }
 
-Write-Host "cleanup.ps1 script completed."
+# Remove Event Log source if it exists
+$sourceName = "wazuh-agent"
+
+if ([System.Diagnostics.EventLog]::SourceExists($sourceName)) {
+    try {
+        Write-Host "Removing event log source: $sourceName"
+        Remove-EventLog -Source $sourceName
+        Write-Host "Event log source removed successfully."
+    } catch {
+        Write-Host "Failed to remove event log source: $_"
+        exit 1
+    }
+} else {
+    Write-Host "Event log source '$sourceName' has already been removed."
+}
+
+    Write-Host "cleanup.ps1 script completed."
