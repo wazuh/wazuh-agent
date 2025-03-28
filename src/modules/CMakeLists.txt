@@ -30,7 +30,7 @@ endif()
 
 add_subdirectory(sca)
 
-target_link_libraries(ModuleManager PUBLIC Boost::asio nlohmann_json::nlohmann_json TaskManager ConfigurationParser MessageEntry CommandEntry PRIVATE Logger)
+target_link_libraries(ModuleManager PUBLIC Boost::asio nlohmann_json::nlohmann_json TaskManager ConfigurationParser MessageEntry CommandEntry PRIVATE SCA Logger)
 
 include(../cmake/ConfigureTarget.cmake)
 configure_target(ModuleManager)

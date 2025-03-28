@@ -12,31 +12,51 @@
 #include <memory>
 #include <string>
 
-class ISecurityConfigurationAssessment : public ISecurityConfigurationAssessment
+class SecurityConfigurationAssessment : public ISecurityConfigurationAssessment
 {
 public:
+    /// @brief Get the instance of the SecurityConfigurationAssessment
+    /// @return The instance of the SecurityConfigurationAssessment
+    static SecurityConfigurationAssessment& Instance()
+    {
+        static SecurityConfigurationAssessment s_instance;
+        return s_instance;
+    }
+
     /// @copydoc ISecurityConfigurationAssessment::~ISecurityConfigurationAssessment
-    virtual ~ISecurityConfigurationAssessment() = default;
 
     /// @copydoc ISecurityConfigurationAssessment::Start
-    virtual void Start() override;
+    void Start() override {}
 
     /// @copydoc ISecurityConfigurationAssessment::Setup
-    virtual void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) override;
+    void Setup(std::shared_ptr<const configuration::ConfigurationParser>) override {}
 
     /// @copydoc ISecurityConfigurationAssessment::Stop
-    virtual void Stop() override;
+    void Stop() override {}
 
     /// @copydoc ISecurityConfigurationAssessment::ExecuteCommand
-    virtual Co_CommandExecutionResult ExecuteCommand(const std::string command,
-                                                     const nlohmann::json parameters) override;
+    Co_CommandExecutionResult ExecuteCommand(const std::string, const nlohmann::json) override
+    {
+        return {};
+    }
 
     /// @copydoc ISecurityConfigurationAssessment::Name
-    virtual const std::string& Name() const override;
+    const std::string& Name() const override
+    {
+        return m_name;
+    }
 
     /// @copydoc ISecurityConfigurationAssessment::SetPushMessageFunction
-    virtual void SetPushMessageFunction(const std::function<int(Message)>& pushMessage) override;
+    void SetPushMessageFunction(const std::function<int(Message)>&) override {}
 
     /// @copydoc ISecurityConfigurationAssessment::InitDb
-    virtual void InitDb() override;
+    void InitDb() override {}
+
+private:
+    SecurityConfigurationAssessment() = default;
+    ~SecurityConfigurationAssessment() = default;
+    SecurityConfigurationAssessment(const SecurityConfigurationAssessment&) = delete;
+    SecurityConfigurationAssessment& operator=(const SecurityConfigurationAssessment&) = delete;
+
+    std::string m_name = "SCA";
 };
