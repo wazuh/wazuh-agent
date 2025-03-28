@@ -18,7 +18,6 @@ inventory:
   ports: true
   ports_all: false
   processes: false
-  hotfixes: true
 logcollector:
   enabled: true
   localfiles:

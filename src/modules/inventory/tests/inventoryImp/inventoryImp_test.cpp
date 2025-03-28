@@ -77,9 +77,6 @@ TEST_F(InventoryImpTest, defaultCtor)
         .WillOnce(::testing::InvokeArgument<0>(
             R"({"architecture":"amd64","scan_time":"2020/12/28 21:49:50", "group":"x11","name":"xserver-xorg","priority":"optional","size":4111222333,"source":"xorg","version":"1:7.7+19ubuntu14","format":"deb","location":" "})"_json));
 
-    EXPECT_CALL(*spInfoWrapper, hotfixes())
-        .WillRepeatedly(Return(nlohmann::json::parse(R"([{"hotfix":"KB12345678"}])")));
-
     EXPECT_CALL(*spInfoWrapper, networks())
         .WillRepeatedly(Return(nlohmann::json::parse(
             R"({"iface":[{"IPv4":[{"address":"172.17.0.1","broadcast":"172.17.255.255","dhcp":"unknown","metric":"0","netmask":"255.255.0.0"}],"adapter":"","gateway":"","mac":"02:42:1c:26:13:65","mtu":1500,"name":"docker0","rx_bytes":0,"rx_dropped":0,"rx_errors":0,"rx_packets":0,"state":"down","tx_bytes":0,"tx_dropped":0,"tx_errors":0,"tx_packets":0,"type":"ethernet"}]})")));
@@ -100,19 +97,16 @@ TEST_F(InventoryImpTest, defaultCtor)
         R"({"data":{"host":{"architecture":"x86_64","hostname":"UBUNTU","os":{"full":null,"kernel":"7601","name":"Microsoft Windows 7","platform":null,"type":null,"version":"6.1.7601"}}},"metadata":{"collector":"system","module":"inventory","operation":"create"}})"};
     const auto expectedResult3 {
         R"({"data":{"package":{"architecture":"amd64","description":null,"installed":null,"name":"xserver-xorg","path":" ","size":4111222333,"type":"deb","version":"1:7.7+19ubuntu14"}},"metadata":{"collector":"packages","module":"inventory","operation":"create"}})"};
-    const auto expectedResult5 {
-        R"({"data":{"package":{"hotfix":{"name":"KB12345678"}}},"metadata":{"collector":"hotfixes","module":"inventory","operation":"create"}})"};
-    const auto expectedResult6 {
+    const auto expectedResult4 {
         R"({"data":{"destination":{"ip":["0.0.0.0"],"port":0},"file":{"inode":0},"host":{"network":{"egress":{"queue":0},"ingress":{"queue":0}}},"interface":{"state":"listening"},"network":{"protocol":"tcp"},"process":{"name":null,"pid":0},"source":{"ip":["127.0.0.1"],"port":631}},"metadata":{"collector":"ports","module":"inventory","operation":"create"}})"};
-    const auto expectedResult7 {
+    const auto expectedResult5 {
         R"({"data":{"host":{"ip":["172.17.0.1"],"mac":"02:42:1c:26:13:65","network":{"egress":{"bytes":0,"drops":0,"errors":0,"packets":0},"ingress":{"bytes":0,"drops":0,"errors":0,"packets":0}}},"interface":{"mtu":1500,"state":"down","type":"ethernet"},"network":{"broadcast":["172.17.255.255"],"dhcp":"unknown","gateway":[],"metric":"0","netmask":["255.255.0.0"],"type":"ipv4"},"observer":{"ingress":{"interface":{"alias":null,"name":"docker0"}}}},"metadata":{"collector":"networks","module":"inventory","operation":"create"}})"};
 
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult1)).Times(testing::AtLeast(1));
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult2)).Times(testing::AtLeast(1));
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult3)).Times(testing::AtLeast(1));
+    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult4)).Times(testing::AtLeast(1));
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult5)).Times(testing::AtLeast(1));
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult6)).Times(testing::AtLeast(1));
-    EXPECT_CALL(wrapperDelta, callbackMock(expectedResult7)).Times(testing::AtLeast(1));
 
     auto configurationParser = std::make_shared<configuration::ConfigurationParser>();
     Inventory::Instance().Setup(configurationParser);

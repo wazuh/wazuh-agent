@@ -38,3 +38,6 @@ __pycache__
 venv
 
 doxygen/
+
+# config result
+etc/config/wazuh-agent.yml
