@@ -17,9 +17,8 @@
 class SecurityConfigurationAssessment : public ISecurityConfigurationAssessment
 {
 public:
-    SecurityConfigurationAssessment(
-        std::unique_ptr<DBSync> dbSync = nullptr,
-        std::shared_ptr<const configuration::ConfigurationParser> configurationParser = nullptr)
+    SecurityConfigurationAssessment(std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
+                                    std::unique_ptr<DBSync> dbSync = nullptr)
     {
         Setup(configurationParser);
 
@@ -34,11 +33,10 @@ public:
         }
     }
 
+    /// @copydoc ISecurityConfigurationAssessment::~ISecurityConfigurationAssessment
     ~SecurityConfigurationAssessment() = default;
     SecurityConfigurationAssessment(const SecurityConfigurationAssessment&) = delete;
     SecurityConfigurationAssessment& operator=(const SecurityConfigurationAssessment&) = delete;
-
-    /// @copydoc ISecurityConfigurationAssessment::~ISecurityConfigurationAssessment
 
     /// @copydoc ISecurityConfigurationAssessment::Start
     void Start() override
