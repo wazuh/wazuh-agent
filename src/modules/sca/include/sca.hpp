@@ -26,13 +26,28 @@ public:
     /// @copydoc ISecurityConfigurationAssessment::~ISecurityConfigurationAssessment
 
     /// @copydoc ISecurityConfigurationAssessment::Start
-    void Start() override {}
+    void Start() override
+    {
+        // Execute the policies
+        // Run regex engine, check type of policies
+        // Run the policies
+        // Create a report and send it to the server
+    }
 
     /// @copydoc ISecurityConfigurationAssessment::Setup
-    void Setup(std::shared_ptr<const configuration::ConfigurationParser>) override {}
+    void Setup(std::shared_ptr<const configuration::ConfigurationParser>) override
+    {
+        // Read configuration
+        // Load policies
+        // Validate requirements
+    }
 
     /// @copydoc ISecurityConfigurationAssessment::Stop
-    void Stop() override {}
+    void Stop() override
+    {
+        // Stop the policies
+        // Stop the regex engine
+    }
 
     /// @copydoc ISecurityConfigurationAssessment::ExecuteCommand
     Co_CommandExecutionResult ExecuteCommand(const std::string, const nlohmann::json) override
@@ -50,7 +65,10 @@ public:
     void SetPushMessageFunction(const std::function<int(Message)>&) override {}
 
     /// @copydoc ISecurityConfigurationAssessment::InitDb
-    void InitDb() override {}
+    void InitDb() override
+    {
+        // Initialize the database
+    }
 
 private:
     SecurityConfigurationAssessment() = default;
