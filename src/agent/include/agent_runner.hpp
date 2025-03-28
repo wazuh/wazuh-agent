@@ -34,6 +34,12 @@ private:
     /// @return 0 if the enrollment is successful, 1 otherwise.
     int EnrollAgent() const;
 
+    /// @brief Reloads an agents module.
+    int ReloadModule() const;
+
+    /// @brief Reloads the agent configuration and all modules.
+    int ReloadConfig() const;
+
     /// @brief Displays the current status of the agent.
     void StatusAgent() const;
 
