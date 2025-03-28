@@ -2,7 +2,9 @@
 
 #include <isca.hpp>
 
+#include <config.h>
 #include <configuration_parser.hpp>
+#include <dbsync.hpp>
 #include <message.hpp>
 #include <moduleWrapper.hpp>
 
@@ -35,9 +37,11 @@ public:
     }
 
     /// @copydoc ISecurityConfigurationAssessment::Setup
-    void Setup(std::shared_ptr<const configuration::ConfigurationParser>) override
+    void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) override
     {
         // Read configuration
+        m_dbFilePath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
+                       m_dbFilePath;
         // Load policies
         // Validate requirements
     }
@@ -67,7 +71,8 @@ public:
     /// @copydoc ISecurityConfigurationAssessment::InitDb
     void InitDb() override
     {
-        // Initialize the database
+        m_dBSync = std::make_unique<DBSync>(
+            HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, "", DbManagement::PERSISTENT);
     }
 
 private:
@@ -77,4 +82,6 @@ private:
     SecurityConfigurationAssessment& operator=(const SecurityConfigurationAssessment&) = delete;
 
     std::string m_name = "SCA";
+    std::unique_ptr<DBSync> m_dBSync;
+    std::string m_dbFilePath;
 };
