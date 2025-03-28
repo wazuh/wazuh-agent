@@ -45,7 +45,6 @@ if (-not (Get-ChildItem -Path $CleanPath -Recurse)) {
     }
 }
 
-
 # Remove Wazuh service
 $serviceName = "wazuh-agent"
 $wazuhagent = "$PSScriptRoot\wazuh-agent.exe"

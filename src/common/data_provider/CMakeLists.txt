@@ -5,39 +5,26 @@ project(sysinfo)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
-get_filename_component(SRC_FOLDER     ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
-get_filename_component(COMMON_FOLDER  ${CMAKE_CURRENT_SOURCE_DIR}/../ ABSOLUTE)
-
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-if(WIN32)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-else()
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-endif()
-
-if(UNIX AND NOT APPLE)
-    find_package(Lua REQUIRED)
-    include_directories(${LUA_INCLUDE_DIR})
-endif()
-
-if(APPLE)
-    find_package(unofficial-libplist CONFIG REQUIRED)
+if(UNIX)
+    find_package(LibArchive REQUIRED)
+    if (APPLE)
+        find_package(unofficial-libplist CONFIG REQUIRED)
+        find_library(iokit_lib IOKit REQUIRED)
+        find_library(corefoundation_lib CoreFoundation REQUIRED)
+    else()
+        find_package(Lua REQUIRED)
+        find_path(POPT_INCLUDE_DIR include/popt.h)
+        find_library(POPT_LIBRARY libpopt.a)
+        find_library(PROC_NG_LIBRARY NAMES proc-ng REQUIRED)
+        find_library(LIBDB_LIBRARY NAMES db REQUIRED)
+        find_library(LIBRPM_LIBRARY NAMES rpm REQUIRED)
+        find_library(LIBRPMIO_LIBRARY NAMES rpmio REQUIRED)
+    endif()
 endif()
 
 find_package(cJSON CONFIG REQUIRED)
-find_package(LibArchive REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
-
-find_path(POPT_INCLUDE_DIR include/popt.h)
-include_directories(${POPT_INCLUDE_DIR})
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
-include_directories(${COMMON_FOLDER})
-
-link_directories(${SRC_FOLDER})
 
 if(WIN32)
     file(GLOB SYSINFO_SRC
@@ -75,10 +62,17 @@ endif()
 add_library(sysinfo STATIC
     ${SYSINFO_SRC}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/sysInfo.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/utilsWrapper.cpp
-    ${SRC_FOLDER}/${RESOURCE_OBJ})
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utilsWrapper.cpp)
 
-target_include_directories(sysinfo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
+target_include_directories(sysinfo
+    PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/
+    ${CMAKE_CURRENT_SOURCE_DIR}/../
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/
+    $<$<PLATFORM_ID:Linux>:${LUA_INCLUDE_DIR}>
+    $<$<PLATFORM_ID:Linux>:${POPT_INCLUDE_DIR}>
+)
 
 target_link_libraries(sysinfo
     PUBLIC
@@ -92,54 +86,25 @@ target_link_libraries(sysinfo
     sqlite_wrapper
     string_helper
     time_helper
-)
-
-if(WIN32)
-    target_link_libraries(sysinfo PUBLIC encoding_helper registry_helper windows_helper)
-elseif(NOT APPLE)
-    target_link_libraries(sysinfo PUBLIC linux_helper)
-endif()
-
-if(WIN32)
-    target_link_libraries(sysinfo
-        PUBLIC
-        psapi
-        iphlpapi
-        ws2_32
-    )
-elseif(APPLE)
-    find_library(iokit_lib IOKit REQUIRED)
-    find_library(corefoundation_lib CoreFoundation REQUIRED)
-
-    target_link_libraries(sysinfo
-        PUBLIC
-        unofficial::libplist::libplist
-        unofficial::libplist::libplist++
-        ${iokit_lib}
-        ${corefoundation_lib}
-        LibArchive::LibArchive
-    )
-else()
-    find_library(POPT_LIBRARY libpopt.a)
-    find_library(PROC_NG_LIBRARY NAMES proc-ng REQUIRED)
-    find_library(LIBDB_LIBRARY NAMES db REQUIRED)
-    find_library(LIBRPM_LIBRARY NAMES rpm REQUIRED)
-    find_library(LIBRPMIO_LIBRARY NAMES rpmio REQUIRED)
-
-    target_link_libraries(sysinfo
-        PUBLIC
-        ${LIBDB_LIBRARY}
-        ${PROC_NG_LIBRARY}
-        ${LIBRPM_LIBRARY}
-        ${LIBRPMIO_LIBRARY}
-        LibArchive::LibArchive
-        ${POPT_LIBRARY}
-        ${LUA_LIBRARIES}
-    )
-endif()
-
-target_link_libraries(sysinfo
-    PUBLIC
+    $<$<PLATFORM_ID:Windows>:encoding_helper>
+    $<$<PLATFORM_ID:Windows>:registry_helper>
+    $<$<PLATFORM_ID:Windows>:windows_helper>
+    $<$<PLATFORM_ID:Windows>:psapi>
+    $<$<PLATFORM_ID:Windows>:iphlpapi>
+    $<$<PLATFORM_ID:Windows>:ws2_32>
+    $<$<PLATFORM_ID:Darwin>:unofficial::libplist::libplist>
+    $<$<PLATFORM_ID:Darwin>:unofficial::libplist::libplist++>
+    $<$<PLATFORM_ID:Darwin>:${iokit_lib}>
+    $<$<PLATFORM_ID:Darwin>:${corefoundation_lib}>
+    $<$<PLATFORM_ID:Darwin>:LibArchive::LibArchive>
+    $<$<PLATFORM_ID:Linux>:linux_helper>
+    $<$<PLATFORM_ID:Linux>:${LIBDB_LIBRARY}>
+    $<$<PLATFORM_ID:Linux>:${PROC_NG_LIBRARY}>
+    $<$<PLATFORM_ID:Linux>:${LIBRPM_LIBRARY}>
+    $<$<PLATFORM_ID:Linux>:${LIBRPMIO_LIBRARY}>
+    $<$<PLATFORM_ID:Linux>:LibArchive::LibArchive>
+    $<$<PLATFORM_ID:Linux>:${POPT_LIBRARY}>
+    $<$<PLATFORM_ID:Linux>:${LUA_LIBRARIES}>
     nlohmann_json::nlohmann_json
     cjson
     PRIVATE

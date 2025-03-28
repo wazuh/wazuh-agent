@@ -5,24 +5,22 @@ project(sysInfoNetworkWindows_unit_test)
 file(GLOB sysinfo_UNIT_TEST_SRC
     "*.cpp")
 
-file(GLOB SYSINFO_SRC
-    "${CMAKE_SOURCE_DIR}/src/network/networkInterfaceWindows.cpp")
-
-find_package(GTest CONFIG REQUIRED)
-
 add_executable(sysInfoNetworkWindows_unit_test
-    ${sysinfo_UNIT_TEST_SRC}
-    ${SYSINFO_SRC})
+    ${sysinfo_UNIT_TEST_SRC})
+
+target_include_directories(sysInfoNetworkWindows_unit_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/network
+)
 
 configure_target(sysInfoNetworkWindows_unit_test)
 
-target_link_libraries(sysInfoNetworkWindows_unit_test
+target_link_libraries(sysInfoNetworkWindows_unit_test PRIVATE
     sysinfo
     GTest::gtest
-    GTest::gtest_main
     GTest::gmock
+    GTest::gtest_main
     GTest::gmock_main
-    cjson
 )
 
 add_test(NAME sysInfoNetworkWindows_unit_test

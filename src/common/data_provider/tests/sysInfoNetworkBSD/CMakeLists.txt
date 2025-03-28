@@ -5,12 +5,13 @@ project(sysInfoNetworkBSD_unit_test)
 file(GLOB sysinfo_UNIT_TEST_SRC
     "*.cpp")
 
-file(GLOB SYSINFO_SRC
-    "${CMAKE_CURRENT_SOURCE_DIR}/../../src/network/networkInterfaceBSD.cpp")
-
 add_executable(sysInfoNetworkBSD_unit_test
-    ${sysinfo_UNIT_TEST_SRC}
-    ${SYSINFO_SRC})
+    ${sysinfo_UNIT_TEST_SRC})
+
+target_include_directories(sysInfoNetworkBSD_unit_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/network
+)
 
 configure_target(sysInfoNetworkBSD_unit_test)
 

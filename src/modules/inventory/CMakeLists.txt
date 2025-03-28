@@ -5,9 +5,6 @@ project(Inventory)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
-get_filename_component(SRC_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
-get_filename_component(COMMON_FOLDER ${SRC_FOLDER}/common/ ABSOLUTE)
-
 find_package(cJSON CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
@@ -19,11 +16,10 @@ add_library(Inventory
     src/inventoryNormalizer.cpp
     src/statelessEvent.cpp)
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    target_compile_options(Inventory PRIVATE /WX-)
-endif()
-
-target_include_directories(Inventory PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(Inventory
+    PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
 target_link_libraries(Inventory
     PUBLIC
@@ -46,10 +42,10 @@ target_link_libraries(Inventory
     cjson
 )
 
+add_subdirectory(testtool)
+
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(Inventory)
-
-add_subdirectory(testtool)
 
 if(BUILD_TESTS)
     enable_testing()

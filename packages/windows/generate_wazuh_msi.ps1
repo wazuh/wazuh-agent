@@ -55,17 +55,16 @@ function BuildWazuhMsi(){
 
         $exeFiles = @()
 
-        # Every .exe and .dll
+        # Every .exe
         $exeFiles += Get-ChildItem -Filter "*.exe"
-        $exeFiles += Get-ChildItem -Filter "*.dll"
 
         # Extract symbols
         foreach ($file in $exeFiles)
         {
             Write-Host "Extracting dbg symbols from" $file.FullName
-            $args = $file.FullName # Source (exe/dll with debug symbols)
+            $args = $file.FullName # Source (exe with debug symbols)
             $args += " "
-            $args += $file.FullName  # Destination (same as source - exe/dll is stripped of debug symbols)
+            $args += $file.FullName  # Destination (same as source - exe is stripped of debug symbols)
             $args += " "
             $args += $file.BaseName
             $args += ".pdb"
@@ -111,7 +110,6 @@ function BuildWazuhMsi(){
         # Define files to sign
         $filesToSign = @(
             "$PSScriptRoot\..\..\build\$CMAKE_CONFIG\*.exe",
-            "$PSScriptRoot\..\..\build\$CMAKE_CONFIG\*.dll",
             "$PSScriptRoot\postinstall.ps1",
             "$PSScriptRoot\cleanup.ps1"
         )

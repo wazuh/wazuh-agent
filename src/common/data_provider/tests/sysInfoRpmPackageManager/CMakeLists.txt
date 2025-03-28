@@ -2,10 +2,15 @@ cmake_minimum_required(VERSION 3.22)
 
 project(RpmPackageManager_unit_test)
 
-file(GLOB RPM_UNIT_TEST_SRC "*.cpp")
-file(GLOB RPM_SRC "${CMAKE_SOURCE_DIR}/src/packages/rpm*.cpp")
+file(GLOB RPM_UNIT_TEST_SRC
+    "*.cpp")
 
-add_executable(sysInfoRpm_unit_test ${RPM_UNIT_TEST_SRC} ${RPM_SRC})
+add_executable(sysInfoRpm_unit_test ${RPM_UNIT_TEST_SRC})
+
+target_include_directories(sysInfoRpm_unit_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/packages
+)
 
 configure_target(sysInfoRpm_unit_test)
 

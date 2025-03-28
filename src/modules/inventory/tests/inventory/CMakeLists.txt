@@ -1,5 +1,3 @@
-find_package(GTest CONFIG REQUIRED)
-
 add_executable(inventory_unit_test inventory_test.cpp)
 configure_target(inventory_unit_test)
 target_include_directories(inventory_unit_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include)

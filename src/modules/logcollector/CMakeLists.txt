@@ -7,9 +7,6 @@ set_common_settings()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-get_filename_component(SRC_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
-get_filename_component(COMMON_FOLDER ${SRC_FOLDER}/common/ ABSOLUTE)
-
 if(APPLE)
     find_package(fmt REQUIRED)
     add_subdirectory(src/macos_reader/oslogstore)
@@ -17,7 +14,6 @@ endif()
 
 find_package(cJSON CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
-find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio)
 
 FILE(GLOB LOGCOLLECTOR_SOURCES src/*.cpp src/file_reader/src/*.cpp)

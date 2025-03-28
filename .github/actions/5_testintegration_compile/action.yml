@@ -19,8 +19,13 @@ runs:
         mkdir -p ${{ inputs.build_path }} && cd ${{ inputs.build_path }}
         if [[ "$RUNNER_OS" == "Windows" ]]; then
           cmake ${SRC_FOLDER} -DBUILD_TESTS=1 -G "Visual Studio 17 2022" -A x64
-        else
+        elif [[ "$RUNNER_OS" == "Linux" ]]; then
           cmake ${SRC_FOLDER} -DBUILD_TESTS=1 -G "Unix Makefiles"
+        elif [[ "$RUNNER_OS" == "macOS" ]]; then
+          cmake ${SRC_FOLDER} -DBUILD_TESTS=1 -DENABLE_CLANG_TIDY=NO -G "Unix Makefiles"
+        else
+          echo "Unsupported OS: $RUNNER_OS"
+          exit 1
         fi
         echo "CMake project generated in $(pwd)"
       shell: bash
