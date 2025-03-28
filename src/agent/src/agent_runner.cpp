@@ -5,6 +5,7 @@
 #include <config.h>
 #include <configuration_parser.hpp>
 #include <http_client.hpp>
+#include <instance_communicator.hpp>
 #include <instance_handler.hpp>
 #include <logger.hpp>
 #include <restart_handler.hpp>
@@ -140,7 +141,7 @@ int AgentRunner::ReloadModule() const
 int AgentRunner::ReloadConfig() const
 {
     std::cout << "Starting wazuh-agent config reload\n";
-
+    instance_communicator::SendSignal("RELOAD");
     return 1;
 }
 
