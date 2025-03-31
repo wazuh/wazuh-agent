@@ -10,8 +10,6 @@
 #include <functional>
 #include <string>
 
-using ResultCallbackData = const std::function<void(ReturnTypeCallback, const nlohmann::json&)>;
-
 class DBSync : public IDBSync
 {
 public:
