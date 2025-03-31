@@ -9,7 +9,9 @@
 using logcollector::Logcollector;
 #endif
 
+#ifdef ENABLE_SCA
 #include <sca.hpp>
+#endif
 
 namespace
 {
@@ -50,7 +52,9 @@ void ModuleManager::AddModules()
 #endif
     }
 
+#ifdef ENABLE_SCA
     AddModule(SecurityConfigurationAssessment<>::Instance(m_configurationParser));
+#endif
 
     Setup();
 }

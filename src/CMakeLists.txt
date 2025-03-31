@@ -37,7 +37,7 @@ find_package(OpenSSL REQUIRED)
 include(cmake/CommonSettings.cmake)
 set_common_settings()
 
-if(ENABLE_LOGCOLLECTOR OR ENABLE_INVENTORY)
+if(ENABLE_LOGCOLLECTOR OR ENABLE_INVENTORY OR ENABLE_SCA)
     add_subdirectory(common)
 else()
     add_subdirectory(common/config)
