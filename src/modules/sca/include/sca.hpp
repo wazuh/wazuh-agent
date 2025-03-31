@@ -7,6 +7,7 @@
 #include <config.h>
 #include <configuration_parser.hpp>
 #include <dbsync.hpp>
+#include <filesystem_wrapper.hpp>
 #include <message.hpp>
 #include <moduleWrapper.hpp>
 
@@ -25,7 +26,11 @@ class SecurityConfigurationAssessment : public ISecurityConfigurationAssessment
 public:
     /// @brief Constructor
     /// @param configurationParser Configuration parser for setting up the module
-    SecurityConfigurationAssessment(std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
+    /// @param fileSystemWrapper File system wrapper for file operations
+    SecurityConfigurationAssessment(std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
+                                    std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
+        : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
+                                                : std::make_unique<file_system::FileSystemWrapper>())
     {
         m_dbFilePath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
                        SCA_DB_DISK_NAME;
@@ -92,21 +97,19 @@ private:
     /// @param policiesPath Path to the policies
     void AddPoliciesFromPath(const std::filesystem::path& policiesPath)
     {
-        if (!std::filesystem::exists(policiesPath) || !std::filesystem::is_directory(policiesPath))
+        if (!m_fileSystemWrapper->exists(policiesPath) || !m_fileSystemWrapper->is_directory(policiesPath))
         {
             return;
         }
 
-        for (const auto& policyFile : std::filesystem::directory_iterator(policiesPath))
+        for (const auto& policyFile : m_fileSystemWrapper->list_directory(policiesPath))
         {
-            if (!policyFile.is_regular_file())
+            if (!std::filesystem::is_regular_file(policyFile))
             {
                 continue;
             }
 
-            const auto& policyFilePath = policyFile.path();
-
-            if (policyFilePath.extension() == ".yml" || policyFilePath.extension() == ".yaml")
+            if (policyFile.extension() == ".yml" || policyFile.extension() == ".yaml")
             {
                 // TODO: Load and parse the YAML file
                 // SCAPolicy policy;
@@ -122,4 +125,5 @@ private:
     std::string m_dbFilePath;
     std::function<int(Message)> m_pushMessage;
     std::vector<SCAPolicy> m_policies;
+    std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper;
 };
