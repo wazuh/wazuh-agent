@@ -4,14 +4,6 @@
 #include <ctime>
 #include <iostream>
 
-static void LogToCout(const char* msg)
-{
-    if (msg)
-    {
-        std::cout << msg << '\n';
-    }
-}
-
 int main()
 {
     const std::string sql {
@@ -58,7 +50,6 @@ int main()
     cJSON* json_insert {cJSON_Parse(insert_sql.c_str())};
     cJSON* json_update {cJSON_Parse(update_sql.c_str())};
     cJSON* json_result {nullptr};
-    dbsync_initialize(&LogToCout);
     auto handle {dbsync_create(HostType::AGENT, DbEngineType::SQLITE3, "temp.db", sql.c_str())};
 
     if (nullptr != handle)

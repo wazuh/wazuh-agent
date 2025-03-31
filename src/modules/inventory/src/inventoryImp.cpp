@@ -274,7 +274,7 @@ void Inventory::NotifyChange(ReturnTypeCallback result,
 {
     if (DB_ERROR == result)
     {
-        LogErrorInventory(data.dump());
+        LogError("{}", data.dump());
         return;
     }
 
@@ -1036,8 +1036,6 @@ void Inventory::DeleteMetadata(const std::string& key)
 
 void Inventory::CleanMetadata()
 {
-    DBSync::initialize(LogErrorInventory);
-
     try
     {
         {
@@ -1056,7 +1054,7 @@ void Inventory::CleanMetadata()
     }
     catch (const std::exception& ex)
     {
-        LogErrorInventory(ex.what());
+        LogError("{}", ex.what());
     }
 }
 

@@ -36,6 +36,7 @@
   - [Logcollector](ref/modules/logcollector/README.md)
     - [Architecture](ref/modules/logcollector/architecture.md)
     - [API Reference](ref/modules/logcollector/api-reference.md)
+  - [SCA](ref/modules/sca/README.md)
 - [Upgrade](ref/upgrade.md)
 - [Uninstall](ref/uninstall.md)
 - [Back Up and Restore](ref/backup-restore.md)

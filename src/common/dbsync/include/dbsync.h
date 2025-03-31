@@ -7,10 +7,6 @@ extern "C"
 {
 #endif
 
-    /// @brief Initializes the shared library.
-    /// @param logFunction pointer to log function to be used by the dbsync.
-    void dbsync_initialize(log_fnc_t logFunction);
-
     /// @brief Creates a new DBSync instance (wrapper)
     /// @param hostType          Dynamic library host type to be used.
     /// @param dbType            Database type to be used (currently only supported SQLITE3)

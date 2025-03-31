@@ -39,6 +39,7 @@ target_link_libraries(dbsync
     PRIVATE
     pal
     unofficial::sqlite3::sqlite3
+    Logger
 )
 
 add_subdirectory(example)

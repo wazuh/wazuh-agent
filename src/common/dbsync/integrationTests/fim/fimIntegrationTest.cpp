@@ -2,7 +2,6 @@
 #include "cjsonSmartDeleter.hpp"
 #include "dbsync.h"
 #include <fstream>
-#include <iostream>
 #include <nlohmann/json.hpp>
 #include <sstream>
 
@@ -22,14 +21,6 @@ static void Callback(const ReturnTypeCallback type, const cJSON* json, void* ctx
     CallbackMock* wrapper {static_cast<CallbackMock*>(ctx)};
     const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_PrintUnformatted(json)};
     wrapper->callbackMock(type, nlohmann::json::parse(spJsonBytes.get()));
-}
-
-static void LogFunction(const char* msg)
-{
-    if (msg)
-    {
-        std::cout << msg << '\n';
-    }
 }
 
 static std::string LoadDbQueriesDump()
@@ -59,7 +50,6 @@ DBSyncFimIntegrationTest::DBSyncFimIntegrationTest()
     : m_dbHandle {dbsync_create(HostType::AGENT, DbEngineType::SQLITE3, DATABASE_TEMP, LoadDbQueriesDump().c_str())}
 
 {
-    dbsync_initialize(&LogFunction);
 }
 
 DBSyncFimIntegrationTest::~DBSyncFimIntegrationTest()

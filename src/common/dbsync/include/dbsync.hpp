@@ -1,19 +1,18 @@
 #pragma once
 
+#include <idbsync.hpp>
+
 #include "builder.hpp"
 #include "commonDefs.h"
-#include <functional>
+
 #include <nlohmann/json.hpp>
 
-using ResultCallbackData = const std::function<void(ReturnTypeCallback, const nlohmann::json&)>;
+#include <functional>
+#include <string>
 
-class DBSync
+class DBSync : public IDBSync
 {
 public:
-    /// @brief Initializes the shared library.
-    /// @param logFunction pointer to log function to be used by the dbsync.
-    static void initialize(std::function<void(const std::string&)> logFunction);
-
     /// @brief Explicit DBSync Constructor.
     /// @param hostType          Dynamic library host type to be used.
     /// @param dbType            Database type to be used (currently only supported SQLITE3)
@@ -33,56 +32,40 @@ public:
     DBSync(const DBSYNC_HANDLE handle);
 
     /// @brief DBSync Destructor.
-    virtual ~DBSync();
+    ~DBSync();
 
-    /// @brief Generates triggers that execute actions to maintain consistency between tables.
-    /// @param jsInput      JSON information with tables relationship.
-    virtual void addTableRelationship(const nlohmann::json& jsInput);
+    /// @copydoc IDBSync::addTableRelationship
+    void addTableRelationship(const nlohmann::json& jsInput) override;
 
-    /// @brief Insert the \p jsInsert data in the database.
-    /// @param jsInsert JSON information with values to be inserted.
-    virtual void insertData(const nlohmann::json& jsInsert);
+    /// @copydoc IDBSync::insertData
+    void insertData(const nlohmann::json& jsInsert) override;
 
-    /// @brief Sets the max rows in the \p table table.
-    /// @param table    Table name to apply the max rows configuration.
-    /// @param maxRows  Max rows number to be applied in the table \p table table.
-    /// @details The table will work as a queue if the limit is exceeded.
-    virtual void setTableMaxRow(const std::string& table, const long long maxRows);
+    /// @copydoc IDBSync::setTableMaxRow
+    void setTableMaxRow(const std::string& table, const long long maxRows) override;
 
-    /// @brief Inserts (or modifies) a database record.
-    /// @param jsInput        JSON information used to add/modified a database record.
-    /// @param callbackData   Result callback(std::function) will be called for each result.
-    virtual void syncRow(const nlohmann::json& jsInput, ResultCallbackData& callbackData);
+    /// @copydoc IDBSync::syncRow
+    void syncRow(const nlohmann::json& jsInput, ResultCallbackData& callbackData) override;
 
-    /// @brief Select data, based in \p jsInput data, from the database table.
-    /// @param jsInput         JSON with table name, fields and filters to apply in the query.
-    /// @param callbackData    Result callback(std::function) will be called for each result.
-    virtual void selectRows(const nlohmann::json& jsInput, ResultCallbackData& callbackData);
+    /// @copydoc IDBSync::selectRows
+    void selectRows(const nlohmann::json& jsInput, ResultCallbackData& callbackData) override;
 
-    /// @brief Deletes a database table record and its relationships based on \p jsInput value.
-    /// @param jsInput JSON information to be applied/deleted in the database.
-    virtual void deleteRows(const nlohmann::json& jsInput);
+    /// @copydoc IDBSync::deleteRows
+    void deleteRows(const nlohmann::json& jsInput) override;
 
-    /// @brief Updates data table with \p jsInput information. \p jsResult value will
-    ///  hold/contain the results of this operation (rows insertion, modification and/or deletion).
-    /// @param jsInput    JSON information with snapshot values.
-    /// @param jsResult   JSON with deletes, creations and modifications (diffs) in rows.
-    virtual void updateWithSnapshot(const nlohmann::json& jsInput, nlohmann::json& jsResult);
+    /// @copydoc IDBSync::updateWithSnapshot(const nlohmann::json& jsInput, nlohmann::json& jsResult)
+    void updateWithSnapshot(const nlohmann::json& jsInput, nlohmann::json& jsResult) override;
 
-    /// @brief Update data table, based on json_raw_snapshot bulk data based on json string.
-    /// @param jsInput       JSON with snapshot values.
-    /// @param callbackData  Result callback(std::function) will be called for each result.
-    virtual void updateWithSnapshot(const nlohmann::json& jsInput, ResultCallbackData& callbackData);
+    /// @copydoc IDBSync::updateWithSnapshot(const nlohmann::json& jsInput, ResultCallbackData& callbackData)
+    void updateWithSnapshot(const nlohmann::json& jsInput, ResultCallbackData& callbackData) override;
 
-    /// @brief Turns off the services provided by the shared library.
-    static void teardown();
-
-    /// @brief Get current dbsync handle in the instance.
-    /// @return DBSYNC_HANDLE to be used in all internal calls.
-    DBSYNC_HANDLE handle()
+    /// @copydoc IDBSync::handle
+    DBSYNC_HANDLE handle() override
     {
         return m_dbsyncHandle;
     }
+
+    /// @brief Turns off the services provided by the shared library.
+    static void teardown();
 
 private:
     DBSYNC_HANDLE m_dbsyncHandle;

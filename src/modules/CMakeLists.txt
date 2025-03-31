@@ -16,6 +16,7 @@ message(STATUS "Wazuh agent modules")
 message(STATUS "-------------------")
 message(STATUS "Inventory:      ${ENABLE_INVENTORY}")
 message(STATUS "Logcollector:   ${ENABLE_LOGCOLLECTOR}")
+message(STATUS "SCA:   ${ENABLE_SCA}")
 message(STATUS "-------------------")
 
 if(ENABLE_INVENTORY)
@@ -25,7 +26,12 @@ endif()
 
 if(ENABLE_LOGCOLLECTOR)
     add_subdirectory(logcollector)
-    target_link_libraries(ModuleManager PUBLIC Logcollector)
+    target_link_libraries(ModuleManager PRIVATE Logcollector)
+endif()
+
+if(ENABLE_SCA)
+    add_subdirectory(sca)
+    target_link_libraries(ModuleManager PRIVATE SCA)
 endif()
 
 target_link_libraries(ModuleManager PUBLIC Boost::asio nlohmann_json::nlohmann_json TaskManager ConfigurationParser MessageEntry CommandEntry PRIVATE Logger)

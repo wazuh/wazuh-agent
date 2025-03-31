@@ -3,6 +3,7 @@
 #include "dbsync.hpp"
 #include "dbsyncPipelineFactory.h"
 #include "dbsync_implementation.h"
+#include "logger.hpp"
 #include <map>
 #include <mutex>
 
@@ -13,19 +14,9 @@ extern "C"
 
     using namespace DbSync;
 
-    static std::function<void(const std::string&)> GS_LOG_FUNCTION;
-
     static void LogMessage(const std::string& msg)
     {
-        if (!msg.empty() && GS_LOG_FUNCTION)
-        {
-            GS_LOG_FUNCTION(msg);
-        }
-    }
-
-    void dbsync_initialize(log_fnc_t logFunction)
-    {
-        DBSync::initialize([logFunction](const std::string& msg) { logFunction(msg.c_str()); });
+        LogError("{}", msg);
     }
 
     DBSYNC_HANDLE _dbsync_create(const HostType hostType,
@@ -580,14 +571,6 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
-
-void DBSync::initialize(std::function<void(const std::string&)> logFunction)
-{
-    if (!GS_LOG_FUNCTION)
-    {
-        GS_LOG_FUNCTION = std::move(logFunction);
-    }
-}
 
 DBSync::DBSync(const HostType hostType,
                const DbEngineType dbType,
