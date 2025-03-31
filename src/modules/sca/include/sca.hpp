@@ -21,7 +21,8 @@ class SecurityConfigurationAssessment : public ISecurityConfigurationAssessment
 public:
     SecurityConfigurationAssessment(std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
     {
-        Setup(configurationParser);
+        m_dbFilePath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
+                       SCA_DB_DISK_NAME;
 
         m_dBSync = std::make_unique<DBSyncType>(
             HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, "", DbManagement::PERSISTENT);
@@ -42,11 +43,9 @@ public:
     }
 
     /// @copydoc ISecurityConfigurationAssessment::Setup
-    void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) override
+    void Setup(std::shared_ptr<const configuration::ConfigurationParser>) override
     {
         // Read configuration
-        m_dbFilePath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
-                       SCA_DB_DISK_NAME;
         // Load policies
         // Validate requirements
     }
