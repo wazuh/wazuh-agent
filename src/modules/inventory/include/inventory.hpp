@@ -108,7 +108,6 @@ private:
     void SyncLoop();
     void ShowConfig();
     cJSON* Dump() const;
-    static void LogErrorInventory(const std::string& log);
     nlohmann::json EcsData(const nlohmann::json& data, const std::string& table, bool createFields = true);
     std::string GetPrimaryKeys(const nlohmann::json& data, const std::string& table);
     std::string CalculateHashId(const nlohmann::json& data, const std::string& table);

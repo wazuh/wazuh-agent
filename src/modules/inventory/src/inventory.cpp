@@ -20,8 +20,6 @@ void Inventory::Start()
 
     ShowConfig();
 
-    DBSync::initialize(LogErrorInventory);
-
     try
     {
         Inventory::Instance().Init(
@@ -39,7 +37,7 @@ void Inventory::Start()
     }
     catch (const std::exception& ex)
     {
-        LogErrorInventory(ex.what());
+        LogError("{}", ex.what());
     }
 
     LogInfo("Inventory module stopped.");
@@ -256,9 +254,4 @@ cJSON* Inventory::Dump() const
     cJSON_AddItemToObject(rootJson, "inventory", invJson);
 
     return rootJson;
-}
-
-void Inventory::LogErrorInventory(const std::string& log)
-{
-    LogError("{}", log.c_str());
 }
