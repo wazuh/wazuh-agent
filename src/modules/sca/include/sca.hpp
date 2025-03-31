@@ -23,6 +23,8 @@ template<class DBSyncType>
 class SecurityConfigurationAssessment : public ISecurityConfigurationAssessment
 {
 public:
+    /// @brief Constructor
+    /// @param configurationParser Configuration parser for setting up the module
     SecurityConfigurationAssessment(std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
     {
         m_dbFilePath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
