@@ -14,7 +14,7 @@ class IDBSync
 {
 public:
     /// @brief DBSync Destructor.
-    virtual ~DBSync() = default;
+    virtual ~IDBSync() = default;
 
     /// @brief Generates triggers that execute actions to maintain consistency between tables.
     /// @param jsInput      JSON information with tables relationship.
@@ -54,9 +54,6 @@ public:
     /// @param jsInput       JSON with snapshot values.
     /// @param callbackData  Result callback(std::function) will be called for each result.
     virtual void updateWithSnapshot(const nlohmann::json& jsInput, ResultCallbackData& callbackData) = 0;
-
-    /// @brief Turns off the services provided by the shared library.
-    virtual static void teardown() = 0;
 
     /// @brief Get current dbsync handle in the instance.
     /// @return DBSYNC_HANDLE to be used in all internal calls.
