@@ -14,11 +14,12 @@
 #include <memory>
 #include <string>
 
+template<class DBSyncType>
 class SecurityConfigurationAssessment : public ISecurityConfigurationAssessment
 {
 public:
     SecurityConfigurationAssessment(std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
-                                    std::unique_ptr<DBSync> dbSync = nullptr)
+                                    std::unique_ptr<DBSyncType> dbSync = nullptr)
     {
         Setup(configurationParser);
 
@@ -28,7 +29,7 @@ public:
         }
         else
         {
-            m_dBSync = std::make_unique<DBSync>(
+            m_dBSync = std::make_unique<DBSyncType>(
                 HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, "", DbManagement::PERSISTENT);
         }
     }
@@ -87,7 +88,7 @@ public:
 
 private:
     std::string m_name = "SCA";
-    std::unique_ptr<DBSync> m_dBSync;
+    std::unique_ptr<DBSyncType> m_dBSync;
     std::string m_dbFilePath;
     std::function<int(Message)> m_pushMessage;
 };
