@@ -98,8 +98,10 @@ private:
         m_dbFilePath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
                        SCA_DB_DISK_NAME;
 
+        LogError("DB file path: {}", m_dbFilePath);
+
         m_dBSync = std::make_unique<DBSyncType>(
-            HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, "", DbManagement::PERSISTENT);
+            HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, GetCreateStatement(), DbManagement::PERSISTENT);
     }
 
     /// @brief Destructor
@@ -135,6 +137,14 @@ private:
                 // enqueue policy as a task
             }
         }
+    }
+
+    /// @brief Get the create statement for the database
+    std::string GetCreateStatement() const
+    {
+        // Placeholder for the actual SQL statement
+        // This should be replaced with the actual SQL statement to create the SCA table
+        return R"(CREATE TABLE sca (policy TEXT PRIMARY KEY );)";
     }
 
     const std::string SCA_DB_DISK_NAME = "sca.db";
