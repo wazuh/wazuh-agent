@@ -77,7 +77,10 @@ public:
     }
 
     /// @copydoc ISecurityConfigurationAssessment::SetPushMessageFunction
-    void SetPushMessageFunction(const std::function<int(Message)>&) override {}
+    void SetPushMessageFunction(const std::function<int(Message)>& pushMessage) override
+    {
+        m_pushMessage = pushMessage;
+    }
 
     /// @copydoc ISecurityConfigurationAssessment::InitDb
     void InitDb() override {}
@@ -86,4 +89,5 @@ private:
     std::string m_name = "SCA";
     std::unique_ptr<DBSync> m_dBSync;
     std::string m_dbFilePath;
+    std::function<int(Message)> m_pushMessage;
 };
