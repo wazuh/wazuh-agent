@@ -25,7 +25,7 @@ class ScaTest : public ::testing::Test
 protected:
     void SetUp() override
     {
-        m_configurationParser = std::make_shared<const configuration::ConfigurationParser>(std::string(R"(
+        m_configurationParser = std::make_shared<configuration::ConfigurationParser>(std::string(R"(
             agent:
               retry_interval: 5
               verification_mode: none
@@ -34,11 +34,11 @@ protected:
               batch_size: 1
         )"));
 
-        m_sca = std::make_unique<SecurityConfigurationAssessment<MockDBSync>>(m_configurationParser);
+        m_sca = &SecurityConfigurationAssessment<MockDBSync>::Instance(m_configurationParser);
     }
 
-    std::shared_ptr<const configuration::ConfigurationParser> m_configurationParser = nullptr;
-    std::unique_ptr<SecurityConfigurationAssessment<MockDBSync>> m_sca = nullptr;
+    std::shared_ptr<configuration::ConfigurationParser> m_configurationParser = nullptr;
+    SecurityConfigurationAssessment<MockDBSync>* m_sca;
 };
 
 TEST_F(ScaTest, ConstructorSetsDbFilePath)

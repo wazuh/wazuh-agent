@@ -20,29 +20,19 @@
 #include <string>
 #include <vector>
 
-template<class DBSyncType>
+template<class DBSyncType = DBSync>
 class SecurityConfigurationAssessment : public ISecurityConfigurationAssessment
 {
 public:
-    /// @brief Constructor
-    /// @param configurationParser Configuration parser for setting up the module
-    /// @param fileSystemWrapper File system wrapper for file operations
-    SecurityConfigurationAssessment(std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
-                                    std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
-        : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
-                                                : std::make_unique<file_system::FileSystemWrapper>())
+    /// @brief Get SCA Instance
+    /// @return SCA instance
+    static SecurityConfigurationAssessment&
+    Instance(std::shared_ptr<configuration::ConfigurationParser> configurationParser = nullptr,
+             std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
     {
-        m_dbFilePath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
-                       SCA_DB_DISK_NAME;
-
-        m_dBSync = std::make_unique<DBSyncType>(
-            HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, "", DbManagement::PERSISTENT);
+        static SecurityConfigurationAssessment instance(configurationParser, std::move(fileSystemWrapper));
+        return instance;
     }
-
-    /// @copydoc ISecurityConfigurationAssessment::~ISecurityConfigurationAssessment
-    ~SecurityConfigurationAssessment() = default;
-    SecurityConfigurationAssessment(const SecurityConfigurationAssessment&) = delete;
-    SecurityConfigurationAssessment& operator=(const SecurityConfigurationAssessment&) = delete;
 
     /// @copydoc ISecurityConfigurationAssessment::Start
     void Start() override
@@ -92,6 +82,26 @@ public:
     }
 
 private:
+    /// @brief Constructor
+    /// @param configurationParser Configuration parser for setting up the module
+    /// @param fileSystemWrapper File system wrapper for file operations
+    SecurityConfigurationAssessment(std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
+                                    std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
+        : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
+                                                : std::make_unique<file_system::FileSystemWrapper>())
+    {
+        m_dbFilePath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
+                       SCA_DB_DISK_NAME;
+
+        m_dBSync = std::make_unique<DBSyncType>(
+            HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, "", DbManagement::PERSISTENT);
+    }
+
+    /// @copydoc ISecurityConfigurationAssessment::~ISecurityConfigurationAssessment
+    ~SecurityConfigurationAssessment() = default;
+    SecurityConfigurationAssessment(const SecurityConfigurationAssessment&) = delete;
+    SecurityConfigurationAssessment& operator=(const SecurityConfigurationAssessment&) = delete;
+
     /// @brief Add policies from policies path
     /// @param policiesPath Path to the policies
     void AddPoliciesFromPath(const std::filesystem::path& policiesPath)
