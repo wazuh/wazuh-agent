@@ -8,11 +8,6 @@
 #include <memory>
 #include <nlohmann/json.hpp>
 
-static void LoggerFunction(const char* msg)
-{
-    std::cout << "Msg: " << msg << '\n';
-}
-
 int main(int argc, const char* argv[])
 {
     try
@@ -29,8 +24,6 @@ int main(int argc, const char* argv[])
         const std::string hostType {jsonConfigFile.at("host_type").get_ref<const std::string&>()};
         const std::string persistance {jsonConfigFile.at("persistance").get_ref<const std::string&>()};
         const std::string sqlStmt {jsonConfigFile.at("sql_statement").get_ref<const std::string&>()};
-
-        dbsync_initialize(LoggerFunction);
 
         DBSYNC_HANDLE handle {nullptr};
 

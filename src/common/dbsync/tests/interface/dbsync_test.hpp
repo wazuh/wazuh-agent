@@ -10,7 +10,6 @@ protected:
     DBSyncTest() = default;
     virtual ~DBSyncTest() = default;
 
-    void SetUp() override;
     void TearDown() override;
 };
 

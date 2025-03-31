@@ -3,7 +3,6 @@
 #include "dbsync.h"
 #include "dbsync.hpp"
 #include <fstream>
-#include <iostream>
 #include <nlohmann/json.hpp>
 
 constexpr auto DATABASE_TEMP {"TEMP.db"};
@@ -24,19 +23,6 @@ static void Callback(const ReturnTypeCallback type, const cJSON* json, void* ctx
     const std::unique_ptr<char, CJsonSmartFree> spJsonBytes {cJSON_PrintUnformatted(json)};
     wrapper->callbackMock(type, nlohmann::json::parse(spJsonBytes.get()));
 }
-
-static void LogFunction(const char* msg)
-{
-    if (msg)
-    {
-        std::cout << msg << '\n';
-    }
-}
-
-void DBSyncTest::SetUp()
-{
-    dbsync_initialize(&LogFunction);
-};
 
 void DBSyncTest::TearDown()
 {
@@ -544,8 +530,6 @@ TEST_F(DBSyncTest, UpdateDataCbEmptyInputs)
 
 TEST(DBSyncTestInit, InitializeWithNullFnct)
 {
-    dbsync_initialize(nullptr);
-
     const auto sql {"CREATE TABLE processes(`pid` BIGINT, `name` TEXT, PRIMARY KEY (`pid`)) WITHOUT ROWID;"};
     const auto insertionSqlStmt {R"({"table":"processes","data":[{"pid":4,"name":"System"}]})"};
 

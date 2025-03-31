@@ -10,10 +10,6 @@ using ResultCallbackData = const std::function<void(ReturnTypeCallback, const nl
 class DBSync
 {
 public:
-    /// @brief Initializes the shared library.
-    /// @param logFunction pointer to log function to be used by the dbsync.
-    static void initialize(std::function<void(const std::string&)> logFunction);
-
     /// @brief Explicit DBSync Constructor.
     /// @param hostType          Dynamic library host type to be used.
     /// @param dbType            Database type to be used (currently only supported SQLITE3)
