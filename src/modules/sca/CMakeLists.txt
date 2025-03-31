@@ -5,12 +5,9 @@ project(SCA)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
-add_library(SCA src/sca.cpp)
-target_include_directories(SCA PUBLIC include)
-target_link_libraries(SCA PUBLIC dbsync Config ConfigurationParser MessageEntry ModuleManager CommandEntry)
-
-include(../../cmake/ConfigureTarget.cmake)
-configure_target(SCA)
+add_library(SCA INTERFACE)
+target_include_directories(SCA INTERFACE include)
+target_link_libraries(SCA INTERFACE dbsync Config ConfigurationParser MessageEntry ModuleManager CommandEntry)
 
 if(BUILD_TESTS)
     enable_testing()
