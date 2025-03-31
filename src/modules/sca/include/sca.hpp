@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SCAPolicy.hpp>
 #include <isca.hpp>
 
 #include <command_entry.hpp>
@@ -11,9 +12,12 @@
 
 #include <nlohmann/json.hpp>
 
+#include <filesystem>
 #include <functional>
+#include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
 
 template<class DBSyncType>
 class SecurityConfigurationAssessment : public ISecurityConfigurationAssessment
@@ -46,8 +50,11 @@ public:
     void Setup(std::shared_ptr<const configuration::ConfigurationParser>) override
     {
         // Read configuration
+        // m_policiesFolder = configurationParser->GetConfigOrDefault(
+        //     config::DEFAULT_SCA_POLICIES_PATH, "sca", "policies_path");
+
         // Load policies
-        // Validate requirements
+        // AddPoliciesFromPath(m_policiesFolder);
     }
 
     /// @copydoc ISecurityConfigurationAssessment::Stop
@@ -81,9 +88,37 @@ public:
     void InitDb() override {}
 
 private:
+    /// @brief Add policies from policies path
+    /// @param policiesPath Path to the policies
+    void AddPoliciesFromPath(const std::filesystem::path& policiesPath)
+    {
+        if (!std::filesystem::exists(policiesPath) || !std::filesystem::is_directory(policiesPath))
+        {
+            return;
+        }
+
+        for (const auto& policyFile : std::filesystem::directory_iterator(policiesPath))
+        {
+            if (!policyFile.is_regular_file())
+            {
+                continue;
+            }
+
+            const auto& policyFilePath = policyFile.path();
+
+            if (policyFilePath.extension() == ".yml" || policyFilePath.extension() == ".yaml")
+            {
+                // TODO: Load and parse the YAML file
+                // SCAPolicy policy;
+                // m_policies.push_back(std::move(policy));
+            }
+        }
+    }
+
     const std::string SCA_DB_DISK_NAME = "sca.db";
     std::string m_name = "SCA";
     std::unique_ptr<DBSyncType> m_dBSync;
     std::string m_dbFilePath;
     std::function<int(Message)> m_pushMessage;
+    std::vector<SCAPolicy> m_policies;
 };
