@@ -19,20 +19,12 @@ template<class DBSyncType>
 class SecurityConfigurationAssessment : public ISecurityConfigurationAssessment
 {
 public:
-    SecurityConfigurationAssessment(std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
-                                    std::unique_ptr<DBSyncType> dbSync = nullptr)
+    SecurityConfigurationAssessment(std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
     {
         Setup(configurationParser);
 
-        if (dbSync)
-        {
-            m_dBSync = std::move(dbSync);
-        }
-        else
-        {
-            m_dBSync = std::make_unique<DBSyncType>(
-                HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, "", DbManagement::PERSISTENT);
-        }
+        m_dBSync = std::make_unique<DBSyncType>(
+            HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, "", DbManagement::PERSISTENT);
     }
 
     /// @copydoc ISecurityConfigurationAssessment::~ISecurityConfigurationAssessment
@@ -54,7 +46,7 @@ public:
     {
         // Read configuration
         m_dbFilePath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
-                       m_dbFilePath;
+                       SCA_DB_DISK_NAME;
         // Load policies
         // Validate requirements
     }
@@ -88,6 +80,7 @@ public:
     void InitDb() override {}
 
 private:
+    const std::string SCA_DB_DISK_NAME = "sca.db";
     std::string m_name = "SCA";
     std::unique_ptr<DBSyncType> m_dBSync;
     std::string m_dbFilePath;

@@ -8,15 +8,18 @@
 #include <memory>
 #include <string>
 
+std::string MockDBSyncDbFilePath;
+
 class MockDBSync
 {
 public:
-    explicit MockDBSync(const HostType, const DbEngineType, const std::string&, const std::string&, const DbManagement)
+    explicit MockDBSync(
+        const HostType, const DbEngineType, const std::string& dbFilePath, const std::string&, const DbManagement)
     {
+        MockDBSyncDbFilePath = dbFilePath;
     }
 };
 
-// fixture
 class ScaTest : public ::testing::Test
 {
 protected:
@@ -26,6 +29,7 @@ protected:
             agent:
               retry_interval: 5
               verification_mode: none
+              path.data: test_path
             events:
               batch_size: 1
         )"));
@@ -37,7 +41,9 @@ protected:
     std::unique_ptr<SecurityConfigurationAssessment<MockDBSync>> m_sca = nullptr;
 };
 
-TEST_F(ScaTest, Constructor)
+TEST_F(ScaTest, ConstructorSetsDbFilePath)
 {
-    SUCCEED();
+    const auto expectedDbFilePath =
+        m_configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data");
+    EXPECT_EQ(MockDBSyncDbFilePath, expectedDbFilePath + "/sca.db");
 }
