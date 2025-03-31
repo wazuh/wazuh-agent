@@ -82,6 +82,33 @@ std::shared_ptr<IModule> ModuleManager::GetModule(const std::string& name)
     return nullptr;
 }
 
+void ModuleManager::ReloadModule(const std::string& name)
+{
+    const std::lock_guard<std::mutex> lock(m_mutex);
+
+    if (auto it = m_modules.find(name); it != m_modules.end())
+    {
+        it->second->Stop();
+
+        --m_started;
+
+        it->second->Setup(m_configurationParser);
+
+        m_taskManager.EnqueueTask(
+            [this, it]
+            {
+                ++m_started;
+                it->second->Run();
+            },
+            it->second->Name());
+
+        LogInfo("Module {} reloaded", name);
+        return;
+    }
+
+    LogError("Module {} not found", name);
+}
+
 void ModuleManager::Start()
 {
     const std::lock_guard<std::mutex> lock(m_mutex);

@@ -4,6 +4,11 @@
 
 #include <optional>
 
+/// @brief Sends signal to the previous instance of the agent
+/// @param message The message to be sent
+/// @return True if the signal was sent successfully
+bool SendSignal(const std::string& message);
+
 /// @brief The AgentRunner class is responsible for running the agent based on the provided command line arguments.
 class AgentRunner
 {
@@ -34,11 +39,11 @@ private:
     /// @return 0 if the enrollment is successful, 1 otherwise.
     int EnrollAgent() const;
 
-    /// @brief Reloads an agents module.
+    /// @brief Reloads an agent's module.
     int ReloadModule() const;
 
     /// @brief Reloads the agent configuration and all modules.
-    int ReloadConfig() const;
+    int ReloadModules() const;
 
     /// @brief Displays the current status of the agent.
     void StatusAgent() const;

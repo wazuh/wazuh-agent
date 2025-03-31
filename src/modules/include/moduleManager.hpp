@@ -38,6 +38,9 @@ public:
     /// @copydoc IModuleManager::AddModules
     void AddModules() override;
 
+    /// @copydoc IModuleManager::ReloadModule
+    void ReloadModule(const std::string& name) override;
+
     /// @copydoc IModuleManager::GetModule
     std::shared_ptr<IModule> GetModule(const std::string& name) override;
 

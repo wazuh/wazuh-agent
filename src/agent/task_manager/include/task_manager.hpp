@@ -37,6 +37,13 @@ public:
     /// @return The number of enqueued threads
     size_t GetNumEnqueuedThreads() const;
 
+    /// @brief Returns the IO context for the task manager
+    /// @return The IO context used by the task manager
+    boost::asio::io_context& GetIOContext()
+    {
+        return m_ioContext;
+    }
+
 private:
     /// @brief The IO context for the task manager
     boost::asio::io_context m_ioContext;

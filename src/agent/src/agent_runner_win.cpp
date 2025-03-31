@@ -41,3 +41,42 @@ std::optional<int> AgentRunner::HandlePlatformSpecificOptions() const
     }
     return std::nullopt;
 }
+
+bool SendSignal(const std::string& message)
+{
+    HANDLE hPipe = CreateFile(pipeName.c_str(), // pipe name
+                              GENERIC_WRITE,    // write access
+                              0,                // no sharing
+                              NULL,             // default security attributes
+                              OPEN_EXISTING,    // opens existing pipe
+                              0,                // default attributes
+                              NULL);            // no template file
+
+    if (hPipe == INVALID_HANDLE_VALUE)
+    {
+        std::cerr << "Client connect error: " << GetLastError() << "\n";
+        return false;
+    }
+
+    std::string command = message + "\n";
+    DWORD bytesWritten = 0;
+
+    BOOL success = WriteFile(hPipe,                              // pipe handle
+                             command.c_str(),                    // message
+                             static_cast<DWORD>(command.size()), // message length
+                             &bytesWritten,                      // bytes written
+                             NULL);                              // not overlapped
+
+    if (!success || bytesWritten != command.size())
+    {
+        std::cerr << "Client write error: " << GetLastError() << "\n";
+        CloseHandle(hPipe);
+        return false;
+    }
+
+    std::cout << "Client sent signal: " << message << "\n";
+
+    // Done writing: close the handle to signal EOF
+    CloseHandle(hPipe);
+    return true;
+}
