@@ -1,7 +1,6 @@
 #pragma once
 
 #include <SCAPolicy.hpp>
-#include <isca.hpp>
 
 #include <command_entry.hpp>
 #include <config.h>
@@ -21,7 +20,7 @@
 #include <vector>
 
 template<class DBSyncType = DBSync>
-class SecurityConfigurationAssessment : public ISecurityConfigurationAssessment
+class SecurityConfigurationAssessment
 {
 public:
     /// @brief Get SCA Instance
@@ -34,8 +33,8 @@ public:
         return instance;
     }
 
-    /// @copydoc ISecurityConfigurationAssessment::Start
-    void Start() override
+    /// @brief Start the SCA module
+    void Start()
     {
         // Execute the policies (run io context)
         // Each policy should:
@@ -43,8 +42,9 @@ public:
         // Create a report and send it to the server
     }
 
-    /// @copydoc ISecurityConfigurationAssessment::Setup
-    void Setup(std::shared_ptr<const configuration::ConfigurationParser>) override
+    /// @brief Setup the SCA module
+    /// @param configurationParser Configuration parser for setting up the module
+    void Setup([[maybe_unused]] std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
     {
         // Read configuration
         // m_policiesFolder = configurationParser->GetConfigOrDefault(
@@ -54,29 +54,34 @@ public:
         // AddPoliciesFromPath(m_policiesFolder);
     }
 
-    /// @copydoc ISecurityConfigurationAssessment::Stop
-    void Stop() override
+    /// @brief Stop the SCA module
+    void Stop()
     {
         // Stop the policies
         // Stop the regex engine
     }
 
-    /// @copydoc ISecurityConfigurationAssessment::ExecuteCommand
+    /// @brief Execute a command
+    /// @param command Command to execute
+    /// @param parameters Parameters for the command
+    /// @return Command execution result
     Co_CommandExecutionResult ExecuteCommand([[maybe_unused]] const std::string command,
-                                             [[maybe_unused]] const nlohmann::json parameters) override
+                                             [[maybe_unused]] const nlohmann::json parameters)
     {
         co_return module_command::CommandExecutionResult {module_command::Status::FAILURE,
                                                           "SCA command handling not implemented yet"};
     }
 
-    /// @copydoc ISecurityConfigurationAssessment::Name
-    const std::string& Name() const override
+    /// @brief Returns the name of the module
+    /// @return Name of the module
+    const std::string& Name() const
     {
         return m_name;
     }
 
-    /// @copydoc ISecurityConfigurationAssessment::SetPushMessageFunction
-    void SetPushMessageFunction(const std::function<int(Message)>& pushMessage) override
+    /// @brief Set the push message function
+    /// @param pushMessage Function to push messages
+    void SetPushMessageFunction(const std::function<int(Message)>& pushMessage)
     {
         m_pushMessage = pushMessage;
     }
@@ -97,9 +102,13 @@ private:
             HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, "", DbManagement::PERSISTENT);
     }
 
-    /// @copydoc ISecurityConfigurationAssessment::~ISecurityConfigurationAssessment
+    /// @brief Destructor
     ~SecurityConfigurationAssessment() = default;
+
+    /// @brief Deleted copy constructor
     SecurityConfigurationAssessment(const SecurityConfigurationAssessment&) = delete;
+
+    /// @brief Deleted copy assignment operator
     SecurityConfigurationAssessment& operator=(const SecurityConfigurationAssessment&) = delete;
 
     /// @brief Add policies from policies path
