@@ -47,3 +47,22 @@ TEST_F(ScaTest, ConstructorSetsDbFilePath)
         m_configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data");
     EXPECT_EQ(MockDBSyncDbFilePath, expectedDbFilePath + "/sca.db");
 }
+
+TEST_F(ScaTest, SetPushMessageFunctionStoresCallback)
+{
+    bool called = false;
+
+    auto lambda = [&called](Message) -> int
+    {
+        called = true;
+        return 123;
+    };
+
+    m_sca->SetPushMessageFunction(lambda);
+
+    Message dummyMessage(MessageType::STATELESS, nlohmann::json {}, "dummyModule", "dummyType", "dummyMetaData");
+    const int result = lambda(dummyMessage);
+
+    EXPECT_TRUE(called);
+    EXPECT_EQ(result, 123);
+}
