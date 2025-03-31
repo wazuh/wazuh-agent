@@ -3,7 +3,7 @@
 #include <command_entry.hpp>
 #include <message.hpp>
 #include <moduleWrapper.hpp>
-#include <sca.hpp>
+// #include <sca.hpp>
 #include <task_manager.hpp>
 
 #include <map>
@@ -110,5 +110,5 @@ private:
     /// @brief The number of modules that have started
     std::atomic<int> m_started {0};
 
-    std::unique_ptr<ISecurityConfigurationAssessment> m_sca;
+    // std::unique_ptr<ISecurityConfigurationAssessment> m_sca;
 };

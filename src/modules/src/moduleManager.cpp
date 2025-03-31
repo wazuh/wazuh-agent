@@ -50,8 +50,8 @@ void ModuleManager::AddModules()
 #endif
     }
 
-    m_sca = std::make_unique<SecurityConfigurationAssessment<DBSync>>(m_configurationParser);
-    AddModule(*m_sca);
+    // m_sca = std::make_unique<SecurityConfigurationAssessment<DBSync>>(m_configurationParser);
+    // AddModule(*m_sca);
 
     Setup();
 }
