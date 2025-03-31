@@ -30,8 +30,9 @@ public:
         m_dbFilePath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
                        SCA_DB_DISK_NAME;
 
-        m_dBSync = std::make_unique<DBSyncType>(
-            HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, "", DbManagement::PERSISTENT);
+        // TODO inject dbsync shared pointer, initialized by module manager
+        // m_dBSync = std::make_unique<DBSyncType>(
+        //     HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, "", DbManagement::PERSISTENT);
     }
 
     /// @copydoc ISecurityConfigurationAssessment::~ISecurityConfigurationAssessment
