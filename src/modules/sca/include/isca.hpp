@@ -39,7 +39,4 @@ public:
     /// @brief Sets the push message function
     /// @param pushMessage Push message function
     virtual void SetPushMessageFunction(const std::function<int(Message)>& pushMessage) = 0;
-
-    /// @brief Initialie the DB
-    virtual void InitDb() = 0;
 };

@@ -84,9 +84,6 @@ public:
         m_pushMessage = pushMessage;
     }
 
-    /// @copydoc ISecurityConfigurationAssessment::InitDb
-    void InitDb() override {}
-
 private:
     /// @brief Add policies from policies path
     /// @param policiesPath Path to the policies
