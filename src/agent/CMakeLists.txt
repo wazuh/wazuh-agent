@@ -11,6 +11,7 @@ add_subdirectory(command_handler)
 add_subdirectory(communicator)
 add_subdirectory(configuration_parser)
 add_subdirectory(http_client)
+add_subdirectory(instance_communicator)
 add_subdirectory(multitype_queue)
 add_subdirectory(persistence)
 add_subdirectory(task_manager)
@@ -51,6 +52,7 @@ target_link_libraries(
            Communicator
            ConfigurationParser
            HttpClient
+           InstanceCommunicator
            MultiTypeQueue
            ModuleManager
            TaskManager
