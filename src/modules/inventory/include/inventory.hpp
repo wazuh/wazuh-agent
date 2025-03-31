@@ -23,7 +23,7 @@
 class Inventory
 {
 public:
-    const std::string INVENTORY_DB_DISK_NAME = "local.db";
+    const std::string INVENTORY_DB_DISK_NAME = "inventory.db";
     const std::string INVENTORY_NORM_CONFIG_NAME = "norm_config.json";
 
     static Inventory& Instance()
