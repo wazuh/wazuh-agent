@@ -6,6 +6,7 @@
 #include <command_handler_utils.hpp>
 #include <config.h>
 #include <http_client.hpp>
+#include <instance_communicator.hpp>
 #include <message.hpp>
 #include <message_queue_utils.hpp>
 #include <multitype_queue.hpp>
@@ -20,6 +21,7 @@ Agent::Agent(std::unique_ptr<configuration::ConfigurationParser> configurationPa
              std::unique_ptr<http_client::IHttpClient> httpClient,
              std::unique_ptr<IAgentInfo> agentInfo,
              std::unique_ptr<command_handler::ICommandHandler> commandHandler,
+             std::unique_ptr<instance_communicator::IInstanceCommunicator> instanceCommunicator,
              std::shared_ptr<IMultiTypeQueue> messageQueue)
     : m_signalHandler(std::move(signalHandler))
     , m_configurationParser(std::move(configurationParser))
@@ -40,6 +42,17 @@ Agent::Agent(std::unique_ptr<configuration::ConfigurationParser> configurationPa
                       m_agentInfo->GetUUID())
     , m_commandHandler(commandHandler ? std::move(commandHandler)
                                       : std::make_unique<command_handler::CommandHandler>(m_configurationParser))
+    , m_instanceCommunicator(
+          instanceCommunicator
+              ? std::move(instanceCommunicator)
+              : std::make_unique<instance_communicator::InstanceCommunicator>(
+                    instance_communicator::DEFAULT_PORT,
+                    [this](const std::string& signal)
+                    {
+                        LogWarn(" *********************** Message received from previous instance: {}", signal);
+                        ReloadModules();
+                        return;
+                    }))
     , m_centralizedConfiguration(
           [this](const std::vector<std::string>& groups)
           {
@@ -174,6 +187,8 @@ void Agent::Run()
         m_running.store(true);
     }
 
+    m_taskManager.EnqueueTask(m_instanceCommunicator->Listen(m_taskManager.GetIOContext()));
+
     m_signalHandler->WaitForSignal();
 
     {
@@ -184,4 +199,6 @@ void Agent::Run()
     m_commandHandler->Stop();
     m_communicator.Stop();
     m_moduleManager.Stop();
+    LogWarn("Stopping Instance Communicator");
+    m_instanceCommunicator->Stop();
 }
