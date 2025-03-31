@@ -192,7 +192,7 @@ class NetworkLinuxInterface final : public INetworkInterfaceWrapper
 
         if (inputData)
         {
-            const auto result {getnameinfo(inputData, socketLen, retVal.get(), NI_MAXHOST, NULL, 0, NI_NUMERICHOST)};
+            const auto result {getnameinfo(inputData, socketLen, retVal.get(), NI_MAXHOST, nullptr, 0, NI_NUMERICHOST)};
 
             if (result != 0)
             {

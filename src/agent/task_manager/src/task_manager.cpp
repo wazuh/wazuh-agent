@@ -71,6 +71,7 @@ void TaskManager::EnqueueTask(std::function<void()> task, const std::string& tas
         LogError("Enqueued more threaded tasks than available threads");
     }
 
+    // NOLINTBEGIN(bugprone-exception-escape)
     auto taskWithThreadCounter = [this, taskID, task = std::move(task)]() mutable
     {
         try
@@ -83,6 +84,7 @@ void TaskManager::EnqueueTask(std::function<void()> task, const std::string& tas
         }
         --m_numEnqueuedThreads;
     };
+    // NOLINTEND(bugprone-exception-escape)
 
     boost::asio::post(m_ioContext, std::move(taskWithThreadCounter));
 }

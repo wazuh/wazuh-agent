@@ -31,6 +31,9 @@ namespace
 
 namespace command_handler
 {
+    using namespace std::chrono_literals;
+    constexpr std::chrono::milliseconds WAIT_TIME {1000ms};
+
     CommandHandler::CommandHandler(std::shared_ptr<configuration::ConfigurationParser> configurationParser,
                                    std::unique_ptr<command_store::ICommandStore> commandStore)
     {
@@ -70,7 +73,6 @@ namespace command_handler
         const std::function<boost::asio::awaitable<module_command::CommandExecutionResult>(
             module_command::CommandEntry&)> dispatchCommand) // NOLINT(performance-unnecessary-value-param)
     {
-        using namespace std::chrono_literals;
         const auto executor = co_await boost::asio::this_coro::executor;
         std::unique_ptr<boost::asio::steady_timer> expTimer = std::make_unique<boost::asio::steady_timer>(executor);
 
@@ -81,7 +83,7 @@ namespace command_handler
             auto cmd = getCommandFromQueue();
             if (cmd == std::nullopt)
             {
-                expTimer->expires_after(1000ms);
+                expTimer->expires_after(WAIT_TIME);
                 co_await expTimer->async_wait(boost::asio::use_awaitable);
                 continue;
             }

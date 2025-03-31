@@ -10,6 +10,7 @@ void SysInfoHardwareWrapperX86_64MacTest::TearDown() {};
 using ::testing::_; // NOLINT(bugprone-reserved-identifier)
 using ::testing::Return;
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
 TEST_F(SysInfoHardwareWrapperX86_64MacTest, Test_CpuMhz_WithCpuFrequency_Succeed)
 {
     auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
@@ -46,3 +47,5 @@ TEST_F(SysInfoHardwareWrapperX86_64MacTest, Test_CpuMhz_WithoutCpuFrequency_Fail
 
     EXPECT_THROW(wrapper->cpuMhz(), std::system_error);
 }
+
+// NOLINTEND(cppcoreguidelines-avoid-magic-numbers)

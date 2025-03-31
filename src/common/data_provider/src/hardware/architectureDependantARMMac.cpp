@@ -41,14 +41,14 @@ int getMhz(IOsPrimitivesMac* osPrimitives)
             continue;
         }
 
-        std::string name(buf);
+        const std::string name(buf);
 
         if (name.compare("pmgr"))
         {
             continue;
         }
 
-        CFMutableDictionaryRef properties;
+        CFMutableDictionaryRef properties = nullptr;
         kr = osPrimitives->IORegistryEntryCreateCFProperties(device, &properties, kCFAllocatorDefault, kNilOptions);
 
         if (kr != KERN_SUCCESS)
@@ -79,15 +79,16 @@ int getMhz(IOsPrimitivesMac* osPrimitives)
                 0, std::system_category(), "CF type id of p_cores_freq_property is not Data type id."};
         }
 
-        size_t length = static_cast<size_t>(osPrimitives->CFDataGetLength(p_cores_freq_property));
+        const auto length = static_cast<size_t>(osPrimitives->CFDataGetLength(p_cores_freq_property));
 
         // The frequencies are in hz, saved in an array as little endian 4 byte integers
         for (size_t i = 0; i < length - 3; i += sizeof(uint32_t))
         {
             uint32_t cur_freq = 0;
-            osPrimitives->CFDataGetBytes(p_cores_freq_property,
-                                         osPrimitives->CFRangeMake(static_cast<CFIndex>(i), sizeof(uint32_t)),
-                                         reinterpret_cast<UInt8*>(&cur_freq));
+            osPrimitives->CFDataGetBytes(
+                p_cores_freq_property,
+                osPrimitives->CFRangeMake(static_cast<CFIndex>(i), sizeof(uint32_t)),
+                reinterpret_cast<UInt8*>(&cur_freq)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
             cpuHz = std::max(cpuHz, static_cast<uint64_t>(cur_freq));
         }
     }

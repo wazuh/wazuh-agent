@@ -29,6 +29,7 @@ public:
 
 TEST_F(SysInfoHardwareMacTest, Test_BuildHardwareData_Succeed)
 {
+    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
     auto mock {std::make_shared<OSHardwareWrapperMacMock>()};
     nlohmann::json hardware {};
     EXPECT_CALL(*mock, boardSerial()).WillOnce(Return("H2WH91N3Q6NY"));
@@ -47,4 +48,5 @@ TEST_F(SysInfoHardwareMacTest, Test_BuildHardwareData_Succeed)
     EXPECT_EQ(static_cast<uint64_t>(16777216), hardware.at("ram_total").get_ref<nlohmann::json::number_unsigned_t&>());
     EXPECT_EQ(static_cast<uint64_t>(8388608), hardware.at("ram_free").get_ref<nlohmann::json::number_unsigned_t&>());
     EXPECT_EQ(static_cast<uint64_t>(50), hardware.at("ram_usage").get_ref<nlohmann::json::number_unsigned_t&>());
+    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 }

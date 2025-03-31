@@ -33,7 +33,7 @@ namespace
     std::string GetExecutablePath()
     {
         char buffer[MAX_PATH];
-        GetModuleFileName(NULL, buffer, MAX_PATH);
+        GetModuleFileName(nullptr, buffer, MAX_PATH);
         return std::string(buffer);
     }
 

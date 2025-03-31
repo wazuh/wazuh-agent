@@ -6,7 +6,7 @@
 
 TEST(OSLogStoreWrapperTest, Constructor)
 {
-    [[maybe_unused]] OSLogStoreWrapper oslogstore;
+    [[maybe_unused]] const OSLogStoreWrapper oslogstore;
     SUCCEED();
 }
 

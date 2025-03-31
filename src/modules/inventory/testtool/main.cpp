@@ -7,6 +7,7 @@
 
 constexpr int DEFAULT_SLEEP_TIME {60};
 
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, const char* argv[])
 {
     auto timedMainLoop {false};

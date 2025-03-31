@@ -17,7 +17,7 @@ namespace macos_reader_tests
     constexpr time_t DEFAULT_WAIT_IN_MILLIS = 50;
 
     using namespace logcollector;
-    using ::testing::_;
+    using ::testing::_; // NOLINT(bugprone-reserved-identifier)
     using ::testing::Invoke;
     using ::testing::Return;
 
@@ -33,14 +33,14 @@ namespace macos_reader_tests
     TEST(MacOSReaderTest, Constructor)
     {
         auto logCollector = LogcollectorMock();
-        logcollector::MacOSReader macOSReader(logCollector, DEFAULT_WAIT_IN_MILLIS);
+        const logcollector::MacOSReader macOSReader(logCollector, DEFAULT_WAIT_IN_MILLIS);
     }
 
     TEST(MacOSReaderTest, ConstructorWithStoreWrapper)
     {
         auto logCollector = LogcollectorMock();
         auto logStoreMock = std::make_unique<MockIOSLogStoreWrapper>();
-        MacOSReader reader(std::move(logStoreMock), logCollector, DEFAULT_WAIT_IN_MILLIS);
+        const MacOSReader reader(std::move(logStoreMock), logCollector, DEFAULT_WAIT_IN_MILLIS);
 
         // Just ensure the constructor works
         SUCCEED();
@@ -58,8 +58,8 @@ namespace macos_reader_tests
         logcollector::MacOSReader macOSReader(logCollector, DEFAULT_WAIT_IN_MILLIS);
         boost::asio::co_spawn(
             ioContext,
-            [&macOSReader, &didMacOSReaderRun]()
-                -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+            // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+            [&macOSReader, &didMacOSReaderRun]() -> boost::asio::awaitable<void>
             {
                 co_await macOSReader.Run();
                 didMacOSReaderRun = true;
@@ -104,16 +104,14 @@ namespace macos_reader_tests
 
         boost::asio::co_spawn(
             ioContext,
-            [&macOSReader]()
-                -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-            { co_await macOSReader.Run(); },
+            // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+            [&macOSReader]() -> boost::asio::awaitable<void> { co_await macOSReader.Run(); },
             boost::asio::detached);
 
         boost::asio::co_spawn(
             ioContext,
-            [&macOSReader2]()
-                -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-            { co_await macOSReader2.Run(); },
+            // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+            [&macOSReader2]() -> boost::asio::awaitable<void> { co_await macOSReader2.Run(); },
             boost::asio::detached);
 
         boost::asio::post(ioContext,
@@ -167,9 +165,8 @@ namespace macos_reader_tests
 
         boost::asio::co_spawn(
             ioContext,
-            [&macOSReader]()
-                -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-            { co_await macOSReader.Run(); },
+            // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+            [&macOSReader]() -> boost::asio::awaitable<void> { co_await macOSReader.Run(); },
             boost::asio::detached);
 
         ioContext.run();

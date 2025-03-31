@@ -17,7 +17,7 @@
 #include <memory>
 
 using namespace https_socket_verify_utils;
-using ::testing::_;
+using ::testing::_; // NOLINT(bugprone-reserved-identifier)
 using ::testing::Invoke;
 using ::testing::Return;
 
@@ -40,23 +40,23 @@ public:
     }
 
 private:
-    X509* m_cert;
+    X509* m_cert {nullptr};
 };
 
 class HttpsVerifierTest : public ::testing::Test
 {
 protected:
-    MockX509Utils* mockX509Ptr;
-    MockCertStoreUtils* mockCertStorePtr;
+    MockX509Utils* mockX509Ptr {};
+    MockCertStoreUtils* mockCertStorePtr {};
     std::unique_ptr<HttpsVerifierWin> verifier;
     MockVerifyContext ctx;
 
     void SetUp() override
     {
-        mockX509Ptr = new MockX509Utils();
+        mockX509Ptr = new MockX509Utils(); // NOLINT(cppcoreguidelines-owning-memory)
         std::unique_ptr<ICertificateX509Utils> x509Ptr(mockX509Ptr);
 
-        mockCertStorePtr = new MockCertStoreUtils();
+        mockCertStorePtr = new MockCertStoreUtils(); // NOLINT(cppcoreguidelines-owning-memory)
         std::unique_ptr<ICertificateStoreUtilsWin> certStorePtr(mockCertStorePtr);
         verifier = std::make_unique<HttpsVerifierWin>("full", "example.com", x509Ptr, certStorePtr);
     }
@@ -70,17 +70,17 @@ protected:
 class HttpsVerifierTestModeCertificate : public ::testing::Test
 {
 protected:
-    MockX509Utils* mockX509Ptr;
-    MockCertStoreUtils* mockCertStorePtr;
+    MockX509Utils* mockX509Ptr {};
+    MockCertStoreUtils* mockCertStorePtr {};
     std::unique_ptr<HttpsVerifierWin> verifier;
     MockVerifyContext ctx;
 
     void SetUp() override
     {
-        mockX509Ptr = new MockX509Utils();
+        mockX509Ptr = new MockX509Utils(); // NOLINT(cppcoreguidelines-owning-memory)
         std::unique_ptr<ICertificateX509Utils> x509Ptr(mockX509Ptr);
 
-        mockCertStorePtr = new MockCertStoreUtils();
+        mockCertStorePtr = new MockCertStoreUtils(); // NOLINT(cppcoreguidelines-owning-memory)
         std::unique_ptr<ICertificateStoreUtilsWin> certStorePtr(mockCertStorePtr);
         verifier = std::make_unique<HttpsVerifierWin>("certificate", "example.com", x509Ptr, certStorePtr);
     }
@@ -91,6 +91,7 @@ protected:
     }
 };
 
+// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-magic-numbers)
 TEST_F(HttpsVerifierTest, VerifyExtractCertificateNoCertificates)
 {
     EXPECT_CALL(*mockX509Ptr, GetCertChain(_)).WillOnce(Return(reinterpret_cast<STACK_OF(X509)*>(0x1)));
@@ -359,6 +360,8 @@ TEST_F(HttpsVerifierTestModeCertificate, VerifyCertificateModeSuccess)
 
     EXPECT_TRUE(verifier->Verify(ctx));
 }
+
+// NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-magic-numbers)
 
 int main(int argc, char** argv)
 {

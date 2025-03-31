@@ -37,6 +37,7 @@ public:
     MOCK_METHOD(void, multiarch, (nlohmann::json & package), (const, override));
 };
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
 TEST_F(SysInfoMacPackagesTest, Test_SPEC_Data)
 {
     auto mock {std::make_shared<SysInfoMacPackagesWrapperMock>()};
@@ -100,7 +101,7 @@ TEST_F(SysInfoMacPackagesTest, macPortsValidData)
     EXPECT_CALL(*mockStatement, column(3)).WillOnce(Return(ByMove(std::move(mockColumn_4))));
     EXPECT_CALL(*mockStatement, column(4)).WillOnce(Return(ByMove(std::move(mockColumn_5))));
 
-    MacportsWrapper macportsMock(*mockStatement);
+    const MacportsWrapper macportsMock(*mockStatement);
 
     nlohmann::json package;
     macportsMock.name(package);
@@ -144,7 +145,7 @@ TEST_F(SysInfoMacPackagesTest, macPortsValidDataEmptyFields)
     EXPECT_CALL(*mockStatement, column(3)).WillOnce(Return(ByMove(std::move(mockColumn_4))));
     EXPECT_CALL(*mockStatement, column(4)).WillOnce(Return(ByMove(std::move(mockColumn_5))));
 
-    MacportsWrapper macportsMock(*mockStatement);
+    const MacportsWrapper macportsMock(*mockStatement);
 
     nlohmann::json package;
     macportsMock.name(package);
@@ -190,7 +191,7 @@ TEST_F(SysInfoMacPackagesTest, macPortsValidDataEmptyName)
     EXPECT_CALL(*mockStatement, column(3)).WillOnce(Return(ByMove(std::move(mockColumn_4))));
     EXPECT_CALL(*mockStatement, column(4)).WillOnce(Return(ByMove(std::move(mockColumn_5))));
 
-    MacportsWrapper macportsMock(*mockStatement);
+    const MacportsWrapper macportsMock(*mockStatement);
 
     nlohmann::json package;
     macportsMock.name(package);
@@ -198,3 +199,5 @@ TEST_F(SysInfoMacPackagesTest, macPortsValidDataEmptyName)
     // Packages with empty string names are discarded.
     EXPECT_EQ(package["name"], "");
 }
+
+// NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
