@@ -40,9 +40,9 @@ public:
     /// @copydoc ISecurityConfigurationAssessment::Start
     void Start() override
     {
-        // Execute the policies
+        // Execute the policies (run io context)
+        // Each policy should:
         // Run regex engine, check type of policies
-        // Run the policies
         // Create a report and send it to the server
     }
 
@@ -111,6 +111,7 @@ private:
                 // TODO: Load and parse the YAML file
                 // SCAPolicy policy;
                 // m_policies.push_back(std::move(policy));
+                // enqueue policy as a task
             }
         }
     }
