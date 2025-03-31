@@ -2,6 +2,7 @@
 
 #include <isca.hpp>
 
+#include <command_entry.hpp>
 #include <config.h>
 #include <configuration_parser.hpp>
 #include <dbsync.hpp>

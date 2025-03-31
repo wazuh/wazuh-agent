@@ -7,7 +7,7 @@ set_common_settings()
 
 add_library(SCA src/sca.cpp)
 target_include_directories(SCA PUBLIC include)
-target_link_libraries(SCA PUBLIC dbsync Config)
+target_link_libraries(SCA PUBLIC dbsync Config ConfigurationParser MessageEntry ModuleManager CommandEntry)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(SCA)
