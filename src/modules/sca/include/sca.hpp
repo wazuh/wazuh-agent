@@ -58,9 +58,11 @@ public:
     }
 
     /// @copydoc ISecurityConfigurationAssessment::ExecuteCommand
-    Co_CommandExecutionResult ExecuteCommand(const std::string, const nlohmann::json) override
+    Co_CommandExecutionResult ExecuteCommand([[maybe_unused]] const std::string command,
+                                             [[maybe_unused]] const nlohmann::json parameters) override
     {
-        return {};
+        co_return module_command::CommandExecutionResult {module_command::Status::FAILURE,
+                                                          "SCA command handling not implemented yet"};
     }
 
     /// @copydoc ISecurityConfigurationAssessment::Name
