@@ -66,3 +66,8 @@ TEST_F(ScaTest, SetPushMessageFunctionStoresCallback)
     EXPECT_TRUE(called);
     EXPECT_EQ(result, 123);
 }
+
+TEST_F(ScaTest, NameReturnsCorrectValue)
+{
+    EXPECT_EQ(m_sca->Name(), "SCA");
+}
