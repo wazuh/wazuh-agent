@@ -23,7 +23,7 @@ jobs:
     - name: Set up dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake llvm gcovr autopoint libltdl-dev \
+        sudo apt-get install -y llvm gcovr autopoint libltdl-dev \
           libtool zlib1g-dev libgcrypt20-dev libmagic-dev libpopt-dev \
           libsqlite3-dev liblua5.4-dev gettext libarchive-dev libsystemd-dev
       shell: bash
@@ -32,6 +32,9 @@ jobs:
       uses: ./.github/actions/vcpkg_related/5_builderpackage_vcpkg
       with:
         gh_token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup CMake 3.x
+      uses: ./.github/actions/5_builderprecompiled_cmake
 
     - name: Generate CMake project
       run: |

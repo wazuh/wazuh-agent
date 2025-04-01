@@ -1,0 +1,37 @@
+name: 'Setup CMake 3.x'
+description: 'Installs and sets CMake 3.30.3 as the default version on GitHub runners'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up CMake on Windows
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        choco install cmake --force --allow-downgrade --version=3.30.3 -y
+        echo "C:\\Program Files\\CMake\\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
+
+    - name: Set up CMake on Linux
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo apt-get remove --yes cmake
+        sudo apt-get update
+        wget -q "https://cmake.org/files/v3.30/cmake-3.30.3-linux-x86_64.tar.gz" -O cmake.tar.gz
+        sudo tar -xf cmake.tar.gz --strip-components=1 -C /usr/local
+        rm cmake.tar.gz
+
+    - name: Set up CMake on macOS
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        brew unlink cmake || true
+        curl -LO "https://cmake.org/files/v3.30/cmake-3.30.3-macos-universal.tar.gz"
+        tar -xf cmake-3.30.3-macos-universal.tar.gz
+        sudo rsync -av cmake-3.30.3-macos-universal/CMake.app/Contents/ /usr/local/
+        rm -rf cmake-3.30.3-macos-universal
+        rm cmake-3.30.3-macos-universal.tar.gz
+
+    - name: Verify CMake Version
+      shell: bash
+      run: cmake --version
