@@ -57,7 +57,7 @@ runs:
         docker_image_tag: ${{ env.TAG }}
 
     - name: Build ${{ inputs.system }} wazuh-agent on ${{ env.ARCH }}
-      shell: bash      
+      shell: bash
       run: |
         REVISION=${{ inputs.revision }}
         FLAGS="--verbose -s /tmp --dont-build-docker -j $(nproc) "

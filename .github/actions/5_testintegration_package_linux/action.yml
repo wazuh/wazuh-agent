@@ -17,10 +17,10 @@ runs:
           -v $GITHUB_WORKSPACE/.github/actions/5_testintegration_package_linux/:/tests \
           -v /tmp/:/packages \
           --entrypoint '/tests/install_component.sh' ${{ inputs.tested_docker }}
-        
+
     - name: Check test result
       shell: bash
-      run: |    
+      run: |
         if grep -iq "wazuh-agent*" /tmp/status.log ; then
           echo "Package successfully installated."
         else
