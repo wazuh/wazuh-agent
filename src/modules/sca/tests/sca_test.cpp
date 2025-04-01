@@ -38,7 +38,7 @@ protected:
     }
 
     std::shared_ptr<configuration::ConfigurationParser> m_configurationParser = nullptr;
-    SecurityConfigurationAssessment<MockDBSync>* m_sca;
+    SecurityConfigurationAssessment<MockDBSync>* m_sca = nullptr;
 };
 
 TEST_F(ScaTest, ConstructorSetsDbFilePath)
