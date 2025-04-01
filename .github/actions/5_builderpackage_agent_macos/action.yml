@@ -16,6 +16,9 @@ runs:
       with:
         gh_token: ${{ inputs.gh_token }}
 
+    - name: Setup CMake 3.x
+      uses: ./.github/actions/5_builderprecompiled_cmake
+
     - name: Build repository
       shell: bash
       run: |

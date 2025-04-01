@@ -31,7 +31,7 @@ runs:
         echo "FLAGS=$FLAGS" >> $GITHUB_ENV
 
     - name: Build macOS package
-      shell: bash      
+      shell: bash
       run: |
         sudo unzip -o wazuh-agent-binaries-${{ inputs.architecture }}.zip -d /
         bash packages/macos/generate_wazuh_packages.sh -i

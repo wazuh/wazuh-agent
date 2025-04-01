@@ -22,7 +22,7 @@ namespace instance_handler
 
         PSECURITY_DESCRIPTOR pSD = (PSECURITY_DESCRIPTOR)LocalAlloc(LPTR, SECURITY_DESCRIPTOR_MIN_LENGTH);
         InitializeSecurityDescriptor(pSD, SECURITY_DESCRIPTOR_REVISION);
-        SetSecurityDescriptorDacl(pSD, TRUE, NULL, FALSE);
+        SetSecurityDescriptorDacl(pSD, TRUE, nullptr, FALSE);
 
         sa.lpSecurityDescriptor = pSD;
         sa.bInheritHandle = FALSE;

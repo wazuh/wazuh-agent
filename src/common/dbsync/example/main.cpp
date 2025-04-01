@@ -4,6 +4,7 @@
 #include <ctime>
 #include <iostream>
 
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main()
 {
     const std::string sql {

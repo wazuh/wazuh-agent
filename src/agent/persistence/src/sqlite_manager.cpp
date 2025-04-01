@@ -415,7 +415,7 @@ size_t SQLiteManager::GetSize(const std::string& tableName,
 
 TransactionId SQLiteManager::BeginTransaction()
 {
-    TransactionId transactionId = m_nextTransactionId++;
+    const auto transactionId = m_nextTransactionId++;
     m_transactions.emplace(transactionId, std::make_unique<SQLite::Transaction>(*m_db));
     return transactionId;
 }

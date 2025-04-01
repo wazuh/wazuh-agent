@@ -100,7 +100,7 @@ namespace https_socket_verify_utils
 
     bool HttpsVerifierWin::CreateCertStore(CertStorePtr& store)
     {
-        HCERTSTORE rawStore = m_certStoreUtils->OpenSystemStore(NULL, "ROOT");
+        HCERTSTORE rawStore = m_certStoreUtils->OpenSystemStore(0, "ROOT");
         if (!rawStore)
         {
             LogError("The Windows certificate store could not be opened.");
@@ -125,7 +125,7 @@ namespace https_socket_verify_utils
         PCCERT_CHAIN_CONTEXT rawChainCtx = nullptr;
 
         if (!m_certStoreUtils->GetCertificateChain(
-                NULL, certCtx.get(), NULL, store.get(), &chainPara, 0, NULL, &rawChainCtx))
+                nullptr, certCtx.get(), nullptr, store.get(), &chainPara, 0, nullptr, &rawChainCtx))
         {
             LogError("The certificate chain could not be verified.");
             return false;
@@ -166,7 +166,7 @@ namespace https_socket_verify_utils
         }
 
         const DWORD subjectSize =
-            m_certStoreUtils->GetNameString(certCtx.get(), CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, NULL, 0);
+            m_certStoreUtils->GetNameString(certCtx.get(), CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, nullptr, nullptr, 0);
 
         if (subjectSize <= 1) // Considering the null terminator
         {
@@ -176,7 +176,7 @@ namespace https_socket_verify_utils
 
         std::string subjectName(subjectSize, '\0');
         const DWORD actualSize = m_certStoreUtils->GetNameString(
-            certCtx.get(), CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, subjectName.data(), subjectSize);
+            certCtx.get(), CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, nullptr, subjectName.data(), subjectSize);
 
         if (actualSize != subjectSize)
         {

@@ -65,7 +65,7 @@ namespace logcollector::winevt
                                                                nullptr,
                                                                wideStringChannel.c_str(),
                                                                wideStringQuery.c_str(),
-                                                               NULL,
+                                                               nullptr,
                                                                this,
                                                                subscriptionCallback,
                                                                EvtSubscribeToFutureEvents);
@@ -95,13 +95,13 @@ namespace logcollector::winevt
         DWORD bufferUsed = 0;
         DWORD propertyCount = 0;
 
-        m_winAPI->EvtRender(NULL, event, EvtRenderEventXml, 0, NULL, &bufferUsed, &propertyCount);
+        m_winAPI->EvtRender(nullptr, event, EvtRenderEventXml, 0, nullptr, &bufferUsed, &propertyCount);
 
         if (bufferUsed > 0)
         {
             std::vector<wchar_t> buffer(bufferUsed);
             if (m_winAPI->EvtRender(
-                    NULL, event, EvtRenderEventXml, bufferUsed, buffer.data(), &bufferUsed, &propertyCount))
+                    nullptr, event, EvtRenderEventXml, bufferUsed, buffer.data(), &bufferUsed, &propertyCount))
             {
                 std::string logString;
                 try

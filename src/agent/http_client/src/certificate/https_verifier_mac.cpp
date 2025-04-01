@@ -41,7 +41,7 @@ namespace https_socket_verify_utils
 
         if (m_mode == "full")
         {
-            SecCertificatePtr serverCert(m_certStoreUtils->CreateCertificate(certData.get()), m_deleter);
+            const SecCertificatePtr serverCert(m_certStoreUtils->CreateCertificate(certData.get()), m_deleter);
             if (!serverCert || !ValidateHostname(serverCert))
             {
                 return false;
@@ -83,7 +83,7 @@ namespace https_socket_verify_utils
 
     bool HttpsVerifierMac::CreateTrustObject(const CFDataPtr& certData, SecTrustPtr& trust)
     {
-        SecCertificatePtr serverCert(m_certStoreUtils->CreateCertificate(certData.get()), m_deleter);
+        const SecCertificatePtr serverCert(m_certStoreUtils->CreateCertificate(certData.get()), m_deleter);
         if (!serverCert)
         {
             LogError("Failed to create SecCertificateRef.");
@@ -92,11 +92,11 @@ namespace https_socket_verify_utils
 
         const void* certArrayValues[] = {serverCert.get()};
 
-        CFArrayPtr certArray(m_certStoreUtils->CreateCertArray(certArrayValues, 1), m_deleter);
-        SecPolicyPtr policy(m_certStoreUtils->CreateSSLPolicy(true, ""), m_deleter);
+        const CFArrayPtr certArray(m_certStoreUtils->CreateCertArray(certArrayValues, 1), m_deleter);
+        const SecPolicyPtr policy(m_certStoreUtils->CreateSSLPolicy(true, ""), m_deleter);
 
         SecTrustRef rawTrust = nullptr;
-        OSStatus status = m_certStoreUtils->CreateTrustObject(certArray.get(), policy.get(), &rawTrust);
+        const OSStatus status = m_certStoreUtils->CreateTrustObject(certArray.get(), policy.get(), &rawTrust);
 
         if (status != errSecSuccess)
         {
@@ -116,9 +116,9 @@ namespace https_socket_verify_utils
 
         if (!trustResult && errorRef)
         {
-            CFErrorPtr error(const_cast<__CFError*>(errorRef), m_deleter);
+            const CFErrorPtr error(const_cast<__CFError*>(errorRef), m_deleter);
 
-            CFStringPtr errorDesc(m_certStoreUtils->CopyErrorDescription(errorRef), m_deleter);
+            const CFStringPtr errorDesc(m_certStoreUtils->CopyErrorDescription(errorRef), m_deleter);
             std::string errorString = m_certStoreUtils->GetStringCFString(errorDesc.get());
             LogError("Trust evaluation failed: {}", errorString);
         }
@@ -128,7 +128,7 @@ namespace https_socket_verify_utils
 
     bool HttpsVerifierMac::ValidateHostname(const SecCertificatePtr& serverCert)
     {
-        CFStringPtr sanString(m_certStoreUtils->CopySubjectSummary(serverCert.get()), m_deleter);
+        const CFStringPtr sanString(m_certStoreUtils->CopySubjectSummary(serverCert.get()), m_deleter);
         if (!sanString)
         {
             LogError("Failed to retrieve SAN or CN for hostname validation.");

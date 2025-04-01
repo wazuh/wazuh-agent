@@ -13,11 +13,11 @@ using ::testing::Return;
 TEST_F(PKGWrapperTest, LongVersion)
 {
     std::string inputPath;
-    inputPath += getwd(NULL);
+    inputPath += getwd(nullptr);
     inputPath += "/input_files";
-    std::string package {"PKGWrapperTest_LongVersion.app"};
+    const std::string package {"PKGWrapperTest_LongVersion.app"};
 
-    struct PackageContext ctx
+    const struct PackageContext ctx
     {
         inputPath, package, ""
     };
@@ -58,11 +58,11 @@ TEST_F(PKGWrapperTest, LongVersion)
 TEST_F(PKGWrapperTest, ShortVersion)
 {
     std::string inputPath;
-    inputPath += getwd(NULL);
+    inputPath += getwd(nullptr);
     inputPath += "/input_files";
-    std::string package {"PKGWrapperTest_ShortVersion.app"};
+    const std::string package {"PKGWrapperTest_ShortVersion.app"};
 
-    struct PackageContext ctx
+    const struct PackageContext ctx
     {
         inputPath, package, ""
     };
@@ -103,11 +103,11 @@ TEST_F(PKGWrapperTest, ShortVersion)
 TEST_F(PKGWrapperTest, NoName)
 {
     std::string inputPath;
-    inputPath += getwd(NULL);
+    inputPath += getwd(nullptr);
     inputPath += "/input_files";
-    std::string package {"PKGWrapperTest_NoName.app"};
+    const std::string package {"PKGWrapperTest_NoName.app"};
 
-    struct PackageContext ctx
+    const struct PackageContext ctx
     {
         inputPath, package, ""
     };
@@ -148,11 +148,11 @@ TEST_F(PKGWrapperTest, NoName)
 TEST_F(PKGWrapperTest, NoVersion)
 {
     std::string inputPath;
-    inputPath += getwd(NULL);
+    inputPath += getwd(nullptr);
     inputPath += "/input_files";
-    std::string package {"PKGWrapperTest_NoVersion.app"};
+    const std::string package {"PKGWrapperTest_NoVersion.app"};
 
-    struct PackageContext ctx
+    const struct PackageContext ctx
     {
         inputPath, package, ""
     };
@@ -193,11 +193,11 @@ TEST_F(PKGWrapperTest, NoVersion)
 TEST_F(PKGWrapperTest, NoGroups)
 {
     std::string inputPath;
-    inputPath += getwd(NULL);
+    inputPath += getwd(nullptr);
     inputPath += "/input_files";
-    std::string package {"PKGWrapperTest_NoGroups.app"};
+    const std::string package {"PKGWrapperTest_NoGroups.app"};
 
-    struct PackageContext ctx
+    const struct PackageContext ctx
     {
         inputPath, package, ""
     };
@@ -238,11 +238,11 @@ TEST_F(PKGWrapperTest, NoGroups)
 TEST_F(PKGWrapperTest, NoDescription)
 {
     std::string inputPath;
-    inputPath += getwd(NULL);
+    inputPath += getwd(nullptr);
     inputPath += "/input_files";
-    std::string package {"PKGWrapperTest_NoDescription.app"};
+    const std::string package {"PKGWrapperTest_NoDescription.app"};
 
-    struct PackageContext ctx
+    const struct PackageContext ctx
     {
         inputPath, package, ""
     };
@@ -283,11 +283,11 @@ TEST_F(PKGWrapperTest, NoDescription)
 TEST_F(PKGWrapperTest, NoVendor)
 {
     std::string inputPath;
-    inputPath += getwd(NULL);
+    inputPath += getwd(nullptr);
     inputPath += "/input_files";
-    std::string package {"PKGWrapperTest_NoVendor.app"};
+    const std::string package {"PKGWrapperTest_NoVendor.app"};
 
-    struct PackageContext ctx
+    const struct PackageContext ctx
     {
         inputPath, package, ""
     };
@@ -328,11 +328,11 @@ TEST_F(PKGWrapperTest, NoVendor)
 TEST_F(PKGWrapperTest, pkgVersionXML)
 {
     std::string inputPath;
-    inputPath += getwd(NULL);
+    inputPath += getwd(nullptr);
     inputPath += "/input_files";
-    std::string package {"com.wazuh.pkg.wazuh-agent.plist"};
+    const std::string package {"com.wazuh.pkg.wazuh-agent.plist"};
 
-    struct PackageContext ctx
+    const struct PackageContext ctx
     {
         inputPath, package, ""
     };
@@ -373,11 +373,11 @@ TEST_F(PKGWrapperTest, pkgVersionXML)
 TEST_F(PKGWrapperTest, pkgVersionBin)
 {
     std::string inputPath;
-    inputPath += getwd(NULL);
+    inputPath += getwd(nullptr);
     inputPath += "/input_files";
-    std::string package {"us.zoom.pkg.videomeeting.plist"};
+    const std::string package {"us.zoom.pkg.videomeeting.plist"};
 
-    struct PackageContext ctx
+    const struct PackageContext ctx
     {
         inputPath, package, ""
     };
@@ -418,11 +418,11 @@ TEST_F(PKGWrapperTest, pkgVersionBin)
 TEST_F(PKGWrapperTest, pkgVersionLong)
 {
     std::string inputPath;
-    inputPath += getwd(NULL);
+    inputPath += getwd(nullptr);
     inputPath += "/input_files";
-    std::string package {"org.R-project.x86_64.R.GUI.pkg.plist"};
+    const std::string package {"org.R-project.x86_64.R.GUI.pkg.plist"};
 
-    struct PackageContext ctx
+    const struct PackageContext ctx
     {
         inputPath, package, ""
     };

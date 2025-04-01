@@ -11,6 +11,7 @@ void SysInfoHardwareWrapperMacTest::TearDown() {};
 using ::testing::_; // NOLINT(bugprone-reserved-identifier)
 using ::testing::Return;
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
 TEST_F(SysInfoHardwareWrapperMacTest, Test_CpuName_Succeed)
 {
     auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
@@ -89,7 +90,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_CpuCores_Succeed)
     auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
     EXPECT_CALL(*wrapper, sysctl(_, _, _, _, _, _))
         .WillOnce(
-            [](int* name, u_int namelen, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
+            [](const int* name, u_int namelen, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
             {
                 (void)name;
                 (void)namelen;
@@ -109,7 +110,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_CpuCores_Failed_Sysctl)
     auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
     EXPECT_CALL(*wrapper, sysctl(_, _, _, _, _, _))
         .WillOnce(
-            [](int* name, u_int namelen, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
+            [](const int* name, u_int namelen, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
             {
                 (void)name;
                 (void)namelen;
@@ -127,7 +128,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamTotal_Succeed)
     auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
     EXPECT_CALL(*wrapper, sysctlbyname("hw.memsize", _, _, _, _))
         .WillOnce(
-            [](const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
+            [](const char* name, void* oldp, const size_t* oldlenp, void* newp, size_t newlen)
             {
                 (void)name;
                 (void)oldlenp;
@@ -146,7 +147,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamTotal_Failed_Sysctlbyname)
     auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
     EXPECT_CALL(*wrapper, sysctlbyname("hw.memsize", _, _, _, _))
         .WillOnce(
-            [](const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
+            [](const char* name, void* oldp, const size_t* oldlenp, void* newp, size_t newlen)
             {
                 (void)name;
                 (void)oldlenp;
@@ -163,7 +164,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamFree_Succeed)
     auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
     EXPECT_CALL(*wrapper, sysctlbyname("vm.pagesize", _, _, _, _))
         .WillOnce(
-            [](const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
+            [](const char* name, void* oldp, const size_t* oldlenp, void* newp, size_t newlen)
             {
                 (void)name;
                 (void)oldlenp;
@@ -174,7 +175,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamFree_Succeed)
             });
     EXPECT_CALL(*wrapper, sysctlbyname("vm.page_free_count", _, _, _, _))
         .WillOnce(
-            [](const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
+            [](const char* name, void* oldp, const size_t* oldlenp, void* newp, size_t newlen)
             {
                 (void)name;
                 (void)oldlenp;
@@ -193,7 +194,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamFree_Failed_Sysctlbyname1)
     auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
     EXPECT_CALL(*wrapper, sysctlbyname("vm.pagesize", _, _, _, _))
         .WillOnce(
-            [](const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
+            [](const char* name, void* oldp, const size_t* oldlenp, void* newp, size_t newlen)
             {
                 (void)name;
                 (void)oldlenp;
@@ -210,7 +211,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamFree_Failed_Sysctlbyname2)
     auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
     EXPECT_CALL(*wrapper, sysctlbyname("vm.pagesize", _, _, _, _))
         .WillOnce(
-            [](const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
+            [](const char* name, void* oldp, const size_t* oldlenp, void* newp, size_t newlen)
             {
                 (void)name;
                 (void)oldlenp;
@@ -221,7 +222,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamFree_Failed_Sysctlbyname2)
             });
     EXPECT_CALL(*wrapper, sysctlbyname("vm.page_free_count", _, _, _, _))
         .WillOnce(
-            [](const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
+            [](const char* name, void* oldp, const size_t* oldlenp, void* newp, size_t newlen)
             {
                 (void)name;
                 (void)oldlenp;
@@ -238,7 +239,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamUsage_Succeed)
     auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
     EXPECT_CALL(*wrapper, sysctlbyname("hw.memsize", _, _, _, _))
         .WillOnce(
-            [](const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
+            [](const char* name, void* oldp, const size_t* oldlenp, void* newp, size_t newlen)
             {
                 (void)name;
                 (void)oldlenp;
@@ -249,7 +250,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamUsage_Succeed)
             });
     EXPECT_CALL(*wrapper, sysctlbyname("vm.pagesize", _, _, _, _))
         .WillOnce(
-            [](const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
+            [](const char* name, void* oldp, const size_t* oldlenp, void* newp, size_t newlen)
             {
                 (void)name;
                 (void)oldlenp;
@@ -260,7 +261,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamUsage_Succeed)
             });
     EXPECT_CALL(*wrapper, sysctlbyname("vm.page_free_count", _, _, _, _))
         .WillOnce(
-            [](const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
+            [](const char* name, void* oldp, const size_t* oldlenp, void* newp, size_t newlen)
             {
                 (void)name;
                 (void)oldlenp;
@@ -281,7 +282,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamUsage_Succeed_TotalRamZero)
     auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
     EXPECT_CALL(*wrapper, sysctlbyname("hw.memsize", _, _, _, _))
         .WillOnce(
-            [](const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
+            [](const char* name, void* oldp, const size_t* oldlenp, void* newp, size_t newlen)
             {
                 (void)name;
                 (void)oldlenp;
@@ -300,7 +301,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamUsage_Failed_Sysctlbyname1)
     auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
     EXPECT_CALL(*wrapper, sysctlbyname("hw.memsize", _, _, _, _))
         .WillOnce(
-            [](const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
+            [](const char* name, void* oldp, const size_t* oldlenp, void* newp, size_t newlen)
             {
                 (void)name;
                 (void)oldlenp;
@@ -317,7 +318,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamUsage_Failed_Sysctlbyname2)
     auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
     EXPECT_CALL(*wrapper, sysctlbyname("hw.memsize", _, _, _, _))
         .WillOnce(
-            [](const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
+            [](const char* name, void* oldp, const size_t* oldlenp, void* newp, size_t newlen)
             {
                 (void)name;
                 (void)oldlenp;
@@ -328,7 +329,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamUsage_Failed_Sysctlbyname2)
             });
     EXPECT_CALL(*wrapper, sysctlbyname("vm.pagesize", _, _, _, _))
         .WillOnce(
-            [](const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
+            [](const char* name, void* oldp, const size_t* oldlenp, void* newp, size_t newlen)
             {
                 (void)name;
                 (void)oldlenp;
@@ -345,7 +346,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamUsage_Failed_Sysctlbyname3)
     auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
     EXPECT_CALL(*wrapper, sysctlbyname("hw.memsize", _, _, _, _))
         .WillOnce(
-            [](const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
+            [](const char* name, void* oldp, const size_t* oldlenp, void* newp, size_t newlen)
             {
                 (void)name;
                 (void)oldlenp;
@@ -356,7 +357,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamUsage_Failed_Sysctlbyname3)
             });
     EXPECT_CALL(*wrapper, sysctlbyname("vm.pagesize", _, _, _, _))
         .WillOnce(
-            [](const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
+            [](const char* name, void* oldp, const size_t* oldlenp, void* newp, size_t newlen)
             {
                 (void)name;
                 (void)oldlenp;
@@ -367,7 +368,7 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamUsage_Failed_Sysctlbyname3)
             });
     EXPECT_CALL(*wrapper, sysctlbyname("vm.page_free_count", _, _, _, _))
         .WillOnce(
-            [](const char* name, void* oldp, size_t* oldlenp, void* newp, size_t newlen)
+            [](const char* name, void* oldp, const size_t* oldlenp, void* newp, size_t newlen)
             {
                 (void)name;
                 (void)oldlenp;
@@ -378,6 +379,8 @@ TEST_F(SysInfoHardwareWrapperMacTest, Test_RamUsage_Failed_Sysctlbyname3)
             });
     EXPECT_THROW(wrapper->ramUsage(), std::system_error);
 }
+
+// NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 
 TEST_F(SysInfoHardwareWrapperMacTest, Test_BoardSerial_Succeed)
 {

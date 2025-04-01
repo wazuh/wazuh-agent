@@ -47,6 +47,9 @@ runs:
         Invoke-WebRequest -Uri $url -OutFile $zipFile
         Expand-Archive -Path $zipFile -DestinationPath $extractPath -Force
 
+    - name: Setup CMake 3.x
+      uses: ./.github/actions/5_builderprecompiled_cmake
+
     - name: Build MSI for Windows package
       shell: pwsh
       run: |

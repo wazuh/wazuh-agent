@@ -26,7 +26,7 @@ static void Callback(const ReturnTypeCallback type, const cJSON* json, void* ctx
 static std::string LoadDbQueriesDump()
 {
     const std::string inputFile = std::string(TEST_DB_INPUTS_DIR) + "/" + "fim_sql_db_dump.sql";
-    std::ifstream file(inputFile);
+    const std::ifstream file(inputFile);
     if (!file.is_open())
     {
         return "";
@@ -52,7 +52,7 @@ DBSyncFimIntegrationTest::DBSyncFimIntegrationTest()
 {
 }
 
-DBSyncFimIntegrationTest::~DBSyncFimIntegrationTest()
+DBSyncFimIntegrationTest::~DBSyncFimIntegrationTest() // NOLINT(bugprone-exception-escape)
 {
     EXPECT_NO_THROW(dbsync_teardown());
     std::remove(DATABASE_TEMP);

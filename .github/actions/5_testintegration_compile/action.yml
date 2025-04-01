@@ -22,7 +22,7 @@ runs:
         elif [[ "$RUNNER_OS" == "Linux" ]]; then
           cmake ${SRC_FOLDER} -DBUILD_TESTS=1 -G "Unix Makefiles"
         elif [[ "$RUNNER_OS" == "macOS" ]]; then
-          cmake ${SRC_FOLDER} -DBUILD_TESTS=1 -DENABLE_CLANG_TIDY=NO -G "Unix Makefiles"
+          cmake ${SRC_FOLDER} -DBUILD_TESTS=1 -G "Unix Makefiles"
         else
           echo "Unsupported OS: $RUNNER_OS"
           exit 1

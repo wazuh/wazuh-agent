@@ -27,14 +27,14 @@ namespace restart_handler
 
         const std::string cmd = fmt::format("cmd.exe /c timeout /t 3 && {}", fmt::join(cmdLineArgs, " "));
 
-        if (CreateProcess(NULL,
+        if (CreateProcess(nullptr,
                           (LPSTR)cmd.c_str(),
-                          NULL,
-                          NULL,
+                          nullptr,
+                          nullptr,
                           FALSE,
                           CREATE_NEW_CONSOLE | CREATE_NEW_PROCESS_GROUP,
-                          NULL,
-                          NULL,
+                          nullptr,
+                          nullptr,
                           &si,
                           &pi))
         {
@@ -94,14 +94,14 @@ namespace restart_handler
 
         const std::string cmd = pwrShell + " -Command \"Restart-Service -Name 'wazuh-agent' -Force\"";
 
-        if (CreateProcess(NULL,
+        if (CreateProcess(nullptr,
                           (LPSTR)cmd.c_str(),
-                          NULL,
-                          NULL,
+                          nullptr,
+                          nullptr,
                           FALSE,
                           CREATE_NEW_CONSOLE | CREATE_NEW_PROCESS_GROUP,
-                          NULL,
-                          NULL,
+                          nullptr,
+                          nullptr,
                           &si,
                           &pi))
         {

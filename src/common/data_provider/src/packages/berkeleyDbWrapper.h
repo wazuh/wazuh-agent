@@ -44,7 +44,7 @@ public:
         DB* dbp;
         DBC* cursor;
 
-        if ((ret = db_create(&dbp, NULL, 0)) != 0)
+        if ((ret = db_create(&dbp, nullptr, 0)) != 0)
         {
             throw std::runtime_error {db_strerror(ret)};
         }
@@ -54,12 +54,12 @@ public:
         // Set Big-endian order by default
         m_db->set_lorder(m_db.get(), 1234);
 
-        if ((ret = m_db->open(m_db.get(), NULL, directory.c_str(), NULL, DB_HASH, DB_RDONLY, 0)) != 0)
+        if ((ret = m_db->open(m_db.get(), nullptr, directory.c_str(), nullptr, DB_HASH, DB_RDONLY, 0)) != 0)
         {
             throw std::runtime_error {std::string("Failed to open database '") + directory + "': " + db_strerror(ret)};
         }
 
-        if ((ret = m_db->cursor(m_db.get(), NULL, &cursor, 0)) != 0)
+        if ((ret = m_db->cursor(m_db.get(), nullptr, &cursor, 0)) != 0)
         {
             throw std::runtime_error {std::string("Error creating cursor: ") + db_strerror(ret)};
         }

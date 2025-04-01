@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-24.04, windows-2022, macos-14]
 
     steps:
     - name: Checkout code
@@ -26,7 +26,7 @@ jobs:
         fetch-depth: 0
 
     - name: Set up dependencies on Ubuntu
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-24.04'
       run: |
         sudo apt-get update
         sudo apt-get install -y wget gnupg lsb-release software-properties-common \
@@ -44,6 +44,9 @@ jobs:
       uses: ./.github/actions/vcpkg_related/5_builderpackage_vcpkg
       with:
         gh_token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup CMake 3.x
+      uses: ./.github/actions/5_builderprecompiled_cmake
 
     - name: Run Compile Action
       uses: ./.github/actions/5_testintegration_compile

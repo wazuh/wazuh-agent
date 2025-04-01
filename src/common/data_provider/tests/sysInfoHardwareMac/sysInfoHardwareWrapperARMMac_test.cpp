@@ -10,6 +10,7 @@ void SysInfoHardwareWrapperARMMacTest::SetUp() {};
 
 void SysInfoHardwareWrapperARMMacTest::TearDown() {};
 
+// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-magic-numbers)
 TEST_F(SysInfoHardwareWrapperARMMacTest, Test_CpuMhz_Succeed)
 {
     auto wrapper {std::make_shared<OSHardwareWrapperMac<OsPrimitivesMacMock>>()};
@@ -151,3 +152,5 @@ TEST_F(SysInfoHardwareWrapperARMMacTest, Test_CpuMhz_Failed_CFGetTypeID)
 
     EXPECT_THROW(wrapper->cpuMhz(), std::system_error);
 }
+
+// NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-magic-numbers)

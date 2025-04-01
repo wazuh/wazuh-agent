@@ -15,6 +15,7 @@
 #include <grp.h>
 #include <libproc.h>
 #include <pwd.h>
+#include <span>
 #include <sqlite3.h>
 #include <sys/proc.h>
 #include <sys/proc_info.h>
@@ -28,17 +29,17 @@ constexpr auto MAC_ROSETTA_DEFAULT_ARCH {"arm64"};
 
 using ProcessTaskInfo = struct proc_taskallinfo;
 
-static const std::vector<int> s_validFDSock = {{SOCKINFO_TCP, SOCKINFO_IN}};
+static const std::vector<int> S_VALID_FD_SOCK = {{SOCKINFO_TCP, SOCKINFO_IN}};
 
-static const std::map<std::string, int> s_mapPackagesDirectories = {{"/Applications", PKG},
-                                                                    {"/Applications/Utilities", PKG},
-                                                                    {"/System/Applications", PKG},
-                                                                    {"/System/Applications/Utilities", PKG},
-                                                                    {"/System/Library/CoreServices", PKG},
-                                                                    {"/private/var/db/receipts", RCP},
-                                                                    {"/Library/Apple/System/Library/Receipts", RCP},
-                                                                    {"/usr/local/Cellar", BREW},
-                                                                    {"/opt/local/var/macports/registry", MACPORTS}};
+static const std::map<std::string, int> S_MAP_PACKAGES_DIRECTORIES = {{"/Applications", PKG},
+                                                                      {"/Applications/Utilities", PKG},
+                                                                      {"/System/Applications", PKG},
+                                                                      {"/System/Applications/Utilities", PKG},
+                                                                      {"/System/Library/CoreServices", PKG},
+                                                                      {"/private/var/db/receipts", RCP},
+                                                                      {"/Library/Apple/System/Library/Receipts", RCP},
+                                                                      {"/usr/local/Cellar", BREW},
+                                                                      {"/opt/local/var/macports/registry", MACPORTS}};
 
 static nlohmann::json GetProcessInfo(const ProcessTaskInfo& taskInfo, const pid_t pid)
 {
@@ -86,8 +87,9 @@ nlohmann::json SysInfo::getHardware() const
     return hardware;
 }
 
-static void
-getPackagesFromPath(const std::string& pkgDirectory, const int pkgType, std::function<void(nlohmann::json&)> callback)
+static void GetPackagesFromPath(const std::string& pkgDirectory,
+                                const int pkgType,
+                                const std::function<void(nlohmann::json&)>& callback)
 {
     if (MACPORTS == pkgType)
     {
@@ -102,7 +104,7 @@ getPackagesFromPath(const std::string& pkgDirectory, const int pkgType, std::fun
 
                 SQLiteLegacy::Statement stmt {sqliteConnection, MACPORTS_QUERY};
 
-                std::pair<SQLiteLegacy::IStatement&, const int&> pkgContext {
+                const std::pair<SQLiteLegacy::IStatement&, const int&> pkgContext {
                     std::make_pair(std::ref(stmt), std::cref(pkgType))};
 
                 while (SQLITE_ROW == stmt.step())
@@ -169,10 +171,12 @@ getPackagesFromPath(const std::string& pkgDirectory, const int pkgType, std::fun
                 if (!Utils::startsWith(packageName, "."))
                 {
                     std::vector<std::filesystem::path> packageVersions;
-                    if (fsWrapper->exists(pkgDirectory + "/" + packageName) &&
-                        fsWrapper->is_directory(pkgDirectory + "/" + packageName))
+                    std::filesystem::path packagePath {pkgDirectory + "/"};
+                    packagePath += packageName;
+
+                    if (fsWrapper->exists(packagePath) && fsWrapper->is_directory(packagePath))
                     {
-                        packageVersions = fsWrapper->list_directory(pkgDirectory + "/" + packageName);
+                        packageVersions = fsWrapper->list_directory(packagePath);
                     }
 
                     for (const auto& version : packageVersions)
@@ -229,7 +233,7 @@ nlohmann::json SysInfo::getProcessesInfo() const
     return jsProcessesList;
 }
 
-static bool isRunningOnRosetta()
+static bool IsRunningOnRosetta()
 {
 
     /* Rosetta is a translation process that allows users to run
@@ -244,7 +248,7 @@ static bool isRunningOnRosetta()
     auto retVal {false};
     auto isTranslated {0};
     auto len {sizeof(isTranslated)};
-    const auto result {sysctlbyname("sysctl.proc_translated", &isTranslated, &len, NULL, 0)};
+    const auto result {sysctlbyname("sysctl.proc_translated", &isTranslated, &len, nullptr, 0)};
 
     if (result)
     {
@@ -287,7 +291,7 @@ nlohmann::json SysInfo::getOsInfo() const
         ret["release"] = uts.release;
     }
 
-    if (isRunningOnRosetta())
+    if (IsRunningOnRosetta())
     {
         ret["architecture"] = MAC_ROSETTA_DEFAULT_ARCH;
     }
@@ -295,7 +299,7 @@ nlohmann::json SysInfo::getOsInfo() const
     return ret;
 }
 
-static void getProcessesSocketFD(std::map<ProcessInfo, std::vector<std::shared_ptr<socket_fdinfo>>>& processSocket)
+static void GetProcessesSocketFd(std::map<ProcessInfo, std::vector<std::shared_ptr<socket_fdinfo>>>& processSocket)
 {
     int32_t maxProcess {0};
     auto maxProcessLen {sizeof(maxProcess)};
@@ -316,7 +320,7 @@ static void getProcessesSocketFD(std::map<ProcessInfo, std::vector<std::shared_p
                 const std::string processName {processInformation.pbi_name};
                 const ProcessInfo processData {pid, processName};
 
-                const auto processFDBufferSize {proc_pidinfo(pid, PROC_PIDLISTFDS, 0, 0, 0)};
+                const auto processFDBufferSize {proc_pidinfo(pid, PROC_PIDLISTFDS, 0, nullptr, 0)};
 
                 if (processFDBufferSize != -1)
                 {
@@ -326,23 +330,25 @@ static void getProcessesSocketFD(std::map<ProcessInfo, std::vector<std::shared_p
                     if (proc_pidinfo(pid, PROC_PIDLISTFDS, 0, processFDInformationBuffer.get(), processFDBufferSize) !=
                         -1)
                     {
-                        auto processFDInformation {reinterpret_cast<proc_fdinfo*>(processFDInformationBuffer.get())};
+                        auto processFDInformation =
+                            std::span<proc_fdinfo>(std::bit_cast<proc_fdinfo*>(processFDInformationBuffer.get()),
+                                                   static_cast<size_t>(processFDBufferSize) / PROC_PIDLISTFD_SIZE);
 
-                        for (auto j = 0ul; j < static_cast<size_t>(processFDBufferSize) / PROC_PIDLISTFD_SIZE; ++j)
+                        for (auto& fdInfo : processFDInformation)
                         {
-                            if (PROX_FDTYPE_SOCKET == processFDInformation[j].proc_fdtype)
+                            if (PROX_FDTYPE_SOCKET == fdInfo.proc_fdtype)
                             {
                                 auto socketInfo {std::make_shared<socket_fdinfo>()};
 
                                 if (PROC_PIDFDSOCKETINFO_SIZE == proc_pidfdinfo(pid,
-                                                                                processFDInformation[j].proc_fd,
+                                                                                fdInfo.proc_fd,
                                                                                 PROC_PIDFDSOCKETINFO,
                                                                                 socketInfo.get(),
                                                                                 PROC_PIDFDSOCKETINFO_SIZE))
                                 {
-                                    if (socketInfo && std::find(s_validFDSock.begin(),
-                                                                s_validFDSock.end(),
-                                                                socketInfo->psi.soi_kind) != s_validFDSock.end())
+                                    if (socketInfo && std::find(S_VALID_FD_SOCK.begin(),
+                                                                S_VALID_FD_SOCK.end(),
+                                                                socketInfo->psi.soi_kind) != S_VALID_FD_SOCK.end())
                                     {
                                         processSocket[processData].push_back(socketInfo);
                                     }
@@ -360,7 +366,7 @@ nlohmann::json SysInfo::getPorts() const
 {
     nlohmann::json ports;
     std::map<ProcessInfo, std::vector<std::shared_ptr<socket_fdinfo>>> fdMap;
-    getProcessesSocketFD(fdMap);
+    GetProcessesSocketFd(fdMap);
 
     for (const auto& processInfo : fdMap)
     {
@@ -389,7 +395,7 @@ void SysInfo::getProcessesInfo(const std::function<void(nlohmann::json&)>& callb
 {
     int32_t maxProc {};
     size_t len {sizeof(maxProc)};
-    const auto ret {sysctlbyname("kern.maxproc", &maxProc, &len, NULL, 0)};
+    const auto ret {sysctlbyname("kern.maxproc", &maxProc, &len, nullptr, 0)};
 
     if (ret)
     {
@@ -416,13 +422,13 @@ void SysInfo::getProcessesInfo(const std::function<void(nlohmann::json&)>& callb
 void SysInfo::getPackages(const std::function<void(nlohmann::json&)>& callback) const
 {
     const auto fsWrapper = std::make_unique<file_system::FileSystemWrapper>();
-    for (const auto& packageDirectory : s_mapPackagesDirectories)
+    for (const auto& packageDirectory : S_MAP_PACKAGES_DIRECTORIES)
     {
         const auto pkgDirectory {packageDirectory.first};
 
         if (fsWrapper->exists(pkgDirectory) && fsWrapper->is_directory(pkgDirectory))
         {
-            getPackagesFromPath(pkgDirectory, packageDirectory.second, callback);
+            GetPackagesFromPath(pkgDirectory, packageDirectory.second, callback);
         }
     }
 
@@ -447,5 +453,5 @@ void SysInfo::getPackages(const std::function<void(nlohmann::json&)>& callback) 
 nlohmann::json SysInfo::getHotfixes() const
 {
     // Currently not supported for this OS.
-    return nlohmann::json();
+    return {};
 }

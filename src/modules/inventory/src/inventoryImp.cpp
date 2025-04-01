@@ -356,10 +356,12 @@ void Inventory::NotifyEvent(ReturnTypeCallback result,
 
 void Inventory::UpdateChanges(const std::string& table, const nlohmann::json& values, const bool isFirstScan)
 {
+    // NOLINTBEGIN(bugprone-exception-escape)
     const auto callback {[this, table, isFirstScan](ReturnTypeCallback result, const nlohmann::json& data)
                          {
                              NotifyChange(result, data, table, isFirstScan);
                          }};
+    // NOLINTEND(bugprone-exception-escape)
 
     const std::unique_lock<std::mutex> lock {m_mutex};
     DBSyncTxn txn {m_spDBSync->handle(), nlohmann::json {table}, 0, QUEUE_SIZE, callback};
