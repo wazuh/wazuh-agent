@@ -18,10 +18,11 @@ inventory:
   ports: true
   ports_all: false
   processes: false
-  hotfixes: true
 logcollector:
   enabled: true
-  localfiles:
-    - /var/log/auth.log
   reload_interval: 1m
   read_interval: 500ms
+  macos:
+    - query: process == "sshd" OR message CONTAINS "invalid"
+      level: info
+      type: trace,activity,log
