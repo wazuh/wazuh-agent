@@ -50,21 +50,22 @@ TEST_F(ScaTest, ConstructorSetsDbFilePath)
 
 TEST_F(ScaTest, SetPushMessageFunctionStoresCallback)
 {
+    constexpr int expectedReturnValue = 123;
     bool called = false;
 
-    auto lambda = [&called](Message) -> int
+    auto lambda = [&](Message) -> int // NOLINT(performance-unnecessary-value-param)
     {
         called = true;
-        return 123;
+        return expectedReturnValue;
     };
 
     m_sca->SetPushMessageFunction(lambda);
 
-    Message dummyMessage(MessageType::STATELESS, nlohmann::json {}, "dummyModule", "dummyType", "dummyMetaData");
+    const Message dummyMessage(MessageType::STATELESS, nlohmann::json {}, "dummyModule", "dummyType", "dummyMetaData");
     const int result = lambda(dummyMessage);
 
     EXPECT_TRUE(called);
-    EXPECT_EQ(result, 123);
+    EXPECT_EQ(result, expectedReturnValue);
 }
 
 TEST_F(ScaTest, NameReturnsCorrectValue)
