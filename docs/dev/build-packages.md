@@ -60,7 +60,12 @@ wazuh# cd packages
 
 2. Build a RPM agent package for arm64 architecture with checksum generation:
 ```
-./generate_package.sh -t agent -a arm64 -s /tmp -c --system rpm
+./generate_package.sh -a arm64 -s /tmp -c --system rpm
+```
+
+3. Build a package using local Wazuh source code:
+```
+./generate_package.sh -a amd64 --sources /path/to/wazuh/source --system rpm
 ```
 
 **Notes:**
@@ -155,15 +160,15 @@ $ ./packages/windows/generate_wazuh_msi.ps1 [PACKAGE-OPTIONS]
 
 
 **Example Usage:**
-1. Build a package with `wazuh-agent_4.9.0-0_windows_0ceb378` name without signing it:
+1. Build a package with `wazuh-agent_5.0.0-0_windows_0ceb378` name without signing it:
 
 ```
-$ ./generate_wazuh_msi.ps1 -MSI_NAME wazuh-agent_4.9.0-0_windows_0ceb378 -SIGN no
+$ ./generate_wazuh_msi.ps1 -MSI_NAME wazuh-agent_5.0.0-0_windows_0ceb378 -SIGN no
 ```
 
 # Workflows
 
-Packages can also be built using GHA Workflows from the Github interface which let manually set every avaialble field as seen in the following links:
+Packages can also be built using GHA Workflows from the GitHub interface which let manually set every available field as seen in the following links:
 
 [Linux Packages WF](https://github.com/wazuh/wazuh-agent/actions/workflows/5_builderpackage_agent-linux.yml)
 
@@ -225,6 +230,20 @@ Where the JSON looks like this:
 
 Workflows can be executed directly from the command line using the `gh` command instead of `curl`. For example, while in the repository directory, the workflow can be triggered with:
 
+**Linux package example**:
+
+To build a package using the available workflow in the `enhancement/484-linux-rpmdeb-arm-package-creation` branch, using the `-r` option, and using the `-f` arguments as selected options to build the package.
+
 ```bash
-gh workflow run packages-build-linux-agent-amd.yml -r enhancement/484-linux-rpmdeb-arm-package-creation -f architecture=arm64 -f source_reference=enhancement/484-linux-rpmdeb-arm-package-creation -f revision=3 -f is_stage=false -f system=rpm -f id=test_arm64_deps -f upload_to=artifact
+gh workflow run 5_builderpackage_agent-linux.yml -r enhancement/484-linux-rpmdeb-arm-package-creation -f architecture=arm64 -f source_reference=enhancement/484-linux-rpmdeb-arm-package-creation -f revision=3 -f is_stage=false -f system=rpm -f id=test_arm64_deps
+```
+
+**Mac OS package example**:
+```bash
+gh workflow run 5_builderpackage_agent-macos.yml -r main -f architecture=intel64 -f source_reference=main -f revision=1 -f is_stage=false -f upload_to_s3=false -f id=test_intel64_macos -f upload_to=artifact
+```
+
+**Windows package example**:
+```bash
+gh workflow run 5_builderpackage_agent-win.yml -r main -f source_reference=enhancement/484-linux-rpmdeb-arm-package-creation -f revision=1 -f checksum=true -f is_stage=false
 ```
