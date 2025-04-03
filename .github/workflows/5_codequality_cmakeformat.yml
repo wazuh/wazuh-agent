@@ -1,0 +1,23 @@
+name: CMake Format Check
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+  workflow_dispatch:
+
+jobs:
+  cmake-format:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run CMake Format Check
+      uses: ./.github/actions/5_codelinter_cmakeformat
+      with:
+        path: 'src/'
+        id: 'wazuh-agent'
