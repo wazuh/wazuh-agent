@@ -17,6 +17,29 @@
 #include <string>
 #include <vector>
 
+constexpr auto POLICY_SQL_STATEMENT {
+    R"(CREATE TABLE IF NOT EXISTS sca_policy (
+    id TEXT PRIMARY KEY,
+    name TEXT,
+    file TEXT,
+    description TEXT,
+    refs TEXT);)"};
+
+constexpr auto CHECK_SQL_STATEMENT {
+    R"(CREATE TABLE IF NOT EXISTS sca_check (
+    id TEXT PRIMARY KEY,
+    policy_id TEXT REFERENCES sca_policy(id),
+    name TEXT,
+    description TEXT,
+    rationale TEXT,
+    remediation TEXT,
+    refs TEXT,
+    result TEXT,
+    reason TEXT,
+    condition TEXT,
+    compliance TEXT,
+    rules TEXT);)"};
+
 class SecurityConfigurationAssessment : public IModule
 {
 public:
@@ -63,7 +86,6 @@ private:
     /// @brief Get the create statement for the database
     std::string GetCreateStatement() const;
 
-    /// @brief SCA db file name
     const std::string SCA_DB_DISK_NAME = "sca.db";
 
     /// @brief SCA module name

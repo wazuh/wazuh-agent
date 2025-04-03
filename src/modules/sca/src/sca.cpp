@@ -98,7 +98,9 @@ void SecurityConfigurationAssessment::EnqueueTask(boost::asio::awaitable<void> t
 
 std::string SecurityConfigurationAssessment::GetCreateStatement() const
 {
-    // Placeholder for the actual SQL statement
-    // This should be replaced with the actual SQL statement to create the SCA table
-    return R"(CREATE TABLE sca (policy TEXT PRIMARY KEY );)";
+    std::string ret;
+    ret += POLICY_SQL_STATEMENT;
+    ret += CHECK_SQL_STATEMENT;
+
+    return ret;
 }
