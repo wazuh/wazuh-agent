@@ -5,6 +5,6 @@
 
 TEST(ScaPolicyLoaderTest, Contruction)
 {
-    [[maybe_unused]] SCAPolicyLoader policyLoader;
+    [[maybe_unused]] const SCAPolicyLoader policyLoader;
     SUCCEED();
 }
