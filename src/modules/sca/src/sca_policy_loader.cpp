@@ -7,16 +7,16 @@ SCAPolicyLoader::SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemW
     : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
                                             : std::make_shared<file_system::FileSystemWrapper>())
 {
-    m_customPoliciesPaths = [this, &configurationParser]()
+    const auto loadPoliciesPathsFromConfig = [this, &configurationParser](const std::string& configKey)
     {
         std::vector<std::filesystem::path> policiesPaths;
         std::vector<std::string> policies;
-        policies = configurationParser->GetConfigOrDefault(policies, "sca", "policies");
+        policies = configurationParser->GetConfigOrDefault(policies, "sca", configKey);
         for (const auto& policy : policies)
         {
             if (m_fileSystemWrapper->exists(policy))
             {
-                policiesPaths.push_back(policy);
+                policiesPaths.emplace_back(policy);
             }
             else
             {
@@ -24,23 +24,8 @@ SCAPolicyLoader::SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemW
             }
         }
         return policiesPaths;
-    }();
-    m_disabledPoliciesPaths = [this, &configurationParser]()
-    {
-        std::vector<std::filesystem::path> policiesPaths;
-        std::vector<std::string> policies;
-        policies = configurationParser->GetConfigOrDefault(policies, "sca", "policies_disabled");
-        for (const auto& policy : policies)
-        {
-            if (m_fileSystemWrapper->exists(policy))
-            {
-                policiesPaths.push_back(policy);
-            }
-            else
-            {
-                LogWarn("Policy file does not exist: {}", policy);
-            }
-        }
-        return policiesPaths;
-    }();
+    };
+
+    m_customPoliciesPaths = loadPoliciesPathsFromConfig("policies");
+    m_disabledPoliciesPaths = loadPoliciesPathsFromConfig("policies_disabled");
 }
