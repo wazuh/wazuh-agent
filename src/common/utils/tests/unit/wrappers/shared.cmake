@@ -1,4 +1,5 @@
-set(HASH_OP_WRAPPERS "-Wl,--wrap,OSHash_Add \
+set(HASH_OP_WRAPPERS
+    "-Wl,--wrap,OSHash_Add \
                       -Wl,--wrap,OSHash_Add_ex \
                       -Wl,--wrap,OSHash_Begin \
                       -Wl,--wrap,OSHash_Begin_ex \
@@ -16,8 +17,8 @@ set(HASH_OP_WRAPPERS "-Wl,--wrap,OSHash_Add \
                       -Wl,--wrap,OSHash_Update \
                       -Wl,--wrap,OSHash_Get_Elem_ex")
 
-
-set(DEBUG_OP_WRAPPERS "-Wl,--wrap,_mdebug1 \
+set(DEBUG_OP_WRAPPERS
+    "-Wl,--wrap,_mdebug1 \
                        -Wl,--wrap,_mdebug2 \
                        -Wl,--wrap,_merror \
                        -Wl,--wrap,_merror_exit \

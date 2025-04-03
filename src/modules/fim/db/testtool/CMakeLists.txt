@@ -10,39 +10,23 @@ if(COVERITY)
 endif(COVERITY)
 
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -std=c++14 -pthread")
-  if(FSANITIZE)
-    set(CMAKE_CXX_FLAGS_DEBUG "-fsanitize=address,leak,undefined")
-  endif(FSANITIZE)
+    set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -std=c++14 -pthread")
+    if(FSANITIZE)
+        set(CMAKE_CXX_FLAGS_DEBUG "-fsanitize=address,leak,undefined")
+    endif(FSANITIZE)
 else()
-  set(CMAKE_CXX_FLAGS "/Zi /W4 /permissive- /std:c++14 /MTd")
+    set(CMAKE_CXX_FLAGS "/Zi /W4 /permissive- /std:c++14 /MTd")
 endif()
 
-add_executable(fimdb_test_tool
-               ${CMAKE_SOURCE_DIR}/src/db/testtool/main.cpp )
+add_executable(fimdb_test_tool ${CMAKE_SOURCE_DIR}/src/db/testtool/main.cpp)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     add_definitions(-DOS_TYPE=OSType::WINDOWS)
-    target_link_libraries(fimdb_test_tool
-        rsync
-        fimdb
-        dbsync
-    )
-elseif (CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+    target_link_libraries(fimdb_test_tool rsync fimdb dbsync)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
     add_definitions(-DOS_TYPE=OSType::OTHERS)
-    target_link_libraries(fimdb_test_tool
-        dbsync
-        fimdb
-        rsync
-        pthread
-    )
+    target_link_libraries(fimdb_test_tool dbsync fimdb rsync pthread)
 else()
     add_definitions(-DOS_TYPE=OSType::OTHERS)
-    target_link_libraries(fimdb_test_tool
-        dbsync
-        fimdb
-        rsync
-        pthread
-        dl
-    )
+    target_link_libraries(fimdb_test_tool dbsync fimdb rsync pthread dl)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")

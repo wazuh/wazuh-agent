@@ -1,4 +1,4 @@
-#include wrappers
+# include wrappers
 include(${SRC_FOLDER}/unit_tests/wrappers/wazuh/shared/shared.cmake)
 
 if(${TARGET} STREQUAL "winagent")
@@ -8,7 +8,8 @@ endif(${TARGET} STREQUAL "winagent")
 # Tests list and flags
 list(APPEND shared_tests_names "test_file_op")
 if(NOT ${TARGET} STREQUAL "winagent")
-    set(FILE_OP_BASE_FLAGS "-Wl,--wrap,stat,--wrap,chmod,--wrap,getpid,--wrap,wfopen \
+    set(FILE_OP_BASE_FLAGS
+        "-Wl,--wrap,stat,--wrap,chmod,--wrap,getpid,--wrap,wfopen \
                             -Wl,--wrap,unlink,--wrap,fopen,--wrap,fflush,--wrap,fclose \
                             -Wl,--wrap,fread,--wrap,ftell,--wrap,fseek,--wrap,fwrite,--wrap,remove \
                             -Wl,--wrap,fprintf,--wrap,fgets,--wrap,File_DateofChange \
@@ -19,7 +20,10 @@ if(NOT ${TARGET} STREQUAL "winagent")
                             -Wl,--wrap,merror,--wrap,fseek")
     list(APPEND shared_tests_flags "${FILE_OP_BASE_FLAGS}")
 else()
-    list(APPEND shared_tests_flags "-Wl,--wrap,get_windows_file_time_epoch,--wrap,mdebug2 \
+    list(
+        APPEND
+        shared_tests_flags
+        "-Wl,--wrap,get_windows_file_time_epoch,--wrap,mdebug2 \
                                     -Wl,--wrap,syscom_dispatch -Wl,--wrap,Start_win32_Syscheck \
                                     -Wl,--wrap=is_fim_shutdown -Wl,--wrap=_imp__dbsync_initialize \
                                     -Wl,--wrap=_imp__rsync_initialize -Wl,--wrap=fim_db_teardown ${DEBUG_OP_WRAPPERS}")
@@ -35,28 +39,16 @@ foreach(counter RANGE ${count})
     add_executable(${test_name} ${test_name}.c)
 
     if(${TARGET} STREQUAL "server")
-        target_link_libraries(
-            ${test_name}
-            ${WAZUHLIB}
-            ${WAZUHEXT}
-            ANALYSISD_O
-            ${TEST_DEPS}
-        )
+        target_link_libraries(${test_name} ${WAZUHLIB} ${WAZUHEXT} ANALYSISD_O ${TEST_DEPS})
     else()
-        target_link_libraries(
-            ${test_name}
-            ${TEST_DEPS}
-        )
+        target_link_libraries(${test_name} ${TEST_DEPS})
         if(${TARGET} STREQUAL "winagent")
-          target_link_libraries(${test_name} fimdb)
+            target_link_libraries(${test_name} fimdb)
         endif(${TARGET} STREQUAL "winagent")
     endif()
 
     if(NOT test_flags STREQUAL " ")
-        target_link_libraries(
-            ${test_name}
-            ${test_flags}
-        )
+        target_link_libraries(${test_name} ${test_flags})
     endif()
     add_test(NAME ${test_name} COMMAND ${test_name})
 endforeach()
