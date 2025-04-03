@@ -1,6 +1,12 @@
 #pragma once
 
+#include <filesystem>
+
 class SCAPolicy
 {
-    // On creation, validate requirements
+public:
+    static SCAPolicy LoadFromFile([[maybe_unused]] const std::filesystem::path& path)
+    {
+        return {};
+    }
 };
