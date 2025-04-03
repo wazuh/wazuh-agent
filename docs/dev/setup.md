@@ -59,7 +59,7 @@ To install the necessary dependencies on Windows, run the following commands:
 ## Set up the Toolchain
 
 In addition to the requirements listed above, our development process mandates the use of
-`clang-format` and `clang-tidy`, with checks integrated into our CI pipelines.
+`clang-format`, `clang-tidy`, and `cmake-format`, with checks integrated into our CI pipelines.
 
 On Linux, these tools can be installed with the following commands:
 
@@ -69,6 +69,7 @@ chmod +x llvm.sh
 sudo ./llvm.sh 18
 sudo apt-get update
 sudo apt-get install -y clang-tidy-18 clang-format-18
+sudo apt-get install -y cmake-format
 ```
 
 Additionally, it is possible to check out Vcpkg to a separate path and use that instance for builds:
