@@ -49,4 +49,11 @@ namespace config
         constexpr auto DEFAULT_PROCESSES = @DEFAULT_PROCESSES@;
         constexpr auto DEFAULT_HOTFIXES = @DEFAULT_HOTFIXES@;
     }
+
+    namespace sca
+    {
+        constexpr auto DEFAULT_ENABLED = @DEFAULT_SCA_ENABLED@;
+        constexpr auto DEFAULT_INTERVAL = @DEFAULT_SCA_INTERVAL@;
+        constexpr auto DEFAULT_SCAN_ON_START = @DEFAULT_SCA_SCAN_ON_START@;
+    }
 }

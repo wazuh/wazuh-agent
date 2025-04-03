@@ -44,14 +44,58 @@ public:
 
     /// @brief Setup the SCA module
     /// @param configurationParser Configuration parser for setting up the module
-    void Setup([[maybe_unused]] std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
+    void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
     {
-        // Read configuration
-        // m_policiesFolder = configurationParser->GetConfigOrDefault(
-        //     config::DEFAULT_SCA_POLICIES_PATH, "sca", "policies_path");
+        m_dbFilePath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
+                       SCA_DB_DISK_NAME;
+        m_enabled = configurationParser->GetConfigOrDefault(config::sca::DEFAULT_ENABLED, "sca", "enabled");
+        m_scanOnStart =
+            configurationParser->GetConfigOrDefault(config::sca::DEFAULT_SCAN_ON_START, "sca", "scan_on_start");
+        m_scanInterval = configurationParser->GetTimeConfigOrDefault(config::sca::DEFAULT_INTERVAL, "sca", "interval");
+        m_policiesPaths = [this, &configurationParser]()
+        {
+            std::vector<std::filesystem::path> policiesPaths;
+            std::vector<std::string> policies;
+            policies = configurationParser->GetConfigOrDefault(policies, "sca", "policies");
+            for (const auto& policy : policies)
+            {
+                if (m_fileSystemWrapper->exists(policy))
+                {
+                    policiesPaths.push_back(policy);
+                }
+                else
+                {
+                    LogWarn("Policy file does not exist: {}", policy);
+                }
+            }
+            return policiesPaths;
+        }();
+        m_disabledPoliciesPaths = [this, &configurationParser]()
+        {
+            std::vector<std::filesystem::path> policiesPaths;
+            std::vector<std::string> policies;
+            policies = configurationParser->GetConfigOrDefault(policies, "sca", "policies_disabled");
+            for (const auto& policy : policies)
+            {
+                if (m_fileSystemWrapper->exists(policy))
+                {
+                    policiesPaths.push_back(policy);
+                }
+                else
+                {
+                    LogWarn("Policy file does not exist: {}", policy);
+                }
+            }
+            return policiesPaths;
+        }();
 
-        // Load policies
-        // AddPoliciesFromPath(m_policiesFolder);
+        // Now that we have the custom and disabled policies, we can create them
+        // We should also account for the default policies
+        // AddPoliciesFromPath(DefaultPoliciesPath());
+        // m_policies = CreatePolicies(m_policiesPaths, m_disabledPoliciesPaths);
+
+        m_dBSync = std::make_unique<DBSyncType>(
+            HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, GetCreateStatement(), DbManagement::PERSISTENT);
     }
 
     /// @brief Stop the SCA module
@@ -95,11 +139,7 @@ private:
         : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
                                                 : std::make_unique<file_system::FileSystemWrapper>())
     {
-        m_dbFilePath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
-                       SCA_DB_DISK_NAME;
-
-        m_dBSync = std::make_unique<DBSyncType>(
-            HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, GetCreateStatement(), DbManagement::PERSISTENT);
+        Setup(configurationParser);
     }
 
     /// @brief Destructor
@@ -150,6 +190,11 @@ private:
     std::unique_ptr<DBSyncType> m_dBSync;
     std::string m_dbFilePath;
     std::function<int(Message)> m_pushMessage;
-    std::vector<SCAPolicy> m_policies;
     std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper;
+    bool m_enabled;
+    bool m_scanOnStart;
+    std::time_t m_scanInterval;
+    std::vector<SCAPolicy> m_policies;
+    std::vector<std::filesystem::path> m_policiesPaths;
+    std::vector<std::filesystem::path> m_disabledPoliciesPaths;
 };
