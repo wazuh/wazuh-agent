@@ -69,6 +69,26 @@ std::shared_ptr<ModuleWrapper> ModuleManager::GetModule(const std::string& name)
     return nullptr;
 }
 
+void ModuleManager::ReloadModule(const std::string& name)
+{
+    const std::lock_guard<std::mutex> lock(m_mutex);
+
+    for (const auto& [moduleName, module] : m_modules)
+    {
+        LogDebug("Module: {}", moduleName);
+    }
+
+    if (auto it = m_modules.find(name); it != m_modules.end())
+    {
+        it->second->Stop();
+        it->second->Start();
+        LogInfo("Module {} reloaded", name);
+        return;
+    }
+
+    LogError("Module {} not found", name);
+}
+
 void ModuleManager::Start()
 {
     const std::lock_guard<std::mutex> lock(m_mutex);
