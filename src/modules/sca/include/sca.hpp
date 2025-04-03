@@ -19,6 +19,35 @@
 #include <string>
 #include <vector>
 
+constexpr auto SCA_POLICY_SQL_STATEMENT {
+    R"(CREATE TABLE IF NOT EXISTS sca_policy (
+    id TEXT PRIMARY KEY,
+    name TEXT,
+    file TEXT,
+    description TEXT,
+    `references` TEXT);)"};
+
+constexpr auto SCA_CHECK_SQL_STATEMENT {
+    R"(CREATE TABLE IF NOT EXISTS sca_check (
+    id INTEGER PRIMARY KEY,
+    policy_id TEXT REFERENCES sca_policy(id),
+    name TEXT,
+    description TEXT,
+    rationale TEXT,
+    remediation TEXT,
+    `references` TEXT,
+    result TEXT,
+    reason TEXT,
+    condition TEXT,
+    compliance TEXT);)"};
+
+constexpr auto SCA_RULE_SQL_STATEMENT {
+    R"(CREATE TABLE IF NOT EXISTS sca_rule (
+    id INTEGER,
+    check_id INTEGER REFERENCES sca_check (id),
+    rule TEXT,
+    PRIMARY KEY (id, check_id)) WITHOUT ROWID;)"};
+
 template<class DBSyncType = DBSync>
 class SecurityConfigurationAssessment
 {
@@ -142,9 +171,13 @@ private:
     /// @brief Get the create statement for the database
     std::string GetCreateStatement() const
     {
-        // Placeholder for the actual SQL statement
-        // This should be replaced with the actual SQL statement to create the SCA table
-        return R"(CREATE TABLE sca (policy TEXT PRIMARY KEY );)";
+        std::string ret;
+
+        ret += SCA_POLICY_SQL_STATEMENT;
+        ret += SCA_CHECK_SQL_STATEMENT;
+        ret += SCA_RULE_SQL_STATEMENT;
+
+        return ret;
     }
 
     const std::string SCA_DB_DISK_NAME = "sca.db";
