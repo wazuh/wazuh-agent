@@ -4,6 +4,29 @@
 #include <dbsync.hpp>
 #include <sca_policy_loader.hpp>
 
+constexpr auto POLICY_SQL_STATEMENT {
+    R"(CREATE TABLE IF NOT EXISTS sca_policy (
+    id TEXT PRIMARY KEY,
+    name TEXT,
+    file TEXT,
+    description TEXT,
+    refs TEXT);)"};
+
+constexpr auto CHECK_SQL_STATEMENT {
+    R"(CREATE TABLE IF NOT EXISTS sca_check (
+    id TEXT PRIMARY KEY,
+    policy_id TEXT REFERENCES sca_policy(id),
+    name TEXT,
+    description TEXT,
+    rationale TEXT,
+    remediation TEXT,
+    refs TEXT,
+    result TEXT,
+    reason TEXT,
+    condition TEXT,
+    compliance TEXT,
+    rules TEXT);)"};
+
 SecurityConfigurationAssessment::SecurityConfigurationAssessment(
     std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
     std::shared_ptr<IDBSync> dbSync,
@@ -98,7 +121,9 @@ void SecurityConfigurationAssessment::EnqueueTask(boost::asio::awaitable<void> t
 
 std::string SecurityConfigurationAssessment::GetCreateStatement() const
 {
-    // Placeholder for the actual SQL statement
-    // This should be replaced with the actual SQL statement to create the SCA table
-    return R"(CREATE TABLE sca (policy TEXT PRIMARY KEY );)";
+    std::string ret;
+    ret += POLICY_SQL_STATEMENT;
+    ret += CHECK_SQL_STATEMENT;
+
+    return ret;
 }
