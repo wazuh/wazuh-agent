@@ -52,42 +52,6 @@ public:
         m_scanOnStart =
             configurationParser->GetConfigOrDefault(config::sca::DEFAULT_SCAN_ON_START, "sca", "scan_on_start");
         m_scanInterval = configurationParser->GetTimeConfigOrDefault(config::sca::DEFAULT_INTERVAL, "sca", "interval");
-        m_policiesPaths = [this, &configurationParser]()
-        {
-            std::vector<std::filesystem::path> policiesPaths;
-            std::vector<std::string> policies;
-            policies = configurationParser->GetConfigOrDefault(policies, "sca", "policies");
-            for (const auto& policy : policies)
-            {
-                if (m_fileSystemWrapper->exists(policy))
-                {
-                    policiesPaths.push_back(policy);
-                }
-                else
-                {
-                    LogWarn("Policy file does not exist: {}", policy);
-                }
-            }
-            return policiesPaths;
-        }();
-        m_disabledPoliciesPaths = [this, &configurationParser]()
-        {
-            std::vector<std::filesystem::path> policiesPaths;
-            std::vector<std::string> policies;
-            policies = configurationParser->GetConfigOrDefault(policies, "sca", "policies_disabled");
-            for (const auto& policy : policies)
-            {
-                if (m_fileSystemWrapper->exists(policy))
-                {
-                    policiesPaths.push_back(policy);
-                }
-                else
-                {
-                    LogWarn("Policy file does not exist: {}", policy);
-                }
-            }
-            return policiesPaths;
-        }();
 
         // Now that we have the custom and disabled policies, we can create them
         // We should also account for the default policies
@@ -195,6 +159,4 @@ private:
     bool m_scanOnStart;
     std::time_t m_scanInterval;
     std::vector<SCAPolicy> m_policies;
-    std::vector<std::filesystem::path> m_policiesPaths;
-    std::vector<std::filesystem::path> m_disabledPoliciesPaths;
 };
