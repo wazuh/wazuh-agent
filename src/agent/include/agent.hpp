@@ -60,6 +60,11 @@ public:
     /// This method stops all modules launched by moduleManager, and starts them again.
     void ReloadModules();
 
+    /// @brief Reload a module
+    ///
+    /// This method stops the specified module launched by moduleManager, and starts it again.
+    void ReloadModule(const std::string& module);
+
 private:
     /// @brief Task manager
     TaskManager m_taskManager;

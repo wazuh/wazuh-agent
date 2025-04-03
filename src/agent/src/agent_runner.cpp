@@ -69,7 +69,7 @@ void AgentRunner::ParseOptions(int argc, char* argv[])
         (OPT_STATUS, OPT_STATUS_DESC)
         (OPT_ENROLL_AGENT, OPT_ENROLL_AGENT_DESC)
         (OPT_RELOAD_CONFIG, OPT_RELOAD_CONFIG_DESC)
-        (OPT_RELOAD_MODULE, OPT_RELOAD_MODULE_DESC)
+        (OPT_RELOAD_MODULE, program_options::value<std::string>(), OPT_RELOAD_MODULE_DESC)
         (OPT_CONFIG_FILE, program_options::value<std::string>()->default_value(""), OPT_CONFIG_FILE_DESC);
 
     m_enrollmentOptions.add_options()
@@ -133,6 +133,18 @@ int AgentRunner::Run() const
 
 int AgentRunner::ReloadModule() const
 {
+    if (m_options[OPT_RELOAD_MODULE].as<std::string>().empty())
+    {
+        std::cout << "--reload-module arg is mandatory. Use --help for more information.\n";
+        return 0;
+    }
+
+    if (!instance_communicator::SendSignal(
+            fmt::format("RELOAD-MODULE:{}", m_options[OPT_RELOAD_MODULE].as<std::string>())))
+    {
+        std::cout << "wazuh-agent config reload-module failed\n";
+        return 0;
+    }
     std::cout << "Starting wazuh-agent module reload\n";
 
     return 1;

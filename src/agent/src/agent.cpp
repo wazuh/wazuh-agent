@@ -47,17 +47,32 @@ Agent::Agent(std::unique_ptr<configuration::ConfigurationParser> configurationPa
                                                             m_agentInfo->GetUUID()))
     , m_commandHandler(commandHandler ? std::move(commandHandler)
                                       : std::make_unique<command_handler::CommandHandler>(m_configurationParser))
-    , m_instanceCommunicator(
-          instanceCommunicator
-              ? std::move(instanceCommunicator)
-              : std::make_unique<instance_communicator::InstanceCommunicator>(
-                    instance_communicator::DEFAULT_PORT,
-                    [this](const std::string& signal)
-                    {
-                        LogWarn(" *********************** Message received from previous instance: {}", signal);
-                        ReloadModules();
-                        return;
-                    }))
+    , m_instanceCommunicator(instanceCommunicator
+                                 ? std::move(instanceCommunicator)
+                                 : std::make_unique<instance_communicator::InstanceCommunicator>(
+                                       [this](const std::string& signal)
+                                       {
+                                           if (signal == "RELOAD")
+                                           {
+                                               ReloadModules();
+                                           }
+                                           else if (signal.starts_with("RELOAD-MODULE:"))
+                                           {
+                                               auto pos = signal.find(':');
+                                               if (pos == std::string::npos)
+                                               {
+                                                   LogWarn("Invalid format in message received from CLI: {}", signal);
+                                                   return;
+                                               }
+                                               ReloadModule(signal.substr(pos + 1));
+                                           }
+                                           else
+                                           {
+                                               LogWarn("Invalid message received from CLI: {}", signal);
+                                           }
+
+                                           return;
+                                       }))
     , m_centralizedConfiguration(
           [this](const std::vector<std::string>& groups)
           {
@@ -96,6 +111,19 @@ Agent::~Agent()
     m_taskManager.Stop();
 }
 
+void Agent::ReloadModule(const std::string& module)
+{
+    const std::lock_guard<std::mutex> lock(m_reloadMutex);
+    if (m_running.load())
+    {
+        m_moduleManager->ReloadModule(module);
+    }
+    else
+    {
+        LogWarn("Agent cannot reload modules while start up or shutdown is in progress.");
+    }
+}
+
 void Agent::ReloadModules()
 {
     const std::lock_guard<std::mutex> lock(m_reloadMutex);
@@ -104,7 +132,6 @@ void Agent::ReloadModules()
     {
         try
         {
-            LogInfo("Reloading Modules");
             m_configurationParser->ReloadConfiguration();
             m_moduleManager->Stop();
             m_moduleManager->Setup();
