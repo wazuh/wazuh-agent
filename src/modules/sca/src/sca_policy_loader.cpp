@@ -12,11 +12,11 @@ SCAPolicyLoader::SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemW
                                             : std::make_shared<file_system::FileSystemWrapper>())
     , m_policyLoader(std::move(loader))
 {
-    const auto loadPoliciesPathsFromConfig = [this, &configurationParser](const std::string& configKey)
+    const auto loadPoliciesPathsFromConfig = [this, configurationParser](const std::string& configKey)
     {
         std::vector<std::filesystem::path> policiesPaths;
-        std::vector<std::string> policies;
-        policies = configurationParser->GetConfigOrDefault(policies, "sca", configKey);
+        const auto policies = configurationParser->GetConfigOrDefault<std::vector<std::string>>({}, "sca", configKey);
+
         for (const auto& policy : policies)
         {
             if (m_fileSystemWrapper->exists(policy))
@@ -56,8 +56,7 @@ std::vector<SCAPolicy> SCAPolicyLoader::GetPolicies() const
     {
         return std::any_of(m_disabledPoliciesPaths.begin(),
                            m_disabledPoliciesPaths.end(),
-                           [&](const std::filesystem::path& disabledPath)
-                           { return std::filesystem::equivalent(path, disabledPath); });
+                           [&](const std::filesystem::path& disabledPath) { return path == disabledPath; });
     };
 
     std::vector<SCAPolicy> policies;
