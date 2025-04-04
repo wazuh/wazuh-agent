@@ -23,6 +23,4 @@ logcollector:
   reload_interval: 1m
   read_interval: 500ms
   macos:
-    - query: process == "sshd" OR message CONTAINS "invalid"
-      level: info
-      type: trace,activity,log
+    - level: info
