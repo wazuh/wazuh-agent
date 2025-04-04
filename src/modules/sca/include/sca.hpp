@@ -117,32 +117,6 @@ private:
     /// @brief Deleted copy assignment operator
     SecurityConfigurationAssessment& operator=(const SecurityConfigurationAssessment&) = delete;
 
-    /// @brief Add policies from policies path
-    /// @param policiesPath Path to the policies
-    void AddPoliciesFromPath(const std::filesystem::path& policiesPath)
-    {
-        if (!m_fileSystemWrapper->exists(policiesPath) || !m_fileSystemWrapper->is_directory(policiesPath))
-        {
-            return;
-        }
-
-        for (const auto& policyFile : m_fileSystemWrapper->list_directory(policiesPath))
-        {
-            if (!std::filesystem::is_regular_file(policyFile))
-            {
-                continue;
-            }
-
-            if (policyFile.extension() == ".yml" || policyFile.extension() == ".yaml")
-            {
-                // TODO: Load and parse the YAML file
-                // SCAPolicy policy;
-                // m_policies.push_back(std::move(policy));
-                // enqueue policy as a task
-            }
-        }
-    }
-
     /// @brief Get the create statement for the database
     std::string GetCreateStatement() const
     {
