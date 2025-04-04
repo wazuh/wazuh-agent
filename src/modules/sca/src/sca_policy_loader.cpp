@@ -6,7 +6,7 @@
 #include <algorithm>
 
 SCAPolicyLoader::SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemWrapper,
-                                 std::shared_ptr<configuration::ConfigurationParser> configurationParser,
+                                 std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
                                  PolicyLoaderFunc loader)
     : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
                                             : std::make_shared<file_system::FileSystemWrapper>())

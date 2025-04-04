@@ -9,6 +9,7 @@
 #include <filesystem_wrapper.hpp>
 #include <message.hpp>
 #include <moduleWrapper.hpp>
+#include <sca_policy_loader.hpp>
 
 #include <nlohmann/json.hpp>
 
@@ -27,9 +28,9 @@ public:
     /// @return SCA instance
     static SecurityConfigurationAssessment&
     Instance(std::shared_ptr<configuration::ConfigurationParser> configurationParser = nullptr,
-             std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
+             std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
     {
-        static SecurityConfigurationAssessment instance(configurationParser, std::move(fileSystemWrapper));
+        static SecurityConfigurationAssessment instance(configurationParser, fileSystemWrapper);
         return instance;
     }
 
@@ -53,10 +54,11 @@ public:
             configurationParser->GetConfigOrDefault(config::sca::DEFAULT_SCAN_ON_START, "sca", "scan_on_start");
         m_scanInterval = configurationParser->GetTimeConfigOrDefault(config::sca::DEFAULT_INTERVAL, "sca", "interval");
 
-        // Now that we have the custom and disabled policies, we can create them
-        // We should also account for the default policies
-        // AddPoliciesFromPath(DefaultPoliciesPath());
-        // m_policies = CreatePolicies(m_policiesPaths, m_disabledPoliciesPaths);
+        m_policies = [this, &configurationParser]()
+        {
+            SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser);
+            return policyLoader.GetPolicies();
+        }();
 
         m_dBSync = std::make_unique<DBSyncType>(
             HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, GetCreateStatement(), DbManagement::PERSISTENT);
@@ -99,9 +101,9 @@ private:
     /// @param configurationParser Configuration parser for setting up the module
     /// @param fileSystemWrapper File system wrapper for file operations
     SecurityConfigurationAssessment(std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
-                                    std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
+                                    std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
         : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
-                                                : std::make_unique<file_system::FileSystemWrapper>())
+                                                : std::make_shared<file_system::FileSystemWrapper>())
     {
         Setup(configurationParser);
     }
@@ -154,7 +156,7 @@ private:
     std::unique_ptr<DBSyncType> m_dBSync;
     std::string m_dbFilePath;
     std::function<int(Message)> m_pushMessage;
-    std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper;
+    std::shared_ptr<IFileSystemWrapper> m_fileSystemWrapper;
     bool m_enabled;
     bool m_scanOnStart;
     std::time_t m_scanInterval;

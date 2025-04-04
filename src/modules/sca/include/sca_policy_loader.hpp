@@ -18,7 +18,7 @@ public:
     using PolicyLoaderFunc = std::function<SCAPolicy(const std::filesystem::path&)>;
 
     SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr,
-                    std::shared_ptr<configuration::ConfigurationParser> configurationParser = nullptr,
+                    std::shared_ptr<const configuration::ConfigurationParser> configurationParser = nullptr,
                     PolicyLoaderFunc loader = SCAPolicy::LoadFromFile);
 
     ~SCAPolicyLoader() = default;
