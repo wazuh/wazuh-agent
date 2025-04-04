@@ -37,7 +37,6 @@ private:
     std::shared_ptr<IFileSystemWrapper> m_fileSystemWrapper;
     PolicyLoaderFunc m_policyLoader;
 
-    std::filesystem::path m_defaultPolicyPath;
     std::vector<std::filesystem::path> m_customPoliciesPaths;
     std::vector<std::filesystem::path> m_disabledPoliciesPaths;
 };

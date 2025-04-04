@@ -39,17 +39,6 @@ std::vector<SCAPolicy> SCAPolicyLoader::GetPolicies() const
 {
     std::vector<std::filesystem::path> allPolicyPaths;
 
-    if (m_fileSystemWrapper->exists(m_defaultPolicyPath) && m_fileSystemWrapper->is_directory(m_defaultPolicyPath))
-    {
-        for (const auto& entry : m_fileSystemWrapper->list_directory(m_defaultPolicyPath))
-        {
-            if (m_fileSystemWrapper->is_regular_file(entry))
-            {
-                allPolicyPaths.push_back(entry);
-            }
-        }
-    }
-
     allPolicyPaths.insert(allPolicyPaths.end(), m_customPoliciesPaths.begin(), m_customPoliciesPaths.end());
 
     const auto isDisabled = [this](const std::filesystem::path& path)
