@@ -73,5 +73,6 @@ public:
         output["os_display_version"] = osInfoProvider->displayVersion();
         output["architecture"] = osInfoProvider->machine();
         output["os_platform"] = "windows";
+        output["sysname"] = "Windows";
     }
 };

@@ -1147,24 +1147,13 @@ void Inventory::SetJsonFieldArray(nlohmann::json& target,
     if (createFields || source.contains(sourceKey))
     {
         const nlohmann::json::json_pointer destPointer(destPath);
+        target[destPointer] = nullptr;
 
-        if (source.contains(sourceKey) && source[sourceKey] != EMPTY_VALUE)
+        if (source.contains(sourceKey) && !source[sourceKey].is_null() && source[sourceKey] != EMPTY_VALUE)
         {
             const auto& value = source[sourceKey];
-
-            if (value.is_null())
-            {
-                target[destPointer] = nullptr;
-            }
-            else
-            {
-                target[destPointer] = nlohmann::json::array();
-                target[destPointer].push_back(value);
-            }
-        }
-        else
-        {
-            target[destPointer] = nullptr;
+            target[destPointer] = nlohmann::json::array();
+            target[destPointer].push_back(value);
         }
     }
 }
