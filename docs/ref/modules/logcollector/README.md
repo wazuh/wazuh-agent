@@ -94,7 +94,7 @@ logcollector:
       query: Event[System/EventID = 37]
 ```
 
-This collector gets logs from the Windows Event Viewer. It needs a channel and a query to work. It will subscribe to the before mentioned channel with the specified query and it will return a json containing the events matching the criteria.
+This collector gets logs from the Windows Event Viewer. It needs a channel and a query to work (if this is empty '*' wildcard is assumed collecting all possible messages). It will subscribe to the before mentioned channel with the specified query and it will return a json containing the events matching the criteria.
 
 ```json
 {"agent":{"groups":[],"host":{"architecture":"x86_64","hostname":"HOSTNAME","ip":["LOCALIP","4444:4444:4444:4444:4444:44444:4444:4444","127.0.0.1","::1"],"os":{"name":"Microsoft Windows Server 2022","type":"Unknown","version":"10.0.20348.2762"}},"id":"4444-4444-4444-4444-ae5a7d59936c","name":"","type":"Endpoint","version":"x.y.z"}}
@@ -107,7 +107,7 @@ This collector gets logs from the Windows Event Viewer. It needs a channel and a
 |           | reload_interval | Time in milliseconds to recheck for subscriptions | 60000   |
 |     ✔️     | windows         | Vector of readers to subscribe                    |         |
 |     ✔️     | windows.channel | Channel name to be used for subscription          |         |
-|     ✔️     | windows.query   | Query to apply to the channel                     |         |
+|           | windows.query   | Query to apply to the channel                     |         |
 
 ### macOS (ULS) Collector
 

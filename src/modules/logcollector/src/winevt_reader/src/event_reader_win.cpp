@@ -21,7 +21,7 @@ namespace logcollector::winevt
                                                        std::shared_ptr<IWinAPIWrapper> winAPI)
         : IReader(logcollector)
         , m_channel(channel)
-        , m_query(query)
+        , m_query(query.empty() ? "*" : query)
         , m_ChannelsRefreshInterval(channelRefreshInterval)
         , m_winAPI(winAPI ? winAPI : std::make_shared<DefaultWinAPIWrapper>())
     {

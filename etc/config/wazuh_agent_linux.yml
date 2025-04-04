@@ -25,7 +25,7 @@ logcollector:
   reload_interval: 1m
   read_interval: 500ms
   journald:
-    - field: "SYSLOG_IDENTIFIER"
-      value: "systemd"
-      exact_match: false
+    - field: PRIORITY
+      value: 0|1|2|3|4|5|6|7
+      exact_match: true
       ignore_if_missing: true

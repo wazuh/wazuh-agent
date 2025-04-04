@@ -319,14 +319,17 @@ TEST(ConfigurationParser, GetConfigOrDefaultArrayMap)
               api_token: api_token1
             - org_name: dummy2
               api_token: api_token2
+            - org_name: dummy3
     )";
     const auto parserStr = std::make_unique<configuration::ConfigurationParser>(strConfig);
-    const auto ret =
+    auto ret =
         parserStr->GetConfigOrDefault<std::vector<std::map<std::string, std::string>>>({}, "agent_array", "api_auth");
     ASSERT_EQ(ret[0].at("org_name"), "dummy1");
     ASSERT_EQ(ret[0].at("api_token"), "api_token1");
     ASSERT_EQ(ret[1].at("org_name"), "dummy2");
     ASSERT_EQ(ret[1].at("api_token"), "api_token2");
+    ASSERT_EQ(ret[2].at("org_name"), "dummy3");
+    ASSERT_EQ(ret[2]["api_token"], "");
 }
 
 TEST(ConfigurationParser, GetConfigOrDefaultMap)
