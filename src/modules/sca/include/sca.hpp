@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SCAPolicy.hpp>
+#include <sca_policy.hpp>
 
 #include <command_entry.hpp>
 #include <config.h>

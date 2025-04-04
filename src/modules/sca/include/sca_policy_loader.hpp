@@ -2,9 +2,9 @@
 
 #include <isca_policy_loader.hpp>
 
-#include <SCAPolicy.hpp>
 #include <configuration_parser.hpp>
 #include <ifilesystem_wrapper.hpp>
+#include <sca_policy.hpp>
 
 #include <filesystem>
 #include <functional>
