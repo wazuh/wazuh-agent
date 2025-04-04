@@ -22,7 +22,7 @@ TEST_F(LinuxInfoHelperTest, timeTick2unixTime)
     const auto startTimeNum {std::stoul(startTimeStr)};
     const auto startTimeUnixFunc {Utils::timeTick2unixTime(startTimeNum)};
 
-    const auto startTimeUnixCmd {std::stoul(Utils::Exec("date -d \"`ps -o lstart -p 1|tail -n 1`\" +%s"))};
+    const auto startTimeUnixCmd {std::stoul(Utils::Exec("LC_ALL=C date -d \"`ps -o lstart -p 1|tail -n 1`\" +%s"))};
 
     EXPECT_FALSE(startTimeUnixFunc != startTimeUnixCmd);
 }
