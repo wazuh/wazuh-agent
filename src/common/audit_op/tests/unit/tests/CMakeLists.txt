@@ -1,4 +1,4 @@
-#include wrappers
+# include wrappers
 include(${SRC_FOLDER}/unit_tests/wrappers/wazuh/shared/shared.cmake)
 
 if(${TARGET} STREQUAL "winagent")
@@ -7,7 +7,10 @@ endif(${TARGET} STREQUAL "winagent")
 
 # Tests list and flags
 list(APPEND shared_tests_names "test_audit_op")
-list(APPEND shared_tests_flags "-Wl,--wrap,audit_send -Wl,--wrap,popen \
+list(
+    APPEND
+    shared_tests_flags
+    "-Wl,--wrap,audit_send -Wl,--wrap,popen \
                                 -Wl,--wrap,select -Wl,--wrap,audit_get_reply -Wl,--wrap,wpopenv -Wl,--wrap,fgets \
                                 -Wl,--wrap,wpclose -Wl,--wrap,audit_open -Wl,--wrap,audit_add_watch_dir \
                                 -Wl,--wrap,audit_update_watch_perms -Wl,--wrap,audit_errno_to_name -Wl,--wrap,wfopen \
@@ -27,28 +30,16 @@ foreach(counter RANGE ${count})
     add_executable(${test_name} ${test_name}.c)
 
     if(${TARGET} STREQUAL "server")
-        target_link_libraries(
-            ${test_name}
-            ${WAZUHLIB}
-            ${WAZUHEXT}
-            ANALYSISD_O
-            ${TEST_DEPS}
-        )
+        target_link_libraries(${test_name} ${WAZUHLIB} ${WAZUHEXT} ANALYSISD_O ${TEST_DEPS})
     else()
-        target_link_libraries(
-            ${test_name}
-            ${TEST_DEPS}
-        )
+        target_link_libraries(${test_name} ${TEST_DEPS})
         if(${TARGET} STREQUAL "winagent")
-          target_link_libraries(${test_name} fimdb)
+            target_link_libraries(${test_name} fimdb)
         endif(${TARGET} STREQUAL "winagent")
     endif()
 
     if(NOT test_flags STREQUAL " ")
-        target_link_libraries(
-            ${test_name}
-            ${test_flags}
-        )
+        target_link_libraries(${test_name} ${test_flags})
     endif()
     add_test(NAME ${test_name} COMMAND ${test_name})
 endforeach()

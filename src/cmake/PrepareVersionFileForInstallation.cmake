@@ -1,15 +1,9 @@
-# This script is used to prepare the version file for installations.
-# It appends the short commit hash to the version file
-# and updates the version in case it was overriden by the user
-# (i.e. with -DVERSION=x.y.z)
+# This script is used to prepare the version file for installations. It appends the short commit hash to the version
+# file and updates the version in case it was overriden by the user (i.e. with -DVERSION=x.y.z)
 
 file(READ "${CMAKE_SOURCE_DIR}/../VERSION.json" VERSION_JSON)
 
-execute_process(
-    COMMAND git rev-parse --short=7 HEAD
-    OUTPUT_VARIABLE GIT_SHORT_COMMIT
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+execute_process(COMMAND git rev-parse --short=7 HEAD OUTPUT_VARIABLE GIT_SHORT_COMMIT OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 string(REGEX REPLACE "^v" "" CLEAN_VERSION "${VERSION}")
 string(REGEX REPLACE "^V" "" CLEAN_VERSION "${CLEAN_VERSION}")

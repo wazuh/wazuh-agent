@@ -124,7 +124,7 @@ wazuh# cd packages/macos
 
 1. Build a package for arm64 architecture using 3 cores to compile and store the package in the `/tmp` folder, showing verbose output of the building procedure:
 ```
-./macos/generate_wazuh_packages.sh -a arm64 -j 3 -r 0 -s /tmp --verbose 
+./macos/generate_wazuh_packages.sh -a arm64 -j 3 -r 0 -s /tmp --verbose
 ```
 
 ## Windows Packages

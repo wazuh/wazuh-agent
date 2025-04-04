@@ -18,20 +18,18 @@ else()
     set(VERIFY_UTILS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/certificate/https_socket_verify_utils_lin.cpp")
 endif()
 
-add_library(HttpClient src/http_client.cpp src/http_request_params.cpp src/http_socket.cpp src/https_socket.cpp ${VERIFY_UTILS_FILE})
+add_library(HttpClient src/http_client.cpp src/http_request_params.cpp src/http_socket.cpp src/https_socket.cpp
+                       ${VERIFY_UTILS_FILE})
 
 if(MSVC)
     target_compile_options(HttpClient PRIVATE /bigobj)
 endif()
 
-target_include_directories(HttpClient
-        PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-        PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/certificate)
+target_include_directories(HttpClient PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/src/certificate)
 
-target_link_libraries(HttpClient PUBLIC Boost::asio PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::beast Boost::system Boost::url Logger)
+target_link_libraries(HttpClient PUBLIC Boost::asio PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::beast Boost::system
+                                                            Boost::url Logger)
 
 if(WIN32)
     target_link_libraries(HttpClient PRIVATE Crypt32)

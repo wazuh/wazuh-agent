@@ -21,60 +21,49 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_package(fmt REQUIRED)
 
 if(WIN32)
-    set(SOURCES
-        src/agent_runner_win.cpp
-        src/windows/windows_api_facade.cpp
-        src/windows/windows_service.cpp
-        src/signal_handler_win.cpp
-        src/instance_handler_win.cpp
-    )
+    set(SOURCES src/agent_runner_win.cpp src/windows/windows_api_facade.cpp src/windows/windows_service.cpp
+                src/signal_handler_win.cpp src/instance_handler_win.cpp)
 elseif(UNIX)
-    set(SOURCES
-        src/agent_runner_unix.cpp
-        src/signal_handler_unix.cpp
-        src/instance_handler_unix.cpp
-    )
+    set(SOURCES src/agent_runner_unix.cpp src/signal_handler_unix.cpp src/instance_handler_unix.cpp)
 endif()
 
-list(APPEND SOURCES
+list(
+    APPEND
+    SOURCES
     src/agent.cpp
     src/agent_enrollment.cpp
     src/agent_runner.cpp
     src/command_handler_utils.cpp
     src/message_queue_utils.cpp
     src/signal_handler.cpp
-    src/instance_handler.cpp
-)
+    src/instance_handler.cpp)
 
 add_library(Agent ${SOURCES})
-target_include_directories(Agent
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/unix
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/windows)
-target_link_libraries(Agent
-    PUBLIC
-    AgentInfo
-    CentralizedConfiguration
-    CommandHandler
-    Communicator
-    ConfigurationParser
-    HttpClient
-    MultiTypeQueue
-    ModuleManager
-    TaskManager
-    RestartHandler
-    sysinfo
-    PRIVATE
-    Boost::asio
-    Boost::system
-    Boost::program_options
-    nlohmann_json::nlohmann_json
-    fmt::fmt
-    FilesystemWrapper
-    Logger
-    Config
-)
+target_include_directories(
+    Agent PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/src/unix
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/windows)
+target_link_libraries(
+    Agent
+    PUBLIC AgentInfo
+           CentralizedConfiguration
+           CommandHandler
+           Communicator
+           ConfigurationParser
+           HttpClient
+           MultiTypeQueue
+           ModuleManager
+           TaskManager
+           RestartHandler
+           sysinfo
+    PRIVATE Boost::asio
+            Boost::system
+            Boost::program_options
+            nlohmann_json::nlohmann_json
+            fmt::fmt
+            FilesystemWrapper
+            Logger
+            Config)
 
 include(../cmake/ConfigureTarget.cmake)
 configure_target(Agent)

@@ -7,9 +7,7 @@ set_common_settings()
 
 find_package(spdlog REQUIRED)
 
-set(LIBRARIES
-    spdlog::spdlog
-)
+set(LIBRARIES spdlog::spdlog)
 
 if(UNIX AND NOT APPLE)
     find_package(PkgConfig REQUIRED)

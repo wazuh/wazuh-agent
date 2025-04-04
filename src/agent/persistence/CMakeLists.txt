@@ -13,7 +13,8 @@ add_library(Persistence src/persistence_factory.cpp src/sqlite_manager.cpp)
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(Persistence)
 
-target_include_directories(Persistence PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(Persistence PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(Persistence PRIVATE SQLiteCpp fmt::fmt Logger)
 
 if(BUILD_TESTS)

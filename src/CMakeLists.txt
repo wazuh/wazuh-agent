@@ -7,10 +7,7 @@ else()
     message(STATUS "VCPKG is not installed or VCPKG_ROOT is not set. Fetching vcpkg...")
 
     include(FetchContent)
-    FetchContent_Declare(vcpkg
-        GIT_REPOSITORY https://github.com/microsoft/vcpkg/
-        GIT_TAG 2024.09.30
-    )
+    FetchContent_Declare(vcpkg GIT_REPOSITORY https://github.com/microsoft/vcpkg/ GIT_TAG 2024.09.30)
 
     FetchContent_MakeAvailable(vcpkg)
 
@@ -76,10 +73,8 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 endif()
 
 # Replace propper config in the generic placement
-add_custom_command(OUTPUT ${OUTPUT_CONFIG}
-    COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_CONFIG} ${OUTPUT_CONFIG}
-    DEPENDS ${SOURCE_CONFIG}
-    COMMENT "Creating ${OUTPUT_CONFIG} from ${SOURCE_CONFIG}")
+add_custom_command(OUTPUT ${OUTPUT_CONFIG} COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_CONFIG} ${OUTPUT_CONFIG}
+                   DEPENDS ${SOURCE_CONFIG} COMMENT "Creating ${OUTPUT_CONFIG} from ${SOURCE_CONFIG}")
 
 add_custom_target(generate_config ALL DEPENDS ${OUTPUT_CONFIG})
 
@@ -91,18 +86,17 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     install(CODE "file(MAKE_DIRECTORY \"${CONFIG_INSTALL_DIR}\")")
     install(FILES ${OUTPUT_CONFIG} DESTINATION ${CONFIG_INSTALL_DIR})
     install(FILES "${CMAKE_BINARY_DIR}/VERSION.json" DESTINATION ${PARENT_DIR})
-    install(TARGETS wazuh-agent
-            DESTINATION ${BIN_INSTALL_DIR})
+    install(TARGETS wazuh-agent DESTINATION ${BIN_INSTALL_DIR})
 
     message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 
-    add_custom_target(generate_service_file ALL
-        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/configureServiceFile.cmake
-        DEPENDS ${CMAKE_BINARY_DIR}/configureServiceFile.cmake
-    )
+    add_custom_target(
+        generate_service_file ALL COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/configureServiceFile.cmake
+        DEPENDS ${CMAKE_BINARY_DIR}/configureServiceFile.cmake)
 
     get_filename_component(SERVICE_FILENAME "${SERVICE_FILE}" NAME)
-    configure_file(${CMAKE_SOURCE_DIR}/cmake/configureServiceFile.cmake.in ${CMAKE_BINARY_DIR}/configureServiceFile.cmake @ONLY)
+    configure_file(${CMAKE_SOURCE_DIR}/cmake/configureServiceFile.cmake.in
+                   ${CMAKE_BINARY_DIR}/configureServiceFile.cmake @ONLY)
     install(SCRIPT ${CMAKE_BINARY_DIR}/configureServiceFile.cmake)
     install(FILES "${CMAKE_BINARY_DIR}/${SERVICE_FILENAME}" DESTINATION "${SERVICE_INSTALL_DIR}")
 

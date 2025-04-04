@@ -1,13 +1,14 @@
 # Copyright (C) 2015, Wazuh Inc.
 #
-# This program is free software; you can redistribute it
-# and/or modify it under the terms of the GNU General Public
-# License (version 2) as published by the FSF - Free Software
-# Foundation.
+# This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software Foundation.
 
 # Tests list and flags
 list(APPEND tests_names "test_wm_azure")
-list(APPEND tests_flags "-Wl,--wrap=time,--wrap=w_time_delay,--wrap=w_sleep_until,--wrap=_mwarn,--wrap=_minfo,--wrap=_merror \
+list(
+    APPEND
+    tests_flags
+    "-Wl,--wrap=time,--wrap=w_time_delay,--wrap=w_sleep_until,--wrap=_mwarn,--wrap=_minfo,--wrap=_merror \
                          -Wl,--wrap=_mtwarn,--wrap=_mtinfo,--wrap=_mterror,--wrap=wm_exec,--wrap=StartMQ,--wrap=FOREVER,--wrap=SendMSG \
                          -Wl,--wrap=atexit")
 list(APPEND use_shared_libs 1)
@@ -21,21 +22,11 @@ list(REMOVE_ITEM azure ../../../wazuh_modules/main.o)
 
 add_library(AZURE_O STATIC ${azure})
 
-set_source_files_properties(
-  ${azure}
-  PROPERTIES
-  EXTERNAL_OBJECT true
-  GENERATED true
-  )
+set_source_files_properties(${azure} PROPERTIES EXTERNAL_OBJECT true GENERATED true)
 
-set_target_properties(
-  AZURE_O
-  PROPERTIES
-  LINKER_LANGUAGE C
-  )
+set_target_properties(AZURE_O PROPERTIES LINKER_LANGUAGE C)
 
 target_link_libraries(AZURE_O ${WAZUHLIB} ${WAZUHEXT} -lpthread)
-
 
 # Compiling tests
 list(LENGTH tests_names count)
@@ -46,9 +37,9 @@ foreach(counter RANGE ${count})
     list(GET use_shared_libs ${counter} use_libs)
 
     if(use_libs EQUAL "1")
-      add_executable(${test_name} ${test_name}.c ${shared_libs})
-    else ()
-      add_executable(${test_name} ${test_name}.c)
+        add_executable(${test_name} ${test_name}.c ${shared_libs})
+    else()
+        add_executable(${test_name} ${test_name}.c)
     endif()
 
     target_link_libraries(
@@ -59,13 +50,9 @@ foreach(counter RANGE ${count})
         -lcmocka
         -ldl
         -fprofile-arcs
-        -ftest-coverage
-    )
+        -ftest-coverage)
     if(NOT test_flags STREQUAL " ")
-        target_link_libraries(
-            ${test_name}
-            ${test_flags}
-        )
+        target_link_libraries(${test_name} ${test_flags})
     endif()
     add_test(${test_name} ${test_name})
 endforeach()

@@ -1,16 +1,17 @@
 # Copyright (C) 2015, Wazuh Inc.
 #
-# This program is free software; you can redistribute it
-# and/or modify it under the terms of the GNU General Public
-# License (version 2) as published by the FSF - Free Software
-# Foundation.
+# This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software Foundation.
 
-#include wrappers
+# include wrappers
 include(${SRC_FOLDER}/unit_tests/wrappers/wazuh/shared/shared.cmake)
 
 # Tests list and flags
 list(APPEND tests_names "test_wm_office365")
-list(APPEND tests_flags "-Wl,--wrap,access -Wl,--wrap,wurl_http_request \
+list(
+    APPEND
+    tests_flags
+    "-Wl,--wrap,access -Wl,--wrap,wurl_http_request \
                         -Wl,--wrap,wurl_free_response -Wl,--wrap,wm_sendmsg -Wl,--wrap,strftime -Wl,--wrap,gmtime_r \
                         -Wl,--wrap,wm_state_io -Wl,--wrap,time -Wl,--wrap,StartMQ -Wl,--wrap,wfopen \
                         -Wl,--wrap=syscom_dispatch -Wl,--wrap=Start_win32_Syscheck \ -Wl,--wrap=is_fim_shutdown \
@@ -31,18 +32,9 @@ list(REMOVE_ITEM office365 ../../../wazuh_modules/main.o)
 
 add_library(OFFICE365_O STATIC ${office365})
 
-set_source_files_properties(
-  ${office365}
-  PROPERTIES
-  EXTERNAL_OBJECT true
-  GENERATED true
-  )
+set_source_files_properties(${office365} PROPERTIES EXTERNAL_OBJECT true GENERATED true)
 
-set_target_properties(
-  OFFICE365_O
-  PROPERTIES
-  LINKER_LANGUAGE C
-  )
+set_target_properties(OFFICE365_O PROPERTIES LINKER_LANGUAGE C)
 
 target_link_libraries(OFFICE365_O ${WAZUHLIB} ${WAZUHEXT} -lpthread)
 
@@ -59,9 +51,9 @@ foreach(counter RANGE ${count})
     list(GET use_shared_libs ${counter} use_libs)
 
     if(use_libs EQUAL "1")
-      add_executable(${test_name} ${test_name}.c ${shared_libs})
-    else ()
-      add_executable(${test_name} ${test_name}.c)
+        add_executable(${test_name} ${test_name}.c ${shared_libs})
+    else()
+        add_executable(${test_name} ${test_name}.c)
     endif()
 
     if(${TARGET} STREQUAL "server")
@@ -73,23 +65,16 @@ foreach(counter RANGE ${count})
             -lcmocka
             -ldl
             -fprofile-arcs
-            -ftest-coverage
-        )
+            -ftest-coverage)
     else()
-        target_link_libraries(
-            ${test_name}
-            ${TEST_DEPS}
-        )
+        target_link_libraries(${test_name} ${TEST_DEPS})
         if(${TARGET} STREQUAL "winagent")
-          target_link_libraries(${test_name} fimdb)
+            target_link_libraries(${test_name} fimdb)
         endif(${TARGET} STREQUAL "winagent")
     endif()
 
     if(NOT test_flags STREQUAL " ")
-        target_link_libraries(
-            ${test_name}
-            ${test_flags}
-        )
+        target_link_libraries(${test_name} ${test_flags})
     endif()
     add_test(NAME ${test_name} COMMAND ${test_name})
 endforeach()

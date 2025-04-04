@@ -11,36 +11,24 @@ find_package(unofficial-sqlite3 CONFIG REQUIRED)
 
 add_definitions(-DPROMISE_TYPE=PromiseType::NORMAL)
 
-file(GLOB DBSYNC_SRC
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/sqlite/*.cpp")
+file(GLOB DBSYNC_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/sqlite/*.cpp")
 
-add_library(dbsync STATIC
-    ${DBSYNC_SRC})
+add_library(dbsync STATIC ${DBSYNC_SRC})
 
-target_include_directories(dbsync
-    PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/
-    ${CMAKE_CURRENT_SOURCE_DIR}/../
-    PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/
-)
+target_include_directories(dbsync PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/ ${CMAKE_CURRENT_SOURCE_DIR}/../
+                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/)
 
-target_link_libraries(dbsync
-    PUBLIC
-    deleter_helper
-    map_wrapper
-    pipeline_helper
-    sqlite_wrapper
-    string_helper
-    thread_dispatcher
-    nlohmann_json::nlohmann_json
-    cjson
-    PRIVATE
-    pal
-    unofficial::sqlite3::sqlite3
-    Logger
-)
+target_link_libraries(
+    dbsync
+    PUBLIC deleter_helper
+           map_wrapper
+           pipeline_helper
+           sqlite_wrapper
+           string_helper
+           thread_dispatcher
+           nlohmann_json::nlohmann_json
+           cjson
+    PRIVATE pal unofficial::sqlite3::sqlite3 Logger)
 
 add_subdirectory(example)
 add_subdirectory(testtool)

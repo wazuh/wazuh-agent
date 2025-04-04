@@ -1,13 +1,14 @@
 # Copyright (C) 2015, Wazuh Inc.
 #
-# This program is free software; you can redistribute it
-# and/or modify it under the terms of the GNU General Public
-# License (version 2) as published by the FSF - Free Software
-# Foundation.
+# This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software Foundation.
 
 # Tests list and flags
 list(APPEND tests_names "test_wm_osquery_already_running")
-list(APPEND tests_flags "-Wl,--wrap,access -Wl,--wrap,wurl_http_request \
+list(
+    APPEND
+    tests_flags
+    "-Wl,--wrap,access -Wl,--wrap,wurl_http_request \
                          -Wl,--wrap,wurl_free_response -Wl,--wrap,wm_sendmsg -Wl,--wrap,strftime \
                          -Wl,--wrap,wm_state_io -Wl,--wrap,time -Wl,--wrap,StartMQ \
                          -Wl,--wrap=syscom_dispatch -Wl,--wrap=Start_win32_Syscheck \ -Wl,--wrap=is_fim_shutdown \
@@ -23,21 +24,11 @@ list(REMOVE_ITEM osquery ../../../wazuh_modules/main.o)
 
 add_library(OSQUERY_O STATIC ${osquery})
 
-set_source_files_properties(
-  ${osquery}
-  PROPERTIES
-  EXTERNAL_OBJECT true
-  GENERATED true
-  )
+set_source_files_properties(${osquery} PROPERTIES EXTERNAL_OBJECT true GENERATED true)
 
-set_target_properties(
-  OSQUERY_O
-  PROPERTIES
-  LINKER_LANGUAGE C
-  )
+set_target_properties(OSQUERY_O PROPERTIES LINKER_LANGUAGE C)
 
 target_link_libraries(OSQUERY_O ${WAZUHLIB} ${WAZUHEXT} -lpthread)
-
 
 # Compiling tests
 list(LENGTH tests_names count)
@@ -48,9 +39,9 @@ foreach(counter RANGE ${count})
     list(GET use_shared_libs ${counter} use_libs)
 
     if(use_libs EQUAL "1")
-      add_executable(${test_name} ${test_name}.c ${shared_libs})
-    else ()
-      add_executable(${test_name} ${test_name}.c)
+        add_executable(${test_name} ${test_name}.c ${shared_libs})
+    else()
+        add_executable(${test_name} ${test_name}.c)
     endif()
 
     if(${TARGET} STREQUAL "server")
@@ -62,20 +53,13 @@ foreach(counter RANGE ${count})
             -lcmocka
             -ldl
             -fprofile-arcs
-            -ftest-coverage
-        )
+            -ftest-coverage)
     else()
-        target_link_libraries(
-            ${test_name}
-            ${TEST_DEPS}
-        )
+        target_link_libraries(${test_name} ${TEST_DEPS})
     endif()
 
     if(NOT test_flags STREQUAL " ")
-        target_link_libraries(
-            ${test_name}
-            ${test_flags}
-        )
+        target_link_libraries(${test_name} ${test_flags})
     endif()
     add_test(NAME ${test_name} COMMAND ${test_name})
 endforeach()

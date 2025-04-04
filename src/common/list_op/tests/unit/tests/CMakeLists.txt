@@ -1,4 +1,4 @@
-#include wrappers
+# include wrappers
 include(${SRC_FOLDER}/unit_tests/wrappers/wazuh/shared/shared.cmake)
 
 if(${TARGET} STREQUAL "winagent")
@@ -7,15 +7,16 @@ endif(${TARGET} STREQUAL "winagent")
 
 # Tests list and flags
 list(APPEND shared_tests_names "test_list_op")
-set(LIST_OP_BASE_FLAGS "-Wl,--wrap,pthread_mutex_unlock -Wl,--wrap,pthread_mutex_lock \
+set(LIST_OP_BASE_FLAGS
+    "-Wl,--wrap,pthread_mutex_unlock -Wl,--wrap,pthread_mutex_lock \
                         -Wl,--wrap,pthread_rwlock_rdlock -Wl,--wrap,pthread_rwlock_unlock \
                         -Wl,--wrap,pthread_rwlock_wrlock ${DEBUG_OP_WRAPPERS}")
 if(${TARGET} STREQUAL "winagent")
-list(APPEND shared_tests_flags "${LIST_OP_BASE_FLAGS} -Wl,--wrap,syscom_dispatch -Wl,--wrap,Start_win32_Syscheck \
+    list(APPEND shared_tests_flags "${LIST_OP_BASE_FLAGS} -Wl,--wrap,syscom_dispatch -Wl,--wrap,Start_win32_Syscheck \
                                 -Wl,--wrap=is_fim_shutdown -Wl,--wrap=_imp__dbsync_initialize \
                                 -Wl,--wrap=_imp__rsync_initialize -Wl,--wrap=fim_db_teardown")
 else()
-list(APPEND shared_tests_flags "${LIST_OP_BASE_FLAGS}")
+    list(APPEND shared_tests_flags "${LIST_OP_BASE_FLAGS}")
 endif()
 
 # Compiling tests
@@ -28,28 +29,16 @@ foreach(counter RANGE ${count})
     add_executable(${test_name} ${test_name}.c)
 
     if(${TARGET} STREQUAL "server")
-        target_link_libraries(
-            ${test_name}
-            ${WAZUHLIB}
-            ${WAZUHEXT}
-            ANALYSISD_O
-            ${TEST_DEPS}
-        )
+        target_link_libraries(${test_name} ${WAZUHLIB} ${WAZUHEXT} ANALYSISD_O ${TEST_DEPS})
     else()
-        target_link_libraries(
-            ${test_name}
-            ${TEST_DEPS}
-        )
+        target_link_libraries(${test_name} ${TEST_DEPS})
         if(${TARGET} STREQUAL "winagent")
-          target_link_libraries(${test_name} fimdb)
+            target_link_libraries(${test_name} fimdb)
         endif(${TARGET} STREQUAL "winagent")
     endif()
 
     if(NOT test_flags STREQUAL " ")
-        target_link_libraries(
-            ${test_name}
-            ${test_flags}
-        )
+        target_link_libraries(${test_name} ${test_flags})
     endif()
     add_test(NAME ${test_name} COMMAND ${test_name})
 endforeach()

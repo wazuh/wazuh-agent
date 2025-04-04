@@ -64,8 +64,7 @@ function(set_common_settings)
                 add_link_options(--coverage)
             endif()
 
-            # We found that gcc gcov doesn't report coverage on
-            # coroutines, so we use llvm-cov if available
+            # We found that gcc gcov doesn't report coverage on coroutines, so we use llvm-cov if available
             find_program(LLVM_COV_EXECUTABLE NAMES llvm-cov)
 
             if(LLVM_COV_EXECUTABLE)
@@ -74,12 +73,13 @@ function(set_common_settings)
                 set(GCOV_EXECUTABLE "gcov")
             endif()
 
-            add_custom_target(coverage
+            add_custom_target(
+                coverage
                 COMMAND ${CMAKE_MAKE_PROGRAM} test
-                COMMAND gcovr --gcov-executable "${GCOV_EXECUTABLE}" -v -r .. -e '.*main\.cpp' -e '.*vcpkg.*' -e '.*mock_.*' -e '.*_test.*' --html --html-details -o coverage.html
+                COMMAND gcovr --gcov-executable "${GCOV_EXECUTABLE}" -v -r .. -e '.*main\.cpp' -e '.*vcpkg.*' -e
+                        '.*mock_.*' -e '.*_test.*' --html --html-details -o coverage.html
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                COMMENT "Generating code coverage report"
-            )
+                COMMENT "Generating code coverage report")
         endif()
     endif()
 

@@ -9,11 +9,6 @@ add_library(Config INTERFACE)
 
 include(../../cmake/config.cmake)
 
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/include/config.h"
-)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/config.h.in" "${CMAKE_CURRENT_BINARY_DIR}/include/config.h")
 
-target_include_directories(Config INTERFACE
-    "${CMAKE_CURRENT_BINARY_DIR}/include"
-)
+target_include_directories(Config INTERFACE "${CMAKE_CURRENT_BINARY_DIR}/include")

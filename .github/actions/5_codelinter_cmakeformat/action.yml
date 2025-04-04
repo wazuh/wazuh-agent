@@ -1,0 +1,67 @@
+name: "CMake Format Check"
+description: "Validates CMake files formatting using cmake-format"
+
+inputs:
+  path:
+    required: true
+    description: "Path to validate"
+    default: src/
+  id:
+    required: true
+    description: "Module identifier, used to name the artifact"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install dependencies
+      shell: bash
+      run: |
+        python3 -m pip install --upgrade pip
+        pip install cmakelang==0.6.13
+
+    - name: Check CMake Formatting
+      shell: bash
+      run: |
+
+        # Print cmake-format version used.
+        echo "cmake-format version: $(cmake-format --version)"
+
+        # Ensure the .cmake-format config file exists in the repository root
+        CONFIG_FILE="${{ github.workspace }}/.cmake-format"
+        if [ ! -f "$CONFIG_FILE" ]; then
+          echo "Configuration file (.cmake-format) not found in repository root"
+          exit 1
+        fi
+
+        # Find all CMake files in the specified path
+        cmake_files=$(find "${{ inputs.path }}" -type f \( -name 'CMakeLists.txt' -o -name '*.cmake' \) | tr '\n' ' ')
+
+        # If no files found, exit successfully
+        if [[ -z "$cmake_files" ]]; then
+          echo "No CMake files found in path: ${{ inputs.path }}"
+          exit 0
+        fi
+
+        # Perform dry-run check using the config file
+        ERROR_FILE="${{ github.workspace }}/cmake_format_errors.txt"
+        cmake-format --config-file "$CONFIG_FILE" --check $cmake_files 2>&1 | tee "$ERROR_FILE"
+
+        # Check if there are errors
+        if [ -s "$ERROR_FILE" ]; then
+          echo "---------------------------------"
+          echo "FAILED: CMake-format check failed"
+          echo "---------------------------------"
+          exit 1
+        else
+          echo "---------------------------------"
+          echo "PASSED: CMake-format check passed"
+          echo "---------------------------------"
+        fi
+
+    - name: Upload CMake Format Errors
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: CMake Format Errors - ${{ inputs.id }}
+        path: ${{ github.workspace }}/cmake_format_errors.txt
+        retention-days: 1
