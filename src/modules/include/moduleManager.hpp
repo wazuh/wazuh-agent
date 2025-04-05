@@ -62,6 +62,11 @@ public:
         m_modules[moduleName] = wrapper;
     }
 
+    /// @brief Reloads a module by name
+    ///
+    /// @param[in] name Name of the module
+    void ReloadModule(const std::string& name);
+
     /// @brief Adds all modules to the manager
     void AddModules();
 
