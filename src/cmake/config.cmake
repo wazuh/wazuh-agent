@@ -80,3 +80,9 @@ set(QUEUE_STATUS_REFRESH_TIMER 100 CACHE STRING "Default Agent's queue refresh t
 set(QUEUE_DEFAULT_SIZE "\"10000B\"" CACHE STRING "Default Agent's queue size (10000)")
 
 set(DEFAULT_COMMANDS_REQUEST_TIMEOUT "\"11m\"" CACHE STRING "Default Agent's command request timeout (11m)")
+
+set(DEFAULT_SCA_ENABLED true CACHE BOOL "Default SCA enabled")
+
+set(DEFAULT_SCA_INTERVAL "\"1h\"" CACHE STRING "Default SCA interval (1h)")
+
+set(DEFAULT_SCA_SCAN_ON_START true CACHE BOOL "Default SCA scan on start")

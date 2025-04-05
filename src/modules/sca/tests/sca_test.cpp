@@ -5,20 +5,10 @@
 #include <configuration_parser.hpp>
 #include <dbsync.hpp>
 
+#include "mocks/mockdbsync.hpp"
+
 #include <memory>
 #include <string>
-
-std::string MockDBSyncDbFilePath;
-
-class MockDBSync
-{
-public:
-    explicit MockDBSync(
-        const HostType, const DbEngineType, const std::string& dbFilePath, const std::string&, const DbManagement)
-    {
-        MockDBSyncDbFilePath = dbFilePath;
-    }
-};
 
 class ScaTest : public ::testing::Test
 {
@@ -38,7 +28,7 @@ protected:
     }
 
     std::shared_ptr<configuration::ConfigurationParser> m_configurationParser = nullptr;
-    SecurityConfigurationAssessment<MockDBSync>* m_sca;
+    SecurityConfigurationAssessment<MockDBSync>* m_sca = nullptr;
 };
 
 TEST_F(ScaTest, ConstructorSetsDbFilePath)
@@ -50,21 +40,22 @@ TEST_F(ScaTest, ConstructorSetsDbFilePath)
 
 TEST_F(ScaTest, SetPushMessageFunctionStoresCallback)
 {
+    constexpr int expectedReturnValue = 123;
     bool called = false;
 
-    auto lambda = [&called](Message) -> int
+    auto lambda = [&](Message) -> int // NOLINT(performance-unnecessary-value-param)
     {
         called = true;
-        return 123;
+        return expectedReturnValue;
     };
 
     m_sca->SetPushMessageFunction(lambda);
 
-    Message dummyMessage(MessageType::STATELESS, nlohmann::json {}, "dummyModule", "dummyType", "dummyMetaData");
+    const Message dummyMessage(MessageType::STATELESS, nlohmann::json {}, "dummyModule", "dummyType", "dummyMetaData");
     const int result = lambda(dummyMessage);
 
     EXPECT_TRUE(called);
-    EXPECT_EQ(result, 123);
+    EXPECT_EQ(result, expectedReturnValue);
 }
 
 TEST_F(ScaTest, NameReturnsCorrectValue)

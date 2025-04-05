@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SCAPolicy.hpp>
+#include <sca_policy.hpp>
 
 #include <command_entry.hpp>
 #include <config.h>
@@ -9,6 +9,7 @@
 #include <filesystem_wrapper.hpp>
 #include <message.hpp>
 #include <moduleWrapper.hpp>
+#include <sca_policy_loader.hpp>
 
 #include <nlohmann/json.hpp>
 
@@ -27,9 +28,9 @@ public:
     /// @return SCA instance
     static SecurityConfigurationAssessment&
     Instance(std::shared_ptr<configuration::ConfigurationParser> configurationParser = nullptr,
-             std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
+             std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
     {
-        static SecurityConfigurationAssessment instance(configurationParser, std::move(fileSystemWrapper));
+        static SecurityConfigurationAssessment instance(configurationParser, fileSystemWrapper);
         return instance;
     }
 
@@ -44,14 +45,23 @@ public:
 
     /// @brief Setup the SCA module
     /// @param configurationParser Configuration parser for setting up the module
-    void Setup([[maybe_unused]] std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
+    void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
     {
-        // Read configuration
-        // m_policiesFolder = configurationParser->GetConfigOrDefault(
-        //     config::DEFAULT_SCA_POLICIES_PATH, "sca", "policies_path");
+        m_dbFilePath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
+                       SCA_DB_DISK_NAME;
+        m_enabled = configurationParser->GetConfigOrDefault(config::sca::DEFAULT_ENABLED, "sca", "enabled");
+        m_scanOnStart =
+            configurationParser->GetConfigOrDefault(config::sca::DEFAULT_SCAN_ON_START, "sca", "scan_on_start");
+        m_scanInterval = configurationParser->GetTimeConfigOrDefault(config::sca::DEFAULT_INTERVAL, "sca", "interval");
 
-        // Load policies
-        // AddPoliciesFromPath(m_policiesFolder);
+        m_policies = [this, &configurationParser]()
+        {
+            SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser);
+            return policyLoader.GetPolicies();
+        }();
+
+        m_dBSync = std::make_unique<DBSyncType>(
+            HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, GetCreateStatement(), DbManagement::PERSISTENT);
     }
 
     /// @brief Stop the SCA module
@@ -91,17 +101,11 @@ private:
     /// @param configurationParser Configuration parser for setting up the module
     /// @param fileSystemWrapper File system wrapper for file operations
     SecurityConfigurationAssessment(std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
-                                    std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
+                                    std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
         : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
-                                                : std::make_unique<file_system::FileSystemWrapper>())
+                                                : std::make_shared<file_system::FileSystemWrapper>())
     {
-        m_dbFilePath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
-                       SCA_DB_DISK_NAME;
-
-        LogError("DB file path: {}", m_dbFilePath);
-
-        m_dBSync = std::make_unique<DBSyncType>(
-            HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, GetCreateStatement(), DbManagement::PERSISTENT);
+        Setup(configurationParser);
     }
 
     /// @brief Destructor
@@ -112,32 +116,6 @@ private:
 
     /// @brief Deleted copy assignment operator
     SecurityConfigurationAssessment& operator=(const SecurityConfigurationAssessment&) = delete;
-
-    /// @brief Add policies from policies path
-    /// @param policiesPath Path to the policies
-    void AddPoliciesFromPath(const std::filesystem::path& policiesPath)
-    {
-        if (!m_fileSystemWrapper->exists(policiesPath) || !m_fileSystemWrapper->is_directory(policiesPath))
-        {
-            return;
-        }
-
-        for (const auto& policyFile : m_fileSystemWrapper->list_directory(policiesPath))
-        {
-            if (!std::filesystem::is_regular_file(policyFile))
-            {
-                continue;
-            }
-
-            if (policyFile.extension() == ".yml" || policyFile.extension() == ".yaml")
-            {
-                // TODO: Load and parse the YAML file
-                // SCAPolicy policy;
-                // m_policies.push_back(std::move(policy));
-                // enqueue policy as a task
-            }
-        }
-    }
 
     /// @brief Get the create statement for the database
     std::string GetCreateStatement() const
@@ -152,6 +130,9 @@ private:
     std::unique_ptr<DBSyncType> m_dBSync;
     std::string m_dbFilePath;
     std::function<int(Message)> m_pushMessage;
+    std::shared_ptr<IFileSystemWrapper> m_fileSystemWrapper;
+    bool m_enabled;
+    bool m_scanOnStart;
+    std::time_t m_scanInterval;
     std::vector<SCAPolicy> m_policies;
-    std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper;
 };
