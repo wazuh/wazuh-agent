@@ -1,6 +1,7 @@
 #pragma once
 
 #include <command_entry.hpp>
+#include <imoduleManager.hpp>
 #include <message.hpp>
 #include <moduleWrapper.hpp>
 #include <task_manager.hpp>
@@ -11,7 +12,7 @@
 #include <string>
 #include <thread>
 
-class ModuleManager
+class ModuleManager : public IModuleManager
 {
 public:
     /// @brief Constructor for ModuleManager
@@ -62,30 +63,20 @@ public:
         m_modules[moduleName] = wrapper;
     }
 
-    /// @brief Adds all modules to the manager
-    void AddModules();
+    /// @copydoc IModuleManager::AddModules
+    void AddModules() override;
 
-    /// @brief Get a module by name
-    ///
-    /// @param[in] name Name of the module
-    /// @return Pointer to the module
-    std::shared_ptr<ModuleWrapper> GetModule(const std::string& name);
+    /// @copydoc IModuleManager::GetModule
+    std::shared_ptr<ModuleWrapper> GetModule(const std::string& name) override;
 
-    /// @brief Start the modules
-    ///
-    /// This function begins the procedure to start the modules and blocks until the Start function
-    /// for each module has been called. However, it does not guarantee that the modules are fully
-    /// operational upon return; they may still be in the process of initializing.
-    ///
-    /// @note Call this function before interacting with the modules to ensure the startup process is initiated.
-    /// @warning Ensure the modules have fully started before performing any operations that depend on them.
-    void Start();
+    /// @copydoc IModuleManager::Start
+    void Start() override;
 
-    /// @brief Setup the modules
-    void Setup();
+    /// @copydoc IModuleManager::Setup
+    void Setup() override;
 
-    /// @brief Stop the modules
-    void Stop();
+    /// @copydoc IModuleManager::Stop
+    void Stop() override;
 
 private:
     /// @brief The task manager

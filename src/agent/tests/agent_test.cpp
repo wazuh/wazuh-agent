@@ -8,6 +8,7 @@
 #include <mock_agent_info.hpp>
 #include <mock_command_handler.hpp>
 #include <mock_http_client.hpp>
+#include <mock_module_manager.hpp>
 #include <mock_multitype_queue.hpp>
 
 class MockSignalHandler : public ISignalHandler
@@ -63,10 +64,15 @@ TEST_F(AgentTests, AgentStopsWhenSignalReceived)
     auto mockAgentInfo = std::make_unique<MockAgentInfo>();
     MockAgentInfo* mockAgentInfoPtr = mockAgentInfo.get();
 
+    auto mockModuleManager = std::make_unique<MockModuleManager>();
+    MockModuleManager* mockModuleManagerPtr = mockModuleManager.get();
+    EXPECT_CALL(*mockModuleManagerPtr, Start()).Times(1);
+    EXPECT_CALL(*mockModuleManagerPtr, Stop()).Times(1);
+
     auto WaitForSignalCalled = false;
 
     const std::vector<std::string> mockGroups = {"group1", "group2"};
-    EXPECT_CALL(*mockAgentInfoPtr, GetUUID()).Times(3).WillRepeatedly(testing::Return("mock_uuid"));
+    EXPECT_CALL(*mockAgentInfoPtr, GetUUID()).Times(2).WillRepeatedly(testing::Return("mock_uuid"));
     EXPECT_CALL(*mockAgentInfoPtr, GetKey()).Times(2).WillRepeatedly(testing::Return("mock_key"));
     EXPECT_CALL(*mockAgentInfoPtr, GetName()).WillOnce(testing::Return("mock_name"));
     EXPECT_CALL(*mockAgentInfoPtr, GetGroups()).WillOnce(testing::Return(mockGroups));
@@ -91,6 +97,7 @@ TEST_F(AgentTests, AgentStopsWhenSignalReceived)
                 std::move(mockHttpClient),
                 std::move(mockAgentInfo),
                 std::move(mockCommandHandler),
+                std::move(mockModuleManager),
                 std::move(mockMultiTypeQueue));
 
     EXPECT_NO_THROW(agent.Run());
