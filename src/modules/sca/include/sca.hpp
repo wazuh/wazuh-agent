@@ -56,7 +56,7 @@ public:
 
         m_policies = [this, &configurationParser]()
         {
-            SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser);
+            SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser, m_pushMessage);
             return policyLoader.GetPolicies();
         }();
 
