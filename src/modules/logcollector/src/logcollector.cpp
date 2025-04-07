@@ -126,7 +126,7 @@ void Logcollector::SetPushMessageFunction(const std::function<int(Message)>& pus
     m_pushMessage = pushMessage;
 }
 
-void Logcollector::SendMessage(const std::string& location, const std::string& log, const std::string& collectorType)
+void Logcollector::PushMessage(const std::string& location, const std::string& log, const std::string& collectorType)
 {
     if (!m_pushMessage)
     {

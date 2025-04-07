@@ -62,7 +62,7 @@ namespace logcollector::winevt
         MOCK_METHOD(void, AddReader, (std::shared_ptr<IReader> reader), (override));
         MOCK_METHOD(void, EnqueueTask, (Awaitable task), (override));
         MOCK_METHOD(void,
-                    SendMessage,
+                    PushMessage,
                     (const std::string& channel, const std::string& message, const std::string& collectorType),
                     (override));
 

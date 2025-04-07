@@ -39,7 +39,7 @@ TEST_F(InventoryTest, SendUpdateEvent_Stateful)
         "data": {"key": "value"}
     })";
 
-    inventory.SendDeltaEvent(inputData);
+    inventory.PushMessage(inputData);
 }
 
 TEST_F(InventoryTest, SendDeleteEvent_Stateful)
@@ -69,7 +69,7 @@ TEST_F(InventoryTest, SendDeleteEvent_Stateful)
         "data": {"key": "value"}
     })";
 
-    inventory.SendDeltaEvent(inputData);
+    inventory.PushMessage(inputData);
 }
 
 TEST_F(InventoryTest, SendUpdateEvent_WithStateless)
@@ -106,7 +106,7 @@ TEST_F(InventoryTest, SendUpdateEvent_WithStateless)
         "stateless": {"alert": "high"}
     })";
 
-    inventory.SendDeltaEvent(inputData);
+    inventory.PushMessage(inputData);
 }
 
 TEST_F(InventoryTest, PushMessageFails_LogsWarning)
@@ -125,7 +125,7 @@ TEST_F(InventoryTest, PushMessageFails_LogsWarning)
         "data": {"key": "value"}
     })";
 
-    inventory.SendDeltaEvent(inputData);
+    inventory.PushMessage(inputData);
 }
 
 int main(int argc, char** argv)

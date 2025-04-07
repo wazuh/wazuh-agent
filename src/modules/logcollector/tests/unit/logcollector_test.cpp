@@ -53,7 +53,7 @@ TEST(Logcollector, SetupFileReader)
     ASSERT_NE(capturedReader2, nullptr);
 }
 
-TEST(Logcollector, SendMessageFile)
+TEST(Logcollector, PushMessageFile)
 {
     PushMessageMock mock;
     LogcollectorMock logcollector;
@@ -69,7 +69,7 @@ TEST(Logcollector, SendMessageFile)
     const auto LOG = "test log";
     const auto METADATA = R"({"collector":"file","module":"logcollector"})";
 
-    logcollector.SendMessage(LOCATION, LOG, "file");
+    logcollector.PushMessage(LOCATION, LOG, "file");
 
     ASSERT_EQ(capturedMessage.type, MessageType::STATELESS);
     ASSERT_EQ(capturedMessage.data["log"]["file"]["path"], LOCATION);
@@ -78,7 +78,7 @@ TEST(Logcollector, SendMessageFile)
     ASSERT_EQ(capturedMessage.metaData, METADATA);
 }
 
-TEST(Logcollector, SendMessageApp)
+TEST(Logcollector, PushMessageApp)
 {
     PushMessageMock mock;
     LogcollectorMock logcollector;
@@ -94,7 +94,7 @@ TEST(Logcollector, SendMessageApp)
     const auto LOG = "test log";
     const auto METADATA = R"({"collector":"windows-eventlog","module":"logcollector"})";
 
-    logcollector.SendMessage(LOCATION, LOG, "windows-eventlog");
+    logcollector.PushMessage(LOCATION, LOG, "windows-eventlog");
 
     ASSERT_EQ(capturedMessage.type, MessageType::STATELESS);
     ASSERT_EQ(capturedMessage.data["event"]["original"], LOG);

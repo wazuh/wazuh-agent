@@ -50,12 +50,12 @@ namespace logcollector
         /// @param pushMessage Push message function
         void SetPushMessageFunction(const std::function<int(Message)>& pushMessage);
 
-        /// @brief Sends a message to que queue
+        /// @brief Pushes a message to que queue
         /// @param location Location of the message
         /// @param log Message to send
         /// @param collectorType type of logcollector
         /// @pre The message queue must be set with SetMessageQueue
-        virtual void SendMessage(const std::string& location, const std::string& log, const std::string& collectorType);
+        virtual void PushMessage(const std::string& location, const std::string& log, const std::string& collectorType);
 
         /// @brief Enqueues an ASIO task (coroutine)
         /// @param task Task to enqueue

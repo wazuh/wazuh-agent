@@ -24,7 +24,7 @@ void Inventory::Start()
     {
         Inventory::Instance().Init(
             std::make_shared<SysInfo>(),
-            [this](const std::string& diff) { this->SendDeltaEvent(diff); },
+            [this](const std::string& diff) { this->PushMessage(diff); },
             m_dbFilePath,
             m_normConfigPath,
 #if defined(__linux__)
@@ -101,7 +101,7 @@ void Inventory::SetPushMessageFunction(const std::function<int(Message)>& pushMe
     m_pushMessage = pushMessage;
 }
 
-void Inventory::SendDeltaEvent(const std::string& data)
+void Inventory::PushMessage(const std::string& data)
 {
 
     const auto jsonData = nlohmann::json::parse(data);

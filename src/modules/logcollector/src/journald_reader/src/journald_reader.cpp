@@ -73,7 +73,7 @@ namespace logcollector
                             LogDebug("Truncating message of length {}", message.length());
                             message.resize(MAX_LINE_LENGTH);
                         }
-                        m_logcollector.SendMessage(filteredMessage->fieldValue, message, COLLECTOR_TYPE);
+                        m_logcollector.PushMessage(filteredMessage->fieldValue, message, COLLECTOR_TYPE);
                     }
                 }
                 catch (const JournalLogException& e)

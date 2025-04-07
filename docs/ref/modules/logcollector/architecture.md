@@ -13,7 +13,7 @@ classDiagram
         + Stop()
         + ExecuteCommand(CommandResult(string))
         + SetPushMessageFunction(std::function)
-        + SendMessage()
+        + PushMessage()
         + EnqueueTask()
         + AddReader()
         + Wait()
