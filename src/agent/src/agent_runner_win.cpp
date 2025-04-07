@@ -2,6 +2,8 @@
 
 #include <windows_service.hpp>
 
+#include <iostream>
+
 namespace
 {
     /// Command-line options
@@ -44,6 +46,8 @@ std::optional<int> AgentRunner::HandlePlatformSpecificOptions() const
 
 bool SendSignal(const std::string& message)
 {
+    const std::string pipeName = "\\\\.\\pipe\\agent-pipe";
+
     HANDLE hPipe = CreateFile(pipeName.c_str(), // pipe name
                               GENERIC_WRITE,    // write access
                               0,                // no sharing
