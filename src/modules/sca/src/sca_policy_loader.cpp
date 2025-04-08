@@ -7,9 +7,11 @@
 
 SCAPolicyLoader::SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemWrapper,
                                  std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
+                                 std::function<int(Message)> pushMessage,
                                  PolicyLoaderFunc loader)
     : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
                                             : std::make_shared<file_system::FileSystemWrapper>())
+    , m_pushMessage(std::move(pushMessage))
     , m_policyLoader(std::move(loader))
 {
     const auto loadPoliciesPathsFromConfig = [this, configurationParser](const std::string& configKey)
@@ -55,7 +57,7 @@ std::vector<SCAPolicy> SCAPolicyLoader::GetPolicies() const
         {
             try
             {
-                policies.emplace_back(m_policyLoader(path));
+                policies.emplace_back(m_policyLoader(path, m_pushMessage));
                 LogDebug("Loading policy from {}", path.string());
             }
             catch (const std::exception& e)

@@ -6,9 +6,9 @@
 #include <iagent_info.hpp>
 #include <icommand_handler.hpp>
 #include <ihttp_client.hpp>
+#include <imoduleManager.hpp>
 #include <imultitype_queue.hpp>
 #include <isignal_handler.hpp>
-#include <moduleManager.hpp>
 #include <signal_handler.hpp>
 #include <sysInfo.hpp>
 #include <task_manager.hpp>
@@ -31,6 +31,7 @@ public:
     /// @param httpClient Pointer to an IHttpClient implementation
     /// @param agentInfo Pointer to a custom IAgentInfo implementation
     /// @param commandHandler Pointer to a custom ICommandHandler implementation
+    /// @param moduleManager Pointer to a custom IModuleManager implementation
     /// @param messageQueue Pointer to a custom IMultiTypeQueue implementation
     /// @throws std::runtime_error If the Agent is not enrolled
     /// @throws Any exception propagated from dependencies used within the constructor
@@ -40,6 +41,7 @@ public:
           std::unique_ptr<http_client::IHttpClient> httpClient = nullptr,
           std::unique_ptr<IAgentInfo> agentInfo = nullptr,
           std::unique_ptr<command_handler::ICommandHandler> commandHandler = nullptr,
+          std::unique_ptr<IModuleManager> moduleManager = nullptr,
           std::shared_ptr<IMultiTypeQueue> messageQueue = nullptr);
 
     /// @brief Destructor
@@ -78,7 +80,7 @@ private:
     communicator::Communicator m_communicator;
 
     /// @brief Module manager
-    ModuleManager m_moduleManager;
+    std::unique_ptr<IModuleManager> m_moduleManager;
 
     /// @brief Command handler
     std::unique_ptr<command_handler::ICommandHandler> m_commandHandler;

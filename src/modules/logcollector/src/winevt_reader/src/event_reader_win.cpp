@@ -113,7 +113,7 @@ namespace logcollector::winevt
                     LogError("Cannot convert utf16 string: {}", e.what());
                     return;
                 }
-                m_logcollector.SendMessage(m_channel, logString, COLLECTOR_TYPE);
+                m_logcollector.PushMessage(m_channel, logString, COLLECTOR_TYPE);
             }
         }
     }

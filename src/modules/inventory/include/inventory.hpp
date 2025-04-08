@@ -49,7 +49,8 @@ public:
               const std::string& dbPath,
               const std::string& normalizerConfigPath,
               const std::string& normalizerType);
-    virtual void SendDeltaEvent(const std::string& data);
+
+    virtual void PushMessage(const std::string& data);
 
     const std::string& AgentUUID() const
     {

@@ -8,6 +8,7 @@
 #include <http_client.hpp>
 #include <message.hpp>
 #include <message_queue_utils.hpp>
+#include <moduleManager.hpp>
 #include <multitype_queue.hpp>
 #include <restart_handler.hpp>
 
@@ -20,6 +21,7 @@ Agent::Agent(std::unique_ptr<configuration::ConfigurationParser> configurationPa
              std::unique_ptr<http_client::IHttpClient> httpClient,
              std::unique_ptr<IAgentInfo> agentInfo,
              std::unique_ptr<command_handler::ICommandHandler> commandHandler,
+             std::unique_ptr<IModuleManager> moduleManager,
              std::shared_ptr<IMultiTypeQueue> messageQueue)
     : m_signalHandler(std::move(signalHandler))
     , m_configurationParser(std::move(configurationParser))
@@ -35,9 +37,12 @@ Agent::Agent(std::unique_ptr<configuration::ConfigurationParser> configurationPa
                      m_agentInfo->GetUUID(),
                      m_agentInfo->GetKey(),
                      [this]() { return m_agentInfo->GetHeaderInfo(); })
-    , m_moduleManager([this](Message message) -> int { return m_messageQueue->push(std::move(message)); },
-                      m_configurationParser,
-                      m_agentInfo->GetUUID())
+    , m_moduleManager(moduleManager
+                          ? std::move(moduleManager)
+                          : std::make_unique<ModuleManager>([this](Message message) -> int
+                                                            { return m_messageQueue->push(std::move(message)); },
+                                                            m_configurationParser,
+                                                            m_agentInfo->GetUUID()))
     , m_commandHandler(commandHandler ? std::move(commandHandler)
                                       : std::make_unique<command_handler::CommandHandler>(m_configurationParser))
     , m_centralizedConfiguration(
@@ -88,9 +93,9 @@ void Agent::ReloadModules()
         {
             LogInfo("Reloading Modules");
             m_configurationParser->ReloadConfiguration();
-            m_moduleManager.Stop();
-            m_moduleManager.Setup();
-            m_moduleManager.Start();
+            m_moduleManager->Stop();
+            m_moduleManager->Setup();
+            m_moduleManager->Start();
             LogInfo("Modules reloaded");
         }
         catch (const std::exception& e)
@@ -141,8 +146,8 @@ void Agent::Run()
                                   { PopMessagesFromQueue(m_messageQueue, MessageType::STATELESS, messageCount); }),
                               "Stateless");
 
-    m_moduleManager.AddModules();
-    m_moduleManager.Start();
+    m_moduleManager->AddModules();
+    m_moduleManager->Start();
 
     m_taskManager.EnqueueTask(
         m_commandHandler->CommandsProcessingTask(
@@ -165,7 +170,7 @@ void Agent::Run()
                     LogInfo("Restart: Initiating restart");
                     return restart_handler::RestartHandler::RestartAgent();
                 }
-                return DispatchCommand(cmd, m_moduleManager.GetModule(cmd.Module), m_messageQueue);
+                return DispatchCommand(cmd, m_moduleManager->GetModule(cmd.Module), m_messageQueue);
             }),
         "CommandsProcessing");
 
@@ -183,5 +188,5 @@ void Agent::Run()
 
     m_commandHandler->Stop();
     m_communicator.Stop();
-    m_moduleManager.Stop();
+    m_moduleManager->Stop();
 }

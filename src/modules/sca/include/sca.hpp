@@ -56,7 +56,7 @@ public:
 
         m_policies = [this, &configurationParser]()
         {
-            SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser);
+            SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser, m_pushMessage);
             return policyLoader.GetPolicies();
         }();
 
@@ -78,8 +78,15 @@ public:
     Co_CommandExecutionResult ExecuteCommand([[maybe_unused]] const std::string command,
                                              [[maybe_unused]] const nlohmann::json parameters)
     {
-        co_return module_command::CommandExecutionResult {module_command::Status::FAILURE,
-                                                          "SCA command handling not implemented yet"};
+        if (!m_enabled)
+        {
+            LogInfo("SCA module is disabled.");
+            co_return module_command::CommandExecutionResult {module_command::Status::FAILURE, "Module is disabled"};
+        }
+
+        LogInfo("Command: {}", command);
+        co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS,
+                                                          "Command not implemented yet"};
     }
 
     /// @brief Returns the name of the module

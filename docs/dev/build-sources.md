@@ -53,5 +53,5 @@
 |`ENABLE_CLANG_TIDY`|Check code with _clang-tidy_ (requires `clang-tidy-18`) |`ON`|
 |`ENABLE_INVENTORY`|Enable Inventory module |`ON`|
 |`ENABLE_LOGCOLLECTOR`|Enable Logcollector module|`ON`|
-|`ENABLE_SCA`|Enable SCA module|`OFF`|
+|`ENABLE_SCA`|Enable SCA module|`ON`|
 

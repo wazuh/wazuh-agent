@@ -8,12 +8,11 @@ target_include_directories(
             ${CMAKE_CURRENT_SOURCE_DIR}/../agent_info/tests/mocks
             ${CMAKE_CURRENT_SOURCE_DIR}/../command_handler/tests/mocks
             ${CMAKE_CURRENT_SOURCE_DIR}/../http_client/tests/mocks
-            ${CMAKE_CURRENT_SOURCE_DIR}/../multitype_queue/tests/mocks)
+            ${CMAKE_CURRENT_SOURCE_DIR}/../multitype_queue/tests/mocks
+            ${CMAKE_CURRENT_SOURCE_DIR}/../../modules/tests/mocks)
 target_link_libraries(agent_test PRIVATE Agent Persistence GTest::gtest GTest::gmock)
 
-if(NOT WIN32)
-    add_test(NAME AgentTest COMMAND agent_test)
-endif()
+add_test(NAME AgentTest COMMAND agent_test)
 
 add_executable(agent_enrollment_test agent_enrollment_test.cpp)
 configure_target(agent_enrollment_test)

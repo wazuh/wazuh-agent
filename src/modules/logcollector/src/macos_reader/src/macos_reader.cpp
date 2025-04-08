@@ -59,7 +59,7 @@ namespace logcollector
                 m_lastLogEntryTimeInSecondsSince1970 = slightlyBigger;
 
                 const auto logAndDate = log.date + " " + log.log;
-                m_logcollector.SendMessage(COLLECTOR_TYPE, logAndDate, COLLECTOR_TYPE);
+                m_logcollector.PushMessage(COLLECTOR_TYPE, logAndDate, COLLECTOR_TYPE);
             }
 
             co_await m_logcollector.Wait(std::chrono::milliseconds(m_waitInMillis));
