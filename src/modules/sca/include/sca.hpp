@@ -11,6 +11,7 @@
 #include <moduleWrapper.hpp>
 #include <sca_policy_loader.hpp>
 
+#include <boost/asio.hpp>
 #include <nlohmann/json.hpp>
 
 #include <filesystem>
@@ -41,6 +42,7 @@ public:
         // Each policy should:
         // Run regex engine, check type of policies
         // Create a report and send it to the server
+        m_ioContext.run();
     }
 
     /// @brief Setup the SCA module
@@ -69,6 +71,7 @@ public:
     {
         // Stop the policies
         // Stop the regex engine
+        m_ioContext.stop();
     }
 
     /// @brief Execute a command
@@ -101,6 +104,28 @@ public:
     void SetPushMessageFunction(const std::function<int(Message)>& pushMessage)
     {
         m_pushMessage = pushMessage;
+    }
+
+    /// @brief Enqueues an ASIO task (coroutine)
+    /// @param task Task to enqueue
+    void EnqueueTask(boost::asio::awaitable<void> task)
+    {
+        // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+        boost::asio::co_spawn(
+            m_ioContext,
+            [task = std::move(task)]() mutable -> boost::asio::awaitable<void>
+            {
+                try
+                {
+                    co_await std::move(task);
+                }
+                catch (const std::exception& e)
+                {
+                    LogError("Logcollector coroutine task exited with an exception: {}", e.what());
+                }
+            },
+            boost::asio::detached);
+        // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
     }
 
 private:
@@ -142,4 +167,7 @@ private:
     bool m_scanOnStart;
     std::time_t m_scanInterval;
     std::vector<SCAPolicy> m_policies;
+
+    /// @brief Boost ASIO context
+    boost::asio::io_context m_ioContext;
 };
