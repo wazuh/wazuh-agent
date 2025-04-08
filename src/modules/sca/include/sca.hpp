@@ -157,15 +157,34 @@ private:
         return R"(CREATE TABLE sca (policy TEXT PRIMARY KEY );)";
     }
 
+    /// @brief SCA db file name
     const std::string SCA_DB_DISK_NAME = "sca.db";
+
+    /// @brief SCA module name
     std::string m_name = "SCA";
+
+    /// @brief Pointer to DBSync
     std::unique_ptr<DBSyncType> m_dBSync;
+
+    /// @brief Path to the database file
     std::string m_dbFilePath;
+
+    /// @brief Function for pushing event messages
     std::function<int(Message)> m_pushMessage;
+
+    /// @brief Pointer to a file system wrapper
     std::shared_ptr<IFileSystemWrapper> m_fileSystemWrapper;
+
+    /// @brief Flag indicating whether the module is enabled
     bool m_enabled;
+
+    /// @brief Flag indicating whether to scan on start
     bool m_scanOnStart;
+
+    /// @brief Scan interval in seconds
     std::time_t m_scanInterval;
+
+    /// @brief List of policies
     std::vector<SCAPolicy> m_policies;
 
     /// @brief Boost ASIO context
