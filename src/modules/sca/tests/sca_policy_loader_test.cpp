@@ -27,11 +27,7 @@ TEST(ScaPolicyLoaderTest, NoPolicies)
         return SCAPolicy {};
     };
 
-    const std::filesystem::path defaultDir = "";
-    EXPECT_CALL(*fsMock, exists(defaultDir)).WillOnce(testing::Return(false));
-
     const SCAPolicyLoader loader(fsMock, configurationParser, nullptr, fakeLoader);
-
     ASSERT_EQ(loader.GetPolicies().size(), 0);
 }
 
@@ -49,16 +45,9 @@ TEST(ScaPolicyLoaderTest, GetPoliciesReturnsOnePolicyFromConfiguration)
 
     const std::filesystem::path configPoliciesValue = "test_path";
     const std::filesystem::path configPoliciesDisabledValue = "test_path_disabled";
-    const std::filesystem::path defaultDir = "";
 
     EXPECT_CALL(*fsMock, exists(configPoliciesValue)).WillOnce(testing::Return(true));
     EXPECT_CALL(*fsMock, exists(configPoliciesDisabledValue)).WillOnce(testing::Return(true));
-    EXPECT_CALL(*fsMock, exists(defaultDir)).WillOnce(testing::Return(true));
-    EXPECT_CALL(*fsMock, is_directory(defaultDir)).WillOnce(testing::Return(true));
-    EXPECT_CALL(*fsMock, list_directory(defaultDir))
-        .WillOnce(testing::Return(std::vector<std::filesystem::path> {configPoliciesDisabledValue}));
-
-    EXPECT_CALL(*fsMock, is_regular_file(configPoliciesDisabledValue)).WillOnce(testing::Return(true));
 
     const auto fakeLoader =
         [=](const std::filesystem::path&, std::function<int(Message)>) // NOLINT(performance-unnecessary-value-param)
