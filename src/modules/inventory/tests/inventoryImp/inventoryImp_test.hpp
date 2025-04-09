@@ -2,6 +2,8 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+#include <inventory.hpp>
+
 class InventoryImpTest : public ::testing::Test
 {
 protected:
@@ -10,4 +12,6 @@ protected:
 
     void SetUp() override;
     void TearDown() override;
+
+    Inventory m_inventory;
 };

@@ -42,9 +42,9 @@ void ModuleManager::AddModules()
         const std::lock_guard<std::mutex> lock(m_mutex);
 
 #ifdef ENABLE_INVENTORY
-        Inventory& inventory = Inventory::Instance();
-        inventory.SetAgentUUID(m_agentUUID);
-        AddModule(std::make_shared<IModule>(&inventory));
+        auto inventory = std::make_shared<Inventory>();
+        inventory->SetAgentUUID(m_agentUUID);
+        AddModule(inventory);
 #endif
 
 #ifdef ENABLE_LOGCOLLECTOR

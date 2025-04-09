@@ -506,12 +506,6 @@ void Inventory::Init(const std::shared_ptr<ISysInfo>& spInfo,
     SyncLoop();
 }
 
-void Inventory::Destroy()
-{
-    m_stopping = true;
-    m_cv.notify_all();
-}
-
 nlohmann::json Inventory::EcsHardwareData(const nlohmann::json& originalData, bool createFields)
 {
     nlohmann::json ret;

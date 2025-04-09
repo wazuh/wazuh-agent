@@ -17,7 +17,6 @@
 #include <command_entry.hpp>
 #include <imodule.hpp>
 #include <message.hpp>
-#include <moduleWrapper.hpp>
 
 #include <boost/asio/awaitable.hpp>
 
@@ -27,11 +26,10 @@ public:
     const std::string INVENTORY_DB_DISK_NAME = "inventory.db";
     const std::string INVENTORY_NORM_CONFIG_NAME = "norm_config.json";
 
-    static Inventory& Instance()
-    {
-        static Inventory s_instance;
-        return s_instance;
-    }
+    Inventory();
+    ~Inventory() = default;
+    Inventory(const Inventory&) = delete;
+    Inventory& operator=(const Inventory&) = delete;
 
     /// @copydoc IModule::Run
     void Run() override;
@@ -73,13 +71,6 @@ public:
     }
 
 private:
-    Inventory();
-    ~Inventory() = default;
-    Inventory(const Inventory&) = delete;
-    Inventory& operator=(const Inventory&) = delete;
-
-    void Destroy();
-
     std::string GetCreateStatement() const;
     nlohmann::json EcsProcessesData(const nlohmann::json& originalData, bool createFields = true);
     nlohmann::json EcsSystemData(const nlohmann::json& originalData, bool createFields = true);

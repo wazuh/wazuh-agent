@@ -22,7 +22,7 @@ void Inventory::Run()
 
     try
     {
-        Inventory::Instance().Init(
+        Init(
             std::make_shared<SysInfo>(),
             [this](const std::string& diff) { this->PushMessage(diff); },
             m_dbFilePath,
@@ -76,7 +76,8 @@ void Inventory::Setup(std::shared_ptr<const configuration::ConfigurationParser> 
 void Inventory::Stop()
 {
     LogInfo("Inventory module stopping...");
-    Inventory::Instance().Destroy();
+    m_stopping = true;
+    m_cv.notify_all();
 }
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
