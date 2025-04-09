@@ -75,6 +75,6 @@ TEST_F(ScaTest, EnqueueTaskExecutesTask)
     };
 
     m_sca->EnqueueTask(task());
-    m_sca->Start();
+    m_sca->Run();
     EXPECT_TRUE(taskExecuted);
 }

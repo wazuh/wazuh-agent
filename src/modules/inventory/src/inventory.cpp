@@ -6,7 +6,7 @@
 
 #include <cjson/cJSON.h>
 
-void Inventory::Start()
+void Inventory::Run()
 {
 
     if (!m_enabled)
@@ -16,7 +16,7 @@ void Inventory::Start()
         return;
     }
 
-    LogInfo("Inventory module started.");
+    LogInfo("Inventory module running.");
 
     ShowConfig();
 

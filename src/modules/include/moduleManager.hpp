@@ -48,7 +48,7 @@ public:
         module.SetPushMessageFunction(m_pushMessage);
 
         auto wrapper = std::make_shared<ModuleWrapper>(ModuleWrapper {
-            .Start = [&module]() { module.Start(); },
+            .Run = [&module]() { module.Run(); },
             .Setup = [&module](std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
             { module.Setup(configurationParser); },
             .Stop = [&module]() { module.Stop(); },

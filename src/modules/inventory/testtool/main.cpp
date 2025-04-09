@@ -47,7 +47,7 @@ int main(int argc, const char* argv[])
                                 Inventory::Instance().Stop();
                             }};
 
-        Inventory::Instance().Start();
+        Inventory::Instance().Run();
 
         if (thread.joinable())
         {

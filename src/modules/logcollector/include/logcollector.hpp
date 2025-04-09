@@ -23,8 +23,8 @@ namespace logcollector
     class Logcollector
     {
     public:
-        /// @brief Starts the module
-        void Start();
+        /// @brief Runs the module
+        void Run();
 
         /// @brief Configures the module
         /// @param configurationParser Configuration parser

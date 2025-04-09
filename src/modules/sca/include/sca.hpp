@@ -35,8 +35,8 @@ public:
         return instance;
     }
 
-    /// @brief Start the SCA module
-    void Start()
+    /// @brief Run the SCA module
+    void Run()
     {
         // Execute the policies (run io context)
         // Each policy should:

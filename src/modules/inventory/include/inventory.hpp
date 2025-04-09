@@ -32,7 +32,7 @@ public:
         return s_instance;
     }
 
-    void Start();
+    void Run();
     void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
     void Stop();
     Co_CommandExecutionResult ExecuteCommand(const std::string command, const nlohmann::json parameters) const;

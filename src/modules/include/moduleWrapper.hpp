@@ -14,7 +14,7 @@ using Co_CommandExecutionResult = boost::asio::awaitable<module_command::Command
 
 struct ModuleWrapper
 {
-    std::function<void()> Start;
+    std::function<void()> Run;
     std::function<void(std::shared_ptr<const configuration::ConfigurationParser>)> Setup;
     std::function<void()> Stop;
     std::function<Co_CommandExecutionResult(std::string, nlohmann::json)> ExecuteCommand;

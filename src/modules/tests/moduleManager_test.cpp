@@ -8,7 +8,7 @@
 class MockModule
 {
 public:
-    MOCK_METHOD(void, Start, (), ());
+    MOCK_METHOD(void, Run, (), ());
     MOCK_METHOD(void, Setup, (std::shared_ptr<const configuration::ConfigurationParser>), ());
     MOCK_METHOD(void, Stop, (), ());
     MOCK_METHOD(boost::asio::awaitable<module_command::CommandExecutionResult>,
@@ -124,7 +124,7 @@ TEST_F(ModuleManagerTest, SetupMultipleModules)
 TEST_F(ModuleManagerTest, StartModules)
 {
     EXPECT_CALL(mockModule, Name()).Times(3);
-    EXPECT_CALL(mockModule, Start())
+    EXPECT_CALL(mockModule, Run())
         .Times(1)
         .WillOnce(testing::InvokeWithoutArgs(
             [&]()
@@ -157,7 +157,7 @@ TEST_F(ModuleManagerTest, StartMultipleModules)
     EXPECT_CALL(mockModule1, Name()).Times(3).WillRepeatedly(testing::Return("MockModule1"));
     EXPECT_CALL(mockModule2, Name()).Times(3).WillRepeatedly(testing::Return("MockModule2"));
 
-    EXPECT_CALL(mockModule1, Start())
+    EXPECT_CALL(mockModule1, Run())
         .Times(1)
         .WillOnce(testing::InvokeWithoutArgs(
             [&]()
@@ -168,7 +168,7 @@ TEST_F(ModuleManagerTest, StartMultipleModules)
                 }
                 cv.notify_one();
             }));
-    EXPECT_CALL(mockModule2, Start())
+    EXPECT_CALL(mockModule2, Run())
         .Times(1)
         .WillOnce(testing::InvokeWithoutArgs(
             [&]()

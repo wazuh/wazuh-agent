@@ -21,7 +21,7 @@ namespace logcollector
     constexpr int ACTIVE_READERS_WAIT_MS = 10;
 }
 
-void Logcollector::Start()
+void Logcollector::Run()
 {
     if (!m_enabled)
     {
@@ -29,7 +29,7 @@ void Logcollector::Start()
         return;
     }
 
-    LogInfo("Logcollector module started.");
+    LogInfo("Logcollector module running.");
     m_ioContext.run();
 }
 

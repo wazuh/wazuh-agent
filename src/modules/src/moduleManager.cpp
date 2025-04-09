@@ -83,7 +83,7 @@ void ModuleManager::Start()
             [this, module]
             {
                 ++m_started;
-                module->Start();
+                module->Run();
             },
             module->Name());
     }
