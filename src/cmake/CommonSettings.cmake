@@ -50,7 +50,7 @@ function(set_common_settings)
     option(COVERAGE "Enable coverage report" OFF)
     option(ENABLE_INVENTORY "Enable Inventory module" ON)
     option(ENABLE_LOGCOLLECTOR "Enable Logcollector module" ON)
-    option(ENABLE_SCA "Enable SCA module" OFF)
+    option(ENABLE_SCA "Enable SCA module" ON)
 
     if(COVERAGE)
         if(NOT TARGET coverage)

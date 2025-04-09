@@ -9,7 +9,6 @@
 #include <filesystem_wrapper.hpp>
 #include <imodule.hpp>
 #include <message.hpp>
-#include <moduleWrapper.hpp>
 #include <sca_policy_loader.hpp>
 
 #include <boost/asio.hpp>
@@ -26,15 +25,25 @@ template<class DBSyncType = DBSync>
 class SecurityConfigurationAssessment : public IModule
 {
 public:
-    /// @brief Get SCA Instance
-    /// @return SCA instance
-    static SecurityConfigurationAssessment&
-    Instance(std::shared_ptr<configuration::ConfigurationParser> configurationParser = nullptr,
-             std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
+    /// @brief Constructor
+    /// @param configurationParser Configuration parser for setting up the module
+    /// @param fileSystemWrapper File system wrapper for file operations
+    SecurityConfigurationAssessment(std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
+                                    std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
+        : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
+                                                : std::make_shared<file_system::FileSystemWrapper>())
     {
-        static SecurityConfigurationAssessment instance(configurationParser, fileSystemWrapper);
-        return instance;
+        Setup(configurationParser);
     }
+
+    /// @brief Destructor
+    ~SecurityConfigurationAssessment() = default;
+
+    /// @brief Deleted copy constructor
+    SecurityConfigurationAssessment(const SecurityConfigurationAssessment&) = delete;
+
+    /// @brief Deleted copy assignment operator
+    SecurityConfigurationAssessment& operator=(const SecurityConfigurationAssessment&) = delete;
 
     /// @copydoc IModule::Run
     void Run() override
@@ -124,26 +133,6 @@ public:
     }
 
 private:
-    /// @brief Constructor
-    /// @param configurationParser Configuration parser for setting up the module
-    /// @param fileSystemWrapper File system wrapper for file operations
-    SecurityConfigurationAssessment(std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
-                                    std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
-        : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
-                                                : std::make_shared<file_system::FileSystemWrapper>())
-    {
-        Setup(configurationParser);
-    }
-
-    /// @brief Destructor
-    ~SecurityConfigurationAssessment() = default;
-
-    /// @brief Deleted copy constructor
-    SecurityConfigurationAssessment(const SecurityConfigurationAssessment&) = delete;
-
-    /// @brief Deleted copy assignment operator
-    SecurityConfigurationAssessment& operator=(const SecurityConfigurationAssessment&) = delete;
-
     /// @brief Get the create statement for the database
     std::string GetCreateStatement() const
     {

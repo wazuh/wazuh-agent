@@ -50,11 +50,11 @@ void ModuleManager::AddModules()
 #ifdef ENABLE_LOGCOLLECTOR
         AddModule(std::make_shared<Logcollector>());
 #endif
-    }
 
 #ifdef ENABLE_SCA
-    AddModule(std::make_shared<IModule>(&SecurityConfigurationAssessment<>::Instance(m_configurationParser)));
+        AddModule(std::make_shared<SecurityConfigurationAssessment<DBSync>>(m_configurationParser));
 #endif
+    }
 
     Setup();
 }

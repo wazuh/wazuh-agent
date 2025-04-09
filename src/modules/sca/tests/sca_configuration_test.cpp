@@ -14,7 +14,7 @@ class ScaConfigurationTest : public ::testing::Test
 {
 protected:
     std::shared_ptr<configuration::ConfigurationParser> m_configurationParser = nullptr;
-    SecurityConfigurationAssessment<MockDBSync>* m_sca = nullptr;
+    std::shared_ptr<SecurityConfigurationAssessment<MockDBSync>> m_sca = nullptr;
 };
 
 TEST_F(ScaConfigurationTest, ValidateExpectedConfigurationVariables)
@@ -32,5 +32,5 @@ TEST_F(ScaConfigurationTest, ValidateExpectedConfigurationVariables)
           policies_disabled:
             - ruleset/sca/cis_debian9.yml
     )"));
-    m_sca = &SecurityConfigurationAssessment<MockDBSync>::Instance(m_configurationParser);
+    m_sca = std::make_shared<SecurityConfigurationAssessment<MockDBSync>>(m_configurationParser);
 }

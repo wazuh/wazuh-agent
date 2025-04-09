@@ -24,11 +24,11 @@ protected:
               batch_size: 1
         )"));
 
-        m_sca = &SecurityConfigurationAssessment<MockDBSync>::Instance(m_configurationParser);
+        m_sca = std::make_shared<SecurityConfigurationAssessment<MockDBSync>>(m_configurationParser);
     }
 
     std::shared_ptr<configuration::ConfigurationParser> m_configurationParser = nullptr;
-    SecurityConfigurationAssessment<MockDBSync>* m_sca = nullptr;
+    std::shared_ptr<SecurityConfigurationAssessment<MockDBSync>> m_sca = nullptr;
 };
 
 TEST_F(ScaTest, ConstructorSetsDbFilePath)
