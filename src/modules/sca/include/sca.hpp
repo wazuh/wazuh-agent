@@ -11,6 +11,7 @@
 #include <moduleWrapper.hpp>
 #include <sca_policy_loader.hpp>
 
+#include <boost/asio.hpp>
 #include <nlohmann/json.hpp>
 
 #include <filesystem>
@@ -41,6 +42,7 @@ public:
         // Each policy should:
         // Run regex engine, check type of policies
         // Create a report and send it to the server
+        m_ioContext.run();
     }
 
     /// @brief Setup the SCA module
@@ -69,6 +71,7 @@ public:
     {
         // Stop the policies
         // Stop the regex engine
+        m_ioContext.stop();
     }
 
     /// @brief Execute a command
@@ -103,6 +106,28 @@ public:
         m_pushMessage = pushMessage;
     }
 
+    /// @brief Enqueues an ASIO task (coroutine)
+    /// @param task Task to enqueue
+    void EnqueueTask(boost::asio::awaitable<void> task)
+    {
+        // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+        boost::asio::co_spawn(
+            m_ioContext,
+            [task = std::move(task)]() mutable -> boost::asio::awaitable<void>
+            {
+                try
+                {
+                    co_await std::move(task);
+                }
+                catch (const std::exception& e)
+                {
+                    LogError("Logcollector coroutine task exited with an exception: {}", e.what());
+                }
+            },
+            boost::asio::detached);
+        // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+    }
+
 private:
     /// @brief Constructor
     /// @param configurationParser Configuration parser for setting up the module
@@ -132,14 +157,36 @@ private:
         return R"(CREATE TABLE sca (policy TEXT PRIMARY KEY );)";
     }
 
+    /// @brief SCA db file name
     const std::string SCA_DB_DISK_NAME = "sca.db";
+
+    /// @brief SCA module name
     std::string m_name = "SCA";
+
+    /// @brief Pointer to DBSync
     std::unique_ptr<DBSyncType> m_dBSync;
+
+    /// @brief Path to the database file
     std::string m_dbFilePath;
+
+    /// @brief Function for pushing event messages
     std::function<int(Message)> m_pushMessage;
+
+    /// @brief Pointer to a file system wrapper
     std::shared_ptr<IFileSystemWrapper> m_fileSystemWrapper;
+
+    /// @brief Flag indicating whether the module is enabled
     bool m_enabled;
+
+    /// @brief Flag indicating whether to scan on start
     bool m_scanOnStart;
+
+    /// @brief Scan interval in seconds
     std::time_t m_scanInterval;
+
+    /// @brief List of policies
     std::vector<SCAPolicy> m_policies;
+
+    /// @brief Boost ASIO context
+    boost::asio::io_context m_ioContext;
 };
