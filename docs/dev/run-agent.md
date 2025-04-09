@@ -1,5 +1,11 @@
 # Run from Sources
 
+To build the agent from source, refer to: [build-sources.md](./build-sources.md).
+
+> Note: After building, the agent executables are located in:
+> - **Linux/macOS:** `wazuh-agent/build`
+> - **Windows:** `wazuh-agent\build\Debug`
+
 ## Enroll the Agent
 
 To allow the agent to successfully connect to a Wazuh server, it must first enroll with the server. This is done using the --enroll option.
@@ -7,25 +13,92 @@ Ensure that the server is online and ready to accept enrollment requests before 
 
 ### Enrollment Command
 
+- **Linux/macOS:**
 ```
 cd build/
 ./wazuh-agent --enroll --enroll-url https://localhost:55000 --user <username> --password <password> [--name <agent-name>]
 ```
 
+- **Windows:**
+```
+cd .\build\Debug\
+./wazuh-agent --enroll --enroll-url https://localhost:55000 --user <username> --password <password> [--name <agent-name>]
+```
+
 Replace:
 
-* <username> with your Wazuh server username.
-* <password> with your corresponding password.
-* <agent-name> with the desired name for the agent (optional).
+* `<username>` with the Wazuh server username.
+* `<password>` with the corresponding password.
+* `<agent-name>` with the desired name for the agent (optional).
 
 ### View Enrollment Help
 
 For additional options and details, use:
 
 ```
-cd build/
 ./wazuh-agent --enroll --help
 ```
+
+### Important Notes About Enrollment
+
+The agent stores information in a local database during enrollment. By default, the database is created in the following paths:
+
+- **Linux:** `/var/lib/wazuh-agent`
+- **macOS:** `/Library/Application Support/Wazuh agent.app/var`
+- **Windows:** `C:\\ProgramData\\wazuh-agent\\var`
+
+If these directories do not exist at the time of running the enrollment command **when running from sources**, the agent will fail with an error like:
+
+```
+Error: Cannot open database: C:\ProgramData\wazuh-agent\var/agent_info.db
+```
+
+To avoid this, **manually create the directory** before running the command, depending on the operating system:
+
+- **Linux:**
+  ```bash
+  sudo mkdir -p /var/lib/wazuh-agent
+  ```
+
+- **macOS:**
+  ```bash
+  sudo mkdir -p "/Library/Application Support/Wazuh agent.app/var"
+  ```
+
+- **Windows:**
+  ```powershell
+  mkdir "C:\ProgramData\wazuh-agent\var"
+  ```
+
+> Note: If the agent is installed using the installation process, the necessary directories are automatically created.
+
+**Alternative: Use a Custom Data Path**
+
+A custom location for the agent data can be configured by setting the `path.data` option in the `wazuh-agent.yml` configuration file:
+
+```yaml
+agent:
+  ...
+  path.data: "C:/MyCustomPath/"
+```
+
+> Note: Setting `path.data: "."` will make the agent use the current working directory as the data directory.
+
+Default configuration file locations:
+
+- **Linux:** `/etc/wazuh-agent/wazuh-agent.yml`
+- **macOS:** `/Library/Application Support/Wazuh agent.app/etc/wazuh-agent.yml`
+- **Windows:** `C:\\ProgramData\\wazuh-agent\\config\\wazuh-agent.yml`
+
+### Use a Custom Configuration File
+
+A custom config file can also be specified during enrollment using the `--config-file` option:
+
+```bash
+./wazuh-agent --enroll --enroll-url https://localhost:55000 --user <username> --password <password> [--name <agent-name>] --config-file /path/to/wazuh-agent.yml
+```
+
+This is useful when testing with different configurations or running the agent from a non-default directory.
 
 ## Run the Agent on Linux
 
