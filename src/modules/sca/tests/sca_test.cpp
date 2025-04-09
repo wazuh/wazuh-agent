@@ -62,3 +62,19 @@ TEST_F(ScaTest, NameReturnsCorrectValue)
 {
     EXPECT_EQ(m_sca->Name(), "SCA");
 }
+
+TEST_F(ScaTest, EnqueueTaskExecutesTask)
+{
+    bool taskExecuted = false;
+
+    auto task = [&]() -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+    {
+        taskExecuted = true;
+        m_sca->Stop();
+        co_return;
+    };
+
+    m_sca->EnqueueTask(task());
+    m_sca->Start();
+    EXPECT_TRUE(taskExecuted);
+}
