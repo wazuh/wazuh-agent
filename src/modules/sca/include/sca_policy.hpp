@@ -2,12 +2,21 @@
 
 #include <message.hpp>
 
+#include <boost/asio/awaitable.hpp>
+
 #include <filesystem>
 #include <functional>
 
 class SCAPolicy
 {
 public:
+    /// @brief Runs the policy check
+    /// @return Awaitable void
+    boost::asio::awaitable<void> Run()
+    {
+        co_return;
+    }
+
     /// @brief Loads a policy from a SCA Policy yaml file
     /// @param path The path to the SCA Policy yaml file
     /// @param pushMessage A function that pushes messages
