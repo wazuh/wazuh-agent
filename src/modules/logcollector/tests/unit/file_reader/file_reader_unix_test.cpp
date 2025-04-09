@@ -98,7 +98,8 @@ TEST(FileReader, Reload)
     auto c = TempFile("/tmp/fileC.log");
 
     auto regex = "/tmp/file*.log";
-    FileReader reader(Logcollector::Instance(), regex, 500, 60000); // NOLINT
+    Logcollector logcollector;
+    FileReader reader(logcollector, regex, 500, 60000); // NOLINT
     reader.Reload([&](Localfile& lf) { mockCallback.Call(lf.Filename()); });
 
     auto d = TempFile("/tmp/fileD.log");

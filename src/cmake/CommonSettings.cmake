@@ -49,7 +49,7 @@ function(set_common_settings)
     option(BUILD_TESTS "Enable tests building" OFF)
     option(COVERAGE "Enable coverage report" OFF)
     option(ENABLE_INVENTORY "Enable Inventory module" ON)
-    option(ENABLE_LOGCOLLECTOR "Enable Logcollector module" OFF)
+    option(ENABLE_LOGCOLLECTOR "Enable Logcollector module" ON)
     option(ENABLE_SCA "Enable SCA module" OFF)
 
     if(COVERAGE)

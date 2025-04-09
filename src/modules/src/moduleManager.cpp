@@ -48,7 +48,7 @@ void ModuleManager::AddModules()
 #endif
 
 #ifdef ENABLE_LOGCOLLECTOR
-        AddModule(std::make_shared<IModule>(&Logcollector::Instance()));
+        AddModule(std::make_shared<Logcollector>());
 #endif
     }
 

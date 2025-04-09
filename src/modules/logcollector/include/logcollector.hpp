@@ -3,7 +3,6 @@
 #include <command_entry.hpp>
 #include <imodule.hpp>
 #include <message.hpp>
-#include <moduleWrapper.hpp>
 
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
@@ -24,6 +23,18 @@ namespace logcollector
     class Logcollector : public IModule
     {
     public:
+        /// @brief Constructor
+        Logcollector() = default;
+
+        /// @brief Destructor
+        virtual ~Logcollector() = default;
+
+        /// @brief Deleted copy constructor
+        Logcollector(const Logcollector&) = delete;
+
+        /// @brief Deleted copy assignment operator
+        Logcollector& operator=(const Logcollector&) = delete;
+
         /// @copydoc IModule::Run
         void Run() override;
 
@@ -65,25 +76,11 @@ namespace logcollector
         /// @param ms Time to wait in milliseconds
         virtual boost::asio::awaitable<void> Wait(std::chrono::milliseconds ms);
 
-        /// @brief Gets the instance of the Logcollector module
-        /// @return Instance of the Logcollector module
-        static Logcollector& Instance()
-        {
-            static Logcollector s_instance;
-            return s_instance;
-        }
-
         /// @brief Add platform specific implementation of IReader to logcollector.
         /// @param configurationParser where to get parameters.
         void AddPlatformSpecificReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
 
     protected:
-        /// @brief Constructor
-        Logcollector() {}
-
-        /// @brief Destructor
-        virtual ~Logcollector() = default;
-
         /// @brief Sets up the file reader
         /// @param configurationParser Configuration parser
         void SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser);

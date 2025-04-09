@@ -108,7 +108,8 @@ TEST(FileReader, Reload)
     auto c = TempFile(GetFullFileName("C.log"));
 
     auto regex = TMP_FILE_DIR + std::string("*.log");
-    FileReader reader(Logcollector::Instance(), regex, 500, 60000); // NOLINT
+    Logcollector logcollector;
+    FileReader reader(logcollector, regex, 500, 60000); // NOLINT
     reader.Reload([&](Localfile& lf) { mockCallback.Call(lf.Filename()); });
 
     auto d = TempFile(GetFullFileName("D.log"));
