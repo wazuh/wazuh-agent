@@ -7,6 +7,7 @@
 #include <configuration_parser.hpp>
 #include <dbsync.hpp>
 #include <filesystem_wrapper.hpp>
+#include <imodule.hpp>
 #include <message.hpp>
 #include <moduleWrapper.hpp>
 #include <sca_policy_loader.hpp>
@@ -22,7 +23,7 @@
 #include <vector>
 
 template<class DBSyncType = DBSync>
-class SecurityConfigurationAssessment
+class SecurityConfigurationAssessment : public IModule
 {
 public:
     /// @brief Get SCA Instance
@@ -35,8 +36,8 @@ public:
         return instance;
     }
 
-    /// @brief Run the SCA module
-    void Run()
+    /// @copydoc IModule::Run
+    void Run() override
     {
         // Execute the policies (run io context)
         // Each policy should:
@@ -45,9 +46,8 @@ public:
         m_ioContext.run();
     }
 
-    /// @brief Setup the SCA module
-    /// @param configurationParser Configuration parser for setting up the module
-    void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
+    /// @copydoc IModule::Setup
+    void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) override
     {
         m_dbFilePath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
                        SCA_DB_DISK_NAME;
@@ -66,20 +66,17 @@ public:
             HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, GetCreateStatement(), DbManagement::PERSISTENT);
     }
 
-    /// @brief Stop the SCA module
-    void Stop()
+    /// @copydoc IModule::Stop
+    void Stop() override
     {
         // Stop the policies
         // Stop the regex engine
         m_ioContext.stop();
     }
 
-    /// @brief Execute a command
-    /// @param command Command to execute
-    /// @param parameters Parameters for the command
-    /// @return Command execution result
+    /// @copydoc IModule::ExecuteCommand
     Co_CommandExecutionResult ExecuteCommand([[maybe_unused]] const std::string command,
-                                             [[maybe_unused]] const nlohmann::json parameters)
+                                             [[maybe_unused]] const nlohmann::json parameters) override
     {
         if (!m_enabled)
         {
@@ -92,9 +89,8 @@ public:
                                                           "Command not implemented yet"};
     }
 
-    /// @brief Returns the name of the module
-    /// @return Name of the module
-    const std::string& Name() const
+    /// @copydoc IModule::Name
+    const std::string& Name() const override
     {
         return m_name;
     }

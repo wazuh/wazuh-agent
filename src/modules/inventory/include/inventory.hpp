@@ -15,12 +15,13 @@
 #include <sysInfoInterface.hpp>
 
 #include <command_entry.hpp>
+#include <imodule.hpp>
 #include <message.hpp>
 #include <moduleWrapper.hpp>
 
 #include <boost/asio/awaitable.hpp>
 
-class Inventory
+class Inventory : public IModule
 {
 public:
     const std::string INVENTORY_DB_DISK_NAME = "inventory.db";
@@ -32,12 +33,20 @@ public:
         return s_instance;
     }
 
-    void Run();
-    void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
-    void Stop();
-    Co_CommandExecutionResult ExecuteCommand(const std::string command, const nlohmann::json parameters) const;
+    /// @copydoc IModule::Run
+    void Run() override;
 
-    const std::string& Name() const
+    /// @copydoc IModule::Setup
+    void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) override;
+
+    /// @copydoc IModule::Stop
+    void Stop() override;
+
+    /// @copydoc IModule::ExecuteCommand
+    Co_CommandExecutionResult ExecuteCommand(const std::string command, const nlohmann::json parameters) override;
+
+    /// @copydoc IModule::Name
+    const std::string& Name() const override
     {
         return m_moduleName;
     };

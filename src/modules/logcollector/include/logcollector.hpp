@@ -1,6 +1,7 @@
 #pragma once
 
 #include <command_entry.hpp>
+#include <imodule.hpp>
 #include <message.hpp>
 #include <moduleWrapper.hpp>
 
@@ -20,28 +21,23 @@ namespace logcollector
     /// @brief Logcollector module class
     ///
     /// This module is responsible for collecting logs from various sources and processing them.
-    class Logcollector
+    class Logcollector : public IModule
     {
     public:
-        /// @brief Runs the module
-        void Run();
+        /// @copydoc IModule::Run
+        void Run() override;
 
-        /// @brief Configures the module
-        /// @param configurationParser Configuration parser
-        void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
+        /// @copydoc IModule::Setup
+        void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) override;
 
-        /// @brief Stops the module
-        void Stop();
+        /// @copydoc IModule::Stop
+        void Stop() override;
 
-        /// @brief Executes a command
-        /// @param command Command to execute
-        /// @param parameters A json object containing the parameters of the command to be executed
-        /// @return Awaitable (coroutine) which will return the result of the command execution
-        Co_CommandExecutionResult ExecuteCommand(const std::string command, const nlohmann::json parameters);
+        /// @copydoc IModule::ExecuteCommand
+        Co_CommandExecutionResult ExecuteCommand(const std::string command, const nlohmann::json parameters) override;
 
-        /// @brief Gets the name of the Logcollector module
-        /// @return Name of the module
-        const std::string& Name() const
+        /// @copydoc IModule::Name
+        const std::string& Name() const override
         {
             return m_moduleName;
         };

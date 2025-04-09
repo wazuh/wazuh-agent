@@ -80,7 +80,7 @@ void Inventory::Stop()
 }
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
-Co_CommandExecutionResult Inventory::ExecuteCommand(const std::string command, const nlohmann::json) const
+Co_CommandExecutionResult Inventory::ExecuteCommand(const std::string command, const nlohmann::json)
 {
     if (!m_enabled)
     {
