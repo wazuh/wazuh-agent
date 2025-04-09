@@ -42,9 +42,8 @@ namespace logcollector
             return m_moduleName;
         };
 
-        /// @brief Sets the push message function
-        /// @param pushMessage Push message function
-        void SetPushMessageFunction(const std::function<int(Message)>& pushMessage);
+        /// @copydoc IModule::SetPushMessageFunction
+        void SetPushMessageFunction(const std::function<int(Message)>& pushMessage) override;
 
         /// @brief Pushes a message to que queue
         /// @param location Location of the message

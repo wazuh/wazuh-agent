@@ -51,7 +51,8 @@ public:
         return m_moduleName;
     };
 
-    void SetPushMessageFunction(const std::function<int(Message)>& pushMessage);
+    /// @copydoc IModule::SetPushMessageFunction
+    void SetPushMessageFunction(const std::function<int(Message)>& pushMessage) override;
 
     void Init(const std::shared_ptr<ISysInfo>& spInfo,
               const std::function<void(const std::string&)>& reportDiffFunction,

@@ -95,9 +95,8 @@ public:
         return m_name;
     }
 
-    /// @brief Set the push message function
-    /// @param pushMessage Function to push messages
-    void SetPushMessageFunction(const std::function<int(Message)>& pushMessage)
+    /// @copydoc IModule::SetPushMessageFunction
+    void SetPushMessageFunction(const std::function<int(Message)>& pushMessage) override
     {
         m_pushMessage = pushMessage;
     }
