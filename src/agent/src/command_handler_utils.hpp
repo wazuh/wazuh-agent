@@ -1,7 +1,7 @@
 #pragma once
 
 #include <command_entry.hpp>
-#include <moduleWrapper.hpp>
+#include <imodule.hpp>
 
 #include <boost/asio/awaitable.hpp>
 #include <nlohmann/json.hpp>
@@ -37,7 +37,7 @@ DispatchCommand(module_command::CommandEntry commandEntry,
 /// @return The result of the command execution
 boost::asio::awaitable<module_command::CommandExecutionResult>
 DispatchCommand(module_command::CommandEntry commandEntry,
-                std::shared_ptr<ModuleWrapper> module,
+                std::shared_ptr<IModule> module,
                 std::shared_ptr<IMultiTypeQueue> messageQueue);
 
 /// @brief Reports the result of a command execution to the message queue

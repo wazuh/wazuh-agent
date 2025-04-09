@@ -44,22 +44,22 @@ void ModuleManager::AddModules()
 #ifdef ENABLE_INVENTORY
         Inventory& inventory = Inventory::Instance();
         inventory.SetAgentUUID(m_agentUUID);
-        AddModule(inventory);
+        AddModule(std::make_shared<IModule>(&inventory));
 #endif
 
 #ifdef ENABLE_LOGCOLLECTOR
-        AddModule(Logcollector::Instance());
+        AddModule(std::make_shared<IModule>(&Logcollector::Instance()));
 #endif
     }
 
 #ifdef ENABLE_SCA
-    AddModule(SecurityConfigurationAssessment<>::Instance(m_configurationParser));
+    AddModule(std::make_shared<IModule>(&SecurityConfigurationAssessment<>::Instance(m_configurationParser)));
 #endif
 
     Setup();
 }
 
-std::shared_ptr<ModuleWrapper> ModuleManager::GetModule(const std::string& name)
+std::shared_ptr<IModule> ModuleManager::GetModule(const std::string& name)
 {
     const std::lock_guard<std::mutex> lock(m_mutex);
     if (auto it = m_modules.find(name); it != m_modules.end())

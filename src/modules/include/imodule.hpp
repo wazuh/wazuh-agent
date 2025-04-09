@@ -34,7 +34,7 @@ public:
     /// @param command The name of the command to execute
     /// @param parameters The arguments for the command
     /// @return The result of the command execution
-    virtual Co_CommandExecutionResult ExecuteCommand(std::string command, nlohmann::json parameters) = 0;
+    virtual Co_CommandExecutionResult ExecuteCommand(const std::string command, const nlohmann::json parameters) = 0;
 
     /// @brief Returns the name of the module.
     /// @return The name of the module
