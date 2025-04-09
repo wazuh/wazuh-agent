@@ -33,18 +33,7 @@ public:
     /// SetPushMessageFunction is set to the manager's pushMessage callback.
     ///
     /// @param[in] module The module to add
-    void AddModule(std::shared_ptr<IModule> module)
-    {
-        const auto moduleName = module->Name();
-
-        if (m_modules.find(moduleName) != m_modules.end())
-        {
-            throw std::runtime_error("Module with name '" + moduleName + "' already exists");
-        }
-
-        module->SetPushMessageFunction(m_pushMessage);
-        m_modules[moduleName] = module;
-    }
+    void AddModule(std::shared_ptr<IModule> module);
 
     /// @copydoc IModuleManager::AddModules
     void AddModules() override;

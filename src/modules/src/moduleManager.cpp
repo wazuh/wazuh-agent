@@ -59,6 +59,19 @@ void ModuleManager::AddModules()
     Setup();
 }
 
+void ModuleManager::AddModule(std::shared_ptr<IModule> module)
+{
+    const auto moduleName = module->Name();
+
+    if (m_modules.find(moduleName) != m_modules.end())
+    {
+        throw std::runtime_error("Module with name '" + moduleName + "' already exists");
+    }
+
+    module->SetPushMessageFunction(m_pushMessage);
+    m_modules[moduleName] = module;
+}
+
 std::shared_ptr<IModule> ModuleManager::GetModule(const std::string& name)
 {
     const std::lock_guard<std::mutex> lock(m_mutex);
