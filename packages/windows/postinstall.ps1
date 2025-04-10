@@ -96,7 +96,7 @@ if ($env:ProgramFiles) {
     $installDir = "C:\Program Files\wazuh-agent"
 }
 
-$batFilePath = "$env:SystemRoot\System32\wazuh-agent.bat"
+$batFilePath = "C:\Windows\System32\wazuh-agent.bat"
 $batFileContent = @"
 @echo off
 "$installDir\wazuh-agent.exe" %*
