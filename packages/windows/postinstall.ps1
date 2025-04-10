@@ -1,6 +1,6 @@
 $programData = [System.Environment]::GetFolderPath("CommonApplicationData")
 
-# Create required directories
+## Create required directories
 $directoriesToCreate = @(
     "$programData\wazuh-agent",
     "$programData\wazuh-agent\config",
@@ -18,7 +18,7 @@ foreach ($dir in $directoriesToCreate) {
 }
 Write-Host "Directories created successfully."
 
-# Handle Wazuh config file
+## Handle Wazuh config file
 $destinationDir = Join-Path -Path $programData -ChildPath "wazuh-agent\config"
 $sourcePath = "$PSScriptRoot\wazuh-agent.yml"
 $destinationPath = Join-Path -Path $destinationDir -ChildPath "wazuh-agent.yml"
@@ -55,7 +55,7 @@ if (Test-Path $sourcePath) {
     Write-Host "Source file not found: $sourcePath"
 }
 
-# Install Wazuh service
+## Install Wazuh service
 $serviceName = "wazuh-agent"
 $wazuhagent = "$PSScriptRoot\wazuh-agent.exe"
 
@@ -71,7 +71,7 @@ if (-not (Get-Service -Name $serviceName -ErrorAction SilentlyContinue)) {
     Write-Host "Service $serviceName already installed."
 }
 
-# Register "wazuh-agent" as an Event Log source if not already present
+## Register "wazuh-agent" as an Event Log source if not already present
 $logName = "Application"
 $sourceName = "wazuh-agent"
 
@@ -90,29 +90,51 @@ if (-not $eventLogExists) {
     Write-Host "Event log source '$sourceName' is already registered."
 }
 
+## Define native methods
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+
+public class NativeMethods {
+    [DllImport("kernel32.dll", SetLastError = true)]
+    public static extern bool Wow64DisableWow64FsRedirection(ref IntPtr oldValue);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    public static extern bool Wow64RevertWow64FsRedirection(IntPtr oldValue);
+}
+"@
+
 if ($env:ProgramFiles) {
     $installDir = "$env:ProgramFiles\wazuh-agent"
 } else {
     $installDir = "C:\Program Files\wazuh-agent"
 }
 
-$batFilePath = "C:\Windows\System32\wazuh-agent.bat"
-$batFileContent = @"
+$batContent = @"
 @echo off
-"$installDir\wazuh-agent.exe" %*
+"$wazuhagent" %*
 "@
 
+## Disable WOW64 redirection
+$oldValue = [IntPtr]::Zero
+$disableSuccess = [NativeMethods]::Wow64DisableWow64FsRedirection([ref]$oldValue)
+
 try {
-    $batFileContent | Out-File -FilePath $batFilePath -Encoding ASCII -Force
-    Write-Host "Batch file created at: $batFilePath" -ForegroundColor Green
+    $batContent | Out-File "C:\Windows\System32\wazuh-agent.bat" -Encoding ASCII -Force
+    Write-Host "Batch file created at: C:\Windows\System32\wazuh-agent.bat" -ForegroundColor Green
 }
 catch {
-    Write-Host "Error: $_" -ForegroundColor Red
+    Write-Host "Error writing batch file: $_" -ForegroundColor Red
+}
+finally {
+    if ($disableSuccess) {
+        [NativeMethods]::Wow64RevertWow64FsRedirection($oldValue)
+    }
 }
 
 Write-Host "postinstall.ps1 script completed."
 
-# Delete script after execution
+## Delete script after execution
 $scriptPath = "$PSScriptRoot\postinstall.ps1"
 Write-Host "Deleting script: $scriptPath"
 Remove-Item -Path $scriptPath -Force
