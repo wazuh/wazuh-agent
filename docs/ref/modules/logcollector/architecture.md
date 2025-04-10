@@ -4,7 +4,7 @@
 
 ```mermaid
 classDiagram
-    class ModuleWrapper
+    class IModule
     class Logcollector {
         - context : io_context
         - m_readers : MultiTypeQueue
@@ -61,7 +61,7 @@ classDiagram
         + Run()
         + Stop()
     }
-    ModuleWrapper <-- Logcollector
+    IModule <-- Logcollector
     Logcollector o-- IReader
     IReader <|-- FileReader
     IReader <|-- JournaldReader

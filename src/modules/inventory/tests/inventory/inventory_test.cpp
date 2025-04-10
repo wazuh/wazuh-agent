@@ -9,7 +9,7 @@ protected:
 
     void TearDown() override {}
 
-    Inventory& inventory = Inventory::Instance();
+    Inventory inventory;
 };
 
 TEST_F(InventoryTest, SendUpdateEvent_Stateful)

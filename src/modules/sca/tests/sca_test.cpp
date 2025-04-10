@@ -24,19 +24,14 @@ protected:
               batch_size: 1
         )"));
 
-        m_sca = &SecurityConfigurationAssessment<MockDBSync>::Instance(m_configurationParser);
+        m_mockDBSync = std::make_shared<MockDBSync>();
+        m_sca = std::make_shared<SecurityConfigurationAssessment>(m_configurationParser, m_mockDBSync);
     }
 
     std::shared_ptr<configuration::ConfigurationParser> m_configurationParser = nullptr;
-    SecurityConfigurationAssessment<MockDBSync>* m_sca = nullptr;
+    std::shared_ptr<IDBSync> m_mockDBSync = nullptr;
+    std::shared_ptr<SecurityConfigurationAssessment> m_sca = nullptr;
 };
-
-TEST_F(ScaTest, ConstructorSetsDbFilePath)
-{
-    const auto expectedDbFilePath =
-        m_configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data");
-    EXPECT_EQ(MockDBSyncDbFilePath, expectedDbFilePath + "/sca.db");
-}
 
 TEST_F(ScaTest, SetPushMessageFunctionStoresCallback)
 {
@@ -75,6 +70,6 @@ TEST_F(ScaTest, EnqueueTaskExecutesTask)
     };
 
     m_sca->EnqueueTask(task());
-    m_sca->Start();
+    m_sca->Run();
     EXPECT_TRUE(taskExecuted);
 }

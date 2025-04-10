@@ -92,7 +92,7 @@ DispatchCommand(module_command::CommandEntry commandEntry,
 
 boost::asio::awaitable<module_command::CommandExecutionResult>
 DispatchCommand(module_command::CommandEntry commandEntry,
-                std::shared_ptr<ModuleWrapper> module,
+                std::shared_ptr<IModule> module,
                 std::shared_ptr<IMultiTypeQueue> messageQueue)
 {
     if (!module)

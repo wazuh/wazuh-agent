@@ -5,7 +5,7 @@ project(SCA)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
-add_library(SCA src/sca_policy_loader.cpp)
+add_library(SCA src/sca.cpp src/sca_policy_loader.cpp)
 target_include_directories(SCA PUBLIC include PRIVATE src)
 target_link_libraries(
     SCA

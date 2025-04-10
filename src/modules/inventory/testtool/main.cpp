@@ -29,11 +29,12 @@ int main(int argc, const char* argv[])
     }
 
     configurationParser = std::make_shared<configuration::ConfigurationParser>();
-    Inventory::Instance().Setup(configurationParser);
+    auto inventory = std::make_shared<Inventory>();
+    inventory->Setup(configurationParser);
 
     try
     {
-        std::thread thread {[timedMainLoop, sleepTime]
+        std::thread thread {[timedMainLoop, sleepTime, inventory]
                             {
                                 if (!timedMainLoop)
                                 {
@@ -44,10 +45,10 @@ int main(int argc, const char* argv[])
                                     std::this_thread::sleep_for(std::chrono::seconds(sleepTime));
                                 }
 
-                                Inventory::Instance().Stop();
+                                inventory->Stop();
                             }};
 
-        Inventory::Instance().Start();
+        inventory->Run();
 
         if (thread.joinable())
         {

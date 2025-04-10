@@ -1,8 +1,8 @@
 #pragma once
 
 #include <command_entry.hpp>
+#include <imodule.hpp>
 #include <message.hpp>
-#include <moduleWrapper.hpp>
 #include <task_manager.hpp>
 
 #include <map>
@@ -24,7 +24,7 @@ public:
     ///
     /// @param[in] name Name of the module
     /// @return Pointer to the module
-    virtual std::shared_ptr<ModuleWrapper> GetModule(const std::string& name) = 0;
+    virtual std::shared_ptr<IModule> GetModule(const std::string& name) = 0;
 
     /// @brief Start the modules
     ///

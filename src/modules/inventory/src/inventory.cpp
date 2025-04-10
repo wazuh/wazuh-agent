@@ -6,7 +6,7 @@
 
 #include <cjson/cJSON.h>
 
-void Inventory::Start()
+void Inventory::Run()
 {
 
     if (!m_enabled)
@@ -16,13 +16,13 @@ void Inventory::Start()
         return;
     }
 
-    LogInfo("Inventory module started.");
+    LogInfo("Inventory module running.");
 
     ShowConfig();
 
     try
     {
-        Inventory::Instance().Init(
+        Init(
             std::make_shared<SysInfo>(),
             [this](const std::string& diff) { this->PushMessage(diff); },
             m_dbFilePath,
@@ -76,11 +76,12 @@ void Inventory::Setup(std::shared_ptr<const configuration::ConfigurationParser> 
 void Inventory::Stop()
 {
     LogInfo("Inventory module stopping...");
-    Inventory::Instance().Destroy();
+    m_stopping = true;
+    m_cv.notify_all();
 }
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
-Co_CommandExecutionResult Inventory::ExecuteCommand(const std::string command, const nlohmann::json) const
+Co_CommandExecutionResult Inventory::ExecuteCommand(const std::string command, const nlohmann::json)
 {
     if (!m_enabled)
     {

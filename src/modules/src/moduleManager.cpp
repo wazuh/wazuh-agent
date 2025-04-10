@@ -42,24 +42,37 @@ void ModuleManager::AddModules()
         const std::lock_guard<std::mutex> lock(m_mutex);
 
 #ifdef ENABLE_INVENTORY
-        Inventory& inventory = Inventory::Instance();
-        inventory.SetAgentUUID(m_agentUUID);
+        auto inventory = std::make_shared<Inventory>();
+        inventory->SetAgentUUID(m_agentUUID);
         AddModule(inventory);
 #endif
 
 #ifdef ENABLE_LOGCOLLECTOR
-        AddModule(Logcollector::Instance());
+        AddModule(std::make_shared<Logcollector>());
 #endif
-    }
 
 #ifdef ENABLE_SCA
-    AddModule(SecurityConfigurationAssessment<>::Instance(m_configurationParser));
+        AddModule(std::make_shared<SecurityConfigurationAssessment>(m_configurationParser));
 #endif
+    }
 
     Setup();
 }
 
-std::shared_ptr<ModuleWrapper> ModuleManager::GetModule(const std::string& name)
+void ModuleManager::AddModule(std::shared_ptr<IModule> module)
+{
+    const auto moduleName = module->Name();
+
+    if (m_modules.find(moduleName) != m_modules.end())
+    {
+        throw std::runtime_error("Module with name '" + moduleName + "' already exists");
+    }
+
+    module->SetPushMessageFunction(m_pushMessage);
+    m_modules[moduleName] = module;
+}
+
+std::shared_ptr<IModule> ModuleManager::GetModule(const std::string& name)
 {
     const std::lock_guard<std::mutex> lock(m_mutex);
     if (auto it = m_modules.find(name); it != m_modules.end())
@@ -83,7 +96,7 @@ void ModuleManager::Start()
             [this, module]
             {
                 ++m_started;
-                module->Start();
+                module->Run();
             },
             module->Name());
     }

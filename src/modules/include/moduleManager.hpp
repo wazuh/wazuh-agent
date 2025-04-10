@@ -1,9 +1,9 @@
 #pragma once
 
 #include <command_entry.hpp>
+#include <imodule.hpp>
 #include <imoduleManager.hpp>
 #include <message.hpp>
-#include <moduleWrapper.hpp>
 #include <task_manager.hpp>
 
 #include <map>
@@ -31,43 +31,15 @@ public:
     ///
     /// The module is added only if it doesn't already exist. The module's
     /// SetPushMessageFunction is set to the manager's pushMessage callback.
-    /// The module is wrapped in a ModuleWrapper and added to the map of
-    /// modules under its name.
     ///
-    /// @tparam T The type of the module
     /// @param[in] module The module to add
-    template<typename T>
-    void AddModule(T& module)
-    {
-        const std::string& moduleName = module.Name();
-        if (m_modules.find(moduleName) != m_modules.end())
-        {
-            throw std::runtime_error("Module '" + moduleName + "' already exists.");
-        }
-
-        module.SetPushMessageFunction(m_pushMessage);
-
-        auto wrapper = std::make_shared<ModuleWrapper>(ModuleWrapper {
-            .Start = [&module]() { module.Start(); },
-            .Setup = [&module](std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
-            { module.Setup(configurationParser); },
-            .Stop = [&module]() { module.Stop(); },
-            .ExecuteCommand = [&module](std::string command, nlohmann::json parameters) -> Co_CommandExecutionResult
-            { co_return co_await module.ExecuteCommand(command, parameters); },
-            .Name =
-                [&module]()
-            {
-                return module.Name();
-            }});
-
-        m_modules[moduleName] = wrapper;
-    }
+    void AddModule(std::shared_ptr<IModule> module);
 
     /// @copydoc IModuleManager::AddModules
     void AddModules() override;
 
     /// @copydoc IModuleManager::GetModule
-    std::shared_ptr<ModuleWrapper> GetModule(const std::string& name) override;
+    std::shared_ptr<IModule> GetModule(const std::string& name) override;
 
     /// @copydoc IModuleManager::Start
     void Start() override;
@@ -83,7 +55,7 @@ private:
     TaskManager m_taskManager;
 
     /// @brief The modules
-    std::map<std::string, std::shared_ptr<ModuleWrapper>> m_modules;
+    std::map<std::string, std::shared_ptr<IModule>> m_modules;
 
     /// @brief The pushMessage callback
     std::function<int(Message)> m_pushMessage;

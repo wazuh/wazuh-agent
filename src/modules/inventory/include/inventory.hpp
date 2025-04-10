@@ -15,34 +15,42 @@
 #include <sysInfoInterface.hpp>
 
 #include <command_entry.hpp>
+#include <imodule.hpp>
 #include <message.hpp>
-#include <moduleWrapper.hpp>
 
 #include <boost/asio/awaitable.hpp>
 
-class Inventory
+class Inventory : public IModule
 {
 public:
     const std::string INVENTORY_DB_DISK_NAME = "inventory.db";
     const std::string INVENTORY_NORM_CONFIG_NAME = "norm_config.json";
 
-    static Inventory& Instance()
-    {
-        static Inventory s_instance;
-        return s_instance;
-    }
+    Inventory();
+    ~Inventory() = default;
+    Inventory(const Inventory&) = delete;
+    Inventory& operator=(const Inventory&) = delete;
 
-    void Start();
-    void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
-    void Stop();
-    Co_CommandExecutionResult ExecuteCommand(const std::string command, const nlohmann::json parameters) const;
+    /// @copydoc IModule::Run
+    void Run() override;
 
-    const std::string& Name() const
+    /// @copydoc IModule::Setup
+    void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) override;
+
+    /// @copydoc IModule::Stop
+    void Stop() override;
+
+    /// @copydoc IModule::ExecuteCommand
+    Co_CommandExecutionResult ExecuteCommand(const std::string command, const nlohmann::json parameters) override;
+
+    /// @copydoc IModule::Name
+    const std::string& Name() const override
     {
         return m_moduleName;
     };
 
-    void SetPushMessageFunction(const std::function<int(Message)>& pushMessage);
+    /// @copydoc IModule::SetPushMessageFunction
+    void SetPushMessageFunction(const std::function<int(Message)>& pushMessage) override;
 
     void Init(const std::shared_ptr<ISysInfo>& spInfo,
               const std::function<void(const std::string&)>& reportDiffFunction,
@@ -63,13 +71,6 @@ public:
     }
 
 private:
-    Inventory();
-    ~Inventory() = default;
-    Inventory(const Inventory&) = delete;
-    Inventory& operator=(const Inventory&) = delete;
-
-    void Destroy();
-
     std::string GetCreateStatement() const;
     nlohmann::json EcsProcessesData(const nlohmann::json& originalData, bool createFields = true);
     nlohmann::json EcsSystemData(const nlohmann::json& originalData, bool createFields = true);

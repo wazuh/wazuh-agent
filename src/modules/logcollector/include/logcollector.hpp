@@ -1,8 +1,8 @@
 #pragma once
 
 #include <command_entry.hpp>
+#include <imodule.hpp>
 #include <message.hpp>
-#include <moduleWrapper.hpp>
 
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
@@ -20,35 +20,41 @@ namespace logcollector
     /// @brief Logcollector module class
     ///
     /// This module is responsible for collecting logs from various sources and processing them.
-    class Logcollector
+    class Logcollector : public IModule
     {
     public:
-        /// @brief Starts the module
-        void Start();
+        /// @brief Constructor
+        Logcollector() = default;
 
-        /// @brief Configures the module
-        /// @param configurationParser Configuration parser
-        void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
+        /// @brief Destructor
+        virtual ~Logcollector() = default;
 
-        /// @brief Stops the module
-        void Stop();
+        /// @brief Deleted copy constructor
+        Logcollector(const Logcollector&) = delete;
 
-        /// @brief Executes a command
-        /// @param command Command to execute
-        /// @param parameters A json object containing the parameters of the command to be executed
-        /// @return Awaitable (coroutine) which will return the result of the command execution
-        Co_CommandExecutionResult ExecuteCommand(const std::string command, const nlohmann::json parameters);
+        /// @brief Deleted copy assignment operator
+        Logcollector& operator=(const Logcollector&) = delete;
 
-        /// @brief Gets the name of the Logcollector module
-        /// @return Name of the module
-        const std::string& Name() const
+        /// @copydoc IModule::Run
+        void Run() override;
+
+        /// @copydoc IModule::Setup
+        void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) override;
+
+        /// @copydoc IModule::Stop
+        void Stop() override;
+
+        /// @copydoc IModule::ExecuteCommand
+        Co_CommandExecutionResult ExecuteCommand(const std::string command, const nlohmann::json parameters) override;
+
+        /// @copydoc IModule::Name
+        const std::string& Name() const override
         {
             return m_moduleName;
         };
 
-        /// @brief Sets the push message function
-        /// @param pushMessage Push message function
-        void SetPushMessageFunction(const std::function<int(Message)>& pushMessage);
+        /// @copydoc IModule::SetPushMessageFunction
+        void SetPushMessageFunction(const std::function<int(Message)>& pushMessage) override;
 
         /// @brief Pushes a message to que queue
         /// @param location Location of the message
@@ -70,25 +76,11 @@ namespace logcollector
         /// @param ms Time to wait in milliseconds
         virtual boost::asio::awaitable<void> Wait(std::chrono::milliseconds ms);
 
-        /// @brief Gets the instance of the Logcollector module
-        /// @return Instance of the Logcollector module
-        static Logcollector& Instance()
-        {
-            static Logcollector s_instance;
-            return s_instance;
-        }
-
         /// @brief Add platform specific implementation of IReader to logcollector.
         /// @param configurationParser where to get parameters.
         void AddPlatformSpecificReader(std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
 
     protected:
-        /// @brief Constructor
-        Logcollector() {}
-
-        /// @brief Destructor
-        virtual ~Logcollector() = default;
-
         /// @brief Sets up the file reader
         /// @param configurationParser Configuration parser
         void SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser);

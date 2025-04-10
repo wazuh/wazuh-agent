@@ -109,15 +109,15 @@ TEST_F(InventoryImpTest, defaultCtor)
     EXPECT_CALL(wrapperDelta, callbackMock(expectedResult5)).Times(testing::AtLeast(1));
 
     auto configurationParser = std::make_shared<configuration::ConfigurationParser>();
-    Inventory::Instance().Setup(configurationParser);
-    std::thread t {[&spInfoWrapper, &callbackDataDelta]()
+    m_inventory.Setup(configurationParser);
+    std::thread t {[&spInfoWrapper, &callbackDataDelta, this]()
                    {
-                       Inventory::Instance().Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
-                       Inventory::Instance().SetAgentUUID("1234");
+                       m_inventory.Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
+                       m_inventory.SetAgentUUID("1234");
                    }};
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Inventory::Instance().Stop();
+    m_inventory.Stop();
 
     if (t.joinable())
     {
@@ -169,16 +169,16 @@ TEST_F(InventoryImpTest, intervalSeconds)
             hotfixes: true
     )";
     auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
-    Inventory::Instance().Setup(configParser);
+    m_inventory.Setup(configParser);
 
-    std::thread t {[&spInfoWrapper]()
+    std::thread t {[&spInfoWrapper, this]()
                    {
-                       Inventory::Instance().Init(spInfoWrapper, ReportFunction, INVENTORY_DB_PATH, "", "");
-                       Inventory::Instance().SetAgentUUID("1234");
+                       m_inventory.Init(spInfoWrapper, ReportFunction, INVENTORY_DB_PATH, "", "");
+                       m_inventory.SetAgentUUID("1234");
                    }};
 
     std::this_thread::sleep_for(std::chrono::seconds {SLEEP_DURATION_SECONDS});
-    Inventory::Instance().Stop();
+    m_inventory.Stop();
 
     if (t.joinable())
     {
@@ -213,16 +213,16 @@ TEST_F(InventoryImpTest, noScanOnStart)
             hotfixes: true
     )";
     auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
-    Inventory::Instance().Setup(configParser);
+    m_inventory.Setup(configParser);
 
-    std::thread t {[&spInfoWrapper]()
+    std::thread t {[&spInfoWrapper, this]()
                    {
-                       Inventory::Instance().Init(spInfoWrapper, ReportFunction, INVENTORY_DB_PATH, "", "");
-                       Inventory::Instance().SetAgentUUID("1234");
+                       m_inventory.Init(spInfoWrapper, ReportFunction, INVENTORY_DB_PATH, "", "");
+                       m_inventory.SetAgentUUID("1234");
                    }};
 
     std::this_thread::sleep_for(std::chrono::seconds {2});
-    Inventory::Instance().Stop();
+    m_inventory.Stop();
 
     if (t.joinable())
     {
@@ -301,16 +301,16 @@ TEST_F(InventoryImpTest, noHardware)
             hotfixes: true
     )";
     auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
-    Inventory::Instance().Setup(configParser);
+    m_inventory.Setup(configParser);
 
-    std::thread t {[&spInfoWrapper, &callbackDataDelta]()
+    std::thread t {[&spInfoWrapper, &callbackDataDelta, this]()
                    {
-                       Inventory::Instance().Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
-                       Inventory::Instance().SetAgentUUID("1234");
+                       m_inventory.Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
+                       m_inventory.SetAgentUUID("1234");
                    }};
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Inventory::Instance().Stop();
+    m_inventory.Stop();
 
     if (t.joinable())
     {
@@ -389,16 +389,16 @@ TEST_F(InventoryImpTest, noOs)
             hotfixes: true
     )";
     auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
-    Inventory::Instance().Setup(configParser);
+    m_inventory.Setup(configParser);
 
-    std::thread t {[&spInfoWrapper, &callbackDataDelta]()
+    std::thread t {[&spInfoWrapper, &callbackDataDelta, this]()
                    {
-                       Inventory::Instance().Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
-                       Inventory::Instance().SetAgentUUID("1234");
+                       m_inventory.Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
+                       m_inventory.SetAgentUUID("1234");
                    }};
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
-    Inventory::Instance().Stop();
+    m_inventory.Stop();
 
     if (t.joinable())
     {
@@ -477,16 +477,16 @@ TEST_F(InventoryImpTest, noNetwork)
             hotfixes: true
     )";
     auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
-    Inventory::Instance().Setup(configParser);
+    m_inventory.Setup(configParser);
 
-    std::thread t {[&spInfoWrapper, &callbackDataDelta]()
+    std::thread t {[&spInfoWrapper, &callbackDataDelta, this]()
                    {
-                       Inventory::Instance().Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
-                       Inventory::Instance().SetAgentUUID("1234");
+                       m_inventory.Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
+                       m_inventory.SetAgentUUID("1234");
                    }};
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Inventory::Instance().Stop();
+    m_inventory.Stop();
 
     if (t.joinable())
     {
@@ -564,16 +564,16 @@ TEST_F(InventoryImpTest, noPackages)
             hotfixes: true
     )";
     auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
-    Inventory::Instance().Setup(configParser);
+    m_inventory.Setup(configParser);
 
-    std::thread t {[&spInfoWrapper, &callbackDataDelta]()
+    std::thread t {[&spInfoWrapper, &callbackDataDelta, this]()
                    {
-                       Inventory::Instance().Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
-                       Inventory::Instance().SetAgentUUID("1234");
+                       m_inventory.Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
+                       m_inventory.SetAgentUUID("1234");
                    }};
 
     std::this_thread::sleep_for(std::chrono::seconds {2});
-    Inventory::Instance().Stop();
+    m_inventory.Stop();
 
     if (t.joinable())
     {
@@ -652,16 +652,16 @@ TEST_F(InventoryImpTest, noPorts)
             hotfixes: true
     )";
     auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
-    Inventory::Instance().Setup(configParser);
+    m_inventory.Setup(configParser);
 
-    std::thread t {[&spInfoWrapper, &callbackDataDelta]()
+    std::thread t {[&spInfoWrapper, &callbackDataDelta, this]()
                    {
-                       Inventory::Instance().Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
-                       Inventory::Instance().SetAgentUUID("1234");
+                       m_inventory.Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
+                       m_inventory.SetAgentUUID("1234");
                    }};
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Inventory::Instance().Stop();
+    m_inventory.Stop();
 
     if (t.joinable())
     {
@@ -748,16 +748,16 @@ TEST_F(InventoryImpTest, noPortsAll)
             hotfixes: true
     )";
     auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
-    Inventory::Instance().Setup(configParser);
+    m_inventory.Setup(configParser);
 
-    std::thread t {[&spInfoWrapper, &callbackDataDelta]()
+    std::thread t {[&spInfoWrapper, &callbackDataDelta, this]()
                    {
-                       Inventory::Instance().Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
-                       Inventory::Instance().SetAgentUUID("1234");
+                       m_inventory.Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
+                       m_inventory.SetAgentUUID("1234");
                    }};
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Inventory::Instance().Stop();
+    m_inventory.Stop();
 
     if (t.joinable())
     {
@@ -836,16 +836,16 @@ TEST_F(InventoryImpTest, noProcesses)
             hotfixes: true
     )";
     auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
-    Inventory::Instance().Setup(configParser);
+    m_inventory.Setup(configParser);
 
-    std::thread t {[&spInfoWrapper, &callbackDataDelta]()
+    std::thread t {[&spInfoWrapper, &callbackDataDelta, this]()
                    {
-                       Inventory::Instance().Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
-                       Inventory::Instance().SetAgentUUID("1234");
+                       m_inventory.Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
+                       m_inventory.SetAgentUUID("1234");
                    }};
 
     std::this_thread::sleep_for(std::chrono::seconds {2});
-    Inventory::Instance().Stop();
+    m_inventory.Stop();
 
     if (t.joinable())
     {
@@ -925,16 +925,16 @@ TEST_F(InventoryImpTest, noHotfixes)
             hotfixes: false
     )";
     auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
-    Inventory::Instance().Setup(configParser);
+    m_inventory.Setup(configParser);
 
-    std::thread t {[&spInfoWrapper, &callbackDataDelta]()
+    std::thread t {[&spInfoWrapper, &callbackDataDelta, this]()
                    {
-                       Inventory::Instance().Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
-                       Inventory::Instance().SetAgentUUID("1234");
+                       m_inventory.Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
+                       m_inventory.SetAgentUUID("1234");
                    }};
 
     std::this_thread::sleep_for(std::chrono::seconds {2});
-    Inventory::Instance().Stop();
+    m_inventory.Stop();
 
     if (t.joinable())
     {
@@ -983,15 +983,15 @@ TEST_F(InventoryImpTest, scanInvalidData)
             hotfixes: true
     )";
     auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
-    Inventory::Instance().Setup(configParser);
+    m_inventory.Setup(configParser);
 
-    std::thread t {[&spInfoWrapper]()
+    std::thread t {[&spInfoWrapper, this]()
                    {
-                       Inventory::Instance().Init(spInfoWrapper, ReportFunction, INVENTORY_DB_PATH, "", "");
-                       Inventory::Instance().SetAgentUUID("1234");
+                       m_inventory.Init(spInfoWrapper, ReportFunction, INVENTORY_DB_PATH, "", "");
+                       m_inventory.SetAgentUUID("1234");
                    }};
     std::this_thread::sleep_for(std::chrono::seconds {1});
-    Inventory::Instance().Stop();
+    m_inventory.Stop();
 
     if (t.joinable())
     {
@@ -1112,16 +1112,16 @@ TEST_F(InventoryImpTest, portAllEnable)
             hotfixes: false
     )";
     auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
-    Inventory::Instance().Setup(configParser);
+    m_inventory.Setup(configParser);
 
-    std::thread t {[&spInfoWrapper, &callbackData]()
+    std::thread t {[&spInfoWrapper, &callbackData, this]()
                    {
-                       Inventory::Instance().Init(spInfoWrapper, callbackData, INVENTORY_DB_PATH, "", "");
-                       Inventory::Instance().SetAgentUUID("1234");
+                       m_inventory.Init(spInfoWrapper, callbackData, INVENTORY_DB_PATH, "", "");
+                       m_inventory.SetAgentUUID("1234");
                    }};
 
     std::this_thread::sleep_for(std::chrono::seconds {2});
-    Inventory::Instance().Stop();
+    m_inventory.Stop();
 
     if (t.joinable())
     {
@@ -1238,16 +1238,16 @@ TEST_F(InventoryImpTest, portAllDisable)
             hotfixes: false
     )";
     auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
-    Inventory::Instance().Setup(configParser);
+    m_inventory.Setup(configParser);
 
-    std::thread t {[&spInfoWrapper, &callbackData]()
+    std::thread t {[&spInfoWrapper, &callbackData, this]()
                    {
-                       Inventory::Instance().Init(spInfoWrapper, callbackData, INVENTORY_DB_PATH, "", "");
-                       Inventory::Instance().SetAgentUUID("1234");
+                       m_inventory.Init(spInfoWrapper, callbackData, INVENTORY_DB_PATH, "", "");
+                       m_inventory.SetAgentUUID("1234");
                    }};
 
     std::this_thread::sleep_for(std::chrono::seconds {2});
-    Inventory::Instance().Stop();
+    m_inventory.Stop();
 
     if (t.joinable())
     {
@@ -1297,16 +1297,16 @@ TEST_F(InventoryImpTest, PackagesDuplicated)
             hotfixes: false
     )";
     auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
-    Inventory::Instance().Setup(configParser);
+    m_inventory.Setup(configParser);
 
-    std::thread t {[&spInfoWrapper, &callbackData]()
+    std::thread t {[&spInfoWrapper, &callbackData, this]()
                    {
-                       Inventory::Instance().Init(spInfoWrapper, callbackData, INVENTORY_DB_PATH, "", "");
-                       Inventory::Instance().SetAgentUUID("1234");
+                       m_inventory.Init(spInfoWrapper, callbackData, INVENTORY_DB_PATH, "", "");
+                       m_inventory.SetAgentUUID("1234");
                    }};
 
     std::this_thread::sleep_for(std::chrono::seconds {2});
-    Inventory::Instance().Stop();
+    m_inventory.Stop();
 
     if (t.joinable())
     {
@@ -1351,16 +1351,16 @@ TEST_F(InventoryImpTest, hashId)
             hotfixes: false
     )";
     auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
-    Inventory::Instance().Setup(configParser);
+    m_inventory.Setup(configParser);
 
-    std::thread t {[&spInfoWrapper, &callbackDataDelta]()
+    std::thread t {[&spInfoWrapper, &callbackDataDelta, this]()
                    {
-                       Inventory::Instance().SetAgentUUID("1234");
-                       Inventory::Instance().Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
+                       m_inventory.SetAgentUUID("1234");
+                       m_inventory.Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
                    }};
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Inventory::Instance().Stop();
+    m_inventory.Stop();
 
     if (t.joinable())
     {
@@ -1414,16 +1414,16 @@ TEST_F(InventoryImpTest, statelessMessage)
             hotfixes: false
     )";
     auto configParser = std::make_shared<configuration::ConfigurationParser>(inventoryConfig);
-    Inventory::Instance().Setup(configParser);
+    m_inventory.Setup(configParser);
 
-    std::thread t {[&spInfoWrapper, &callbackDataDelta]()
+    std::thread t {[&spInfoWrapper, &callbackDataDelta, this]()
                    {
-                       Inventory::Instance().Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
-                       Inventory::Instance().SetAgentUUID("1234");
+                       m_inventory.Init(spInfoWrapper, callbackDataDelta, INVENTORY_DB_PATH, "", "");
+                       m_inventory.SetAgentUUID("1234");
                    }};
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
-    Inventory::Instance().Stop();
+    m_inventory.Stop();
 
     if (t.joinable())
     {
