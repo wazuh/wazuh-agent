@@ -79,13 +79,13 @@ private:
     std::shared_ptr<IFileSystemWrapper> m_fileSystemWrapper;
 
     /// @brief Flag indicating whether the module is enabled
-    bool m_enabled;
+    bool m_enabled = true;
 
     /// @brief Flag indicating whether to scan on start
-    bool m_scanOnStart;
+    bool m_scanOnStart = true;
 
     /// @brief Scan interval in seconds
-    std::time_t m_scanInterval;
+    std::time_t m_scanInterval = 3600;
 
     /// @brief List of policies
     std::vector<SCAPolicy> m_policies;
