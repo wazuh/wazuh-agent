@@ -48,6 +48,8 @@ rm -fr %{buildroot}
 cmake --install "$(pwd)/src/build" --prefix %{buildroot}%{_localstatedir}
 install -D /usr/lib/systemd/system/wazuh-agent.service %{buildroot}%{_localstatedir}usr/lib/systemd/system/wazuh-agent.service
 sed -i "s|%{buildroot}%{_localstatedir}|/|g" %{buildroot}%{_localstatedir}usr/lib/systemd/system/wazuh-agent.service
+mkdir -p %{buildroot}/usr/bin
+ln -sf %{_localstatedir}usr/share/wazuh-agent/bin/wazuh-agent %{buildroot}/usr/bin/wazuh-agent
 exit 0
 
 %pre
@@ -238,6 +240,7 @@ if [ $1 = 0 ]; then
 
   if [ $1 = 0 ];then
     # Remove lingering folders and files
+    rm -f %{_localstatedir}usr/bin/wazuh-agent
     rm -rf %{_localstatedir}usr/share/wazuh-agent/bin/wazuh-agent
     rm -f %{_localstatedir}usr/lib/systemd/system/wazuh-agent.service
     rm -rf %{_localstatedir}etc/wazuh-agent
@@ -260,6 +263,7 @@ rm -fr %{buildroot}
 %dir %attr(750, root, wazuh) %{_localstatedir}var/lib/wazuh-agent
 %attr(750, root, wazuh) %{_localstatedir}etc/wazuh-agent/wazuh-agent.yml
 %attr(440, wazuh, wazuh) %{_localstatedir}usr/share/wazuh-agent/VERSION.json
+%attr(755, root, root) %{_localstatedir}usr/bin/wazuh-agent
 
 %changelog
 * Wed Jan 01 2025 Wazuh Inc <info@wazuh.com> - 5.0.0
