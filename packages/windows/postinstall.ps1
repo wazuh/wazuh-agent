@@ -90,6 +90,26 @@ if (-not $eventLogExists) {
     Write-Host "Event log source '$sourceName' is already registered."
 }
 
+if ($env:ProgramFiles) {
+    $installDir = "$env:ProgramFiles\wazuh-agent"
+} else {
+    $installDir = "C:\Program Files\wazuh-agent"
+}
+
+$batFilePath = "$env:SystemRoot\System32\wazuh-agent.bat"
+$batFileContent = @"
+@echo off
+"$installDir\wazuh-agent.exe" %*
+"@
+
+try {
+    $batFileContent | Out-File -FilePath $batFilePath -Encoding ASCII -Force
+    Write-Host "Batch file created at: $batFilePath" -ForegroundColor Green
+}
+catch {
+    Write-Host "Error: $_" -ForegroundColor Red
+}
+
 Write-Host "postinstall.ps1 script completed."
 
 # Delete script after execution
