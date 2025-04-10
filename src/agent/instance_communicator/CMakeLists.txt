@@ -21,4 +21,7 @@ target_link_libraries(InstanceCommunicator PUBLIC Boost::asio PRIVATE Logger Con
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(InstanceCommunicator)
 
-# if(BUILD_TESTS) enable_testing() add_subdirectory(tests) endif()
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
