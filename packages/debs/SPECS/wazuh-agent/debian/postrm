@@ -10,6 +10,7 @@ case "$1" in
 
         if [ "$1" = "remove" ]; then
             rm -rf ${WAZUH_SHARE_DIR}
+            rm -f /usr/bin/wazuh-agent
             rm -f /usr/lib/systemd/system/wazuh-agent.service
 
             # Remove the shared library configuration file if it exists
