@@ -3,21 +3,16 @@
 #include <sca_policy.hpp>
 
 #include <command_entry.hpp>
-#include <config.h>
 #include <configuration_parser.hpp>
-#include <dbsync.hpp>
 #include <filesystem_wrapper.hpp>
 #include <idbsync.hpp>
 #include <imodule.hpp>
 #include <message.hpp>
-#include <sca_policy_loader.hpp>
 
 #include <boost/asio.hpp>
 #include <nlohmann/json.hpp>
 
-#include <filesystem>
 #include <functional>
-#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -27,23 +22,11 @@ class SecurityConfigurationAssessment : public IModule
 public:
     /// @brief Constructor
     /// @param configurationParser Configuration parser for setting up the module
+    /// @param dbSync Pointer to IDBSync for database synchronization
     /// @param fileSystemWrapper File system wrapper for file operations
     SecurityConfigurationAssessment(std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
                                     std::shared_ptr<IDBSync> dbSync = nullptr,
-                                    std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
-        : m_dBSync(dbSync ? std::move(dbSync)
-                          : std::make_shared<DBSync>(HostType::AGENT,
-                                                     DbEngineType::SQLITE3,
-                                                     configurationParser->GetConfigOrDefault(
-                                                         config::DEFAULT_DATA_PATH, "agent", "path.data") +
-                                                         "/" + SCA_DB_DISK_NAME,
-                                                     GetCreateStatement(),
-                                                     DbManagement::PERSISTENT))
-        , m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
-                                                : std::make_shared<file_system::FileSystemWrapper>())
-    {
-        Setup(configurationParser);
-    }
+                                    std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr);
 
     /// @brief Destructor
     ~SecurityConfigurationAssessment() = default;
@@ -55,95 +38,30 @@ public:
     SecurityConfigurationAssessment& operator=(const SecurityConfigurationAssessment&) = delete;
 
     /// @copydoc IModule::Run
-    void Run() override
-    {
-        // Execute the policies (run io context)
-        // Each policy should:
-        // Run regex engine, check type of policies
-        // Create a report and send it to the server
-        m_ioContext.run();
-    }
+    void Run() override;
 
     /// @copydoc IModule::Setup
-    void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) override
-    {
-        m_enabled = configurationParser->GetConfigOrDefault(config::sca::DEFAULT_ENABLED, "sca", "enabled");
-        m_scanOnStart =
-            configurationParser->GetConfigOrDefault(config::sca::DEFAULT_SCAN_ON_START, "sca", "scan_on_start");
-        m_scanInterval = configurationParser->GetTimeConfigOrDefault(config::sca::DEFAULT_INTERVAL, "sca", "interval");
-
-        m_policies = [this, &configurationParser]()
-        {
-            SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser, m_pushMessage);
-            return policyLoader.GetPolicies();
-        }();
-    }
+    void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) override;
 
     /// @copydoc IModule::Stop
-    void Stop() override
-    {
-        // Stop the policies
-        // Stop the regex engine
-        m_ioContext.stop();
-    }
+    void Stop() override;
 
     /// @copydoc IModule::ExecuteCommand
-    Co_CommandExecutionResult ExecuteCommand([[maybe_unused]] const std::string command,
-                                             [[maybe_unused]] const nlohmann::json parameters) override
-    {
-        if (!m_enabled)
-        {
-            LogInfo("SCA module is disabled.");
-            co_return module_command::CommandExecutionResult {module_command::Status::FAILURE, "Module is disabled"};
-        }
-
-        LogInfo("Command: {}", command);
-        co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS,
-                                                          "Command not implemented yet"};
-    }
+    Co_CommandExecutionResult ExecuteCommand(const std::string command, const nlohmann::json parameters) override;
 
     /// @copydoc IModule::Name
-    const std::string& Name() const override
-    {
-        return m_name;
-    }
+    const std::string& Name() const override;
 
     /// @copydoc IModule::SetPushMessageFunction
-    void SetPushMessageFunction(const std::function<int(Message)>& pushMessage) override
-    {
-        m_pushMessage = pushMessage;
-    }
+    void SetPushMessageFunction(const std::function<int(Message)>& pushMessage) override;
 
     /// @brief Enqueues an ASIO task (coroutine)
     /// @param task Task to enqueue
-    void EnqueueTask(boost::asio::awaitable<void> task)
-    {
-        // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-        boost::asio::co_spawn(
-            m_ioContext,
-            [task = std::move(task)]() mutable -> boost::asio::awaitable<void>
-            {
-                try
-                {
-                    co_await std::move(task);
-                }
-                catch (const std::exception& e)
-                {
-                    LogError("Logcollector coroutine task exited with an exception: {}", e.what());
-                }
-            },
-            boost::asio::detached);
-        // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    }
+    void EnqueueTask(boost::asio::awaitable<void> task);
 
 private:
     /// @brief Get the create statement for the database
-    std::string GetCreateStatement() const
-    {
-        // Placeholder for the actual SQL statement
-        // This should be replaced with the actual SQL statement to create the SCA table
-        return R"(CREATE TABLE sca (policy TEXT PRIMARY KEY );)";
-    }
+    std::string GetCreateStatement() const;
 
     /// @brief SCA db file name
     const std::string SCA_DB_DISK_NAME = "sca.db";
