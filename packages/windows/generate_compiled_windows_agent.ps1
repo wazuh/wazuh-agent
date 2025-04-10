@@ -5,7 +5,8 @@ param (
     [string]$MSI_NAME = "wazuh-agent",
     [string]$BUILD_TESTS = "0",
     [string]$CMAKE_CONFIG = "Debug",
-    [string]$TOKEN_VCPKG = ""
+    [string]$TOKEN_VCPKG = "",
+    [int]$JOBS = 0
 )
 
 if(($help.isPresent)) {
@@ -17,6 +18,7 @@ if(($help.isPresent)) {
         2. BUILD_TESTS: Define test mode action (0 or 1). By default '0'.
         3. CMAKE_CONFIG: Cmake config type, Debug, Release, RelWithDebInfo or MinSizeRel. By default 'Debug'.
         4. TOKEN_VCPKG: VCPKG remote binary caching repository key. By default is empty, no binary caching funcionality will be used.
+        5. JOBS: Number of threads to use for compilation. If 0, it will use all logical processors.
     "
     Exit
 }
@@ -61,5 +63,13 @@ mkdir build -Force
 $Env:CUSTOM_PACKAGE_NAME = $MSI_NAME
 $Env:CUSTOM_CMAKE_CONFIG = $CMAKE_CONFIG
 cmake src -B build -DBUILD_TESTS=$BUILD_TESTS -G "Visual Studio 17 2022" -A x64
-cmake --build build --config $CMAKE_CONFIG --parallel (Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors
+
+if ($JOBS -le 0) {
+    $JOBS = (Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors
+    Write-Host "JOBS not specified or <= 0. Using $JOBS logical processors."
+} else {
+    Write-Host "Using $JOBS threads for compilation."
+}
+
+cmake --build build --config $CMAKE_CONFIG --parallel $JOBS
 cd $originalDir
