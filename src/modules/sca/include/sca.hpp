@@ -7,6 +7,7 @@
 #include <configuration_parser.hpp>
 #include <dbsync.hpp>
 #include <filesystem_wrapper.hpp>
+#include <idbsync.hpp>
 #include <imodule.hpp>
 #include <message.hpp>
 #include <sca_policy_loader.hpp>
@@ -21,7 +22,6 @@
 #include <string>
 #include <vector>
 
-template<class DBSyncType = DBSync>
 class SecurityConfigurationAssessment : public IModule
 {
 public:
@@ -29,8 +29,17 @@ public:
     /// @param configurationParser Configuration parser for setting up the module
     /// @param fileSystemWrapper File system wrapper for file operations
     SecurityConfigurationAssessment(std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
+                                    std::shared_ptr<IDBSync> dbSync = nullptr,
                                     std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr)
-        : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
+        : m_dBSync(dbSync ? std::move(dbSync)
+                          : std::make_shared<DBSync>(HostType::AGENT,
+                                                     DbEngineType::SQLITE3,
+                                                     configurationParser->GetConfigOrDefault(
+                                                         config::DEFAULT_DATA_PATH, "agent", "path.data") +
+                                                         "/" + SCA_DB_DISK_NAME,
+                                                     GetCreateStatement(),
+                                                     DbManagement::PERSISTENT))
+        , m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
                                                 : std::make_shared<file_system::FileSystemWrapper>())
     {
         Setup(configurationParser);
@@ -58,8 +67,6 @@ public:
     /// @copydoc IModule::Setup
     void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) override
     {
-        m_dbFilePath = configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data") + "/" +
-                       SCA_DB_DISK_NAME;
         m_enabled = configurationParser->GetConfigOrDefault(config::sca::DEFAULT_ENABLED, "sca", "enabled");
         m_scanOnStart =
             configurationParser->GetConfigOrDefault(config::sca::DEFAULT_SCAN_ON_START, "sca", "scan_on_start");
@@ -70,9 +77,6 @@ public:
             SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser, m_pushMessage);
             return policyLoader.GetPolicies();
         }();
-
-        m_dBSync = std::make_unique<DBSyncType>(
-            HostType::AGENT, DbEngineType::SQLITE3, m_dbFilePath, GetCreateStatement(), DbManagement::PERSISTENT);
     }
 
     /// @copydoc IModule::Stop
@@ -147,11 +151,8 @@ private:
     /// @brief SCA module name
     std::string m_name = "SCA";
 
-    /// @brief Pointer to DBSync
-    std::unique_ptr<DBSyncType> m_dBSync;
-
-    /// @brief Path to the database file
-    std::string m_dbFilePath;
+    /// @brief Pointer to IDBSync
+    std::shared_ptr<IDBSync> m_dBSync;
 
     /// @brief Function for pushing event messages
     std::function<int(Message)> m_pushMessage;

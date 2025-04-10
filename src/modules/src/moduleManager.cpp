@@ -52,7 +52,7 @@ void ModuleManager::AddModules()
 #endif
 
 #ifdef ENABLE_SCA
-        AddModule(std::make_shared<SecurityConfigurationAssessment<DBSync>>(m_configurationParser));
+        AddModule(std::make_shared<SecurityConfigurationAssessment>(m_configurationParser));
 #endif
     }
 
