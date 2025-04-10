@@ -26,7 +26,6 @@ BUILD_DOCKER="yes"
 DOCKER_TAG="latest"
 INSTALLATION_PATH="/"
 CHECKSUM="no"
-FUTURE="no"
 IS_STAGE="no"
 ENTRYPOINT="/home/build.sh"
 
@@ -84,7 +83,7 @@ build_pkg() {
         ${CONTAINER_NAME}:${DOCKER_TAG} \
         ${ENTRYPOINT} \
         ${REVISION} ${JOBS} ${DEBUG} \
-        ${CHECKSUM} ${FUTURE} ${SRC}|| return 1
+        ${CHECKSUM} ${SRC} || return 1
 
     echo "Package $(ls -Art ${OUTDIR} | tail -n 1) added to ${OUTDIR}."
 
@@ -116,8 +115,7 @@ help() {
     echo "    --sources <path>           [Optional] Absolute path containing wazuh source code. This option will use local source code instead of downloading it from GitHub. By default use the script path."
     echo "    --is_stage                 [Optional] Use release name in package."
     echo "    --system                   [Optional] Select Package OS [rpm, deb]. By default is 'deb'."
-    echo "    --src                      [Optional] Generate the source package in the destination directory."
-    echo "    --future                   [Optional] Build test future package x.30.0 Used for development purposes."
+    echo "    --src                      [Optional] Generate the source package in the destination directory (only for rpm)."
     echo "    --verbose                  [Optional] Print commands and their arguments as they are executed."
     echo "    -h, --help                 Show this help."
     echo
@@ -215,10 +213,6 @@ main() {
             else
                 help 1
             fi
-            ;;
-        "--future")
-            FUTURE="yes"
-            shift 1
             ;;
         "--is_stage")
             IS_STAGE="yes"

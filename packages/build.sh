@@ -12,42 +12,15 @@ set -e
 build_directories() {
   local build_folder=$1
   local wazuh_dir="$2"
-  local future="$3"
 
   mkdir -p "${build_folder}"
   wazuh_version="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' wazuh*/VERSION.json)"
 
-  if [[ "$future" == "yes" ]]; then
-    wazuh_version="$(future_version "$build_folder" "$wazuh_dir" $wazuh_version)"
-    source_dir="${build_folder}/wazuh-${BUILD_TARGET}-${wazuh_version}"
-  else
-    package_name="wazuh-${BUILD_TARGET}-${wazuh_version}"
-    source_dir="${build_folder}/${package_name}"
-    cp -aR $wazuh_dir "$source_dir"
-  fi
+  package_name="wazuh-${BUILD_TARGET}-${wazuh_version}"
+  source_dir="${build_folder}/${package_name}"
+  cp -aR $wazuh_dir "$source_dir"
+
   echo "$source_dir"
-}
-
-# Function to handle future version
-future_version() {
-  local build_folder="$1"
-  local wazuh_dir="$2"
-  local base_version="$3"
-
-  specs_path="$(find $wazuh_dir -name SPECS | grep $SYSTEM)"
-
-  local major=$(echo "$base_version" | cut -dv -f2 | cut -d. -f1)
-  local minor=$(echo "$base_version" | cut -d. -f2)
-  local version="${major}.30.0"
-  local old_name="wazuh-${BUILD_TARGET}-${base_version}"
-  local new_name=wazuh-${BUILD_TARGET}-${version}
-
-  local new_wazuh_dir="${build_folder}/${new_name}"
-  cp -R ${wazuh_dir} "$new_wazuh_dir"
-  find "$new_wazuh_dir" "${specs_path}" \( -name "*VERSION*" -o -name "*changelog*" \
-        -o -name "*.spec" \) -exec sed -i "s/${base_version}/${version}/g" {} \;
-  sed -i 's/\("version"[[:space:]]*:[[:space:]]*"\)[^"]*\("\)/\1'"${major}.30.0"'\2/' "$new_wazuh_dir/VERSION.json"
-  echo "$version"
 }
 
 # Function to generate checksum and move files
@@ -93,8 +66,7 @@ export REVISION="$1"
 export JOBS="$2"
 debug="$3"
 checksum="$4"
-future="$5"
-src="$6"
+src="$5"
 
 build_dir="/build_wazuh"
 
@@ -114,7 +86,7 @@ else
 fi
 
 # Build directories
-source_dir=$(build_directories "$build_dir/${BUILD_TARGET}" "wazuh*" $future)
+source_dir=$(build_directories "$build_dir/${BUILD_TARGET}" "wazuh*")
 
 wazuh_version="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' wazuh*/VERSION.json)"
 # TODO: Improve how we handle package_name
