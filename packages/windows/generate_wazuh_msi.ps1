@@ -110,6 +110,7 @@ function BuildWazuhMsi(){
         # Define files to sign
         $filesToSign = @(
             "$PSScriptRoot\..\..\build\$CMAKE_CONFIG\*.exe",
+            "$PSScriptRoot\preinstall.ps1",
             "$PSScriptRoot\postinstall.ps1",
             "$PSScriptRoot\cleanup.ps1"
         )

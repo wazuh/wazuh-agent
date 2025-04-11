@@ -107,3 +107,9 @@ runs:
       with:
         name: ${{ env.PKG_NAME }}.sha512
         path: C:/tmp/${{ env.PKG_NAME }}.msi.sha512
+
+    - name: Upload Windows Wazuh debug symbols
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.PKG_NAME }}-debug-symbols.zip
+        path: C:/tmp/${{ env.PKG_NAME }}-debug-symbols.zip

@@ -1,16 +1,9 @@
 $CleanPath = "C:\ProgramData\wazuh-agent"
 Write-Host "Running cleanup.ps1 for path $CleanPath"
 
-# List of files to keep after uninstallation
-$Exceptions = @(
-    "config/wazuh-agent.yml"
-)
-
-$ExceptionPaths = $Exceptions | ForEach-Object { Join-Path -Path $CleanPath -ChildPath $_ }
-
 # Remove Wazuh data folder
-Get-ChildItem -Path $CleanPath -Recurse -File | ForEach-Object {
-    if ($_.FullName -notin $ExceptionPaths) {
+if (Test-Path $CleanPath) {
+    Get-ChildItem -Path $CleanPath -Recurse -File | ForEach-Object {
         try {
             Write-Host "Removing file: $($_.FullName)"
             Remove-Item -Path $_.FullName -Force
@@ -18,31 +11,31 @@ Get-ChildItem -Path $CleanPath -Recurse -File | ForEach-Object {
             Write-Host "Failed to remove file: $_"
             exit 1
         }
-    } else {
-        Write-Host "Skipping file (exception): $($_.FullName)"
     }
-}
 
-Get-ChildItem -Path $CleanPath -Recurse -Directory | Sort-Object -Property FullName -Descending | ForEach-Object {
-    if (-not (Get-ChildItem -Path $_.FullName -Recurse)) {
+    Get-ChildItem -Path $CleanPath -Recurse -Directory | Sort-Object -Property FullName -Descending | ForEach-Object {
+        if (-not (Get-ChildItem -Path $_.FullName -Recurse)) {
+            try {
+                Write-Host "Removing empty directory: $($_.FullName)"
+                Remove-Item -Path $_.FullName -Force
+            } catch {
+                Write-Host "Failed to remove empty directory: $_"
+                exit 1
+            }
+        }
+    }
+
+    if (-not (Get-ChildItem -Path $CleanPath -Recurse)) {
         try {
-            Write-Host "Removing empty directory: $($_.FullName)"
-            Remove-Item -Path $_.FullName -Force
+            Write-Host "Removing root directory: $CleanPath"
+            Remove-Item -Path $CleanPath -Force
         } catch {
-            Write-Host "Failed to remove empty directory: $_"
+            Write-Host "Failed to remove root directory: $_"
             exit 1
         }
     }
-}
-
-if (-not (Get-ChildItem -Path $CleanPath -Recurse)) {
-    try {
-        Write-Host "Removing root directory: $CleanPath"
-        Remove-Item -Path $CleanPath -Force
-    } catch {
-        Write-Host "Failed to remove root directory: $_"
-        exit 1
-    }
+} else {
+    Write-Host "Cleanup path $CleanPath does not exist. Skipping."
 }
 
 # Remove Wazuh service
@@ -73,4 +66,4 @@ if ([System.Diagnostics.EventLog]::SourceExists($sourceName)) {
     Write-Host "Event log source '$sourceName' has already been removed."
 }
 
-    Write-Host "cleanup.ps1 script completed."
+Write-Host "cleanup.ps1 script completed."

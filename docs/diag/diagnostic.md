@@ -47,7 +47,7 @@ Copy this file for analysis.
 
 To gather the configuration file, locate the following file:
 
-- `C:\ProgramData\wazuh-agent\config\wazuh-agent.yml`
+- `C:\Program Files\wazuh-agent\config\wazuh-agent.yml`
 
 Copy this file for analysis.
 
@@ -79,10 +79,10 @@ Use the Event Viewer to search for logs related to `wazuh-agent`.
 
 Collect system resource usage data to understand the agent's performance impact. Fill in the table below with the relevant data:
 
-| Daemon               | CPU usage | RAM usage | Disk usage | Network usage               |
-|----------------------|-----------|-----------|------------|-----------------------------|
-| (Global)             |           |           |            | (Connections to port 27000) |
-| `wazuh-agent`        |           |           |            |                             |
+| Daemon        | CPU usage | RAM usage | Disk usage | Network usage               |
+| ------------- | --------- | --------- | ---------- | --------------------------- |
+| (Global)      |           |           |            | (Connections to port 27000) |
+| `wazuh-agent` |           |           |            |                             |
 
 #### Steps to collect system resource data
 
@@ -115,9 +115,9 @@ Collect system resource usage data to understand the agent's performance impact.
 
 Collect system resource usage data to understand the agent's performance impact. Fill in the table below with the relevant data:
 
-| Daemon            | CPU usage | RAM usage | Disk usage | Network usage                     |
-|-------------------|-----------|-----------|------------|-----------------------------------|
-| `wazuh-agent.exe` |           |           |            |                                   |
+| Daemon            | CPU usage | RAM usage | Disk usage | Network usage |
+| ----------------- | --------- | --------- | ---------- | ------------- |
+| `wazuh-agent.exe` |           |           |            |               |
 
 #### Steps to collect system resource data
 
