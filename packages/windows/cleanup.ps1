@@ -73,4 +73,18 @@ if ([System.Diagnostics.EventLog]::SourceExists($sourceName)) {
     Write-Host "Event log source '$sourceName' has already been removed."
 }
 
-    Write-Host "cleanup.ps1 script completed."
+# Remove the wazuh-agent.bat file from System32
+$bakFile = "C:\Windows\System32\wazuh-agent.bat"
+if (Test-Path $bakFile) {
+    try {
+        Write-Host "Removing backup file: $bakFile"
+        Remove-Item -Path $bakFile -Force
+    } catch {
+        Write-Host "Failed to remove backup file: $_"
+        exit 1
+    }
+} else {
+    Write-Host "No backup file found at: $bakFile"
+}
+
+Write-Host "cleanup.ps1 script completed."
