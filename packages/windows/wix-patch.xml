@@ -1,9 +1,29 @@
 <CPackWiXPatch>
   <CPackWiXFragment Id="#PRODUCT">
+    <!-- Embed scripts into the Binary table -->
+    <Binary Id="PreInstallScript" SourceFile="preinstall.ps1" />
+    <Binary Id="PostInstallScript" SourceFile="postinstall.ps1" />
+    <Binary Id="CleanupScript" SourceFile="cleanup.ps1" />
+
+    <!-- PreInstall Custom Action -->
+    <SetProperty
+        Id="PreInstall"
+        Value="&quot;powershell.exe&quot; -ExecutionPolicy Bypass -File &quot;[#PreInstallScriptPath]&quot;"
+        Sequence="execute"
+        Before="PreInstall"
+    />
+    <CustomAction
+        Id="PreInstall"
+        BinaryKey="WixCA"
+        DllEntry="WixQuietExec"
+        Return="check"
+        Execute="deferred"
+        Impersonate="no"
+    />
     <!-- PostInstall Custom Action -->
     <SetProperty
         Id="PostInstall"
-        Value="&quot;powershell.exe&quot; -ExecutionPolicy Bypass -File &quot;[INSTALL_ROOT]postinstall.ps1&quot;"
+        Value="&quot;powershell.exe&quot; -ExecutionPolicy Bypass -File &quot;[#PostInstallScriptPath]&quot;"
         Sequence="execute"
         Before="PostInstall"
     />
@@ -18,7 +38,7 @@
     <!-- CleanupScript Custom Action -->
     <SetProperty
         Id="CleanupScript"
-        Value="&quot;powershell.exe&quot; -ExecutionPolicy Bypass -File &quot;[INSTALL_ROOT]cleanup.ps1&quot;"
+        Value="&quot;powershell.exe&quot; -ExecutionPolicy Bypass -File &quot;[#CleanupScriptPath]&quot;"
         Sequence="execute"
         Before="CleanupScript"
     />
@@ -32,8 +52,9 @@
     />
     <!-- Schedule Custom Actions -->
     <InstallExecuteSequence>
-      <Custom Action="PostInstall" Before="InstallFinalize">NOT Installed</Custom>
-      <Custom Action="CleanupScript" Before="RemoveFiles">Installed AND REMOVE~="ALL"</Custom>
+      <Custom Action="PreInstall" After="InstallInitialize">NOT Installed OR (Installed AND UPGRADINGPRODUCTCODE)</Custom>
+      <Custom Action="PostInstall" Before="InstallFinalize">NOT Installed OR (Installed AND UPGRADINGPRODUCTCODE)</Custom>
+      <Custom Action="CleanupScript" Before="RemoveExistingProducts">Installed AND REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE</Custom>
     </InstallExecuteSequence>
   </CPackWiXFragment>
 </CPackWiXPatch>

@@ -62,7 +62,7 @@ not recommended for moving an agent from one endpoint to another.
 
 3. Back up Wazuh agent data and configuration file:
    ```sh
-   xcopy "C:\ProgramData\wazuh-agent\config\wazuh-agent.yml" "%bkp_folder%\ProgramData\wazuh-agent\config\" /K /S /X /I
+   xcopy "C:\Program Files\wazuh-agent\config\wazuh-agent.yml" "%bkp_folder%\Program Files\wazuh-agent\config\" /K /S /X /I
    xcopy "C:\ProgramData\wazuh-agent\var\agent_info.db" "%bkp_folder%\ProgramData\wazuh-agent\var\" /K /S /X /I
    ```
 
@@ -112,8 +112,8 @@ not recommended for moving an agent from one endpoint to another.
 
 2. Copy files to their respective locations:
    ```sh
-   xcopy "ProgramData\wazuh-agent\config\wazuh-agent.yml" "C:\ProgramData\wazuh-agent\config\" /K /S /X /I
-   xcopy "\ProgramData\wazuh-agent\var\agent_info.db" "C:\ProgramData\wazuh-agent\var\" /K /S /X /I
+   xcopy "Program Files\wazuh-agent\config\wazuh-agent.yml" "C:\Program Files\wazuh-agent\config\\" /K /S /X /I
+   xcopy "ProgramData\wazuh-agent\var\agent_info.db" "C:\ProgramData\wazuh-agent\var\\" /K /S /X /I
    ```
 
 3. Start the service:
