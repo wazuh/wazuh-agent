@@ -13,6 +13,7 @@ USER="wazuh"
 AGENT_DIR="/Library/Application Support/Wazuh agent.app"
 CONF_DIR="$AGENT_DIR/etc"
 DATA_DIR="$AGENT_DIR/var"
+BIN_DIR="$AGENT_DIR/bin"
 SERVICE_FILE="/Library/LaunchDaemons/com.wazuh.agent.plist"
 UPGRADE_FILE_FLAG="${AGENT_DIR}/WAZUH_PKG_UPGRADE"
 
@@ -32,7 +33,7 @@ if [ -f "${UPGRADE_FILE_FLAG}" ]; then
 fi
 
 # Default for all directories
-echo "Seting permissions and ownership for directories and files"
+echo "Setting permissions and ownership for directories and files"
 chmod -R 750 "${AGENT_DIR}"/
 chown -R root:"${GROUP}" "${AGENT_DIR}"/
 chown -R root:wheel "${AGENT_DIR}"/bin
@@ -48,6 +49,11 @@ sudo chmod 644 "$SERVICE_FILE"
 
 chown "${USER}":"${GROUP}" "${AGENT_DIR}"/VERSION.json
 chmod 440 "${AGENT_DIR}"/VERSION.json
+
+# Add symbolic link to the executable wazuh-agent
+BIN_ORIG="$BIN_DIR/wazuh-agent"
+BIN_LINK="/usr/local/bin/wazuh-agent"
+ln -sf "$BIN_ORIG" "$BIN_LINK"
 
 # Remove old ossec user and group if exists and change ownwership of files
 if [[ $(dscl . -read /Groups/ossec) ]]; then
