@@ -105,7 +105,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     include(InstallRequiredSystemLibraries)
     install(DIRECTORY ${CMAKE_BINARY_DIR}/$ENV{CUSTOM_CMAKE_CONFIG}/ DESTINATION . PATTERN "*-debug-symbols.zip"
                                                                                            EXCLUDE)
-    install(FILES ${OUTPUT_CONFIG} DESTINATION .)
+    install(FILES ${OUTPUT_CONFIG} DESTINATION config)
     install(FILES ${WINDOWS_FOLDER}/postinstall.ps1 DESTINATION .)
     install(FILES ${WINDOWS_FOLDER}/cleanup.ps1 DESTINATION .)
     install(FILES "${CMAKE_BINARY_DIR}/VERSION.json" DESTINATION .)
