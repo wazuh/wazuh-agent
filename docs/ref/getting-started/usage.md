@@ -5,10 +5,10 @@
 To allow the agent to successfully connect to a Wazuh server, it must first enroll with the server. This is done using the --enroll option.
 Ensure that the server is online and ready to accept enrollment requests before proceeding.
 
-### Enrollment Command
+## Enrollment Command on Linux
 
 ```
-wazuh-agent --enroll --enroll-url https://localhost:55000 --user <username> --password <password> [--name <agent-name>]
+/usr/share/wazuh-agent/bin/wazuh-agent --enroll --enroll-url https://localhost:55000 --user <username> --password <password> [--name <agent-name>]
 ```
 
 Replace:
@@ -22,7 +22,47 @@ Replace:
 For additional options and details, use:
 
 ```
-wazuh-agent --enroll --help
+/usr/share/wazuh-agent/bin/wazuh-agent --enroll --help
+```
+
+## Enrollment Command on MacOS
+
+```
+/Library/Application\ Support/Wazuh\ agent.app/bin/wazuh-agent --enroll --enroll-url https://localhost:55000 --user <username> --password <password> [--name <agent-name>]
+```
+
+Replace:
+
+* `<username>` with the Wazuh server username.
+* `<password>` with the corresponding password.
+* `<agent-name>` with the desired name for the agent (optional).
+
+### View Enrollment Help
+
+For additional options and details, use:
+
+```
+/Library/Application\ Support/Wazuh\ agent.app/bin/wazuh-agent --enroll --help
+```
+
+## Enrollment Command on Windows
+
+```
+"C:\Program Files\wazuh-agent\wazuh-agent.exe" --enroll --enroll-url https://localhost:55000 --user <username> --password <password> [--name <agent-name>]
+```
+
+Replace:
+
+* `<username>` with the Wazuh server username.
+* `<password>` with the corresponding password.
+* `<agent-name>` with the desired name for the agent (optional).
+
+### View Enrollment Help
+
+For additional options and details, use:
+
+```
+"C:\Program Files\wazuh-agent\wazuh-agent.exe" --enroll --help
 ```
 
 ## Run the Agent on Linux
