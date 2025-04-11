@@ -239,7 +239,9 @@ namespace windows_service
 
             LogInfo("Starting {}.", AGENT_SERVICENAME.c_str());
 
-            Agent agent(std::make_unique<configuration::ConfigurationParser>(std::filesystem::path(configFilePath)));
+            Agent agent(configFilePath.empty() ? std::make_unique<configuration::ConfigurationParser>()
+                                               : std::make_unique<configuration::ConfigurationParser>(
+                                                     std::filesystem::path(configFilePath)));
             agent.Run();
         }
         catch (const std::exception& e)
