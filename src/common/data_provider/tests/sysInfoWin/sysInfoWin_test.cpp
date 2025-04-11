@@ -1,8 +1,8 @@
 #include "sysInfoWin_test.hpp"
 #include "packages/packagesWindowsParserHelper.h"
+#include <iostream>
 
 void SysInfoWinTest::SetUp() {};
-
 void SysInfoWinTest::TearDown() {};
 
 TEST_F(SysInfoWinTest, test_extract_HFValue_7618)
