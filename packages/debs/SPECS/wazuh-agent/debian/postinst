@@ -4,7 +4,8 @@
 
 set -e
 UPGRADE_RESTART_FLAG="/tmp/wazuh.restart"
-BINARY_DIR="/usr/share/wazuh-agent/bin"
+AGENT_BINARY="/usr/share/wazuh-agent/bin/wazuh-agent"
+AGENT_LINK="/usr/local/bin/wazuh-agent"
 
 case "$1" in
     configure)
@@ -30,7 +31,7 @@ case "$1" in
         adduser --system --shell ${OSMYSHELL} --ingroup ${GROUP} ${USER} > /dev/null 2>&1
     fi
 
-    ln -sf "${BINARY_DIR}/wazuh-agent" /usr/bin/wazuh-agent
+    ln -sf "${AGENT_BINARY}" "${AGENT_LINK}"
 
     if [ -f ${UPGRADE_RESTART_FLAG} ] ; then
         if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1; then
