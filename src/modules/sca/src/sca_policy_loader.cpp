@@ -1,5 +1,6 @@
 #include <sca_policy_loader.hpp>
 
+#include <dbsync.hpp>
 #include <filesystem_wrapper.hpp>
 #include <logger.hpp>
 
@@ -8,11 +9,13 @@
 SCAPolicyLoader::SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemWrapper,
                                  std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
                                  std::function<int(Message)> pushMessage,
+                                 std::shared_ptr<IDBSync> dBSync,
                                  PolicyLoaderFunc loader)
     : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
                                             : std::make_shared<file_system::FileSystemWrapper>())
     , m_pushMessage(std::move(pushMessage))
     , m_policyLoader(std::move(loader))
+    , m_dBSync(std::move(dBSync))
 {
     const auto loadPoliciesPathsFromConfig = [this, configurationParser](const std::string& configKey)
     {
@@ -68,4 +71,84 @@ std::vector<SCAPolicy> SCAPolicyLoader::GetPolicies() const
     }
 
     return policies;
+}
+
+void SCAPolicyLoader::SyncPoliciesAndReportDelta(const nlohmann::json& data, const CreateEventsFunc& createEvents)
+{
+    std::unordered_map<std::string, nlohmann::json> modifiedPoliciesMap;
+    std::unordered_map<std::string, nlohmann::json> modifiedChecksMap;
+
+    if (data.contains("policies") && data.at("policies").is_array())
+    {
+        modifiedPoliciesMap = SyncWithDBSync(data["policies"], SCA_POLICY_TABLE_NAME);
+    }
+    else
+    {
+        LogError("No policies found in data");
+        return;
+    }
+
+    if (data.contains("checks") && data.at("checks").is_array())
+    {
+        modifiedChecksMap = SyncWithDBSync(data["checks"], SCA_CHECK_TABLE_NAME);
+    }
+    else
+    {
+        LogError("No checks found in data");
+        return;
+    }
+
+    createEvents(modifiedPoliciesMap, modifiedChecksMap);
+}
+
+std::unordered_map<std::string, nlohmann::json> SCAPolicyLoader::SyncWithDBSync(const nlohmann::json& data,
+                                                                                const std::string& tableName)
+{
+    static std::unordered_map<std::string, nlohmann::json> modifiedDataMap;
+    modifiedDataMap.clear();
+
+    const auto callback {[](ReturnTypeCallback result, const nlohmann::json& rowData)
+                         {
+                             if (result != DB_ERROR)
+                             {
+                                 std::string id;
+                                 if (result == MODIFIED && rowData.contains("new") && rowData["new"].is_object())
+                                 {
+                                     if (rowData["new"].contains("id") && rowData["new"]["id"].is_string())
+                                     {
+                                         id = rowData["new"]["id"];
+                                     }
+                                 }
+                                 else if ((result == INSERTED || result == DELETED) && rowData.contains("id") &&
+                                          rowData["id"].is_string())
+                                 {
+                                     id = rowData["id"];
+                                 }
+
+                                 if (!id.empty())
+                                 {
+                                     modifiedDataMap[id] = nlohmann::json {{"result", result}, {"data", rowData}};
+                                 }
+                                 else
+                                 {
+                                     LogError("Invalid data: {}", rowData.dump());
+                                 }
+                             }
+                             else
+                             {
+                                 LogError("DB error: {}", rowData.dump());
+                             }
+                         }};
+
+    DBSyncTxn txn {m_dBSync->handle(), nlohmann::json {tableName}, 0, DBSYNC_QUEUE_SIZE, callback};
+
+    nlohmann::json input;
+    input["table"] = tableName;
+    input["data"] = data;
+    input["options"]["return_old_data"] = true;
+
+    txn.syncTxnRow(input);
+    txn.getDeletedRows(callback);
+
+    return modifiedDataMap;
 }
