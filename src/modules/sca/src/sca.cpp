@@ -2,6 +2,7 @@
 
 #include <config.h>
 #include <dbsync.hpp>
+#include <sca_event_handler.hpp>
 #include <sca_policy_loader.hpp>
 
 SecurityConfigurationAssessment::SecurityConfigurationAssessment(
@@ -40,7 +41,7 @@ void SecurityConfigurationAssessment::Setup(
 
     m_policies = [this, &configurationParser]()
     {
-        const SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser, m_pushMessage);
+        const SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser, m_pushMessage, m_dBSync);
         return policyLoader.GetPolicies();
     }();
 }
