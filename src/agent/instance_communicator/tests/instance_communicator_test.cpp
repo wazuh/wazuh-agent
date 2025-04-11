@@ -4,6 +4,7 @@
 #include <functional>
 #include <memory>
 
+#include <iinstance_communicator_wrapper.hpp>
 #include <instance_communicator.hpp>
 
 using namespace testing;
@@ -15,19 +16,50 @@ public:
     MOCK_METHOD(void, ReloadModule, (const std::string& moduleName), ());
 };
 
+class MockInstanceCommunicatorWrapper : public instance_communicator::IInstanceCommunicatorWrapper
+{
+public:
+    MOCK_METHOD(void, AcceptorOpen, (boost::asio::local::stream_protocol::acceptor&), (override));
+    MOCK_METHOD(void,
+                AcceptorBind,
+                (boost::asio::local::stream_protocol::acceptor&, const boost::asio::local::stream_protocol::endpoint&),
+                (override));
+    MOCK_METHOD(void, AcceptorListen, (boost::asio::local::stream_protocol::acceptor&), (override));
+    MOCK_METHOD(void, AcceptorClose, (boost::asio::local::stream_protocol::acceptor&), (override));
+    MOCK_METHOD(boost::asio::awaitable<void>,
+                AcceptorAsyncAccept,
+                (boost::asio::local::stream_protocol::acceptor&,
+                 boost::asio::local::stream_protocol::socket& socket,
+                 boost::system::error_code& ec),
+                (override));
+    MOCK_METHOD(boost::asio::awaitable<void>,
+                SocketReadUntil,
+                (boost::asio::local::stream_protocol::socket & socket,
+                 boost::asio::streambuf& buffer,
+                 boost::system::error_code& ec),
+                (override));
+};
+
 class InstanceCommunicatorTest : public Test
 {
 protected:
     void SetUp() override
     {
-        // m_instanceCommunicator =
-        //     std::make_unique<instance_communicator::InstanceCommunicator>([]() {}, [](const std::string&) {});
+        m_mockWrapper = std::make_unique<MockInstanceCommunicatorWrapper>();
+
+        m_communicator = std::make_shared<instance_communicator::InstanceCommunicator>(
+            [this]() { m_mockCallbacks.ReloadModules(); },
+            [this](const std::string& moduleName) { m_mockCallbacks.ReloadModule(moduleName); });
     }
 
-    void TearDown() override {}
+    void TearDown() override
+    {
+        m_mockWrapper.reset();
+    }
 
     MockCallbacks m_mockCallbacks;
-    std::unique_ptr<instance_communicator::InstanceCommunicator> m_instanceCommunicator;
+    std::unique_ptr<MockInstanceCommunicatorWrapper> m_mockWrapper;
+    std::shared_ptr<instance_communicator::IInstanceCommunicator> m_communicator;
 };
 
 TEST(TestInstanceCommunicator, ConstructorTest)
@@ -40,42 +72,299 @@ TEST(TestInstanceCommunicator, ConstructorTest)
 
 TEST_F(InstanceCommunicatorTest, ReloadModuleHandlerIsCalled)
 {
-    // Set the expectation that mockDependency.ReloadModules() will be called exactly once.
     EXPECT_CALL(m_mockCallbacks, ReloadModules()).Times(::testing::Exactly(1));
 
-    // Create an InstanceCommunicator instance, passing the mock method.
-    const instance_communicator::InstanceCommunicator communicator(
-        [this]() { m_mockCallbacks.ReloadModules(); },
-        [](const std::string&) {
-        } // Dummy lambda for the second handler if not relevant to this test
-    );
+    const instance_communicator::InstanceCommunicator communicator([this]() { m_mockCallbacks.ReloadModules(); },
+                                                                   [](const std::string&) {});
 
-    // Perform the action on the InstanceCommunicator that should trigger reloadModulesHandler.
-    // For example, if there's a method like 'TriggerReloadAllModules':
     communicator.HandleSignal("RELOAD");
-    // The EXPECT_CALL implicitly verifies if the expectation was met when the test ends.
 }
 
 TEST_F(InstanceCommunicatorTest, ReloadModulesHandlerIsCalled)
 {
-    // Define the expected module name.
     const std::string message = "RELOAD-MODULE:my_test_module";
     const std::string expectedModuleName = "my_test_module";
 
-    // Set the expectation that mockDependency.ReloadModule() will be called exactly once
-    // with the specific 'expectedModuleName'.
     EXPECT_CALL(m_mockCallbacks, ReloadModule(expectedModuleName)).Times(::testing::Exactly(1));
 
-    // Create an InstanceCommunicator instance, passing the mock method.
     const instance_communicator::InstanceCommunicator communicator(
-        []() {}, // Dummy lambda for the first handler if not relevant to this test
-        [this](const std::string& moduleName) { m_mockCallbacks.ReloadModule(moduleName); });
+        []() {}, [this](const std::string& moduleName) { m_mockCallbacks.ReloadModule(moduleName); });
 
-    // Perform the action on the InstanceCommunicator that should trigger reloadModuleHandler
-    // with the 'expectedModuleName'. For example, if there's a method like 'TriggerReloadModule':
     communicator.HandleSignal(message);
+}
 
-    // The EXPECT_CALL implicitly verifies if the expectation was met when the test ends.
+TEST_F(InstanceCommunicatorTest, Listen)
+{
+    EXPECT_CALL(*m_mockWrapper, AcceptorOpen(testing::_)).Times(::testing::Exactly(1));
+    EXPECT_CALL(*m_mockWrapper, AcceptorBind(testing::_, testing::_)).Times(::testing::Exactly(1));
+    EXPECT_CALL(*m_mockWrapper, AcceptorListen(testing::_)).Times(::testing::Exactly(1));
+    EXPECT_CALL(*m_mockWrapper, AcceptorClose(testing::_)).Times(::testing::Exactly(1));
+    EXPECT_CALL(*m_mockWrapper, AcceptorAsyncAccept(testing::_, testing::_, testing::_))
+        .WillRepeatedly(testing::Invoke(
+            [](boost::asio::local::stream_protocol::acceptor&,                     // NOLINT
+               boost::asio::local::stream_protocol::socket&,                       // NOLINT
+               boost::system::error_code& retCode) -> boost::asio::awaitable<void> // NOLINT
+            {
+                retCode = {};
+                co_return;
+            }));
+
+    EXPECT_CALL(m_mockCallbacks, ReloadModules())
+        .WillRepeatedly(testing::Invoke([]() { std::cout << "ReloadModules\n"; }));
+
+    EXPECT_CALL(*m_mockWrapper, SocketReadUntil(testing::_, testing::_, testing::_))
+        .WillOnce(testing::Invoke(
+            [this](boost::asio::local::stream_protocol::socket&,                  // NOLINT
+                   boost::asio::streambuf& buff,                                  // NOLINT
+                   boost::system::error_code& ec) -> boost::asio::awaitable<void> // NOLINT
+            {
+                std::ostream os(&buff);
+                os << "RELOAD\n";
+                ec = {};
+                m_communicator->Stop();
+                co_return;
+            }));
+
+    boost::asio::io_context ioContext;
+    boost::asio::co_spawn(
+        ioContext,
+        [&ioContext, this]() -> boost::asio::awaitable<void> // NOLINT
+        { co_await m_communicator->Listen(ioContext, std::move(m_mockWrapper)); },
+        boost::asio::detached); // NOLINT (unused-result)
+
+    ioContext.run();
+}
+
+TEST_F(InstanceCommunicatorTest, ListenFailsAcceptorOpen)
+{
+    EXPECT_CALL(*m_mockWrapper, AcceptorOpen(testing::_))
+        .WillOnce([]() { throw std::runtime_error("Test exception"); })
+        .WillOnce(testing::Return());
+    EXPECT_CALL(*m_mockWrapper, AcceptorBind(testing::_, testing::_)).Times(::testing::Exactly(1));
+    EXPECT_CALL(*m_mockWrapper, AcceptorListen(testing::_)).Times(::testing::Exactly(1));
+    EXPECT_CALL(*m_mockWrapper, AcceptorClose(testing::_)).Times(::testing::Exactly(2));
+    EXPECT_CALL(*m_mockWrapper, AcceptorAsyncAccept(testing::_, testing::_, testing::_))
+        .WillRepeatedly(testing::Invoke(
+            [](boost::asio::local::stream_protocol::acceptor&,                     // NOLINT
+               boost::asio::local::stream_protocol::socket&,                       // NOLINT
+               boost::system::error_code& retCode) -> boost::asio::awaitable<void> // NOLINT
+            {
+                retCode = {};
+                co_return;
+            }));
+
+    EXPECT_CALL(m_mockCallbacks, ReloadModules())
+        .WillRepeatedly(testing::Invoke([]() { std::cout << "ReloadModules\n"; }));
+
+    EXPECT_CALL(*m_mockWrapper, SocketReadUntil(testing::_, testing::_, testing::_))
+        .WillOnce(testing::Invoke(
+            [this](boost::asio::local::stream_protocol::socket&,                  // NOLINT
+                   boost::asio::streambuf& buff,                                  // NOLINT
+                   boost::system::error_code& ec) -> boost::asio::awaitable<void> // NOLINT
+            {
+                std::ostream os(&buff);
+                os << "RELOAD\n";
+                ec = {};
+                m_communicator->Stop();
+                co_return;
+            }));
+
+    boost::asio::io_context ioContext;
+    boost::asio::co_spawn(
+        ioContext,
+        [&ioContext, this]() -> boost::asio::awaitable<void> // NOLINT
+        { co_await m_communicator->Listen(ioContext, std::move(m_mockWrapper)); },
+        boost::asio::detached); // NOLINT (unused-result)
+
+    ioContext.run();
+}
+
+TEST_F(InstanceCommunicatorTest, ListenFailsAcceptorBind)
+{
+    EXPECT_CALL(*m_mockWrapper, AcceptorOpen(testing::_)).Times(::testing::Exactly(2));
+    EXPECT_CALL(*m_mockWrapper, AcceptorBind(testing::_, testing::_))
+        .WillOnce([]() { throw std::runtime_error("Test exception"); })
+        .WillOnce(testing::Return());
+    EXPECT_CALL(*m_mockWrapper, AcceptorListen(testing::_)).Times(::testing::Exactly(1));
+    EXPECT_CALL(*m_mockWrapper, AcceptorClose(testing::_)).Times(::testing::Exactly(2));
+    EXPECT_CALL(*m_mockWrapper, AcceptorAsyncAccept(testing::_, testing::_, testing::_))
+        .WillRepeatedly(testing::Invoke(
+            [](boost::asio::local::stream_protocol::acceptor&,                     // NOLINT
+               boost::asio::local::stream_protocol::socket&,                       // NOLINT
+               boost::system::error_code& retCode) -> boost::asio::awaitable<void> // NOLINT
+            {
+                retCode = {};
+                co_return;
+            }));
+
+    EXPECT_CALL(m_mockCallbacks, ReloadModules())
+        .WillRepeatedly(testing::Invoke([]() { std::cout << "ReloadModules\n"; }));
+
+    EXPECT_CALL(*m_mockWrapper, SocketReadUntil(testing::_, testing::_, testing::_))
+        .WillOnce(testing::Invoke(
+            [this](boost::asio::local::stream_protocol::socket&,                  // NOLINT
+                   boost::asio::streambuf& buff,                                  // NOLINT
+                   boost::system::error_code& ec) -> boost::asio::awaitable<void> // NOLINT
+            {
+                std::ostream os(&buff);
+                os << "RELOAD\n";
+                ec = {};
+                m_communicator->Stop();
+                co_return;
+            }));
+
+    boost::asio::io_context ioContext;
+    boost::asio::co_spawn(
+        ioContext,
+        [&ioContext, this]() -> boost::asio::awaitable<void> // NOLINT
+        { co_await m_communicator->Listen(ioContext, std::move(m_mockWrapper)); },
+        boost::asio::detached); // NOLINT (unused-result)
+
+    ioContext.run();
+}
+
+TEST_F(InstanceCommunicatorTest, ListenFailsAcceptorListen)
+{
+    EXPECT_CALL(*m_mockWrapper, AcceptorOpen(testing::_)).Times(::testing::Exactly(2));
+    EXPECT_CALL(*m_mockWrapper, AcceptorBind(testing::_, testing::_)).Times(::testing::Exactly(2));
+    EXPECT_CALL(*m_mockWrapper, AcceptorListen(testing::_))
+        .WillOnce([]() { throw std::runtime_error("Test exception"); })
+        .WillOnce(testing::Return());
+    EXPECT_CALL(*m_mockWrapper, AcceptorClose(testing::_)).Times(::testing::Exactly(2));
+    EXPECT_CALL(*m_mockWrapper, AcceptorAsyncAccept(testing::_, testing::_, testing::_))
+        .WillRepeatedly(testing::Invoke(
+            [](boost::asio::local::stream_protocol::acceptor&,                     // NOLINT
+               boost::asio::local::stream_protocol::socket&,                       // NOLINT
+               boost::system::error_code& retCode) -> boost::asio::awaitable<void> // NOLINT
+            {
+                retCode = {};
+                co_return;
+            }));
+
+    EXPECT_CALL(m_mockCallbacks, ReloadModules())
+        .WillRepeatedly(testing::Invoke([]() { std::cout << "ReloadModules\n"; }));
+
+    EXPECT_CALL(*m_mockWrapper, SocketReadUntil(testing::_, testing::_, testing::_))
+        .WillOnce(testing::Invoke(
+            [this](boost::asio::local::stream_protocol::socket&,                  // NOLINT
+                   boost::asio::streambuf& buff,                                  // NOLINT
+                   boost::system::error_code& ec) -> boost::asio::awaitable<void> // NOLINT
+            {
+                std::ostream os(&buff);
+                os << "RELOAD\n";
+                ec = {};
+                m_communicator->Stop();
+                co_return;
+            }));
+
+    boost::asio::io_context ioContext;
+    boost::asio::co_spawn(
+        ioContext,
+        [&ioContext, this]() -> boost::asio::awaitable<void> // NOLINT
+        { co_await m_communicator->Listen(ioContext, std::move(m_mockWrapper)); },
+        boost::asio::detached); // NOLINT (unused-result)
+
+    ioContext.run();
+}
+
+TEST_F(InstanceCommunicatorTest, ListenFailsAcceptorAsyncAccept)
+{
+    EXPECT_CALL(*m_mockWrapper, AcceptorOpen(testing::_)).Times(::testing::Exactly(1));
+    EXPECT_CALL(*m_mockWrapper, AcceptorBind(testing::_, testing::_)).Times(::testing::Exactly(1));
+    EXPECT_CALL(*m_mockWrapper, AcceptorListen(testing::_)).Times(::testing::Exactly(1));
+    EXPECT_CALL(*m_mockWrapper, AcceptorClose(testing::_)).Times(::testing::Exactly(1));
+    EXPECT_CALL(*m_mockWrapper, AcceptorAsyncAccept(testing::_, testing::_, testing::_))
+        .WillOnce(testing::Invoke(
+            [](boost::asio::local::stream_protocol::acceptor&,                     // NOLINT
+               boost::asio::local::stream_protocol::socket&,                       // NOLINT
+               boost::system::error_code& retCode) -> boost::asio::awaitable<void> // NOLINT
+            {
+                retCode = boost::asio::error::operation_aborted;
+                co_return;
+            }))
+        .WillOnce(testing::Invoke(
+            [](boost::asio::local::stream_protocol::acceptor&,                     // NOLINT
+               boost::asio::local::stream_protocol::socket&,                       // NOLINT
+               boost::system::error_code& retCode) -> boost::asio::awaitable<void> // NOLINT
+            {
+                retCode = {};
+                co_return;
+            }));
+
+    EXPECT_CALL(m_mockCallbacks, ReloadModules())
+        .WillRepeatedly(testing::Invoke([]() { std::cout << "ReloadModules\n"; }));
+
+    EXPECT_CALL(*m_mockWrapper, SocketReadUntil(testing::_, testing::_, testing::_))
+        .WillOnce(testing::Invoke(
+            [this](boost::asio::local::stream_protocol::socket&,                  // NOLINT
+                   boost::asio::streambuf& buff,                                  // NOLINT
+                   boost::system::error_code& ec) -> boost::asio::awaitable<void> // NOLINT
+            {
+                std::ostream os(&buff);
+                os << "RELOAD\n";
+                ec = {};
+                m_communicator->Stop();
+                co_return;
+            }));
+
+    boost::asio::io_context ioContext;
+    boost::asio::co_spawn(
+        ioContext,
+        [&ioContext, this]() -> boost::asio::awaitable<void> // NOLINT
+        { co_await m_communicator->Listen(ioContext, std::move(m_mockWrapper)); },
+        boost::asio::detached); // NOLINT (unused-result)
+
+    ioContext.run();
+}
+
+TEST_F(InstanceCommunicatorTest, ListenFailsReadUntil)
+{
+    EXPECT_CALL(*m_mockWrapper, AcceptorOpen(testing::_)).Times(::testing::Exactly(1));
+    EXPECT_CALL(*m_mockWrapper, AcceptorBind(testing::_, testing::_)).Times(::testing::Exactly(1));
+    EXPECT_CALL(*m_mockWrapper, AcceptorListen(testing::_)).Times(::testing::Exactly(1));
+    EXPECT_CALL(*m_mockWrapper, AcceptorClose(testing::_)).Times(::testing::Exactly(1));
+    EXPECT_CALL(*m_mockWrapper, AcceptorAsyncAccept(testing::_, testing::_, testing::_))
+        .WillRepeatedly(testing::Invoke(
+            [](boost::asio::local::stream_protocol::acceptor&,                     // NOLINT
+               boost::asio::local::stream_protocol::socket&,                       // NOLINT
+               boost::system::error_code& retCode) -> boost::asio::awaitable<void> // NOLINT
+            {
+                retCode = {};
+                co_return;
+            }));
+
+    EXPECT_CALL(m_mockCallbacks, ReloadModules())
+        .WillRepeatedly(testing::Invoke([]() { std::cout << "ReloadModules\n"; }));
+
+    EXPECT_CALL(*m_mockWrapper, SocketReadUntil(testing::_, testing::_, testing::_))
+        .WillOnce(testing::Invoke(
+            [](boost::asio::local::stream_protocol::socket&,                  // NOLINT
+               boost::asio::streambuf&,                                       // NOLINT
+               boost::system::error_code& ec) -> boost::asio::awaitable<void> // NOLINT
+            {
+                ec = boost::asio::error::operation_aborted;
+                co_return;
+            }))
+        .WillOnce(testing::Invoke(
+            [this](boost::asio::local::stream_protocol::socket&,                  // NOLINT
+                   boost::asio::streambuf& buff,                                  // NOLINT
+                   boost::system::error_code& ec) -> boost::asio::awaitable<void> // NOLINT
+            {
+                std::ostream os(&buff);
+                os << "RELOAD\n";
+                ec = {};
+                m_communicator->Stop();
+                co_return;
+            }));
+
+    boost::asio::io_context ioContext;
+    boost::asio::co_spawn(
+        ioContext,
+        [&ioContext, this]() -> boost::asio::awaitable<void> // NOLINT
+        { co_await m_communicator->Listen(ioContext, std::move(m_mockWrapper)); },
+        boost::asio::detached); // NOLINT (unused-result)
+
+    ioContext.run();
 }
 
 int main(int argc, char** argv)

@@ -80,7 +80,7 @@ TEST_F(AgentTests, AgentStopsWhenSignalReceived)
     EXPECT_CALL(*mockAgentInfoPtr, GetName()).WillOnce(testing::Return("mock_name"));
     EXPECT_CALL(*mockAgentInfoPtr, GetGroups()).WillOnce(testing::Return(mockGroups));
     EXPECT_CALL(*mockAgentInfoPtr, GetHeaderInfo()).WillRepeatedly(testing::Return("header_info"));
-    EXPECT_CALL(*mockInstanceCommunicator, Listen(testing::_))
+    EXPECT_CALL(*mockInstanceCommunicator, Listen(testing::_, testing::_))
         .WillOnce(testing::Invoke([]() -> boost::asio::awaitable<void> { co_return; }));
     EXPECT_CALL(*mockInstanceCommunicator, Stop()).Times(1);
 
