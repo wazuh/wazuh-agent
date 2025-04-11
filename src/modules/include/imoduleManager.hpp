@@ -26,6 +26,11 @@ public:
     /// @return Pointer to the module
     virtual std::shared_ptr<IModule> GetModule(const std::string& name) = 0;
 
+    /// @brief Reloads a module by name
+    ///
+    /// @param[in] name Name of the module
+    virtual void ReloadModule(const std::string& name) = 0;
+
     /// @brief Start the modules
     ///
     /// This function begins the procedure to start the modules and blocks until the Start function

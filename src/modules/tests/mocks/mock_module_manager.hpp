@@ -15,4 +15,5 @@ public:
     MOCK_METHOD(void, Start, (), (override));
     MOCK_METHOD(void, Setup, (), (override));
     MOCK_METHOD(void, Stop, (), (override));
+    MOCK_METHOD(void, ReloadModule, (const std::string& name), (override));
 };
