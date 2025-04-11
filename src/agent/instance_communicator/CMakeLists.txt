@@ -8,9 +8,11 @@ set_common_settings()
 find_package(Boost REQUIRED COMPONENTS asio)
 
 if(WIN32)
-    set(SOURCES src/instance_communicator.cpp src/instance_communicator_win.cpp)
+    set(SOURCES src/instance_communicator.cpp src/instance_communicator_win.cpp
+                src/instance_communicator_wrapper_win.cpp)
 else()
-    set(SOURCES src/instance_communicator.cpp src/instance_communicator_unix.cpp)
+    set(SOURCES src/instance_communicator.cpp src/instance_communicator_unix.cpp
+                src/instance_communicator_wrapper_unix.cpp)
 endif()
 
 add_library(InstanceCommunicator ${SOURCES})

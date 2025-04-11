@@ -24,7 +24,8 @@ namespace instance_communicator
         void HandleSignal(const std::string& signal) const override;
 
         /// @copydoc IInstanceCommunicator::Listen
-        boost::asio::awaitable<void> Listen(boost::asio::io_context& ioContext) override;
+        boost::asio::awaitable<void> Listen(boost::asio::io_context& ioContext,
+                                            std::unique_ptr<IInstanceCommunicatorWrapper> wrapper = nullptr) override;
 
         /// @copydoc IInstanceCommunicator::Stop
         void Stop() override;

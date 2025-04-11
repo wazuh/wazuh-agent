@@ -6,8 +6,16 @@
 namespace instance_communicator
 {
     boost::asio::awaitable<void> InstanceCommunicator::Listen(
-        boost::asio::io_context& ioContext) // NOLINT (cppcoreguidelines-avoid-reference-coroutine-parameters)
+        boost::asio::io_context& ioContext, // NOLINT (cppcoreguidelines-avoid-reference-coroutine-parameters)
+        std::unique_ptr<IInstanceCommunicatorWrapper> wrapper)
     {
+        LogCritical("Starting InstanceCommunicator");
+
+        if (wrapper == nullptr)
+        {
+            wrapper = std::make_unique<InstanceCommunicatorWrapper>();
+        }
+
         const std::string socketPath = std::string(config::DEFAULT_RUN_PATH) + "/agent-socket";
 
         ::unlink(socketPath.c_str());
@@ -19,9 +27,9 @@ namespace instance_communicator
         {
             try
             {
-                acceptor.open();
-                acceptor.bind(boost::asio::local::stream_protocol::endpoint(socketPath));
-                acceptor.listen();
+                wrapper->AcceptorOpen(acceptor);
+                wrapper->AcceptorBind(acceptor, boost::asio::local::stream_protocol::endpoint(socketPath));
+                wrapper->AcceptorListen(acceptor);
                 ::chmod(socketPath.c_str(), 0660); // NOLINT (avoid-magic-numbers)
                 acceptorCreated = true;
                 LogDebug("InstanceCommunicator listening on {}", socketPath);
@@ -29,7 +37,7 @@ namespace instance_communicator
             catch (const std::exception& e)
             {
                 LogError("Failed to initialize acceptor: {}", e.what());
-                acceptor.close();
+                wrapper->AcceptorClose(acceptor);
                 acceptorCreated = false;
             }
         }
@@ -41,14 +49,13 @@ namespace instance_communicator
                 boost::asio::local::stream_protocol::socket socket(ioContext);
                 boost::system::error_code ec;
 
-                co_await acceptor.async_accept(socket, boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+                co_await wrapper->AcceptorAsyncAccept(acceptor, socket, ec);
 
                 if (!ec)
                 {
                     boost::asio::streambuf buffer;
 
-                    co_await boost::asio::async_read_until(
-                        socket, buffer, "\n", boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+                    co_await wrapper->SocketReadUntil(socket, buffer, ec);
 
                     if (!ec || ec == boost::asio::error::eof)
                     {
@@ -74,11 +81,12 @@ namespace instance_communicator
                 LogError("Listener exception: {}", e.what());
             }
 
-            co_await boost::asio::steady_timer(ioContext, std::chrono::seconds(1)) // NOLINT (avoid-magic-numbers)
+            co_await boost::asio::steady_timer(ioContext,
+                                               std::chrono::milliseconds(500)) // NOLINT (avoid-magic-numbers)
                 .async_wait(boost::asio::use_awaitable);
         }
 
-        acceptor.close();
+        wrapper->AcceptorClose(acceptor);
         ::unlink(socketPath.c_str());
         LogDebug("InstanceCommunicator stopping");
         co_return;
