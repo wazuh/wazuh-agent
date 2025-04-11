@@ -2,6 +2,7 @@
 
 #include <config.h>
 #include <dbsync.hpp>
+#include <sca_event_handler.hpp>
 #include <sca_policy_loader.hpp>
 
 SecurityConfigurationAssessment::SecurityConfigurationAssessment(
@@ -40,7 +41,7 @@ void SecurityConfigurationAssessment::Setup(
 
     m_policies = [this, &configurationParser]()
     {
-        const SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser, m_pushMessage);
+        const SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser, m_pushMessage, m_dBSync);
         return policyLoader.GetPolicies();
     }();
 }
@@ -98,7 +99,9 @@ void SecurityConfigurationAssessment::EnqueueTask(boost::asio::awaitable<void> t
 
 std::string SecurityConfigurationAssessment::GetCreateStatement() const
 {
-    // Placeholder for the actual SQL statement
-    // This should be replaced with the actual SQL statement to create the SCA table
-    return R"(CREATE TABLE sca (policy TEXT PRIMARY KEY );)";
+    std::string ret;
+    ret += POLICY_SQL_STATEMENT;
+    ret += CHECK_SQL_STATEMENT;
+
+    return ret;
 }
