@@ -8,8 +8,7 @@ set_common_settings()
 find_package(Boost REQUIRED COMPONENTS asio)
 
 if(WIN32)
-    set(SOURCES src/instance_communicator.cpp src/instance_communicator_win.cpp
-                src/instance_communicator_wrapper_win.cpp)
+    set(SOURCES src/instance_communicator.cpp src/instance_communicator_win.cpp)
 else()
     set(SOURCES src/instance_communicator.cpp src/instance_communicator_unix.cpp
                 src/instance_communicator_wrapper_unix.cpp)
@@ -23,7 +22,9 @@ target_link_libraries(InstanceCommunicator PUBLIC Boost::asio PRIVATE Logger Con
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(InstanceCommunicator)
 
-if(BUILD_TESTS)
-    enable_testing()
-    add_subdirectory(tests)
+if(NOT WIN32)
+    if(BUILD_TESTS)
+        enable_testing()
+        add_subdirectory(tests)
+    endif()
 endif()
