@@ -22,9 +22,11 @@ class SecurityConfigurationAssessment : public IModule
 public:
     /// @brief Constructor
     /// @param configurationParser Configuration parser for setting up the module
+    /// @param agentUUID Agent UUID
     /// @param dbSync Pointer to IDBSync for database synchronization
     /// @param fileSystemWrapper File system wrapper for file operations
     SecurityConfigurationAssessment(std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
+                                    std::string agentUUID,
                                     std::shared_ptr<IDBSync> dbSync = nullptr,
                                     std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr);
 
@@ -68,6 +70,9 @@ private:
 
     /// @brief SCA module name
     std::string m_name = "SCA";
+
+    /// @brief Agent UUID
+    std::string m_agentUUID {""};
 
     /// @brief Pointer to IDBSync
     std::shared_ptr<IDBSync> m_dBSync;

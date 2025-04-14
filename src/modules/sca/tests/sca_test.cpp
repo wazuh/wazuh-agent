@@ -25,7 +25,7 @@ protected:
         )"));
 
         m_mockDBSync = std::make_shared<MockDBSync>();
-        m_sca = std::make_shared<SecurityConfigurationAssessment>(m_configurationParser, m_mockDBSync);
+        m_sca = std::make_shared<SecurityConfigurationAssessment>(m_configurationParser, "agent-uuid", m_mockDBSync);
     }
 
     std::shared_ptr<configuration::ConfigurationParser> m_configurationParser = nullptr;

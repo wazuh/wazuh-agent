@@ -30,9 +30,11 @@ constexpr auto CHECK_SQL_STATEMENT {
 
 SecurityConfigurationAssessment::SecurityConfigurationAssessment(
     std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
+    std::string agentUUID,
     std::shared_ptr<IDBSync> dbSync,
     std::shared_ptr<IFileSystemWrapper> fileSystemWrapper)
-    : m_dBSync(dbSync ? std::move(dbSync)
+    : m_agentUUID(std::move(agentUUID))
+    , m_dBSync(dbSync ? std::move(dbSync)
                       : std::make_shared<DBSync>(
                             HostType::AGENT,
                             DbEngineType::SQLITE3,
@@ -43,7 +45,6 @@ SecurityConfigurationAssessment::SecurityConfigurationAssessment(
     , m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
                                             : std::make_shared<file_system::FileSystemWrapper>())
 {
-    Setup(configurationParser);
 }
 
 void SecurityConfigurationAssessment::Run()
