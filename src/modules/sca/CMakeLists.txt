@@ -15,7 +15,8 @@ target_link_libraries(
            ConfigurationParser
            MessageEntry
            ModuleManager
-           CommandEntry)
+           CommandEntry
+    PRIVATE hash_helper string_helper time_helper)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(SCA)
