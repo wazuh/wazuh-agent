@@ -22,7 +22,7 @@ constexpr auto CHECK_SQL_STATEMENT {
     rationale TEXT,
     remediation TEXT,
     refs TEXT,
-    result TEXT,
+    result TEXT DEFAULT 'Not run',
     reason TEXT,
     condition TEXT,
     compliance TEXT,

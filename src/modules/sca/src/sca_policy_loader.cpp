@@ -91,6 +91,22 @@ void SCAPolicyLoader::SyncPoliciesAndReportDelta(const nlohmann::json& data, con
     if (data.contains("checks") && data.at("checks").is_array())
     {
         modifiedChecksMap = SyncWithDBSync(data["checks"], SCA_CHECK_TABLE_NAME);
+
+        for (auto& check : modifiedChecksMap)
+        {
+            if (check.second["result"] == MODIFIED)
+            {
+                try
+                {
+                    check.second["data"]["new"]["result"] = "Not run";
+                    UpdateCheckResult(check.second["data"]["new"]);
+                }
+                catch (const std::exception& e)
+                {
+                    LogError("Failed to update check result: {}", e.what());
+                }
+            }
+        }
     }
     else
     {
@@ -151,4 +167,14 @@ std::unordered_map<std::string, nlohmann::json> SCAPolicyLoader::SyncWithDBSync(
     txn.getDeletedRows(callback);
 
     return modifiedDataMap;
+}
+
+void SCAPolicyLoader::UpdateCheckResult(const nlohmann::json& check)
+{
+    auto updateResultQuery = SyncRowQuery::builder().table(SCA_CHECK_TABLE_NAME).data(check).build();
+
+    const auto callback = [](ReturnTypeCallback, const nlohmann::json&) {
+    };
+
+    m_dBSync->syncRow(updateResultQuery.query(), callback);
 }
