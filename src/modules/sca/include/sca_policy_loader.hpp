@@ -62,6 +62,7 @@ public:
 private:
     std::unordered_map<std::string, nlohmann::json> SyncWithDBSync(const nlohmann::json& data,
                                                                    const std::string& tableName);
+    void UpdateCheckResult(const nlohmann::json& check);
 
     std::shared_ptr<IFileSystemWrapper> m_fileSystemWrapper;
     std::function<int(Message)> m_pushMessage;
