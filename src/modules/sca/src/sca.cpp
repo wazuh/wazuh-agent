@@ -43,7 +43,6 @@ SecurityConfigurationAssessment::SecurityConfigurationAssessment(
     , m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
                                             : std::make_shared<file_system::FileSystemWrapper>())
 {
-    Setup(configurationParser);
 }
 
 void SecurityConfigurationAssessment::Run()
@@ -127,4 +126,9 @@ std::string SecurityConfigurationAssessment::GetCreateStatement() const
     ret += CHECK_SQL_STATEMENT;
 
     return ret;
+}
+
+void SecurityConfigurationAssessment::SetAgentUUID(const std::string& agentUUID)
+{
+    m_agentUUID = agentUUID;
 }

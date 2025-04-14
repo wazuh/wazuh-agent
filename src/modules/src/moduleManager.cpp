@@ -52,7 +52,9 @@ void ModuleManager::AddModules()
 #endif
 
 #ifdef ENABLE_SCA
-        AddModule(std::make_shared<SecurityConfigurationAssessment>(m_configurationParser));
+        auto sca = std::make_shared<SecurityConfigurationAssessment>(m_configurationParser);
+        sca->SetAgentUUID(m_agentUUID);
+        AddModule(sca);
 #endif
     }
 
