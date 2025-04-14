@@ -65,7 +65,7 @@ void SecurityConfigurationAssessment::Setup(
 
     m_policies = [this, &configurationParser]()
     {
-        const SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser, m_pushMessage, m_dBSync);
+        const SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser, m_dBSync);
         return policyLoader.GetPolicies();
     }();
 }

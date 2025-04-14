@@ -1,5 +1,11 @@
 #include <sca_event_handler.hpp>
 
+#include <dbsync.hpp>
+#include <hashHelper.hpp>
+#include <logger.hpp>
+#include <stringHelper.hpp>
+#include <timeHelper.hpp>
+
 /// @brief Map of operations
 static const std::map<ReturnTypeCallback, std::string> OPERATION_MAP {
     {MODIFIED, "update"},

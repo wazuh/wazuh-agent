@@ -8,12 +8,10 @@
 
 SCAPolicyLoader::SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemWrapper,
                                  std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
-                                 std::function<int(Message)> pushMessage,
                                  std::shared_ptr<IDBSync> dBSync,
                                  PolicyLoaderFunc loader)
     : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
                                             : std::make_shared<file_system::FileSystemWrapper>())
-    , m_pushMessage(std::move(pushMessage))
     , m_policyLoader(std::move(loader))
     , m_dBSync(std::move(dBSync))
 {
@@ -60,7 +58,7 @@ std::vector<SCAPolicy> SCAPolicyLoader::GetPolicies() const
         {
             try
             {
-                policies.emplace_back(m_policyLoader(path, m_pushMessage));
+                policies.emplace_back(m_policyLoader(path));
                 LogDebug("Loading policy from {}", path.string());
             }
             catch (const std::exception& e)

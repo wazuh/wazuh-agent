@@ -30,17 +30,15 @@ class SCAPolicyLoader : public ISCAPolicyLoader
 {
 public:
     /// @brief Type alias for a function that loads a policy from a SCA Policy yaml file
-    using PolicyLoaderFunc = std::function<SCAPolicy(const std::filesystem::path&, std::function<int(Message)>)>;
+    using PolicyLoaderFunc = std::function<SCAPolicy(const std::filesystem::path&)>;
 
     /// @brief Constructor for SCAPolicyLoader
     /// @param fileSystemWrapper A shared pointer to a file system wrapper
     /// @param configurationParser A shared pointer to a configuration parser
-    /// @param pushMessage A function that pushes messages
     /// @param dBSync A shared pointer to a DBSync object
     /// @param loader A function that loads a policy from a SCA Policy yaml file
     SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr,
                     std::shared_ptr<const configuration::ConfigurationParser> configurationParser = nullptr,
-                    std::function<int(Message)> pushMessage = nullptr,
                     std::shared_ptr<IDBSync> dBSync = nullptr,
                     PolicyLoaderFunc loader = SCAPolicy::LoadFromFile);
 
@@ -65,7 +63,6 @@ private:
     void UpdateCheckResult(const nlohmann::json& check);
 
     std::shared_ptr<IFileSystemWrapper> m_fileSystemWrapper;
-    std::function<int(Message)> m_pushMessage;
     PolicyLoaderFunc m_policyLoader;
 
     std::vector<std::filesystem::path> m_customPoliciesPaths;
