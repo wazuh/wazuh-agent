@@ -25,6 +25,9 @@ public:
                     std::shared_ptr<IDBSync> dBSync = nullptr,
                     std::function<int(Message)> pushMessage = nullptr);
 
+    /// @brief Destructor
+    virtual ~SCAEventHandler() = default;
+
     /// @brief Processes maps of modified policies and checks, and generates appropriate events.
     /// @param modifiedPoliciesMap Map of modified policies: { policy_id : policy_json }.
     /// @param modifiedChecksMap Map of modified checks: { check_id : check_json }.
@@ -84,12 +87,12 @@ protected:
     ///
     /// @param policyId The ID of the policy.
     /// @return A vector of check JSON objects.
-    std::vector<nlohmann::json> GetChecksForPolicy(const std::string& policyId) const;
+    virtual std::vector<nlohmann::json> GetChecksForPolicy(const std::string& policyId) const;
 
     /// @brief Retrieves a policy object from the database based on its ID.
     /// @param policyId The ID of the policy to retrieve.
     /// @return A JSON object representing the policy.
-    nlohmann::json GetPolicyById(const std::string& policyId) const;
+    virtual nlohmann::json GetPolicyById(const std::string& policyId) const;
 
     /// @brief Splits a comma-separated string into a JSON array.
     /// @param input A string with elements separated by commas.
