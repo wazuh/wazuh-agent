@@ -4,6 +4,8 @@
 #include <filesystem_wrapper.hpp>
 
 #include <boost/asio/awaitable.hpp>
+#include <boost/asio/steady_timer.hpp>
+#include <boost/asio/use_awaitable.hpp>
 
 #include <memory>
 #include <optional>
@@ -31,36 +33,74 @@ class IRuleEvaluator
 public:
     virtual ~IRuleEvaluator() = default;
 
-    virtual RuleResult Evaluate(const PolicyEvaluationContext& ctx) = 0;
+    virtual RuleResult Evaluate() = 0;
 
     /// @brief Runs the file check
     /// @return Awaitable void
     virtual boost::asio::awaitable<void> Run() = 0;
 };
 
-class FileRuleEvaluator : public IRuleEvaluator
+class RuleEvaluator : public IRuleEvaluator
 {
-    FileRuleEvaluator(std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
-        : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
-                                                : std::make_unique<file_system::FileSystemWrapper>())
+public:
+    boost::asio::awaitable<void> Run() override
     {
-    }
+        // while keep running evaluate then async wait a timer sleep
 
-    RuleResult Evaluate(const PolicyEvaluationContext& ctx) override
-    {
-        if (ctx.pattern)
+        while (m_running)
         {
-            return CheckFileListForContents(ctx);
+            // evaluate
+            const auto result = Evaluate();
+            if (result == RuleResult::Found)
+            {
+                // do something
+            }
+            else if (result == RuleResult::NotFound)
+            {
+                // do something else
+            }
+            else if (result == RuleResult::Invalid)
+            {
+                // handle invalid case
+            }
+            // sleep for a while
+            auto executor = co_await boost::asio::this_coro::executor;
+            boost::asio::steady_timer timer(executor);
+            timer.expires_after(std::chrono::seconds(5));
+            co_await timer.async_wait(boost::asio::use_awaitable);
         }
-        return CheckFileListForExistence(ctx);
+        co_return;
     }
 
 private:
-    RuleResult CheckFileListForContents(const PolicyEvaluationContext& ctx)
+    // keep runing atomic flag
+    std::atomic<bool> m_running {true};
+};
+
+class FileRuleEvaluator : public RuleEvaluator
+{
+    FileRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
+        : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
+                                                : std::make_unique<file_system::FileSystemWrapper>())
+        , m_ctx(ctx)
     {
-        if (ctx.paths)
+    }
+
+    RuleResult Evaluate() override
+    {
+        if (m_ctx.pattern)
         {
-            for (const auto& path : *ctx.paths)
+            return CheckFileListForContents();
+        }
+        return CheckFileListForExistence();
+    }
+
+private:
+    RuleResult CheckFileListForContents()
+    {
+        if (m_ctx.paths)
+        {
+            for (const auto& path : *m_ctx.paths)
             {
                 if (m_fileSystemWrapper->exists(path))
                 {
@@ -74,11 +114,11 @@ private:
         return RuleResult::Invalid;
     }
 
-    RuleResult CheckFileListForExistence(const PolicyEvaluationContext& ctx)
+    RuleResult CheckFileListForExistence()
     {
-        if (ctx.paths)
+        if (m_ctx.paths)
         {
-            for (const auto& path : *ctx.paths)
+            for (const auto& path : *m_ctx.paths)
             {
                 if (!m_fileSystemWrapper->exists(path))
                 {
@@ -91,16 +131,24 @@ private:
     }
 
     std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper;
+    PolicyEvaluationContext m_ctx;
 };
 
-class CommandRuleEvaluator : public IRuleEvaluator
+class CommandRuleEvaluator : public RuleEvaluator
 {
 public:
-    RuleResult Evaluate(const PolicyEvaluationContext& ctx) override
+    CommandRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
+        : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
+                                                : std::make_unique<file_system::FileSystemWrapper>())
+        , m_ctx(ctx)
     {
-        if (ctx.command && ctx.pattern)
+    }
+
+    RuleResult Evaluate() override
+    {
+        if (m_ctx.command && m_ctx.pattern)
         {
-            const auto output = Utils::Exec(*ctx.command);
+            const auto output = Utils::Exec(*m_ctx.command);
             if (!output.empty())
             {
                 // check pattern against output
@@ -111,26 +159,31 @@ public:
         }
         return RuleResult::Invalid;
     }
+
+private:
+    std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper;
+    PolicyEvaluationContext m_ctx;
 };
 
-class DirRuleEvaluator : public IRuleEvaluator
+class DirRuleEvaluator : public RuleEvaluator
 {
 public:
-    DirRuleEvaluator(std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
+    DirRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
         : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
                                                 : std::make_unique<file_system::FileSystemWrapper>())
+        , m_ctx(ctx)
     {
     }
 
-    RuleResult Evaluate(const PolicyEvaluationContext& ctx) override
+    RuleResult Evaluate() override
     {
         // if there's no "file" pattern in pattern, just check that the list of paths exists (directories)
         // TODO check that there's a "file" pattern or not
-        if (!ctx.pattern)
+        if (!m_ctx.pattern)
         {
-            if (ctx.paths)
+            if (m_ctx.paths)
             {
-                for (const auto& path : *ctx.paths)
+                for (const auto& path : *m_ctx.paths)
                 {
                     if (!m_fileSystemWrapper->exists(path) || !m_fileSystemWrapper->is_directory(path))
                     {
@@ -142,9 +195,9 @@ public:
         }
         // if there's a pattern, check that the list of paths exists (directories) and that the pattern exists in the
         // directory
-        if (ctx.paths)
+        if (m_ctx.paths)
         {
-            for ([[maybe_unused]] const auto& path : *ctx.paths)
+            for ([[maybe_unused]] const auto& path : *m_ctx.paths)
             {
             }
             return RuleResult::Found;
@@ -154,15 +207,27 @@ public:
 
 private:
     std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper;
+    PolicyEvaluationContext m_ctx;
 };
 
-class ProcessRuleEvaluator : public IRuleEvaluator
+class ProcessRuleEvaluator : public RuleEvaluator
 {
 public:
-    RuleResult Evaluate([[maybe_unused]] const PolicyEvaluationContext& ctx) override
+    ProcessRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
+        : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
+                                                : std::make_unique<file_system::FileSystemWrapper>())
+        , m_ctx(ctx)
+    {
+    }
+
+    RuleResult Evaluate() override
     {
         // get list of running processes
         // check if pattern matches
         return RuleResult::Invalid;
     }
+
+private:
+    std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper;
+    PolicyEvaluationContext m_ctx;
 };
