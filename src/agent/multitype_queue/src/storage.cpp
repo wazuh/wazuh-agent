@@ -161,10 +161,9 @@ int Storage::Store(const nlohmann::json& message,
     {
         for (const auto& singleMessageData : message)
         {
-            fields.emplace_back(MESSAGE_COLUMN_NAME, ColumnType::TEXT, singleMessageData.dump());
-
             try
             {
+                fields.emplace_back(MESSAGE_COLUMN_NAME, ColumnType::TEXT, singleMessageData.dump());
                 m_db->Insert(tableName, fields);
                 result++;
             }
@@ -177,10 +176,9 @@ int Storage::Store(const nlohmann::json& message,
     }
     else
     {
-        fields.emplace_back(MESSAGE_COLUMN_NAME, ColumnType::TEXT, message.dump());
-
         try
         {
+            fields.emplace_back(MESSAGE_COLUMN_NAME, ColumnType::TEXT, message.dump());
             m_db->Insert(tableName, fields);
             result++;
         }
