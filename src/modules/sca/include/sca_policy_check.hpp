@@ -43,6 +43,13 @@ public:
 class RuleEvaluator : public IRuleEvaluator
 {
 public:
+    RuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
+        : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
+                                                : std::make_unique<file_system::FileSystemWrapper>())
+        , m_ctx(ctx)
+    {
+    }
+
     boost::asio::awaitable<void> Run() override
     {
         // while keep running evaluate then async wait a timer sleep
@@ -72,6 +79,10 @@ public:
         co_return;
     }
 
+protected:
+    std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper = nullptr;
+    PolicyEvaluationContext m_ctx = {};
+
 private:
     // keep runing atomic flag
     std::atomic<bool> m_running {true};
@@ -80,9 +91,7 @@ private:
 class FileRuleEvaluator : public RuleEvaluator
 {
     FileRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
-        : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
-                                                : std::make_unique<file_system::FileSystemWrapper>())
-        , m_ctx(ctx)
+        : RuleEvaluator(ctx, std::move(fileSystemWrapper))
     {
     }
 
@@ -129,18 +138,13 @@ private:
         }
         return RuleResult::Invalid;
     }
-
-    std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper;
-    PolicyEvaluationContext m_ctx;
 };
 
 class CommandRuleEvaluator : public RuleEvaluator
 {
 public:
     CommandRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
-        : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
-                                                : std::make_unique<file_system::FileSystemWrapper>())
-        , m_ctx(ctx)
+        : RuleEvaluator(ctx, std::move(fileSystemWrapper))
     {
     }
 
@@ -159,19 +163,13 @@ public:
         }
         return RuleResult::Invalid;
     }
-
-private:
-    std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper;
-    PolicyEvaluationContext m_ctx;
 };
 
 class DirRuleEvaluator : public RuleEvaluator
 {
 public:
     DirRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
-        : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
-                                                : std::make_unique<file_system::FileSystemWrapper>())
-        , m_ctx(ctx)
+        : RuleEvaluator(ctx, std::move(fileSystemWrapper))
     {
     }
 
@@ -204,19 +202,13 @@ public:
         }
         return RuleResult::Invalid;
     }
-
-private:
-    std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper;
-    PolicyEvaluationContext m_ctx;
 };
 
 class ProcessRuleEvaluator : public RuleEvaluator
 {
 public:
     ProcessRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
-        : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
-                                                : std::make_unique<file_system::FileSystemWrapper>())
-        , m_ctx(ctx)
+        : RuleEvaluator(ctx, std::move(fileSystemWrapper))
     {
     }
 
@@ -226,8 +218,4 @@ public:
         // check if pattern matches
         return RuleResult::Invalid;
     }
-
-private:
-    std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper;
-    PolicyEvaluationContext m_ctx;
 };
