@@ -1,5 +1,7 @@
 #include "event_reader_win.hpp"
 
+#include <Windows.h>
+
 #include <iomanip>
 #include <sstream>
 
@@ -113,22 +115,38 @@ namespace logcollector::winevt
                     LogError("Cannot convert utf16 string: {}", e.what());
                     return;
                 }
-                m_logcollector.PushMessage(m_channel, logString, COLLECTOR_TYPE);
+
+                try
+                {
+                    m_logcollector.PushMessage(m_channel, logString, COLLECTOR_TYPE);
+                }
+                catch (const std::exception& e)
+                {
+                    LogError("Cannot push message '{}' into the queue: {}", logString, e.what());
+                }
             }
         }
     }
 
     std::string WindowsEventTracerReader::WcharVecToString(std::vector<wchar_t>& buffer)
     {
-        buffer.erase(std::remove(buffer.begin(), buffer.end(), L'\0'), buffer.end());
-        std::wstring wstr(buffer.begin(), buffer.end());
-        std::string result;
-        result.reserve(wstr.size() * sizeof(wchar_t));
-        std::transform(wstr.begin(),
-                       wstr.end(),
-                       std::back_inserter(result),
-                       [](wchar_t wc) -> char { return static_cast<char>(wc); });
-        return result;
+        if (buffer.empty() || buffer.back() != L'\0')
+        {
+            buffer.push_back(L'\0');
+        }
+        std::wstring wstr(buffer.data());
+
+        int utf8Size = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
+        if (utf8Size == 0)
+        {
+            LogError("Error in WideCharToMultiByte conversion");
+            return "";
+        }
+
+        std::vector<char> utf8Buffer(utf8Size);
+        WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, utf8Buffer.data(), utf8Size, nullptr, nullptr);
+
+        return std::string(utf8Buffer.data(), utf8Size - 1);
     }
 
 } // namespace logcollector::winevt
