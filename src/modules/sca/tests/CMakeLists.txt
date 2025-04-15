@@ -12,3 +12,9 @@ target_include_directories(
                                    ${CMAKE_CURRENT_SOURCE_DIR}/../../../common/file_helper/filesystem/tests/mocks)
 target_link_libraries(sca_policy_loader_test PRIVATE SCA GTest::gtest GTest::gmock GTest::gtest_main)
 add_test(NAME SCAPolicyLoaderTest COMMAND sca_policy_loader_test)
+
+add_executable(sca_event_handler_test sca_event_handler_test.cpp)
+configure_target(sca_event_handler_test)
+target_include_directories(sca_event_handler_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+target_link_libraries(sca_event_handler_test PRIVATE SCA GTest::gtest GTest::gmock GTest::gtest_main)
+add_test(NAME SCAEventHandlerTest COMMAND sca_event_handler_test)
