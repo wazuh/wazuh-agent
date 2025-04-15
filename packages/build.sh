@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Test
+
 # Wazuh package builder
 # Copyright (C) 2015, Wazuh Inc.
 #
