@@ -1,6 +1,7 @@
 #pragma once
 
 #include <message.hpp>
+#include <sca_policy_check.hpp>
 
 #include <boost/asio/awaitable.hpp>
 
@@ -10,6 +11,25 @@
 class SCAPolicy
 {
 public:
+    /// @brief Constructor
+    SCAPolicy()
+    {
+        // instantiate checks
+        // check id
+        // check title
+        // check condition
+        // set condition (all, any, none, any required (required deprecated), all required (required deprecated))
+
+        // now RULES
+        // regex engine type
+        // is it negated?
+        // possible types: WM_SCA_TYPE_FILE, WM_SCA_TYPE_REGISTRY, WM_SCA_TYPE_PROCESS, WM_SCA_TYPE_DIR,
+        // WM_SCA_TYPE_COMMAND.
+        // do sca check
+        // check results
+        // report
+    }
+
     /// @brief Runs the policy check
     /// @return Awaitable void
     boost::asio::awaitable<void> Run()
@@ -25,4 +45,7 @@ public:
     {
         return {};
     }
+
+private:
+    std::vector<FileRuleEvaluator> m_checks;
 };
