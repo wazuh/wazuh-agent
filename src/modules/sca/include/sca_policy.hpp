@@ -46,31 +46,14 @@ public:
         {
             for (const auto& check : m_checks)
             {
-                // aggregate the results based on the condition
-                // all, any, none
-                [[maybe_unused]] auto result = [&]
-                {
-                    if (check.condition == "all")
-                    {
-                        return RuleResult::Found;
-                    }
-                    else if (check.condition == "any")
-                    {
-                        return RuleResult::NotFound;
-                    }
-                    else if (check.condition == "none")
-                    {
-                        return RuleResult::Invalid;
-                    }
-                    else
-                    {
-                        return RuleResult::Invalid;
-                    }
-                };
+                auto resultEvaluator = CheckConditionEvaluator::fromString(check.condition);
 
-                for ([[maybe_unused]] const auto& rule : check.rules)
+                for (const auto& rule : check.rules)
                 {
+                    resultEvaluator.addResult(rule->Evaluate() == RuleResult::Found);
                 }
+
+                [[maybe_unused]] auto result = resultEvaluator.result();
             }
 
             auto executor = co_await boost::asio::this_coro::executor;
