@@ -35,6 +35,23 @@ enum class ConditionType
 class CheckConditionEvaluator
 {
 public:
+    static CheckConditionEvaluator fromString(const std::string& str)
+    {
+        if (str == "all")
+        {
+            return CheckConditionEvaluator {ConditionType::All};
+        }
+        if (str == "any")
+        {
+            return CheckConditionEvaluator {ConditionType::Any};
+        }
+        if (str == "none")
+        {
+            return CheckConditionEvaluator {ConditionType::None};
+        }
+        throw std::invalid_argument("Invalid condition type: " + str);
+    }
+
     explicit CheckConditionEvaluator(ConditionType type)
         : m_type {type}
     {
