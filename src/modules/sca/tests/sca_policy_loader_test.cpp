@@ -24,7 +24,8 @@ TEST(ScaPolicyLoaderTest, NoPolicies)
     const auto fakeLoader =
         [=](const std::filesystem::path&, std::function<int(Message)>) // NOLINT(performance-unnecessary-value-param)
     {
-        return SCAPolicy {};
+        std::vector<SCAPolicy::Check> checks;
+        return SCAPolicy {std::move(checks)};
     };
 
     const SCAPolicyLoader loader(fsMock, configurationParser, nullptr, fakeLoader);
@@ -52,7 +53,8 @@ TEST(ScaPolicyLoaderTest, GetPoliciesReturnsOnePolicyFromConfiguration)
     const auto fakeLoader =
         [=](const std::filesystem::path&, std::function<int(Message)>) // NOLINT(performance-unnecessary-value-param)
     {
-        return SCAPolicy {};
+        std::vector<SCAPolicy::Check> checks;
+        return SCAPolicy {std::move(checks)};
     };
     const SCAPolicyLoader loader(fsMock, configurationParser, nullptr, fakeLoader);
 

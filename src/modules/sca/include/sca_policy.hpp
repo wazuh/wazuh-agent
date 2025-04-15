@@ -13,8 +13,17 @@
 class SCAPolicy
 {
 public:
+    struct Check
+    {
+        std::string id;
+        std::string title;
+        std::string condition;
+        std::vector<std::unique_ptr<IRuleEvaluator>> rules;
+    };
+
     /// @brief Constructor
-    SCAPolicy()
+    SCAPolicy(std::vector<Check> checks)
+        : m_checks(std::move(checks))
     {
         // instantiate checks
         // check id
@@ -47,9 +56,10 @@ public:
     static SCAPolicy LoadFromFile([[maybe_unused]] const std::filesystem::path& path,
                                   [[maybe_unused]] std::function<int(Message)> pushMessage)
     {
-        return {};
+        std::vector<Check> checks;
+        return SCAPolicy(std::move(checks));
     }
 
 private:
-    std::vector<std::pair<int, std::vector<std::unique_ptr<IRuleEvaluator>>>> m_checks;
+    std::vector<Check> m_checks;
 };
