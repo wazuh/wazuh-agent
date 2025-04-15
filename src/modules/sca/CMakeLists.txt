@@ -16,6 +16,7 @@ target_link_libraries(
            MessageEntry
            ModuleManager
            CommandEntry
+           cmd_helper
     PRIVATE hash_helper string_helper time_helper)
 
 include(../../cmake/ConfigureTarget.cmake)
