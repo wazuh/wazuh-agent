@@ -49,10 +49,10 @@ SecurityConfigurationAssessment::SecurityConfigurationAssessment(
 
 void SecurityConfigurationAssessment::Run()
 {
-    // Execute the policies (run io context)
-    // Each policy should:
-    // Run regex engine, check type of policies
-    // Create a report and send it to the server
+    for (auto& policy : m_policies)
+    {
+        EnqueueTask(policy.Run());
+    }
     m_ioContext.run();
 }
 

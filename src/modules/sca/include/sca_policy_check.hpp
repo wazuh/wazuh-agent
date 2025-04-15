@@ -3,10 +3,6 @@
 #include <cmdHelper.hpp>
 #include <filesystem_wrapper.hpp>
 
-#include <boost/asio/awaitable.hpp>
-#include <boost/asio/steady_timer.hpp>
-#include <boost/asio/use_awaitable.hpp>
-
 #include <memory>
 #include <optional>
 #include <string>
@@ -15,6 +11,7 @@
 
 struct PolicyEvaluationContext
 {
+    std::string condition;
     std::optional<std::string> command;
     std::optional<std::string> pattern;
     std::optional<std::string> directory;
@@ -23,9 +20,9 @@ struct PolicyEvaluationContext
 
 enum class RuleResult
 {
+    Invalid = -1,
     Found,
-    NotFound,
-    Invalid
+    NotFound
 };
 
 class IRuleEvaluator
@@ -34,10 +31,6 @@ public:
     virtual ~IRuleEvaluator() = default;
 
     virtual RuleResult Evaluate() = 0;
-
-    /// @brief Runs the file check
-    /// @return Awaitable void
-    virtual boost::asio::awaitable<void> Run() = 0;
 };
 
 class RuleEvaluator : public IRuleEvaluator
@@ -50,42 +43,14 @@ public:
     {
     }
 
-    boost::asio::awaitable<void> Run() override
+    const PolicyEvaluationContext& GetContext() const
     {
-        // while keep running evaluate then async wait a timer sleep
-
-        while (m_running)
-        {
-            // evaluate
-            const auto result = Evaluate();
-            if (result == RuleResult::Found)
-            {
-                // do something
-            }
-            else if (result == RuleResult::NotFound)
-            {
-                // do something else
-            }
-            else if (result == RuleResult::Invalid)
-            {
-                // handle invalid case
-            }
-            // sleep for a while
-            auto executor = co_await boost::asio::this_coro::executor;
-            boost::asio::steady_timer timer(executor);
-            timer.expires_after(std::chrono::seconds(5));
-            co_await timer.async_wait(boost::asio::use_awaitable);
-        }
-        co_return;
+        return m_ctx;
     }
 
 protected:
     std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper = nullptr;
     PolicyEvaluationContext m_ctx = {};
-
-private:
-    // keep runing atomic flag
-    std::atomic<bool> m_running {true};
 };
 
 class FileRuleEvaluator : public RuleEvaluator
