@@ -144,7 +144,7 @@ public:
         // directory
         if (ctx.paths)
         {
-            for (const auto& path : *ctx.paths)
+            for ([[maybe_unused]] const auto& path : *ctx.paths)
             {
             }
             return RuleResult::Found;
@@ -159,7 +159,7 @@ private:
 class ProcessRuleEvaluator : public IRuleEvaluator
 {
 public:
-    RuleResult Evaluate(const PolicyEvaluationContext& ctx) override
+    RuleResult Evaluate([[maybe_unused]] const PolicyEvaluationContext& ctx) override
     {
         // get list of running processes
         // check if pattern matches
