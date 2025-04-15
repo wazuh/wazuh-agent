@@ -5,6 +5,11 @@
 
 #include <boost/asio/awaitable.hpp>
 
+#include <boost/asio/steady_timer.hpp>
+#include <boost/asio/this_coro.hpp>
+#include <boost/asio/use_awaitable.hpp>
+
+#include <atomic>
 #include <filesystem>
 #include <functional>
 #include <memory>
@@ -27,11 +32,58 @@ public:
     {
     }
 
+    SCAPolicy(SCAPolicy&& other) noexcept
+        : m_checks(std::move(other.m_checks))
+        , m_keepRunning(other.m_keepRunning.load())
+    {
+    }
+
     /// @brief Runs the policy check
     /// @return Awaitable void
     boost::asio::awaitable<void> Run()
     {
+        while (m_keepRunning)
+        {
+            for (const auto& check : m_checks)
+            {
+                // aggregate the results based on the condition
+                // all, any, none
+                [[maybe_unused]] auto result = [&]
+                {
+                    if (check.condition == "all")
+                    {
+                        return RuleResult::Found;
+                    }
+                    else if (check.condition == "any")
+                    {
+                        return RuleResult::NotFound;
+                    }
+                    else if (check.condition == "none")
+                    {
+                        return RuleResult::Invalid;
+                    }
+                    else
+                    {
+                        return RuleResult::Invalid;
+                    }
+                };
+
+                for ([[maybe_unused]] const auto& rule : check.rules)
+                {
+                }
+            }
+
+            auto executor = co_await boost::asio::this_coro::executor;
+            boost::asio::steady_timer timer(executor);
+            timer.expires_after(std::chrono::seconds(5));
+            co_await timer.async_wait(boost::asio::use_awaitable);
+        }
         co_return;
+    }
+
+    void Stop()
+    {
+        m_keepRunning = false;
     }
 
     /// @brief Loads a policy from a SCA Policy yaml file
@@ -46,4 +98,5 @@ public:
 
 private:
     std::vector<Check> m_checks;
+    std::atomic<bool> m_keepRunning {true};
 };
