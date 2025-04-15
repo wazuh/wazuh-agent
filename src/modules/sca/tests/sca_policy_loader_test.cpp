@@ -3,6 +3,7 @@
 
 #include <configuration_parser.hpp>
 #include <isca_policy_loader.hpp>
+#include <sca_policy.hpp>
 #include <sca_policy_loader.hpp>
 
 #include "mocks/mockdbsync.hpp"
@@ -25,7 +26,8 @@ TEST(ScaPolicyLoaderTest, NoPolicies)
     auto dbSync = std::make_shared<MockDBSync>();
     const auto fakeLoader = [=](const std::filesystem::path&)
     {
-        return SCAPolicy {};
+        std::vector<SCAPolicy::Check> checks;
+        return SCAPolicy {std::move(checks)};
     };
 
     const SCAPolicyLoader loader(fsMock, configurationParser, dbSync, fakeLoader);
@@ -53,7 +55,8 @@ TEST(ScaPolicyLoaderTest, GetPoliciesReturnsOnePolicyFromConfiguration)
 
     const auto fakeLoader = [=](const std::filesystem::path&)
     {
-        return SCAPolicy {};
+        std::vector<SCAPolicy::Check> checks;
+        return SCAPolicy {std::move(checks)};
     };
     const SCAPolicyLoader loader(fsMock, configurationParser, dbSync, fakeLoader);
 
