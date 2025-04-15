@@ -7,6 +7,8 @@
 
 #include <filesystem>
 #include <functional>
+#include <memory>
+#include <vector>
 
 class SCAPolicy
 {
@@ -47,5 +49,5 @@ public:
     }
 
 private:
-    std::vector<FileRuleEvaluator> m_checks;
+    std::vector<std::pair<int, std::vector<std::unique_ptr<IRuleEvaluator>>>> m_checks;
 };
