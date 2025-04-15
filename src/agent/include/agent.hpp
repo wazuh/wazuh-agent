@@ -6,6 +6,7 @@
 #include <iagent_info.hpp>
 #include <icommand_handler.hpp>
 #include <ihttp_client.hpp>
+#include <iinstance_communicator.hpp>
 #include <imoduleManager.hpp>
 #include <imultitype_queue.hpp>
 #include <isignal_handler.hpp>
@@ -32,6 +33,7 @@ public:
     /// @param agentInfo Pointer to a custom IAgentInfo implementation
     /// @param commandHandler Pointer to a custom ICommandHandler implementation
     /// @param moduleManager Pointer to a custom IModuleManager implementation
+    /// @param instanceCommunicator Pointer to a custom IInstanceCommunicator implementation
     /// @param messageQueue Pointer to a custom IMultiTypeQueue implementation
     /// @throws std::runtime_error If the Agent is not enrolled
     /// @throws Any exception propagated from dependencies used within the constructor
@@ -42,6 +44,7 @@ public:
           std::unique_ptr<IAgentInfo> agentInfo = nullptr,
           std::unique_ptr<command_handler::ICommandHandler> commandHandler = nullptr,
           std::unique_ptr<IModuleManager> moduleManager = nullptr,
+          std::unique_ptr<instance_communicator::IInstanceCommunicator> instanceCommunicator = nullptr,
           std::shared_ptr<IMultiTypeQueue> messageQueue = nullptr);
 
     /// @brief Destructor
@@ -56,6 +59,11 @@ public:
     ///
     /// This method stops all modules launched by moduleManager, and starts them again.
     void ReloadModules();
+
+    /// @brief Reload a module
+    ///
+    /// This method stops the specified module launched by moduleManager, and starts it again.
+    void ReloadModule(const std::string& module);
 
 private:
     /// @brief Task manager
@@ -84,6 +92,9 @@ private:
 
     /// @brief Command handler
     std::unique_ptr<command_handler::ICommandHandler> m_commandHandler;
+
+    /// @brief Instance communicator
+    std::unique_ptr<instance_communicator::IInstanceCommunicator> m_instanceCommunicator;
 
     /// @brief Centralized configuration
     centralized_configuration::CentralizedConfiguration m_centralizedConfiguration;
