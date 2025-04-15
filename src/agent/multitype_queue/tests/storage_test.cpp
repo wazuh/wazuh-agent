@@ -248,6 +248,71 @@ TEST_F(StorageTest, StoreMultipleMessagesFailAll)
     EXPECT_EQ(m_storage->Store(messages, tableName), 0);
 }
 
+TEST_F(StorageTest, StoreFailInvalidUTF8InvalidByteFF)
+{
+    // 0xFF is not allowed in UTF-8
+    nlohmann::json message;
+    message["event"] = std::string("Invalid\xFFtext");
+
+    EXPECT_CALL(*m_mockPersistence, BeginTransaction()).Times(1);
+    EXPECT_CALL(*m_mockPersistence, Insert(tableName, testing::_)).Times(0);
+    EXPECT_CALL(*m_mockPersistence, CommitTransaction(testing::_)).Times(1);
+
+    EXPECT_EQ(m_storage->Store(message, tableName), 0);
+}
+
+TEST_F(StorageTest, StoreFailInvalidUTF8ContinuationByteAlone)
+{
+    // 0x80 is a continuation byte but appears without a lead byte
+    nlohmann::json message;
+    message["event"] = std::string("Invalid\x80text");
+
+    EXPECT_CALL(*m_mockPersistence, BeginTransaction()).Times(1);
+    EXPECT_CALL(*m_mockPersistence, Insert(tableName, testing::_)).Times(0);
+    EXPECT_CALL(*m_mockPersistence, CommitTransaction(testing::_)).Times(1);
+
+    EXPECT_EQ(m_storage->Store(message, tableName), 0);
+}
+
+TEST_F(StorageTest, StoreFailInvalidUTF8InvalidLeadByteC0)
+{
+    // 0xC0 is an invalid lead byte in UTF-8 (overlong encoding)
+    nlohmann::json message;
+    message["event"] = std::string("Invalid\xC0text");
+
+    EXPECT_CALL(*m_mockPersistence, BeginTransaction()).Times(1);
+    EXPECT_CALL(*m_mockPersistence, Insert(tableName, testing::_)).Times(0);
+    EXPECT_CALL(*m_mockPersistence, CommitTransaction(testing::_)).Times(1);
+
+    EXPECT_EQ(m_storage->Store(message, tableName), 0);
+}
+
+TEST_F(StorageTest, StoreFailInvalidUTF8TruncatedMultibyteSequence)
+{
+    // 0xC3 expects a following byte, but it's missing
+    nlohmann::json message;
+    message["event"] = std::string("Invalid\xC3");
+
+    EXPECT_CALL(*m_mockPersistence, BeginTransaction()).Times(1);
+    EXPECT_CALL(*m_mockPersistence, Insert(tableName, testing::_)).Times(0);
+    EXPECT_CALL(*m_mockPersistence, CommitTransaction(testing::_)).Times(1);
+
+    EXPECT_EQ(m_storage->Store(message, tableName), 0);
+}
+
+TEST_F(StorageTest, StoreFailInvalidUTF8ReservedByteFE)
+{
+    // 0xFE is reserved and not allowed in UTF-8
+    nlohmann::json message;
+    message["event"] = std::string("Invalid\xFEtext");
+
+    EXPECT_CALL(*m_mockPersistence, BeginTransaction()).Times(1);
+    EXPECT_CALL(*m_mockPersistence, Insert(tableName, testing::_)).Times(0);
+    EXPECT_CALL(*m_mockPersistence, CommitTransaction(testing::_)).Times(1);
+
+    EXPECT_EQ(m_storage->Store(message, tableName), 0);
+}
+
 TEST_F(StorageTest, RetrieveMultipleMessages)
 {
     const std::vector<column::Row> mockRows = {
