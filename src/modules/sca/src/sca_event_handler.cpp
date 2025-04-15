@@ -6,14 +6,21 @@
 #include <stringHelper.hpp>
 #include <timeHelper.hpp>
 
-/// @brief Map of operations
-static const std::map<ReturnTypeCallback, std::string> OPERATION_MAP {
+/// @brief Map of stateful operations
+static const std::map<ReturnTypeCallback, std::string> STATEFUL_OPERATION_MAP {
     {MODIFIED, "update"},
     {DELETED, "delete"},
     {INSERTED, "create"},
     {MAX_ROWS, "max_rows"},
     {DB_ERROR, "db_error"},
     {SELECTED, "selected"},
+};
+
+/// @brief Map of stateless operations
+static const std::map<ReturnTypeCallback, std::string> STATELESS_OPERATION_MAP {
+    {MODIFIED, "change"},
+    {DELETED, "deletion"},
+    {INSERTED, "creation"},
 };
 
 SCAEventHandler::SCAEventHandler(std::string agentUUID,
@@ -25,6 +32,27 @@ SCAEventHandler::SCAEventHandler(std::string agentUUID,
 
 void SCAEventHandler::CreateEvents(const std::unordered_map<std::string, nlohmann::json>& modifiedPoliciesMap,
                                    const std::unordered_map<std::string, nlohmann::json>& modifiedChecksMap) const
+{
+    const nlohmann::json events = ProcessEvents(modifiedPoliciesMap, modifiedChecksMap);
+
+    for (const auto& event : events)
+    {
+        const nlohmann::json processedStatefulEvent = ProcessStateful(event);
+        if (!processedStatefulEvent.empty())
+        {
+            PushStateful(processedStatefulEvent["event"], processedStatefulEvent["metadata"]);
+        }
+        const nlohmann::json processedStatelessEvent = ProcessStateless(event);
+        if (!processedStatelessEvent.empty())
+        {
+            PushStateless(processedStatelessEvent["event"], processedStatelessEvent["metadata"]);
+        }
+    }
+}
+
+nlohmann::json
+SCAEventHandler::ProcessEvents(const std::unordered_map<std::string, nlohmann::json>& modifiedPoliciesMap,
+                               const std::unordered_map<std::string, nlohmann::json>& modifiedChecksMap) const
 {
     nlohmann::json events = nlohmann::json::array();
     try
@@ -46,13 +74,15 @@ void SCAEventHandler::CreateEvents(const std::unordered_map<std::string, nlohman
                     continue;
                 }
 
-                const nlohmann::json event = {{"policy", policyData}, {"check", checkData}, {"result", policyResult}};
+                const nlohmann::json event = {
+                    {"policy", policyData}, {"check", checkData}, {"result", policyResult}, {"collector", "policy"}};
                 events.push_back(event);
             }
         }
 
         for (const auto& checkEntry : modifiedChecksMap)
         {
+            nlohmann::json policyData;
             nlohmann::json checkData = checkEntry.second["data"];
             int checkResult = checkEntry.second["result"];
 
@@ -66,15 +96,17 @@ void SCAEventHandler::CreateEvents(const std::unordered_map<std::string, nlohman
                 policyId = checkData["policy_id"];
             }
 
-            nlohmann::json policyData = GetPolicyById(policyId);
-            if (policyData.empty())
+            if (modifiedPoliciesMap.find(policyId) != modifiedPoliciesMap.end())
             {
-                if (modifiedPoliciesMap.find(policyId) != modifiedPoliciesMap.end())
-                {
-                    policyData = modifiedPoliciesMap.at(policyId)["data"];
-                }
+                policyData = modifiedPoliciesMap.at(policyId)["data"];
             }
-            const nlohmann::json event = {{"policy", policyData}, {"check", checkData}, {"result", checkResult}};
+            else
+            {
+                policyData = GetPolicyById(policyId);
+            }
+
+            const nlohmann::json event = {
+                {"policy", policyData}, {"check", checkData}, {"result", checkResult}, {"collector", "check"}};
             events.push_back(event);
         }
     }
@@ -83,10 +115,7 @@ void SCAEventHandler::CreateEvents(const std::unordered_map<std::string, nlohman
         LogError("Failed to create events: {}", e.what());
     }
 
-    for (const auto& event : events)
-    {
-        ProcessStateful(event);
-    }
+    return events;
 }
 
 std::vector<nlohmann::json> SCAEventHandler::GetChecksForPolicy(const std::string& policyId) const
@@ -148,10 +177,12 @@ nlohmann::json SCAEventHandler::GetPolicyById(const std::string& policyId) const
     return policy;
 }
 
-void SCAEventHandler::ProcessStateful(const nlohmann::json& event) const
+nlohmann::json SCAEventHandler::ProcessStateful(const nlohmann::json& event) const
 {
     nlohmann::json check;
     nlohmann::json policy;
+    nlohmann::json jsonEvent;
+    nlohmann::json jsonMetadata;
 
     try
     {
@@ -166,6 +197,11 @@ void SCAEventHandler::ProcessStateful(const nlohmann::json& event) const
                 check = event["check"];
             }
         }
+        else
+        {
+            LogError("Stateful event does not contain check");
+            return {};
+        }
 
         if (event.contains("policy") && event["policy"].is_object())
         {
@@ -178,44 +214,130 @@ void SCAEventHandler::ProcessStateful(const nlohmann::json& event) const
                 policy = event["policy"];
             }
         }
-
-        if (check.contains("refs") && check["refs"].is_string())
+        else
         {
-            const std::string refsStr = check["refs"].get<std::string>();
-            check["references"] = StringToJsonArray(refsStr);
-            check.erase("refs");
+            LogError("Stateful event does not contain policy");
+            return {};
         }
 
-        if (check.contains("compliance") && check["compliance"].is_string())
-        {
-            const std::string refsStr = check["compliance"].get<std::string>();
-            check["compliance"] = StringToJsonArray(refsStr);
-        }
+        NormalizeCheck(check);
+        NormalizePolicy(policy);
 
-        if (check.contains("rules") && check["rules"].is_string())
-        {
-            const std::string refsStr = check["rules"].get<std::string>();
-            check["rules"] = StringToJsonArray(refsStr);
-        }
-
-        if (policy.contains("refs") && policy["refs"].is_string())
-        {
-            const std::string refsStr = policy["refs"].get<std::string>();
-            policy["references"] = StringToJsonArray(refsStr);
-            policy.erase("refs");
-        }
-
-        const nlohmann::json jsonEvent = {
-            {"policy", policy}, {"check", check}, {"timestamp", Utils::getCurrentISO8601()}};
-        const nlohmann::json jsonMetadata = {
-            {"id", CalculateHashId(jsonEvent)}, {"operation", OPERATION_MAP.at(event["result"])}, {"module", "sca"}};
-
-        PushMessage(jsonEvent, jsonMetadata);
+        jsonEvent = {{"policy", policy}, {"check", check}, {"timestamp", Utils::getCurrentISO8601()}};
+        jsonMetadata = {{"id", CalculateHashId(jsonEvent)},
+                        {"operation", STATEFUL_OPERATION_MAP.at(event["result"])},
+                        {"module", "sca"}};
     }
     catch (const std::exception& e)
     {
         LogError("Error processing stateful event: {}", e.what());
     }
+
+    return nlohmann::json {{"event", jsonEvent}, {"metadata", jsonMetadata}};
+}
+
+nlohmann::json SCAEventHandler::ProcessStateless(const nlohmann::json& event) const
+{
+    nlohmann::json check;
+    nlohmann::json policy;
+    nlohmann::json changedFields = nlohmann::json::array();
+    nlohmann::json jsonEvent;
+    nlohmann::json jsonMetadata;
+
+    try
+    {
+        if (event.contains("check") && event["check"].is_object())
+        {
+            if (event["check"].contains("new") && event["check"]["new"].is_object())
+            {
+                check = event["check"]["new"];
+            }
+            else
+            {
+                check = event["check"];
+            }
+
+            if (event["check"].contains("old") && event["check"]["old"].is_object())
+            {
+                const auto& old = event["check"]["old"];
+                nlohmann::json previous;
+
+                for (auto& [key, value] : old.items())
+                {
+                    if (key == "id")
+                    {
+                        continue;
+                    }
+                    previous[key] = value;
+                    changedFields.push_back("check." + key);
+                }
+                check["previous"] = previous;
+            }
+        }
+        else
+        {
+            LogError("Stateless event does not contain check");
+            return {};
+        }
+
+        if (event.contains("policy") && event["policy"].is_object())
+        {
+            if (event["policy"].contains("new") && event["policy"]["new"].is_object())
+            {
+                policy = event["policy"]["new"];
+            }
+            else
+            {
+                policy = event["policy"];
+            }
+
+            if (event["policy"].contains("old") && event["policy"]["old"].is_object())
+            {
+                const auto& old = event["policy"]["old"];
+                nlohmann::json previous;
+
+                for (auto& [key, value] : old.items())
+                {
+                    if (key == "id")
+                    {
+                        continue;
+                    }
+                    previous[key] = value;
+                    changedFields.push_back("policy." + key);
+                }
+                policy["previous"] = previous;
+            }
+        }
+        else
+        {
+            LogError("Stateless event does not contain policy");
+            return {};
+        }
+
+        NormalizeCheck(check);
+        NormalizePolicy(policy);
+
+        jsonEvent = {
+            {"event",
+             {
+                 {"created", Utils::getCurrentISO8601()},
+                 {"category", {"configuration"}},
+                 {"type", STATELESS_OPERATION_MAP.at(event["result"])},
+                 {"action",
+                  {event.at("collector").get<std::string>() + "-" + STATELESS_OPERATION_MAP.at(event["result"])}},
+                 {"changed_fields", changedFields},
+             }},
+            {"policy", policy},
+            {"check", check}};
+
+        jsonMetadata = {{"module", "sca"}, {"collector", event.at("collector")}};
+    }
+    catch (const std::exception& e)
+    {
+        LogError("Error processing stateless event: {}", e.what());
+    }
+
+    return nlohmann::json {{"event", jsonEvent}, {"metadata", jsonMetadata}};
 }
 
 std::string SCAEventHandler::CalculateHashId(const nlohmann::json& data) const
@@ -229,7 +351,7 @@ std::string SCAEventHandler::CalculateHashId(const nlohmann::json& data) const
     return Utils::asciiToHex(hash.hash());
 }
 
-void SCAEventHandler::PushMessage(const nlohmann::json& event, const nlohmann::json& metadata) const
+void SCAEventHandler::PushStateful(const nlohmann::json& event, const nlohmann::json& metadata) const
 {
     if (!m_pushMessage)
     {
@@ -245,6 +367,21 @@ void SCAEventHandler::PushMessage(const nlohmann::json& event, const nlohmann::j
     m_pushMessage(statefulMessage);
 
     LogTrace("Stateful event queued: {}, metadata {}", event.dump(), metadata.dump());
+}
+
+void SCAEventHandler::PushStateless(const nlohmann::json& event, const nlohmann::json& metadata) const
+{
+    if (!m_pushMessage)
+    {
+        throw std::runtime_error("Message queue not set, cannot send message.");
+    }
+
+    const Message statelessMessage {
+        MessageType::STATELESS, event, metadata["module"], metadata["collector"], metadata.dump()};
+
+    m_pushMessage(statelessMessage);
+
+    LogTrace("Stateless event queued: {}, metadata {}", event.dump(), metadata.dump());
 }
 
 nlohmann::json SCAEventHandler::StringToJsonArray(const std::string& input) const
@@ -275,4 +412,37 @@ nlohmann::json SCAEventHandler::StringToJsonArray(const std::string& input) cons
     }
 
     return result;
+}
+
+void SCAEventHandler::NormalizeCheck(nlohmann::json& check) const
+{
+    if (check.contains("refs") && check["refs"].is_string())
+    {
+        check["references"] = StringToJsonArray(check["refs"].get<std::string>());
+        check.erase("refs");
+    }
+
+    if (check.contains("compliance") && check["compliance"].is_string())
+    {
+        check["compliance"] = StringToJsonArray(check["compliance"].get<std::string>());
+    }
+
+    if (check.contains("rules") && check["rules"].is_string())
+    {
+        check["rules"] = StringToJsonArray(check["rules"].get<std::string>());
+    }
+
+    if (check.contains("policy_id"))
+    {
+        check.erase("policy_id");
+    }
+}
+
+void SCAEventHandler::NormalizePolicy(nlohmann::json& policy) const
+{
+    if (policy.contains("refs") && policy["refs"].is_string())
+    {
+        policy["references"] = StringToJsonArray(policy["refs"].get<std::string>());
+        policy.erase("refs");
+    }
 }
