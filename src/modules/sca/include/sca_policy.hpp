@@ -78,6 +78,11 @@ public:
         co_return;
     }
 
+    void Stop()
+    {
+        m_keepRunning = false;
+    }
+
     /// @brief Loads a policy from a SCA Policy yaml file
     /// @param path The path to the SCA Policy yaml file
     /// @returns A SCAPolicy object

@@ -72,8 +72,10 @@ void SecurityConfigurationAssessment::Setup(
 
 void SecurityConfigurationAssessment::Stop()
 {
-    // Stop the policies
-    // Stop the regex engine
+    for (auto& policy : m_policies)
+    {
+        policy.Stop();
+    }
     m_ioContext.stop();
 }
 
