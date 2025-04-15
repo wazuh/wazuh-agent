@@ -29,16 +29,6 @@ jobs:
         id: changes
         with:
           filters: |
-            pkg_deb_manager_builder_amd64:
-              - 'packages/build.sh'
-              - 'packages/generate_package.sh'
-              - 'packages/debs/amd64/manager/**'
-              - 'packages/debs/utils/**'
-            pkg_rpm_manager_builder_amd64:
-              - 'packages/build.sh'
-              - 'packages/generate_package.sh'
-              - 'packages/rpms/amd64/manager/**'
-              - 'packages/rpms/utils/**'
             pkg_deb_agent_builder_amd64:
               - 'packages/build.sh'
               - 'packages/generate_package.sh'
@@ -112,20 +102,6 @@ jobs:
           VERSION="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' VERSION.json)"
           echo "TAG=$VERSION" >> $GITHUB_ENV;
 
-      - name: Request pkg_deb_manager_builder_amd64 update
-        if: steps.changes.outputs.pkg_deb_manager_builder_amd64 == 'true'
-        run: |
-          gh workflow run packages-upload-manager-images.yml -r ${{ github.ref_name }} -f docker_image_tag=${{ env.TAG }} -f system=deb -f source_reference=${{ github.ref_name }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Request pkg_rpm_manager_builder_amd64 update
-        if: steps.changes.outputs.pkg_rpm_manager_builder_amd64 == 'true'
-        run: |
-          gh workflow run packages-upload-manager-images.yml -r ${{ github.ref_name }} -f docker_image_tag=${{ env.TAG }} -f system=rpm -f source_reference=${{ github.ref_name }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Request pkg_deb_agent_builder_amd64 update
         if: steps.changes.outputs.pkg_deb_agent_builder_amd64 == 'true'
         run: |
@@ -153,4 +129,3 @@ jobs:
           gh workflow run 5_builderpackage_upload-images-linux.yml --repo wazuh/wazuh-agent-packages -r ${{ github.ref_name }} -f docker_image_tag=${{ env.TAG }} -f system=rpm -f architecture=arm64 -f source_reference=${{ github.ref_name }}
         env:
           GH_TOKEN: ${{ secrets.CI_WAZUH_AGENT_PACKAGES }}
-
