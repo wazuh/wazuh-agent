@@ -97,6 +97,11 @@ Co_CommandExecutionResult Inventory::ExecuteCommand(const std::string command, c
     co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS, "Command not implemented yet"};
 }
 
+const std::string& Inventory::Name() const
+{
+    return m_moduleName;
+}
+
 void Inventory::SetPushMessageFunction(const std::function<int(Message)>& pushMessage)
 {
     m_pushMessage = pushMessage;
@@ -145,6 +150,16 @@ void Inventory::PushMessage(const std::string& data)
                 "Stateless event queued: {}, metadata {}", jsonData["stateless"].dump(), jsonData["metadata"].dump());
         }
     }
+}
+
+const std::string& Inventory::AgentUUID() const
+{
+    return m_agentUUID;
+}
+
+void Inventory::SetAgentUUID(const std::string& agentUUID)
+{
+    m_agentUUID = agentUUID;
 }
 
 void Inventory::ShowConfig()

@@ -44,10 +44,7 @@ public:
     Co_CommandExecutionResult ExecuteCommand(const std::string command, const nlohmann::json parameters) override;
 
     /// @copydoc IModule::Name
-    const std::string& Name() const override
-    {
-        return m_moduleName;
-    };
+    const std::string& Name() const override;
 
     /// @copydoc IModule::SetPushMessageFunction
     void SetPushMessageFunction(const std::function<int(Message)>& pushMessage) override;
@@ -60,15 +57,9 @@ public:
 
     virtual void PushMessage(const std::string& data);
 
-    const std::string& AgentUUID() const
-    {
-        return m_agentUUID;
-    };
+    const std::string& AgentUUID() const;
 
-    void SetAgentUUID(const std::string& agentUUID)
-    {
-        m_agentUUID = agentUUID;
-    }
+    void SetAgentUUID(const std::string& agentUUID);
 
 private:
     std::string GetCreateStatement() const;

@@ -48,10 +48,7 @@ namespace logcollector
         Co_CommandExecutionResult ExecuteCommand(const std::string command, const nlohmann::json parameters) override;
 
         /// @copydoc IModule::Name
-        const std::string& Name() const override
-        {
-            return m_moduleName;
-        };
+        const std::string& Name() const override;
 
         /// @copydoc IModule::SetPushMessageFunction
         void SetPushMessageFunction(const std::function<int(Message)>& pushMessage) override;
