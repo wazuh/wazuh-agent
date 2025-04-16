@@ -4,7 +4,6 @@
 #include <sca_policy_check.hpp>
 
 #include <boost/asio/awaitable.hpp>
-
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
@@ -68,6 +67,8 @@ public:
                 }
 
                 [[maybe_unused]] auto result = resultEvaluator.result();
+
+                ReportCheckResult(check, result);
             }
 
             auto executor = co_await boost::asio::this_coro::executor;
@@ -94,6 +95,16 @@ public:
     }
 
 private:
+    void ReportCheckResult([[maybe_unused]] const Check& check, [[maybe_unused]] bool result)
+    {
+        // Send the check result to the pushMessage function
+        if (m_pushMessage)
+        {
+            // TODO
+        }
+    }
+
     std::vector<Check> m_checks;
     std::atomic<bool> m_keepRunning {true};
+    std::function<int(Message)> m_pushMessage;
 };
