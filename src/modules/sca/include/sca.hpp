@@ -59,6 +59,9 @@ public:
     /// @param task Task to enqueue
     void EnqueueTask(boost::asio::awaitable<void> task);
 
+    /// @brief Sets the agent UUID
+    void SetAgentUUID(const std::string& agentUUID);
+
 private:
     /// @brief Get the create statement for the database
     std::string GetCreateStatement() const;
@@ -92,4 +95,7 @@ private:
 
     /// @brief Boost ASIO context
     boost::asio::io_context m_ioContext;
+
+    /// @brief Agent UUID
+    std::string m_agentUUID {""};
 };
