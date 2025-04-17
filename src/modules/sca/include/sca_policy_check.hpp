@@ -9,14 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
-struct PolicyEvaluationContext
-{
-    std::string condition;
-    std::optional<std::string> command;
-    std::optional<std::string> pattern;
-    std::optional<std::string> directory;
-    std::optional<std::vector<std::string>> paths;
-};
+using PolicyVariables = std::unordered_map<std::string, std::vector<std::string>>;
 
 enum class RuleResult
 {
@@ -30,6 +23,18 @@ enum class ConditionType
     All,
     Any,
     None
+};
+
+struct PolicyEvaluationContext
+{
+    ConditionType condition;
+    PolicyVariables variables;
+    std::string rule;
+
+    std::optional<std::string> command;
+    std::optional<std::string> pattern;
+    std::optional<std::string> directory;
+    std::optional<std::vector<std::string>> paths;
 };
 
 class CheckConditionEvaluator
