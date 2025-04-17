@@ -59,6 +59,36 @@ struct PolicyEvaluationContext
 
         return result;
     }
+
+    [[nodiscard]] std::vector<std::filesystem::path> ResolvedPaths() const
+    {
+        std::string expanded = RuleWithReplacedVariables();
+
+        std::vector<std::filesystem::path> paths;
+        size_t start = 0;
+
+        while (start < expanded.size())
+        {
+            size_t end = expanded.find(',', start);
+            if (end == std::string::npos)
+            {
+                end = expanded.size();
+            }
+
+            std::string path = expanded.substr(start, end - start);
+            path.erase(0, path.find_first_not_of(" \t"));
+            path.erase(path.find_last_not_of(" \t") + 1);
+
+            if (!path.empty())
+            {
+                paths.emplace_back(path);
+            }
+
+            start = end + 1;
+        }
+
+        return paths;
+    }
 };
 
 class CheckConditionEvaluator
