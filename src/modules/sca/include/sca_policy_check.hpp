@@ -35,6 +35,30 @@ struct PolicyEvaluationContext
     std::optional<std::string> pattern;
     std::optional<std::string> directory;
     std::optional<std::vector<std::string>> paths;
+
+    [[nodiscard]] std::string RuleWithReplacedVariables() const
+    {
+        std::string result = rule;
+
+        for (const auto& [var, values] : variables)
+        {
+            if (values.empty())
+            {
+                continue;
+            }
+
+            const auto& replacement = values.front();
+            size_t pos = 0;
+
+            while ((pos = result.find(var, pos)) != std::string::npos)
+            {
+                result.replace(pos, var.length(), replacement);
+                pos += replacement.length();
+            }
+        }
+
+        return result;
+    }
 };
 
 class CheckConditionEvaluator
