@@ -89,6 +89,19 @@ struct PolicyEvaluationContext
 
         return paths;
     }
+
+    [[nodiscard]] std::optional<std::string> GetPattern(const std::string& value)
+    {
+        const std::string delimiter = " -> ";
+        size_t pos = value.find(delimiter);
+
+        if (pos != std::string::npos)
+        {
+            return value.substr(pos + delimiter.size());
+        }
+
+        return std::nullopt;
+    }
 };
 
 class CheckConditionEvaluator
