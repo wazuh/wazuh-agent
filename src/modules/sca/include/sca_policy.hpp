@@ -80,6 +80,7 @@ public:
     }
 
 private:
+    std::vector<Check> m_requirements;
     std::vector<Check> m_checks;
     std::atomic<bool> m_keepRunning {true};
 };
