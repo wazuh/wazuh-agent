@@ -19,11 +19,11 @@ namespace sca
             key.erase(0, 1);
         }
 
-        static const std::unordered_map<std::string, int> type_map = {{"f", WM_SCA_TYPE_FILE},
-                                                                      {"r", WM_SCA_TYPE_REGISTRY},
-                                                                      {"p", WM_SCA_TYPE_PROCESS},
-                                                                      {"d", WM_SCA_TYPE_DIR},
-                                                                      {"c", WM_SCA_TYPE_COMMAND}};
+        static const std::map<std::string, int> type_map = {{"f", WM_SCA_TYPE_FILE},
+                                                            {"r", WM_SCA_TYPE_REGISTRY},
+                                                            {"p", WM_SCA_TYPE_PROCESS},
+                                                            {"d", WM_SCA_TYPE_DIR},
+                                                            {"c", WM_SCA_TYPE_COMMAND}};
 
         const auto it = type_map.find(key);
 
