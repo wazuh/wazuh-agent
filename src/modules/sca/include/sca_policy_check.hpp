@@ -2,14 +2,13 @@
 
 #include <cmdHelper.hpp>
 #include <filesystem_wrapper.hpp>
+#include <sca_utils.hpp>
 
 #include <memory>
 #include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-using PolicyVariables = std::unordered_map<std::string, std::vector<std::string>>;
 
 enum class RuleResult
 {
@@ -28,7 +27,7 @@ enum class ConditionType
 struct PolicyEvaluationContext
 {
     ConditionType condition;
-    PolicyVariables variables;
+    sca::PolicyVariables variables;
     std::string rule;
 
     std::optional<std::string> command;
