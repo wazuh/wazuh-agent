@@ -2,14 +2,13 @@
 
 #include <cmdHelper.hpp>
 #include <filesystem_wrapper.hpp>
+#include <sca_utils.hpp>
 
 #include <memory>
 #include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-using PolicyVariables = std::unordered_map<std::string, std::vector<std::string>>;
 
 enum class RuleResult
 {
@@ -28,80 +27,13 @@ enum class ConditionType
 struct PolicyEvaluationContext
 {
     ConditionType condition;
-    PolicyVariables variables;
+    sca::PolicyVariables variables;
     std::string rule;
 
     std::optional<std::string> command;
     std::optional<std::string> pattern;
     std::optional<std::string> directory;
     std::optional<std::vector<std::string>> paths;
-
-    [[nodiscard]] std::string RuleWithReplacedVariables() const
-    {
-        std::string result = rule;
-
-        for (const auto& [var, values] : variables)
-        {
-            if (values.empty())
-            {
-                continue;
-            }
-
-            const auto& replacement = values.front();
-            size_t pos = 0;
-
-            while ((pos = result.find(var, pos)) != std::string::npos)
-            {
-                result.replace(pos, var.length(), replacement);
-                pos += replacement.length();
-            }
-        }
-
-        return result;
-    }
-
-    [[nodiscard]] std::vector<std::filesystem::path> ResolvedPaths() const
-    {
-        std::string expanded = RuleWithReplacedVariables();
-
-        std::vector<std::filesystem::path> paths;
-        size_t start = 0;
-
-        while (start < expanded.size())
-        {
-            size_t end = expanded.find(',', start);
-            if (end == std::string::npos)
-            {
-                end = expanded.size();
-            }
-
-            std::string path = expanded.substr(start, end - start);
-            path.erase(0, path.find_first_not_of(" \t"));
-            path.erase(path.find_last_not_of(" \t") + 1);
-
-            if (!path.empty())
-            {
-                paths.emplace_back(path);
-            }
-
-            start = end + 1;
-        }
-
-        return paths;
-    }
-
-    [[nodiscard]] std::optional<std::string> GetPattern(const std::string& value)
-    {
-        const std::string delimiter = " -> ";
-        size_t pos = value.find(delimiter);
-
-        if (pos != std::string::npos)
-        {
-            return value.substr(pos + delimiter.size());
-        }
-
-        return std::nullopt;
-    }
 };
 
 class CheckConditionEvaluator
