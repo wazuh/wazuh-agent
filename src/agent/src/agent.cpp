@@ -16,6 +16,7 @@
 #include <nlohmann/json.hpp>
 
 #include <memory>
+#include <optional>
 
 Agent::Agent(std::unique_ptr<configuration::ConfigurationParser> configurationParser,
              std::unique_ptr<ISignalHandler> signalHandler,
@@ -47,10 +48,10 @@ Agent::Agent(std::unique_ptr<configuration::ConfigurationParser> configurationPa
                                                             m_agentInfo->GetUUID()))
     , m_commandHandler(commandHandler ? std::move(commandHandler)
                                       : std::make_unique<command_handler::CommandHandler>(m_configurationParser))
-    , m_instanceCommunicator(instanceCommunicator ? std::move(instanceCommunicator)
-                                                  : std::make_unique<instance_communicator::InstanceCommunicator>(
-                                                        [this]() { ReloadModules(); },
-                                                        [this](const std::string& module) { ReloadModule(module); }))
+    , m_instanceCommunicator(instanceCommunicator
+                                 ? std::move(instanceCommunicator)
+                                 : std::make_unique<instance_communicator::InstanceCommunicator>(
+                                       [this](const std::optional<std::string>& module) { ReloadModules(module); }))
     , m_centralizedConfiguration(
           [this](const std::vector<std::string>& groups)
           {
@@ -89,29 +90,7 @@ Agent::~Agent()
     m_taskManager.Stop();
 }
 
-void Agent::ReloadModule(const std::string& module)
-{
-    const std::lock_guard<std::mutex> lock(m_reloadMutex);
-    if (m_running.load())
-    {
-        try
-        {
-            m_configurationParser->ReloadConfiguration();
-            m_moduleManager->ReloadModule(module);
-            LogInfo("Module {} reloaded", module);
-        }
-        catch (const std::exception& e)
-        {
-            LogError("Error reloading module {}: {}", module, e.what());
-        }
-    }
-    else
-    {
-        LogWarn("Agent cannot reload modules while start up or shutdown is in progress.");
-    }
-}
-
-void Agent::ReloadModules()
+void Agent::ReloadModules(const std::optional<std::string>& module)
 {
     const std::lock_guard<std::mutex> lock(m_reloadMutex);
 
@@ -120,14 +99,30 @@ void Agent::ReloadModules()
         try
         {
             m_configurationParser->ReloadConfiguration();
-            m_moduleManager->Stop();
-            m_moduleManager->Setup();
-            m_moduleManager->Start();
-            LogInfo("Modules reloaded");
+
+            if (module.has_value())
+            {
+                m_moduleManager->ReloadModule(module.value());
+                LogInfo("Module {} reloaded", module.value());
+            }
+            else
+            {
+                m_moduleManager->Stop();
+                m_moduleManager->Setup();
+                m_moduleManager->Start();
+                LogInfo("Modules reloaded");
+            }
         }
         catch (const std::exception& e)
         {
-            LogError("Error reloading modules: {}", e.what());
+            if (module.has_value())
+            {
+                LogError("Error reloading module {}: {}", module.value(), e.what());
+            }
+            else
+            {
+                LogError("Error reloading modules: {}", e.what());
+            }
         }
     }
     else
@@ -206,7 +201,8 @@ void Agent::Run()
         m_running.store(true);
     }
 
-    m_taskManager.EnqueueTask(m_instanceCommunicator->Listen(m_taskManager.GetIOContext()));
+    m_taskManager.EnqueueTask(m_instanceCommunicator->Listen(
+        m_configurationParser->GetConfigOrDefault(config::DEFAULT_RUN_PATH, "agent", "path.run")));
 
     m_signalHandler->WaitForSignal();
 

@@ -102,7 +102,6 @@ void ModuleManager::ReloadModule(const std::string& name)
             },
             it->second->Name());
 
-        LogInfo("Module {} reloaded", name);
         return;
     }
 

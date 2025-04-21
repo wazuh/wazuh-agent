@@ -1,9 +1,10 @@
 #pragma once
 
-#include <iinstance_communicator_wrapper.hpp>
-#include <instance_communicator_wrapper.hpp>
+#include <isocket_wrapper.hpp>
 
 #include <boost/asio/awaitable.hpp>
+
+#include <string>
 
 namespace instance_communicator
 {
@@ -19,10 +20,10 @@ namespace instance_communicator
         virtual void HandleSignal(const std::string& signal) const = 0;
 
         /// @brief Starts listening for incoming connections
-        /// @param ioContext The io context to be used
-        /// @param wrapper The wrapper to be used for mocking in unit tests (nullptr in production)
-        virtual boost::asio::awaitable<void>
-        Listen(boost::asio::io_context& ioContext, std::unique_ptr<IInstanceCommunicatorWrapper> wrapper = nullptr) = 0;
+        /// @param socketFilePath The path to the socket
+        /// @param socketWrapper The wrapper to be used for mocking socket functions
+        virtual boost::asio::awaitable<void> Listen(const std::string& socketFilePath,
+                                                    std::unique_ptr<ISocketWrapper> socketWrapper = nullptr) = 0;
 
         /// @brief Stops the Instance Communicator
         virtual void Stop() = 0;

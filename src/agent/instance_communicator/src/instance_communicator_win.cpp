@@ -4,41 +4,50 @@
 
 #include <windows.h>
 
-namespace instance_communicator
+namespace
 {
     boost::asio::awaitable<void> AsyncConnectNamedPipe(boost::asio::windows::stream_handle& pipe,
                                                        boost::system::error_code& ec)
     {
         HANDLE native = pipe.native_handle();
 
-        OVERLAPPED overlapped {};
-        overlapped.hEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
-
-        if (!overlapped.hEvent)
+        if (native == INVALID_HANDLE_VALUE)
         {
-            ec = boost::system::error_code(GetLastError(), boost::system::system_category());
-            co_return;
-        }
-
-        BOOL result = ConnectNamedPipe(native, &overlapped);
-        DWORD lastError = GetLastError();
-
-        if (result || lastError == ERROR_PIPE_CONNECTED)
-        {
-            CloseHandle(overlapped.hEvent);
-            ec = {};
-            co_return;
-        }
-
-        if (lastError != ERROR_IO_PENDING)
-        {
-            CloseHandle(overlapped.hEvent);
-            ec = boost::system::error_code(lastError, boost::system::system_category());
+            ec = boost::system::error_code(ERROR_INVALID_HANDLE, boost::system::system_category());
             co_return;
         }
 
         auto executor = co_await boost::asio::this_coro::executor;
-        boost::asio::windows::object_handle eventHandle(executor, overlapped.hEvent);
+        boost::asio::windows::object_handle eventHandle(executor, CreateEvent(nullptr, TRUE, FALSE, nullptr));
+
+        if (!eventHandle.is_open())
+        {
+            DWORD err = GetLastError();
+            ec = boost::system::error_code(err, boost::system::system_category());
+            co_return;
+        }
+
+        OVERLAPPED overlapped {};
+        overlapped.hEvent = eventHandle.native_handle();
+
+        BOOL result = ConnectNamedPipe(native, &overlapped);
+        if (result)
+        {
+            ec.clear();
+            co_return;
+        }
+
+        DWORD lastError = GetLastError();
+        if (lastError == ERROR_PIPE_CONNECTED)
+        {
+            ec.clear();
+            co_return;
+        }
+        else if (lastError != ERROR_IO_PENDING)
+        {
+            ec = boost::system::error_code(lastError, boost::system::system_category());
+            co_return;
+        }
 
         try
         {
@@ -47,11 +56,12 @@ namespace instance_communicator
             DWORD bytesTransferred;
             if (GetOverlappedResult(native, &overlapped, &bytesTransferred, FALSE))
             {
-                ec = {};
+                ec.clear();
             }
             else
             {
-                ec = boost::system::error_code(GetLastError(), boost::system::system_category());
+                DWORD err = GetLastError();
+                ec = boost::system::error_code(err, boost::system::system_category());
             }
         }
         catch (const boost::system::system_error& e)
@@ -59,64 +69,79 @@ namespace instance_communicator
             ec = e.code();
         }
 
-        eventHandle.close();
-        CloseHandle(overlapped.hEvent);
-
         co_return;
     }
 
-    boost::asio::awaitable<void> InstanceCommunicator::Listen(
-        boost::asio::io_context& ioContext, // NOLINT (cppcoreguidelines-avoid-reference-coroutine-parameters)
-        std::unique_ptr<IInstanceCommunicatorWrapper>)
+} // namespace
+
+namespace instance_communicator
+{
+    boost::asio::awaitable<void>
+    InstanceCommunicator::Listen([[maybe_unused]] const std::string&
+                                     socketFilePath, // NOLINT (cppcoreguidelines-avoid-reference-coroutine-parameters)
+                                 [[maybe_unused]] std::unique_ptr<ISocketWrapper> socketWrapper)
     {
+        constexpr int A_SECOND_IN_MILLIS = 1000;
+        constexpr int BUFFER_SIZE = 4096;
+        auto executor = co_await boost::asio::this_coro::executor;
+
         const std::string pipeName = "\\\\.\\pipe\\agent-pipe";
 
         while (m_keepRunning.load())
         {
-
             HANDLE pipeHandle = CreateNamedPipe(pipeName.c_str(),
                                                 PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
                                                 PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
                                                 PIPE_UNLIMITED_INSTANCES,
-                                                4096,  // Output buffer size
-                                                4096,  // Input buffer size
-                                                0,     // Default timeout
-                                                NULL); // Default security
+                                                BUFFER_SIZE, // Output buffer size
+                                                BUFFER_SIZE, // Input buffer size
+                                                0,           // Default timeout
+                                                nullptr);    // Default security
 
             if (pipeHandle == INVALID_HANDLE_VALUE)
             {
-                LogError("CreateNamedPipe failed: {}", GetLastError());
-                co_await boost::asio::steady_timer(ioContext, std::chrono::seconds(1))
-                    .async_wait(boost::asio::use_awaitable);
+                DWORD err = GetLastError();
+                LogError("CreateNamedPipe failed (code {}): {}", err, std::system_category().message(err));
+
+                boost::asio::steady_timer timer(executor, std::chrono::milliseconds(A_SECOND_IN_MILLIS));
+                co_await timer.async_wait(boost::asio::use_awaitable);
 
                 continue;
             }
 
             LogDebug("InstanceCommunicator listening on {}", pipeName);
 
-            boost::asio::windows::stream_handle pipeStream(ioContext, pipeHandle);
+            boost::asio::windows::stream_handle pipeStream(executor, pipeHandle);
 
+            boost::system::error_code ec;
             try
             {
-                boost::system::error_code ec;
                 co_await AsyncConnectNamedPipe(pipeStream, ec);
 
-                if (!ec)
+                if (ec)
                 {
-                    std::array<char, 1024> buffer {};
+                    LogError("Named pipe connection failed (code {}): {}", ec.value(), ec.message());
+                }
+                else if (!pipeStream.is_open())
+                {
+                    LogError("Pipe stream is not open after connection.");
+                }
+                else
+                {
+                    std::array<char, BUFFER_SIZE> buffer {};
                     std::size_t n =
                         co_await pipeStream.async_read_some(boost::asio::buffer(buffer), boost::asio::use_awaitable);
 
                     std::string message(buffer.data(), n);
-                    message.erase(std::remove(message.begin(), message.end(), '\n'), message.end());
 
-                    LogWarn("Server received signal: {}", message);
+                    if (auto pos = message.find('\n'); pos != std::string::npos)
+                    {
+                        message.erase(pos, 1);
+                    }
+
+                    LogDebug("Received signal: {}", message);
 
                     HandleSignal(message);
-                }
-                else
-                {
-                    LogError("Named pipe connection failed: {}", ec.message());
                 }
             }
             catch (const std::exception& e)
@@ -124,11 +149,15 @@ namespace instance_communicator
                 LogError("Listener exception: {}", e.what());
             }
 
-            pipeStream.close();
+            if (pipeStream.is_open())
+            {
+                pipeStream.close();
+            }
+
             CloseHandle(pipeHandle);
 
-            co_await boost::asio::steady_timer(ioContext, std::chrono::seconds(1))
-                .async_wait(boost::asio::use_awaitable);
+            boost::asio::steady_timer timer(executor, std::chrono::milliseconds(A_SECOND_IN_MILLIS));
+            co_await timer.async_wait(boost::asio::use_awaitable);
         }
 
         LogDebug("InstanceCommunicator stopping");

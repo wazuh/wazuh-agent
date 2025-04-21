@@ -17,6 +17,7 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 
 /// @brief Agent class
@@ -55,15 +56,11 @@ public:
     /// This method sets up the agent and starts the task manager.
     void Run();
 
-    /// @brief Reload the modules
+    /// @brief Reload the agent modules
+    /// @param module The name of the module to reload
     ///
-    /// This method stops all modules launched by moduleManager, and starts them again.
-    void ReloadModules();
-
-    /// @brief Reload a module
-    ///
-    /// This method stops the specified module launched by moduleManager, and starts it again.
-    void ReloadModule(const std::string& module);
+    /// This method stops the specified modules (all if not specified) and reloads them.
+    void ReloadModules(const std::optional<std::string>& module = std::nullopt);
 
 private:
     /// @brief Task manager

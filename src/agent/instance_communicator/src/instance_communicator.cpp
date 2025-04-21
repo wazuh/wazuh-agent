@@ -4,12 +4,11 @@
 
 namespace instance_communicator
 {
-    InstanceCommunicator::InstanceCommunicator(std::function<void()> reloadModulesHandler,
-                                               std::function<void(const std::string&)> reloadModuleHandler)
+    InstanceCommunicator::InstanceCommunicator(
+        std::function<void(const std::optional<std::string>&)> reloadModulesHandler)
         : m_reloadModulesHandler(std::move(reloadModulesHandler))
-        , m_reloadModuleHandler(std::move(reloadModuleHandler))
     {
-        if (m_reloadModulesHandler == nullptr || m_reloadModuleHandler == nullptr)
+        if (m_reloadModulesHandler == nullptr)
         {
             throw std::runtime_error(std::string("Invalid handler passed."));
         }
@@ -19,11 +18,11 @@ namespace instance_communicator
     {
         if (signal == "RELOAD")
         {
-            m_reloadModulesHandler();
+            m_reloadModulesHandler(std::nullopt);
         }
         else if (signal.starts_with("RELOAD-MODULE:"))
         {
-            m_reloadModuleHandler(signal.substr(signal.find(':') + 1));
+            m_reloadModulesHandler(signal.substr(signal.find(':') + 1));
         }
         else
         {
