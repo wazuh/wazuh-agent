@@ -8,7 +8,15 @@
 
 namespace sca
 {
-    using PolicyVariables = std::map<std::string, std::vector<std::string>>;
+    struct StringLengthGreater
+    {
+        bool operator()(const std::string& a, const std::string& b) const
+        {
+            return a.length() > b.length() || (a.length() == b.length() && a < b);
+        }
+    };
+
+    using PolicyVariables = std::map<std::string, std::vector<std::string>, StringLengthGreater>;
 
     enum WM_SCA_TYPE
     {
