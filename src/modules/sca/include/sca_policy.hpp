@@ -44,16 +44,33 @@ public:
     {
         while (m_keepRunning)
         {
-            for (const auto& check : m_checks)
-            {
-                auto resultEvaluator = CheckConditionEvaluator::fromString(check.condition);
+            auto requirementsOk = false;
 
-                for (const auto& rule : check.rules)
+            for (const auto& requirement : m_requirements)
+            {
+                auto resultEvaluator = CheckConditionEvaluator::fromString(requirement.condition);
+
+                for (const auto& rule : requirement.rules)
                 {
                     resultEvaluator.addResult(rule->Evaluate() == RuleResult::Found);
                 }
 
-                [[maybe_unused]] auto result = resultEvaluator.result();
+                requirementsOk = resultEvaluator.result();
+            }
+
+            if (requirementsOk)
+            {
+                for (const auto& check : m_checks)
+                {
+                    auto resultEvaluator = CheckConditionEvaluator::fromString(check.condition);
+
+                    for (const auto& rule : check.rules)
+                    {
+                        resultEvaluator.addResult(rule->Evaluate() == RuleResult::Found);
+                    }
+
+                    [[maybe_unused]] auto result = resultEvaluator.result();
+                }
             }
 
             auto executor = co_await boost::asio::this_coro::executor;
