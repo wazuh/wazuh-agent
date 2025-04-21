@@ -1,14 +1,14 @@
 #pragma once
 
 #include <filesystem>
+#include <map>
 #include <optional>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 namespace sca
 {
-    using PolicyVariables = std::unordered_map<std::string, std::vector<std::string>>;
+    using PolicyVariables = std::map<std::string, std::vector<std::string>>;
 
     enum WM_SCA_TYPE
     {
