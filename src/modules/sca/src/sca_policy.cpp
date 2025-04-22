@@ -25,28 +25,28 @@ boost::asio::awaitable<void> SCAPolicy::Run()
 
         for (const auto& requirement : m_requirements)
         {
-            auto resultEvaluator = CheckConditionEvaluator::fromString(requirement.condition);
+            auto resultEvaluator = CheckConditionEvaluator::FromString(requirement.condition);
 
             for (const auto& rule : requirement.rules)
             {
-                resultEvaluator.addResult(rule->Evaluate() == RuleResult::Found);
+                resultEvaluator.AddResult(rule->Evaluate() == RuleResult::Found);
             }
 
-            requirementsOk = resultEvaluator.result();
+            requirementsOk = resultEvaluator.Result();
         }
 
         if (requirementsOk)
         {
             for (const auto& check : m_checks)
             {
-                auto resultEvaluator = CheckConditionEvaluator::fromString(check.condition);
+                auto resultEvaluator = CheckConditionEvaluator::FromString(check.condition);
 
                 for (const auto& rule : check.rules)
                 {
-                    resultEvaluator.addResult(rule->Evaluate() == RuleResult::Found);
+                    resultEvaluator.AddResult(rule->Evaluate() == RuleResult::Found);
                 }
 
-                [[maybe_unused]] auto result = resultEvaluator.result();
+                [[maybe_unused]] auto result = resultEvaluator.Result();
             }
         }
 
