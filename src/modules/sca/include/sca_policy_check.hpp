@@ -133,6 +133,10 @@ public:
                                                 : std::make_unique<file_system::FileSystemWrapper>())
         , m_ctx(ctx)
     {
+        if (m_ctx.rule.empty())
+        {
+            throw std::invalid_argument("Rule cannot be empty");
+        }
     }
 
     const PolicyEvaluationContext& GetContext() const
