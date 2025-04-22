@@ -25,9 +25,9 @@ bool AgentRunner::SendSignal(const std::string& message, const std::string& conf
                                          ? configuration::ConfigurationParser()
                                          : configuration::ConfigurationParser(std::filesystem::path(configFilePath));
 
-    const auto socketFilePath = configurationParser.GetConfigOrDefault(config::DEFAULT_RUN_PATH, "agent", "path.run");
+    const auto runPath = configurationParser.GetConfigOrDefault(config::DEFAULT_RUN_PATH, "agent", "path.run");
 
-    const std::string socketPath = fmt::format("{}/agent-socket", socketFilePath);
+    const std::string socketPath = fmt::format("{}/agent-socket", runPath);
 
     // NOLINTNEXTLINE(bugprone-unused-return-value)
     socket.connect(boost::asio::local::stream_protocol::endpoint(socketPath), ec);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipipe_wrapper.hpp>
 #include <isocket_wrapper.hpp>
 
 #include <boost/asio/awaitable.hpp>
@@ -20,10 +21,12 @@ namespace instance_communicator
         virtual void HandleSignal(const std::string& signal) const = 0;
 
         /// @brief Starts listening for incoming connections
-        /// @param socketFilePath The path to the socket
+        /// @param runPath The path where to listen
         /// @param socketWrapper The wrapper to be used for mocking socket functions
-        virtual boost::asio::awaitable<void> Listen(const std::string& socketFilePath,
-                                                    std::unique_ptr<ISocketWrapper> socketWrapper = nullptr) = 0;
+        /// @param pipeWrapper The wrapper to be used for mocking pipe functions
+        virtual boost::asio::awaitable<void> Listen(const std::string& runPath,
+                                                    std::unique_ptr<ISocketWrapper> socketWrapper = nullptr,
+                                                    std::unique_ptr<IPipeWrapper> pipeWrapper = nullptr) = 0;
 
         /// @brief Stops the Instance Communicator
         virtual void Stop() = 0;

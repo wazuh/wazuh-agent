@@ -9,8 +9,9 @@
 namespace instance_communicator
 {
     boost::asio::awaitable<void> InstanceCommunicator::Listen(
-        const std::string& socketFilePath, // NOLINT (cppcoreguidelines-avoid-reference-coroutine-parameters)
-        std::unique_ptr<ISocketWrapper> socketWrapper)
+        const std::string& runPath, // NOLINT (cppcoreguidelines-avoid-reference-coroutine-parameters)
+        std::unique_ptr<ISocketWrapper> socketWrapper,
+        [[maybe_unused]] std::unique_ptr<IPipeWrapper> pipeWrapper)
     {
         constexpr int A_SECOND_IN_MILLIS = 1000;
         constexpr mode_t SOCKET_FILE_PERMISSIONS = 0660;
@@ -21,7 +22,7 @@ namespace instance_communicator
             socketWrapper = std::make_unique<SocketWrapper>(executor);
         }
 
-        const std::string socketPath = fmt::format("{}/agent-socket", socketFilePath);
+        const std::string socketPath = fmt::format("{}/agent-socket", runPath);
 
         ::unlink(socketPath.c_str());
 

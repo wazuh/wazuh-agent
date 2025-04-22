@@ -5,6 +5,8 @@
 #include <boost/asio.hpp>
 #include <boost/asio/awaitable.hpp>
 
+#include <string>
+
 namespace instance_communicator
 {
     /// @brief Interface for the SocketWrapper class

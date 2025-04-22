@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iinstance_communicator.hpp>
+#include <ipipe_wrapper.hpp>
 #include <isocket_wrapper.hpp>
 
 #include <boost/asio/awaitable.hpp>
@@ -23,8 +24,9 @@ namespace instance_communicator
         void HandleSignal(const std::string& signal) const override;
 
         /// @copydoc IInstanceCommunicator::Listen
-        boost::asio::awaitable<void> Listen(const std::string& socketFilePath,
-                                            std::unique_ptr<ISocketWrapper> socketWrapper = nullptr) override;
+        boost::asio::awaitable<void> Listen(const std::string& runPath,
+                                            std::unique_ptr<ISocketWrapper> socketWrapper = nullptr,
+                                            std::unique_ptr<IPipeWrapper> pipeWrapper = nullptr) override;
 
         /// @copydoc IInstanceCommunicator::Stop
         void Stop() override;

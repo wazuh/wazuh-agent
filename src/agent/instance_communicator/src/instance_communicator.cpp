@@ -1,5 +1,8 @@
 #include <instance_communicator.hpp>
 
+#include <boost/asio.hpp>
+#include <boost/system/error_code.hpp>
+
 #include <logger.hpp>
 
 namespace instance_communicator
