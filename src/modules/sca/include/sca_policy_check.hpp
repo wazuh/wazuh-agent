@@ -38,7 +38,7 @@ public:
 class RuleEvaluator : public IRuleEvaluator
 {
 public:
-    RuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
+    RuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
 
     const PolicyEvaluationContext& GetContext() const;
 
@@ -50,7 +50,7 @@ protected:
 class FileRuleEvaluator : public RuleEvaluator
 {
 public:
-    FileRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
+    FileRuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
 
     RuleResult Evaluate() override;
 
@@ -63,7 +63,7 @@ private:
 class CommandRuleEvaluator : public RuleEvaluator
 {
 public:
-    CommandRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
+    CommandRuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
 
     RuleResult Evaluate() override;
 };
@@ -71,7 +71,7 @@ public:
 class DirRuleEvaluator : public RuleEvaluator
 {
 public:
-    DirRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
+    DirRuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
 
     RuleResult Evaluate() override;
 };
@@ -79,7 +79,7 @@ public:
 class ProcessRuleEvaluator : public RuleEvaluator
 {
 public:
-    ProcessRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
+    ProcessRuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
 
     RuleResult Evaluate() override;
 };
