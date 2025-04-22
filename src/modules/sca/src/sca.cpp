@@ -2,13 +2,39 @@
 
 #include <config.h>
 #include <dbsync.hpp>
+#include <sca_event_handler.hpp>
 #include <sca_policy_loader.hpp>
+
+constexpr auto POLICY_SQL_STATEMENT {
+    R"(CREATE TABLE IF NOT EXISTS sca_policy (
+    id TEXT PRIMARY KEY,
+    name TEXT,
+    file TEXT,
+    description TEXT,
+    refs TEXT);)"};
+
+constexpr auto CHECK_SQL_STATEMENT {
+    R"(CREATE TABLE IF NOT EXISTS sca_check (
+    id TEXT PRIMARY KEY,
+    policy_id TEXT REFERENCES sca_policy(id),
+    name TEXT,
+    description TEXT,
+    rationale TEXT,
+    remediation TEXT,
+    refs TEXT,
+    result TEXT DEFAULT 'Not run',
+    reason TEXT,
+    condition TEXT,
+    compliance TEXT,
+    rules TEXT);)"};
 
 SecurityConfigurationAssessment::SecurityConfigurationAssessment(
     std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
+    std::string agentUUID,
     std::shared_ptr<IDBSync> dbSync,
     std::shared_ptr<IFileSystemWrapper> fileSystemWrapper)
-    : m_dBSync(dbSync ? std::move(dbSync)
+    : m_agentUUID(std::move(agentUUID))
+    , m_dBSync(dbSync ? std::move(dbSync)
                       : std::make_shared<DBSync>(
                             HostType::AGENT,
                             DbEngineType::SQLITE3,
@@ -19,7 +45,6 @@ SecurityConfigurationAssessment::SecurityConfigurationAssessment(
     , m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
                                             : std::make_shared<file_system::FileSystemWrapper>())
 {
-    Setup(configurationParser);
 }
 
 void SecurityConfigurationAssessment::Run()
@@ -40,7 +65,7 @@ void SecurityConfigurationAssessment::Setup(
 
     m_policies = [this, &configurationParser]()
     {
-        const SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser, m_pushMessage);
+        const SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser, m_dBSync);
         return policyLoader.GetPolicies();
     }();
 }
@@ -98,7 +123,9 @@ void SecurityConfigurationAssessment::EnqueueTask(boost::asio::awaitable<void> t
 
 std::string SecurityConfigurationAssessment::GetCreateStatement() const
 {
-    // Placeholder for the actual SQL statement
-    // This should be replaced with the actual SQL statement to create the SCA table
-    return R"(CREATE TABLE sca (policy TEXT PRIMARY KEY );)";
+    std::string ret;
+    ret += POLICY_SQL_STATEMENT;
+    ret += CHECK_SQL_STATEMENT;
+
+    return ret;
 }

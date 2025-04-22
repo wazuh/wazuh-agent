@@ -5,7 +5,7 @@ project(SCA)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
-add_library(SCA src/sca.cpp src/sca_policy_loader.cpp)
+add_library(SCA src/sca.cpp src/sca_policy_loader.cpp src/sca_event_handler.cpp)
 target_include_directories(SCA PUBLIC include PRIVATE src)
 target_link_libraries(
     SCA
@@ -15,7 +15,8 @@ target_link_libraries(
            ConfigurationParser
            MessageEntry
            ModuleManager
-           CommandEntry)
+           CommandEntry
+    PRIVATE hash_helper string_helper time_helper)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(SCA)
