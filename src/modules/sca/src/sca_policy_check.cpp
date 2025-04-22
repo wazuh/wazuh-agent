@@ -5,10 +5,10 @@
 
 #include <vector>
 
-RuleEvaluator::RuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
+RuleEvaluator::RuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
     : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
                                             : std::make_unique<file_system::FileSystemWrapper>())
-    , m_ctx(ctx)
+    , m_ctx(std::move(ctx))
 {
     if (m_ctx.rule.empty())
     {
@@ -21,9 +21,8 @@ const PolicyEvaluationContext& RuleEvaluator::GetContext() const
     return m_ctx;
 }
 
-FileRuleEvaluator::FileRuleEvaluator(const PolicyEvaluationContext& ctx,
-                                     std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
-    : RuleEvaluator(ctx, std::move(fileSystemWrapper))
+FileRuleEvaluator::FileRuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
+    : RuleEvaluator(std::move(ctx), std::move(fileSystemWrapper))
 {
 }
 
@@ -58,9 +57,9 @@ RuleResult FileRuleEvaluator::CheckFileExistence()
     return RuleResult::NotFound;
 }
 
-CommandRuleEvaluator::CommandRuleEvaluator(const PolicyEvaluationContext& ctx,
+CommandRuleEvaluator::CommandRuleEvaluator(PolicyEvaluationContext ctx,
                                            std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
-    : RuleEvaluator(ctx, std::move(fileSystemWrapper))
+    : RuleEvaluator(std::move(ctx), std::move(fileSystemWrapper))
 {
 }
 
@@ -76,9 +75,8 @@ RuleResult CommandRuleEvaluator::Evaluate()
     return RuleResult::NotFound;
 }
 
-DirRuleEvaluator::DirRuleEvaluator(const PolicyEvaluationContext& ctx,
-                                   std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
-    : RuleEvaluator(ctx, std::move(fileSystemWrapper))
+DirRuleEvaluator::DirRuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
+    : RuleEvaluator(std::move(ctx), std::move(fileSystemWrapper))
 {
 }
 
@@ -93,9 +91,9 @@ RuleResult DirRuleEvaluator::Evaluate()
     return RuleResult::Found;
 }
 
-ProcessRuleEvaluator::ProcessRuleEvaluator(const PolicyEvaluationContext& ctx,
+ProcessRuleEvaluator::ProcessRuleEvaluator(PolicyEvaluationContext ctx,
                                            std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
-    : RuleEvaluator(ctx, std::move(fileSystemWrapper))
+    : RuleEvaluator(std::move(ctx), std::move(fileSystemWrapper))
 {
 }
 
