@@ -8,13 +8,13 @@
 class CheckConditionEvaluator
 {
 public:
-    static CheckConditionEvaluator fromString(const std::string& str);
+    static CheckConditionEvaluator FromString(const std::string& str);
 
     explicit CheckConditionEvaluator(ConditionType type);
 
-    void addResult(bool passed);
+    void AddResult(bool passed);
 
-    bool result() const;
+    bool Result() const;
 
 private:
     ConditionType m_type;

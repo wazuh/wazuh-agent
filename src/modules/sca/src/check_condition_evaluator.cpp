@@ -1,6 +1,6 @@
 #include <check_condition_evaluator.hpp>
 
-CheckConditionEvaluator CheckConditionEvaluator::fromString(const std::string& str)
+CheckConditionEvaluator CheckConditionEvaluator::FromString(const std::string& str)
 {
     if (str == "all")
     {
@@ -22,7 +22,7 @@ CheckConditionEvaluator::CheckConditionEvaluator(ConditionType type)
 {
 }
 
-void CheckConditionEvaluator::addResult(bool passed)
+void CheckConditionEvaluator::AddResult(bool passed)
 {
     if (m_result.has_value())
     {
@@ -55,7 +55,7 @@ void CheckConditionEvaluator::addResult(bool passed)
     }
 }
 
-bool CheckConditionEvaluator::result() const
+bool CheckConditionEvaluator::Result() const
 {
     if (m_result.has_value())
     {
