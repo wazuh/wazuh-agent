@@ -25,14 +25,8 @@ enum class ConditionType
 
 struct PolicyEvaluationContext
 {
-    ConditionType condition;
-    sca::PolicyVariables variables;
     std::string rule;
-
-    std::optional<std::string> command;
     std::optional<std::string> pattern;
-    std::optional<std::string> directory;
-    std::optional<std::vector<std::string>> paths;
 };
 
 class CheckConditionEvaluator
@@ -160,44 +154,32 @@ class FileRuleEvaluator : public RuleEvaluator
     {
         if (m_ctx.pattern)
         {
-            return CheckFileListForContents();
+            return CheckFileForContents();
         }
-        return CheckFileListForExistence();
+        return CheckFileExistence();
     }
 
 private:
-    RuleResult CheckFileListForContents()
+    RuleResult CheckFileForContents()
     {
-        if (m_ctx.paths)
+        if (m_fileSystemWrapper->exists(m_ctx.rule))
         {
-            for (const auto& path : *m_ctx.paths)
-            {
-                if (m_fileSystemWrapper->exists(path))
-                {
-                    // Check file contents against the pattern
-                    // Placeholder for actual content check logic
-                    return RuleResult::Found;
-                }
-            }
-            return RuleResult::NotFound;
-        }
-        return RuleResult::Invalid;
-    }
-
-    RuleResult CheckFileListForExistence()
-    {
-        if (m_ctx.paths)
-        {
-            for (const auto& path : *m_ctx.paths)
-            {
-                if (!m_fileSystemWrapper->exists(path))
-                {
-                    return RuleResult::NotFound;
-                }
-            }
+            // Check file contents against the pattern
+            // Placeholder for actual content check logic
             return RuleResult::Found;
         }
-        return RuleResult::Invalid;
+        return RuleResult::NotFound; // or invalid?
+    }
+
+    RuleResult CheckFileExistence()
+    {
+        if (m_fileSystemWrapper->exists(m_ctx.rule))
+        {
+            // Check file contents against the pattern
+            // Placeholder for actual content check logic
+            return RuleResult::Found;
+        }
+        return RuleResult::NotFound;
     }
 };
 
@@ -211,18 +193,14 @@ public:
 
     RuleResult Evaluate() override
     {
-        if (m_ctx.command && m_ctx.pattern)
+        const auto output = Utils::Exec(m_ctx.rule);
+        if (!output.empty())
         {
-            const auto output = Utils::Exec(*m_ctx.command);
-            if (!output.empty())
-            {
-                // check pattern against output
-                // Placeholder for actual pattern check logic
-                return RuleResult::Found;
-            }
-            return RuleResult::NotFound;
+            // check pattern against output
+            // Placeholder for actual pattern check logic
+            return RuleResult::Found;
         }
-        return RuleResult::Invalid;
+        return RuleResult::NotFound;
     }
 };
 
@@ -236,32 +214,13 @@ public:
 
     RuleResult Evaluate() override
     {
-        // if there's no "file" pattern in pattern, just check that the list of paths exists (directories)
-        // TODO check that there's a "file" pattern or not
-        if (!m_ctx.pattern)
+        if (!m_fileSystemWrapper->exists(m_ctx.rule) || !m_fileSystemWrapper->is_directory(m_ctx.rule))
         {
-            if (m_ctx.paths)
-            {
-                for (const auto& path : *m_ctx.paths)
-                {
-                    if (!m_fileSystemWrapper->exists(path) || !m_fileSystemWrapper->is_directory(path))
-                    {
-                        return RuleResult::NotFound;
-                    }
-                }
-                return RuleResult::Found;
-            }
+            return RuleResult::NotFound;
         }
-        // if there's a pattern, check that the list of paths exists (directories) and that the pattern exists in the
-        // directory
-        if (m_ctx.paths)
-        {
-            for ([[maybe_unused]] const auto& path : *m_ctx.paths)
-            {
-            }
-            return RuleResult::Found;
-        }
-        return RuleResult::Invalid;
+        // check if pattern matches
+        // Placeholder for actual pattern check logic
+        return RuleResult::Found;
     }
 };
 
