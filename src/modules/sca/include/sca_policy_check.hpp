@@ -1,13 +1,11 @@
 #pragma once
 
-#include <cmdHelper.hpp>
-#include <filesystem_wrapper.hpp>
+#include <ifilesystem_wrapper.hpp>
 #include <sca_utils.hpp>
 
 #include <memory>
 #include <optional>
 #include <string>
-#include <vector>
 
 enum class RuleResult
 {
@@ -32,77 +30,13 @@ struct PolicyEvaluationContext
 class CheckConditionEvaluator
 {
 public:
-    static CheckConditionEvaluator fromString(const std::string& str)
-    {
-        if (str == "all")
-        {
-            return CheckConditionEvaluator {ConditionType::All};
-        }
-        if (str == "any")
-        {
-            return CheckConditionEvaluator {ConditionType::Any};
-        }
-        if (str == "none")
-        {
-            return CheckConditionEvaluator {ConditionType::None};
-        }
-        throw std::invalid_argument("Invalid condition type: " + str);
-    }
+    static CheckConditionEvaluator fromString(const std::string& str);
 
-    explicit CheckConditionEvaluator(ConditionType type)
-        : m_type {type}
-    {
-    }
+    explicit CheckConditionEvaluator(ConditionType type);
 
-    void addResult(bool passed)
-    {
-        if (m_result.has_value())
-        {
-            return;
-        }
+    void addResult(bool passed);
 
-        ++m_totalRules;
-        m_passedRules += passed;
-
-        switch (m_type)
-        {
-            case ConditionType::All:
-                if (!passed)
-                {
-                    m_result = false;
-                }
-                break;
-            case ConditionType::Any:
-                if (passed)
-                {
-                    m_result = true;
-                }
-                break;
-            case ConditionType::None:
-                if (passed)
-                {
-                    m_result = false;
-                }
-                break;
-        }
-    }
-
-    bool result() const
-    {
-        if (m_result.has_value())
-        {
-            return *m_result;
-        }
-
-        switch (m_type)
-        {
-            case ConditionType::All: return m_totalRules > 0 && m_passedRules == m_totalRules;
-            case ConditionType::Any: return m_passedRules > 0;
-            case ConditionType::None: return m_passedRules == 0;
-        }
-
-        return false;
-    }
+    bool result() const;
 
 private:
     ConditionType m_type;
@@ -122,21 +56,9 @@ public:
 class RuleEvaluator : public IRuleEvaluator
 {
 public:
-    RuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
-        : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
-                                                : std::make_unique<file_system::FileSystemWrapper>())
-        , m_ctx(ctx)
-    {
-        if (m_ctx.rule.empty())
-        {
-            throw std::invalid_argument("Rule cannot be empty");
-        }
-    }
+    RuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
 
-    const PolicyEvaluationContext& GetContext() const
-    {
-        return m_ctx;
-    }
+    const PolicyEvaluationContext& GetContext() const;
 
 protected:
     std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper = nullptr;
@@ -146,97 +68,36 @@ protected:
 class FileRuleEvaluator : public RuleEvaluator
 {
 public:
-    FileRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
-        : RuleEvaluator(ctx, std::move(fileSystemWrapper))
-    {
-    }
+    FileRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
 
-    RuleResult Evaluate() override
-    {
-        if (m_ctx.pattern)
-        {
-            return CheckFileForContents();
-        }
-        return CheckFileExistence();
-    }
+    RuleResult Evaluate() override;
 
 private:
-    RuleResult CheckFileForContents()
-    {
-        if (m_fileSystemWrapper->exists(m_ctx.rule))
-        {
-            // Check file contents against the pattern
-            // Placeholder for actual content check logic
-            return RuleResult::Found;
-        }
-        return RuleResult::NotFound; // or invalid?
-    }
+    RuleResult CheckFileForContents();
 
-    RuleResult CheckFileExistence()
-    {
-        if (m_fileSystemWrapper->exists(m_ctx.rule))
-        {
-            // Check file contents against the pattern
-            // Placeholder for actual content check logic
-            return RuleResult::Found;
-        }
-        return RuleResult::NotFound;
-    }
+    RuleResult CheckFileExistence();
 };
 
 class CommandRuleEvaluator : public RuleEvaluator
 {
 public:
-    CommandRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
-        : RuleEvaluator(ctx, std::move(fileSystemWrapper))
-    {
-    }
+    CommandRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
 
-    RuleResult Evaluate() override
-    {
-        const auto output = Utils::Exec(m_ctx.rule);
-        if (!output.empty())
-        {
-            // check pattern against output
-            // Placeholder for actual pattern check logic
-            return RuleResult::Found;
-        }
-        return RuleResult::NotFound;
-    }
+    RuleResult Evaluate() override;
 };
 
 class DirRuleEvaluator : public RuleEvaluator
 {
 public:
-    DirRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
-        : RuleEvaluator(ctx, std::move(fileSystemWrapper))
-    {
-    }
+    DirRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
 
-    RuleResult Evaluate() override
-    {
-        if (!m_fileSystemWrapper->exists(m_ctx.rule) || !m_fileSystemWrapper->is_directory(m_ctx.rule))
-        {
-            return RuleResult::NotFound;
-        }
-        // check if pattern matches
-        // Placeholder for actual pattern check logic
-        return RuleResult::Found;
-    }
+    RuleResult Evaluate() override;
 };
 
 class ProcessRuleEvaluator : public RuleEvaluator
 {
 public:
-    ProcessRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
-        : RuleEvaluator(ctx, std::move(fileSystemWrapper))
-    {
-    }
+    ProcessRuleEvaluator(const PolicyEvaluationContext& ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
 
-    RuleResult Evaluate() override
-    {
-        // get list of running processes
-        // check if pattern matches
-        return RuleResult::Invalid;
-    }
+    RuleResult Evaluate() override;
 };
