@@ -26,20 +26,22 @@ This will start the `wazuh-agent` process with `debug` level logging, allowing f
 
 ## Command line options
 
-| Option                | Description                                                                                            | Default  |
-| --------------------- | ------------------------------------------------------------------------------------------------------ | -------- |
-| `--help`              | Display help menu                                                                                      | N/A      |
-| `--run`               | Run agent in foreground (this is the default behavior)                                                 | N/A      |
-| `--status`            | Check if the agent is running (running or stopped)                                                     | N/A      |
-| `--config-file`       | Path to the Wazuh configuration file (optional)                                                        | N/A      |
-| `--enroll`            | Use this option to enroll as a new agent                                                               | N/A      |
-| `--enroll-url`        | URL of the server management API enrollment endpoint                                                   | N/A      |
-| `--user`              | User to authenticate with the server management API                                                    | N/A      |
-| `--password`          | Password to authenticate with the server management API                                                | N/A      |
-| `--key`               | Key to enroll the agent (optional)                                                                     | N/A      |
-| `--name`              | Name to enroll the agent (optional)                                                                    | N/A      |
-| `--connect-url`       | URL of the server (optional)                                                                           | N/A      |
-| `--verification-mode` | Verification mode to be applied on HTTPS connection to the server (full, certificate, none) (optional) | N/A      |
+| Option                | Description                                                                                            | Default |
+| --------------------- | ------------------------------------------------------------------------------------------------------ | ------- |
+| `--help`              | Display help menu                                                                                      | N/A     |
+| `--run`               | Run agent in foreground (this is the default behavior)                                                 | N/A     |
+| `--status`            | Check if the agent is running (running or stopped)                                                     | N/A     |
+| `--config-file`       | Path to the Wazuh configuration file (optional)                                                        | N/A     |
+| `--reload-config`     | Reload configuration file and all modules                                                              | N/A     |
+| `--reload-module`     | Reload a specific module by name                                                                       | N/A     |
+| `--enroll`            | Use this option to enroll as a new agent                                                               | N/A     |
+| `--enroll-url`        | URL of the server management API enrollment endpoint                                                   | N/A     |
+| `--user`              | User to authenticate with the server management API                                                    | N/A     |
+| `--password`          | Password to authenticate with the server management API                                                | N/A     |
+| `--key`               | Key to enroll the agent (optional)                                                                     | N/A     |
+| `--name`              | Name to enroll the agent (optional)                                                                    | N/A     |
+| `--connect-url`       | URL of the server (optional)                                                                           | N/A     |
+| `--verification-mode` | Verification mode to be applied on HTTPS connection to the server (full, certificate, none) (optional) | N/A     |
 
 ## Configuration file
 
@@ -117,33 +119,33 @@ logcollector:
 
 #### Localfiles Configuration
 
-| Mandatory | Option     | Description              | Default |
-| :-------: | ---------  | ------------------------ | ------- |
-|    ✅     | `location` | Path to local log files  | N/A     |
+| Mandatory | Option     | Description             | Default |
+| :-------: | ---------- | ----------------------- | ------- |
+|     ✅     | `location` | Path to local log files | N/A     |
 
 #### Journald Configuration
 
-| Mandatory | Option              | Description                      | Default         |
-| :-------: | ------------------- | -------------------------------- | --------------- |
-|    ✅     | `field`             | Journald field to filter         | N/A             |
-|    ✅     | `value`             | Expected value for the field     | N/A             |
-|           | `exact_match`       | Whether the match must be exact  | true            |
-|           | `ignore_if_missing` | Ignore entry if field is missing | false           |
+| Mandatory | Option              | Description                      | Default |
+| :-------: | ------------------- | -------------------------------- | ------- |
+|     ✅     | `field`             | Journald field to filter         | N/A     |
+|     ✅     | `value`             | Expected value for the field     | N/A     |
+|           | `exact_match`       | Whether the match must be exact  | true    |
+|           | `ignore_if_missing` | Ignore entry if field is missing | false   |
 
 #### Windows Configuration
 
 | Mandatory | Option    | Description               | Default |
 | :-------: | --------- | ------------------------- | ------- |
-|    ✅     | `channel` | Windows event log channel | N/A     |
-|    ✅     | `query`   | Windows event log query   | N/A     |
+|     ✅     | `channel` | Windows event log channel | N/A     |
+|     ✅     | `query`   | Windows event log query   | N/A     |
 
 #### macOS Configuration
 
 | Mandatory | Option  | Description                                         | Default |
 | :-------: | ------- | --------------------------------------------------- | ------- |
-|    ✅     | `query` | macOS log query                                     | N/A     |
-|    ✅     | `level` | macOS log level (Debug, Info, Notice, Error, Fault) | N/A     |
-|    ✅     | `type`  | macOS log types (trace, activity, log)              | N/A     |
+|     ✅     | `query` | macOS log query                                     | N/A     |
+|     ✅     | `level` | macOS log level (Debug, Info, Notice, Error, Fault) | N/A     |
+|     ✅     | `type`  | macOS log types (trace, activity, log)              | N/A     |
 
 ### Inventory Module
 
