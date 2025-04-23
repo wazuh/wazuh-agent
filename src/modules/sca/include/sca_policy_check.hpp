@@ -76,9 +76,14 @@ public:
 class DirRuleEvaluator : public RuleEvaluator
 {
 public:
-    DirRuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
+    DirRuleEvaluator(PolicyEvaluationContext ctx,
+                     std::unique_ptr<IFileSystemWrapper> fileSystemWrapper,
+                     std::unique_ptr<IFileIOUtils> fileUtils);
 
     RuleResult Evaluate() override;
+
+private:
+    std::unique_ptr<IFileIOUtils> m_fileUtils = nullptr;
 };
 
 class ProcessRuleEvaluator : public RuleEvaluator

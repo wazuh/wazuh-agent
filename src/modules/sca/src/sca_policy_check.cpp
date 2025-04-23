@@ -105,8 +105,11 @@ RuleResult CommandRuleEvaluator::Evaluate()
     return RuleResult::NotFound;
 }
 
-DirRuleEvaluator::DirRuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
+DirRuleEvaluator::DirRuleEvaluator(PolicyEvaluationContext ctx,
+                                   std::unique_ptr<IFileSystemWrapper> fileSystemWrapper,
+                                   std::unique_ptr<IFileIOUtils> fileUtils)
     : RuleEvaluator(std::move(ctx), std::move(fileSystemWrapper))
+    , m_fileUtils(std::move(fileUtils))
 {
 }
 
@@ -134,6 +137,21 @@ RuleResult DirRuleEvaluator::Evaluate()
                 if (file.string() == fileName)
                 {
                     // Check file content against the pattern
+                    auto result = RuleResult::NotFound;
+
+                    m_fileUtils->readLineByLine(m_ctx.rule,
+                                                [&content, &result](const std::string& line)
+                                                {
+                                                    if (line == content)
+                                                    {
+                                                        // stop reading
+                                                        result = RuleResult::Found;
+                                                        return false;
+                                                    }
+                                                    // continue reading
+                                                    return true;
+                                                });
+                    return result;
                 }
             }
             return RuleResult::NotFound;
