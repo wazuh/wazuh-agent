@@ -42,11 +42,37 @@ RuleResult FileRuleEvaluator::CheckFileForContents()
 {
     if (m_fileSystemWrapper->exists(m_ctx.rule))
     {
-        const auto content = m_fileUtils->getFileContent(m_ctx.rule);
-        if (sca::PatternMatches(content, *m_ctx.pattern)) // NOLINT(bugprone-unchecked-optional-access)
+        const auto pattern = *m_ctx.pattern; // NOLINT(bugprone-unchecked-optional-access)
+
+        if (pattern.starts_with("r:"))
         {
-            return RuleResult::Found;
+            const auto content = m_fileUtils->getFileContent(m_ctx.rule);
+
+            if (sca::PatternMatches(content, pattern))
+            {
+                return RuleResult::Found;
+            }
+            return RuleResult::NotFound;
         }
+        else
+        {
+            auto result = RuleResult::NotFound;
+
+            m_fileUtils->readLineByLine(m_ctx.rule,
+                                        [&pattern, &result](const std::string& line)
+                                        {
+                                            if (line == pattern)
+                                            {
+                                                // stop reading
+                                                result = RuleResult::Found;
+                                                return false;
+                                            }
+                                            // continue reading
+                                            return true;
+                                        });
+            return result;
+        }
+
         return RuleResult::NotFound;
     }
     return RuleResult::NotFound; // or invalid?
