@@ -8,6 +8,33 @@ namespace
         // Implement the actual PCRE2 matching logic here
         return content.find(pattern) != std::string::npos;
     }
+
+    bool EvaluateNumericRegexComparison([[maybe_unused]] const std::string& content,
+                                        [[maybe_unused]] const std::string& expr)
+    {
+        // Placeholder for actual numeric regex comparison logic
+        // Implement the actual numeric regex comparison logic here
+        return false;
+    }
+
+    bool EvaluateMinterm(const std::string& minterm, const std::string& content)
+    {
+        if (minterm.starts_with("r:"))
+        {
+            const auto pattern = minterm.substr(2);
+            return Pcre2Match(content, pattern);
+        }
+        else if (minterm.starts_with("n:"))
+        {
+            const auto expression = minterm.substr(2);
+            return EvaluateNumericRegexComparison(content, expression);
+        }
+        else
+        {
+            return content == minterm;
+        }
+    }
+
 } // namespace
 
 namespace sca
@@ -89,7 +116,6 @@ namespace sca
 
         // Split the pattern into individual conditions (minterms)
         constexpr std::string_view delimiter = " && ";
-        constexpr std::string_view regexPrefix = "r:";
 
         size_t start = 0;
 
@@ -111,14 +137,8 @@ namespace sca
                 minterm.erase(0, 1); // Remove the '!' for pattern matching
             }
 
-            // Strip "r:" prefix if present
-            if (minterm.starts_with(regexPrefix))
-            {
-                minterm.erase(0, regexPrefix.length());
-            }
-
             // Match the current minterm against the content
-            const auto matchResult = Pcre2Match(content, minterm);
+            const bool matchResult = EvaluateMinterm(minterm, content);
 
             // If negated, invert the match result
             const auto mintermResult = negated ^ matchResult;
