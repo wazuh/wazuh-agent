@@ -89,6 +89,7 @@ namespace sca
 
         // Split the pattern into individual conditions (minterms)
         constexpr std::string_view delimiter = " && ";
+        constexpr std::string_view regexPrefix = "r:";
 
         size_t start = 0;
 
@@ -108,6 +109,12 @@ namespace sca
             {
                 negated = true;
                 minterm.erase(0, 1); // Remove the '!' for pattern matching
+            }
+
+            // Strip "r:" prefix if present
+            if (minterm.starts_with(regexPrefix))
+            {
+                minterm.erase(0, regexPrefix.length());
             }
 
             // Match the current minterm against the content
