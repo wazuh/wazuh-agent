@@ -116,8 +116,43 @@ RuleResult DirRuleEvaluator::Evaluate()
     {
         return RuleResult::NotFound;
     }
-    // check if pattern matches
-    // Placeholder for actual pattern check logic
+
+    if (m_ctx.pattern)
+    {
+        if (m_ctx.pattern->starts_with("r:"))
+        {
+            // Check if a directory contains files that match a regex
+        }
+        else if (const auto content = sca::GetPattern(*m_ctx.pattern))
+        {
+            // Check files matching fileName for content
+            const auto fileName = m_ctx.pattern->substr(0, m_ctx.pattern->find(" -> "));
+            const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
+
+            for (const auto& file : files)
+            {
+                if (file.string() == fileName)
+                {
+                    // Check file content against the pattern
+                }
+            }
+            return RuleResult::NotFound;
+        }
+        else
+        {
+            // Check if a directory contains files that match a string
+            const auto pattern = *m_ctx.pattern; // NOLINT(bugprone-unchecked-optional-access)
+            const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
+            for (const auto& file : files)
+            {
+                if (file.string() == pattern)
+                {
+                    return RuleResult::Found;
+                }
+            }
+            return RuleResult::NotFound;
+        }
+    }
     return RuleResult::Found;
 }
 
