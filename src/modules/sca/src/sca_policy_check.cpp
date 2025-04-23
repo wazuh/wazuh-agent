@@ -44,7 +44,7 @@ RuleResult FileRuleEvaluator::CheckFileForContents()
     {
         const auto pattern = *m_ctx.pattern; // NOLINT(bugprone-unchecked-optional-access)
 
-        if (pattern.starts_with("r:"))
+        if (pattern.starts_with("r:") || pattern.starts_with("n:"))
         {
             const auto content = m_fileUtils->getFileContent(m_ctx.rule);
 
