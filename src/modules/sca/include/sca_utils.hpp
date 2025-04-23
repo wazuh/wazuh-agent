@@ -34,4 +34,6 @@ namespace sca
     std::vector<std::filesystem::path> ResolvedPaths(const std::string& ruleWithReplacedVariables);
 
     std::optional<std::string> GetPattern(const std::string& rule);
+
+    bool PatternMatches(const std::string& content, const std::string& pattern);
 } // namespace sca

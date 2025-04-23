@@ -1,5 +1,15 @@
 #include <sca_utils.hpp>
 
+namespace
+{
+    // Placeholder for actual PCRE2 matching function
+    bool Pcre2Match(const std::string& content, const std::string& pattern)
+    {
+        // Implement the actual PCRE2 matching logic here
+        return content.find(pattern) != std::string::npos;
+    }
+} // namespace
+
 namespace sca
 {
     std::optional<std::pair<int, std::string>> ParseRuleType(const std::string& input)
@@ -98,4 +108,51 @@ namespace sca
 
         return std::nullopt;
     }
+
+    bool PatternMatches(const std::string& content, const std::string& pattern)
+    {
+        if (content.empty())
+        {
+            return false;
+        }
+
+        // Split the pattern into individual conditions (minterms)
+        constexpr std::string_view delimiter = " && ";
+
+        size_t start = 0;
+
+        // Loop over each minterm (subpattern) in the compound pattern
+        while (start < pattern.size())
+        {
+            // Find the next delimiter and extract the substring for this minterm
+            const auto end = pattern.find(delimiter, start);
+            auto minterm = pattern.substr(start, end - start);
+
+            // Advance the start position for the next iteration
+            start = (end == std::string::npos) ? end : end + delimiter.length();
+
+            // Check if the minterm is negated
+            bool negated = false;
+            if (!minterm.empty() && minterm[0] == '!')
+            {
+                negated = true;
+                minterm.erase(0, 1); // Remove the '!' for pattern matching
+            }
+
+            // Match the current minterm against the content
+            const auto matchResult = Pcre2Match(content, minterm);
+
+            // If negated, invert the match result
+            const auto mintermResult = negated ^ matchResult;
+
+            // If any minterm fails it's over
+            if (!mintermResult)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 } // namespace sca
