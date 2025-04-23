@@ -18,6 +18,7 @@ target_include_directories(SCA PUBLIC include PRIVATE src)
 target_link_libraries(
     SCA
     PUBLIC FilesystemWrapper
+           FileIO
            dbsync
            Config
            ConfigurationParser

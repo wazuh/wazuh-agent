@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ifile_io_utils.hpp>
 #include <ifilesystem_wrapper.hpp>
 #include <sca_utils.hpp>
 
@@ -50,7 +51,9 @@ protected:
 class FileRuleEvaluator : public RuleEvaluator
 {
 public:
-    FileRuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
+    FileRuleEvaluator(PolicyEvaluationContext ctx,
+                      std::unique_ptr<IFileSystemWrapper> fileSystemWrapper,
+                      std::unique_ptr<IFileIOUtils> fileUtils);
 
     RuleResult Evaluate() override;
 
@@ -58,6 +61,8 @@ private:
     RuleResult CheckFileForContents();
 
     RuleResult CheckFileExistence();
+
+    std::unique_ptr<IFileIOUtils> m_fileUtils = nullptr;
 };
 
 class CommandRuleEvaluator : public RuleEvaluator

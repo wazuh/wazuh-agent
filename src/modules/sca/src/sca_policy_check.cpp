@@ -21,8 +21,11 @@ const PolicyEvaluationContext& RuleEvaluator::GetContext() const
     return m_ctx;
 }
 
-FileRuleEvaluator::FileRuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
+FileRuleEvaluator::FileRuleEvaluator(PolicyEvaluationContext ctx,
+                                     std::unique_ptr<IFileSystemWrapper> fileSystemWrapper,
+                                     std::unique_ptr<IFileIOUtils> fileUtils)
     : RuleEvaluator(std::move(ctx), std::move(fileSystemWrapper))
+    , m_fileUtils(std::move(fileUtils))
 {
 }
 
@@ -39,9 +42,12 @@ RuleResult FileRuleEvaluator::CheckFileForContents()
 {
     if (m_fileSystemWrapper->exists(m_ctx.rule))
     {
-        // Check file contents against the pattern
-        // Placeholder for actual content check logic
-        return RuleResult::Found;
+        const auto content = m_fileUtils->getFileContent(m_ctx.rule);
+        if (sca::PatternMatches(content, *m_ctx.pattern)) // NOLINT(bugprone-unchecked-optional-access)
+        {
+            return RuleResult::Found;
+        }
+        return RuleResult::NotFound;
     }
     return RuleResult::NotFound; // or invalid?
 }
