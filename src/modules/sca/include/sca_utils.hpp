@@ -32,4 +32,6 @@ namespace sca
     std::string RuleWithReplacedVariables(const PolicyVariables& variables, std::string rule);
 
     std::optional<std::string> GetPattern(const std::string& rule);
+
+    bool PatternMatches(const std::string& content, const std::string& pattern);
 } // namespace sca
