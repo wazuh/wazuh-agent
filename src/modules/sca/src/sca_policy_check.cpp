@@ -95,12 +95,22 @@ CommandRuleEvaluator::CommandRuleEvaluator(PolicyEvaluationContext ctx,
 
 RuleResult CommandRuleEvaluator::Evaluate()
 {
-    const auto output = Utils::Exec(m_ctx.rule);
-    if (!output.empty())
+    if (const auto output = Utils::Exec(m_ctx.rule); !output.empty())
     {
-        // check pattern against output
-        // Placeholder for actual pattern check logic
-        return RuleResult::Found;
+        if (m_ctx.pattern)
+        {
+            if (m_ctx.pattern->starts_with("r:") || m_ctx.pattern->starts_with("n:"))
+            {
+                if (sca::PatternMatches(output, *m_ctx.pattern))
+                {
+                    return RuleResult::Found;
+                }
+            }
+            else if (output == *m_ctx.pattern)
+            {
+                return RuleResult::Found;
+            }
+        }
     }
     return RuleResult::NotFound;
 }
