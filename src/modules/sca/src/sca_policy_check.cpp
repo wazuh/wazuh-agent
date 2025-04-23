@@ -125,6 +125,17 @@ RuleResult DirRuleEvaluator::Evaluate()
         if (m_ctx.pattern->starts_with("r:"))
         {
             // Check if a directory contains files that match a regex
+            const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
+
+            for (const auto& file : files)
+            {
+                if (sca::PatternMatches(file.string(), *m_ctx.pattern))
+                {
+                    return RuleResult::Found;
+                }
+            }
+
+            return RuleResult::NotFound;
         }
         else if (const auto content = sca::GetPattern(*m_ctx.pattern))
         {
