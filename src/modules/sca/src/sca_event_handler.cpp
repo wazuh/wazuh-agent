@@ -6,6 +6,8 @@
 #include <stringHelper.hpp>
 #include <timeHelper.hpp>
 
+#include <sstream>
+
 /// @brief Map of stateful operations
 static const std::map<ReturnTypeCallback, std::string> STATEFUL_OPERATION_MAP {
     {MODIFIED, "update"},
