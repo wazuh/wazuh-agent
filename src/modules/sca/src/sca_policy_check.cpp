@@ -82,8 +82,6 @@ RuleResult FileRuleEvaluator::CheckFileExistence()
 {
     if (m_fileSystemWrapper->exists(m_ctx.rule))
     {
-        // Check file contents against the pattern
-        // Placeholder for actual content check logic
         return RuleResult::Found;
     }
     return RuleResult::NotFound;
