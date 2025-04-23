@@ -8,14 +8,21 @@ set_common_settings()
 find_package(Boost REQUIRED COMPONENTS asio)
 
 if(WIN32)
-    set(SOURCES src/instance_communicator.cpp src/instance_communicator_win.cpp src/pipe_wrapper_win.cpp)
+    set(SOURCES src/instance_communicator.cpp src/pipe/pipe_wrapper.cpp)
 else()
-    set(SOURCES src/instance_communicator.cpp src/instance_communicator_unix.cpp src/socket_wrapper_unix.cpp)
+    set(SOURCES src/instance_communicator.cpp src/socket/socket_wrapper.cpp)
 endif()
 
 add_library(InstanceCommunicator ${SOURCES})
-target_include_directories(InstanceCommunicator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
-                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+if(WIN32)
+    target_include_directories(InstanceCommunicator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/src/pipe)
+else()
+    target_include_directories(InstanceCommunicator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/src/socket)
+endif()
+
 target_link_libraries(InstanceCommunicator PUBLIC Boost::asio PRIVATE Logger Config)
 
 include(../../cmake/ConfigureTarget.cmake)

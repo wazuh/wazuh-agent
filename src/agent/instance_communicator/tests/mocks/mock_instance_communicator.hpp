@@ -11,9 +11,7 @@ namespace instance_communicator
     public:
         MOCK_METHOD(boost::asio::awaitable<void>,
                     Listen,
-                    (const std::string& runPath,
-                     std::unique_ptr<ISocketWrapper> socketWrapper,
-                     std::unique_ptr<IPipeWrapper> pipeWrapper),
+                    (const std::string& endpointName, std::unique_ptr<IListenerWrapper> listenerWrapper),
                     (override));
         MOCK_METHOD(void, Stop, (), (override));
         MOCK_METHOD(void, HandleSignal, (const std::string& signal), (const, override));
