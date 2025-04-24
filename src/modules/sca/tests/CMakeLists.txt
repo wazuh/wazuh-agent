@@ -36,3 +36,13 @@ target_include_directories(
                                         ${CMAKE_CURRENT_SOURCE_DIR}/../../../common/file_helper/filesystem/tests/mocks)
 target_link_libraries(command_rule_evaluator_test PRIVATE SCA GTest::gtest GTest::gmock GTest::gtest_main)
 add_test(NAME CommandRuleEvaluatorTest COMMAND command_rule_evaluator_test)
+
+add_executable(directory_rule_evaluator_test directory_rule_evaluator_test.cpp)
+configure_target(directory_rule_evaluator_test)
+target_include_directories(
+    directory_rule_evaluator_test
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src
+            ${CMAKE_CURRENT_SOURCE_DIR}/../../../common/file_helper/filesystem/tests/mocks
+            ${CMAKE_CURRENT_SOURCE_DIR}/../../../common/file_helper/file_io/tests/mocks)
+target_link_libraries(directory_rule_evaluator_test PRIVATE SCA GTest::gtest GTest::gmock GTest::gtest_main)
+add_test(NAME DirectoryRuleEvaluatorTest COMMAND directory_rule_evaluator_test)
