@@ -20,9 +20,9 @@ namespace instance_communicator
         virtual void HandleSignal(const std::string& signal) const = 0;
 
         /// @brief Starts listening for incoming connections
-        /// @param endpointName The name of the endpoint to listen on
+        /// @param runPath The path to the run directory
         /// @param listenerWrapper The listener wrapper to use
-        virtual boost::asio::awaitable<void> Listen(const std::string& endpointName,
+        virtual boost::asio::awaitable<void> Listen(const std::string& runPath,
                                                     std::unique_ptr<IListenerWrapper> listenerWrapper = nullptr) = 0;
 
         /// @brief Stops the Instance Communicator

@@ -14,10 +14,10 @@ namespace instance_communicator
         virtual ~IListenerWrapper() = default;
 
         /// @brief Creates or opens the listener
-        /// @param name The name of the listener
+        /// @param runPath The path to the run directory
         /// @param bufferSize The size of the buffer
         /// @return True if the listener was created or opened, false otherwise
-        virtual bool CreateOrOpen(const std::string& name, std::size_t bufferSize = 0) = 0;
+        virtual bool CreateOrOpen(const std::string& runPath, std::size_t bufferSize = 0) = 0;
 
         /// @brief Asynchronously accepts a connection (pipe connect or socket accept)
         /// @param ec The error code

@@ -201,14 +201,9 @@ void Agent::Run()
         m_running.store(true);
     }
 
-#ifdef WIN32
-    const std::string endpoint = "\\\\.\\pipe\\agent-pipe";
-#else
-    const auto runPath = m_configurationParser->GetConfigOrDefault(config::DEFAULT_RUN_PATH, "agent", "path.run");
-    const std::string endpoint = fmt::format("{}/agent-socket", runPath);
-#endif
-
-    m_taskManager.EnqueueTask(m_instanceCommunicator->Listen(endpoint), "InstanceCommunicator");
+    m_taskManager.EnqueueTask(m_instanceCommunicator->Listen(m_configurationParser->GetConfigOrDefault(
+                                  config::DEFAULT_RUN_PATH, "agent", "path.run")),
+                              "InstanceCommunicator");
 
     m_signalHandler->WaitForSignal();
 

@@ -1,5 +1,6 @@
 #include <ilistener_wrapper.hpp>
 #include <instance_communicator.hpp>
+#include <listener_wrapper.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
@@ -11,12 +12,12 @@
 #include <memory>
 #include <string>
 
-#ifdef WIN32
-#include <listener_wrapper_win.hpp>
-using ListenerType = instance_communicator::PipeListenerWrapper;
+#ifdef USE_PIPE_WRAPPER
+#include <ipipe_wrapper.hpp>
+using ListenerType = instance_communicator::ListenerWrapper<instance_communicator::IPipeWrapper>;
 #else
-#include <listener_wrapper_unix.hpp>
-using ListenerType = instance_communicator::SocketListenerWrapper;
+#include <isocket_wrapper.hpp>
+using ListenerType = instance_communicator::ListenerWrapper<instance_communicator::ISocketWrapper>;
 #endif
 
 namespace instance_communicator
@@ -48,7 +49,7 @@ namespace instance_communicator
     }
 
     boost::asio::awaitable<void> InstanceCommunicator::Listen(
-        const std::string& endpointName, // NOLINT(cppcoreguidelines-avoid-reference-coroutine-parameters)
+        const std::string& runPath, // NOLINT(cppcoreguidelines-avoid-reference-coroutine-parameters)
         std::unique_ptr<IListenerWrapper> listenerWrapper)
     {
         constexpr int A_SECOND_IN_MILLIS = 1000;
@@ -62,13 +63,13 @@ namespace instance_communicator
 
         while (m_keepRunning.load())
         {
-            if (!listenerWrapper->CreateOrOpen(endpointName, BUFFER_SIZE))
+            if (!listenerWrapper->CreateOrOpen(runPath, BUFFER_SIZE))
             {
-                LogError("Failed to create or open listener at '{}'", endpointName);
+                LogError("Failed to create or open listener");
             }
             else
             {
-                LogDebug("InstanceCommunicator listening on {}", endpointName);
+                LogDebug("InstanceCommunicator listening");
 
                 boost::system::error_code ec;
                 try

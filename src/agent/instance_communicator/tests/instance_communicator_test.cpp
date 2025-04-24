@@ -21,7 +21,7 @@ public:
 class MockSocketWrapper : public instance_communicator::IListenerWrapper
 {
 public:
-    MOCK_METHOD(bool, CreateOrOpen, (const std::string& name, std::size_t bufferSize), (override));
+    MOCK_METHOD(bool, CreateOrOpen, (const std::string& runPath, std::size_t bufferSize), (override));
     MOCK_METHOD(boost::asio::awaitable<void>, AsyncAccept, (boost::system::error_code & ec), (override));
     MOCK_METHOD(boost::asio::awaitable<std::size_t>,
                 AsyncRead,
@@ -119,8 +119,7 @@ TEST_F(InstanceCommunicatorTest, Listen)
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(
         ioContext,
-        [this]() -> boost::asio::awaitable<void>
-        { co_await m_communicator->Listen("/endpoint", std::move(m_mockWrapper)); },
+        [this]() -> boost::asio::awaitable<void> { co_await m_communicator->Listen("/tmp", std::move(m_mockWrapper)); },
         boost::asio::detached);
 
     ioContext.run();
@@ -162,8 +161,7 @@ TEST_F(InstanceCommunicatorTest, ListenFailsAcceptorOpen)
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(
         ioContext,
-        [this]() -> boost::asio::awaitable<void>
-        { co_await m_communicator->Listen("/endpoint", std::move(m_mockWrapper)); },
+        [this]() -> boost::asio::awaitable<void> { co_await m_communicator->Listen("/tmp", std::move(m_mockWrapper)); },
         boost::asio::detached);
 
     ioContext.run();
@@ -210,8 +208,7 @@ TEST_F(InstanceCommunicatorTest, ListenFailsAcceptorAsyncAccept)
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(
         ioContext,
-        [this]() -> boost::asio::awaitable<void>
-        { co_await m_communicator->Listen("/endpoint", std::move(m_mockWrapper)); },
+        [this]() -> boost::asio::awaitable<void> { co_await m_communicator->Listen("/tmp", std::move(m_mockWrapper)); },
         boost::asio::detached);
 
     ioContext.run();
@@ -260,8 +257,7 @@ TEST_F(InstanceCommunicatorTest, ListenFailsReadUntil)
     boost::asio::io_context ioContext;
     boost::asio::co_spawn(
         ioContext,
-        [this]() -> boost::asio::awaitable<void>
-        { co_await m_communicator->Listen("/endpoint", std::move(m_mockWrapper)); },
+        [this]() -> boost::asio::awaitable<void> { co_await m_communicator->Listen("/tmp", std::move(m_mockWrapper)); },
         boost::asio::detached);
 
     ioContext.run();
