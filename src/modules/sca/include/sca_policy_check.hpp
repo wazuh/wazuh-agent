@@ -92,3 +92,11 @@ public:
 
     RuleResult Evaluate() override;
 };
+
+class RegistryRuleEvaluator : public RuleEvaluator
+{
+public:
+    RegistryRuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
+
+    RuleResult Evaluate() override;
+};

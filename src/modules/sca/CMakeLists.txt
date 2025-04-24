@@ -13,7 +13,8 @@ add_library(
     src/sca_policy_loader.cpp
     src/sca_event_handler.cpp
     src/sca_utils.cpp
-    src/check_condition_evaluator.cpp)
+    src/check_condition_evaluator.cpp
+    $<$<PLATFORM_ID:Windows>:src/sca_policy_check_win.cpp>)
 target_include_directories(SCA PUBLIC include PRIVATE src)
 target_link_libraries(
     SCA
@@ -26,7 +27,7 @@ target_link_libraries(
            ModuleManager
            CommandEntry
            cmd_helper
-    PRIVATE OsUtils hash_helper string_helper time_helper)
+    PRIVATE OsUtils hash_helper string_helper time_helper $<$<PLATFORM_ID:Windows>:registry_helper>)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(SCA)
