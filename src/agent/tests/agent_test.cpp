@@ -8,6 +8,7 @@
 #include <mock_agent_info.hpp>
 #include <mock_command_handler.hpp>
 #include <mock_http_client.hpp>
+#include <mock_instance_communicator.hpp>
 #include <mock_module_manager.hpp>
 #include <mock_multitype_queue.hpp>
 
@@ -69,6 +70,8 @@ TEST_F(AgentTests, AgentStopsWhenSignalReceived)
     EXPECT_CALL(*mockModuleManagerPtr, Start()).Times(1);
     EXPECT_CALL(*mockModuleManagerPtr, Stop()).Times(1);
 
+    auto mockInstanceCommunicator = std::make_unique<instance_communicator::MockInstanceCommunicator>();
+
     auto WaitForSignalCalled = false;
 
     const std::vector<std::string> mockGroups = {"group1", "group2"};
@@ -77,6 +80,9 @@ TEST_F(AgentTests, AgentStopsWhenSignalReceived)
     EXPECT_CALL(*mockAgentInfoPtr, GetName()).WillOnce(testing::Return("mock_name"));
     EXPECT_CALL(*mockAgentInfoPtr, GetGroups()).WillOnce(testing::Return(mockGroups));
     EXPECT_CALL(*mockAgentInfoPtr, GetHeaderInfo()).WillRepeatedly(testing::Return("header_info"));
+    EXPECT_CALL(*mockInstanceCommunicator, Listen(testing::_, testing::_, testing::_))
+        .WillOnce(testing::Invoke([]() -> boost::asio::awaitable<void> { co_return; }));
+    EXPECT_CALL(*mockInstanceCommunicator, Stop()).Times(1);
 
     EXPECT_CALL(*mockSignalHandlerPtr, WaitForSignal())
         .Times(1)
@@ -98,6 +104,7 @@ TEST_F(AgentTests, AgentStopsWhenSignalReceived)
                 std::move(mockAgentInfo),
                 std::move(mockCommandHandler),
                 std::move(mockModuleManager),
+                std::move(mockInstanceCommunicator),
                 std::move(mockMultiTypeQueue));
 
     EXPECT_NO_THROW(agent.Run());

@@ -41,6 +41,16 @@ private:
     /// @return 0 if the agent runs successfully, 1 otherwise.
     int StartAgent() const;
 
+    /// @brief Reloads the agent configuration and all modules.
+    /// @return 0 if the modules reload is successful, 1 otherwise.
+    int ReloadModules() const;
+
+    /// @brief Sends signal to the previous instance of the agent
+    /// @param message The message to be sent
+    /// @param configFilePath The path to the configuration file
+    /// @return True if the signal was sent successfully
+    bool SendSignal(const std::string& message, const std::string& configFilePath) const;
+
     boost::program_options::variables_map m_options;
     boost::program_options::options_description m_allOptions = {"Allowed options", 120};
     boost::program_options::options_description m_generalOptions = {"General options", 120};

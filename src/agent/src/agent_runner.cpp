@@ -5,6 +5,7 @@
 #include <config.h>
 #include <configuration_parser.hpp>
 #include <http_client.hpp>
+#include <instance_communicator.hpp>
 #include <instance_handler.hpp>
 #include <logger.hpp>
 #include <restart_handler.hpp>
@@ -47,6 +48,10 @@ namespace
     const auto OPT_VERIFICATION_MODE {"verification-mode"};
     const auto OPT_VERIFICATION_MODE_DESC {
         "Verification mode to be applied on HTTPS connection to the server (optional)"};
+    const auto OPT_RELOAD_CONFIG {"reload-config"};
+    const auto OPT_RELOAD_CONFIG_DESC {"Reload configuration file and all modules"};
+    const auto OPT_RELOAD_MODULE {"reload-module"};
+    const auto OPT_RELOAD_MODULE_DESC {"Reload a specific module"};
 } // namespace
 
 AgentRunner::AgentRunner(int argc, char* argv[])
@@ -63,6 +68,8 @@ void AgentRunner::ParseOptions(int argc, char* argv[])
         (OPT_RUN, OPT_RUN_DESC)
         (OPT_STATUS, OPT_STATUS_DESC)
         (OPT_ENROLL_AGENT, OPT_ENROLL_AGENT_DESC)
+        (OPT_RELOAD_CONFIG, OPT_RELOAD_CONFIG_DESC)
+        (OPT_RELOAD_MODULE, program_options::value<std::string>(), OPT_RELOAD_MODULE_DESC)
         (OPT_CONFIG_FILE, program_options::value<std::string>()->default_value(""), OPT_CONFIG_FILE_DESC);
 
     m_enrollmentOptions.add_options()
@@ -95,6 +102,10 @@ int AgentRunner::Run() const
         {
             std::cout << m_allOptions << '\n';
         }
+    }
+    else if (m_options.count(OPT_RELOAD_CONFIG) || m_options.count(OPT_RELOAD_MODULE))
+    {
+        return ReloadModules();
     }
     else if (m_options.count(OPT_ENROLL_AGENT))
     {
@@ -204,6 +215,46 @@ int AgentRunner::StartAgent() const
     {
         LogError("Exception thrown in wazuh-agent: {}", e.what());
         return 1;
+    }
+
+    return 0;
+}
+
+int AgentRunner::ReloadModules() const
+{
+    const auto configFilePath = m_options[OPT_CONFIG_FILE].as<std::string>();
+
+    if (m_options.count(OPT_RELOAD_MODULE))
+    {
+        const auto module = m_options[OPT_RELOAD_MODULE].as<std::string>();
+
+        if (module.empty())
+        {
+            std::cout << "--reload-module arg is mandatory. Use --help for more information.\n";
+            return 1;
+        }
+
+        if (!SendSignal(fmt::format("RELOAD-MODULE:{}", module), configFilePath))
+        {
+            std::cout << "wazuh-agent module reload failed\n";
+            return 1;
+        }
+
+        std::cout << "Starting wazuh-agent module reload\n";
+
+        return 0;
+    }
+
+    if (m_options.count(OPT_RELOAD_CONFIG))
+    {
+        if (!SendSignal("RELOAD", configFilePath))
+        {
+            std::cout << "wazuh-agent modules reload failed\n";
+            return 1;
+        }
+
+        std::cout << "Starting wazuh-agent modules reload\n";
+        return 0;
     }
 
     return 0;

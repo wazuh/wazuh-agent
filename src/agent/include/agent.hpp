@@ -6,6 +6,7 @@
 #include <iagent_info.hpp>
 #include <icommand_handler.hpp>
 #include <ihttp_client.hpp>
+#include <iinstance_communicator.hpp>
 #include <imoduleManager.hpp>
 #include <imultitype_queue.hpp>
 #include <isignal_handler.hpp>
@@ -16,6 +17,7 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 
 /// @brief Agent class
@@ -32,6 +34,7 @@ public:
     /// @param agentInfo Pointer to a custom IAgentInfo implementation
     /// @param commandHandler Pointer to a custom ICommandHandler implementation
     /// @param moduleManager Pointer to a custom IModuleManager implementation
+    /// @param instanceCommunicator Pointer to a custom IInstanceCommunicator implementation
     /// @param messageQueue Pointer to a custom IMultiTypeQueue implementation
     /// @throws std::runtime_error If the Agent is not enrolled
     /// @throws Any exception propagated from dependencies used within the constructor
@@ -42,6 +45,7 @@ public:
           std::unique_ptr<IAgentInfo> agentInfo = nullptr,
           std::unique_ptr<command_handler::ICommandHandler> commandHandler = nullptr,
           std::unique_ptr<IModuleManager> moduleManager = nullptr,
+          std::unique_ptr<instance_communicator::IInstanceCommunicator> instanceCommunicator = nullptr,
           std::shared_ptr<IMultiTypeQueue> messageQueue = nullptr);
 
     /// @brief Destructor
@@ -52,10 +56,11 @@ public:
     /// This method sets up the agent and starts the task manager.
     void Run();
 
-    /// @brief Reload the modules
+    /// @brief Reload the agent modules
+    /// @param module The name of the module to reload
     ///
-    /// This method stops all modules launched by moduleManager, and starts them again.
-    void ReloadModules();
+    /// This method stops the specified modules (all if not specified) and reloads them.
+    void ReloadModules(const std::optional<std::string>& module = std::nullopt);
 
 private:
     /// @brief Task manager
@@ -84,6 +89,9 @@ private:
 
     /// @brief Command handler
     std::unique_ptr<command_handler::ICommandHandler> m_commandHandler;
+
+    /// @brief Instance communicator
+    std::unique_ptr<instance_communicator::IInstanceCommunicator> m_instanceCommunicator;
 
     /// @brief Centralized configuration
     centralized_configuration::CentralizedConfiguration m_centralizedConfiguration;

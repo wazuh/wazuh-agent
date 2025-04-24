@@ -992,7 +992,10 @@ void Inventory::SyncLoop()
             std::unique_lock<std::mutex> lock {m_mutex};
             m_cv.wait_for(lock, std::chrono::milliseconds {m_intervalValue}, [&]() { return m_stopping.load(); });
         }
-        Scan();
+        if (!m_stopping)
+        {
+            Scan();
+        }
     }
     const std::unique_lock<std::mutex> lock {m_mutex};
     m_spDBSync.reset(nullptr);
