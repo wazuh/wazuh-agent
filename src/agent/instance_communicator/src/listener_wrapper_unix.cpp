@@ -44,6 +44,9 @@ namespace instance_communicator
         }
         catch (...) // NOLINT(bugprone-empty-catch)
         {
+            boost::system::error_code ec;
+            m_listener->AcceptorClose(ec);
+
             return false;
         }
     }
@@ -75,6 +78,6 @@ namespace instance_communicator
     {
         boost::system::error_code ec;
         m_listener->SocketShutdown(ec);
-        m_listener->AcceptorClose();
+        m_listener->AcceptorClose(ec);
     }
 } // namespace instance_communicator

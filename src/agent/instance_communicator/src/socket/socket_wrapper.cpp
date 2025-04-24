@@ -21,9 +21,11 @@ namespace instance_communicator
         m_acceptor.listen();
     }
 
-    void SocketWrapper::AcceptorClose()
+    void SocketWrapper::AcceptorClose(boost::system::error_code& ec)
     {
-        m_acceptor.close();
+        // NOLINTBEGIN(bugprone-unused-return-value)
+        m_acceptor.close(ec);
+        // NOLINTEND(bugprone-unused-return-value)
     }
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-reference-coroutine-parameters)

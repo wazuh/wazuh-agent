@@ -20,6 +20,7 @@ namespace instance_communicator
 
         if (m_pipeHandle == nullptr || m_pipeHandle == INVALID_HANDLE_VALUE)
         {
+            PipeClose();
             return false;
         }
 
@@ -28,8 +29,7 @@ namespace instance_communicator
 
         if (ec || !m_pipeStream.is_open())
         {
-            CloseHandle(m_pipeHandle);
-            m_pipeHandle = INVALID_HANDLE_VALUE;
+            PipeClose();
             return false;
         }
 

@@ -26,7 +26,8 @@ namespace instance_communicator
         virtual void AcceptorListen() = 0;
 
         /// @brief Wraps the acceptor close method
-        virtual void AcceptorClose() = 0;
+        /// @param ec The error code from close
+        virtual void AcceptorClose(boost::system::error_code& ec) = 0;
 
         /// @brief Wraps the acceptor async_accept method
         /// @param ec The error code from async_accept
