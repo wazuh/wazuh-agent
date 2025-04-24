@@ -5,6 +5,8 @@ project(SCA)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
+find_package(pcre2 CONFIG REQUIRED)
+
 add_library(
     SCA
     src/sca.cpp
@@ -15,7 +17,11 @@ add_library(
     src/sca_utils.cpp
     src/check_condition_evaluator.cpp
     $<$<PLATFORM_ID:Windows>:src/sca_policy_check_win.cpp>)
+
 target_include_directories(SCA PUBLIC include PRIVATE src)
+
+target_compile_definitions(SCA PRIVATE PCRE2_CODE_UNIT_WIDTH=8)
+
 target_link_libraries(
     SCA
     PUBLIC FilesystemWrapper
@@ -27,7 +33,7 @@ target_link_libraries(
            ModuleManager
            CommandEntry
            cmd_helper
-    PRIVATE OsUtils hash_helper string_helper time_helper $<$<PLATFORM_ID:Windows>:registry_helper>)
+    PRIVATE PCRE2::8BIT OsUtils hash_helper string_helper time_helper $<$<PLATFORM_ID:Windows>:registry_helper>)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(SCA)
