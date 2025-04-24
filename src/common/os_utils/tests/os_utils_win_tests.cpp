@@ -17,7 +17,7 @@ TEST(GetWindowsProcessListTest, MockedProcessList)
 
     size_t callIndex = 0;
 
-    ProcessSnapshotAPI mockAPI;
+    os_utils::ProcessSnapshotAPI mockAPI;
     mockAPI.CreateSnapshot = [](DWORD, DWORD) -> HANDLE
     {
         return reinterpret_cast<HANDLE>(1);

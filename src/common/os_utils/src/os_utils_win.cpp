@@ -1,5 +1,7 @@
 #include <os_utils_win.hpp>
 
+#include <os_utils.hpp>
+
 std::vector<std::string> os_utils::OsUtils::GetRunningProcesses()
 {
     return os_utils::GetRunningProcesses();

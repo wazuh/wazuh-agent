@@ -2,6 +2,7 @@
 
 #include <cmdHelper.hpp>
 #include <filesystem_wrapper.hpp>
+#include <os_utils.hpp>
 
 #include <vector>
 
@@ -203,7 +204,16 @@ ProcessRuleEvaluator::ProcessRuleEvaluator(PolicyEvaluationContext ctx,
 
 RuleResult ProcessRuleEvaluator::Evaluate()
 {
-    // get list of running processes
-    // check if pattern matches
+    os_utils::OsUtils osUtils;
+
+    const auto processes = osUtils.GetRunningProcesses();
+
+    for (const auto& process : processes)
+    {
+        if (process == m_ctx.rule)
+        {
+            return RuleResult::Found;
+        }
+    }
     return RuleResult::Invalid;
 }

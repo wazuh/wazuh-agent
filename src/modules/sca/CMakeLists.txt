@@ -26,7 +26,7 @@ target_link_libraries(
            ModuleManager
            CommandEntry
            cmd_helper
-    PRIVATE hash_helper string_helper time_helper)
+    PRIVATE OsUtils hash_helper string_helper time_helper)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(SCA)
