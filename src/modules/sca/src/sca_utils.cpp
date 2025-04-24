@@ -1,12 +1,36 @@
 #include <sca_utils.hpp>
 
+#include <pcre2.h>
+
 namespace
 {
-    // Placeholder for actual PCRE2 matching function
     bool Pcre2Match(const std::string& content, const std::string& pattern)
     {
-        // Implement the actual PCRE2 matching logic here
-        return content.find(pattern) != std::string::npos;
+        int error_code = 0;
+        PCRE2_SIZE error_offset = 0;
+        pcre2_code* re = nullptr;
+
+        const auto pattern_ptr =
+            reinterpret_cast<PCRE2_SPTR8>(pattern.c_str()); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+
+        re = pcre2_compile(pattern_ptr, PCRE2_ZERO_TERMINATED, 0, &error_code, &error_offset, nullptr);
+
+        if (re == nullptr)
+        {
+            return false;
+        }
+
+        pcre2_match_data* match_data = pcre2_match_data_create_from_pattern(re, nullptr);
+
+        const auto content_ptr =
+            reinterpret_cast<PCRE2_SPTR8>(content.c_str()); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+
+        const int rc = pcre2_match(re, content_ptr, content.size(), 0, 0, match_data, nullptr);
+
+        pcre2_match_data_free(match_data);
+        pcre2_code_free(re);
+
+        return rc >= 0;
     }
 
     bool EvaluateNumericRegexComparison([[maybe_unused]] const std::string& content,
@@ -17,12 +41,15 @@ namespace
         return false;
     }
 
-    bool EvaluateMinterm(const std::string& minterm, const std::string& content)
+    bool EvaluateMinterm(const std::string& minterm, const std::string& content, sca::RegexEngineType engine)
     {
         if (minterm.starts_with("r:"))
         {
             const auto pattern = minterm.substr(2);
-            return Pcre2Match(content, pattern);
+            if (engine == sca::RegexEngineType::PCRE2)
+            {
+                return Pcre2Match(content, pattern);
+            }
         }
         else if (minterm.starts_with("n:"))
         {
@@ -33,6 +60,8 @@ namespace
         {
             return content == minterm;
         }
+
+        return false;
     }
 
 } // namespace
@@ -136,7 +165,7 @@ namespace sca
         return std::nullopt;
     }
 
-    bool PatternMatches(const std::string& content, const std::string& pattern)
+    bool PatternMatches(const std::string& content, const std::string& pattern, RegexEngineType engine)
     {
         if (content.empty())
         {
@@ -167,7 +196,7 @@ namespace sca
             }
 
             // Match the current minterm against the content
-            const bool matchResult = EvaluateMinterm(minterm, content);
+            const bool matchResult = EvaluateMinterm(minterm, content, engine);
 
             // If negated, invert the match result
             const auto mintermResult = negated ^ matchResult;

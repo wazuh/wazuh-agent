@@ -70,6 +70,10 @@
             "version>=": "3.3.2"
         },
         {
+            "name": "pcre2",
+            "version>=": "10.45"
+        },
+        {
             "name": "procps",
             "version>=": "3.3.0",
             "platform": "linux"

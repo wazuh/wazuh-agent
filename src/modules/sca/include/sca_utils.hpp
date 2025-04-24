@@ -18,6 +18,12 @@ namespace sca
 
     using PolicyVariables = std::map<std::string, std::vector<std::string>, StringLengthGreater>;
 
+    enum class RegexEngineType
+    {
+        PCRE2,
+        Invalid
+    };
+
     enum WM_SCA_TYPE
     {
         WM_SCA_TYPE_FILE,
@@ -35,5 +41,7 @@ namespace sca
 
     std::optional<std::string> GetPattern(const std::string& rule);
 
-    bool PatternMatches(const std::string& content, const std::string& pattern);
+    bool PatternMatches(const std::string& content,
+                        const std::string& pattern,
+                        RegexEngineType engine = RegexEngineType::PCRE2);
 } // namespace sca
