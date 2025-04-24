@@ -85,12 +85,12 @@ TEST_F(FileRuleEvaluatorTest, PatternExactLineMatchesReturnsFound)
 
     EXPECT_CALL(*m_rawFsMock, exists(std::filesystem::path("some/file"))).WillOnce(::testing::Return(true));
     EXPECT_CALL(*m_rawIoMock, readLineByLine(std::filesystem::path("some/file"), ::testing::_))
-        .WillOnce(
-            [](const std::string&, const auto& callback)
+        .WillOnce(::testing::Invoke(
+            [](const std::filesystem::path&, const std::function<bool(const std::string&)>& callback)
             {
                 callback("nope");
-                callback("exact"); // triggers return false
-            });
+                callback("exact");
+            }));
 
     auto evaluator = CreateEvaluator();
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
@@ -103,12 +103,12 @@ TEST_F(FileRuleEvaluatorTest, PatternExactLineNoMatchReturnsNotFound)
 
     EXPECT_CALL(*m_rawFsMock, exists(std::filesystem::path("some/file"))).WillOnce(::testing::Return(true));
     EXPECT_CALL(*m_rawIoMock, readLineByLine(std::filesystem::path("some/file"), ::testing::_))
-        .WillOnce(
-            [](const std::string&, const auto& callback)
+        .WillOnce(::testing::Invoke(
+            [](const std::filesystem::path&, const std::function<bool(const std::string&)>& callback)
             {
                 callback("line1");
                 callback("line2");
-            });
+            }));
 
     auto evaluator = CreateEvaluator();
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::NotFound);
