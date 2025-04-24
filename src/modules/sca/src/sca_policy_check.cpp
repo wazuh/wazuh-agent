@@ -86,14 +86,17 @@ RuleResult FileRuleEvaluator::CheckFileExistence()
 }
 
 CommandRuleEvaluator::CommandRuleEvaluator(PolicyEvaluationContext ctx,
-                                           std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
+                                           std::unique_ptr<IFileSystemWrapper> fileSystemWrapper,
+                                           CommandExecFunc commandExecFunc)
     : RuleEvaluator(std::move(ctx), std::move(fileSystemWrapper))
+    , m_commandExecFunc(commandExecFunc ? std::move(commandExecFunc) : [](const std::string& cmd)
+                            { return Utils::Exec(cmd); })
 {
 }
 
 RuleResult CommandRuleEvaluator::Evaluate()
 {
-    if (const auto output = Utils::Exec(m_ctx.rule); !output.empty())
+    if (const auto output = m_commandExecFunc(m_ctx.rule); !output.empty())
     {
         if (m_ctx.pattern)
         {

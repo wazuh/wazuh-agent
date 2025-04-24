@@ -68,9 +68,16 @@ private:
 class CommandRuleEvaluator : public RuleEvaluator
 {
 public:
-    CommandRuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
+    using CommandExecFunc = std::function<std::string(const std::string&)>;
+
+    CommandRuleEvaluator(PolicyEvaluationContext ctx,
+                         std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr,
+                         CommandExecFunc commandExecFunc = nullptr);
 
     RuleResult Evaluate() override;
+
+private:
+    CommandExecFunc m_commandExecFunc = nullptr;
 };
 
 class DirRuleEvaluator : public RuleEvaluator
