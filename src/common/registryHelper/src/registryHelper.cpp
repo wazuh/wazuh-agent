@@ -7,8 +7,62 @@
 #include <memory>
 #include <system_error>
 
+namespace
+{
+    HKEY stringToHKEY(const std::string& keyName)
+    {
+        if (keyName == "HKEY_CLASSES_ROOT")
+        {
+            return HKEY_CLASSES_ROOT;
+        }
+        if (keyName == "HKEY_CURRENT_USER")
+        {
+            return HKEY_CURRENT_USER;
+        }
+        if (keyName == "HKEY_LOCAL_MACHINE")
+        {
+            return HKEY_LOCAL_MACHINE;
+        }
+        if (keyName == "HKEY_USERS")
+        {
+            return HKEY_USERS;
+        }
+        if (keyName == "HKEY_CURRENT_CONFIG")
+        {
+            return HKEY_CURRENT_CONFIG;
+        }
+        if (keyName == "HKEY_PERFORMANCE_DATA")
+        {
+            return HKEY_PERFORMANCE_DATA;
+        }
+        if (keyName == "HKEY_PERFORMANCE_TEXT")
+        {
+            return HKEY_PERFORMANCE_TEXT;
+        }
+        if (keyName == "HKEY_PERFORMANCE_NLSTEXT")
+        {
+            return HKEY_PERFORMANCE_NLSTEXT;
+        }
+        if (keyName == "HKEY_DYN_DATA")
+        {
+            return HKEY_DYN_DATA; // obsolete
+        }
+        throw std::invalid_argument("Unknown HKEY string: " + keyName);
+    }
+} // namespace
+
 namespace Utils
 {
+    Registry::Registry(const HKEY key, const std::string& subKey, const REGSAM access)
+        : m_registryKey {openRegistry(key, subKey, access)}
+    {
+    }
+
+    Registry::Registry(const std::string& key, const std::string& subKey, const REGSAM access)
+        : m_registryKey {openRegistry(stringToHKEY(key), subKey, access)}
+    {
+    }
+
     Registry::~Registry()
     {
         close();
