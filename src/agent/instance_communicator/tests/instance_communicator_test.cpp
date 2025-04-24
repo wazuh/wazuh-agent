@@ -21,11 +21,11 @@ public:
 class MockSocketWrapper : public instance_communicator::IListenerWrapper
 {
 public:
-    MOCK_METHOD(bool, CreateOrOpen, (const std::string& runPath, std::size_t bufferSize), (override));
+    MOCK_METHOD(bool, CreateOrOpen, (const std::string& runPath, const std::size_t bufferSize), (override));
     MOCK_METHOD(boost::asio::awaitable<void>, AsyncAccept, (boost::system::error_code & ec), (override));
     MOCK_METHOD(boost::asio::awaitable<std::size_t>,
                 AsyncRead,
-                (char* data, std::size_t size, boost::system::error_code& ec),
+                (char* data, const std::size_t size, boost::system::error_code& ec),
                 (override));
     MOCK_METHOD(void, Close, (), (override));
 };

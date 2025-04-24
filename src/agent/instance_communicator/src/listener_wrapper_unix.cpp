@@ -21,7 +21,7 @@ namespace instance_communicator
 
     template<>
     bool ListenerWrapper<ISocketWrapper>::CreateOrOpen(const std::string& runPath,
-                                                       [[maybe_unused]] std::size_t bufferSize)
+                                                       [[maybe_unused]] const std::size_t bufferSize)
     {
         constexpr mode_t SOCKET_FILE_PERMISSIONS = 0660;
 
@@ -61,7 +61,7 @@ namespace instance_communicator
     template<>
     boost::asio::awaitable<std::size_t> ListenerWrapper<ISocketWrapper>::AsyncRead(
         char* data,
-        std::size_t size,
+        const std::size_t size,
         boost::system::error_code& ec) // NOLINT(cppcoreguidelines-avoid-reference-coroutine-parameters)
     {
         auto buf = std::make_shared<boost::asio::streambuf>();

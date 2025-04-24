@@ -19,7 +19,7 @@ namespace instance_communicator
 
     template<>
     bool ListenerWrapper<IPipeWrapper>::CreateOrOpen([[maybe_unused]] const std::string& runPath,
-                                                     std::size_t bufferSize)
+                                                     const std::size_t bufferSize)
     {
         return m_listener->PipeCreate(ENDPOINT, bufferSize);
     }
@@ -34,7 +34,7 @@ namespace instance_communicator
     template<>
     boost::asio::awaitable<std::size_t> ListenerWrapper<IPipeWrapper>::AsyncRead(
         char* data,
-        std::size_t size,
+        const std::size_t size,
         boost::system::error_code& ec) // NOLINT(cppcoreguidelines-avoid-reference-coroutine-parameters)
     {
         co_return co_await m_listener->PipeAsyncRead(data, size, ec);

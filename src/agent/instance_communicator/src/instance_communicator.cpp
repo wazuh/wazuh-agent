@@ -80,11 +80,11 @@ namespace instance_communicator
                     {
                         std::array<char, BUFFER_SIZE> buffer {};
 
-                        std::size_t n = co_await listenerWrapper->AsyncRead(buffer.data(), buffer.size(), ec);
+                        std::size_t bytes = co_await listenerWrapper->AsyncRead(buffer.data(), buffer.size(), ec);
 
                         if (!ec || ec == boost::asio::error::eof)
                         {
-                            std::string message(buffer.data(), n);
+                            std::string message(buffer.data(), bytes);
 
                             if (auto pos = message.find('\n'); pos != std::string::npos)
                             {

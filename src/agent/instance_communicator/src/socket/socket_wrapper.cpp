@@ -23,9 +23,7 @@ namespace instance_communicator
 
     void SocketWrapper::AcceptorClose(boost::system::error_code& ec)
     {
-        // NOLINTBEGIN(bugprone-unused-return-value)
-        m_acceptor.close(ec);
-        // NOLINTEND(bugprone-unused-return-value)
+        m_acceptor.close(ec); // NOLINT(bugprone-unused-return-value)
     }
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-reference-coroutine-parameters)

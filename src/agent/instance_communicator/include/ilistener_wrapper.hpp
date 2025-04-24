@@ -17,7 +17,7 @@ namespace instance_communicator
         /// @param runPath The path to the run directory
         /// @param bufferSize The size of the buffer
         /// @return True if the listener was created or opened, false otherwise
-        virtual bool CreateOrOpen(const std::string& runPath, std::size_t bufferSize = 0) = 0;
+        virtual bool CreateOrOpen(const std::string& runPath, const std::size_t bufferSize = 0) = 0;
 
         /// @brief Asynchronously accepts a connection (pipe connect or socket accept)
         /// @param ec The error code
@@ -29,7 +29,7 @@ namespace instance_communicator
         /// @param ec The error code
         /// @return The number of bytes read
         virtual boost::asio::awaitable<std::size_t>
-        AsyncRead(char* data, std::size_t size, boost::system::error_code& ec) = 0;
+        AsyncRead(char* data, const std::size_t size, boost::system::error_code& ec) = 0;
 
         /// @brief Closes the stream and/or handle
         virtual void Close() = 0;
