@@ -48,7 +48,10 @@ RuleResult RegistryRuleEvaluator::Evaluate()
 
         // If there's no pattern we are just checking that the registry exists
         // Since Utils::Registry will throw if it doesn't exist, we can just return Found
-        [[maybe_unused]] Utils::Registry registry(m_ctx.rule);
+        [this]
+        {
+            Utils::Registry registry(m_ctx.rule);
+        }();
         return RuleResult::Found;
     }
     catch (const std::exception& e)
