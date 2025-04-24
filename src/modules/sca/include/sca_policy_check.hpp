@@ -4,6 +4,7 @@
 #include <ifilesystem_wrapper.hpp>
 #include <sca_utils.hpp>
 
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
