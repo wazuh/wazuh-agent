@@ -53,7 +53,6 @@ RuleResult FileRuleEvaluator::CheckFileForContents()
             {
                 return RuleResult::Found;
             }
-            return RuleResult::NotFound;
         }
         else
         {
@@ -73,8 +72,6 @@ RuleResult FileRuleEvaluator::CheckFileForContents()
                                         });
             return result;
         }
-
-        return RuleResult::NotFound;
     }
     return RuleResult::NotFound; // or invalid?
 }
