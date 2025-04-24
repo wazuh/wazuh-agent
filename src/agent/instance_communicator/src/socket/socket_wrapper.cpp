@@ -1,5 +1,5 @@
 
-#include <socket_wrapper_unix.hpp>
+#include <socket_wrapper.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/asio/awaitable.hpp>
@@ -21,9 +21,9 @@ namespace instance_communicator
         m_acceptor.listen();
     }
 
-    void SocketWrapper::AcceptorClose()
+    void SocketWrapper::AcceptorClose(boost::system::error_code& ec)
     {
-        m_acceptor.close();
+        m_acceptor.close(ec); // NOLINT(bugprone-unused-return-value)
     }
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-reference-coroutine-parameters)

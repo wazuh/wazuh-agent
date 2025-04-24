@@ -201,8 +201,9 @@ void Agent::Run()
         m_running.store(true);
     }
 
-    m_taskManager.EnqueueTask(m_instanceCommunicator->Listen(
-        m_configurationParser->GetConfigOrDefault(config::DEFAULT_RUN_PATH, "agent", "path.run")));
+    m_taskManager.EnqueueTask(m_instanceCommunicator->Listen(m_configurationParser->GetConfigOrDefault(
+                                  config::DEFAULT_RUN_PATH, "agent", "path.run")),
+                              "InstanceCommunicator");
 
     m_signalHandler->WaitForSignal();
 

@@ -31,7 +31,7 @@ namespace instance_communicator
         void AcceptorListen() override;
 
         /// @copydoc ISocketWrapper::AcceptorClose
-        void AcceptorClose() override;
+        void AcceptorClose(boost::system::error_code& ec) override;
 
         /// @copydoc ISocketWrapper::AcceptorAsyncAccept
         boost::asio::awaitable<void> AcceptorAsyncAccept(boost::system::error_code& ec) override;
