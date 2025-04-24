@@ -1,5 +1,7 @@
 #include <os_utils_unix.hpp>
 
+#include <os_utils.hpp>
+
 #include <algorithm>
 #include <cerrno>
 #include <cstdio>
@@ -27,6 +29,11 @@ namespace
     // to get the maximum PID value
     constexpr pid_t MAX_PID = 32768;
 } // namespace
+
+std::vector<std::string> os_utils::OsUtils::GetRunningProcesses()
+{
+    return os_utils::GetRunningProcesses();
+}
 
 bool os_utils::PidExists(pid_t pid)
 {

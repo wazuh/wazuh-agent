@@ -5,7 +5,8 @@ project(OsUtils)
 include(../../cmake/CommonSettings.cmake)
 set_common_settings()
 
-add_library(OsUtils src/os_utils_unix.cpp)
+add_library(OsUtils $<$<NOT:$<PLATFORM_ID:Windows>>:src/os_utils_unix.cpp>
+                    $<$<PLATFORM_ID:Windows>:src/os_utils_win.cpp>)
 target_include_directories(OsUtils PUBLIC include PRIVATE src)
 target_link_libraries(OsUtils PUBLIC FilesystemWrapper PRIVATE Logger)
 
