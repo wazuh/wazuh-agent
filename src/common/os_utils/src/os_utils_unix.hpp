@@ -2,9 +2,7 @@
 
 #include <filesystem_wrapper.hpp>
 
-#include <memory>
 #include <string>
-#include <sys/types.h>
 #include <vector>
 
 namespace os_utils
@@ -14,15 +12,12 @@ namespace os_utils
     /// @return True if the process exists, false otherwise.
     bool PidExists(pid_t pid);
 
-    /// @brief Get the process name of a running process using the ps command.
-    /// @param ps The path to the ps command.
+    /// @brief Get the process name of a running process.
     /// @param pid The PID of the process to check.
     /// @return The name of the process if it exists, otherwise an empty string.
-    std::string GetProcessName(const std::string& ps, int pid);
+    std::string GetProcessName(int pid);
 
     /// @brief Get the list of all running Unix processes.
-    /// @param fs A unique pointer to a file system wrapper. Default is a new instance of FileSystemWrapper.
     /// @return A vector of strings containing the names of running processes. Empty if none or error found.
-    std::vector<std::string>
-    GetRunningProcesses(std::unique_ptr<IFileSystemWrapper> fs = std::make_unique<file_system::FileSystemWrapper>());
+    std::vector<std::string> GetRunningProcesses();
 } // namespace os_utils

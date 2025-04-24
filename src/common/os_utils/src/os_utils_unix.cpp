@@ -1,100 +1,76 @@
 #include <os_utils.hpp>
 #include <os_utils_unix.hpp>
 
-#include <fileSmartDeleter.hpp>
-
-#include <algorithm>
 #include <cerrno>
 #include <cstdio>
 #include <filesystem>
-#include <iostream>
+#include <fstream>
 #include <sstream>
 #include <unistd.h>
 
+#if defined(__APPLE__)
+#include <libproc.h>
+#elif defined(__linux__)
+#include <sys/types.h>
+#endif
+
 namespace
 {
-    constexpr int MAX_LINE_LENGTH = 2048;
-
     // TODO: replace with more robust and accurate method
     // to get the maximum PID value
     constexpr pid_t MAX_PID = 32768;
 } // namespace
+
+std::vector<std::string> os_utils::OsUtils::GetRunningProcesses()
+{
+    return os_utils::GetRunningProcesses();
+}
 
 bool os_utils::PidExists(pid_t pid)
 {
     return !(getsid(pid) == -1 && errno == ESRCH) && !(getpgid(pid) == -1 && errno == ESRCH);
 }
 
-std::string os_utils::GetProcessName(const std::string& ps, int pid)
+std::string os_utils::GetProcessName(pid_t pid)
 {
-    std::ostringstream cmd;
-    cmd << ps << " -p " << pid << " 2> /dev/null";
+#ifdef __linux__
+    const auto commPath = std::filesystem::path("/proc") / std::to_string(pid) / "comm";
 
-    const std::unique_ptr<FILE, FileSmartDeleter> pipe(popen(cmd.str().c_str(), "r"));
-    if (!pipe)
+    if (std::ifstream comm(commPath); comm)
     {
-        return {};
+        // First line will be the process name
+        std::string name;
+        std::getline(comm, name);
+        return name;
     }
-
-    char buffer[MAX_LINE_LENGTH + 1];
-
-    while (fgets(buffer, sizeof(buffer), pipe.get()))
+#elif defined(__APPLE__)
+    if (char pathbuf[PROC_PIDPATHINFO_MAXSIZE]; proc_pidpath(pid, pathbuf, sizeof(pathbuf)) > 0)
     {
-        const std::string line(buffer);
-        const auto colonPosition = line.find(':');
-        if (colonPosition == std::string::npos)
+        const std::string fullPath(pathbuf);
+
+        if (const auto pos = fullPath.find_last_of('/'); pos != std::string::npos)
         {
-            continue;
+            return fullPath.substr(pos + 1);
         }
-
-        const auto spacePosition = line.find(' ', colonPosition);
-        if (spacePosition == std::string::npos)
-        {
-            continue;
-        }
-
-        auto trimmed = line.substr(spacePosition + 1);
-        trimmed.erase(0, trimmed.find_first_not_of(' '));
-        trimmed.erase(trimmed.find_last_not_of('\n') + 1);
-
-        return trimmed;
+        return fullPath;
     }
-
+#else
+#error "Unsupported platform"
+#endif
     return {};
 }
 
-std::vector<std::string> os_utils::GetRunningProcesses(std::unique_ptr<IFileSystemWrapper> fs)
+std::vector<std::string> os_utils::GetRunningProcesses()
 {
-    if (!fs)
-    {
-        return {};
-    }
-
-    std::string psPath;
-
-    if (fs->is_regular_file("/bin/ps"))
-    {
-        psPath = "/bin/ps";
-    }
-    else if (fs->is_regular_file("/usr/bin/ps"))
-    {
-        psPath = "/usr/bin/ps";
-    }
-    else
-    {
-        std::cerr << "'ps' not found.\n";
-        return {};
-    }
-
     std::vector<std::string> processList;
 
-    for (pid_t i = 1; i <= MAX_PID; ++i)
+    for (pid_t pid = 1; pid <= MAX_PID; ++pid)
     {
-        if (PidExists(i))
+        if (PidExists(pid))
         {
-            if (auto procName = GetProcessName(psPath, i); !procName.empty())
+            if (auto name = GetProcessName(pid); !name.empty())
             {
-                processList.push_back(std::move(procName));
+                processList.emplace_back(std::move(name));
             }
         }
     }

@@ -7,14 +7,14 @@ TEST(PidExistsTest, ExistingPid)
     EXPECT_TRUE(os_utils::PidExists(getpid()));
 }
 
-TEST(GetRunningProcessesTest, FailsOnBadPath)
+TEST(GetRunningProcessesTest, FailsOnBadPid)
 {
-    auto result = os_utils::GetProcessName("/bad/ps", getpid());
+    const auto result = os_utils::GetProcessName(-1);
     EXPECT_EQ(result, "");
 }
 
-TEST(GetRunningProcessesTest, NoProcessesFoundWithNoFilesystemWrapper)
+TEST(GetRunningProcessesTest, AtLeastOneProcessFound)
 {
-    auto result = os_utils::GetRunningProcesses(nullptr);
-    EXPECT_TRUE(result.empty());
+    const auto result = os_utils::GetRunningProcesses();
+    EXPECT_FALSE(result.empty());
 }
