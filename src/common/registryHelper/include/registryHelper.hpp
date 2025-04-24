@@ -16,14 +16,17 @@ namespace Utils
     class Registry final
     {
     public:
-        /// @brief Constructor
+        /// @brief Constructor with HKEY
         /// @param key key of the registry
         /// @param subKey subkey of the registry
         /// @param access access to the registry
-        Registry(const HKEY key, const std::string& subKey = "", const REGSAM access = KEY_READ)
-            : m_registryKey {openRegistry(key, subKey, access)}
-        {
-        }
+        Registry(const HKEY key, const std::string& subKey = "", const REGSAM access = KEY_READ);
+
+        /// @brief Constructor with std::string
+        /// @param key key of the registry. Will be converted to HKEY if possible.
+        /// @param subKey subkey of the registry
+        /// @param access access to the registry
+        Registry(const std::string& key, const std::string& subKey = "", const REGSAM access = KEY_READ);
 
         /// @brief Destructor
         ~Registry();
