@@ -50,6 +50,7 @@ protected:
 
 class FileRuleEvaluator : public RuleEvaluator
 {
+public:
     FileRuleEvaluator(PolicyEvaluationContext ctx,
                       std::unique_ptr<IFileSystemWrapper> fileSystemWrapper,
                       std::unique_ptr<IFileIOUtils> fileUtils);
