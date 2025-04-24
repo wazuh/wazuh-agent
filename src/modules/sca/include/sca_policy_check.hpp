@@ -97,9 +97,16 @@ private:
 class ProcessRuleEvaluator : public RuleEvaluator
 {
 public:
-    ProcessRuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
+    using GetProcessesFunc = std::function<std::vector<std::string>()>;
+
+    ProcessRuleEvaluator(PolicyEvaluationContext ctx,
+                         std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr,
+                         GetProcessesFunc getProcesses = nullptr);
 
     RuleResult Evaluate() override;
+
+private:
+    GetProcessesFunc m_getProcesses = nullptr;
 };
 
 class RegistryRuleEvaluator : public RuleEvaluator

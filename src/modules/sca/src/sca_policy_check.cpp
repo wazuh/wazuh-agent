@@ -197,16 +197,16 @@ RuleResult DirRuleEvaluator::Evaluate()
 }
 
 ProcessRuleEvaluator::ProcessRuleEvaluator(PolicyEvaluationContext ctx,
-                                           std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
+                                           std::unique_ptr<IFileSystemWrapper> fileSystemWrapper,
+                                           GetProcessesFunc getProcesses)
     : RuleEvaluator(std::move(ctx), std::move(fileSystemWrapper))
+    , m_getProcesses(getProcesses ? std::move(getProcesses) : [] { return os_utils::OsUtils().GetRunningProcesses(); })
 {
 }
 
 RuleResult ProcessRuleEvaluator::Evaluate()
 {
-    os_utils::OsUtils osUtils;
-
-    const auto processes = osUtils.GetRunningProcesses();
+    const auto processes = m_getProcesses();
 
     for (const auto& process : processes)
     {
