@@ -290,10 +290,7 @@ RuleEvaluatorFactory::CreateEvaluator(const std::string& input,
 
     const std::string cleanedRule = rule.substr(delimiter_pos + 1);
 
-    PolicyEvaluationContext ctx;
-    ctx.rule = cleanedRule;
-    ctx.pattern = pattern.empty() ? std::nullopt : std::make_optional(pattern);
-    ctx.isNegated = isNegated;
+    PolicyEvaluationContext ctx {.rule = cleanedRule, .pattern = pattern, .isNegated = isNegated};
 
     switch (it->second)
     {
