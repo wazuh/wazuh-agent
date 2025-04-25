@@ -7,7 +7,6 @@
 
 namespace
 {
-
     // Checks if a registry key exists
     const RegistryRuleEvaluator::IsValidRegistryKeyFunc DEFAULT_IS_VALID_REGISTRY_KEY =
         [](const std::string& rootKey) -> bool
@@ -84,8 +83,7 @@ RuleResult RegistryRuleEvaluator::Evaluate()
                 }
             }
         }
-
-        if (m_isValidRegistryKey(m_ctx.rule))
+        else if (m_isValidRegistryKey(m_ctx.rule))
         {
             result = RuleResult::Found;
         }
