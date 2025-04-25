@@ -4,8 +4,6 @@
 #include <filesystem_wrapper.hpp>
 #include <os_utils.hpp>
 
-#include <vector>
-
 RuleEvaluator::RuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
     : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
                                             : std::make_unique<file_system::FileSystemWrapper>())

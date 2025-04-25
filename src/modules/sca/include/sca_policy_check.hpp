@@ -8,6 +8,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
 enum class RuleResult
 {
@@ -112,7 +113,22 @@ private:
 class RegistryRuleEvaluator : public RuleEvaluator
 {
 public:
-    RegistryRuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
+    using IsValidRegistryKeyFunc = std::function<bool(const std::string& rootKey)>;
+    using GetRegistryKeysFunc =
+        std::function<std::vector<std::string>(const std::string& root, const std::string& subkey)>;
+    using GetRegistryValuesFunc =
+        std::function<std::vector<std::string>(const std::string& root, const std::string& subkey)>;
+
+    RegistryRuleEvaluator(PolicyEvaluationContext ctx,
+                          std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr,
+                          IsValidRegistryKeyFunc isValidRegistryKey = nullptr,
+                          GetRegistryKeysFunc getRegistryKeys = nullptr,
+                          GetRegistryValuesFunc getRegistryValues = nullptr);
 
     RuleResult Evaluate() override;
+
+private:
+    IsValidRegistryKeyFunc m_isValidRegistryKey = nullptr;
+    GetRegistryKeysFunc m_getRegistryKeys = nullptr;
+    GetRegistryValuesFunc m_getRegistryValues = nullptr;
 };
