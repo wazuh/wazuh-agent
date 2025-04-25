@@ -36,7 +36,7 @@ public:
     void Stop();
 
 private:
-    void ReportCheckResult([[maybe_unused]] const Check& check, [[maybe_unused]] bool result);
+    void ReportCheckResult(const Check& check, bool result);
 
     Check m_requirements;
     std::vector<Check> m_checks;

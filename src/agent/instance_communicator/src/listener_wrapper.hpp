@@ -17,7 +17,7 @@ namespace instance_communicator
     public:
         explicit ListenerWrapper(const boost::asio::any_io_executor& executor);
 
-        bool CreateOrOpen([[maybe_unused]] const std::string& runPath, const std::size_t bufferSize) override;
+        bool CreateOrOpen(const std::string& runPath, const std::size_t bufferSize) override;
 
         boost::asio::awaitable<void> AsyncAccept(boost::system::error_code& ec) override;
 
