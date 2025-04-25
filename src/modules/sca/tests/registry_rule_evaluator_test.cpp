@@ -89,20 +89,6 @@ TEST_F(RegistryRuleEvaluatorTest, PatternArrowValueNotFoundReturnsNotFound)
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::NotFound);
 }
 
-TEST_F(RegistryRuleEvaluatorTest, PatternArrowValueNotFoundReturnsNotFound)
-{
-    m_ctx.pattern = std::string("SubKey -> MissingValue");
-    m_ctx.rule = "HKEY_CURRENT_USER\\MyApp";
-
-    m_getValues = [](const std::string&, const std::string&)
-    {
-        return std::vector<std::string> {"A", "B", "C"};
-    };
-
-    auto evaluator = CreateEvaluator();
-    EXPECT_EQ(evaluator.Evaluate(), RuleResult::NotFound);
-}
-
 TEST_F(RegistryRuleEvaluatorTest, PatternKeyNotFoundReturnsNotFound)
 {
     m_ctx.pattern = std::string("TargetSubKey");
