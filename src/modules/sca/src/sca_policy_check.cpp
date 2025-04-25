@@ -1,6 +1,7 @@
 #include <sca_policy_check.hpp>
 
 #include <cmdHelper.hpp>
+#include <file_io_utils.hpp>
 #include <filesystem_wrapper.hpp>
 #include <os_utils.hpp>
 #include <sca_utils.hpp>
@@ -224,6 +225,15 @@ RuleEvaluatorFactory::CreateEvaluator(const std::string& input,
                                       std::unique_ptr<IFileSystemWrapper> fileSystemWrapper,
                                       std::unique_ptr<IFileIOUtils> fileUtils)
 {
+    if (!fileSystemWrapper)
+    {
+        fileSystemWrapper = std::make_unique<file_system::FileSystemWrapper>();
+    }
+    if (!fileUtils)
+    {
+        fileUtils = std::make_unique<file_io::FileIOUtils>();
+    }
+
     auto trim = [](const std::string& str) -> std::string
     {
         const auto start = str.find_first_not_of(" \t");
