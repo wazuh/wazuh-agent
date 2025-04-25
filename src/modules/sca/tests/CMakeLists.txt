@@ -19,6 +19,12 @@ target_include_directories(sca_event_handler_test PRIVATE ${CMAKE_CURRENT_SOURCE
 target_link_libraries(sca_event_handler_test PRIVATE SCA GTest::gtest GTest::gmock GTest::gtest_main)
 add_test(NAME SCAEventHandlerTest COMMAND sca_event_handler_test)
 
+add_executable(rule_creation_test rule_creation_test.cpp)
+configure_target(rule_creation_test)
+target_include_directories(rule_creation_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+target_link_libraries(rule_creation_test PRIVATE SCA GTest::gtest GTest::gtest_main)
+add_test(NAME RuleCreationTest COMMAND rule_creation_test)
+
 add_executable(file_rule_evaluator_test file_rule_evaluator_test.cpp)
 configure_target(file_rule_evaluator_test)
 target_include_directories(
