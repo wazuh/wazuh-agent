@@ -6,13 +6,15 @@
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 
-SCAPolicy::SCAPolicy(std::vector<Check> checks)
-    : m_checks(std::move(checks))
+SCAPolicy::SCAPolicy(Check requirements, std::vector<Check> checks)
+    : m_requirements(std::move(requirements))
+    , m_checks(std::move(checks))
 {
 }
 
 SCAPolicy::SCAPolicy(SCAPolicy&& other) noexcept
-    : m_checks(std::move(other.m_checks))
+    : m_requirements(std::move(other.m_requirements))
+    , m_checks(std::move(other.m_checks))
     , m_keepRunning(other.m_keepRunning.load())
 {
 }
@@ -21,13 +23,13 @@ boost::asio::awaitable<void> SCAPolicy::Run()
 {
     while (m_keepRunning)
     {
-        auto requirementsOk = false;
+        auto requirementsOk = true;
 
-        for (const auto& requirement : m_requirements)
+        if (!m_requirements.rules.empty())
         {
-            auto resultEvaluator = CheckConditionEvaluator::FromString(requirement.condition);
+            auto resultEvaluator = CheckConditionEvaluator::FromString(m_requirements.condition);
 
-            for (const auto& rule : requirement.rules)
+            for (const auto& rule : m_requirements.rules)
             {
                 resultEvaluator.AddResult(rule->Evaluate() == RuleResult::Found);
             }
@@ -61,10 +63,4 @@ boost::asio::awaitable<void> SCAPolicy::Run()
 void SCAPolicy::Stop()
 {
     m_keepRunning = false;
-}
-
-SCAPolicy SCAPolicy::LoadFromFile([[maybe_unused]] const std::filesystem::path& path)
-{
-    std::vector<Check> checks;
-    return SCAPolicy(std::move(checks));
 }

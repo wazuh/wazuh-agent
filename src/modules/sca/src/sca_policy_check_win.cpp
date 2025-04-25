@@ -53,6 +53,8 @@ RegistryRuleEvaluator::RegistryRuleEvaluator(PolicyEvaluationContext ctx,
 
 RuleResult RegistryRuleEvaluator::Evaluate()
 {
+    RuleResult result = RuleResult::NotFound;
+
     try
     {
         if (m_ctx.pattern)
@@ -65,10 +67,10 @@ RuleResult RegistryRuleEvaluator::Evaluate()
                 {
                     if (value == *content)
                     {
-                        return RuleResult::Found;
+                        result = RuleResult::Found;
+                        break;
                     }
                 }
-                return RuleResult::NotFound;
             }
             else
             {
@@ -76,22 +78,22 @@ RuleResult RegistryRuleEvaluator::Evaluate()
                 {
                     if (key == *m_ctx.pattern)
                     {
-                        return RuleResult::Found;
+                        result = RuleResult::Found;
+                        break;
                     }
                 }
-
-                return RuleResult::NotFound;
             }
         }
 
         if (m_isValidRegistryKey(m_ctx.rule))
         {
-            return RuleResult::Found;
+            result = RuleResult::Found;
         }
     }
     catch (const std::exception& e)
     {
         LogDebug("RegistryRuleEvaluator::Evaluate: Exception: {}", e.what());
     }
-    return RuleResult::NotFound;
+
+    return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
 }

@@ -17,14 +17,14 @@ class SCAPolicy
 public:
     struct Check
     {
-        std::string id;
+        std::optional<std::string> id;
         std::string title;
         std::string condition;
         std::vector<std::unique_ptr<IRuleEvaluator>> rules;
     };
 
     /// @brief Constructor
-    explicit SCAPolicy(std::vector<Check> checks);
+    explicit SCAPolicy(Check requirements, std::vector<Check> checks);
 
     SCAPolicy(SCAPolicy&& other) noexcept;
 
@@ -35,14 +35,8 @@ public:
     /// @brief Stops the policy check
     void Stop();
 
-    /// @brief Loads a policy from a SCA Policy yaml file
-    /// @param path The path to the SCA Policy yaml file
-    /// @returns A SCAPolicy object
-    /// @note This function is a placeholder and should be implemented in the actual code
-    static SCAPolicy LoadFromFile([[maybe_unused]] const std::filesystem::path& path);
-
 private:
-    std::vector<Check> m_requirements;
+    Check m_requirements;
     std::vector<Check> m_checks;
     std::atomic<bool> m_keepRunning {true};
 };
