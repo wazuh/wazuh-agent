@@ -257,7 +257,7 @@ RuleEvaluatorFactory::CreateEvaluator(const std::string& input,
 
     const auto [ruleType, cleanedRule] = ruleTypeAndValue.value();
 
-    PolicyEvaluationContext ctx {.rule = cleanedRule, .pattern = pattern, .isNegated = isNegated};
+    const PolicyEvaluationContext ctx {.rule = cleanedRule, .pattern = pattern, .isNegated = isNegated};
 
     switch (ruleType)
     {
