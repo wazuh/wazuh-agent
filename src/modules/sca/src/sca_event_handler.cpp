@@ -394,18 +394,7 @@ nlohmann::json SCAEventHandler::StringToJsonArray(const std::string& input) cons
 
     while (std::getline(stream, token, ','))
     {
-        const size_t start = token.find_first_not_of(" \t");
-
-        const size_t end = token.find_last_not_of(" \t");
-
-        if (start != std::string::npos && end != std::string::npos)
-        {
-            token = token.substr(start, end - start + 1);
-        }
-        else
-        {
-            token = "";
-        }
+        token = Utils::Trim(token, " \t");
 
         if (!token.empty())
         {

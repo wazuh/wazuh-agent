@@ -1,5 +1,7 @@
 #include <sca_utils.hpp>
 
+#include <stringHelper.hpp>
+
 #include <optional>
 #include <pcre2.h>
 #include <sstream>
@@ -179,8 +181,7 @@ namespace sca
             }
 
             auto path = ruleWithReplacedVariables.substr(start, end - start);
-            path.erase(0, path.find_first_not_of(" \t"));
-            path.erase(path.find_last_not_of(" \t") + 1);
+            path = Utils::Trim(path, " \t");
 
             if (!path.empty())
             {
