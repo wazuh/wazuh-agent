@@ -41,11 +41,10 @@ namespace
 } // namespace
 
 RegistryRuleEvaluator::RegistryRuleEvaluator(PolicyEvaluationContext ctx,
-                                             std::unique_ptr<IFileSystemWrapper> fileSystemWrapper,
                                              IsValidRegistryKeyFunc isValidRegistryKey,
                                              GetRegistryKeysFunc getRegistryKeys,
                                              GetRegistryValuesFunc getRegistryValues)
-    : RuleEvaluator(std::move(ctx), std::move(fileSystemWrapper))
+    : RuleEvaluator(std::move(ctx), nullptr)
     , m_isValidRegistryKey(isValidRegistryKey ? std::move(isValidRegistryKey) : DEFAULT_IS_VALID_REGISTRY_KEY)
     , m_getRegistryKeys(getRegistryKeys ? std::move(getRegistryKeys) : DEFAULT_GET_REGISTRY_KEYS)
     , m_getRegistryValues(getRegistryValues ? std::move(getRegistryValues) : DEFAULT_GET_REGISTRY_VALUES)
