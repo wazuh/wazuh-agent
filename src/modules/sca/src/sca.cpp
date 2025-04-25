@@ -121,7 +121,7 @@ void SecurityConfigurationAssessment::EnqueueTask(boost::asio::awaitable<void> t
             }
             catch (const std::exception& e)
             {
-                LogError("Logcollector coroutine task exited with an exception: {}", e.what());
+                LogError("SCA coroutine task exited with an exception: {}", e.what());
             }
         },
         boost::asio::detached);
