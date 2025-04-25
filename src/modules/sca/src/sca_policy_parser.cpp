@@ -189,11 +189,9 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
                 {
                     for (const auto& rule : checkNode["rules"])
                     {
-                        std::unique_ptr<IRuleEvaluator> RuleEvaluator =
-                            RuleEvaluatorFactory::CreateEvaluator(rule.as<std::string>());
-                        if (RuleEvaluator != nullptr)
+                        if (auto ruleEvaluator = RuleEvaluatorFactory::CreateEvaluator(rule.as<std::string>()))
                         {
-                            check.rules.push_back(std::move(RuleEvaluator));
+                            check.rules.push_back(std::move(ruleEvaluator));
                         }
                         else
                         {
