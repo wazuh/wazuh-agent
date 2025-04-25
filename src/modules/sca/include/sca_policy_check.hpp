@@ -28,6 +28,7 @@ struct PolicyEvaluationContext
 {
     std::string rule;
     std::optional<std::string> pattern;
+    bool isNegated;
 };
 
 class IRuleEvaluator
@@ -36,6 +37,8 @@ public:
     virtual ~IRuleEvaluator() = default;
 
     virtual RuleResult Evaluate() = 0;
+
+    virtual const PolicyEvaluationContext& GetContext() const = 0;
 };
 
 class RuleEvaluator : public IRuleEvaluator
@@ -43,7 +46,7 @@ class RuleEvaluator : public IRuleEvaluator
 public:
     RuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper);
 
-    const PolicyEvaluationContext& GetContext() const;
+    const PolicyEvaluationContext& GetContext() const override;
 
 protected:
     std::unique_ptr<IFileSystemWrapper> m_fileSystemWrapper = nullptr;
@@ -54,8 +57,8 @@ class FileRuleEvaluator : public RuleEvaluator
 {
 public:
     FileRuleEvaluator(PolicyEvaluationContext ctx,
-                      std::unique_ptr<IFileSystemWrapper> fileSystemWrapper,
-                      std::unique_ptr<IFileIOUtils> fileUtils);
+                      std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr,
+                      std::unique_ptr<IFileIOUtils> fileUtils = nullptr);
 
     RuleResult Evaluate() override;
 
@@ -130,4 +133,13 @@ private:
     IsValidRegistryKeyFunc m_isValidRegistryKey = nullptr;
     GetRegistryKeysFunc m_getRegistryKeys = nullptr;
     GetRegistryValuesFunc m_getRegistryValues = nullptr;
+};
+
+class RuleEvaluatorFactory
+{
+public:
+    static std::unique_ptr<IRuleEvaluator>
+    CreateEvaluator(const std::string& input,
+                    std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr,
+                    std::unique_ptr<IFileIOUtils> fileUtils = nullptr);
 };
