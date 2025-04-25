@@ -8,19 +8,6 @@
 
 namespace sca
 {
-    /// @brief A custom comparator for std::map that sorts keys by string length in descending order.
-    struct StringLengthGreater
-    {
-        bool operator()(const std::string& a, const std::string& b) const
-        {
-            return a.length() > b.length() || (a.length() == b.length() && a < b);
-        }
-    };
-
-    /// @brief A container for policy variables that will sort them by length in descending order.
-    /// @details This is used to ensure that longer keys are checked first when replacing variables in rules.
-    using PolicyVariables = std::map<std::string, std::vector<std::string>, StringLengthGreater>;
-
     /// @brief Types of supported regex engines.
     enum class RegexEngineType
     {
@@ -42,12 +29,6 @@ namespace sca
     /// @param input The input string to parse.
     /// @return An optional pair containing the rule type and its string representation if successful.
     std::optional<std::pair<int, std::string>> ParseRuleType(const std::string& input);
-
-    /// @brief Replaces variables in the rule with their corresponding values from the policy variables.
-    /// @param variables The policy variables to use for replacement.
-    /// @param rule The rule string with variables to be replaced.
-    /// @return The rule string with variables replaced by their corresponding values.
-    std::string RuleWithReplacedVariables(const PolicyVariables& variables, std::string rule);
 
     /// @brief Resolves paths in the rule string.
     /// @param ruleWithReplacedVariables The rule string with variables replaced.

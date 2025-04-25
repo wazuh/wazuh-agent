@@ -164,28 +164,6 @@ namespace sca
         return std::make_pair(it->second, value);
     }
 
-    std::string RuleWithReplacedVariables(const PolicyVariables& variables, std::string rule)
-    {
-        for (const auto& [var, values] : variables)
-        {
-            if (values.empty())
-            {
-                continue;
-            }
-
-            const auto& replacement = values.front();
-            size_t pos = 0;
-
-            while ((pos = rule.find(var, pos)) != std::string::npos)
-            {
-                rule.replace(pos, var.length(), replacement);
-                pos += replacement.length();
-            }
-        }
-
-        return rule;
-    }
-
     std::vector<std::filesystem::path> ResolvedPaths(const std::string& ruleWithReplacedVariables)
     {
         std::vector<std::filesystem::path> paths;
