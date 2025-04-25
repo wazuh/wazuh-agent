@@ -3,9 +3,6 @@
 
 #include <sca_policy_check.hpp>
 
-#include <mock_file_io_utils.hpp>
-#include <mock_filesystem_wrapper.hpp>
-
 #include <filesystem>
 #include <memory>
 
