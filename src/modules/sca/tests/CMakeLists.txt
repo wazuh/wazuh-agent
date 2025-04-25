@@ -54,3 +54,11 @@ target_include_directories(
                                         ${CMAKE_CURRENT_SOURCE_DIR}/../../../common/file_helper/filesystem/tests/mocks)
 target_link_libraries(process_rule_evaluator_test PRIVATE SCA GTest::gtest GTest::gmock GTest::gtest_main)
 add_test(NAME ProcessRuleEvaluatorTest COMMAND process_rule_evaluator_test)
+
+if(WIN32)
+    add_executable(registry_rule_evaluator_test registry_rule_evaluator_test.cpp)
+    configure_target(registry_rule_evaluator_test)
+    target_include_directories(registry_rule_evaluator_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+    target_link_libraries(registry_rule_evaluator_test PRIVATE SCA GTest::gtest GTest::gmock GTest::gtest_main)
+    add_test(NAME RegistryRuleEvaluatorTest COMMAND registry_rule_evaluator_test)
+endif()
