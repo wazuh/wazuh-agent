@@ -216,11 +216,6 @@ RuleResult ProcessRuleEvaluator::Evaluate()
         }
     }
 
-    if (processes.empty())
-    {
-        result = RuleResult::Invalid;
-    }
-
     return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
 }
 
