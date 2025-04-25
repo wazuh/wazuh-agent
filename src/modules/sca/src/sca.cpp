@@ -66,7 +66,12 @@ void SecurityConfigurationAssessment::Setup(
     m_policies = [this, &configurationParser]()
     {
         const SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser, m_dBSync);
-        return policyLoader.GetPolicies();
+        return policyLoader.GetPolicies(
+            [this](auto policyData, auto checksData)
+            {
+                const SCAEventHandler eventHandler(m_agentUUID, m_dBSync, m_pushMessage);
+                eventHandler.CreateEvents(policyData, checksData);
+            });
     }();
 }
 

@@ -4,15 +4,15 @@
 #include <filesystem_wrapper.hpp>
 #include <logger.hpp>
 
+#include <yaml-cpp/yaml.h>
+
 #include <algorithm>
 
 SCAPolicyLoader::SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemWrapper,
                                  std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
-                                 std::shared_ptr<IDBSync> dBSync,
-                                 PolicyLoaderFunc loader)
+                                 std::shared_ptr<IDBSync> dBSync)
     : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
                                             : std::make_shared<file_system::FileSystemWrapper>())
-    , m_policyLoader(std::move(loader))
     , m_dBSync(std::move(dBSync))
 {
     const auto loadPoliciesPathsFromConfig = [this, configurationParser](const std::string& configKey)
@@ -38,7 +38,7 @@ SCAPolicyLoader::SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemW
     m_disabledPoliciesPaths = loadPoliciesPathsFromConfig("policies_disabled");
 }
 
-std::vector<SCAPolicy> SCAPolicyLoader::GetPolicies() const
+std::vector<SCAPolicy> SCAPolicyLoader::GetPolicies(const CreateEventsFunc& createEvents) const
 {
     std::vector<std::filesystem::path> allPolicyPaths;
 
@@ -52,14 +52,33 @@ std::vector<SCAPolicy> SCAPolicyLoader::GetPolicies() const
     };
 
     std::vector<SCAPolicy> policies;
+    nlohmann::json policiesAndChecks;
+    policiesAndChecks["policies"] = nlohmann::json::array();
+    policiesAndChecks["checks"] = nlohmann::json::array();
+
     for (const auto& path : allPolicyPaths)
     {
         if (!isDisabled(path))
         {
             try
             {
-                policies.emplace_back(m_policyLoader(path));
                 LogDebug("Loading policy from {}", path.string());
+
+                auto loadFunc = [](const std::filesystem::path& filename) -> YAML::Node
+                {
+                    return YAML::LoadFile(filename.string());
+                };
+
+                const PolicyParser parser(path, loadFunc);
+                auto policy = parser.ParsePolicy(policiesAndChecks);
+                if (policy)
+                {
+                    policies.emplace_back(std::move(policy.value()));
+                }
+                else
+                {
+                    LogWarn("Failed to parse policy from: {}", path.string());
+                }
             }
             catch (const std::exception& e)
             {
@@ -68,10 +87,19 @@ std::vector<SCAPolicy> SCAPolicyLoader::GetPolicies() const
         }
     }
 
+    if (!policiesAndChecks["policies"].empty() && !policiesAndChecks["checks"].empty())
+    {
+        SyncPoliciesAndReportDelta(policiesAndChecks, createEvents);
+    }
+    else
+    {
+        LogWarn("No policies and checks found to synchronize");
+    }
+
     return policies;
 }
 
-void SCAPolicyLoader::SyncPoliciesAndReportDelta(const nlohmann::json& data, const CreateEventsFunc& createEvents)
+void SCAPolicyLoader::SyncPoliciesAndReportDelta(const nlohmann::json& data, const CreateEventsFunc& createEvents) const
 {
     std::unordered_map<std::string, nlohmann::json> modifiedPoliciesMap;
     std::unordered_map<std::string, nlohmann::json> modifiedChecksMap;
@@ -116,7 +144,7 @@ void SCAPolicyLoader::SyncPoliciesAndReportDelta(const nlohmann::json& data, con
 }
 
 std::unordered_map<std::string, nlohmann::json> SCAPolicyLoader::SyncWithDBSync(const nlohmann::json& data,
-                                                                                const std::string& tableName)
+                                                                                const std::string& tableName) const
 {
     static std::unordered_map<std::string, nlohmann::json> modifiedDataMap;
     modifiedDataMap.clear();
@@ -167,7 +195,7 @@ std::unordered_map<std::string, nlohmann::json> SCAPolicyLoader::SyncWithDBSync(
     return modifiedDataMap;
 }
 
-void SCAPolicyLoader::UpdateCheckResult(const nlohmann::json& check)
+void SCAPolicyLoader::UpdateCheckResult(const nlohmann::json& check) const
 {
     auto updateResultQuery = SyncRowQuery::builder().table(SCA_CHECK_TABLE_NAME).data(check).build();
 
