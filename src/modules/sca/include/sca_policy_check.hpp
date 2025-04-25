@@ -120,7 +120,6 @@ public:
         std::function<std::vector<std::string>(const std::string& root, const std::string& subkey)>;
 
     RegistryRuleEvaluator(PolicyEvaluationContext ctx,
-                          std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr,
                           IsValidRegistryKeyFunc isValidRegistryKey = nullptr,
                           GetRegistryKeysFunc getRegistryKeys = nullptr,
                           GetRegistryValuesFunc getRegistryValues = nullptr);
