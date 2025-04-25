@@ -1,14 +1,17 @@
 #include <sca_utils.hpp>
 
+#include <optional>
 #include <pcre2.h>
+#include <sstream>
 
 namespace
 {
-    bool Pcre2Match(const std::string& content, const std::string& pattern)
+    std::pair<bool, std::string> Pcre2Match(const std::string& content, const std::string& pattern)
     {
         int error_code = 0;
         PCRE2_SIZE error_offset = 0;
         pcre2_code* re = nullptr;
+        std::string matched;
 
         const auto pattern_ptr =
             reinterpret_cast<PCRE2_SPTR8>(pattern.c_str()); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
@@ -17,7 +20,7 @@ namespace
 
         if (re == nullptr)
         {
-            return false;
+            return std::make_pair(false, "");
         }
 
         pcre2_match_data* match_data = pcre2_match_data_create_from_pattern(re, nullptr);
@@ -27,17 +30,77 @@ namespace
 
         const int rc = pcre2_match(re, content_ptr, content.size(), 0, 0, match_data, nullptr);
 
+        if (rc >= 0)
+        {
+            PCRE2_SIZE* ovector = pcre2_get_ovector_pointer(match_data);
+            PCRE2_SIZE start = ovector[0]; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            PCRE2_SIZE end = ovector[1];   // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+
+            matched = content.substr(start, end - start);
+        }
+
         pcre2_match_data_free(match_data);
         pcre2_code_free(re);
 
-        return rc >= 0;
+        return std::make_pair(rc >= 0, matched);
     }
 
-    bool EvaluateNumericRegexComparison([[maybe_unused]] const std::string& content,
-                                        [[maybe_unused]] const std::string& expr)
+    bool
+    EvaluateNumericRegexComparison(const std::string& content, const std::string& expr, sca::RegexEngineType engine)
     {
-        // Placeholder for actual numeric regex comparison logic
-        // Implement the actual numeric regex comparison logic here
+        std::istringstream stream(expr);
+        std::string pattern, compare_word, op_str, expected_value_str;
+        std::pair<bool, std::string> match_result {false, ""};
+
+        if (!(stream >> pattern >> compare_word >> op_str >> expected_value_str))
+        {
+            return false;
+        }
+
+        if (compare_word != "compare")
+        {
+            return false;
+        }
+
+        const int expected_value = std::stoi(expected_value_str);
+
+        if (engine == sca::RegexEngineType::PCRE2)
+        {
+            match_result = Pcre2Match(content, pattern);
+        }
+
+        if (!match_result.first)
+        {
+            return false;
+        }
+
+        const int actual_value = std::stoi(match_result.second);
+
+        if (op_str == "<")
+        {
+            return actual_value < expected_value;
+        }
+        if (op_str == "<=")
+        {
+            return actual_value <= expected_value;
+        }
+        if (op_str == "==")
+        {
+            return actual_value == expected_value;
+        }
+        if (op_str == "!=")
+        {
+            return actual_value != expected_value;
+        }
+        if (op_str == ">=")
+        {
+            return actual_value >= expected_value;
+        }
+        if (op_str == ">")
+        {
+            return actual_value > expected_value;
+        }
+
         return false;
     }
 
@@ -48,13 +111,13 @@ namespace
             const auto pattern = minterm.substr(2);
             if (engine == sca::RegexEngineType::PCRE2)
             {
-                return Pcre2Match(content, pattern);
+                return Pcre2Match(content, pattern).first;
             }
         }
         else if (minterm.starts_with("n:"))
         {
             const auto expression = minterm.substr(2);
-            return EvaluateNumericRegexComparison(content, expression);
+            return EvaluateNumericRegexComparison(content, expression, engine);
         }
         else
         {
