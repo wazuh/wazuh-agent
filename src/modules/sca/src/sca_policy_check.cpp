@@ -241,14 +241,20 @@ RuleEvaluatorFactory::CreateEvaluator(const std::string& input,
         return (start == std::string::npos) ? "" : str.substr(start, end - start + 1);
     };
 
-    const auto arrowPos = input.find("->");
-    if (arrowPos == std::string::npos)
-    {
-        return nullptr;
-    }
+    std::string rule;
+    std::optional<std::string> pattern;
 
-    std::string rule = trim(input.substr(0, arrowPos));
-    const std::string pattern = trim(input.substr(arrowPos + 2));
+    const auto arrowPos = input.find("->");
+    if (arrowPos != std::string::npos)
+    {
+        rule = trim(input.substr(0, arrowPos));
+        pattern = trim(input.substr(arrowPos + 2));
+    }
+    else
+    {
+        rule = trim(input);
+        pattern = std::nullopt;
+    }
 
     bool isNegated = false;
     if (rule.starts_with("not "))
