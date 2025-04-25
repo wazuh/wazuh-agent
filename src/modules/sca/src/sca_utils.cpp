@@ -32,14 +32,26 @@ namespace
 
         const int rc = pcre2_match(re, content_ptr, content.size(), 0, 0, match_data, nullptr);
 
+        // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         if (rc >= 0)
         {
             PCRE2_SIZE* ovector = pcre2_get_ovector_pointer(match_data);
-            PCRE2_SIZE start = ovector[0]; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            PCRE2_SIZE end = ovector[1];   // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
-            matched = content.substr(start, end - start);
+            // rc is the number of matches found; rc >= 2 means full match + at least one capture
+            if (rc >= 2)
+            {
+                PCRE2_SIZE start = ovector[2]; // first capture group
+                PCRE2_SIZE end = ovector[3];
+                matched = content.substr(start, end - start);
+            }
+            else
+            {
+                PCRE2_SIZE start = ovector[0]; // full match fallback
+                PCRE2_SIZE end = ovector[1];
+                matched = content.substr(start, end - start);
+            }
         }
+        // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
         pcre2_match_data_free(match_data);
         pcre2_code_free(re);
