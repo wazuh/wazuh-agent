@@ -1,5 +1,6 @@
 #include <os_utils_unix.hpp>
 
+#include <fileSmartDeleter.hpp>
 #include <os_utils.hpp>
 
 #include <algorithm>
@@ -12,17 +13,6 @@
 
 namespace
 {
-    struct PCloseDeleter
-    {
-        void operator()(FILE* f) const
-        {
-            if (f)
-            {
-                pclose(f);
-            }
-        }
-    };
-
     constexpr int MAX_LINE_LENGTH = 2048;
 
     // TODO: replace with more robust and accurate method
@@ -45,7 +35,7 @@ std::string os_utils::GetProcessName(const std::string& ps, int pid)
     std::ostringstream cmd;
     cmd << ps << " -p " << pid << " 2> /dev/null";
 
-    const std::unique_ptr<FILE, PCloseDeleter> pipe(popen(cmd.str().c_str(), "r"));
+    const std::unique_ptr<FILE, FileSmartDeleter> pipe(popen(cmd.str().c_str(), "r"));
     if (!pipe)
     {
         return {};
