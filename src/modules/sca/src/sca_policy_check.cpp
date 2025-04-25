@@ -241,21 +241,21 @@ RuleEvaluatorFactory::CreateEvaluator(const std::string& input,
         return (start == std::string::npos) ? "" : str.substr(start, end - start + 1);
     };
 
-    auto rule_input = trim(input);
+    auto ruleInput = trim(input);
     auto isNegated = false;
-    if (rule_input.starts_with("not "))
+    if (ruleInput.starts_with("not "))
     {
         isNegated = true;
-        rule_input = trim(rule_input.substr(4));
+        ruleInput = trim(ruleInput.substr(4));
     }
 
-    const auto pattern = sca::GetPattern(rule_input);
+    const auto pattern = sca::GetPattern(ruleInput);
     if (pattern.has_value())
     {
-        rule_input = trim(rule_input.substr(0, rule_input.find("->")));
+        ruleInput = trim(ruleInput.substr(0, ruleInput.find("->")));
     }
 
-    const auto ruleTypeAndValue = sca::ParseRuleType(rule_input);
+    const auto ruleTypeAndValue = sca::ParseRuleType(ruleInput);
     if (!ruleTypeAndValue.has_value())
     {
         return nullptr;
