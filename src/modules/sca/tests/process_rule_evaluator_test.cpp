@@ -54,7 +54,7 @@ TEST_F(ProcessRuleEvaluatorTest, ProcessNotFoundReturnsNotFound)
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::NotFound);
 }
 
-TEST_F(ProcessRuleEvaluatorTest, EmptyProcessListReturnsInvalid)
+TEST_F(ProcessRuleEvaluatorTest, EmptyProcessListReturnsNotFound)
 {
     m_ctx.rule = "whatever";
 
@@ -64,5 +64,5 @@ TEST_F(ProcessRuleEvaluatorTest, EmptyProcessListReturnsInvalid)
     };
 
     auto evaluator = CreateEvaluator();
-    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::NotFound);
 }
