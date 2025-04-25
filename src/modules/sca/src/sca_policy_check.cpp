@@ -283,9 +283,8 @@ RuleEvaluatorFactory::CreateEvaluator(const std::string& input,
     {
         case sca::WM_SCA_TYPE_FILE:
             return std::make_unique<FileRuleEvaluator>(ctx, std::move(fileSystemWrapper), std::move(fileUtils));
-            // TODO
-        // case sca::WM_SCA_TYPE_REGISTRY: return std::make_unique<RegistryRuleEvaluator>(ctx,
-        // std::move(fileSystemWrapper));
+        case sca::WM_SCA_TYPE_REGISTRY:
+            return std::make_unique<RegistryRuleEvaluator>(ctx, std::move(fileSystemWrapper));
         case sca::WM_SCA_TYPE_PROCESS: return std::make_unique<ProcessRuleEvaluator>(ctx, std::move(fileSystemWrapper));
         case sca::WM_SCA_TYPE_DIR:
             return std::make_unique<DirRuleEvaluator>(ctx, std::move(fileSystemWrapper), std::move(fileUtils));
