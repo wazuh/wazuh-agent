@@ -112,17 +112,16 @@ TEST_F(CommandRuleEvaluatorTest, PatternGivenButCommandOutputIsEmptyReturnsNotFo
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::NotFound);
 }
 
-// TODO bring back when regex is supported
-// TEST_F(CommandRuleEvaluatorTest, NumericPatternMatchesOutputReturnsFound)
-// {
-//     m_ctx.rule = "some command";
-//     m_ctx.pattern = std::string("n:\\d+ compare <= 50");
+TEST_F(CommandRuleEvaluatorTest, NumericPatternMatchesOutputReturnsFound)
+{
+    m_ctx.rule = "some command";
+    m_ctx.pattern = std::string("n:\\d+ compare <= 50");
 
-//     m_execMock = [](const std::string&)
-//     {
-//         return "42";
-//     };
+    m_execMock = [](const std::string&)
+    {
+        return "42";
+    };
 
-//     auto evaluator = CreateEvaluator();
-//     EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
-// }
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
+}
