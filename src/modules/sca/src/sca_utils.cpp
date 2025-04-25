@@ -1,5 +1,7 @@
 #include <sca_utils.hpp>
 
+#include <stringHelper.hpp>
+
 #include <optional>
 #include <pcre2.h>
 #include <sstream>

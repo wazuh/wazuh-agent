@@ -5,6 +5,7 @@
 #include <filesystem_wrapper.hpp>
 #include <os_utils.hpp>
 #include <sca_utils.hpp>
+#include <stringHelper.hpp>
 
 RuleEvaluator::RuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
     : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
@@ -234,25 +235,18 @@ RuleEvaluatorFactory::CreateEvaluator(const std::string& input,
         fileUtils = std::make_unique<file_io::FileIOUtils>();
     }
 
-    auto trim = [](const std::string& str) -> std::string
-    {
-        const auto start = str.find_first_not_of(" \t");
-        const auto end = str.find_last_not_of(" \t");
-        return (start == std::string::npos) ? "" : str.substr(start, end - start + 1);
-    };
-
-    auto ruleInput = trim(input);
+    auto ruleInput = Utils::Trim(input, " \t");
     auto isNegated = false;
     if (ruleInput.starts_with("not "))
     {
         isNegated = true;
-        ruleInput = trim(ruleInput.substr(4));
+        ruleInput = Utils::Trim(ruleInput.substr(4), " \t");
     }
 
     const auto pattern = sca::GetPattern(ruleInput);
     if (pattern.has_value())
     {
-        ruleInput = trim(ruleInput.substr(0, ruleInput.find("->")));
+        ruleInput = Utils::Trim(ruleInput.substr(0, ruleInput.find("->")), " \t");
     }
 
     const auto ruleTypeAndValue = sca::ParseRuleType(ruleInput);
