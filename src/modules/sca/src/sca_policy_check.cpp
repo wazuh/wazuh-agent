@@ -241,58 +241,31 @@ RuleEvaluatorFactory::CreateEvaluator(const std::string& input,
         return (start == std::string::npos) ? "" : str.substr(start, end - start + 1);
     };
 
-    std::string rule;
-    std::optional<std::string> pattern;
-
-    const auto arrowPos = input.find("->");
-    if (arrowPos != std::string::npos)
-    {
-        rule = trim(input.substr(0, arrowPos));
-        pattern = trim(input.substr(arrowPos + 2));
-    }
-    else
-    {
-        rule = trim(input);
-        pattern = std::nullopt;
-    }
-
-    bool isNegated = false;
-    if (rule.starts_with("not "))
+    auto rule_input = trim(input);
+    auto isNegated = false;
+    if (rule_input.starts_with("not "))
     {
         isNegated = true;
-        rule = trim(rule.substr(4));
+        rule_input = trim(rule_input.substr(4));
     }
 
-    const auto delimiter_pos = rule.find(':');
-    if (delimiter_pos == std::string::npos)
+    const auto pattern = sca::GetPattern(rule_input);
+    if (pattern.has_value())
+    {
+        rule_input = trim(rule_input.substr(0, rule_input.find("->")));
+    }
+
+    const auto ruleTypeAndValue = sca::ParseRuleType(rule_input);
+    if (!ruleTypeAndValue.has_value())
     {
         return nullptr;
     }
 
-    auto key = rule.substr(0, delimiter_pos);
-
-    if (!key.empty() && key.front() == '!')
-    {
-        key.erase(0, 1);
-    }
-
-    static const std::map<std::string, int> type_map = {{"f", sca::WM_SCA_TYPE_FILE},
-                                                        {"r", sca::WM_SCA_TYPE_REGISTRY},
-                                                        {"p", sca::WM_SCA_TYPE_PROCESS},
-                                                        {"d", sca::WM_SCA_TYPE_DIR},
-                                                        {"c", sca::WM_SCA_TYPE_COMMAND}};
-
-    const auto it = type_map.find(key);
-    if (it == type_map.end())
-    {
-        return nullptr;
-    }
-
-    const std::string cleanedRule = rule.substr(delimiter_pos + 1);
+    const auto [ruleType, cleanedRule] = ruleTypeAndValue.value();
 
     PolicyEvaluationContext ctx {.rule = cleanedRule, .pattern = pattern, .isNegated = isNegated};
 
-    switch (it->second)
+    switch (ruleType)
     {
         case sca::WM_SCA_TYPE_FILE:
             return std::make_unique<FileRuleEvaluator>(ctx, std::move(fileSystemWrapper), std::move(fileUtils));
