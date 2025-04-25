@@ -84,8 +84,7 @@ RuleResult RegistryRuleEvaluator::Evaluate()
                 }
             }
         }
-
-        if (m_isValidRegistryKey(m_ctx.rule))
+        else if (m_isValidRegistryKey(m_ctx.rule))
         {
             result = RuleResult::Found;
         }
