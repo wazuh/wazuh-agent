@@ -30,6 +30,18 @@ namespace
 
         return result;
     }
+
+    std::string GetStreamOutput(boost::process::pipe& processPipe)
+    {
+        std::string line;
+        std::stringstream output;
+        boost::process::ipstream stream(processPipe);
+        while (stream && std::getline(stream, line))
+        {
+            output << line << '\n';
+        }
+        return output.str();
+    }
 } // namespace
 
 namespace Utils
@@ -51,7 +63,7 @@ namespace Utils
         return result;
     }
 
-    std::string Exec(const std::string& cmd)
+    ExecResult Exec(const std::string& cmd)
     {
         try
         {
@@ -74,16 +86,11 @@ namespace Utils
                                           boost::process::std_err > stdErrPipe,
                                           boost::this_process::environment());
 
-            boost::process::ipstream outStream(stdOutPipe);
-            std::stringstream output;
-            std::string line;
-            while (outStream && std::getline(outStream, line))
-            {
-                output << line << '\n';
-            }
-
+            const auto output = GetStreamOutput(stdOutPipe);
+            const auto error = GetStreamOutput(stdErrPipe);
             process.wait();
-            return output.str();
+
+            return {.StdOut = output, .StdErr = error, .ExitCode = process.exit_code()};
         }
         // NOLINTBEGIN(bugprone-empty-catch)
         catch (const std::exception&)

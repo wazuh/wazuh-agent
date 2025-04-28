@@ -87,8 +87,9 @@ CommandRuleEvaluator::CommandRuleEvaluator(PolicyEvaluationContext ctx,
                                            std::unique_ptr<IFileSystemWrapper> fileSystemWrapper,
                                            CommandExecFunc commandExecFunc)
     : RuleEvaluator(std::move(ctx), std::move(fileSystemWrapper))
-    , m_commandExecFunc(commandExecFunc ? std::move(commandExecFunc) : [](const std::string& cmd)
-                            { return Utils::Exec(cmd); })
+    , m_commandExecFunc(commandExecFunc
+                        ? std::move(commandExecFunc)
+                        : [](const std::string& cmd) { const auto cmdOutput = Utils::Exec(cmd); return cmdOutput.StdOut + cmdOutput.StdErr; })
 {
 }
 
