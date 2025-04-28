@@ -8,7 +8,7 @@
 
 namespace Utils
 {
-    std::string Exec(const std::string& cmd, const size_t bufferSize)
+    std::string PipeOpen(const std::string& cmd, const size_t bufferSize)
     {
         const std::unique_ptr<FILE, FileSmartDeleter> file {popen(cmd.c_str(), "r")};
         std::vector<char> buffer(bufferSize);

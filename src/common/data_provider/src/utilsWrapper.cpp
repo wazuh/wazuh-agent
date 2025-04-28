@@ -3,5 +3,5 @@
 
 std::string UtilsWrapper::exec(const std::string& cmd, const size_t bufferSize)
 {
-    return Utils::Exec(cmd, bufferSize);
+    return Utils::PipeOpen(cmd, bufferSize);
 }
