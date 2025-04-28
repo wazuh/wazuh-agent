@@ -48,7 +48,7 @@ boost::asio::awaitable<void> SCAPolicy::Run()
                     resultEvaluator.AddResult(rule->Evaluate() == RuleResult::Found);
                 }
 
-                [[maybe_unused]] auto result = resultEvaluator.Result();
+                const auto result = resultEvaluator.Result();
 
                 ReportCheckResult(check, result);
             }
