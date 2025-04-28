@@ -26,9 +26,9 @@ enum class ConditionType
 
 struct PolicyEvaluationContext
 {
-    std::string rule;
-    std::optional<std::string> pattern;
-    bool isNegated;
+    std::string rule = {};
+    std::optional<std::string> pattern = std::nullopt;
+    bool isNegated = false;
 };
 
 class IRuleEvaluator
