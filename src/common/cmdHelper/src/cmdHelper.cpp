@@ -9,6 +9,7 @@
 #include <memory>
 #include <ranges>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -29,6 +30,18 @@ namespace
         }
 
         return result;
+    }
+
+    std::string GetStreamOutput(boost::process::pipe& processPipe)
+    {
+        std::string line;
+        std::stringstream output;
+        boost::process::ipstream stream(processPipe);
+        while (stream && std::getline(stream, line))
+        {
+            output << line << '\n';
+        }
+        return output.str();
     }
 } // namespace
 
@@ -51,7 +64,7 @@ namespace Utils
         return result;
     }
 
-    std::string Exec(const std::string& cmd)
+    ExecResult Exec(const std::string& cmd)
     {
         try
         {
@@ -71,27 +84,19 @@ namespace Utils
             boost::process::child process(exePath,
                                           boost::process::args = execArgs,
                                           boost::process::std_out > stdOutPipe,
-                                          boost::process::std_err > stdErrPipe,
-                                          boost::this_process::environment());
+                                          boost::process::std_err > stdErrPipe);
 
-            boost::process::ipstream outStream(stdOutPipe);
-            std::stringstream output;
-            std::string line;
-            while (outStream && std::getline(outStream, line))
-            {
-                output << line << '\n';
-            }
-
+            const auto output = GetStreamOutput(stdOutPipe);
+            const auto error = GetStreamOutput(stdErrPipe);
             process.wait();
-            return output.str();
-        }
-        // NOLINTBEGIN(bugprone-empty-catch)
-        catch (const std::exception&)
-        {
-            // log? throw?
-        }
-        // NOLINTEND(bugprone-empty-catch)
 
-        return {};
+            return {.StdOut = output, .StdErr = error, .ExitCode = process.exit_code()};
+        }
+        catch (const std::exception& e)
+        {
+            return {.StdOut = "", .StdErr = e.what(), .ExitCode = 1};
+        }
+
+        return {.StdOut = "", .StdErr = "", .ExitCode = 1};
     }
 } // namespace Utils

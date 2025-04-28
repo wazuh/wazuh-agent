@@ -4,6 +4,13 @@
 
 namespace Utils
 {
+    struct ExecResult
+    {
+        std::string StdOut;
+        std::string StdErr;
+        int ExitCode;
+    };
+
     /// @brief Executes a command
     /// @param cmd command
     /// @param bufferSize buffer size in bytes
@@ -12,11 +19,11 @@ namespace Utils
 
     /// @brief Executes a command and captures its output.
     ///
-    /// Runs a command without using a shell, capturing both stdout and stderr.
+    /// Runs a command without using a shell, capturing both StdOut and StdErr.
     /// The function waits for the process to finish before returning.
     ///
     /// @param cmd The command to execute (no shell features like piping or expansions).
-    /// @return The combined stdout and stderr output.
+    /// @return A ExecResult containing the command's StdOut, StdErr, and ExitCode.
     /// @throw boost::process::process_error if the command fails to start.
-    std::string Exec(const std::string& cmd);
+    ExecResult Exec(const std::string& cmd);
 } // namespace Utils
