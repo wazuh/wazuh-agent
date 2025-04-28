@@ -8,5 +8,5 @@ namespace Utils
     /// @param cmd command
     /// @param bufferSize buffer size in bytes
     /// @return command output
-    std::string Exec(const std::string& cmd, const size_t bufferSize = 128);
+    std::string PipeOpen(const std::string& cmd, const size_t bufferSize = 128);
 } // namespace Utils
