@@ -42,9 +42,9 @@ RuleResult FileRuleEvaluator::Evaluate()
 
 RuleResult FileRuleEvaluator::CheckFileForContents()
 {
-    if (!m_fileSystemWrapper->exists(m_ctx.rule))
+    if (!m_fileSystemWrapper->exists(m_ctx.rule) || !m_fileSystemWrapper->is_regular_file(m_ctx.rule))
     {
-        return m_ctx.isNegated ? RuleResult::Found : RuleResult::NotFound;
+        return RuleResult::Invalid;
     }
 
     const auto pattern = *m_ctx.pattern; // NOLINT(bugprone-unchecked-optional-access)
@@ -77,8 +77,8 @@ RuleResult FileRuleEvaluator::CheckFileForContents()
 
 RuleResult FileRuleEvaluator::CheckFileExistence()
 {
-    const bool exists = m_fileSystemWrapper->exists(m_ctx.rule);
-    const RuleResult result = exists ? RuleResult::Found : RuleResult::NotFound;
+    const auto exists = m_fileSystemWrapper->exists(m_ctx.rule) && m_fileSystemWrapper->is_regular_file(m_ctx.rule);
+    const auto result = exists ? RuleResult::Found : RuleResult::NotFound;
 
     return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
 }
