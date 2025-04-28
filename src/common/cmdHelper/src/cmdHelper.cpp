@@ -83,8 +83,7 @@ namespace Utils
             boost::process::child process(exePath,
                                           boost::process::args = execArgs,
                                           boost::process::std_out > stdOutPipe,
-                                          boost::process::std_err > stdErrPipe,
-                                          boost::this_process::environment());
+                                          boost::process::std_err > stdErrPipe);
 
             const auto output = GetStreamOutput(stdOutPipe);
             const auto error = GetStreamOutput(stdErrPipe);
