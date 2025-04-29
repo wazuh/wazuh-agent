@@ -24,7 +24,7 @@ public:
     };
 
     /// @brief Constructor
-    explicit SCAPolicy(Check requirements, std::vector<Check> checks);
+    explicit SCAPolicy(std::string id, Check requirements, std::vector<Check> checks);
 
     SCAPolicy(SCAPolicy&& other) noexcept;
 
@@ -36,6 +36,7 @@ public:
     void Stop();
 
 private:
+    std::string m_id;
     Check m_requirements;
     std::vector<Check> m_checks;
     std::atomic<bool> m_keepRunning {true};

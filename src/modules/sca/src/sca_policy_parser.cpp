@@ -219,7 +219,7 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
         return std::nullopt;
     }
 
-    return SCAPolicy(std::move(requirements), std::move(checks));
+    return SCAPolicy(policyId, std::move(requirements), std::move(checks));
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)

@@ -6,14 +6,16 @@
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 
-SCAPolicy::SCAPolicy(Check requirements, std::vector<Check> checks)
-    : m_requirements(std::move(requirements))
+SCAPolicy::SCAPolicy(std::string id, Check requirements, std::vector<Check> checks)
+    : m_id(std::move(id))
+    , m_requirements(std::move(requirements))
     , m_checks(std::move(checks))
 {
 }
 
 SCAPolicy::SCAPolicy(SCAPolicy&& other) noexcept
-    : m_requirements(std::move(other.m_requirements))
+    : m_id(std::move(other.m_id))
+    , m_requirements(std::move(other.m_requirements))
     , m_checks(std::move(other.m_checks))
     , m_keepRunning(other.m_keepRunning.load())
 {
