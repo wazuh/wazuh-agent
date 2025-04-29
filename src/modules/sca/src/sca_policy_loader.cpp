@@ -3,6 +3,7 @@
 #include <dbsync.hpp>
 #include <filesystem_wrapper.hpp>
 #include <logger.hpp>
+#include <sca_policy_parser.hpp>
 
 #include <yaml-cpp/yaml.h>
 

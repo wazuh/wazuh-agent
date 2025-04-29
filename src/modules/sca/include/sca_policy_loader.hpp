@@ -7,7 +7,6 @@
 #include <ifilesystem_wrapper.hpp>
 #include <message.hpp>
 #include <sca_policy.hpp>
-#include <sca_policy_parser.hpp>
 
 #include <filesystem>
 #include <functional>
