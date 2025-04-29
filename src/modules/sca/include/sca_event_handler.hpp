@@ -5,6 +5,12 @@
 
 #include <nlohmann/json.hpp>
 
+#include <functional>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 /// @brief Handles Security Configuration Assessment (SCA) events.
 ///
 /// This class is responsible for processing and generating SCA events related to policy and check updates. It receives

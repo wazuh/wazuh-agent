@@ -1,4 +1,4 @@
-#include "sca_policy_parser.hpp"
+#include <sca_policy_parser.hpp>
 
 #include <fstream>
 #include <iostream>
