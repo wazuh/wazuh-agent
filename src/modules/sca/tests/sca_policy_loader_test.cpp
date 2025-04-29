@@ -24,6 +24,8 @@ TEST(ScaPolicyLoaderTest, NoPolicies)
     auto configurationParser = std::make_shared<configuration::ConfigurationParser>(std::string(R"()"));
     auto dbSync = std::make_shared<MockDBSync>();
 
+    const std::time_t scanInterval {3600};
+
     const SCAPolicyLoader loader(fsMock, configurationParser, dbSync);
-    ASSERT_EQ(loader.GetPolicies([](auto, auto) { return; }).size(), 0);
+    ASSERT_EQ(loader.GetPolicies([](auto, auto) { return; }, scanInterval, true).size(), 0);
 }

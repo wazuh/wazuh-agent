@@ -24,7 +24,7 @@ public:
     };
 
     /// @brief Constructor
-    explicit SCAPolicy(Check requirements, std::vector<Check> checks);
+    explicit SCAPolicy(Check requirements, std::vector<Check> checks, std::time_t scanInterval, bool scanOnStart);
 
     SCAPolicy(SCAPolicy&& other) noexcept;
 
@@ -42,4 +42,6 @@ private:
     std::vector<Check> m_checks;
     std::atomic<bool> m_keepRunning {true};
     std::function<int(Message)> m_pushMessage;
+    std::time_t m_scanInterval;
+    bool m_scanOnStart;
 };

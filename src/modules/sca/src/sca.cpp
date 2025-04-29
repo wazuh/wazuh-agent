@@ -71,7 +71,9 @@ void SecurityConfigurationAssessment::Setup(
             {
                 const SCAEventHandler eventHandler(m_agentUUID, m_dBSync, m_pushMessage);
                 eventHandler.CreateEvents(policyData, checksData);
-            });
+            },
+            m_scanInterval,
+            m_scanOnStart);
     }();
 }
 

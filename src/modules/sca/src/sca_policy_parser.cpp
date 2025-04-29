@@ -115,7 +115,8 @@ bool PolicyParser::isValidYamlFile(const std::filesystem::path& filename) const
     }
 }
 
-std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndChecks) const
+std::optional<SCAPolicy>
+PolicyParser::ParsePolicy(nlohmann::json& policiesAndChecks, std::time_t scanInterval, bool scanOnStart) const
 {
     std::vector<SCAPolicy::Check> checks;
     SCAPolicy::Check requirements;
@@ -219,7 +220,7 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
         return std::nullopt;
     }
 
-    return SCAPolicy(std::move(requirements), std::move(checks));
+    return SCAPolicy(std::move(requirements), std::move(checks), scanInterval, scanOnStart);
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)

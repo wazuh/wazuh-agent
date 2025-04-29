@@ -56,7 +56,8 @@ public:
     ///
     /// @param policiesAndChecks JSON object to be filled with extracted data.
     /// @return A populated SCAPolicy object.
-    std::optional<SCAPolicy> ParsePolicy(nlohmann::json& policiesAndChecks) const;
+    std::optional<SCAPolicy>
+    ParsePolicy(nlohmann::json& policiesAndChecks, std::time_t scanInterval, bool scanOnStart) const;
 
 private:
     /// @brief Recursively replaces variables in the YAML node with their values.

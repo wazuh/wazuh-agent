@@ -46,7 +46,9 @@ public:
     /// maps:
     ///   - modifiedPoliciesMap: maps policy ID to the JSON data of the created, modified or deleted policy
     ///   - modifiedChecksMap: maps check ID to the JSON data of the created, modified or deleted check
-    std::vector<SCAPolicy> GetPolicies(const CreateEventsFunc& createEvents) const;
+    /// @param
+    std::vector<SCAPolicy>
+    GetPolicies(const CreateEventsFunc& createEvents, std::time_t scanInterval, bool scanOnStart) const;
 
     /// @brief Saves SCA Policies into the database
     /// @param data All SCA policies and its checks

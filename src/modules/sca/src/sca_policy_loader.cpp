@@ -39,7 +39,8 @@ SCAPolicyLoader::SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemW
     m_disabledPoliciesPaths = loadPoliciesPathsFromConfig("policies_disabled");
 }
 
-std::vector<SCAPolicy> SCAPolicyLoader::GetPolicies(const CreateEventsFunc& createEvents) const
+std::vector<SCAPolicy>
+SCAPolicyLoader::GetPolicies(const CreateEventsFunc& createEvents, std::time_t scanInterval, bool scanOnStart) const
 {
     std::vector<std::filesystem::path> allPolicyPaths;
 
@@ -71,7 +72,7 @@ std::vector<SCAPolicy> SCAPolicyLoader::GetPolicies(const CreateEventsFunc& crea
                 };
 
                 const PolicyParser parser(path, loadFunc);
-                auto policy = parser.ParsePolicy(policiesAndChecks);
+                auto policy = parser.ParsePolicy(policiesAndChecks, scanInterval, scanOnStart);
                 if (policy)
                 {
                     policies.emplace_back(std::move(policy.value()));
