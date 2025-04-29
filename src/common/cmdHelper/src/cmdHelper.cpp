@@ -7,10 +7,8 @@
 
 #include <cstdio>
 #include <memory>
-#include <ranges>
 #include <sstream>
 #include <stdexcept>
-#include <string>
 #include <vector>
 
 namespace
@@ -18,10 +16,11 @@ namespace
     std::vector<std::string> TokenizeCommand(const std::string& command)
     {
         std::vector<std::string> result;
-
-        for (auto token : command | std::views::split(' ') | std::views::filter([](auto&& r) { return !r.empty(); }))
+        std::istringstream stream(command);
+        std::string token;
+        while (stream >> token)
         {
-            result.emplace_back(token.begin(), token.end());
+            result.push_back(token);
         }
 
         if (result.empty())
@@ -32,12 +31,11 @@ namespace
         return result;
     }
 
-    std::string GetStreamOutput(boost::process::pipe& processPipe)
+    std::string GetStreamOutput(std::istream& stream)
     {
         std::string line;
         std::stringstream output;
-        boost::process::ipstream stream(processPipe);
-        while (stream && std::getline(stream, line))
+        while (std::getline(stream, line))
         {
             output << line << '\n';
         }
@@ -55,7 +53,7 @@ namespace Utils
 
         if (file)
         {
-            while (fgets(buffer.data(), static_cast<int>(bufferSize), file.get()))
+            while (fgets(buffer.data(), static_cast<int>(buffer.size()), file.get()))
             {
                 result += buffer.data();
             }
@@ -76,18 +74,17 @@ namespace Utils
                 throw std::runtime_error("Executable not found in PATH: " + args[0]);
             }
 
-            boost::process::pipe stdOutPipe;
-            boost::process::pipe stdErrPipe;
+            boost::process::ipstream stdoutStream;
+            boost::process::ipstream stderrStream;
             const std::vector<std::string> execArgs(args.begin() + 1, args.end());
 
-            // Launch the process with args and capture output
             boost::process::child process(exePath,
                                           boost::process::args = execArgs,
-                                          boost::process::std_out > stdOutPipe,
-                                          boost::process::std_err > stdErrPipe);
+                                          boost::process::std_out > stdoutStream,
+                                          boost::process::std_err > stderrStream);
 
-            const auto output = GetStreamOutput(stdOutPipe);
-            const auto error = GetStreamOutput(stdErrPipe);
+            const auto output = GetStreamOutput(stdoutStream);
+            const auto error = GetStreamOutput(stderrStream);
             process.wait();
 
             return {.StdOut = output, .StdErr = error, .ExitCode = process.exit_code()};
