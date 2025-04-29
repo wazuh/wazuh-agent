@@ -121,17 +121,21 @@ void SCAPolicyLoader::SyncPoliciesAndReportDelta(const nlohmann::json& data, con
 
         for (auto& check : modifiedChecksMap)
         {
-            if (check.second["result"] == MODIFIED)
+            try
             {
-                try
+                if (check.second["result"] == INSERTED)
+                {
+                    check.second["data"]["result"] = "Not run";
+                }
+                else if (check.second["result"] == MODIFIED)
                 {
                     check.second["data"]["new"]["result"] = "Not run";
                     UpdateCheckResult(check.second["data"]["new"]);
                 }
-                catch (const std::exception& e)
-                {
-                    LogError("Failed to update check result: {}", e.what());
-                }
+            }
+            catch (const std::exception& e)
+            {
+                LogError("Failed to update check result: {}", e.what());
             }
         }
     }
