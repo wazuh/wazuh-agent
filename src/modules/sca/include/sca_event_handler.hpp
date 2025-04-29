@@ -40,6 +40,12 @@ public:
     void ReportPoliciesDelta(const std::unordered_map<std::string, nlohmann::json>& modifiedPoliciesMap,
                              const std::unordered_map<std::string, nlohmann::json>& modifiedChecksMap) const;
 
+    /// @brief Reports the result of a check execution.
+    /// @param policyId The ID of the policy associated with the check.
+    /// @param checkId The ID of the check.
+    /// @param passed Indicates whether the check passed or failed.
+    void ReportCheckResult(const std::string& policyId, const std::string& checkId, bool passed) const;
+
 protected:
     /// @brief Processes modified items and returns a list of events.
     ///

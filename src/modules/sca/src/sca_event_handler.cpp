@@ -53,6 +53,35 @@ void SCAEventHandler::ReportPoliciesDelta(
     }
 }
 
+void SCAEventHandler::ReportCheckResult(const std::string& policyId, const std::string& checkId, bool passed) const
+{
+    auto policyData = GetPolicyById(policyId);
+    auto checkData = GetPolicyCheckById(checkId);
+    checkData["result"] = passed ? "passed" : "failed";
+
+    auto updateResultQuery = SyncRowQuery::builder().table("sca_check").data(checkData).returnOldData().build();
+
+    const auto callback = [&, this](ReturnTypeCallback result, const nlohmann::json& rowData)
+    {
+        if (result == MODIFIED)
+        {
+            const nlohmann::json event = {
+                {"policy", policyData}, {"check", rowData}, {"result", result}, {"collector", "check"}};
+
+            const auto stateful = ProcessStateful(event);
+            PushStateful(stateful["event"], stateful["metadata"]);
+            const auto stateless = ProcessStateless(event);
+            PushStateless(stateless["event"], stateless["metadata"]);
+        }
+        else
+        {
+            LogDebug("Failed to update check result: {}", rowData.dump());
+        }
+    };
+
+    m_dBSync->syncRow(updateResultQuery.query(), callback);
+}
+
 nlohmann::json
 SCAEventHandler::ProcessEvents(const std::unordered_map<std::string, nlohmann::json>& modifiedPoliciesMap,
                                const std::unordered_map<std::string, nlohmann::json>& modifiedChecksMap) const
