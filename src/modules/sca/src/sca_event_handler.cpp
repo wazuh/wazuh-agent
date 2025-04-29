@@ -180,6 +180,41 @@ nlohmann::json SCAEventHandler::GetPolicyById(const std::string& policyId) const
     return policy;
 }
 
+nlohmann::json SCAEventHandler::GetPolicyCheckById(const std::string& policyCheckId) const
+{
+    nlohmann::json check;
+
+    const std::string filter = "WHERE id = '" + policyCheckId + "'";
+    auto selectQuery = SelectQuery::builder()
+                           .table("sca_check")
+                           .columnList({"id",
+                                        "policy_id",
+                                        "name",
+                                        "description",
+                                        "rationale",
+                                        "remediation",
+                                        "refs",
+                                        "result",
+                                        "reason",
+                                        "condition",
+                                        "compliance",
+                                        "rules"})
+                           .rowFilter(filter)
+                           .build();
+
+    const auto callback = [&check](ReturnTypeCallback returnTypeCallback, const nlohmann::json& resultData)
+    {
+        if (returnTypeCallback == SELECTED)
+        {
+            check = resultData;
+        }
+    };
+
+    m_dBSync->selectRows(selectQuery.query(), callback);
+
+    return check;
+}
+
 nlohmann::json SCAEventHandler::ProcessStateful(const nlohmann::json& event) const
 {
     nlohmann::json check;

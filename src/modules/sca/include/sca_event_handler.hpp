@@ -100,6 +100,11 @@ protected:
     /// @return A JSON object representing the policy.
     virtual nlohmann::json GetPolicyById(const std::string& policyId) const;
 
+    /// @brief Retrieves a policy check object from the database based on its ID.
+    /// @param policyCheckId The ID of the policy check to retrieve.
+    /// @return A JSON object representing the policy check.
+    virtual nlohmann::json GetPolicyCheckById(const std::string& policyCheckId) const;
+
     /// @brief Splits a comma-separated string into a JSON array.
     /// @param input A string with elements separated by commas.
     /// @return A JSON array of elements.
