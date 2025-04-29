@@ -7,7 +7,4 @@ class CmdUtilsTest : public ::testing::Test
 protected:
     CmdUtilsTest() = default;
     virtual ~CmdUtilsTest() = default;
-
-    void SetUp() override;
-    void TearDown() override;
 };

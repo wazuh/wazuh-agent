@@ -9,6 +9,7 @@
 #include <memory>
 #include <ranges>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -91,13 +92,11 @@ namespace Utils
 
             return {.StdOut = output, .StdErr = error, .ExitCode = process.exit_code()};
         }
-        // NOLINTBEGIN(bugprone-empty-catch)
-        catch (const std::exception&)
+        catch (const std::exception& e)
         {
-            // log? throw?
+            return {.StdOut = "", .StdErr = e.what(), .ExitCode = 1};
         }
-        // NOLINTEND(bugprone-empty-catch)
 
-        return {};
+        return {.StdOut = "", .StdErr = "", .ExitCode = 1};
     }
 } // namespace Utils
