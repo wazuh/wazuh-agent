@@ -37,8 +37,8 @@ public:
     /// @brief Processes maps of modified policies and checks, and generates appropriate events.
     /// @param modifiedPoliciesMap Map of modified policies: { policy_id : policy_json }.
     /// @param modifiedChecksMap Map of modified checks: { check_id : check_json }.
-    void CreateEvents(const std::unordered_map<std::string, nlohmann::json>& modifiedPoliciesMap,
-                      const std::unordered_map<std::string, nlohmann::json>& modifiedChecksMap) const;
+    void ReportPoliciesDelta(const std::unordered_map<std::string, nlohmann::json>& modifiedPoliciesMap,
+                             const std::unordered_map<std::string, nlohmann::json>& modifiedChecksMap) const;
 
 protected:
     /// @brief Processes modified items and returns a list of events.

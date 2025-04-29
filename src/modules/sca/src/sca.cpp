@@ -70,7 +70,7 @@ void SecurityConfigurationAssessment::Setup(
             [this](auto policyData, auto checksData)
             {
                 const SCAEventHandler eventHandler(m_agentUUID, m_dBSync, m_pushMessage);
-                eventHandler.CreateEvents(policyData, checksData);
+                eventHandler.ReportPoliciesDelta(policyData, checksData);
             });
     }();
 }

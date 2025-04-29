@@ -32,8 +32,9 @@ SCAEventHandler::SCAEventHandler(std::string agentUUID,
     , m_dBSync(std::move(dBSync))
     , m_pushMessage(std::move(pushMessage)) {};
 
-void SCAEventHandler::CreateEvents(const std::unordered_map<std::string, nlohmann::json>& modifiedPoliciesMap,
-                                   const std::unordered_map<std::string, nlohmann::json>& modifiedChecksMap) const
+void SCAEventHandler::ReportPoliciesDelta(
+    const std::unordered_map<std::string, nlohmann::json>& modifiedPoliciesMap,
+    const std::unordered_map<std::string, nlohmann::json>& modifiedChecksMap) const
 {
     const nlohmann::json events = ProcessEvents(modifiedPoliciesMap, modifiedChecksMap);
 
