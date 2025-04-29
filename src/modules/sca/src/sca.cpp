@@ -51,7 +51,12 @@ void SecurityConfigurationAssessment::Run()
 {
     for (auto& policy : m_policies)
     {
-        EnqueueTask(policy.Run());
+        EnqueueTask(policy.Run(
+            [this](const std::string& policyId, const std::string& checkId, bool result)
+            {
+                const SCAEventHandler eventHandler(m_agentUUID, m_dBSync, m_pushMessage);
+                eventHandler.ReportCheckResult(policyId, checkId, result);
+            }));
     }
     m_ioContext.run();
 }

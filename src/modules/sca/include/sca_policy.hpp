@@ -30,7 +30,8 @@ public:
 
     /// @brief Runs the policy check
     /// @return Awaitable void
-    boost::asio::awaitable<void> Run();
+    boost::asio::awaitable<void>
+    Run(std::function<void(const std::string&, const std::string&, bool)> reportCheckResult);
 
     /// @brief Stops the policy check
     void Stop();

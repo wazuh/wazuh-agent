@@ -21,7 +21,8 @@ SCAPolicy::SCAPolicy(SCAPolicy&& other) noexcept
 {
 }
 
-boost::asio::awaitable<void> SCAPolicy::Run()
+boost::asio::awaitable<void>
+SCAPolicy::Run(std::function<void(const std::string&, const std::string&, bool)> reportCheckResult)
 {
     while (m_keepRunning)
     {
@@ -50,7 +51,10 @@ boost::asio::awaitable<void> SCAPolicy::Run()
                     resultEvaluator.AddResult(rule->Evaluate() == RuleResult::Found);
                 }
 
-                [[maybe_unused]] auto result = resultEvaluator.Result();
+                const auto result = resultEvaluator.Result();
+
+                // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+                reportCheckResult(m_id, check.id.value(), result);
             }
         }
 
