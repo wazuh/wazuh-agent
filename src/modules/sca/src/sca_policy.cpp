@@ -1,6 +1,7 @@
 #include <sca_policy.hpp>
 
 #include <check_condition_evaluator.hpp>
+#include <logger.hpp>
 
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/this_coro.hpp>
@@ -22,48 +23,64 @@ SCAPolicy::SCAPolicy(SCAPolicy&& other) noexcept
 }
 
 boost::asio::awaitable<void>
-SCAPolicy::Run(std::function<void(const std::string&, const std::string&, bool)> reportCheckResult)
+SCAPolicy::Run(std::time_t scanInterval,
+               bool scanOnStart,
+               std::function<void(const std::string&, const std::string&, bool)> reportCheckResult)
 {
+    if (scanOnStart && m_keepRunning)
+    {
+        Scan(reportCheckResult);
+    }
+
     while (m_keepRunning)
     {
-        auto requirementsOk = true;
+        auto executor = co_await boost::asio::this_coro::executor;
+        boost::asio::steady_timer timer(executor);
+        timer.expires_after(std::chrono::milliseconds(scanInterval));
+        co_await timer.async_wait(boost::asio::use_awaitable);
 
-        if (!m_requirements.rules.empty())
+        Scan(reportCheckResult);
+    }
+    co_return;
+}
+
+void SCAPolicy::Scan(const std::function<void(const std::string&, const std::string&, bool)>& reportCheckResult)
+{
+    LogInfo("Starting Policy checks evaluation for policy {}.", m_id);
+
+    auto requirementsOk = true;
+
+    if (!m_requirements.rules.empty())
+    {
+        auto resultEvaluator = CheckConditionEvaluator::FromString(m_requirements.condition);
+
+        for (const auto& rule : m_requirements.rules)
         {
-            auto resultEvaluator = CheckConditionEvaluator::FromString(m_requirements.condition);
+            resultEvaluator.AddResult(rule->Evaluate() == RuleResult::Found);
+        }
 
-            for (const auto& rule : m_requirements.rules)
+        requirementsOk = resultEvaluator.Result();
+    }
+
+    if (requirementsOk)
+    {
+        for (const auto& check : m_checks)
+        {
+            auto resultEvaluator = CheckConditionEvaluator::FromString(check.condition);
+
+            for (const auto& rule : check.rules)
             {
                 resultEvaluator.AddResult(rule->Evaluate() == RuleResult::Found);
             }
 
-            requirementsOk = resultEvaluator.Result();
+            const auto result = resultEvaluator.Result();
+
+            // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+            reportCheckResult(m_id, check.id.value(), result);
         }
 
-        if (requirementsOk)
-        {
-            for (const auto& check : m_checks)
-            {
-                auto resultEvaluator = CheckConditionEvaluator::FromString(check.condition);
-
-                for (const auto& rule : check.rules)
-                {
-                    resultEvaluator.AddResult(rule->Evaluate() == RuleResult::Found);
-                }
-
-                const auto result = resultEvaluator.Result();
-
-                // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-                reportCheckResult(m_id, check.id.value(), result);
-            }
-        }
-
-        auto executor = co_await boost::asio::this_coro::executor;
-        boost::asio::steady_timer timer(executor);
-        timer.expires_after(std::chrono::seconds(5)); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-        co_await timer.async_wait(boost::asio::use_awaitable);
+        LogInfo("Policy checks evaluation completed for policy {}.", m_id);
     }
-    co_return;
 }
 
 void SCAPolicy::Stop()

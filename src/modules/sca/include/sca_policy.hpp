@@ -29,14 +29,21 @@ public:
     SCAPolicy(SCAPolicy&& other) noexcept;
 
     /// @brief Runs the policy check
+    /// @param scanInterval Scan interval in milliseconds
+    /// @param scanOnStart Scan on start
+    /// @param reportCheckResult Function to report check result
     /// @return Awaitable void
     boost::asio::awaitable<void>
-    Run(std::function<void(const std::string&, const std::string&, bool)> reportCheckResult);
+    Run(std::time_t scanInterval,
+        bool scanOnStart,
+        std::function<void(const std::string&, const std::string&, bool)> reportCheckResult);
 
     /// @brief Stops the policy check
     void Stop();
 
 private:
+    void Scan(const std::function<void(const std::string&, const std::string&, bool)>& reportCheckResult);
+
     std::string m_id;
     Check m_requirements;
     std::vector<Check> m_checks;
