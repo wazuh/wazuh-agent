@@ -81,6 +81,10 @@ void SCAPolicy::Scan(const std::function<void(const std::string&, const std::str
 
         LogInfo("Policy checks evaluation completed for policy {}.", m_id);
     }
+    else
+    {
+        LogInfo("Policy requirements evaluation failed for policy {}.", m_id);
+    }
 }
 
 void SCAPolicy::Stop()
