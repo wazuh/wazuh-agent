@@ -7,6 +7,20 @@
 #include <sca_utils.hpp>
 #include <stringHelper.hpp>
 
+namespace
+{
+    bool IsRegexPattern(const std::string& pattern)
+    {
+        return pattern.starts_with("r:") || pattern.starts_with("!r:");
+    }
+
+    bool IsRegexOrNumericPattern(const std::string& pattern)
+    {
+        return IsRegexPattern(pattern) || pattern.starts_with("n:") || pattern.starts_with("!n:");
+    }
+
+} // namespace
+
 RuleEvaluator::RuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
     : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
                                             : std::make_unique<file_system::FileSystemWrapper>())
@@ -48,10 +62,9 @@ RuleResult FileRuleEvaluator::CheckFileForContents()
     }
 
     const auto pattern = *m_ctx.pattern; // NOLINT(bugprone-unchecked-optional-access)
-
     bool matchFound = false;
 
-    if (pattern.starts_with("r:") || pattern.starts_with("n:"))
+    if (IsRegexOrNumericPattern(pattern))
     {
         const auto content = m_fileUtils->getFileContent(m_ctx.rule);
         matchFound = sca::PatternMatches(content, pattern);
@@ -105,7 +118,7 @@ RuleResult CommandRuleEvaluator::Evaluate()
 
     if (m_ctx.pattern)
     {
-        if (m_ctx.pattern->starts_with("r:") || m_ctx.pattern->starts_with("n:"))
+        if (IsRegexOrNumericPattern(*m_ctx.pattern))
         {
             if (sca::PatternMatches(output, *m_ctx.pattern) || sca::PatternMatches(error, *m_ctx.pattern))
             {
@@ -139,7 +152,7 @@ RuleResult DirRuleEvaluator::Evaluate()
     }
     else if (m_ctx.pattern)
     {
-        if (m_ctx.pattern->starts_with("r:"))
+        if (IsRegexPattern(*m_ctx.pattern))
         {
             const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
 
