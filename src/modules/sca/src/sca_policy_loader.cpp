@@ -5,8 +5,6 @@
 #include <logger.hpp>
 #include <sca_policy_parser.hpp>
 
-#include <yaml-cpp/yaml.h>
-
 #include <algorithm>
 
 SCAPolicyLoader::SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemWrapper,
@@ -65,14 +63,9 @@ std::vector<SCAPolicy> SCAPolicyLoader::GetPolicies(const CreateEventsFunc& crea
             {
                 LogDebug("Loading policy from {}", path.string());
 
-                auto loadFunc = [](const std::filesystem::path& filename) -> YAML::Node
-                {
-                    return YAML::LoadFile(filename.string());
-                };
+                const PolicyParser parser(path);
 
-                const PolicyParser parser(path, loadFunc);
-                auto policy = parser.ParsePolicy(policiesAndChecks);
-                if (policy)
+                if (auto policy = parser.ParsePolicy(policiesAndChecks); policy)
                 {
                     policies.emplace_back(std::move(policy.value()));
                 }

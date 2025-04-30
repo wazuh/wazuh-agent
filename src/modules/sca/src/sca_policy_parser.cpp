@@ -71,7 +71,8 @@ namespace
     }
 } // namespace
 
-PolicyParser::PolicyParser(const std::filesystem::path& filename, const LoadFileFunc& loadFile)
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
+PolicyParser::PolicyParser(const std::filesystem::path& filename, LoadFileFunc loadFileFunc)
 {
     try
     {
@@ -79,7 +80,7 @@ PolicyParser::PolicyParser(const std::filesystem::path& filename, const LoadFile
         {
             throw std::runtime_error("The file does not contain a valid YAML structure.");
         }
-        m_node = loadFile(filename);
+        m_node = loadFileFunc ? loadFileFunc(filename) : YAML::LoadFile(filename.string());
         auto variables = m_node["variables"];
         if (variables)
         {

@@ -37,8 +37,8 @@ class PolicyParser
 public:
     /// @brief Constructs a PolicyParser and loads the YAML file.
     /// @param filename Path to the YAML policy file.
-    /// @param loadFile Function to load the YAML file.
-    explicit PolicyParser(const std::filesystem::path& filename, const LoadFileFunc& loadFile);
+    /// @param loadFileFunc Function to load the YAML file.
+    explicit PolicyParser(const std::filesystem::path& filename, LoadFileFunc loadFileFunc = {});
 
     /// @brief Checks if the specified YAML file is valid.
     ///
