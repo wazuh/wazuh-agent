@@ -121,6 +121,11 @@ Co_CommandExecutionResult Logcollector::ExecuteCommand(const std::string command
 
 // NOLINTEND(performance-unnecessary-value-param)
 
+const std::string& Logcollector::Name() const
+{
+    return m_moduleName;
+}
+
 void Logcollector::SetPushMessageFunction(const std::function<int(Message)>& pushMessage)
 {
     m_pushMessage = pushMessage;

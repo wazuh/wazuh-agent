@@ -5,6 +5,12 @@
 
 #include <nlohmann/json.hpp>
 
+#include <functional>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 /// @brief Handles Security Configuration Assessment (SCA) events.
 ///
 /// This class is responsible for processing and generating SCA events related to policy and check updates. It receives
@@ -31,8 +37,14 @@ public:
     /// @brief Processes maps of modified policies and checks, and generates appropriate events.
     /// @param modifiedPoliciesMap Map of modified policies: { policy_id : policy_json }.
     /// @param modifiedChecksMap Map of modified checks: { check_id : check_json }.
-    void CreateEvents(const std::unordered_map<std::string, nlohmann::json>& modifiedPoliciesMap,
-                      const std::unordered_map<std::string, nlohmann::json>& modifiedChecksMap) const;
+    void ReportPoliciesDelta(const std::unordered_map<std::string, nlohmann::json>& modifiedPoliciesMap,
+                             const std::unordered_map<std::string, nlohmann::json>& modifiedChecksMap) const;
+
+    /// @brief Reports the result of a check execution.
+    /// @param policyId The ID of the policy associated with the check.
+    /// @param checkId The ID of the check.
+    /// @param passed Indicates whether the check passed or failed.
+    void ReportCheckResult(const std::string& policyId, const std::string& checkId, bool passed) const;
 
 protected:
     /// @brief Processes modified items and returns a list of events.
@@ -93,6 +105,11 @@ protected:
     /// @param policyId The ID of the policy to retrieve.
     /// @return A JSON object representing the policy.
     virtual nlohmann::json GetPolicyById(const std::string& policyId) const;
+
+    /// @brief Retrieves a policy check object from the database based on its ID.
+    /// @param policyCheckId The ID of the policy check to retrieve.
+    /// @return A JSON object representing the policy check.
+    virtual nlohmann::json GetPolicyCheckById(const std::string& policyCheckId) const;
 
     /// @brief Splits a comma-separated string into a JSON array.
     /// @param input A string with elements separated by commas.

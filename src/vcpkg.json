@@ -11,6 +11,10 @@
             "version>=": "1.85.0"
         },
         {
+            "name": "boost-process",
+            "version>=": "1.85.0"
+        },
+        {
             "name": "boost-program-options",
             "version>=": "1.85.0"
         },
@@ -68,6 +72,10 @@
         {
             "name": "openssl",
             "version>=": "3.3.2"
+        },
+        {
+            "name": "pcre2",
+            "version>=": "10.45"
         },
         {
             "name": "procps",

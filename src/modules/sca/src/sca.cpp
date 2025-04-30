@@ -49,10 +49,16 @@ SecurityConfigurationAssessment::SecurityConfigurationAssessment(
 
 void SecurityConfigurationAssessment::Run()
 {
-    // Execute the policies (run io context)
-    // Each policy should:
-    // Run regex engine, check type of policies
-    // Create a report and send it to the server
+    for (auto& policy : m_policies)
+    {
+        EnqueueTask(policy.Run(m_scanInterval,
+                               m_scanOnStart,
+                               [this](const std::string& policyId, const std::string& checkId, bool result)
+                               {
+                                   const SCAEventHandler eventHandler(m_agentUUID, m_dBSync, m_pushMessage);
+                                   eventHandler.ReportCheckResult(policyId, checkId, result);
+                               }));
+    }
     m_ioContext.run();
 }
 
@@ -66,14 +72,21 @@ void SecurityConfigurationAssessment::Setup(
     m_policies = [this, &configurationParser]()
     {
         const SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser, m_dBSync);
-        return policyLoader.GetPolicies();
+        return policyLoader.GetPolicies(
+            [this](auto policyData, auto checksData)
+            {
+                const SCAEventHandler eventHandler(m_agentUUID, m_dBSync, m_pushMessage);
+                eventHandler.ReportPoliciesDelta(policyData, checksData);
+            });
     }();
 }
 
 void SecurityConfigurationAssessment::Stop()
 {
-    // Stop the policies
-    // Stop the regex engine
+    for (auto& policy : m_policies)
+    {
+        policy.Stop();
+    }
     m_ioContext.stop();
 }
 
@@ -114,7 +127,7 @@ void SecurityConfigurationAssessment::EnqueueTask(boost::asio::awaitable<void> t
             }
             catch (const std::exception& e)
             {
-                LogError("Logcollector coroutine task exited with an exception: {}", e.what());
+                LogError("SCA coroutine task exited with an exception: {}", e.what());
             }
         },
         boost::asio::detached);

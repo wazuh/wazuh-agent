@@ -29,25 +29,24 @@ using CreateEventsFunc = std::function<void(std::unordered_map<std::string, nloh
 class SCAPolicyLoader : public ISCAPolicyLoader
 {
 public:
-    /// @brief Type alias for a function that loads a policy from a SCA Policy yaml file
-    using PolicyLoaderFunc = std::function<SCAPolicy(const std::filesystem::path&)>;
-
     /// @brief Constructor for SCAPolicyLoader
     /// @param fileSystemWrapper A shared pointer to a file system wrapper
     /// @param configurationParser A shared pointer to a configuration parser
     /// @param dBSync A shared pointer to a DBSync object
-    /// @param loader A function that loads a policy from a SCA Policy yaml file
     SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr,
                     std::shared_ptr<const configuration::ConfigurationParser> configurationParser = nullptr,
-                    std::shared_ptr<IDBSync> dBSync = nullptr,
-                    PolicyLoaderFunc loader = SCAPolicy::LoadFromFile);
+                    std::shared_ptr<IDBSync> dBSync = nullptr);
 
     /// @brief Destructor for SCAPolicyLoader
     ~SCAPolicyLoader() = default;
 
     /// @brief Loads SCA Policies
     /// @returns a vector of SCAPolicy objects
-    std::vector<SCAPolicy> GetPolicies() const;
+    /// @param createEvents Callback function to generate events. It will be called with two
+    /// maps:
+    ///   - modifiedPoliciesMap: maps policy ID to the JSON data of the created, modified or deleted policy
+    ///   - modifiedChecksMap: maps check ID to the JSON data of the created, modified or deleted check
+    std::vector<SCAPolicy> GetPolicies(const CreateEventsFunc& createEvents) const;
 
     /// @brief Saves SCA Policies into the database
     /// @param data All SCA policies and its checks
@@ -55,15 +54,21 @@ public:
     /// maps:
     ///   - modifiedPoliciesMap: maps policy ID to the JSON data of the created, modified or deleted policy
     ///   - modifiedChecksMap: maps check ID to the JSON data of the created, modified or deleted check
-    void SyncPoliciesAndReportDelta(const nlohmann::json& data, const CreateEventsFunc& createEvents);
+    void SyncPoliciesAndReportDelta(const nlohmann::json& data, const CreateEventsFunc& createEvents) const;
 
 private:
+    /// @brief Synchronizes with the DBSync and returns a map of modified policies and checks
+    /// @param data SCA policies and checks
+    /// @param tableName DBSync table name
+    /// @returns a map of modified policies and checks
     std::unordered_map<std::string, nlohmann::json> SyncWithDBSync(const nlohmann::json& data,
-                                                                   const std::string& tableName);
-    void UpdateCheckResult(const nlohmann::json& check);
+                                                                   const std::string& tableName) const;
+
+    /// @brief Synchronizes with the DBSync and updates the result of a check
+    /// @param check The check to update
+    void UpdateCheckResult(const nlohmann::json& check) const;
 
     std::shared_ptr<IFileSystemWrapper> m_fileSystemWrapper;
-    PolicyLoaderFunc m_policyLoader;
 
     std::vector<std::filesystem::path> m_customPoliciesPaths;
     std::vector<std::filesystem::path> m_disabledPoliciesPaths;

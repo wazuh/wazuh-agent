@@ -32,8 +32,9 @@ SCAEventHandler::SCAEventHandler(std::string agentUUID,
     , m_dBSync(std::move(dBSync))
     , m_pushMessage(std::move(pushMessage)) {};
 
-void SCAEventHandler::CreateEvents(const std::unordered_map<std::string, nlohmann::json>& modifiedPoliciesMap,
-                                   const std::unordered_map<std::string, nlohmann::json>& modifiedChecksMap) const
+void SCAEventHandler::ReportPoliciesDelta(
+    const std::unordered_map<std::string, nlohmann::json>& modifiedPoliciesMap,
+    const std::unordered_map<std::string, nlohmann::json>& modifiedChecksMap) const
 {
     const nlohmann::json events = ProcessEvents(modifiedPoliciesMap, modifiedChecksMap);
 
@@ -50,6 +51,35 @@ void SCAEventHandler::CreateEvents(const std::unordered_map<std::string, nlohman
             PushStateless(processedStatelessEvent["event"], processedStatelessEvent["metadata"]);
         }
     }
+}
+
+void SCAEventHandler::ReportCheckResult(const std::string& policyId, const std::string& checkId, bool passed) const
+{
+    auto policyData = GetPolicyById(policyId);
+    auto checkData = GetPolicyCheckById(checkId);
+    checkData["result"] = passed ? "passed" : "failed";
+
+    auto updateResultQuery = SyncRowQuery::builder().table("sca_check").data(checkData).returnOldData().build();
+
+    const auto callback = [&, this](ReturnTypeCallback result, const nlohmann::json& rowData)
+    {
+        if (result == MODIFIED)
+        {
+            const nlohmann::json event = {
+                {"policy", policyData}, {"check", rowData}, {"result", result}, {"collector", "check"}};
+
+            const auto stateful = ProcessStateful(event);
+            PushStateful(stateful["event"], stateful["metadata"]);
+            const auto stateless = ProcessStateless(event);
+            PushStateless(stateless["event"], stateless["metadata"]);
+        }
+        else
+        {
+            LogDebug("Failed to update check result: {}", rowData.dump());
+        }
+    };
+
+    m_dBSync->syncRow(updateResultQuery.query(), callback);
 }
 
 nlohmann::json
@@ -177,6 +207,41 @@ nlohmann::json SCAEventHandler::GetPolicyById(const std::string& policyId) const
     m_dBSync->selectRows(selectQuery.query(), callback);
 
     return policy;
+}
+
+nlohmann::json SCAEventHandler::GetPolicyCheckById(const std::string& policyCheckId) const
+{
+    nlohmann::json check;
+
+    const std::string filter = "WHERE id = '" + policyCheckId + "'";
+    auto selectQuery = SelectQuery::builder()
+                           .table("sca_check")
+                           .columnList({"id",
+                                        "policy_id",
+                                        "name",
+                                        "description",
+                                        "rationale",
+                                        "remediation",
+                                        "refs",
+                                        "result",
+                                        "reason",
+                                        "condition",
+                                        "compliance",
+                                        "rules"})
+                           .rowFilter(filter)
+                           .build();
+
+    const auto callback = [&check](ReturnTypeCallback returnTypeCallback, const nlohmann::json& resultData)
+    {
+        if (returnTypeCallback == SELECTED)
+        {
+            check = resultData;
+        }
+    };
+
+    m_dBSync->selectRows(selectQuery.query(), callback);
+
+    return check;
 }
 
 nlohmann::json SCAEventHandler::ProcessStateful(const nlohmann::json& event) const
@@ -394,18 +459,7 @@ nlohmann::json SCAEventHandler::StringToJsonArray(const std::string& input) cons
 
     while (std::getline(stream, token, ','))
     {
-        const size_t start = token.find_first_not_of(" \t");
-
-        const size_t end = token.find_last_not_of(" \t");
-
-        if (start != std::string::npos && end != std::string::npos)
-        {
-            token = token.substr(start, end - start + 1);
-        }
-        else
-        {
-            token = "";
-        }
+        token = Utils::Trim(token, " \t");
 
         if (!token.empty())
         {

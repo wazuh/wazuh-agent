@@ -274,10 +274,10 @@ nlohmann::json SysInfo::getOsInfo() const
     };
 
     MacOsParser parser;
-    parser.parseSwVersion(Utils::Exec("sw_vers"), ret);
-    parser.parseUname(Utils::Exec("uname -r"), ret);
+    parser.parseSwVersion(Utils::PipeOpen("sw_vers"), ret);
+    parser.parseUname(Utils::PipeOpen("uname -r"), ret);
 
-    if (!parser.parseSystemProfiler(Utils::Exec("system_profiler SPSoftwareDataType"), ret))
+    if (!parser.parseSystemProfiler(Utils::PipeOpen("system_profiler SPSoftwareDataType"), ret))
     {
         ret["os_name"] = "macOS";
     }
