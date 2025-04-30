@@ -89,7 +89,7 @@ CommandRuleEvaluator::CommandRuleEvaluator(PolicyEvaluationContext ctx,
     : RuleEvaluator(std::move(ctx), std::move(fileSystemWrapper))
     , m_commandExecFunc(commandExecFunc
                         ? std::move(commandExecFunc)
-                        : [](const std::string& cmd) { const auto cmdOutput = Utils::Exec(cmd); return cmdOutput.StdOut + cmdOutput.StdErr; })
+                        : [](const std::string& cmd) { const auto cmdOutput = Utils::Exec(cmd); return std::make_pair(cmdOutput.StdOut, cmdOutput.StdErr); })
 {
 }
 
@@ -97,21 +97,24 @@ RuleResult CommandRuleEvaluator::Evaluate()
 {
     RuleResult result = RuleResult::NotFound;
 
-    if (const auto output = m_commandExecFunc(m_ctx.rule); !output.empty())
-    {
+    auto [output, error] = m_commandExecFunc(m_ctx.rule);
+
+    // Trim ending lines if any (command output may have trailing newlines)
+    output = Utils::Trim(output, "\n");
+    error = Utils::Trim(error, "\n");
+
         if (m_ctx.pattern)
         {
             if (m_ctx.pattern->starts_with("r:") || m_ctx.pattern->starts_with("n:"))
             {
-                if (sca::PatternMatches(output, *m_ctx.pattern))
-                {
-                    result = RuleResult::Found;
-                }
-            }
-            else if (output == *m_ctx.pattern)
+            if (sca::PatternMatches(output, *m_ctx.pattern) || sca::PatternMatches(error, *m_ctx.pattern))
             {
                 result = RuleResult::Found;
             }
+        }
+        else if (output == m_ctx.pattern.value() || error == m_ctx.pattern.value())
+        {
+            result = RuleResult::Found;
         }
     }
 

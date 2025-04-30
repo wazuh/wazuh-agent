@@ -14,7 +14,7 @@ protected:
     PolicyEvaluationContext m_ctx;
     std::unique_ptr<MockFileSystemWrapper> m_fsMock;
     MockFileSystemWrapper* m_rawFsMock = nullptr;
-    std::function<std::string(const std::string&)> m_execMock;
+    std::function<std::pair<std::string, std::string>(const std::string&)> m_execMock;
 
     void SetUp() override
     {
@@ -35,7 +35,7 @@ TEST_F(CommandRuleEvaluatorTest, CommandReturnsEmptyStringReturnsNotFound)
 
     m_execMock = [](const std::string&)
     {
-        return "";
+        return std::make_pair("", "");
     };
 
     auto evaluator = CreateEvaluator();
@@ -49,7 +49,7 @@ TEST_F(CommandRuleEvaluatorTest, CommandOutputMatchesLiteralPatternReturnsFound)
 
     m_execMock = [](const std::string&)
     {
-        return "exact match";
+        return std::make_pair("exact match", "");
     };
 
     auto evaluator = CreateEvaluator();
@@ -63,7 +63,7 @@ TEST_F(CommandRuleEvaluatorTest, CommandOutputDoesNotMatchLiteralPatternReturnsN
 
     m_execMock = [](const std::string&)
     {
-        return "something else";
+        return std::make_pair("something else", "");
     };
 
     auto evaluator = CreateEvaluator();
@@ -77,7 +77,7 @@ TEST_F(CommandRuleEvaluatorTest, RegexPatternMatchesOutputReturnsFound)
 
     m_execMock = [](const std::string&)
     {
-        return "success";
+        return std::make_pair("success", "");
     };
 
     auto evaluator = CreateEvaluator();
@@ -91,7 +91,7 @@ TEST_F(CommandRuleEvaluatorTest, RegexPatternDoesNotMatchOutputReturnsNotFound)
 
     m_execMock = [](const std::string&)
     {
-        return "ok";
+        return std::make_pair("ok", "");
     };
 
     auto evaluator = CreateEvaluator();
@@ -105,7 +105,7 @@ TEST_F(CommandRuleEvaluatorTest, PatternGivenButCommandOutputIsEmptyReturnsNotFo
 
     m_execMock = [](const std::string&)
     {
-        return "";
+        return std::make_pair("", "");
     };
 
     auto evaluator = CreateEvaluator();
@@ -119,7 +119,7 @@ TEST_F(CommandRuleEvaluatorTest, NumericPatternMatchesOutputReturnsFound)
 
     m_execMock = [](const std::string&)
     {
-        return "42";
+        return std::make_pair("42", "");
     };
 
     auto evaluator = CreateEvaluator();

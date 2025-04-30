@@ -73,7 +73,8 @@ private:
 class CommandRuleEvaluator : public RuleEvaluator
 {
 public:
-    using CommandExecFunc = std::function<std::string(const std::string&)>;
+    /// @brief Function that takes a command and returns the output and error as a pair of strings.
+    using CommandExecFunc = std::function<std::pair<std::string, std::string>(const std::string&)>;
 
     CommandRuleEvaluator(PolicyEvaluationContext ctx,
                          std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr,
