@@ -1,6 +1,7 @@
 #include <os_utils.hpp>
 #include <os_utils_unix.hpp>
 
+#include <algorithm>
 #include <cerrno>
 #include <cstdio>
 #include <filesystem>
@@ -13,28 +14,6 @@
 #elif defined(__linux__)
 #include <sys/types.h>
 #endif
-
-namespace
-{
-    pid_t GetMaxPid()
-    {
-#ifdef __linux__
-        std::ifstream pidMaxFile("/proc/sys/kernel/pid_max");
-        pid_t maxPid = 32768; // NOLINT
-        if (pidMaxFile)
-        {
-            pidMaxFile >> maxPid;
-        }
-        return maxPid;
-#elif defined(__APPLE__)
-        // macOS doesn't expose this; PID space is limited and smaller
-        return 99999;
-#else
-        // Other platforms — fallback default
-        return 32768;
-#endif
-    }
-} // namespace
 
 std::vector<std::string> os_utils::OsUtils::GetRunningProcesses()
 {
@@ -79,7 +58,25 @@ std::vector<std::string> os_utils::GetRunningProcesses()
 {
     std::vector<std::string> processList;
 
-    for (pid_t pid = 1; pid <= GetMaxPid(); ++pid)
+#ifdef __linux__
+    for (const auto& entry : std::filesystem::directory_iterator("/proc"))
+    {
+        const auto& filename = entry.path().filename().string();
+
+        if (std::all_of(filename.begin(), filename.end(), ::isdigit))
+        {
+            const pid_t pid = std::stoi(filename);
+
+            if (auto name = GetProcessName(pid); !name.empty())
+            {
+                processList.emplace_back(std::move(name));
+            }
+        }
+    }
+#else
+    const pid_t maxPid = 99999;
+
+    for (pid_t pid = 1; pid <= maxPid; ++pid)
     {
         if (PidExists(pid))
         {
@@ -89,6 +86,7 @@ std::vector<std::string> os_utils::GetRunningProcesses()
             }
         }
     }
+#endif
 
     return processList;
 }
