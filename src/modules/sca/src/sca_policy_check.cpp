@@ -103,10 +103,10 @@ RuleResult CommandRuleEvaluator::Evaluate()
     output = Utils::Trim(output, "\n");
     error = Utils::Trim(error, "\n");
 
-        if (m_ctx.pattern)
+    if (m_ctx.pattern)
+    {
+        if (m_ctx.pattern->starts_with("r:") || m_ctx.pattern->starts_with("n:"))
         {
-            if (m_ctx.pattern->starts_with("r:") || m_ctx.pattern->starts_with("n:"))
-            {
             if (sca::PatternMatches(output, *m_ctx.pattern) || sca::PatternMatches(error, *m_ctx.pattern))
             {
                 result = RuleResult::Found;
@@ -145,7 +145,7 @@ RuleResult DirRuleEvaluator::Evaluate()
 
             for (const auto& file : files)
             {
-                if (sca::PatternMatches(file.string(), *m_ctx.pattern))
+                if (sca::PatternMatches(file.filename().string(), *m_ctx.pattern))
                 {
                     result = RuleResult::Found;
                     break;
@@ -159,14 +159,14 @@ RuleResult DirRuleEvaluator::Evaluate()
 
             for (const auto& file : files)
             {
-                if (file.string() == fileName)
+                if (file.filename().string() == fileName)
                 {
                     result = RuleResult::NotFound;
 
-                    m_fileUtils->readLineByLine(m_ctx.rule,
+                    m_fileUtils->readLineByLine(file,
                                                 [&content, &result](const std::string& line)
                                                 {
-                                                    if (line == content)
+                                                    if (line == content.value())
                                                     {
                                                         result = RuleResult::Found;
                                                         return false;
@@ -184,7 +184,7 @@ RuleResult DirRuleEvaluator::Evaluate()
 
             for (const auto& file : files)
             {
-                if (file.string() == pattern)
+                if (file.filename().string() == pattern)
                 {
                     result = RuleResult::Found;
                     break;

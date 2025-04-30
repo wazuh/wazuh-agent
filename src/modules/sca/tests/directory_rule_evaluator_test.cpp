@@ -104,7 +104,7 @@ TEST_F(DirRuleEvaluatorTest, PatternWithArrowMatchesFileContentReturnsFound)
     EXPECT_CALL(*m_rawFsMock, is_directory(std::filesystem::path("dir/"))).WillOnce(::testing::Return(true));
     EXPECT_CALL(*m_rawFsMock, list_directory(std::filesystem::path("dir/")))
         .WillOnce(::testing::Return(std::vector<std::filesystem::path> {"target.txt"}));
-    EXPECT_CALL(*m_rawIoMock, readLineByLine(std::filesystem::path("dir/"), ::testing::_))
+    EXPECT_CALL(*m_rawIoMock, readLineByLine(std::filesystem::path("target.txt"), ::testing::_))
         .WillOnce(
             [](const auto&, const auto& callback)
             {
