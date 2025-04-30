@@ -20,7 +20,7 @@ namespace
         const auto pattern_ptr =
             reinterpret_cast<PCRE2_SPTR8>(pattern.c_str()); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 
-        re = pcre2_compile(pattern_ptr, PCRE2_ZERO_TERMINATED, 0, &error_code, &error_offset, nullptr);
+        re = pcre2_compile(pattern_ptr, PCRE2_ZERO_TERMINATED, PCRE2_MULTILINE, &error_code, &error_offset, nullptr);
 
         if (re == nullptr)
         {
@@ -202,6 +202,7 @@ namespace sca
 
         // Split the pattern into individual conditions (minterms)
         constexpr std::string_view delimiter = " && ";
+        std::vector<std::pair<bool, std::string>> minterms; // (negated, pattern)
 
         size_t start = 0;
 
@@ -223,20 +224,50 @@ namespace sca
                 minterm.erase(0, 1); // Remove the '!' for pattern matching
             }
 
-            // Match the current minterm against the content
-            const bool matchResult = EvaluateMinterm(minterm, content, engine);
+            minterms.emplace_back(negated, minterm);
+        }
 
-            // If negated, invert the match result
-            const auto mintermResult = negated ^ matchResult;
-
-            // If any minterm fails it's over
-            if (!mintermResult)
+        // Special case: if there's only one minterm and it's negated
+        if (minterms.size() == 1 && minterms[0].first)
+        {
+            const auto& minterm = minterms[0].second;
+            std::istringstream stream(content);
+            std::string line;
+            while (std::getline(stream, line))
             {
-                return false;
+                if (EvaluateMinterm(minterm, line, engine))
+                {
+                    return false; // A line matched the negated pattern → fail
+                }
+            }
+            return true; // No line matched the negated pattern → pass
+        }
+
+        // Regular compound pattern logic
+        std::istringstream stream(content);
+        std::string line;
+
+        while (std::getline(stream, line))
+        {
+            bool allMintermsPassed = true;
+
+            for (const auto& [negated, minterm] : minterms)
+            {
+                const bool match = EvaluateMinterm(minterm, line, engine);
+                if ((negated && match) || (!negated && !match))
+                {
+                    allMintermsPassed = false;
+                    break;
+                }
+            }
+
+            if (allMintermsPassed)
+            {
+                return true; // A line satisfied all minterms
             }
         }
 
-        return true;
+        return false; // No line satisfied all minterms
     }
 
 } // namespace sca
