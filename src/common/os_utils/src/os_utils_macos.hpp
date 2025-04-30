@@ -5,6 +5,11 @@
 
 namespace os_utils
 {
+    /// @brief Check if a process with the given PID exists.
+    /// @param pid The PID of the process to check.
+    /// @return True if the process exists, false otherwise.
+    bool PidExists(pid_t pid);
+
     /// @brief Get the process name of a running process.
     /// @param pid The PID of the process to check.
     /// @return The name of the process if it exists, otherwise an empty string.

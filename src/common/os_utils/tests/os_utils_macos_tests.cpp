@@ -1,6 +1,11 @@
 #include <gtest/gtest.h>
 
-#include <os_utils_unix.hpp>
+#include <os_utils_macos.hpp>
+
+TEST(PidExistsTest, ExistingPid)
+{
+    EXPECT_TRUE(os_utils::PidExists(getpid()));
+}
 
 TEST(GetRunningProcessesTest, FailsOnBadPid)
 {
