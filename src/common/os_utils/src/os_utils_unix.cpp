@@ -16,9 +16,24 @@
 
 namespace
 {
-    // TODO: replace with more robust and accurate method
-    // to get the maximum PID value
-    constexpr pid_t MAX_PID = 32768;
+    pid_t GetMaxPid()
+    {
+#ifdef __linux__
+        std::ifstream pidMaxFile("/proc/sys/kernel/pid_max");
+        pid_t maxPid = 32768; // NOLINT
+        if (pidMaxFile)
+        {
+            pidMaxFile >> maxPid;
+        }
+        return maxPid;
+#elif defined(__APPLE__)
+        // macOS doesn't expose this; PID space is limited and smaller
+        return 99999;
+#else
+        // Other platforms — fallback default
+        return 32768;
+#endif
+    }
 } // namespace
 
 std::vector<std::string> os_utils::OsUtils::GetRunningProcesses()
@@ -64,7 +79,7 @@ std::vector<std::string> os_utils::GetRunningProcesses()
 {
     std::vector<std::string> processList;
 
-    for (pid_t pid = 1; pid <= MAX_PID; ++pid)
+    for (pid_t pid = 1; pid <= GetMaxPid(); ++pid)
     {
         if (PidExists(pid))
         {
