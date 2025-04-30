@@ -56,6 +56,10 @@ void SCAPolicy::Scan(const std::function<void(const std::string&, const std::str
 
         for (const auto& rule : m_requirements.rules)
         {
+            if (!m_keepRunning)
+            {
+                return;
+            }
             resultEvaluator.AddResult(rule->Evaluate() == RuleResult::Found);
         }
 
@@ -70,6 +74,10 @@ void SCAPolicy::Scan(const std::function<void(const std::string&, const std::str
 
             for (const auto& rule : check.rules)
             {
+                if (!m_keepRunning)
+                {
+                    return;
+                }
                 resultEvaluator.AddResult(rule->Evaluate() == RuleResult::Found);
             }
 
