@@ -36,13 +36,14 @@ public:
     boost::asio::awaitable<void>
     Run(std::time_t scanInterval,
         bool scanOnStart,
-        std::function<void(const std::string&, const std::string&, bool)> reportCheckResult);
+        std::function<void(const std::string&, const std::string&, const sca::CheckResult)> reportCheckResult);
 
     /// @brief Stops the policy check
     void Stop();
 
 private:
-    void Scan(const std::function<void(const std::string&, const std::string&, bool)>& reportCheckResult);
+    void
+    Scan(const std::function<void(const std::string&, const std::string&, const sca::CheckResult)>& reportCheckResult);
 
     std::string m_id;
     Check m_requirements;

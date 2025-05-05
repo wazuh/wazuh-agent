@@ -23,6 +23,30 @@ namespace sca
         WM_SCA_TYPE_COMMAND
     };
 
+    /// @brief Types of supported check results.
+    enum class CheckResult
+    {
+        Passed,
+        Failed,
+        NotApplicable,
+        NotRun
+    };
+
+    /// @brief Converts a CheckResult enum value to its string representation.
+    /// @param result The CheckResult enum value to convert.
+    /// @return The string representation of the CheckResult enum value.
+    constexpr std::string_view CheckResultToString(const CheckResult result)
+    {
+        switch (result)
+        {
+            case CheckResult::Passed: return "Passed";
+            case CheckResult::Failed: return "Failed";
+            case CheckResult::NotApplicable: return "Not applicable";
+            case CheckResult::NotRun: return "Not run";
+            default: return "Unknown";
+        }
+    }
+
     /// @brief Parses the rule type from the input string.
     /// @param input The input string to parse.
     /// @return An optional pair containing the rule type and its string representation if successful.

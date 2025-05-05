@@ -25,7 +25,7 @@ SCAPolicy::SCAPolicy(SCAPolicy&& other) noexcept
 boost::asio::awaitable<void>
 SCAPolicy::Run(std::time_t scanInterval,
                bool scanOnStart,
-               std::function<void(const std::string&, const std::string&, bool)> reportCheckResult)
+               std::function<void(const std::string&, const std::string&, const sca::CheckResult)> reportCheckResult)
 {
     if (scanOnStart && m_keepRunning)
     {
@@ -44,7 +44,8 @@ SCAPolicy::Run(std::time_t scanInterval,
     co_return;
 }
 
-void SCAPolicy::Scan(const std::function<void(const std::string&, const std::string&, bool)>& reportCheckResult)
+void SCAPolicy::Scan(
+    const std::function<void(const std::string&, const std::string&, const sca::CheckResult)>& reportCheckResult)
 {
     LogInfo("Starting Policy checks evaluation for policy {}.", m_id);
 
@@ -84,14 +85,18 @@ void SCAPolicy::Scan(const std::function<void(const std::string&, const std::str
             const auto result = resultEvaluator.Result();
 
             // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-            reportCheckResult(m_id, check.id.value(), result);
+            reportCheckResult(m_id, check.id.value(), result ? sca::CheckResult::Passed : sca::CheckResult::Failed);
         }
 
         LogInfo("Policy checks evaluation completed for policy {}.", m_id);
     }
     else
     {
-        LogInfo("Policy requirements evaluation failed for policy {}.", m_id);
+        for (const auto& check : m_checks)
+        {
+            // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+            reportCheckResult(m_id, check.id.value(), sca::CheckResult::NotApplicable);
+        }
     }
 }
 
