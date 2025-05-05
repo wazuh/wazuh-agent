@@ -147,6 +147,18 @@ namespace
 
 namespace sca
 {
+    std::string_view CheckResultToString(const CheckResult result)
+    {
+        switch (result)
+        {
+            case CheckResult::Passed: return "Passed";
+            case CheckResult::Failed: return "Failed";
+            case CheckResult::NotApplicable: return "Not applicable";
+            case CheckResult::NotRun: return "Not run";
+            default: return "Unknown";
+        }
+    }
+
     std::optional<std::pair<int, std::string>> ParseRuleType(const std::string& input)
     {
         const auto delimiter_pos = input.find(':');
