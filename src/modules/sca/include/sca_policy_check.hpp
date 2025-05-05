@@ -3,6 +3,7 @@
 #include <ifile_io_utils.hpp>
 #include <ifilesystem_wrapper.hpp>
 #include <sca_utils.hpp>
+#include <sysInfoInterface.hpp>
 
 #include <functional>
 #include <memory>
@@ -106,11 +107,13 @@ public:
 
     ProcessRuleEvaluator(PolicyEvaluationContext ctx,
                          std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr,
+                         std::unique_ptr<ISysInfo> sysInfo = nullptr,
                          GetProcessesFunc getProcesses = nullptr);
 
     RuleResult Evaluate() override;
 
 private:
+    std::unique_ptr<ISysInfo> m_sysInfo = nullptr;
     GetProcessesFunc m_getProcesses = nullptr;
 };
 
@@ -142,5 +145,6 @@ public:
     static std::unique_ptr<IRuleEvaluator>
     CreateEvaluator(const std::string& input,
                     std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr,
-                    std::unique_ptr<IFileIOUtils> fileUtils = nullptr);
+                    std::unique_ptr<IFileIOUtils> fileUtils = nullptr,
+                    std::unique_ptr<ISysInfo> sysInfo = nullptr);
 };

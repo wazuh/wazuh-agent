@@ -3,9 +3,10 @@
 #include <cmdHelper.hpp>
 #include <file_io_utils.hpp>
 #include <filesystem_wrapper.hpp>
-#include <os_utils.hpp>
 #include <sca_utils.hpp>
 #include <stringHelper.hpp>
+#include <sysInfo.hpp>
+#include <sysInfoInterface.hpp>
 
 namespace
 {
@@ -215,9 +216,25 @@ RuleResult DirRuleEvaluator::Evaluate()
 
 ProcessRuleEvaluator::ProcessRuleEvaluator(PolicyEvaluationContext ctx,
                                            std::unique_ptr<IFileSystemWrapper> fileSystemWrapper,
+                                           std::unique_ptr<ISysInfo> sysInfo,
                                            GetProcessesFunc getProcesses)
     : RuleEvaluator(std::move(ctx), std::move(fileSystemWrapper))
-    , m_getProcesses(getProcesses ? std::move(getProcesses) : [] { return os_utils::OsUtils().GetRunningProcesses(); })
+    , m_sysInfo(std::move(sysInfo))
+    , m_getProcesses(getProcesses ? std::move(getProcesses) : [this]()
+                     {
+                         std::vector<std::string> processNames;
+
+                         m_sysInfo->processes(
+                             [&processNames](nlohmann::json& procJson)
+                             {
+                                 if (procJson.contains("name") && procJson["name"].is_string())
+                                 {
+                                     processNames.emplace_back(procJson["name"]);
+                                 }
+                             });
+
+                         return processNames;
+                     })
 {
 }
 
@@ -241,7 +258,8 @@ RuleResult ProcessRuleEvaluator::Evaluate()
 std::unique_ptr<IRuleEvaluator>
 RuleEvaluatorFactory::CreateEvaluator(const std::string& input,
                                       std::unique_ptr<IFileSystemWrapper> fileSystemWrapper,
-                                      std::unique_ptr<IFileIOUtils> fileUtils)
+                                      std::unique_ptr<IFileIOUtils> fileUtils,
+                                      std::unique_ptr<ISysInfo> sysInfo)
 {
     if (!fileSystemWrapper)
     {
@@ -250,6 +268,10 @@ RuleEvaluatorFactory::CreateEvaluator(const std::string& input,
     if (!fileUtils)
     {
         fileUtils = std::make_unique<file_io::FileIOUtils>();
+    }
+    if (!sysInfo)
+    {
+        sysInfo = std::make_unique<SysInfo>();
     }
 
     auto ruleInput = Utils::Trim(input, " \t");
@@ -283,7 +305,8 @@ RuleEvaluatorFactory::CreateEvaluator(const std::string& input,
 #ifdef _WIN32
         case sca::WM_SCA_TYPE_REGISTRY: return std::make_unique<RegistryRuleEvaluator>(ctx);
 #endif
-        case sca::WM_SCA_TYPE_PROCESS: return std::make_unique<ProcessRuleEvaluator>(ctx, std::move(fileSystemWrapper));
+        case sca::WM_SCA_TYPE_PROCESS:
+            return std::make_unique<ProcessRuleEvaluator>(ctx, std::move(fileSystemWrapper), std::move(sysInfo));
         case sca::WM_SCA_TYPE_DIR:
             return std::make_unique<DirRuleEvaluator>(ctx, std::move(fileSystemWrapper), std::move(fileUtils));
         case sca::WM_SCA_TYPE_COMMAND: return std::make_unique<CommandRuleEvaluator>(ctx, std::move(fileSystemWrapper));
