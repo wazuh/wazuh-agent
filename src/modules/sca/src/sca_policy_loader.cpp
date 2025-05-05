@@ -118,11 +118,11 @@ void SCAPolicyLoader::SyncPoliciesAndReportDelta(const nlohmann::json& data, con
             {
                 if (check.second["result"] == INSERTED)
                 {
-                    check.second["data"]["result"] = "Not run";
+                    check.second["data"]["result"] = sca::CheckResultToString(sca::CheckResult::NotRun);
                 }
                 else if (check.second["result"] == MODIFIED)
                 {
-                    check.second["data"]["new"]["result"] = "Not run";
+                    check.second["data"]["new"]["result"] = sca::CheckResultToString(sca::CheckResult::NotRun);
                     UpdateCheckResult(check.second["data"]["new"]);
                 }
             }

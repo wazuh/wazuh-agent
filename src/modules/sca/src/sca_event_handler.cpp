@@ -53,11 +53,13 @@ void SCAEventHandler::ReportPoliciesDelta(
     }
 }
 
-void SCAEventHandler::ReportCheckResult(const std::string& policyId, const std::string& checkId, bool passed) const
+void SCAEventHandler::ReportCheckResult(const std::string& policyId,
+                                        const std::string& checkId,
+                                        const sca::CheckResult checkResult) const
 {
     auto policyData = GetPolicyById(policyId);
     auto checkData = GetPolicyCheckById(checkId);
-    checkData["result"] = passed ? "passed" : "failed";
+    checkData["result"] = sca::CheckResultToString(checkResult);
 
     auto updateResultQuery = SyncRowQuery::builder().table("sca_check").data(checkData).returnOldData().build();
 

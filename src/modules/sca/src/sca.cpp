@@ -53,7 +53,7 @@ void SecurityConfigurationAssessment::Run()
     {
         EnqueueTask(policy.Run(m_scanInterval,
                                m_scanOnStart,
-                               [this](const std::string& policyId, const std::string& checkId, bool result)
+                               [this](const std::string& policyId, const std::string& checkId, sca::CheckResult result)
                                {
                                    const SCAEventHandler eventHandler(m_agentUUID, m_dBSync, m_pushMessage);
                                    eventHandler.ReportCheckResult(policyId, checkId, result);
