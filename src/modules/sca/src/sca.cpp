@@ -50,6 +50,12 @@ SecurityConfigurationAssessment::SecurityConfigurationAssessment(
 
 void SecurityConfigurationAssessment::Run()
 {
+    if (!m_enabled)
+    {
+        LogInfo("SCA module is disabled.");
+        return;
+    }
+
     for (auto& policy : m_policies)
     {
         EnqueueTask(policy.Run(m_scanInterval,
