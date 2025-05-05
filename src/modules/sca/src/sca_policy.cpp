@@ -47,12 +47,12 @@ SCAPolicy::Run(std::time_t scanInterval,
 void SCAPolicy::Scan(
     const std::function<void(const std::string&, const std::string&, const sca::CheckResult)>& reportCheckResult)
 {
-    LogInfo("Starting Policy checks evaluation for policy {}.", m_id);
-
     auto requirementsOk = true;
 
     if (!m_requirements.rules.empty())
     {
+        LogInfo("Starting Policy requirements evaluation for policy \"{}\".", m_id);
+
         auto resultEvaluator = CheckConditionEvaluator::FromString(m_requirements.condition);
 
         for (const auto& rule : m_requirements.rules)
@@ -65,10 +65,16 @@ void SCAPolicy::Scan(
         }
 
         requirementsOk = resultEvaluator.Result();
+
+        LogInfo("Policy requirements evaluation completed for policy \"{}\", result: {}.",
+                m_id,
+                requirementsOk ? "passed" : "failed");
     }
 
     if (requirementsOk)
     {
+        LogInfo("Starting Policy checks evaluation for policy \"{}\".", m_id);
+
         for (const auto& check : m_checks)
         {
             auto resultEvaluator = CheckConditionEvaluator::FromString(check.condition);
@@ -88,7 +94,9 @@ void SCAPolicy::Scan(
             reportCheckResult(m_id, check.id.value(), result ? sca::CheckResult::Passed : sca::CheckResult::Failed);
         }
 
-        LogInfo("Policy checks evaluation completed for policy {}.", m_id);
+        LogInfo("Policy checks evaluation completed for policy \"{}\", result: {}.",
+                m_id,
+                requirementsOk ? "passed" : "failed");
     }
     else
     {
