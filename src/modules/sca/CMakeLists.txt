@@ -28,13 +28,14 @@ target_link_libraries(
     PUBLIC FilesystemWrapper
            FileIO
            dbsync
+           sysinfo
            Config
            ConfigurationParser
            MessageEntry
            ModuleManager
            CommandEntry
            cmd_helper
-    PRIVATE PCRE2::8BIT OsUtils hash_helper string_helper time_helper $<$<PLATFORM_ID:Windows>:registry_helper>)
+    PRIVATE PCRE2::8BIT hash_helper string_helper time_helper $<$<PLATFORM_ID:Windows>:registry_helper>)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(SCA)
