@@ -2,6 +2,7 @@
 
 #include <config.h>
 #include <dbsync.hpp>
+#include <logger.hpp>
 #include <sca_event_handler.hpp>
 #include <sca_policy_loader.hpp>
 
@@ -59,6 +60,7 @@ void SecurityConfigurationAssessment::Run()
                                    eventHandler.ReportCheckResult(policyId, checkId, result);
                                }));
     }
+    LogInfo("SCA module running.");
     m_ioContext.run();
 }
 
@@ -88,6 +90,7 @@ void SecurityConfigurationAssessment::Stop()
         policy.Stop();
     }
     m_ioContext.stop();
+    LogInfo("SCA module stopped.");
 }
 
 Co_CommandExecutionResult
