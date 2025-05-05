@@ -66,7 +66,7 @@ Agent::Agent(std::unique_ptr<configuration::ConfigurationParser> configurationPa
           },
           // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
           [this](const std::filesystem::path& fileToValidate)
-          { return m_configurationParser->isValidYamlFile(fileToValidate); },
+          { return m_configurationParser->IsValidYamlFile(fileToValidate); },
           [this]() { ReloadModules(); })
 {
     // Check if agent is enrolled

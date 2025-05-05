@@ -47,7 +47,7 @@ namespace configuration
 
         try
         {
-            if (!isValidYamlFile(m_configFilePath))
+            if (!IsValidYamlFile(m_configFilePath))
             {
                 throw std::runtime_error("The file does not contain a valid YAML structure.");
             }
@@ -75,7 +75,7 @@ namespace configuration
         }
     }
 
-    bool ConfigurationParser::isValidYamlFile(const std::filesystem::path& configFile) const
+    bool ConfigurationParser::IsValidYamlFile(const std::filesystem::path& configFile) const
     {
         try
         {

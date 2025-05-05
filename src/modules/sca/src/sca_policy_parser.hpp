@@ -47,7 +47,7 @@ public:
     ///
     /// @param filename The path to the YAML file to be validated.
     /// @return `true` if the file is a valid YAML file; `false` otherwise.
-    bool isValidYamlFile(const std::filesystem::path& filename) const;
+    bool IsValidYamlFile(const std::filesystem::path& filename) const;
 
     /// @brief Parses the loaded policy file and extracts a SCAPolicy object.
     ///
@@ -61,11 +61,11 @@ public:
 private:
     /// @brief Recursively replaces variables in the YAML node with their values.
     /// @param currentNode The YAML node to process.
-    void replaceVariablesInNode(YAML::Node& currentNode);
+    void ReplaceVariablesInNode(YAML::Node& currentNode);
 
     /// @brief Root YAML node loaded from the policy file.
     YAML::Node m_node;
 
     /// @brief Map of variables found in the YAML file, used for substitution.
-    PolicyVariables m_variable_map;
+    PolicyVariables m_variablesMap;
 };

@@ -162,7 +162,7 @@ namespace configuration
         ///
         /// @param configFile The path to the YAML file to be validated.
         /// @return `true` if the file is a valid YAML file; `false` otherwise.
-        bool isValidYamlFile(const std::filesystem::path& configFile) const;
+        bool IsValidYamlFile(const std::filesystem::path& configFile) const;
 
         /// @brief Sets the function to get group IDs.
         ///

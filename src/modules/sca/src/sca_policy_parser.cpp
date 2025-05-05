@@ -76,22 +76,23 @@ PolicyParser::PolicyParser(const std::filesystem::path& filename, LoadFileFunc l
 {
     try
     {
-        if (!isValidYamlFile(filename))
+        if (!IsValidYamlFile(filename))
         {
             throw std::runtime_error("The file does not contain a valid YAML structure.");
         }
+
         m_node = loadFileFunc ? loadFileFunc(filename) : YAML::LoadFile(filename.string());
-        auto variables = m_node["variables"];
-        if (variables)
+
+        if (auto variables = m_node["variables"]; variables)
         {
             for (const auto& var : variables)
             {
-                const auto var_name = var.first.as<std::string>();
-                const auto var_value = var.second.as<std::string>();
-                m_variable_map[var_name] = var_value;
+                const auto name = var.first.as<std::string>();
+                const auto value = var.second.as<std::string>();
+                m_variablesMap[name] = value;
             }
         }
-        replaceVariablesInNode(m_node);
+        ReplaceVariablesInNode(m_node);
     }
     catch (const YAML::Exception& e)
     {
@@ -99,11 +100,12 @@ PolicyParser::PolicyParser(const std::filesystem::path& filename, LoadFileFunc l
     }
 }
 
-bool PolicyParser::isValidYamlFile(const std::filesystem::path& filename) const
+bool PolicyParser::IsValidYamlFile(const std::filesystem::path& filename) const
 {
     try
     {
-        const YAML::Node mapToValidte = YAML::LoadFile(filename.string());
+        const auto mapToValidte = YAML::LoadFile(filename.string());
+
         if (!mapToValidte.IsMap() && !mapToValidte.IsSequence())
         {
             throw std::runtime_error("The file does not contain a valid YAML structure.");
@@ -123,8 +125,7 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
 
     std::string policyId;
 
-    auto policyNode = m_node["policy"];
-    if (policyNode)
+    if (const auto policyNode = m_node["policy"]; policyNode)
     {
         try
         {
@@ -144,8 +145,7 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
         return std::nullopt;
     }
 
-    auto requirementsNode = m_node["requirements"];
-    if (requirementsNode)
+    if (const auto requirementsNode = m_node["requirements"]; requirementsNode)
     {
         try
         {
@@ -174,8 +174,7 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
         }
     }
 
-    auto checksNode = m_node["checks"];
-    if (checksNode)
+    if (const auto checksNode = m_node["checks"]; checksNode)
     {
         for (const auto& checkNode : checksNode)
         {
@@ -224,12 +223,12 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
-void PolicyParser::replaceVariablesInNode(YAML::Node& currentNode)
+void PolicyParser::ReplaceVariablesInNode(YAML::Node& currentNode)
 {
     if (currentNode.IsScalar())
     {
         auto value = currentNode.as<std::string>();
-        for (const auto& pair : m_variable_map)
+        for (const auto& pair : m_variablesMap)
         {
             size_t pos = 0;
             while ((pos = value.find(pair.first, pos)) != std::string::npos)
@@ -244,7 +243,7 @@ void PolicyParser::replaceVariablesInNode(YAML::Node& currentNode)
     {
         for (auto it = currentNode.begin(); it != currentNode.end(); ++it)
         {
-            replaceVariablesInNode(it->second);
+            ReplaceVariablesInNode(it->second);
         }
     }
     else if (currentNode.IsSequence())
@@ -253,7 +252,7 @@ void PolicyParser::replaceVariablesInNode(YAML::Node& currentNode)
         for (std::size_t i = 0; i < currentNode.size(); ++i)
         {
             YAML::Node element = currentNode[i];
-            replaceVariablesInNode(element);
+            ReplaceVariablesInNode(element);
             currentNode[i] = element;
         }
     }
