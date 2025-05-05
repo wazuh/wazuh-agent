@@ -96,5 +96,5 @@ private:
     std::vector<SCAPolicy> m_policies;
 
     /// @brief Boost ASIO context
-    boost::asio::io_context m_ioContext;
+    std::unique_ptr<boost::asio::io_context> m_ioContext;
 };
