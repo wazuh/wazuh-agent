@@ -94,7 +94,7 @@ TEST_F(LoggerMessageTest, LogsTraceMessage)
 {
     LogTrace("This is a trace message");
     const std::string logged_message = oss.str();
-    EXPECT_TRUE(logged_message.find("[TRACE]") != std::string::npos);
+    EXPECT_TRUE(logged_message.find("[trace]") != std::string::npos);
     EXPECT_TRUE(logged_message.find("This is a trace message") != std::string::npos);
 }
 
@@ -102,7 +102,7 @@ TEST_F(LoggerMessageTest, LogsDebugMessage)
 {
     LogDebug("This is a debug message");
     const std::string logged_message = oss.str();
-    EXPECT_TRUE(logged_message.find("[DEBUG]") != std::string::npos);
+    EXPECT_TRUE(logged_message.find("[debug]") != std::string::npos);
     EXPECT_TRUE(logged_message.find("This is a debug message") != std::string::npos);
 }
 
@@ -110,7 +110,7 @@ TEST_F(LoggerMessageTest, LogsInfoMessage)
 {
     LogInfo("This is an info message");
     const std::string logged_message = oss.str();
-    EXPECT_TRUE(logged_message.find("[INFO]") != std::string::npos);
+    EXPECT_TRUE(logged_message.find("[info]") != std::string::npos);
     EXPECT_TRUE(logged_message.find("This is an info message") != std::string::npos);
 }
 
@@ -118,7 +118,7 @@ TEST_F(LoggerMessageTest, LogsWarnMessage)
 {
     LogWarn("This is a warning message");
     const std::string logged_message = oss.str();
-    EXPECT_TRUE(logged_message.find("[WARN]") != std::string::npos);
+    EXPECT_TRUE(logged_message.find("[warning]") != std::string::npos);
     EXPECT_TRUE(logged_message.find("This is a warning message") != std::string::npos);
 }
 
@@ -128,7 +128,7 @@ TEST_F(LoggerMessageTest, LogsErrorMessage)
     const std::exception e;
     LogError("{}: {}", error_message, e.what());
     const std::string logged_message = oss.str();
-    EXPECT_TRUE(logged_message.find("[ERROR]") != std::string::npos);
+    EXPECT_TRUE(logged_message.find("[error]") != std::string::npos);
     EXPECT_TRUE(logged_message.find("Can't open database") != std::string::npos);
     EXPECT_TRUE(logged_message.find(e.what()) != std::string::npos);
 }
@@ -137,7 +137,7 @@ TEST_F(LoggerMessageTest, LogsCriticalMessage)
 {
     LogCritical("This is a critical message");
     const std::string logged_message = oss.str();
-    EXPECT_TRUE(logged_message.find("[CRITICAL]") != std::string::npos);
+    EXPECT_TRUE(logged_message.find("[critical]") != std::string::npos);
     EXPECT_TRUE(logged_message.find("This is a critical message") != std::string::npos);
 }
 
