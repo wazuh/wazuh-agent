@@ -156,74 +156,90 @@ RuleResult DirRuleEvaluator::Evaluate()
 {
     LogDebug("Processing directory rule: '{}'", m_ctx.rule);
 
+    if (m_ctx.pattern)
+    {
+        return CheckDirectoryForContents();
+    }
+    return CheckDirectoryExistence();
+}
+
+RuleResult DirRuleEvaluator::CheckDirectoryForContents()
+{
+    if (!m_fileSystemWrapper->exists(m_ctx.rule) || !m_fileSystemWrapper->is_directory(m_ctx.rule))
+    {
+        LogDebug("Directory '{}' does not exist or is not a directory", m_ctx.rule);
+        return RuleResult::Invalid;
+    }
+
+    const auto pattern = *m_ctx.pattern; // NOLINT(bugprone-unchecked-optional-access)
+    auto result = RuleResult::NotFound;
+
+    if (IsRegexPattern(pattern))
+    {
+        const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
+
+        for (const auto& file : files)
+        {
+            if (sca::PatternMatches(file.filename().string(), pattern))
+            {
+                result = RuleResult::Found;
+                break;
+            }
+        }
+    }
+    else if (const auto content = sca::GetPattern(pattern))
+    {
+        const auto fileName = pattern.substr(0, pattern.find(" -> "));
+        const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
+
+        for (const auto& file : files)
+        {
+            if (file.filename().string() == fileName)
+            {
+                result = RuleResult::NotFound;
+
+                m_fileUtils->readLineByLine(file,
+                                            [&content, &result](const std::string& line)
+                                            {
+                                                if (line == content.value())
+                                                {
+                                                    result = RuleResult::Found;
+                                                    return false;
+                                                }
+                                                return true;
+                                            });
+                break;
+            }
+        }
+    }
+    else
+    {
+        const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
+
+        for (const auto& file : files)
+        {
+            if (file.filename().string() == pattern)
+            {
+                result = RuleResult::Found;
+                break;
+            }
+        }
+    }
+    LogDebug("Pattern '{}' {} found in directory '{}'",
+             pattern,
+             result == RuleResult::Found ? "was" : "was not",
+             m_ctx.rule);
+
+    return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
+}
+
+RuleResult DirRuleEvaluator::CheckDirectoryExistence()
+{
     auto result = RuleResult::NotFound;
 
     if (!m_fileSystemWrapper->exists(m_ctx.rule) || !m_fileSystemWrapper->is_directory(m_ctx.rule))
     {
         LogDebug("Directory '{}' does not exist or is not a directory", m_ctx.rule);
-        if (m_ctx.pattern)
-        {
-            return RuleResult::Invalid;
-        }
-    }
-    else if (m_ctx.pattern)
-    {
-        if (IsRegexPattern(*m_ctx.pattern))
-        {
-            const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
-
-            for (const auto& file : files)
-            {
-                if (sca::PatternMatches(file.filename().string(), *m_ctx.pattern))
-                {
-                    result = RuleResult::Found;
-                    break;
-                }
-            }
-        }
-        else if (const auto content = sca::GetPattern(*m_ctx.pattern))
-        {
-            const auto fileName = m_ctx.pattern->substr(0, m_ctx.pattern->find(" -> "));
-            const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
-
-            for (const auto& file : files)
-            {
-                if (file.filename().string() == fileName)
-                {
-                    result = RuleResult::NotFound;
-
-                    m_fileUtils->readLineByLine(file,
-                                                [&content, &result](const std::string& line)
-                                                {
-                                                    if (line == content.value())
-                                                    {
-                                                        result = RuleResult::Found;
-                                                        return false;
-                                                    }
-                                                    return true;
-                                                });
-                    break;
-                }
-            }
-        }
-        else
-        {
-            const auto pattern = *m_ctx.pattern;
-            const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
-
-            for (const auto& file : files)
-            {
-                if (file.filename().string() == pattern)
-                {
-                    result = RuleResult::Found;
-                    break;
-                }
-            }
-        }
-        LogDebug("Pattern '{}' {} found in directory '{}'",
-                 *m_ctx.pattern,
-                 result == RuleResult::Found ? "was" : "was not",
-                 m_ctx.rule);
     }
     else
     {
