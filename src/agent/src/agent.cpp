@@ -212,6 +212,8 @@ void Agent::Run()
         m_running.store(false);
     }
 
+    LogInfo("Stopping agent...");
+
     m_commandHandler->Stop();
     m_communicator.Stop();
     m_moduleManager->Stop();
