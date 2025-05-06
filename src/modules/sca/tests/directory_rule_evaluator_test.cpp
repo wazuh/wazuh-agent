@@ -129,3 +129,14 @@ TEST_F(DirRuleEvaluatorTest, ExactPatternMatchesFileNameReturnsFound)
     auto evaluator = CreateEvaluator();
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
 }
+
+TEST_F(DirRuleEvaluatorTest, PatternSearchOnMissingFileReturnsInvalid)
+{
+    m_ctx.pattern = std::string("match.txt");
+    m_ctx.rule = "dir/";
+
+    EXPECT_CALL(*m_rawFsMock, exists(std::filesystem::path("dir/"))).WillOnce(::testing::Return(false));
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+}

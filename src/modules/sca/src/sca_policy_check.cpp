@@ -154,11 +154,17 @@ DirRuleEvaluator::DirRuleEvaluator(PolicyEvaluationContext ctx,
 
 RuleResult DirRuleEvaluator::Evaluate()
 {
+    LogDebug("Processing directory rule: '{}'", m_ctx.rule);
+
     auto result = RuleResult::NotFound;
 
     if (!m_fileSystemWrapper->exists(m_ctx.rule) || !m_fileSystemWrapper->is_directory(m_ctx.rule))
     {
-        result = RuleResult::NotFound;
+        LogDebug("Directory '{}' does not exist or is not a directory", m_ctx.rule);
+        if (m_ctx.pattern)
+        {
+            return RuleResult::Invalid;
+        }
     }
     else if (m_ctx.pattern)
     {
@@ -214,9 +220,14 @@ RuleResult DirRuleEvaluator::Evaluate()
                 }
             }
         }
+        LogDebug("Pattern '{}' {} found in directory '{}'",
+                 *m_ctx.pattern,
+                 result == RuleResult::Found ? "was" : "was not",
+                 m_ctx.rule);
     }
     else
     {
+        LogDebug("Directory '{}' exists", m_ctx.rule);
         result = RuleResult::Found;
     }
 
