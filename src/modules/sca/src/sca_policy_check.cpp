@@ -3,6 +3,7 @@
 #include <cmdHelper.hpp>
 #include <file_io_utils.hpp>
 #include <filesystem_wrapper.hpp>
+#include <logger.hpp>
 #include <sca_utils.hpp>
 #include <stringHelper.hpp>
 #include <sysInfo.hpp>
@@ -57,12 +58,17 @@ RuleResult FileRuleEvaluator::Evaluate()
 
 RuleResult FileRuleEvaluator::CheckFileForContents()
 {
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+    const auto pattern = *m_ctx.pattern;
+
+    LogDebug("Processing file rule. Checking contents of file: '{}' against pattern '{}'", m_ctx.rule, pattern);
+
     if (!m_fileSystemWrapper->exists(m_ctx.rule) || !m_fileSystemWrapper->is_regular_file(m_ctx.rule))
     {
+        LogDebug("File '{}' does not exist or is not a regular file", m_ctx.rule);
         return RuleResult::Invalid;
     }
 
-    const auto pattern = *m_ctx.pattern; // NOLINT(bugprone-unchecked-optional-access)
     bool matchFound = false;
 
     if (IsRegexOrNumericPattern(pattern))
@@ -86,14 +92,17 @@ RuleResult FileRuleEvaluator::CheckFileForContents()
                                     });
     }
 
+    LogDebug("Pattern '{}' {} found in file '{}'", pattern, matchFound ? "was" : "was not", m_ctx.rule);
     return (matchFound != m_ctx.isNegated) ? RuleResult::Found : RuleResult::NotFound;
 }
 
 RuleResult FileRuleEvaluator::CheckFileExistence()
 {
+    LogDebug("Processing file rule. Checking existence of file: '{}'", m_ctx.rule);
     const auto exists = m_fileSystemWrapper->exists(m_ctx.rule) && m_fileSystemWrapper->is_regular_file(m_ctx.rule);
     const auto result = exists ? RuleResult::Found : RuleResult::NotFound;
 
+    LogDebug("File '{}' {} found", m_ctx.rule, exists ? "was" : "was not");
     return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
 }
 
