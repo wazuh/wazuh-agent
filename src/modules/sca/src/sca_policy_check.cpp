@@ -288,8 +288,10 @@ ProcessRuleEvaluator::ProcessRuleEvaluator(PolicyEvaluationContext ctx,
 
 RuleResult ProcessRuleEvaluator::Evaluate()
 {
+    LogDebug("Processing process rule: '{}'", m_ctx.rule);
+
     const auto processes = m_getProcesses();
-    RuleResult result = RuleResult::NotFound;
+    auto result = RuleResult::NotFound;
 
     for (const auto& process : processes)
     {
@@ -300,6 +302,7 @@ RuleResult ProcessRuleEvaluator::Evaluate()
         }
     }
 
+    LogDebug("Process '{}' {} found", m_ctx.rule, result == RuleResult::Found ? "was" : "was not");
     return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
 }
 
