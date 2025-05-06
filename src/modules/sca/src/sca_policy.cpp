@@ -51,7 +51,7 @@ void SCAPolicy::Scan(
 
     if (!m_requirements.rules.empty())
     {
-        LogInfo("Starting Policy requirements evaluation for policy \"{}\".", m_id);
+        LogDebug("Starting Policy requirements evaluation for policy \"{}\".", m_id);
 
         auto resultEvaluator = CheckConditionEvaluator::FromString(m_requirements.condition);
 
@@ -66,14 +66,14 @@ void SCAPolicy::Scan(
 
         requirementsOk = resultEvaluator.Result();
 
-        LogInfo("Policy requirements evaluation completed for policy \"{}\", result: {}.",
-                m_id,
-                requirementsOk ? "passed" : "failed");
+        LogDebug("Policy requirements evaluation completed for policy \"{}\", result: {}.",
+                 m_id,
+                 requirementsOk ? "passed" : "failed");
     }
 
     if (requirementsOk)
     {
-        LogInfo("Starting Policy checks evaluation for policy \"{}\".", m_id);
+        LogDebug("Starting Policy checks evaluation for policy \"{}\".", m_id);
 
         for (const auto& check : m_checks)
         {
@@ -90,13 +90,14 @@ void SCAPolicy::Scan(
 
             const auto result = resultEvaluator.Result();
 
+            LogDebug(
+                "Policy check evaluation completed for policy \"{}\", result: {}.", m_id, result ? "passed" : "failed");
+
             // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
             reportCheckResult(m_id, check.id.value(), result ? sca::CheckResult::Passed : sca::CheckResult::Failed);
         }
 
-        LogInfo("Policy checks evaluation completed for policy \"{}\", result: {}.",
-                m_id,
-                requirementsOk ? "passed" : "failed");
+        LogDebug("Policy checks evaluation completed for policy \"{}\"", m_id);
     }
     else
     {
