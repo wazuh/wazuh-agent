@@ -24,7 +24,7 @@ struct StringLengthGreater
 using PolicyVariables = std::map<std::string, std::string, StringLengthGreater>;
 
 /// @brief Type alias for a function that loads a YAML file.
-using LoadFileFunc = std::function<YAML::Node(const std::filesystem::path&)>;
+using LoadFileFunc = std::function<YAML::Node(const std::string&)>;
 
 /// @brief Parses and processes SCA policy files defined in YAML format.
 ///
@@ -65,6 +65,9 @@ private:
 
     /// @brief Root YAML node loaded from the policy file.
     YAML::Node m_node;
+
+    /// @brief Function to load the YAML file.
+    LoadFileFunc m_loadFileFunc;
 
     /// @brief Map of variables found in the YAML file, used for substitution.
     PolicyVariables m_variablesMap;

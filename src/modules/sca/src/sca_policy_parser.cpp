@@ -73,15 +73,16 @@ namespace
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
 PolicyParser::PolicyParser(const std::filesystem::path& filename, LoadFileFunc loadFileFunc)
+    : m_loadFileFunc(loadFileFunc ? std::move(loadFileFunc) : YAML::LoadFile)
 {
     try
     {
-        if (!IsValidYamlFile(filename))
+        if (!IsValidYamlFile(filename.string()))
         {
             throw std::runtime_error("The file does not contain a valid YAML structure.");
         }
 
-        m_node = loadFileFunc ? loadFileFunc(filename) : YAML::LoadFile(filename.string());
+        m_node = m_loadFileFunc(filename.string());
 
         if (auto variables = m_node["variables"]; variables)
         {
@@ -104,7 +105,7 @@ bool PolicyParser::IsValidYamlFile(const std::filesystem::path& filename) const
 {
     try
     {
-        const auto mapToValidte = YAML::LoadFile(filename.string());
+        const auto mapToValidte = m_loadFileFunc(filename.string());
 
         if (!mapToValidte.IsMap() && !mapToValidte.IsSequence())
         {
