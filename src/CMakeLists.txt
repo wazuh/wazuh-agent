@@ -25,6 +25,15 @@ get_filename_component(WINDOWS_FOLDER ${CMAKE_SOURCE_DIR}/../packages/windows/ A
 
 project(wazuh-agent)
 
+if(MSVC)
+    set(WAZUH_MINWINVER 0x0601 CACHE STRING "Win32 API level")
+    add_definitions(-D_WIN32_WINNT=${WAZUH_MINWINVER} -DWINVER=${WAZUH_MINWINVER})
+    if(NOT CMAKE_GENERATOR_TOOLSET)
+        set(CMAKE_GENERATOR_TOOLSET "v141" CACHE STRING "" FORCE)
+    endif()
+    add_link_options("/SUBSYSTEM:CONSOLE,6.01")
+endif()
+
 if(UNIX AND NOT APPLE)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++")
 endif()

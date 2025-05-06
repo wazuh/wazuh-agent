@@ -62,7 +62,13 @@ cd $PSScriptRoot/../..
 mkdir build -Force
 $Env:CUSTOM_PACKAGE_NAME = $MSI_NAME
 $Env:CUSTOM_CMAKE_CONFIG = $CMAKE_CONFIG
-cmake src -B build -DBUILD_TESTS=$BUILD_TESTS -G "Visual Studio 17 2022" -A x64
+cmake src -B build `
+  -DBUILD_TESTS=$BUILD_TESTS `
+  -G "Visual Studio 16 2019" `
+  -A x64 `
+  -T v141 `
+  -DCMAKE_SYSTEM_VERSION=6.1 `
+  -D_WIN32_WINNT=0x0601
 
 if ($JOBS -le 0) {
     $JOBS = (Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors
