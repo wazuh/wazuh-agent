@@ -97,6 +97,10 @@ public:
     RuleResult Evaluate() override;
 
 private:
+    RuleResult CheckDirectoryForContents();
+
+    RuleResult CheckDirectoryExistence();
+
     std::unique_ptr<IFileIOUtils> m_fileUtils = nullptr;
 };
 

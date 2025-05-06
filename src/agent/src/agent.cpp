@@ -66,7 +66,7 @@ Agent::Agent(std::unique_ptr<configuration::ConfigurationParser> configurationPa
           },
           // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
           [this](const std::filesystem::path& fileToValidate)
-          { return m_configurationParser->isValidYamlFile(fileToValidate); },
+          { return m_configurationParser->IsValidYamlFile(fileToValidate); },
           [this]() { ReloadModules(); })
 {
     // Check if agent is enrolled
@@ -211,6 +211,8 @@ void Agent::Run()
         const std::unique_lock<std::mutex> lock(m_reloadMutex);
         m_running.store(false);
     }
+
+    LogInfo("Stopping agent...");
 
     m_commandHandler->Stop();
     m_communicator.Stop();

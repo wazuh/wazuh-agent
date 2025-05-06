@@ -28,10 +28,24 @@ protected:
     }
 };
 
-TEST_F(CommandRuleEvaluatorTest, CommandReturnsEmptyStringReturnsNotFound)
+TEST_F(CommandRuleEvaluatorTest, EvaluationReturnsInvalidWhenNoPattern)
 {
     m_ctx.rule = "some command";
     m_ctx.pattern = std::nullopt;
+
+    m_execMock = [](const std::string&)
+    {
+        return std::make_pair("", "");
+    };
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+}
+
+TEST_F(CommandRuleEvaluatorTest, CommandReturnsEmptyStringReturnsNotFound)
+{
+    m_ctx.rule = "some command";
+    m_ctx.pattern = std::string("some pattern");
 
     m_execMock = [](const std::string&)
     {

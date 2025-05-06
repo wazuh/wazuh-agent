@@ -2,6 +2,7 @@
 
 #include <config.h>
 #include <dbsync.hpp>
+#include <logger.hpp>
 #include <sca_event_handler.hpp>
 #include <sca_policy_loader.hpp>
 
@@ -49,17 +50,18 @@ SecurityConfigurationAssessment::SecurityConfigurationAssessment(
 
 void SecurityConfigurationAssessment::Run()
 {
-    for (auto& policy : m_policies)
+    if (!m_enabled)
     {
-        EnqueueTask(policy.Run(m_scanInterval,
-                               m_scanOnStart,
-                               [this](const std::string& policyId, const std::string& checkId, sca::CheckResult result)
-                               {
-                                   const SCAEventHandler eventHandler(m_agentUUID, m_dBSync, m_pushMessage);
-                                   eventHandler.ReportCheckResult(policyId, checkId, result);
-                               }));
+        LogInfo("SCA module is disabled.");
+        return;
     }
-    m_ioContext.run();
+    if (!m_ioContext)
+    {
+        LogError("SCA module doesn't have a valid io context.");
+        return;
+    }
+    LogInfo("SCA module running.");
+    m_ioContext->run();
 }
 
 void SecurityConfigurationAssessment::Setup(
@@ -72,22 +74,41 @@ void SecurityConfigurationAssessment::Setup(
     m_policies = [this, &configurationParser]()
     {
         const SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser, m_dBSync);
-        return policyLoader.GetPolicies(
+        return policyLoader.LoadPolicies(
             [this](auto policyData, auto checksData)
             {
                 const SCAEventHandler eventHandler(m_agentUUID, m_dBSync, m_pushMessage);
                 eventHandler.ReportPoliciesDelta(policyData, checksData);
             });
     }();
+
+    m_ioContext = std::make_unique<boost::asio::io_context>();
+
+    for (auto& policy : m_policies)
+    {
+        EnqueueTask(policy.Run(m_scanInterval,
+                               m_scanOnStart,
+                               [this](const std::string& policyId, const std::string& checkId, sca::CheckResult result)
+                               {
+                                   const SCAEventHandler eventHandler(m_agentUUID, m_dBSync, m_pushMessage);
+                                   eventHandler.ReportCheckResult(policyId, checkId, result);
+                               }));
+    }
 }
 
 void SecurityConfigurationAssessment::Stop()
 {
+    if (!m_ioContext)
+    {
+        LogError("SCA module doesn't have a valid io context.");
+        return;
+    }
     for (auto& policy : m_policies)
     {
         policy.Stop();
     }
-    m_ioContext.stop();
+    m_ioContext->stop();
+    LogInfo("SCA module stopped.");
 }
 
 Co_CommandExecutionResult
@@ -116,9 +137,15 @@ void SecurityConfigurationAssessment::SetPushMessageFunction(const std::function
 
 void SecurityConfigurationAssessment::EnqueueTask(boost::asio::awaitable<void> task)
 {
+    if (!m_ioContext)
+    {
+        LogError("SCA module doesn't have a valid io context.");
+        return;
+    }
+
     // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
     boost::asio::co_spawn(
-        m_ioContext,
+        *m_ioContext,
         [task = std::move(task)]() mutable -> boost::asio::awaitable<void>
         {
             try

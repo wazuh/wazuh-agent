@@ -69,6 +69,7 @@ TEST_F(ScaTest, EnqueueTaskExecutesTask)
         co_return;
     };
 
+    m_sca->Setup(m_configurationParser);
     m_sca->EnqueueTask(task());
     m_sca->Run();
     EXPECT_TRUE(taskExecuted);

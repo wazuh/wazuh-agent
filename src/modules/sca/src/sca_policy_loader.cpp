@@ -37,7 +37,7 @@ SCAPolicyLoader::SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemW
     m_disabledPoliciesPaths = loadPoliciesPathsFromConfig("policies_disabled");
 }
 
-std::vector<SCAPolicy> SCAPolicyLoader::GetPolicies(const CreateEventsFunc& createEvents) const
+std::vector<SCAPolicy> SCAPolicyLoader::LoadPolicies(const CreateEventsFunc& createEvents) const
 {
     std::vector<std::filesystem::path> allPolicyPaths;
 

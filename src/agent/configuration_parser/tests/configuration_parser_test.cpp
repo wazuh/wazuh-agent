@@ -423,7 +423,7 @@ TEST_F(ConfigurationParserInvalidYamlFileTest, isValidYamlFileInvalid)
     {
         const auto parser = std::make_unique<configuration::ConfigurationParser>();
 
-        EXPECT_FALSE(parser->isValidYamlFile(m_tempConfigFilePath));
+        EXPECT_FALSE(parser->IsValidYamlFile(m_tempConfigFilePath));
     }
     catch (const std::exception&)
     {
@@ -438,7 +438,7 @@ TEST_F(ConfigurationParserFileTest, isValidYamlFileValid)
     {
         const auto parser = std::make_unique<configuration::ConfigurationParser>();
 
-        EXPECT_TRUE(parser->isValidYamlFile(m_tempConfigFilePath));
+        EXPECT_TRUE(parser->IsValidYamlFile(m_tempConfigFilePath));
     }
     catch (const std::exception&)
     {

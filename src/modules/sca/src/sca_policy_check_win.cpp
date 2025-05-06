@@ -52,7 +52,9 @@ RegistryRuleEvaluator::RegistryRuleEvaluator(PolicyEvaluationContext ctx,
 
 RuleResult RegistryRuleEvaluator::Evaluate()
 {
-    RuleResult result = RuleResult::NotFound;
+    LogDebug("Processing registry rule: {}", m_ctx.rule);
+
+    auto result = RuleResult::NotFound;
 
     try
     {
@@ -91,7 +93,9 @@ RuleResult RegistryRuleEvaluator::Evaluate()
     catch (const std::exception& e)
     {
         LogDebug("RegistryRuleEvaluator::Evaluate: Exception: {}", e.what());
+        return RuleResult::Invalid;
     }
 
+    LogDebug("Registry rule evaluation {}", result == RuleResult::Found ? "passed" : "failed");
     return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
 }

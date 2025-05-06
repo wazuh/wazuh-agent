@@ -3,6 +3,7 @@
 #include <cmdHelper.hpp>
 #include <file_io_utils.hpp>
 #include <filesystem_wrapper.hpp>
+#include <logger.hpp>
 #include <sca_utils.hpp>
 #include <stringHelper.hpp>
 #include <sysInfo.hpp>
@@ -57,12 +58,17 @@ RuleResult FileRuleEvaluator::Evaluate()
 
 RuleResult FileRuleEvaluator::CheckFileForContents()
 {
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+    const auto pattern = *m_ctx.pattern;
+
+    LogDebug("Processing file rule. Checking contents of file: '{}' against pattern '{}'", m_ctx.rule, pattern);
+
     if (!m_fileSystemWrapper->exists(m_ctx.rule) || !m_fileSystemWrapper->is_regular_file(m_ctx.rule))
     {
+        LogDebug("File '{}' does not exist or is not a regular file", m_ctx.rule);
         return RuleResult::Invalid;
     }
 
-    const auto pattern = *m_ctx.pattern; // NOLINT(bugprone-unchecked-optional-access)
     bool matchFound = false;
 
     if (IsRegexOrNumericPattern(pattern))
@@ -86,14 +92,17 @@ RuleResult FileRuleEvaluator::CheckFileForContents()
                                     });
     }
 
+    LogDebug("Pattern '{}' {} found in file '{}'", pattern, matchFound ? "was" : "was not", m_ctx.rule);
     return (matchFound != m_ctx.isNegated) ? RuleResult::Found : RuleResult::NotFound;
 }
 
 RuleResult FileRuleEvaluator::CheckFileExistence()
 {
+    LogDebug("Processing file rule. Checking existence of file: '{}'", m_ctx.rule);
     const auto exists = m_fileSystemWrapper->exists(m_ctx.rule) && m_fileSystemWrapper->is_regular_file(m_ctx.rule);
     const auto result = exists ? RuleResult::Found : RuleResult::NotFound;
 
+    LogDebug("File '{}' {} found", m_ctx.rule, exists ? "was" : "was not");
     return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
 }
 
@@ -109,16 +118,18 @@ CommandRuleEvaluator::CommandRuleEvaluator(PolicyEvaluationContext ctx,
 
 RuleResult CommandRuleEvaluator::Evaluate()
 {
-    RuleResult result = RuleResult::NotFound;
+    LogDebug("Processing command rule: '{}'", m_ctx.rule);
 
-    auto [output, error] = m_commandExecFunc(m_ctx.rule);
-
-    // Trim ending lines if any (command output may have trailing newlines)
-    output = Utils::Trim(output, "\n");
-    error = Utils::Trim(error, "\n");
+    auto result = RuleResult::NotFound;
 
     if (m_ctx.pattern)
     {
+        auto [output, error] = m_commandExecFunc(m_ctx.rule);
+
+        // Trim ending lines if any (command output may have trailing newlines)
+        output = Utils::Trim(output, "\n");
+        error = Utils::Trim(error, "\n");
+
         if (IsRegexOrNumericPattern(*m_ctx.pattern))
         {
             if (sca::PatternMatches(output, *m_ctx.pattern) || sca::PatternMatches(error, *m_ctx.pattern))
@@ -131,6 +142,16 @@ RuleResult CommandRuleEvaluator::Evaluate()
             result = RuleResult::Found;
         }
     }
+    else
+    {
+        LogDebug("No pattern provided for command rule evaluation");
+        return RuleResult::Invalid;
+    }
+
+    LogDebug("Command rule '{}' pattern '{}' {} found",
+             m_ctx.rule,
+             *m_ctx.pattern,
+             result == RuleResult::Found ? "was" : "was not");
 
     return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
 }
@@ -145,69 +166,96 @@ DirRuleEvaluator::DirRuleEvaluator(PolicyEvaluationContext ctx,
 
 RuleResult DirRuleEvaluator::Evaluate()
 {
-    auto result = RuleResult::NotFound;
+    LogDebug("Processing directory rule: '{}'", m_ctx.rule);
 
+    if (m_ctx.pattern)
+    {
+        return CheckDirectoryForContents();
+    }
+    return CheckDirectoryExistence();
+}
+
+RuleResult DirRuleEvaluator::CheckDirectoryForContents()
+{
     if (!m_fileSystemWrapper->exists(m_ctx.rule) || !m_fileSystemWrapper->is_directory(m_ctx.rule))
     {
-        result = RuleResult::NotFound;
+        LogDebug("Directory '{}' does not exist or is not a directory", m_ctx.rule);
+        return RuleResult::Invalid;
     }
-    else if (m_ctx.pattern)
+
+    const auto pattern = *m_ctx.pattern; // NOLINT(bugprone-unchecked-optional-access)
+    auto result = RuleResult::NotFound;
+
+    if (IsRegexPattern(pattern))
     {
-        if (IsRegexPattern(*m_ctx.pattern))
-        {
-            const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
+        const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
 
-            for (const auto& file : files)
+        for (const auto& file : files)
+        {
+            if (sca::PatternMatches(file.filename().string(), pattern))
             {
-                if (sca::PatternMatches(file.filename().string(), *m_ctx.pattern))
-                {
-                    result = RuleResult::Found;
-                    break;
-                }
+                result = RuleResult::Found;
+                break;
             }
         }
-        else if (const auto content = sca::GetPattern(*m_ctx.pattern))
+    }
+    else if (const auto content = sca::GetPattern(pattern))
+    {
+        const auto fileName = pattern.substr(0, pattern.find(" -> "));
+        const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
+
+        for (const auto& file : files)
         {
-            const auto fileName = m_ctx.pattern->substr(0, m_ctx.pattern->find(" -> "));
-            const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
-
-            for (const auto& file : files)
+            if (file.filename().string() == fileName)
             {
-                if (file.filename().string() == fileName)
-                {
-                    result = RuleResult::NotFound;
+                result = RuleResult::NotFound;
 
-                    m_fileUtils->readLineByLine(file,
-                                                [&content, &result](const std::string& line)
+                m_fileUtils->readLineByLine(file,
+                                            [&content, &result](const std::string& line)
+                                            {
+                                                if (line == content.value())
                                                 {
-                                                    if (line == content.value())
-                                                    {
-                                                        result = RuleResult::Found;
-                                                        return false;
-                                                    }
-                                                    return true;
-                                                });
-                    break;
-                }
-            }
-        }
-        else
-        {
-            const auto pattern = *m_ctx.pattern;
-            const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
-
-            for (const auto& file : files)
-            {
-                if (file.filename().string() == pattern)
-                {
-                    result = RuleResult::Found;
-                    break;
-                }
+                                                    result = RuleResult::Found;
+                                                    return false;
+                                                }
+                                                return true;
+                                            });
+                break;
             }
         }
     }
     else
     {
+        const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
+
+        for (const auto& file : files)
+        {
+            if (file.filename().string() == pattern)
+            {
+                result = RuleResult::Found;
+                break;
+            }
+        }
+    }
+    LogDebug("Pattern '{}' {} found in directory '{}'",
+             pattern,
+             result == RuleResult::Found ? "was" : "was not",
+             m_ctx.rule);
+
+    return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
+}
+
+RuleResult DirRuleEvaluator::CheckDirectoryExistence()
+{
+    auto result = RuleResult::NotFound;
+
+    if (!m_fileSystemWrapper->exists(m_ctx.rule) || !m_fileSystemWrapper->is_directory(m_ctx.rule))
+    {
+        LogDebug("Directory '{}' does not exist or is not a directory", m_ctx.rule);
+    }
+    else
+    {
+        LogDebug("Directory '{}' exists", m_ctx.rule);
         result = RuleResult::Found;
     }
 
@@ -240,8 +288,10 @@ ProcessRuleEvaluator::ProcessRuleEvaluator(PolicyEvaluationContext ctx,
 
 RuleResult ProcessRuleEvaluator::Evaluate()
 {
+    LogDebug("Processing process rule: '{}'", m_ctx.rule);
+
     const auto processes = m_getProcesses();
-    RuleResult result = RuleResult::NotFound;
+    auto result = RuleResult::NotFound;
 
     for (const auto& process : processes)
     {
@@ -252,6 +302,7 @@ RuleResult ProcessRuleEvaluator::Evaluate()
         }
     }
 
+    LogDebug("Process '{}' {} found", m_ctx.rule, result == RuleResult::Found ? "was" : "was not");
     return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
 }
 
