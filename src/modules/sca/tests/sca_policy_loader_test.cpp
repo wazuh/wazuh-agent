@@ -26,5 +26,5 @@ TEST(ScaPolicyLoaderTest, NoPolicies)
     auto dbSync = std::make_shared<MockDBSync>();
 
     const SCAPolicyLoader loader(fsMock, configurationParser, dbSync);
-    ASSERT_EQ(loader.GetPolicies([](auto, auto) { return; }).size(), 0);
+    ASSERT_EQ(loader.LoadPolicies([](auto, auto) { return; }).size(), 0);
 }
