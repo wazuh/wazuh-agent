@@ -184,7 +184,7 @@ std::unordered_map<std::string, nlohmann::json> SCAPolicyLoader::SyncWithDBSync(
 
     nlohmann::json input;
     input["table"] = tableName;
-    input["data"] = data;
+    input["data"] = NormalizeData(data);
     input["options"]["return_old_data"] = true;
 
     txn.syncTxnRow(input);
@@ -201,4 +201,24 @@ void SCAPolicyLoader::UpdateCheckResult(const nlohmann::json& check) const
     };
 
     m_dBSync->syncRow(updateResultQuery.query(), callback);
+}
+
+nlohmann::json SCAPolicyLoader::NormalizeData(nlohmann::json data) const
+{
+    for (auto& entry : data)
+    {
+        if (entry.contains("references"))
+        {
+            entry["refs"] = entry["references"];
+            entry.erase("references");
+        }
+
+        if (entry.contains("title"))
+        {
+            entry["name"] = entry["title"];
+            entry.erase("title");
+        }
+    }
+
+    return data;
 }

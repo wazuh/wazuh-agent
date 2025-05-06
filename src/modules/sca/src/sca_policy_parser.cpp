@@ -149,7 +149,6 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
     {
         try
         {
-            requirements.title = requirementsNode["title"].as<std::string>();
             requirements.condition = requirementsNode["condition"].as<std::string>();
 
             for (const auto& rule : requirementsNode["rules"])
@@ -182,7 +181,6 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
             {
                 SCAPolicy::Check check;
                 check.id = checkNode["id"].as<std::string>();
-                check.title = checkNode["title"].as<std::string>();
                 check.condition = checkNode["condition"].as<std::string>();
 
                 if (checkNode["rules"])
