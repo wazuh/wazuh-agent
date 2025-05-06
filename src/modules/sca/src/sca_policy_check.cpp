@@ -118,16 +118,18 @@ CommandRuleEvaluator::CommandRuleEvaluator(PolicyEvaluationContext ctx,
 
 RuleResult CommandRuleEvaluator::Evaluate()
 {
-    RuleResult result = RuleResult::NotFound;
+    LogDebug("Processing command rule: '{}'", m_ctx.rule);
 
-    auto [output, error] = m_commandExecFunc(m_ctx.rule);
-
-    // Trim ending lines if any (command output may have trailing newlines)
-    output = Utils::Trim(output, "\n");
-    error = Utils::Trim(error, "\n");
+    auto result = RuleResult::NotFound;
 
     if (m_ctx.pattern)
     {
+        auto [output, error] = m_commandExecFunc(m_ctx.rule);
+
+        // Trim ending lines if any (command output may have trailing newlines)
+        output = Utils::Trim(output, "\n");
+        error = Utils::Trim(error, "\n");
+
         if (IsRegexOrNumericPattern(*m_ctx.pattern))
         {
             if (sca::PatternMatches(output, *m_ctx.pattern) || sca::PatternMatches(error, *m_ctx.pattern))
@@ -140,6 +142,16 @@ RuleResult CommandRuleEvaluator::Evaluate()
             result = RuleResult::Found;
         }
     }
+    else
+    {
+        LogDebug("No pattern provided for command rule evaluation");
+        return RuleResult::Invalid;
+    }
+
+    LogDebug("Command rule '{}' pattern '{}' {} found",
+             m_ctx.rule,
+             *m_ctx.pattern,
+             result == RuleResult::Found ? "was" : "was not");
 
     return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
 }
