@@ -1,5 +1,6 @@
 #include <sca_utils.hpp>
 
+#include <logger.hpp>
 #include <stringHelper.hpp>
 
 #include <pcre2.h>
@@ -7,6 +8,7 @@
 #include <map>
 #include <optional>
 #include <sstream>
+#include <stdexcept>
 
 namespace
 {
@@ -205,8 +207,10 @@ namespace sca
         return std::nullopt;
     }
 
-    bool PatternMatches(const std::string& content, const std::string& pattern, RegexEngineType engine)
+    std::optional<bool> PatternMatches(const std::string& content, const std::string& pattern, RegexEngineType engine)
     {
+        try
+        {
         if (content.empty())
         {
             return false;
@@ -280,6 +284,12 @@ namespace sca
         }
 
         return false; // No line satisfied all minterms
+        }
+        catch (const std::exception& e)
+        {
+            LogError("{}", e.what());
+            return std::nullopt;
+        }
     }
 
 } // namespace sca

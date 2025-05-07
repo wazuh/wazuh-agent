@@ -74,7 +74,15 @@ RuleResult FileRuleEvaluator::CheckFileForContents()
     if (IsRegexOrNumericPattern(pattern))
     {
         const auto content = m_fileUtils->getFileContent(m_ctx.rule);
-        matchFound = sca::PatternMatches(content, pattern);
+
+        if (const auto patternMatch = sca::PatternMatches(content, pattern))
+        {
+            matchFound = patternMatch.value();
+        }
+        else
+        {
+            return RuleResult::Invalid;
+        }
     }
     else
     {
@@ -132,9 +140,17 @@ RuleResult CommandRuleEvaluator::Evaluate()
 
         if (IsRegexOrNumericPattern(*m_ctx.pattern))
         {
-            if (sca::PatternMatches(output, *m_ctx.pattern) || sca::PatternMatches(error, *m_ctx.pattern))
+            const auto outputPatternMatch = sca::PatternMatches(output, *m_ctx.pattern);
+            const auto errorPatternMatch = sca::PatternMatches(error, *m_ctx.pattern);
+
+            if (outputPatternMatch || errorPatternMatch)
             {
-                result = RuleResult::Found;
+                result = outputPatternMatch.value_or(false) || errorPatternMatch.value_or(false) ? RuleResult::Found
+                                                                                                 : RuleResult::NotFound;
+            }
+            else
+            {
+                return RuleResult::Invalid;
             }
         }
         else if (output == m_ctx.pattern.value() || error == m_ctx.pattern.value())
@@ -190,13 +206,26 @@ RuleResult DirRuleEvaluator::CheckDirectoryForContents()
     {
         const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
 
+        auto hadValue = false;
+
         for (const auto& file : files)
         {
-            if (sca::PatternMatches(file.filename().string(), pattern))
+            if (const auto patternMatch = sca::PatternMatches(file.filename().string(), pattern))
             {
-                result = RuleResult::Found;
-                break;
+                hadValue = true;
+
+                if (patternMatch.value())
+                {
+                    result = RuleResult::Found;
+                    break;
+                }
             }
+        }
+
+        if (!hadValue)
+        {
+            // We assume that if all calls to PatternMatches return nullopt, the pattern is invalid or an error occurred
+            return RuleResult::Invalid;
         }
     }
     else if (const auto content = sca::GetPattern(pattern))
