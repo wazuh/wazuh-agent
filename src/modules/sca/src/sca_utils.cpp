@@ -16,51 +16,65 @@ namespace
     {
         int error_code = 0;
         PCRE2_SIZE error_offset = 0;
-        pcre2_code* re = nullptr;
-        std::string matched;
 
-        const auto pattern_ptr =
-            reinterpret_cast<PCRE2_SPTR8>(pattern.c_str()); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        const auto pattern_ptr = reinterpret_cast<PCRE2_SPTR8>(pattern.c_str());
 
-        re = pcre2_compile(pattern_ptr, PCRE2_ZERO_TERMINATED, PCRE2_MULTILINE, &error_code, &error_offset, nullptr);
+        auto* re =
+            pcre2_compile(pattern_ptr, PCRE2_ZERO_TERMINATED, PCRE2_MULTILINE, &error_code, &error_offset, nullptr);
 
-        if (re == nullptr)
+        if (!re)
         {
-            return std::make_pair(false, "");
+            throw std::runtime_error("PCRE2 compilation failed");
         }
 
-        pcre2_match_data* match_data = pcre2_match_data_create_from_pattern(re, nullptr);
+        auto* match_data = pcre2_match_data_create_from_pattern(re, nullptr);
 
-        const auto content_ptr =
-            reinterpret_cast<PCRE2_SPTR8>(content.c_str()); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+        if (!match_data)
+        {
+            pcre2_code_free(re);
+            throw std::runtime_error("PCRE2 match data creation failed");
+        }
 
-        const int rc = pcre2_match(re, content_ptr, content.size(), 0, 0, match_data, nullptr);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        const auto content_ptr = reinterpret_cast<PCRE2_SPTR8>(content.c_str());
+        const auto rc = pcre2_match(re, content_ptr, content.size(), 0, 0, match_data, nullptr);
+
+        auto pcre2CleanUp = [match_data, re]()
+        {
+            pcre2_match_data_free(match_data);
+            pcre2_code_free(re);
+        };
+
+        if (rc == PCRE2_ERROR_NOMATCH)
+        {
+            // No match, but not an error
+            pcre2CleanUp();
+            return {false, ""};
+        }
+        else if (rc < 0)
+        {
+            // Other matching error
+            pcre2CleanUp();
+            throw std::runtime_error("PCRE2 match error: " + std::to_string(rc));
+        }
+
+        const auto* ovector = pcre2_get_ovector_pointer(match_data);
+
+        if (!ovector)
+        {
+            pcre2CleanUp();
+            throw std::runtime_error("PCRE2 ovector pointer is null");
+        }
 
         // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        if (rc >= 0)
-        {
-            PCRE2_SIZE* ovector = pcre2_get_ovector_pointer(match_data);
-
-            // rc is the number of matches found; rc >= 2 means full match + at least one capture
-            if (rc >= 2)
-            {
-                PCRE2_SIZE start = ovector[2]; // first capture group
-                PCRE2_SIZE end = ovector[3];
-                matched = content.substr(start, end - start);
-            }
-            else
-            {
-                PCRE2_SIZE start = ovector[0]; // full match fallback
-                PCRE2_SIZE end = ovector[1];
-                matched = content.substr(start, end - start);
-            }
-        }
+        const auto match = rc >= 2 ? content.substr(ovector[2], ovector[3] - ovector[2])
+                                   : content.substr(ovector[0], ovector[1] - ovector[0]);
         // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
-        pcre2_match_data_free(match_data);
-        pcre2_code_free(re);
+        pcre2CleanUp();
 
-        return std::make_pair(rc >= 0, matched);
+        return {true, match};
     }
 
     bool
@@ -211,79 +225,79 @@ namespace sca
     {
         try
         {
-        if (content.empty())
-        {
-            return false;
-        }
-
-        // Split the pattern into individual conditions (minterms)
-        constexpr std::string_view delimiter = " && ";
-        std::vector<std::pair<bool, std::string>> minterms; // (negated, pattern)
-
-        size_t start = 0;
-
-        // Loop over each minterm (subpattern) in the compound pattern
-        while (start < pattern.size())
-        {
-            // Find the next delimiter and extract the substring for this minterm
-            const auto end = pattern.find(delimiter, start);
-            auto minterm = pattern.substr(start, end - start);
-
-            // Advance the start position for the next iteration
-            start = (end == std::string::npos) ? end : end + delimiter.length();
-
-            // Check if the minterm is negated
-            bool negated = false;
-            if (!minterm.empty() && minterm[0] == '!')
+            if (content.empty())
             {
-                negated = true;
-                minterm.erase(0, 1); // Remove the '!' for pattern matching
+                return false;
             }
 
-            minterms.emplace_back(negated, minterm);
-        }
+            // Split the pattern into individual conditions (minterms)
+            constexpr std::string_view delimiter = " && ";
+            std::vector<std::pair<bool, std::string>> minterms; // (negated, pattern)
 
-        // Special case: if there's only one minterm and it's negated
-        if (minterms.size() == 1 && minterms[0].first)
-        {
-            const auto& minterm = minterms[0].second;
+            size_t start = 0;
+
+            // Loop over each minterm (subpattern) in the compound pattern
+            while (start < pattern.size())
+            {
+                // Find the next delimiter and extract the substring for this minterm
+                const auto end = pattern.find(delimiter, start);
+                auto minterm = pattern.substr(start, end - start);
+
+                // Advance the start position for the next iteration
+                start = (end == std::string::npos) ? end : end + delimiter.length();
+
+                // Check if the minterm is negated
+                bool negated = false;
+                if (!minterm.empty() && minterm[0] == '!')
+                {
+                    negated = true;
+                    minterm.erase(0, 1); // Remove the '!' for pattern matching
+                }
+
+                minterms.emplace_back(negated, minterm);
+            }
+
+            // Special case: if there's only one minterm and it's negated
+            if (minterms.size() == 1 && minterms[0].first)
+            {
+                const auto& minterm = minterms[0].second;
+                std::istringstream stream(content);
+                std::string line;
+                while (std::getline(stream, line))
+                {
+                    if (EvaluateMinterm(minterm, line, engine))
+                    {
+                        return false; // A line matched the negated pattern → fail
+                    }
+                }
+                return true; // No line matched the negated pattern → pass
+            }
+
+            // Regular compound pattern logic
             std::istringstream stream(content);
             std::string line;
+
             while (std::getline(stream, line))
             {
-                if (EvaluateMinterm(minterm, line, engine))
+                bool allMintermsPassed = true;
+
+                for (const auto& [negated, minterm] : minterms)
                 {
-                    return false; // A line matched the negated pattern → fail
+                    const bool match = EvaluateMinterm(minterm, line, engine);
+                    if ((negated && match) || (!negated && !match))
+                    {
+                        allMintermsPassed = false;
+                        break;
+                    }
                 }
-            }
-            return true; // No line matched the negated pattern → pass
-        }
 
-        // Regular compound pattern logic
-        std::istringstream stream(content);
-        std::string line;
-
-        while (std::getline(stream, line))
-        {
-            bool allMintermsPassed = true;
-
-            for (const auto& [negated, minterm] : minterms)
-            {
-                const bool match = EvaluateMinterm(minterm, line, engine);
-                if ((negated && match) || (!negated && !match))
+                if (allMintermsPassed)
                 {
-                    allMintermsPassed = false;
-                    break;
+                    return true; // A line satisfied all minterms
                 }
             }
 
-            if (allMintermsPassed)
-            {
-                return true; // A line satisfied all minterms
-            }
-        }
-
-        return false; // No line satisfied all minterms
+            return false; // No line satisfied all minterms
         }
         catch (const std::exception& e)
         {

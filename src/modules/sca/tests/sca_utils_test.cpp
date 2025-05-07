@@ -83,6 +83,12 @@ TEST(PatternMatchesTest, InvalidOperandForComparisonReturnsNullopt)
     ASSERT_FALSE(patternMatch.has_value());
 }
 
+TEST(PatternMatchesTest, InvalidPCRE2RegexReturnsNullopt)
+{
+    const auto patternMatch = PatternMatches("aaaaaaaaaaaaaaaaaaaaa!", "r:^((a+)+$");
+    ASSERT_FALSE(patternMatch.has_value());
+}
+
 TEST(PatternMatchesTest, SimpleMatch)
 {
     auto patternMatch = PatternMatches("match", "match");
