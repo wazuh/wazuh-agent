@@ -37,6 +37,8 @@
     - [Architecture](ref/modules/logcollector/architecture.md)
     - [API Reference](ref/modules/logcollector/api-reference.md)
   - [SCA](ref/modules/sca/README.md)
+    - [Architecture](ref/modules/sca/architecture.md)
+    - [API Reference](ref/modules/sca/api-reference.md)
     - [Output Samples](ref/modules/sca/output-samples.md)
 - [Upgrade](ref/upgrade.md)
 - [Uninstall](ref/uninstall.md)
