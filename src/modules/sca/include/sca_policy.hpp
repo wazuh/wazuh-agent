@@ -18,7 +18,6 @@ public:
     struct Check
     {
         std::optional<std::string> id;
-        std::string title;
         std::string condition;
         std::vector<std::unique_ptr<IRuleEvaluator>> rules;
     };

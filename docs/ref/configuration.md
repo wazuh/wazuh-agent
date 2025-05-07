@@ -177,3 +177,25 @@ inventory:
 |           | `ports_all`     | Enables the all ports scan or only listening ports                                      | false   |
 |           | `processes`     | Enables the process scan                                                                | false   |
 |           | `hotfixes`      | Enables the hotfix scan                                                                 | true    |
+
+### SCA Module
+
+```yaml
+sca:
+  enabled: true
+  scan_on_start: true
+  interval: 1h
+  policies:
+    - etc/shared/cis_debian10.yml
+    - /my/custom/policy/path/my_policy.yaml
+  policies_disabled:
+    - ruleset/sca/cis_debian9.yml
+```
+
+| Mandatory | Option              | Description                                                                 | Default |
+| :-------: | ------------------- | --------------------------------------------------------------------------- | ------- |
+|           | `enabled`           | Enables or disables the SCA module                                          | yes     |
+|           | `scan_on_start`     | Runs an assessment as soon as the agent starts                              | true    |
+|           | `interval`          | Time between scans (supports `s`, `m`, `h`, `d`)                            | 1h      |
+|           | `policies`          | List of enabled policy file paths                                           | —       |
+|           | `policies_disabled` | List of policy file paths to explicitly disable                             | —       |

@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <nlohmann/json.hpp>
 #include <sstream>
 
@@ -73,15 +74,16 @@ namespace
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
 PolicyParser::PolicyParser(const std::filesystem::path& filename, LoadFileFunc loadFileFunc)
+    : m_loadFileFunc(loadFileFunc ? std::move(loadFileFunc) : YAML::LoadFile)
 {
     try
     {
-        if (!IsValidYamlFile(filename))
+        if (!IsValidYamlFile(filename.string()))
         {
             throw std::runtime_error("The file does not contain a valid YAML structure.");
         }
 
-        m_node = loadFileFunc ? loadFileFunc(filename) : YAML::LoadFile(filename.string());
+        m_node = m_loadFileFunc(filename.string());
 
         if (auto variables = m_node["variables"]; variables)
         {
@@ -94,7 +96,7 @@ PolicyParser::PolicyParser(const std::filesystem::path& filename, LoadFileFunc l
         }
         ReplaceVariablesInNode(m_node);
     }
-    catch (const YAML::Exception& e)
+    catch (const std::exception& e)
     {
         LogError("Error parsing YAML file: {}", e.what());
     }
@@ -104,7 +106,7 @@ bool PolicyParser::IsValidYamlFile(const std::filesystem::path& filename) const
 {
     try
     {
-        const auto mapToValidte = YAML::LoadFile(filename.string());
+        const auto mapToValidte = m_loadFileFunc(filename.string());
 
         if (!mapToValidte.IsMap() && !mapToValidte.IsSequence())
         {
@@ -149,7 +151,6 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
     {
         try
         {
-            requirements.title = requirementsNode["title"].as<std::string>();
             requirements.condition = requirementsNode["condition"].as<std::string>();
 
             for (const auto& rule : requirementsNode["rules"])
@@ -169,7 +170,7 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
         }
         catch (const YAML::Exception& e)
         {
-            LogError("Failed to parse requirements. Skipping it. Error: {}", e.what());
+            LogError("Failed to parse requirements. Error: {}", e.what());
             return std::nullopt;
         }
     }
@@ -182,16 +183,19 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
             {
                 SCAPolicy::Check check;
                 check.id = checkNode["id"].as<std::string>();
-                check.title = checkNode["title"].as<std::string>();
                 check.condition = checkNode["condition"].as<std::string>();
+                YAML::Node checkWithValidRules = YAML::Clone(checkNode);
+                checkWithValidRules["rules"] = YAML::Node(YAML::NodeType::Sequence);
 
                 if (checkNode["rules"])
                 {
                     for (const auto& rule : checkNode["rules"])
                     {
-                        if (auto ruleEvaluator = RuleEvaluatorFactory::CreateEvaluator(rule.as<std::string>()))
+                        const auto ruleStr = rule.as<std::string>();
+                        if (auto ruleEvaluator = RuleEvaluatorFactory::CreateEvaluator(ruleStr))
                         {
                             check.rules.push_back(std::move(ruleEvaluator));
+                            checkWithValidRules["rules"].push_back(ruleStr);
                         }
                         else
                         {
@@ -202,7 +206,7 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
 
                 LogDebug("Check {} parsed.", check.id.value_or("Invalid id"));
                 checks.push_back(std::move(check));
-                nlohmann::json checkJson = YamlNodeToJson(checkNode);
+                nlohmann::json checkJson = YamlNodeToJson(checkWithValidRules);
                 checkJson["policy_id"] = policyId;
                 policiesAndChecks["checks"].push_back(checkJson);
             }

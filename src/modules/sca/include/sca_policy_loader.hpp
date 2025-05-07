@@ -68,6 +68,15 @@ private:
     /// @param check The check to update
     void UpdateCheckResult(const nlohmann::json& check) const;
 
+    /// @brief Normalizes the structure of a JSON object.
+    ///
+    /// Ensures "references" field is replaced with "refs" and "title" field is replaced with "name" before the DB
+    /// transaction.
+    ///
+    /// @param data The JSON object to normalize.
+    /// @returns The normalized JSON object.
+    nlohmann::json NormalizeData(nlohmann::json data) const;
+
     std::shared_ptr<IFileSystemWrapper> m_fileSystemWrapper;
 
     std::vector<std::filesystem::path> m_customPoliciesPaths;

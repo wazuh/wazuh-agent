@@ -75,6 +75,12 @@ target_include_directories(
 target_link_libraries(process_rule_evaluator_test PRIVATE SCA GTest::gtest GTest::gmock GTest::gtest_main)
 add_test(NAME ProcessRuleEvaluatorTest COMMAND process_rule_evaluator_test)
 
+add_executable(sca_policy_parser_test sca_policy_parser_test.cpp)
+configure_target(sca_policy_parser_test)
+target_include_directories(sca_policy_parser_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+target_link_libraries(sca_policy_parser_test PRIVATE SCA GTest::gtest GTest::gtest_main)
+add_test(NAME SCAPolicyParserTest COMMAND sca_policy_parser_test)
+
 if(WIN32)
     add_executable(registry_rule_evaluator_test registry_rule_evaluator_test.cpp)
     configure_target(registry_rule_evaluator_test)
