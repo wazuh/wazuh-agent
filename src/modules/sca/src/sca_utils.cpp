@@ -14,35 +14,35 @@ namespace
 {
     std::pair<bool, std::string> Pcre2Match(const std::string& content, const std::string& pattern)
     {
-        int error_code = 0;
+        int errorCode = 0;
         PCRE2_SIZE error_offset = 0;
 
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const auto pattern_ptr = reinterpret_cast<PCRE2_SPTR8>(pattern.c_str());
+        const auto patternPtr = reinterpret_cast<PCRE2_SPTR8>(pattern.c_str());
 
         auto* re =
-            pcre2_compile(pattern_ptr, PCRE2_ZERO_TERMINATED, PCRE2_MULTILINE, &error_code, &error_offset, nullptr);
+            pcre2_compile(patternPtr, PCRE2_ZERO_TERMINATED, PCRE2_MULTILINE, &errorCode, &error_offset, nullptr);
 
         if (!re)
         {
             throw std::runtime_error("PCRE2 compilation failed");
         }
 
-        auto* match_data = pcre2_match_data_create_from_pattern(re, nullptr);
+        auto* matchData = pcre2_match_data_create_from_pattern(re, nullptr);
 
-        if (!match_data)
+        if (!matchData)
         {
             pcre2_code_free(re);
             throw std::runtime_error("PCRE2 match data creation failed");
         }
 
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const auto content_ptr = reinterpret_cast<PCRE2_SPTR8>(content.c_str());
-        const auto rc = pcre2_match(re, content_ptr, content.size(), 0, 0, match_data, nullptr);
+        const auto contentPtr = reinterpret_cast<PCRE2_SPTR8>(content.c_str());
+        const auto rc = pcre2_match(re, contentPtr, content.size(), 0, 0, matchData, nullptr);
 
-        auto pcre2CleanUp = [match_data, re]()
+        auto pcre2CleanUp = [matchData, re]()
         {
-            pcre2_match_data_free(match_data);
+            pcre2_match_data_free(matchData);
             pcre2_code_free(re);
         };
 
@@ -59,7 +59,7 @@ namespace
             throw std::runtime_error("PCRE2 match error: " + std::to_string(rc));
         }
 
-        const auto* ovector = pcre2_get_ovector_pointer(match_data);
+        const auto* ovector = pcre2_get_ovector_pointer(matchData);
 
         if (!ovector)
         {
@@ -81,56 +81,56 @@ namespace
     EvaluateNumericRegexComparison(const std::string& content, const std::string& expr, sca::RegexEngineType engine)
     {
         std::istringstream stream(expr);
-        std::string pattern, compare_word, op_str, expected_value_str;
-        std::pair<bool, std::string> match_result {false, ""};
+        std::string pattern, compareWord, opStr, expectedValueStr;
+        std::pair<bool, std::string> matchResult {false, ""};
 
-        if (!(stream >> pattern >> compare_word >> op_str >> expected_value_str))
+        if (!(stream >> pattern >> compareWord >> opStr >> expectedValueStr))
         {
             throw std::runtime_error("Invalid expression format");
         }
 
-        if (compare_word != "compare")
+        if (compareWord != "compare")
         {
             throw std::runtime_error("Expected 'compare' keyword in numeric comparison");
         }
 
-        const int expected_value = std::stoi(expected_value_str);
+        const int expectedValue = std::stoi(expectedValueStr);
 
         if (engine == sca::RegexEngineType::PCRE2)
         {
-            match_result = Pcre2Match(content, pattern);
+            matchResult = Pcre2Match(content, pattern);
         }
 
-        if (!match_result.first)
+        if (!matchResult.first)
         {
             return false;
         }
 
-        const int actual_value = std::stoi(match_result.second);
+        const int actualValue = std::stoi(matchResult.second);
 
-        if (op_str == "<")
+        if (opStr == "<")
         {
-            return actual_value < expected_value;
+            return actualValue < expectedValue;
         }
-        if (op_str == "<=")
+        if (opStr == "<=")
         {
-            return actual_value <= expected_value;
+            return actualValue <= expectedValue;
         }
-        if (op_str == "==")
+        if (opStr == "==")
         {
-            return actual_value == expected_value;
+            return actualValue == expectedValue;
         }
-        if (op_str == "!=")
+        if (opStr == "!=")
         {
-            return actual_value != expected_value;
+            return actualValue != expectedValue;
         }
-        if (op_str == ">=")
+        if (opStr == ">=")
         {
-            return actual_value >= expected_value;
+            return actualValue >= expectedValue;
         }
-        if (op_str == ">")
+        if (opStr == ">")
         {
-            return actual_value > expected_value;
+            return actualValue > expectedValue;
         }
 
         throw std::runtime_error("Invalid operator in numeric comparison");
@@ -177,30 +177,30 @@ namespace sca
 
     std::optional<std::pair<int, std::string>> ParseRuleType(const std::string& input)
     {
-        const auto delimiter_pos = input.find(':');
+        const auto delimeterPos = input.find(':');
 
-        if (delimiter_pos == std::string::npos)
+        if (delimeterPos == std::string::npos)
         {
             return std::nullopt;
         }
 
-        auto key = input.substr(0, delimiter_pos);
-        const auto value = input.substr(delimiter_pos + 1);
+        auto key = input.substr(0, delimeterPos);
+        const auto value = input.substr(delimeterPos + 1);
 
         if (!key.empty() && key.front() == '!')
         {
             key.erase(0, 1);
         }
 
-        static const std::map<std::string, int> type_map = {{"f", WM_SCA_TYPE_FILE},
-                                                            {"r", WM_SCA_TYPE_REGISTRY},
-                                                            {"p", WM_SCA_TYPE_PROCESS},
-                                                            {"d", WM_SCA_TYPE_DIR},
-                                                            {"c", WM_SCA_TYPE_COMMAND}};
+        static const std::map<std::string, int> typeMap = {{"f", WM_SCA_TYPE_FILE},
+                                                           {"r", WM_SCA_TYPE_REGISTRY},
+                                                           {"p", WM_SCA_TYPE_PROCESS},
+                                                           {"d", WM_SCA_TYPE_DIR},
+                                                           {"c", WM_SCA_TYPE_COMMAND}};
 
-        const auto it = type_map.find(key);
+        const auto it = typeMap.find(key);
 
-        if (it == type_map.end())
+        if (it == typeMap.end())
         {
             return std::nullopt;
         }
