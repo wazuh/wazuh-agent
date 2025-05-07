@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <nlohmann/json.hpp>
 #include <sstream>
 
@@ -95,7 +96,7 @@ PolicyParser::PolicyParser(const std::filesystem::path& filename, LoadFileFunc l
         }
         ReplaceVariablesInNode(m_node);
     }
-    catch (const YAML::Exception& e)
+    catch (const std::exception& e)
     {
         LogError("Error parsing YAML file: {}", e.what());
     }
@@ -169,7 +170,7 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
         }
         catch (const YAML::Exception& e)
         {
-            LogError("Failed to parse requirements. Skipping it. Error: {}", e.what());
+            LogError("Failed to parse requirements. Error: {}", e.what());
             return std::nullopt;
         }
     }
@@ -183,14 +184,18 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
                 SCAPolicy::Check check;
                 check.id = checkNode["id"].as<std::string>();
                 check.condition = checkNode["condition"].as<std::string>();
+                YAML::Node checkWithValidRules = YAML::Clone(checkNode);
+                checkWithValidRules["rules"] = YAML::Node(YAML::NodeType::Sequence);
 
                 if (checkNode["rules"])
                 {
                     for (const auto& rule : checkNode["rules"])
                     {
-                        if (auto ruleEvaluator = RuleEvaluatorFactory::CreateEvaluator(rule.as<std::string>()))
+                        const auto ruleStr = rule.as<std::string>();
+                        if (auto ruleEvaluator = RuleEvaluatorFactory::CreateEvaluator(ruleStr))
                         {
                             check.rules.push_back(std::move(ruleEvaluator));
+                            checkWithValidRules["rules"].push_back(ruleStr);
                         }
                         else
                         {
@@ -201,7 +206,7 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
 
                 LogDebug("Check {} parsed.", check.id.value_or("Invalid id"));
                 checks.push_back(std::move(check));
-                nlohmann::json checkJson = YamlNodeToJson(checkNode);
+                nlohmann::json checkJson = YamlNodeToJson(checkWithValidRules);
                 checkJson["policy_id"] = policyId;
                 policiesAndChecks["checks"].push_back(checkJson);
             }
