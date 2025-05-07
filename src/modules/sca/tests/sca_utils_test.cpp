@@ -65,6 +65,24 @@ TEST(GetPatternTest, InvalidPattern)
     EXPECT_FALSE(GetPattern("no arrow here"));
 }
 
+TEST(PatternMatchesTest, InvalidCompareStringReturnsNullopt)
+{
+    const auto patternMatch = PatternMatches("match", "n:123 c0mp4r3 >= 123");
+    ASSERT_FALSE(patternMatch.has_value());
+}
+
+TEST(PatternMatchesTest, InvalidComparisonOperatorReturnsNullopt)
+{
+    const auto patternMatch = PatternMatches("123", "n:123 compare !! 123");
+    ASSERT_FALSE(patternMatch.has_value());
+}
+
+TEST(PatternMatchesTest, InvalidOperandForComparisonReturnsNullopt)
+{
+    const auto patternMatch = PatternMatches("match", "n:^\\*.*soft.*nofile\\s+(\\d+) compare >= asdf");
+    ASSERT_FALSE(patternMatch.has_value());
+}
+
 TEST(PatternMatchesTest, SimpleMatch)
 {
     auto patternMatch = PatternMatches("match", "match");

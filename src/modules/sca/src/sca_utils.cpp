@@ -72,12 +72,12 @@ namespace
 
         if (!(stream >> pattern >> compare_word >> op_str >> expected_value_str))
         {
-            return false;
+            throw std::runtime_error("Invalid expression format");
         }
 
         if (compare_word != "compare")
         {
-            return false;
+            throw std::runtime_error("Expected 'compare' keyword in numeric comparison");
         }
 
         const int expected_value = std::stoi(expected_value_str);
@@ -119,7 +119,7 @@ namespace
             return actual_value > expected_value;
         }
 
-        return false;
+        throw std::runtime_error("Invalid operator in numeric comparison");
     }
 
     bool EvaluateMinterm(const std::string& minterm, const std::string& content, sca::RegexEngineType engine)
