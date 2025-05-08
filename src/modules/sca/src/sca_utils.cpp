@@ -301,7 +301,7 @@ namespace sca
         }
         catch (const std::exception& e)
         {
-            LogError("{}", e.what());
+            LogError("Exception '{}' was caught while evaluating pattern '{}'.", e.what(), pattern);
             return std::nullopt;
         }
     }
