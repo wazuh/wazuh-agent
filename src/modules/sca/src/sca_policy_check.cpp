@@ -204,28 +204,30 @@ RuleResult DirRuleEvaluator::CheckDirectoryForContents()
 
     if (IsRegexPattern(pattern))
     {
-        const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
-
-        auto hadValue = false;
-
-        for (const auto& file : files)
+        if (const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule); !files.empty())
         {
-            if (const auto patternMatch = sca::PatternMatches(file.filename().string(), pattern))
-            {
-                hadValue = true;
+            auto hadValue = false;
 
-                if (patternMatch.value())
+            for (const auto& file : files)
+            {
+                if (const auto patternMatch = sca::PatternMatches(file.filename().string(), pattern))
                 {
-                    result = RuleResult::Found;
-                    break;
+                    hadValue = true;
+
+                    if (patternMatch.value())
+                    {
+                        result = RuleResult::Found;
+                        break;
+                    }
                 }
             }
-        }
 
-        if (!hadValue)
-        {
-            // We assume that if all calls to PatternMatches return nullopt, the pattern is invalid or an error occurred
-            return RuleResult::Invalid;
+            if (!hadValue)
+            {
+                // We assume that if all calls to PatternMatches return nullopt, the pattern is invalid or an error
+                // occurred
+                return RuleResult::Invalid;
+            }
         }
     }
     else if (const auto content = sca::GetPattern(pattern))
