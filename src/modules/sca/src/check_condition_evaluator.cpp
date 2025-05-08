@@ -22,7 +22,7 @@ CheckConditionEvaluator::CheckConditionEvaluator(ConditionType type)
 {
 }
 
-void CheckConditionEvaluator::AddResult(bool passed)
+void CheckConditionEvaluator::AddResult(RuleResult result)
 {
     if (m_result.has_value())
     {
@@ -30,24 +30,24 @@ void CheckConditionEvaluator::AddResult(bool passed)
     }
 
     ++m_totalRules;
-    m_passedRules += passed;
+    m_passedRules += (RuleResult::Found == result) ? 1 : 0;
 
     switch (m_type)
     {
         case ConditionType::All:
-            if (!passed)
+            if (RuleResult::Found != result)
             {
                 m_result = false;
             }
             break;
         case ConditionType::Any:
-            if (passed)
+            if (RuleResult::Found == result)
             {
                 m_result = true;
             }
             break;
         case ConditionType::None:
-            if (passed)
+            if (RuleResult::NotFound != result)
             {
                 m_result = false;
             }

@@ -12,7 +12,7 @@ public:
 
     explicit CheckConditionEvaluator(ConditionType type);
 
-    void AddResult(bool passed);
+    void AddResult(RuleResult result);
 
     bool Result() const;
 
