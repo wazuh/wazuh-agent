@@ -233,3 +233,29 @@ TEST_F(DirRuleEvaluatorTest, CanonicalChangesPathAndIsUsed)
     auto evaluator = CreateEvaluator();
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
 }
+
+TEST_F(DirRuleEvaluatorTest, FileFoundInSubdirectory)
+{
+    m_ctx.pattern = std::string("match.txt");
+    m_ctx.rule = "dir/";
+
+    // Top-level directory exists and is canonicalized
+    EXPECT_CALL(*m_rawFsMock, exists(std::filesystem::path("dir/"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawFsMock, canonical(std::filesystem::path("dir/"))).WillOnce(::testing::Return("dir/"));
+    EXPECT_CALL(*m_rawFsMock, is_directory(std::filesystem::path("dir/"))).WillOnce(::testing::Return(true));
+
+    // Top-level contains one subdirectory
+    EXPECT_CALL(*m_rawFsMock, list_directory(std::filesystem::path("dir/")))
+        .WillOnce(::testing::Return(std::vector<std::filesystem::path> {"sub"}));
+    EXPECT_CALL(*m_rawFsMock, is_symlink(std::filesystem::path("sub"))).WillOnce(::testing::Return(false));
+    EXPECT_CALL(*m_rawFsMock, is_directory(std::filesystem::path("sub"))).WillOnce(::testing::Return(true));
+
+    // Subdirectory contains "match.txt"
+    EXPECT_CALL(*m_rawFsMock, list_directory(std::filesystem::path("sub")))
+        .WillOnce(::testing::Return(std::vector<std::filesystem::path> {"match.txt"}));
+    EXPECT_CALL(*m_rawFsMock, is_symlink(std::filesystem::path("match.txt"))).WillOnce(::testing::Return(false));
+    EXPECT_CALL(*m_rawFsMock, is_directory(std::filesystem::path("match.txt"))).WillOnce(::testing::Return(false));
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
+}
