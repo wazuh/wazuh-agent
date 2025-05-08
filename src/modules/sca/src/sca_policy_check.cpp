@@ -239,8 +239,6 @@ RuleResult DirRuleEvaluator::CheckDirectoryForContents()
         {
             if (file.filename().string() == fileName)
             {
-                result = RuleResult::NotFound;
-
                 m_fileUtils->readLineByLine(file,
                                             [&content, &result](const std::string& line)
                                             {
