@@ -70,6 +70,14 @@ namespace
 
         return nullptr;
     }
+
+    void ValidateConditionString(const std::string& value)
+    {
+        if (!(value == "any" || value == "none" || value == "all"))
+        {
+            throw std::invalid_argument("Invalid condition: " + value);
+        }
+    }
 } // namespace
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
@@ -152,6 +160,7 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
         try
         {
             requirements.condition = requirementsNode["condition"].as<std::string>();
+            ValidateConditionString(requirements.condition);
 
             for (const auto& rule : requirementsNode["rules"])
             {
@@ -168,7 +177,7 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
             }
             LogDebug("Requirements parsed.");
         }
-        catch (const YAML::Exception& e)
+        catch (const std::exception& e)
         {
             LogError("Failed to parse requirements. Error: {}", e.what());
             return std::nullopt;
@@ -184,6 +193,7 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
                 SCAPolicy::Check check;
                 check.id = checkNode["id"].as<std::string>();
                 check.condition = checkNode["condition"].as<std::string>();
+                ValidateConditionString(check.condition);
                 YAML::Node checkWithValidRules = YAML::Clone(checkNode);
                 checkWithValidRules["rules"] = YAML::Node(YAML::NodeType::Sequence);
 
@@ -210,7 +220,7 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
                 checkJson["policy_id"] = policyId;
                 policiesAndChecks["checks"].push_back(checkJson);
             }
-            catch (const YAML::Exception& e)
+            catch (const std::exception& e)
             {
                 LogError("Failed to parse a check. Skipping it. Error: {}", e.what());
                 continue;
