@@ -130,7 +130,7 @@ TEST_F(DirRuleEvaluatorTest, ExactPatternMatchesFileNameReturnsFound)
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
 }
 
-TEST_F(DirRuleEvaluatorTest, PatternSearchOnMissingFileReturnsInvalid)
+TEST_F(DirRuleEvaluatorTest, PatternSearchOnMissingDirectoryReturnsInvalid)
 {
     m_ctx.pattern = std::string("match.txt");
     m_ctx.rule = "dir/";
@@ -139,4 +139,32 @@ TEST_F(DirRuleEvaluatorTest, PatternSearchOnMissingFileReturnsInvalid)
 
     auto evaluator = CreateEvaluator();
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+}
+
+TEST_F(DirRuleEvaluatorTest, PatternSearchOnMissingFileReturnsNotFound)
+{
+    m_ctx.pattern = std::string("match.txt -> hello");
+    m_ctx.rule = "dir/";
+
+    EXPECT_CALL(*m_rawFsMock, exists(std::filesystem::path("dir/"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawFsMock, is_directory(std::filesystem::path("dir/"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawFsMock, list_directory(std::filesystem::path("dir/")))
+        .WillOnce(::testing::Return(std::vector<std::filesystem::path> {}));
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::NotFound);
+}
+
+TEST_F(DirRuleEvaluatorTest, RegexPatternSearchOnMissingFileReturnsNotFound)
+{
+    m_ctx.pattern = std::string("match.txt -> r:hello");
+    m_ctx.rule = "dir/";
+
+    EXPECT_CALL(*m_rawFsMock, exists(std::filesystem::path("dir/"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawFsMock, is_directory(std::filesystem::path("dir/"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawFsMock, list_directory(std::filesystem::path("dir/")))
+        .WillOnce(::testing::Return(std::vector<std::filesystem::path> {"nomatchfile"}));
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::NotFound);
 }
