@@ -294,56 +294,24 @@ namespace Utils
 
     std::string getIpV6Address(const uint8_t* addrParam)
     {
-        std::string retVal;
-
-        if (addrParam)
+        if (!addrParam)
         {
-            constexpr auto IPV6_BUFFER_ADDRESS_SIZE {16};
-            std::array<char, IPV6_BUFFER_ADDRESS_SIZE> buffer;
-            memcpy(buffer.data(), addrParam, IPV6_BUFFER_ADDRESS_SIZE);
-
-            std::array<char, IPV6_BUFFER_ADDRESS_SIZE> addrComparator;
-            addrComparator.fill(0);
-
-            if (std::equal(buffer.begin(), buffer.end(), addrComparator.begin()))
-            {
-                retVal = "::";
-            }
-            else
-            {
-                addrComparator.at(IPV6_BUFFER_ADDRESS_SIZE - 1) = 0x1;
-
-                if (std::equal(buffer.begin(), buffer.end(), addrComparator.begin()))
-                {
-                    retVal = "::1";
-                }
-                else
-                {
-                    std::stringstream ss;
-                    bool separator {false};
-                    ss << std::hex << std::setfill('0');
-
-                    for (const auto& value : buffer)
-                    {
-                        ss << std::setw(2) << (static_cast<unsigned>(value) & 0xFF);
-
-                        if (separator)
-                        {
-                            ss << ":";
-                        }
-
-                        separator = !separator;
-                    }
-
-                    retVal = ss.str();
-                    Utils::replaceAll(retVal, "0000", "");
-                    Utils::replaceAll(retVal, ":::", "::");
-                    retVal = retVal.substr(0, retVal.size() - 1);
-                }
-            }
+            return "";
         }
 
-        return retVal;
+        sockaddr_in6 sa6 {};
+        sa6.sin6_family = AF_INET6;
+        memcpy(&sa6.sin6_addr, addrParam, 16);
+
+        wchar_t buffer[128] = {};
+        DWORD bufSize = 128;
+
+        if (WSAAddressToStringW(reinterpret_cast<SOCKADDR*>(&sa6), sizeof(sa6), nullptr, buffer, &bufSize) != 0)
+        {
+            return "";
+        }
+
+        return wstringToStringUTF8(buffer);
     }
 
     std::string ipv6Netmask(const uint8_t maskLength)
