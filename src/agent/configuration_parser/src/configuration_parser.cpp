@@ -56,7 +56,9 @@ namespace configuration
         catch (const std::exception& e)
         {
             m_config = YAML::Node();
-            LogWarn("Using default values due to error parsing wazuh-agent.yml file: {}", e.what());
+            LogWarn("Using default values due to error parsing wazuh-agent.yml file: {} - {}",
+                    e.what(),
+                    m_configFilePath.string());
         }
     }
 
