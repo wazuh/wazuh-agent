@@ -7,15 +7,30 @@
 
 namespace
 {
+    std::pair<std::string, std::string> SplitRegistryKey(std::string_view fullKey)
+    {
+        if (fullKey.empty())
+        {
+            return {"", ""};
+        }
+
+        size_t separator = fullKey.find('\\');
+
+        if (separator == std::string_view::npos)
+        {
+            return {std::string(fullKey), ""};
+        }
+        return {std::string(fullKey.substr(0, separator)), std::string(fullKey.substr(separator + 1))};
+    }
+
     // Checks if a registry key exists
     const RegistryRuleEvaluator::IsValidRegistryKeyFunc DEFAULT_IS_VALID_REGISTRY_KEY =
         [](const std::string& rootKey) -> bool
     {
         try
         {
-            Utils::Registry registry(rootKey);
-            (void)registry.enumerate(); // Prevent unused variable warning and optimizing the call away
-            return true;
+            auto [key, subkey] = SplitRegistryKey(rootKey);
+            return Utils::Registry::KeyExists(key, subkey);
         }
         catch (...)
         {
