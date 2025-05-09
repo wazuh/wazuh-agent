@@ -1,12 +1,13 @@
 #pragma once
 
-#include <filesystem_wrapper.hpp>
-#include <sca_policy.hpp>
+#include <isca_policy.hpp>
 
 #include <nlohmann/json.hpp>
+#include <yaml-cpp/yaml.h>
+
+#include <memory>
 #include <string>
 #include <unordered_map>
-#include <yaml-cpp/yaml.h>
 
 /// @brief Compares two strings based on their length and then alphabetical order.
 struct StringLengthGreater
@@ -56,7 +57,7 @@ public:
     ///
     /// @param policiesAndChecks JSON object to be filled with extracted data.
     /// @return A populated SCAPolicy object.
-    std::optional<SCAPolicy> ParsePolicy(nlohmann::json& policiesAndChecks) const;
+    std::unique_ptr<ISCAPolicy> ParsePolicy(nlohmann::json& policiesAndChecks) const;
 
 private:
     /// @brief Recursively replaces variables in the YAML node with their values.

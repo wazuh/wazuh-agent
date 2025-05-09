@@ -1,5 +1,7 @@
 #include <check_condition_evaluator.hpp>
 
+#include <stdexcept>
+
 CheckConditionEvaluator CheckConditionEvaluator::FromString(const std::string& str)
 {
     if (str == "all")

@@ -84,7 +84,7 @@ TEST(PolicyParserTest, ConstructorExtractsVariables)
     nlohmann::json j;
     const auto policyOpt = parser.ParsePolicy(j);
 
-    ASSERT_TRUE(policyOpt.has_value());
+    ASSERT_TRUE(policyOpt);
     ASSERT_EQ(j["checks"].size(), 1);
     EXPECT_EQ(j["checks"][0]["id"], "check1");
     EXPECT_EQ(j["checks"][0]["title"], "title");
@@ -113,7 +113,7 @@ TEST(PolicyParserTest, MissingPolicyReturnsNullopt)
     const PolicyParser parser("dummy.yaml", loader);
     nlohmann::json j;
     const auto policyOpt = parser.ParsePolicy(j);
-    EXPECT_FALSE(policyOpt.has_value());
+    EXPECT_FALSE(policyOpt);
 }
 
 TEST(PolicyParserTest, EmptyRequirementsReturnsNullopt)
@@ -133,7 +133,7 @@ TEST(PolicyParserTest, EmptyRequirementsReturnsNullopt)
     const PolicyParser parser("dummy.yaml", loader);
     nlohmann::json j;
     const auto policyOpt = parser.ParsePolicy(j);
-    EXPECT_FALSE(policyOpt.has_value());
+    EXPECT_FALSE(policyOpt);
 }
 
 TEST(PolicyParserTest, MissingChecksReturnsNullopt)
@@ -155,7 +155,7 @@ TEST(PolicyParserTest, MissingChecksReturnsNullopt)
     const PolicyParser parser("dummy.yaml", loader);
     nlohmann::json j;
     const auto policyOpt = parser.ParsePolicy(j);
-    EXPECT_FALSE(policyOpt.has_value());
+    EXPECT_FALSE(policyOpt);
 }
 
 TEST(PolicyParserTest, InvalidConditionReturnsNullopt)
@@ -177,7 +177,7 @@ TEST(PolicyParserTest, InvalidConditionReturnsNullopt)
     const PolicyParser parser("dummy.yaml", loader);
     nlohmann::json j;
     const auto policyOpt = parser.ParsePolicy(j);
-    EXPECT_FALSE(policyOpt.has_value());
+    EXPECT_FALSE(policyOpt);
 }
 
 TEST(PolicyParserTest, InvalidRuleIsHandledGracefully)
@@ -202,7 +202,7 @@ TEST(PolicyParserTest, InvalidRuleIsHandledGracefully)
     nlohmann::json j;
     const auto policyOpt = parser.ParsePolicy(j);
 
-    ASSERT_TRUE(policyOpt.has_value());
+    ASSERT_TRUE(policyOpt);
     ASSERT_EQ(j["checks"].size(), 1);
     EXPECT_EQ(j["checks"][0]["rules"], "");
 }
@@ -239,7 +239,7 @@ TEST(PolicyParserTest, YamlNodeToJsonParsesMapWithSequenceValues)
     nlohmann::json j;
     const auto policyOpt = parser.ParsePolicy(j);
 
-    ASSERT_TRUE(policyOpt.has_value());
+    ASSERT_TRUE(policyOpt);
     EXPECT_EQ(j["checks"][0]["metadata"]["tags"], "category:security, category:compliance");
     EXPECT_EQ(j["checks"][0]["metadata"]["platforms"], "os:linux, os:windows");
 }

@@ -1,9 +1,9 @@
 #include <sca_policy_check.hpp>
 
-#include <registryHelper.hpp>
 #include <sca_utils.hpp>
 
 #include <logger.hpp>
+#include <registryHelper.hpp>
 
 namespace
 {

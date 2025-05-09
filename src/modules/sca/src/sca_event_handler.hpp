@@ -2,7 +2,6 @@
 
 #include <idbsync.hpp>
 #include <message.hpp>
-#include <sca_utils.hpp>
 
 #include <nlohmann/json.hpp>
 
@@ -44,9 +43,9 @@ public:
     /// @brief Reports the result of a check execution.
     /// @param policyId The ID of the policy associated with the check.
     /// @param checkId The ID of the check.
-    /// @param result Indicates the result of the check execution.
+    /// @param checkResult Indicates the result of the check execution.
     void
-    ReportCheckResult(const std::string& policyId, const std::string& checkId, const sca::CheckResult result) const;
+    ReportCheckResult(const std::string& policyId, const std::string& checkId, const std::string& checkResult) const;
 
 protected:
     /// @brief Processes modified items and returns a list of events.

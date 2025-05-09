@@ -1,12 +1,10 @@
 #pragma once
 
-#include <isca_policy_loader.hpp>
+#include <isca_policy.hpp>
 
 #include <configuration_parser.hpp>
 #include <idbsync.hpp>
 #include <ifilesystem_wrapper.hpp>
-#include <message.hpp>
-#include <sca_policy.hpp>
 
 #include <filesystem>
 #include <functional>
@@ -26,7 +24,7 @@ constexpr auto SCA_CHECK_TABLE_NAME {"sca_check"};
 using CreateEventsFunc = std::function<void(std::unordered_map<std::string, nlohmann::json> modifiedPoliciesMap,
                                             std::unordered_map<std::string, nlohmann::json> modifiedChecksMap)>;
 
-class SCAPolicyLoader : public ISCAPolicyLoader
+class SCAPolicyLoader
 {
 public:
     /// @brief Constructor for SCAPolicyLoader
@@ -46,7 +44,7 @@ public:
     /// maps:
     ///   - modifiedPoliciesMap: maps policy ID to the JSON data of the created, modified or deleted policy
     ///   - modifiedChecksMap: maps check ID to the JSON data of the created, modified or deleted check
-    std::vector<SCAPolicy> LoadPolicies(const CreateEventsFunc& createEvents) const;
+    std::vector<std::unique_ptr<ISCAPolicy>> LoadPolicies(const CreateEventsFunc& createEvents) const;
 
     /// @brief Saves SCA Policies into the database
     /// @param data All SCA policies and its checks

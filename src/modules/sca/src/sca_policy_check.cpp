@@ -1,15 +1,17 @@
 #include <sca_policy_check.hpp>
 
+#include <sca_utils.hpp>
+
 #include <cmdHelper.hpp>
 #include <file_io_utils.hpp>
 #include <filesystem_wrapper.hpp>
 #include <logger.hpp>
-#include <sca_utils.hpp>
 #include <stringHelper.hpp>
 #include <sysInfo.hpp>
 #include <sysInfoInterface.hpp>
 
 #include <stack>
+#include <stdexcept>
 
 namespace
 {

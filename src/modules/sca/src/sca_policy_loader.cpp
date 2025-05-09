@@ -1,9 +1,12 @@
 #include <sca_policy_loader.hpp>
 
+#include <sca_policy.hpp>
+#include <sca_policy_parser.hpp>
+#include <sca_utils.hpp>
+
 #include <dbsync.hpp>
 #include <filesystem_wrapper.hpp>
 #include <logger.hpp>
-#include <sca_policy_parser.hpp>
 
 #include <algorithm>
 
@@ -37,7 +40,7 @@ SCAPolicyLoader::SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemW
     m_disabledPoliciesPaths = loadPoliciesPathsFromConfig("policies_disabled");
 }
 
-std::vector<SCAPolicy> SCAPolicyLoader::LoadPolicies(const CreateEventsFunc& createEvents) const
+std::vector<std::unique_ptr<ISCAPolicy>> SCAPolicyLoader::LoadPolicies(const CreateEventsFunc& createEvents) const
 {
     std::vector<std::filesystem::path> allPolicyPaths;
 
@@ -50,7 +53,7 @@ std::vector<SCAPolicy> SCAPolicyLoader::LoadPolicies(const CreateEventsFunc& cre
                            [&](const std::filesystem::path& disabledPath) { return path == disabledPath; });
     };
 
-    std::vector<SCAPolicy> policies;
+    std::vector<std::unique_ptr<ISCAPolicy>> policies;
     nlohmann::json policiesAndChecks;
     policiesAndChecks["policies"] = nlohmann::json::array();
     policiesAndChecks["checks"] = nlohmann::json::array();
@@ -67,7 +70,7 @@ std::vector<SCAPolicy> SCAPolicyLoader::LoadPolicies(const CreateEventsFunc& cre
 
                 if (auto policy = parser.ParsePolicy(policiesAndChecks); policy)
                 {
-                    policies.emplace_back(std::move(policy.value()));
+                    policies.emplace_back(std::move(policy));
                 }
                 else
                 {

@@ -2,7 +2,6 @@
 #include <gtest/gtest.h>
 
 #include <configuration_parser.hpp>
-#include <isca_policy_loader.hpp>
 #include <sca_policy.hpp>
 #include <sca_policy_loader.hpp>
 
