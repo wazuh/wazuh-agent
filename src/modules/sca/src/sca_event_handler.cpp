@@ -55,11 +55,11 @@ void SCAEventHandler::ReportPoliciesDelta(
 
 void SCAEventHandler::ReportCheckResult(const std::string& policyId,
                                         const std::string& checkId,
-                                        const sca::CheckResult checkResult) const
+                                        const std::string& checkResult) const
 {
     auto policyData = GetPolicyById(policyId);
     auto checkData = GetPolicyCheckById(checkId);
-    checkData["result"] = sca::CheckResultToString(checkResult);
+    checkData["result"] = checkResult;
 
     auto updateResultQuery = SyncRowQuery::builder().table("sca_check").data(checkData).returnOldData().build();
 

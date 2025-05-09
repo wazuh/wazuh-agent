@@ -1,6 +1,8 @@
 #include <sca_policy.hpp>
 
 #include <check_condition_evaluator.hpp>
+#include <sca_utils.hpp>
+
 #include <logger.hpp>
 
 #include <boost/asio/steady_timer.hpp>
@@ -25,7 +27,7 @@ SCAPolicy::SCAPolicy(SCAPolicy&& other) noexcept
 boost::asio::awaitable<void>
 SCAPolicy::Run(std::time_t scanInterval,
                bool scanOnStart,
-               std::function<void(const std::string&, const std::string&, const sca::CheckResult)> reportCheckResult)
+               std::function<void(const std::string&, const std::string&, const std::string&)> reportCheckResult)
 {
     if (scanOnStart && m_keepRunning)
     {
@@ -45,7 +47,7 @@ SCAPolicy::Run(std::time_t scanInterval,
 }
 
 void SCAPolicy::Scan(
-    const std::function<void(const std::string&, const std::string&, const sca::CheckResult)>& reportCheckResult)
+    const std::function<void(const std::string&, const std::string&, const std::string&)>& reportCheckResult)
 {
     auto requirementsOk = true;
 
@@ -93,8 +95,12 @@ void SCAPolicy::Scan(
             LogDebug(
                 "Policy check evaluation completed for policy \"{}\", result: {}.", m_id, result ? "passed" : "failed");
 
-            // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-            reportCheckResult(m_id, check.id.value(), result ? sca::CheckResult::Passed : sca::CheckResult::Failed);
+            // NOLINTBEGIN(bugprone-unchecked-optional-access)
+            reportCheckResult(m_id,
+                              check.id.value(),
+                              result ? sca::CheckResultToString(sca::CheckResult::Passed)
+                                     : sca::CheckResultToString(sca::CheckResult::Failed));
+            // NOLINTEND(bugprone-unchecked-optional-access)
         }
 
         LogDebug("Policy checks evaluation completed for policy \"{}\"", m_id);
@@ -104,7 +110,7 @@ void SCAPolicy::Scan(
         for (const auto& check : m_checks)
         {
             // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-            reportCheckResult(m_id, check.id.value(), sca::CheckResult::NotApplicable);
+            reportCheckResult(m_id, check.id.value(), sca::CheckResultToString(sca::CheckResult::NotApplicable));
         }
     }
 }

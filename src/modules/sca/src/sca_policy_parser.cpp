@@ -1,12 +1,15 @@
 #include <sca_policy_parser.hpp>
 
+#include <sca_policy.hpp>
+#include <sca_policy_check.hpp>
+
+#include <logger.hpp>
+
 #include <fstream>
 #include <iostream>
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <sstream>
-
-#include <logger.hpp>
 
 namespace
 {
@@ -128,10 +131,10 @@ bool PolicyParser::IsValidYamlFile(const std::filesystem::path& filename) const
     }
 }
 
-std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndChecks) const
+std::unique_ptr<ISCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndChecks) const
 {
-    std::vector<SCAPolicy::Check> checks;
-    SCAPolicy::Check requirements;
+    std::vector<Check> checks;
+    Check requirements;
 
     std::string policyId;
 
@@ -152,7 +155,7 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
     else
     {
         LogError("Policy file does not contain policy");
-        return std::nullopt;
+        return nullptr;
     }
 
     if (const auto requirementsNode = m_node["requirements"]; requirementsNode)
@@ -180,7 +183,7 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
         catch (const std::exception& e)
         {
             LogError("Failed to parse requirements. Error: {}", e.what());
-            return std::nullopt;
+            return nullptr;
         }
     }
 
@@ -190,7 +193,7 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
         {
             try
             {
-                SCAPolicy::Check check;
+                Check check;
                 check.id = checkNode["id"].as<std::string>();
                 check.condition = checkNode["condition"].as<std::string>();
                 ValidateConditionString(check.condition);
@@ -230,10 +233,10 @@ std::optional<SCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndCh
     else
     {
         LogError("Policy file does not contain checks");
-        return std::nullopt;
+        return nullptr;
     }
 
-    return SCAPolicy(policyId, std::move(requirements), std::move(checks));
+    return std::make_unique<SCAPolicy>(policyId, std::move(requirements), std::move(checks));
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)

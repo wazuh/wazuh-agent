@@ -1,10 +1,13 @@
 #include <sca.hpp>
 
+#include <sca_event_handler.hpp>
+#include <sca_policy.hpp>
+#include <sca_policy_loader.hpp>
+
 #include <config.h>
 #include <dbsync.hpp>
+#include <filesystem_wrapper.hpp>
 #include <logger.hpp>
-#include <sca_event_handler.hpp>
-#include <sca_policy_loader.hpp>
 
 constexpr auto POLICY_SQL_STATEMENT {
     R"(CREATE TABLE IF NOT EXISTS sca_policy (
@@ -86,13 +89,14 @@ void SecurityConfigurationAssessment::Setup(
 
     for (auto& policy : m_policies)
     {
-        EnqueueTask(policy.Run(m_scanInterval,
-                               m_scanOnStart,
-                               [this](const std::string& policyId, const std::string& checkId, sca::CheckResult result)
-                               {
-                                   const SCAEventHandler eventHandler(m_agentUUID, m_dBSync, m_pushMessage);
-                                   eventHandler.ReportCheckResult(policyId, checkId, result);
-                               }));
+        EnqueueTask(
+            policy->Run(m_scanInterval,
+                        m_scanOnStart,
+                        [this](const std::string& policyId, const std::string& checkId, const std::string& result)
+                        {
+                            const SCAEventHandler eventHandler(m_agentUUID, m_dBSync, m_pushMessage);
+                            eventHandler.ReportCheckResult(policyId, checkId, result);
+                        }));
     }
 }
 
@@ -105,7 +109,7 @@ void SecurityConfigurationAssessment::Stop()
     }
     for (auto& policy : m_policies)
     {
-        policy.Stop();
+        policy->Stop();
     }
     m_ioContext->stop();
     LogInfo("SCA module stopped.");

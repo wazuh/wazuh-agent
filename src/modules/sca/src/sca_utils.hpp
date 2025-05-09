@@ -35,7 +35,7 @@ namespace sca
     /// @brief Converts a CheckResult enum value to its string representation.
     /// @param result The CheckResult enum value to convert.
     /// @return The string representation of the CheckResult enum value.
-    std::string_view CheckResultToString(const CheckResult result);
+    std::string CheckResultToString(const CheckResult result);
 
     /// @brief Parses the rule type from the input string.
     /// @param input The input string to parse.

@@ -163,7 +163,7 @@ namespace
 
 namespace sca
 {
-    std::string_view CheckResultToString(const CheckResult result)
+    std::string CheckResultToString(const CheckResult result)
     {
         switch (result)
         {

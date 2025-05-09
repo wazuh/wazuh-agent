@@ -2,7 +2,6 @@
 
 #include <ifile_io_utils.hpp>
 #include <ifilesystem_wrapper.hpp>
-#include <sca_utils.hpp>
 #include <sysInfoInterface.hpp>
 
 #include <functional>
@@ -16,13 +15,6 @@ enum class RuleResult
     Invalid = -1,
     Found,
     NotFound
-};
-
-enum class ConditionType
-{
-    All,
-    Any,
-    None
 };
 
 struct PolicyEvaluationContext

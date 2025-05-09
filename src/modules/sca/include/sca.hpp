@@ -1,11 +1,11 @@
 #pragma once
 
-#include <sca_policy.hpp>
+#include <isca_policy.hpp>
 
 #include <command_entry.hpp>
 #include <configuration_parser.hpp>
-#include <filesystem_wrapper.hpp>
 #include <idbsync.hpp>
+#include <ifilesystem_wrapper.hpp>
 #include <imodule.hpp>
 #include <message.hpp>
 
@@ -93,7 +93,7 @@ private:
     std::time_t m_scanInterval = 3600;
 
     /// @brief List of policies
-    std::vector<SCAPolicy> m_policies;
+    std::vector<std::unique_ptr<ISCAPolicy>> m_policies;
 
     /// @brief Boost ASIO context
     std::unique_ptr<boost::asio::io_context> m_ioContext;

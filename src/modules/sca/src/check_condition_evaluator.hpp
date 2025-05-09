@@ -5,6 +5,13 @@
 #include <optional>
 #include <string>
 
+enum class ConditionType
+{
+    All,
+    Any,
+    None
+};
+
 class CheckConditionEvaluator
 {
 public:
