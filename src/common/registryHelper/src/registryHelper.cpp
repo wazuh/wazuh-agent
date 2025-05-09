@@ -68,6 +68,20 @@ namespace Utils
         close();
     }
 
+    bool Registry::KeyExists(const std::string& key, const std::string& subKey)
+    {
+        HKEY hKey = nullptr;
+
+        LONG result = RegOpenKeyEx(stringToHKEY(key), subKey.c_str(), 0, KEY_READ, &hKey);
+
+        if (hKey != nullptr)
+        {
+            RegCloseKey(hKey);
+        }
+
+        return (result == ERROR_SUCCESS);
+    }
+
     void Registry::close()
     {
         if (m_registryKey)
