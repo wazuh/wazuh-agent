@@ -88,7 +88,7 @@ Default configuration file locations:
 
 - **Linux:** `/etc/wazuh-agent/wazuh-agent.yml`
 - **macOS:** `/Library/Application Support/Wazuh agent.app/etc/wazuh-agent.yml`
-- **Windows:** `C:\\ProgramData\\wazuh-agent\\config\\wazuh-agent.yml`
+- **Windows:** `C:\\Program Files\\wazuh-agent\\config\\wazuh-agent.yml`
 
 ### Use a Custom Configuration File
 
