@@ -61,7 +61,7 @@ void SCAPolicy::Scan(
             {
                 return;
             }
-            resultEvaluator.AddResult(rule->Evaluate() == RuleResult::Found);
+            resultEvaluator.AddResult(rule->Evaluate());
         }
 
         requirementsOk = resultEvaluator.Result();
@@ -85,7 +85,7 @@ void SCAPolicy::Scan(
                 {
                     return;
                 }
-                resultEvaluator.AddResult(rule->Evaluate() == RuleResult::Found);
+                resultEvaluator.AddResult(rule->Evaluate());
             }
 
             const auto result = resultEvaluator.Result();

@@ -32,16 +32,16 @@ TEST(CheckConditionEvaluatorTest, AllConditionBehavior)
     // No rules added yet: should be false.
     EXPECT_FALSE(evaluator.Result());
 
-    evaluator.AddResult(true);
-    evaluator.AddResult(true);
-    evaluator.AddResult(true);
+    evaluator.AddResult(RuleResult::Found);
+    evaluator.AddResult(RuleResult::Found);
+    evaluator.AddResult(RuleResult::Found);
     EXPECT_TRUE(evaluator.Result());
 
     // Adding a failing rule
     auto evaluator2 = CheckConditionEvaluator::FromString("all");
-    evaluator2.AddResult(true);
-    evaluator2.AddResult(false);
-    evaluator2.AddResult(true);
+    evaluator2.AddResult(RuleResult::Found);
+    evaluator2.AddResult(RuleResult::NotFound);
+    evaluator2.AddResult(RuleResult::Found);
     EXPECT_FALSE(evaluator2.Result());
 }
 
@@ -52,11 +52,11 @@ TEST(CheckConditionEvaluatorTest, AnyConditionBehavior)
     // No rules added yet: should be false.
     EXPECT_FALSE(evaluator.Result());
 
-    evaluator.AddResult(false);
-    evaluator.AddResult(false);
+    evaluator.AddResult(RuleResult::NotFound);
+    evaluator.AddResult(RuleResult::NotFound);
     EXPECT_FALSE(evaluator.Result());
 
-    evaluator.AddResult(true);
+    evaluator.AddResult(RuleResult::Found);
     EXPECT_TRUE(evaluator.Result());
 }
 
@@ -67,11 +67,11 @@ TEST(CheckConditionEvaluatorTest, NoneConditionBehavior)
     // No rules added yet: should be true.
     EXPECT_TRUE(evaluator.Result());
 
-    evaluator.AddResult(false);
-    evaluator.AddResult(false);
+    evaluator.AddResult(RuleResult::NotFound);
+    evaluator.AddResult(RuleResult::NotFound);
     EXPECT_TRUE(evaluator.Result());
 
-    evaluator.AddResult(true); // At least one passed -> should now be false.
+    evaluator.AddResult(RuleResult::Found); // At least one passed -> should now be false.
     EXPECT_FALSE(evaluator.Result());
 }
 
@@ -79,17 +79,52 @@ TEST(CheckConditionEvaluatorTest, AddResultStopsAfterResultDetermined)
 {
     auto evaluator = CheckConditionEvaluator::FromString("any");
 
-    evaluator.AddResult(true); // Should determine result = true immediately
+    evaluator.AddResult(RuleResult::Found); // Should determine result = true immediately
     EXPECT_TRUE(evaluator.Result());
 
-    evaluator.AddResult(false); // Should have no effect
+    evaluator.AddResult(RuleResult::NotFound); // Should have no effect
     EXPECT_TRUE(evaluator.Result());
 
     auto evaluator2 = CheckConditionEvaluator::FromString("all");
 
-    evaluator2.AddResult(false); // Should determine result = false immediately
+    evaluator2.AddResult(RuleResult::NotFound); // Should determine result = false immediately
     EXPECT_FALSE(evaluator2.Result());
 
-    evaluator2.AddResult(true); // Should have no effect
+    evaluator2.AddResult(RuleResult::Found); // Should have no effect
     EXPECT_FALSE(evaluator2.Result());
+}
+
+TEST(CheckConditionEvaluatorTest, AllConditionWithInvalidMakesResultFalse)
+{
+    auto evaluator = CheckConditionEvaluator::FromString("all");
+
+    evaluator.AddResult(RuleResult::Found);
+    evaluator.AddResult(RuleResult::Found);
+    evaluator.AddResult(RuleResult::Invalid);
+
+    EXPECT_FALSE(evaluator.Result());
+}
+
+TEST(CheckConditionEvaluatorTest, NoneConditionWithInvalidMakesResultFalse)
+{
+    auto evaluator = CheckConditionEvaluator::FromString("none");
+
+    evaluator.AddResult(RuleResult::NotFound);
+    evaluator.AddResult(RuleResult::Invalid);
+
+    EXPECT_FALSE(evaluator.Result());
+}
+
+TEST(CheckConditionEvaluatorTest, AnyConditionWithInvalidCanBeTrue)
+{
+    auto evaluator = CheckConditionEvaluator::FromString("any");
+
+    evaluator.AddResult(RuleResult::NotFound);
+    EXPECT_FALSE(evaluator.Result());
+
+    evaluator.AddResult(RuleResult::Invalid);
+    EXPECT_FALSE(evaluator.Result());
+
+    evaluator.AddResult(RuleResult::Found);
+    EXPECT_TRUE(evaluator.Result());
 }

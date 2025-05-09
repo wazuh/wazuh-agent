@@ -9,6 +9,8 @@
 #include <sysInfo.hpp>
 #include <sysInfoInterface.hpp>
 
+#include <stack>
+
 namespace
 {
     bool IsRegexPattern(const std::string& pattern)
@@ -21,6 +23,18 @@ namespace
         return IsRegexPattern(pattern) || pattern.starts_with("n:") || pattern.starts_with("!n:");
     }
 
+    template<typename Func>
+    auto TryFunc(Func&& func) -> std::optional<decltype(func())>
+    {
+        try
+        {
+            return std::forward<Func>(func)();
+        }
+        catch (const std::exception&)
+        {
+            return std::nullopt;
+        }
+    }
 } // namespace
 
 RuleEvaluator::RuleEvaluator(PolicyEvaluationContext ctx, std::unique_ptr<IFileSystemWrapper> fileSystemWrapper)
@@ -74,7 +88,15 @@ RuleResult FileRuleEvaluator::CheckFileForContents()
     if (IsRegexOrNumericPattern(pattern))
     {
         const auto content = m_fileUtils->getFileContent(m_ctx.rule);
-        matchFound = sca::PatternMatches(content, pattern);
+
+        if (const auto patternMatch = sca::PatternMatches(content, pattern))
+        {
+            matchFound = patternMatch.value();
+        }
+        else
+        {
+            return RuleResult::Invalid;
+        }
     }
     else
     {
@@ -132,9 +154,17 @@ RuleResult CommandRuleEvaluator::Evaluate()
 
         if (IsRegexOrNumericPattern(*m_ctx.pattern))
         {
-            if (sca::PatternMatches(output, *m_ctx.pattern) || sca::PatternMatches(error, *m_ctx.pattern))
+            const auto outputPatternMatch = sca::PatternMatches(output, *m_ctx.pattern);
+            const auto errorPatternMatch = sca::PatternMatches(error, *m_ctx.pattern);
+
+            if (outputPatternMatch || errorPatternMatch)
             {
-                result = RuleResult::Found;
+                result = outputPatternMatch.value_or(false) || errorPatternMatch.value_or(false) ? RuleResult::Found
+                                                                                                 : RuleResult::NotFound;
+            }
+            else
+            {
+                return RuleResult::Invalid;
             }
         }
         else if (output == m_ctx.pattern.value() || error == m_ctx.pattern.value())
@@ -177,72 +207,143 @@ RuleResult DirRuleEvaluator::Evaluate()
 
 RuleResult DirRuleEvaluator::CheckDirectoryForContents()
 {
-    if (!m_fileSystemWrapper->exists(m_ctx.rule) || !m_fileSystemWrapper->is_directory(m_ctx.rule))
+    if (!TryFunc([&] { return m_fileSystemWrapper->exists(m_ctx.rule); }).value_or(false))
     {
-        LogDebug("Directory '{}' does not exist or is not a directory", m_ctx.rule);
+        LogDebug("Path '{}' does not exist", m_ctx.rule);
+        return RuleResult::Invalid;
+    }
+
+    auto resolved = TryFunc([&] { return m_fileSystemWrapper->canonical(m_ctx.rule); });
+    if (!resolved)
+    {
+        LogDebug("Directory '{}' could not be resolved", m_ctx.rule);
+        return RuleResult::Invalid;
+    }
+    const auto rootPath = *resolved;
+
+    if (!TryFunc([&] { return m_fileSystemWrapper->is_directory(rootPath); }).value_or(false))
+    {
+        LogDebug("Path '{}' is not a directory", rootPath.string());
         return RuleResult::Invalid;
     }
 
     const auto pattern = *m_ctx.pattern; // NOLINT(bugprone-unchecked-optional-access)
-    auto result = RuleResult::NotFound;
 
-    if (IsRegexPattern(pattern))
+    std::stack<std::filesystem::path> dirs;
+    dirs.emplace(rootPath);
+
+    while (!dirs.empty())
     {
-        const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
+        const auto currentDir = dirs.top();
+        dirs.pop();
 
-        for (const auto& file : files)
+        const auto filesOpt = TryFunc([&] { return m_fileSystemWrapper->list_directory(currentDir); });
+        if (!filesOpt || filesOpt->empty())
         {
-            if (sca::PatternMatches(file.filename().string(), pattern))
+            continue;
+        }
+
+        const auto& files = *filesOpt;
+
+        if (IsRegexPattern(pattern))
+        {
+            bool hadValue = false;
+            for (const auto& file : files)
             {
-                result = RuleResult::Found;
-                break;
+                if (TryFunc([&] { return m_fileSystemWrapper->is_symlink(file); }).value_or(false))
+                {
+                    continue;
+                }
+
+                if (TryFunc([&] { return m_fileSystemWrapper->is_directory(file); }).value_or(false))
+                {
+                    dirs.emplace(file);
+                    continue;
+                }
+
+                const auto patternMatch = sca::PatternMatches(file.filename().string(), pattern);
+                if (patternMatch.has_value())
+                {
+                    hadValue = true;
+                    if (patternMatch.value())
+                    {
+                        return m_ctx.isNegated ? RuleResult::NotFound : RuleResult::Found;
+                    }
+                }
+            }
+
+            if (!hadValue)
+            {
+                return RuleResult::Invalid;
+            }
+        }
+        else if (const auto content = sca::GetPattern(pattern))
+        {
+            const auto fileName = pattern.substr(0, pattern.find(" -> "));
+            for (const auto& file : files)
+            {
+                if (TryFunc([&] { return m_fileSystemWrapper->is_symlink(file); }).value_or(false))
+                {
+                    continue;
+                }
+
+                if (TryFunc([&] { return m_fileSystemWrapper->is_directory(file); }).value_or(false))
+                {
+                    dirs.emplace(file);
+                    continue;
+                }
+
+                if (file.filename().string() == fileName)
+                {
+                    bool found = false;
+                    TryFunc(
+                        [&]
+                        {
+                            m_fileUtils->readLineByLine(file,
+                                                        [&content, &found](const std::string& line)
+                                                        {
+                                                            if (line == content.value())
+                                                            {
+                                                                found = true;
+                                                                return false;
+                                                            }
+                                                            return true;
+                                                        });
+                            return true;
+                        });
+
+                    if (found)
+                    {
+                        return m_ctx.isNegated ? RuleResult::NotFound : RuleResult::Found;
+                    }
+                }
+            }
+        }
+        else
+        {
+            for (const auto& file : files)
+            {
+                if (TryFunc([&] { return m_fileSystemWrapper->is_symlink(file); }).value_or(false))
+                {
+                    continue;
+                }
+
+                if (TryFunc([&] { return m_fileSystemWrapper->is_directory(file); }).value_or(false))
+                {
+                    dirs.emplace(file);
+                    continue;
+                }
+
+                if (file.filename().string() == pattern)
+                {
+                    return m_ctx.isNegated ? RuleResult::NotFound : RuleResult::Found;
+                }
             }
         }
     }
-    else if (const auto content = sca::GetPattern(pattern))
-    {
-        const auto fileName = pattern.substr(0, pattern.find(" -> "));
-        const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
 
-        for (const auto& file : files)
-        {
-            if (file.filename().string() == fileName)
-            {
-                result = RuleResult::NotFound;
-
-                m_fileUtils->readLineByLine(file,
-                                            [&content, &result](const std::string& line)
-                                            {
-                                                if (line == content.value())
-                                                {
-                                                    result = RuleResult::Found;
-                                                    return false;
-                                                }
-                                                return true;
-                                            });
-                break;
-            }
-        }
-    }
-    else
-    {
-        const auto files = m_fileSystemWrapper->list_directory(m_ctx.rule);
-
-        for (const auto& file : files)
-        {
-            if (file.filename().string() == pattern)
-            {
-                result = RuleResult::Found;
-                break;
-            }
-        }
-    }
-    LogDebug("Pattern '{}' {} found in directory '{}'",
-             pattern,
-             result == RuleResult::Found ? "was" : "was not",
-             m_ctx.rule);
-
-    return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
+    LogDebug("Pattern '{}' was not found in directory '{}'", pattern, rootPath.string());
+    return m_ctx.isNegated ? RuleResult::Found : RuleResult::NotFound;
 }
 
 RuleResult DirRuleEvaluator::CheckDirectoryExistence()

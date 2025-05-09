@@ -22,6 +22,16 @@ namespace file_system
         return std::filesystem::is_socket(path);
     }
 
+    bool FileSystemWrapper::is_symlink(const std::filesystem::path& path) const
+    {
+        return std::filesystem::is_symlink(path);
+    }
+
+    std::filesystem::path FileSystemWrapper::canonical(const std::filesystem::path& path) const
+    {
+        return std::filesystem::canonical(path);
+    }
+
     std::uintmax_t FileSystemWrapper::remove_all(const std::filesystem::path& path) const
     {
         return std::filesystem::remove_all(path);

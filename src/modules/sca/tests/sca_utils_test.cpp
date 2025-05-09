@@ -65,120 +65,192 @@ TEST(GetPatternTest, InvalidPattern)
     EXPECT_FALSE(GetPattern("no arrow here"));
 }
 
+TEST(PatternMatchesTest, InvalidCompareStringReturnsNullopt)
+{
+    const auto patternMatch = PatternMatches("match", "n:123 c0mp4r3 >= 123");
+    ASSERT_FALSE(patternMatch.has_value());
+}
+
+TEST(PatternMatchesTest, InvalidComparisonOperatorReturnsNullopt)
+{
+    const auto patternMatch = PatternMatches("123", "n:123 compare !! 123");
+    ASSERT_FALSE(patternMatch.has_value());
+}
+
+TEST(PatternMatchesTest, InvalidOperandForComparisonReturnsNullopt)
+{
+    const auto patternMatch = PatternMatches("match", "n:^\\*.*soft.*nofile\\s+(\\d+) compare >= asdf");
+    ASSERT_FALSE(patternMatch.has_value());
+}
+
+TEST(PatternMatchesTest, InvalidPCRE2RegexReturnsNullopt)
+{
+    const auto patternMatch = PatternMatches("aaaaaaaaaaaaaaaaaaaaa!", "r:^((a+)+$");
+    ASSERT_FALSE(patternMatch.has_value());
+}
+
 TEST(PatternMatchesTest, SimpleMatch)
 {
-    EXPECT_TRUE(PatternMatches("match", "match"));
-    EXPECT_FALSE(PatternMatches("nope", "match"));
+    auto patternMatch = PatternMatches("match", "match");
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_TRUE(*patternMatch);
+    patternMatch = PatternMatches("nope", "match");
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_FALSE(*patternMatch);
 }
 
 TEST(PatternMatchesTest, RegexMatch)
 {
-    EXPECT_TRUE(PatternMatches("123", "r:\\d+"));
-    EXPECT_FALSE(PatternMatches("abc", "r:\\d+"));
+    auto patternMatch = PatternMatches("123", "r:\\d+");
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_TRUE(*patternMatch);
+    patternMatch = PatternMatches("abc", "r:\\d+");
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_FALSE(*patternMatch);
 }
 
 TEST(PatternMatchesTest, NumericComparison)
 {
-    EXPECT_TRUE(PatternMatches("123", "n:\\d+ compare == 123"));
-    EXPECT_FALSE(PatternMatches("123", "n:\\d+ compare < 100"));
+    auto patternMatch = PatternMatches("123", "n:\\d+ compare == 123");
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_TRUE(*patternMatch);
+    patternMatch = PatternMatches("123", "n:\\d+ compare < 100");
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_FALSE(*patternMatch);
 }
 
 TEST(PatternMatchesTest, Negated)
 {
-    EXPECT_TRUE(PatternMatches("something", "!r:abc"));
-    EXPECT_FALSE(PatternMatches("abc", "!r:abc"));
+    auto patternMatch = PatternMatches("something", "!r:abc");
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_TRUE(*patternMatch);
+    patternMatch = PatternMatches("abc", "!r:abc");
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_FALSE(*patternMatch);
 }
 
 TEST(PatternMatchesTest, CompoundPattern)
 {
-    EXPECT_TRUE(PatternMatches("123abc", "r:\\d+ && r:abc"));
-    EXPECT_FALSE(PatternMatches("123abc", "r:\\d+ && r:def"));
+    auto patternMatch = PatternMatches("123abc", "r:\\d+ && r:abc");
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_TRUE(*patternMatch);
+
+    patternMatch = PatternMatches("123abc", "r:\\d+ && r:def");
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_FALSE(*patternMatch);
 }
 
 TEST(PatternMatchesTest, EmptyContent)
 {
-    EXPECT_FALSE(PatternMatches("", "r:.*"));
+    const auto patternMatch = PatternMatches("", "r:.*");
+    if (!patternMatch.has_value())
+    {
+        // If there's no value, treat it as a failure
+        EXPECT_FALSE(true);
+    }
+    else
+    {
+        EXPECT_FALSE(*patternMatch);
+    }
 }
 
 TEST(PatternMatchesTest, DocExample_LineWithoutCommentWithProtocolAnd2)
 {
     const std::string content = "Protocol 2";
     const std::string pattern = "!r:^# && r:Protocol && r:2";
-    EXPECT_TRUE(PatternMatches(content, pattern));
+    const auto patternMatch = PatternMatches(content, pattern);
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_TRUE(*patternMatch);
 }
 
 TEST(PatternMatchesTest, DocExample_CommandOutputStartsWithEnabled)
 {
     const std::string content = "enabled";
     const std::string pattern = "r:^enabled";
-    EXPECT_TRUE(PatternMatches(content, pattern));
+    const auto patternMatch = PatternMatches(content, pattern);
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_TRUE(*patternMatch);
 }
 
 TEST(PatternMatchesTest, DocExample_NumericComparisonMaxAuthTries)
 {
-    const std::string content = "MaxAuthTries	3";
+    const std::string content = "MaxAuthTries\t3";
     const std::string pattern = "n:^\\s*MaxAuthTries\\s*\\t*(\\d+) compare <= 4";
-    EXPECT_TRUE(PatternMatches(content, pattern));
+    const auto patternMatch = PatternMatches(content, pattern);
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_TRUE(*patternMatch);
 }
 
 TEST(PatternMatchesTest, DocExample_WholeLineLiteralMatch)
 {
     const std::string content = "1";
     const std::string pattern = "1";
-    EXPECT_TRUE(PatternMatches(content, pattern));
+    const auto patternMatch = PatternMatches(content, pattern);
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_TRUE(*patternMatch);
 }
 
 TEST(PatternMatchesTest, DocExample_NegatedRegexMatch)
 {
     const std::string content = "maxauthtries 3";
     const std::string pattern = "!r:^\\s*maxauthtries\\s+4\\s*$";
-    EXPECT_TRUE(PatternMatches(content, pattern));
+    const auto patternMatch = PatternMatches(content, pattern);
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_TRUE(*patternMatch);
 }
 
 TEST(PatternMatchesTest, DocExample_UIDCheck)
 {
     const std::string content = "user:x:0:0";
     const std::string pattern = "!r:^# && !r:^root: && r:^\\w+:\\w+:0:";
-    EXPECT_TRUE(PatternMatches(content, pattern));
+    const auto patternMatch = PatternMatches(content, pattern);
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_TRUE(*patternMatch);
 }
 
 TEST(PatternMatchesTest, CompoundRule_NegatedCommentAndContainsProtocolAnd2)
 {
     const std::string content = "# Some commented line\nProtocol 2\nPort 22";
     const std::string pattern = "!r:^# && r:Protocol && r:2";
-    EXPECT_TRUE(PatternMatches(content, pattern));
+    const auto patternMatch = PatternMatches(content, pattern);
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_TRUE(*patternMatch);
 }
 
 TEST(PatternMatchesTest, NotRegex_ExcludesMatchingLine)
 {
     const std::string content = "PasswordAuthentication yes\nPermitRootLogin yes";
     const std::string pattern = "!r:^PasswordAuthentication\\s+no";
-    // Should pass: "PasswordAuthentication no" is not present
-    EXPECT_TRUE(PatternMatches(content, pattern));
+    const auto patternMatch = PatternMatches(content, pattern);
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_TRUE(*patternMatch);
 }
 
 TEST(PatternMatchesTest, NotRegex_MatchFailsWhenLineIsPresent)
 {
     const std::string content = "PasswordAuthentication no\nPermitRootLogin yes";
     const std::string pattern = "!r:^PasswordAuthentication\\s+no";
-    // Should fail: the line is present and matches
-    EXPECT_FALSE(PatternMatches(content, pattern));
+    const auto patternMatch = PatternMatches(content, pattern);
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_FALSE(*patternMatch);
 }
 
 TEST(PatternMatchesTest, NotRegex_WithCompoundMatch)
 {
     const std::string content = "# comment\nPermitRootLogin yes\nPasswordAuthentication yes";
     const std::string pattern = "!r:^# && r:PermitRootLogin && r:yes";
-    // Should pass: "PermitRootLogin yes" line does not start with # and contains the other tokens
-    EXPECT_TRUE(PatternMatches(content, pattern));
+    const auto patternMatch = PatternMatches(content, pattern);
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_TRUE(*patternMatch);
 }
 
 TEST(PatternMatchesTest, NotRegex_WithCompoundFailing)
 {
     const std::string content = "# PermitRootLogin yes";
     const std::string pattern = "!r:^# && r:PermitRootLogin && r:yes";
-    // Should fail: the only line containing "PermitRootLogin" also starts with #
-    EXPECT_FALSE(PatternMatches(content, pattern));
+    const auto patternMatch = PatternMatches(content, pattern);
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_FALSE(*patternMatch);
 }
 
 // NOLINTEND(bugprone-unchecked-optional-access, modernize-raw-string-literal)

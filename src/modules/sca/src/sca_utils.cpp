@@ -1,5 +1,6 @@
 #include <sca_utils.hpp>
 
+#include <logger.hpp>
 #include <stringHelper.hpp>
 
 #include <pcre2.h>
@@ -7,117 +8,132 @@
 #include <map>
 #include <optional>
 #include <sstream>
+#include <stdexcept>
 
 namespace
 {
     std::pair<bool, std::string> Pcre2Match(const std::string& content, const std::string& pattern)
     {
-        int error_code = 0;
+        int errorCode = 0;
         PCRE2_SIZE error_offset = 0;
-        pcre2_code* re = nullptr;
-        std::string matched;
 
-        const auto pattern_ptr =
-            reinterpret_cast<PCRE2_SPTR8>(pattern.c_str()); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        const auto patternPtr = reinterpret_cast<PCRE2_SPTR8>(pattern.c_str());
 
-        re = pcre2_compile(pattern_ptr, PCRE2_ZERO_TERMINATED, PCRE2_MULTILINE, &error_code, &error_offset, nullptr);
+        auto* re =
+            pcre2_compile(patternPtr, PCRE2_ZERO_TERMINATED, PCRE2_MULTILINE, &errorCode, &error_offset, nullptr);
 
-        if (re == nullptr)
+        if (!re)
         {
-            return std::make_pair(false, "");
+            throw std::runtime_error("PCRE2 compilation failed");
         }
 
-        pcre2_match_data* match_data = pcre2_match_data_create_from_pattern(re, nullptr);
+        auto* matchData = pcre2_match_data_create_from_pattern(re, nullptr);
 
-        const auto content_ptr =
-            reinterpret_cast<PCRE2_SPTR8>(content.c_str()); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+        if (!matchData)
+        {
+            pcre2_code_free(re);
+            throw std::runtime_error("PCRE2 match data creation failed");
+        }
 
-        const int rc = pcre2_match(re, content_ptr, content.size(), 0, 0, match_data, nullptr);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        const auto contentPtr = reinterpret_cast<PCRE2_SPTR8>(content.c_str());
+        const auto rc = pcre2_match(re, contentPtr, content.size(), 0, 0, matchData, nullptr);
+
+        auto pcre2CleanUp = [matchData, re]()
+        {
+            pcre2_match_data_free(matchData);
+            pcre2_code_free(re);
+        };
+
+        if (rc == PCRE2_ERROR_NOMATCH)
+        {
+            // No match, but not an error
+            pcre2CleanUp();
+            return {false, ""};
+        }
+        else if (rc < 0)
+        {
+            // Other matching error
+            pcre2CleanUp();
+            throw std::runtime_error("PCRE2 match error: " + std::to_string(rc));
+        }
+
+        const auto* ovector = pcre2_get_ovector_pointer(matchData);
+
+        if (!ovector)
+        {
+            pcre2CleanUp();
+            throw std::runtime_error("PCRE2 ovector pointer is null");
+        }
 
         // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        if (rc >= 0)
-        {
-            PCRE2_SIZE* ovector = pcre2_get_ovector_pointer(match_data);
-
-            // rc is the number of matches found; rc >= 2 means full match + at least one capture
-            if (rc >= 2)
-            {
-                PCRE2_SIZE start = ovector[2]; // first capture group
-                PCRE2_SIZE end = ovector[3];
-                matched = content.substr(start, end - start);
-            }
-            else
-            {
-                PCRE2_SIZE start = ovector[0]; // full match fallback
-                PCRE2_SIZE end = ovector[1];
-                matched = content.substr(start, end - start);
-            }
-        }
+        const auto match = rc >= 2 ? content.substr(ovector[2], ovector[3] - ovector[2])
+                                   : content.substr(ovector[0], ovector[1] - ovector[0]);
         // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
-        pcre2_match_data_free(match_data);
-        pcre2_code_free(re);
+        pcre2CleanUp();
 
-        return std::make_pair(rc >= 0, matched);
+        return {true, match};
     }
 
     bool
     EvaluateNumericRegexComparison(const std::string& content, const std::string& expr, sca::RegexEngineType engine)
     {
         std::istringstream stream(expr);
-        std::string pattern, compare_word, op_str, expected_value_str;
-        std::pair<bool, std::string> match_result {false, ""};
+        std::string pattern, compareWord, opStr, expectedValueStr;
+        std::pair<bool, std::string> matchResult {false, ""};
 
-        if (!(stream >> pattern >> compare_word >> op_str >> expected_value_str))
+        if (!(stream >> pattern >> compareWord >> opStr >> expectedValueStr))
         {
-            return false;
+            throw std::runtime_error("Invalid expression format");
         }
 
-        if (compare_word != "compare")
+        if (compareWord != "compare")
         {
-            return false;
+            throw std::runtime_error("Expected 'compare' keyword in numeric comparison");
         }
 
-        const int expected_value = std::stoi(expected_value_str);
+        const int expectedValue = std::stoi(expectedValueStr);
 
         if (engine == sca::RegexEngineType::PCRE2)
         {
-            match_result = Pcre2Match(content, pattern);
+            matchResult = Pcre2Match(content, pattern);
         }
 
-        if (!match_result.first)
+        if (!matchResult.first)
         {
             return false;
         }
 
-        const int actual_value = std::stoi(match_result.second);
+        const int actualValue = std::stoi(matchResult.second);
 
-        if (op_str == "<")
+        if (opStr == "<")
         {
-            return actual_value < expected_value;
+            return actualValue < expectedValue;
         }
-        if (op_str == "<=")
+        if (opStr == "<=")
         {
-            return actual_value <= expected_value;
+            return actualValue <= expectedValue;
         }
-        if (op_str == "==")
+        if (opStr == "==")
         {
-            return actual_value == expected_value;
+            return actualValue == expectedValue;
         }
-        if (op_str == "!=")
+        if (opStr == "!=")
         {
-            return actual_value != expected_value;
+            return actualValue != expectedValue;
         }
-        if (op_str == ">=")
+        if (opStr == ">=")
         {
-            return actual_value >= expected_value;
+            return actualValue >= expectedValue;
         }
-        if (op_str == ">")
+        if (opStr == ">")
         {
-            return actual_value > expected_value;
+            return actualValue > expectedValue;
         }
 
-        return false;
+        throw std::runtime_error("Invalid operator in numeric comparison");
     }
 
     bool EvaluateMinterm(const std::string& minterm, const std::string& content, sca::RegexEngineType engine)
@@ -161,30 +177,30 @@ namespace sca
 
     std::optional<std::pair<int, std::string>> ParseRuleType(const std::string& input)
     {
-        const auto delimiter_pos = input.find(':');
+        const auto delimeterPos = input.find(':');
 
-        if (delimiter_pos == std::string::npos)
+        if (delimeterPos == std::string::npos)
         {
             return std::nullopt;
         }
 
-        auto key = input.substr(0, delimiter_pos);
-        const auto value = input.substr(delimiter_pos + 1);
+        auto key = input.substr(0, delimeterPos);
+        const auto value = input.substr(delimeterPos + 1);
 
         if (!key.empty() && key.front() == '!')
         {
             key.erase(0, 1);
         }
 
-        static const std::map<std::string, int> type_map = {{"f", WM_SCA_TYPE_FILE},
-                                                            {"r", WM_SCA_TYPE_REGISTRY},
-                                                            {"p", WM_SCA_TYPE_PROCESS},
-                                                            {"d", WM_SCA_TYPE_DIR},
-                                                            {"c", WM_SCA_TYPE_COMMAND}};
+        static const std::map<std::string, int> typeMap = {{"f", WM_SCA_TYPE_FILE},
+                                                           {"r", WM_SCA_TYPE_REGISTRY},
+                                                           {"p", WM_SCA_TYPE_PROCESS},
+                                                           {"d", WM_SCA_TYPE_DIR},
+                                                           {"c", WM_SCA_TYPE_COMMAND}};
 
-        const auto it = type_map.find(key);
+        const auto it = typeMap.find(key);
 
-        if (it == type_map.end())
+        if (it == typeMap.end())
         {
             return std::nullopt;
         }
@@ -205,81 +221,89 @@ namespace sca
         return std::nullopt;
     }
 
-    bool PatternMatches(const std::string& content, const std::string& pattern, RegexEngineType engine)
+    std::optional<bool> PatternMatches(const std::string& content, const std::string& pattern, RegexEngineType engine)
     {
-        if (content.empty())
+        try
         {
-            return false;
-        }
-
-        // Split the pattern into individual conditions (minterms)
-        constexpr std::string_view delimiter = " && ";
-        std::vector<std::pair<bool, std::string>> minterms; // (negated, pattern)
-
-        size_t start = 0;
-
-        // Loop over each minterm (subpattern) in the compound pattern
-        while (start < pattern.size())
-        {
-            // Find the next delimiter and extract the substring for this minterm
-            const auto end = pattern.find(delimiter, start);
-            auto minterm = pattern.substr(start, end - start);
-
-            // Advance the start position for the next iteration
-            start = (end == std::string::npos) ? end : end + delimiter.length();
-
-            // Check if the minterm is negated
-            bool negated = false;
-            if (!minterm.empty() && minterm[0] == '!')
+            if (content.empty())
             {
-                negated = true;
-                minterm.erase(0, 1); // Remove the '!' for pattern matching
+                return false;
             }
 
-            minterms.emplace_back(negated, minterm);
-        }
+            // Split the pattern into individual conditions (minterms)
+            constexpr std::string_view delimiter = " && ";
+            std::vector<std::pair<bool, std::string>> minterms; // (negated, pattern)
 
-        // Special case: if there's only one minterm and it's negated
-        if (minterms.size() == 1 && minterms[0].first)
-        {
-            const auto& minterm = minterms[0].second;
+            size_t start = 0;
+
+            // Loop over each minterm (subpattern) in the compound pattern
+            while (start < pattern.size())
+            {
+                // Find the next delimiter and extract the substring for this minterm
+                const auto end = pattern.find(delimiter, start);
+                auto minterm = pattern.substr(start, end - start);
+
+                // Advance the start position for the next iteration
+                start = (end == std::string::npos) ? end : end + delimiter.length();
+
+                // Check if the minterm is negated
+                bool negated = false;
+                if (!minterm.empty() && minterm[0] == '!')
+                {
+                    negated = true;
+                    minterm.erase(0, 1); // Remove the '!' for pattern matching
+                }
+
+                minterms.emplace_back(negated, minterm);
+            }
+
+            // Special case: if there's only one minterm and it's negated
+            if (minterms.size() == 1 && minterms[0].first)
+            {
+                const auto& minterm = minterms[0].second;
+                std::istringstream stream(content);
+                std::string line;
+                while (std::getline(stream, line))
+                {
+                    if (EvaluateMinterm(minterm, line, engine))
+                    {
+                        return false; // A line matched the negated pattern → fail
+                    }
+                }
+                return true; // No line matched the negated pattern → pass
+            }
+
+            // Regular compound pattern logic
             std::istringstream stream(content);
             std::string line;
+
             while (std::getline(stream, line))
             {
-                if (EvaluateMinterm(minterm, line, engine))
+                bool allMintermsPassed = true;
+
+                for (const auto& [negated, minterm] : minterms)
                 {
-                    return false; // A line matched the negated pattern → fail
+                    const bool match = EvaluateMinterm(minterm, line, engine);
+                    if ((negated && match) || (!negated && !match))
+                    {
+                        allMintermsPassed = false;
+                        break;
+                    }
+                }
+
+                if (allMintermsPassed)
+                {
+                    return true; // A line satisfied all minterms
                 }
             }
-            return true; // No line matched the negated pattern → pass
+
+            return false; // No line satisfied all minterms
         }
-
-        // Regular compound pattern logic
-        std::istringstream stream(content);
-        std::string line;
-
-        while (std::getline(stream, line))
+        catch (const std::exception& e)
         {
-            bool allMintermsPassed = true;
-
-            for (const auto& [negated, minterm] : minterms)
-            {
-                const bool match = EvaluateMinterm(minterm, line, engine);
-                if ((negated && match) || (!negated && !match))
-                {
-                    allMintermsPassed = false;
-                    break;
-                }
-            }
-
-            if (allMintermsPassed)
-            {
-                return true; // A line satisfied all minterms
-            }
+            LogError("Exception '{}' was caught while evaluating pattern '{}'.", e.what(), pattern);
+            return std::nullopt;
         }
-
-        return false; // No line satisfied all minterms
     }
 
 } // namespace sca

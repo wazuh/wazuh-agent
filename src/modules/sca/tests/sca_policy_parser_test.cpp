@@ -68,7 +68,7 @@ TEST(PolicyParserTest, ConstructorExtractsVariables)
       checks:
         - id: check1
           title: "title"
-          condition: "condition"
+          condition: "all"
           rules:
             - 'f: $var1/passwd exists'
             - 'f: $var11/shared exists'
@@ -88,7 +88,7 @@ TEST(PolicyParserTest, ConstructorExtractsVariables)
     ASSERT_EQ(j["checks"].size(), 1);
     EXPECT_EQ(j["checks"][0]["id"], "check1");
     EXPECT_EQ(j["checks"][0]["title"], "title");
-    EXPECT_EQ(j["checks"][0]["condition"], "condition");
+    EXPECT_EQ(j["checks"][0]["condition"], "all");
     EXPECT_EQ(j["checks"][0]["rules"], "f: /etc/passwd exists, f: /usr/shared exists");
 
     ASSERT_EQ(j["policies"].size(), 1);
@@ -101,7 +101,7 @@ TEST(PolicyParserTest, MissingPolicyReturnsNullopt)
       checks:
         - id: check1
           title: Title
-          condition: Condition
+          condition: all
           rules: ['f: /test exists']
       )";
 
@@ -143,7 +143,29 @@ TEST(PolicyParserTest, MissingChecksReturnsNullopt)
         id: policy_id
       requirements:
         title: title
-        condition: cond
+        condition: all
+        rules: ['f: /etc/passwd exists']
+      )";
+
+    const auto loader = [yml](const std::string&)
+    {
+        return LoadFromString(yml);
+    };
+
+    const PolicyParser parser("dummy.yaml", loader);
+    nlohmann::json j;
+    const auto policyOpt = parser.ParsePolicy(j);
+    EXPECT_FALSE(policyOpt.has_value());
+}
+
+TEST(PolicyParserTest, InvalidConditionReturnsNullopt)
+{
+    const std::string yml = R"(
+      policy:
+        id: policy_id
+      requirements:
+        title: title
+        condition: invalid_condition
         rules: ['f: /etc/passwd exists']
       )";
 

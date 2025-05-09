@@ -37,6 +37,17 @@ public:
     /// @return Returns true if the path is a socket, otherwise false.
     virtual bool is_socket(const std::filesystem::path& path) const = 0;
 
+    /// @brief Checks if the specified path is a symbolic link.
+    /// @param path The path to check.
+    /// @return Returns true if the path is a symbolic link, otherwise false.
+    virtual bool is_symlink(const std::filesystem::path& path) const = 0;
+
+    /// @brief Converts the specified path to a canonical absolute path, i.e. an absolute path that has no dot, dot-dot
+    /// elements or symbolic links in its generic format representation.
+    /// @param path The path to convert.
+    /// @return Returns the canonical absolute path.
+    virtual std::filesystem::path canonical(const std::filesystem::path& path) const = 0;
+
     /// @brief Removes all files and subdirectories in the specified directory.
     /// @param path The directory path to remove.
     /// @return Returns the number of files and directories removed.
