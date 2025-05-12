@@ -5,8 +5,12 @@
 
 #ifdef WIN32
 const std::string TEST_CMD = "whoami";
+const std::string TEST_CMD_QUOTES = "powershell -Command \" Write-Output 'Hello world'\"";
+const std::string TEST_CMD_QUOTES_EXPECTED_RESULT = "Hello world\r\n";
 #else
 const std::string TEST_CMD = "uname";
+const std::string TEST_CMD_QUOTES = "bash -c \" echo 'Hello world'\"";
+const std::string TEST_CMD_QUOTES_EXPECTED_RESULT = "Hello world\n";
 #endif
 
 TEST_F(CmdUtilsTest, PipeOpenCmd)
@@ -49,4 +53,12 @@ TEST_F(CmdUtilsTest, PipeOpenEmptyCmd)
 {
     const auto result {Utils::PipeOpen("")};
     EXPECT_TRUE(result.empty());
+}
+
+TEST_F(CmdUtilsTest, ExecNestedQuotes)
+{
+    const auto result = Utils::Exec(TEST_CMD_QUOTES);
+    EXPECT_EQ(result.StdOut, TEST_CMD_QUOTES_EXPECTED_RESULT);
+    EXPECT_TRUE(result.StdErr.empty());
+    EXPECT_EQ(result.ExitCode, 0);
 }
