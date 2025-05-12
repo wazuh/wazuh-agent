@@ -1,4 +1,6 @@
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+
 #include <list>
 #include <spdlog/spdlog.h>
 #include <sstream>

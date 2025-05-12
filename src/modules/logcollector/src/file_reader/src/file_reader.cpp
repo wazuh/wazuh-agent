@@ -5,6 +5,7 @@
 #include <logger.hpp>
 
 #include <algorithm>
+#include <filesystem>
 #include <string>
 
 using namespace logcollector;
