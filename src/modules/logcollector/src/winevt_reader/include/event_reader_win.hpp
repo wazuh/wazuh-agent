@@ -40,9 +40,6 @@ namespace logcollector::winevt
         void Stop() override;
 
     private:
-        ///@brief Main function to query events from event channel.
-        Awaitable QueryEvents();
-
         ///@brief Process an individual event and print its XML representation.
         /// @param event subscription handle event.
         void ProcessEvent(EVT_HANDLE event);

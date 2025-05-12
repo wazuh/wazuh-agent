@@ -31,17 +31,6 @@ namespace logcollector::winevt
 
     Awaitable WindowsEventTracerReader::Run()
     {
-        m_logcollector.EnqueueTask(QueryEvents());
-        co_return;
-    }
-
-    void WindowsEventTracerReader::Stop()
-    {
-        m_keepRunning.store(false);
-    }
-
-    Awaitable WindowsEventTracerReader::QueryEvents()
-    {
         const auto wideStringChannel = std::wstring(m_channel.begin(), m_channel.end());
         const auto wideStringQuery = std::wstring(m_query.begin(), m_query.end());
 
@@ -90,6 +79,13 @@ namespace logcollector::winevt
         {
             m_winAPI->EvtClose(subscriptionHandle);
         }
+
+        co_return;
+    }
+
+    void WindowsEventTracerReader::Stop()
+    {
+        m_keepRunning.store(false);
     }
 
     void WindowsEventTracerReader::ProcessEvent(EVT_HANDLE event)
