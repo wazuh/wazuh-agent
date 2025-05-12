@@ -80,18 +80,25 @@ namespace
     bool
     EvaluateNumericRegexComparison(const std::string& content, const std::string& expr, sca::RegexEngineType engine)
     {
-        std::istringstream stream(expr);
-        std::string pattern, compareWord, opStr, expectedValueStr;
+        std::string pattern, opStr, expectedValueStr;
         std::pair<bool, std::string> matchResult {false, ""};
 
-        if (!(stream >> pattern >> compareWord >> opStr >> expectedValueStr))
+        const std::string compareWord = "compare";
+        const auto comparePos = expr.find(compareWord);
+        if (comparePos == std::string::npos)
         {
-            throw std::runtime_error("Invalid expression format");
+            throw std::runtime_error("Invalid expression format, 'compare' keyword missing");
         }
 
-        if (compareWord != "compare")
+        pattern = expr.substr(0, comparePos - 1);
+        const auto remainder = expr.substr(comparePos + compareWord.size() + 1);
+
+        std::istringstream remainderStream(remainder);
+        remainderStream >> opStr >> expectedValueStr;
+
+        if (opStr.empty() || expectedValueStr.empty())
         {
-            throw std::runtime_error("Expected 'compare' keyword in numeric comparison");
+            throw std::runtime_error("Invalid operator or expected value in numeric comparison");
         }
 
         const int expectedValue = std::stoi(expectedValueStr);

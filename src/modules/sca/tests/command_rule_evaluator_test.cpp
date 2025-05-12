@@ -139,3 +139,17 @@ TEST_F(CommandRuleEvaluatorTest, NumericPatternMatchesOutputReturnsFound)
     auto evaluator = CreateEvaluator();
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
 }
+
+TEST_F(CommandRuleEvaluatorTest, NumericPatternWithStringMatchesOutputReturnsFound)
+{
+    m_ctx.rule = "some command";
+    m_ctx.pattern = std::string("n:Some string:\\s+(\\d+) compare >= 24");
+
+    m_execMock = [](const std::string&)
+    {
+        return std::make_pair("Some string:           42", "");
+    };
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
+}
