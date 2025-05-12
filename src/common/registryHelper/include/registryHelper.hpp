@@ -88,6 +88,11 @@ namespace Utils
         /// @return True if the value was found
         bool string(const std::string& valueName, std::string& value) const;
 
+        /// @brief Get a value as a string
+        /// @param valueName Name of the value
+        /// @return Value as a string
+        std::string getValue(const std::string& valueName) const;
+
     private:
         /// @brief Open the registry
         /// @param key Key of the registry
