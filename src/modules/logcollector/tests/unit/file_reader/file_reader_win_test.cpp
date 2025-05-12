@@ -6,8 +6,6 @@
 #include <sstream>
 
 #include <file_reader.hpp>
-#include <logcollector.hpp>
-#include <logcollector_mock.hpp>
 #include <tempfile.hpp>
 
 using namespace logcollector;
@@ -110,8 +108,14 @@ TEST(FileReader, Reload)
     auto c = TempFile(GetFullFileName("C.log"));
 
     auto regex = TMP_FILE_DIR + std::string("*.log");
-    Logcollector logcollector;
-    FileReader reader(logcollector, regex, 500, 60000); // NOLINT
+
+    const auto dummyPush = [](const std::string&, const std::string&, const std::string&) {
+    };
+    const auto dummyWait = [](std::chrono::milliseconds) -> Awaitable
+    {
+        co_return;
+    };
+    FileReader reader(dummyPush, dummyWait, regex, 500, 60000); // NOLINT
     reader.Reload([&](Localfile& lf) { mockCallback.Call(lf.Filename()); });
 
     auto d = TempFile(GetFullFileName("D.log"));

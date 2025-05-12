@@ -38,7 +38,13 @@ namespace logcollector
                 {
                     // Create a reader with all conditions
                     AddReader(std::make_shared<JournaldReader>(
-                        *this, filters, config["ignore_if_missing"].as<bool>(false), fileWait));
+                        [this](const std::string& location, const std::string& log, const std::string& collectorType)
+                        { PushMessage(location, log, collectorType); },
+                        // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+                        [this](std::chrono::milliseconds duration) -> Awaitable { co_await Wait(duration); },
+                        filters,
+                        config["ignore_if_missing"].as<bool>(false),
+                        fileWait));
                 }
             }
             else
@@ -49,7 +55,13 @@ namespace logcollector
                                             config["exact_match"].as<bool>(true)}};
 
                 AddReader(std::make_shared<JournaldReader>(
-                    *this, filters, config["ignore_if_missing"].as<bool>(false), fileWait));
+                    [this](const std::string& location, const std::string& log, const std::string& collectorType)
+                    { PushMessage(location, log, collectorType); },
+                    // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+                    [this](std::chrono::milliseconds duration) -> Awaitable { co_await Wait(duration); },
+                    filters,
+                    config["ignore_if_missing"].as<bool>(false),
+                    fileWait));
             }
         }
     }

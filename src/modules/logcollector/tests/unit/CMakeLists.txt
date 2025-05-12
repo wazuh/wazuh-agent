@@ -6,7 +6,7 @@ endif()
 file(GLOB LOGCOLLECTOR_TEST_SOURCES *_test.cpp)
 file(GLOB UNIX_TEST_SOURCES journald_reader/*.cpp file_reader/*_unix_test.cpp)
 file(GLOB MACOS_TEST_SOURCES macos_reader/*.cpp file_reader/*_unix_test.cpp)
-file(GLOB WIN_TEST_SOURCES winevt_reader/*.cpp file_reader/*_win_test.cpp)
+file(GLOB WIN_TEST_SOURCES file_reader/*_win_test.cpp)
 
 add_executable(
     logcollector_unit_tests

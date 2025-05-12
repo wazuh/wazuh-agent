@@ -5,7 +5,6 @@
 #include <fstream>
 #include <list>
 
-#include <logcollector.hpp>
 #include <reader.hpp>
 
 const std::string FILE_READER_TYPE = "file";
@@ -75,11 +74,20 @@ namespace logcollector
     public:
         /// @brief Constructor for the file reader
         ///
-        /// @param logcollector Log collector instance
+        /// @param pushMessageFunc Push message function
+        /// @param waitFunc Wait function
+        /// @param enqueueTaskFunc Enqueue task function
         /// @param pattern File pattern
         /// @param fileWait File wait time in milliseconds
         /// @param reloadInterval Reload interval in milliseconds
-        FileReader(Logcollector& logcollector, std::string pattern, std::time_t fileWait, std::time_t reloadInterval);
+        FileReader(
+            std::function<void(const std::string& location, const std::string& log, const std::string& collectorType)>
+                pushMessageFunc,
+            std::function<Awaitable(std::chrono::milliseconds)> waitFunc,
+            std::function<void(boost::asio::awaitable<void>)> enqueueTaskFunc,
+            std::string pattern,
+            std::time_t fileWait,
+            std::time_t reloadInterval);
 
         /// @copydoc IReader::Run
         Awaitable Run() override;
@@ -114,6 +122,9 @@ namespace logcollector
         /// @param filename File name
         /// @post The file is destroyed and may not be used anymore
         void RemoveLocalfile(const std::string& filename);
+
+        /// @brief Enqueue task function
+        std::function<void(boost::asio::awaitable<void>)> m_enqueueTask;
 
         /// @brief File pattern
         std::string m_filePattern;

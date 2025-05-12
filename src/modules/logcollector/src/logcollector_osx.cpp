@@ -58,7 +58,15 @@ namespace logcollector
             const auto level = entry["level"];
             const auto types = entry["type"];
             const auto typeList = SplitAndTrim(types);
-            AddReader(std::make_shared<MacOSReader>(*this, fileWait, level, query, typeList));
+            AddReader(std::make_shared<MacOSReader>(
+                [this](const std::string& location, const std::string& log, const std::string& collectorType)
+                { PushMessage(location, log, collectorType); },
+                // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+                [this](std::chrono::milliseconds duration) -> Awaitable { co_await Wait(duration); },
+                fileWait,
+                level,
+                query,
+                typeList));
         }
     }
 

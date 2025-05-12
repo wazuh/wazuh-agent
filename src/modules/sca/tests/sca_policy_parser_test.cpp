@@ -4,6 +4,8 @@
 
 #include <string>
 
+// NOLINTBEGIN(bugprone-exception-escape)
+
 namespace
 {
     YAML::Node LoadFromString(const std::string& yml)
@@ -243,3 +245,5 @@ TEST(PolicyParserTest, YamlNodeToJsonParsesMapWithSequenceValues)
     EXPECT_EQ(j["checks"][0]["metadata"]["tags"], "category:security, category:compliance");
     EXPECT_EQ(j["checks"][0]["metadata"]["platforms"], "os:linux, os:windows");
 }
+
+// NOLINTEND(bugprone-exception-escape)

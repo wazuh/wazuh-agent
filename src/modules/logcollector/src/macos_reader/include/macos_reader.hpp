@@ -1,12 +1,13 @@
 #pragma once
 
-#include <logcollector.hpp>
+#include <message.hpp>
 #include <oslogstore.hpp>
 #include <reader.hpp>
 
 #include <atomic>
 #include <chrono>
 #include <ctime>
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -26,31 +27,39 @@ namespace logcollector
     {
     public:
         /// @brief Constructs a new `MacOSReader` instance.
-        /// @param logcollector Reference to the `Logcollector` instance managing the log reading process.
+        /// @param pushMessageFunc Push message function
+        /// @param waitFunc Wait function
         /// @param waitInMillis Duration in milliseconds to wait before processing log files.
         /// @param logLevel The minimum log level to filter log entries.
         /// @param query An optional query string using `NSPredicate` syntax for additional log filtering.
         /// @param logTypes A vector of log type strings to further filter log entries.
-        MacOSReader(Logcollector& logcollector,
-                    const std::time_t waitInMillis,
-                    const std::string& logLevel = "",
-                    const std::string& query = "",
-                    const std::vector<std::string>& logTypes = {});
+        MacOSReader(
+            std::function<void(const std::string& location, const std::string& log, const std::string& collectorType)>
+                pushMessageFunc,
+            std::function<Awaitable(std::chrono::milliseconds)> waitFunc,
+            const std::time_t waitInMillis,
+            const std::string& logLevel = "",
+            const std::string& query = "",
+            const std::vector<std::string>& logTypes = {});
 
         /// @brief Constructs a new `MacOSReader` instance, allowing dependency injection for the `IOSLogStoreWrapper`.
         /// @param osLogStoreWrapper A unique pointer to an instance of `IOSLogStoreWrapper`, used for interacting with
         /// the OS log store.
-        /// @param logcollector Reference to the `Logcollector` instance managing the log reading process.
+        /// @param pushMessageFunc Push message function
+        /// @param waitFunc Wait function
         /// @param waitInMillis Duration in milliseconds to wait before processing log files.
         /// @param logLevel The minimum log level to filter log entries.
         /// @param query An optional query string using `NSPredicate` syntax for additional log filtering.
         /// @param logTypes A vector of log type strings to further filter log entries.
-        MacOSReader(std::unique_ptr<IOSLogStoreWrapper> osLogStoreWrapper,
-                    Logcollector& logcollector,
-                    const std::time_t waitInMillis,
-                    const std::string& logLevel = "",
-                    const std::string& query = "",
-                    const std::vector<std::string>& logTypes = {});
+        MacOSReader(
+            std::unique_ptr<IOSLogStoreWrapper> osLogStoreWrapper,
+            std::function<void(const std::string& location, const std::string& log, const std::string& collectorType)>
+                pushMessageFunc,
+            std::function<Awaitable(std::chrono::milliseconds)> waitFunc,
+            const std::time_t waitInMillis,
+            const std::string& logLevel = "",
+            const std::string& query = "",
+            const std::vector<std::string>& logTypes = {});
 
         /// @brief Destructor for `MacOSReader`.
         ~MacOSReader() override = default;

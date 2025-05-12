@@ -10,11 +10,14 @@ namespace
 
 namespace logcollector
 {
-    JournaldReader::JournaldReader(Logcollector& logcollector,
-                                   FilterGroup filters,
-                                   bool ignoreIfMissing,
-                                   std::time_t fileWait)
-        : IReader(logcollector)
+    JournaldReader::JournaldReader(
+        std::function<void(const std::string& location, const std::string& log, const std::string& collectorType)>
+            pushMessageFunc,
+        std::function<Awaitable(std::chrono::milliseconds)> waitFunc,
+        FilterGroup filters,
+        bool ignoreIfMissing,
+        std::time_t fileWait)
+        : IReader(std::move(pushMessageFunc), std::move(waitFunc))
         , m_filters(std::move(filters))
         , m_ignoreIfMissing(ignoreIfMissing)
         , m_journal(std::make_unique<JournalLog>())
@@ -73,7 +76,7 @@ namespace logcollector
                             LogDebug("Truncating message of length {}", message.length());
                             message.resize(MAX_LINE_LENGTH);
                         }
-                        m_logcollector.PushMessage(filteredMessage->fieldValue, message, COLLECTOR_TYPE);
+                        m_pushMessage(filteredMessage->fieldValue, message, COLLECTOR_TYPE);
                     }
                 }
                 catch (const JournalLogException& e)
@@ -83,7 +86,7 @@ namespace logcollector
 
                 if (shouldWait)
                 {
-                    co_await m_logcollector.Wait(m_waitTime);
+                    co_await m_wait(m_waitTime);
                 }
             }
         }

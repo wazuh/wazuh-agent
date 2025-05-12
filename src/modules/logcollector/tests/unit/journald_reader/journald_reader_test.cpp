@@ -2,7 +2,6 @@
 #include <gtest/gtest.h>
 
 #include <journald_reader.hpp>
-#include <logcollector_mock.hpp>
 
 using namespace logcollector;
 using namespace testing;
@@ -10,7 +9,6 @@ using namespace testing;
 class JournaldReaderTests : public ::testing::Test
 {
 protected:
-    LogcollectorMock logcollector;
     FilterGroup testFilters;
     bool ignoreIfMissing {true};
     std::time_t fileWait = 500;
@@ -23,7 +21,13 @@ protected:
 
     JournaldReader CreateReader()
     {
-        return {logcollector, testFilters, ignoreIfMissing, fileWait};
+        auto dummyPush = [](const std::string&, const std::string&, const std::string&) {
+        };
+        auto dummyWait = [](std::chrono::milliseconds) -> Awaitable
+        {
+            co_return;
+        };
+        return {dummyPush, dummyWait, testFilters, ignoreIfMissing, fileWait};
     }
 };
 
@@ -59,9 +63,16 @@ TEST_F(JournaldReaderTests, FilterHandling)
         {{{"UNIT", "service1|service2", true}}, "1 conditions"},
         {{{"UNIT", "service1", true}, {"PRIORITY", "3|4|5", true}}, "2 conditions"}};
 
+    auto dummyPush = [](const std::string&, const std::string&, const std::string&) {
+    };
+    auto dummyWait = [](std::chrono::milliseconds) -> Awaitable
+    {
+        co_return;
+    };
+
     for (const auto& tc : testCases)
     {
-        const JournaldReader reader(logcollector, tc.filters, ignoreIfMissing, fileWait);
+        const JournaldReader reader(dummyPush, dummyWait, tc.filters, ignoreIfMissing, fileWait);
         EXPECT_THAT(reader.GetFilterDescription(), ::testing::HasSubstr(tc.expectedDesc));
     }
 }

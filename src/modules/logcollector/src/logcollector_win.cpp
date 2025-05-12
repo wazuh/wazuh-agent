@@ -25,7 +25,14 @@ namespace logcollector
         {
             const auto channel = entry["channel"];
             const auto query = entry["query"];
-            AddReader(std::make_shared<winevt::WindowsEventTracerReader>(*this, channel, query, refreshInterval));
+            AddReader(std::make_shared<winevt::WindowsEventTracerReader>(
+                [this](const std::string& location, const std::string& log, const std::string& collectorType)
+                { PushMessage(location, log, collectorType); },
+                // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+                [this](std::chrono::milliseconds duration) -> Awaitable { co_await Wait(duration); },
+                channel,
+                query,
+                refreshInterval));
         }
     }
 

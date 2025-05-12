@@ -1,9 +1,8 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <logcollector.hpp>
-#include <logcollector_mock.hpp>
 #include <macos_reader.hpp>
+#include <reader.hpp>
 
 #include <boost/asio.hpp>
 
@@ -12,6 +11,16 @@
 #include <string>
 #include <thread>
 #include <vector>
+
+namespace
+{
+    const auto DUMMY_PUSH = [](const std::string&, const std::string&, const std::string&) {
+    };
+    const auto DUMMY_WAIT = [](std::chrono::milliseconds) -> logcollector::Awaitable
+    {
+        co_return;
+    };
+} // namespace
 
 namespace macos_reader_tests
 {
@@ -33,15 +42,13 @@ namespace macos_reader_tests
 
     TEST(MacOSReaderTest, Constructor)
     {
-        auto logCollector = LogcollectorMock();
-        const logcollector::MacOSReader macOSReader(logCollector, DEFAULT_WAIT_IN_MILLIS);
+        const logcollector::MacOSReader macOSReader(DUMMY_PUSH, DUMMY_WAIT, DEFAULT_WAIT_IN_MILLIS);
     }
 
     TEST(MacOSReaderTest, ConstructorWithStoreWrapper)
     {
-        auto logCollector = LogcollectorMock();
         auto logStoreMock = std::make_unique<MockIOSLogStoreWrapper>();
-        const MacOSReader reader(std::move(logStoreMock), logCollector, DEFAULT_WAIT_IN_MILLIS);
+        const MacOSReader reader(std::move(logStoreMock), DUMMY_PUSH, DUMMY_WAIT, DEFAULT_WAIT_IN_MILLIS);
 
         // Just ensure the constructor works
         SUCCEED();
@@ -49,14 +56,11 @@ namespace macos_reader_tests
 
     TEST(MacOSReaderTest, RunAndStop)
     {
-        auto logCollector = LogcollectorMock();
-        EXPECT_CALL(logCollector, Wait(::testing::_)).Times(::testing::AnyNumber());
-
         boost::asio::io_context ioContext;
 
         auto didMacOSReaderRun = false;
 
-        logcollector::MacOSReader macOSReader(logCollector, DEFAULT_WAIT_IN_MILLIS);
+        logcollector::MacOSReader macOSReader(DUMMY_PUSH, DUMMY_WAIT, DEFAULT_WAIT_IN_MILLIS);
         boost::asio::co_spawn(
             ioContext,
             // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
@@ -86,16 +90,15 @@ namespace macos_reader_tests
 
     TEST(MacOSReaderTest, CreateQueryFromRule)
     {
-        auto logCollector = LogcollectorMock();
-        EXPECT_CALL(logCollector, Wait(::testing::_)).Times(::testing::AnyNumber());
-
-        logcollector::MacOSReader macOSReader(logCollector,
+        logcollector::MacOSReader macOSReader(DUMMY_PUSH,
+                                              DUMMY_WAIT,
                                               DEFAULT_WAIT_IN_MILLIS,
                                               "debug",
                                               R"(process != "sshd" OR message CONTAINS "invalid")",
                                               {"trace", "activity", "log"});
 
-        logcollector::MacOSReader macOSReader2(logCollector,
+        logcollector::MacOSReader macOSReader2(DUMMY_PUSH,
+                                               DUMMY_WAIT,
                                                DEFAULT_WAIT_IN_MILLIS,
                                                "debug",
                                                R"(process != "wazuh-agent"")",
@@ -131,9 +134,6 @@ namespace macos_reader_tests
 
     TEST(MacOSReaderTest, ReadsEntriesCorrectly)
     {
-        auto logCollector = LogcollectorMock();
-        EXPECT_CALL(logCollector, Wait(::testing::_)).Times(::testing::AnyNumber());
-
         const double aPointInTime = 1672531200.0;
         const double anotherPointInTime = 1672531260.0;
 
@@ -144,34 +144,27 @@ namespace macos_reader_tests
                 {anotherPointInTime, "2023-01-01T00:01:00Z", "Sample log message 2"}}))
             .WillRepeatedly(Return(std::vector<IOSLogStoreWrapper::LogEntry> {}));
 
-        MacOSReader macOSReader(std::move(logStoreMock), logCollector, DEFAULT_WAIT_IN_MILLIS);
+        std::unique_ptr<MacOSReader> macOSReader;
 
-        int pushMessageCallCount = 0;
+        const auto dummyPush = [&macOSReader](const std::string&, const std::string& dumpedData, const std::string&)
+        {
+            EXPECT_THAT(dumpedData, ::testing::HasSubstr("2023-01-01T00"));
+            EXPECT_THAT(dumpedData, ::testing::HasSubstr("Sample log message "));
+            macOSReader->Stop();
+        };
 
-        logCollector.SetPushMessageFunction(
-            [&pushMessageCallCount, &macOSReader](Message message) -> int // NOLINT(performance-unnecessary-value-param)
-            {
-                EXPECT_EQ(message.moduleName, "logcollector");
-                const auto dumpedData = message.data.dump();
-
-                EXPECT_THAT(dumpedData, ::testing::HasSubstr("2023-01-01T00"));
-                EXPECT_THAT(dumpedData, ::testing::HasSubstr("Sample log message "));
-
-                ++pushMessageCallCount;
-                macOSReader.Stop();
-                return 0;
-            });
+        macOSReader =
+            std::make_unique<MacOSReader>(std::move(logStoreMock), dummyPush, DUMMY_WAIT, DEFAULT_WAIT_IN_MILLIS);
 
         boost::asio::io_context ioContext;
 
         boost::asio::co_spawn(
             ioContext,
             // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-            [&macOSReader]() -> boost::asio::awaitable<void> { co_await macOSReader.Run(); },
+            [&macOSReader]() -> boost::asio::awaitable<void> { co_await macOSReader->Run(); },
             boost::asio::detached);
 
         ioContext.run();
-        EXPECT_EQ(pushMessageCallCount, 2);
     }
 
 } // namespace macos_reader_tests

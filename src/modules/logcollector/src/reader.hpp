@@ -1,11 +1,11 @@
 #pragma once
 
-#include <logcollector.hpp>
-
 #include <boost/asio/awaitable.hpp>
-#include <logcollector.hpp>
 
 #include <atomic>
+#include <chrono>
+#include <functional>
+#include <string>
 
 namespace logcollector
 {
@@ -16,9 +16,12 @@ namespace logcollector
     {
     public:
         /// @brief Constructor
-        /// @param logcollector Logcollector instance
-        IReader(Logcollector& logcollector)
-            : m_logcollector(logcollector)
+        IReader(
+            std::function<void(const std::string& location, const std::string& log, const std::string& collectorType)>
+                pushMessageFunc,
+            std::function<Awaitable(std::chrono::milliseconds)> waitFunc)
+            : m_pushMessage(pushMessageFunc)
+            , m_wait(waitFunc)
         {
         }
 
@@ -33,11 +36,19 @@ namespace logcollector
         virtual void Stop() = 0;
 
     protected:
+        /// @brief Push message function
+        /// @param message The message to push
+        /// @return The result of the push operation
+        std::function<void(const std::string& location, const std::string& log, const std::string& collectorType)>
+            m_pushMessage;
+
+        /// @brief Wait function
+        /// @param waitTime The time to wait
+        /// @return Awaitable result
+        std::function<Awaitable(std::chrono::milliseconds waitTimeMillis)> m_wait;
+
         /// @brief Indicates if the log reader should keep running
         std::atomic<bool> m_keepRunning = true;
-
-        /// @brief Logcollector instance
-        Logcollector& m_logcollector;
     };
 
 } // namespace logcollector

@@ -90,7 +90,15 @@ void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::Co
 
     for (const auto& lf : localfiles)
     {
-        AddReader(std::make_shared<FileReader>(*this, lf, fileWait, reloadInterval));
+        AddReader(std::make_shared<FileReader>(
+            [this](const std::string& location, const std::string& log, const std::string& collectorType)
+            { PushMessage(location, log, collectorType); },
+            // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+            [this](std::chrono::milliseconds duration) -> Awaitable { co_await Wait(duration); },
+            [this](Awaitable task) { EnqueueTask(std::move(task)); },
+            lf,
+            fileWait,
+            reloadInterval));
     }
 }
 
