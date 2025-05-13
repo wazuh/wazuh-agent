@@ -20,6 +20,9 @@ public:
     /// @param numThreads The number of threads to start
     virtual void StartThreadPool(size_t numThreads) = 0;
 
+    /// @brief Runs the task manager synchronously on the current thread
+    virtual void RunSingleThread() = 0;
+
     /// @brief Stops the task manager
     virtual void Stop() = 0;
 

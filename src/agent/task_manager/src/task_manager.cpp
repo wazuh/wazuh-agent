@@ -32,6 +32,21 @@ void TaskManager::StartThreadPool(size_t numThreads)
     }
 }
 
+void TaskManager::RunSingleThread()
+{
+    {
+        const std::lock_guard<std::mutex> lock(m_mutex);
+
+        if (!m_work)
+        {
+            m_work = std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
+                boost::asio::make_work_guard(m_ioContext));
+        }
+    }
+
+    m_ioContext.run();
+}
+
 void TaskManager::Stop()
 {
     const std::lock_guard<std::mutex> lock(m_mutex);

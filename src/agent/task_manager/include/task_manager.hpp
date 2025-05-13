@@ -24,6 +24,9 @@ public:
     /// @copydoc ITaskManager::StartThreadPool
     void StartThreadPool(size_t numThreads) override;
 
+    /// @copydoc ITaskManager::RunSingleThread
+    void RunSingleThread() override;
+
     /// @copydoc ITaskManager::Stop
     void Stop() override;
 
