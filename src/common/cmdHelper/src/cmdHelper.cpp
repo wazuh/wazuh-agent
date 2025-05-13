@@ -18,10 +18,64 @@ namespace
     std::vector<std::string> TokenizeCommand(const std::string& command)
     {
         std::vector<std::string> result;
+        std::string current;
+        bool inQuotes = false;
+        char quoteChar = '\0';
 
-        for (auto token : command | std::views::split(' ') | std::views::filter([](auto&& r) { return !r.empty(); }))
+        for (size_t i = 0; i < command.length(); ++i)
         {
-            result.emplace_back(token.begin(), token.end());
+            const char c = command[i];
+
+            if ((c == '"' || c == '\''))
+            {
+                size_t backslashCount = 0;
+                for (size_t j = i; j > 0 && command[j - 1] == '\\'; --j)
+                {
+                    ++backslashCount;
+                }
+                const bool escaped = (backslashCount % 2 == 1);
+
+                if (!escaped)
+                {
+                    if (!inQuotes)
+                    {
+                        inQuotes = true;
+                        quoteChar = c;
+                    }
+                    else if (quoteChar == c)
+                    {
+                        inQuotes = false;
+                    }
+                    else
+                    {
+                        current += c;
+                    }
+                    continue;
+                }
+            }
+
+            if (std::isspace(c) && !inQuotes)
+            {
+                if (!current.empty())
+                {
+                    result.push_back(current);
+                    current.clear();
+                }
+            }
+            else
+            {
+                current += c;
+            }
+        }
+
+        if (inQuotes)
+        {
+            throw std::runtime_error("Unclosed quote in command");
+        }
+
+        if (!current.empty())
+        {
+            result.push_back(current);
         }
 
         if (result.empty())
