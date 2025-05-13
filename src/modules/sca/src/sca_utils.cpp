@@ -306,4 +306,14 @@ namespace sca
         }
     }
 
+    bool IsRegexPattern(const std::string& pattern)
+    {
+        return pattern.starts_with("r:") || pattern.starts_with("!r:");
+    }
+
+    bool IsRegexOrNumericPattern(const std::string& pattern)
+    {
+        return IsRegexPattern(pattern) || pattern.starts_with("n:") || pattern.starts_with("!n:");
+    }
+
 } // namespace sca

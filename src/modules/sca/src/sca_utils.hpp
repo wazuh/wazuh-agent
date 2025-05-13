@@ -56,4 +56,14 @@ namespace sca
     std::optional<bool> PatternMatches(const std::string& content,
                                        const std::string& pattern,
                                        RegexEngineType engine = RegexEngineType::PCRE2);
+
+    /// @brief Checks if the given pattern is a regex pattern.
+    /// @param pattern The pattern to check.
+    /// @return True if the pattern is a regex pattern, false otherwise.
+    bool IsRegexPattern(const std::string& pattern);
+
+    /// @brief Checks if the given pattern is a regex pattern or a numeric pattern.
+    /// @param pattern The pattern to check.
+    /// @return True if the pattern is a regex pattern or a numeric pattern, false otherwise.
+    bool IsRegexOrNumericPattern(const std::string& pattern);
 } // namespace sca

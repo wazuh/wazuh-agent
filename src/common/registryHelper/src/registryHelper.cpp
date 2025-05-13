@@ -307,6 +307,45 @@ namespace Utils
         return ret;
     }
 
+    std::string Registry::getValue(const std::string& valueName) const
+    {
+        DWORD type = 0;
+        DWORD size = 0;
+        LONG result = RegQueryValueExA(m_registryKey, valueName.c_str(), nullptr, &type, nullptr, &size);
+
+        if (result != ERROR_SUCCESS)
+        {
+            throw std::system_error {result, std::system_category(), "Error reading the size of: " + valueName};
+        }
+
+        auto spBuff = std::make_unique<BYTE[]>(size);
+        result = RegQueryValueExA(m_registryKey, valueName.c_str(), nullptr, &type, spBuff.get(), &size);
+
+        if (result != ERROR_SUCCESS)
+        {
+            throw std::system_error {result, std::system_category(), "Error reading the value of: " + valueName};
+        }
+
+        switch (type)
+        {
+            case REG_SZ:
+            case REG_EXPAND_SZ: return std::string(reinterpret_cast<char*>(spBuff.get()));
+            case REG_DWORD:
+            {
+                DWORD dwValue;
+                std::memcpy(&dwValue, spBuff.get(), sizeof(DWORD));
+                return std::to_string(dwValue);
+            }
+            case REG_QWORD:
+            {
+                ULONGLONG qwValue;
+                std::memcpy(&qwValue, spBuff.get(), sizeof(ULONGLONG));
+                return std::to_string(qwValue);
+            }
+            default: throw std::runtime_error("Unsupported registry value type for: " + valueName);
+        }
+    }
+
     HKEY Registry::openRegistry(const HKEY key, const std::string& subKey, const REGSAM access)
     {
         HKEY ret {nullptr};

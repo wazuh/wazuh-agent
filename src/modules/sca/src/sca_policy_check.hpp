@@ -117,22 +117,24 @@ class RegistryRuleEvaluator : public RuleEvaluator
 {
 public:
     using IsValidRegistryKeyFunc = std::function<bool(const std::string& rootKey)>;
-    using GetRegistryKeysFunc =
-        std::function<std::vector<std::string>(const std::string& root, const std::string& subkey)>;
-    using GetRegistryValuesFunc =
-        std::function<std::vector<std::string>(const std::string& root, const std::string& subkey)>;
+    using GetRegistryValuesFunc = std::function<std::vector<std::string>(const std::string& rootKey)>;
+    using GetRegistryKeyValueFunc = std::function<std::string(const std::string& rootKey, const std::string& key)>;
 
     RegistryRuleEvaluator(PolicyEvaluationContext ctx,
                           IsValidRegistryKeyFunc isValidRegistryKey = nullptr,
-                          GetRegistryKeysFunc getRegistryKeys = nullptr,
-                          GetRegistryValuesFunc getRegistryValues = nullptr);
+                          GetRegistryValuesFunc getRegistryValues = nullptr,
+                          GetRegistryKeyValueFunc getRegistryKeyValue = nullptr);
 
     RuleResult Evaluate() override;
 
 private:
+    RuleResult CheckRegistryForContents();
+
+    RuleResult CheckRegistryExistence();
+
     IsValidRegistryKeyFunc m_isValidRegistryKey = nullptr;
-    GetRegistryKeysFunc m_getRegistryKeys = nullptr;
     GetRegistryValuesFunc m_getRegistryValues = nullptr;
+    GetRegistryKeyValueFunc m_getRegistryKeyValue = nullptr;
 };
 
 class RuleEvaluatorFactory

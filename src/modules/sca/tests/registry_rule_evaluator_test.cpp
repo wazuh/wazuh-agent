@@ -10,8 +10,8 @@ class RegistryRuleEvaluatorTest : public ::testing::Test
 protected:
     PolicyEvaluationContext m_ctx;
     RegistryRuleEvaluator::IsValidRegistryKeyFunc m_isValidKey;
-    RegistryRuleEvaluator::GetRegistryKeysFunc m_getKeys;
     RegistryRuleEvaluator::GetRegistryValuesFunc m_getValues;
+    RegistryRuleEvaluator::GetRegistryKeyValueFunc m_getKeyValue;
 
     void SetUp() override
     {
@@ -19,19 +19,19 @@ protected:
         {
             return true;
         };
-        m_getKeys = [](const std::string&, const std::string&)
+        m_getValues = [](const std::string&)
         {
             return std::vector<std::string> {};
         };
-        m_getValues = [](const std::string&, const std::string&)
+        m_getKeyValue = [](const std::string&, const std::string&)
         {
-            return std::vector<std::string> {};
+            return std::string {};
         };
     }
 
     RegistryRuleEvaluator CreateEvaluator()
     {
-        return {m_ctx, m_isValidKey, m_getKeys, m_getValues};
+        return {m_ctx, m_isValidKey, m_getValues, m_getKeyValue};
     }
 };
 
@@ -61,14 +61,75 @@ TEST_F(RegistryRuleEvaluatorTest, NoPatternInvalidKeyReturnsNotFound)
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::NotFound);
 }
 
-TEST_F(RegistryRuleEvaluatorTest, PatternArrowValueFoundReturnsFound)
+TEST_F(RegistryRuleEvaluatorTest, PatternKeyFoundReturnsFound)
 {
-    m_ctx.pattern = std::string("SubKey -> ExpectedValue");
+    m_ctx.pattern = std::string("ExpectedKey");
     m_ctx.rule = "HKEY_CURRENT_USER\\MyApp";
 
-    m_getValues = [](const std::string&, const std::string&)
+    m_getValues = [](const std::string&)
     {
-        return std::vector<std::string> {"SomethingElse", "ExpectedValue"};
+        return std::vector<std::string> {"SomethingElse", "ExpectedKey"};
+    };
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
+}
+
+TEST_F(RegistryRuleEvaluatorTest, PatternKeyNotFoundReturnsNotFound)
+{
+    m_ctx.pattern = std::string("MissingKey");
+    m_ctx.rule = "HKEY_CURRENT_USER\\MyApp";
+
+    m_getValues = [](const std::string&)
+    {
+        return std::vector<std::string> {"SomethingElse", "ExpectedKey"};
+    };
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::NotFound);
+}
+
+TEST_F(RegistryRuleEvaluatorTest, PatternRegexKeyFoundReturnsFound)
+{
+    m_ctx.pattern = std::string("r:ExpectedKey");
+    m_ctx.rule = "HKEY_CURRENT_USER\\MyApp";
+
+    m_getValues = [](const std::string&)
+    {
+        return std::vector<std::string> {"SomethingElse", "ExpectedKey"};
+    };
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
+}
+
+TEST_F(RegistryRuleEvaluatorTest, PatternRegexKeyNotFoundReturnsNotFound)
+{
+    m_ctx.pattern = std::string("r:MissingKey");
+    m_ctx.rule = "HKEY_CURRENT_USER\\MyApp";
+
+    m_getValues = [](const std::string&)
+    {
+        return std::vector<std::string> {"SomethingElse", "ExpectedKey"};
+    };
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::NotFound);
+}
+
+TEST_F(RegistryRuleEvaluatorTest, PatternArrowValueFoundReturnsFound)
+{
+    m_ctx.pattern = std::string("ExpectedKey -> ExpectedValue");
+    m_ctx.rule = "HKEY_CURRENT_USER\\MyApp";
+
+    m_getValues = [](const std::string&)
+    {
+        return std::vector<std::string> {"SomethingElse", "ExpectedKey"};
+    };
+
+    m_getKeyValue = [](const std::string&, const std::string&)
+    {
+        return std::string {"ExpectedValue"};
     };
 
     auto evaluator = CreateEvaluator();
@@ -77,26 +138,55 @@ TEST_F(RegistryRuleEvaluatorTest, PatternArrowValueFoundReturnsFound)
 
 TEST_F(RegistryRuleEvaluatorTest, PatternArrowValueNotFoundReturnsNotFound)
 {
-    m_ctx.pattern = std::string("SubKey -> MissingValue");
+    m_ctx.pattern = std::string("ExpectedKey -> MissingValue");
     m_ctx.rule = "HKEY_CURRENT_USER\\MyApp";
 
-    m_getValues = [](const std::string&, const std::string&)
+    m_getValues = [](const std::string&)
     {
-        return std::vector<std::string> {"A", "B", "C"};
+        return std::vector<std::string> {"SomethingElse", "ExpectedKey"};
+    };
+
+    m_getKeyValue = [](const std::string&, const std::string&)
+    {
+        return std::string {"ExpectedValue"};
     };
 
     auto evaluator = CreateEvaluator();
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::NotFound);
 }
 
-TEST_F(RegistryRuleEvaluatorTest, PatternKeyNotFoundReturnsNotFound)
+TEST_F(RegistryRuleEvaluatorTest, PatternArrowRegexValueFoundReturnsFound)
 {
-    m_ctx.pattern = std::string("TargetSubKey");
-    m_ctx.rule = "HKEY_LOCAL_MACHINE\\Software";
+    m_ctx.pattern = std::string("ExpectedKey -> r:ExpectedValue");
+    m_ctx.rule = "HKEY_CURRENT_USER\\MyApp";
 
-    m_getKeys = [](const std::string&, const std::string&)
+    m_getValues = [](const std::string&)
     {
-        return std::vector<std::string> {"Unrelated", "SomethingElse"};
+        return std::vector<std::string> {"SomethingElse", "ExpectedKey"};
+    };
+
+    m_getKeyValue = [](const std::string&, const std::string&)
+    {
+        return std::string {"ExpectedValue"};
+    };
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
+}
+
+TEST_F(RegistryRuleEvaluatorTest, PatternArrowRegexValueNotFoundReturnsNotFound)
+{
+    m_ctx.pattern = std::string("ExpectedKey -> r:MissingValue");
+    m_ctx.rule = "HKEY_CURRENT_USER\\MyApp";
+
+    m_getValues = [](const std::string&)
+    {
+        return std::vector<std::string> {"SomethingElse", "ExpectedKey"};
+    };
+
+    m_getKeyValue = [](const std::string&, const std::string&)
+    {
+        return std::string {"ExpectedValue"};
     };
 
     auto evaluator = CreateEvaluator();
