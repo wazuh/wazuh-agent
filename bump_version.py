@@ -219,7 +219,7 @@ def update_file_sources(executor: Executor, new_version: Optional[str] = None, n
     patterns_doxyfile = {
         "version": (re.compile(fr'(PROJECT_NUMBER\s+=\s+"v)({PATTERN_VERSION})("$)', re.MULTILINE), fr'\g<1>{new_version}\g<3>' if new_version else None)
     }
-    update_file(executor, DIR_SRC / 'Doxyfile', patterns_doxyfile)
+    update_file(executor, DIR_ROOT / 'Doxyfile', patterns_doxyfile)
 
     # Update vcpkg.json
     vcpkg_json_path = DIR_SRC / "vcpkg.json"

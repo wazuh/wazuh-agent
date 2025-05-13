@@ -23,27 +23,27 @@ wazuh# cd packages
 
 **Options:**
 
-| Option                     | Description                                                                                                | Default         |
-|----------------------------|------------------------------------------------------------------------------------------------------------|-----------------|
-| -b, --branch               | Select Git branch (optional)                                                                               | main            |
-| -a, --architecture         | Target architecture of the package [amd64, arm64] (optional)                                               |                 |
-| -j, --jobs                 | Change number of parallel jobs when compiling the manager or agent (optional)                              | 2               |
-| -r, --revision             | Package revision (optional)                                                                                | 0               |
-| -s, --store                | Set the destination path of package (optional). By default, an output folder will be created.              | Output folder   |
-| -p, --path                 | Installation path for the package (optional)                                                               | /               |
-| -d, --debug                | Build the binaries with debug symbols (optional)                                                           | no              |
-| -c, --checksum             | Generate checksum on the same directory as the package (optional)                                          | no              |
-| -e, --entrypoint           | Script to execute as entrypoint (optional)                                                                 |                 |
-| --dont-build-docker        | Use locally built docker image instead of generating a new one (optional)                                  |                 |
-| --vcpkg-binary-caching-key | VCPK remote binary caching repository key (optional)                                                       |                 |
-| --tag                      | Tag to use with the docker image (optional)                                                                |                 |
-|*--sources                  | Absolute path containing wazuh source code. Uses local source instead of downloading from GitHub (optional)| Script path     |
-|**--is_stage                | Use release name in package (optional)                                                                     |                 |
-| --system                   | Select Package OS [rpm, deb] (optional)                                                                    | deb             |
-| --src                      | Generate the source package in the destination directory (optional)                                        |                 |
-| --future                   | Build test future package x.30.0 for development purposes (optional)                                       |                 |
-| --verbose                  | Print commands and their arguments as they are executed (optional)                                         |                 |
-| -h, --help                 | Show this help                                                                                             |                 |
+| Option                     | Description                                                                                                 | Default       |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------- |
+| -b, --branch               | Select Git branch (optional)                                                                                | main          |
+| -a, --architecture         | Target architecture of the package [amd64, arm64] (optional)                                                |               |
+| -j, --jobs                 | Change number of parallel jobs when compiling the manager or agent (optional)                               | 2             |
+| -r, --revision             | Package revision (optional)                                                                                 | 0             |
+| -s, --store                | Set the destination path of package (optional). By default, an output folder will be created.               | Output folder |
+| -p, --path                 | Installation path for the package (optional)                                                                | /             |
+| -d, --debug                | Build the binaries with debug symbols (optional)                                                            | no            |
+| -c, --checksum             | Generate checksum on the same directory as the package (optional)                                           | no            |
+| -e, --entrypoint           | Script to execute as entrypoint (optional)                                                                  |               |
+| --dont-build-docker        | Use locally built docker image instead of generating a new one (optional)                                   |               |
+| --vcpkg-binary-caching-key | VCPK remote binary caching repository key (optional)                                                        |               |
+| --tag                      | Tag to use with the docker image (optional)                                                                 |               |
+| *--sources                 | Absolute path containing wazuh source code. Uses local source instead of downloading from GitHub (optional) | Script path   |
+| **--is_stage               | Use release name in package (optional)                                                                      |               |
+| --system                   | Select Package OS [rpm, deb] (optional)                                                                     | deb           |
+| --src                      | Generate the source package in the destination directory (optional)                                         |               |
+| --future                   | Build test future package x.30.0 for development purposes (optional)                                        |               |
+| --verbose                  | Print commands and their arguments as they are executed (optional)                                          |               |
+| -h, --help                 | Show this help                                                                                              |               |
 
 ***Note 1:** If we don't use this flag and no `-b` parameter is given, the script will use the current directory where `generate_package.sh` is located.
 
@@ -85,35 +85,35 @@ wazuh# cd packages/macos
 
 **Options:**
 
-| Option                     | Description                                                                                                | Default         |
-|----------------------------|------------------------------------------------------------------------------------------------------------|-----------------|
-| -a, --architecture         | Target architecture of the package [intel64, arm64] (optional)                                             | intel64         |
-| -b, --branch               | Select Git branch (optional)                                                                               |                 |
-| -j, --jobs                 | Number of parallel jobs when compiling (optional)                                                          | 2               |
-| -r, --revision             | Package revision (optional)                                                                                | 0               |
-| -s, --store-path           | Set the destination path of package (optional). By default, an output folder will be created               | Output folder   |
-| -d, --debug                | Build the binaries with debug symbols (optional)                                                           | no              |
-| -c, --checksum             | Generate checksum on the same directory as the package (optional)                                          | no              |
-| --vcpkg-binary-caching-key | VCPK remote binary caching repository key (optional)                                                       |                 |
-|--is_stage                  | Use release name in package (optional)                                                                     |                 |
-| -v, --verbose              | Print commands and their arguments as they are executed (optional)                                         |                 |
-| -h, --help                 | Show this help                                                                                             |                 |
-| -i, --install-deps         | Install build dependencies                                                                                 |                 |
-| -x, --install-xcode        | Install X-Code and brew. Can't be executed as root                                                         |                 |
+| Option                     | Description                                                                                  | Default       |
+| -------------------------- | -------------------------------------------------------------------------------------------- | ------------- |
+| -a, --architecture         | Target architecture of the package [intel64, arm64] (optional)                               | intel64       |
+| -b, --branch               | Select Git branch (optional)                                                                 |               |
+| -j, --jobs                 | Number of parallel jobs when compiling (optional)                                            | 2             |
+| -r, --revision             | Package revision (optional)                                                                  | 0             |
+| -s, --store-path           | Set the destination path of package (optional). By default, an output folder will be created | Output folder |
+| -d, --debug                | Build the binaries with debug symbols (optional)                                             | no            |
+| -c, --checksum             | Generate checksum on the same directory as the package (optional)                            | no            |
+| --vcpkg-binary-caching-key | VCPK remote binary caching repository key (optional)                                         |               |
+| --is_stage                 | Use release name in package (optional)                                                       |               |
+| -v, --verbose              | Print commands and their arguments as they are executed (optional)                           |               |
+| -h, --help                 | Show this help                                                                               |               |
+| -i, --install-deps         | Install build dependencies                                                                   |               |
+| -x, --install-xcode        | Install X-Code and brew. Can't be executed as root                                           |               |
 
 **Signing options:**
 
-| Option                     | Description                                                                                                | Default         |
-|----------------------------|------------------------------------------------------------------------------------------------------------|-----------------|
-| --keychain                 | Keychain where the Certificates are installed (optional)                                                   |                 |
-| --keychain-password        | Password of the keychain (optional)                                                                        |                 |
-| --application-certificate  | Apple Developer ID certificate name to sign Apps and binaries (optional)                                   |                 |
-| --installer-certificate    | Apple Developer ID certificate name to sign pkg (optional)                                                 |                 |
-| --notarize                 | Notarize the package for its distribution on macOS (optional)                                              | no              |
-| --notarize-path            | Path of the package to be notarized (optional)                                                             |                 |
-| --developer-id             | Your Apple Developer ID (optional)                                                                         |                 |
-| --team-id                  | Your Apple Team ID (optional)                                                                              |                 |
-| --altool-password          | Temporary password to use altool from Xcode (optional)                                                     |                 |
+| Option                    | Description                                                              | Default |
+| ------------------------- | ------------------------------------------------------------------------ | ------- |
+| --keychain                | Keychain where the Certificates are installed (optional)                 |         |
+| --keychain-password       | Password of the keychain (optional)                                      |         |
+| --application-certificate | Apple Developer ID certificate name to sign Apps and binaries (optional) |         |
+| --installer-certificate   | Apple Developer ID certificate name to sign pkg (optional)               |         |
+| --notarize                | Notarize the package for its distribution on macOS (optional)            | no      |
+| --notarize-path           | Path of the package to be notarized (optional)                           |         |
+| --developer-id            | Your Apple Developer ID (optional)                                       |         |
+| --team-id                 | Your Apple Team ID (optional)                                            |         |
+| --altool-password         | Temporary password to use altool from Xcode (optional)                   |         |
 
 
 **Note 1:** When building the package, run script with `-i` argument and `-x` argument to fully cover the packaging dependencies.
@@ -138,32 +138,32 @@ $ ./packages/windows/generate_wazuh_msi.ps1 [PACKAGE-OPTIONS]
 
 **Compilation options:**
 
-| Option                     | Description                                                                                                | Default         |
-|----------------------------|------------------------------------------------------------------------------------------------------------|-----------------|
-| -MSI_NAME                  | MSI package name output                                                                                    | wazuh-agent     |
-| -BUILD_TESTS               | Define test mode action (0 or 1)                                                                           | 0               |
-| -CMAKE_CONFIG              | Cmake config type, Debug, Release, RelWithDebInfo or MinSizeRel                                            | Debug           |
-| -TOKEN_VCPKG               | VCPKG remote binary caching repository key. By default is empty, no binary caching funcionality will be used.                                               |                 |
+| Option        | Description                                                                                                   | Default     |
+| ------------- | ------------------------------------------------------------------------------------------------------------- | ----------- |
+| -MSI_NAME     | MSI package name output                                                                                       | wazuh-agent |
+| -BUILD_TESTS  | Define test mode action (0 or 1)                                                                              | 0           |
+| -CMAKE_CONFIG | Cmake config type, Debug, Release, RelWithDebInfo or MinSizeRel                                               | Debug       |
+| -TOKEN_VCPKG  | VCPKG remote binary caching repository key. By default is empty, no binary caching funcionality will be used. |             |
 
 **Packaging options:**
 
-| Option                     | Description                                                                                                | Default         |
-|----------------------------|------------------------------------------------------------------------------------------------------------|-----------------|
-| -MSI_NAME                  | MSI package name output                                                                                    | wazuh-agent     |
-| -SIGN                      | Define sign action process (yes or no)                                                                     | no              |
-| -DEBUG                     | Define debug symbols generation process (yes or no)                                                        | no              |
-| -CMAKE_CONFIG              | Cmake config type, Debug, Release, RelWithDebInfo or MinSizeRel                                            | Debug           |
-| -SIGN_TOOLS_PATH           | Sign tools path. Not needed if PATH env var is correctly configured                                        |                 |
-| -CV2PDB_PATH               | Debug symbols tools path. Not needed if PATH env var is correctly configured                               |                 |
-| -CERTIFICATE_PATH          | Path to the .pfx certificate file. If not specified, signtool /a parameter will be used                    |                 |
-| -CERTIFICATE_PASSWORD      | Password for the .pfx certificate file. If not specified, signtool /a parameter will be used               |                 |
+| Option                | Description                                                                                  | Default     |
+| --------------------- | -------------------------------------------------------------------------------------------- | ----------- |
+| -MSI_NAME             | MSI package name output                                                                      | wazuh-agent |
+| -SIGN                 | Define sign action process (yes or no)                                                       | no          |
+| -DEBUG                | Define debug symbols generation process (yes or no)                                          | no          |
+| -CMAKE_CONFIG         | Cmake config type, Debug, Release, RelWithDebInfo or MinSizeRel                              | Debug       |
+| -SIGN_TOOLS_PATH      | Sign tools path. Not needed if PATH env var is correctly configured                          |             |
+| -CV2PDB_PATH          | Debug symbols tools path. Not needed if PATH env var is correctly configured                 |             |
+| -CERTIFICATE_PATH     | Path to the .pfx certificate file. If not specified, signtool /a parameter will be used      |             |
+| -CERTIFICATE_PASSWORD | Password for the .pfx certificate file. If not specified, signtool /a parameter will be used |             |
 
 
 **Example Usage:**
-1. Build a package with `wazuh-agent_5.0.0-0_windows_0ceb378` name without signing it:
+1. Build a package with `wazuh-agent_6.0.0-0_windows_0ceb378` name without signing it:
 
 ```
-$ ./generate_wazuh_msi.ps1 -MSI_NAME wazuh-agent_5.0.0-0_windows_0ceb378 -SIGN no
+$ ./generate_wazuh_msi.ps1 -MSI_NAME wazuh-agent_6.0.0-0_windows_0ceb378 -SIGN no
 ```
 
 # Workflows

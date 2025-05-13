@@ -130,7 +130,7 @@ TEST_F(HttpClientTest, PerformHttpRequest_Success_verification_full)
     EXPECT_CALL(*mockSocket, Read(_, _)).WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::ok); });
 
     const http_client::HttpRequestParams params(
-        http_client::MethodType::GET, "https://localhost:80", "/", "Wazuh 5.0.0", "full");
+        http_client::MethodType::GET, "https://localhost:80", "/", "Wazuh 6.0.0", "full");
     const auto response = client->PerformHttpRequest(params);
 
     EXPECT_EQ(std::get<0>(response), http_client::HTTP_CODE_OK);
@@ -148,7 +148,7 @@ TEST_F(HttpClientTest, PerformHttpRequest_Success_verification_certificate)
     EXPECT_CALL(*mockSocket, Read(_, _)).WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::ok); });
 
     const http_client::HttpRequestParams params(
-        http_client::MethodType::GET, "https://localhost:80", "/", "Wazuh 5.0.0", "certificate");
+        http_client::MethodType::GET, "https://localhost:80", "/", "Wazuh 6.0.0", "certificate");
     const auto response = client->PerformHttpRequest(params);
 
     EXPECT_EQ(std::get<0>(response), http_client::HTTP_CODE_OK);
@@ -166,7 +166,7 @@ TEST_F(HttpClientTest, PerformHttpRequest_Success_verification_none)
     EXPECT_CALL(*mockSocket, Read(_, _)).WillOnce([](auto& res, auto&) { res.result(boost::beast::http::status::ok); });
 
     const http_client::HttpRequestParams params(
-        http_client::MethodType::GET, "https://localhost:80", "/", "Wazuh 5.0.0", "none");
+        http_client::MethodType::GET, "https://localhost:80", "/", "Wazuh 6.0.0", "none");
     const auto response = client->PerformHttpRequest(params);
 
     EXPECT_EQ(std::get<0>(response), http_client::HTTP_CODE_OK);
@@ -179,7 +179,7 @@ TEST_F(HttpClientTest, PerformHttpRequest_ExceptionThrown)
     EXPECT_CALL(*mockResolver, Resolve(_, _)).WillOnce(Throw(std::runtime_error("Simulated resolution failure")));
 
     const http_client::HttpRequestParams params(
-        http_client::MethodType::GET, "https://localhost:80", "/", "Wazuh 5.0.0", "full");
+        http_client::MethodType::GET, "https://localhost:80", "/", "Wazuh 6.0.0", "full");
     const auto response = client->PerformHttpRequest(params);
 
     EXPECT_EQ(std::get<0>(response), http_client::HTTP_CODE_INTERNAL_SERVER_ERROR);
@@ -197,7 +197,7 @@ TEST_P(HttpClientTest, Co_PerformHttpRequest_Success)
     SetupMockSocketReadExpectations(GetParam());
 
     const http_client::HttpRequestParams params(
-        http_client::MethodType::GET, "https://localhost:8080", "/test", "Wazuh 5.0.0", "full");
+        http_client::MethodType::GET, "https://localhost:8080", "/test", "Wazuh 6.0.0", "full");
 
     std::future<std::tuple<int, std::string>> response;
 
@@ -236,7 +236,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_CallbacksNotCalledIfCannotConnect)
     EXPECT_CALL(*mockSocket, SetVerificationMode("localhost", "full")).Times(1);
 
     const http_client::HttpRequestParams params(
-        http_client::MethodType::GET, "https://localhost:8080", "/test", "Wazuh 5.0.0", "full");
+        http_client::MethodType::GET, "https://localhost:8080", "/test", "Wazuh 6.0.0", "full");
 
     std::future<std::tuple<int, std::string>> response;
 
@@ -270,7 +270,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncWriteFails
     SetupMockSocketWriteExpectations(boost::system::errc::make_error_code(boost::system::errc::bad_address));
 
     const http_client::HttpRequestParams params(
-        http_client::MethodType::GET, "https://localhost:8080", "/test", "Wazuh 5.0.0", "full");
+        http_client::MethodType::GET, "https://localhost:8080", "/test", "Wazuh 6.0.0", "full");
 
     std::future<std::tuple<int, std::string>> response;
 
@@ -306,7 +306,7 @@ TEST_F(HttpClientTest, Co_PerformHttpRequest_OnSuccessNotCalledIfAsyncReadFails)
                                     boost::system::errc::make_error_code(boost::system::errc::bad_address));
 
     const http_client::HttpRequestParams params(
-        http_client::MethodType::GET, "https://localhost:8080", "/test", "Wazuh 5.0.0", "full");
+        http_client::MethodType::GET, "https://localhost:8080", "/test", "Wazuh 6.0.0", "full");
 
     std::future<std::tuple<int, std::string>> response;
 
