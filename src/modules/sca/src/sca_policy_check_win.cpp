@@ -49,6 +49,7 @@ namespace
             }
             else
             {
+                LogDebug("Invalid pattern '{}' for registry value '{}'", pattern, value);
                 return RuleResult::Invalid;
             }
         }
@@ -117,6 +118,7 @@ RuleResult RegistryRuleEvaluator::CheckRegistryForContents()
                     hadValue = true;
                     if (patternMatch.value())
                     {
+                        LogDebug("Pattern '{}' was found in registry '{}'", pattern, m_ctx.rule);
                         return m_ctx.isNegated ? RuleResult::NotFound : RuleResult::Found;
                     }
                 }
@@ -135,6 +137,7 @@ RuleResult RegistryRuleEvaluator::CheckRegistryForContents()
             {
                 if (value == pattern)
                 {
+                    LogDebug("Pattern '{}' was found in registry '{}'", pattern, m_ctx.rule);
                     return m_ctx.isNegated ? RuleResult::NotFound : RuleResult::Found;
                 }
             }
@@ -142,6 +145,7 @@ RuleResult RegistryRuleEvaluator::CheckRegistryForContents()
 
         if (isRegex && !hadValue)
         {
+            LogDebug("Invalid pattern '{}' for registry '{}'", pattern, m_ctx.rule);
             return RuleResult::Invalid;
         }
     }

@@ -45,6 +45,7 @@ namespace
             }
             else
             {
+                LogDebug("Invalid pattern '{}' for file '{}'", pattern, filePath);
                 return RuleResult::Invalid;
             }
         }
@@ -170,6 +171,7 @@ RuleResult CommandRuleEvaluator::Evaluate()
             }
             else
             {
+                LogDebug("Invalid pattern '{}' for command rule evaluation", *m_ctx.pattern);
                 return RuleResult::Invalid;
             }
         }
@@ -279,6 +281,7 @@ RuleResult DirRuleEvaluator::CheckDirectoryForContents()
                     hadValue = true;
                     if (patternMatch.value())
                     {
+                        LogDebug("Pattern '{}' was found in directory '{}'", pattern, rootPath.string());
                         return m_ctx.isNegated ? RuleResult::NotFound : RuleResult::Found;
                     }
                 }
@@ -296,6 +299,7 @@ RuleResult DirRuleEvaluator::CheckDirectoryForContents()
             {
                 if (file.filename().string() == pattern)
                 {
+                    LogDebug("Pattern '{}' was found in directory '{}'", pattern, rootPath.string());
                     return m_ctx.isNegated ? RuleResult::NotFound : RuleResult::Found;
                 }
             }
@@ -303,6 +307,7 @@ RuleResult DirRuleEvaluator::CheckDirectoryForContents()
 
         if (isRegex && !hadValue)
         {
+            LogDebug("Invalid pattern '{}' for directory '{}'", pattern, rootPath.string());
             return RuleResult::Invalid;
         }
     }
