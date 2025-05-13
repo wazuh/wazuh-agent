@@ -15,16 +15,6 @@
 
 namespace
 {
-    bool IsRegexPattern(const std::string& pattern)
-    {
-        return pattern.starts_with("r:") || pattern.starts_with("!r:");
-    }
-
-    bool IsRegexOrNumericPattern(const std::string& pattern)
-    {
-        return IsRegexPattern(pattern) || pattern.starts_with("n:") || pattern.starts_with("!n:");
-    }
-
     template<typename Func>
     auto TryFunc(Func&& func) -> std::optional<decltype(func())>
     {
@@ -45,7 +35,7 @@ namespace
     {
         bool matchFound = false;
 
-        if (IsRegexOrNumericPattern(pattern))
+        if (sca::IsRegexOrNumericPattern(pattern))
         {
             const auto content = fileUtils->getFileContent(filePath);
 
@@ -168,7 +158,7 @@ RuleResult CommandRuleEvaluator::Evaluate()
         output = Utils::Trim(output, "\n");
         error = Utils::Trim(error, "\n");
 
-        if (IsRegexOrNumericPattern(*m_ctx.pattern))
+        if (sca::IsRegexOrNumericPattern(*m_ctx.pattern))
         {
             const auto outputPatternMatch = sca::PatternMatches(output, *m_ctx.pattern);
             const auto errorPatternMatch = sca::PatternMatches(error, *m_ctx.pattern);
@@ -263,7 +253,7 @@ RuleResult DirRuleEvaluator::CheckDirectoryForContents()
         const auto& files = *filesOpt;
 
         // Check if pattern is a regex
-        const auto isRegex = IsRegexPattern(pattern);
+        const auto isRegex = sca::IsRegexPattern(pattern);
 
         // Check if pattern has content
         const auto content = sca::GetPattern(pattern);

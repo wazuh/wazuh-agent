@@ -7,16 +7,6 @@
 
 namespace
 {
-    bool IsRegexPattern(const std::string& pattern)
-    {
-        return pattern.starts_with("r:") || pattern.starts_with("!r:");
-    }
-
-    bool IsRegexOrNumericPattern(const std::string& pattern)
-    {
-        return IsRegexPattern(pattern) || pattern.starts_with("n:") || pattern.starts_with("!n:");
-    }
-
     // Checks if a registry key exists
     const RegistryRuleEvaluator::IsValidRegistryKeyFunc DEFAULT_IS_VALID_REGISTRY_KEY =
         [](const std::string& rootKey) -> bool
@@ -51,7 +41,7 @@ namespace
     {
         bool matchFound = false;
 
-        if (IsRegexOrNumericPattern(pattern))
+        if (sca::IsRegexOrNumericPattern(pattern))
         {
             if (const auto patternMatch = sca::PatternMatches(value, pattern))
             {
@@ -112,7 +102,7 @@ RuleResult RegistryRuleEvaluator::CheckRegistryForContents()
         bool hadValue = false;
 
         // Check if pattern is a regex
-        const auto isRegex = IsRegexPattern(pattern);
+        const auto isRegex = sca::IsRegexPattern(pattern);
 
         // Check if pattern has content
         const auto content = sca::GetPattern(pattern);
