@@ -24,8 +24,7 @@ namespace
     }
 
     // Checks if a registry key exists
-    const RegistryRuleEvaluator::IsValidRegistryKeyFunc DEFAULT_IS_VALID_REGISTRY_KEY =
-        [](const std::string& rootKey) -> bool
+    const RegistryRuleEvaluator::IsValidKeyFunc DEFAULT_IS_VALID_KEY = [](const std::string& rootKey) -> bool
     {
         try
         {
@@ -38,57 +37,31 @@ namespace
         }
     };
 
-    // Gets values from a key
-    const RegistryRuleEvaluator::GetRegistryValuesFunc DEFAULT_GET_REGISTRY_VALUES =
-        [](const std::string& rootKey) -> std::vector<std::string>
+    // Gets subkeys
+    const RegistryRuleEvaluator::EnumKeysFunc DEFAULT_ENUM_KEYS =
+        [](const std::string& root) -> std::vector<std::string>
     {
         return Utils::Registry(rootKey).enumerateValueKey();
     };
 
-    // Gets value from a key
-    const RegistryRuleEvaluator::GetRegistryKeyValueFunc DEFAULT_GET_REGISTRY_KEY_VALUE =
-        [](const std::string& rootKey, const std::string& key) -> std::string
+    // Gets values from a key
+    const RegistryRuleEvaluator::EnumValuesFunc DEFAULT_ENUM_VALUES =
+        [](const std::string& root) -> std::vector<std::string>
     {
-        return Utils::Registry(rootKey).getValue(key);
+        auto [key, path] = SplitRegistryKey(root);
+
+        return Utils::Registry(key, path).enumerateValueKey();
     };
-
-    RuleResult FindContentInRegistryValue(const std::string& value, const std::string& pattern, const bool isNegated)
-    {
-        bool matchFound = false;
-
-        if (sca::IsRegexOrNumericPattern(pattern))
-        {
-            if (const auto patternMatch = sca::PatternMatches(value, pattern))
-            {
-                matchFound = patternMatch.value();
-            }
-            else
-            {
-                LogDebug("Invalid pattern '{}' for registry value '{}'", pattern, value);
-                return RuleResult::Invalid;
-            }
-        }
-        else
-        {
-            if (value == pattern)
-            {
-                matchFound = true;
-            }
-        }
-
-        LogDebug("Pattern '{}' {} found in registry value '{}'", pattern, matchFound ? "was" : "was not", value);
-        return (matchFound != isNegated) ? RuleResult::Found : RuleResult::NotFound;
-    }
 } // namespace
 
 RegistryRuleEvaluator::RegistryRuleEvaluator(PolicyEvaluationContext ctx,
-                                             IsValidRegistryKeyFunc isValidRegistryKey,
-                                             GetRegistryValuesFunc getRegistryValues,
-                                             GetRegistryKeyValueFunc getRegistryKeyValue)
+                                             IsValidKeyFunc isValidKey,
+                                             EnumKeysFunc enumKeys,
+                                             EnumValuesFunc enumValues)
     : RuleEvaluator(std::move(ctx), nullptr)
-    , m_isValidRegistryKey(isValidRegistryKey ? std::move(isValidRegistryKey) : DEFAULT_IS_VALID_REGISTRY_KEY)
-    , m_getRegistryValues(getRegistryValues ? std::move(getRegistryValues) : DEFAULT_GET_REGISTRY_VALUES)
-    , m_getRegistryKeyValue(getRegistryKeyValue ? std::move(getRegistryKeyValue) : DEFAULT_GET_REGISTRY_KEY_VALUE)
+    , m_isValidKey(isValidKey ? std::move(isValidKey) : DEFAULT_IS_VALID_KEY)
+    , m_enumKeys(enumKeys ? std::move(enumKeys) : DEFAULT_ENUM_KEYS)
+    , m_enumValues(enumValues ? std::move(enumValues) : DEFAULT_ENUM_VALUES)
 {
 }
 
@@ -96,12 +69,12 @@ RuleResult RegistryRuleEvaluator::Evaluate()
 {
     if (m_ctx.pattern)
     {
-        return CheckRegistryForContents();
+        return CheckKeyForContents();
     }
-    return CheckRegistryExistence();
+    return CheckKeyExistence();
 }
 
-RuleResult RegistryRuleEvaluator::CheckRegistryForContents()
+RuleResult RegistryRuleEvaluator::CheckKeyForContents()
 {
     LogDebug("Processing registry rule: {}", m_ctx.rule);
 
@@ -111,7 +84,7 @@ RuleResult RegistryRuleEvaluator::CheckRegistryForContents()
     {
         if (!m_isValidRegistryKey(m_ctx.rule))
         {
-            LogDebug("Registry '{}' does not exist", m_ctx.rule);
+            LogDebug("Key '{}' does not exist", m_ctx.rule);
             return RuleResult::Invalid;
         }
 
@@ -133,7 +106,7 @@ RuleResult RegistryRuleEvaluator::CheckRegistryForContents()
                     hadValue = true;
                     if (patternMatch.value())
                     {
-                        LogDebug("Pattern '{}' was found in registry '{}'", pattern, m_ctx.rule);
+                        LogDebug("Pattern '{}' was found in key '{}'", pattern, m_ctx.rule);
                         return m_ctx.isNegated ? RuleResult::NotFound : RuleResult::Found;
                     }
                 }
@@ -152,7 +125,7 @@ RuleResult RegistryRuleEvaluator::CheckRegistryForContents()
             {
                 if (value == pattern)
                 {
-                    LogDebug("Pattern '{}' was found in registry '{}'", pattern, m_ctx.rule);
+                    LogDebug("Pattern '{}' was found in key '{}'", pattern, m_ctx.rule);
                     return m_ctx.isNegated ? RuleResult::NotFound : RuleResult::Found;
                 }
             }
@@ -160,7 +133,7 @@ RuleResult RegistryRuleEvaluator::CheckRegistryForContents()
 
         if (isRegex && !hadValue)
         {
-            LogDebug("Invalid pattern '{}' for registry '{}'", pattern, m_ctx.rule);
+            LogDebug("Invalid pattern '{}' for key '{}'", pattern, m_ctx.rule);
             return RuleResult::Invalid;
         }
     }
@@ -170,25 +143,25 @@ RuleResult RegistryRuleEvaluator::CheckRegistryForContents()
         return RuleResult::Invalid;
     }
 
-    LogDebug("Pattern '{}' was not found in registry '{}'", pattern, m_ctx.rule);
+    LogDebug("Pattern '{}' was not found in key '{}'", pattern, m_ctx.rule);
     return m_ctx.isNegated ? RuleResult::Found : RuleResult::NotFound;
 }
 
-RuleResult RegistryRuleEvaluator::CheckRegistryExistence()
+RuleResult RegistryRuleEvaluator::CheckKeyExistence()
 {
     auto result = RuleResult::NotFound;
 
-    LogDebug("Processing registry rule. Checking existence of registry: '{}'", m_ctx.rule);
+    LogDebug("Processing registry rule. Checking existence of key: '{}'", m_ctx.rule);
 
     try
     {
-        if (!m_isValidRegistryKey(m_ctx.rule))
+        if (!m_isValidKey(m_ctx.rule))
         {
-            LogDebug("Registry '{}' does not exist", m_ctx.rule);
+            LogDebug("Key '{}' does not exist", m_ctx.rule);
         }
         else
         {
-            LogDebug("Registry '{}' exists", m_ctx.rule);
+            LogDebug("Key '{}' exists", m_ctx.rule);
             result = RuleResult::Found;
         }
     }

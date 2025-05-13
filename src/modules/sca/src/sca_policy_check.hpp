@@ -29,6 +29,8 @@ class IRuleEvaluator
 public:
     virtual ~IRuleEvaluator() = default;
 
+    /// @brief Evaluates the rule
+    /// @return Returns a RuleResult indicating if the rule was found or is invalid
     virtual RuleResult Evaluate() = 0;
 
     virtual const PolicyEvaluationContext& GetContext() const = 0;
@@ -113,28 +115,39 @@ private:
     GetProcessesFunc m_getProcesses = nullptr;
 };
 
+/// @brief Subclass of RuleEvaluator that evaluates registry-related rules
 class RegistryRuleEvaluator : public RuleEvaluator
 {
 public:
-    using IsValidRegistryKeyFunc = std::function<bool(const std::string& rootKey)>;
-    using GetRegistryValuesFunc = std::function<std::vector<std::string>(const std::string& rootKey)>;
-    using GetRegistryKeyValueFunc = std::function<std::string(const std::string& rootKey, const std::string& key)>;
+    using IsValidKeyFunc = std::function<bool(const std::string& rootKey)>;
+    using EnumKeysFunc = std::function<std::vector<std::string>(const std::string& root)>;
+    using EnumValuesFunc = std::function<std::vector<std::string>(const std::string& root)>;
 
+    /// @brief Constructor
+    /// @param ctx Evaluation context
+    /// @param isValidKey Function that returns true if the key is valid
+    /// @param enumKeys Function that returns a vector of subkeys
+    /// @param enumValues Function that returns a vector of values
     RegistryRuleEvaluator(PolicyEvaluationContext ctx,
-                          IsValidRegistryKeyFunc isValidRegistryKey = nullptr,
-                          GetRegistryValuesFunc getRegistryValues = nullptr,
-                          GetRegistryKeyValueFunc getRegistryKeyValue = nullptr);
+                          IsValidKeyFunc isValidKey = nullptr,
+                          EnumKeysFunc enumKeys = nullptr,
+                          EnumValuesFunc enumValues = nullptr);
 
+    /// @copydoc IRuleEvaluator::Evaluate
     RuleResult Evaluate() override;
 
 private:
-    RuleResult CheckRegistryForContents();
+    /// @brief Checks if the key has the contents expected by the rule
+    /// @return Returns a RuleResult with the result
+    RuleResult CheckKeyForContents();
 
-    RuleResult CheckRegistryExistence();
+    /// @brief Checks if a Key exists
+    /// @return Returns a RuleResult with the result
+    RuleResult CheckKeyExistence();
 
-    IsValidRegistryKeyFunc m_isValidRegistryKey = nullptr;
-    GetRegistryValuesFunc m_getRegistryValues = nullptr;
-    GetRegistryKeyValueFunc m_getRegistryKeyValue = nullptr;
+    IsValidKeyFunc m_isValidKey = nullptr;
+    EnumValuesFunc m_enumValues = nullptr;
+    EnumKeysFunc m_enumKeys = nullptr;
 };
 
 class RuleEvaluatorFactory
