@@ -32,7 +32,7 @@
         "id": "d9a65288-11bc-4362-8198-fa4939116a73",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {
@@ -112,7 +112,7 @@
         "id": "d9a65288-11bc-4362-8198-fa4939116a73",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {
@@ -191,7 +191,7 @@
         "id": "d9a65288-11bc-4362-8198-fa4939116a73",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {
@@ -235,7 +235,7 @@
         "id": "d9a65288-11bc-4362-8198-fa4939116a73",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {
@@ -331,7 +331,7 @@ under the `previous` key within the policy object. Additionally, the modified fi
         "id": "d9a65288-11bc-4362-8198-fa4939116a73",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {
@@ -431,7 +431,7 @@ applicable). As in the previous case, the modified fields will be listed in `cha
         "id": "d9a65288-11bc-4362-8198-fa4939116a73",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {
@@ -535,7 +535,7 @@ applicable). As in the previous case, the modified fields will be listed in `cha
         "id": "d9a65288-11bc-4362-8198-fa4939116a73",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {

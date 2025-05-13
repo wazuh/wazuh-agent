@@ -1,5 +1,5 @@
-wazuh-agent (5.0.0-0) UNRELEASED; urgency=low
+wazuh-agent (6.0.0-RELEASE) stable; urgency=low
 
-  * More info: https://github.com/wazuh/wazuh-agent/blob/main/README.md
+  * More info: https://documentation.wazuh.com/current/release-notes/release-6-0-0.html
 
- -- Wazuh, Inc <info@wazuh.com>  Wed, 01 Jan 2025 00:00:00 +0000
+ -- Wazuh, Inc <info@wazuh.com>  Thu, 01 Jan 2026 00:00:00 +0000

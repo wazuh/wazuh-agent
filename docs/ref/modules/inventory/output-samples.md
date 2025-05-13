@@ -1,14 +1,14 @@
 ## Index
 
-| Type | Stateful | Stateless |
-| --- | ---  | ---  |
-| System | [Stateful](#System-Windows-Stateful) | [Stateful](#System-Windows-Stateless) |
-| Hardware | [Stateful](#Hardware-Windows-Stateful) | [Stateless](#Hardware-Windows-Stateless) |
-| Packages | [Stateful](#Packages-Windows-Stateful) | [Stateless](#Packages-Windows-Stateless) |
-| Processes |[Stateful](#Processes-Windows-Stateful) | [Stateless](#Processes-Windows-Stateless) |
-| Networks | [Stateful](#Networks-Windows-Stateful) | [Stateless](#Networks-Windows-Stateless) |
-| Ports | [Stateful](#Ports-Windows-Stateful) | [Stateless](#Ports-Windows-Stateless) |
-| Hotfix | [Stateful](#Hotfix-Windows-Stateful) | [Stateless](#Hotfix-Windows-Stateless) |
+| Type      | Stateful                                | Stateless                                 |
+| --------- | --------------------------------------- | ----------------------------------------- |
+| System    | [Stateful](#System-Windows-Stateful)    | [Stateful](#System-Windows-Stateless)     |
+| Hardware  | [Stateful](#Hardware-Windows-Stateful)  | [Stateless](#Hardware-Windows-Stateless)  |
+| Packages  | [Stateful](#Packages-Windows-Stateful)  | [Stateless](#Packages-Windows-Stateless)  |
+| Processes | [Stateful](#Processes-Windows-Stateful) | [Stateless](#Processes-Windows-Stateless) |
+| Networks  | [Stateful](#Networks-Windows-Stateful)  | [Stateless](#Networks-Windows-Stateless)  |
+| Ports     | [Stateful](#Ports-Windows-Stateful)     | [Stateless](#Ports-Windows-Stateless)     |
+| Hotfix    | [Stateful](#Hotfix-Windows-Stateful)    | [Stateless](#Hotfix-Windows-Stateless)    |
 
 ## System
 
@@ -36,7 +36,7 @@
         "id": "80a25e2d-8e52-4591-bd68-dd7e8a7baf33",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {
@@ -86,7 +86,7 @@
         "id": "80a25e2d-8e52-4591-bd68-dd7e8a7baf33",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {
@@ -149,7 +149,7 @@
         "id": "80a25e2d-8e52-4591-bd68-dd7e8a7baf33",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {
@@ -207,7 +207,7 @@
         "id": "80a25e2d-8e52-4591-bd68-dd7e8a7baf33",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {
@@ -282,7 +282,7 @@
         "id": "80a25e2d-8e52-4591-bd68-dd7e8a7baf33",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {
@@ -368,7 +368,7 @@
         "id": "80a25e2d-8e52-4591-bd68-dd7e8a7baf33",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {
@@ -433,7 +433,7 @@
         "id": "80a25e2d-8e52-4591-bd68-dd7e8a7baf33",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {
@@ -598,7 +598,7 @@
         "id": "80a25e2d-8e52-4591-bd68-dd7e8a7baf33",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {
@@ -737,7 +737,7 @@
         "id": "80a25e2d-8e52-4591-bd68-dd7e8a7baf33",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {
@@ -822,7 +822,7 @@
         "id": "80a25e2d-8e52-4591-bd68-dd7e8a7baf33",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {
@@ -933,7 +933,7 @@
         "id": "80a25e2d-8e52-4591-bd68-dd7e8a7baf33",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {
@@ -1050,7 +1050,7 @@
         "id": "80a25e2d-8e52-4591-bd68-dd7e8a7baf33",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {
@@ -1147,7 +1147,7 @@
         "id": "2fcc3b59-9873-44dd-832a-1e35ab02ea99",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {
@@ -1191,7 +1191,7 @@
         "id": "2fcc3b59-9873-44dd-832a-1e35ab02ea99",
         "name": "dummy",
         "type": "Endpoint",
-        "version": "v5.0.0"
+        "version": "v6.0.0"
     }
 }
 {

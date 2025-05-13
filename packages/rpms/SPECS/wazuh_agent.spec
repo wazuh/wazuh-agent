@@ -262,5 +262,5 @@ rm -fr %{buildroot}
 %attr(440, wazuh, wazuh) %{_localstatedir}usr/share/wazuh-agent/VERSION.json
 
 %changelog
-* Wed Jan 01 2025 Wazuh Inc <info@wazuh.com> - 5.0.0
-- More info: https://github.com/wazuh/wazuh-agent/blob/main/README.md
+* Thu Jan 01 2026 support <info@wazuh.com> - 6.0.0
+- More info: https://documentation.wazuh.com/current/release-notes/release-6-0-0.html
