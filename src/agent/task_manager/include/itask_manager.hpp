@@ -16,9 +16,9 @@ public:
     /// @brief Virtual destructor
     virtual ~ITaskManager() = default;
 
-    /// @brief Starts the task manager
+    /// @brief Starts the task manager asynchronously with the specified number of threads
     /// @param numThreads The number of threads to start
-    virtual void Start(size_t numThreads) = 0;
+    virtual void StartThreadPool(size_t numThreads) = 0;
 
     /// @brief Stops the task manager
     virtual void Stop() = 0;

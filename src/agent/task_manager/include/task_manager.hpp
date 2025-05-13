@@ -21,8 +21,8 @@ public:
 
     ~TaskManager() override;
 
-    /// @copydoc ITaskManager::Start
-    void Start(size_t numThreads) override;
+    /// @copydoc ITaskManager::StartThreadPool
+    void StartThreadPool(size_t numThreads) override;
 
     /// @copydoc ITaskManager::Stop
     void Stop() override;

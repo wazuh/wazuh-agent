@@ -24,7 +24,7 @@ protected:
 
 TEST_F(TaskManagerTest, StartAndStop)
 {
-    taskManager.Start(4);
+    taskManager.StartThreadPool(4);
     taskManager.Stop();
 }
 
@@ -39,7 +39,7 @@ TEST_F(TaskManagerTest, EnqueueFunctionTask)
     taskManager.EnqueueTask(task);
 
     EXPECT_FALSE(taskExecuted);
-    taskManager.Start(4);
+    taskManager.StartThreadPool(4);
 
     while (!taskExecuted.load())
     {
@@ -62,7 +62,7 @@ TEST_F(TaskManagerTest, EnqueueCoroutineTask)
     taskManager.EnqueueTask(coroutineTask());
 
     EXPECT_FALSE(taskExecuted);
-    taskManager.Start(4);
+    taskManager.StartThreadPool(4);
 
     while (!taskExecuted.load())
     {
@@ -86,7 +86,7 @@ TEST_F(TaskManagerTest, EnqueueFunctionTaskIncrementsCounter)
     taskManager.EnqueueTask(task);
 
     EXPECT_FALSE(taskExecuted);
-    taskManager.Start(4);
+    taskManager.StartThreadPool(4);
 
     while (!taskExecuted.load())
     {

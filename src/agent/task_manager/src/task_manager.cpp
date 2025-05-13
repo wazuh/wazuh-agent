@@ -13,7 +13,7 @@ TaskManager::~TaskManager()
     Stop();
 }
 
-void TaskManager::Start(size_t numThreads)
+void TaskManager::StartThreadPool(size_t numThreads)
 {
     const std::lock_guard<std::mutex> lock(m_mutex);
 

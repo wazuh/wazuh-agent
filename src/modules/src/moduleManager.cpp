@@ -113,7 +113,7 @@ void ModuleManager::Start()
 {
     const std::lock_guard<std::mutex> lock(m_mutex);
 
-    m_taskManager.Start(m_modules.size());
+    m_taskManager.StartThreadPool(m_modules.size());
 
     m_started.store(0);
 
