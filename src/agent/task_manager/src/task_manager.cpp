@@ -121,25 +121,26 @@ void TaskManager::EnqueueTask(boost::asio::awaitable<void> task, const std::stri
 {
     const std::lock_guard<std::mutex> lock(m_mutex);
 
-    // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    boost::asio::co_spawn(
-        m_ioContext,
-        [sharedData = std::make_shared<std::pair<std::string, boost::asio::awaitable<void>>>(
-             taskID, std::move(task))]() mutable -> boost::asio::awaitable<void>
-        {
-            try
-            {
-                co_await std::move(sharedData->second);
-            }
-            catch (const std::exception& e)
-            {
-                LogError("{} coroutine task exited with an exception: {}",
-                         sharedData->first.empty() ? "Anonymous" : sharedData->first,
-                         e.what());
-            }
-        },
-        boost::asio::detached);
-    // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+    // NOLINTBEGIN(bugprone-exception-escape, performance-unnecessary-value-param)
+    boost::asio::co_spawn(m_ioContext,
+                          std::move(task),
+                          [taskID](std::exception_ptr ep)
+                          {
+                              if (ep)
+                              {
+                                  try
+                                  {
+                                      std::rethrow_exception(ep);
+                                  }
+                                  catch (const std::exception& e)
+                                  {
+                                      LogError("{} coroutine task exited with an exception: {}",
+                                               taskID.empty() ? "Anonymous" : taskID,
+                                               e.what());
+                                  }
+                              }
+                          });
+    // NOLINTEND(bugprone-exception-escape, performance-unnecessary-value-param)
 }
 
 size_t TaskManager::GetNumEnqueuedThreadTasks() const
