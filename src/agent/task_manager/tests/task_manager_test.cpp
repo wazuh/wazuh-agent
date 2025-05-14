@@ -10,13 +10,13 @@
 class TaskManagerTest : public ::testing::Test
 {
 protected:
-    TaskManager taskManager;
-
     void SetUp() override
     {
+        taskManager = std::make_unique<TaskManager>();
         taskExecuted = false;
     }
 
+    std::unique_ptr<TaskManager> taskManager;
     std::atomic<bool> taskExecuted;
     std::mutex mtx;
     std::condition_variable cv;
@@ -24,8 +24,8 @@ protected:
 
 TEST_F(TaskManagerTest, StartAndStop)
 {
-    taskManager.StartThreadPool(4);
-    taskManager.Stop();
+    taskManager->StartThreadPool(4);
+    taskManager->Stop();
 }
 
 TEST_F(TaskManagerTest, EnqueueFunctionTask)
@@ -36,10 +36,10 @@ TEST_F(TaskManagerTest, EnqueueFunctionTask)
         cv.notify_one();
     };
 
-    taskManager.EnqueueTask(task);
+    taskManager->EnqueueTask(task);
 
     EXPECT_FALSE(taskExecuted);
-    taskManager.StartThreadPool(4);
+    taskManager->StartThreadPool(4);
 
     while (!taskExecuted.load())
     {
@@ -47,7 +47,7 @@ TEST_F(TaskManagerTest, EnqueueFunctionTask)
 
     EXPECT_TRUE(taskExecuted);
 
-    taskManager.Stop();
+    taskManager->Stop();
 }
 
 TEST_F(TaskManagerTest, EnqueueCoroutineTask)
@@ -59,34 +59,34 @@ TEST_F(TaskManagerTest, EnqueueCoroutineTask)
         co_return;
     };
 
-    taskManager.EnqueueTask(coroutineTask());
+    taskManager->EnqueueTask(coroutineTask());
 
     EXPECT_FALSE(taskExecuted);
-    taskManager.StartThreadPool(4);
+    taskManager->StartThreadPool(4);
 
     while (!taskExecuted.load())
     {
     }
 
     EXPECT_TRUE(taskExecuted);
-    taskManager.Stop();
+    taskManager->Stop();
 }
 
 TEST_F(TaskManagerTest, EnqueueFunctionTaskIncrementsCounter)
 {
-    EXPECT_EQ(taskManager.GetNumEnqueuedThreadTasks(), 0);
+    EXPECT_EQ(taskManager->GetNumEnqueuedThreadTasks(), 0);
 
     const std::function<void()> task = [this]()
     {
-        EXPECT_EQ(taskManager.GetNumEnqueuedThreadTasks(), 1);
+        EXPECT_EQ(taskManager->GetNumEnqueuedThreadTasks(), 1);
         taskExecuted = true;
         cv.notify_one();
     };
 
-    taskManager.EnqueueTask(task);
+    taskManager->EnqueueTask(task);
 
     EXPECT_FALSE(taskExecuted);
-    taskManager.StartThreadPool(4);
+    taskManager->StartThreadPool(4);
 
     while (!taskExecuted.load())
     {
@@ -94,9 +94,9 @@ TEST_F(TaskManagerTest, EnqueueFunctionTaskIncrementsCounter)
 
     EXPECT_TRUE(taskExecuted);
 
-    taskManager.Stop();
+    taskManager->Stop();
 
-    EXPECT_EQ(taskManager.GetNumEnqueuedThreadTasks(), 0);
+    EXPECT_EQ(taskManager->GetNumEnqueuedThreadTasks(), 0);
 }
 
 int main(int argc, char** argv)
