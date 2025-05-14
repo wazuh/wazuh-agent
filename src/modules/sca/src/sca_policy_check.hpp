@@ -122,7 +122,7 @@ public:
     using IsValidKeyFunc = std::function<bool(const std::string& rootKey)>;
     using EnumKeysFunc = std::function<std::vector<std::string>(const std::string& root)>;
     using EnumValuesFunc = std::function<std::vector<std::string>(const std::string& root)>;
-    using GetValueFunc = std::function<std::string(const std::string& key, const std::string& value)>;
+    using GetValueFunc = std::function<std::optional<std::string>(const std::string& key, const std::string& value)>;
 
     /// @brief Constructor
     /// @param ctx Evaluation context

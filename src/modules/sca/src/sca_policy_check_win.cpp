@@ -48,7 +48,7 @@ namespace
         }
         catch (...)
         {
-            return false;
+            return {};
         }
     };
 
@@ -63,12 +63,12 @@ namespace
         }
         catch (...)
         {
-            return false;
+            return {};
         }
     };
 
-    const RegistryRuleEvaluator::GetValueFunc DEFAULT_GET_VALUE = [](const std::string& root,
-                                                                     const std::string& value) -> std::string
+    const RegistryRuleEvaluator::GetValueFunc DEFAULT_GET_VALUE =
+        [](const std::string& root, const std::string& value) -> std::optional<std::string>
     {
         try
         {
@@ -77,7 +77,7 @@ namespace
         }
         catch (...)
         {
-            return false;
+            return std::nullopt;
         }
     };
 } // namespace
@@ -109,6 +109,15 @@ RuleResult RegistryRuleEvaluator::Evaluate()
 RuleResult RegistryRuleEvaluator::CheckKeyForContents()
 {
     // found at least one -> operator in the rule.
+
+    // First check that key exists
+    if (!m_isValidKey(m_ctx.rule))
+    {
+        LogDebug("Key '{}' does not exist", m_ctx.rule);
+        LogDebug("Registry rule evaluation invalid");
+        return RuleResult::Invalid;
+    }
+
     LogDebug("Checking pattern: {}", m_ctx.pattern.value());
 
     auto result = RuleResult::NotFound;
@@ -121,12 +130,18 @@ RuleResult RegistryRuleEvaluator::CheckKeyForContents()
         const auto valueName = pattern.substr(0, m_ctx.pattern->find(" -> "));
 
         const auto obtainedValue = m_getValue(m_ctx.rule, valueName);
+        if (!obtainedValue.has_value())
+        {
+            LogDebug("value '{}' does not exist", valueName);
+            LogDebug("Registry rule evaluation invalid");
+            return RuleResult::Invalid;
+        }
 
         // Check if pattern is a regex
         const auto isRegex = sca::IsRegexOrNumericPattern(content.value());
         if (isRegex)
         {
-            const auto patternMatch = sca::PatternMatches(obtainedValue, content.value());
+            const auto patternMatch = sca::PatternMatches(obtainedValue.value(), content.value());
             if (patternMatch.has_value())
             {
                 if (patternMatch.value())
@@ -136,7 +151,7 @@ RuleResult RegistryRuleEvaluator::CheckKeyForContents()
                 }
             }
         }
-        else if (obtainedValue == content.value())
+        else if (obtainedValue.value() == content.value())
         {
             result = RuleResult::Found;
         }
@@ -157,6 +172,7 @@ RuleResult RegistryRuleEvaluator::CheckKeyForContents()
                     {
                         LogDebug("Pattern '{}' was found in key '{}'", pattern, m_ctx.rule);
                         result = RuleResult::Found;
+                        break;
                     }
                 }
             }
@@ -180,6 +196,7 @@ RuleResult RegistryRuleEvaluator::CheckKeyForContents()
                         {
                             LogDebug("Pattern '{}' was found in key '{}'", pattern, m_ctx.rule);
                             result = RuleResult::Found;
+                            break;
                         }
                     }
                 }
