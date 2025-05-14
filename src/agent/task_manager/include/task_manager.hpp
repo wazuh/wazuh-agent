@@ -44,6 +44,10 @@ public:
     /// @return The number of threads in the TaskManager
     size_t GetNumThreads() const;
 
+    /// @brief Returns whether the TaskManager is stopped
+    /// @return True if the TaskManager is stopped, false otherwise
+    bool IsStopped() const;
+
 private:
     /// @brief The IO context for the task manager
     boost::asio::io_context m_ioContext;

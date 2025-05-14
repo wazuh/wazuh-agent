@@ -53,6 +53,19 @@ TEST_F(TaskManagerTest, StartAndStop)
     EXPECT_EQ(taskManager->GetNumThreads(), 0);
 }
 
+TEST_F(TaskManagerTest, IsStoppedReturnsTrueWhenNotStarted)
+{
+    EXPECT_TRUE(taskManager->IsStopped());
+}
+
+TEST_F(TaskManagerTest, IsStoppedReturnsFalseWhenRunning)
+{
+    taskManager->StartThreadPool(4);
+    EXPECT_FALSE(taskManager->IsStopped());
+    taskManager->Stop();
+    EXPECT_TRUE(taskManager->IsStopped());
+}
+
 TEST_F(TaskManagerTest, EnqueueFunctionTask)
 {
     const std::function<void()> task = [this]()
@@ -158,6 +171,7 @@ TEST_F(TaskManagerTest, IdleRunSingleThreadUnblocksOnExternalStop)
         [&]() // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutine)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(50)); // NOLINT
+            EXPECT_FALSE(taskManager->IsStopped());
             taskManager->Stop();
             unblocked = true;
         });

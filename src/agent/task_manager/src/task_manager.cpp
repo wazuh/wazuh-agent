@@ -151,3 +151,8 @@ size_t TaskManager::GetNumThreads() const
 {
     return m_threads.size() + m_numAdditionalThreads;
 }
+
+bool TaskManager::IsStopped() const
+{
+    return GetNumThreads() == 0;
+}
