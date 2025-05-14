@@ -74,11 +74,11 @@ TEST_F(TaskManagerTest, EnqueueCoroutineTask)
 
 TEST_F(TaskManagerTest, EnqueueFunctionTaskIncrementsCounter)
 {
-    EXPECT_EQ(taskManager.GetNumEnqueuedThreads(), 0);
+    EXPECT_EQ(taskManager.GetNumEnqueuedThreadTasks(), 0);
 
     const std::function<void()> task = [this]()
     {
-        EXPECT_EQ(taskManager.GetNumEnqueuedThreads(), 1);
+        EXPECT_EQ(taskManager.GetNumEnqueuedThreadTasks(), 1);
         taskExecuted = true;
         cv.notify_one();
     };
@@ -96,7 +96,7 @@ TEST_F(TaskManagerTest, EnqueueFunctionTaskIncrementsCounter)
 
     taskManager.Stop();
 
-    EXPECT_EQ(taskManager.GetNumEnqueuedThreads(), 0);
+    EXPECT_EQ(taskManager.GetNumEnqueuedThreadTasks(), 0);
 }
 
 int main(int argc, char** argv)

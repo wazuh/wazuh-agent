@@ -36,9 +36,9 @@ public:
     /// @copydoc ITaskManager::EnqueueTask
     void EnqueueTask(boost::asio::awaitable<void> task, const std::string& taskID = "") override;
 
-    /// @brief Returns the number of enqueued threads
-    /// @return The number of enqueued threads
-    size_t GetNumEnqueuedThreads() const;
+    /// @brief Returns the number of tasks enqueued on threads
+    /// @return The number of enqueued tasks on threads
+    size_t GetNumEnqueuedThreadTasks() const;
 
 private:
     /// @brief The IO context for the task manager
@@ -51,7 +51,7 @@ private:
     std::vector<std::thread> m_threads;
 
     /// @brief Number of enqueued threads
-    std::atomic<size_t> m_numEnqueuedThreads = 0;
+    std::atomic<size_t> m_numEnqueuedThreadTasks = 0;
 
     /// @brief Mutex to control Start and Stop operations
     mutable std::mutex m_mutex;

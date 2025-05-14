@@ -84,7 +84,7 @@ void TaskManager::Stop()
             }
         }
         m_threads.clear();
-        m_numEnqueuedThreads = 0;
+        m_numEnqueuedThreadTasks = 0;
     }
 }
 
@@ -92,7 +92,7 @@ void TaskManager::EnqueueTask(std::function<void()> task, const std::string& tas
 {
     const std::lock_guard<std::mutex> lock(m_mutex);
 
-    if (++m_numEnqueuedThreads > m_threads.size())
+    if (++m_numEnqueuedThreadTasks > m_threads.size())
     {
         LogError("Enqueued more threaded tasks than available threads");
     }
@@ -108,7 +108,7 @@ void TaskManager::EnqueueTask(std::function<void()> task, const std::string& tas
         {
             LogError("{} task exited with an exception: {}", taskID.empty() ? "Anonymous" : taskID, e.what());
         }
-        --m_numEnqueuedThreads;
+        --m_numEnqueuedThreadTasks;
     };
     // NOLINTEND(bugprone-exception-escape)
 
@@ -140,7 +140,7 @@ void TaskManager::EnqueueTask(boost::asio::awaitable<void> task, const std::stri
     // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 }
 
-size_t TaskManager::GetNumEnqueuedThreads() const
+size_t TaskManager::GetNumEnqueuedThreadTasks() const
 {
-    return m_numEnqueuedThreads;
+    return m_numEnqueuedThreadTasks;
 }
