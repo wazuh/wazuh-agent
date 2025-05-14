@@ -17,14 +17,17 @@ void TaskManager::StartThreadPool(size_t numThreads)
 {
     const std::lock_guard<std::mutex> lock(m_mutex);
 
-    if (m_work || !m_threads.empty())
+    if (!m_threads.empty())
     {
-        LogError("Task manager already started");
+        LogWarn("Task manager thread pool already started");
         return;
     }
 
-    m_work = std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
-        boost::asio::make_work_guard(m_ioContext));
+    if (!m_work)
+    {
+        m_work = std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
+            boost::asio::make_work_guard(m_ioContext));
+    }
 
     for (size_t i = 0; i < numThreads; ++i)
     {
