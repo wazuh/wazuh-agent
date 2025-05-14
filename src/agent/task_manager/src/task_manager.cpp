@@ -73,8 +73,6 @@ void TaskManager::Stop()
         m_threads.clear();
         m_numEnqueuedThreads = 0;
     }
-
-    m_ioContext.reset();
 }
 
 void TaskManager::EnqueueTask(std::function<void()> task, const std::string& taskID)
