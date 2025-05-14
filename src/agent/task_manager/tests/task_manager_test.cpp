@@ -52,6 +52,8 @@ TEST_F(TaskManagerTest, EnqueueFunctionTask)
 
 TEST_F(TaskManagerTest, EnqueueCoroutineTask)
 {
+    EXPECT_FALSE(taskExecuted);
+
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
     auto coroutineTask = [this]() -> boost::asio::awaitable<void>
     {
@@ -59,10 +61,8 @@ TEST_F(TaskManagerTest, EnqueueCoroutineTask)
         co_return;
     };
 
-    taskManager->EnqueueTask(coroutineTask());
-
-    EXPECT_FALSE(taskExecuted);
     taskManager->StartThreadPool(4);
+    taskManager->EnqueueTask(coroutineTask());
 
     while (!taskExecuted.load())
     {
