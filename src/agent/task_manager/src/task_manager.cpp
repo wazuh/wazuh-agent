@@ -57,7 +57,9 @@ void TaskManager::RunSingleThread()
         }
     }
 
+    ++m_numAdditionalThreads;
     m_ioContext.run();
+    --m_numAdditionalThreads;
 }
 
 void TaskManager::Stop()
@@ -92,7 +94,7 @@ void TaskManager::EnqueueTask(std::function<void()> task, const std::string& tas
 {
     const std::lock_guard<std::mutex> lock(m_mutex);
 
-    if (++m_numEnqueuedThreadTasks > m_threads.size())
+    if (++m_numEnqueuedThreadTasks > GetNumThreads())
     {
         LogError("Enqueued more threaded tasks than available threads");
     }
@@ -143,4 +145,9 @@ void TaskManager::EnqueueTask(boost::asio::awaitable<void> task, const std::stri
 size_t TaskManager::GetNumEnqueuedThreadTasks() const
 {
     return m_numEnqueuedThreadTasks;
+}
+
+size_t TaskManager::GetNumThreads() const
+{
+    return m_threads.size() + m_numAdditionalThreads;
 }

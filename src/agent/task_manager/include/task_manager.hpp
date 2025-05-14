@@ -40,6 +40,10 @@ public:
     /// @return The number of enqueued tasks on threads
     size_t GetNumEnqueuedThreadTasks() const;
 
+    /// @brief Returns the number of threads in the TaskManager
+    /// @return The number of threads in the TaskManager
+    size_t GetNumThreads() const;
+
 private:
     /// @brief The IO context for the task manager
     boost::asio::io_context m_ioContext;
@@ -52,6 +56,9 @@ private:
 
     /// @brief Number of enqueued threads
     std::atomic<size_t> m_numEnqueuedThreadTasks = 0;
+
+    /// @brief Number of additional threads (if any) that are not part of the thread pool
+    std::atomic<size_t> m_numAdditionalThreads = 0;
 
     /// @brief Mutex to control Start and Stop operations
     mutable std::mutex m_mutex;

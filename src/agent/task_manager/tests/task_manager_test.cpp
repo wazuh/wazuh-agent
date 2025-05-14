@@ -25,6 +25,7 @@ protected:
 TEST_F(TaskManagerTest, StopOnUnstartedThreadPool)
 {
     taskManager->Stop();
+    EXPECT_EQ(taskManager->GetNumThreads(), 0);
 }
 
 TEST_F(TaskManagerTest, StartCanBeCalledMultipleTimes)
@@ -32,19 +33,24 @@ TEST_F(TaskManagerTest, StartCanBeCalledMultipleTimes)
     taskManager->StartThreadPool(4);
     taskManager->StartThreadPool(4);
     taskManager->StartThreadPool(4);
+    EXPECT_EQ(taskManager->GetNumThreads(), 4);
 }
 
 TEST_F(TaskManagerTest, StopCanBeCalledMultipleTimes)
 {
     taskManager->StartThreadPool(4);
+    EXPECT_EQ(taskManager->GetNumThreads(), 4);
     taskManager->Stop();
     taskManager->Stop();
+    EXPECT_EQ(taskManager->GetNumThreads(), 0);
 }
 
 TEST_F(TaskManagerTest, StartAndStop)
 {
     taskManager->StartThreadPool(4);
+    EXPECT_EQ(taskManager->GetNumThreads(), 4);
     taskManager->Stop();
+    EXPECT_EQ(taskManager->GetNumThreads(), 0);
 }
 
 TEST_F(TaskManagerTest, EnqueueFunctionTask)
