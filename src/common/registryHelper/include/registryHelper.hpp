@@ -93,6 +93,12 @@ namespace Utils
         /// @return Value as a string
         std::string getValue(const std::string& valueName) const;
 
+        /// @brief Checks for existence of a registry key
+        /// @param key Name of the ROOT key (e. g. "HKEY_LOCAL_MACHINE")
+        /// @param subkey Name of the subkey (e. g. "SOFTWARE\Microsoft\Windows\CurrentVersion")
+        /// @return True if the key-subkey pair exists
+        static bool KeyExists(const std::string& key, const std::string& subkey);
+
     private:
         /// @brief Open the registry
         /// @param key Key of the registry
