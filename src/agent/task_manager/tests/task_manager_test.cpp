@@ -124,6 +124,64 @@ TEST_F(TaskManagerTest, EnqueueFunctionTaskIncrementsCounter)
     EXPECT_EQ(taskManager->GetNumEnqueuedThreadTasks(), 0);
 }
 
+TEST_F(TaskManagerTest, RunSingleThreadProcessesFunctionAndThenStops)
+{
+    taskManager->EnqueueTask([&]() { taskExecuted = true; });
+    taskManager->EnqueueTask([&]() { taskManager->Stop(); });
+    taskManager->RunSingleThread();
+
+    EXPECT_TRUE(taskExecuted);
+    EXPECT_EQ(taskManager->GetNumEnqueuedThreadTasks(), 0);
+}
+
+TEST_F(TaskManagerTest, RunSingleThreadProcessesCoroutineAndThenStops)
+{
+    auto coro = [&]() -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+    {
+        taskExecuted = true;
+        co_return;
+    };
+
+    taskManager->EnqueueTask(coro());
+    taskManager->EnqueueTask([&]() { taskManager->Stop(); });
+    taskManager->RunSingleThread();
+
+    EXPECT_TRUE(taskExecuted);
+    EXPECT_EQ(taskManager->GetNumEnqueuedThreadTasks(), 0);
+}
+
+TEST_F(TaskManagerTest, IdleRunSingleThreadUnblocksOnExternalStop)
+{
+    std::atomic<bool> unblocked {false};
+
+    std::thread stopper(
+        [&]() // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutine)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(50)); // NOLINT
+            taskManager->Stop();
+            unblocked = true;
+        });
+
+    taskManager->RunSingleThread();
+
+    stopper.join();
+    EXPECT_TRUE(unblocked);
+    EXPECT_FALSE(taskExecuted);
+    EXPECT_EQ(taskManager->GetNumEnqueuedThreadTasks(), 0);
+}
+
+TEST_F(TaskManagerTest, ZeroPoolThenRunSingleThread)
+{
+    taskManager->StartThreadPool(0);
+    taskManager->EnqueueTask([&]() { taskExecuted = true; });
+    taskManager->EnqueueTask([&]() { taskManager->Stop(); });
+    taskManager->RunSingleThread();
+
+    EXPECT_TRUE(taskExecuted);
+    EXPECT_EQ(taskManager->GetNumEnqueuedThreadTasks(), 0);
+    taskManager->Stop();
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
