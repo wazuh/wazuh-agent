@@ -72,7 +72,7 @@ namespace
     {
         try
         {
-            auto [key, path] = SplitRegistryKey(root);
+            const auto [key, path] = SplitRegistryKey(root);
             return Utils::Registry(key, path).getValue(value);
         }
         catch (...)
@@ -80,6 +80,24 @@ namespace
             return std::nullopt;
         }
     };
+
+    RuleResult CheckMatch(const std::string& candidate, const std::string& pattern, bool isRegex)
+    {
+        if (isRegex)
+        {
+            const auto patternMatch = sca::PatternMatches(candidate, pattern);
+            if (patternMatch.has_value() && patternMatch.value())
+            {
+                return RuleResult::Found;
+            }
+        }
+        else if (candidate == pattern)
+        {
+            return RuleResult::Found;
+        }
+
+        return RuleResult::NotFound;
+    }
 } // namespace
 
 RegistryRuleEvaluator::RegistryRuleEvaluator(PolicyEvaluationContext ctx,
@@ -97,8 +115,6 @@ RegistryRuleEvaluator::RegistryRuleEvaluator(PolicyEvaluationContext ctx,
 
 RuleResult RegistryRuleEvaluator::Evaluate()
 {
-    LogDebug("Processing registry rule: {}", m_ctx.rule);
-
     if (m_ctx.pattern)
     {
         return CheckKeyForContents();
@@ -108,17 +124,14 @@ RuleResult RegistryRuleEvaluator::Evaluate()
 
 RuleResult RegistryRuleEvaluator::CheckKeyForContents()
 {
-    // found at least one -> operator in the rule.
+    LogDebug("Processing registry rule: {}", m_ctx.rule);
 
-    // First check that key exists
+    // First check that the key exists
     if (!m_isValidKey(m_ctx.rule))
     {
         LogDebug("Key '{}' does not exist", m_ctx.rule);
-        LogDebug("Registry rule evaluation invalid");
         return RuleResult::Invalid;
     }
-
-    LogDebug("Checking pattern: {}", m_ctx.pattern.value());
 
     auto result = RuleResult::NotFound;
 
@@ -126,35 +139,18 @@ RuleResult RegistryRuleEvaluator::CheckKeyForContents()
 
     if (const auto content = sca::GetPattern(pattern))
     {
-        // Found a second -> operator in the rule. Will check for content
         const auto valueName = pattern.substr(0, m_ctx.pattern->find(" -> "));
 
         const auto obtainedValue = m_getValue(m_ctx.rule, valueName);
+
+        // Check that the value exists
         if (!obtainedValue.has_value())
         {
-            LogDebug("value '{}' does not exist", valueName);
-            LogDebug("Registry rule evaluation invalid");
+            LogDebug("Value '{}' does not exist", valueName);
             return RuleResult::Invalid;
         }
 
-        // Check if pattern is a regex
-        const auto isRegex = sca::IsRegexOrNumericPattern(content.value());
-        if (isRegex)
-        {
-            const auto patternMatch = sca::PatternMatches(obtainedValue.value(), content.value());
-            if (patternMatch.has_value())
-            {
-                if (patternMatch.value())
-                {
-                    LogDebug("Pattern '{}' was found in key '{}'", content.value(), m_ctx.rule);
-                    result = RuleResult::Found;
-                }
-            }
-        }
-        else if (obtainedValue.value() == content.value())
-        {
-            result = RuleResult::Found;
-        }
+        result = CheckMatch(obtainedValue.value(), content.value(), sca::IsRegexOrNumericPattern(content.value()));
     }
     else
     {
@@ -163,20 +159,7 @@ RuleResult RegistryRuleEvaluator::CheckKeyForContents()
 
         for (const auto& key : m_enumKeys(m_ctx.rule))
         {
-            if (isRegex)
-            {
-                const auto patternMatch = sca::PatternMatches(key, pattern);
-                if (patternMatch.has_value())
-                {
-                    if (patternMatch.value())
-                    {
-                        LogDebug("Pattern '{}' was found in key '{}'", pattern, m_ctx.rule);
-                        result = RuleResult::Found;
-                        break;
-                    }
-                }
-            }
-            else if (key == *m_ctx.pattern)
+            if (CheckMatch(key, pattern, isRegex) == RuleResult::Found)
             {
                 result = RuleResult::Found;
                 break;
@@ -187,20 +170,7 @@ RuleResult RegistryRuleEvaluator::CheckKeyForContents()
         {
             for (const auto& value : m_enumValues(m_ctx.rule))
             {
-                if (isRegex)
-                {
-                    const auto patternMatch = sca::PatternMatches(value, pattern);
-                    if (patternMatch.has_value())
-                    {
-                        if (patternMatch.value())
-                        {
-                            LogDebug("Pattern '{}' was found in key '{}'", pattern, m_ctx.rule);
-                            result = RuleResult::Found;
-                            break;
-                        }
-                    }
-                }
-                else if (value == *m_ctx.pattern)
+                if (CheckMatch(value, pattern, isRegex) == RuleResult::Found)
                 {
                     result = RuleResult::Found;
                     break;
