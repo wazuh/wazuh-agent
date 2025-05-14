@@ -122,16 +122,19 @@ public:
     using IsValidKeyFunc = std::function<bool(const std::string& rootKey)>;
     using EnumKeysFunc = std::function<std::vector<std::string>(const std::string& root)>;
     using EnumValuesFunc = std::function<std::vector<std::string>(const std::string& root)>;
+    using GetValueFunc = std::function<std::string(const std::string& key, const std::string& value)>;
 
     /// @brief Constructor
     /// @param ctx Evaluation context
     /// @param isValidKey Function that returns true if the key is valid
     /// @param enumKeys Function that returns a vector of subkeys
     /// @param enumValues Function that returns a vector of values
+    /// @param getValue Function that returns the value of a key
     RegistryRuleEvaluator(PolicyEvaluationContext ctx,
                           IsValidKeyFunc isValidKey = nullptr,
                           EnumKeysFunc enumKeys = nullptr,
-                          EnumValuesFunc enumValues = nullptr);
+                          EnumValuesFunc enumValues = nullptr,
+                          GetValueFunc getValue = nullptr);
 
     /// @copydoc IRuleEvaluator::Evaluate
     RuleResult Evaluate() override;
@@ -148,6 +151,7 @@ private:
     IsValidKeyFunc m_isValidKey = nullptr;
     EnumValuesFunc m_enumValues = nullptr;
     EnumKeysFunc m_enumKeys = nullptr;
+    GetValueFunc m_getValue = nullptr;
 };
 
 class RuleEvaluatorFactory
