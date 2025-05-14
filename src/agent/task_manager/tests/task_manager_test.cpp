@@ -22,6 +22,25 @@ protected:
     std::condition_variable cv;
 };
 
+TEST_F(TaskManagerTest, StopOnUnstartedThreadPool)
+{
+    taskManager->Stop();
+}
+
+TEST_F(TaskManagerTest, StartCanBeCalledMultipleTimes)
+{
+    taskManager->StartThreadPool(4);
+    taskManager->StartThreadPool(4);
+    taskManager->StartThreadPool(4);
+}
+
+TEST_F(TaskManagerTest, StopCanBeCalledMultipleTimes)
+{
+    taskManager->StartThreadPool(4);
+    taskManager->Stop();
+    taskManager->Stop();
+}
+
 TEST_F(TaskManagerTest, StartAndStop)
 {
     taskManager->StartThreadPool(4);
