@@ -23,6 +23,11 @@ void TaskManager::StartThreadPool(size_t numThreads)
         return;
     }
 
+    if (m_ioContext.stopped())
+    {
+        m_ioContext.restart();
+    }
+
     if (!m_work)
     {
         m_work = std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
@@ -44,6 +49,11 @@ void TaskManager::RunSingleThread()
         {
             m_work = std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
                 boost::asio::make_work_guard(m_ioContext));
+        }
+
+        if (m_ioContext.stopped())
+        {
+            m_ioContext.restart();
         }
     }
 
