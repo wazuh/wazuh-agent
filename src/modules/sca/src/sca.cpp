@@ -58,13 +58,9 @@ void SecurityConfigurationAssessment::Run()
         LogInfo("SCA module is disabled.");
         return;
     }
-    if (!m_ioContext)
-    {
-        LogError("SCA module doesn't have a valid io context.");
-        return;
-    }
+
     LogInfo("SCA module running.");
-    m_ioContext->run();
+    m_taskManager->RunSingleThread();
 }
 
 void SecurityConfigurationAssessment::Setup(
@@ -85,7 +81,7 @@ void SecurityConfigurationAssessment::Setup(
             });
     }();
 
-    m_ioContext = std::make_unique<boost::asio::io_context>();
+    m_taskManager = std::make_unique<TaskManager>();
 
     for (auto& policy : m_policies)
     {
@@ -102,16 +98,11 @@ void SecurityConfigurationAssessment::Setup(
 
 void SecurityConfigurationAssessment::Stop()
 {
-    if (!m_ioContext)
-    {
-        LogError("SCA module doesn't have a valid io context.");
-        return;
-    }
     for (auto& policy : m_policies)
     {
         policy->Stop();
     }
-    m_ioContext->stop();
+    m_taskManager->Stop();
     LogInfo("SCA module stopped.");
 }
 
@@ -141,28 +132,7 @@ void SecurityConfigurationAssessment::SetPushMessageFunction(const std::function
 
 void SecurityConfigurationAssessment::EnqueueTask(boost::asio::awaitable<void> task)
 {
-    if (!m_ioContext)
-    {
-        LogError("SCA module doesn't have a valid io context.");
-        return;
-    }
-
-    // NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
-    boost::asio::co_spawn(
-        *m_ioContext,
-        [task = std::move(task)]() mutable -> boost::asio::awaitable<void>
-        {
-            try
-            {
-                co_await std::move(task);
-            }
-            catch (const std::exception& e)
-            {
-                LogError("SCA coroutine task exited with an exception: {}", e.what());
-            }
-        },
-        boost::asio::detached);
-    // NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+    m_taskManager->EnqueueTask(std::move(task));
 }
 
 std::string SecurityConfigurationAssessment::GetCreateStatement() const
