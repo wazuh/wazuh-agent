@@ -115,7 +115,9 @@ TEST(FileReader, Reload)
     {
         co_return;
     };
-    FileReader reader(dummyPush, dummyWait, regex, 500, 60000); // NOLINT
+    const auto dummyEnqueueTask = [](Awaitable) -> void {
+    };
+    FileReader reader(dummyPush, dummyWait, dummyEnqueueTask, regex, 500, 60000); // NOLINT
     reader.Reload([&](Localfile& lf) { mockCallback.Call(lf.Filename()); });
 
     auto d = TempFile(GetFullFileName("D.log"));
