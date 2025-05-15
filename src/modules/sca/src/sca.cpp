@@ -83,16 +83,26 @@ void SecurityConfigurationAssessment::Setup(
 
     m_taskManager = std::make_unique<TaskManager>();
 
+    auto awaitTimer = [this](std::chrono::milliseconds ms) -> boost::asio::awaitable<void> // NOLINT
+    {
+        auto timer = m_taskManager->CreateSteadyTimer(ms);
+
+        boost::system::error_code ec;
+        co_await timer.async_wait(boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+        co_return;
+    };
+
     for (auto& policy : m_policies)
     {
-        EnqueueTask(
-            policy->Run(m_scanInterval,
-                        m_scanOnStart,
-                        [this](const std::string& policyId, const std::string& checkId, const std::string& result)
-                        {
-                            const SCAEventHandler eventHandler(m_agentUUID, m_dBSync, m_pushMessage);
-                            eventHandler.ReportCheckResult(policyId, checkId, result);
-                        }));
+        EnqueueTask(policy->Run(
+            m_scanInterval,
+            m_scanOnStart,
+            [this](const std::string& policyId, const std::string& checkId, const std::string& result)
+            {
+                const SCAEventHandler eventHandler(m_agentUUID, m_dBSync, m_pushMessage);
+                eventHandler.ReportCheckResult(policyId, checkId, result);
+            },
+            awaitTimer));
     }
 }
 

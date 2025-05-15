@@ -32,7 +32,8 @@ public:
     boost::asio::awaitable<void>
     Run(std::time_t scanInterval,
         bool scanOnStart,
-        std::function<void(const std::string&, const std::string&, const std::string&)> reportCheckResult) override;
+        std::function<void(const std::string&, const std::string&, const std::string&)> reportCheckResult,
+        std::function<boost::asio::awaitable<void>(std::chrono::milliseconds)> wait) override;
 
     /// @copydoc ISCAPolicy::Stop
     void Stop() override;

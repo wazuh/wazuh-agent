@@ -27,7 +27,8 @@ SCAPolicy::SCAPolicy(SCAPolicy&& other) noexcept
 boost::asio::awaitable<void>
 SCAPolicy::Run(std::time_t scanInterval,
                bool scanOnStart,
-               std::function<void(const std::string&, const std::string&, const std::string&)> reportCheckResult)
+               std::function<void(const std::string&, const std::string&, const std::string&)> reportCheckResult,
+               std::function<boost::asio::awaitable<void>(std::chrono::milliseconds)> wait)
 {
     if (scanOnStart && m_keepRunning)
     {
@@ -36,10 +37,7 @@ SCAPolicy::Run(std::time_t scanInterval,
 
     while (m_keepRunning)
     {
-        auto executor = co_await boost::asio::this_coro::executor;
-        boost::asio::steady_timer timer(executor);
-        timer.expires_after(std::chrono::milliseconds(scanInterval));
-        co_await timer.async_wait(boost::asio::use_awaitable);
+        co_await wait(std::chrono::milliseconds(scanInterval));
 
         Scan(reportCheckResult);
     }
