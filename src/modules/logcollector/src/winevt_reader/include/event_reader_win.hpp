@@ -2,10 +2,8 @@
 
 #include <codecvt>
 #include <ctime>
-#include <fstream>
-#include <iostream>
+#include <functional>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -22,16 +20,20 @@ namespace logcollector::winevt
     {
     public:
         /// @brief Constructor for the Windows Event Tracer Reader
-        /// @param logcollector Log collector instance.
+        /// @param pushMessageFunc Push message function
+        /// @param waitFunc Wait function
         /// @param channel Channel name.
         /// @param query Query.
         /// @param channelRefreshInterval channel query refresh interval in millisecconds.
         /// @param winAPI wrapper of winevt methods.
-        WindowsEventTracerReader(Logcollector& logcollector,
-                                 const std::string channel,
-                                 const std::string query,
-                                 const std::time_t channelRefreshInterval,
-                                 std::shared_ptr<IWinAPIWrapper> winAPI = nullptr);
+        WindowsEventTracerReader(
+            std::function<void(const std::string& location, const std::string& log, const std::string& collectorType)>
+                pushMessageFunc,
+            std::function<Awaitable(std::chrono::milliseconds)> waitFunc,
+            const std::string channel,
+            const std::string query,
+            const std::time_t channelRefreshInterval,
+            std::shared_ptr<IWinAPIWrapper> winAPI = nullptr);
 
         /// @copydoc IReader::Run
         Awaitable Run() override;
@@ -40,9 +42,6 @@ namespace logcollector::winevt
         void Stop() override;
 
     private:
-        ///@brief Main function to query events from event channel.
-        Awaitable QueryEvents();
-
         ///@brief Process an individual event and print its XML representation.
         /// @param event subscription handle event.
         void ProcessEvent(EVT_HANDLE event);

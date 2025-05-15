@@ -8,6 +8,7 @@
 #include <ifilesystem_wrapper.hpp>
 #include <imodule.hpp>
 #include <message.hpp>
+#include <task_manager.hpp>
 
 #include <boost/asio.hpp>
 #include <nlohmann/json.hpp>
@@ -95,6 +96,6 @@ private:
     /// @brief List of policies
     std::vector<std::unique_ptr<ISCAPolicy>> m_policies;
 
-    /// @brief Boost ASIO context
-    std::unique_ptr<boost::asio::io_context> m_ioContext;
+    /// @brief Task manager for managing tasks
+    std::unique_ptr<TaskManager> m_taskManager;
 };

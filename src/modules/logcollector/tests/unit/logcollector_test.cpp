@@ -18,7 +18,16 @@ TEST(Logcollector, AddReader)
 {
     auto logcollector = LogcollectorMock();
     auto a = TempFile("/tmp/A.log");
-    auto fileReader = std::make_shared<FileReader>(logcollector, "/tmp/*.log", 500, 60000); // NOLINT
+    auto dummyPush = [](const std::string&, const std::string&, const std::string&) {
+    };
+    auto dummyWait = [](std::chrono::milliseconds) -> Awaitable
+    {
+        co_return;
+    };
+    auto dummyEnqueue = [](boost::asio::awaitable<void>) {
+    };
+    auto fileReader = std::make_shared<FileReader>(
+        dummyPush, dummyWait, dummyEnqueue, "/tmp/*.log", 500, 60000); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
 
     EXPECT_CALL(logcollector, EnqueueTask(::testing::_)).Times(1);
     EXPECT_CALL(logcollector, AddReader(::testing::_));

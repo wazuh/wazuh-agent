@@ -133,7 +133,7 @@ void Agent::ReloadModules(const std::optional<std::string>& module)
 
 void Agent::Run()
 {
-    m_taskManager.Start(m_agentThreadCount);
+    m_taskManager.StartThreadPool(m_agentThreadCount);
 
     // Check if the server recognizes the agent
     m_communicator.SendAuthenticationRequest();

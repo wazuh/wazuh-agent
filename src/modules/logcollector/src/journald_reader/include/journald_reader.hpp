@@ -1,11 +1,13 @@
 #pragma once
 
 #include <journal_log.hpp>
-#include <logcollector.hpp>
 #include <reader.hpp>
 
+#include <chrono>
+#include <functional>
 #include <memory>
 #include <regex>
+#include <string>
 
 namespace logcollector
 {
@@ -18,11 +20,18 @@ namespace logcollector
     {
     public:
         /// @brief Constructs a new journal reader
-        /// @param logcollector Reference to logcollector instance
+        /// @param pushMessageFunc Push message function
+        /// @param waitFunc Wait function
         /// @param filters Group of filters to apply (AND logic between them)
         /// @param ignoreIfMissing Whether to ignore missing fields
         /// @param fileWait Time to wait between reads in milliseconds
-        JournaldReader(Logcollector& logcollector, FilterGroup filters, bool ignoreIfMissing, std::time_t fileWait);
+        JournaldReader(
+            std::function<void(const std::string& location, const std::string& log, const std::string& collectorType)>
+                pushMessageFunc,
+            std::function<Awaitable(std::chrono::milliseconds)> waitFunc,
+            FilterGroup filters,
+            bool ignoreIfMissing,
+            std::time_t fileWait);
 
         /// @copydoc IReader::Run
         Awaitable Run() override;

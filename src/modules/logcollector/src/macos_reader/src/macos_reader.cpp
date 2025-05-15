@@ -13,12 +13,15 @@ namespace
 namespace logcollector
 {
 
-    MacOSReader::MacOSReader(Logcollector& logcollector,
-                             const std::time_t waitInMillis,
-                             const std::string& logLevel,
-                             const std::string& query,
-                             const std::vector<std::string>& logTypes)
-        : IReader(logcollector)
+    MacOSReader::MacOSReader(
+        std::function<void(const std::string& location, const std::string& log, const std::string& collectorType)>
+            pushMessageFunc,
+        std::function<Awaitable(std::chrono::milliseconds)> waitFunc,
+        const std::time_t waitInMillis,
+        const std::string& logLevel,
+        const std::string& query,
+        const std::vector<std::string>& logTypes)
+        : IReader(std::move(pushMessageFunc), std::move(waitFunc))
         , m_osLogStoreWrapper(std::make_unique<OSLogStoreWrapper>())
         , m_logLevel(OSLogStoreWrapper::LogLevel::Undefined)
         , m_lastLogEntryTimeInSecondsSince1970(
@@ -29,13 +32,16 @@ namespace logcollector
         SetQuery(query, logTypes);
     }
 
-    MacOSReader::MacOSReader(std::unique_ptr<IOSLogStoreWrapper> osLogStoreWrapper,
-                             Logcollector& logcollector,
-                             const std::time_t waitInMillis,
-                             const std::string& logLevel,
-                             const std::string& query,
-                             const std::vector<std::string>& logTypes)
-        : MacOSReader(logcollector, waitInMillis, logLevel, query, logTypes)
+    MacOSReader::MacOSReader(
+        std::unique_ptr<IOSLogStoreWrapper> osLogStoreWrapper,
+        std::function<void(const std::string& location, const std::string& log, const std::string& collectorType)>
+            pushMessageFunc,
+        std::function<Awaitable(std::chrono::milliseconds)> waitFunc,
+        const std::time_t waitInMillis,
+        const std::string& logLevel,
+        const std::string& query,
+        const std::vector<std::string>& logTypes)
+        : MacOSReader(std::move(pushMessageFunc), std::move(waitFunc), waitInMillis, logLevel, query, logTypes)
     {
         m_osLogStoreWrapper = std::move(osLogStoreWrapper);
     }
@@ -59,10 +65,10 @@ namespace logcollector
                 m_lastLogEntryTimeInSecondsSince1970 = slightlyBigger;
 
                 const auto logAndDate = log.date + " " + log.log;
-                m_logcollector.PushMessage(COLLECTOR_TYPE, logAndDate, COLLECTOR_TYPE);
+                m_pushMessage(COLLECTOR_TYPE, logAndDate, COLLECTOR_TYPE);
             }
 
-            co_await m_logcollector.Wait(std::chrono::milliseconds(m_waitInMillis));
+            co_await m_wait(std::chrono::milliseconds(m_waitInMillis));
         }
     }
 

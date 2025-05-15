@@ -5,7 +5,6 @@
 #include <iomanip>
 #include <sstream>
 
-#include <logcollector.hpp>
 #include <logger.hpp>
 
 namespace
@@ -16,12 +15,15 @@ namespace
 namespace logcollector::winevt
 {
 
-    WindowsEventTracerReader::WindowsEventTracerReader(Logcollector& logcollector,
-                                                       const std::string channel,
-                                                       const std::string query,
-                                                       const std::time_t channelRefreshInterval,
-                                                       std::shared_ptr<IWinAPIWrapper> winAPI)
-        : IReader(logcollector)
+    WindowsEventTracerReader::WindowsEventTracerReader(
+        std::function<void(const std::string& location, const std::string& log, const std::string& collectorType)>
+            pushMessageFunc,
+        std::function<Awaitable(std::chrono::milliseconds)> waitFunc,
+        const std::string channel,
+        const std::string query,
+        const std::time_t channelRefreshInterval,
+        std::shared_ptr<IWinAPIWrapper> winAPI)
+        : IReader(std::move(pushMessageFunc), std::move(waitFunc))
         , m_channel(channel)
         , m_query(query.empty() ? "*" : query)
         , m_ChannelsRefreshInterval(channelRefreshInterval)
@@ -30,17 +32,6 @@ namespace logcollector::winevt
     }
 
     Awaitable WindowsEventTracerReader::Run()
-    {
-        m_logcollector.EnqueueTask(QueryEvents());
-        co_return;
-    }
-
-    void WindowsEventTracerReader::Stop()
-    {
-        m_keepRunning.store(false);
-    }
-
-    Awaitable WindowsEventTracerReader::QueryEvents()
     {
         const auto wideStringChannel = std::wstring(m_channel.begin(), m_channel.end());
         const auto wideStringQuery = std::wstring(m_query.begin(), m_query.end());
@@ -82,7 +73,7 @@ namespace logcollector::winevt
 
         while (m_keepRunning.load())
         {
-            co_await m_logcollector.Wait(std::chrono::milliseconds(m_ChannelsRefreshInterval));
+            co_await m_wait(std::chrono::milliseconds(m_ChannelsRefreshInterval));
         }
 
         LogInfo("Unsubscribing to channel '{}'.", m_channel);
@@ -90,6 +81,13 @@ namespace logcollector::winevt
         {
             m_winAPI->EvtClose(subscriptionHandle);
         }
+
+        co_return;
+    }
+
+    void WindowsEventTracerReader::Stop()
+    {
+        m_keepRunning.store(false);
     }
 
     void WindowsEventTracerReader::ProcessEvent(EVT_HANDLE event)
@@ -118,7 +116,7 @@ namespace logcollector::winevt
 
                 try
                 {
-                    m_logcollector.PushMessage(m_channel, logString, COLLECTOR_TYPE);
+                    m_pushMessage(m_channel, logString, COLLECTOR_TYPE);
                 }
                 catch (const std::exception& e)
                 {

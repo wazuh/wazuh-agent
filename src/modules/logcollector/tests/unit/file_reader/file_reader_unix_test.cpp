@@ -98,8 +98,16 @@ TEST(FileReader, Reload)
     auto c = TempFile("/tmp/fileC.log");
 
     auto regex = "/tmp/file*.log";
-    Logcollector logcollector;
-    FileReader reader(logcollector, regex, 500, 60000); // NOLINT
+    const Logcollector logcollector;
+    auto dummyPush = [](const std::string&, const std::string&, const std::string&) {
+    };
+    auto dummyWait = [](std::chrono::milliseconds) -> Awaitable
+    {
+        co_return;
+    };
+    auto dummyEnqueue = [](boost::asio::awaitable<void>) {
+    };
+    FileReader reader(dummyPush, dummyWait, dummyEnqueue, regex, 500, 60000); // NOLINT
     reader.Reload([&](Localfile& lf) { mockCallback.Call(lf.Filename()); });
 
     auto d = TempFile("/tmp/fileD.log");

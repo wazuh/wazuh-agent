@@ -1,19 +1,24 @@
 #include "file_reader.hpp"
 
 #include <config.h>
-#include <logcollector.hpp>
 #include <logger.hpp>
 
 #include <algorithm>
+#include <filesystem>
 #include <string>
 
 using namespace logcollector;
 
-FileReader::FileReader(Logcollector& logcollector,
-                       std::string pattern,
-                       std::time_t fileWait,
-                       std::time_t reloadInterval)
-    : IReader(logcollector)
+FileReader::FileReader(
+    std::function<void(const std::string& location, const std::string& log, const std::string& collectorType)>
+        pushMessageFunc,
+    std::function<Awaitable(std::chrono::milliseconds)> waitFunc,
+    std::function<void(boost::asio::awaitable<void>)> enqueueTaskFunc,
+    std::string pattern,
+    std::time_t fileWait,
+    std::time_t reloadInterval)
+    : IReader(std::move(pushMessageFunc), std::move(waitFunc))
+    , m_enqueueTask(std::move(enqueueTaskFunc))
     , m_filePattern(std::move(pattern))
     , m_localfiles()
     , m_fileWait(fileWait)
@@ -29,10 +34,10 @@ Awaitable FileReader::Run()
             [&](Localfile& lf)
             {
                 lf.SeekEnd();
-                m_logcollector.EnqueueTask(ReadLocalfile(&lf));
+                m_enqueueTask(ReadLocalfile(&lf));
             });
 
-        co_await m_logcollector.Wait(std::chrono::milliseconds(m_reloadInterval));
+        co_await m_wait(std::chrono::milliseconds(m_reloadInterval));
     }
 }
 
@@ -49,7 +54,7 @@ Awaitable FileReader::ReadLocalfile(Localfile* lf)
 
         while (!log.empty())
         {
-            m_logcollector.PushMessage(lf->Filename(), log, m_collectorType);
+            m_pushMessage(lf->Filename(), log, m_collectorType);
             log = lf->NextLog();
         }
 
@@ -67,7 +72,7 @@ Awaitable FileReader::ReadLocalfile(Localfile* lf)
             co_return;
         }
 
-        co_await m_logcollector.Wait(std::chrono::milliseconds(m_fileWait));
+        co_await m_wait(std::chrono::milliseconds(m_fileWait));
     }
 
     RemoveLocalfile(lf->Filename());
