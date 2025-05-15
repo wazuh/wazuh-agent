@@ -3,9 +3,9 @@
 #include <command_entry.hpp>
 #include <imodule.hpp>
 #include <message.hpp>
+#include <task_manager.hpp>
 
 #include <boost/asio/awaitable.hpp>
-#include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 
 #include <list>
@@ -13,7 +13,6 @@
 
 namespace logcollector
 {
-
     /// @brief Interface for log readers
     class IReader;
 
@@ -86,6 +85,12 @@ namespace logcollector
         void CleanAllReaders();
 
     private:
+        /// @brief Wraps a task with a counter
+        /// @param task Task to wrap
+        /// @return Awaitable that completes when the task is done
+        /// @details This function is used to keep track of the number of tasks that are currently running.
+        boost::asio::awaitable<void> WrapWithCounter(boost::asio::awaitable<void> task);
+
         /// @brief Module name
         const std::string m_moduleName = "logcollector";
 
@@ -95,8 +100,8 @@ namespace logcollector
         /// @brief Push message function
         std::function<int(Message)> m_pushMessage;
 
-        /// @brief Boost ASIO context
-        boost::asio::io_context m_ioContext;
+        /// @brief Task manager for the module
+        TaskManager m_taskManager;
 
         /// @brief List of readers
         std::list<std::shared_ptr<IReader>> m_readers;
