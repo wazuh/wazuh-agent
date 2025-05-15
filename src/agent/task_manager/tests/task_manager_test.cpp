@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <task_manager.hpp>
 
+#include <boost/asio.hpp>
+
 #include <atomic>
 #include <condition_variable>
 #include <memory>
@@ -194,6 +196,78 @@ TEST_F(TaskManagerTest, ZeroPoolThenRunSingleThread)
     EXPECT_TRUE(taskExecuted);
     EXPECT_EQ(taskManager->GetNumEnqueuedThreadTasks(), 0);
     taskManager->Stop();
+}
+
+TEST_F(TaskManagerTest, StoppingTheTaskManagerCancelsTimer)
+{
+    taskManager->StartThreadPool(4);
+    auto timerTaskExecuted = false;
+    auto timerCancelled = true;
+
+    auto task1 = [&]() -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+    {
+        timerTaskExecuted = true;
+        auto timer = taskManager->CreateSteadyTimer(std::chrono::hours(1));
+        boost::system::error_code ec;
+        co_await timer.async_wait(boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+        timerCancelled = false;
+        co_return;
+    };
+    taskManager->EnqueueTask(task1());
+
+    auto task2 = [&]() -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+    {
+        taskExecuted = true;
+        co_return;
+    };
+    taskManager->EnqueueTask(task2());
+
+    while (!taskExecuted.load())
+    {
+    }
+
+    taskManager->Stop();
+
+    EXPECT_TRUE(taskExecuted);
+    EXPECT_TRUE(timerTaskExecuted);
+    EXPECT_TRUE(timerCancelled);
+    EXPECT_EQ(taskManager->GetNumEnqueuedThreadTasks(), 0);
+    EXPECT_EQ(taskManager->GetNumThreads(), 0);
+}
+
+TEST_F(TaskManagerTest, DestroyingTheTaskManagerCancelsTimer)
+{
+    taskManager->StartThreadPool(4);
+    auto timerTaskExecuted = false;
+    auto timerCancelled = true;
+
+    auto task1 = [&]() -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+    {
+        timerTaskExecuted = true;
+        auto timer = taskManager->CreateSteadyTimer(std::chrono::hours(1));
+        boost::system::error_code ec;
+        co_await timer.async_wait(boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+        timerCancelled = false;
+        co_return;
+    };
+    taskManager->EnqueueTask(task1());
+
+    auto task2 = [&]() -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+    {
+        taskExecuted = true;
+        co_return;
+    };
+    taskManager->EnqueueTask(task2());
+
+    while (!taskExecuted.load())
+    {
+    }
+
+    taskManager.reset();
+
+    EXPECT_TRUE(taskExecuted);
+    EXPECT_TRUE(timerTaskExecuted);
+    EXPECT_TRUE(timerCancelled);
 }
 
 int main(int argc, char** argv)

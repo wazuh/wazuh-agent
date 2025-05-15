@@ -4,6 +4,7 @@
 
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/steady_timer.hpp>
 
 #include <functional>
 #include <memory>
@@ -47,6 +48,12 @@ public:
     /// @brief Returns whether the TaskManager is stopped
     /// @return True if the TaskManager is stopped, false otherwise
     bool IsStopped() const;
+
+    /// @brief Creates a steady timer which can be waited asyncronously and is managed by the TaskManager
+    /// @param ms The duration to wait
+    /// @return A steady timer
+    /// @note The timer is automatically cancelled when the TaskManager is stopped
+    boost::asio::steady_timer CreateSteadyTimer(std::chrono::milliseconds ms);
 
 private:
     /// @brief The IO context for the task manager

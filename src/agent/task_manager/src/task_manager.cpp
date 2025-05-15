@@ -157,3 +157,8 @@ bool TaskManager::IsStopped() const
 {
     return GetNumThreads() == 0;
 }
+
+boost::asio::steady_timer TaskManager::CreateSteadyTimer(std::chrono::milliseconds ms)
+{
+    return boost::asio::steady_timer(m_ioContext, ms);
+}
