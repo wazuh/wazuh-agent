@@ -62,3 +62,75 @@ TEST_F(CmdUtilsTest, ExecNestedQuotes)
     EXPECT_TRUE(result.StdErr.empty());
     EXPECT_EQ(result.ExitCode, 0);
 }
+
+TEST_F(CmdUtilsTest, ThrowsOnEmptyString)
+{
+    EXPECT_THROW(Utils::TokenizeCommand(""), std::runtime_error);
+}
+
+TEST_F(CmdUtilsTest, OneWord)
+{
+    const auto result = Utils::TokenizeCommand("echo");
+    ASSERT_EQ(result.size(), 1);
+    EXPECT_EQ(result[0], "echo");
+}
+
+TEST_F(CmdUtilsTest, MultipleWords)
+{
+    const auto result = Utils::TokenizeCommand("echo hello world");
+    ASSERT_EQ(result.size(), 3);
+    EXPECT_EQ(result[0], "echo");
+    EXPECT_EQ(result[1], "hello");
+    EXPECT_EQ(result[2], "world");
+}
+
+TEST_F(CmdUtilsTest, QuotedArgument)
+{
+    const auto result = Utils::TokenizeCommand("echo \"hello world\"");
+    ASSERT_EQ(result.size(), 2);
+    EXPECT_EQ(result[0], "echo");
+    EXPECT_EQ(result[1], "hello world");
+}
+
+TEST_F(CmdUtilsTest, EscapedCharacters)
+{
+    const auto result = Utils::TokenizeCommand("echo \\\"escaped\\\" \\\\slash");
+    ASSERT_EQ(result.size(), 3);
+    EXPECT_EQ(result[0], "echo");
+    EXPECT_EQ(result[1], "\"escaped\"");
+    EXPECT_EQ(result[2], "\\slash");
+}
+
+TEST_F(CmdUtilsTest, UnclosedQuoteIsHandled)
+{
+    const auto result = Utils::TokenizeCommand("echo \"hello world");
+    ASSERT_EQ(result.size(), 2);
+    EXPECT_EQ(result[0], "echo");
+    EXPECT_EQ(result[1], "hello world");
+}
+
+TEST_F(CmdUtilsTest, HandlesExtraSpaces)
+{
+    const auto result = Utils::TokenizeCommand("echo    hello   world");
+    ASSERT_EQ(result.size(), 3);
+    EXPECT_EQ(result[0], "echo");
+    EXPECT_EQ(result[1], "hello");
+    EXPECT_EQ(result[2], "world");
+}
+
+TEST_F(CmdUtilsTest, NestedEscapedQuotes)
+{
+    const auto result = Utils::TokenizeCommand("bash -c \"echo 'Hello \\\"nested\\\" world'\"");
+    ASSERT_EQ(result.size(), 3);
+    EXPECT_EQ(result[0], "bash");
+    EXPECT_EQ(result[1], "-c");
+    EXPECT_EQ(result[2], "echo 'Hello \"nested\" world'");
+}
+
+TEST_F(CmdUtilsTest, EscapedSpaceWithinQuotes)
+{
+    const auto result = Utils::TokenizeCommand("echo \"hello\\ world\"");
+    ASSERT_EQ(result.size(), 2);
+    EXPECT_EQ(result[0], "echo");
+    EXPECT_EQ(result[1], "hello world");
+}
