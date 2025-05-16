@@ -2,7 +2,6 @@
 
 #include <sca_utils.hpp>
 
-#include <cmdHelper.hpp>
 #include <file_io_utils.hpp>
 #include <filesystem_wrapper.hpp>
 #include <logger.hpp>
@@ -152,9 +151,8 @@ CommandRuleEvaluator::CommandRuleEvaluator(PolicyEvaluationContext ctx,
                                            std::unique_ptr<IFileSystemWrapper> fileSystemWrapper,
                                            CommandExecFunc commandExecFunc)
     : RuleEvaluator(std::move(ctx), std::move(fileSystemWrapper))
-    , m_commandExecFunc(commandExecFunc
-                        ? std::move(commandExecFunc)
-                        : [](const std::string& cmd) { const auto cmdOutput = Utils::Exec(cmd); return std::make_pair(cmdOutput.StdOut, cmdOutput.StdErr); })
+    , m_commandExecFunc(commandExecFunc ? std::move(commandExecFunc) : [](const std::string& cmd)
+                            { return Utils::Exec(cmd); })
 {
 }
 
@@ -166,39 +164,45 @@ RuleResult CommandRuleEvaluator::Evaluate()
 
     if (!m_ctx.rule.empty())
     {
-        auto [output, error] = m_commandExecFunc(m_ctx.rule);
-
-        if (m_ctx.pattern)
+        if (auto execResult = m_commandExecFunc(m_ctx.rule))
         {
-            // Trim ending lines if any (command output may have trailing newlines)
-            output = Utils::Trim(output, "\n");
-            error = Utils::Trim(error, "\n");
-
-            if (sca::IsRegexOrNumericPattern(*m_ctx.pattern))
+            if (m_ctx.pattern)
             {
-                const auto outputPatternMatch = sca::PatternMatches(output, *m_ctx.pattern);
-                const auto errorPatternMatch = sca::PatternMatches(error, *m_ctx.pattern);
+                // Trim ending lines if any (command output may have trailing newlines)
+                execResult->StdOut = Utils::Trim(execResult->StdOut, "\n");
+                execResult->StdErr = Utils::Trim(execResult->StdErr, "\n");
 
-                if (outputPatternMatch || errorPatternMatch)
+                if (sca::IsRegexOrNumericPattern(*m_ctx.pattern))
                 {
-                    result = outputPatternMatch.value_or(false) || errorPatternMatch.value_or(false)
-                                 ? RuleResult::Found
-                                 : RuleResult::NotFound;
+                    const auto outputPatternMatch = sca::PatternMatches(execResult->StdOut, *m_ctx.pattern);
+                    const auto errorPatternMatch = sca::PatternMatches(execResult->StdErr, *m_ctx.pattern);
+
+                    if (outputPatternMatch || errorPatternMatch)
+                    {
+                        result = outputPatternMatch.value_or(false) || errorPatternMatch.value_or(false)
+                                     ? RuleResult::Found
+                                     : RuleResult::NotFound;
+                    }
+                    else
+                    {
+                        LogDebug("Invalid pattern '{}' for command rule evaluation", *m_ctx.pattern);
+                        return RuleResult::Invalid;
+                    }
                 }
-                else
+                else if (execResult->StdOut == m_ctx.pattern.value() || execResult->StdErr == m_ctx.pattern.value())
                 {
-                    LogDebug("Invalid pattern '{}' for command rule evaluation", *m_ctx.pattern);
-                    return RuleResult::Invalid;
+                    result = RuleResult::Found;
                 }
             }
-            else if (output == m_ctx.pattern.value() || error == m_ctx.pattern.value())
+            else
             {
                 result = RuleResult::Found;
             }
         }
         else
         {
-            return RuleResult::Found;
+            LogDebug("Command rule '{}' execution failed", m_ctx.rule);
+            return RuleResult::Invalid;
         }
     }
     else

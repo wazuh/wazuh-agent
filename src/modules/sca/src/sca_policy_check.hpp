@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmdHelper.hpp>
 #include <ifile_io_utils.hpp>
 #include <ifilesystem_wrapper.hpp>
 #include <sysInfoInterface.hpp>
@@ -69,7 +70,7 @@ class CommandRuleEvaluator : public RuleEvaluator
 {
 public:
     /// @brief Function that takes a command and returns the output and error as a pair of strings.
-    using CommandExecFunc = std::function<std::pair<std::string, std::string>(const std::string&)>;
+    using CommandExecFunc = std::function<std::optional<Utils::ExecResult>(const std::string&)>;
 
     CommandRuleEvaluator(PolicyEvaluationContext ctx,
                          std::unique_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr,

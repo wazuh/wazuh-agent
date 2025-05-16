@@ -110,7 +110,7 @@ namespace Utils
         return result;
     }
 
-    ExecResult Exec(const std::string& cmd)
+    std::optional<ExecResult> Exec(const std::string& cmd)
     {
         try
         {
@@ -136,11 +136,20 @@ namespace Utils
             const auto error = GetStreamOutput(stdErrPipe);
             process.wait();
 
-            return {.StdOut = output, .StdErr = error, .ExitCode = process.exit_code()};
+            ExecResult result;
+            result.StdOut = output;
+            result.StdErr = error;
+            result.ExitCode = process.exit_code();
+            return std::make_optional(result);
         }
         catch (const std::exception& e)
         {
-            return {.StdOut = "", .StdErr = e.what(), .ExitCode = 1};
+            LogDebug("Error executing command: {}", e.what());
+            return std::nullopt;
+        }
+        catch (...)
+        {
+            return std::nullopt;
         }
     }
 } // namespace Utils

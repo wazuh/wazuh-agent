@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -29,7 +30,7 @@ namespace Utils
     /// The function waits for the process to finish before returning.
     ///
     /// @param cmd The command to execute (no shell features like piping or expansions).
-    /// @return A ExecResult containing the command's StdOut, StdErr, and ExitCode.
+    /// @return An optional ExecResult containing the command's StdOut, StdErr, and ExitCode.
     /// @throw boost::process::process_error if the command fails to start.
-    ExecResult Exec(const std::string& cmd);
+    std::optional<ExecResult> Exec(const std::string& cmd);
 } // namespace Utils
