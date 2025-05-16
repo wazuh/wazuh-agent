@@ -212,7 +212,7 @@ RuleResult CommandRuleEvaluator::Evaluate()
 
     LogDebug("Command rule '{}' pattern '{}' {} found",
              m_ctx.rule,
-             *m_ctx.pattern,
+             m_ctx.pattern.value_or(""),
              result == RuleResult::Found ? "was" : "was not");
 
     return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
