@@ -142,7 +142,5 @@ namespace Utils
         {
             return {.StdOut = "", .StdErr = e.what(), .ExitCode = 1};
         }
-
-        return {.StdOut = "", .StdErr = "", .ExitCode = 1};
     }
 } // namespace Utils
