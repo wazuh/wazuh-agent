@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace Utils
 {
@@ -10,6 +11,11 @@ namespace Utils
         std::string StdErr;
         int ExitCode;
     };
+
+    /// @brief Tokenizes a command into its arguments
+    /// @param command command
+    /// @return command arguments
+    std::vector<std::string> TokenizeCommand(const std::string& command);
 
     /// @brief Executes a command
     /// @param cmd command

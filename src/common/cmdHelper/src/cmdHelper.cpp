@@ -11,81 +11,9 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <vector>
 
 namespace
 {
-    std::vector<std::string> TokenizeCommand(const std::string& command)
-    {
-        std::vector<std::string> result;
-        std::string current;
-        bool inQuotes = false;
-        char quoteChar = '\0';
-
-        for (size_t i = 0; i < command.length(); ++i)
-        {
-            const char c = command[i];
-
-            if ((c == '"' || c == '\''))
-            {
-                size_t backslashCount = 0;
-                for (size_t j = i; j > 0 && command[j - 1] == '\\'; --j)
-                {
-                    ++backslashCount;
-                }
-                const bool escaped = (backslashCount % 2 == 1);
-
-                if (!escaped)
-                {
-                    if (!inQuotes)
-                    {
-                        inQuotes = true;
-                        quoteChar = c;
-                    }
-                    else if (quoteChar == c)
-                    {
-                        inQuotes = false;
-                    }
-                    else
-                    {
-                        current += c;
-                    }
-                    continue;
-                }
-            }
-
-            if (std::isspace(c) && !inQuotes)
-            {
-                if (!current.empty())
-                {
-                    result.push_back(current);
-                    current.clear();
-                }
-            }
-            else
-            {
-                current += c;
-            }
-        }
-
-        if (inQuotes)
-        {
-            throw std::runtime_error("Unclosed quote in command");
-        }
-
-        if (!current.empty())
-        {
-            result.push_back(current);
-        }
-
-        if (result.empty())
-        {
-            throw std::runtime_error("Empty command string");
-        }
-
-        return result;
-    }
-
     std::string GetStreamOutput(boost::process::pipe& processPipe)
     {
         std::string line;
@@ -101,6 +29,70 @@ namespace
 
 namespace Utils
 {
+
+    std::vector<std::string> TokenizeCommand(const std::string& command)
+    {
+        std::vector<std::string> result;
+        std::string accum;
+        bool quoting = false;
+
+        const size_t len = command.length();
+        size_t i = 0;
+
+        while (i < len)
+        {
+            const char c = command[i];
+
+            if (c == ' ')
+            {
+                if (quoting)
+                {
+                    accum += c;
+                }
+                else
+                {
+                    if (!accum.empty())
+                    {
+                        result.push_back(std::move(accum));
+                        accum.clear();
+                    }
+                }
+                ++i;
+            }
+            else if (c == '"')
+            {
+                ++i; // Skip the quote
+                quoting = !quoting;
+            }
+            else if (c == '\\')
+            {
+                ++i;
+                if (i < len)
+                {
+                    accum += command[i];
+                    ++i;
+                }
+            }
+            else
+            {
+                accum += c;
+                ++i;
+            }
+        }
+
+        if (!accum.empty())
+        {
+            result.push_back(std::move(accum));
+        }
+
+        if (result.empty())
+        {
+            throw std::runtime_error("Empty command string");
+        }
+
+        return result;
+    }
+
     std::string PipeOpen(const std::string& cmd, const size_t bufferSize)
     {
         const std::unique_ptr<FILE, FileSmartDeleter> file {popen(cmd.c_str(), "r")};
