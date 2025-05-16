@@ -71,3 +71,16 @@ TEST_F(ProcessRuleEvaluatorTest, EmptyProcessListReturnsNotFound)
     auto evaluator = CreateEvaluator();
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::NotFound);
 }
+
+TEST_F(ProcessRuleEvaluatorTest, ProcessListRetrievalFailsReturnsInvalid)
+{
+    m_ctx.rule = "anyprocess";
+
+    m_processesMock = []() -> std::vector<std::string>
+    {
+        throw std::runtime_error("Failed to read /proc");
+    };
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+}
