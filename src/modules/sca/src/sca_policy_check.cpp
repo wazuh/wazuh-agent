@@ -419,16 +419,23 @@ RuleResult ProcessRuleEvaluator::Evaluate()
 {
     LogDebug("Processing process rule: '{}'", m_ctx.rule);
 
-    const auto processes = m_getProcesses();
     auto result = RuleResult::NotFound;
 
-    for (const auto& process : processes)
+    if (const auto processes = TryFunc([this] { return m_getProcesses(); }))
     {
-        if (process == m_ctx.rule)
+        for (const auto& process : processes.value())
         {
-            result = RuleResult::Found;
-            break;
+            if (process == m_ctx.rule)
+            {
+                result = RuleResult::Found;
+                break;
+            }
         }
+    }
+    else
+    {
+        LogDebug("Process rule '{}' execution failed", m_ctx.rule);
+        return RuleResult::Invalid;
     }
 
     LogDebug("Process '{}' {} found", m_ctx.rule, result == RuleResult::Found ? "was" : "was not");
