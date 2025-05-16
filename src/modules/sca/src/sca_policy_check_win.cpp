@@ -31,8 +31,9 @@ namespace
             const auto [key, subkey] = SplitRegistryKey(rootKey);
             return Utils::Registry::KeyExists(key, subkey);
         }
-        catch (...)
+        catch (const std::exception& e)
         {
+            LogDebug("RegistryRuleEvaluator::IsValidKey: Exception: {}", e.what());
             return false;
         }
     };
@@ -81,6 +82,17 @@ namespace
         }
     };
 
+    bool CaseInsensitiveEqual(const std::string& a, const std::string& b)
+    {
+        return a.size() == b.size() && std::equal(a.begin(),
+                                                  a.end(),
+                                                  b.begin(),
+                                                  [](char a, char b) -> bool {
+                                                      return std::tolower(static_cast<unsigned char>(a)) ==
+                                                             std::tolower(static_cast<unsigned char>(b));
+                                                  });
+    }
+
     RuleResult CheckMatch(const std::string& candidate, const std::string& pattern, bool isRegex)
     {
         if (isRegex)
@@ -91,7 +103,7 @@ namespace
                 return RuleResult::Found;
             }
         }
-        else if (candidate == pattern)
+        else if (CaseInsensitiveEqual(candidate, pattern))
         {
             return RuleResult::Found;
         }
@@ -124,7 +136,9 @@ RuleResult RegistryRuleEvaluator::Evaluate()
 
 RuleResult RegistryRuleEvaluator::CheckKeyForContents()
 {
-    LogDebug("Processing registry rule: {}", m_ctx.rule);
+    const auto pattern = *m_ctx.pattern; // NOLINT(bugprone-unchecked-optional-access)
+
+    LogDebug("Processing registry rule: {} -> {}", m_ctx.rule, pattern);
 
     // First check that the key exists
     if (!m_isValidKey(m_ctx.rule))
@@ -134,8 +148,6 @@ RuleResult RegistryRuleEvaluator::CheckKeyForContents()
     }
 
     auto result = RuleResult::NotFound;
-
-    const auto pattern = *m_ctx.pattern; // NOLINT(bugprone-unchecked-optional-access)
 
     if (const auto content = sca::GetPattern(pattern))
     {
@@ -162,6 +174,7 @@ RuleResult RegistryRuleEvaluator::CheckKeyForContents()
             if (CheckMatch(key, pattern, isRegex) == RuleResult::Found)
             {
                 result = RuleResult::Found;
+                LogDebug("Key '{}' exists", pattern);
                 break;
             }
         }
@@ -173,6 +186,7 @@ RuleResult RegistryRuleEvaluator::CheckKeyForContents()
                 if (CheckMatch(value, pattern, isRegex) == RuleResult::Found)
                 {
                     result = RuleResult::Found;
+                    LogDebug("Value '{}' exists", pattern);
                     break;
                 }
             }

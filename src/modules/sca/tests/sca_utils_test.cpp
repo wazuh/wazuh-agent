@@ -253,4 +253,13 @@ TEST(PatternMatchesTest, NotRegex_WithCompoundFailing)
     EXPECT_FALSE(*patternMatch);
 }
 
+TEST(PatternMatchesTest, REG_MULTI_SZtest)
+{
+    const std::string content = "some\\string\nanother\\string\nthird\\string\nyet\\another\\one";
+    const std::string pattern = "r:third\\string";
+    const auto patternMatch = PatternMatches(content, pattern);
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_TRUE(*patternMatch);
+}
+
 // NOLINTEND(bugprone-unchecked-optional-access, modernize-raw-string-literal)
