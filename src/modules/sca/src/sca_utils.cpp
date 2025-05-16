@@ -20,8 +20,8 @@ namespace
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         const auto patternPtr = reinterpret_cast<PCRE2_SPTR8>(pattern.c_str());
 
-        auto* re =
-            pcre2_compile(patternPtr, PCRE2_ZERO_TERMINATED, PCRE2_MULTILINE, &errorCode, &error_offset, nullptr);
+        auto* re = pcre2_compile(
+            patternPtr, PCRE2_ZERO_TERMINATED, PCRE2_MULTILINE | PCRE2_CASELESS, &errorCode, &error_offset, nullptr);
 
         if (!re)
         {
