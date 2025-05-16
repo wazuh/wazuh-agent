@@ -11,23 +11,23 @@ namespace
 {
     HKEY stringToHKEY(const std::string& keyName)
     {
-        if (keyName == "HKEY_CLASSES_ROOT")
+        if (keyName == "HKEY_CLASSES_ROOT" || keyName == "HKCR")
         {
             return HKEY_CLASSES_ROOT;
         }
-        if (keyName == "HKEY_CURRENT_USER")
+        if (keyName == "HKEY_CURRENT_USER" || keyName == "HKCU")
         {
             return HKEY_CURRENT_USER;
         }
-        if (keyName == "HKEY_LOCAL_MACHINE")
+        if (keyName == "HKEY_LOCAL_MACHINE" || keyName == "HKLM")
         {
             return HKEY_LOCAL_MACHINE;
         }
-        if (keyName == "HKEY_USERS")
+        if (keyName == "HKEY_USERS" || keyName == "HKU")
         {
             return HKEY_USERS;
         }
-        if (keyName == "HKEY_CURRENT_CONFIG")
+        if (keyName == "HKEY_CURRENT_CONFIG" || keyName == "HKCC")
         {
             return HKEY_CURRENT_CONFIG;
         }
