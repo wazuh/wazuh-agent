@@ -259,7 +259,12 @@ RuleResult DirRuleEvaluator::CheckDirectoryForContents()
         dirs.pop();
 
         const auto filesOpt = TryFunc([&] { return m_fileSystemWrapper->list_directory(currentDir); });
-        if (!filesOpt || filesOpt->empty())
+        if (!filesOpt)
+        {
+            LogDebug("Directory '{}' could not be listed", currentDir.string());
+            return RuleResult::Invalid;
+        }
+        if (filesOpt->empty())
         {
             continue;
         }
@@ -275,15 +280,31 @@ RuleResult DirRuleEvaluator::CheckDirectoryForContents()
 
         for (const auto& file : files)
         {
-            if (TryFunc([&] { return m_fileSystemWrapper->is_symlink(file); }).value_or(false))
+            if (const auto isSymlink = TryFunc([&] { return m_fileSystemWrapper->is_symlink(file); }))
             {
-                continue;
+                if (isSymlink.value())
+                {
+                    continue;
+                }
+            }
+            else
+            {
+                LogDebug("Symlink check failed for file '{}'", file.string());
+                return RuleResult::Invalid;
             }
 
-            if (TryFunc([&] { return m_fileSystemWrapper->is_directory(file); }).value_or(false))
+            if (const auto isDirectory = TryFunc([&] { return m_fileSystemWrapper->is_directory(file); }))
             {
-                dirs.emplace(file);
-                continue;
+                if (isDirectory.value())
+                {
+                    dirs.emplace(file);
+                    continue;
+                }
+            }
+            else
+            {
+                LogDebug("Directory check failed for file '{}'", file.string());
+                return RuleResult::Invalid;
             }
 
             if (isRegex)
@@ -338,14 +359,22 @@ RuleResult DirRuleEvaluator::CheckDirectoryExistence()
 
     LogDebug("Processing directory rule. Checking existence of directory: '{}'", m_ctx.rule);
 
-    if (!m_fileSystemWrapper->exists(m_ctx.rule) || !m_fileSystemWrapper->is_directory(m_ctx.rule))
+    if (const auto dirOk = TryFunc(
+            [&] { return m_fileSystemWrapper->exists(m_ctx.rule) && m_fileSystemWrapper->is_directory(m_ctx.rule); }))
     {
-        LogDebug("Directory '{}' does not exist or is not a directory", m_ctx.rule);
+        if (dirOk.value())
+        {
+            LogDebug("Directory '{}' exists", m_ctx.rule);
+            result = RuleResult::Found;
+        }
+        else
+        {
+            LogDebug("Directory '{}' does not exist or is not a directory", m_ctx.rule);
+        }
     }
     else
     {
-        LogDebug("Directory '{}' exists", m_ctx.rule);
-        result = RuleResult::Found;
+        result = RuleResult::Invalid;
     }
 
     return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
