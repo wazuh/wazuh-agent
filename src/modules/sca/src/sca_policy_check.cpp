@@ -164,39 +164,46 @@ RuleResult CommandRuleEvaluator::Evaluate()
 
     auto result = RuleResult::NotFound;
 
-    if (m_ctx.pattern)
+    if (!m_ctx.rule.empty())
     {
         auto [output, error] = m_commandExecFunc(m_ctx.rule);
 
-        // Trim ending lines if any (command output may have trailing newlines)
-        output = Utils::Trim(output, "\n");
-        error = Utils::Trim(error, "\n");
-
-        if (sca::IsRegexOrNumericPattern(*m_ctx.pattern))
+        if (m_ctx.pattern)
         {
-            const auto outputPatternMatch = sca::PatternMatches(output, *m_ctx.pattern);
-            const auto errorPatternMatch = sca::PatternMatches(error, *m_ctx.pattern);
+            // Trim ending lines if any (command output may have trailing newlines)
+            output = Utils::Trim(output, "\n");
+            error = Utils::Trim(error, "\n");
 
-            if (outputPatternMatch || errorPatternMatch)
+            if (sca::IsRegexOrNumericPattern(*m_ctx.pattern))
             {
-                result = outputPatternMatch.value_or(false) || errorPatternMatch.value_or(false) ? RuleResult::Found
-                                                                                                 : RuleResult::NotFound;
+                const auto outputPatternMatch = sca::PatternMatches(output, *m_ctx.pattern);
+                const auto errorPatternMatch = sca::PatternMatches(error, *m_ctx.pattern);
+
+                if (outputPatternMatch || errorPatternMatch)
+                {
+                    result = outputPatternMatch.value_or(false) || errorPatternMatch.value_or(false)
+                                 ? RuleResult::Found
+                                 : RuleResult::NotFound;
+                }
+                else
+                {
+                    LogDebug("Invalid pattern '{}' for command rule evaluation", *m_ctx.pattern);
+                    return RuleResult::Invalid;
+                }
             }
-            else
+            else if (output == m_ctx.pattern.value() || error == m_ctx.pattern.value())
             {
-                LogDebug("Invalid pattern '{}' for command rule evaluation", *m_ctx.pattern);
-                return RuleResult::Invalid;
+                result = RuleResult::Found;
             }
         }
-        else if (output == m_ctx.pattern.value() || error == m_ctx.pattern.value())
+        else
         {
-            result = RuleResult::Found;
+            return RuleResult::Found;
         }
     }
     else
     {
-        LogDebug("No pattern provided for command rule evaluation");
-        return RuleResult::Invalid;
+        LogDebug("Command rule is empty");
     }
 
     LogDebug("Command rule '{}' pattern '{}' {} found",

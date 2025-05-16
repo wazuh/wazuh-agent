@@ -28,7 +28,7 @@ protected:
     }
 };
 
-TEST_F(CommandRuleEvaluatorTest, EvaluationReturnsInvalidWhenNoPattern)
+TEST_F(CommandRuleEvaluatorTest, EvaluationReturnsFoundWhenCommandGivenButNoPattern)
 {
     m_ctx.rule = "some command";
     m_ctx.pattern = std::nullopt;
@@ -39,7 +39,7 @@ TEST_F(CommandRuleEvaluatorTest, EvaluationReturnsInvalidWhenNoPattern)
     };
 
     auto evaluator = CreateEvaluator();
-    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
 }
 
 TEST_F(CommandRuleEvaluatorTest, CommandReturnsEmptyStringReturnsNotFound)
