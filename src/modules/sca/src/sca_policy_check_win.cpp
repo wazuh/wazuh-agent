@@ -44,8 +44,9 @@ namespace
             }
             return false;
         }
-        catch (...)
+        catch (const std::exception& e)
         {
+            LogDebug("RegistryRuleEvaluator::IsValidKey: Exception: {}", e.what());
             return false;
         }
     };
@@ -150,7 +151,7 @@ RuleResult RegistryRuleEvaluator::CheckKeyForContents()
 {
     const auto pattern = *m_ctx.pattern; // NOLINT(bugprone-unchecked-optional-access)
 
-    LogDebug("Processing registry rule: {} -> {}", m_ctx.rule, pattern);
+    LogDebug("Processing registry rule:{} {} -> {}", m_ctx.isNegated ? "NOT " : "", m_ctx.rule, pattern);
 
     // First check that the key exists
     try
@@ -224,17 +225,17 @@ RuleResult RegistryRuleEvaluator::CheckKeyExistence()
 {
     auto result = RuleResult::NotFound;
 
-    LogDebug("Checking existence of key: '{}'", m_ctx.rule);
+    LogDebug("Processing registry rule:{} {}", m_ctx.isNegated ? "NOT " : "", m_ctx.rule);
 
     try
     {
         if (!m_isValidKey(m_ctx.rule))
         {
-            LogDebug("Key '{}' does not exist", m_ctx.rule);
+            LogDebug("Key does not exist. Rule {}", m_ctx.isNegated ? "passed" : "failed");
         }
         else
         {
-            LogDebug("Key '{}' exists", m_ctx.rule);
+            LogDebug("Key exists.  Rule {}", m_ctx.isNegated ? "failed" : "passed");
             result = RuleResult::Found;
         }
     }
