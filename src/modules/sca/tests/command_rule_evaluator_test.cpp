@@ -159,3 +159,17 @@ TEST_F(CommandRuleEvaluatorTest, NumericPatternWithStringMatchesOutputReturnsFou
     auto evaluator = CreateEvaluator();
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
 }
+
+TEST_F(CommandRuleEvaluatorTest, CommandExecutionReturnsNulloptIsInvalid)
+{
+    m_ctx.rule = "some command";
+    m_ctx.pattern = std::string("something");
+
+    m_execMock = [](const std::string&) -> std::optional<Utils::ExecResult>
+    {
+        return std::nullopt;
+    };
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+}
