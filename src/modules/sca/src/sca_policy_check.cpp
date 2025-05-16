@@ -107,13 +107,17 @@ RuleResult FileRuleEvaluator::CheckFileForContents()
 
     LogDebug("Processing file rule. Checking contents of file: '{}' against pattern '{}'", m_ctx.rule, pattern);
 
-    if (!m_fileSystemWrapper->exists(m_ctx.rule) || !m_fileSystemWrapper->is_regular_file(m_ctx.rule))
+    if (TryFunc(
+            [&]
+            { return !m_fileSystemWrapper->exists(m_ctx.rule) || !m_fileSystemWrapper->is_regular_file(m_ctx.rule); })
+            .value_or(false))
     {
         LogDebug("File '{}' does not exist or is not a regular file", m_ctx.rule);
         return RuleResult::Invalid;
     }
 
-    return FindContentInFile(m_fileUtils, m_ctx.rule, pattern, m_ctx.isNegated);
+    return TryFunc([&] { return FindContentInFile(m_fileUtils, m_ctx.rule, pattern, m_ctx.isNegated); })
+        .value_or(RuleResult::Invalid);
 }
 
 RuleResult FileRuleEvaluator::CheckFileExistence()
@@ -122,14 +126,23 @@ RuleResult FileRuleEvaluator::CheckFileExistence()
 
     LogDebug("Processing file rule. Checking existence of file: '{}'", m_ctx.rule);
 
-    if (!m_fileSystemWrapper->exists(m_ctx.rule) || !m_fileSystemWrapper->is_regular_file(m_ctx.rule))
+    if (const auto fileOk = TryFunc(
+            [&]
+            { return m_fileSystemWrapper->exists(m_ctx.rule) && m_fileSystemWrapper->is_regular_file(m_ctx.rule); }))
     {
-        LogDebug("File '{}' does not exist or is not a file", m_ctx.rule);
+        if (fileOk.value())
+        {
+            LogDebug("File '{}' exists", m_ctx.rule);
+            result = RuleResult::Found;
+        }
+        else
+        {
+            LogDebug("File '{}' does not exist or is not a file", m_ctx.rule);
+        }
     }
     else
     {
-        LogDebug("File '{}' exists", m_ctx.rule);
-        result = RuleResult::Found;
+        result = RuleResult::Invalid;
     }
 
     return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
@@ -292,7 +305,10 @@ RuleResult DirRuleEvaluator::CheckDirectoryForContents()
 
                 if (file.filename().string() == fileName)
                 {
-                    return FindContentInFile(m_fileUtils, fileName, content.value(), m_ctx.isNegated);
+                    return TryFunc(
+                               [&]
+                               { return FindContentInFile(m_fileUtils, fileName, content.value(), m_ctx.isNegated); })
+                        .value_or(RuleResult::Invalid);
                 }
             }
             else
