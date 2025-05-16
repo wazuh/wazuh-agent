@@ -31,8 +31,9 @@ namespace
             const auto [key, subkey] = SplitRegistryKey(rootKey);
             return Utils::Registry::KeyExists(key, subkey);
         }
-        catch (...)
+        catch (const std::exception& e)
         {
+            LogDebug("RegistryRuleEvaluator::IsValidKey: Exception: {}", e.what());
             return false;
         }
     };
