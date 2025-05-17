@@ -31,6 +31,11 @@ void CheckConditionEvaluator::AddResult(RuleResult result)
         return;
     }
 
+    if (result == RuleResult::Invalid)
+    {
+        m_hasInvalid = true;
+    }
+
     ++m_totalRules;
     m_passedRules += (RuleResult::Found == result) ? 1 : 0;
 
@@ -57,19 +62,35 @@ void CheckConditionEvaluator::AddResult(RuleResult result)
     }
 }
 
-bool CheckConditionEvaluator::Result() const
+sca::CheckResult CheckConditionEvaluator::Result() const
 {
-    if (m_result.has_value())
+    if (m_hasInvalid)
     {
-        return *m_result;
+        if (m_type == ConditionType::Any && m_result.value_or(m_passedRules > 0))
+        {
+            return sca::CheckResult::Passed;
+        }
+        return sca::CheckResult::NotApplicable;
     }
 
-    switch (m_type)
+    const auto passed = [&]
     {
-        case ConditionType::All: return m_totalRules > 0 && m_passedRules == m_totalRules;
-        case ConditionType::Any: return m_passedRules > 0;
-        case ConditionType::None: return m_passedRules == 0;
-    }
+        if (m_result.has_value())
+        {
+            return *m_result;
+        }
 
-    return false;
+        switch (m_type)
+        {
+            case ConditionType::All: return m_passedRules > 0 && m_passedRules == m_totalRules;
+            case ConditionType::Any: return m_passedRules > 0;
+            case ConditionType::None: return m_passedRules == 0;
+            default:
+            {
+                throw std::runtime_error("Invalid condition type");
+            };
+        }
+    }();
+
+    return passed ? sca::CheckResult::Passed : sca::CheckResult::Failed;
 }
