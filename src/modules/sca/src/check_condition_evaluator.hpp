@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sca_policy_check.hpp>
+#include <sca_utils.hpp>
 
 #include <optional>
 #include <string>
@@ -21,11 +22,12 @@ public:
 
     void AddResult(RuleResult result);
 
-    bool Result() const;
+    sca::CheckResult Result() const;
 
 private:
     ConditionType m_type;
     int m_totalRules {0};
     int m_passedRules {0};
     std::optional<bool> m_result;
+    std::optional<bool> m_hasInvalid;
 };

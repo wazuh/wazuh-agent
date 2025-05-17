@@ -14,7 +14,7 @@ protected:
     PolicyEvaluationContext m_ctx;
     std::unique_ptr<MockFileSystemWrapper> m_fsMock;
     MockFileSystemWrapper* m_rawFsMock = nullptr;
-    std::function<std::pair<std::string, std::string>(const std::string&)> m_execMock;
+    std::function<std::optional<Utils::ExecResult>(const std::string&)> m_execMock;
 
     void SetUp() override
     {
@@ -28,18 +28,18 @@ protected:
     }
 };
 
-TEST_F(CommandRuleEvaluatorTest, EvaluationReturnsInvalidWhenNoPattern)
+TEST_F(CommandRuleEvaluatorTest, EvaluationReturnsFoundWhenCommandGivenButNoPattern)
 {
     m_ctx.rule = "some command";
     m_ctx.pattern = std::nullopt;
 
     m_execMock = [](const std::string&)
     {
-        return std::make_pair("", "");
+        return std::make_optional<Utils::ExecResult>();
     };
 
     auto evaluator = CreateEvaluator();
-    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
 }
 
 TEST_F(CommandRuleEvaluatorTest, CommandReturnsEmptyStringReturnsNotFound)
@@ -49,7 +49,7 @@ TEST_F(CommandRuleEvaluatorTest, CommandReturnsEmptyStringReturnsNotFound)
 
     m_execMock = [](const std::string&)
     {
-        return std::make_pair("", "");
+        return std::make_optional<Utils::ExecResult>();
     };
 
     auto evaluator = CreateEvaluator();
@@ -63,7 +63,8 @@ TEST_F(CommandRuleEvaluatorTest, CommandOutputMatchesLiteralPatternReturnsFound)
 
     m_execMock = [](const std::string&)
     {
-        return std::make_pair("exact match", "");
+        const Utils::ExecResult result {.StdOut = "exact match", .StdErr = "", .ExitCode = 0};
+        return std::make_optional<Utils::ExecResult>(result);
     };
 
     auto evaluator = CreateEvaluator();
@@ -77,7 +78,8 @@ TEST_F(CommandRuleEvaluatorTest, CommandOutputDoesNotMatchLiteralPatternReturnsN
 
     m_execMock = [](const std::string&)
     {
-        return std::make_pair("something else", "");
+        const Utils::ExecResult result {.StdOut = "something else", .StdErr = "", .ExitCode = 0};
+        return std::make_optional<Utils::ExecResult>(result);
     };
 
     auto evaluator = CreateEvaluator();
@@ -91,7 +93,8 @@ TEST_F(CommandRuleEvaluatorTest, RegexPatternMatchesOutputReturnsFound)
 
     m_execMock = [](const std::string&)
     {
-        return std::make_pair("success", "");
+        const Utils::ExecResult result {.StdOut = "success", .StdErr = "", .ExitCode = 0};
+        return std::make_optional<Utils::ExecResult>(result);
     };
 
     auto evaluator = CreateEvaluator();
@@ -105,7 +108,8 @@ TEST_F(CommandRuleEvaluatorTest, RegexPatternDoesNotMatchOutputReturnsNotFound)
 
     m_execMock = [](const std::string&)
     {
-        return std::make_pair("ok", "");
+        const Utils::ExecResult result {.StdOut = "ok", .StdErr = "", .ExitCode = 0};
+        return std::make_optional<Utils::ExecResult>(result);
     };
 
     auto evaluator = CreateEvaluator();
@@ -119,7 +123,7 @@ TEST_F(CommandRuleEvaluatorTest, PatternGivenButCommandOutputIsEmptyReturnsNotFo
 
     m_execMock = [](const std::string&)
     {
-        return std::make_pair("", "");
+        return std::make_optional<Utils::ExecResult>();
     };
 
     auto evaluator = CreateEvaluator();
@@ -133,7 +137,8 @@ TEST_F(CommandRuleEvaluatorTest, NumericPatternMatchesOutputReturnsFound)
 
     m_execMock = [](const std::string&)
     {
-        return std::make_pair("42", "");
+        const Utils::ExecResult result {.StdOut = "42", .StdErr = "", .ExitCode = 0};
+        return std::make_optional<Utils::ExecResult>(result);
     };
 
     auto evaluator = CreateEvaluator();
@@ -147,9 +152,24 @@ TEST_F(CommandRuleEvaluatorTest, NumericPatternWithStringMatchesOutputReturnsFou
 
     m_execMock = [](const std::string&)
     {
-        return std::make_pair("Some string:           42", "");
+        const Utils::ExecResult result {.StdOut = "Some string:           42", .StdErr = "", .ExitCode = 0};
+        return std::make_optional<Utils::ExecResult>(result);
     };
 
     auto evaluator = CreateEvaluator();
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
+}
+
+TEST_F(CommandRuleEvaluatorTest, CommandExecutionReturnsNulloptIsInvalid)
+{
+    m_ctx.rule = "some command";
+    m_ctx.pattern = std::string("something");
+
+    m_execMock = [](const std::string&) -> std::optional<Utils::ExecResult>
+    {
+        return std::nullopt;
+    };
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
 }

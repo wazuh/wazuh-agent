@@ -253,4 +253,13 @@ TEST(PatternMatchesTest, NotRegex_WithCompoundFailing)
     EXPECT_FALSE(*patternMatch);
 }
 
+TEST(PatternMatchesTest, MatcherIsCaseInsensitive)
+{
+    const std::string content = "windows";
+    const std::string pattern = "r:^WINDOWS";
+    const auto patternMatch = PatternMatches(content, pattern);
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_TRUE(*patternMatch);
+}
+
 // NOLINTEND(bugprone-unchecked-optional-access, modernize-raw-string-literal)
