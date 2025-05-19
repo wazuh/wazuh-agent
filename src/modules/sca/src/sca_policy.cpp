@@ -90,11 +90,12 @@ void SCAPolicy::Scan(
 
             const auto result = resultEvaluator.Result();
 
-            LogDebug("Policy check evaluation completed for policy \"{}\", result: {}.",
+            // NOLINTBEGIN(bugprone-unchecked-optional-access)
+            LogDebug("Policy check \"{}\" evaluation completed for policy \"{}\", result: {}.",
+                     check.id.value(),
                      m_id,
                      sca::CheckResultToString(result));
 
-            // NOLINTBEGIN(bugprone-unchecked-optional-access)
             reportCheckResult(m_id, check.id.value(), sca::CheckResultToString(result));
             // NOLINTEND(bugprone-unchecked-optional-access)
         }
