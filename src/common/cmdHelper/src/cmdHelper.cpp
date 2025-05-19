@@ -6,6 +6,7 @@
 #include <boost/process.hpp>
 
 #include <cstdio>
+#include <filesystem>
 #include <memory>
 #include <ranges>
 #include <sstream>
@@ -116,11 +117,26 @@ namespace Utils
         {
             // Tokenize to separate the command and its arguments
             const auto args = TokenizeCommand(cmd);
-            const auto exePath = boost::process::search_path(args[0]);
-            if (exePath.empty())
+            const auto exePath = [&]()
             {
-                throw std::runtime_error("Executable not found in PATH: " + args[0]);
-            }
+                const std::string& exeCandidate = args[0];
+
+                if (exeCandidate.starts_with('/'))
+                {
+                    if (!std::filesystem::exists(exeCandidate))
+                    {
+                        throw std::runtime_error("Executable not found at: " + exeCandidate);
+                    }
+                    return exeCandidate;
+                }
+
+                const auto foundPath = boost::process::search_path(exeCandidate);
+                if (foundPath.empty())
+                {
+                    throw std::runtime_error("Executable not found in PATH: " + exeCandidate);
+                }
+                return foundPath.string();
+            }();
 
             boost::process::pipe stdOutPipe;
             boost::process::pipe stdErrPipe;
