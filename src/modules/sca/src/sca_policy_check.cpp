@@ -141,7 +141,8 @@ RuleResult FileRuleEvaluator::CheckFileExistence()
     }
     else
     {
-        result = RuleResult::Invalid;
+        LogDebug("An error occured and file rule '{}' could not be resolved", m_ctx.rule);
+        return RuleResult::Invalid;
     }
 
     return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
@@ -385,7 +386,8 @@ RuleResult DirRuleEvaluator::CheckDirectoryExistence()
     }
     else
     {
-        result = RuleResult::Invalid;
+        LogDebug("An error occured and file rule '{}' could not be resolved", m_ctx.rule);
+        return RuleResult::Invalid;
     }
 
     return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;

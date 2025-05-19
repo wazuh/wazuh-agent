@@ -63,6 +63,19 @@ TEST_F(DirRuleEvaluatorTest, ExistsButNotDirectoryReturnsNotFound)
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::NotFound);
 }
 
+TEST_F(DirRuleEvaluatorTest, ExceptionOnDirectoryCheckReturnsInvalid)
+{
+    m_ctx.pattern = std::nullopt;
+    m_ctx.rule = "dir/";
+
+    EXPECT_CALL(*m_rawFsMock, exists(std::filesystem::path("dir/"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawFsMock, is_directory(std::filesystem::path("dir/")))
+        .WillOnce(::testing::Throw(std::runtime_error("I/O error")));
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+}
+
 TEST_F(DirRuleEvaluatorTest, NoPatternValidDirectoryReturnsFound)
 {
     m_ctx.pattern = std::nullopt;
