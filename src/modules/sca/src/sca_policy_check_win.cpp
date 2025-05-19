@@ -5,6 +5,11 @@
 #include <logger.hpp>
 #include <registryHelper.hpp>
 
+#include <windows.h>
+
+#include <stdexcept>
+#include <system_error>
+
 namespace
 {
     std::pair<std::string, std::string> SplitRegistryKey(std::string_view fullKey)
@@ -30,6 +35,14 @@ namespace
         {
             const auto [key, subkey] = SplitRegistryKey(rootKey);
             return Utils::Registry::KeyExists(key, subkey);
+        }
+        catch (const std::system_error& e)
+        {
+            if (e.code().value() == ERROR_ACCESS_DENIED)
+            {
+                throw std::runtime_error("Access denied to registry key");
+            }
+            return false;
         }
         catch (...)
         {
@@ -127,9 +140,17 @@ RuleResult RegistryRuleEvaluator::CheckKeyForContents()
     LogDebug("Processing registry rule: {}", m_ctx.rule);
 
     // First check that the key exists
-    if (!m_isValidKey(m_ctx.rule))
+    try
     {
-        LogDebug("Key '{}' does not exist", m_ctx.rule);
+        if (!m_isValidKey(m_ctx.rule))
+        {
+            LogDebug("Key '{}' does not exist", m_ctx.rule);
+            return RuleResult::Invalid;
+        }
+    }
+    catch (const std::exception& e)
+    {
+        LogDebug("RegistryRuleEvaluator::Evaluate: Exception: {}", e.what());
         return RuleResult::Invalid;
     }
 
