@@ -6,6 +6,7 @@
 #include <boost/process.hpp>
 
 #include <cstdio>
+#include <filesystem>
 #include <memory>
 #include <ranges>
 #include <sstream>
@@ -110,17 +111,32 @@ namespace Utils
         return result;
     }
 
-    ExecResult Exec(const std::string& cmd)
+    std::optional<ExecResult> Exec(const std::string& cmd)
     {
         try
         {
             // Tokenize to separate the command and its arguments
             const auto args = TokenizeCommand(cmd);
-            const auto exePath = boost::process::search_path(args[0]);
-            if (exePath.empty())
+            const auto exePath = [&]()
             {
-                throw std::runtime_error("Executable not found in PATH: " + args[0]);
-            }
+                const std::string& exeCandidate = args[0];
+
+                if (exeCandidate.starts_with('/'))
+                {
+                    if (!std::filesystem::exists(exeCandidate))
+                    {
+                        throw std::runtime_error("Executable not found at: " + exeCandidate);
+                    }
+                    return exeCandidate;
+                }
+
+                const auto foundPath = boost::process::search_path(exeCandidate);
+                if (foundPath.empty())
+                {
+                    throw std::runtime_error("Executable not found in PATH: " + exeCandidate);
+                }
+                return foundPath.string();
+            }();
 
             boost::process::pipe stdOutPipe;
             boost::process::pipe stdErrPipe;
@@ -136,13 +152,20 @@ namespace Utils
             const auto error = GetStreamOutput(stdErrPipe);
             process.wait();
 
-            return {.StdOut = output, .StdErr = error, .ExitCode = process.exit_code()};
+            ExecResult result;
+            result.StdOut = output;
+            result.StdErr = error;
+            result.ExitCode = process.exit_code();
+            return std::make_optional(result);
         }
         catch (const std::exception& e)
         {
-            return {.StdOut = "", .StdErr = e.what(), .ExitCode = 1};
+            LogDebug("Error executing command: {}", e.what());
+            return std::nullopt;
         }
-
-        return {.StdOut = "", .StdErr = "", .ExitCode = 1};
+        catch (...)
+        {
+            return std::nullopt;
+        }
     }
 } // namespace Utils

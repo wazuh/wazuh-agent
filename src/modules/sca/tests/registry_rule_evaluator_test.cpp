@@ -4,6 +4,8 @@
 
 #include <filesystem>
 #include <memory>
+#include <stdexcept>
+#include <system_error>
 
 class RegistryRuleEvaluatorTest : public ::testing::Test
 {
@@ -64,6 +66,32 @@ TEST_F(RegistryRuleEvaluatorTest, NoPatternInvalidKeyReturnsNotFound)
 
     auto evaluator = CreateEvaluator();
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::NotFound);
+}
+
+TEST_F(RegistryRuleEvaluatorTest, NoPatternAndExceptionReturnsInvalid)
+{
+    m_ctx.pattern = std::nullopt;
+    m_ctx.rule = "HKEY_LOCAL_MACHINE\\Software\\Something";
+    m_isValidKey = [](const std::string&) -> bool
+    {
+        throw std::system_error(EDOM, std::generic_category(), "FIX ME");
+    };
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+}
+
+TEST_F(RegistryRuleEvaluatorTest, PatternAndExceptionReturnsInvalid)
+{
+    m_ctx.pattern = std::string("r:.*");
+    m_ctx.rule = "HKEY_LOCAL_MACHINE\\Software\\Something";
+    m_isValidKey = [](const std::string&) -> bool
+    {
+        throw std::system_error(EDOM, std::generic_category(), "FIX ME");
+    };
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
 }
 
 TEST_F(RegistryRuleEvaluatorTest, PatternKeyFoundReturnsFound)

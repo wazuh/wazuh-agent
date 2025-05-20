@@ -63,6 +63,19 @@ TEST_F(DirRuleEvaluatorTest, ExistsButNotDirectoryReturnsNotFound)
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::NotFound);
 }
 
+TEST_F(DirRuleEvaluatorTest, ExceptionOnDirectoryCheckReturnsInvalid)
+{
+    m_ctx.pattern = std::nullopt;
+    m_ctx.rule = "dir/";
+
+    EXPECT_CALL(*m_rawFsMock, exists(std::filesystem::path("dir/"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawFsMock, is_directory(std::filesystem::path("dir/")))
+        .WillOnce(::testing::Throw(std::runtime_error("I/O error")));
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+}
+
 TEST_F(DirRuleEvaluatorTest, NoPatternValidDirectoryReturnsFound)
 {
     m_ctx.pattern = std::nullopt;
@@ -290,4 +303,76 @@ TEST_F(DirRuleEvaluatorTest, FileFoundInSubdirectory)
 
     auto evaluator = CreateEvaluator();
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
+}
+
+TEST_F(DirRuleEvaluatorTest, ExistsThrowsReturnsInvalid)
+{
+    m_ctx.pattern = std::nullopt;
+    m_ctx.rule = "dir/";
+
+    EXPECT_CALL(*m_rawFsMock, exists(std::filesystem::path("dir/")))
+        .WillOnce(::testing::Throw(std::runtime_error("Permission denied")));
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+}
+
+TEST_F(DirRuleEvaluatorTest, IsDirectoryThrowsReturnsInvalid)
+{
+    m_ctx.pattern = std::nullopt;
+    m_ctx.rule = "dir/";
+
+    EXPECT_CALL(*m_rawFsMock, exists(std::filesystem::path("dir/"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawFsMock, is_directory(std::filesystem::path("dir/")))
+        .WillOnce(::testing::Throw(std::runtime_error("Filesystem error")));
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+}
+
+TEST_F(DirRuleEvaluatorTest, ListDirectoryThrowsReturnsInvalid)
+{
+    m_ctx.pattern = std::string("match.txt");
+    m_ctx.rule = "dir/";
+
+    EXPECT_CALL(*m_rawFsMock, exists(std::filesystem::path("dir/"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawFsMock, is_directory(std::filesystem::path("dir/"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawFsMock, list_directory(std::filesystem::path("dir/")))
+        .WillOnce(::testing::Throw(std::runtime_error("Access denied")));
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+}
+
+TEST_F(DirRuleEvaluatorTest, SubEntryIsDirectoryThrowsReturnsInvalid)
+{
+    m_ctx.pattern = std::string("match.txt");
+    m_ctx.rule = "dir/";
+
+    EXPECT_CALL(*m_rawFsMock, exists(std::filesystem::path("dir/"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawFsMock, is_directory(std::filesystem::path("dir/"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawFsMock, list_directory(std::filesystem::path("dir/")))
+        .WillOnce(::testing::Return(std::vector<std::filesystem::path> {"match.txt"}));
+    EXPECT_CALL(*m_rawFsMock, is_directory(std::filesystem::path("match.txt")))
+        .WillOnce(::testing::Throw(std::runtime_error("Broken stat")));
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+}
+
+TEST_F(DirRuleEvaluatorTest, FileContentThrowsReturnsInvalid)
+{
+    m_ctx.pattern = std::string("target.txt -> r:hello");
+    m_ctx.rule = "dir/";
+
+    EXPECT_CALL(*m_rawFsMock, exists(std::filesystem::path("dir/"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawFsMock, is_directory(std::filesystem::path("dir/"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawFsMock, list_directory(std::filesystem::path("dir/")))
+        .WillOnce(::testing::Return(std::vector<std::filesystem::path> {"target.txt"}));
+    EXPECT_CALL(*m_rawFsMock, is_directory(std::filesystem::path("target.txt"))).WillOnce(::testing::Return(false));
+    EXPECT_CALL(*m_rawIoMock, getFileContent("target.txt"))
+        .WillOnce(::testing::Throw(std::runtime_error("Read failure")));
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
 }

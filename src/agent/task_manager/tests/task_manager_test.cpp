@@ -238,14 +238,14 @@ TEST_F(TaskManagerTest, StoppingTheTaskManagerCancelsTimer)
 TEST_F(TaskManagerTest, DestroyingTheTaskManagerCancelsTimer)
 {
     taskManager->StartThreadPool(4);
-    auto timerTaskExecuted = false;
+    std::atomic<bool> timerTaskExecuted = false;
     auto timerCancelled = true;
 
     auto task1 = [&]() -> boost::asio::awaitable<void> // NOLINT(cppcoreguidelines-avoid-capturing-lambda-coroutines)
     {
-        timerTaskExecuted = true;
         auto timer = taskManager->CreateSteadyTimer(std::chrono::hours(1));
         boost::system::error_code ec;
+        timerTaskExecuted = true;
         co_await timer.async_wait(boost::asio::redirect_error(boost::asio::use_awaitable, ec));
         timerCancelled = false;
         co_return;
@@ -259,7 +259,7 @@ TEST_F(TaskManagerTest, DestroyingTheTaskManagerCancelsTimer)
     };
     taskManager->EnqueueTask(task2());
 
-    while (!taskExecuted.load())
+    while (!(taskExecuted.load() && timerTaskExecuted.load()))
     {
     }
 

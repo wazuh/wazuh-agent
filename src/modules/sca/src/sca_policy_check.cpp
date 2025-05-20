@@ -2,7 +2,6 @@
 
 #include <sca_utils.hpp>
 
-#include <cmdHelper.hpp>
 #include <file_io_utils.hpp>
 #include <filesystem_wrapper.hpp>
 #include <logger.hpp>
@@ -107,13 +106,17 @@ RuleResult FileRuleEvaluator::CheckFileForContents()
 
     LogDebug("Processing file rule. Checking contents of file: '{}' against pattern '{}'", m_ctx.rule, pattern);
 
-    if (!m_fileSystemWrapper->exists(m_ctx.rule) || !m_fileSystemWrapper->is_regular_file(m_ctx.rule))
+    if (TryFunc(
+            [&]
+            { return !m_fileSystemWrapper->exists(m_ctx.rule) || !m_fileSystemWrapper->is_regular_file(m_ctx.rule); })
+            .value_or(false))
     {
         LogDebug("File '{}' does not exist or is not a regular file", m_ctx.rule);
         return RuleResult::Invalid;
     }
 
-    return FindContentInFile(m_fileUtils, m_ctx.rule, pattern, m_ctx.isNegated);
+    return TryFunc([&] { return FindContentInFile(m_fileUtils, m_ctx.rule, pattern, m_ctx.isNegated); })
+        .value_or(RuleResult::Invalid);
 }
 
 RuleResult FileRuleEvaluator::CheckFileExistence()
@@ -122,14 +125,24 @@ RuleResult FileRuleEvaluator::CheckFileExistence()
 
     LogDebug("Processing file rule. Checking existence of file: '{}'", m_ctx.rule);
 
-    if (!m_fileSystemWrapper->exists(m_ctx.rule) || !m_fileSystemWrapper->is_regular_file(m_ctx.rule))
+    if (const auto fileOk = TryFunc(
+            [&]
+            { return m_fileSystemWrapper->exists(m_ctx.rule) && m_fileSystemWrapper->is_regular_file(m_ctx.rule); }))
     {
-        LogDebug("File '{}' does not exist or is not a file", m_ctx.rule);
+        if (fileOk.value())
+        {
+            LogDebug("File '{}' exists", m_ctx.rule);
+            result = RuleResult::Found;
+        }
+        else
+        {
+            LogDebug("File '{}' does not exist or is not a file", m_ctx.rule);
+        }
     }
     else
     {
-        LogDebug("File '{}' exists", m_ctx.rule);
-        result = RuleResult::Found;
+        LogDebug("An error occured and file rule '{}' could not be resolved", m_ctx.rule);
+        return RuleResult::Invalid;
     }
 
     return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
@@ -139,9 +152,8 @@ CommandRuleEvaluator::CommandRuleEvaluator(PolicyEvaluationContext ctx,
                                            std::unique_ptr<IFileSystemWrapper> fileSystemWrapper,
                                            CommandExecFunc commandExecFunc)
     : RuleEvaluator(std::move(ctx), std::move(fileSystemWrapper))
-    , m_commandExecFunc(commandExecFunc
-                        ? std::move(commandExecFunc)
-                        : [](const std::string& cmd) { const auto cmdOutput = Utils::Exec(cmd); return std::make_pair(cmdOutput.StdOut, cmdOutput.StdErr); })
+    , m_commandExecFunc(commandExecFunc ? std::move(commandExecFunc) : [](const std::string& cmd)
+                            { return Utils::Exec(cmd); })
 {
 }
 
@@ -151,44 +163,57 @@ RuleResult CommandRuleEvaluator::Evaluate()
 
     auto result = RuleResult::NotFound;
 
-    if (m_ctx.pattern)
+    if (!m_ctx.rule.empty())
     {
-        auto [output, error] = m_commandExecFunc(m_ctx.rule);
-
-        // Trim ending lines if any (command output may have trailing newlines)
-        output = Utils::Trim(output, "\n");
-        error = Utils::Trim(error, "\n");
-
-        if (sca::IsRegexOrNumericPattern(*m_ctx.pattern))
+        if (auto execResult = m_commandExecFunc(m_ctx.rule))
         {
-            const auto outputPatternMatch = sca::PatternMatches(output, *m_ctx.pattern);
-            const auto errorPatternMatch = sca::PatternMatches(error, *m_ctx.pattern);
-
-            if (outputPatternMatch || errorPatternMatch)
+            if (m_ctx.pattern)
             {
-                result = outputPatternMatch.value_or(false) || errorPatternMatch.value_or(false) ? RuleResult::Found
-                                                                                                 : RuleResult::NotFound;
+                // Trim ending lines if any (command output may have trailing newlines)
+                execResult->StdOut = Utils::Trim(execResult->StdOut, "\n");
+                execResult->StdErr = Utils::Trim(execResult->StdErr, "\n");
+
+                if (sca::IsRegexOrNumericPattern(*m_ctx.pattern))
+                {
+                    const auto outputPatternMatch = sca::PatternMatches(execResult->StdOut, *m_ctx.pattern);
+                    const auto errorPatternMatch = sca::PatternMatches(execResult->StdErr, *m_ctx.pattern);
+
+                    if (outputPatternMatch || errorPatternMatch)
+                    {
+                        result = outputPatternMatch.value_or(false) || errorPatternMatch.value_or(false)
+                                     ? RuleResult::Found
+                                     : RuleResult::NotFound;
+                    }
+                    else
+                    {
+                        LogDebug("Invalid pattern '{}' for command rule evaluation", *m_ctx.pattern);
+                        return RuleResult::Invalid;
+                    }
+                }
+                else if (execResult->StdOut == m_ctx.pattern.value() || execResult->StdErr == m_ctx.pattern.value())
+                {
+                    result = RuleResult::Found;
+                }
             }
             else
             {
-                LogDebug("Invalid pattern '{}' for command rule evaluation", *m_ctx.pattern);
-                return RuleResult::Invalid;
+                result = RuleResult::Found;
             }
         }
-        else if (output == m_ctx.pattern.value() || error == m_ctx.pattern.value())
+        else
         {
-            result = RuleResult::Found;
+            LogDebug("Command rule '{}' execution failed", m_ctx.rule);
+            return RuleResult::Invalid;
         }
     }
     else
     {
-        LogDebug("No pattern provided for command rule evaluation");
-        return RuleResult::Invalid;
+        LogDebug("Command rule is empty");
     }
 
     LogDebug("Command rule '{}' pattern '{}' {} found",
              m_ctx.rule,
-             *m_ctx.pattern,
+             m_ctx.pattern.value_or(""),
              result == RuleResult::Found ? "was" : "was not");
 
     return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
@@ -246,7 +271,12 @@ RuleResult DirRuleEvaluator::CheckDirectoryForContents()
         dirs.pop();
 
         const auto filesOpt = TryFunc([&] { return m_fileSystemWrapper->list_directory(currentDir); });
-        if (!filesOpt || filesOpt->empty())
+        if (!filesOpt)
+        {
+            LogDebug("Directory '{}' could not be listed", currentDir.string());
+            return RuleResult::Invalid;
+        }
+        if (filesOpt->empty())
         {
             continue;
         }
@@ -262,15 +292,31 @@ RuleResult DirRuleEvaluator::CheckDirectoryForContents()
 
         for (const auto& file : files)
         {
-            if (TryFunc([&] { return m_fileSystemWrapper->is_symlink(file); }).value_or(false))
+            if (const auto isSymlink = TryFunc([&] { return m_fileSystemWrapper->is_symlink(file); }))
             {
-                continue;
+                if (isSymlink.value())
+                {
+                    continue;
+                }
+            }
+            else
+            {
+                LogDebug("Symlink check failed for file '{}'", file.string());
+                return RuleResult::Invalid;
             }
 
-            if (TryFunc([&] { return m_fileSystemWrapper->is_directory(file); }).value_or(false))
+            if (const auto isDirectory = TryFunc([&] { return m_fileSystemWrapper->is_directory(file); }))
             {
-                dirs.emplace(file);
-                continue;
+                if (isDirectory.value())
+                {
+                    dirs.emplace(file);
+                    continue;
+                }
+            }
+            else
+            {
+                LogDebug("Directory check failed for file '{}'", file.string());
+                return RuleResult::Invalid;
             }
 
             if (isRegex)
@@ -292,7 +338,10 @@ RuleResult DirRuleEvaluator::CheckDirectoryForContents()
 
                 if (file.filename().string() == fileName)
                 {
-                    return FindContentInFile(m_fileUtils, fileName, content.value(), m_ctx.isNegated);
+                    return TryFunc(
+                               [&]
+                               { return FindContentInFile(m_fileUtils, fileName, content.value(), m_ctx.isNegated); })
+                        .value_or(RuleResult::Invalid);
                 }
             }
             else
@@ -322,14 +371,23 @@ RuleResult DirRuleEvaluator::CheckDirectoryExistence()
 
     LogDebug("Processing directory rule. Checking existence of directory: '{}'", m_ctx.rule);
 
-    if (!m_fileSystemWrapper->exists(m_ctx.rule) || !m_fileSystemWrapper->is_directory(m_ctx.rule))
+    if (const auto dirOk = TryFunc(
+            [&] { return m_fileSystemWrapper->exists(m_ctx.rule) && m_fileSystemWrapper->is_directory(m_ctx.rule); }))
     {
-        LogDebug("Directory '{}' does not exist or is not a directory", m_ctx.rule);
+        if (dirOk.value())
+        {
+            LogDebug("Directory '{}' exists", m_ctx.rule);
+            result = RuleResult::Found;
+        }
+        else
+        {
+            LogDebug("Directory '{}' does not exist or is not a directory", m_ctx.rule);
+        }
     }
     else
     {
-        LogDebug("Directory '{}' exists", m_ctx.rule);
-        result = RuleResult::Found;
+        LogDebug("An error occured and file rule '{}' could not be resolved", m_ctx.rule);
+        return RuleResult::Invalid;
     }
 
     return m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
@@ -363,16 +421,23 @@ RuleResult ProcessRuleEvaluator::Evaluate()
 {
     LogDebug("Processing process rule: '{}'", m_ctx.rule);
 
-    const auto processes = m_getProcesses();
     auto result = RuleResult::NotFound;
 
-    for (const auto& process : processes)
+    if (const auto processes = TryFunc([this] { return m_getProcesses(); }))
     {
-        if (process == m_ctx.rule)
+        for (const auto& process : processes.value())
         {
-            result = RuleResult::Found;
-            break;
+            if (process == m_ctx.rule)
+            {
+                result = RuleResult::Found;
+                break;
+            }
         }
+    }
+    else
+    {
+        LogDebug("Process rule '{}' execution failed", m_ctx.rule);
+        return RuleResult::Invalid;
     }
 
     LogDebug("Process '{}' {} found", m_ctx.rule, result == RuleResult::Found ? "was" : "was not");

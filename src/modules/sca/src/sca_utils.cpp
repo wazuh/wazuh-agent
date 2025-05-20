@@ -20,12 +20,21 @@ namespace
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         const auto patternPtr = reinterpret_cast<PCRE2_SPTR8>(pattern.c_str());
 
-        auto* re =
-            pcre2_compile(patternPtr, PCRE2_ZERO_TERMINATED, PCRE2_MULTILINE, &errorCode, &error_offset, nullptr);
+        auto* re = pcre2_compile(
+            patternPtr, PCRE2_ZERO_TERMINATED, PCRE2_MULTILINE | PCRE2_CASELESS, &errorCode, &error_offset, nullptr);
 
         if (!re)
         {
-            throw std::runtime_error("PCRE2 compilation failed");
+            throw std::runtime_error(
+                [&errorCode, &error_offset]()
+                {
+                    std::vector<PCRE2_UCHAR> buffer(256); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+                    pcre2_get_error_message(errorCode, buffer.data(), buffer.size());
+
+                    return "PCRE2 compilation failed at offset " + std::to_string(error_offset) + ": " +
+                           // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+                           reinterpret_cast<char*>(buffer.data());
+                }());
         }
 
         auto* matchData = pcre2_match_data_create_from_pattern(re, nullptr);

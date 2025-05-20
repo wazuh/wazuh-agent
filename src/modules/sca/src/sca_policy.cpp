@@ -47,7 +47,7 @@ SCAPolicy::Run(std::time_t scanInterval,
 void SCAPolicy::Scan(
     const std::function<void(const std::string&, const std::string&, const std::string&)>& reportCheckResult)
 {
-    auto requirementsOk = true;
+    auto requirementsOk = sca::CheckResult::Passed;
 
     if (!m_requirements.rules.empty())
     {
@@ -68,10 +68,10 @@ void SCAPolicy::Scan(
 
         LogDebug("Policy requirements evaluation completed for policy \"{}\", result: {}.",
                  m_id,
-                 requirementsOk ? "passed" : "failed");
+                 sca::CheckResultToString(requirementsOk));
     }
 
-    if (requirementsOk)
+    if (requirementsOk == sca::CheckResult::Passed)
     {
         LogDebug("Starting Policy checks evaluation for policy \"{}\".", m_id);
 
@@ -90,14 +90,13 @@ void SCAPolicy::Scan(
 
             const auto result = resultEvaluator.Result();
 
-            LogDebug(
-                "Policy check evaluation completed for policy \"{}\", result: {}.", m_id, result ? "passed" : "failed");
-
             // NOLINTBEGIN(bugprone-unchecked-optional-access)
-            reportCheckResult(m_id,
-                              check.id.value(),
-                              result ? sca::CheckResultToString(sca::CheckResult::Passed)
-                                     : sca::CheckResultToString(sca::CheckResult::Failed));
+            LogDebug("Policy check \"{}\" evaluation completed for policy \"{}\", result: {}.",
+                     check.id.value(),
+                     m_id,
+                     sca::CheckResultToString(result));
+
+            reportCheckResult(m_id, check.id.value(), sca::CheckResultToString(result));
             // NOLINTEND(bugprone-unchecked-optional-access)
         }
 

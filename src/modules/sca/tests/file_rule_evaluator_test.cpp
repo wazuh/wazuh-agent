@@ -55,6 +55,19 @@ TEST_F(FileRuleEvaluatorTest, FileExistsReturnsFound)
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
 }
 
+TEST_F(FileRuleEvaluatorTest, FileExistanceCheckWithExceptionReturnsInvalid)
+{
+    m_ctx.pattern = std::nullopt;
+    m_ctx.rule = "some/file";
+
+    EXPECT_CALL(*m_rawFsMock, exists(std::filesystem::path("some/file"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawFsMock, is_regular_file(std::filesystem::path("some/file")))
+        .WillOnce(::testing::Throw(std::runtime_error("I/O error")));
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+}
+
 TEST_F(FileRuleEvaluatorTest, PatternRegexMatchesContentReturnsFound)
 {
     m_ctx.pattern = std::string("r:foo");
@@ -137,6 +150,59 @@ TEST_F(FileRuleEvaluatorTest, PatternGivenButPathIsNotRegularFileReturnsInvalid)
 
     EXPECT_CALL(*m_rawFsMock, exists(std::filesystem::path("some/file"))).WillOnce(::testing::Return(true));
     EXPECT_CALL(*m_rawFsMock, is_regular_file(std::filesystem::path("some/file"))).WillOnce(::testing::Return(false));
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+}
+
+TEST_F(FileRuleEvaluatorTest, FileIsRegularCheckThrowsReturnsInvalid)
+{
+    m_ctx.pattern = std::nullopt;
+    m_ctx.rule = "some/file";
+
+    EXPECT_CALL(*m_rawFsMock, exists(std::filesystem::path("some/file"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawFsMock, is_regular_file(std::filesystem::path("some/file")))
+        .WillOnce(::testing::Throw(std::runtime_error("I/O error")));
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+}
+
+TEST_F(FileRuleEvaluatorTest, PatternGivenButGetFileContentThrowsReturnsInvalid)
+{
+    m_ctx.pattern = std::string("r:foo");
+    m_ctx.rule = "some/file";
+
+    EXPECT_CALL(*m_rawFsMock, exists(std::filesystem::path("some/file"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawFsMock, is_regular_file(std::filesystem::path("some/file"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawIoMock, getFileContent("some/file"))
+        .WillOnce(::testing::Throw(std::runtime_error("Permission denied")));
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+}
+
+TEST_F(FileRuleEvaluatorTest, PatternGivenReadLineByLineThrowsReturnsInvalid)
+{
+    m_ctx.pattern = std::string("exact");
+    m_ctx.rule = "some/file";
+
+    EXPECT_CALL(*m_rawFsMock, exists(std::filesystem::path("some/file"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawFsMock, is_regular_file(std::filesystem::path("some/file"))).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*m_rawIoMock, readLineByLine(std::filesystem::path("some/file"), ::testing::_))
+        .WillOnce(::testing::Throw(std::runtime_error("Failed to open")));
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
+}
+
+TEST_F(FileRuleEvaluatorTest, ExistsThrowsReturnsInvalid)
+{
+    m_ctx.pattern = std::nullopt;
+    m_ctx.rule = "some/file";
+
+    EXPECT_CALL(*m_rawFsMock, exists(std::filesystem::path("some/file")))
+        .WillOnce(::testing::Throw(std::runtime_error("Access denied")));
 
     auto evaluator = CreateEvaluator();
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::Invalid);
