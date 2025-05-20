@@ -92,11 +92,23 @@ TEST_F(CmdUtilsTest, QuotedArgument)
 
 TEST_F(CmdUtilsTest, EscapedCharacters)
 {
-    const auto result = Utils::TokenizeCommand(R"(echo \"escaped\" \\slash)");
+    const auto result = Utils::TokenizeCommand(R"(echo "escaped test" \\slash)");
+
     ASSERT_EQ(result.size(), 3);
     EXPECT_EQ(result[0], "echo");
-    EXPECT_EQ(result[1], "\"escaped\"");
+    EXPECT_EQ(result[1], "escaped test");
     EXPECT_EQ(result[2], "\\slash");
+}
+
+TEST_F(CmdUtilsTest, SingleQuote)
+{
+    const auto result = Utils::TokenizeCommand(R"(echo \" >> myFile.txt)");
+
+    ASSERT_EQ(result.size(), 4);
+    EXPECT_EQ(result[0], "echo");
+    EXPECT_EQ(result[1], "\"");
+    EXPECT_EQ(result[2], ">>");
+    EXPECT_EQ(result[3], "myFile.txt");
 }
 
 TEST_F(CmdUtilsTest, UnclosedQuoteIsHandled)
@@ -131,6 +143,17 @@ TEST_F(CmdUtilsTest, EscapedSpaceWithinQuotes)
     ASSERT_EQ(result.size(), 2);
     EXPECT_EQ(result[0], "echo");
     EXPECT_EQ(result[1], "hello world");
+}
+
+TEST_F(CmdUtilsTest, WindowsRegistryTest)
+{
+    const auto result =
+        Utils::TokenizeCommand(R"(regquery HKLM\Software\Microsoft\Windows\CurrentVersion /v ProductName)");
+    ASSERT_EQ(result.size(), 4);
+    EXPECT_EQ(result[0], "regquery");
+    EXPECT_EQ(result[1], "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion");
+    EXPECT_EQ(result[2], "/v");
+    EXPECT_EQ(result[3], "ProductName");
 }
 
 // NOLINTEND(bugprone-unchecked-optional-access)
