@@ -42,7 +42,7 @@ void CheckConditionEvaluator::AddResult(RuleResult result)
     switch (m_type)
     {
         case ConditionType::All:
-            if (RuleResult::Found != result)
+            if (RuleResult::NotFound == result)
             {
                 m_result = false;
             }
@@ -54,7 +54,7 @@ void CheckConditionEvaluator::AddResult(RuleResult result)
             }
             break;
         case ConditionType::None:
-            if (RuleResult::NotFound != result)
+            if (RuleResult::Found == result)
             {
                 m_result = false;
             }
@@ -64,33 +64,21 @@ void CheckConditionEvaluator::AddResult(RuleResult result)
 
 sca::CheckResult CheckConditionEvaluator::Result() const
 {
-    if (m_hasInvalid)
+    if (m_result.has_value())
     {
-        if (m_type == ConditionType::Any && m_result.value_or(m_passedRules > 0))
-        {
-            return sca::CheckResult::Passed;
-        }
+        return *m_result ? sca::CheckResult::Passed : sca::CheckResult::Failed;
+    }
+
+    if (m_totalRules == 0 || m_hasInvalid)
+    {
         return sca::CheckResult::NotApplicable;
     }
 
-    const auto passed = [&]
+    switch (m_type)
     {
-        if (m_result.has_value())
-        {
-            return *m_result;
-        }
-
-        switch (m_type)
-        {
-            case ConditionType::All: return m_passedRules > 0 && m_passedRules == m_totalRules;
-            case ConditionType::Any: return m_passedRules > 0;
-            case ConditionType::None: return m_passedRules == 0;
-            default:
-            {
-                throw std::runtime_error("Invalid condition type");
-            };
-        }
-    }();
-
-    return passed ? sca::CheckResult::Passed : sca::CheckResult::Failed;
+        case ConditionType::All: return sca::CheckResult::Passed;
+        case ConditionType::Any: return sca::CheckResult::Failed;
+        case ConditionType::None: return sca::CheckResult::Passed;
+        default: throw std::runtime_error("Invalid condition type");
+    }
 }

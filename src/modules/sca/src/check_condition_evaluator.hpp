@@ -29,5 +29,5 @@ private:
     int m_totalRules {0};
     int m_passedRules {0};
     std::optional<bool> m_result;
-    std::optional<bool> m_hasInvalid;
+    bool m_hasInvalid = false;
 };
