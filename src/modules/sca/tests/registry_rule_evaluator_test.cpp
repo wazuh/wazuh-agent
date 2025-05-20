@@ -169,6 +169,25 @@ TEST_F(RegistryRuleEvaluatorTest, PatternArrowValueFoundReturnsFound)
     EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
 }
 
+TEST_F(RegistryRuleEvaluatorTest, PatternArrowValueFoundReturnsFoundCaseInsensitive)
+{
+    m_ctx.pattern = std::string("expectedKey -> expectedValue");
+    m_ctx.rule = "HKEY_CURRENT_USER\\MyApp";
+
+    m_enumValues = [](const std::string&)
+    {
+        return std::vector<std::string> {"SomethingElse", "ExpectedKey"};
+    };
+
+    m_getValue = [](const std::string&, const std::string&) -> std::string
+    {
+        return "ExpectedValue";
+    };
+
+    auto evaluator = CreateEvaluator();
+    EXPECT_EQ(evaluator.Evaluate(), RuleResult::Found);
+}
+
 TEST_F(RegistryRuleEvaluatorTest, PatternArrowValueNotFoundReturnsNotFound)
 {
     m_ctx.pattern = std::string("ExpectedKey -> MissingValue");

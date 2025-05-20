@@ -70,8 +70,18 @@ namespace Utils
                 ++i;
                 if (i < len)
                 {
+                    if (!quoting && command[i] != '\\' && command[i] != '"')
+                    {
+                        // Outside quotes, preserve the backslash and the character
+                        accum += '\\';
+                    }
                     accum += command[i];
                     ++i;
+                }
+                else
+                {
+                    // Trailing backslash
+                    accum += '\\';
                 }
             }
             else

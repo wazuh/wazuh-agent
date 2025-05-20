@@ -262,4 +262,13 @@ TEST(PatternMatchesTest, MatcherIsCaseInsensitive)
     EXPECT_TRUE(*patternMatch);
 }
 
+TEST(PatternMatchesTest, REG_MULTI_SZtest)
+{
+    const std::string content = "some\\string another\\string third\\string yet\\another\\one";
+    const std::string pattern = "r:third\\\\string";
+    const auto patternMatch = PatternMatches(content, pattern);
+    ASSERT_TRUE(patternMatch.has_value());
+    EXPECT_TRUE(*patternMatch);
+}
+
 // NOLINTEND(bugprone-unchecked-optional-access, modernize-raw-string-literal)

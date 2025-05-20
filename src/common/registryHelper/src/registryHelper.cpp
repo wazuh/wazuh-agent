@@ -321,6 +321,34 @@ namespace Utils
         return ret;
     }
 
+    std::string HandleRegMultiSZ(const BYTE* data, DWORD size)
+    {
+        if (size == 0)
+        {
+            return "";
+        }
+
+        std::string result;
+        const char* current = reinterpret_cast<const char*>(data);
+        const char* end = reinterpret_cast<const char*>(data + size);
+
+        while (current < end && *current != '\0')
+        {
+            size_t remaining = end - current;
+            size_t len = strnlen(current, remaining);
+
+            result.append(current, len);
+            current += len + 1;
+
+            if (current < end && *current != '\0')
+            {
+                result += ' ';
+            }
+        }
+
+        return result;
+    }
+
     std::string Registry::getValue(const std::string& valueName) const
     {
         DWORD type = 0;
@@ -355,6 +383,10 @@ namespace Utils
                 ULONGLONG qwValue;
                 std::memcpy(&qwValue, spBuff.get(), sizeof(ULONGLONG));
                 return std::to_string(qwValue);
+            }
+            case REG_MULTI_SZ:
+            {
+                return HandleRegMultiSZ(spBuff.get(), size);
             }
             default: throw std::runtime_error("Unsupported registry value type for: " + valueName);
         }
