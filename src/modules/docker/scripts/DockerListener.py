@@ -14,6 +14,8 @@ import socket
 import sys
 import time
 from os.path import abspath, dirname
+import functools
+import re
 
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 from utils import MAX_EVENT_SIZE
@@ -106,13 +108,48 @@ class DockerListener:
         self.send_msg(json.dumps({self.field_debug_name: "Disconnected from the Docker service"}))
         self.connect()
 
+    @functools.lru_cache(maxsize=256)  # limit the number of container entries
+    def get_container_healthcheck_cmd(self, container_id):
+        container = self.client.containers.get(container_id)
+        healthcheck_commands = container.attrs.get("Config", {}).get("Healthcheck", {}).get("Test")
+        cmd = None
+        if healthcheck_commands:
+            if len(healthcheck_commands) == 2 and healthcheck_commands[0] == "CMD-SHELL":
+                cmd = "/bin/sh -c "
+                cmd += healthcheck_commands[1].strip()
+            elif len(healthcheck_commands) >= 1 and healthcheck_commands[0] == "CMD":
+                cmd = " ".join(healthcheck_commands[1:]).strip()
+        return cmd
+
+    def event_pre_analysis(self, event: dict) -> bool:
+        """
+        Pre-check to filter events before sending them to wazuh socket
+
+        :param event: Event to check
+        :return: True if events should be sent to Wazuh, False otherwise
+        """
+        _type: str = event.get("Type", "")
+        _action: str = event.get("Action", "")
+        _id: str = event.get("id", "")
+        if _type == "container":
+            pattern = r"^(exec_create|exec_start): (.+)"
+            match = re.match(pattern, _action)
+            if match:
+                program = match.group(2).strip()
+                healthcheck_cmd = self.get_container_healthcheck_cmd(_id)
+                if healthcheck_cmd and healthcheck_cmd == program:
+                    return False # do not process the healthcheck command
+        return True
+
     def process(self, event):
         """"
         Processes a main Docker event
 
         :param event: Docker event.
         """
-        self.send_msg(event.decode("utf-8"))
+        decoded_event = event.decode("utf-8")
+        if self.event_pre_analysis(json.loads(decoded_event)):
+            self.send_msg(decoded_event)
 
     def format_msg(self, msg):
         """
