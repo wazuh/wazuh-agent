@@ -21,6 +21,7 @@ SCAPolicy::SCAPolicy(SCAPolicy&& other) noexcept
     , m_requirements(std::move(other.m_requirements))
     , m_checks(std::move(other.m_checks))
     , m_keepRunning(other.m_keepRunning.load())
+    , m_scanInProgress(other.m_scanInProgress.load())
 {
 }
 
@@ -32,14 +33,18 @@ SCAPolicy::Run(std::time_t scanInterval,
 {
     if (scanOnStart && m_keepRunning)
     {
+        m_scanInProgress = true;
         Scan(reportCheckResult);
+        m_scanInProgress = false;
     }
 
     while (m_keepRunning)
     {
         co_await wait(std::chrono::milliseconds(scanInterval));
 
+        m_scanInProgress = true;
         Scan(reportCheckResult);
+        m_scanInProgress = false;
     }
     co_return;
 }
@@ -114,5 +119,10 @@ void SCAPolicy::Scan(
 
 void SCAPolicy::Stop()
 {
+    if (m_scanInProgress)
+    {
+        LogDebug("Aborting current scan for policy \"{}\"", m_id);
+    }
+
     m_keepRunning = false;
 }
