@@ -131,7 +131,7 @@ jobs:
           persist-credentials: false
 
       - name: Test Mac OS Package - ${{ inputs.architecture }}
-        uses: ./.github/actions/5_testcomponent_install_macos
+        uses: ./.github/actions/6_testcomponent_install_macos
         with:
           checksum: ${{ inputs.checksum }}
           upload_to_s3: 'false'
