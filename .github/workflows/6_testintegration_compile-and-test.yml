@@ -46,7 +46,7 @@ jobs:
         gh_token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Setup CMake 3.x
-      uses: ./.github/actions/5_builderprecompiled_cmake
+      uses: ./.github/actions/6_builderprecompiled_cmake
 
     - name: Run Compile Action
       uses: ./.github/actions/5_testintegration_compile
