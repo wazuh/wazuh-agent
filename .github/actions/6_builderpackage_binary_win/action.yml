@@ -21,7 +21,7 @@ runs:
   using: 'composite'
   steps:
     - name: Set up Binary caching
-      uses: ./.github/actions/vcpkg_related/5_builderpackage_vcpkg
+      uses: ./.github/actions/vcpkg_related/6_builderpackage_vcpkg
       with:
         gh_token: ${{ inputs.gh_token }}
 
@@ -48,7 +48,7 @@ runs:
         Expand-Archive -Path $zipFile -DestinationPath $extractPath -Force
 
     - name: Setup CMake 3.x
-      uses: ./.github/actions/5_builderprecompiled_cmake
+      uses: ./.github/actions/6_builderprecompiled_cmake
 
     - name: Build MSI for Windows package
       shell: pwsh
