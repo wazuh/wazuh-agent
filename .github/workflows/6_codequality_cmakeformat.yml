@@ -17,7 +17,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Run CMake Format Check
-      uses: ./.github/actions/5_codelinter_cmakeformat
+      uses: ./.github/actions/6_codelinter_cmakeformat
       with:
         path: 'src/'
         id: 'wazuh-agent'
