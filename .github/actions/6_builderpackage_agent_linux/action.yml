@@ -34,7 +34,7 @@ runs:
         docker_image_tag: ${{ env.TAG }}
 
     - name: Launch Docker container
-      uses: ./.github/actions/5_builderpackage_docker_run
+      uses: ./.github/actions/6_builderpackage_docker_run
       with:
         docker_image_name: ${{ env.DOCKER_IMAGE_NAME }}
         docker_image_tag: ${{ env.TAG }}
