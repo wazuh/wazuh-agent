@@ -26,7 +26,7 @@ runs:
         source_reference: ${{ inputs.source_reference }}
 
     - name: Fetch needed Docker image
-      uses: ./.github/actions/5_builderpackage_docker_pull
+      uses: ./.github/actions/6_builderpackage_docker_pull
       with:
         gh_user: ${{ github.actor}}
         gh_token: ${{ inputs.gh_token}}
