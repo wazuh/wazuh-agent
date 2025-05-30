@@ -69,7 +69,7 @@ runs:
         echo "PACKAGE_NAME=$(find /tmp -maxdepth 1 -type f -name *agent*.${{ inputs.system }} -exec basename {} 2>/dev/null \;| grep -v -E "^(wazuh-agent-dbg|wazuh-agent-debuginfo)")" | tee -a $GITHUB_ENV
 
     - name: Test package installation
-      uses: ./.github/actions/5_testintegration_package_linux
+      uses: ./.github/actions/6_testintegration_package_linux
       with:
         system: ${{ inputs.system }}
         tested_docker: ${{ inputs.system == 'deb' && 'ubuntu:22.04' || 'redhat/ubi9' }}
