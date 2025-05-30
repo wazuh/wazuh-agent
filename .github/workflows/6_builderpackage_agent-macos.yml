@@ -109,7 +109,7 @@ jobs:
           persist-credentials: false
 
       - name: Build Mac OS Package - ${{ inputs.architecture }}
-        uses: ./.github/actions/5_builderpackage_binary_macos
+        uses: ./.github/actions/6_builderpackage_binary_macos
         with:
           architecture: ${{ inputs.architecture }}
           revision: ${{ inputs.revision }}

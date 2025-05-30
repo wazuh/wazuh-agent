@@ -144,7 +144,7 @@ jobs:
           persist-credentials: false
 
       - name: Build Linux DEB Package - ${{ inputs.architecture }}
-        uses: ./.github/actions/5_builderpackage_binary_linux
+        uses: ./.github/actions/6_builderpackage_binary_linux
         with:
           architecture: ${{ inputs.architecture }}
           docker_image_tag: ${{ inputs.docker_image_tag }}
@@ -171,7 +171,7 @@ jobs:
           persist-credentials: false
 
       - name: Build Linux RPM Package - ${{ inputs.architecture }}
-        uses: ./.github/actions/5_builderpackage_binary_linux
+        uses: ./.github/actions/6_builderpackage_binary_linux
         with:
           architecture: ${{ inputs.architecture }}
           docker_image_tag: ${{ inputs.docker_image_tag }}
