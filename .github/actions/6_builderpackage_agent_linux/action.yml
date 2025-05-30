@@ -45,7 +45,7 @@ runs:
       uses: ./.github/actions/6_builderpackage_docker_exec
       with:
         container_name: builder_container
-        commands: bash /wazuh-local-src/.github/actions/vcpkg_related/5_builderpackage_vcpkg/cover_vcpkg_dependencies.sh ${{ inputs.gh_token}}
+        commands: bash /wazuh-local-src/.github/actions/vcpkg_related/6_builderpackage_vcpkg/cover_vcpkg_dependencies.sh ${{ inputs.gh_token}}
 
     - name: Build binaries
       uses: ./.github/actions/6_builderpackage_docker_exec

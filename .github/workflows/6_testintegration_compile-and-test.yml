@@ -41,7 +41,7 @@ jobs:
       shell: bash
 
     - name: Set up Binary caching
-      uses: ./.github/actions/vcpkg_related/5_builderpackage_vcpkg
+      uses: ./.github/actions/vcpkg_related/6_builderpackage_vcpkg
       with:
         gh_token: ${{ secrets.GITHUB_TOKEN }}
 
