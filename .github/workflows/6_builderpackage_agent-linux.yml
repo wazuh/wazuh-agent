@@ -121,7 +121,7 @@ jobs:
           persist-credentials: false
 
       - name: Compile Linux Repository
-        uses: ./.github/actions/5_builderpackage_agent_linux
+        uses: ./.github/actions/6_builderpackage_agent_linux
         with:
           architecture: ${{ inputs.architecture }}
           docker_image_tag: ${{ inputs.docker_image_tag }}
