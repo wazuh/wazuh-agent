@@ -49,7 +49,7 @@ jobs:
       uses: ./.github/actions/6_builderprecompiled_cmake
 
     - name: Run Compile Action
-      uses: ./.github/actions/5_testintegration_compile
+      uses: ./.github/actions/6_testintegration_compile
       with:
         path: src/
         build_path: build-${{ matrix.os }}/
