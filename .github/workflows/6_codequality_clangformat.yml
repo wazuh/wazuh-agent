@@ -17,7 +17,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Run Clang Format Check
-      uses: ./.github/actions/5_codelinter_clangformat
+      uses: ./.github/actions/6_codelinter_clangformat
       with:
         path: 'src/'
         id: 'wazuh-agent'
