@@ -41,7 +41,7 @@ runs:
         sudo unzip -o wazuh-agent-binaries-${{ inputs.architecture }}.zip -d /
 
     - name: Set ARCH, TAG and DOCKER_IMAGE_NAME
-      uses: ./.github/actions/5_builderpackage_docker_resolvable
+      uses: ./.github/actions/6_builderpackage_docker_resolvable
       with:
         system: ${{ inputs.system }}
         architecture: ${{ inputs.architecture }}
