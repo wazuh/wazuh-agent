@@ -68,7 +68,7 @@ jobs:
           persist-credentials: false
 
       - name: Build Windows MSI
-        uses: ./.github/actions/5_builderpackage_binary_win
+        uses: ./.github/actions/6_builderpackage_binary_win
         with:
           revision: ${{ inputs.revision }}
           is_stage: ${{ inputs.is_stage }}

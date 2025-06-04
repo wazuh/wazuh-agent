@@ -1,4 +1,4 @@
-name: Clang Format Check
+name: CMake Format Check
 
 on:
   pull_request:
@@ -9,15 +9,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  clang-format:
+  cmake-format:
     runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    - name: Run Clang Format Check
-      uses: ./.github/actions/5_codelinter_clangformat
+    - name: Run CMake Format Check
+      uses: ./.github/actions/6_codelinter_cmakeformat
       with:
         path: 'src/'
         id: 'wazuh-agent'
