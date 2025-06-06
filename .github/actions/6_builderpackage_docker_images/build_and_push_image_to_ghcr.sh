@@ -10,7 +10,7 @@ else
 fi
 GITHUB_REPOSITORY="wazuh/wazuh"
 GITHUB_OWNER="wazuh"
-IMAGE_ID_CACHE=ghcr.io/${GITHUB_OWNER}/${DOCKER_IMAGE_NAME}:latest-5.0
+IMAGE_ID_CACHE=ghcr.io/${GITHUB_OWNER}/${DOCKER_IMAGE_NAME}:latest-6.0
 IMAGE_ID_CACHE=$(echo ${IMAGE_ID_CACHE} | tr '[A-Z]' '[a-z]')
 IMAGE_ID=ghcr.io/${GITHUB_OWNER}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
 IMAGE_ID=$(echo ${IMAGE_ID} | tr '[A-Z]' '[a-z]')

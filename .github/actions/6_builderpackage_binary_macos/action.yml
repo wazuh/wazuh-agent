@@ -33,7 +33,7 @@ runs:
     - name: Build macOS package
       shell: bash
       run: |
-        sudo unzip -o wazuh-agent-binaries-${{ inputs.architecture }}.zip -d /
+        unzip -o wazuh-agent-binaries-${{ inputs.architecture }}.zip
         bash packages/macos/generate_wazuh_packages.sh -i
         echo 'generate_wazuh_packages.sh ${{ env.FLAGS }}'
         sudo bash packages/macos/generate_wazuh_packages.sh ${{ env.FLAGS }}

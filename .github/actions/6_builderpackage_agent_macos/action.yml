@@ -24,7 +24,8 @@ runs:
       run: |
         mkdir -p src/build && cd src/build && cmake .. && make -j $(sysctl -n hw.ncpu)
         sudo rm -rf _deps vcpkg_installed
-        zip -r ${{ github.workspace }}/wazuh-agent-binaries-${{ inputs.architecture }}.zip ${{ github.workspace }}/
+        cd ../..
+        zip -r wazuh-agent-binaries-${{ inputs.architecture }}.zip etc/config/wazuh-agent.yml src/build
 
     - name: Upload wazuh-agent-binaries.zip
       uses: actions/upload-artifact@v4
