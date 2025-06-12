@@ -56,7 +56,7 @@ runs:
     - name: Zip repository
       shell: bash
       run: |
-        zip -r ${{ github.workspace }}/wazuh-agent-binaries-${{ inputs.architecture }}.zip ${{ github.workspace }}/
+        zip -r ${{ github.workspace }}/wazuh-agent-binaries-${{ inputs.architecture }}.zip ${{ github.workspace }} -x "${{ github.workspace }}/.git/*"
 
     - name: Upload wazuh-agent-binaries.zip
       uses: actions/upload-artifact@v4
