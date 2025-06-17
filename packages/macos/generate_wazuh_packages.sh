@@ -161,9 +161,7 @@ function build_package() {
 
     # Build binaries
     ${WAZUH_PACKAGES_PATH}/package_files/build.sh "${VERBOSE}" "${PACKAGED_DIRECTORY}" "${WAZUH_PATH}" ${JOBS} ${VCPKG_KEY}
-    mkdir -p ${PACKAGED_DIRECTORY}/Library/LaunchDaemons
-    install /Library/LaunchDaemons/com.wazuh.agent.plist ${PACKAGED_DIRECTORY}/Library/LaunchDaemons/com.wazuh.agent.plist
-	sed -i "" "s|${PACKAGED_DIRECTORY}/|/|g" ${PACKAGED_DIRECTORY}/Library/LaunchDaemons/com.wazuh.agent.plist
+	sed -i "" "s|install/|/|g" ${PACKAGED_DIRECTORY}/Library/LaunchDaemons/com.wazuh.agent.plist
 
 
 
@@ -464,7 +462,7 @@ function main() {
     build_package
 
     if [ "${NOTARIZE}" = "yes" ]; then
-        
+
         notarization_path="${DESTINATION}/${pkg_name}.pkg"
 
         if [ -z "${notarization_path}" ]; then

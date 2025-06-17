@@ -13,7 +13,6 @@ DESTINATION_PATH=$2
 WAZUH_PATH=$3
 BUILD_JOBS=$4
 VCPKG_KEY=$5
-SOURCES_DIR=${WAZUH_PATH}/src
 
 set_vcpkg_remote_binary_cache(){
   local vcpkg_token="$1"
@@ -52,26 +51,22 @@ function build() {
         set -ex
     fi
 
- 	if [ ! -d "$SOURCES_DIR/build" ]; then     
-        if [ ! -z "${VCPKG_KEY}" ]; then
-            set_vcpkg_remote_binary_cache $VCPKG_KEY
+    if [ ! -d "${WAZUH_PATH}/install" ]; then
+
+        if [ ! -d "$WAZUH_PATH/build" ]; then
+            if [ ! -z "${VCPKG_KEY}" ]; then
+                set_vcpkg_remote_binary_cache $VCPKG_KEY
+            fi
+
+            cmake -S $WAZUH_PATH/src -B $WAZUH_PATH/build -DVCPKG_INSTALL_OPTIONS="--debug"
+            cmake --build $WAZUH_PATH/build --parallel $BUILD_JOBS
         fi
 
-        cmake -S $SOURCES_DIR -B $SOURCES_DIR/build -DVCPKG_INSTALL_OPTIONS="--debug" 
-        cmake --build $SOURCES_DIR/build --parallel $BUILD_JOBS
+        echo "Installing sources"
+        cmake --install $WAZUH_PATH/build --prefix $WAZUH_PATH/install
     fi
 
-    EXECUTABLE_FILES=$(find "${SOURCES_DIR}" -maxdepth 1 -type f ! -name "*.py" -exec file {} + | grep 'executable' | cut -d: -f1)
-    EXECUTABLE_FILES+=" $(find "${SOURCES_DIR}" -type f ! -name "*.py" ! -path "${SOURCES_DIR}/external/*" ! -path "${SOURCES_DIR}/symbols/*" -name "*.dylib" -print 2>/dev/null)"
-
-    for var in $EXECUTABLE_FILES; do
-        filename=$(basename "$var")
-        dsymutil -o "${SOURCES_DIR}/symbols/${filename}.dSYM" "$var" 2>/dev/null && strip -S "$var"
-    done
-
-    echo "Installing sources"
-    cmake --install $SOURCES_DIR/build --prefix $DESTINATION_PATH
-
+    cp -r "${WAZUH_PATH}/install/." "${DESTINATION_PATH}/"
 }
 
 build
