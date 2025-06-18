@@ -22,10 +22,12 @@ runs:
     - name: Build repository
       shell: bash
       run: |
-        mkdir -p src/build && cd src/build && cmake .. && make -j $(sysctl -n hw.ncpu)
-        sudo rm -rf _deps vcpkg_installed
-        cd ../..
-        zip -r wazuh-agent-binaries-${{ inputs.architecture }}.zip etc/config/wazuh-agent.yml src/build
+        cmake -B build src
+        cmake --build build -j $(sysctl -n hw.ncpu)
+        cmake --install build --prefix install
+
+        sudo rm -rf build/_deps build/vcpkg_installed
+        zip -r wazuh-agent-binaries-${{ inputs.architecture }}.zip .
 
     - name: Upload wazuh-agent-binaries.zip
       uses: actions/upload-artifact@v4
