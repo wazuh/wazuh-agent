@@ -1,7 +1,7 @@
 #pragma once
 
-#include <boost/asio/awaitable.hpp>
-
+#include <chrono>
+#include <ctime>
 #include <functional>
 #include <string>
 
@@ -16,12 +16,11 @@ public:
     /// @param scanOnStart Scan on start
     /// @param reportCheckResult Function to report check result
     /// @param wait Function to wait for the next scan
-    /// @return Awaitable void
-    virtual boost::asio::awaitable<void>
+    virtual void
     Run(std::time_t scanInterval,
         bool scanOnStart,
         std::function<void(const std::string&, const std::string&, const std::string&)> reportCheckResult,
-        std::function<boost::asio::awaitable<void>(std::chrono::milliseconds)> wait) = 0;
+        std::function<void(std::chrono::milliseconds)> wait) = 0;
 
     /// @brief Stops the policy check
     virtual void Stop() = 0;

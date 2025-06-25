@@ -10,7 +10,7 @@ using logcollector::Logcollector;
 #endif
 
 #ifdef ENABLE_SCA
-#include <sca.hpp>
+#include "sca_wrapper.hpp"
 #endif
 
 namespace
@@ -52,7 +52,7 @@ void ModuleManager::AddModules()
 #endif
 
 #ifdef ENABLE_SCA
-        auto sca = std::make_shared<SecurityConfigurationAssessment>(m_configurationParser, m_agentUUID);
+        auto sca = std::make_shared<SCAWrapper>(m_configurationParser, m_agentUUID);
         AddModule(sca);
 #endif
     }

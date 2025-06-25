@@ -6,11 +6,8 @@
 #include <configuration_parser.hpp>
 #include <idbsync.hpp>
 #include <ifilesystem_wrapper.hpp>
-#include <imodule.hpp>
 #include <message.hpp>
-#include <task_manager.hpp>
 
-#include <boost/asio.hpp>
 #include <nlohmann/json.hpp>
 
 #include <functional>
@@ -18,7 +15,7 @@
 #include <string>
 #include <vector>
 
-class SecurityConfigurationAssessment : public IModule
+class SecurityConfigurationAssessment
 {
 public:
     /// @brief Constructor
@@ -41,26 +38,26 @@ public:
     SecurityConfigurationAssessment& operator=(const SecurityConfigurationAssessment&) = delete;
 
     /// @copydoc IModule::Run
-    void Run() override;
+    void Run() ;
 
     /// @copydoc IModule::Setup
-    void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) override;
+    void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) ;
 
     /// @copydoc IModule::Stop
-    void Stop() override;
+    void Stop() ;
 
     /// @copydoc IModule::ExecuteCommand
-    Co_CommandExecutionResult ExecuteCommand(const std::string command, const nlohmann::json parameters) override;
+    // Co_CommandExecutionResult ExecuteCommand(const std::string command, const nlohmann::json parameters) ;
 
     /// @copydoc IModule::Name
-    const std::string& Name() const override;
+    const std::string& Name() const ;
 
     /// @copydoc IModule::SetPushMessageFunction
-    void SetPushMessageFunction(const std::function<int(Message)>& pushMessage) override;
+    void SetPushMessageFunction(const std::function<int(Message)>& pushMessage) ;
 
-    /// @brief Enqueues an ASIO task (coroutine)
-    /// @param task Task to enqueue
-    void EnqueueTask(boost::asio::awaitable<void> task);
+    /// @brief Enqueues a function to be executed as a task
+    /// @param task Function to enqueue
+    void EnqueueTask(std::function<void()> task);
 
 private:
     /// @brief Get the create statement for the database
@@ -97,5 +94,5 @@ private:
     std::vector<std::unique_ptr<ISCAPolicy>> m_policies;
 
     /// @brief Task manager for managing tasks
-    std::unique_ptr<TaskManager> m_taskManager;
+    // std::unique_ptr<TaskManager> m_taskManager;
 };

@@ -3,9 +3,8 @@
 #include <isca_policy.hpp>
 #include <sca_policy_check.hpp>
 
-#include <boost/asio/awaitable.hpp>
-
 #include <atomic>
+#include <chrono>
 #include <filesystem>
 #include <functional>
 #include <memory>
@@ -29,11 +28,11 @@ public:
     SCAPolicy(SCAPolicy&& other) noexcept;
 
     /// @copydoc ISCAPolicy::Run
-    boost::asio::awaitable<void>
+    void
     Run(std::time_t scanInterval,
         bool scanOnStart,
         std::function<void(const std::string&, const std::string&, const std::string&)> reportCheckResult,
-        std::function<boost::asio::awaitable<void>(std::chrono::milliseconds)> wait) override;
+        std::function<void(std::chrono::milliseconds)> wait) override;
 
     /// @copydoc ISCAPolicy::Stop
     void Stop() override;

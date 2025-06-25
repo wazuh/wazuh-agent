@@ -5,10 +5,6 @@
 
 // #include <logger.hpp>
 
-#include <boost/asio/steady_timer.hpp>
-#include <boost/asio/this_coro.hpp>
-#include <boost/asio/use_awaitable.hpp>
-
 SCAPolicy::SCAPolicy(std::string id, Check requirements, std::vector<Check> checks)
     : m_id(std::move(id))
     , m_requirements(std::move(requirements))
@@ -25,11 +21,11 @@ SCAPolicy::SCAPolicy(SCAPolicy&& other) noexcept
 {
 }
 
-boost::asio::awaitable<void>
+void
 SCAPolicy::Run(std::time_t scanInterval,
                bool scanOnStart,
                std::function<void(const std::string&, const std::string&, const std::string&)> reportCheckResult,
-               std::function<boost::asio::awaitable<void>(std::chrono::milliseconds)> wait)
+               std::function<void(std::chrono::milliseconds)> wait)
 {
     if (scanOnStart && m_keepRunning)
     {
@@ -40,7 +36,7 @@ SCAPolicy::Run(std::time_t scanInterval,
 
     while (m_keepRunning)
     {
-        // co_await wait(std::chrono::milliseconds(scanInterval));
+        wait(std::chrono::milliseconds(scanInterval));
 
         m_scanInProgress = true;
         Scan(reportCheckResult);

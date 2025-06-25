@@ -63,7 +63,10 @@ TEST_F(CommandRuleEvaluatorTest, CommandOutputMatchesLiteralPatternReturnsFound)
 
     m_execMock = [](const std::string&)
     {
-        const Utils::ExecResult result {.StdOut = "exact match", .StdErr = "", .ExitCode = 0};
+        Utils::ExecResult result;
+        result.StdOut = "exact match";
+        result.StdErr = "";
+        result.ExitCode = 0;
         return std::make_optional<Utils::ExecResult>(result);
     };
 
@@ -78,7 +81,10 @@ TEST_F(CommandRuleEvaluatorTest, CommandOutputDoesNotMatchLiteralPatternReturnsN
 
     m_execMock = [](const std::string&)
     {
-        const Utils::ExecResult result {.StdOut = "something else", .StdErr = "", .ExitCode = 0};
+        Utils::ExecResult result;
+        result.StdOut = "something else";
+        result.StdErr = "";
+        result.ExitCode = 0;
         return std::make_optional<Utils::ExecResult>(result);
     };
 
@@ -93,7 +99,10 @@ TEST_F(CommandRuleEvaluatorTest, RegexPatternMatchesOutputReturnsFound)
 
     m_execMock = [](const std::string&)
     {
-        const Utils::ExecResult result {.StdOut = "success", .StdErr = "", .ExitCode = 0};
+        Utils::ExecResult result;
+        result.StdOut = "success";
+        result.StdErr = "";
+        result.ExitCode = 0;
         return std::make_optional<Utils::ExecResult>(result);
     };
 
@@ -108,7 +117,10 @@ TEST_F(CommandRuleEvaluatorTest, RegexPatternDoesNotMatchOutputReturnsNotFound)
 
     m_execMock = [](const std::string&)
     {
-        const Utils::ExecResult result {.StdOut = "ok", .StdErr = "", .ExitCode = 0};
+        Utils::ExecResult result;
+        result.StdOut = "ok";
+        result.StdErr = "";
+        result.ExitCode = 0;
         return std::make_optional<Utils::ExecResult>(result);
     };
 
@@ -137,7 +149,10 @@ TEST_F(CommandRuleEvaluatorTest, NumericPatternMatchesOutputReturnsFound)
 
     m_execMock = [](const std::string&)
     {
-        const Utils::ExecResult result {.StdOut = "42", .StdErr = "", .ExitCode = 0};
+        Utils::ExecResult result;
+        result.StdOut = "42";
+        result.StdErr = "";
+        result.ExitCode = 0;
         return std::make_optional<Utils::ExecResult>(result);
     };
 
@@ -152,7 +167,10 @@ TEST_F(CommandRuleEvaluatorTest, NumericPatternWithStringMatchesOutputReturnsFou
 
     m_execMock = [](const std::string&)
     {
-        const Utils::ExecResult result {.StdOut = "Some string:           42", .StdErr = "", .ExitCode = 0};
+        Utils::ExecResult result;
+        result.StdOut = "Some string:           42";
+        result.StdErr = "";
+        result.ExitCode = 0;
         return std::make_optional<Utils::ExecResult>(result);
     };
 
