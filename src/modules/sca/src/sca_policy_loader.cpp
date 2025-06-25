@@ -6,7 +6,7 @@
 
 #include <dbsync.hpp>
 #include <filesystem_wrapper.hpp>
-#include <logger.hpp>
+// #include <logger.hpp>
 
 #include <algorithm>
 
@@ -30,7 +30,7 @@ SCAPolicyLoader::SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemW
             }
             else
             {
-                LogWarn("Policy file does not exist: {}", policy);
+                // LogWarn("Policy file does not exist: {}", policy);
             }
         }
         return policiesPaths;
@@ -64,7 +64,7 @@ std::vector<std::unique_ptr<ISCAPolicy>> SCAPolicyLoader::LoadPolicies(const Cre
         {
             try
             {
-                LogDebug("Loading policy from {}", path.string());
+                // LogDebug("Loading policy from {}", path.string());
 
                 const PolicyParser parser(path);
 
@@ -74,12 +74,12 @@ std::vector<std::unique_ptr<ISCAPolicy>> SCAPolicyLoader::LoadPolicies(const Cre
                 }
                 else
                 {
-                    LogWarn("Failed to parse policy from: {}", path.string());
+                    // LogWarn("Failed to parse policy from: {}", path.string());
                 }
             }
             catch (const std::exception& e)
             {
-                LogWarn("Failed to load policy from {}: {}", path.string(), e.what());
+                // LogWarn("Failed to load policy from {}: {}", path.string(), e.what());
             }
         }
     }
@@ -90,7 +90,7 @@ std::vector<std::unique_ptr<ISCAPolicy>> SCAPolicyLoader::LoadPolicies(const Cre
     }
     else
     {
-        LogWarn("No policies and checks found to synchronize");
+        // LogWarn("No policies and checks found to synchronize");
     }
 
     return policies;
@@ -107,7 +107,7 @@ void SCAPolicyLoader::SyncPoliciesAndReportDelta(const nlohmann::json& data, con
     }
     else
     {
-        LogError("No policies found in data");
+        // LogError("No policies found in data");
         return;
     }
 
@@ -131,13 +131,13 @@ void SCAPolicyLoader::SyncPoliciesAndReportDelta(const nlohmann::json& data, con
             }
             catch (const std::exception& e)
             {
-                LogError("Failed to update check result: {}", e.what());
+                // LogError("Failed to update check result: {}", e.what());
             }
         }
     }
     else
     {
-        LogError("No checks found in data");
+        // LogError("No checks found in data");
         return;
     }
 
@@ -174,12 +174,12 @@ std::unordered_map<std::string, nlohmann::json> SCAPolicyLoader::SyncWithDBSync(
                                  }
                                  else
                                  {
-                                     LogError("Invalid data: {}", rowData.dump());
+                                     // LogError("Invalid data: {}", rowData.dump());
                                  }
                              }
                              else
                              {
-                                 LogError("DB error: {}", rowData.dump());
+                                 // LogError("DB error: {}", rowData.dump());
                              }
                          }};
 

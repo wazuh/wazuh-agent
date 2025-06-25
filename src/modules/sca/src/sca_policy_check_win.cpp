@@ -2,7 +2,7 @@
 
 #include <sca_utils.hpp>
 
-#include <logger.hpp>
+// #include <logger.hpp>
 #include <registryHelper.hpp>
 
 #include <windows.h>
@@ -46,7 +46,7 @@ namespace
         }
         catch (const std::exception& e)
         {
-            LogDebug("RegistryRuleEvaluator::IsValidKey: Exception: {}", e.what());
+            // LogDebug("RegistryRuleEvaluator::IsValidKey: Exception: {}", e.what());
             return false;
         }
     };
@@ -151,20 +151,20 @@ RuleResult RegistryRuleEvaluator::CheckKeyForContents()
 {
     const auto pattern = *m_ctx.pattern; // NOLINT(bugprone-unchecked-optional-access)
 
-    LogDebug("Processing registry rule:{} {} -> {}", m_ctx.isNegated ? "NOT " : "", m_ctx.rule, pattern);
+    // LogDebug("Processing registry rule:{} {} -> {}", m_ctx.isNegated ? "NOT " : "", m_ctx.rule, pattern);
 
     // First check that the key exists
     try
     {
         if (!m_isValidKey(m_ctx.rule))
         {
-            LogDebug("Key '{}' does not exist", m_ctx.rule);
+            // LogDebug("Key '{}' does not exist", m_ctx.rule);
             return RuleResult::Invalid;
         }
     }
     catch (const std::exception& e)
     {
-        LogDebug("RegistryRuleEvaluator::Evaluate: Exception: {}", e.what());
+        // LogDebug("RegistryRuleEvaluator::Evaluate: Exception: {}", e.what());
         return RuleResult::Invalid;
     }
 
@@ -179,7 +179,7 @@ RuleResult RegistryRuleEvaluator::CheckKeyForContents()
         // Check that the value exists
         if (!obtainedValue.has_value())
         {
-            LogDebug("Value '{}' does not exist", valueName);
+            // LogDebug("Value '{}' does not exist", valueName);
             return RuleResult::Invalid;
         }
 
@@ -195,7 +195,7 @@ RuleResult RegistryRuleEvaluator::CheckKeyForContents()
             if (CheckMatch(key, pattern, isRegex) == RuleResult::Found)
             {
                 result = RuleResult::Found;
-                LogDebug("Key '{}' exists", pattern);
+                // LogDebug("Key '{}' exists", pattern);
                 break;
             }
         }
@@ -207,7 +207,7 @@ RuleResult RegistryRuleEvaluator::CheckKeyForContents()
                 if (CheckMatch(value, pattern, isRegex) == RuleResult::Found)
                 {
                     result = RuleResult::Found;
-                    LogDebug("Value '{}' exists", pattern);
+                    // LogDebug("Value '{}' exists", pattern);
                     break;
                 }
             }
@@ -217,7 +217,7 @@ RuleResult RegistryRuleEvaluator::CheckKeyForContents()
     const RuleResult retVal =
         m_ctx.isNegated ? (result == RuleResult::Found ? RuleResult::NotFound : RuleResult::Found) : result;
 
-    LogDebug("Registry rule evaluation {}", retVal == RuleResult::Found ? "passed" : "failed");
+    // LogDebug("Registry rule evaluation {}", retVal == RuleResult::Found ? "passed" : "failed");
     return retVal;
 }
 
@@ -225,23 +225,23 @@ RuleResult RegistryRuleEvaluator::CheckKeyExistence()
 {
     auto result = RuleResult::NotFound;
 
-    LogDebug("Processing registry rule:{} {}", m_ctx.isNegated ? "NOT " : "", m_ctx.rule);
+    // LogDebug("Processing registry rule:{} {}", m_ctx.isNegated ? "NOT " : "", m_ctx.rule);
 
     try
     {
         if (!m_isValidKey(m_ctx.rule))
         {
-            LogDebug("Key does not exist. Rule {}", m_ctx.isNegated ? "passed" : "failed");
+            // LogDebug("Key does not exist. Rule {}", m_ctx.isNegated ? "passed" : "failed");
         }
         else
         {
-            LogDebug("Key exists.  Rule {}", m_ctx.isNegated ? "failed" : "passed");
+            // LogDebug("Key exists.  Rule {}", m_ctx.isNegated ? "failed" : "passed");
             result = RuleResult::Found;
         }
     }
     catch (const std::exception& e)
     {
-        LogDebug("RegistryRuleEvaluator::Evaluate: Exception: {}", e.what());
+        // LogDebug("RegistryRuleEvaluator::Evaluate: Exception: {}", e.what());
         return RuleResult::Invalid;
     }
 

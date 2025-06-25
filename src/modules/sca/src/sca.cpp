@@ -7,7 +7,7 @@
 #include <config.h>
 #include <dbsync.hpp>
 #include <filesystem_wrapper.hpp>
-#include <logger.hpp>
+// #include <logger.hpp>
 
 constexpr auto POLICY_SQL_STATEMENT {
     R"(CREATE TABLE IF NOT EXISTS sca_policy (
@@ -55,11 +55,11 @@ void SecurityConfigurationAssessment::Run()
 {
     if (!m_enabled)
     {
-        LogInfo("SCA module is disabled.");
+        // LogInfo("SCA module is disabled.");
         return;
     }
 
-    LogInfo("SCA module running.");
+    // LogInfo("SCA module running.");
     m_taskManager->RunSingleThread();
 }
 
@@ -88,8 +88,8 @@ void SecurityConfigurationAssessment::Setup(
         auto timer = m_taskManager->CreateSteadyTimer(ms);
 
         boost::system::error_code ec;
-        co_await timer.async_wait(boost::asio::redirect_error(boost::asio::use_awaitable, ec));
-        co_return;
+        // co_await timer.async_wait(boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+        // co_return;
     };
 
     for (auto& policy : m_policies)
@@ -113,7 +113,7 @@ void SecurityConfigurationAssessment::Stop()
         policy->Stop();
     }
     m_taskManager->Stop();
-    LogInfo("SCA module stopped.");
+    // LogInfo("SCA module stopped.");
 }
 
 Co_CommandExecutionResult
@@ -122,12 +122,12 @@ SecurityConfigurationAssessment::ExecuteCommand([[maybe_unused]] const std::stri
 {
     if (!m_enabled)
     {
-        LogInfo("SCA module is disabled.");
-        co_return module_command::CommandExecutionResult {module_command::Status::FAILURE, "Module is disabled"};
+        // LogInfo("SCA module is disabled.");
+        // co_return module_command::CommandExecutionResult {module_command::Status::FAILURE, "Module is disabled"};
     }
 
-    LogInfo("Command: {}", command);
-    co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS, "Command not implemented yet"};
+    // LogInfo("Command: {}", command);
+    // co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS, "Command not implemented yet"};
 }
 
 const std::string& SecurityConfigurationAssessment::Name() const

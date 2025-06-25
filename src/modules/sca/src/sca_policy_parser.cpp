@@ -3,7 +3,7 @@
 #include <sca_policy.hpp>
 #include <sca_policy_check.hpp>
 
-#include <logger.hpp>
+// #include <logger.hpp>
 
 #include <fstream>
 #include <iostream>
@@ -109,7 +109,7 @@ PolicyParser::PolicyParser(const std::filesystem::path& filename, LoadFileFunc l
     }
     catch (const std::exception& e)
     {
-        LogError("Error parsing YAML file: {}", e.what());
+        // LogError("Error parsing YAML file: {}", e.what());
     }
 }
 
@@ -145,16 +145,16 @@ std::unique_ptr<ISCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAn
             policyId = policyNode["id"].as<std::string>();
             policiesAndChecks["policies"].push_back(YamlNodeToJson(policyNode));
 
-            LogDebug("Policy parsed.");
+            // LogDebug("Policy parsed.");
         }
         catch (const YAML::Exception& e)
         {
-            LogError("Failed to parse policy. Skipping it. Error: {}", e.what());
+            // LogError("Failed to parse policy. Skipping it. Error: {}", e.what());
         }
     }
     else
     {
-        LogError("Policy file does not contain policy");
+        // LogError("Policy file does not contain policy");
         return nullptr;
     }
 
@@ -175,14 +175,14 @@ std::unique_ptr<ISCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAn
                 }
                 else
                 {
-                    LogError("Failed to parse rule: {}", rule.as<std::string>());
+                    // LogError("Failed to parse rule: {}", rule.as<std::string>());
                 }
             }
-            LogDebug("Requirements parsed.");
+            // LogDebug("Requirements parsed.");
         }
         catch (const std::exception& e)
         {
-            LogError("Failed to parse requirements. Error: {}", e.what());
+            // LogError("Failed to parse requirements. Error: {}", e.what());
             return nullptr;
         }
     }
@@ -212,12 +212,12 @@ std::unique_ptr<ISCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAn
                         }
                         else
                         {
-                            LogError("Failed to parse rule: {}", rule.as<std::string>());
+                            // LogError("Failed to parse rule: {}", rule.as<std::string>());
                         }
                     }
                 }
 
-                LogDebug("Check {} parsed.", check.id.value_or("Invalid id"));
+                // LogDebug("Check {} parsed.", check.id.value_or("Invalid id"));
                 checks.push_back(std::move(check));
                 nlohmann::json checkJson = YamlNodeToJson(checkWithValidRules);
                 checkJson["policy_id"] = policyId;
@@ -225,14 +225,14 @@ std::unique_ptr<ISCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAn
             }
             catch (const std::exception& e)
             {
-                LogError("Failed to parse a check. Skipping it. Error: {}", e.what());
+                // LogError("Failed to parse a check. Skipping it. Error: {}", e.what());
                 continue;
             }
         }
     }
     else
     {
-        LogError("Policy file does not contain checks");
+        // LogError("Policy file does not contain checks");
         return nullptr;
     }
 

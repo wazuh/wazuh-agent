@@ -39,18 +39,24 @@ extern "C"
 
 #ifdef __cplusplus
 
-#define LogTrace(message, ...)                                                                                         \
-    spdlog::trace("[{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
-#define LogDebug(message, ...)                                                                                         \
-    spdlog::debug("[{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
-#define LogInfo(message, ...)                                                                                          \
-    spdlog::info("[{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
-#define LogWarn(message, ...)                                                                                          \
-    spdlog::warn("[{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
-#define LogError(message, ...)                                                                                         \
-    spdlog::error("[{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
-#define LogCritical(message, ...)                                                                                      \
-    spdlog::critical("[{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__ __VA_OPT__(, ) __VA_ARGS__)
+#define LogTrace(message, ...) \
+    spdlog::trace("[{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__, ##__VA_ARGS__)
+
+#define LogDebug(message, ...) \
+    spdlog::debug("[{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__, ##__VA_ARGS__)
+
+#define LogInfo(message, ...) \
+    spdlog::info("[{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__, ##__VA_ARGS__)
+
+#define LogWarn(message, ...) \
+    spdlog::warn("[{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__, ##__VA_ARGS__)
+
+#define LogError(message, ...) \
+    spdlog::error("[{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__, ##__VA_ARGS__)
+
+#define LogCritical(message, ...) \
+    spdlog::critical("[{}:{}] [{}] " message, LOG_FILE_NAME, __LINE__, __func__, ##__VA_ARGS__)
+
 
 namespace
 {

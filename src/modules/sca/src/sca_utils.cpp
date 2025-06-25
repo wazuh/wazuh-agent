@@ -1,6 +1,6 @@
 #include <sca_utils.hpp>
 
-#include <logger.hpp>
+// #include <logger.hpp>
 #include <stringHelper.hpp>
 
 #include <pcre2.h>
@@ -154,15 +154,15 @@ namespace
 
     bool EvaluateMinterm(const std::string& minterm, const std::string& content, sca::RegexEngineType engine)
     {
-        if (minterm.starts_with("r:"))
+        if (minterm.size() >= 2 && minterm.compare(0, 2, "r:") == 0)
         {
             const auto pattern = minterm.substr(2);
             if (engine == sca::RegexEngineType::PCRE2)
             {
-                return Pcre2Match(content, pattern).first;
+            return Pcre2Match(content, pattern).first;
             }
         }
-        else if (minterm.starts_with("n:"))
+        else if (minterm.size() >= 2 && minterm.compare(0, 2, "n:") == 0)
         {
             const auto expression = minterm.substr(2);
             return EvaluateNumericRegexComparison(content, expression, engine);
@@ -317,19 +317,22 @@ namespace sca
         }
         catch (const std::exception& e)
         {
-            LogError("Exception '{}' was caught while evaluating pattern '{}'.", e.what(), pattern);
+            // LogError("Exception '{}' was caught while evaluating pattern '{}'.", e.what(), pattern);
             return std::nullopt;
         }
     }
 
     bool IsRegexPattern(const std::string& pattern)
     {
-        return pattern.starts_with("r:") || pattern.starts_with("!r:");
+        return (pattern.size() >= 2 && pattern.compare(0, 2, "r:") == 0) ||
+               (pattern.size() >= 3 && pattern.compare(0, 3, "!r:") == 0);
     }
 
     bool IsRegexOrNumericPattern(const std::string& pattern)
     {
-        return IsRegexPattern(pattern) || pattern.starts_with("n:") || pattern.starts_with("!n:");
+        return IsRegexPattern(pattern) ||
+               (pattern.size() >= 2 && pattern.compare(0, 2, "n:") == 0) ||
+               (pattern.size() >= 3 && pattern.compare(0, 3, "!n:") == 0);
     }
 
 } // namespace sca

@@ -2,8 +2,13 @@ cmake_minimum_required(VERSION 3.22)
 
 project(SCA)
 
-include(../../cmake/CommonSettings.cmake)
-set_common_settings()
+# compile with C++17
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# include(../../cmake/CommonSettings.cmake)
+# set_common_settings()
 
 find_package(pcre2 CONFIG REQUIRED)
 

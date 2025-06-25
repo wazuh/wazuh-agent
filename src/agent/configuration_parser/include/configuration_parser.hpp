@@ -87,7 +87,7 @@ namespace configuration
         {
             if ((min && max) && (*min >= *max))
             {
-                LogWarn("Invalid range: min value is greater or equal to max value.");
+                // LogWarn("Invalid range: min value is greater or equal to max value.");
                 return defaultValue;
             }
 
@@ -99,7 +99,7 @@ namespace configuration
                 }
             }
 
-            LogWarn("Requested setting is not found or out of range, default value used.");
+            // LogWarn("Requested setting is not found or out of range, default value used.");
             return defaultValue;
         }
 
@@ -206,7 +206,7 @@ namespace configuration
             }
             catch (const std::invalid_argument& e)
             {
-                LogWarn("Requested setting is invalid, default value used. {}", e.what());
+                // LogWarn("Requested setting is invalid, default value used. {}", e.what());
                 return std::nullopt;
             }
             catch (const std::exception& e)
@@ -232,7 +232,7 @@ namespace configuration
         {
             if (min >= max)
             {
-                LogWarn("Invalid range: min value is greater or equal to max value.");
+                // LogWarn("Invalid range: min value is greater or equal to max value.");
                 return parseFunc(defaultValue);
             }
 
@@ -249,11 +249,11 @@ namespace configuration
                 }
                 catch (const std::exception& e)
                 {
-                    LogWarn("Exception while parsing configuration value: {}. Default value used.", e.what());
+                    // LogWarn("Exception while parsing configuration value: {}. Default value used.", e.what());
                 }
             }
 
-            LogWarn("Requested setting is not found or out of range, default value used.");
+            // LogWarn("Requested setting is not found or out of range, default value used.");
             return parseFunc(defaultValue);
         }
 

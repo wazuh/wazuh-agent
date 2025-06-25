@@ -56,9 +56,9 @@ namespace configuration
         catch (const std::exception& e)
         {
             m_config = YAML::Node();
-            LogWarn("Using default values due to error parsing wazuh-agent.yml file: {} - {}",
-                    e.what(),
-                    m_configFilePath.string());
+            // LogWarn("Using default values due to error parsing wazuh-agent.yml file: {} - {}",
+                    // e.what(),
+                    // m_configFilePath.string());
         }
     }
 
@@ -73,7 +73,7 @@ namespace configuration
         }
         catch (const std::exception& e)
         {
-            LogWarn("Error setting server URL: {}", e.what());
+            // LogWarn("Error setting server URL: {}", e.what());
         }
     }
 
@@ -99,7 +99,7 @@ namespace configuration
         LogDebug("Loading shared configuration.");
         if (m_getGroups == nullptr)
         {
-            LogWarn("Load shared configuration failed, no get groups function set");
+            // LogWarn("Load shared configuration failed, no get groups function set");
             return;
         }
 
@@ -131,7 +131,7 @@ namespace configuration
         }
         catch (const YAML::Exception& e)
         {
-            LogWarn("Load shared configuration failed: {}", e.what());
+            // LogWarn("Load shared configuration failed: {}", e.what());
         }
     }
 
@@ -143,7 +143,7 @@ namespace configuration
 
     void ConfigurationParser::ReloadConfiguration()
     {
-        LogInfo("Reload configuration.");
+        // LogInfo("Reload configuration.");
 
         // Reset saved configuration
         m_config = YAML::Node();
@@ -154,6 +154,6 @@ namespace configuration
         // Load shared configuration
         LoadSharedConfig();
 
-        LogInfo("Reload configuration done.");
+        // LogInfo("Reload configuration done.");
     }
 } // namespace configuration
