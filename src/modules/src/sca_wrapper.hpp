@@ -1,7 +1,6 @@
 #pragma once
 
 #include <imodule.hpp>
-#include <task_manager.hpp>
 #include <configuration_parser.hpp>
 
 #include <sca.hpp>
@@ -25,7 +24,7 @@ public:
     /// @copydoc IModule::Run
     void Run() override
     {
-
+        m_sca->Run();
     }
 
     /// @copydoc IModule::Setup
@@ -37,7 +36,7 @@ public:
     /// @copydoc IModule::Stop
     void Stop() override
     {
-
+        m_sca->Stop();
     }
 
     /// @copydoc IModule::ExecuteCommand
@@ -68,6 +67,4 @@ public:
 private:
     /// @brief Pointer to the SCA module
     std::shared_ptr<SecurityConfigurationAssessment> m_sca;
-
-    std::unique_ptr<TaskManager> m_taskManager;
 };

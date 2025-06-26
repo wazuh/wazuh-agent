@@ -22,27 +22,14 @@ SCAPolicy::SCAPolicy(SCAPolicy&& other) noexcept
 }
 
 void
-SCAPolicy::Run(std::time_t scanInterval,
-               bool scanOnStart,
+SCAPolicy::Run(std::time_t ,
+               bool ,
                std::function<void(const std::string&, const std::string&, const std::string&)> reportCheckResult,
-               std::function<void(std::chrono::milliseconds)> wait)
+               std::function<void(std::chrono::milliseconds)> )
 {
-    if (scanOnStart && m_keepRunning)
-    {
-        m_scanInProgress = true;
-        Scan(reportCheckResult);
-        m_scanInProgress = false;
-    }
-
-    while (m_keepRunning)
-    {
-        wait(std::chrono::milliseconds(scanInterval));
-
-        m_scanInProgress = true;
-        Scan(reportCheckResult);
-        m_scanInProgress = false;
-    }
-    // co_return;
+    m_scanInProgress = true;
+    Scan(reportCheckResult);
+    m_scanInProgress = false;
 }
 
 void SCAPolicy::Scan(

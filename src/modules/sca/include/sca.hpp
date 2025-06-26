@@ -10,6 +10,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include <atomic>
 #include <functional>
 #include <memory>
 #include <string>
@@ -46,18 +47,11 @@ public:
     /// @copydoc IModule::Stop
     void Stop() ;
 
-    /// @copydoc IModule::ExecuteCommand
-    // Co_CommandExecutionResult ExecuteCommand(const std::string command, const nlohmann::json parameters) ;
-
     /// @copydoc IModule::Name
     const std::string& Name() const ;
 
     /// @copydoc IModule::SetPushMessageFunction
     void SetPushMessageFunction(const std::function<int(Message)>& pushMessage) ;
-
-    /// @brief Enqueues a function to be executed as a task
-    /// @param task Function to enqueue
-    void EnqueueTask(std::function<void()> task);
 
 private:
     /// @brief Get the create statement for the database
@@ -93,6 +87,6 @@ private:
     /// @brief List of policies
     std::vector<std::unique_ptr<ISCAPolicy>> m_policies;
 
-    /// @brief Task manager for managing tasks
-    // std::unique_ptr<TaskManager> m_taskManager;
+    /// @brief Flag to keep the module running
+    std::atomic<bool> m_keepRunning {true};
 };

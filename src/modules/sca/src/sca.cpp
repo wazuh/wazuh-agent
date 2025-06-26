@@ -59,8 +59,37 @@ void SecurityConfigurationAssessment::Run()
         return;
     }
 
+    m_keepRunning = true;
+
     // LogInfo("SCA module running.");
-    // m_taskManager->RunSingleThread();
+
+    while(m_keepRunning)
+    {
+        if (m_scanOnStart)
+        {
+            // LogInfo("SCA module scan on start.");
+            for (auto& policy : m_policies)
+            {
+                if (!m_keepRunning)
+                {
+                    return;
+                }
+
+                policy->Run(
+                    m_scanInterval,
+                    m_scanOnStart,
+                    [this](const std::string& policyId, const std::string& checkId, const std::string& result)
+                    {
+                        const SCAEventHandler eventHandler(m_agentUUID, m_dBSync, m_pushMessage);
+                        eventHandler.ReportCheckResult(policyId, checkId, result);
+                    },
+                    nullptr
+                );
+            }
+        }
+
+        std::this_thread::sleep_for(std::chrono::seconds(m_scanInterval));
+    }
 }
 
 void SecurityConfigurationAssessment::Setup(
@@ -80,55 +109,18 @@ void SecurityConfigurationAssessment::Setup(
                 eventHandler.ReportPoliciesDelta(policyData, checksData);
             });
     }();
-
-    // m_taskManager = std::make_unique<TaskManager>();
-
-    // auto awaitTimer = [this](std::chrono::milliseconds ms) -> boost::asio::awaitable<void> // NOLINT
-    // {
-        // auto timer = m_taskManager->CreateSteadyTimer(ms);
-
-        // boost::system::error_code ec;
-        // co_await timer.async_wait(boost::asio::redirect_error(boost::asio::use_awaitable, ec));
-        // co_return;
-    // };
-
-    // for (auto& policy : m_policies)
-    // {
-        // EnqueueTask(policy->Run(
-        //     m_scanInterval,
-        //     m_scanOnStart,
-        //     [this](const std::string& policyId, const std::string& checkId, const std::string& result)
-        //     {
-        //         const SCAEventHandler eventHandler(m_agentUUID, m_dBSync, m_pushMessage);
-        //         eventHandler.ReportCheckResult(policyId, checkId, result);
-        //     },
-        //     awaitTimer));
-    // }
 }
 
 void SecurityConfigurationAssessment::Stop()
 {
+    m_keepRunning = false;
+
     for (auto& policy : m_policies)
     {
         policy->Stop();
     }
-    // m_taskManager->Stop();
     // LogInfo("SCA module stopped.");
 }
-
-// Co_CommandExecutionResult
-// SecurityConfigurationAssessment::ExecuteCommand([[maybe_unused]] const std::string command,
-//                                                 [[maybe_unused]] const nlohmann::json parameters)
-// {
-//     if (!m_enabled)
-//     {
-//         // LogInfo("SCA module is disabled.");
-//         // co_return module_command::CommandExecutionResult {module_command::Status::FAILURE, "Module is disabled"};
-//     }
-
-//     // LogInfo("Command: {}", command);
-//     // co_return module_command::CommandExecutionResult {module_command::Status::SUCCESS, "Command not implemented yet"};
-// }
 
 const std::string& SecurityConfigurationAssessment::Name() const
 {
@@ -138,11 +130,6 @@ const std::string& SecurityConfigurationAssessment::Name() const
 void SecurityConfigurationAssessment::SetPushMessageFunction(const std::function<int(Message)>& pushMessage)
 {
     m_pushMessage = pushMessage;
-}
-
-void SecurityConfigurationAssessment::EnqueueTask(std::function<void()> )
-{
-
 }
 
 std::string SecurityConfigurationAssessment::GetCreateStatement() const
