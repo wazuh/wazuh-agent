@@ -88,7 +88,7 @@ void SecurityConfigurationAssessment::Run()
             }
         }
 
-        std::this_thread::sleep_for(std::chrono::seconds(m_scanInterval));
+        std::this_thread::sleep_for(std::chrono::milliseconds(m_scanInterval));
     }
 }
 
