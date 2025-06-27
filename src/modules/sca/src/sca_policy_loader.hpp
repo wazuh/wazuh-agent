@@ -2,7 +2,6 @@
 
 #include <isca_policy.hpp>
 
-#include <configuration_parser.hpp>
 #include <idbsync.hpp>
 #include <ifilesystem_wrapper.hpp>
 
@@ -28,11 +27,13 @@ class SCAPolicyLoader
 {
 public:
     /// @brief Constructor for SCAPolicyLoader
+    /// @param policies A vector of policy files paths to load
+    /// @param disabledPolicies A vector of disabled policy files paths
     /// @param fileSystemWrapper A shared pointer to a file system wrapper
-    /// @param configurationParser A shared pointer to a configuration parser
     /// @param dBSync A shared pointer to a DBSync object
-    SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr,
-                    std::shared_ptr<const configuration::ConfigurationParser> configurationParser = nullptr,
+    SCAPolicyLoader(const std::vector<std::string>& policies,
+                    const std::vector<std::string>& disabledPolicies,
+                    std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr,
                     std::shared_ptr<IDBSync> dBSync = nullptr);
 
     /// @brief Destructor for SCAPolicyLoader

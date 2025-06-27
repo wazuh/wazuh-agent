@@ -10,19 +10,19 @@
 
 #include <algorithm>
 
-SCAPolicyLoader::SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemWrapper,
-                                 std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
+SCAPolicyLoader::SCAPolicyLoader(const std::vector<std::string>& policies,
+                                 const std::vector<std::string>& disabledPolicies,
+                                 std::shared_ptr<IFileSystemWrapper> fileSystemWrapper,
                                  std::shared_ptr<IDBSync> dBSync)
     : m_fileSystemWrapper(fileSystemWrapper ? std::move(fileSystemWrapper)
                                             : std::make_shared<file_system::FileSystemWrapper>())
     , m_dBSync(std::move(dBSync))
 {
-    const auto loadPoliciesPathsFromConfig = [this, configurationParser](const std::string& configKey)
+    const auto loadPoliciesPathsFromConfig = [this](const std::vector<std::string>& policiesStrPaths)
     {
         std::vector<std::filesystem::path> policiesPaths;
-        const auto policies = configurationParser->GetConfigOrDefault<std::vector<std::string>>({}, "sca", configKey);
 
-        for (const auto& policy : policies)
+        for (const auto& policy : policiesStrPaths)
         {
             if (m_fileSystemWrapper->exists(policy))
             {
@@ -36,8 +36,8 @@ SCAPolicyLoader::SCAPolicyLoader(std::shared_ptr<IFileSystemWrapper> fileSystemW
         return policiesPaths;
     };
 
-    m_customPoliciesPaths = loadPoliciesPathsFromConfig("policies");
-    m_disabledPoliciesPaths = loadPoliciesPathsFromConfig("policies_disabled");
+    m_customPoliciesPaths = loadPoliciesPathsFromConfig(policies);
+    m_disabledPoliciesPaths = loadPoliciesPathsFromConfig(disabledPolicies);
 }
 
 std::vector<std::unique_ptr<ISCAPolicy>> SCAPolicyLoader::LoadPolicies(const CreateEventsFunc& createEvents) const
