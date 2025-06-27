@@ -4,10 +4,11 @@
 #include <sca_policy.hpp>
 #include <sca_policy_loader.hpp>
 
-#include <config.h>
 #include <dbsync.hpp>
 #include <filesystem_wrapper.hpp>
 // #include <logger.hpp>
+
+#include <thread>
 
 constexpr auto POLICY_SQL_STATEMENT {
     R"(CREATE TABLE IF NOT EXISTS sca_policy (
@@ -91,16 +92,18 @@ void SecurityConfigurationAssessment::Run()
     }
 }
 
-void SecurityConfigurationAssessment::Setup(
-    std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
+void SecurityConfigurationAssessment::Setup(bool enabled,
+                                            bool scanOnStart,
+                                            std::time_t scanInterval,
+                                            const std::vector<std::string>& policies,
+                                            const std::vector<std::string>& disabledPolicies)
 {
-    m_enabled = configurationParser->GetConfigOrDefault(config::sca::DEFAULT_ENABLED, "sca", "enabled");
-    m_scanOnStart = configurationParser->GetConfigOrDefault(config::sca::DEFAULT_SCAN_ON_START, "sca", "scan_on_start");
-    m_scanInterval = configurationParser->GetTimeConfigOrDefault(config::sca::DEFAULT_INTERVAL, "sca", "interval");
-
-    m_policies = [this, &configurationParser]()
+    m_enabled = enabled;
+    m_scanOnStart = scanOnStart;
+    m_scanInterval = scanInterval;
+    m_policies = [this, &policies, &disabledPolicies]()
     {
-        const SCAPolicyLoader policyLoader(m_fileSystemWrapper, configurationParser, m_dBSync);
+        const SCAPolicyLoader policyLoader(policies, disabledPolicies, m_fileSystemWrapper, m_dBSync);
         return policyLoader.LoadPolicies(
             [this](auto policyData, auto checksData)
             {

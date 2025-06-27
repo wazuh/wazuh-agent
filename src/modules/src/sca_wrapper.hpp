@@ -31,7 +31,12 @@ public:
     /// @copydoc IModule::Setup
     void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) override
     {
-        m_sca->Setup(configurationParser);
+        const bool enabled = configurationParser->GetConfigOrDefault(config::sca::DEFAULT_ENABLED, "sca", "enabled");
+        const bool scanOnStart = configurationParser->GetConfigOrDefault(config::sca::DEFAULT_SCAN_ON_START, "sca", "scan_on_start");
+        const std::time_t scanInterval = configurationParser->GetTimeConfigOrDefault(config::sca::DEFAULT_INTERVAL, "sca", "interval");
+        const auto policies = configurationParser->GetConfigOrDefault<std::vector<std::string>>({}, "sca", "policies");
+        const auto disabledPolicies = configurationParser->GetConfigOrDefault<std::vector<std::string>>({}, "sca", "policies_disabled");
+        m_sca->Setup(enabled, scanOnStart, scanInterval, policies, disabledPolicies);
     }
 
     /// @copydoc IModule::Stop

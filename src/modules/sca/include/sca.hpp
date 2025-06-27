@@ -3,7 +3,6 @@
 #include <isca_policy.hpp>
 
 #include <command_entry.hpp>
-#include <configuration_parser.hpp>
 #include <idbsync.hpp>
 #include <ifilesystem_wrapper.hpp>
 #include <message.hpp>
@@ -42,7 +41,11 @@ public:
     void Run() ;
 
     /// @copydoc IModule::Setup
-    void Setup(std::shared_ptr<const configuration::ConfigurationParser> configurationParser) ;
+    void Setup(bool enabled,
+               bool scanOnStart,
+               std::time_t scanInterval,
+               const std::vector<std::string>& policies,
+               const std::vector<std::string>& disabledPolicies);
 
     /// @copydoc IModule::Stop
     void Stop() ;

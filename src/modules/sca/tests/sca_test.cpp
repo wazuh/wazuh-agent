@@ -2,8 +2,6 @@
 
 #include <sca.hpp>
 
-#include <configuration_parser.hpp>
-#include <config.h>
 #include <dbsync.hpp>
 
 #include "mocks/mockdbsync.hpp"
@@ -16,24 +14,14 @@ class ScaTest : public ::testing::Test
 protected:
     void SetUp() override
     {
-        m_configurationParser = std::make_shared<configuration::ConfigurationParser>(std::string(R"(
-            agent:
-              retry_interval: 5
-              verification_mode: none
-              path.data: test_path
-            events:
-              batch_size: 1
-        )"));
-
         m_mockDBSync = std::make_shared<MockDBSync>();
         m_sca = std::make_shared<SecurityConfigurationAssessment>(
-            m_configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data"),
+            "test_path",
             "agent-uuid",
             m_mockDBSync
         );
     }
 
-    std::shared_ptr<configuration::ConfigurationParser> m_configurationParser = nullptr;
     std::shared_ptr<IDBSync> m_mockDBSync = nullptr;
     std::shared_ptr<SecurityConfigurationAssessment> m_sca = nullptr;
 };

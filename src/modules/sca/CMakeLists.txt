@@ -11,6 +11,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # set_common_settings()
 
 find_package(pcre2 CONFIG REQUIRED)
+find_package(yaml-cpp CONFIG REQUIRED)
 
 add_library(
     SCA
@@ -34,13 +35,11 @@ target_link_libraries(
            FileIO
            dbsync
            sysinfo
-           Config
-           ConfigurationParser
            MessageEntry
-           ModuleManager
            CommandEntry
            cmd_helper
-    PRIVATE PCRE2::8BIT hash_helper string_helper time_helper $<$<PLATFORM_ID:Windows>:registry_helper>)
+           nlohmann_json::nlohmann_json
+    PRIVATE yaml-cpp::yaml-cpp PCRE2::8BIT hash_helper string_helper time_helper $<$<PLATFORM_ID:Windows>:registry_helper>)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(SCA)
