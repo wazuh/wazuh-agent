@@ -7,10 +7,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# include(../../cmake/CommonSettings.cmake)
-# set_common_settings()
+# include(../../cmake/CommonSettings.cmake) set_common_settings()
 
 find_package(pcre2 CONFIG REQUIRED)
+find_package(yaml CONFIG REQUIRED)
 
 add_library(
     SCA
@@ -40,7 +40,7 @@ target_link_libraries(
            ModuleManager
            CommandEntry
            cmd_helper
-    PRIVATE PCRE2::8BIT hash_helper string_helper time_helper $<$<PLATFORM_ID:Windows>:registry_helper>)
+    PRIVATE PCRE2::8BIT hash_helper string_helper time_helper $<$<PLATFORM_ID:Windows>:registry_helper> yaml)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(SCA)
