@@ -20,11 +20,11 @@ class SecurityConfigurationAssessment
 {
 public:
     /// @brief Constructor
-    /// @param configurationParser Configuration parser for setting up the module
+    /// @param dbFolderPath Path to the database folder
     /// @param agentUUID Agent UUID
     /// @param dbSync Pointer to IDBSync for database synchronization
     /// @param fileSystemWrapper File system wrapper for file operations
-    SecurityConfigurationAssessment(std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
+    SecurityConfigurationAssessment(std::string dbFolderPath,
                                     std::string agentUUID,
                                     std::shared_ptr<IDBSync> dbSync = nullptr,
                                     std::shared_ptr<IFileSystemWrapper> fileSystemWrapper = nullptr);

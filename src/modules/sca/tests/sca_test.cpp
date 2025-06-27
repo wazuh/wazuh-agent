@@ -3,6 +3,7 @@
 #include <sca.hpp>
 
 #include <configuration_parser.hpp>
+#include <config.h>
 #include <dbsync.hpp>
 
 #include "mocks/mockdbsync.hpp"
@@ -25,7 +26,11 @@ protected:
         )"));
 
         m_mockDBSync = std::make_shared<MockDBSync>();
-        m_sca = std::make_shared<SecurityConfigurationAssessment>(m_configurationParser, "agent-uuid", m_mockDBSync);
+        m_sca = std::make_shared<SecurityConfigurationAssessment>(
+            m_configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data"),
+            "agent-uuid",
+            m_mockDBSync
+        );
     }
 
     std::shared_ptr<configuration::ConfigurationParser> m_configurationParser = nullptr;

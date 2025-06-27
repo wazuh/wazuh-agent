@@ -2,6 +2,7 @@
 
 #include <imodule.hpp>
 #include <configuration_parser.hpp>
+#include <config.h>
 
 #include <sca.hpp>
 
@@ -13,11 +14,11 @@ class SCAWrapper : public IModule
 {
 public:
     /// @brief Constructor
-    /// @param configurationParser Configuration parser for setting up the module
+    /// @param dbFolderPath Path to the database folder
     /// @param agentUUID Agent UUID
-    SCAWrapper(std::shared_ptr<const configuration::ConfigurationParser> configurationParser,
+    SCAWrapper(std::string dbFolderPath,
                std::string agentUUID)
-        : m_sca(std::make_shared<SecurityConfigurationAssessment>(configurationParser, agentUUID))
+        : m_sca(std::make_shared<SecurityConfigurationAssessment>(dbFolderPath, agentUUID))
     {
     }
 

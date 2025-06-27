@@ -52,7 +52,10 @@ void ModuleManager::AddModules()
 #endif
 
 #ifdef ENABLE_SCA
-        auto sca = std::make_shared<SCAWrapper>(m_configurationParser, m_agentUUID);
+        auto sca = std::make_shared<SCAWrapper>(
+            m_configurationParser->GetConfigOrDefault(config::DEFAULT_DATA_PATH, "agent", "path.data"),
+            m_agentUUID
+        );
         AddModule(sca);
 #endif
     }
