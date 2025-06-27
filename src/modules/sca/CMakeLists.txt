@@ -36,7 +36,6 @@ target_link_libraries(
            dbsync
            sysinfo
            MessageEntry
-           CommandEntry
            cmd_helper
            nlohmann_json::nlohmann_json
     PRIVATE yaml-cpp::yaml-cpp PCRE2::8BIT hash_helper string_helper time_helper $<$<PLATFORM_ID:Windows>:registry_helper>)

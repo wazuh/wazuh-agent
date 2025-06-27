@@ -2,7 +2,6 @@
 
 #include <isca_policy.hpp>
 
-#include <command_entry.hpp>
 #include <idbsync.hpp>
 #include <ifilesystem_wrapper.hpp>
 #include <message.hpp>
