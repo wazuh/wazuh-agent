@@ -31,7 +31,7 @@ TEST_F(ScaTest, SetPushMessageFunctionStoresCallback)
     constexpr int expectedReturnValue = 123;
     bool called = false;
 
-    auto lambda = [&](Message) -> int // NOLINT(performance-unnecessary-value-param)
+    auto lambda = [&](const std::string&) -> int // NOLINT(performance-unnecessary-value-param)
     {
         called = true;
         return expectedReturnValue;
@@ -39,7 +39,7 @@ TEST_F(ScaTest, SetPushMessageFunctionStoresCallback)
 
     m_sca->SetPushMessageFunction(lambda);
 
-    const Message dummyMessage(MessageType::STATELESS, nlohmann::json {}, "dummyModule", "dummyType", "dummyMetaData");
+    const std::string dummyMessage = R"({"key": "value"})";
     const int result = lambda(dummyMessage);
 
     EXPECT_TRUE(called);

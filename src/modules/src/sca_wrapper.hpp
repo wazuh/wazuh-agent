@@ -3,6 +3,7 @@
 #include <imodule.hpp>
 #include <configuration_parser.hpp>
 #include <config.h>
+#include <message.hpp>
 
 #include <sca.hpp>
 
@@ -60,7 +61,27 @@ public:
     /// @copydoc IModule::SetPushMessageFunction
     void SetPushMessageFunction(const std::function<int(Message)>& pushMessage) override
     {
-        m_sca->SetPushMessageFunction(pushMessage);
+        m_sca->SetPushMessageFunction([pushMessage](const std::string& jsonStr)
+        {
+            try
+            {
+                const auto parsed = nlohmann::json::parse(jsonStr);
+
+                MessageType type = parsed.at("type") == "stateful" ? MessageType::STATEFUL : MessageType::STATELESS;
+                const auto& event = parsed.at("event");
+                const std::string module = parsed.at("module");
+                const auto& metadata = parsed.at("metadata");
+                std::string moduleType = metadata.value("type", "");
+                std::string metadataStr = metadata.dump();
+
+                Message msg(type, event, module, moduleType, metadataStr);
+                return pushMessage(msg);
+            }
+            catch (...)
+            {
+                return -1;
+            }
+        });
     }
 
     /// @brief Enqueues an ASIO task (coroutine)

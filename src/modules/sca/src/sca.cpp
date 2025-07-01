@@ -129,7 +129,7 @@ const std::string& SecurityConfigurationAssessment::Name() const
     return m_name;
 }
 
-void SecurityConfigurationAssessment::SetPushMessageFunction(const std::function<int(Message)>& pushMessage)
+void SecurityConfigurationAssessment::SetPushMessageFunction(const std::function<int(const std::string&)>& pushMessage)
 {
     m_pushMessage = pushMessage;
 }

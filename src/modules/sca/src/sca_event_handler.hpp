@@ -1,7 +1,6 @@
 #pragma once
 
 #include <idbsync.hpp>
-#include <message.hpp>
 
 #include <nlohmann/json.hpp>
 
@@ -29,7 +28,7 @@ public:
     /// @param pushMessage Callback function used to push messages to the message queue.
     SCAEventHandler(std::string agentUUID,
                     std::shared_ptr<IDBSync> dBSync = nullptr,
-                    std::function<int(Message)> pushMessage = nullptr);
+                    std::function<int(const std::string&)> pushMessage = nullptr);
 
     /// @brief Destructor
     virtual ~SCAEventHandler() = default;
@@ -140,5 +139,5 @@ private:
     std::shared_ptr<IDBSync> m_dBSync;
 
     /// @brief Callback function used to push messages to the message queue.
-    std::function<int(Message)> m_pushMessage;
+    std::function<int(const std::string&)> m_pushMessage;
 };

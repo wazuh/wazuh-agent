@@ -4,7 +4,6 @@
 
 #include <idbsync.hpp>
 #include <ifilesystem_wrapper.hpp>
-#include <message.hpp>
 
 #include <nlohmann/json.hpp>
 
@@ -53,7 +52,7 @@ public:
     const std::string& Name() const ;
 
     /// @copydoc IModule::SetPushMessageFunction
-    void SetPushMessageFunction(const std::function<int(Message)>& pushMessage) ;
+    void SetPushMessageFunction(const std::function<int(const std::string&)>& pushMessage) ;
 
 private:
     /// @brief Get the create statement for the database
@@ -72,7 +71,7 @@ private:
     std::shared_ptr<IDBSync> m_dBSync;
 
     /// @brief Function for pushing event messages
-    std::function<int(Message)> m_pushMessage;
+    std::function<int(const std::string&)> m_pushMessage;
 
     /// @brief Pointer to a file system wrapper
     std::shared_ptr<IFileSystemWrapper> m_fileSystemWrapper;

@@ -27,7 +27,7 @@ static const std::map<ReturnTypeCallback, std::string> STATELESS_OPERATION_MAP {
 
 SCAEventHandler::SCAEventHandler(std::string agentUUID,
                                  std::shared_ptr<IDBSync> dBSync,
-                                 std::function<int(Message)> pushMessage)
+                                 std::function<int(const std::string&)> pushMessage)
     : m_agentUUID(std::move(agentUUID))
     , m_dBSync(std::move(dBSync))
     , m_pushMessage(std::move(pushMessage)) {};
@@ -427,11 +427,14 @@ void SCAEventHandler::PushStateful(const nlohmann::json& event, const nlohmann::
         throw std::runtime_error("Message queue not set, cannot send message.");
     }
 
-    const Message statefulMessage {MessageType::STATEFUL,
-                                   metadata["operation"] == "delete" ? "{}"_json : event,
-                                   metadata["module"],
-                                   "",
-                                   metadata.dump()};
+    const nlohmann::json statefulJson = {
+        {"type", "stateful"},
+        {"event", metadata["operation"] == "delete" ? nlohmann::json::object() : event},
+        {"module", metadata["module"]},
+        {"metadata", metadata}
+    };
+
+    const auto statefulMessage = statefulJson.dump();
 
     m_pushMessage(statefulMessage);
 
@@ -445,8 +448,14 @@ void SCAEventHandler::PushStateless(const nlohmann::json& event, const nlohmann:
         throw std::runtime_error("Message queue not set, cannot send message.");
     }
 
-    const Message statelessMessage {
-        MessageType::STATELESS, event, metadata["module"], metadata["collector"], metadata.dump()};
+    const nlohmann::json statelessJson = {
+        {"type", "stateless"},
+        {"event", event},
+        {"module", metadata["module"]},
+        {"metadata", metadata}
+    };
+
+    const auto statelessMessage = statelessJson.dump();
 
     m_pushMessage(statelessMessage);
 
