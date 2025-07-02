@@ -31,13 +31,18 @@ target_compile_definitions(SCA PRIVATE PCRE2_CODE_UNIT_WIDTH=8)
 
 target_link_libraries(
     SCA
-    PUBLIC FilesystemWrapper
-           FileIO
-           dbsync
-           sysinfo
-           cmd_helper
+    PUBLIC FilesystemWrapper # theres another wrapper in 4.x
+           FileIO # readLineByLine and getFileContent are in 4.x
+           dbsync # used extensively, available in 4.x, but no interface
+           sysinfo # available in 4.x, uses processes method
+           cmd_helper # Utils::exec differs from 6.x to 4.x, needs to be adapted
            nlohmann_json::nlohmann_json
-    PRIVATE yaml-cpp::yaml-cpp PCRE2::8BIT hash_helper string_helper time_helper $<$<PLATFORM_ID:Windows>:registry_helper>)
+    PRIVATE yaml-cpp::yaml-cpp
+            PCRE2::8BIT
+            hash_helper # uses Utils::HashData class available in 4.x hashHelper.h
+            string_helper # uses Utils::Trim and Utils::asciiToHex (available in 4.x stringHelper.h)
+            time_helper # uses Utils::getCurrentISO8601 available in 4.x timeHelper.h
+            $<$<PLATFORM_ID:Windows>:registry_helper>) # uses Utils::Registry class (available) and Utils::KeyExists (not available)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(SCA)
