@@ -15,6 +15,8 @@ find_package(yaml CONFIG REQUIRED)
 add_library(
     SCA
     src/sca.cpp
+    src/libyaml_utils.cpp
+    src/libyaml_wrapper.cpp
     src/sca_policy.cpp
     src/sca_policy_check.cpp
     src/sca_policy_loader.cpp
