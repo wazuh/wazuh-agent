@@ -153,6 +153,23 @@ CommandRuleEvaluator::CommandRuleEvaluator(PolicyEvaluationContext ctx,
                                            CommandExecFunc commandExecFunc)
     : RuleEvaluator(std::move(ctx), std::move(fileSystemWrapper))
     , m_commandExecFunc(std::move(commandExecFunc))
+    /*
+    for 5.x
+    , m_commandExecFunc(commandExecFunc ? std::move(commandExecFunc) : [this](const std::string& command)
+    {
+        // use wm_exec with this signature:
+        // int wm_exec(char *command, char **output, int *exitcode, int secs, const char * add_path)
+        // return a ExecResult
+        // for example:
+            char *cmd_output = NULL;
+            int result_code;
+            const int wmExecResult = wm_exec(command, &cmd_output, &result_code, data->commands_timeout, NULL);
+            ExecResult execResult;
+            execResult.StdOut = std::string(cmd_output);
+            execResult.ExitCode = result_code;
+            return execResult;
+    })
+    */
 {
 }
 
