@@ -35,7 +35,6 @@ target_link_libraries(
            FileIO # readLineByLine and getFileContent are in 4.x
            dbsync # used extensively, available in 4.x, but no interface
            sysinfo # available in 4.x, uses processes method
-           cmd_helper # Utils::exec differs from 6.x to 4.x, needs to be adapted
            nlohmann_json::nlohmann_json
     PRIVATE yaml-cpp::yaml-cpp
             PCRE2::8BIT
