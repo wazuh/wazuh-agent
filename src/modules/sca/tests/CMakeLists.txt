@@ -81,6 +81,12 @@ target_include_directories(sca_policy_parser_test PRIVATE ${CMAKE_CURRENT_SOURCE
 target_link_libraries(sca_policy_parser_test PRIVATE SCA GTest::gtest GTest::gmock GTest::gtest_main)
 add_test(NAME SCAPolicyParserTest COMMAND sca_policy_parser_test)
 
+add_executable(yaml_wrapper_test yaml_wrapper_test.cpp ../src/yaml_document.cpp ../src/yaml_node.cpp)
+configure_target(yaml_wrapper_test)
+target_include_directories(yaml_wrapper_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+target_link_libraries(yaml_wrapper_test PRIVATE GTest::gtest GTest::gtest_main yaml)
+add_test(NAME YamlWrapperTest COMMAND yaml_wrapper_test)
+
 if(WIN32)
     add_executable(registry_rule_evaluator_test registry_rule_evaluator_test.cpp)
     configure_target(registry_rule_evaluator_test)
