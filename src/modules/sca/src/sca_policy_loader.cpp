@@ -66,7 +66,7 @@ std::vector<std::unique_ptr<ISCAPolicy>> SCAPolicyLoader::LoadPolicies(const Cre
             {
                 // LogDebug("Loading policy from {}", path.string());
 
-                const PolicyParser parser(path);
+                PolicyParser parser(path);
 
                 if (auto policy = parser.ParsePolicy(policiesAndChecks); policy)
                 {

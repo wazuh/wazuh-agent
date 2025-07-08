@@ -3,6 +3,9 @@
 #include <sca_policy.hpp>
 #include <sca_policy_check.hpp>
 
+#include <yaml_document.hpp>
+#include <yaml_node.hpp>
+
 // #include <logger.hpp>
 
 #include <fstream>
@@ -28,32 +31,32 @@ namespace
     }
 
     // NOLINTNEXTLINE(misc-no-recursion)
-    nlohmann::json YamlNodeToJson(const YAML::Node& yamlNode)
+    nlohmann::json YamlNodeToJson(const YamlNode& yamlNode)
     {
         if (yamlNode.IsScalar())
         {
-            return yamlNode.as<std::string>();
+            return yamlNode.AsString();
         }
         else if (yamlNode.IsSequence())
         {
             std::vector<std::string> values;
-            for (const auto& item : yamlNode)
+            const auto items = yamlNode.AsSequence();
+            for (const auto& item : items)
             {
                 if (item.IsScalar())
                 {
-                    values.push_back(item.as<std::string>());
+                    values.push_back(item.AsString());
                 }
                 else if (item.IsMap())
                 {
-                    for (const auto& subitem : item)
+                    for (const auto& [key, subitem] : item.AsMap())
                     {
-                        const auto key = subitem.first.as<std::string>();
-                        const YAML::Node& valNode = subitem.second;
-                        if (valNode.IsSequence())
+                        if (subitem.IsSequence())
                         {
-                            for (const auto& val : valNode)
+                            const auto subitems = subitem.AsSequence();
+                            for (const auto& val : subitems)
                             {
-                                values.emplace_back(key + ":" + val.as<std::string>());
+                                values.emplace_back(key + ":" + val.AsString());
                             }
                         }
                     }
@@ -64,9 +67,9 @@ namespace
         else if (yamlNode.IsMap())
         {
             nlohmann::json j;
-            for (const auto& kv : yamlNode)
+            for (const auto& [key, node] : yamlNode.AsMap())
             {
-                j[kv.first.as<std::string>()] = YamlNodeToJson(kv.second);
+                j[key] = YamlNodeToJson(node);
             }
             return j;
         }
@@ -84,28 +87,37 @@ namespace
 } // namespace
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
-PolicyParser::PolicyParser(const std::filesystem::path& filename, LoadFileFunc loadFileFunc)
-    : m_loadFileFunc(loadFileFunc ? std::move(loadFileFunc) : YAML::LoadFile)
+PolicyParser::PolicyParser(const std::filesystem::path& filename, std::unique_ptr<IYamlDocument> yamlDocument)
 {
+    if (yamlDocument)
+    {
+        m_yamlDocument = std::move(yamlDocument);
+    }
+    else
+    {
+        m_yamlDocument = std::make_unique<YamlDocument>(filename);
+    }
+
     try
     {
-        if (!IsValidYamlFile(filename.string()))
+        if (!m_yamlDocument->IsValidDocument())
         {
             throw std::runtime_error("The file does not contain a valid YAML structure.");
         }
 
-        m_node = m_loadFileFunc(filename.string());
+        YamlNode root = m_yamlDocument->GetRoot();
 
-        if (auto variables = m_node["variables"]; variables)
+        if (root.HasKey("variables"))
         {
-            for (const auto& var : variables)
+            const auto variablesNode = root["variables"];
+
+            for (const auto& [key, val] : variablesNode.AsMap())
             {
-                const auto name = var.first.as<std::string>();
-                const auto value = var.second.as<std::string>();
-                m_variablesMap[name] = value;
+                m_variablesMap[key] = val.AsString();
             }
+
+            ReplaceVariablesInNode(root);
         }
-        ReplaceVariablesInNode(m_node);
     }
     catch (const std::exception& e)
     {
@@ -113,41 +125,26 @@ PolicyParser::PolicyParser(const std::filesystem::path& filename, LoadFileFunc l
     }
 }
 
-bool PolicyParser::IsValidYamlFile(const std::filesystem::path& filename) const
-{
-    try
-    {
-        const auto mapToValidte = m_loadFileFunc(filename.string());
-
-        if (!mapToValidte.IsMap() && !mapToValidte.IsSequence())
-        {
-            throw std::runtime_error("The file does not contain a valid YAML structure.");
-        }
-        return true;
-    }
-    catch (const std::exception&)
-    {
-        return false;
-    }
-}
-
-std::unique_ptr<ISCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndChecks) const
+std::unique_ptr<ISCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAndChecks)
 {
     std::vector<Check> checks;
     Check requirements;
 
     std::string policyId;
 
-    if (const auto policyNode = m_node["policy"]; policyNode)
+    const YamlNode root = m_yamlDocument->GetRoot();
+
+    if (root.HasKey("policy"))
     {
         try
         {
-            policyId = policyNode["id"].as<std::string>();
+            const auto policyNode = root["policy"];
+            policyId = policyNode["id"].AsString();
             policiesAndChecks["policies"].push_back(YamlNodeToJson(policyNode));
 
             // LogDebug("Policy parsed.");
         }
-        catch (const YAML::Exception& e)
+        catch (const std::exception& e)
         {
             // LogError("Failed to parse policy. Skipping it. Error: {}", e.what());
         }
@@ -158,24 +155,26 @@ std::unique_ptr<ISCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAn
         return nullptr;
     }
 
-    if (const auto requirementsNode = m_node["requirements"]; requirementsNode)
+    if (root.HasKey("requirements"))
     {
         try
         {
-            requirements.condition = requirementsNode["condition"].as<std::string>();
+            const auto requirementsNode = root["requirements"];
+            requirements.condition = requirementsNode["condition"].AsString();
             ValidateConditionString(requirements.condition);
 
-            for (const auto& rule : requirementsNode["rules"])
+            const auto rules = requirementsNode["rules"].AsSequence();
+
+            for (const auto& rule : rules)
             {
-                std::unique_ptr<IRuleEvaluator> RuleEvaluator =
-                    RuleEvaluatorFactory::CreateEvaluator(rule.as<std::string>());
+                std::unique_ptr<IRuleEvaluator> RuleEvaluator = RuleEvaluatorFactory::CreateEvaluator(rule.AsString());
                 if (RuleEvaluator != nullptr)
                 {
                     requirements.rules.push_back(std::move(RuleEvaluator));
                 }
                 else
                 {
-                    // LogError("Failed to parse rule: {}", rule.as<std::string>());
+                    // LogError("Failed to parse rule: {}", rule.AsString());
                 }
             }
             // LogDebug("Requirements parsed.");
@@ -187,28 +186,39 @@ std::unique_ptr<ISCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAn
         }
     }
 
-    if (const auto checksNode = m_node["checks"]; checksNode)
+    if (root.HasKey("checks"))
     {
+        const auto checksNode = root["checks"].AsSequence();
         for (const auto& checkNode : checksNode)
         {
             try
             {
                 Check check;
-                check.id = checkNode["id"].as<std::string>();
-                check.condition = checkNode["condition"].as<std::string>();
+                check.id = checkNode["id"].AsString();
+                check.condition = checkNode["condition"].AsString();
                 ValidateConditionString(check.condition);
-                YAML::Node checkWithValidRules = YAML::Clone(checkNode);
-                checkWithValidRules["rules"] = YAML::Node(YAML::NodeType::Sequence);
 
-                if (checkNode["rules"])
+                // create new document with valid rules
+                auto newDoc = checkNode.Clone();
+                auto newRoot = newDoc.GetRoot();
+
+                // remove existing rules and create empty sequence
+                auto checkWithValidRules = newRoot;
+                newRoot.RemoveKey("rules");
+                newRoot.CreateEmptySequence("rules");
+
+                if (checkNode.HasKey("rules"))
                 {
-                    for (const auto& rule : checkNode["rules"])
+                    const auto rules = checkNode["rules"].AsSequence();
+
+                    for (const auto& rule : rules)
                     {
-                        const auto ruleStr = rule.as<std::string>();
+                        const auto ruleStr = rule.AsString();
+
                         if (auto ruleEvaluator = RuleEvaluatorFactory::CreateEvaluator(ruleStr))
                         {
                             check.rules.push_back(std::move(ruleEvaluator));
-                            checkWithValidRules["rules"].push_back(ruleStr);
+                            checkWithValidRules["rules"].AppendToSequence(ruleStr);
                         }
                         else
                         {
@@ -240,11 +250,11 @@ std::unique_ptr<ISCAPolicy> PolicyParser::ParsePolicy(nlohmann::json& policiesAn
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
-void PolicyParser::ReplaceVariablesInNode(YAML::Node& currentNode)
+void PolicyParser::ReplaceVariablesInNode(YamlNode& currentNode)
 {
     if (currentNode.IsScalar())
     {
-        auto value = currentNode.as<std::string>();
+        auto value = currentNode.AsString();
         for (const auto& pair : m_variablesMap)
         {
             size_t pos = 0;
@@ -254,23 +264,21 @@ void PolicyParser::ReplaceVariablesInNode(YAML::Node& currentNode)
                 pos += pair.second.length();
             }
         }
-        currentNode = value;
+        currentNode.SetScalarValue(value);
     }
     else if (currentNode.IsMap())
     {
-        for (auto it = currentNode.begin(); it != currentNode.end(); ++it)
+        for (auto& [key, node] : currentNode.AsMap())
         {
-            ReplaceVariablesInNode(it->second);
+            ReplaceVariablesInNode(node);
         }
     }
     else if (currentNode.IsSequence())
     {
-        // NOLINTNEXTLINE(modernize-loop-convert)
-        for (std::size_t i = 0; i < currentNode.size(); ++i)
+        auto items = currentNode.AsSequence();
+        for (auto& item : items)
         {
-            YAML::Node element = currentNode[i];
-            ReplaceVariablesInNode(element);
-            currentNode[i] = element;
+            ReplaceVariablesInNode(item);
         }
     }
 }

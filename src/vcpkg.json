@@ -97,6 +97,10 @@
         {
             "name": "yaml-cpp",
             "version>=": "0.8.0"
+        },
+        {
+            "name": "libyaml",
+            "version>=": "0.2.5#5"
         }
     ],
     "vcpkg-configuration": {

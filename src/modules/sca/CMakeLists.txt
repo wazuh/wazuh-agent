@@ -7,15 +7,16 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# include(../../cmake/CommonSettings.cmake)
-# set_common_settings()
+# include(../../cmake/CommonSettings.cmake) set_common_settings()
 
 find_package(pcre2 CONFIG REQUIRED)
-find_package(yaml-cpp CONFIG REQUIRED)
+find_package(yaml CONFIG REQUIRED)
 
 add_library(
     SCA
     src/sca.cpp
+    src/yaml_document.cpp
+    src/yaml_node.cpp
     src/sca_policy.cpp
     src/sca_policy_check.cpp
     src/sca_policy_loader.cpp
@@ -36,12 +37,13 @@ target_link_libraries(
            dbsync # used extensively, available in 4.x, but no interface
            sysinfo # available in 4.x, uses processes method
            nlohmann_json::nlohmann_json
-    PRIVATE yaml-cpp::yaml-cpp
+    PRIVATE yaml
             PCRE2::8BIT
             hash_helper # uses Utils::HashData class available in 4.x hashHelper.h
             string_helper # uses Utils::Trim and Utils::asciiToHex (available in 4.x stringHelper.h)
             time_helper # uses Utils::getCurrentISO8601 available in 4.x timeHelper.h
-            $<$<PLATFORM_ID:Windows>:registry_helper>) # uses Utils::Registry class (available) and Utils::KeyExists (not available)
+            $<$<PLATFORM_ID:Windows>:registry_helper>) # uses Utils::Registry class (available) and Utils::KeyExists
+                                                       # (not available)
 
 include(../../cmake/ConfigureTarget.cmake)
 configure_target(SCA)
