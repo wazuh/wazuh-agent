@@ -163,12 +163,49 @@ TEST(CentralizedConfiguration, ExecuteCommandReturnsFailureOnParseParameters)
                                         "CentralizedConfiguration error while parsing parameters");
 
             const nlohmann::json parameterListCase3 = nlohmann::json::parse(R"({"groups":["", "group2"]})");
-            co_await TestExecuteCommand(
-                centralizedConfiguration,
-                "set-group",
-                parameterListCase3,
-                module_command::Status::FAILURE,
-                "CentralizedConfiguration group set failed, a group name can not be an empty string.");
+            co_await TestExecuteCommand(centralizedConfiguration,
+                                        "set-group",
+                                        parameterListCase3,
+                                        module_command::Status::FAILURE,
+                                        "CentralizedConfiguration group set failed, invalid group name received.");
+        }(),
+        boost::asio::detached);
+
+    io_context.run();
+}
+
+TEST(CentralizedConfiguration, ExecuteCommandRejectsInvalidGroupNames)
+{
+    boost::asio::io_context io_context;
+
+    boost::asio::co_spawn(
+        io_context,
+        []() -> boost::asio::awaitable<void>
+        {
+            CentralizedConfiguration centralizedConfiguration(
+                [](const std::vector<std::string>&) { return true; },
+                []() { return std::vector<std::string> {}; },
+                [](std::string, std::string) -> boost::asio::awaitable<bool> { co_return true; },
+                [](const std::filesystem::path&) { return true; },
+                []() {});
+
+            const std::vector<nlohmann::json> invalidGroupCases = {
+                nlohmann::json::parse(R"({"groups":["../../etc/wazuh-agent"]})"),
+                nlohmann::json::parse(R"({"groups":["/etc/wazuh-agent"]})"),
+                nlohmann::json::parse(R"({"groups":["..\\windows"]})"),
+                nlohmann::json::parse(R"({"groups":[".."]})"),
+                nlohmann::json::parse(R"({"groups":[".hidden"]})"),
+                nlohmann::json::parse(R"({"groups":["group/../escape"]})"),
+                nlohmann::json::parse(R"({"groups":["good", "bad/name"]})")};
+
+            for (const auto& invalidCase : invalidGroupCases)
+            {
+                co_await TestExecuteCommand(centralizedConfiguration,
+                                            "set-group",
+                                            invalidCase,
+                                            module_command::Status::FAILURE,
+                                            "CentralizedConfiguration group set failed, invalid group name received.");
+            }
         }(),
         boost::asio::detached);
 
