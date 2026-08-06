@@ -83,6 +83,80 @@ This collector gets logs from Journald on Linux. It needs a field and a value to
 |           | journald.ignore_if_missing | Boolean to ignore the filtering condition for logs without the specified field               | false   |
 |           | journald.conditions        | Vector of journald fields to filter to be applied simultaneously                             |         |
 
+### Agent-side Syslog listener
+
+The Wazuh agent can optionally receive basic Syslog messages directly over UDP or
+TCP through the Logcollector module. This is useful for lightweight remote-site
+deployments where nearby devices or applications need to forward Syslog to a local
+Wazuh agent, while preserving the agent-based collection model. Received messages
+enter the normal Logcollector processing path and are sent through the standard
+agent-to-manager pipeline, so they remain associated with the receiving agent.
+
+No listener is started unless it is explicitly configured. Each `syslog` entry
+defines one listener (one protocol, bind address and port). Several entries may be
+combined to run multiple independent listeners on the same agent.
+
+```yaml
+logcollector:
+  enabled: true
+  syslog:
+    # UDP listener on localhost
+    - protocol: udp
+      bind_address: 127.0.0.1
+      port: 5514
+    # UDP listener on a specific interface
+    - protocol: udp
+      bind_address: 192.168.10.20
+      port: 5515
+    # TCP listener on localhost
+    - protocol: tcp
+      bind_address: 127.0.0.1
+      port: 1514
+```
+
+`bind_address` is optional and defaults to `127.0.0.1`. Binding to `0.0.0.0` (all
+interfaces) must be configured explicitly. Each message is forwarded with the
+`remote-syslog` collector type and the listener identity (`<protocol>:<address>:<port>`)
+as its provider:
+
+```json
+{"module":"logcollector","collector":"remote-syslog"}
+{"event":{"created":"2025-01-17T17:58:26.212Z","original":"<13>Jun 25 10:00:00 testhost testapp: UDP listener test","provider":"udp:127.0.0.1:5514"}}
+```
+
+| Mandatory | Option              | Description                                                              | Default   |
+| :-------: | ------------------- | ----------------------------------------------------------------------- | --------- |
+|     ✔️     | syslog              | Vector of agent-side syslog listeners                                   |           |
+|     ✔️     | syslog.protocol     | Listener transport protocol: `udp` or `tcp`                             |           |
+|     ✔️     | syslog.port         | Listener port (1-65535)                                                  |           |
+|           | syslog.bind_address | Address the listener binds to                                           | 127.0.0.1 |
+
+A listener definition is rejected (and the listener is not started) when the
+protocol is not `udp`/`tcp`, the port is missing or out of range, the bind address
+is malformed, or another listener already uses the same protocol, bind address and
+port combination.
+
+> **Note:** For high-volume Syslog ingestion, TLS Syslog, disk-assisted queues,
+> advanced filtering, transformations, routing, or complex parsing pipelines, use
+> rsyslog, syslog-ng, Logstash, or the Wazuh manager remote Syslog input as
+> appropriate. Source IP filtering for the agent-side listener should be handled
+> with host firewall rules.
+
+#### Limitations and future work
+
+This first version implements only the UDP/TCP IP-socket listeners from
+[wazuh/wazuh#15178](https://github.com/wazuh/wazuh/issues/15178). The following are
+intentionally **not** included yet and are tracked as future work:
+
+| Not yet supported | Notes |
+| ----------------- | ----- |
+| UNIX domain sockets (`unix_stream`, `unix_dgram`, `unix_seq`) | Local socket ingress requested in #15178; reuses the Boost.Asio local-socket pattern. |
+| Named pipe / FIFO (and Windows named pipes) | Pipe ingress requested in #15178; equivalent to the legacy `syslog-pipe` format. |
+| TLS Syslog (TCP) | The TCP listener is plaintext; use rsyslog/syslog-ng for TLS. |
+| TCP octet-counting framing (RFC 6587) | Only newline-delimited ("non-transparent") framing is parsed. Octet-counted messages (`<len> <msg>`) are not auto-detected. |
+| Hostname `bind_address` | Only numeric IP literals (IPv4/IPv6) are accepted; DNS names are rejected. |
+| `allowed-ips` source filtering | Restrict senders with host firewall rules until implemented. |
+
 ### Windows Collector
 
 ```yaml

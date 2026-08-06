@@ -2,17 +2,23 @@
 
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <boost/asio/ip/address.hpp>
 #include <boost/asio/redirect_error.hpp>
 #include <config.h>
 #include <logger.hpp>
 #include <timeHelper.hpp>
 
+#include <algorithm>
+#include <cctype>
 #include <chrono>
+#include <cstdint>
 #include <iomanip>
 #include <map>
+#include <set>
 #include <sstream>
 
 #include "file_reader.hpp"
+#include "syslog_reader.hpp"
 
 using namespace logcollector;
 
@@ -66,7 +72,104 @@ void Logcollector::Setup(std::shared_ptr<const configuration::ConfigurationParse
         configurationParser->GetConfigOrDefault(config::logcollector::DEFAULT_ENABLED, "logcollector", "enabled");
 
     SetupFileReader(configurationParser);
+    SetupSyslogReaders(configurationParser);
     AddPlatformSpecificReader(configurationParser);
+}
+
+void Logcollector::SetupSyslogReaders(
+    const std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
+{
+    const auto syslogConfigs = configurationParser->GetConfigOrDefault<YAML::Node>(
+        YAML::Node(YAML::NodeType::Sequence), "logcollector", "syslog");
+
+    constexpr int MIN_PORT = 1;
+    constexpr int MAX_PORT = 65535;
+
+    std::set<std::string> seenListeners;
+
+    for (const auto& config : syslogConfigs)
+    {
+        if (!config.IsMap())
+        {
+            LogWarn("Invalid agent-side syslog listener configuration: entry is not a mapping.");
+            continue;
+        }
+
+        auto protocolStr = config["protocol"].as<std::string>("");
+        std::transform(protocolStr.begin(),
+                       protocolStr.end(),
+                       protocolStr.begin(),
+                       [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+        SyslogProtocol protocol = SyslogProtocol::Udp;
+        if (protocolStr == "udp")
+        {
+            protocol = SyslogProtocol::Udp;
+        }
+        else if (protocolStr == "tcp")
+        {
+            protocol = SyslogProtocol::Tcp;
+        }
+        else
+        {
+            LogError("Invalid agent-side syslog listener configuration: unsupported protocol {}.",
+                     protocolStr.empty() ? "(missing)" : protocolStr);
+            continue;
+        }
+
+        if (!config["port"])
+        {
+            LogError("Invalid agent-side syslog listener configuration: missing port.");
+            continue;
+        }
+
+        int port = 0;
+        try
+        {
+            port = config["port"].as<int>();
+        }
+        catch (const std::exception&)
+        {
+            LogError("Invalid agent-side syslog listener configuration: invalid port {}.",
+                     config["port"].as<std::string>(""));
+            continue;
+        }
+
+        if (port < MIN_PORT || port > MAX_PORT)
+        {
+            LogError("Invalid agent-side syslog listener configuration: invalid port {}.", port);
+            continue;
+        }
+
+        const auto bindAddress = config["bind_address"].as<std::string>("127.0.0.1");
+
+        boost::system::error_code ec;
+        boost::asio::ip::make_address(bindAddress, ec);
+        if (ec)
+        {
+            LogError("Invalid agent-side syslog listener configuration: invalid bind address {}.", bindAddress);
+            continue;
+        }
+
+        const auto listenerId =
+            SyslogReader::ProtocolToString(protocol) + ":" + bindAddress + ":" + std::to_string(port);
+
+        if (!seenListeners.insert(listenerId).second)
+        {
+            LogError("Invalid agent-side syslog listener configuration: duplicate listener {}.", listenerId);
+            continue;
+        }
+
+        AddReader(std::make_shared<SyslogReader>(
+            [this](const std::string& location, const std::string& log, const std::string& collectorType)
+            { PushMessage(location, log, collectorType); },
+            // NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+            [this](std::chrono::milliseconds duration) -> Awaitable { co_await Wait(duration); },
+            [this](Awaitable task) { EnqueueTask(std::move(task)); },
+            protocol,
+            bindAddress,
+            static_cast<std::uint16_t>(port)));
+    }
 }
 
 void Logcollector::SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser)

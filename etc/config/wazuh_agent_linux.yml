@@ -29,3 +29,12 @@ logcollector:
       value: 0|1|2|3|4|5|6|7
       exact_match: true
       ignore_if_missing: true
+  # Agent-side syslog listeners (UDP/TCP). Disabled by default: no listener is
+  # started unless explicitly configured here. bind_address defaults to 127.0.0.1.
+  # syslog:
+  #   - protocol: udp
+  #     bind_address: 127.0.0.1
+  #     port: 5514
+  #   - protocol: tcp
+  #     bind_address: 127.0.0.1
+  #     port: 1514

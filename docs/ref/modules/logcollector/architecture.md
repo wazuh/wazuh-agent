@@ -61,11 +61,20 @@ classDiagram
         + Run()
         + Stop()
     }
+    class SyslogReader {
+        - protocol : SyslogProtocol
+        - bindAddress : string
+        - port : uint16
+        + SyslogReader(protocol, bindAddress, port)
+        + Run()
+        + Stop()
+    }
     IModule <-- Logcollector
     Logcollector o-- IReader
     IReader <|-- FileReader
     IReader <|-- JournaldReader
     IReader <|-- WindowsEventTracerReader
     IReader <|-- MacosReader
+    IReader <|-- SyslogReader
     FileReader o-- LocalFile
 ```

@@ -29,6 +29,11 @@ namespace logcollector
             Logcollector::SetupFileReader(configurationParser);
         }
 
+        void SetupSyslogReaders(std::shared_ptr<const configuration::ConfigurationParser> configurationParser)
+        {
+            Logcollector::SetupSyslogReaders(configurationParser);
+        }
+
         MOCK_METHOD(void, AddReader, (std::shared_ptr<IReader> reader), (override));
         MOCK_METHOD(void, EnqueueTask, (Awaitable task), (override));
         MOCK_METHOD(boost::asio::awaitable<void>, Wait, (std::chrono::milliseconds ms), (override));

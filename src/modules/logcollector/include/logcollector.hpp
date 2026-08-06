@@ -81,6 +81,15 @@ namespace logcollector
         /// @param configurationParser Configuration parser
         void SetupFileReader(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
 
+        /// @brief Sets up the agent-side syslog listeners (UDP/TCP)
+        ///
+        /// Reads every listener definition from the configuration, validates it and
+        /// creates one reader per valid definition. Invalid or duplicate definitions
+        /// are reported and skipped so that no listener is silently started.
+        ///
+        /// @param configurationParser Configuration parser
+        void SetupSyslogReaders(const std::shared_ptr<const configuration::ConfigurationParser> configurationParser);
+
         /// @brief Clean all readers
         void CleanAllReaders();
 

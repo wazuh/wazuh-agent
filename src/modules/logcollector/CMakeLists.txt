@@ -16,7 +16,7 @@ find_package(cJSON CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(Boost REQUIRED COMPONENTS asio)
 
-file(GLOB LOGCOLLECTOR_SOURCES src/*.cpp src/file_reader/src/*.cpp)
+file(GLOB LOGCOLLECTOR_SOURCES src/*.cpp src/file_reader/src/*.cpp src/syslog_reader/src/*.cpp)
 file(GLOB JOURNALD_SOURCES src/journald_reader/src/*.cpp)
 file(GLOB MACOS_SOURCES src/macos_reader/src/*.cpp)
 file(GLOB WIN_SOURCES src/winevt_reader/src/*.cpp)
@@ -44,6 +44,7 @@ target_include_directories(
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
             ${CMAKE_CURRENT_SOURCE_DIR}/src/file_reader/include
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/syslog_reader/include
             $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/src/journald_reader/include>
             $<$<PLATFORM_ID:Linux>:${SYSTEMD_INCLUDE_DIRS}>
             $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/winevt_reader/include>
