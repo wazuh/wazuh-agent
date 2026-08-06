@@ -97,13 +97,20 @@ static const std::set<std::string> UNIX_PYPI_DEFAULT_BASE_DIRS {
     "/usr/lib/python*/*-packages",
     "/usr/lib64/python*/*-packages",
     "/usr/local/lib/python*/*-packages",
+    "/usr/local/lib64/python*/*-packages",
     "/home/*/.local/lib/python*/*-packages",
+    "/home/*/.local/lib64/python*/*-packages",
     "/root/.local/lib/python*/*-packages",
+    "/root/.local/lib64/python*/*-packages",
     "/opt/homebrew/lib",
+    "/opt/homebrew/lib64",
     "/Library/Python",
     "/Library/Frameworks/Python.framework/Versions/*/lib/python*/*-packages",
+    "/Library/Frameworks/Python.framework/Versions/*/lib64/python*/*-packages",
     "/root/.pyenv/versions/*/lib/python*/*-packages",
-    "/home/*/.pyenv/versions/*/lib/python*/*-packages"};
+    "/root/.pyenv/versions/*/lib64/python*/*-packages",
+    "/home/*/.pyenv/versions/*/lib/python*/*-packages"
+    "/home/*/.pyenv/versions/*/lib64/python*/*-packages"};
 
 static const std::set<std::string> UNIX_NPM_DEFAULT_BASE_DIRS {"/usr/local/lib",
                                                                "/opt/homebrew/lib",
